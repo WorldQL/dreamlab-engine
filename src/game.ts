@@ -1,6 +1,5 @@
 import { Composite, Engine } from 'matter-js'
 import * as PIXI from 'pixi.js'
-import type { Promisable as Awaitable } from 'type-fest'
 import type { Entity, RenderContext } from './entity'
 
 // /* eslint-disable unicorn/no-array-for-each */
@@ -175,7 +174,11 @@ import type { Entity, RenderContext } from './entity'
 interface Game {
   instantiate<Data, Render, E extends Entity<Data, Render>>(
     entity: E,
-  ): Awaitable<void>
+  ): Promise<void>
+
+  destroy<Data, Render, E extends Entity<Data, Render>>(
+    entity: E,
+  ): Promise<void>
 
   shutdown(): Promise<void>
 }
@@ -258,12 +261,33 @@ export const createGame = ({
       entities.push(entity)
     },
 
+    async destroy(entity) {
+      const idx = entities.indexOf(entity)
+
+      if (idx === -1) return
+      entities.splice(idx, 1)
+
+      if (renderContext) {
+        // @ts-expect-error Assign meta properties
+        const render = entity[symbols.render]
+        await entity.teardownRenderContext(render)
+      }
+
+      // @ts-expect-error Assign meta properties
+      const data = entity[symbols.data]
+      await entity.teardown(data)
+    },
+
     async shutdown() {
+      const jobs = entities.map(async entity => this.destroy(entity))
+      await Promise.all(jobs)
+
       Composite.clear(physics.world, false, true)
       Engine.clear(physics)
 
       if (renderContext) {
         const { app } = renderContext
+
         app.stop()
         app.destroy()
       }
