@@ -1,6 +1,7 @@
 import { Composite, Engine } from 'matter-js'
 import * as PIXI from 'pixi.js'
-import type { Entity, RenderContext } from './entity'
+import { dataManager } from '~/entity.js'
+import type { Entity, RenderContext } from '~/entity.js'
 
 // /* eslint-disable unicorn/no-array-for-each */
 // import type { Except } from 'type-fest'
@@ -244,18 +245,13 @@ export const createGame = ({
   const game: Game = {
     async instantiate(entity) {
       const data = await entity.init({ physics })
-
-      // @ts-expect-error Assign meta properties
-      // eslint-disable-next-line require-atomic-updates
-      entity[symbols.data] = data
+      dataManager.setData(entity, data)
 
       if (renderContext) {
         const { app: _, ...ctx } = renderContext
-        const render = await entity.initRenderContext(ctx)
 
-        // @ts-expect-error Assign meta properties
-        // eslint-disable-next-line require-atomic-updates
-        entity[symbols.render] = render
+        const render = await entity.initRenderContext(ctx)
+        dataManager.setRenderData(entity, render)
       }
 
       entities.push(entity)
@@ -268,13 +264,11 @@ export const createGame = ({
       entities.splice(idx, 1)
 
       if (renderContext) {
-        // @ts-expect-error Assign meta properties
-        const render = entity[symbols.render]
+        const render = dataManager.getRenderData(entity)
         await entity.teardownRenderContext(render)
       }
 
-      // @ts-expect-error Assign meta properties
-      const data = entity[symbols.data]
+      const data = dataManager.getData(entity)
       await entity.teardown(data)
     },
 

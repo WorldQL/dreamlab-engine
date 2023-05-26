@@ -65,3 +65,38 @@ export const isEntity = (entity: unknown): entity is Entity => {
 
   return symbol in entity && entity[symbol] === true
 }
+
+const symbols = {
+  data: Symbol('data'),
+  render: Symbol('render data'),
+} as const
+
+export const dataManager = {
+  getData<Data>(entity: Entity<Data>): Data {
+    if (!(symbols.data in entity)) {
+      throw new Error('invalid entity data access')
+    }
+
+    // @ts-expect-error Meta Property
+    return entity[symbols.data]
+  },
+
+  setData<Data>(entity: Entity<Data>, data: Data): void {
+    // @ts-expect-error Meta Property
+    entity[symbols.data] = data
+  },
+
+  getRenderData<Render>(entity: Entity<unknown, Render>): Render {
+    if (!(symbols.render in entity)) {
+      throw new Error('invalid entity render data access')
+    }
+
+    // @ts-expect-error Meta Property
+    return entity[symbols.render]
+  },
+
+  setRenderData<Render>(entity: Entity<unknown, Render>, render: Render): void {
+    // @ts-expect-error Meta Property
+    entity[symbols.render] = render
+  },
+} as const
