@@ -1,5 +1,5 @@
 import { Composite, Engine } from 'matter-js'
-import * as PIXI from 'pixi.js'
+import type { Application, IApplicationOptions } from 'pixi.js'
 import { dataManager } from '~/entity.js'
 import type { Entity, RenderContext } from '~/entity.js'
 
@@ -24,7 +24,7 @@ interface HeadlessOptions {
 interface NotHeadlessOptions {
   headless: false
   container: HTMLDivElement
-  graphicsOptions?: Partial<PIXI.IApplicationOptions>
+  graphicsOptions?: Partial<IApplicationOptions>
 }
 
 interface CommonOptions {
@@ -35,16 +35,17 @@ interface CommonOptions {
 }
 
 type Options = CommonOptions & (HeadlessOptions | NotHeadlessOptions)
-export const createGame = ({
+export const createGame = async ({
   headless,
   container,
   graphicsOptions,
   physicsTickrate = 60,
-}: Options): Game => {
-  type RenderContextExt = RenderContext & { app: PIXI.Application }
-  const initRenderContext = (): RenderContextExt | undefined => {
+}: Options): Promise<Game> => {
+  type RenderContextExt = RenderContext & { app: Application }
+  const initRenderContext = async (): Promise<RenderContextExt | undefined> => {
     if (headless) return undefined
 
+    const PIXI = await import('pixi.js')
     const app = new PIXI.Application({
       ...graphicsOptions,
 
@@ -68,7 +69,7 @@ export const createGame = ({
   const physics = Engine.create()
   physics.gravity.scale *= 3
 
-  const renderContext = initRenderContext()
+  const renderContext = await initRenderContext()
   const entities: Entity[] = []
 
   const physicsTickDelta = 1_000 / physicsTickrate
@@ -106,7 +107,14 @@ export const createGame = ({
     }
   }
 
-  // TODO: Actually call the tick loop
+  if (renderContext) {
+    const { app } = renderContext
+
+    app.ticker.add(onTick)
+    app.start()
+  } else {
+    // TODO: setInterval tick loop
+  }
 
   const game: Game = {
     async instantiate(entity) {
