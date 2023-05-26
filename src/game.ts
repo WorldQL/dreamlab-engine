@@ -208,7 +208,7 @@ export const createGame = ({
   headless,
   container,
   graphicsOptions,
-  physicsTickrate,
+  physicsTickrate = 60,
 }: Options): Game => {
   type RenderContextExt = RenderContext & { app: PIXI.Application }
   const initRenderContext = (): RenderContextExt | undefined => {
@@ -240,7 +240,42 @@ export const createGame = ({
   const renderContext = initRenderContext()
   const entities: Entity[] = []
 
-  // TODO: Tick loop
+  const physicsTickDelta = 1_000 / physicsTickrate
+  let time = performance.now()
+  let physicsTickAcc = 0
+
+  const onTick = async () => {
+    const now = performance.now()
+    const delta = now - time
+
+    time = now
+    physicsTickAcc += delta
+
+    while (physicsTickAcc >= physicsTickDelta) {
+      physicsTickAcc -= physicsTickDelta
+      Engine.update(physics, physicsTickDelta)
+
+      // const timeState = { delta: physicsTickDelta / 1_000, time: time / 1_000 }
+      for (const entity of entities) {
+        if (typeof entity.onPhysicsStep !== 'function') continue
+
+        const data = dataManager.getData(entity)
+        entity.onPhysicsStep(data)
+      }
+    }
+
+    if (!renderContext) return
+    for (const entity of entities) {
+      if (typeof entity.onRenderFrame !== 'function') continue
+
+      const data = dataManager.getData(entity)
+      const render = dataManager.getRenderData(entity)
+
+      entity.onRenderFrame(data, render)
+    }
+  }
+
+  // TODO: Actually call the tick loop
 
   const game: Game = {
     async instantiate(entity) {
