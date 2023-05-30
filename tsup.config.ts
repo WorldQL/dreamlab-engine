@@ -37,4 +37,7 @@ export function createTsupConfig({
 
 export default createTsupConfig({
   shims: false,
+  splitting: true,
+
+  entry: ['./src/exports/index.ts'],
 })
