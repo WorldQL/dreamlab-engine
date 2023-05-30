@@ -1,12 +1,13 @@
 import type { Engine } from 'matter-js'
 import type { Container } from 'pixi.js'
 import type { Promisable as Awaitable, Except } from 'type-fest'
+import type { Game } from '~/game.js'
 import { mergeObjects } from '~/utils/types.js'
 
-// export interface Time {
-//   delta: number
-//   time: number
-// }
+export interface Time {
+  delta: number
+  time: number
+}
 
 // export interface Render {
 //   offset: Vector
@@ -16,6 +17,7 @@ import { mergeObjects } from '~/utils/types.js'
 // }
 
 export interface InitContext {
+  game: Game<boolean>
   physics: Engine
 }
 
@@ -34,8 +36,8 @@ export interface Entity<Data = unknown, Render = unknown> {
   init(init: InitContext): Awaitable<Data>
   initRenderContext(init: RenderContext): Awaitable<Render>
 
-  onPhysicsStep?(data: Data): void
-  onRenderFrame?(data: Data, render: Render): void
+  onPhysicsStep?(time: Time, data: Data): void
+  onRenderFrame?(time: Time, data: Data, render: Render): void
 
   teardownRenderContext(render: Render): Awaitable<void>
   teardown(data: Data): Awaitable<void>

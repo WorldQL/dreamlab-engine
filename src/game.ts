@@ -3,7 +3,12 @@ import type { Application, IApplicationOptions } from 'pixi.js'
 import { dataManager } from '~/entity.js'
 import type { Entity, RenderContext } from '~/entity.js'
 
-interface Game {
+export interface Game<Headless extends boolean> {
+  get debug(): boolean
+  set debug(value: boolean)
+
+  get render(): Headless extends false ? RenderContextExt : never
+
   instantiate<Data, Render, E extends Entity<Data, Render>>(
     entity: E,
   ): Promise<void>
@@ -15,61 +20,81 @@ interface Game {
   shutdown(): Promise<void>
 }
 
-interface HeadlessOptions {
-  headless: true
-  container?: never
-  graphicsOptions?: never
-}
+interface Options<Headless extends Boolean> {
+  /**
+   * Run the game logic without any rendering code
+   */
+  headless: Headless
 
-interface NotHeadlessOptions {
-  headless: false
-  container: HTMLDivElement
-  graphicsOptions?: Partial<IApplicationOptions>
-}
+  /**
+   * HTML `div` element for the Pixi.js canvas to mount inside
+   */
+  container: Headless extends false ? HTMLDivElement : never
 
-interface CommonOptions {
+  /**
+   * Additional options to pass to Pixi.js
+   */
+  graphicsOptions?: Headless extends false
+    ? Partial<IApplicationOptions>
+    : never
+
   /**
    * Physics Tickrate in Hz [default: 60]
    */
   physicsTickrate?: number
+
+  /**
+   * Debug mode
+   */
+  debug?: boolean
 }
 
-type Options = CommonOptions & (HeadlessOptions | NotHeadlessOptions)
-export const createGame = async ({
+type RenderContextExt = RenderContext & { app: Application }
+async function initRenderContext<Headless extends boolean>({
   headless,
-  container,
   graphicsOptions,
-  physicsTickrate = 60,
-}: Options): Promise<Game> => {
-  type RenderContextExt = RenderContext & { app: Application }
-  const initRenderContext = async (): Promise<RenderContextExt | undefined> => {
-    if (headless) return undefined
+  container,
+}: Options<Headless>): Promise<
+  Headless extends true ? RenderContextExt : undefined
+>
+async function initRenderContext<Headless extends boolean>({
+  headless,
+  graphicsOptions,
+  container,
+}: Options<Headless>): Promise<RenderContextExt | undefined> {
+  if (headless) return undefined
 
-    const PIXI = await import('pixi.js')
-    const app = new PIXI.Application({
-      ...graphicsOptions,
+  const PIXI = await import('pixi.js')
+  const app = new PIXI.Application({
+    ...graphicsOptions,
 
-      resizeTo: container,
-      autoDensity: true,
-    })
+    resizeTo: container,
+    autoDensity: true,
+  })
 
-    app.stage.sortableChildren = true
-    const canvas = app.view as HTMLCanvasElement
+  app.stage.sortableChildren = true
+  const canvas = app.view as HTMLCanvasElement
 
-    const ctx: RenderContextExt = {
-      app,
-      stage: app.stage,
-      canvas,
-      container,
-    }
-
-    return ctx
+  const ctx: RenderContextExt = {
+    app,
+    stage: app.stage,
+    canvas,
+    container,
   }
+
+  return ctx
+}
+
+export async function createGame<Headless extends boolean>(
+  options: Options<Headless>,
+): Promise<Game<Headless>> {
+  let debug = options.debug ?? false
+  const { physicsTickrate = 60 } = options
 
   const physics = Engine.create()
   physics.gravity.scale *= 3
 
-  const renderContext = await initRenderContext()
+  const renderContext = await initRenderContext(options)
   const entities: Entity[] = []
 
   const physicsTickDelta = 1_000 / physicsTickrate
@@ -87,23 +112,25 @@ export const createGame = async ({
       physicsTickAcc -= physicsTickDelta
       Engine.update(physics, physicsTickDelta)
 
-      // const timeState = { delta: physicsTickDelta / 1_000, time: time / 1_000 }
+      const timeState = { delta: physicsTickDelta / 1_000, time: time / 1_000 }
       for (const entity of entities) {
         if (typeof entity.onPhysicsStep !== 'function') continue
 
         const data = dataManager.getData(entity)
-        entity.onPhysicsStep(data)
+        entity.onPhysicsStep(timeState, data)
       }
     }
 
     if (!renderContext) return
+
+    const timeState = { delta: delta / 1_000, time: time / 1_000 }
     for (const entity of entities) {
       if (typeof entity.onRenderFrame !== 'function') continue
 
       const data = dataManager.getData(entity)
       const render = dataManager.getRenderData(entity)
 
-      entity.onRenderFrame(data, render)
+      entity.onRenderFrame(timeState, data, render)
     }
   }
 
@@ -116,9 +143,23 @@ export const createGame = async ({
     // TODO: setInterval tick loop
   }
 
-  const game: Game = {
+  const game: Game<Headless> = {
+    get debug() {
+      return debug
+    },
+
+    set debug(value) {
+      debug = value
+    },
+
+    // @ts-expect-error Generic Hack
+    // TODO: Fix generic hack
+    get render() {
+      return renderContext
+    },
+
     async instantiate(entity) {
-      const data = await entity.init({ physics })
+      const data = await entity.init({ game: this, physics })
       dataManager.setData(entity, data)
 
       if (renderContext) {
