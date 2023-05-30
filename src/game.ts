@@ -1,6 +1,6 @@
 import { Composite, Engine } from 'matter-js'
 import type { Application, IApplicationOptions } from 'pixi.js'
-import { dataManager } from '~/entity.js'
+import { dataManager, isEntity } from '~/entity.js'
 import type { Entity, RenderContext } from '~/entity.js'
 
 export interface Game<Headless extends boolean> {
@@ -159,6 +159,10 @@ export async function createGame<Headless extends boolean>(
     },
 
     async instantiate(entity) {
+      if (!isEntity(entity)) {
+        throw new Error('not an entity')
+      }
+
       const data = await entity.init({ game: this, physics })
       dataManager.setData(entity, data)
 
@@ -173,8 +177,11 @@ export async function createGame<Headless extends boolean>(
     },
 
     async destroy(entity) {
-      const idx = entities.indexOf(entity)
+      if (!isEntity(entity)) {
+        throw new Error('not an entity')
+      }
 
+      const idx = entities.indexOf(entity)
       if (idx === -1) return
       entities.splice(idx, 1)
 
