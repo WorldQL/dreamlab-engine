@@ -43,21 +43,21 @@ export interface Entity<Data = unknown, Render = unknown> {
   teardown(data: Data): Awaitable<void>
 }
 
-export type PartialEntity<Data = unknown, Render = unknown> = Except<
-  Entity<Data, Render>,
+export type Partialize<E extends Entity<Data, Render>, Data, Render> = Except<
+  E,
   typeof symbol
 >
 
-export const createEntity = <Data, Render>(
-  partial: PartialEntity<Data, Render>,
-): Entity<Data, Render> => {
-  const getter: Pick<Entity, typeof symbol> = {
+export const createEntity = <E extends Entity<Data, Render>, Data, Render>(
+  partial: Partialize<E, Data, Render>,
+): E => {
+  const getter: Pick<E, typeof symbol> = {
     get [symbol]() {
       return true as const
     },
   }
 
-  return mergeObjects(partial, getter)
+  return mergeObjects(partial, getter) as E
 }
 
 export const isEntity = (entity: unknown): entity is Entity => {

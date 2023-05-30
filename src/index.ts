@@ -2,7 +2,7 @@ export { createGame } from '~/game.js'
 export { createEntity, isEntity } from '~/entity.js'
 export type {
   Entity,
-  PartialEntity,
+  Partialize,
   InitContext,
   RenderContext,
 } from '~/entity.js'
