@@ -39,5 +39,9 @@ export default createTsupConfig({
   shims: false,
   splitting: true,
 
-  entry: ['./src/exports/index.ts'],
+  entry: [
+    './src/exports/index.ts',
+    './src/exports/entities.ts',
+    './src/exports/input.ts',
+  ],
 })
