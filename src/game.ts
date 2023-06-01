@@ -1,7 +1,7 @@
 import { Composite, Engine } from 'matter-js'
 import type { Application, IApplicationOptions } from 'pixi.js'
 import { dataManager, isEntity } from '~/entity.js'
-import type { Entity, RenderContext } from '~/entity.js'
+import type { Entity, InitContext, RenderContext } from '~/entity.js'
 import { createDebug } from '~/utils/debug.js'
 import type { Debug } from '~/utils/debug.js'
 
@@ -161,13 +161,19 @@ export async function createGame<Headless extends boolean>(
         throw new Error('not an entity')
       }
 
-      const data = await entity.init({ game: this, physics })
+      const init: InitContext = {
+        game: this,
+        physics,
+        preview,
+      }
+
+      const data = await entity.init(init)
       dataManager.setData(entity, data)
 
       if (renderContext) {
         const { app: _, ...ctx } = renderContext
 
-        const render = await entity.initRenderContext(ctx)
+        const render = await entity.initRenderContext(init, ctx)
         dataManager.setRenderData(entity, render)
       }
 

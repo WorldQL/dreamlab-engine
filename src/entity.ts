@@ -34,7 +34,7 @@ export interface Entity<Data = unknown, Render = unknown> {
   get [symbol](): true
 
   init(init: InitContext): Awaitable<Data>
-  initRenderContext(init: RenderContext): Awaitable<Render>
+  initRenderContext(init: InitContext, render: RenderContext): Awaitable<Render>
 
   onPhysicsStep?(time: Time, data: Data): void
   onRenderFrame?(time: Time, data: Data, render: Render): void
