@@ -55,7 +55,7 @@ async function initRenderContext<Headless extends boolean>({
   graphicsOptions,
   container,
 }: Options<Headless>): Promise<
-  Headless extends true ? RenderContextExt : undefined
+  Headless extends false ? RenderContextExt : undefined
 >
 async function initRenderContext<Headless extends boolean>({
   headless,
@@ -152,10 +152,12 @@ export async function createGame<Headless extends boolean>(
       debug = value
     },
 
-    // @ts-expect-error Generic Hack
-    // TODO: Fix generic hack
     get render() {
-      return renderContext
+      if (options.headless === true || renderContext === undefined) {
+        throw new Error('cannot get render context in headless mode')
+      }
+
+      return renderContext as Headless extends false ? RenderContextExt : never
     },
 
     async instantiate(entity) {
