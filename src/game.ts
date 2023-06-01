@@ -2,11 +2,11 @@ import { Composite, Engine } from 'matter-js'
 import type { Application, IApplicationOptions } from 'pixi.js'
 import { dataManager, isEntity } from '~/entity.js'
 import type { Entity, RenderContext } from '~/entity.js'
+import { createDebug } from '~/utils/debug.js'
+import type { Debug } from '~/utils/debug.js'
 
 export interface Game<Headless extends boolean> {
-  get debug(): boolean
-  set debug(value: boolean)
-
+  get debug(): Debug
   get render(): Headless extends false ? RenderContextExt : never
 
   instantiate<Data, Render, E extends Entity<Data, Render>>(
@@ -88,7 +88,7 @@ async function initRenderContext<Headless extends boolean>({
 export async function createGame<Headless extends boolean>(
   options: Options<Headless>,
 ): Promise<Game<Headless>> {
-  let debug = options.debug ?? false
+  const debug = createDebug(options.debug ?? false)
   const { physicsTickrate = 60 } = options
 
   const physics = Engine.create()
@@ -146,10 +146,6 @@ export async function createGame<Headless extends boolean>(
   const game: Game<Headless> = {
     get debug() {
       return debug
-    },
-
-    set debug(value) {
-      debug = value
     },
 
     get render() {

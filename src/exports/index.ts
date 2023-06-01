@@ -6,3 +6,4 @@ export type {
   InitContext,
   RenderContext,
 } from '~/entity.js'
+export type { Debug } from '~/utils/debug.js'
