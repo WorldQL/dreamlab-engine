@@ -17,6 +17,10 @@
     "./input": {
       "import": "./dist/input.js",
       "types": "./dist/input.d.ts"
+    },
+    "./math": {
+      "import": "./dist/math.js",
+      "types": "./dist/math.d.ts"
     }
   },
   "sideEffects": false,
