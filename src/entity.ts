@@ -19,6 +19,7 @@ export interface Time {
 export interface InitContext {
   game: Game<boolean>
   physics: Engine
+  preview: boolean
 }
 
 export interface RenderContext {

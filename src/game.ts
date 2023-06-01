@@ -11,6 +11,7 @@ export interface Game<Headless extends boolean> {
 
   instantiate<Data, Render, E extends Entity<Data, Render>>(
     entity: E,
+    preview?: boolean,
   ): Promise<void>
 
   destroy<Data, Render, E extends Entity<Data, Render>>(
@@ -156,7 +157,7 @@ export async function createGame<Headless extends boolean>(
       return renderContext as Headless extends false ? RenderContextExt : never
     },
 
-    async instantiate(entity) {
+    async instantiate(entity, preview = false) {
       if (!isEntity(entity)) {
         throw new Error('not an entity')
       }
