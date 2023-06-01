@@ -1,2 +1,2 @@
-export { lerp } from '~/math/general.js'
-export { Vector, VectorSchema } from '~/math/vector.js'
+export * from '~/math/general.js'
+export * from '~/math/vector.js'

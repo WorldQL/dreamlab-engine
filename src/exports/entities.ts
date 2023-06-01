@@ -1,1 +1,1 @@
-export { createInputs } from '~/entities/inputs.js'
+export * from '~/entities/inputs.js'
