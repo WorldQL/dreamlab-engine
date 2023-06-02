@@ -18,4 +18,3 @@ export {
   type SpawnableEntity,
   type UID,
 } from '~/spawnable/spawnableEntity.js'
-export type { Debug } from '~/utils/debug.js'

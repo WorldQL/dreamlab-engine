@@ -1,5 +1,7 @@
 import { Composite, Engine } from 'matter-js'
 import type { Application, IApplicationOptions } from 'pixi.js'
+import { createDebug } from '~/debug/value.js'
+import type { Debug } from '~/debug/value.js'
 import { dataManager, isEntity } from '~/entity.js'
 import type { Entity, InitContext, RenderContext } from '~/entity.js'
 import type { Vector } from '~/math/vector.js'
@@ -7,8 +9,6 @@ import type { SpawnableDefinition } from '~/spawnable/definition.js'
 import { instantiate } from '~/spawnable/spawn.js'
 import { isSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type { SpawnableEntity, UID } from '~/spawnable/spawnableEntity.js'
-import { createDebug } from '~/utils/debug.js'
-import type { Debug } from '~/utils/debug.js'
 
 export interface Game<Headless extends boolean> {
   get debug(): Debug
