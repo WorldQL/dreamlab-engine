@@ -56,6 +56,8 @@ interface Render {
 }
 
 export interface Camera extends Entity<Data, Render> {
+  get target(): CameraTarget
+
   // get scale(): ScaleFactor
   // get renderScale(): number
   get offset(): Vector
@@ -69,6 +71,10 @@ export const createCamera = (
   const position = Vector.create()
 
   const camera: Camera = createEntity({
+    get target() {
+      return target
+    },
+
     get offset() {
       const x = targetWidth / 2 - position.x
       const y = targetHeight / 2 - position.y
