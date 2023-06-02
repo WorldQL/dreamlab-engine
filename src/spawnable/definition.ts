@@ -1,38 +1,49 @@
+import type { Except } from 'type-fest'
 import { z } from 'zod'
 import { VectorSchema } from '~/math/vector.js'
+import type { Vector } from '~/math/vector.js'
 import { lookupSpawnableFn } from '~/spawnable/spawn.js'
-
-const OptionalSpawnableContextSchema = z.object({
-  uid: z.string().cuid2(),
-  tags: z.string().array(),
-  zIndex: z.number(),
-})
-
-const SpawnableContextSchemaRequired = z.object({
-  preview: z.boolean(),
-  position: VectorSchema,
-})
+import type { SpawnableFunction, UID } from '~/spawnable/spawnableEntity.js'
 
 const EntityFunctionSchema = z.string().refine(
   name => lookupSpawnableFn(name) !== undefined,
   name => ({ message: `unknown entityFn: ${name}` }),
 )
 
-export type SpawnableDefinition = z.infer<typeof SpawnableDefinitionSchema>
-export const SpawnableDefinitionSchema = SpawnableContextSchemaRequired.merge(
-  OptionalSpawnableContextSchema.partial(),
-)
-  .omit({
-    preview: true,
-  })
-  .extend({
-    entityFn: EntityFunctionSchema,
-    args: z.unknown().array(),
-  })
+export interface SpawnableDefinition<
+  Name extends string = string,
+  Args extends unknown[] = unknown[],
+> {
+  entityFn: Name
+  args: Args
+  position: Vector
+  uid?: UID
+  tags?: string[]
+  zIndex?: number
+}
 
-export type SpawnableContext = z.infer<typeof SpawnableContextSchema>
-export const SpawnableContextSchema = SpawnableContextSchemaRequired.merge(
-  OptionalSpawnableContextSchema,
-).extend({
-  definition: SpawnableDefinitionSchema,
-})
+export const SpawnableDefinitionSchema = z.object({
+  entityFn: EntityFunctionSchema,
+  args: z.any().array(),
+  position: VectorSchema,
+  uid: z.string().cuid2().optional(),
+  tags: z.string().array().optional(),
+  zIndex: z.number().optional(),
+}) as z.ZodType<SpawnableDefinition>
+
+export interface SpawnableContext<
+  Name extends string = string,
+  Args extends unknown[] = unknown[],
+> extends Except<Required<SpawnableDefinition>, 'args' | 'entityFn'> {
+  preview: boolean
+  definition: SpawnableDefinition<Name, Args>
+}
+
+export type InferDefinition<F> = F extends SpawnableFunction<
+  infer Args,
+  infer _E,
+  infer _Data,
+  infer _Render
+>
+  ? SpawnableDefinition<string, Args>
+  : never
