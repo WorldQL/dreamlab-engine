@@ -4,3 +4,4 @@ export {
   type CameraTarget,
 } from '~/entities/camera.js'
 export * from '~/entities/inputs.js'
+export * from '~/entities/solid.js'
