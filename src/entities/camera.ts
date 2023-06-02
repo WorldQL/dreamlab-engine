@@ -1,4 +1,5 @@
 /* eslint-disable no-restricted-globals */
+import type { Container } from 'pixi.js'
 import { createDebugText } from '~/debug/text.js'
 import type { DebugText } from '~/debug/text.js'
 import type { Debug } from '~/debug/value.js'
@@ -58,9 +59,17 @@ interface Render {
 export interface Camera extends Entity<Data, Render> {
   get target(): CameraTarget
 
-  // get scale(): ScaleFactor
-  // get renderScale(): number
+  get scale(): number
+  get renderScale(): number
   get offset(): Vector
+
+  rescale(scale: RescaleOptions): void
+  localToWorld(position: Vector): Vector
+}
+
+interface RescaleOptions {
+  scale?: number
+  renderScale?: number
 }
 
 export const createCamera = (
@@ -69,17 +78,47 @@ export const createCamera = (
   targetHeight: number,
 ) => {
   const position = Vector.create()
+  let stageRef: Container | undefined
+
+  let scale = 1
+  let renderScale = 1
 
   const camera: Camera = createEntity({
     get target() {
       return target
     },
 
-    get offset() {
-      const x = targetWidth / 2 - position.x
-      const y = targetHeight / 2 - position.y
+    // TODO: Allow scale to be changed
+    get scale() {
+      return scale
+    },
+
+    get renderScale() {
+      return renderScale
+    },
+
+    get offset(): Vector {
+      const x = targetWidth / this.scale / 2 - position.x
+      const y = targetHeight / this.scale / 2 - position.y
 
       return Vector.create(x, y)
+    },
+
+    rescale({ scale: newScale, renderScale: newRenderScale }: RescaleOptions) {
+      if (!stageRef) return
+
+      if (newScale) scale = newScale
+      if (newRenderScale) renderScale = newRenderScale
+
+      const finalScale = scale * renderScale
+      stageRef.scale.set(finalScale)
+    },
+
+    localToWorld(pos: Vector) {
+      return Vector.sub(
+        Vector.div(pos, this.renderScale * this.scale),
+        this.offset,
+      )
     },
 
     async init({ game }) {
@@ -88,6 +127,8 @@ export const createCamera = (
 
     async initRenderContext(_, { stage }) {
       await target.ready
+      stageRef = stage
+
       position.x = target.position.x
       position.y = target.position.y
 
@@ -102,7 +143,10 @@ export const createCamera = (
     },
 
     teardownRenderContext({ text }) {
+      stageRef = undefined
+
       text.gfx.removeFromParent()
+      text.gfx.destroy()
     },
 
     onRenderFrame({ delta }, { debug }, { text }) {
@@ -124,7 +168,7 @@ export const createCamera = (
       const content = `camera position: { x: ${xcoord}, y: ${ycoord} }`
 
       text.update(content)
-      text.render(1, debug.value) // TODO: Render text at correct scale
+      text.render(this.scale, debug.value)
     },
   })
 
