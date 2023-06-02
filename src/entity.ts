@@ -19,7 +19,6 @@ export interface Time {
 export interface InitContext {
   game: Game<boolean>
   physics: Engine
-  preview: boolean
 }
 
 export interface RenderContext {
@@ -30,7 +29,7 @@ export interface RenderContext {
   // camera: Camera
 }
 
-const symbol = Symbol('entity')
+export const symbol = Symbol('entity')
 export interface Entity<Data = unknown, Render = unknown> {
   get [symbol](): true
 
@@ -44,15 +43,16 @@ export interface Entity<Data = unknown, Render = unknown> {
   teardown(data: Data): Awaitable<void>
 }
 
+type PartialFields = typeof symbol
 export type Partialize<E extends Entity<Data, Render>, Data, Render> = Except<
   E,
-  typeof symbol
+  PartialFields
 >
 
 export const createEntity = <E extends Entity<Data, Render>, Data, Render>(
   partial: Partialize<E, Data, Render>,
 ): E => {
-  const getter: Pick<E, typeof symbol> = {
+  const getter: Pick<E, PartialFields> = {
     get [symbol]() {
       return true as const
     },

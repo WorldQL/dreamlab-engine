@@ -2,6 +2,11 @@ import { Composite, Engine } from 'matter-js'
 import type { Application, IApplicationOptions } from 'pixi.js'
 import { dataManager, isEntity } from '~/entity.js'
 import type { Entity, InitContext, RenderContext } from '~/entity.js'
+import type { Vector } from '~/math/vector.js'
+import type { SpawnableDefinition } from '~/spawnable/definition.js'
+import { instantiate } from '~/spawnable/spawn.js'
+import { isSpawnableEntity } from '~/spawnable/spawnableEntity.js'
+import type { SpawnableEntity, UID } from '~/spawnable/spawnableEntity.js'
 import { createDebug } from '~/utils/debug.js'
 import type { Debug } from '~/utils/debug.js'
 
@@ -11,12 +16,15 @@ export interface Game<Headless extends boolean> {
 
   instantiate<Data, Render, E extends Entity<Data, Render>>(
     entity: E,
-    preview?: boolean,
   ): Promise<void>
 
   destroy<Data, Render, E extends Entity<Data, Render>>(
     entity: E,
   ): Promise<void>
+
+  spawn(definition: SpawnableDefinition, preview?: boolean): Promise<boolean>
+  lookup(uid: UID): SpawnableEntity | undefined
+  positionQuery(position: Vector): SpawnableEntity[]
 
   shutdown(): Promise<void>
 }
@@ -97,6 +105,7 @@ export async function createGame<Headless extends boolean>(
 
   const renderContext = await initRenderContext(options)
   const entities: Entity[] = []
+  const spawnables = new Map<string, SpawnableEntity>()
 
   const physicsTickDelta = 1_000 / physicsTickrate
   let time = performance.now()
@@ -157,7 +166,7 @@ export async function createGame<Headless extends boolean>(
       return renderContext as Headless extends false ? RenderContextExt : never
     },
 
-    async instantiate(entity, preview = false) {
+    async instantiate(entity) {
       if (!isEntity(entity)) {
         throw new Error('not an entity')
       }
@@ -165,7 +174,6 @@ export async function createGame<Headless extends boolean>(
       const init: InitContext = {
         game: this,
         physics,
-        preview,
       }
 
       const data = await entity.init(init)
@@ -186,7 +194,9 @@ export async function createGame<Headless extends boolean>(
         throw new Error('not an entity')
       }
 
+      if (isSpawnableEntity(entity)) spawnables.delete(entity.uid)
       const idx = entities.indexOf(entity)
+
       if (idx === -1) return
       entities.splice(idx, 1)
 
@@ -197,6 +207,26 @@ export async function createGame<Headless extends boolean>(
 
       const data = dataManager.getData(entity)
       await entity.teardown(data)
+    },
+
+    async spawn(definition, preview) {
+      const entity = instantiate(definition, preview)
+      if (entity === undefined) return false
+
+      await this.instantiate(entity)
+      spawnables.set(entity.uid, entity)
+
+      return true
+    },
+
+    lookup(uid) {
+      return spawnables.get(uid)
+    },
+
+    positionQuery(position) {
+      return [...spawnables.values()].filter(
+        entity => !entity.preview && entity.isInBounds(position),
+      )
     },
 
     async shutdown() {
