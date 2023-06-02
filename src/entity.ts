@@ -1,6 +1,7 @@
 import type { Engine } from 'matter-js'
 import type { Container } from 'pixi.js'
 import type { Promisable as Awaitable, Except } from 'type-fest'
+import type { Camera } from '~/entities/camera.js'
 import type { Game } from '~/game.js'
 import { mergeObjects } from '~/utils/types.js'
 
@@ -8,13 +9,6 @@ export interface Time {
   delta: number
   time: number
 }
-
-// export interface Render {
-//   offset: Vector
-//   scale: ScaleFactor
-//   inverseScale: number
-//   debug: boolean
-// }
 
 export interface InitContext {
   game: Game<boolean>
@@ -26,7 +20,7 @@ export interface RenderContext {
   canvas: HTMLCanvasElement
 
   stage: Container
-  // camera: Camera
+  camera: Camera
 }
 
 export const symbol = Symbol('entity')
