@@ -23,8 +23,8 @@ export const drawBox = (
   {
     fill = '#000',
     fillAlpha = 0,
-    stroke = '#00f',
-    strokeWidth = 2,
+    stroke = '#f00',
+    strokeWidth = 8,
     strokeAlpha = 1,
     strokeAlign = 0,
   }: DrawOptions = {},

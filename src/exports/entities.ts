@@ -6,4 +6,6 @@ export {
 
 export * from '~/entities/cursor.js'
 export * from '~/entities/inputs.js'
-export * from '~/entities/solid.js'
+
+export * from '~/entities/spawnable/nonsolid.js'
+export * from '~/entities/spawnable/solid.js'
