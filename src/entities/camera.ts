@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-globals */
 import type { Container } from 'pixi.js'
 import { createDebugText } from '~/debug/text.js'
 import type { DebugText } from '~/debug/text.js'
@@ -7,45 +6,8 @@ import { createEntity } from '~/entity.js'
 import type { Entity } from '~/entity.js'
 import { distance, lerp2, Vector } from '~/math/vector.js'
 
-export type SetCameraTarget = (position: Vector) => void
 export interface CameraTarget {
-  get ready(): Promise<void>
   get position(): Vector
-}
-
-export const createCameraTarget = (
-  initialPosition?: Vector,
-): [CameraTarget, SetCameraTarget] => {
-  let position = initialPosition ? Vector.clone(initialPosition) : undefined
-
-  const target: CameraTarget = {
-    get ready() {
-      if (position !== undefined) return Promise.resolve()
-
-      return new Promise<void>(resolve => {
-        const interval = setInterval(() => {
-          if (position === undefined) return
-
-          clearInterval(interval)
-          resolve()
-        }, 50)
-      })
-    },
-
-    get position() {
-      if (position === undefined) {
-        throw new Error('position accessed before target was ready')
-      }
-
-      return position
-    },
-  }
-
-  const setter: SetCameraTarget = value => {
-    position = value
-  }
-
-  return [target, setter]
 }
 
 interface Data {
@@ -57,7 +19,9 @@ interface Render {
 }
 
 export interface Camera extends Entity<Data, Render> {
-  get target(): CameraTarget
+  get target(): CameraTarget | undefined
+  setTarget(target: CameraTarget): void
+  clearTarget(): void
 
   get scale(): number
   get renderScale(): number
@@ -73,11 +37,12 @@ interface RescaleOptions {
 }
 
 export const createCamera = (
-  target: CameraTarget,
-  targetWidth: number,
-  targetHeight: number,
+  canvasWidth: number,
+  canvasHeight: number,
+  target?: CameraTarget,
 ) => {
   const position = Vector.create()
+  let targetRef = target
   let stageRef: Container | undefined
 
   let scale = 1
@@ -85,7 +50,15 @@ export const createCamera = (
 
   const camera: Camera = createEntity({
     get target() {
-      return target
+      return targetRef
+    },
+
+    setTarget(target: CameraTarget) {
+      targetRef = target
+    },
+
+    clearTarget() {
+      targetRef = undefined
     },
 
     // TODO: Allow scale to be changed
@@ -98,8 +71,8 @@ export const createCamera = (
     },
 
     get offset(): Vector {
-      const x = targetWidth / this.scale / 2 - position.x
-      const y = targetHeight / this.scale / 2 - position.y
+      const x = canvasWidth / this.scale / 2 - position.x
+      const y = canvasHeight / this.scale / 2 - position.y
 
       return Vector.create(x, y)
     },
@@ -126,11 +99,12 @@ export const createCamera = (
     },
 
     async initRenderContext(_, { stage }) {
-      await target.ready
       stageRef = stage
 
-      position.x = target.position.x
-      position.y = target.position.y
+      if (target) {
+        position.x = target.position.x
+        position.y = target.position.y
+      }
 
       const text = createDebugText(0)
       stage.addChild(text.gfx)
@@ -150,17 +124,19 @@ export const createCamera = (
     },
 
     onRenderFrame({ delta }, { debug }, { text }) {
+      const targetPosition = target?.position ?? Vector.create()
+
       // TODO: Calculate camera speed based on S curve of the distance
       // (fast when close and when far, medium speed when at normal movement distances)
-      const dist = Math.min(distance(position, target.position), 500)
-      const { x, y } = lerp2(position, target.position, delta * 8)
+      const dist = Math.min(distance(position, targetPosition), 500)
+      const { x, y } = lerp2(position, targetPosition, delta * 8)
 
       position.x = x
       position.y = y
 
       if (dist < 1) {
-        position.x = target.position.x
-        position.y = target.position.y
+        position.x = targetPosition.x
+        position.y = targetPosition.y
       }
 
       const xcoord = position.x.toFixed(0)

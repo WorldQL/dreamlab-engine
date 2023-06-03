@@ -3,7 +3,6 @@ import type { Application, IApplicationOptions } from 'pixi.js'
 import { createDebug } from '~/debug/value.js'
 import type { Debug } from '~/debug/value.js'
 import { createCamera } from '~/entities/camera.js'
-import type { CameraTarget } from '~/entities/camera.js'
 import { dataManager, isEntity } from '~/entity.js'
 import type { Entity, InitContext, RenderContext } from '~/entity.js'
 import type { Vector } from '~/math/vector.js'
@@ -55,11 +54,6 @@ interface Options<Headless extends Boolean> {
   dimensions: Headless extends false ? { width: number; height: number } : never
 
   /**
-   * Follow target for the scene camera
-   */
-  cameraTarget: Headless extends false ? CameraTarget : never
-
-  /**
    * Physics Tickrate in Hz [default: 60]
    */
   physicsTickrate?: number
@@ -82,7 +76,6 @@ async function initRenderContext<Headless extends boolean>({
   headless,
   graphicsOptions,
   container,
-  cameraTarget,
   dimensions,
 }: Options<Headless>): Promise<RenderContextExt | undefined> {
   if (headless) return undefined
@@ -98,7 +91,7 @@ async function initRenderContext<Headless extends boolean>({
   app.stage.sortableChildren = true
   const canvas = app.view as HTMLCanvasElement
 
-  const camera = createCamera(cameraTarget, dimensions.width, dimensions.height)
+  const camera = createCamera(dimensions.width, dimensions.height)
   const ctx: RenderContextExt = {
     app,
     stage: app.stage,
