@@ -11,25 +11,6 @@ import { instantiate } from '~/spawnable/spawn.js'
 import { isSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type { SpawnableEntity, UID } from '~/spawnable/spawnableEntity.js'
 
-export interface Game<Headless extends boolean> {
-  get debug(): Debug
-  get render(): Headless extends false ? RenderContextExt : never
-
-  instantiate<Data, Render, E extends Entity<Data, Render>>(
-    entity: E,
-  ): Promise<void>
-
-  destroy<Data, Render, E extends Entity<Data, Render>>(
-    entity: E,
-  ): Promise<void>
-
-  spawn(definition: SpawnableDefinition, preview?: boolean): Promise<boolean>
-  lookup(uid: UID): SpawnableEntity | undefined
-  positionQuery(position: Vector): SpawnableEntity[]
-
-  shutdown(): Promise<void>
-}
-
 interface Options<Headless extends Boolean> {
   /**
    * Run the game logic without any rendering code
@@ -101,6 +82,25 @@ async function initRenderContext<Headless extends boolean>({
   }
 
   return ctx
+}
+
+export interface Game<Headless extends boolean> {
+  get debug(): Debug
+  get render(): Headless extends false ? RenderContextExt : never
+
+  instantiate<Data, Render, E extends Entity<Data, Render>>(
+    entity: E,
+  ): Promise<void>
+
+  destroy<Data, Render, E extends Entity<Data, Render>>(
+    entity: E,
+  ): Promise<void>
+
+  spawn(definition: SpawnableDefinition, preview?: boolean): Promise<boolean>
+  lookup(uid: UID): SpawnableEntity | undefined
+  positionQuery(position: Vector): SpawnableEntity[]
+
+  shutdown(): Promise<void>
 }
 
 export async function createGame<Headless extends boolean>(
