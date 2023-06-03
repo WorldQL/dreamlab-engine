@@ -96,7 +96,10 @@ export interface Game<Headless extends boolean> {
     entity: E,
   ): Promise<void>
 
-  spawn(definition: SpawnableDefinition, preview?: boolean): Promise<boolean>
+  spawn(
+    definition: SpawnableDefinition,
+    preview?: boolean,
+  ): Promise<SpawnableEntity | undefined>
   lookup(uid: UID): SpawnableEntity | undefined
   positionQuery(position: Vector): SpawnableEntity[]
 
@@ -220,12 +223,12 @@ export async function createGame<Headless extends boolean>(
 
     async spawn(definition, preview) {
       const entity = instantiate(definition, preview)
-      if (entity === undefined) return false
+      if (entity === undefined) return undefined
 
       await this.instantiate(entity)
       spawnables.set(entity.uid, entity)
 
-      return true
+      return entity
     },
 
     lookup(uid) {
