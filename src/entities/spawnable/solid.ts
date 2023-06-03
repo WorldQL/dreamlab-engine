@@ -45,7 +45,7 @@ export const createSolid = createSpawnableEntity(
       initRenderContext(_, { stage, camera }) {
         const gfx = new Graphics()
         gfx.zIndex = zIndex + 1
-        drawBox(gfx, { width, height }, { strokeWidth: 10 })
+        drawBox(gfx, { width, height })
 
         const sprite = textureURL
           ? createSprite(textureURL, { width, height, zIndex })
