@@ -101,9 +101,9 @@ export const createCamera = (
     async initRenderContext(_, { stage }) {
       stageRef = stage
 
-      if (target) {
-        position.x = target.position.x
-        position.y = target.position.y
+      if (targetRef) {
+        position.x = targetRef.position.x
+        position.y = targetRef.position.y
       }
 
       const text = createDebugText(0)
@@ -124,7 +124,7 @@ export const createCamera = (
     },
 
     onRenderFrame({ delta }, { debug }, { text }) {
-      const targetPosition = target?.position ?? Vector.create()
+      const targetPosition = targetRef?.position ?? Vector.create()
 
       // TODO: Calculate camera speed based on S curve of the distance
       // (fast when close and when far, medium speed when at normal movement distances)
