@@ -40,6 +40,10 @@
     "test": "npm run check && npm run lint",
     "prepack": "npm run test && npm run build"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WorldQL/dreamlab-core.git"
+  },
   "devDependencies": {
     "@lolpants/eslint-config": "^0.4.1",
     "@types/matter-js": "^0.18.4",
