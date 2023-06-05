@@ -11,13 +11,12 @@ export function createTsupConfig({
   skipNodeModulesBundle = true,
   clean = true,
   shims = true,
-  minify = false,
   splitting = false,
   keepNames = true,
   dts = true,
   sourcemap = true,
 }: Options = {}) {
-  return defineConfig({
+  return defineConfig(options => ({
     entry,
     external,
     noExternal,
@@ -27,12 +26,12 @@ export function createTsupConfig({
     target,
     clean,
     shims,
-    minify,
+    minify: options.watch ? false : 'terser',
     splitting,
     keepNames,
     dts,
     sourcemap,
-  })
+  }))
 }
 
 export default createTsupConfig({
