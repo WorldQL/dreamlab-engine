@@ -1,5 +1,6 @@
 import { Composite, Engine } from 'matter-js'
-import type { Application, IApplicationOptions } from 'pixi.js'
+import { Application } from 'pixi.js'
+import type { IApplicationOptions } from 'pixi.js'
 import { createCamera } from '~/entities/camera.js'
 import { dataManager, isEntity } from '~/entity.js'
 import type { Entity, InitContext, RenderContext } from '~/entity.js'
@@ -61,8 +62,7 @@ async function initRenderContext<Headless extends boolean>({
 }: Options<Headless>): Promise<RenderContextExt | undefined> {
   if (headless) return undefined
 
-  const PIXI = await import('pixi.js')
-  const app = new PIXI.Application({
+  const app = new Application({
     ...graphicsOptions,
 
     resizeTo: container,
