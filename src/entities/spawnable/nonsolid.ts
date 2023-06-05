@@ -1,7 +1,7 @@
 import { Graphics } from 'pixi.js'
-import { drawBox } from '~/debug/shapes.js'
 import { Vector } from '~/math/vector.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
+import { drawBox } from '~/utils/draw.js'
 import { createSprite } from '~/utils/textures.js'
 
 export const createNonsolid = createSpawnableEntity(

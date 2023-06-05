@@ -1,10 +1,9 @@
 import type { Container } from 'pixi.js'
-import { createDebugText } from '~/debug/text.js'
-import type { DebugText } from '~/debug/text.js'
-import type { Debug } from '~/debug/value.js'
 import { createEntity } from '~/entity.js'
 import type { Entity } from '~/entity.js'
 import { distance, lerp2, Vector } from '~/math/vector.js'
+import type { Debug, DebugText } from '~/utils/debug.js'
+import { createDebugText } from '~/utils/debug.js'
 
 export interface CameraTarget {
   get position(): Vector

@@ -2,8 +2,6 @@ import { Bodies, Body, Composite, Detector, Query } from 'matter-js'
 import type { Engine } from 'matter-js'
 import { Graphics } from 'pixi.js'
 import type { Sprite } from 'pixi.js'
-import { drawBox } from '~/debug/shapes.js'
-import type { Debug } from '~/debug/value.js'
 import type { Camera } from '~/entities/camera.js'
 import { Vector } from '~/math/vector.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
@@ -11,6 +9,8 @@ import type {
   PartializeSpawnable,
   SpawnableEntity,
 } from '~/spawnable/spawnableEntity.js'
+import type { Debug } from '~/utils/debug.js'
+import { drawBox } from '~/utils/draw.js'
 import { createSprite } from '~/utils/textures.js'
 
 interface Data {

@@ -1,7 +1,5 @@
 import { Composite, Engine } from 'matter-js'
 import type { Application, IApplicationOptions } from 'pixi.js'
-import { createDebug } from '~/debug/value.js'
-import type { Debug } from '~/debug/value.js'
 import { createCamera } from '~/entities/camera.js'
 import { dataManager, isEntity } from '~/entity.js'
 import type { Entity, InitContext, RenderContext } from '~/entity.js'
@@ -10,6 +8,8 @@ import type { SpawnableDefinition } from '~/spawnable/definition.js'
 import { instantiate } from '~/spawnable/spawn.js'
 import { isSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type { SpawnableEntity, UID } from '~/spawnable/spawnableEntity.js'
+import type { Debug } from '~/utils/debug.js'
+import { createDebug } from '~/utils/debug.js'
 
 interface Options<Headless extends Boolean> {
   /**

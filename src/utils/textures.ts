@@ -1,6 +1,6 @@
 import { Sprite, Texture } from 'pixi.js'
 
-interface SpriteOptions {
+export interface SpriteOptions {
   width?: number
   height?: number
 

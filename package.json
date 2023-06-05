@@ -10,10 +10,6 @@
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
-    "./debug": {
-      "import": "./dist/debug.js",
-      "types": "./dist/debug.d.ts"
-    },
     "./entities": {
       "import": "./dist/entities.js",
       "types": "./dist/entities.d.ts"
@@ -25,6 +21,10 @@
     "./math": {
       "import": "./dist/math.js",
       "types": "./dist/math.d.ts"
+    },
+    "./utils": {
+      "import": "./dist/utils.js",
+      "types": "./dist/utils.d.ts"
     }
   },
   "sideEffects": false,

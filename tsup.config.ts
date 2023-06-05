@@ -41,9 +41,9 @@ export default createTsupConfig({
 
   entry: [
     './src/exports/index.ts',
-    './src/exports/debug.ts',
     './src/exports/entities.ts',
     './src/exports/input.ts',
     './src/exports/math.ts',
+    './src/exports/utils.ts',
   ],
 })

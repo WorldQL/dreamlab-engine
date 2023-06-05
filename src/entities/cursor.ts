@@ -1,6 +1,6 @@
-import { createDebugText } from '~/debug/text.js'
 import { createEntity } from '~/entity.js'
 import { Vector } from '~/math/vector.js'
+import { createDebugText } from '~/utils/debug.js'
 
 export const createCursor = () => {
   let cursorPosition: Vector | undefined
