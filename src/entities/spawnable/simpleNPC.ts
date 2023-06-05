@@ -50,7 +50,7 @@ export const createSimpleNPC = createSpawnableEntity<
     let currentDirection: 'left' | 'right' = 'right'
 
     const body = Bodies.rectangle(position.x, position.y, size, size, {
-      label: 'Simple NPC',
+      label: 'simpleNPC',
       render: { visible: false },
 
       inertia: Number.POSITIVE_INFINITY,
