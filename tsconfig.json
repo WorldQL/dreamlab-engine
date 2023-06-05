@@ -40,6 +40,7 @@
     "target": "ES2021",
     "useDefineForClassFields": true,
 
+    "baseUrl": ".",
     "paths": {
       "~/*": ["./src/*"]
     }
