@@ -156,13 +156,14 @@ export async function createGame<Headless extends boolean>(
     }
   }
 
+  let interval: NodeJS.Timer | undefined
   if (renderContext) {
     const { app } = renderContext
 
     app.ticker.add(onTick)
     app.start()
   } else {
-    // TODO: setInterval tick loop
+    interval = setInterval(onTick, physicsTickrate / 2)
   }
 
   const game: Game<Headless> = {
@@ -254,6 +255,8 @@ export async function createGame<Headless extends boolean>(
         app.stop()
         app.destroy()
       }
+
+      if (interval) clearInterval(interval)
     },
   }
 
