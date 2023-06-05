@@ -36,6 +36,7 @@ export function createTsupConfig({
 }
 
 export default createTsupConfig({
+  platform: 'neutral',
   shims: false,
   splitting: true,
 
