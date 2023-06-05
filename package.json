@@ -10,19 +10,19 @@
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
-    "./entities": {
+    "./dist/entities": {
       "import": "./dist/entities.js",
       "types": "./dist/entities.d.ts"
     },
-    "./input": {
+    "./dist/input": {
       "import": "./dist/input.js",
       "types": "./dist/input.d.ts"
     },
-    "./math": {
+    "./dist/math": {
       "import": "./dist/math.js",
       "types": "./dist/math.d.ts"
     },
-    "./utils": {
+    "./dist/utils": {
       "import": "./dist/utils.js",
       "types": "./dist/utils.d.ts"
     }
