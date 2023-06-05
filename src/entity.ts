@@ -69,7 +69,9 @@ const symbols = {
 } as const
 
 export const dataManager = {
-  getData<Data>(entity: Entity<Data>): Data {
+  getData<E extends Entity<Data>, Data>(
+    entity: E | Partialize<E, Data, unknown>,
+  ): Data {
     if (!(symbols.data in entity)) {
       throw new Error('invalid entity data access')
     }
@@ -83,7 +85,9 @@ export const dataManager = {
     entity[symbols.data] = data
   },
 
-  getRenderData<Render>(entity: Entity<unknown, Render>): Render {
+  getRenderData<E extends Entity<unknown, Render>, Render>(
+    entity: E | Partialize<E, unknown, Render>,
+  ): Render {
     if (!(symbols.render in entity)) {
       throw new Error('invalid entity render data access')
     }
