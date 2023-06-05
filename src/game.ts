@@ -12,28 +12,31 @@ import type { SpawnableEntity, UID } from '~/spawnable/spawnableEntity.js'
 import type { Debug } from '~/utils/debug.js'
 import { createDebug } from '~/utils/debug.js'
 
-interface Options<Headless extends Boolean> {
-  /**
-   * Run the game logic without any rendering code
-   */
-  headless: Headless
-
+interface GraphicsOptions {
   /**
    * HTML `div` element for the Pixi.js canvas to mount inside
    */
-  container: Headless extends false ? HTMLDivElement : never
-
-  /**
-   * Additional options to pass to Pixi.js
-   */
-  graphicsOptions?: Headless extends false
-    ? Partial<IApplicationOptions>
-    : never
+  container: HTMLDivElement
 
   /**
    * Desired canvas dimensions
    */
-  dimensions: Headless extends false ? { width: number; height: number } : never
+  dimensions: { width: number; height: number }
+
+  /**
+   * Additional options to pass to Pixi.js
+   */
+  graphicsOptions?: Partial<IApplicationOptions>
+}
+
+interface HeadlessOptions {
+  container?: never
+  dimensions?: never
+  graphicsOptions?: never
+}
+
+interface CommonOptions<Headless extends boolean> {
+  headless: Headless
 
   /**
    * Physics Tickrate in Hz [default: 60]
@@ -46,21 +49,18 @@ interface Options<Headless extends Boolean> {
   debug?: boolean
 }
 
+type Options<Headless extends boolean> = CommonOptions<Headless> &
+  (Headless extends true ? HeadlessOptions : GraphicsOptions)
+
 type RenderContextExt = RenderContext & { app: Application }
-async function initRenderContext<Headless extends boolean>({
-  headless,
-  graphicsOptions,
-  container,
-}: Options<Headless>): Promise<
-  Headless extends false ? RenderContextExt : undefined
->
-async function initRenderContext<Headless extends boolean>({
-  headless,
-  graphicsOptions,
-  container,
-  dimensions,
-}: Options<Headless>): Promise<RenderContextExt | undefined> {
-  if (headless) return undefined
+async function initRenderContext<Headless extends boolean>(
+  options: Options<Headless>,
+): Promise<Headless extends false ? RenderContextExt : undefined>
+async function initRenderContext<Headless extends boolean>(
+  options: Options<Headless>,
+): Promise<RenderContextExt | undefined> {
+  if (options.headless === true) return undefined
+  const { container, dimensions, graphicsOptions } = options as Options<false>
 
   const app = new Application({
     ...graphicsOptions,
