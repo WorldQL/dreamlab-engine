@@ -3,6 +3,7 @@ import { Vector } from '~/math/vector.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import { drawBox } from '~/utils/draw.js'
 import { createSprite } from '~/utils/textures.js'
+import type { SpriteSource } from '~/utils/textures.js'
 
 export const createNonsolid = createSpawnableEntity(
   'createNonsolid',
@@ -10,7 +11,7 @@ export const createNonsolid = createSpawnableEntity(
     { position, zIndex, tags },
     width: number,
     height: number,
-    textureURL?: string,
+    spriteSource?: SpriteSource,
   ) => ({
     get position() {
       return Vector.clone(position)
@@ -37,8 +38,8 @@ export const createNonsolid = createSpawnableEntity(
       gfx.zIndex = zIndex + 1
       drawBox(gfx, { width, height }, { strokeWidth: 10, stroke: 'blue' })
 
-      const sprite = textureURL
-        ? createSprite(textureURL, { width, height, zIndex })
+      const sprite = spriteSource
+        ? createSprite(spriteSource, { width, height, zIndex })
         : undefined
 
       stage.addChild(gfx)

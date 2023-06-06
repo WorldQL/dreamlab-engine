@@ -4,6 +4,7 @@ import { Vector } from '~/math/vector.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import { drawBox } from '~/utils/draw.js'
 import { createSprite } from '~/utils/textures.js'
+import type { SpriteSource } from '~/utils/textures.js'
 
 export const createSolid = createSpawnableEntity(
   'createSolid',
@@ -11,7 +12,7 @@ export const createSolid = createSpawnableEntity(
     { position, zIndex, tags, preview },
     width: number,
     height: number,
-    textureURL?: string,
+    spriteSource?: SpriteSource,
   ) => {
     const body = Bodies.rectangle(position.x, position.y, width, height, {
       label: 'solid',
@@ -47,8 +48,8 @@ export const createSolid = createSpawnableEntity(
         gfx.zIndex = zIndex + 1
         drawBox(gfx, { width, height })
 
-        const sprite = textureURL
-          ? createSprite(textureURL, { width, height, zIndex })
+        const sprite = spriteSource
+          ? createSprite(spriteSource, { width, height, zIndex })
           : undefined
 
         stage.addChild(gfx)

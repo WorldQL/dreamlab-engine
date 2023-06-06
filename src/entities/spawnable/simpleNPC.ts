@@ -12,6 +12,7 @@ import type {
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
 import { createSprite } from '~/utils/textures.js'
+import type { SpriteSource } from '~/utils/textures.js'
 
 interface Data {
   debug: Debug
@@ -33,13 +34,13 @@ interface Render {
 interface SimpleNPC extends SpawnableEntity<Data, Render> {}
 
 export const createSimpleNPC = createSpawnableEntity<
-  [size: number, textureURL?: string],
+  [size: number, spriteSource?: SpriteSource],
   SimpleNPC,
   Data,
   Render
 >(
   'createSimpleNPC',
-  ({ position, zIndex, tags, preview }, size, textureURL) => {
+  ({ position, zIndex, tags, preview }, size, spriteSource) => {
     const mass = 20
     const sensorSize = 4
     const moveForce = 0.01
@@ -111,8 +112,8 @@ export const createSimpleNPC = createSpawnableEntity<
         gfxSensorL.zIndex = zIndex + 2
         gfxSensorR.zIndex = zIndex + 2
 
-        const sprite = textureURL
-          ? createSprite(textureURL, { width: size, height: size, zIndex })
+        const sprite = spriteSource
+          ? createSprite(spriteSource, { width: size, height: size, zIndex })
           : undefined
 
         stage.addChild(gfxBounds)

@@ -1,4 +1,11 @@
-import { Sprite, Texture } from 'pixi.js'
+import { Sprite, Texture, TilingSprite } from 'pixi.js'
+
+export interface SpriteSourceOptions {
+  url: string
+  tile?: boolean | number
+}
+
+export type SpriteSource = SpriteSourceOptions | string
 
 export interface SpriteOptions {
   width?: number
@@ -8,12 +15,23 @@ export interface SpriteOptions {
 }
 
 export const createSprite = (
-  url: string,
+  source: SpriteSource,
   { width, height, zIndex }: SpriteOptions = {},
 ): Sprite => {
-  const texture = Texture.from(url)
-  const sprite = new Sprite(texture)
+  const { url, tile = false }: SpriteSourceOptions =
+    typeof source === 'string' ? { url: source } : source
 
+  const texture = Texture.from(url)
+  const createSprite = () => {
+    if (!tile) return new Sprite(texture)
+
+    const sprite = new TilingSprite(texture)
+    if (typeof tile === 'number') sprite.tileScale.set(tile)
+
+    return sprite
+  }
+
+  const sprite = createSprite()
   sprite.anchor.set(0.5)
 
   if (width) sprite.width = width
