@@ -47,6 +47,7 @@
   "devDependencies": {
     "@lolpants/eslint-config": "^0.4.1",
     "@types/matter-js": "^0.18.4",
+    "@types/pako": "^2.0.0",
     "eslint": "^8.41.0",
     "prettier": "^2.8.8",
     "terser": "^5.17.7",
@@ -58,6 +59,7 @@
     "buffer": "^6.0.3",
     "eventemitter3": "^5.0.1",
     "matter-js": "^0.19.0",
+    "pako": "^2.1.0",
     "pixi.js": "^7.2.4",
     "poly-decomp-es": "^0.4.1",
     "type-fest": "^3.11.1",

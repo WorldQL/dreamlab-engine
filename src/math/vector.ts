@@ -1,6 +1,7 @@
 /* eslint-disable id-length */
 import { Vector } from 'matter-js'
 import { z } from 'zod'
+import { truncateFloat } from '~/math/general.js'
 
 export const lerp2 = (a: Vector, b: Vector, t: number): Vector => {
   const x = a.x + (b.x - a.x) * t
@@ -19,6 +20,13 @@ export const distance = (a: Vector, b: Vector): number => {
 export const snap = (vec: Vector, factor: number): Vector => {
   const x = Math.round(vec.x / factor) * factor
   const y = Math.round(vec.y / factor) * factor
+
+  return Vector.create(x, y)
+}
+
+export const truncateVector = (vector: Vector, places = 5): Vector => {
+  const x = truncateFloat(vector.x, places)
+  const y = truncateFloat(vector.y, places)
 
   return Vector.create(x, y)
 }

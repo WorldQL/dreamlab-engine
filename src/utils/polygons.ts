@@ -1,10 +1,10 @@
 import { Buffer } from 'buffer/'
+import { Vertices } from 'matter-js'
+import pako from 'pako'
 import { makeCCW, quickDecomp } from 'poly-decomp-es'
 import type { Polygon } from 'poly-decomp-es'
-import { truncateFloat } from '~/math/general.js'
-import { Vector, VectorSchema } from '~/math/vector.js'
-
-const PolygonSchema = VectorSchema.array().array()
+import type { z } from 'zod'
+import { truncateVector, Vector, VectorSchema } from '~/math/vector.js'
 
 const isPolygonConvex = (vertices: Vector[]): boolean => {
   const len = vertices.length
@@ -39,24 +39,35 @@ const isPolygonConvex = (vertices: Vector[]): boolean => {
   return true
 }
 
-export const calculatePolygons = (
-  points: Vector[],
-  truncate = 5,
-): Vector[][] => {
-  if (isPolygonConvex(points)) return [points]
+type Points = z.infer<typeof PointsSchema>
+const PointsSchema = VectorSchema.array()
 
-  const tuplePoints: Polygon = points.map(({ x, y }) => [x, y])
+type Polygons = z.infer<typeof PolygonsSchema>
+const PolygonsSchema = VectorSchema.array().array()
+
+export const calculatePolygons = (
+  points: Points,
+  truncate = 5,
+): readonly [center: Vector, polygons: Polygons] => {
+  // ensure correct schema
+  PointsSchema.parse(points)
+
+  const center = truncateVector(Vertices.centre(points))
+  const offsetPoints = points.map(point => Vector.sub(point, center))
+
+  if (isPolygonConvex(offsetPoints)) {
+    return [center, [offsetPoints]]
+  }
+
+  const tuplePoints: Polygon = offsetPoints.map(({ x, y }) => [x, y])
   makeCCW(tuplePoints)
 
   const decomposed = quickDecomp(tuplePoints)
-  return decomposed.map(polygon =>
-    polygon.map(polygon => {
-      const x = truncateFloat(polygon[0], truncate)
-      const y = truncateFloat(polygon[1], truncate)
-
-      return Vector.create(x, y)
-    }),
+  const polygons = decomposed.map(polygon =>
+    polygon.map(([x, y]) => truncateVector(Vector.create(x, y), truncate)),
   )
+
+  return [center, polygons]
 }
 
 const bytes = {
@@ -68,36 +79,53 @@ const bytes = {
   double: 8,
 } as const
 
-export const encodePolygons = (polygon: Vector[][]): string => {
-  PolygonSchema.parse(polygon)
+export const encodePolygons = (polygons: Polygons, double = false): string => {
+  PolygonsSchema.parse(polygons)
 
-  const polygons = polygon.length
-  const pointCount = polygon.reduce((acc, points) => acc + points.length * 2, 0)
+  const polygonCount = polygons.length
+  const pointCount = polygons.reduce(
+    (acc, points) => acc + points.length * 2,
+    0,
+  )
 
-  const headerSize = bytes.uint16
-  const polySize = polygons * bytes.uint16 + pointCount * bytes.float
+  const headerSize = bytes.uint8 + bytes.uint16
+  const floatSize = double ? bytes.double : bytes.float
+  const polySize = polygonCount * bytes.uint16 + pointCount * floatSize
   const bufferSize = headerSize + polySize
   const buffer = Buffer.alloc(bufferSize)
 
-  let idx = buffer.writeUInt16LE(polygons, 0)
-  for (const points of polygon) {
+  let idx = buffer.writeUInt8(double ? 1 : 0, 0)
+  idx = buffer.writeUInt16LE(polygonCount, idx)
+
+  for (const points of polygons) {
     idx = buffer.writeUInt16LE(points.length, idx)
 
     for (const { x, y } of points) {
-      idx = buffer.writeFloatLE(x, idx)
-      idx = buffer.writeFloatLE(y, idx)
+      if (double) {
+        idx = buffer.writeDoubleLE(x, idx)
+        idx = buffer.writeDoubleLE(y, idx)
+      } else {
+        idx = buffer.writeFloatLE(x, idx)
+        idx = buffer.writeFloatLE(y, idx)
+      }
     }
   }
 
-  return buffer.toString('base64')
+  const deflate = Buffer.from(pako.deflate(buffer))
+  return deflate.toString('base64')
 }
 
-export const decodePolygons = (data: string): Vector[][] => {
-  const buffer = Buffer.from(data, 'base64')
-  const polygonCount = buffer.readUInt16LE(0)
+export const decodePolygons = (data: string): Polygons => {
+  const buf = Buffer.from(data, 'base64')
+  const buffer = Buffer.from(pako.inflate(buf))
 
+  const double = buffer.readUInt8(0)
+  const floatSize = double ? bytes.double : bytes.float
+
+  const polygonCount = buffer.readUInt16LE(bytes.uint8)
   const polygons: Vector[][] = []
-  let offset = bytes.uint16
+
+  let offset = bytes.uint8 + bytes.uint16
   for (let idx = 0; idx < polygonCount; idx++) {
     const points: Vector[] = []
 
@@ -105,11 +133,17 @@ export const decodePolygons = (data: string): Vector[][] => {
     offset += bytes.uint16
 
     for (let pointIdx = 0; pointIdx < pointsCount; pointIdx++) {
-      const x = buffer.readFloatLE(offset)
-      offset += bytes.float
+      const x = double
+        ? buffer.readDoubleLE(offset)
+        : buffer.readFloatLE(offset)
 
-      const y = buffer.readFloatLE(offset)
-      offset += bytes.float
+      offset += floatSize
+
+      const y = double
+        ? buffer.readDoubleLE(offset)
+        : buffer.readFloatLE(offset)
+
+      offset += floatSize
 
       points.push(Vector.create(x, y))
     }
