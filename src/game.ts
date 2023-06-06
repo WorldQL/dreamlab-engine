@@ -164,7 +164,7 @@ export async function createGame<Headless extends boolean>(
     app.ticker.add(onTick)
     app.start()
   } else {
-    interval = setInterval(onTick, physicsTickrate / 2)
+    interval = setInterval(onTick, 1_000 / physicsTickrate / 2)
   }
 
   const game: Game<Headless> = {
