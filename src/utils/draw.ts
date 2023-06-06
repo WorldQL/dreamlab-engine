@@ -54,8 +54,8 @@ export const drawCircle = (
   {
     fill = '#000',
     fillAlpha = 0,
-    stroke = '#00f',
-    strokeWidth = 2,
+    stroke = '#f00',
+    strokeWidth = 8,
     strokeAlpha = 1,
     strokeAlign = 0,
   }: DrawOptions = {},
@@ -81,8 +81,8 @@ export const drawPolygon = (
   {
     fill = '#000',
     fillAlpha = 0,
-    stroke = '#00f',
-    strokeWidth = 2,
+    stroke = '#f00',
+    strokeWidth = 8,
     strokeAlpha = 1,
     strokeAlign = 0,
   }: DrawOptions = {},
@@ -98,5 +98,32 @@ export const drawPolygon = (
   })
 
   graphics.drawPolygon(points)
+}
+
+export const drawComplexPolygon = (
+  graphics: Graphics,
+  polygon: Vector[][],
+  {
+    fill = '#000',
+    fillAlpha = 0,
+    stroke = '#f00',
+    strokeWidth = 8,
+    strokeAlpha = 1,
+    strokeAlign = 0,
+  }: DrawOptions = {},
+) => {
+  graphics.clear()
+
+  graphics.beginFill(fill, fillAlpha)
+  graphics.lineStyle({
+    color: stroke,
+    width: strokeWidth,
+    alignment: strokeAlign,
+    alpha: strokeAlpha,
+  })
+
+  for (const points of polygon) {
+    graphics.drawPolygon(points)
+  }
 }
 // #endregion
