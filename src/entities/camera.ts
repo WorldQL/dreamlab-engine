@@ -7,6 +7,10 @@ import type { LooseVector } from '~/math/vector.js'
 import type { Debug, DebugText } from '~/utils/debug.js'
 import { createDebugText } from '~/utils/debug.js'
 
+const SCALE_LEVELS = [
+  0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2,
+] as const satisfies readonly number[]
+
 export interface CameraTarget {
   get position(): Vector
 }
@@ -16,7 +20,9 @@ interface Data {
 }
 
 interface Render {
+  container: HTMLDivElement
   stage: Container
+
   text: DebugText
 }
 
@@ -53,6 +59,19 @@ export const createCamera = (
   let renderScale = 1
   let renderScaleChanged = false
 
+  let scaleLevelIdx = 3
+  const onWheel = (ev: WheelEvent) => {
+    ev.preventDefault()
+
+    const delta = -Math.sign(ev.deltaY)
+    scaleLevelIdx = Math.max(
+      0,
+      Math.min(SCALE_LEVELS.length - 1, scaleLevelIdx + delta),
+    )
+
+    scaleTarget = SCALE_LEVELS[scaleLevelIdx] as number
+  }
+
   const camera: Camera = createEntity({
     get target() {
       return targetRef
@@ -71,7 +90,6 @@ export const createCamera = (
       targetRef = undefined
     },
 
-    // TODO: Allow scale to be changed
     get scale() {
       return scale
     },
@@ -106,7 +124,7 @@ export const createCamera = (
       return { debug: game.debug }
     },
 
-    async initRenderContext(_, { stage }) {
+    async initRenderContext(_, { container, stage }) {
       if (targetRef) {
         position.x = targetRef.position.x
         position.y = targetRef.position.y
@@ -115,16 +133,20 @@ export const createCamera = (
       const text = createDebugText(0)
       stage.addChild(text.gfx)
 
-      return { stage, text }
+      container.addEventListener('wheel', onWheel)
+
+      return { container, stage, text }
     },
 
     teardown(_) {
       // No-op
     },
 
-    teardownRenderContext({ text }) {
+    teardownRenderContext({ container, text }) {
       text.gfx.removeFromParent()
       text.gfx.destroy()
+
+      container.removeEventListener('wheel', onWheel)
     },
 
     onRenderFrame({ delta }, { debug }, { stage, text }) {
