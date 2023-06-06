@@ -1,6 +1,7 @@
 import type { Container } from 'pixi.js'
 import { createEntity } from '~/entity.js'
 import type { Entity } from '~/entity.js'
+import { lerp } from '~/math/general.js'
 import { distance, lerp2, v, Vector } from '~/math/vector.js'
 import type { LooseVector } from '~/math/vector.js'
 import type { Debug, DebugText } from '~/utils/debug.js'
@@ -15,6 +16,7 @@ interface Data {
 }
 
 interface Render {
+  stage: Container
   text: DebugText
 }
 
@@ -44,10 +46,12 @@ export const createCamera = (
 ) => {
   const position = Vector.create()
   let targetRef = target
-  let stageRef: Container | undefined
 
+  let scaleTarget = 1
   let scale = 1
+
   let renderScale = 1
+  let renderScaleChanged = false
 
   const camera: Camera = createEntity({
     get target() {
@@ -84,13 +88,11 @@ export const createCamera = (
     },
 
     rescale({ scale: newScale, renderScale: newRenderScale }: RescaleOptions) {
-      if (!stageRef) return
-
-      if (newScale) scale = newScale
-      if (newRenderScale) renderScale = newRenderScale
-
-      const finalScale = scale * renderScale
-      stageRef.scale.set(finalScale)
+      if (newScale) scaleTarget = newScale
+      if (newRenderScale) {
+        renderScale = newRenderScale
+        renderScaleChanged = true
+      }
     },
 
     localToWorld(pos: Vector) {
@@ -105,8 +107,6 @@ export const createCamera = (
     },
 
     async initRenderContext(_, { stage }) {
-      stageRef = stage
-
       if (targetRef) {
         position.x = targetRef.position.x
         position.y = targetRef.position.y
@@ -115,7 +115,7 @@ export const createCamera = (
       const text = createDebugText(0)
       stage.addChild(text.gfx)
 
-      return { text }
+      return { stage, text }
     },
 
     teardown(_) {
@@ -123,13 +123,30 @@ export const createCamera = (
     },
 
     teardownRenderContext({ text }) {
-      stageRef = undefined
-
       text.gfx.removeFromParent()
       text.gfx.destroy()
     },
 
-    onRenderFrame({ delta }, { debug }, { text }) {
+    onRenderFrame({ delta }, { debug }, { stage, text }) {
+      let scaleChanged = false
+      if (scale !== scaleTarget) {
+        scale = lerp(scale, scaleTarget, delta * 12)
+        const dist = Math.abs(1 - scale / scaleTarget)
+        if (dist < 0.001) scale = scaleTarget
+
+        scaleChanged = true
+      }
+
+      if (renderScaleChanged) {
+        renderScaleChanged = false
+        scaleChanged = true
+      }
+
+      if (scaleChanged) {
+        const finalScale = scale * renderScale
+        stage.scale.set(finalScale)
+      }
+
       const targetPosition = targetRef?.position ?? Vector.create()
 
       // TODO: Calculate camera speed based on S curve of the distance
