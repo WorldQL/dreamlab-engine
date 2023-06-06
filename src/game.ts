@@ -4,7 +4,8 @@ import type { IApplicationOptions } from 'pixi.js'
 import { createCamera } from '~/entities/camera.js'
 import { dataManager, isEntity } from '~/entity.js'
 import type { Entity, InitContext, RenderContext } from '~/entity.js'
-import type { Vector } from '~/math/vector.js'
+import { v } from '~/math/vector.js'
+import type { LooseVector } from '~/math/vector.js'
 import type { SpawnableDefinition } from '~/spawnable/definition.js'
 import { instantiate } from '~/spawnable/spawn.js'
 import { isSpawnableEntity } from '~/spawnable/spawnableEntity.js'
@@ -101,7 +102,7 @@ export interface Game<Headless extends boolean> {
     preview?: boolean,
   ): Promise<SpawnableEntity | undefined>
   lookup(uid: UID): SpawnableEntity | undefined
-  positionQuery(position: Vector): SpawnableEntity[]
+  positionQuery(position: LooseVector): SpawnableEntity[]
 
   shutdown(): Promise<void>
 }
@@ -237,8 +238,9 @@ export async function createGame<Headless extends boolean>(
     },
 
     positionQuery(position) {
+      const pos = v(position)
       return [...spawnables.values()].filter(
-        entity => !entity.preview && entity.isInBounds(position),
+        entity => !entity.preview && entity.isInBounds(pos),
       )
     },
 

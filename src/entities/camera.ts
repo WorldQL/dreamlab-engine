@@ -1,7 +1,8 @@
 import type { Container } from 'pixi.js'
 import { createEntity } from '~/entity.js'
 import type { Entity } from '~/entity.js'
-import { distance, lerp2, Vector } from '~/math/vector.js'
+import { distance, lerp2, v, Vector } from '~/math/vector.js'
+import type { LooseVector } from '~/math/vector.js'
 import type { Debug, DebugText } from '~/utils/debug.js'
 import { createDebugText } from '~/utils/debug.js'
 
@@ -20,6 +21,7 @@ interface Render {
 export interface Camera extends Entity<Data, Render> {
   get target(): CameraTarget | undefined
   setTarget(target: CameraTarget): void
+  setPosition(position: LooseVector): void
   clearTarget(): void
 
   get scale(): number
@@ -54,6 +56,11 @@ export const createCamera = (
 
     setTarget(target: CameraTarget) {
       targetRef = target
+    },
+
+    setPosition(position: LooseVector) {
+      const pos = v(position)
+      this.setTarget({ position: pos })
     },
 
     clearTarget() {

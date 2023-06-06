@@ -42,3 +42,15 @@ export const VectorSchema = z
     const [x, y] = Array.isArray(coords) ? coords : [coords.x, coords.y]
     return Vector.create(x, y)
   })
+
+export type LooseVector = Vector | [x: number, y: number]
+
+/**
+ * Ensure a vector object or coordinate tuple is a Vector
+ *
+ * @param vector - Vector or coordinate tuple
+ * @returns
+ */
+export const v = (vector: LooseVector): Vector => {
+  return VectorSchema.parse(vector)
+}
