@@ -24,20 +24,17 @@ export class InputEmitter<
 > extends EventEmitter<Events<I>> {
   private readonly state: Map<Input<I>, boolean>
 
-  public constructor(
-    inputs: I,
-    private readonly descriptions: InputDescriptions<I>,
-  ) {
+  public constructor(inputs: I) {
     super()
     this.state = new Map<Input<I>, boolean>(inputs.map(x => [x, false]))
   }
 
-  public get entries(): readonly [input: Input<I>, pressed: boolean][] {
-    return [...this.state.entries()]
+  public getInput(key: Input<I>): boolean {
+    return this.state.get(key) ?? false
   }
 
-  public description(input: Input<I>): string {
-    return this.descriptions[input]
+  public get entries(): readonly [input: Input<I>, pressed: boolean][] {
+    return [...this.state.entries()]
   }
 
   public registerListeners(inputMap: InputMap<I>): Unregister {
@@ -80,4 +77,11 @@ export class InputEmitter<
     // @ts-expect-error Complex Types
     if (pressed === false) this.emit('pressed', input)
   }
+}
+
+export interface RequiredInputs<I extends string> {
+  getInput(input: I): boolean
+
+  addListener(input: I, fn: (pressed: boolean) => void): void
+  removeListener(input: I, fn: (pressed: boolean) => void): void
 }

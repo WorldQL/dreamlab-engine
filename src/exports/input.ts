@@ -1,4 +1,8 @@
-export { InputEmitter, type InputDescriptions } from '~/input/emitter.js'
+export {
+  InputEmitter,
+  type InputDescriptions,
+  type RequiredInputs,
+} from '~/input/emitter.js'
 export {
   InputDefinitionSchema,
   type InputDefinition,
