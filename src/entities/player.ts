@@ -36,9 +36,6 @@ export const createPlayer = (
   inputs: RequiredInputs<Inputs>,
   { width = 80, height = 370 }: PlayerOptions = {},
 ) => {
-  inputs.getInput('left')
-  inputs.getInput('right')
-
   const mass = 50
   const moveForce = 0.5
   const maxSpeed = 1
