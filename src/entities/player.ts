@@ -1,25 +1,30 @@
 import type { Engine } from 'matter-js'
 import { Bodies, Body, Composite, Detector, Query } from 'matter-js'
-import { Graphics } from 'pixi.js'
+import { AnimatedSprite, Graphics } from 'pixi.js'
 import type { Camera } from '~/entities/camera.js'
 import type { Entity } from '~/entity.js'
 import { createEntity, dataManager } from '~/entity.js'
 import type { RequiredInputs } from '~/input/emitter.js'
 import { Vector } from '~/math/vector.js'
+import type { AnimationMap } from '~/textures/animations'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
+import { ref } from '~/utils/ref.js'
+import type { Ref } from '~/utils/ref.js'
 
 interface Data {
   debug: Debug
   physics: Engine
 
   body: Body
-  colliding: { value: boolean }
+  direction: Ref<number>
+  colliding: Ref<boolean>
 }
 
 interface Render {
   camera: Camera
 
+  sprite: AnimatedSprite
   gfxBounds: Graphics
   gfxFeet: Graphics
 }
@@ -34,15 +39,22 @@ export interface PlayerOptions {
 }
 
 type Inputs = 'crouch' | 'jump' | 'left' | 'right' | 'toggle-noclip'
+type Animations = 'idle' | 'jump' | 'walk'
+
 export const createPlayer = (
   inputs: RequiredInputs<Inputs>,
+  animations: AnimationMap<Animations>,
   { width = 80, height = 370 }: PlayerOptions = {},
 ) => {
+  const spriteScale = 0.9
+  const animationSpeed = 0.4
+
   const mass = 50
   const moveForce = 0.5
   const maxSpeed = 1
   const jumpForce = 5
   const feetSensor = 4
+
   let hasJumped = false
 
   let noclip = false
@@ -50,6 +62,15 @@ export const createPlayer = (
 
   const onToggleNoclip = (pressed: boolean) => {
     if (pressed) noclip = !noclip
+  }
+
+  let currentAnimation: Animations = 'idle'
+  const getAnimation = (direction: number): Animations => {
+    if (noclip) return 'idle'
+    if (hasJumped) return 'jump'
+    if (direction !== 0) return 'walk'
+
+    return 'idle'
   }
 
   const player: Player = createEntity({
@@ -79,46 +100,62 @@ export const createPlayer = (
 
       Composite.add(physics.world, body)
 
-      return { debug, physics, body, colliding: { value: false } }
+      return {
+        debug,
+        physics,
+        body,
+        direction: ref(0),
+        colliding: ref(false),
+      }
     },
 
     initRenderContext(_, { stage, camera }) {
+      const sprite = new AnimatedSprite(animations[currentAnimation])
+      sprite.animationSpeed = animationSpeed
+      sprite.scale.set(spriteScale)
+      sprite.anchor.set(0.45, 0.535)
+      sprite.play()
+
       const gfxBounds = new Graphics()
       const gfxFeet = new Graphics()
 
-      gfxBounds.zIndex = 11
-      gfxFeet.zIndex = 12
+      sprite.zIndex = 10
+      gfxBounds.zIndex = sprite.zIndex + 1
+      gfxFeet.zIndex = sprite.zIndex + 2
 
       inputs.addListener('toggle-noclip', onToggleNoclip)
       drawBox(gfxBounds, { width, height }, { stroke: '#00f' })
 
+      stage.addChild(sprite)
       stage.addChild(gfxBounds)
       stage.addChild(gfxFeet)
 
-      return { camera, gfxBounds, gfxFeet }
+      return { camera, sprite, gfxBounds, gfxFeet }
     },
 
     teardown({ physics, body }) {
       Composite.remove(physics.world, body)
     },
 
-    teardownRenderContext({ gfxBounds, gfxFeet }) {
+    teardownRenderContext({ sprite, gfxBounds, gfxFeet }) {
       inputs.removeListener('toggle-noclip', onToggleNoclip)
 
+      sprite.removeFromParent()
       gfxBounds.removeFromParent()
       gfxFeet.removeFromParent()
 
+      sprite.destroy()
       gfxBounds.destroy()
       gfxFeet.destroy()
     },
 
-    onPhysicsStep(_time, { physics, body, colliding }) {
+    onPhysicsStep({ delta }, { physics, body, direction, colliding }) {
       const left = inputs.getInput('left')
       const right = inputs.getInput('right')
       const jump = inputs.getInput('jump')
       const crouch = inputs.getInput('crouch')
 
-      const direction = left ? -1 : right ? 1 : 0
+      direction.value = left ? -1 : right ? 1 : 0
       const xor = left ? !right : right
 
       body.isStatic = noclip
@@ -132,24 +169,24 @@ export const createPlayer = (
 
         const newPosition = Vector.add(
           body.position,
-          Vector.mult(movement, noclipSpeed),
+          Vector.mult(movement, noclipSpeed * delta * 50),
         )
 
         Body.setPosition(body, newPosition)
         Body.setVelocity(body, Vector.create())
       } else {
         if (xor) {
-          const targetVelocity = maxSpeed * direction
+          const targetVelocity = maxSpeed * direction.value
           if (targetVelocity !== 0) {
             const velocityVector = targetVelocity / body.velocity.x
             const forcePercent = Math.min(Math.abs(velocityVector) / 2, 1)
-            const newForce = moveForce * forcePercent * direction
+            const newForce = moveForce * forcePercent * direction.value
 
             Body.applyForce(body, body.position, Vector.create(newForce, 0))
           }
         }
 
-        if (Math.sign(body.velocity.x) !== direction) {
+        if (Math.sign(body.velocity.x) !== direction.value) {
           Body.applyForce(
             body,
             body.position,
@@ -185,17 +222,37 @@ export const createPlayer = (
           Body.applyForce(body, body.position, Vector.create(0, -1 * jumpForce))
         }
 
-        if (!jump) hasJumped = false
+        if (!jump && isColliding) hasJumped = false
       }
     },
 
     onRenderFrame(
       _,
-      { debug, body, colliding: { value: colliding } },
-      { camera, gfxBounds, gfxFeet },
+      {
+        debug,
+        body,
+        direction: { value: direction },
+        colliding: { value: colliding },
+      },
+      { camera, sprite, gfxBounds, gfxFeet },
     ) {
+      const newScale = -direction * spriteScale
+      if (newScale !== 0 && sprite.scale.x !== newScale) {
+        sprite.scale.x = newScale
+      }
+
+      const newAnimation = getAnimation(direction)
+      if (newAnimation !== currentAnimation) {
+        currentAnimation = newAnimation
+        sprite.textures = animations[newAnimation]
+        sprite.loop = newAnimation !== 'jump'
+
+        sprite.gotoAndPlay(0)
+      }
+
       const pos = Vector.add(body.position, camera.offset)
 
+      sprite.position = pos
       gfxBounds.position = pos
       gfxBounds.alpha = debug.value ? 0.5 : 0
 
