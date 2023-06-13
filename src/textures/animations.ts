@@ -3,9 +3,9 @@ import type { Resource, Texture } from 'pixi.js'
 
 export type Animation = Texture<Resource>[]
 export type AnimationMap<
-  T extends readonly string[],
+  T extends string,
   Fallible extends boolean = false,
-> = Record<T[number], Fallible extends true ? Animation | undefined : Animation>
+> = Record<T, Fallible extends true ? Animation | undefined : Animation>
 
 export const loadSpritesheet = async (
   url: string,
@@ -25,12 +25,12 @@ export const loadSpritesheet = async (
 
 export const loadAnimations = async <
   const T extends readonly string[],
-  F extends AnimationMap<T> | undefined,
+  F extends AnimationMap<T[number]> | undefined,
 >(
   animations: T,
   urlFn: (animation: T[number]) => string,
   fallback: F,
-): Promise<AnimationMap<T, F extends undefined ? true : false>> => {
+): Promise<AnimationMap<T[number], F extends undefined ? true : false>> => {
   const jobs = animations.map(async (animation: T[number]) => {
     const url = urlFn(animation)
 
