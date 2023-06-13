@@ -33,6 +33,7 @@
   ],
   "scripts": {
     "build": "tsup",
+    "dev": "npm run build -- --watch",
     "check": "tsc --noEmit --skipLibCheck",
     "lint": "prettier --check . && eslint src --ext ts",
     "format": "prettier --write . && eslint src --ext ts --fix",
