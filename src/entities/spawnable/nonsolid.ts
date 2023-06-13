@@ -36,7 +36,7 @@ export const createNonsolid = createSpawnableEntity(
     initRenderContext(_, { stage, camera }) {
       const gfx = new Graphics()
       gfx.zIndex = zIndex + 1
-      drawBox(gfx, { width, height }, { strokeWidth: 10, stroke: 'blue' })
+      drawBox(gfx, { width, height }, { stroke: 'blue' })
 
       const sprite = spriteSource
         ? createSprite(spriteSource, { width, height, zIndex })
