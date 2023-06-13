@@ -18,4 +18,3 @@ export {
   type SpawnableEntity,
   type UID,
 } from '~/spawnable/spawnableEntity.js'
-export { createSprite } from '~/utils/textures.js'

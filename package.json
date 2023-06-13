@@ -22,6 +22,10 @@
       "import": "./dist/math.js",
       "types": "./dist/math.d.ts"
     },
+    "./dist/textures": {
+      "import": "./dist/textures.js",
+      "types": "./dist/textures.d.ts"
+    },
     "./dist/utils": {
       "import": "./dist/utils.js",
       "types": "./dist/utils.d.ts"

@@ -9,10 +9,10 @@ import type {
   PartializeSpawnable,
   SpawnableEntity,
 } from '~/spawnable/spawnableEntity.js'
+import { createSprite } from '~/textures/sprites.js'
+import type { SpriteSource } from '~/textures/sprites.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
-import { createSprite } from '~/utils/textures.js'
-import type { SpriteSource } from '~/utils/textures.js'
 
 interface Data {
   debug: Debug

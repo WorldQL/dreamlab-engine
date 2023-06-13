@@ -2,9 +2,9 @@ import { Bodies, Composite, Query } from 'matter-js'
 import { Graphics } from 'pixi.js'
 import { Vector } from '~/math/vector.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
+import { createSprite } from '~/textures/sprites.js'
+import type { SpriteSource } from '~/textures/sprites.js'
 import { drawBox } from '~/utils/draw.js'
-import { createSprite } from '~/utils/textures.js'
-import type { SpriteSource } from '~/utils/textures.js'
 
 export const createSolid = createSpawnableEntity(
   'createSolid',
