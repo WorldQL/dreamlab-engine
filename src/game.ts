@@ -85,9 +85,12 @@ async function initRenderContext<Headless extends boolean>(
   return ctx
 }
 
+type TickListener = (delta: number) => Promise<void> | void
+
 export interface Game<Headless extends boolean> {
   get debug(): Debug
   get render(): Headless extends false ? RenderContextExt : never
+  get physics(): Engine
 
   instantiate<Data, Render, E extends Entity<Data, Render>>(
     entity: E,
@@ -103,6 +106,9 @@ export interface Game<Headless extends boolean> {
   ): Promise<SpawnableEntity | undefined>
   lookup(uid: UID): SpawnableEntity | undefined
   positionQuery(position: LooseVector): SpawnableEntity[]
+
+  addTickListener(listener: TickListener): void
+  removeTickListener(listener: TickListener): void
 
   shutdown(): Promise<void>
 }
@@ -120,6 +126,8 @@ export async function createGame<Headless extends boolean>(
   const entities: Entity[] = []
   const spawnables = new Map<string, SpawnableEntity>()
 
+  const tickListeners: Set<TickListener> = new Set()
+
   const physicsTickDelta = 1_000 / physicsTickrate
   let time = performance.now()
   let physicsTickAcc = 0
@@ -134,6 +142,10 @@ export async function createGame<Headless extends boolean>(
     while (physicsTickAcc >= physicsTickDelta) {
       physicsTickAcc -= physicsTickDelta
       Engine.update(physics, physicsTickDelta)
+
+      for (const tickListener of tickListeners) {
+        void tickListener(physicsTickDelta)
+      }
 
       const timeState = { delta: physicsTickDelta / 1_000, time: time / 1_000 }
       for (const entity of entities) {
@@ -178,6 +190,10 @@ export async function createGame<Headless extends boolean>(
       }
 
       return renderContext as Headless extends false ? RenderContextExt : never
+    },
+
+    get physics() {
+      return physics
     },
 
     async instantiate(entity) {
@@ -242,6 +258,14 @@ export async function createGame<Headless extends boolean>(
       return [...spawnables.values()].filter(
         entity => !entity.preview && entity.isInBounds(pos),
       )
+    },
+
+    addTickListener(listener) {
+      tickListeners.add(listener)
+    },
+
+    removeTickListener(listener) {
+      tickListeners.delete(listener)
     },
 
     async shutdown() {
