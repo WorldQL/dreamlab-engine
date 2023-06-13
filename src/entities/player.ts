@@ -31,7 +31,7 @@ export interface PlayerOptions {
   height?: number
 }
 
-type Inputs = 'jump' | 'left' | 'right'
+type Inputs = 'jump' | 'left' | 'right' | 'toggle-noclip'
 export const createPlayer = (
   inputs: RequiredInputs<Inputs>,
   { width = 80, height = 370 }: PlayerOptions = {},
@@ -80,6 +80,8 @@ export const createPlayer = (
       drawBox(gfxBounds, { width, height })
       stage.addChild(gfxBounds)
 
+      inputs.addListener('toggle-noclip', onToggleNoclip)
+
       return { camera, gfxBounds }
     },
 
@@ -88,6 +90,8 @@ export const createPlayer = (
     },
 
     teardownRenderContext({ gfxBounds }) {
+      inputs.removeListener('toggle-noclip', onToggleNoclip)
+
       gfxBounds.removeFromParent()
       gfxBounds.destroy()
     },
