@@ -1,7 +1,7 @@
 import type { Except } from 'type-fest'
 import { z } from 'zod'
-import { VectorSchema } from '~/math/vector.js'
-import type { Vector } from '~/math/vector.js'
+import { TransformSchema } from '~/math/transform.js'
+import type { LooseTransform, Transform } from '~/math/transform.js'
 import { lookupSpawnableFn } from '~/spawnable/spawn.js'
 import type { SpawnableFunction, UID } from '~/spawnable/spawnableEntity.js'
 
@@ -16,7 +16,19 @@ export interface SpawnableDefinition<
 > {
   entityFn: Name
   args: Args
-  position: Vector
+  transform: Transform
+  uid?: UID
+  tags?: string[]
+  zIndex?: number
+}
+
+export interface LooseSpawnableDefinition<
+  Name extends string = string,
+  Args extends unknown[] = unknown[],
+> {
+  entityFn: Name
+  args: Args
+  transform: LooseTransform
   uid?: UID
   tags?: string[]
   zIndex?: number
@@ -25,7 +37,7 @@ export interface SpawnableDefinition<
 export const SpawnableDefinitionSchema = z.object({
   entityFn: EntityFunctionSchema,
   args: z.any().array(),
-  position: VectorSchema,
+  transform: TransformSchema,
   uid: z.string().cuid2().optional(),
   tags: z.string().array().optional(),
   zIndex: z.number().optional(),

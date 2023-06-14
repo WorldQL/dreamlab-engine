@@ -45,7 +45,7 @@ export const instantiate = (
 
   const context: SpawnableContext = {
     uid: definition.uid ?? cuid2.createId(),
-    position: definition.position,
+    transform: definition.transform,
     tags: definition.tags ?? [],
     zIndex: definition.zIndex ?? 0,
 

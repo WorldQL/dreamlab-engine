@@ -1,6 +1,7 @@
 import type { Except } from 'type-fest'
 import { symbol as entitySymbol } from '~/entity.js'
 import type { Entity } from '~/entity.js'
+import type { Transform } from '~/math/transform.js'
 import type { Vector } from '~/math/vector.js'
 import type {
   SpawnableContext,
@@ -19,7 +20,7 @@ export interface SpawnableEntity<Data = unknown, Render = unknown>
   get uid(): UID
   get tags(): string[]
   get preview(): boolean
-  get position(): Vector
+  get transform(): Transform
   get definition(): SpawnableDefinition
 
   isInBounds(position: Vector): boolean

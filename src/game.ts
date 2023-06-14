@@ -6,7 +6,8 @@ import { dataManager, isEntity } from '~/entity.js'
 import type { Entity, InitContext, RenderContext } from '~/entity.js'
 import { v } from '~/math/vector.js'
 import type { LooseVector } from '~/math/vector.js'
-import type { SpawnableDefinition } from '~/spawnable/definition.js'
+import { SpawnableDefinitionSchema } from '~/spawnable/definition.js'
+import type { LooseSpawnableDefinition } from '~/spawnable/definition.js'
 import { instantiate } from '~/spawnable/spawn.js'
 import { isSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type { SpawnableEntity, UID } from '~/spawnable/spawnableEntity.js'
@@ -101,7 +102,7 @@ export interface Game<Headless extends boolean> {
   ): Promise<void>
 
   spawn(
-    definition: SpawnableDefinition,
+    definition: LooseSpawnableDefinition,
     preview?: boolean,
   ): Promise<SpawnableEntity | undefined>
   lookup(uid: UID): SpawnableEntity | undefined
@@ -156,16 +157,16 @@ export async function createGame<Headless extends boolean>(
       }
     }
 
-    if (!renderContext) return
+    if (renderContext) {
+      const timeState = { delta: delta / 1_000, time: time / 1_000 }
+      for (const entity of entities) {
+        if (typeof entity.onRenderFrame !== 'function') continue
 
-    const timeState = { delta: delta / 1_000, time: time / 1_000 }
-    for (const entity of entities) {
-      if (typeof entity.onRenderFrame !== 'function') continue
+        const data = dataManager.getData(entity)
+        const render = dataManager.getRenderData(entity)
 
-      const data = dataManager.getData(entity)
-      const render = dataManager.getRenderData(entity)
-
-      entity.onRenderFrame(timeState, data, render)
+        entity.onRenderFrame(timeState, data, render)
+      }
     }
   }
 
@@ -239,7 +240,8 @@ export async function createGame<Headless extends boolean>(
       await entity.teardown(data)
     },
 
-    async spawn(definition, preview) {
+    async spawn(loose, preview) {
+      const definition = SpawnableDefinitionSchema.parse(loose)
       const entity = instantiate(definition, preview)
       if (entity === undefined) return undefined
 
