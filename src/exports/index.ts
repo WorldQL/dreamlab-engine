@@ -1,4 +1,4 @@
-export { createGame } from '~/game.js'
+export { createGame, type Game } from '~/game.js'
 export {
   createEntity,
   isEntity,
