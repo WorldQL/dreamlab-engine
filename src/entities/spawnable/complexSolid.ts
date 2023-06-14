@@ -3,6 +3,7 @@ import type { Body, Engine } from 'matter-js'
 import { Graphics } from 'pixi.js'
 import type { Camera } from '~/entities/camera'
 import { dataManager } from '~/entity.js'
+import { cloneTransform } from '~/math/transform.js'
 import { Vector } from '~/math/vector.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
@@ -30,9 +31,9 @@ export const createComplexSolid = createSpawnableEntity<
   SpawnableEntity<Data, Render>,
   Data,
   Render
->('createComplexSolid', ({ position, zIndex, tags, preview }, poly) => ({
-  get position() {
-    return Vector.clone(position)
+>('createComplexSolid', ({ transform, zIndex, tags, preview }, poly) => ({
+  get transform() {
+    return cloneTransform(transform)
   },
 
   get tags() {
@@ -49,7 +50,7 @@ export const createComplexSolid = createSpawnableEntity<
 
     const polygons = typeof poly === 'string' ? decodePolygons(poly) : poly
     const bodies = polygons.map(points => {
-      const { x, y } = Vector.add(position, Vertices.centre(points))
+      const { x, y } = Vector.add(transform.position, Vertices.centre(points))
       return Bodies.fromVertices(x, y, [points], {
         label: 'complexSolid',
         render: { visible: false },
@@ -86,7 +87,7 @@ export const createComplexSolid = createSpawnableEntity<
   },
 
   onRenderFrame(_, { debug }, { camera, gfx }) {
-    const pos = Vector.add(position, camera.offset)
+    const pos = Vector.add(transform.position, camera.offset)
 
     gfx.position = pos
     gfx.alpha = debug.value ? 0.5 : 0

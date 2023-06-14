@@ -40,7 +40,9 @@ export const createSimpleNPC = createSpawnableEntity<
   Render
 >(
   'createSimpleNPC',
-  ({ position, zIndex, tags, preview }, size, spriteSource) => {
+  ({ transform, zIndex, tags, preview }, size, spriteSource) => {
+    const { position } = transform
+
     const mass = 20
     const sensorSize = 4
     const moveForce = 0.01
@@ -84,8 +86,8 @@ export const createSimpleNPC = createSpawnableEntity<
       )
 
     const npc: PartializeSpawnable<SimpleNPC, Data, Render> = {
-      get position() {
-        return Vector.clone(body.position)
+      get transform() {
+        return { position: Vector.clone(body.position), rotation: 0 }
       },
 
       get tags() {
