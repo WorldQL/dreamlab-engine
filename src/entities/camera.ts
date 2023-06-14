@@ -2,6 +2,7 @@ import type { Container } from 'pixi.js'
 import { createEntity } from '~/entity.js'
 import type { Entity } from '~/entity.js'
 import { lerp } from '~/math/general.js'
+import type { Transform } from '~/math/transform.js'
 import { distance, lerp2, v, Vector } from '~/math/vector.js'
 import type { LooseVector } from '~/math/vector.js'
 import type { Debug, DebugText } from '~/utils/debug.js'
@@ -11,9 +12,15 @@ const SCALE_LEVELS = [
   0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2,
 ] as const satisfies readonly number[]
 
-export interface CameraTarget {
+interface PositionTarget {
   get position(): Vector
 }
+
+interface TransformTarget {
+  get transform(): Transform
+}
+
+export type CameraTarget = PositionTarget | TransformTarget
 
 interface Data {
   get debug(): Debug
@@ -126,8 +133,13 @@ export const createCamera = (
 
     async initRenderContext(_, { container, stage }) {
       if (targetRef) {
-        position.x = targetRef.position.x
-        position.y = targetRef.position.y
+        const targetPosition =
+          'position' in targetRef
+            ? targetRef.position
+            : targetRef.transform.position
+
+        position.x = targetPosition.x
+        position.y = targetPosition.y
       }
 
       const text = createDebugText(0)
@@ -169,7 +181,12 @@ export const createCamera = (
         stage.scale.set(finalScale)
       }
 
-      const targetPosition = targetRef?.position ?? Vector.create()
+      const targetPosition =
+        targetRef === undefined
+          ? Vector.create()
+          : 'position' in targetRef
+          ? targetRef.position
+          : targetRef.transform.position
 
       // TODO: Calculate camera speed based on S curve of the distance
       // (fast when close and when far, medium speed when at normal movement distances)
