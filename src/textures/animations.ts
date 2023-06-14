@@ -23,9 +23,13 @@ export const loadSpritesheet = async (
   return entries.map(([, texture]) => texture)
 }
 
+export type Fallback<T extends string> =
+  | Animation
+  | ((animation: T) => Promise<Animation>)
+
 export const loadAnimations = async <
   const T extends readonly string[],
-  F extends AnimationMap<T[number]> | undefined,
+  F extends Record<T[number], Fallback<T[number]>> | undefined,
 >(
   animations: T,
   urlFn: (animation: T[number]) => string,
@@ -41,8 +45,12 @@ export const loadAnimations = async <
       if (error instanceof Error) console.error(error)
       console.warn(`Failed to load spritesheet for "${url}"`)
 
-      const textures: Animation | undefined = fallback?.[animation]
-      return [animation, textures]
+      if (fallback === undefined) return [animation, undefined]
+
+      const fn: Fallback<T[number]> = fallback[animation]
+      const textures = typeof fn === 'function' ? await fn(animation) : fn
+
+      return [animation, textures] as const
     }
   })
 
