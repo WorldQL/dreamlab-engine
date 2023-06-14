@@ -1,5 +1,7 @@
 import { Bodies, Composite, Query } from 'matter-js'
 import { Graphics } from 'pixi.js'
+import { toRadians } from '~/math/general.js'
+import { cloneTransform } from '~/math/transform.js'
 import { Vector } from '~/math/vector.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import { createSprite } from '~/textures/sprites.js'
@@ -9,14 +11,16 @@ import { drawBox } from '~/utils/draw.js'
 export const createSolid = createSpawnableEntity(
   'createSolid',
   (
-    { position, zIndex, tags, preview },
+    { transform, zIndex, tags, preview },
     width: number,
     height: number,
     spriteSource?: SpriteSource,
   ) => {
+    const { position, rotation } = transform
     const body = Bodies.rectangle(position.x, position.y, width, height, {
       label: 'solid',
       render: { visible: false },
+      angle: toRadians(rotation),
 
       isStatic: true,
       isSensor: preview,
@@ -24,8 +28,8 @@ export const createSolid = createSpawnableEntity(
     })
 
     return {
-      get position() {
-        return Vector.clone(position)
+      get transform() {
+        return cloneTransform(transform)
       },
 
       get tags() {
@@ -76,9 +80,13 @@ export const createSolid = createSpawnableEntity(
         const pos = Vector.add(position, camera.offset)
 
         gfx.position = pos
+        gfx.angle = rotation
         gfx.alpha = debug.value ? 0.5 : 0
 
-        if (sprite) sprite.position = pos
+        if (sprite) {
+          sprite.position = pos
+          sprite.angle = rotation
+        }
       },
     }
   },

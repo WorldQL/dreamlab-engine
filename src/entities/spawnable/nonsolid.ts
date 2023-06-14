@@ -1,4 +1,5 @@
 import { Graphics } from 'pixi.js'
+import { cloneTransform } from '~/math/transform.js'
 import { Vector } from '~/math/vector.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import { createSprite } from '~/textures/sprites.js'
@@ -8,13 +9,13 @@ import { drawBox } from '~/utils/draw.js'
 export const createNonsolid = createSpawnableEntity(
   'createNonsolid',
   (
-    { position, zIndex, tags },
+    { transform, zIndex, tags },
     width: number,
     height: number,
     spriteSource?: SpriteSource,
   ) => ({
-    get position() {
-      return Vector.clone(position)
+    get transform() {
+      return cloneTransform(transform)
     },
 
     get tags() {
@@ -23,8 +24,8 @@ export const createNonsolid = createSpawnableEntity(
 
     isInBounds({ x, y }) {
       const half = Vector.create(width / 2, height / 2)
-      const { x: minX, y: minY } = Vector.sub(this.position, half)
-      const { x: maxX, y: maxY } = Vector.add(this.position, half)
+      const { x: minX, y: minY } = Vector.sub(this.transform.position, half)
+      const { x: maxX, y: maxY } = Vector.add(this.transform.position, half)
 
       return x >= minX && x <= maxX && y >= minY && y <= maxY
     },
@@ -63,12 +64,16 @@ export const createNonsolid = createSpawnableEntity(
     },
 
     onRenderFrame(_, { debug }, { camera, gfx, sprite }) {
-      const pos = Vector.add(position, camera.offset)
+      const pos = Vector.add(transform.position, camera.offset)
 
       gfx.position = pos
+      gfx.angle = transform.rotation
       gfx.alpha = debug.value ? 0.5 : 0
 
-      if (sprite) sprite.position = pos
+      if (sprite) {
+        sprite.position = pos
+        sprite.angle = transform.rotation
+      }
     },
   }),
 )
