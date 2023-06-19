@@ -40,6 +40,9 @@ interface HeadlessOptions {
 }
 
 interface CommonOptions<Headless extends boolean> {
+  /**
+   * Run the game without running any rendering logic
+   */
   headless: Headless
 
   /**
@@ -95,26 +98,73 @@ export interface Game<Headless extends boolean> {
   get render(): Headless extends false ? RenderContextExt : never
   get physics(): Engine
 
+  /**
+   * Instantiate an entity
+   *
+   * @param entity - Entity
+   */
   instantiate<Data, Render, E extends Entity<Data, Render>>(
     entity: E,
   ): Promise<void>
 
+  /**
+   * Destroy an entity
+   *
+   * @param entity - Entity
+   */
   destroy<Data, Render, E extends Entity<Data, Render>>(
     entity: E,
   ): Promise<void>
 
+  /**
+   * Load many entities from a level definition
+   *
+   * @param level - Level Definition
+   */
   load(level: Level): Promise<void>
 
+  /**
+   * Spawn a new entity
+   *
+   * @param definition - Entity Definition
+   * @param preview - Spawn in Preview mode
+   */
   spawn(
     definition: LooseSpawnableDefinition,
     preview?: boolean,
   ): Promise<SpawnableEntity | undefined>
+
+  /**
+   * Lookup a spawnable entity by UID
+   *
+   * @param uid - Entity UID
+   */
   lookup(uid: UID): SpawnableEntity | undefined
+
+  /**
+   * Query all entities at a single point
+   *
+   * @param position - Position to query
+   */
   positionQuery(position: LooseVector): SpawnableEntity[]
 
+  /**
+   * Add a listener function for physics ticks
+   *
+   * @param listener - Listener Function
+   */
   addTickListener(listener: TickListener): void
+
+  /**
+   * Remove a tick listener
+   *
+   * @param listener - Listener Function
+   */
   removeTickListener(listener: TickListener): void
 
+  /**
+   * Destroy all entities and stop all game logic
+   */
   shutdown(): Promise<void>
 }
 
