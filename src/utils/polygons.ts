@@ -1,4 +1,4 @@
-import { Buffer } from 'buffer/'
+import { Buffer } from 'buf'
 import { Vertices } from 'matter-js'
 import pako from 'pako'
 import { makeCCW, quickDecomp } from 'poly-decomp-es'
