@@ -26,7 +26,7 @@ export function createTsupConfig({
     target,
     clean,
     shims,
-    minify: options.watch ? false : 'terser',
+    minify: !options.watch,
     splitting,
     keepNames,
     dts,
