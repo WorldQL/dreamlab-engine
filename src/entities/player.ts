@@ -5,7 +5,8 @@ import type { Camera } from '~/entities/camera.js'
 import type { Entity } from '~/entity.js'
 import { createEntity, dataManager } from '~/entity.js'
 import type { RequiredInputs } from '~/input/emitter.js'
-import { Vector } from '~/math/vector.js'
+import { v, Vector } from '~/math/vector.js'
+import type { LooseVector } from '~/math/vector.js'
 import type { AnimationMap } from '~/textures/animations'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
@@ -31,7 +32,7 @@ interface Render {
 
 interface Player extends Entity<Data, Render> {
   get position(): Vector
-  teleport(coords: Vector, resetVelocity?: boolean): void
+  teleport(position: LooseVector, resetVelocity?: boolean): void
 }
 
 export interface PlayerOptions {
@@ -80,10 +81,10 @@ export const createPlayer = (
       return Vector.clone(body.position)
     },
 
-    teleport(position, resetVelocity = true) {
+    teleport(position: LooseVector, resetVelocity = true) {
       const { body } = dataManager.getData(this)
 
-      Body.setPosition(body, position)
+      Body.setPosition(body, v(position))
       if (resetVelocity) Body.setVelocity(body, { x: 0, y: 0 })
     },
 
