@@ -56,7 +56,8 @@ export const calculatePolygons = (
   const offsetPoints = points.map(point => Vector.sub(point, center))
 
   if (isPolygonConvex(offsetPoints)) {
-    return [center, [offsetPoints]]
+    const truncated = offsetPoints.map(point => truncateVector(point, truncate))
+    return [center, [truncated]]
   }
 
   const tuplePoints: Polygon = offsetPoints.map(({ x, y }) => [x, y])
