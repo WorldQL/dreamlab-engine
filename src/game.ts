@@ -4,6 +4,8 @@ import type { IApplicationOptions } from 'pixi.js'
 import { createCamera } from '~/entities/camera.js'
 import { dataManager, isEntity } from '~/entity.js'
 import type { Entity, InitContext, RenderContext } from '~/entity.js'
+import { LevelSchema } from '~/level.js'
+import type { Level } from '~/level.js'
 import { v } from '~/math/vector.js'
 import type { LooseVector } from '~/math/vector.js'
 import { SpawnableDefinitionSchema } from '~/spawnable/definition.js'
@@ -100,6 +102,8 @@ export interface Game<Headless extends boolean> {
   destroy<Data, Render, E extends Entity<Data, Render>>(
     entity: E,
   ): Promise<void>
+
+  load(level: Level): Promise<void>
 
   spawn(
     definition: LooseSpawnableDefinition,
@@ -238,6 +242,13 @@ export async function createGame<Headless extends boolean>(
 
       const data = dataManager.getData(entity)
       await entity.teardown(data)
+    },
+
+    async load(data) {
+      const level = await LevelSchema.parseAsync(data)
+      const jobs = level.map(async definition => this.spawn(definition, false))
+
+      await Promise.all(jobs)
     },
 
     async spawn(loose, preview) {

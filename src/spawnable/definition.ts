@@ -34,14 +34,17 @@ export interface LooseSpawnableDefinition<
   zIndex?: number
 }
 
-export const SpawnableDefinitionSchema = z.object({
+export const SpawnableDefinitionSchemaInternal = z.object({
   entityFn: EntityFunctionSchema,
   args: z.any().array(),
   transform: TransformSchema,
   uid: z.string().cuid2().optional(),
   tags: z.string().array().optional(),
   zIndex: z.number().optional(),
-}) as z.ZodType<SpawnableDefinition>
+})
+
+export const SpawnableDefinitionSchema =
+  SpawnableDefinitionSchemaInternal as z.ZodType<SpawnableDefinition>
 
 export interface SpawnableContext<
   Name extends string = string,
