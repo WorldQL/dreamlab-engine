@@ -142,11 +142,21 @@ export interface Game<Headless extends boolean> {
   lookup(uid: UID): SpawnableEntity | undefined
 
   /**
-   * Query all entities at a single point
+   * Query spawnable entities at a single point
    *
    * @param position - Position to query
    */
-  positionQuery(position: LooseVector): SpawnableEntity[]
+  queryPosition(position: LooseVector): SpawnableEntity[]
+
+  /**
+   * Query spawnable enties by tag
+   *
+   * @param query - Type of Query
+   * @param fn - Def
+   * @param tags - Abc
+   */
+  queryTags(query: 'fn', fn: (tags: string[]) => boolean): SpawnableEntity[]
+  queryTags(query: 'all' | 'any', tags: string[]): SpawnableEntity[]
 
   /**
    * Add a listener function for physics ticks
@@ -316,11 +326,42 @@ export async function createGame<Headless extends boolean>(
       return spawnables.get(uid)
     },
 
-    positionQuery(position) {
+    queryPosition(position) {
       const pos = v(position)
       return [...spawnables.values()].filter(
         entity => !entity.preview && entity.isInBounds(pos),
       )
+    },
+
+    queryTags(query, fnOrTags) {
+      if (query === 'fn') {
+        if (typeof fnOrTags !== 'function') {
+          throw new TypeError('`fn` must be a function')
+        }
+
+        return [...spawnables.values()].filter(entity => fnOrTags(entity.tags))
+      }
+
+      if (!Array.isArray(fnOrTags)) {
+        throw new TypeError('`tags` must be an array')
+      }
+
+      const isStringArray = fnOrTags.every(x => typeof x === 'string')
+      if (!isStringArray) {
+        throw new TypeError('`tags` must be an array of strings')
+      }
+
+      return [...spawnables.values()].filter(entity => {
+        if (query === 'all') {
+          return fnOrTags.every(tag => entity.tags.includes(tag))
+        }
+
+        if (query === 'any') {
+          return fnOrTags.some(tag => entity.tags.includes(tag))
+        }
+
+        return false
+      })
     },
 
     addTickListener(listener) {

@@ -43,7 +43,7 @@ export const createCursor = () => {
       if (cursorPosition) {
         const { x, y } = camera.localToWorld(cursorPosition)
 
-        const query = game.positionQuery({ x, y })
+        const query = game.queryPosition({ x, y })
         const entities = query.map(({ definition: { entityFn } }) => entityFn)
 
         const xcoord = x.toFixed(0)
