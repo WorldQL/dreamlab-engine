@@ -31,6 +31,7 @@ interface Render {
 
 interface Player extends Entity<Data, Render> {
   get position(): Vector
+  teleport(coords: Vector, resetVelocity?: boolean): void
 }
 
 export interface PlayerOptions {
@@ -77,6 +78,13 @@ export const createPlayer = (
     get position(): Vector {
       const { body } = dataManager.getData(this)
       return Vector.clone(body.position)
+    },
+
+    teleport(position, resetVelocity = true) {
+      const { body } = dataManager.getData(this)
+
+      Body.setPosition(body, position)
+      if (resetVelocity) Body.setVelocity(body, { x: 0, y: 0 })
     },
 
     init({ game, physics }) {
