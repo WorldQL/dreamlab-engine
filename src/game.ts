@@ -125,8 +125,9 @@ export interface Game<Headless extends boolean> {
    * Load many entities from a level definition
    *
    * @param level - Level Definition
+   * @returns Array of Spawnable Entity IDs
    */
-  load(level: Level): Promise<void>
+  load(level: Level): Promise<string[]>
 
   /**
    * Spawn a new entity
@@ -316,8 +317,11 @@ export async function createGame<Headless extends boolean>(
     async load(data) {
       const level = await LevelSchema.parseAsync(data)
       const jobs = level.map(async definition => this.spawn(definition, false))
+      const entities = await Promise.all(jobs)
 
-      await Promise.all(jobs)
+      return entities
+        .filter((entity): entity is SpawnableEntity => entity !== undefined)
+        .map(entity => entity.uid)
     },
 
     async spawn(loose, preview) {
