@@ -8,6 +8,8 @@ import { LevelSchema } from '~/level.js'
 import type { Level } from '~/level.js'
 import { v } from '~/math/vector.js'
 import type { LooseVector } from '~/math/vector.js'
+import type { NetClient } from '~/network/client'
+import type { NetServer } from '~/network/server'
 import { SpawnableDefinitionSchema } from '~/spawnable/definition.js'
 import type { LooseSpawnableDefinition } from '~/spawnable/definition.js'
 import { instantiate } from '~/spawnable/spawn.js'
@@ -54,6 +56,8 @@ interface CommonOptions<Headless extends boolean> {
    * Debug mode
    */
   debug?: boolean
+
+  network: Headless extends true ? NetServer : NetClient
 }
 
 type Options<Headless extends boolean> = CommonOptions<Headless> &
@@ -97,6 +101,7 @@ export interface Game<Headless extends boolean> {
   get debug(): Debug
   get render(): Headless extends false ? RenderContextExt : never
   get physics(): Engine
+  get network(): Headless extends true ? NetServer : NetClient
 
   /**
    * Instantiate an entity
@@ -259,6 +264,10 @@ export async function createGame<Headless extends boolean>(
 
     get physics() {
       return physics
+    },
+
+    get network() {
+      return options.network
     },
 
     async instantiate(entity) {
