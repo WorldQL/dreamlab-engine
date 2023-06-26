@@ -158,8 +158,8 @@ export interface Game<Headless extends boolean> {
    * Query spawnable enties by tag
    *
    * @param query - Type of Query
-   * @param fn - Def
-   * @param tags - Abc
+   * @param fn - Tags predicate
+   * @param tags - List of tags to check
    */
   queryTags(query: 'fn', fn: (tags: string[]) => boolean): SpawnableEntity[]
   queryTags(query: 'all' | 'any', tags: string[]): SpawnableEntity[]
