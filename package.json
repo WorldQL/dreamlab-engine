@@ -10,21 +10,41 @@
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
+    "./entities": {
+      "import": "./dist/entities.js",
+      "types": "./dist/entities.d.ts"
+    },
     "./dist/entities": {
       "import": "./dist/entities.js",
       "types": "./dist/entities.d.ts"
+    },
+    "./input": {
+      "import": "./dist/input.js",
+      "types": "./dist/input.d.ts"
     },
     "./dist/input": {
       "import": "./dist/input.js",
       "types": "./dist/input.d.ts"
     },
+    "./math": {
+      "import": "./dist/math.js",
+      "types": "./dist/math.d.ts"
+    },
     "./dist/math": {
       "import": "./dist/math.js",
       "types": "./dist/math.d.ts"
     },
+    "./textures": {
+      "import": "./dist/textures.js",
+      "types": "./dist/textures.d.ts"
+    },
     "./dist/textures": {
       "import": "./dist/textures.js",
       "types": "./dist/textures.d.ts"
+    },
+    "./utils": {
+      "import": "./dist/utils.js",
+      "types": "./dist/utils.d.ts"
     },
     "./dist/utils": {
       "import": "./dist/utils.js",
