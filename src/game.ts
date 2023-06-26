@@ -165,6 +165,24 @@ export interface Game<Headless extends boolean> {
   queryTags(query: 'all' | 'any', tags: string[]): SpawnableEntity[]
 
   /**
+   * Query a single spawnable entity with a type predicate
+   *
+   * @param fn - Type predicate
+   */
+  queryType<T extends SpawnableEntity = SpawnableEntity>(
+    fn: (arg: SpawnableEntity) => arg is T,
+  ): T | undefined
+
+  /**
+   * Query multiple spawnable entities with a type predicate
+   *
+   * @param fn - Type predicate
+   */
+  queryTypeAll<T extends SpawnableEntity = SpawnableEntity>(
+    fn: (arg: SpawnableEntity) => arg is T,
+  ): T[]
+
+  /**
    * Add a listener function for physics ticks
    *
    * @param listener - Listener Function
@@ -375,6 +393,16 @@ export async function createGame<Headless extends boolean>(
 
         return false
       })
+    },
+
+    queryType(fn) {
+      // eslint-disable-next-line unicorn/no-array-callback-reference
+      return [...spawnables.values()].find(fn)
+    },
+
+    queryTypeAll(fn) {
+      // eslint-disable-next-line unicorn/no-array-callback-reference
+      return [...spawnables.values()].filter(fn)
     },
 
     addTickListener(listener) {
