@@ -3,4 +3,10 @@ export interface NetServer {
   // TODO
 }
 
-export const createNetServer = (): NetServer => ({ type: 'server' })
+export const createNetServer = (): NetServer => {
+  const net: NetServer = {
+    type: 'server',
+  }
+
+  return Object.freeze(net)
+}
