@@ -1,4 +1,5 @@
 import { Graphics } from 'pixi.js'
+import { simpleBoundsTest } from '~/math/bounds.js'
 import { cloneTransform } from '~/math/transform.js'
 import { Vector } from '~/math/vector.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
@@ -18,12 +19,8 @@ export const createMarker = createSpawnableEntity(
       return tags
     },
 
-    isInBounds({ x, y }) {
-      const half = Vector.create(width / 2, height / 2)
-      const { x: minX, y: minY } = Vector.sub(transform.position, half)
-      const { x: maxX, y: maxY } = Vector.add(transform.position, half)
-
-      return x >= minX && x <= maxX && y >= minY && y <= maxY
+    isInBounds(point) {
+      return simpleBoundsTest(width, height, transform, point)
     },
 
     init({ game }) {
