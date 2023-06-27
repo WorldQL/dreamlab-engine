@@ -1,5 +1,6 @@
 import { createEntity } from '~/entity.js'
-import { Vector } from '~/math/vector.js'
+import { Vec } from '~/math/vector.js'
+import type { Vector } from '~/math/vector.js'
 import { createDebugText } from '~/utils/debug.js'
 
 export const createCursor = () => {
@@ -7,7 +8,7 @@ export const createCursor = () => {
 
   const onPointerOut = () => (cursorPosition = undefined)
   const onPointerMove = (ev: PointerEvent) => {
-    cursorPosition = Vector.create(ev.offsetX, ev.offsetY)
+    cursorPosition = Vec.create(ev.offsetX, ev.offsetY)
   }
 
   return createEntity({

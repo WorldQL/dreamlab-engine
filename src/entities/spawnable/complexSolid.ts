@@ -1,10 +1,11 @@
-import { Bodies, Composite, Query, Vertices } from 'matter-js'
+import Matter from 'matter-js'
 import type { Body, Engine } from 'matter-js'
 import { Graphics } from 'pixi.js'
 import type { Camera } from '~/entities/camera'
 import { dataManager } from '~/entity.js'
 import { cloneTransform } from '~/math/transform.js'
-import { Vector } from '~/math/vector.js'
+import { Vec } from '~/math/vector.js'
+import type { Vector } from '~/math/vector.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type { Debug } from '~/utils/debug.js'
@@ -42,7 +43,7 @@ export const createComplexSolid = createSpawnableEntity<
 
   isInBounds(position) {
     const { bodies } = dataManager.getData(this)
-    return Query.point(bodies, position).length > 0
+    return Matter.Query.point(bodies, position).length > 0
   },
 
   init({ game, physics }) {
@@ -50,8 +51,12 @@ export const createComplexSolid = createSpawnableEntity<
 
     const polygons = typeof poly === 'string' ? decodePolygons(poly) : poly
     const bodies = polygons.map(points => {
-      const { x, y } = Vector.add(transform.position, Vertices.centre(points))
-      return Bodies.fromVertices(x, y, [points], {
+      const { x, y } = Vec.add(
+        transform.position,
+        Matter.Vertices.centre(points),
+      )
+
+      return Matter.Bodies.fromVertices(x, y, [points], {
         label: 'complexSolid',
         render: { visible: false },
 
@@ -61,7 +66,7 @@ export const createComplexSolid = createSpawnableEntity<
       })
     })
 
-    Composite.add(physics.world, bodies)
+    Matter.Composite.add(physics.world, bodies)
     return { debug, physics, polygons, bodies }
   },
 
@@ -78,7 +83,7 @@ export const createComplexSolid = createSpawnableEntity<
   },
 
   teardown({ physics, bodies }) {
-    Composite.remove(physics.world, bodies)
+    Matter.Composite.remove(physics.world, bodies)
   },
 
   teardownRenderContext({ gfx }) {
@@ -87,7 +92,7 @@ export const createComplexSolid = createSpawnableEntity<
   },
 
   onRenderFrame(_, { debug }, { camera, gfx }) {
-    const pos = Vector.add(transform.position, camera.offset)
+    const pos = Vec.add(transform.position, camera.offset)
 
     gfx.position = pos
     gfx.alpha = debug.value ? 0.5 : 0

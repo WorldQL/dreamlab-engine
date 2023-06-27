@@ -1,7 +1,7 @@
 import { Graphics } from 'pixi.js'
 import { simpleBoundsTest } from '~/math/bounds.js'
 import { cloneTransform } from '~/math/transform.js'
-import { Vector } from '~/math/vector.js'
+import { Vec } from '~/math/vector.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import { drawBox } from '~/utils/draw.js'
 
@@ -49,7 +49,7 @@ export const createMarker = createSpawnableEntity(
     },
 
     onRenderFrame(_, { debug }, { camera, gfx }) {
-      const pos = Vector.add(transform.position, camera.offset)
+      const pos = Vec.add(transform.position, camera.offset)
 
       gfx.position = pos
       gfx.alpha = debug.value ? 0.5 : 0

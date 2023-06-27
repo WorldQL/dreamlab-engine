@@ -1,8 +1,8 @@
-import { Bodies, Composite, Query } from 'matter-js'
+import Matter from 'matter-js'
 import { Graphics } from 'pixi.js'
 import { toRadians } from '~/math/general.js'
 import { cloneTransform } from '~/math/transform.js'
-import { Vector } from '~/math/vector.js'
+import { Vec } from '~/math/vector.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import { createSprite } from '~/textures/sprites.js'
 import type { SpriteSource } from '~/textures/sprites.js'
@@ -17,15 +17,21 @@ export const createSolid = createSpawnableEntity(
     spriteSource?: SpriteSource,
   ) => {
     const { position, rotation } = transform
-    const body = Bodies.rectangle(position.x, position.y, width, height, {
-      label: 'solid',
-      render: { visible: false },
-      angle: toRadians(rotation),
+    const body = Matter.Bodies.rectangle(
+      position.x,
+      position.y,
+      width,
+      height,
+      {
+        label: 'solid',
+        render: { visible: false },
+        angle: toRadians(rotation),
 
-      isStatic: true,
-      isSensor: preview,
-      friction: 0,
-    })
+        isStatic: true,
+        isSensor: preview,
+        friction: 0,
+      },
+    )
 
     return {
       get transform() {
@@ -37,12 +43,12 @@ export const createSolid = createSpawnableEntity(
       },
 
       isInBounds(position) {
-        return Query.point([body], position).length > 0
+        return Matter.Query.point([body], position).length > 0
       },
 
       init({ game, physics }) {
         const debug = game.debug
-        Composite.add(physics.world, body)
+        Matter.Composite.add(physics.world, body)
 
         return { debug, physics, body }
       },
@@ -63,7 +69,7 @@ export const createSolid = createSpawnableEntity(
       },
 
       teardown({ physics, body }) {
-        Composite.remove(physics.world, body)
+        Matter.Composite.remove(physics.world, body)
       },
 
       teardownRenderContext({ gfx, sprite }) {
@@ -77,7 +83,7 @@ export const createSolid = createSpawnableEntity(
       },
 
       onRenderFrame(_, { debug }, { camera, gfx, sprite }) {
-        const pos = Vector.add(position, camera.offset)
+        const pos = Vec.add(position, camera.offset)
 
         gfx.position = pos
         gfx.angle = rotation

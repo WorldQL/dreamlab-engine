@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { Vector, VectorSchema } from '~/math/vector.js'
+import { Vec, VectorSchema } from '~/math/vector.js'
 import type { LooseVector } from '~/math/vector.js'
 
 export type Transform = z.infer<typeof TransformSchema>
@@ -9,7 +9,7 @@ export const TransformSchema = z.object({
 })
 
 export const cloneTransform = (transform: Transform): Transform => ({
-  position: Vector.clone(transform.position),
+  position: Vec.clone(transform.position),
   rotation: transform.rotation,
 })
 

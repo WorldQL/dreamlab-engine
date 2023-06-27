@@ -1,9 +1,9 @@
-import { Bodies, Body, Composite, Detector, Query } from 'matter-js'
-import type { Engine } from 'matter-js'
+import Matter from 'matter-js'
+import type { Body, Engine } from 'matter-js'
 import { Graphics } from 'pixi.js'
 import type { Sprite } from 'pixi.js'
 import type { Camera } from '~/entities/camera.js'
-import { Vector } from '~/math/vector.js'
+import { Vec } from '~/math/vector.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type {
   PartializeSpawnable,
@@ -52,7 +52,7 @@ export const createSimpleNPC = createSpawnableEntity<
     let collidingR = false
     let currentDirection: 'left' | 'right' = 'right'
 
-    const body = Bodies.rectangle(position.x, position.y, size, size, {
+    const body = Matter.Bodies.rectangle(position.x, position.y, size, size, {
       label: 'simpleNPC',
       render: { visible: false },
 
@@ -70,7 +70,7 @@ export const createSimpleNPC = createSpawnableEntity<
     })
 
     const getSensorL = () =>
-      Bodies.rectangle(
+      Matter.Bodies.rectangle(
         body.position.x - size / 2 + sensorSize / 2,
         body.position.y,
         sensorSize,
@@ -78,7 +78,7 @@ export const createSimpleNPC = createSpawnableEntity<
       )
 
     const getSensorR = () =>
-      Bodies.rectangle(
+      Matter.Bodies.rectangle(
         body.position.x + size / 2 - sensorSize / 2,
         body.position.y,
         sensorSize,
@@ -87,7 +87,7 @@ export const createSimpleNPC = createSpawnableEntity<
 
     const npc: PartializeSpawnable<SimpleNPC, Data, Render> = {
       get transform() {
-        return { position: Vector.clone(body.position), rotation: 0 }
+        return { position: Vec.clone(body.position), rotation: 0 }
       },
 
       get tags() {
@@ -95,11 +95,11 @@ export const createSimpleNPC = createSpawnableEntity<
       },
 
       isInBounds(position) {
-        return Query.point([body], position).length > 0
+        return Matter.Query.point([body], position).length > 0
       },
 
       init({ game, physics }) {
-        Composite.add(physics.world, body)
+        Matter.Composite.add(physics.world, body)
         return { debug: game.debug, physics, body }
       },
 
@@ -127,7 +127,7 @@ export const createSimpleNPC = createSpawnableEntity<
       },
 
       teardown({ physics, body }) {
-        Composite.remove(physics.world, body)
+        Matter.Composite.remove(physics.world, body)
       },
 
       teardownRenderContext({ gfxBounds, gfxSensorL, gfxSensorR, sprite }) {
@@ -149,12 +149,12 @@ export const createSimpleNPC = createSpawnableEntity<
           .filter(x => x !== body)
           .filter(x => !x.isSensor)
           .filter(x =>
-            Detector.canCollide(body.collisionFilter, x.collisionFilter),
+            Matter.Detector.canCollide(body.collisionFilter, x.collisionFilter),
           )
 
-        const queryL = Query.region(bodies, getSensorL().bounds)
+        const queryL = Matter.Query.region(bodies, getSensorL().bounds)
         collidingL = queryL.length > 0
-        const queryR = Query.region(bodies, getSensorR().bounds)
+        const queryR = Matter.Query.region(bodies, getSensorR().bounds)
         collidingR = queryR.length > 0
 
         if (collidingL) currentDirection = 'right'
@@ -167,7 +167,7 @@ export const createSimpleNPC = createSpawnableEntity<
         const forcePercent = Math.min(Math.abs(velocityVector) / 2, 1)
         const newForce = moveForce * forcePercent * direction
 
-        Body.applyForce(body, body.position, Vector.create(newForce, 0))
+        Matter.Body.applyForce(body, body.position, Vec.create(newForce, 0))
       },
 
       onRenderFrame(
@@ -175,15 +175,15 @@ export const createSimpleNPC = createSpawnableEntity<
         { debug },
         { camera, gfxBounds, gfxSensorL, gfxSensorR, sprite },
       ) {
-        const pos = Vector.add(body.position, camera.offset)
+        const pos = Vec.add(body.position, camera.offset)
         if (sprite) sprite.position = pos
 
         const sensorL = getSensorL()
         const sensorR = getSensorR()
 
         gfxBounds.position = pos
-        gfxSensorL.position = Vector.add(sensorL.position, camera.offset)
-        gfxSensorR.position = Vector.add(sensorR.position, camera.offset)
+        gfxSensorL.position = Vec.add(sensorL.position, camera.offset)
+        gfxSensorR.position = Vec.add(sensorR.position, camera.offset)
 
         const alpha = debug.value ? 0.5 : 0
         gfxBounds.alpha = alpha

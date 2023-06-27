@@ -1,12 +1,12 @@
-import type { Engine } from 'matter-js'
-import { Bodies, Body, Composite, Detector, Query } from 'matter-js'
+import Matter from 'matter-js'
+import type { Body, Engine } from 'matter-js'
 import { AnimatedSprite, Graphics } from 'pixi.js'
 import type { Camera } from '~/entities/camera.js'
 import type { Entity } from '~/entity.js'
 import { createEntity, dataManager } from '~/entity.js'
 import type { RequiredInputs } from '~/input/emitter.js'
-import { v, Vector } from '~/math/vector.js'
-import type { LooseVector } from '~/math/vector.js'
+import { v, Vec } from '~/math/vector.js'
+import type { LooseVector, Vector } from '~/math/vector.js'
 import type { AnimationMap } from '~/textures/animations'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
@@ -78,21 +78,21 @@ export const createPlayer = (
   const player: Player = createEntity({
     get position(): Vector {
       const { body } = dataManager.getData(this)
-      return Vector.clone(body.position)
+      return Vec.clone(body.position)
     },
 
     teleport(position: LooseVector, resetVelocity = true) {
       const { body } = dataManager.getData(this)
 
-      Body.setPosition(body, v(position))
-      if (resetVelocity) Body.setVelocity(body, { x: 0, y: 0 })
+      Matter.Body.setPosition(body, v(position))
+      if (resetVelocity) Matter.Body.setVelocity(body, { x: 0, y: 0 })
     },
 
     init({ game, physics }) {
       const debug = game.debug
 
       // TODO: Reimplement spawnpoints
-      const body = Bodies.rectangle(0, 0, width, height, {
+      const body = Matter.Bodies.rectangle(0, 0, width, height, {
         label: 'player',
         render: { visible: false },
 
@@ -107,7 +107,7 @@ export const createPlayer = (
         // },
       })
 
-      Composite.add(physics.world, body)
+      Matter.Composite.add(physics.world, body)
 
       return {
         debug,
@@ -143,7 +143,7 @@ export const createPlayer = (
     },
 
     teardown({ physics, body }) {
-      Composite.remove(physics.world, body)
+      Matter.Composite.remove(physics.world, body)
     },
 
     teardownRenderContext({ sprite, gfxBounds, gfxFeet }) {
@@ -169,20 +169,20 @@ export const createPlayer = (
 
       body.isStatic = noclip
       if (noclip) {
-        const movement = Vector.create()
+        const movement = Vec.create()
 
         if (left) movement.x -= 1
         if (right) movement.x += 1
         if (jump) movement.y -= 1
         if (crouch) movement.y += 1
 
-        const newPosition = Vector.add(
+        const newPosition = Vec.add(
           body.position,
-          Vector.mult(movement, noclipSpeed * delta * 50),
+          Vec.mult(movement, noclipSpeed * delta * 50),
         )
 
-        Body.setPosition(body, newPosition)
-        Body.setVelocity(body, Vector.create())
+        Matter.Body.setPosition(body, newPosition)
+        Matter.Body.setVelocity(body, Vec.create())
       } else {
         if (xor) {
           const targetVelocity = maxSpeed * direction.value
@@ -191,24 +191,24 @@ export const createPlayer = (
             const forcePercent = Math.min(Math.abs(velocityVector) / 2, 1)
             const newForce = moveForce * forcePercent * direction.value
 
-            Body.applyForce(body, body.position, Vector.create(newForce, 0))
+            Matter.Body.applyForce(body, body.position, Vec.create(newForce, 0))
           }
         }
 
         if (Math.sign(body.velocity.x) !== direction.value) {
-          Body.applyForce(
+          Matter.Body.applyForce(
             body,
             body.position,
-            Vector.create(-body.velocity.x / 20, 0),
+            Vec.create(-body.velocity.x / 20, 0),
           )
         }
 
         const minVelocity = 0.000_01
         if (Math.abs(body.velocity.x) <= minVelocity) {
-          Body.setVelocity(body, Vector.create(0, body.velocity.y))
+          Matter.Body.setVelocity(body, Vec.create(0, body.velocity.y))
         }
 
-        const feet = Bodies.rectangle(
+        const feet = Matter.Bodies.rectangle(
           body.position.x,
           body.position.y + height / 2 - feetSensor / 2,
           width - feetSensor,
@@ -219,16 +219,23 @@ export const createPlayer = (
           .filter(other => other !== body)
           .filter(other => !other.isSensor)
           .filter(other =>
-            Detector.canCollide(body.collisionFilter, other.collisionFilter),
+            Matter.Detector.canCollide(
+              body.collisionFilter,
+              other.collisionFilter,
+            ),
           )
 
-        const query = Query.region(bodies, feet.bounds)
+        const query = Matter.Query.region(bodies, feet.bounds)
         const isColliding = query.length > 0
         colliding.value = isColliding
 
         if (isColliding && jump && !hasJumped) {
           hasJumped = true
-          Body.applyForce(body, body.position, Vector.create(0, -1 * jumpForce))
+          Matter.Body.applyForce(
+            body,
+            body.position,
+            Vec.create(0, -1 * jumpForce),
+          )
         }
 
         if (!jump && isColliding) hasJumped = false
@@ -259,7 +266,7 @@ export const createPlayer = (
         sprite.gotoAndPlay(0)
       }
 
-      const pos = Vector.add(body.position, camera.offset)
+      const pos = Vec.add(body.position, camera.offset)
 
       sprite.position = pos
       gfxBounds.position = pos
@@ -269,9 +276,9 @@ export const createPlayer = (
       const active = '#0f0'
 
       gfxFeet.alpha = debug.value ? 0.5 : 0
-      gfxFeet.position = Vector.add(
+      gfxFeet.position = Vec.add(
         pos,
-        Vector.create(0, height / 2 - feetSensor / 2),
+        Vec.create(0, height / 2 - feetSensor / 2),
       )
 
       drawBox(

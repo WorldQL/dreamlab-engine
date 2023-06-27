@@ -3,8 +3,8 @@ import { createEntity } from '~/entity.js'
 import type { Entity } from '~/entity.js'
 import { lerp } from '~/math/general.js'
 import type { Transform } from '~/math/transform.js'
-import { distance, lerp2, v, Vector } from '~/math/vector.js'
-import type { LooseVector } from '~/math/vector.js'
+import { distance, lerp2, v, Vec } from '~/math/vector.js'
+import type { LooseVector, Vector } from '~/math/vector.js'
 import type { Debug, DebugText } from '~/utils/debug.js'
 import { createDebugText } from '~/utils/debug.js'
 
@@ -57,7 +57,7 @@ export const createCamera = (
   canvasHeight: number,
   target?: CameraTarget,
 ) => {
-  const position = Vector.create()
+  const position = Vec.create()
   let targetRef = target
 
   let scaleTarget = 1
@@ -109,7 +109,7 @@ export const createCamera = (
       const x = canvasWidth / this.scale / 2 - position.x
       const y = canvasHeight / this.scale / 2 - position.y
 
-      return Vector.create(x, y)
+      return Vec.create(x, y)
     },
 
     rescale({ scale: newScale, renderScale: newRenderScale }: RescaleOptions) {
@@ -121,10 +121,7 @@ export const createCamera = (
     },
 
     localToWorld(pos: Vector) {
-      return Vector.sub(
-        Vector.div(pos, this.renderScale * this.scale),
-        this.offset,
-      )
+      return Vec.sub(Vec.div(pos, this.renderScale * this.scale), this.offset)
     },
 
     async init({ game }) {
@@ -183,7 +180,7 @@ export const createCamera = (
 
       const targetPosition =
         targetRef === undefined
-          ? Vector.create()
+          ? Vec.create()
           : 'position' in targetRef
           ? targetRef.position
           : targetRef.transform.position

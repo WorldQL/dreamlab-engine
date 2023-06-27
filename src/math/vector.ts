@@ -1,13 +1,17 @@
 /* eslint-disable id-length */
-import { Vector } from 'matter-js'
+import Matter from 'matter-js'
+import type { Vector } from 'matter-js'
 import { z } from 'zod'
 import { truncateFloat } from '~/math/general.js'
+
+export const Vec = Matter.Vector
+export type { Vector } from 'matter-js'
 
 export const lerp2 = (a: Vector, b: Vector, t: number): Vector => {
   const x = a.x + (b.x - a.x) * t
   const y = a.y + (b.y - a.y) * t
 
-  return Vector.create(x, y)
+  return Vec.create(x, y)
 }
 
 export const distance = (a: Vector, b: Vector): number => {
@@ -21,17 +25,16 @@ export const snap = (vec: Vector, factor: number): Vector => {
   const x = Math.round(vec.x / factor) * factor
   const y = Math.round(vec.y / factor) * factor
 
-  return Vector.create(x, y)
+  return Vec.create(x, y)
 }
 
 export const truncateVector = (vector: Vector, places = 5): Vector => {
   const x = truncateFloat(vector.x, places)
   const y = truncateFloat(vector.y, places)
 
-  return Vector.create(x, y)
+  return Vec.create(x, y)
 }
 
-export { Vector } from 'matter-js'
 export const VectorSchema = z
   .object({
     x: z.number(),
@@ -40,7 +43,7 @@ export const VectorSchema = z
   .or(z.tuple([z.number(), z.number()]))
   .transform(coords => {
     const [x, y] = Array.isArray(coords) ? coords : [coords.x, coords.y]
-    return Vector.create(x, y)
+    return Vec.create(x, y)
   })
 
 export type LooseVector = Vector | [x: number, y: number]

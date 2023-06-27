@@ -1,6 +1,7 @@
-import { Vector } from 'matter-js'
 import { toRadians } from './general.js'
 import type { Transform } from './transform.js'
+import { Vec } from '~/math/vector.js'
+import type { Vector } from '~/math/vector.js'
 
 export const simpleBoundsTest = (
   width: number,
@@ -24,9 +25,9 @@ export const simpleBoundsTest = (
     (point.y - transform.position.y) * angle_cos +
     transform.position.y
 
-  const half = Vector.create(width / 2, height / 2)
-  const { x: minX, y: minY } = Vector.sub(transform.position, half)
-  const { x: maxX, y: maxY } = Vector.add(transform.position, half)
+  const half = Vec.create(width / 2, height / 2)
+  const { x: minX, y: minY } = Vec.sub(transform.position, half)
+  const { x: maxX, y: maxY } = Vec.add(transform.position, half)
 
   return x >= minX && x <= maxX && y >= minY && y <= maxY
 }

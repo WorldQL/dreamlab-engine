@@ -1,10 +1,11 @@
 import { Buffer } from 'buf'
-import { Vertices } from 'matter-js'
+import Matter from 'matter-js'
 import pako from 'pako'
 import { makeCCW, quickDecomp } from 'poly-decomp-es'
 import type { Polygon } from 'poly-decomp-es'
 import type { z } from 'zod'
-import { truncateVector, Vector, VectorSchema } from '~/math/vector.js'
+import { truncateVector, Vec, VectorSchema } from '~/math/vector.js'
+import type { Vector } from '~/math/vector.js'
 
 const isPolygonConvex = (vertices: Vector[]): boolean => {
   const len = vertices.length
@@ -52,8 +53,8 @@ export const calculatePolygons = (
   // ensure correct schema
   PointsSchema.parse(points)
 
-  const center = truncateVector(Vertices.centre(points))
-  const offsetPoints = points.map(point => Vector.sub(point, center))
+  const center = truncateVector(Matter.Vertices.centre(points))
+  const offsetPoints = points.map(point => Vec.sub(point, center))
 
   if (isPolygonConvex(offsetPoints)) {
     const truncated = offsetPoints.map(point => truncateVector(point, truncate))
@@ -65,7 +66,7 @@ export const calculatePolygons = (
 
   const decomposed = quickDecomp(tuplePoints)
   const polygons = decomposed.map(polygon =>
-    polygon.map(([x, y]) => truncateVector(Vector.create(x, y), truncate)),
+    polygon.map(([x, y]) => truncateVector(Vec.create(x, y), truncate)),
   )
 
   return [center, polygons]
@@ -146,7 +147,7 @@ export const decodePolygons = (data: string): Polygons => {
 
       offset += floatSize
 
-      points.push(Vector.create(x, y))
+      points.push(Vec.create(x, y))
     }
 
     polygons.push(points)

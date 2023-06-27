@@ -1,4 +1,5 @@
-import { Composite, Engine } from 'matter-js'
+import Matter from 'matter-js'
+import type { Engine } from 'matter-js'
 import { Application } from 'pixi.js'
 import type { IApplicationOptions } from 'pixi.js'
 import { createCamera } from '~/entities/camera.js'
@@ -208,7 +209,7 @@ export async function createGame<Headless extends boolean>(
   const debug = createDebug(options.debug ?? false)
   const { physicsTickrate = 60 } = options
 
-  const physics = Engine.create()
+  const physics = Matter.Engine.create()
   physics.gravity.scale *= 3
 
   const renderContext = await initRenderContext(options)
@@ -230,7 +231,7 @@ export async function createGame<Headless extends boolean>(
 
     while (physicsTickAcc >= physicsTickDelta) {
       physicsTickAcc -= physicsTickDelta
-      Engine.update(physics, physicsTickDelta)
+      Matter.Engine.update(physics, physicsTickDelta)
 
       for (const tickListener of tickListeners) {
         void tickListener(physicsTickDelta)
@@ -417,8 +418,8 @@ export async function createGame<Headless extends boolean>(
       const jobs = entities.map(async entity => this.destroy(entity))
       await Promise.all(jobs)
 
-      Composite.clear(physics.world, false, true)
-      Engine.clear(physics)
+      Matter.Composite.clear(physics.world, false, true)
+      Matter.Engine.clear(physics)
 
       if (renderContext) {
         const { app } = renderContext
