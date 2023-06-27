@@ -61,7 +61,8 @@
   },
   "sideEffects": false,
   "files": [
-    "dist"
+    "dist",
+    "schemas"
   ],
   "scripts": {
     "build": "tsup",
