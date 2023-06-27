@@ -1,0 +1,77 @@
+{
+  "type": "object",
+  "properties": {
+    "entityFn": {
+      "type": "string"
+    },
+    "args": {
+      "type": "array"
+    },
+    "transform": {
+      "type": "object",
+      "properties": {
+        "position": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "x": {
+                  "type": "number"
+                },
+                "y": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "x",
+                "y"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            }
+          ]
+        },
+        "rotation": {
+          "type": "number",
+          "default": 0
+        }
+      },
+      "required": [
+        "position"
+      ],
+      "additionalProperties": false
+    },
+    "uid": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*$"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "zIndex": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "entityFn",
+    "args",
+    "transform"
+  ],
+  "additionalProperties": false,
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}
