@@ -1,14 +1,21 @@
 import type { Except } from 'type-fest'
 import type { Data } from './shared.js'
 
-export type MessageListener = (channel: string, data: Data) => void
+export type MessageListenerClient = (channel: string, data: Data) => void
 export interface NetClient {
   type: 'client'
 
-  send(channel: string, data: Data): void
+  sendCustomMessage(channel: string, data: Data): void
 
-  addMessageListener(channel: string, listener: MessageListener): void
-  removeMessageListener(channel: string, listener: MessageListener): void
+  addCustomMessageListener(
+    channel: string,
+    listener: MessageListenerClient,
+  ): void
+
+  removeCustomMessageListener(
+    channel: string,
+    listener: MessageListenerClient,
+  ): void
 }
 
 export const createNetClient = (
