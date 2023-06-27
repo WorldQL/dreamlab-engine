@@ -1,36 +1,22 @@
-import type { Payload } from './shared.js'
+import type { Except } from 'type-fest'
+import type { Data } from './shared.js'
 
-export type MessageListener = (payload: Payload) => void
+export type MessageListener = (channel: string, data: Data) => void
 export interface NetClient {
   type: 'client'
 
-  send(payload: Payload): void
+  send(channel: string, data: Data): void
 
-  addMessageListener(listener: MessageListener): void
-  removeMessageListener(listener: MessageListener): void
+  addMessageListener(channel: string, listener: MessageListener): void
+  removeMessageListener(channel: string, listener: MessageListener): void
 }
 
-export const createNetClient = (ws: WebSocket): NetClient => {
-  const listeners = new Set<MessageListener>()
-  const onMessage = ({ data }: MessageEvent) => {
-    // TODO: Decode correctly
-
-    for (const fn of listeners) {
-      fn(data)
-    }
-  }
-
-  ws.addEventListener('message', onMessage)
+export const createNetClient = (
+  handler: Except<NetClient, 'type'>,
+): NetClient => {
   const net: NetClient = {
     type: 'client',
-
-    send: payload => {
-      // TODO: Encode correctly
-      ws.send(JSON.stringify(payload))
-    },
-
-    addMessageListener: fn => listeners.add(fn),
-    removeMessageListener: fn => listeners.delete(fn),
+    ...handler,
   }
 
   return Object.freeze(net)
