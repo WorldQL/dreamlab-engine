@@ -5,7 +5,8 @@ import { PLAYER_MASS } from './player.js'
 import type { PlayerCommon, PlayerOptions } from './player.js'
 import { createEntity, dataManager } from '~/entity.js'
 import type { Entity } from '~/entity.js'
-import { Vec } from '~/math/vector.js'
+import { v, Vec } from '~/math/vector.js'
+import type { LooseVector } from '~/math/vector.js'
 
 interface Data {
   physics: Engine
@@ -31,6 +32,13 @@ export const createNetPlayer = ({
     get position(): Vector {
       const { body } = dataManager.getData(this)
       return Vec.clone(body.position)
+    },
+
+    teleport(position: LooseVector, resetVelocity = true) {
+      const { body } = dataManager.getData(this)
+
+      Matter.Body.setPosition(body, v(position))
+      if (resetVelocity) Matter.Body.setVelocity(body, { x: 0, y: 0 })
     },
 
     get body(): Body {

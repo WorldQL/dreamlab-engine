@@ -34,11 +34,10 @@ interface Render {
 
 export interface PlayerCommon {
   get position(): Vector
-}
-
-interface Player extends PlayerCommon, Entity<Data, Render> {
   teleport(position: LooseVector, resetVelocity?: boolean): void
 }
+
+interface Player extends PlayerCommon, Entity<Data, Render> {}
 
 export interface PlayerOptions {
   width?: number
