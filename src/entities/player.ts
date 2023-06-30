@@ -13,6 +13,8 @@ import { drawBox } from '~/utils/draw.js'
 import { ref } from '~/utils/ref.js'
 import type { Ref } from '~/utils/ref.js'
 
+export const PLAYER_MASS = 50
+
 interface Data {
   debug: Debug
   physics: Engine
@@ -30,8 +32,11 @@ interface Render {
   gfxFeet: Graphics
 }
 
-interface Player extends Entity<Data, Render> {
+export interface PlayerCommon {
   get position(): Vector
+}
+
+interface Player extends PlayerCommon, Entity<Data, Render> {
   teleport(position: LooseVector, resetVelocity?: boolean): void
 }
 
@@ -51,7 +56,6 @@ export const createPlayer = (
   const spriteScale = 0.9
   const animationSpeed = 0.4
 
-  const mass = 50
   const moveForce = 0.5
   const maxSpeed = 1
   const jumpForce = 5
@@ -98,13 +102,9 @@ export const createPlayer = (
 
         inertia: Number.POSITIVE_INFINITY,
         inverseInertia: 0,
-        mass,
-        inverseMass: 1 / mass,
+        mass: PLAYER_MASS,
+        inverseMass: 1 / PLAYER_MASS,
         friction: 0,
-
-        // collisionFilter: {
-        //   category: playerLayer,
-        // },
       })
 
       Matter.Composite.add(physics.world, body)
