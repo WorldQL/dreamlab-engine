@@ -7,7 +7,9 @@ import { createEntity, dataManager } from '~/entity.js'
 import type { RequiredInputs } from '~/input/emitter.js'
 import { v, Vec } from '~/math/vector.js'
 import type { LooseVector, Vector } from '~/math/vector.js'
-import type { AnimationMap } from '~/textures/animations'
+import type { NetClient } from '~/network/client.js'
+import { onlyNetClient } from '~/network/shared.js'
+import type { AnimationMap } from '~/textures/animations.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
 import { ref } from '~/utils/ref.js'
@@ -18,6 +20,7 @@ export const PLAYER_MASS = 50
 interface Data {
   debug: Debug
   physics: Engine
+  network: NetClient | undefined
 
   body: Body
   direction: Ref<number>
@@ -93,6 +96,7 @@ export const createPlayer = (
 
     init({ game, physics }) {
       const debug = game.debug
+      const network = onlyNetClient(game.network)
 
       // TODO: Reimplement spawnpoints
       const body = Matter.Bodies.rectangle(0, 0, width, height, {
@@ -111,6 +115,7 @@ export const createPlayer = (
       return {
         debug,
         physics,
+        network,
         body,
         direction: ref(0),
         colliding: ref(false),
@@ -157,7 +162,7 @@ export const createPlayer = (
       gfxFeet.destroy()
     },
 
-    onPhysicsStep({ delta }, { physics, body, direction, colliding }) {
+    onPhysicsStep({ delta }, { physics, network, body, direction, colliding }) {
       const left = inputs.getInput('left')
       const right = inputs.getInput('right')
       const jump = inputs.getInput('jump')
@@ -239,6 +244,12 @@ export const createPlayer = (
 
         if (!jump && isColliding) hasJumped = false
       }
+
+      network?.sendPlayerPosition(
+        body.position,
+        body.velocity,
+        direction.value === -1,
+      )
     },
 
     onRenderFrame(
