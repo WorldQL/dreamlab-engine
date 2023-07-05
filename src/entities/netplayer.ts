@@ -16,6 +16,9 @@ interface Data {
 interface NetPlayer extends PlayerCommon, Entity<Data, unknown> {
   get id(): string
   get body(): Body
+
+  setPosition(vector: LooseVector): void
+  setVelocity(vector: LooseVector): void
 }
 
 export const createNetPlayer = ({
@@ -34,11 +37,14 @@ export const createNetPlayer = ({
       return Vec.clone(body.position)
     },
 
-    teleport(position: LooseVector, resetVelocity = true) {
+    setPosition(vector: LooseVector) {
       const { body } = dataManager.getData(this)
+      Matter.Body.setPosition(body, v(vector))
+    },
 
-      Matter.Body.setPosition(body, v(position))
-      if (resetVelocity) Matter.Body.setVelocity(body, { x: 0, y: 0 })
+    setVelocity(vector: LooseVector) {
+      const { body } = dataManager.getData(this)
+      Matter.Body.setVelocity(body, v(vector))
     },
 
     get body(): Body {
