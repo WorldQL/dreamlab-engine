@@ -3,7 +3,7 @@ import type { Body, Engine } from 'matter-js'
 import { AnimatedSprite, Graphics } from 'pixi.js'
 import type { Camera } from '~/entities/camera.js'
 import type { Entity } from '~/entity.js'
-import { createEntity, dataManager } from '~/entity.js'
+import { createEntity, dataManager, isEntity } from '~/entity.js'
 import type { RequiredInputs } from '~/input/emitter.js'
 import { v, Vec } from '~/math/vector.js'
 import type { LooseVector, Vector } from '~/math/vector.js'
@@ -35,11 +35,18 @@ interface Render {
   gfxFeet: Graphics
 }
 
+const symbol = Symbol('player')
+export const isPlayer = (player: unknown): player is Player => {
+  if (!isEntity(player)) return false
+  return symbol in player && player[symbol] === true
+}
+
 export interface PlayerCommon {
   get position(): Vector
 }
 
 interface Player extends PlayerCommon, Entity<Data, Render> {
+  get [symbol](): true
   teleport(position: LooseVector, resetVelocity?: boolean): void
 }
 
@@ -83,6 +90,10 @@ export const createPlayer = (
   }
 
   const player: Player = createEntity({
+    get [symbol]() {
+      return true as const
+    },
+
     get position(): Vector {
       const { body } = dataManager.getData(this)
       return Vec.clone(body.position)
