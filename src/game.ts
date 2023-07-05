@@ -269,6 +269,10 @@ export async function createGame<Headless extends boolean>(
     interval = setInterval(onTick, 1_000 / physicsTickrate / 2)
   }
 
+  const sortEntities = () => {
+    entities.sort((a, b) => (a.priority ?? 0) - (b.priority ?? 0))
+  }
+
   const game: Game<Headless> = {
     get debug() {
       return debug
@@ -311,6 +315,7 @@ export async function createGame<Headless extends boolean>(
       }
 
       entities.push(entity)
+      sortEntities()
     },
 
     async destroy(entity) {
@@ -323,6 +328,7 @@ export async function createGame<Headless extends boolean>(
 
       if (idx === -1) return
       entities.splice(idx, 1)
+      sortEntities()
 
       if (renderContext) {
         const render = dataManager.getRenderData(entity)

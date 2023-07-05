@@ -26,6 +26,7 @@ export interface RenderContext {
 export const symbol = Symbol('entity')
 export interface Entity<Data = unknown, Render = unknown> {
   get [symbol](): true
+  readonly priority?: number
 
   init(init: InitContext): Awaitable<Data>
   initRenderContext(init: InitContext, render: RenderContext): Awaitable<Render>
