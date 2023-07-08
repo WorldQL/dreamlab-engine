@@ -188,7 +188,7 @@ export const createCamera = (
       // TODO: Calculate camera speed based on S curve of the distance
       // (fast when close and when far, medium speed when at normal movement distances)
       const dist = Math.min(distance(position, targetPosition), 500)
-      const { x, y } = lerp2(position, targetPosition, delta * 8)
+      const { x, y } = lerp2(position, targetPosition, 1 - 0.5 ** (delta * 8))
 
       position.x = x
       position.y = y
