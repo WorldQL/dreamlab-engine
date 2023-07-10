@@ -1,5 +1,12 @@
+import type { PascalCase } from 'type-fest'
 import type { NetClient } from './client.js'
 import type { NetServer } from './server.js'
+
+export type Listeners<T extends {}> = {
+  [K in keyof T as `${'add' | 'remove'}${PascalCase<K & string>}Listener`]: (
+    ...args: T[K]
+  ) => void
+}
 
 export type Data = Record<string, unknown>
 

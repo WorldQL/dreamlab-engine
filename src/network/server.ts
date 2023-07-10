@@ -1,5 +1,5 @@
 import type { Except } from 'type-fest'
-import type { Data } from './shared.js'
+import type { Data, Listeners } from './shared.js'
 
 export type MessageListenerServer = (
   peer: string,
@@ -7,21 +7,15 @@ export type MessageListenerServer = (
   data: Data,
 ) => void
 
-export interface NetServer {
+interface NetServerListeners {
+  customMessage: [channel: string, listener: MessageListenerServer]
+}
+
+export interface NetServer extends Listeners<NetServerListeners> {
   type: 'server'
 
   sendCustomMessage(peer: string, channel: string, data: Data): void
   broadcastCustomMessage(channel: string, data: Data): void
-
-  addCustomMessageListener(
-    channel: string,
-    listener: MessageListenerServer,
-  ): void
-
-  removeCustomMessageListener(
-    channel: string,
-    listener: MessageListenerServer,
-  ): void
 }
 
 export const createNetServer = (
