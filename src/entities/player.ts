@@ -23,7 +23,8 @@ interface Data {
   network: NetClient | undefined
 
   body: Body
-  direction: Ref<number>
+  direction: Ref<-1 | 0 | 1>
+  facing: Ref<'left' | 'right'>
   colliding: Ref<boolean>
 }
 
@@ -130,6 +131,7 @@ export const createPlayer = (
         network,
         body,
         direction: ref(0),
+        facing: ref('left'),
         colliding: ref(false),
       }
     },
@@ -174,7 +176,10 @@ export const createPlayer = (
       gfxFeet.destroy()
     },
 
-    onPhysicsStep({ delta }, { physics, network, body, direction, colliding }) {
+    onPhysicsStep(
+      { delta },
+      { physics, network, body, direction, facing, colliding },
+    ) {
       const left = inputs.getInput('left')
       const right = inputs.getInput('right')
       const jump = inputs.getInput('jump')
@@ -182,6 +187,11 @@ export const createPlayer = (
 
       direction.value = left ? -1 : right ? 1 : 0
       const xor = left ? !right : right
+
+      if (direction.value !== 0) {
+        const _facing = direction.value === -1 ? 'left' : 'right'
+        facing.value = _facing
+      }
 
       body.isStatic = noclip
       if (noclip) {
@@ -260,7 +270,7 @@ export const createPlayer = (
       network?.sendPlayerPosition(
         body.position,
         body.velocity,
-        direction.value === -1,
+        facing.value !== 'left',
       )
     },
 
@@ -270,12 +280,14 @@ export const createPlayer = (
         debug,
         body,
         direction: { value: direction },
+        facing: { value: facing },
         colliding: { value: colliding },
       },
       { camera, sprite, gfxBounds, gfxFeet },
     ) {
-      const newScale = -direction * spriteScale
-      if (newScale !== 0 && sprite.scale.x !== newScale) {
+      const scale = facing === 'left' ? 1 : -1
+      const newScale = scale * spriteScale
+      if (sprite.scale.x !== newScale) {
         sprite.scale.x = newScale
       }
 
