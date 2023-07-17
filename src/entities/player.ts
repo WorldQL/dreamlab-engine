@@ -16,6 +16,9 @@ import { ref } from '~/utils/ref.js'
 import type { Ref } from '~/utils/ref.js'
 
 export const PLAYER_MASS = 50
+export const SPRITE_SCALE = 0.9
+export const ANIMATION_SPEED = 0.4
+export const SPRITE_ANCHOR = [0.45, 0.535] as const
 
 interface Data {
   debug: Debug
@@ -56,17 +59,14 @@ export interface PlayerOptions {
   height?: number
 }
 
-type Inputs = 'crouch' | 'jump' | 'left' | 'right' | 'toggle-noclip'
-type Animations = 'idle' | 'jump' | 'walk'
+type Input = 'crouch' | 'jump' | 'left' | 'right' | 'toggle-noclip'
+export type Animation = 'idle' | 'jump' | 'walk'
 
 export const createPlayer = (
-  inputs: RequiredInputs<Inputs>,
-  animations: AnimationMap<Animations>,
+  inputs: RequiredInputs<Input>,
+  animations: AnimationMap<Animation>,
   { width = 80, height = 370 }: PlayerOptions = {},
 ) => {
-  const spriteScale = 0.9
-  const animationSpeed = 0.4
-
   const moveForce = 0.5
   const maxSpeed = 1
   const jumpForce = 5
@@ -81,8 +81,8 @@ export const createPlayer = (
     if (pressed) noclip = !noclip
   }
 
-  let currentAnimation: Animations = 'idle'
-  const getAnimation = (direction: number): Animations => {
+  let currentAnimation: Animation = 'idle'
+  const getAnimation = (direction: number): Animation => {
     if (noclip) return 'idle'
     if (hasJumped) return 'jump'
     if (direction !== 0) return 'walk'
@@ -138,9 +138,9 @@ export const createPlayer = (
 
     initRenderContext(_, { stage, camera }) {
       const sprite = new AnimatedSprite(animations[currentAnimation])
-      sprite.animationSpeed = animationSpeed
-      sprite.scale.set(spriteScale)
-      sprite.anchor.set(0.45, 0.535)
+      sprite.animationSpeed = ANIMATION_SPEED
+      sprite.scale.set(SPRITE_SCALE)
+      sprite.anchor.set(...SPRITE_ANCHOR)
       sprite.play()
 
       const gfxBounds = new Graphics()
@@ -286,7 +286,7 @@ export const createPlayer = (
       { camera, sprite, gfxBounds, gfxFeet },
     ) {
       const scale = facing === 'left' ? 1 : -1
-      const newScale = scale * spriteScale
+      const newScale = scale * SPRITE_SCALE
       if (sprite.scale.x !== newScale) {
         sprite.scale.x = newScale
       }
