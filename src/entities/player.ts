@@ -279,6 +279,7 @@ export const createPlayer = (
       {
         debug,
         body,
+        network,
         direction: { value: direction },
         facing: { value: facing },
         colliding: { value: colliding },
@@ -298,6 +299,7 @@ export const createPlayer = (
         sprite.loop = newAnimation !== 'jump'
 
         sprite.gotoAndPlay(0)
+        network?.sendPlayerAnimation(newAnimation)
       }
 
       const pos = Vec.add(body.position, camera.offset)
