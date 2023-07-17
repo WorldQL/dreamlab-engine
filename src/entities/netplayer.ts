@@ -41,6 +41,7 @@ export interface NetPlayer extends PlayerCommon, Entity<Data, Render> {
 
   setPosition(vector: LooseVector): void
   setVelocity(vector: LooseVector): void
+  setFlipped(flipped: boolean): void
   setAnimation(animation: Animation): void
 }
 
@@ -50,6 +51,8 @@ export const createNetPlayer = (
   { width = 80, height = 370 }: PlayerOptions = {},
 ) => {
   const id = uid ?? createId()
+
+  let isFlipped = false
   let currentAnimation: Animation = 'idle'
   let animationChanged = false
 
@@ -71,6 +74,10 @@ export const createNetPlayer = (
     setVelocity(vector: LooseVector) {
       const { body } = dataManager.getData(this)
       Matter.Body.setVelocity(body, v(vector))
+    },
+
+    setFlipped(flipped) {
+      isFlipped = flipped
     },
 
     setAnimation(animation) {
@@ -141,6 +148,12 @@ export const createNetPlayer = (
     onRenderFrame(_, { debug, body }, { camera, sprite, gfxBounds }) {
       if (!animations) {
         throw new Error(`missing animations for netplayer: ${id}`)
+      }
+
+      const scale = isFlipped ? -1 : 1
+      const newScale = scale * SPRITE_SCALE
+      if (sprite.scale.x !== newScale) {
+        sprite.scale.x = newScale
       }
 
       if (animationChanged) {
