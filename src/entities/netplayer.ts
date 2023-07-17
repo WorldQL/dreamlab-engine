@@ -35,7 +35,7 @@ interface Render {
   gfxBounds: Graphics
 }
 
-interface NetPlayer extends PlayerCommon, Entity<Data, Render> {
+export interface NetPlayer extends PlayerCommon, Entity<Data, Render> {
   get id(): string
   get body(): Body
 
