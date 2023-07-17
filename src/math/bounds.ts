@@ -1,5 +1,5 @@
-import { toRadians } from './general.js'
-import type { Transform } from './transform.js'
+import { toRadians } from '~/math/general.js'
+import type { Transform } from '~/math/transform.js'
 import { Vec } from '~/math/vector.js'
 import type { Vector } from '~/math/vector.js'
 
