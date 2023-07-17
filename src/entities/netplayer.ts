@@ -45,10 +45,11 @@ export interface NetPlayer extends PlayerCommon, Entity<Data, Render> {
 }
 
 export const createNetPlayer = (
+  uid: string | undefined,
   animations: AnimationMap<Animation> | undefined,
   { width = 80, height = 370 }: PlayerOptions = {},
 ) => {
-  const id = createId()
+  const id = uid ?? createId()
   let currentAnimation: Animation = 'idle'
   let animationChanged = false
 
