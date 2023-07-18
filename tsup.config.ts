@@ -1,51 +1,25 @@
+import { readdir } from 'node:fs/promises'
+import { join } from 'node:path/posix'
 import { defineConfig } from 'tsup'
-import type { Options } from 'tsup'
 
-export function createTsupConfig({
-  entry = ['./src/index.ts'],
-  external = [],
-  noExternal = [],
-  platform = 'node',
-  format = 'esm',
-  target = 'es2021',
-  skipNodeModulesBundle = true,
-  clean = true,
-  shims = true,
-  splitting = false,
-  keepNames = true,
-  dts = true,
-  sourcemap = true,
-}: Options = {}) {
-  return defineConfig(options => ({
-    entry,
-    external,
-    noExternal,
-    platform,
-    format,
-    skipNodeModulesBundle,
-    target,
-    clean,
-    shims,
+export default defineConfig(async options => {
+  const entryDir = './src/exports'
+  const entry = await readdir(entryDir)
+
+  return {
+    entry: entry.map(path => join(entryDir, path)),
+
+    target: 'es2021',
+    format: 'esm',
+    platform: 'neutral',
+
+    clean: true,
     minify: !options.watch,
-    splitting,
-    keepNames,
-    dts,
-    sourcemap,
-  }))
-}
 
-export default createTsupConfig({
-  platform: 'neutral',
-  shims: false,
-  splitting: true,
+    dts: true,
+    sourcemap: true,
 
-  entry: [
-    './src/exports/index.ts',
-    './src/exports/entities.ts',
-    './src/exports/input.ts',
-    './src/exports/math.ts',
-    './src/exports/network.ts',
-    './src/exports/textures.ts',
-    './src/exports/utils.ts',
-  ],
+    keepNames: true,
+    skipNodeModulesBundle: true,
+  }
 })
