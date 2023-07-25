@@ -39,8 +39,9 @@ export interface Camera extends Entity<Data, Render> {
   setPosition(position: LooseVector): void
   clearTarget(): void
 
-  get scale(): number
+  get zoomScale(): number
   get renderScale(): number
+  get scale(): number
   get offset(): Vector
 
   rescale(scale: RescaleOptions): void
@@ -60,23 +61,23 @@ export const createCamera = (
   const position = Vec.create()
   let targetRef = target
 
-  let scaleTarget = 1
-  let scale = 1
+  let zoomScaleTarget = 1
+  let zoomScale = 1
 
   let renderScale = 1
   let renderScaleChanged = false
 
-  let scaleLevelIdx = 3
+  let zoomScaleLevelIdx = 3
   const onWheel = (ev: WheelEvent) => {
     ev.preventDefault()
 
     const delta = -Math.sign(ev.deltaY)
-    scaleLevelIdx = Math.max(
+    zoomScaleLevelIdx = Math.max(
       0,
-      Math.min(SCALE_LEVELS.length - 1, scaleLevelIdx + delta),
+      Math.min(SCALE_LEVELS.length - 1, zoomScaleLevelIdx + delta),
     )
 
-    scaleTarget = SCALE_LEVELS[scaleLevelIdx] as number
+    zoomScaleTarget = SCALE_LEVELS[zoomScaleLevelIdx] as number
   }
 
   const camera: Camera = createEntity({
@@ -97,23 +98,27 @@ export const createCamera = (
       targetRef = undefined
     },
 
-    get scale() {
-      return scale
+    get zoomScale() {
+      return zoomScale
     },
 
     get renderScale() {
       return renderScale
     },
 
+    get scale() {
+      return zoomScale * renderScale
+    },
+
     get offset(): Vector {
-      const x = canvasWidth / this.scale / 2 - position.x
-      const y = canvasHeight / this.scale / 2 - position.y
+      const x = canvasWidth / this.zoomScale / 2 - position.x
+      const y = canvasHeight / this.zoomScale / 2 - position.y
 
       return Vec.create(x, y)
     },
 
     rescale({ scale: newScale, renderScale: newRenderScale }: RescaleOptions) {
-      if (newScale) scaleTarget = newScale
+      if (newScale) zoomScaleTarget = newScale
       if (newRenderScale) {
         renderScale = newRenderScale
         renderScaleChanged = true
@@ -121,7 +126,7 @@ export const createCamera = (
     },
 
     localToWorld(pos: Vector) {
-      return Vec.sub(Vec.div(pos, this.renderScale * this.scale), this.offset)
+      return Vec.sub(Vec.div(pos, this.scale), this.offset)
     },
 
     async init({ game }) {
@@ -160,10 +165,10 @@ export const createCamera = (
 
     onRenderFrame({ delta }, { debug }, { stage, text }) {
       let scaleChanged = false
-      if (scale !== scaleTarget) {
-        scale = lerp(scale, scaleTarget, delta * 12)
-        const dist = Math.abs(1 - scale / scaleTarget)
-        if (dist < 0.001) scale = scaleTarget
+      if (zoomScale !== zoomScaleTarget) {
+        zoomScale = lerp(zoomScale, zoomScaleTarget, delta * 12)
+        const dist = Math.abs(1 - zoomScale / zoomScaleTarget)
+        if (dist < 0.001) zoomScale = zoomScaleTarget
 
         scaleChanged = true
       }
@@ -174,7 +179,7 @@ export const createCamera = (
       }
 
       if (scaleChanged) {
-        const finalScale = scale * renderScale
+        const finalScale = zoomScale * renderScale
         stage.scale.set(finalScale)
       }
 
