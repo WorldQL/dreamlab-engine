@@ -60,11 +60,11 @@ export interface PlayerOptions {
 }
 
 type Input = 'crouch' | 'jump' | 'left' | 'right' | 'toggle-noclip'
-export type Animation = 'idle' | 'jump' | 'walk'
+export type PlayerAnimation = 'idle' | 'jump' | 'walk'
 
 export const createPlayer = (
   inputs: RequiredInputs<Input>,
-  animations: AnimationMap<Animation>,
+  animations: AnimationMap<PlayerAnimation>,
   { width = 80, height = 370 }: PlayerOptions = {},
 ) => {
   const moveForce = 0.5
@@ -81,8 +81,8 @@ export const createPlayer = (
     if (pressed) noclip = !noclip
   }
 
-  let currentAnimation: Animation = 'idle'
-  const getAnimation = (direction: number): Animation => {
+  let currentAnimation: PlayerAnimation = 'idle'
+  const getAnimation = (direction: number): PlayerAnimation => {
     if (noclip) return 'idle'
     if (hasJumped) return 'jump'
     if (direction !== 0) return 'walk'

@@ -10,7 +10,7 @@ import {
   SPRITE_SCALE,
 } from '~/entities/player.js'
 import type {
-  Animation,
+  PlayerAnimation,
   PlayerCommon,
   PlayerOptions,
 } from '~/entities/player.js'
@@ -42,18 +42,18 @@ export interface NetPlayer extends PlayerCommon, Entity<Data, Render> {
   setPosition(vector: LooseVector): void
   setVelocity(vector: LooseVector): void
   setFlipped(flipped: boolean): void
-  setAnimation(animation: Animation): void
+  setAnimation(animation: PlayerAnimation): void
 }
 
 export const createNetPlayer = (
   uid: string | undefined,
-  animations: AnimationMap<Animation> | undefined,
+  animations: AnimationMap<PlayerAnimation> | undefined,
   { width = 80, height = 370 }: PlayerOptions = {},
 ) => {
   const id = uid ?? createId()
 
   let isFlipped = false
-  let currentAnimation: Animation = 'idle'
+  let currentAnimation: PlayerAnimation = 'idle'
   let animationChanged = false
 
   const netPlayer: NetPlayer = createEntity<NetPlayer, Data, Render>({
