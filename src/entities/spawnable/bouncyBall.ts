@@ -72,7 +72,7 @@ export const createBouncyBall = createSpawnableEntity(
       },
 
       teardown({ physics, body }) {
-        Matter.Composite.remove(physics.world, body)
+        physics.unregister(this, body)
       },
 
       teardownRenderContext({ gfx, sprite }) {
