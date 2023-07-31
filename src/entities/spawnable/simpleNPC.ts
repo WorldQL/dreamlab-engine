@@ -1,9 +1,10 @@
 import Matter from 'matter-js'
-import type { Body, Engine } from 'matter-js'
+import type { Body } from 'matter-js'
 import { Graphics } from 'pixi.js'
 import type { Sprite } from 'pixi.js'
 import type { Camera } from '~/entities/camera.js'
 import { Vec } from '~/math/vector.js'
+import type { Physics } from '~/physics.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type {
   PartializeSpawnable,
@@ -16,7 +17,7 @@ import { drawBox } from '~/utils/draw.js'
 
 interface Data {
   debug: Debug
-  physics: Engine
+  physics: Physics
 
   body: Body
 }
@@ -99,7 +100,7 @@ export const createSimpleNPC = createSpawnableEntity<
       },
 
       init({ game, physics }) {
-        Matter.Composite.add(physics.world, body)
+        physics.register(this, body)
         return { debug: game.debug, physics, body }
       },
 
@@ -127,7 +128,7 @@ export const createSimpleNPC = createSpawnableEntity<
       },
 
       teardown({ physics, body }) {
-        Matter.Composite.remove(physics.world, body)
+        physics.unregister(this, body)
       },
 
       teardownRenderContext({ gfxBounds, gfxSensorL, gfxSensorR, sprite }) {

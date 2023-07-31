@@ -1,11 +1,12 @@
 import Matter from 'matter-js'
-import type { Body, Engine } from 'matter-js'
+import type { Body } from 'matter-js'
 import { Graphics } from 'pixi.js'
-import type { Camera } from '~/entities/camera'
+import type { Camera } from '~/entities/camera.js'
 import { dataManager } from '~/entity.js'
 import { cloneTransform } from '~/math/transform.js'
 import { Vec } from '~/math/vector.js'
 import type { Vector } from '~/math/vector.js'
+import type { Physics } from '~/physics.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type { Debug } from '~/utils/debug.js'
@@ -14,7 +15,7 @@ import { decodePolygons } from '~/utils/polygons.js'
 
 interface Data {
   debug: Debug
-  physics: Engine
+  physics: Physics
 
   polygons: Vector[][]
   bodies: Body[]
@@ -66,7 +67,7 @@ export const createComplexSolid = createSpawnableEntity<
       })
     })
 
-    Matter.Composite.add(physics.world, bodies)
+    physics.register(this, ...bodies)
     return { debug, physics, polygons, bodies }
   },
 
@@ -83,7 +84,7 @@ export const createComplexSolid = createSpawnableEntity<
   },
 
   teardown({ physics, bodies }) {
-    Matter.Composite.remove(physics.world, bodies)
+    physics.unregister(this, ...bodies)
   },
 
   teardownRenderContext({ gfx }) {

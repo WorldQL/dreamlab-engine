@@ -19,3 +19,4 @@ export {
   type SpawnableEntity,
   type UID,
 } from '~/spawnable/spawnableEntity.js'
+export type { Physics } from '~/physics.js'

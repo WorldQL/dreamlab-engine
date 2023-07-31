@@ -48,7 +48,7 @@ export const createSolid = createSpawnableEntity(
 
       init({ game, physics }) {
         const debug = game.debug
-        Matter.Composite.add(physics.world, body)
+        physics.register(this, body)
 
         return { debug, physics, body }
       },
@@ -69,7 +69,7 @@ export const createSolid = createSpawnableEntity(
       },
 
       teardown({ physics, body }) {
-        Matter.Composite.remove(physics.world, body)
+        physics.unregister(this, body)
       },
 
       teardownRenderContext({ gfx, sprite }) {

@@ -1,5 +1,4 @@
 import Matter from 'matter-js'
-import type { Engine } from 'matter-js'
 import { Application } from 'pixi.js'
 import type { IApplicationOptions } from 'pixi.js'
 import { createCamera } from '~/entities/camera.js'
@@ -11,6 +10,8 @@ import { v } from '~/math/vector.js'
 import type { LooseVector } from '~/math/vector.js'
 import type { NetClient } from '~/network/client'
 import type { NetServer } from '~/network/server'
+import { createPhysics } from '~/physics.js'
+import type { Physics } from '~/physics.js'
 import { SpawnableDefinitionSchema } from '~/spawnable/definition.js'
 import type { LooseSpawnableDefinition } from '~/spawnable/definition.js'
 import { instantiate } from '~/spawnable/spawn.js'
@@ -101,7 +102,7 @@ type TickListener = (delta: number) => Promise<void> | void
 export interface Game<Headless extends boolean> {
   get debug(): Debug
   get render(): Headless extends false ? RenderContextExt : never
-  get physics(): Engine
+  get physics(): Physics
   get network(): Headless extends true ? NetServer : NetClient
 
   /**
@@ -209,8 +210,8 @@ export async function createGame<Headless extends boolean>(
   const debug = createDebug(options.debug ?? false)
   const { physicsTickrate = 60 } = options
 
-  const physics = Matter.Engine.create()
-  physics.gravity.scale *= 3
+  const physics = createPhysics()
+  physics.engine.gravity.scale *= 3
 
   const renderContext = await initRenderContext(options)
   const entities: Entity[] = []
@@ -231,7 +232,7 @@ export async function createGame<Headless extends boolean>(
 
     while (physicsTickAcc >= physicsTickDelta) {
       physicsTickAcc -= physicsTickDelta
-      Matter.Engine.update(physics, physicsTickDelta)
+      Matter.Engine.update(physics.engine, physicsTickDelta)
 
       for (const tickListener of tickListeners) {
         void tickListener(physicsTickDelta)
@@ -425,7 +426,7 @@ export async function createGame<Headless extends boolean>(
       await Promise.all(jobs)
 
       Matter.Composite.clear(physics.world, false, true)
-      Matter.Engine.clear(physics)
+      Matter.Engine.clear(physics.engine)
 
       if (renderContext) {
         const { app } = renderContext

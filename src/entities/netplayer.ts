@@ -1,6 +1,6 @@
 import { createId } from '@paralleldrive/cuid2'
 import Matter from 'matter-js'
-import type { Body, Engine, Vector } from 'matter-js'
+import type { Body, Vector } from 'matter-js'
 import { AnimatedSprite, Graphics } from 'pixi.js'
 import type { Camera } from '~/entities/camera.js'
 import {
@@ -18,13 +18,14 @@ import { createEntity, dataManager } from '~/entity.js'
 import type { Entity } from '~/entity.js'
 import { v, Vec } from '~/math/vector.js'
 import type { LooseVector } from '~/math/vector.js'
+import type { Physics } from '~/physics.js'
 import type { AnimationMap } from '~/textures/animations.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
 
 interface Data {
   debug: Debug
-  physics: Engine
+  physics: Physics
   body: Body
 }
 

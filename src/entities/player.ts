@@ -1,5 +1,5 @@
 import Matter from 'matter-js'
-import type { Body, Engine } from 'matter-js'
+import type { Body } from 'matter-js'
 import { AnimatedSprite, Graphics } from 'pixi.js'
 import type { Camera } from '~/entities/camera.js'
 import type { Entity } from '~/entity.js'
@@ -9,6 +9,7 @@ import { v, Vec } from '~/math/vector.js'
 import type { LooseVector, Vector } from '~/math/vector.js'
 import type { NetClient } from '~/network/client.js'
 import { onlyNetClient } from '~/network/shared.js'
+import type { Physics } from '~/physics.js'
 import type { AnimationMap } from '~/textures/animations.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
@@ -22,7 +23,7 @@ export const SPRITE_ANCHOR = [0.45, 0.535] as const
 
 interface Data {
   debug: Debug
-  physics: Engine
+  physics: Physics
   network: NetClient | undefined
 
   body: Body

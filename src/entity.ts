@@ -1,8 +1,8 @@
-import type { Engine } from 'matter-js'
 import type { Container } from 'pixi.js'
 import type { Promisable as Awaitable, Except } from 'type-fest'
 import type { Camera } from '~/entities/camera.js'
 import type { Game } from '~/game.js'
+import type { Physics } from '~/physics.js'
 import { mergeObjects } from '~/utils/types.js'
 
 export interface Time {
@@ -12,7 +12,7 @@ export interface Time {
 
 export interface InitContext {
   game: Game<boolean>
-  physics: Engine
+  physics: Physics
 }
 
 export interface RenderContext {
