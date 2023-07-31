@@ -47,7 +47,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/WorldQL/dreamlab-core.git"
+    "url": "git+https://github.com/WorldQL/dreamlab-core.git"
   },
   "devDependencies": {
     "@luludev/eslint-config": "^0.4.2",
