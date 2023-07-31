@@ -39,7 +39,7 @@ interface Render {
   gfxFeet: Graphics
 }
 
-const symbol = Symbol.for('@dreamlab/core/entities/player')
+const symbol = Symbol('player')
 export const isPlayer = (player: unknown): player is Player => {
   if (!isEntity(player)) return false
   return symbol in player && player[symbol] === true
