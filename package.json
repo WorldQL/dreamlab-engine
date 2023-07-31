@@ -53,7 +53,7 @@
     "@luludev/eslint-config": "^0.4.2",
     "@types/matter-js": "^0.18.5",
     "@types/pako": "^2.0.0",
-    "eslint": "^8.45.0",
+    "eslint": "^8.46.0",
     "husky": "^8.0.3",
     "prettier": "^3.0.0",
     "tsup": "^7.1.0",
@@ -68,7 +68,7 @@
     "pako": "^2.1.0",
     "pixi.js": "^7.2.4",
     "poly-decomp-es": "^0.4.1",
-    "type-fest": "^4.0.0",
+    "type-fest": "^4.1.0",
     "zod": "^3.21.4"
   }
 }
