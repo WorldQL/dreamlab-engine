@@ -15,6 +15,12 @@
     "./package.json": {
       "import": "./package.json"
     },
+    "./modules.json": {
+      "import": "./dist/modules.json"
+    },
+    "./dist/modules.json": {
+      "import": "./dist/modules.json"
+    },
     "./dist/*": {
       "import": {
         "types": "./dist/*.d.ts",
