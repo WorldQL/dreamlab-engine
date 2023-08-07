@@ -3,6 +3,7 @@ import Matter from 'matter-js'
 import { Application } from 'pixi.js'
 import type { IApplicationOptions } from 'pixi.js'
 import { createCamera } from '~/entities/camera.js'
+import { registerDefaultSpawnables } from '~/entities/spawnable/index.js'
 import { dataManager, isEntity } from '~/entity.js'
 import type { Entity, InitContext, RenderContext } from '~/entity.js'
 import { LevelSchema } from '~/level.js'
@@ -490,6 +491,7 @@ export async function createGame<Headless extends boolean>(
     },
   }
 
+  registerDefaultSpawnables(game)
   if (renderContext) await game.instantiate(renderContext.camera)
 
   return game
