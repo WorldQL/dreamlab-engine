@@ -33,7 +33,7 @@ export const createComplexSolid = createSpawnableEntity<
   SpawnableEntity<Data, Render>,
   Data,
   Render
->('createComplexSolid', ({ transform, zIndex, tags, preview }, poly) => ({
+>(({ transform, zIndex, tags, preview }, poly) => ({
   get transform() {
     return cloneTransform(transform)
   },

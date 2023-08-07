@@ -8,7 +8,6 @@ import type { SpriteSource } from '~/textures/sprites.js'
 import { drawBox } from '~/utils/draw.js'
 
 export const createNonsolid = createSpawnableEntity(
-  'createNonsolid',
   (
     { transform, zIndex, tags },
     width: number,

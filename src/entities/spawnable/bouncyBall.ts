@@ -8,7 +8,6 @@ import type { SpriteSource } from '~/textures/sprites.js'
 import { drawCircle } from '~/utils/draw.js'
 
 export const createBouncyBall = createSpawnableEntity(
-  'createBouncyBall',
   (
     { transform, zIndex, tags, preview },
     radius: number,

@@ -9,7 +9,6 @@ const width = 30
 const height = 30
 
 export const createMarker = createSpawnableEntity(
-  'createMarker',
   ({ transform, zIndex, tags }) => ({
     get transform() {
       return cloneTransform(transform)

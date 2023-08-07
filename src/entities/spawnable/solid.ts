@@ -9,7 +9,6 @@ import type { SpriteSource } from '~/textures/sprites.js'
 import { drawBox } from '~/utils/draw.js'
 
 export const createSolid = createSpawnableEntity(
-  'createSolid',
   (
     { transform, zIndex, tags, preview },
     width: number,
