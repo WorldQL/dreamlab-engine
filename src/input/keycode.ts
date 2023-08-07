@@ -60,3 +60,9 @@ const SpecialSchema = z.enum(special)
 
 export type KeyCode = z.infer<typeof KeyCodeSchema>
 export const KeyCodeSchema = LetterSchema.or(DigitSchema).or(SpecialSchema)
+
+export const keyCodes = Object.freeze([
+  ...letters,
+  ...digits,
+  ...special,
+] as const)

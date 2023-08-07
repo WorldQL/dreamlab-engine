@@ -1,5 +1,6 @@
 import EventEmitter from 'eventemitter3'
-import { KeyCodeSchema } from './keycode.js'
+import type { LiteralUnion } from 'type-fest'
+import { keyCodes, KeyCodeSchema } from './keycode.js'
 import type { KeyCode } from './keycode.js'
 
 class CountMap<K> {
@@ -31,20 +32,27 @@ class CountMap<K> {
 }
 
 type Unregister = (this: unknown) => void
-type Events = Record<KeyCode, [pressed: boolean]>
+type KeyEvents = Record<LiteralUnion<KeyCode, string>, [pressed: boolean]>
 
 function onKey(this: InputManager, ev: KeyboardEvent, pressed: boolean): void {
   const result = KeyCodeSchema.safeParse(ev.code)
   if (!result.success) return
 
-  ev.preventDefault()
+  // ev.preventDefault()
   this.setKey(result.data, pressed)
 }
 
-export class InputManager extends EventEmitter<Events> {
-  private readonly keys = new CountMap<KeyCode>()
+export class InputManager extends EventEmitter<KeyEvents> {
+  private readonly keys = new Set<KeyCode>()
   private readonly held = new Set<KeyCode>()
-  // private readonly bindings = new Map<KeyCode, string>()
+
+  private readonly inputs = new Map<string, KeyCode>()
+  private readonly bindings = new Map<KeyCode, string>()
+
+  private readonly inputMap = new Map<string, Set<KeyCode>>()
+  private readonly reverseInputMap = new Map<KeyCode, string>()
+
+  private readonly inputCount = new CountMap<string>()
 
   public constructor() {
     super()
@@ -67,34 +75,69 @@ export class InputManager extends EventEmitter<Events> {
     return unregister
   }
 
-  // TODO: Allow binding keys to aliases and support remapping
-  // public registerInput(name: string, defaultKey: KeyCode): void {
-  //   this.bindings.set(defaultKey, name)
-  // }
-
-  // public getInputKeys(name: string): KeyCode[] {
-  //   // TODO: Maybe optimise this
-  //   return [...this.bindings.entries()]
-  //     .filter(([_, input]) => input === name)
-  //     .map(([key]) => key)
-  // }
-
-  // public getInput(input: string): boolean | undefined {
-  //   const keys =
-  // }
-
+  // #region Key Access
   public getKey(key: KeyCode): boolean {
     return this.keys.has(key)
   }
 
   public setKey(key: KeyCode, pressed: boolean): void {
-    if (pressed) this.keys.increment(key)
-    else this.keys.decrement(key)
+    if (pressed) this.keys.add(key)
+    else this.keys.delete(key)
 
-    this.fireEvent(key)
+    this.fireEvents(key)
+  }
+  // #endregion
+
+  // #region Input Mapping
+  private updateInputs(): void {
+    this.inputMap.clear()
+    this.reverseInputMap.clear()
+
+    const defaultKeyBindings = new Map<KeyCode, string>()
+    for (const [input, defaultKey] of this.inputs.entries()) {
+      defaultKeyBindings.set(defaultKey, input)
+    }
+
+    for (const key of keyCodes) {
+      const input = this.bindings.get(key) ?? defaultKeyBindings.get(key)
+      if (!input) continue
+
+      const set = this.inputMap.get(input) ?? new Set()
+      set.add(key)
+
+      this.inputMap.set(input, set)
+      this.reverseInputMap.set(key, input)
+    }
   }
 
-  private fireEvent(key: KeyCode): void {
+  public registerInput(name: string, defaultKey: KeyCode): void {
+    // @ts-expect-error String Union
+    if (keyCodes.includes(name)) {
+      throw new Error('input name cannot be a key code')
+    }
+
+    this.inputs.set(name, defaultKey)
+    this.updateInputs()
+  }
+
+  public bindInput(key: KeyCode, input: string | undefined): void {
+    if (input) this.bindings.set(key, input)
+    else this.bindings.delete(key)
+
+    this.updateInputs()
+  }
+  // #endregion
+
+  // #region Input Access
+  public getInput(input: string): boolean | undefined {
+    const keys = this.inputMap.get(input)
+    if (!keys || keys.size === 0) return undefined
+
+    return [...keys].some(key => this.getKey(key))
+  }
+  // #endregion
+
+  private fireEvents(key: KeyCode): void {
     // Check for being held
     const wasPressed = this.held.has(key)
     const isPressed = this.getKey(key)
@@ -105,5 +148,19 @@ export class InputManager extends EventEmitter<Events> {
     else this.held.delete(key)
 
     this.emit(key, isPressed)
+
+    // Check if this key is mapped to an input
+    const input = this.reverseInputMap.get(key)
+    if (!input) return
+
+    // Update internal state
+    const prevCount = this.inputCount.count(input)
+    if (isPressed) this.inputCount.increment(input)
+    else this.inputCount.decrement(input)
+
+    // Emit if needed
+    const count = this.inputCount.count(input)
+    if (prevCount === 0 && count === 1) this.emit(input, true)
+    else if (count === 0) this.emit(input, false)
   }
 }
