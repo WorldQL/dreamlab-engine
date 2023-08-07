@@ -6,6 +6,7 @@ import { createCamera } from '~/entities/camera.js'
 import { registerDefaultSpawnables } from '~/entities/spawnable/index.js'
 import { dataManager, isEntity } from '~/entity.js'
 import type { Entity, InitContext, RenderContext } from '~/entity.js'
+import { InputManager } from '~/input/manager.js'
 import { LevelSchema } from '~/level.js'
 import type { Level } from '~/level.js'
 import { v } from '~/math/vector.js'
@@ -110,6 +111,7 @@ type TickListener = (delta: number) => Promise<void> | void
 
 export interface Game<Headless extends boolean> {
   get debug(): Debug
+  get inputs(): Headless extends false ? InputManager : undefined
   get render(): Headless extends false ? RenderContextExt : never
   get physics(): Physics
   get network(): Headless extends true ? NetServer : NetClient
@@ -242,6 +244,9 @@ export async function createGame<Headless extends boolean>(
   const entities: Entity[] = []
   const spawnables = new Map<string, SpawnableEntity>()
 
+  const inputs = new InputManager()
+  const unregister = renderContext ? inputs.registerListeners() : undefined
+
   const spawnableFunctions = new Map<string, BareSpawnableFunction>()
   const tickListeners: Set<TickListener> = new Set()
 
@@ -303,6 +308,15 @@ export async function createGame<Headless extends boolean>(
   const game: Game<Headless> = {
     get debug() {
       return debug
+    },
+
+    get inputs() {
+      type R = Headless extends false ? InputManager : undefined
+      if (options.headless === true || renderContext === undefined) {
+        return undefined as R
+      }
+
+      return inputs as R
     },
 
     get render() {
@@ -474,6 +488,8 @@ export async function createGame<Headless extends boolean>(
     },
 
     async shutdown() {
+      unregister?.()
+
       const jobs = entities.map(async entity => this.destroy(entity))
       await Promise.all(jobs)
 

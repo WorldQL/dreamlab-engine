@@ -44,7 +44,7 @@ const digits = [
 ] as const
 const DigitSchema = z.enum(digits)
 
-const SpecialSchema = z.enum([
+const special = [
   'ArrowDown',
   'ArrowLeft',
   'ArrowRight',
@@ -55,7 +55,8 @@ const SpecialSchema = z.enum([
   'ShiftRight',
   'Space',
   'Tab',
-])
+] as const
+const SpecialSchema = z.enum(special)
 
 export type KeyCode = z.infer<typeof KeyCodeSchema>
 export const KeyCodeSchema = LetterSchema.or(DigitSchema).or(SpecialSchema)

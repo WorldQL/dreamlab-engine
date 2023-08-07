@@ -4,7 +4,7 @@ import { AnimatedSprite, Graphics } from 'pixi.js'
 import type { Camera } from '~/entities/camera.js'
 import type { Entity } from '~/entity.js'
 import { createEntity, dataManager, isEntity } from '~/entity.js'
-import type { RequiredInputs } from '~/input/emitter.js'
+import type { InputManager } from '~/input/manager.js'
 import { v, Vec } from '~/math/vector.js'
 import type { LooseVector, Vector } from '~/math/vector.js'
 import type { NetClient } from '~/network/client.js'
@@ -23,6 +23,7 @@ export const SPRITE_ANCHOR = [0.45, 0.535] as const
 
 interface Data {
   debug: Debug
+  inputs: InputManager | undefined
   physics: Physics
   network: NetClient | undefined
 
@@ -60,11 +61,9 @@ export interface PlayerOptions {
   height?: number
 }
 
-type Input = 'crouch' | 'jump' | 'left' | 'right' | 'toggle-noclip'
 export type PlayerAnimation = 'idle' | 'jump' | 'walk'
 
 export const createPlayer = (
-  inputs: RequiredInputs<Input>,
   animations: AnimationMap<PlayerAnimation>,
   { width = 80, height = 370 }: PlayerOptions = {},
 ) => {
@@ -110,6 +109,7 @@ export const createPlayer = (
 
     init({ game, physics }) {
       const debug = game.debug
+      const inputs = game.inputs
       const network = onlyNetClient(game.network)
 
       // TODO: Reimplement spawnpoints
@@ -125,9 +125,11 @@ export const createPlayer = (
       })
 
       Matter.Composite.add(physics.world, body)
+      inputs?.addListener('KeyV', onToggleNoclip) // TODO: Remap
 
       return {
         debug,
+        inputs,
         physics,
         network,
         body,
@@ -151,7 +153,6 @@ export const createPlayer = (
       gfxBounds.zIndex = sprite.zIndex + 1
       gfxFeet.zIndex = sprite.zIndex + 2
 
-      inputs.addListener('toggle-noclip', onToggleNoclip)
       drawBox(gfxBounds, { width, height }, { stroke: '#00f' })
 
       stage.addChild(sprite)
@@ -161,13 +162,12 @@ export const createPlayer = (
       return { camera, sprite, gfxBounds, gfxFeet }
     },
 
-    teardown({ physics, body }) {
+    teardown({ inputs, physics, body }) {
+      inputs?.removeListener('KeyV', onToggleNoclip) // TODO: Remap
       Matter.Composite.remove(physics.world, body)
     },
 
     teardownRenderContext({ sprite, gfxBounds, gfxFeet }) {
-      inputs.removeListener('toggle-noclip', onToggleNoclip)
-
       sprite.removeFromParent()
       gfxBounds.removeFromParent()
       gfxFeet.removeFromParent()
@@ -179,12 +179,13 @@ export const createPlayer = (
 
     onPhysicsStep(
       { delta },
-      { physics, network, body, direction, facing, colliding },
+      { inputs, physics, network, body, direction, facing, colliding },
     ) {
-      const left = inputs.getInput('left')
-      const right = inputs.getInput('right')
-      const jump = inputs.getInput('jump')
-      const crouch = inputs.getInput('crouch')
+      // TODO: Remap
+      const left = inputs?.getKey('KeyA') ?? false
+      const right = inputs?.getKey('KeyD') ?? false
+      const jump = inputs?.getKey('KeyW') ?? false
+      const crouch = inputs?.getKey('KeyS') ?? false
 
       direction.value = left ? -1 : right ? 1 : 0
       const xor = left ? !right : right
