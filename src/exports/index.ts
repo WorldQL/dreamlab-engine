@@ -2,6 +2,7 @@ export { createGame, type Game } from '~/game.js'
 export { LevelSchema, type Level } from '~/level.js'
 export {
   createEntity,
+  dataManager,
   isEntity,
   type Entity,
   type InitContext,
