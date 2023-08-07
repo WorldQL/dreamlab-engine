@@ -23,7 +23,7 @@ export interface RenderContext {
   camera: Camera
 }
 
-export const symbol = Symbol('entity')
+export const symbol = Symbol.for('@dreamlab/core/entity')
 export interface Entity<Data = unknown, Render = unknown> {
   get [symbol](): true
   readonly priority?: number
@@ -65,8 +65,8 @@ export const isEntity = (entity: unknown): entity is Entity => {
 }
 
 const symbols = {
-  data: Symbol('data'),
-  render: Symbol('render data'),
+  data: Symbol.for('@dreamlab/core/entity/data'),
+  render: Symbol.for('@dreamlab/core/entity/render-data'),
 } as const
 
 export const dataManager = {

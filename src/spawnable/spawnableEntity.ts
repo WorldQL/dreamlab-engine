@@ -10,7 +10,7 @@ import type {
 import { mergeObjects } from '~/utils/types.js'
 
 export type UID = string
-const symbol = Symbol('spawnable entity')
+const symbol = Symbol.for('@dreamlab/core/spawnable-entity')
 
 export interface SpawnableEntity<Data = unknown, Render = unknown>
   extends Entity<Data, Render> {
