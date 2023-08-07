@@ -7,7 +7,6 @@ import type {
   SpawnableContext,
   SpawnableDefinition,
 } from '~/spawnable/definition.js'
-import { registerSpawnableFn } from '~/spawnable/spawn.js'
 import { mergeObjects } from '~/utils/types.js'
 
 export type UID = string
@@ -46,13 +45,19 @@ export type SpawnableFunction<
   Render,
 > = (ctx: SpawnableContext, ...args: Args) => E
 
+export type BareSpawnableFunction = SpawnableFunction<
+  unknown[],
+  SpawnableEntity,
+  unknown,
+  unknown
+>
+
 export const createSpawnableEntity = <
   Args extends unknown[],
   E extends SpawnableEntity<Data, Render>,
   Data,
   Render,
 >(
-  name: string,
   fn: (
     ctx: SpawnableContext,
     ...args: Args
@@ -85,7 +90,6 @@ export const createSpawnableEntity = <
     return mergeObjects(partial, getter) as E
   }
 
-  registerSpawnableFn(name, spawnFn)
   return spawnFn
 }
 

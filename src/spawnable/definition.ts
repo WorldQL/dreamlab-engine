@@ -2,13 +2,7 @@ import type { Except } from 'type-fest'
 import { z } from 'zod'
 import { TransformSchema } from '~/math/transform.js'
 import type { LooseTransform, Transform } from '~/math/transform.js'
-import { lookupSpawnableFn } from '~/spawnable/spawn.js'
 import type { SpawnableFunction, UID } from '~/spawnable/spawnableEntity.js'
-
-const EntityFunctionSchema = z.string().refine(
-  name => lookupSpawnableFn(name) !== undefined,
-  name => ({ message: `unknown entityFn: ${name}` }),
-)
 
 export interface SpawnableDefinition<
   Name extends string = string,
@@ -35,7 +29,7 @@ export interface LooseSpawnableDefinition<
 }
 
 export const SpawnableDefinitionSchemaInternal = z.object({
-  entityFn: EntityFunctionSchema,
+  entityFn: z.string(),
   args: z.any().array(),
   transform: TransformSchema,
   uid: z.string().cuid2().optional(),

@@ -1,3 +1,4 @@
+import cuid2 from '@paralleldrive/cuid2'
 import Matter from 'matter-js'
 import { Application } from 'pixi.js'
 import type { IApplicationOptions } from 'pixi.js'
@@ -13,10 +14,17 @@ import type { NetServer } from '~/network/server'
 import { createPhysics } from '~/physics.js'
 import type { Physics } from '~/physics.js'
 import { SpawnableDefinitionSchema } from '~/spawnable/definition.js'
-import type { LooseSpawnableDefinition } from '~/spawnable/definition.js'
-import { instantiate } from '~/spawnable/spawn.js'
+import type {
+  LooseSpawnableDefinition,
+  SpawnableContext,
+} from '~/spawnable/definition.js'
 import { isSpawnableEntity } from '~/spawnable/spawnableEntity.js'
-import type { SpawnableEntity, UID } from '~/spawnable/spawnableEntity.js'
+import type {
+  BareSpawnableFunction,
+  SpawnableEntity,
+  SpawnableFunction,
+  UID,
+} from '~/spawnable/spawnableEntity.js'
 import type { Debug } from '~/utils/debug.js'
 import { createDebug } from '~/utils/debug.js'
 
@@ -104,6 +112,22 @@ export interface Game<Headless extends boolean> {
   get render(): Headless extends false ? RenderContextExt : never
   get physics(): Physics
   get network(): Headless extends true ? NetServer : NetClient
+
+  /**
+   * Register a spawnable function with this game instance
+   *
+   * @param name - Entity function name
+   * @param spawnableFn - Spawnable Function
+   */
+  register<
+    Args extends unknown[],
+    E extends SpawnableEntity<Data, Render>,
+    Data,
+    Render,
+  >(
+    name: string,
+    spawnableFn: SpawnableFunction<Args, E, Data, Render>,
+  ): void
 
   /**
    * Instantiate an entity
@@ -217,6 +241,7 @@ export async function createGame<Headless extends boolean>(
   const entities: Entity[] = []
   const spawnables = new Map<string, SpawnableEntity>()
 
+  const spawnableFunctions = new Map<string, BareSpawnableFunction>()
   const tickListeners: Set<TickListener> = new Set()
 
   const physicsTickDelta = 1_000 / physicsTickrate
@@ -295,6 +320,17 @@ export async function createGame<Headless extends boolean>(
       return options.network
     },
 
+    register(name, spawnableFn) {
+      if (spawnableFunctions.has(name)) {
+        throw new Error(`duplicate spawnable function: ${name}`)
+      }
+
+      spawnableFunctions.set(
+        name,
+        spawnableFn as unknown as BareSpawnableFunction,
+      )
+    },
+
     async instantiate(entity) {
       if (!isEntity(entity)) {
         throw new Error('not an entity')
@@ -350,11 +386,26 @@ export async function createGame<Headless extends boolean>(
         .map(entity => entity.uid)
     },
 
-    async spawn(loose, preview) {
+    async spawn(loose, preview = false) {
       const definition = SpawnableDefinitionSchema.parse(loose)
-      const entity = instantiate(definition, preview)
-      if (entity === undefined) return undefined
+      const fn = spawnableFunctions.get(definition.entityFn)
 
+      if (fn === undefined) {
+        console.warn(`unknown spawnable function: ${definition.entityFn}`)
+        return undefined
+      }
+
+      const context: SpawnableContext = {
+        uid: definition.uid ?? cuid2.createId(),
+        transform: definition.transform,
+        tags: definition.tags ?? [],
+        zIndex: definition.zIndex ?? 0,
+
+        preview,
+        definition,
+      }
+
+      const entity = fn(context, ...definition.args)
       await this.instantiate(entity)
       spawnables.set(entity.uid, entity)
 
