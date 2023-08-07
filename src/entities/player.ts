@@ -62,6 +62,13 @@ export interface PlayerOptions {
 }
 
 export type PlayerAnimation = 'idle' | 'jump' | 'walk'
+export enum PlayerInput {
+  Crouch = '@player/crouch',
+  Jump = '@player/jump',
+  ToggleNoclip = '@player/toggle-noclip',
+  WalkLeft = '@player/walk-left',
+  WalkRight = '@player/walk-right',
+}
 
 export const createPlayer = (
   animations: AnimationMap<PlayerAnimation>,
@@ -125,7 +132,16 @@ export const createPlayer = (
       })
 
       Matter.Composite.add(physics.world, body)
-      inputs?.addListener('KeyV', onToggleNoclip) // TODO: Remap
+
+      if (inputs) {
+        inputs.registerInput(PlayerInput.WalkLeft, 'KeyA')
+        inputs.registerInput(PlayerInput.WalkRight, 'KeyD')
+        inputs.registerInput(PlayerInput.Jump, 'Space')
+        inputs.registerInput(PlayerInput.Crouch, 'KeyS')
+        inputs.registerInput(PlayerInput.ToggleNoclip, 'KeyV')
+
+        inputs.addListener(PlayerInput.ToggleNoclip, onToggleNoclip)
+      }
 
       return {
         debug,
@@ -163,7 +179,7 @@ export const createPlayer = (
     },
 
     teardown({ inputs, physics, body }) {
-      inputs?.removeListener('KeyV', onToggleNoclip) // TODO: Remap
+      inputs?.removeListener(PlayerInput.ToggleNoclip, onToggleNoclip)
       Matter.Composite.remove(physics.world, body)
     },
 
@@ -181,11 +197,10 @@ export const createPlayer = (
       { delta },
       { inputs, physics, network, body, direction, facing, colliding },
     ) {
-      // TODO: Remap
-      const left = inputs?.getKey('KeyA') ?? false
-      const right = inputs?.getKey('KeyD') ?? false
-      const jump = inputs?.getKey('KeyW') ?? false
-      const crouch = inputs?.getKey('KeyS') ?? false
+      const left = inputs?.getInput(PlayerInput.WalkLeft) ?? false
+      const right = inputs?.getInput(PlayerInput.WalkRight) ?? false
+      const jump = inputs?.getInput(PlayerInput.Jump) ?? false
+      const crouch = inputs?.getInput(PlayerInput.Crouch) ?? false
 
       direction.value = left ? -1 : right ? 1 : 0
       const xor = left ? !right : right
