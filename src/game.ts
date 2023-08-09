@@ -184,7 +184,7 @@ export interface Game<Headless extends boolean> {
   queryPosition(position: LooseVector): SpawnableEntity[]
 
   /**
-   * Query spawnable enties by tag
+   * Query spawnable entities by tag
    *
    * @param query - Type of Query
    * @param fn - Tags predicate
