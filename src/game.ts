@@ -117,6 +117,11 @@ export interface Game<Headless extends boolean> {
   get network(): Headless extends true ? NetServer : NetClient
 
   /**
+   * List of all entities
+   */
+  get entities(): Entity[]
+
+  /**
    * Register a spawnable function with this game instance
    *
    * @param name - Entity function name
@@ -333,6 +338,10 @@ export async function createGame<Headless extends boolean>(
 
     get network() {
       return options.network
+    },
+
+    get entities() {
+      return [...entities, ...spawnables.values()]
     },
 
     register(name, spawnableFn) {
