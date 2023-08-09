@@ -51,7 +51,7 @@ export interface PlayerCommon {
   get position(): Vector
 }
 
-interface Player extends PlayerCommon, Entity<Data, Render> {
+export interface Player extends PlayerCommon, Entity<Data, Render> {
   get [symbol](): true
   teleport(position: LooseVector, resetVelocity?: boolean): void
 }
