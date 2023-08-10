@@ -11,8 +11,8 @@ import { LevelSchema } from '~/level.js'
 import type { Level } from '~/level.js'
 import { v } from '~/math/vector.js'
 import type { LooseVector } from '~/math/vector.js'
-import type { NetClient } from '~/network/client'
-import type { NetServer } from '~/network/server'
+import type { BareNetClient, NetClient } from '~/network/client'
+import type { BareNetServer, NetServer } from '~/network/server'
 import { createPhysics } from '~/physics.js'
 import type { Physics } from '~/physics.js'
 import { SpawnableDefinitionSchema } from '~/spawnable/definition.js'
@@ -68,8 +68,6 @@ interface CommonOptions<Headless extends boolean> {
    * Debug mode
    */
   debug?: boolean
-
-  network: Headless extends true ? NetServer : NetClient
 }
 
 type Options<Headless extends boolean> = CommonOptions<Headless> &
@@ -114,12 +112,19 @@ export interface Game<Headless extends boolean> {
   get inputs(): Headless extends false ? InputManager : undefined
   get render(): Headless extends false ? RenderContextExt : never
   get physics(): Physics
-  get network(): Headless extends true ? NetServer : NetClient
+  get network(): (Headless extends true ? NetServer : NetClient) | undefined
 
   /**
    * List of all entities
    */
   get entities(): Entity[]
+
+  /**
+   * Initialize the network interface
+   */
+  initNetwork(
+    network: Headless extends true ? BareNetServer : BareNetClient,
+  ): void
 
   /**
    * Register a spawnable function with this game instance
@@ -259,6 +264,8 @@ export async function createGame<Headless extends boolean>(
   let time = performance.now()
   let physicsTickAcc = 0
 
+  let network: (Headless extends true ? NetServer : NetClient) | undefined
+
   const onTick = async () => {
     const now = performance.now()
     const delta = now - time
@@ -337,11 +344,18 @@ export async function createGame<Headless extends boolean>(
     },
 
     get network() {
-      return options.network
+      return network
     },
 
     get entities() {
       return [...entities, ...spawnables.values()]
+    },
+
+    initNetwork(net) {
+      const type = options.headless ? 'server' : 'client'
+      network = { type, ...net } as Headless extends true
+        ? NetServer
+        : NetClient
     },
 
     register(name, spawnableFn) {

@@ -8,21 +8,11 @@ interface NetClientListeners {
   customMessage: [channel: string, listener: MessageListenerClient]
 }
 
+export type BareNetClient = Except<NetClient, 'type'>
 export interface NetClient extends Listeners<NetClientListeners> {
   type: 'client'
 
   sendCustomMessage(channel: string, data: Data): void
   sendPlayerPosition(position: Vector, velocity: Vector, flipped: boolean): void
   sendPlayerAnimation(animation: string): void
-}
-
-export const createNetClient = (
-  handler: Except<NetClient, 'type'>,
-): NetClient => {
-  const net: NetClient = {
-    type: 'client',
-    ...handler,
-  }
-
-  return Object.freeze(net)
 }
