@@ -7,8 +7,6 @@ import { registerDefaultSpawnables } from '~/entities/spawnable/index.js'
 import { dataManager, isEntity } from '~/entity.js'
 import type { Entity, InitContext, RenderContext } from '~/entity.js'
 import { InputManager } from '~/input/manager.js'
-import { LevelSchema } from '~/level.js'
-import type { Level } from '~/level.js'
 import { v } from '~/math/vector.js'
 import type { LooseVector } from '~/math/vector.js'
 import type { BareNetClient, NetClient } from '~/network/client'
@@ -161,14 +159,6 @@ export interface Game<Headless extends boolean> {
   ): Promise<void>
 
   /**
-   * Load many entities from a level definition
-   *
-   * @param level - Level Definition
-   * @returns Array of Spawnable Entity IDs
-   */
-  load(level: Level): Promise<string[]>
-
-  /**
    * Spawn a new entity
    *
    * @param definition - Entity Definition
@@ -178,6 +168,15 @@ export interface Game<Headless extends boolean> {
     definition: LooseSpawnableDefinition,
     preview?: boolean,
   ): Promise<SpawnableEntity | undefined>
+
+  /**
+   * Spawn multiple entities in one go
+   *
+   * @param definitions - Entity Definitions
+   */
+  spawnMany(
+    ...definitions: LooseSpawnableDefinition[]
+  ): Promise<SpawnableEntity[]>
 
   /**
    * Lookup a spawnable entity by UID
@@ -414,16 +413,6 @@ export async function createGame<Headless extends boolean>(
       await entity.teardown(data)
     },
 
-    async load(data) {
-      const level = await LevelSchema.parseAsync(data)
-      const jobs = level.map(async definition => this.spawn(definition, false))
-      const entities = await Promise.all(jobs)
-
-      return entities
-        .filter((entity): entity is SpawnableEntity => entity !== undefined)
-        .map(entity => entity.uid)
-    },
-
     async spawn(loose, preview = false) {
       const definition = SpawnableDefinitionSchema.parse(loose)
       const fn = spawnableFunctions.get(definition.entityFn)
@@ -448,6 +437,15 @@ export async function createGame<Headless extends boolean>(
       spawnables.set(entity.uid, entity)
 
       return entity
+    },
+
+    async spawnMany(...definitions) {
+      const jobs = definitions.map(async def => this.spawn(def, false))
+      const entities = await Promise.all(jobs)
+
+      return entities.filter(
+        (entity): entity is SpawnableEntity => entity !== undefined,
+      )
     },
 
     lookup(uid) {

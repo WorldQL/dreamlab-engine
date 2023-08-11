@@ -1,4 +1,4 @@
-import { LevelSchema, SpawnableDefinitionSchema } from '../dist/index.js'
+import { SpawnableDefinitionSchema } from '../dist/index.js'
 import { zodToJsonSchema } from 'zod-to-json-schema'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
@@ -14,6 +14,6 @@ const writeSchema = async (name, schema) => {
 }
 
 await Promise.all([
-  writeSchema('level', LevelSchema),
+  // writeSchema('level', LevelSchema),
   writeSchema('spawnable-definition', SpawnableDefinitionSchema),
 ])
