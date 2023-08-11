@@ -7,10 +7,10 @@ import { createSolid } from './solid.js'
 import type { Game } from '~/game.js'
 
 export const registerDefaultSpawnables = (game: Game<boolean>) => {
-  game.register('createBouncyBall', createBouncyBall)
-  game.register('createComplexSolid', createComplexSolid)
-  game.register('createMarker', createMarker)
-  game.register('createNonsolid', createNonsolid)
-  game.register('createSimpleNPC', createSimpleNPC)
-  game.register('createSolid', createSolid)
+  game.register('BouncyBall', createBouncyBall)
+  game.register('ComplexSolid', createComplexSolid)
+  game.register('Marker', createMarker)
+  game.register('Nonsolid', createNonsolid)
+  game.register('SimpleNPC', createSimpleNPC)
+  game.register('Solid', createSolid)
 }
