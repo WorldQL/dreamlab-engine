@@ -8,7 +8,7 @@ export interface SpawnableDefinition<
   Name extends string = string,
   Args extends unknown[] = unknown[],
 > {
-  entityFn: Name
+  entity: Name
   args: Args
   transform: Transform
   uid?: UID
@@ -20,7 +20,7 @@ export interface LooseSpawnableDefinition<
   Name extends string = string,
   Args extends unknown[] = unknown[],
 > {
-  entityFn: Name
+  entity: Name
   args: Args
   transform: LooseTransform
   uid?: UID
@@ -29,7 +29,7 @@ export interface LooseSpawnableDefinition<
 }
 
 export const SpawnableDefinitionSchemaInternal = z.object({
-  entityFn: z.string(),
+  entity: z.string(),
   args: z.any().array(),
   transform: TransformSchema,
   uid: z.string().cuid2().optional(),
@@ -43,7 +43,7 @@ export const SpawnableDefinitionSchema =
 export interface SpawnableContext<
   Name extends string = string,
   Args extends unknown[] = unknown[],
-> extends Except<Required<SpawnableDefinition>, 'args' | 'entityFn'> {
+> extends Except<Required<SpawnableDefinition>, 'args' | 'entity'> {
   preview: boolean
   definition: SpawnableDefinition<Name, Args>
 }

@@ -127,7 +127,7 @@ export interface Game<Headless extends boolean> {
   /**
    * Register a spawnable function with this game instance
    *
-   * @param name - Entity function name
+   * @param name - Entity name
    * @param spawnableFn - Spawnable Function
    */
   register<
@@ -415,10 +415,10 @@ export async function createGame<Headless extends boolean>(
 
     async spawn(loose, preview = false) {
       const definition = SpawnableDefinitionSchema.parse(loose)
-      const fn = spawnableFunctions.get(definition.entityFn)
+      const fn = spawnableFunctions.get(definition.entity)
 
       if (fn === undefined) {
-        console.warn(`unknown spawnable function: ${definition.entityFn}`)
+        console.warn(`unknown spawnable function: ${definition.entity}`)
         return undefined
       }
 
