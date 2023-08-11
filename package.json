@@ -36,8 +36,7 @@
   },
   "sideEffects": false,
   "files": [
-    "dist",
-    "schemas"
+    "dist"
   ],
   "scripts": {
     "build": "tsup",
@@ -47,9 +46,7 @@
     "format": "prettier --write . && eslint src --ext ts --fix",
     "fmt": "npm run format",
     "test": "npm run check && npm run lint",
-    "schemagen": "npm run build -- --silent && node ./scripts/schemagen.mjs",
     "prepack": "npm run test && npm run build",
-    "prepare": "husky install",
     "postversion": "git push --follow-tags"
   },
   "repository": {
@@ -61,7 +58,6 @@
     "@types/matter-js": "^0.18.5",
     "@types/pako": "^2.0.0",
     "eslint": "^8.46.0",
-    "husky": "^8.0.3",
     "prettier": "^3.0.1",
     "tsup": "^7.2.0",
     "typescript": "^5.1.6",
