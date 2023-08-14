@@ -130,11 +130,6 @@ export const createSimpleNPC = createSpawnableEntity<
     },
 
     teardownRenderContext({ gfxBounds, gfxSensorL, gfxSensorR, sprite }) {
-      gfxBounds.removeFromParent()
-      gfxSensorL.removeFromParent()
-      gfxSensorR.removeFromParent()
-      sprite?.removeFromParent()
-
       gfxBounds.destroy()
       gfxSensorL.destroy()
       gfxSensorR.destroy()

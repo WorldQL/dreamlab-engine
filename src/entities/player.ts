@@ -189,10 +189,6 @@ export const createPlayer = (
     },
 
     teardownRenderContext({ sprite, gfxBounds, gfxFeet }) {
-      sprite.removeFromParent()
-      gfxBounds.removeFromParent()
-      gfxFeet.removeFromParent()
-
       sprite.destroy()
       gfxBounds.destroy()
       gfxFeet.destroy()

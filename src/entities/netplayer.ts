@@ -155,9 +155,6 @@ export const createNetPlayer = (
     },
 
     teardownRenderContext({ sprite, gfxBounds }) {
-      sprite.removeFromParent()
-      gfxBounds.removeFromParent()
-
       sprite.destroy()
       gfxBounds.destroy()
     },

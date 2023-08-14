@@ -43,7 +43,6 @@ export const createMarker = createSpawnableEntity(
     },
 
     teardownRenderContext({ gfx }) {
-      gfx.removeFromParent()
       gfx.destroy()
     },
 

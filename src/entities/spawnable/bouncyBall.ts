@@ -75,13 +75,8 @@ export const createBouncyBall = createSpawnableEntity(
       },
 
       teardownRenderContext({ gfx, sprite }) {
-        gfx.removeFromParent()
         gfx.destroy()
-
-        if (sprite) {
-          sprite.removeFromParent()
-          sprite.destroy()
-        }
+        sprite?.destroy()
       },
 
       onRenderFrame(_, { debug, body }, { camera, gfx, sprite }) {

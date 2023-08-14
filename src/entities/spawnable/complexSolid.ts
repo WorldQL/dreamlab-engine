@@ -88,7 +88,6 @@ export const createComplexSolid = createSpawnableEntity<
   },
 
   teardownRenderContext({ gfx }) {
-    gfx.removeFromParent()
     gfx.destroy()
   },
 

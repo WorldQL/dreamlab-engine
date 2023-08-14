@@ -32,7 +32,6 @@ export const createCursor = () => {
     },
 
     teardownRenderContext({ container, text }) {
-      text.gfx.removeFromParent()
       text.gfx.destroy()
 
       container.removeEventListener('pointerover', onPointerMove)
