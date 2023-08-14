@@ -1,2 +1,2 @@
-export * from '~/textures/animations.js'
+export * from '~/textures/playerAnimations.js'
 export * from '~/textures/sprites.js'

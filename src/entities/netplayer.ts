@@ -10,7 +10,7 @@ import {
   PLAYER_SPRITE_SCALE,
 } from '~/entities/player.js'
 import type {
-  PlayerAnimation,
+  KnownPlayerAnimation,
   PlayerCommon,
   PlayerSize,
 } from '~/entities/player.js'
@@ -19,7 +19,7 @@ import type { Entity } from '~/entity.js'
 import { v, Vec } from '~/math/vector.js'
 import type { LooseVector } from '~/math/vector.js'
 import type { Physics } from '~/physics.js'
-import type { AnimationMap } from '~/textures/animations.js'
+import type { PlayerAnimationMap } from '~/textures/playerAnimations.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
 
@@ -52,19 +52,19 @@ export interface NetPlayer extends PlayerCommon, Entity<Data, Render> {
   setPosition(vector: LooseVector): void
   setVelocity(vector: LooseVector): void
   setFlipped(flipped: boolean): void
-  setAnimation(animation: PlayerAnimation): void
+  setAnimation(animation: KnownPlayerAnimation): void
 }
 
 export const createNetPlayer = (
   peerID: string,
   entityID: string | undefined,
-  animations: AnimationMap<PlayerAnimation> | undefined,
+  animations: PlayerAnimationMap<KnownPlayerAnimation> | undefined,
   { width = 80, height = 370 }: Partial<PlayerSize> = {},
 ) => {
   const _entityID = entityID ?? createId()
 
   let isFlipped = false
-  let currentAnimation: PlayerAnimation = 'idle'
+  let currentAnimation: KnownPlayerAnimation = 'idle'
   let animationChanged = false
 
   const netPlayer: NetPlayer = createEntity<NetPlayer, Data, Render>({
@@ -137,7 +137,7 @@ export const createNetPlayer = (
         throw new Error(`missing animations for netplayer: ${_entityID}`)
       }
 
-      const sprite = new AnimatedSprite(animations[currentAnimation])
+      const sprite = new AnimatedSprite(animations[currentAnimation].textures)
       sprite.animationSpeed = PLAYER_ANIMATION_SPEED
       sprite.scale.set(PLAYER_SPRITE_SCALE)
       sprite.anchor.set(...PLAYER_SPRITE_ANCHOR)
@@ -178,7 +178,7 @@ export const createNetPlayer = (
 
       if (animationChanged) {
         animationChanged = false
-        sprite.textures = animations[currentAnimation]
+        sprite.textures = animations[currentAnimation].textures
         sprite.loop = currentAnimation !== 'jump'
 
         sprite.gotoAndPlay(0)

@@ -10,7 +10,7 @@ import type { LooseVector, Vector } from '~/math/vector.js'
 import type { NetClient } from '~/network/client.js'
 import { onlyNetClient } from '~/network/shared.js'
 import type { Physics } from '~/physics.js'
-import type { AnimationMap } from '~/textures/animations.js'
+import type { PlayerAnimationMap } from '~/textures/playerAnimations.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
 import { ref } from '~/utils/ref.js'
@@ -62,7 +62,7 @@ export interface PlayerSize {
   height: number
 }
 
-export type PlayerAnimation = 'idle' | 'jump' | 'walk'
+export type KnownPlayerAnimation = 'idle' | 'jump' | 'walk'
 export enum PlayerInput {
   Crouch = '@player/crouch',
   Jump = '@player/jump',
@@ -72,7 +72,7 @@ export enum PlayerInput {
 }
 
 export const createPlayer = (
-  animations: AnimationMap<PlayerAnimation>,
+  animations: PlayerAnimationMap<KnownPlayerAnimation>,
   { width = 80, height = 370 }: Partial<PlayerSize> = {},
 ) => {
   const moveForce = 0.5
@@ -89,8 +89,8 @@ export const createPlayer = (
     if (pressed) noclip = !noclip
   }
 
-  let currentAnimation: PlayerAnimation = 'idle'
-  const getAnimation = (direction: number): PlayerAnimation => {
+  let currentAnimation: KnownPlayerAnimation = 'idle'
+  const getAnimation = (direction: number): KnownPlayerAnimation => {
     if (noclip) return 'idle'
     if (hasJumped) return 'jump'
     if (direction !== 0) return 'walk'
@@ -161,7 +161,7 @@ export const createPlayer = (
     },
 
     initRenderContext(_, { stage, camera }) {
-      const sprite = new AnimatedSprite(animations[currentAnimation])
+      const sprite = new AnimatedSprite(animations[currentAnimation].textures)
       sprite.animationSpeed = PLAYER_ANIMATION_SPEED
       sprite.scale.set(PLAYER_SPRITE_SCALE)
       sprite.anchor.set(...PLAYER_SPRITE_ANCHOR)
@@ -313,7 +313,7 @@ export const createPlayer = (
       const newAnimation = getAnimation(direction)
       if (newAnimation !== currentAnimation) {
         currentAnimation = newAnimation
-        sprite.textures = animations[newAnimation]
+        sprite.textures = animations[newAnimation].textures
         sprite.loop = newAnimation !== 'jump'
 
         sprite.gotoAndPlay(0)

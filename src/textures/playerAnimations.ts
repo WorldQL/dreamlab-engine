@@ -1,16 +1,23 @@
 import { Assets, Spritesheet } from 'pixi.js'
 import type { Resource, Texture } from 'pixi.js'
 
-export type Animation = Texture<Resource>[]
-export type AnimationMap<
+export type PlayerAnimationTex = Texture<Resource>[]
+export interface PlayerAnimation {
+  textures: PlayerAnimationTex
+}
+
+export type PlayerAnimationMap<
   T extends string,
   Fallible extends boolean = false,
-> = Record<T, Fallible extends true ? Animation | undefined : Animation>
+> = Record<
+  T,
+  Fallible extends true ? PlayerAnimation | undefined : PlayerAnimation
+>
 
-export const loadSpritesheet = async (
+export const loadPlayerSpritesheet = async (
   url: string,
   sort = true,
-): Promise<Animation> => {
+): Promise<PlayerAnimationTex> => {
   const sheet = await Assets.load(url)
   if (!(sheet instanceof Spritesheet)) {
     throw new TypeError('is not a sprite sheet')
@@ -24,22 +31,24 @@ export const loadSpritesheet = async (
 }
 
 export type Fallback<T extends string> =
-  | Animation
-  | ((animation: T) => Promise<Animation>)
+  | PlayerAnimationTex
+  | ((animation: T) => PlayerAnimationTex | Promise<PlayerAnimationTex>)
 
-export const loadAnimations = async <
+export const loadPlayerAnimations = async <
   const T extends readonly string[],
   F extends Record<T[number], Fallback<T[number]>> | undefined,
 >(
   animations: T,
   urlFn: (animation: T[number]) => string,
   fallback: F,
-): Promise<AnimationMap<T[number], F extends undefined ? true : false>> => {
+): Promise<
+  PlayerAnimationMap<T[number], F extends undefined ? true : false>
+> => {
   const jobs = animations.map(async (animation: T[number]) => {
     const url = urlFn(animation)
 
     try {
-      const textures = await loadSpritesheet(url)
+      const textures = await loadPlayerSpritesheet(url)
       return [animation, textures] as const
     } catch (error) {
       if (error instanceof Error) console.error(error)
