@@ -17,9 +17,9 @@ import { ref } from '~/utils/ref.js'
 import type { Ref } from '~/utils/ref.js'
 
 export const PLAYER_MASS = 50
-export const SPRITE_SCALE = 0.9
-export const ANIMATION_SPEED = 0.4
-export const SPRITE_ANCHOR = [0.45, 0.535] as const
+export const PLAYER_SPRITE_SCALE = 0.9
+export const PLAYER_ANIMATION_SPEED = 0.4
+export const PLAYER_SPRITE_ANCHOR = [0.45, 0.535] as const
 
 interface Data {
   debug: Debug
@@ -162,9 +162,9 @@ export const createPlayer = (
 
     initRenderContext(_, { stage, camera }) {
       const sprite = new AnimatedSprite(animations[currentAnimation])
-      sprite.animationSpeed = ANIMATION_SPEED
-      sprite.scale.set(SPRITE_SCALE)
-      sprite.anchor.set(...SPRITE_ANCHOR)
+      sprite.animationSpeed = PLAYER_ANIMATION_SPEED
+      sprite.scale.set(PLAYER_SPRITE_SCALE)
+      sprite.anchor.set(...PLAYER_SPRITE_ANCHOR)
       sprite.play()
 
       const gfxBounds = new Graphics()
@@ -305,7 +305,7 @@ export const createPlayer = (
       { camera, sprite, gfxBounds, gfxFeet },
     ) {
       const scale = facing === 'left' ? 1 : -1
-      const newScale = scale * SPRITE_SCALE
+      const newScale = scale * PLAYER_SPRITE_SCALE
       if (sprite.scale.x !== newScale) {
         sprite.scale.x = newScale
       }

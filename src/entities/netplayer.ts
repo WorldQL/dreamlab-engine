@@ -4,10 +4,10 @@ import type { Body, Vector } from 'matter-js'
 import { AnimatedSprite, Graphics } from 'pixi.js'
 import type { Camera } from '~/entities/camera.js'
 import {
-  ANIMATION_SPEED,
+  PLAYER_ANIMATION_SPEED,
   PLAYER_MASS,
-  SPRITE_ANCHOR,
-  SPRITE_SCALE,
+  PLAYER_SPRITE_ANCHOR,
+  PLAYER_SPRITE_SCALE,
 } from '~/entities/player.js'
 import type {
   PlayerAnimation,
@@ -132,9 +132,9 @@ export const createNetPlayer = (
       }
 
       const sprite = new AnimatedSprite(animations[currentAnimation])
-      sprite.animationSpeed = ANIMATION_SPEED
-      sprite.scale.set(SPRITE_SCALE)
-      sprite.anchor.set(...SPRITE_ANCHOR)
+      sprite.animationSpeed = PLAYER_ANIMATION_SPEED
+      sprite.scale.set(PLAYER_SPRITE_SCALE)
+      sprite.anchor.set(...PLAYER_SPRITE_ANCHOR)
       sprite.play()
 
       const gfxBounds = new Graphics()
@@ -165,7 +165,7 @@ export const createNetPlayer = (
       }
 
       const scale = isFlipped ? -1 : 1
-      const newScale = scale * SPRITE_SCALE
+      const newScale = scale * PLAYER_SPRITE_SCALE
       if (sprite.scale.x !== newScale) {
         sprite.scale.x = newScale
       }
