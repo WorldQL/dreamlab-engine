@@ -2,7 +2,7 @@ import type { Except } from 'type-fest'
 import type { Data, Listeners } from './shared.js'
 
 export type MessageListenerServer = (
-  peer: string,
+  peerID: string,
   channel: string,
   data: Data,
 ) => void
@@ -15,6 +15,6 @@ export type BareNetServer = Except<NetServer, 'type'>
 export interface NetServer extends Listeners<NetServerListeners> {
   type: 'server'
 
-  sendCustomMessage(peer: string, channel: string, data: Data): void
+  sendCustomMessage(peerID: string, channel: string, data: Data): void
   broadcastCustomMessage(channel: string, data: Data): void
 }
