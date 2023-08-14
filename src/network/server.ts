@@ -1,10 +1,10 @@
 import type { Except } from 'type-fest'
 import type { Data, Listeners } from './shared.js'
 
-export type MessageListenerServer<T extends {} = Data> = (
+export type MessageListenerServer = (
   peer: string,
   channel: string,
-  data: T,
+  data: Data,
 ) => void
 
 interface NetServerListeners {

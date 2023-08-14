@@ -2,10 +2,7 @@ import type { Vector } from 'matter-js'
 import type { Except } from 'type-fest'
 import type { Data, Listeners } from './shared.js'
 
-export type MessageListenerClient<T extends {} = Data> = (
-  channel: string,
-  data: T,
-) => void
+export type MessageListenerClient = (channel: string, data: Data) => void
 
 interface NetClientListeners {
   customMessage: [channel: string, listener: MessageListenerClient]
