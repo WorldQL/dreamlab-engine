@@ -45,7 +45,8 @@ export const isNetPlayer = (netplayer: unknown): netplayer is NetPlayer => {
 export interface NetPlayer extends PlayerCommon, Entity<Data, Render> {
   get [symbol](): true
 
-  get id(): string
+  get peerID(): string
+  get entityID(): string
   get body(): Body
 
   setPosition(vector: LooseVector): void
@@ -55,11 +56,12 @@ export interface NetPlayer extends PlayerCommon, Entity<Data, Render> {
 }
 
 export const createNetPlayer = (
-  uid: string | undefined,
+  peerID: string,
+  entityID: string | undefined,
   animations: AnimationMap<PlayerAnimation> | undefined,
   { width = 80, height = 370 }: Partial<PlayerSize> = {},
 ) => {
-  const id = uid ?? createId()
+  const _entityID = entityID ?? createId()
 
   let isFlipped = false
   let currentAnimation: PlayerAnimation = 'idle'
@@ -70,8 +72,12 @@ export const createNetPlayer = (
       return true as const
     },
 
-    get id(): string {
-      return id
+    get peerID(): string {
+      return peerID
+    },
+
+    get entityID(): string {
+      return _entityID
     },
 
     get position(): Vector {
@@ -128,7 +134,7 @@ export const createNetPlayer = (
 
     initRenderContext(_, { stage, camera }) {
       if (!animations) {
-        throw new Error(`missing animations for netplayer: ${id}`)
+        throw new Error(`missing animations for netplayer: ${_entityID}`)
       }
 
       const sprite = new AnimatedSprite(animations[currentAnimation])
@@ -161,7 +167,7 @@ export const createNetPlayer = (
 
     onRenderFrame(_, { debug, body }, { camera, sprite, gfxBounds }) {
       if (!animations) {
-        throw new Error(`missing animations for netplayer: ${id}`)
+        throw new Error(`missing animations for netplayer: ${_entityID}`)
       }
 
       const scale = isFlipped ? -1 : 1
