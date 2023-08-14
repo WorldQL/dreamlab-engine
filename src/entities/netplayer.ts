@@ -14,7 +14,7 @@ import type {
   PlayerCommon,
   PlayerOptions,
 } from '~/entities/player.js'
-import { createEntity, dataManager } from '~/entity.js'
+import { createEntity, dataManager, isEntity } from '~/entity.js'
 import type { Entity } from '~/entity.js'
 import { v, Vec } from '~/math/vector.js'
 import type { LooseVector } from '~/math/vector.js'
@@ -36,7 +36,15 @@ interface Render {
   gfxBounds: Graphics
 }
 
+const symbol = Symbol.for('@dreamlab/core/entities/netplayer')
+export const isNetPlayer = (netplayer: unknown): netplayer is NetPlayer => {
+  if (!isEntity(netplayer)) return false
+  return symbol in netplayer && netplayer[symbol] === true
+}
+
 export interface NetPlayer extends PlayerCommon, Entity<Data, Render> {
+  get [symbol](): true
+
   get id(): string
   get body(): Body
 
@@ -58,6 +66,10 @@ export const createNetPlayer = (
   let animationChanged = false
 
   const netPlayer: NetPlayer = createEntity<NetPlayer, Data, Render>({
+    get [symbol]() {
+      return true as const
+    },
+
     get id(): string {
       return id
     },
