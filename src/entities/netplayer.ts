@@ -12,7 +12,7 @@ import {
 import type {
   PlayerAnimation,
   PlayerCommon,
-  PlayerOptions,
+  PlayerSize,
 } from '~/entities/player.js'
 import { createEntity, dataManager, isEntity } from '~/entity.js'
 import type { Entity } from '~/entity.js'
@@ -57,7 +57,7 @@ export interface NetPlayer extends PlayerCommon, Entity<Data, Render> {
 export const createNetPlayer = (
   uid: string | undefined,
   animations: AnimationMap<PlayerAnimation> | undefined,
-  { width = 80, height = 370 }: PlayerOptions = {},
+  { width = 80, height = 370 }: Partial<PlayerSize> = {},
 ) => {
   const id = uid ?? createId()
 
@@ -77,6 +77,10 @@ export const createNetPlayer = (
     get position(): Vector {
       const { body } = dataManager.getData(this)
       return Vec.clone(body.position)
+    },
+
+    get size() {
+      return { width, height }
     },
 
     setPosition(vector: LooseVector) {

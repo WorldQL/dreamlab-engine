@@ -49,6 +49,7 @@ export const isPlayer = (player: unknown): player is Player => {
 
 export interface PlayerCommon {
   get position(): Vector
+  get size(): PlayerSize
 }
 
 export interface Player extends PlayerCommon, Entity<Data, Render> {
@@ -56,9 +57,9 @@ export interface Player extends PlayerCommon, Entity<Data, Render> {
   teleport(position: LooseVector, resetVelocity?: boolean): void
 }
 
-export interface PlayerOptions {
-  width?: number
-  height?: number
+export interface PlayerSize {
+  width: number
+  height: number
 }
 
 export type PlayerAnimation = 'idle' | 'jump' | 'walk'
@@ -72,7 +73,7 @@ export enum PlayerInput {
 
 export const createPlayer = (
   animations: AnimationMap<PlayerAnimation>,
-  { width = 80, height = 370 }: PlayerOptions = {},
+  { width = 80, height = 370 }: Partial<PlayerSize> = {},
 ) => {
   const moveForce = 0.5
   const maxSpeed = 1
@@ -105,6 +106,10 @@ export const createPlayer = (
     get position(): Vector {
       const { body } = dataManager.getData(this)
       return Vec.clone(body.position)
+    },
+
+    get size() {
+      return { width, height }
     },
 
     teleport(position: LooseVector, resetVelocity = true) {
