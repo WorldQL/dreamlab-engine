@@ -11,6 +11,7 @@ export {
 export {
   SpawnableDefinitionSchema,
   type SpawnableDefinition,
+  type LooseSpawnableDefinition,
 } from '~/spawnable/definition.js'
 export {
   createSpawnableEntity,
