@@ -1,16 +1,16 @@
 import Matter from 'matter-js'
-import type { Body } from 'matter-js'
 import { AnimatedSprite, Graphics } from 'pixi.js'
 import type { Camera } from '~/entities/camera.js'
 import type { Entity } from '~/entity.js'
-import { createEntity, dataManager, isEntity } from '~/entity.js'
+import { createEntity, isEntity } from '~/entity.js'
 import type { InputManager } from '~/input/manager.js'
 import { v, Vec } from '~/math/vector.js'
 import type { LooseVector, Vector } from '~/math/vector.js'
 import type { NetClient } from '~/network/client.js'
 import { onlyNetClient } from '~/network/shared.js'
 import type { Physics } from '~/physics.js'
-import type { PlayerAnimationMap } from '~/textures/playerAnimations.js'
+import { bones } from '~/textures/playerAnimations.js'
+import type { Bone, PlayerAnimationMap } from '~/textures/playerAnimations.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
 import { ref } from '~/utils/ref.js'
@@ -27,7 +27,6 @@ interface Data {
   physics: Physics
   network: NetClient | undefined
 
-  body: Body
   direction: Ref<-1 | 0 | 1>
   facing: Ref<'left' | 'right'>
   colliding: Ref<boolean>
@@ -54,6 +53,8 @@ export interface PlayerCommon {
 
 export interface Player extends PlayerCommon, Entity<Data, Render> {
   get [symbol](): true
+  get bones(): Readonly<Record<Bone, Vector>>
+
   teleport(position: LooseVector, resetVelocity?: boolean): void
 }
 
@@ -90,6 +91,20 @@ export const createPlayer = (
   }
 
   let currentAnimation: KnownPlayerAnimation = 'idle'
+  let spriteSign = 1
+  let currentFrame = 0
+
+  const body = Matter.Bodies.rectangle(0, 0, width, height, {
+    label: 'player',
+    render: { visible: false },
+
+    inertia: Number.POSITIVE_INFINITY,
+    inverseInertia: 0,
+    mass: PLAYER_MASS,
+    inverseMass: 1 / PLAYER_MASS,
+    friction: 0,
+  })
+
   const getAnimation = (direction: number): KnownPlayerAnimation => {
     if (noclip) return 'idle'
     if (hasJumped) return 'jump'
@@ -98,13 +113,47 @@ export const createPlayer = (
     return 'idle'
   }
 
+  const bonePosition = (bone: Bone): Vector => {
+    const animation = animations[currentAnimation]
+
+    const animW = animation.width
+    const animH = animation.height
+    const bonePosition = animation.bones[bone][currentFrame]!
+
+    const flip = spriteSign
+    const normalized = {
+      x: flip === 1 ? bonePosition.x : animW - bonePosition.x,
+      y: bonePosition.y,
+    }
+
+    const offsetFromCenter: Vector = {
+      x: (1 - (normalized.x / animW) * 2) * (animW / -2),
+      y: (1 - (normalized.y / animH) * 2) * (animH / -2),
+    }
+
+    const offsetFromAnchor = Vec.add(offsetFromCenter, {
+      x: flip * ((1 - PLAYER_SPRITE_ANCHOR[0] * 2) * (animW / 2)),
+      y: (1 - PLAYER_SPRITE_ANCHOR[1] * 2) * (animH / 2),
+    })
+
+    const scaled = Vec.mult(offsetFromAnchor, PLAYER_SPRITE_SCALE)
+    return Vec.add(body.position, scaled)
+  }
+
+  const boneMap = {} as Readonly<Record<Bone, Vector>>
+  for (const bone of bones) {
+    Object.defineProperty(boneMap, bone, {
+      get: () => bonePosition(bone),
+    })
+  }
+
+  Object.freeze(boneMap)
   const player: Player = createEntity({
     get [symbol]() {
       return true as const
     },
 
     get position(): Vector {
-      const { body } = dataManager.getData(this)
       return Vec.clone(body.position)
     },
 
@@ -112,9 +161,11 @@ export const createPlayer = (
       return { width, height }
     },
 
-    teleport(position: LooseVector, resetVelocity = true) {
-      const { body } = dataManager.getData(this)
+    get bones(): Readonly<Record<Bone, Vector>> {
+      return boneMap
+    },
 
+    teleport(position: LooseVector, resetVelocity = true) {
       Matter.Body.setPosition(body, v(position))
       if (resetVelocity) Matter.Body.setVelocity(body, { x: 0, y: 0 })
     },
@@ -125,16 +176,6 @@ export const createPlayer = (
       const network = onlyNetClient(game.network)
 
       // TODO: Reimplement spawnpoints
-      const body = Matter.Bodies.rectangle(0, 0, width, height, {
-        label: 'player',
-        render: { visible: false },
-
-        inertia: Number.POSITIVE_INFINITY,
-        inverseInertia: 0,
-        mass: PLAYER_MASS,
-        inverseMass: 1 / PLAYER_MASS,
-        friction: 0,
-      })
 
       Matter.Composite.add(physics.world, body)
 
@@ -153,7 +194,6 @@ export const createPlayer = (
         inputs,
         physics,
         network,
-        body,
         direction: ref(0),
         facing: ref('left'),
         colliding: ref(false),
@@ -183,7 +223,7 @@ export const createPlayer = (
       return { camera, sprite, gfxBounds, gfxFeet }
     },
 
-    teardown({ inputs, physics, body }) {
+    teardown({ inputs, physics }) {
       inputs?.removeListener(PlayerInput.ToggleNoclip, onToggleNoclip)
       Matter.Composite.remove(physics.world, body)
     },
@@ -196,7 +236,7 @@ export const createPlayer = (
 
     onPhysicsStep(
       { delta },
-      { inputs, physics, network, body, direction, facing, colliding },
+      { inputs, physics, network, direction, facing, colliding },
     ) {
       const left = inputs?.getInput(PlayerInput.WalkLeft) ?? false
       const right = inputs?.getInput(PlayerInput.WalkRight) ?? false
@@ -296,7 +336,6 @@ export const createPlayer = (
       _,
       {
         debug,
-        body,
         network,
         direction: { value: direction },
         facing: { value: facing },
@@ -308,6 +347,7 @@ export const createPlayer = (
       const newScale = scale * PLAYER_SPRITE_SCALE
       if (sprite.scale.x !== newScale) {
         sprite.scale.x = newScale
+        spriteSign = Math.sign(sprite.scale.x)
       }
 
       const newAnimation = getAnimation(direction)
@@ -320,6 +360,7 @@ export const createPlayer = (
         network?.sendPlayerAnimation(newAnimation)
       }
 
+      currentFrame = sprite.currentFrame
       const pos = Vec.add(body.position, camera.offset)
 
       sprite.position = pos
