@@ -118,12 +118,12 @@ export const createPlayer = (
 
     const animW = animation.width
     const animH = animation.height
-    const bonePosition = animation.bones[bone][currentFrame]!
+    const position = animation.bones[bone][currentFrame]!
 
     const flip = spriteSign
     const normalized = {
-      x: flip === 1 ? bonePosition.x : animW - bonePosition.x,
-      y: bonePosition.y,
+      x: flip === 1 ? position.x : animW - position.x,
+      y: position.y,
     }
 
     const offsetFromCenter: Vector = {
