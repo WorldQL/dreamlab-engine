@@ -1,7 +1,7 @@
-import type { Vector } from 'matter-js'
 import { Assets, Spritesheet } from 'pixi.js'
 import type { Resource, Texture } from 'pixi.js'
 import type { Except } from 'type-fest'
+import type { Vector } from '~/math/vector.js'
 
 export type Bone = (typeof bones)[number]
 export const bones = ['handLeft', 'handRight'] as const

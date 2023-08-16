@@ -1,6 +1,6 @@
 import { createId } from '@paralleldrive/cuid2'
 import Matter from 'matter-js'
-import type { Body, Vector } from 'matter-js'
+import type { Body } from 'matter-js'
 import { AnimatedSprite, Graphics } from 'pixi.js'
 import type { Camera } from '~/entities/camera.js'
 import {
@@ -17,7 +17,7 @@ import type {
 import { createEntity, dataManager, isEntity } from '~/entity.js'
 import type { Entity } from '~/entity.js'
 import { v, Vec } from '~/math/vector.js'
-import type { LooseVector } from '~/math/vector.js'
+import type { LooseVector, Vector } from '~/math/vector.js'
 import type { Physics } from '~/physics.js'
 import type { PlayerAnimationMap } from '~/textures/playerAnimations.js'
 import type { Debug } from '~/utils/debug.js'

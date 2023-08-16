@@ -1,6 +1,6 @@
-import type { Vector } from 'matter-js'
 import type { Except } from 'type-fest'
 import type { Data, Listeners } from './shared.js'
+import type { Vector } from '~/math/vector.js'
 
 export type MessageListenerClient = (channel: string, data: Data) => void
 

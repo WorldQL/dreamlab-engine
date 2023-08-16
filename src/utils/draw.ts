@@ -1,5 +1,5 @@
-import type { Vector } from 'matter-js'
 import type { ColorSource, Graphics } from 'pixi.js'
+import type { Vector } from '~/math/vector.js'
 
 export interface DrawOptions {
   fill?: ColorSource
