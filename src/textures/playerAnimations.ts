@@ -1,19 +1,36 @@
 import { Assets, Spritesheet } from 'pixi.js'
 import type { Resource, Texture } from 'pixi.js'
 import type { Except } from 'type-fest'
-import type { Vector } from '~/math/vector.js'
+import { z } from 'zod'
+import { VectorSchema } from '~/math/vector.js'
+import { enumMap } from '~/utils/types.js'
 
 export type Bone = (typeof bones)[number]
-export const bones = ['handLeft', 'handRight'] as const
+const handBones = ['handLeft', 'handRight'] as const
+export const bones = [...handBones] as const
 
-export type PlayerAnimationBones = Record<Bone, Vector[]>
+const BoneOffsetSchema = z
+  .tuple([z.number(), z.number(), z.number()])
+  .transform(([x, y, delta]) => ({ x, y, delta }))
+
+const BoneOffsetDataSchema = z
+  // eslint-disable-next-line id-length
+  .object({ x: BoneOffsetSchema, y: BoneOffsetSchema, z: BoneOffsetSchema })
+  .array()
+
+export const PlayerAnimationBonesSchema = z.object({
+  bones: enumMap(z.enum(bones), VectorSchema.array()),
+  handOffsets: enumMap(z.enum(handBones), BoneOffsetDataSchema),
+})
+
+export type PlayerAnimationBones = z.infer<typeof PlayerAnimationBonesSchema>
 export type PlayerAnimationTex = Texture<Resource>[]
 
 export interface PlayerAnimation {
   width: number
   height: number
 
-  bones: PlayerAnimationBones
+  boneData: PlayerAnimationBones
   textures: PlayerAnimationTex
 }
 
@@ -25,7 +42,7 @@ export type PlayerAnimationMap<
   Fallible extends true ? PlayerAnimation | undefined : PlayerAnimation
 >
 
-type SpritesheetData = Except<PlayerAnimation, 'bones'>
+type SpritesheetData = Except<PlayerAnimation, 'boneData'>
 export const loadPlayerSpritesheet = async (
   url: string,
   sort = true,
@@ -74,13 +91,13 @@ export const loadPlayerAnimations = async <
       const url = urlFn(animation)
 
       const boneFn = bones[animation]
-      if (!boneFn) throw new Error(`missing bones for: ${animation}`)
+      if (!boneFn) throw new Error(`missing bone data for: ${animation}`)
       const boneData: PlayerAnimationBones =
         typeof boneFn === 'function' ? await boneFn(animation) : boneFn
 
       try {
         const spritesheet = await loadPlayerSpritesheet(url)
-        return [animation, { ...spritesheet, bones: boneData }] as const
+        return [animation, { ...spritesheet, boneData }] as const
       } catch (error) {
         if (error instanceof Error) console.error(error)
         console.warn(`Failed to load spritesheet for "${url}"`)
@@ -90,7 +107,7 @@ export const loadPlayerAnimations = async <
         const fn: Fallback<T[number]> = fallback[animation]
         const textures = typeof fn === 'function' ? await fn(animation) : fn
 
-        return [animation, { ...textures, bones: boneData }] as const
+        return [animation, { ...textures, boneData }] as const
       }
     },
   )
