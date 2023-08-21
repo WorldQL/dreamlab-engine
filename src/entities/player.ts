@@ -87,6 +87,8 @@ export const createPlayer = (
   const noclipSpeed = 15
 
   const onToggleNoclip = (pressed: boolean) => {
+    // TODO(Charlotte): if a player is noclipping, we should network this
+    // so that the serverside prediction can take that into account
     if (pressed) noclip = !noclip
   }
 
@@ -251,6 +253,10 @@ export const createPlayer = (
         facing.value = _facing
       }
 
+      // TODO(Charlotte): factor out movement code into its own place,
+      // so that we can apply it to NetPlayers for prediction (based on inputs)
+      // on both the client and server
+
       body.isStatic = noclip
       if (noclip) {
         const movement = Vec.create()
@@ -330,6 +336,7 @@ export const createPlayer = (
         body.velocity,
         facing.value !== 'left',
       )
+      network?.sendPlayerMotionInputs(jump, crouch, left, right)
     },
 
     onRenderFrame(
