@@ -1,21 +1,17 @@
+export interface KvOps {
+  get(key: string): Promise<string | undefined>
+  set(key: string, value: string): Promise<void>
+  delete(key: string): Promise<void>
+}
+
 export interface KvStore {
   /**
-   * Get a value local to the current player
+   * KV scoped to the current player in the current world
    */
-  getPlayer(key: string): Promise<string | undefined>
+  readonly player: KvOps
 
   /**
-   * Get a value for this world
+   * KV scoped to the current world
    */
-  getWorld(key: string): Promise<string | undefined>
-
-  /**
-   * Set a value local to the current player
-   */
-  setPlayer(key: string, value: string): Promise<void>
-
-  /**
-   * Set a value for this world
-   */
-  setWorld(key: string, value: string): Promise<void>
+  readonly world: KvOps
 }
