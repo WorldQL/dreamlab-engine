@@ -1,4 +1,4 @@
-interface KvStore {
+export interface KvStore {
   /**
    * Get a value local to the current player
    */

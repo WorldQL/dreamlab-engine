@@ -13,6 +13,7 @@ import type { BareNetClient, NetClient } from '~/network/client'
 import type { BareNetServer, NetServer } from '~/network/server'
 import { createPhysics } from '~/physics.js'
 import type { Physics } from '~/physics.js'
+import type { KvStore } from '~/sdk/kv.js'
 import { SpawnableDefinitionSchema } from '~/spawnable/definition.js'
 import type {
   LooseSpawnableDefinition,
@@ -43,9 +44,18 @@ interface ClientOptions {
    * Additional options to pass to Pixi.js
    */
   graphicsOptions?: Partial<IApplicationOptions>
+
+  // Server Options
+  kv?: never
 }
 
 interface ServerOptions {
+  /**
+   * Key-Value Store
+   */
+  kv: KvStore
+
+  // Client options
   container?: never
   dimensions?: never
   graphicsOptions?: never
@@ -112,6 +122,7 @@ interface GameClient {
 }
 
 interface GameServer {
+  get kv(): KvStore
   get network(): NetServer | undefined
 }
 
@@ -337,6 +348,7 @@ export async function createGame<Server extends boolean>(
   const serverData: GameServer | undefined = !options.isServer
     ? undefined
     : {
+        kv: Object.freeze(options.kv) as KvStore,
         network: network as NetServer | undefined,
       }
 
