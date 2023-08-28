@@ -28,7 +28,7 @@ import type {
 import type { Debug } from '~/utils/debug.js'
 import { createDebug } from '~/utils/debug.js'
 
-interface GraphicsOptions {
+interface ClientOptions {
   /**
    * HTML `div` element for the Pixi.js canvas to mount inside
    */
@@ -45,17 +45,17 @@ interface GraphicsOptions {
   graphicsOptions?: Partial<IApplicationOptions>
 }
 
-interface HeadlessOptions {
+interface ServerOptions {
   container?: never
   dimensions?: never
   graphicsOptions?: never
 }
 
-interface CommonOptions<Headless extends boolean> {
+interface CommonOptions<Server extends boolean> {
   /**
-   * Run the game without running any rendering logic
+   * Run the game in server mode, disabling any rendering logic
    */
-  headless: Headless
+  isServer: Server
 
   /**
    * Physics Tickrate in Hz [default: 60]
@@ -68,17 +68,17 @@ interface CommonOptions<Headless extends boolean> {
   debug?: boolean
 }
 
-type Options<Headless extends boolean> = CommonOptions<Headless> &
-  (Headless extends true ? HeadlessOptions : GraphicsOptions)
+type Options<Server extends boolean> = CommonOptions<Server> &
+  (Server extends true ? ServerOptions : ClientOptions)
 
 type RenderContextExt = RenderContext & { app: Application }
-async function initRenderContext<Headless extends boolean>(
-  options: Options<Headless>,
-): Promise<Headless extends false ? RenderContextExt : undefined>
-async function initRenderContext<Headless extends boolean>(
-  options: Options<Headless>,
+async function initRenderContext<Server extends boolean>(
+  options: Options<Server>,
+): Promise<Server extends false ? RenderContextExt : undefined>
+async function initRenderContext<Server extends boolean>(
+  options: Options<Server>,
 ): Promise<RenderContextExt | undefined> {
-  if (options.headless === true) return undefined
+  if (options.isServer === true) return undefined
   const { container, dimensions, graphicsOptions } = options as Options<false>
 
   const app = new Application({
@@ -105,12 +105,22 @@ async function initRenderContext<Headless extends boolean>(
 
 type TickListener = (delta: number) => Promise<void> | void
 
-export interface Game<Headless extends boolean> {
+interface GameClient {
+  get inputs(): InputManager
+  get render(): RenderContextExt
+  get network(): NetClient | undefined
+}
+
+interface GameServer {
+  get network(): NetServer | undefined
+}
+
+export interface Game<Server extends boolean> {
   get debug(): Debug
-  get inputs(): Headless extends false ? InputManager : undefined
-  get render(): Headless extends false ? RenderContextExt : never
   get physics(): Physics
-  get network(): (Headless extends true ? NetServer : NetClient) | undefined
+
+  get client(): Server extends true ? undefined : GameClient
+  get server(): Server extends true ? GameServer : undefined
 
   /**
    * List of all entities
@@ -121,7 +131,7 @@ export interface Game<Headless extends boolean> {
    * Initialize the network interface
    */
   initNetwork(
-    network: Headless extends true ? BareNetServer : BareNetClient,
+    network: Server extends true ? BareNetServer : BareNetClient,
   ): void
 
   /**
@@ -240,9 +250,9 @@ export interface Game<Headless extends boolean> {
   shutdown(): Promise<void>
 }
 
-export async function createGame<Headless extends boolean>(
-  options: Options<Headless>,
-): Promise<Game<Headless>> {
+export async function createGame<Server extends boolean>(
+  options: Options<Server>,
+): Promise<Game<Server>> {
   const debug = createDebug(options.debug ?? false)
   const { physicsTickrate = 60 } = options
 
@@ -263,7 +273,7 @@ export async function createGame<Headless extends boolean>(
   let time = performance.now()
   let physicsTickAcc = 0
 
-  let network: (Headless extends true ? NetServer : NetClient) | undefined
+  let network: (Server extends true ? NetServer : NetClient) | undefined
 
   const onTick = async () => {
     const now = performance.now()
@@ -316,34 +326,43 @@ export async function createGame<Headless extends boolean>(
     entities.sort((a, b) => (a.priority ?? 0) - (b.priority ?? 0))
   }
 
-  const game: Game<Headless> = {
+  const clientData: GameClient | undefined = options.isServer
+    ? undefined
+    : {
+        inputs,
+        network: network as NetClient | undefined,
+        render: renderContext as RenderContextExt,
+      }
+
+  const serverData: GameServer | undefined = !options.isServer
+    ? undefined
+    : {
+        network: network as NetServer | undefined,
+      }
+
+  const game: Game<Server> = {
     get debug() {
       return debug
-    },
-
-    get inputs() {
-      type R = Headless extends false ? InputManager : undefined
-      if (options.headless === true || renderContext === undefined) {
-        return undefined as R
-      }
-
-      return inputs as R
-    },
-
-    get render() {
-      if (options.headless === true || renderContext === undefined) {
-        throw new Error('cannot get render context in headless mode')
-      }
-
-      return renderContext as Headless extends false ? RenderContextExt : never
     },
 
     get physics() {
       return physics
     },
 
-    get network() {
-      return network
+    get client() {
+      if (options.isServer || clientData === undefined) {
+        return undefined as Server extends true ? undefined : GameClient
+      }
+
+      return clientData as Server extends true ? undefined : GameClient
+    },
+
+    get server() {
+      if (!options.isServer || serverData === undefined) {
+        return undefined as Server extends true ? GameServer : undefined
+      }
+
+      return serverData as Server extends true ? GameServer : undefined
     },
 
     get entities() {
@@ -351,10 +370,8 @@ export async function createGame<Headless extends boolean>(
     },
 
     initNetwork(net) {
-      const type = options.headless ? 'server' : 'client'
-      network = { type, ...net } as Headless extends true
-        ? NetServer
-        : NetClient
+      const type = options.isServer ? 'server' : 'client'
+      network = { type, ...net } as Server extends true ? NetServer : NetClient
     },
 
     register(name, spawnableFn) {
