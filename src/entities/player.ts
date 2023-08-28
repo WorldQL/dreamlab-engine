@@ -174,8 +174,8 @@ export const createPlayer = (
 
     init({ game, physics }) {
       const debug = game.debug
-      const inputs = game.inputs
-      const network = onlyNetClient(game.network)
+      const inputs = game.client?.inputs
+      const network = onlyNetClient(game)
 
       // TODO: Reimplement spawnpoints
 
