@@ -11,6 +11,7 @@ import { onlyNetClient } from '~/network/shared.js'
 import type { Physics } from '~/physics.js'
 import { bones } from '~/textures/playerAnimations.js'
 import type { Bone, PlayerAnimationMap } from '~/textures/playerAnimations.js'
+import { createSprite } from '~/textures/sprites.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
 import { ref } from '~/utils/ref.js'
@@ -63,8 +64,9 @@ export interface PlayerSize {
   height: number
 }
 
-export type KnownPlayerAnimation = 'idle' | 'jump' | 'walk'
+export type KnownPlayerAnimation = 'attack' | 'idle' | 'jump' | 'walk'
 export enum PlayerInput {
+  Attack = '@player/attack',
   Crouch = '@player/crouch',
   Jump = '@player/jump',
   ToggleNoclip = '@player/toggle-noclip',
@@ -85,6 +87,18 @@ export const createPlayer = (
 
   let noclip = false
   const noclipSpeed = 15
+  let attack = false
+
+  const weaponSprite = createSprite(
+    'https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693261056400.png',
+    { width: 150, height: 150 },
+  )
+
+  const weaponBody = Matter.Bodies.rectangle(0, 0, 150, 150, {
+    label: 'weapon',
+    render: { visible: false },
+    isSensor: true,
+  })
 
   const onToggleNoclip = (pressed: boolean) => {
     // TODO(Charlotte): if a player is noclipping, we should network this
@@ -110,6 +124,7 @@ export const createPlayer = (
   const getAnimation = (direction: number): KnownPlayerAnimation => {
     if (noclip) return 'idle'
     if (hasJumped) return 'jump'
+    if (attack) return 'attack'
     if (direction !== 0) return 'walk'
 
     return 'idle'
@@ -150,6 +165,7 @@ export const createPlayer = (
   }
 
   Object.freeze(boneMap)
+
   const player: Player = createEntity({
     get [symbol]() {
       return true as const
@@ -181,8 +197,13 @@ export const createPlayer = (
 
       Matter.Composite.add(physics.world, body)
 
+
+      Matter.Composite.add(physics.world, weaponBody)
+
+
       if (inputs) {
         inputs.registerInput(PlayerInput.WalkLeft, 'KeyA')
+        inputs.registerInput(PlayerInput.Attack, 'KeyE')
         inputs.registerInput(PlayerInput.WalkRight, 'KeyD')
         inputs.registerInput(PlayerInput.Jump, 'Space')
         inputs.registerInput(PlayerInput.Crouch, 'KeyS')
@@ -219,6 +240,7 @@ export const createPlayer = (
       drawBox(gfxBounds, { width, height }, { stroke: '#00f' })
 
       stage.addChild(sprite)
+      stage.addChild(weaponSprite)
       stage.addChild(gfxBounds)
       stage.addChild(gfxFeet)
 
@@ -232,6 +254,7 @@ export const createPlayer = (
 
     teardownRenderContext({ sprite, gfxBounds, gfxFeet }) {
       sprite.destroy()
+      weaponSprite.destroy()
       gfxBounds.destroy()
       gfxFeet.destroy()
     },
@@ -243,6 +266,7 @@ export const createPlayer = (
       const left = inputs?.getInput(PlayerInput.WalkLeft) ?? false
       const right = inputs?.getInput(PlayerInput.WalkRight) ?? false
       const jump = inputs?.getInput(PlayerInput.Jump) ?? false
+      attack = inputs?.getInput(PlayerInput.Attack) ?? false
       const crouch = inputs?.getInput(PlayerInput.Crouch) ?? false
 
       direction.value = left ? -1 : right ? 1 : 0
@@ -258,6 +282,7 @@ export const createPlayer = (
       // on both the client and server
 
       body.isStatic = noclip
+
       if (noclip) {
         const movement = Vec.create()
 
@@ -336,7 +361,42 @@ export const createPlayer = (
         body.velocity,
         facing.value !== 'left',
       )
-      network?.sendPlayerMotionInputs(jump, crouch, left, right)
+      network?.sendPlayerMotionInputs(jump, crouch, left, right, attack)
+
+
+      if(attack) {
+        const swordPosition = {
+            x: facing.value === 'left' ? body.position.x - 150 : body.position.x + 150,
+            y: body.position.y
+        };
+
+        const sword = Matter.Bodies.rectangle(
+            swordPosition.x,
+            swordPosition.y,
+            150,
+            150
+        );
+
+        const swordBodies = physics.world.bodies
+            .filter(other => other !== body)
+            .filter(other => !other.isSensor)
+            .filter(other => Matter.Detector.canCollide(
+                sword.collisionFilter,
+                other.collisionFilter
+            ));
+
+        const swordQuery = Matter.Query.region(swordBodies, sword.bounds);
+        const isSwordColliding = swordQuery.length > 0;
+
+        if(isSwordColliding) {
+          for (const collidedEntity of swordQuery) {
+              const label = collidedEntity.label;
+              network?.sendCustomMessage("@dreamlab/Hittable/hit", {label});
+              console.log("Sending hit packet for:", label);
+          }
+      }
+
+    }
     },
 
     onRenderFrame(
@@ -361,6 +421,10 @@ export const createPlayer = (
       if (newAnimation !== currentAnimation) {
         currentAnimation = newAnimation
         sprite.textures = animations[newAnimation].textures
+        sprite.animationSpeed =
+          currentAnimation === 'attack'
+            ? PLAYER_ANIMATION_SPEED * 5
+            : PLAYER_ANIMATION_SPEED
         sprite.loop = newAnimation !== 'jump'
 
         sprite.gotoAndPlay(0)
@@ -388,6 +452,46 @@ export const createPlayer = (
         { width: width - feetSensor, height: feetSensor },
         { strokeAlpha: 0, fill: colliding ? active : inactive, fillAlpha: 1 },
       )
+
+      if (weaponSprite) {
+        const pos = Vec.add(
+          { x: boneMap.handLeft.x, y: boneMap.handLeft.y },
+          camera.offset,
+        )
+        weaponSprite.position = pos
+
+        const animation = animations[currentAnimation]
+
+        const lefthand_axisX_x =
+          animation.boneData.handOffsets.handLeft[currentFrame]!.x.x
+        const lefthand_axisX_y =
+          animation.boneData.handOffsets.handLeft[currentFrame]!.x.y
+        const lefthand_axisY_x =
+          animation.boneData.handOffsets.handLeft[currentFrame]!.y.x
+        const lefthand_axisY_y =
+          animation.boneData.handOffsets.handLeft[currentFrame]!.y.y
+
+        let rotation = Math.atan2(
+          lefthand_axisY_y - lefthand_axisX_y,
+          lefthand_axisY_x - lefthand_axisX_x,
+        )
+
+        if (scale === -1) {
+          rotation = -rotation
+        }
+
+        weaponSprite.rotation = rotation
+        const initialWidth = weaponSprite.width
+        const initialHeight = weaponSprite.height
+
+        weaponSprite.scale.x = -scale
+
+        weaponSprite.width = initialWidth
+        weaponSprite.height = initialHeight
+
+        weaponSprite.anchor.set(0, 1)
+      }
+
     },
   })
 
