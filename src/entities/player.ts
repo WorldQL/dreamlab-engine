@@ -31,6 +31,7 @@ interface Data {
   direction: Ref<-1 | 0 | 1>
   facing: Ref<'left' | 'right'>
   colliding: Ref<boolean>
+  weaponColliding: Ref<boolean>
 }
 
 interface Render {
@@ -99,6 +100,8 @@ export const createPlayer = (
     render: { visible: false },
     isSensor: true,
   })
+
+  const gfxWeaponBounds = new Graphics()
 
   const onToggleNoclip = (pressed: boolean) => {
     // TODO(Charlotte): if a player is noclipping, we should network this
@@ -220,6 +223,7 @@ export const createPlayer = (
         direction: ref(0),
         facing: ref('left'),
         colliding: ref(false),
+        weaponColliding: ref(false),
       }
     },
 
@@ -238,13 +242,14 @@ export const createPlayer = (
       gfxFeet.zIndex = sprite.zIndex + 2
 
       drawBox(gfxBounds, { width, height }, { stroke: '#00f' })
+      drawBox(gfxWeaponBounds, { width, height }, { stroke: '#00f' })
 
       stage.addChild(sprite)
-      stage.addChild(weaponSprite)
+      stage.addChild(weaponSprite, gfxWeaponBounds)
       stage.addChild(gfxBounds)
       stage.addChild(gfxFeet)
 
-      return { camera, sprite, gfxBounds, gfxFeet }
+      return { camera, sprite, gfxBounds, gfxWeaponBounds, gfxFeet }
     },
 
     teardown({ inputs, physics }) {
@@ -261,7 +266,7 @@ export const createPlayer = (
 
     onPhysicsStep(
       { delta },
-      { inputs, physics, network, direction, facing, colliding },
+      { inputs, physics, network, direction, facing, colliding, weaponColliding },
     ) {
       const left = inputs?.getInput(PlayerInput.WalkLeft) ?? false
       const right = inputs?.getInput(PlayerInput.WalkRight) ?? false
@@ -387,6 +392,7 @@ export const createPlayer = (
 
         const swordQuery = Matter.Query.region(swordBodies, sword.bounds);
         const isSwordColliding = swordQuery.length > 0;
+        weaponColliding.value = isSwordColliding
 
         if(isSwordColliding) {
           for (const collidedEntity of swordQuery) {
@@ -407,6 +413,7 @@ export const createPlayer = (
         direction: { value: direction },
         facing: { value: facing },
         colliding: { value: colliding },
+        weaponColliding: { value: weaponColliding },
       },
       { camera, sprite, gfxBounds, gfxFeet },
     ) {
@@ -490,6 +497,19 @@ export const createPlayer = (
         weaponSprite.height = initialHeight
 
         weaponSprite.anchor.set(0, 1)
+
+
+        gfxWeaponBounds.position = pos
+        gfxWeaponBounds.alpha = debug.value ? 0.5 : 0
+
+        const inactive = '#f00'
+        const active = '#0f0'
+
+        drawBox(
+          gfxWeaponBounds,
+          { width:150, height: 150 },
+          { strokeAlpha: 0, fill: weaponColliding ? active : inactive, fillAlpha: 1 },
+        )
       }
 
     },
