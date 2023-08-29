@@ -95,11 +95,17 @@ export const createPlayer = (
     { width: 150, height: 150 },
   )
 
-  const weaponBody = Matter.Bodies.rectangle(0, 0, 150, 150, {
-    label: 'weapon',
-    render: { visible: false },
-    isSensor: true,
-  })
+  const weaponBody = Matter.Bodies.rectangle(
+    weaponSprite.x,
+    weaponSprite.y,
+    150,
+    150,
+    {
+        label: 'weapon',
+        render: { visible: false },
+        isSensor: true
+    }
+);
 
   const gfxWeaponBounds = new Graphics()
 
@@ -168,6 +174,7 @@ export const createPlayer = (
   }
 
   Object.freeze(boneMap)
+
 
   const player: Player = createEntity({
     get [symbol]() {
@@ -370,27 +377,15 @@ export const createPlayer = (
 
 
       if(attack) {
-        const swordPosition = {
-            x: facing.value === 'left' ? body.position.x - 150 : body.position.x + 150,
-            y: body.position.y
-        };
-
-        const sword = Matter.Bodies.rectangle(
-            swordPosition.x,
-            swordPosition.y,
-            150,
-            150
-        );
-
         const swordBodies = physics.world.bodies
             .filter(other => other !== body)
             .filter(other => !other.isSensor)
             .filter(other => Matter.Detector.canCollide(
-                sword.collisionFilter,
+              weaponBody.collisionFilter,
                 other.collisionFilter
             ));
 
-        const swordQuery = Matter.Query.region(swordBodies, sword.bounds);
+        const swordQuery = Matter.Query.region(swordBodies, weaponBody.bounds);
         const isSwordColliding = swordQuery.length > 0;
         weaponColliding.value = isSwordColliding
 
@@ -404,6 +399,7 @@ export const createPlayer = (
 
     }
     },
+
 
     onRenderFrame(
       _,
@@ -498,8 +494,9 @@ export const createPlayer = (
 
         weaponSprite.anchor.set(0, 1)
 
+        Matter.Body.setAngle(weaponBody, rotation)
 
-        gfxWeaponBounds.position = pos
+        gfxWeaponBounds.position = weaponSprite
         gfxWeaponBounds.alpha = debug.value ? 0.5 : 0
 
         const inactive = '#f00'
