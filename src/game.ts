@@ -340,16 +340,24 @@ export async function createGame<Server extends boolean>(
   const clientData: GameClient | undefined = options.isServer
     ? undefined
     : {
-        inputs,
-        network: network as NetClient | undefined,
-        render: renderContext as RenderContextExt,
+        get inputs() {
+          return inputs
+        },
+        get render() {
+          return renderContext as RenderContextExt
+        },
+        get network() {
+          return network as NetClient | undefined
+        },
       }
 
   const serverData: GameServer | undefined = !options.isServer
     ? undefined
     : {
         kv: Object.freeze(options.kv) as KvStore,
-        network: network as NetServer | undefined,
+        get network() {
+          return network as NetServer | undefined
+        },
       }
 
   const game: Game<Server> = {
