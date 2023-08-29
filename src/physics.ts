@@ -11,6 +11,8 @@ export interface Physics {
   get world(): World
 
   getBodies(entity: SpawnableEntity): Body[]
+  getEntity(body: Body): SpawnableEntity | undefined
+
   register<E extends SpawnableEntity<Data, Render>, Data, Render>(
     entity: E | PartializeSpawnable<E, Data, Render>,
     ...bodies: Body[]
@@ -24,6 +26,7 @@ export interface Physics {
 export const createPhysics = (): Physics => {
   const engine = Matter.Engine.create()
   const entities = new Map<string, Body[]>()
+  const bodiesMap = new Map<number, SpawnableEntity>()
 
   const physics: Physics = {
     get engine() {
@@ -32,6 +35,18 @@ export const createPhysics = (): Physics => {
 
     get world() {
       return engine.world
+    },
+
+    getBodies(entity) {
+      if (!isSpawnableEntity(entity)) {
+        throw new TypeError('entity is not a spawnableentity')
+      }
+
+      return entities.get(entity.uid) ?? []
+    },
+
+    getEntity(body) {
+      return bodiesMap.get(body.id)
     },
 
     register(entity, ...bodies) {
@@ -43,6 +58,10 @@ export const createPhysics = (): Physics => {
       set.push(...bodies)
 
       entities.set(entity.uid, set)
+      for (const body of bodies) {
+        bodiesMap.set(body.id, entity)
+      }
+
       Matter.Composite.add(engine.world, bodies)
     },
 
@@ -60,15 +79,11 @@ export const createPhysics = (): Physics => {
       entities.set(entity.uid, set)
       if (set.length === 0) entities.delete(entity.uid)
 
-      Matter.Composite.remove(engine.world, bodies)
-    },
-
-    getBodies(entity) {
-      if (!isSpawnableEntity(entity)) {
-        throw new TypeError('entity is not a spawnableentity')
+      for (const body of bodies) {
+        bodiesMap.delete(body.id)
       }
 
-      return entities.get(entity.uid) ?? []
+      Matter.Composite.remove(engine.world, bodies)
     },
   }
 
