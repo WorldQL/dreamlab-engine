@@ -19,6 +19,7 @@ export interface NetClient extends Listeners<NetClientListeners> {
     fallThrough: boolean,
     left: boolean,
     right: boolean,
+    attack: boolean,
   ): void
   sendPlayerAnimation(animation: string): void
 }
