@@ -427,7 +427,7 @@ export const createPlayer = (
         colliding: { value: colliding },
         weaponColliding: { value: weaponColliding },
       },
-      { camera, sprite, weaponSprite, gfxBounds, gfxFeet },
+      { camera, sprite, weaponSprite, gfxBounds, gfxFeet, gfxWeaponBounds },
     ) {
       const scale = facing === 'left' ? 1 : -1
       const newScale = scale * PLAYER_SPRITE_SCALE
@@ -473,6 +473,9 @@ export const createPlayer = (
       )
 
       if (weaponSprite) {
+        weaponSprite.visible = Boolean(attack)
+        gfxWeaponBounds.visible = Boolean(attack)
+
         const pos = Vec.add(
           { x: boneMap.handLeft.x, y: boneMap.handLeft.y },
           camera.offset,
@@ -480,24 +483,14 @@ export const createPlayer = (
         weaponSprite.position = pos
 
         const animation = animations[currentAnimation]
-
-        const lefthand_axisX_x =
-          animation.boneData.handOffsets.handLeft[currentFrame]!.x.x
-        const lefthand_axisX_y =
-          animation.boneData.handOffsets.handLeft[currentFrame]!.x.y
-        const lefthand_axisY_x =
-          animation.boneData.handOffsets.handLeft[currentFrame]!.y.x
-        const lefthand_axisY_y =
-          animation.boneData.handOffsets.handLeft[currentFrame]!.y.y
+        const handOffsets =
+          animation.boneData.handOffsets.handLeft[currentFrame]
 
         let rotation = Math.atan2(
-          lefthand_axisY_y - lefthand_axisX_y,
-          lefthand_axisY_x - lefthand_axisX_x,
+          handOffsets!.y.y - handOffsets!.x.y,
+          handOffsets!.y.x - handOffsets!.x.x,
         )
-
-        if (scale === -1) {
-          rotation = -rotation
-        }
+        rotation *= scale === -1 ? -1 : 1
 
         weaponSprite.rotation = rotation
         const initialWidth = weaponSprite.width
@@ -512,15 +505,13 @@ export const createPlayer = (
 
         Matter.Body.setAngle(weaponBody, rotation)
 
-        gfxWeaponBounds.position = weaponSprite
+        gfxWeaponBounds.position.set(weaponSprite.x, weaponSprite.y)
+        gfxWeaponBounds.rotation = rotation
         gfxWeaponBounds.alpha = debug.value ? 0.5 : 0
-
-        const inactive = '#f00'
-        const active = '#0f0'
 
         drawBox(
           gfxWeaponBounds,
-          { width: 150, height: 150 },
+          { width: weaponSprite.width, height: weaponSprite.height },
           {
             strokeAlpha: 0,
             fill: weaponColliding ? active : inactive,
