@@ -266,7 +266,13 @@ export const createPlayer = (
       Matter.Composite.remove(physics.world, body)
     },
 
-    teardownRenderContext({ sprite, weaponSprite, gfxBounds, gfxFeet, gfxWeaponBounds }) {
+    teardownRenderContext({
+      sprite,
+      weaponSprite,
+      gfxBounds,
+      gfxFeet,
+      gfxWeaponBounds,
+    }) {
       sprite.destroy()
       weaponSprite.destroy()
       gfxBounds.destroy()
