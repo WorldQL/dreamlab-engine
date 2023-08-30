@@ -1,4 +1,5 @@
 import Matter from 'matter-js'
+import type { Sprite } from 'pixi.js'
 import { AnimatedSprite, Graphics } from 'pixi.js'
 import type { Camera } from '~/entities/camera.js'
 import type { Entity } from '~/entity.js'
@@ -40,6 +41,9 @@ interface Render {
   sprite: AnimatedSprite
   gfxBounds: Graphics
   gfxFeet: Graphics
+
+  weaponSprite: Sprite
+  gfxWeaponBounds: Graphics
 }
 
 const symbol = Symbol.for('@dreamlab/core/entities/player')
@@ -90,22 +94,11 @@ export const createPlayer = (
   const noclipSpeed = 15
   let attack = false
 
-  const weaponSprite = createSprite(
-    'https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693261056400.png',
-    { width: 150, height: 150 },
-  )
-
-  const weaponBody = Matter.Bodies.rectangle(
-    weaponSprite.x,
-    weaponSprite.y,
-    150,
-    150,
-    {
-        label: 'weapon',
-        render: { visible: false },
-        isSensor: true
-    }
-);
+  const weaponBody = Matter.Bodies.rectangle(0, 0, 150, 150, {
+    label: 'weapon',
+    render: { visible: false },
+    isSensor: true,
+  })
 
   const gfxWeaponBounds = new Graphics()
 
@@ -175,7 +168,6 @@ export const createPlayer = (
 
   Object.freeze(boneMap)
 
-
   const player: Player = createEntity({
     get [symbol]() {
       return true as const
@@ -207,9 +199,7 @@ export const createPlayer = (
 
       Matter.Composite.add(physics.world, body)
 
-
       Matter.Composite.add(physics.world, weaponBody)
-
 
       if (inputs) {
         inputs.registerInput(PlayerInput.WalkLeft, 'KeyA')
@@ -241,22 +231,34 @@ export const createPlayer = (
       sprite.anchor.set(...PLAYER_SPRITE_ANCHOR)
       sprite.play()
 
+      const weaponSprite = createSprite(
+        'https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693261056400.png',
+        { width: 150, height: 150 },
+      )
+
       const gfxBounds = new Graphics()
       const gfxFeet = new Graphics()
+      const gfxWeaponBounds = new Graphics()
 
       sprite.zIndex = 10
       gfxBounds.zIndex = sprite.zIndex + 1
       gfxFeet.zIndex = sprite.zIndex + 2
+      gfxFeet.zIndex = sprite.zIndex + 3
 
       drawBox(gfxBounds, { width, height }, { stroke: '#00f' })
       drawBox(gfxWeaponBounds, { width, height }, { stroke: '#00f' })
 
-      stage.addChild(sprite)
+      stage.addChild(sprite, gfxBounds, gfxFeet)
       stage.addChild(weaponSprite, gfxWeaponBounds)
-      stage.addChild(gfxBounds)
-      stage.addChild(gfxFeet)
 
-      return { camera, sprite, gfxBounds, gfxWeaponBounds, gfxFeet }
+      return {
+        camera,
+        sprite,
+        gfxBounds,
+        gfxFeet,
+        weaponSprite,
+        gfxWeaponBounds,
+      }
     },
 
     teardown({ inputs, physics }) {
@@ -264,16 +266,25 @@ export const createPlayer = (
       Matter.Composite.remove(physics.world, body)
     },
 
-    teardownRenderContext({ sprite, gfxBounds, gfxFeet }) {
+    teardownRenderContext({ sprite, weaponSprite, gfxBounds, gfxFeet, gfxWeaponBounds }) {
       sprite.destroy()
       weaponSprite.destroy()
       gfxBounds.destroy()
       gfxFeet.destroy()
+      gfxWeaponBounds.destroy()
     },
 
     onPhysicsStep(
       { delta },
-      { inputs, physics, network, direction, facing, colliding, weaponColliding },
+      {
+        inputs,
+        physics,
+        network,
+        direction,
+        facing,
+        colliding,
+        weaponColliding,
+      },
     ) {
       const left = inputs?.getInput(PlayerInput.WalkLeft) ?? false
       const right = inputs?.getInput(PlayerInput.WalkRight) ?? false
@@ -375,31 +386,30 @@ export const createPlayer = (
       )
       network?.sendPlayerMotionInputs(jump, crouch, left, right, attack)
 
-
-      if(attack) {
+      if (attack) {
         const swordBodies = physics.world.bodies
-            .filter(other => other !== body)
-            .filter(other => !other.isSensor)
-            .filter(other => Matter.Detector.canCollide(
+          .filter(other => other !== body)
+          .filter(other => !other.isSensor)
+          .filter(other =>
+            Matter.Detector.canCollide(
               weaponBody.collisionFilter,
-                other.collisionFilter
-            ));
+              other.collisionFilter,
+            ),
+          )
 
-        const swordQuery = Matter.Query.region(swordBodies, weaponBody.bounds);
-        const isSwordColliding = swordQuery.length > 0;
+        const swordQuery = Matter.Query.region(swordBodies, weaponBody.bounds)
+        const isSwordColliding = swordQuery.length > 0
         weaponColliding.value = isSwordColliding
 
-        if(isSwordColliding) {
+        if (isSwordColliding) {
           for (const collidedEntity of swordQuery) {
-              const label = collidedEntity.label;
-              network?.sendCustomMessage("@dreamlab/Hittable/hit", {label});
-              console.log("Sending hit packet for:", label);
+            const label = collidedEntity.label
+            network?.sendCustomMessage('@dreamlab/Hittable/hit', { label })
+            console.log('Sending hit packet for:', label)
           }
+        }
       }
-
-    }
     },
-
 
     onRenderFrame(
       _,
@@ -411,7 +421,7 @@ export const createPlayer = (
         colliding: { value: colliding },
         weaponColliding: { value: weaponColliding },
       },
-      { camera, sprite, gfxBounds, gfxFeet },
+      { camera, sprite, weaponSprite, gfxBounds, gfxFeet },
     ) {
       const scale = facing === 'left' ? 1 : -1
       const newScale = scale * PLAYER_SPRITE_SCALE
@@ -504,11 +514,14 @@ export const createPlayer = (
 
         drawBox(
           gfxWeaponBounds,
-          { width:150, height: 150 },
-          { strokeAlpha: 0, fill: weaponColliding ? active : inactive, fillAlpha: 1 },
+          { width: 150, height: 150 },
+          {
+            strokeAlpha: 0,
+            fill: weaponColliding ? active : inactive,
+            fillAlpha: 1,
+          },
         )
       }
-
     },
   })
 
