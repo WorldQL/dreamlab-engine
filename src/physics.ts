@@ -23,6 +23,13 @@ export interface Physics {
   ): void
 }
 
+const randomID = (): number => {
+  const buf = new Uint32Array(1)
+  crypto.getRandomValues(buf)
+
+  return buf[0]!
+}
+
 export const createPhysics = (): Physics => {
   const engine = Matter.Engine.create()
   const entities = new Map<string, Body[]>()
@@ -52,6 +59,11 @@ export const createPhysics = (): Physics => {
     register(entity, ...bodies) {
       if (!isSpawnableEntity(entity)) {
         throw new TypeError('entity is not a spawnableentity')
+      }
+
+      // Override Matter.js sequential IDs with random ones
+      for (const body of bodies) {
+        body.id = randomID()
       }
 
       const set = entities.get(entity.uid) ?? []
