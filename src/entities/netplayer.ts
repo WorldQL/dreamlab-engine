@@ -48,6 +48,7 @@ export interface NetPlayer extends PlayerCommon, Entity<Data, Render> {
   get peerID(): string
   get entityID(): string
   get body(): Body
+  get weaponUrl(): string
 
   setPosition(vector: LooseVector): void
   setVelocity(vector: LooseVector): void
@@ -58,8 +59,9 @@ export interface NetPlayer extends PlayerCommon, Entity<Data, Render> {
 export const createNetPlayer = (
   peerID: string,
   entityID: string | undefined,
+  weaponUrl: string,
   animations: PlayerAnimationMap<KnownPlayerAnimation> | undefined,
-  { width = 80, height = 370 }: Partial<PlayerSize> = {},
+  { width = 10, height = 370}: Partial<PlayerSize> = {},
 ) => {
   const _entityID = entityID ?? createId()
 
@@ -87,6 +89,10 @@ export const createNetPlayer = (
 
     get size() {
       return { width, height }
+    },
+
+    get weaponUrl() {
+      return weaponUrl
     },
 
     setPosition(vector: LooseVector) {

@@ -55,6 +55,7 @@ export const isPlayer = (player: unknown): player is Player => {
 export interface PlayerCommon {
   get position(): Vector
   get size(): PlayerSize
+  get weaponUrl(): string
 }
 
 export interface Player extends PlayerCommon, Entity<Data, Render> {
@@ -81,26 +82,20 @@ export enum PlayerInput {
 
 export const createPlayer = (
   animations: PlayerAnimationMap<KnownPlayerAnimation>,
-  { width = 80, height = 370 }: Partial<PlayerSize> = {},
+  { width = 10, height = 370 }: Partial<PlayerSize> = {},
 ) => {
   const moveForce = 0.5
   const maxSpeed = 1
   const jumpForce = 5
   const feetSensor = 4
+  const weaponSpriteUrl =
+    'https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693261056400.png'
 
   let hasJumped = false
 
   let noclip = false
   const noclipSpeed = 15
   let attack = false
-
-  const weaponBody = Matter.Bodies.rectangle(0, 0, 150, 150, {
-    label: 'weapon',
-    render: { visible: false },
-    isSensor: true,
-  })
-
-  const gfxWeaponBounds = new Graphics()
 
   const onToggleNoclip = (pressed: boolean) => {
     // TODO(Charlotte): if a player is noclipping, we should network this
@@ -121,6 +116,12 @@ export const createPlayer = (
     mass: PLAYER_MASS,
     inverseMass: 1 / PLAYER_MASS,
     friction: 0,
+  })
+
+  const weaponBody = Matter.Bodies.rectangle(0, 0, 150, 150, {
+    label: 'weapon',
+    render: { visible: false },
+    isSensor: true,
   })
 
   const getAnimation = (direction: number): KnownPlayerAnimation => {
@@ -185,6 +186,10 @@ export const createPlayer = (
       return boneMap
     },
 
+    get weaponUrl() {
+      return weaponSpriteUrl
+    },
+
     teleport(position: LooseVector, resetVelocity = true) {
       Matter.Body.setPosition(body, v(position))
       if (resetVelocity) Matter.Body.setVelocity(body, { x: 0, y: 0 })
@@ -231,10 +236,10 @@ export const createPlayer = (
       sprite.anchor.set(...PLAYER_SPRITE_ANCHOR)
       sprite.play()
 
-      const weaponSprite = createSprite(
-        'https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693261056400.png',
-        { width: 150, height: 150 },
-      )
+      const weaponSprite = createSprite(weaponSpriteUrl, {
+        width: 150,
+        height: 150,
+      })
 
       const gfxBounds = new Graphics()
       const gfxFeet = new Graphics()
@@ -243,7 +248,7 @@ export const createPlayer = (
       sprite.zIndex = 10
       gfxBounds.zIndex = sprite.zIndex + 1
       gfxFeet.zIndex = sprite.zIndex + 2
-      gfxFeet.zIndex = sprite.zIndex + 3
+      gfxWeaponBounds.zIndex = sprite.zIndex + 3
 
       drawBox(gfxBounds, { width, height }, { stroke: '#00f' })
       drawBox(gfxWeaponBounds, { width, height }, { stroke: '#00f' })
