@@ -18,16 +18,16 @@ export interface NetClient extends Listeners<NetClientListeners> {
 
   sendCustomMessage(channel: string, data: Data): void
   sendPlayerPosition(position: Vector, velocity: Vector, flipped: boolean): void
-<<<<<<< HEAD
-  sendPlayerMotionInputs(
-    jump: boolean,
-    fallThrough: boolean,
-    left: boolean,
-    right: boolean,
-    attack: boolean,
-  ): void
-=======
+
+  // sendPlayerMotionInputs(
+  //   jump: boolean,
+  //   fallThrough: boolean,
+  //   left: boolean,
+  //   right: boolean,
+  //   attack: boolean,
+  // ): void
+
   sendPlayerMotionInputs(inputs: InputMap): void
->>>>>>> origin/trunk
+
   sendPlayerAnimation(animation: string): void
 }

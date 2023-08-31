@@ -395,8 +395,15 @@ export const createPlayer = (
         body.velocity,
         facing.value !== 'left',
       )
-<<<<<<< HEAD
-      network?.sendPlayerMotionInputs(jump, crouch, left, right, attack)
+
+      network?.sendPlayerMotionInputs({
+        jump,
+        crouch,
+        walkLeft: left,
+        walkRight: right,
+        toggleNoclip: false, // TODO: Actually send this
+        attack,
+      })
 
       if (attack) {
         const swordBodies = physics.world.bodies
@@ -421,16 +428,6 @@ export const createPlayer = (
           }
         }
       }
-=======
-
-      network?.sendPlayerMotionInputs({
-        jump,
-        crouch,
-        walkLeft: left,
-        walkRight: right,
-        toggleNoclip: false, // TODO: Actually send this
-      })
->>>>>>> origin/trunk
     },
 
     onRenderFrame(
