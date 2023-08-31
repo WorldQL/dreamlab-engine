@@ -1,6 +1,6 @@
 import Matter from 'matter-js'
 import type { Sprite } from 'pixi.js'
-import { AnimatedSprite, Graphics } from 'pixi.js'
+import { AnimatedSprite, Graphics, Texture } from 'pixi.js'
 import type { Camera } from '~/entities/camera.js'
 import type { Entity } from '~/entity.js'
 import { createEntity, dataManager, isEntity } from '~/entity.js'
@@ -12,7 +12,9 @@ import { onlyNetClient } from '~/network/shared.js'
 import type { Physics } from '~/physics.js'
 import { bones } from '~/textures/playerAnimations.js'
 import type { Bone, PlayerAnimationMap } from '~/textures/playerAnimations.js'
-import { createSprite } from '~/textures/sprites.js'
+import { createPlayerData, getObjects } from '~/textures/playerDataHandler.js'
+import type { PlayerData } from '~/textures/playerDataHandler.js'
+import { changeSpriteTexture, createSprite } from '~/textures/sprites.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
 import { ref } from '~/utils/ref.js'
@@ -55,6 +57,7 @@ export const isPlayer = (player: unknown): player is Player => {
 
 export interface PlayerCommon {
   get position(): Vector
+  get playerData(): PlayerData
   get size(): PlayerSize
   get weaponUrl(): string
 }
@@ -75,6 +78,7 @@ export type KnownPlayerAnimation = 'attack' | 'idle' | 'jump' | 'walk'
 export enum PlayerInput {
   Attack = '@player/attack',
   Crouch = '@player/crouch',
+  CycleWeapon = '@player/cycle-weapon',
   Jump = '@player/jump',
   ToggleNoclip = '@player/toggle-noclip',
   WalkLeft = '@player/walk-left',
@@ -83,7 +87,7 @@ export enum PlayerInput {
 
 export const createPlayer = (
   animations: PlayerAnimationMap<KnownPlayerAnimation>,
-  { width = 10, height = 370 }: Partial<PlayerSize> = {},
+  { width = 80, height = 370 }: Partial<PlayerSize> = {},
 ) => {
   const moveForce = 0.5
   const maxSpeed = 1
@@ -95,6 +99,9 @@ export const createPlayer = (
   let noclip = false
   const noclipSpeed = 15
   let attack = false
+
+  let cycleWeapon = false
+  let weaponIndex = 0
 
   const onToggleNoclip = (pressed: boolean) => {
     // TODO(Charlotte): if a player is noclipping, we should network this
@@ -167,6 +174,7 @@ export const createPlayer = (
   }
 
   Object.freeze(boneMap)
+  const playerData = createPlayerData()
 
   const player: Player = createEntity({
     get [symbol]() {
@@ -179,6 +187,10 @@ export const createPlayer = (
 
     get size() {
       return { width, height }
+    },
+
+    get playerData() {
+      return playerData
     },
 
     get bones(): Readonly<Record<Bone, Vector>> {
@@ -209,6 +221,7 @@ export const createPlayer = (
       if (inputs) {
         inputs.registerInput(PlayerInput.WalkLeft, 'KeyA')
         inputs.registerInput(PlayerInput.Attack, 'KeyE')
+        inputs.registerInput(PlayerInput.CycleWeapon, 'KeyQ')
         inputs.registerInput(PlayerInput.WalkRight, 'KeyD')
         inputs.registerInput(PlayerInput.Jump, 'Space')
         inputs.registerInput(PlayerInput.Crouch, 'KeyS')
@@ -229,23 +242,19 @@ export const createPlayer = (
       }
     },
 
-    initRenderContext({ game }, { stage, camera }) {
-      const network = onlyNetClient(game)
-
+    initRenderContext(_, { stage, camera }) {
       const sprite = new AnimatedSprite(animations[currentAnimation].textures)
       sprite.animationSpeed = PLAYER_ANIMATION_SPEED
       sprite.scale.set(PLAYER_SPRITE_SCALE)
       sprite.anchor.set(...PLAYER_SPRITE_ANCHOR)
       sprite.play()
 
+      const objects = getObjects(playerData)
       const weaponSpriteUrl =
+        objects?.[weaponIndex]?.imageTasks?.[weaponIndex]?.imageURL ??
         'https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693261056400.png'
+
       const weaponURL = ref(weaponSpriteUrl)
-
-      network?.addCustomMessageListener('', () => {
-        // TODO
-      })
-
       const weaponSprite = createSprite(weaponSpriteUrl, {
         width: 150,
         height: 150,
@@ -312,6 +321,7 @@ export const createPlayer = (
       const right = inputs?.getInput(PlayerInput.WalkRight) ?? false
       const jump = inputs?.getInput(PlayerInput.Jump) ?? false
       attack = inputs?.getInput(PlayerInput.Attack) ?? false
+      cycleWeapon = inputs?.getInput(PlayerInput.CycleWeapon) ?? false
       const crouch = inputs?.getInput(PlayerInput.Crouch) ?? false
 
       direction.value = left ? -1 : right ? 1 : 0
@@ -414,6 +424,7 @@ export const createPlayer = (
         walkRight: right,
         toggleNoclip: false, // TODO: Actually send this
         attack,
+        cycleWeapon,
       })
 
       if (attack) {
@@ -499,6 +510,22 @@ export const createPlayer = (
       if (weaponSprite) {
         weaponSprite.visible = Boolean(attack)
         gfxWeaponBounds.visible = Boolean(attack)
+
+        if (cycleWeapon) {
+          const objects = getObjects(playerData)
+
+          if (objects.length <= weaponIndex) {
+            weaponIndex = 0
+          } else {
+            weaponIndex++
+          }
+
+          const weaponSpriteUrl =
+            objects?.[weaponIndex]?.imageTasks?.[0]?.imageURL ??
+            'https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693261056400.png'
+
+          changeSpriteTexture(weaponSprite, weaponSpriteUrl)
+        }
 
         const pos = Vec.add(
           { x: boneMap.handLeft.x, y: boneMap.handLeft.y },

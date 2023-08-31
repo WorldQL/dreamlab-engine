@@ -61,7 +61,7 @@ export const createNetPlayer = (
   entityID: string | undefined,
   weaponUrl: string,
   animations: PlayerAnimationMap<KnownPlayerAnimation> | undefined,
-  { width = 10, height = 370}: Partial<PlayerSize> = {},
+  { width = 80, height = 370 }: Partial<PlayerSize> = {},
 ) => {
   const _entityID = entityID ?? createId()
 
@@ -196,6 +196,7 @@ export const createNetPlayer = (
       gfxBounds.position = pos
       gfxBounds.alpha = debug.value ? 0.5 : 0
     },
+    playerData: undefined,
   })
 
   return netPlayer

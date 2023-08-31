@@ -40,3 +40,24 @@ export const createSprite = (
 
   return sprite
 }
+
+export const changeSpriteTexture = (
+  sprite: Sprite | TilingSprite,
+  source: SpriteSource,
+): void => {
+  const { url }: SpriteSourceOptions =
+    typeof source === 'string' ? { url: source } : source
+
+  const newTexture = Texture.from(url)
+
+  sprite.texture = newTexture
+
+  if (
+    sprite instanceof TilingSprite &&
+    typeof source !== 'string' &&
+    source.tile &&
+    typeof source.tile === 'number'
+  ) {
+    sprite.tileScale.set(source.tile)
+  }
+}
