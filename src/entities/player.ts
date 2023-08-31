@@ -3,7 +3,7 @@ import type { Sprite } from 'pixi.js'
 import { AnimatedSprite, Graphics } from 'pixi.js'
 import type { Camera } from '~/entities/camera.js'
 import type { Entity } from '~/entity.js'
-import { createEntity, isEntity } from '~/entity.js'
+import { createEntity, dataManager, isEntity } from '~/entity.js'
 import type { InputManager } from '~/input/manager.js'
 import { v, Vec } from '~/math/vector.js'
 import type { LooseVector, Vector } from '~/math/vector.js'
@@ -42,6 +42,7 @@ interface Render {
   gfxBounds: Graphics
   gfxFeet: Graphics
 
+  weaponURL: Ref<string>
   weaponSprite: Sprite
   gfxWeaponBounds: Graphics
 }
@@ -88,8 +89,6 @@ export const createPlayer = (
   const maxSpeed = 1
   const jumpForce = 5
   const feetSensor = 4
-  const weaponSpriteUrl =
-    'https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693261056400.png'
 
   let hasJumped = false
 
@@ -186,8 +185,9 @@ export const createPlayer = (
       return boneMap
     },
 
-    get weaponUrl() {
-      return weaponSpriteUrl
+    get weaponUrl(): string {
+      const { weaponURL } = dataManager.getRenderData(this)
+      return weaponURL.value
     },
 
     teleport(position: LooseVector, resetVelocity = true) {
@@ -229,12 +229,22 @@ export const createPlayer = (
       }
     },
 
-    initRenderContext(_, { stage, camera }) {
+    initRenderContext({ game }, { stage, camera }) {
+      const network = onlyNetClient(game)
+
       const sprite = new AnimatedSprite(animations[currentAnimation].textures)
       sprite.animationSpeed = PLAYER_ANIMATION_SPEED
       sprite.scale.set(PLAYER_SPRITE_SCALE)
       sprite.anchor.set(...PLAYER_SPRITE_ANCHOR)
       sprite.play()
+
+      const weaponSpriteUrl =
+        'https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693261056400.png'
+      const weaponURL = ref(weaponSpriteUrl)
+
+      network?.addCustomMessageListener('', () => {
+        // TODO
+      })
 
       const weaponSprite = createSprite(weaponSpriteUrl, {
         width: 150,
@@ -261,6 +271,7 @@ export const createPlayer = (
         sprite,
         gfxBounds,
         gfxFeet,
+        weaponURL,
         weaponSprite,
         gfxWeaponBounds,
       }

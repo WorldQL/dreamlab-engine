@@ -24,10 +24,18 @@ export interface Physics {
 }
 
 const randomID = (): number => {
-  const buf = new Uint32Array(1)
-  crypto.getRandomValues(buf)
+  const buf = new BigUint64Array(1)
+  while (true) {
+    crypto.getRandomValues(buf)
+    const value = buf[0]
+    if (value === undefined) {
+      throw new Error('failed to fill buffer with random value')
+    }
 
-  return buf[0]!
+    if (value < Number.MAX_SAFE_INTEGER) {
+      return Number(value)
+    }
+  }
 }
 
 export const createPhysics = (): Physics => {
