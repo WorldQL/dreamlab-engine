@@ -395,6 +395,7 @@ export const createPlayer = (
         body.velocity,
         facing.value !== 'left',
       )
+<<<<<<< HEAD
       network?.sendPlayerMotionInputs(jump, crouch, left, right, attack)
 
       if (attack) {
@@ -420,6 +421,16 @@ export const createPlayer = (
           }
         }
       }
+=======
+
+      network?.sendPlayerMotionInputs({
+        jump,
+        crouch,
+        walkLeft: left,
+        walkRight: right,
+        toggleNoclip: false, // TODO: Actually send this
+      })
+>>>>>>> origin/trunk
     },
 
     onRenderFrame(

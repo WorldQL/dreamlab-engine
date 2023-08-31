@@ -1,6 +1,10 @@
-import type { Except } from 'type-fest'
+import type { CamelCase, Except } from 'type-fest'
 import type { Data, Listeners } from './shared.js'
+import type { PlayerInput } from '~/entities/player.js'
 import type { Vector } from '~/math/vector.js'
+
+type Inputs = `${PlayerInput}` extends `@player/${infer T}` ? T : never
+type InputMap = Record<CamelCase<Inputs>, boolean>
 
 export type MessageListenerClient = (channel: string, data: Data) => void
 
@@ -14,6 +18,7 @@ export interface NetClient extends Listeners<NetClientListeners> {
 
   sendCustomMessage(channel: string, data: Data): void
   sendPlayerPosition(position: Vector, velocity: Vector, flipped: boolean): void
+<<<<<<< HEAD
   sendPlayerMotionInputs(
     jump: boolean,
     fallThrough: boolean,
@@ -21,5 +26,8 @@ export interface NetClient extends Listeners<NetClientListeners> {
     right: boolean,
     attack: boolean,
   ): void
+=======
+  sendPlayerMotionInputs(inputs: InputMap): void
+>>>>>>> origin/trunk
   sendPlayerAnimation(animation: string): void
 }
