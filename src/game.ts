@@ -89,10 +89,14 @@ async function initRenderContext<Server extends boolean>(
 async function initRenderContext<Server extends boolean>(
   options: Options<Server>,
 ): Promise<RenderContextExt | undefined> {
+  console.log('init render context!');
 
+  // TODO: Expose this so that dreamlab-game OR a user script can load textures.
   await TextureManager.loadTexture('https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693339947404.png');
   await TextureManager.loadTexture('https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693261056400.png')
   await TextureManager.loadTexture('https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693240114500.png')
+
+  console.log('I did not get stuck loading textures!')
 
   if (options.isServer === true) return undefined
   const { container, dimensions, graphicsOptions } = options as Options<false>
