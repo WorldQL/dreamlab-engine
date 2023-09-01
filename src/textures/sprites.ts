@@ -14,6 +14,30 @@ export interface SpriteOptions {
   zIndex?: number
 }
 
+interface TextureMap {
+  [key: string]: Texture;
+};
+
+export class TextureManager {
+  private static sprites: TextureMap = {};
+
+  public static async loadTexture(url: string) {
+    let _t = this.sprites[url];
+
+    if (_t !== undefined) {
+      return;
+    }
+
+    _t = await Texture.fromURL(url);
+    this.sprites[url] = _t
+    return _t
+  }
+
+  public static getTexture(url: string): Texture | undefined {
+    return this.sprites[url];
+  }
+}
+
 export const createSprite = (
   source: SpriteSource,
   { width, height, zIndex }: SpriteOptions = {},
@@ -45,12 +69,15 @@ export const changeSpriteTexture = (
   sprite: Sprite | TilingSprite,
   source: SpriteSource,
 ): void => {
+  console.log('running changeSpriteTexture')
   const { url }: SpriteSourceOptions =
     typeof source === 'string' ? { url: source } : source
 
-  const newTexture = Texture.from(url)
+  const newTexture = TextureManager.getTexture(url);
 
-  sprite.texture = newTexture
+  if (newTexture !== undefined) {
+    sprite.texture = newTexture
+  }
 
   if (
     sprite instanceof TilingSprite &&

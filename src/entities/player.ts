@@ -102,6 +102,7 @@ export const createPlayer = (
 
   let cycleWeapon = false
   let weaponIndex = 0
+  let didRespondToCycleWeapon = false;
 
   const onToggleNoclip = (pressed: boolean) => {
     // TODO(Charlotte): if a player is noclipping, we should network this
@@ -512,7 +513,7 @@ export const createPlayer = (
         weaponSprite.visible = Boolean(attack)
         gfxWeaponBounds.visible = Boolean(attack)
 
-        if (cycleWeapon) {
+        if (cycleWeapon && !didRespondToCycleWeapon) {
           const objects = getObjects(playerData)
 
           if (objects.length <= weaponIndex) {
@@ -526,6 +527,11 @@ export const createPlayer = (
             'https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693261056400.png'
 
           changeSpriteTexture(weaponSprite, weaponSpriteUrl)
+          didRespondToCycleWeapon = true
+        }
+
+        if (!cycleWeapon) {
+          didRespondToCycleWeapon = false;
         }
 
         const pos = Vec.add(

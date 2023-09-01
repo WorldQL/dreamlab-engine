@@ -2,6 +2,7 @@ import cuid2 from '@paralleldrive/cuid2'
 import Matter from 'matter-js'
 import { Application } from 'pixi.js'
 import type { IApplicationOptions } from 'pixi.js'
+import { TextureManager } from './textures/sprites.js'
 import { createCamera } from '~/entities/camera.js'
 import { registerDefaultSpawnables } from '~/entities/spawnable/index.js'
 import { dataManager, isEntity } from '~/entity.js'
@@ -88,6 +89,11 @@ async function initRenderContext<Server extends boolean>(
 async function initRenderContext<Server extends boolean>(
   options: Options<Server>,
 ): Promise<RenderContextExt | undefined> {
+
+  await TextureManager.loadTexture('https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693339947404.png');
+  await TextureManager.loadTexture('https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693261056400.png')
+  await TextureManager.loadTexture('https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693240114500.png')
+
   if (options.isServer === true) return undefined
   const { container, dimensions, graphicsOptions } = options as Options<false>
 
