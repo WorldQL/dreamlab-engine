@@ -25,6 +25,28 @@ export const PLAYER_SPRITE_SCALE = 0.9
 export const PLAYER_ANIMATION_SPEED = 0.4
 export const PLAYER_SPRITE_ANCHOR = [0.45, 0.535] as const
 
+interface PlayerDataMap {
+  [key: string]: unknown;
+};
+
+export class PlayerDataManager {
+  private static playerData: PlayerDataMap = {};
+
+  public static set(key: string, value: unknown) {
+    this.playerData[key] = value
+  }
+
+  public static get(key: string): unknown {
+    return this.playerData[key];
+  }
+
+  public static getAll(): PlayerDataMap {
+    return this.playerData;
+  }
+}
+
+
+
 interface Data {
   debug: Debug
   inputs: InputManager | undefined
@@ -212,6 +234,8 @@ export const createPlayer = (
       const debug = game.debug
       const inputs = game.client?.inputs
       const network = onlyNetClient(game)
+
+      console.log(PlayerDataManager.getAll())
 
       // TODO: Reimplement spawnpoints
 
