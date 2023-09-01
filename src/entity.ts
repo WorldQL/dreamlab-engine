@@ -10,6 +10,10 @@ export interface Time {
   time: number
 }
 
+export interface RenderTime extends Time {
+  smooth: number
+}
+
 export interface InitContext {
   game: Game<boolean>
   physics: Physics
@@ -32,7 +36,7 @@ export interface Entity<Data = unknown, Render = unknown> {
   initRenderContext(init: InitContext, render: RenderContext): Awaitable<Render>
 
   onPhysicsStep?(time: Time, data: Data): void
-  onRenderFrame?(time: Time, data: Data, render: Render): void
+  onRenderFrame?(time: RenderTime, data: Data, render: Render): void
 
   teardownRenderContext(render: Render): Awaitable<void>
   teardown(data: Data): Awaitable<void>

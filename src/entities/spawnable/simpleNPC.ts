@@ -165,11 +165,13 @@ export const createSimpleNPC = createSpawnableEntity<
     },
 
     onRenderFrame(
-      _,
+      { smooth },
       { debug },
       { camera, gfxBounds, gfxSensorL, gfxSensorR, sprite },
     ) {
-      const pos = Vec.add(body.position, camera.offset)
+      const smoothed = Vec.add(body.position, Vec.mult(body.velocity, smooth))
+      const pos = Vec.add(smoothed, camera.offset)
+
       if (sprite) sprite.position = pos
 
       const sensorL = getSensorL()

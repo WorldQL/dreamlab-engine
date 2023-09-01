@@ -311,7 +311,9 @@ export async function createGame<Server extends boolean>(
     }
 
     if (renderContext) {
-      const timeState = { delta: delta / 1_000, time: time / 1_000 }
+      const smooth = physicsTickAcc / physicsTickDelta
+      const timeState = { delta: delta / 1_000, time: time / 1_000, smooth }
+
       for (const entity of entities) {
         if (typeof entity.onRenderFrame !== 'function') continue
 
