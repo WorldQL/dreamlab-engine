@@ -165,7 +165,7 @@ export const createNetPlayer = (
       gfxBounds.destroy()
     },
 
-    onRenderFrame(_, { debug, body }, { camera, sprite, gfxBounds }) {
+    onRenderFrame({ smooth }, { debug, body }, { camera, sprite, gfxBounds }) {
       if (!animations) {
         throw new Error(`missing animations for netplayer: ${_entityID}`)
       }
@@ -184,7 +184,8 @@ export const createNetPlayer = (
         sprite.gotoAndPlay(0)
       }
 
-      const pos = Vec.add(body.position, camera.offset)
+      const smoothed = Vec.add(body.position, Vec.mult(body.velocity, smooth))
+      const pos = Vec.add(smoothed, camera.offset)
 
       sprite.position = pos
       gfxBounds.position = pos

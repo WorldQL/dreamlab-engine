@@ -347,7 +347,7 @@ export const createPlayer = (
     },
 
     onRenderFrame(
-      _,
+      { smooth },
       {
         debug,
         network,
@@ -375,7 +375,8 @@ export const createPlayer = (
       }
 
       currentFrame = sprite.currentFrame
-      const pos = Vec.add(body.position, camera.offset)
+      const smoothed = Vec.add(body.position, Vec.mult(body.velocity, smooth))
+      const pos = Vec.add(smoothed, camera.offset)
 
       sprite.position = pos
       gfxBounds.position = pos

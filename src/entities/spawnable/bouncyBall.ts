@@ -79,8 +79,9 @@ export const createBouncyBall = createSpawnableEntity(
         sprite?.destroy()
       },
 
-      onRenderFrame(_, { debug, body }, { camera, gfx, sprite }) {
-        const pos = Vec.add(body.position, camera.offset)
+      onRenderFrame({ smooth }, { debug, body }, { camera, gfx, sprite }) {
+        const smoothed = Vec.add(body.position, Vec.mult(body.velocity, smooth))
+        const pos = Vec.add(smoothed, camera.offset)
 
         gfx.position = pos
         gfx.rotation = body.angle
