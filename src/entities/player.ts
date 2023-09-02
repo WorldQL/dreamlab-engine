@@ -22,22 +22,22 @@ export const PLAYER_ANIMATION_SPEED = 0.4
 export const PLAYER_SPRITE_ANCHOR = [0.45, 0.535] as const
 
 interface PlayerDataMap {
-  [key: string]: unknown;
-};
+  [key: string]: unknown
+}
 
 export class PlayerDataManager {
-  private static playerData: PlayerDataMap = {};
+  private static playerData: PlayerDataMap = {}
 
   public static set(key: string, value: unknown) {
     this.playerData[key] = value
   }
 
   public static get(key: string): unknown {
-    return this.playerData[key];
+    return this.playerData[key]
   }
 
   public static getAll(): PlayerDataMap {
-    return this.playerData;
+    return this.playerData
   }
 }
 
