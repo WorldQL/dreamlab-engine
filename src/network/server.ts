@@ -1,8 +1,13 @@
 import type { Except } from 'type-fest'
 import type { Data, Listeners } from './shared.js'
 
+export interface PeerInfo {
+  readonly peerID: string
+  readonly playerID: string
+}
+
 export type MessageListenerServer = (
-  peerID: string,
+  peer: PeerInfo,
   channel: string,
   data: Data,
 ) => void
