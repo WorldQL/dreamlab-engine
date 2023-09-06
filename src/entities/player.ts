@@ -3,7 +3,7 @@ import type { Sprite } from 'pixi.js'
 import { AnimatedSprite, Graphics } from 'pixi.js'
 import type { Camera } from '~/entities/camera.js'
 import type { Entity } from '~/entity.js'
-import { createEntity, dataManager, isEntity } from '~/entity.js'
+import { createEntity, isEntity } from '~/entity.js'
 import type { InputManager } from '~/input/manager.js'
 import { v, Vec } from '~/math/vector.js'
 import type { LooseVector, Vector } from '~/math/vector.js'
@@ -12,8 +12,7 @@ import { onlyNetClient } from '~/network/shared.js'
 import type { Physics } from '~/physics.js'
 import { bones } from '~/textures/playerAnimations.js'
 import type { Bone, PlayerAnimationMap } from '~/textures/playerAnimations.js'
-import { createPlayerData, getObjects } from '~/textures/playerDataHandler.js'
-import type { PlayerData } from '~/textures/playerDataHandler.js'
+import { PlayerDataManager } from '~/textures/playerDataHandler.js'
 import { changeSpriteTexture, createSprite } from '~/textures/sprites.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
@@ -24,28 +23,6 @@ export const PLAYER_MASS = 50
 export const PLAYER_SPRITE_SCALE = 0.9
 export const PLAYER_ANIMATION_SPEED = 0.4
 export const PLAYER_SPRITE_ANCHOR = [0.45, 0.535] as const
-
-interface PlayerDataMap {
-  [key: string]: unknown;
-};
-
-export class PlayerDataManager {
-  private static playerData: PlayerDataMap = {};
-
-  public static set(key: string, value: unknown) {
-    this.playerData[key] = value
-  }
-
-  public static get(key: string): unknown {
-    return this.playerData[key];
-  }
-
-  public static getAll(): PlayerDataMap {
-    return this.playerData;
-  }
-}
-
-
 
 interface Data {
   debug: Debug
@@ -79,9 +56,7 @@ export const isPlayer = (player: unknown): player is Player => {
 
 export interface PlayerCommon {
   get position(): Vector
-  get playerData(): PlayerData
   get size(): PlayerSize
-  get weaponUrl(): string
 }
 
 export interface Player extends PlayerCommon, Entity<Data, Render> {
@@ -197,7 +172,6 @@ export const createPlayer = (
   }
 
   Object.freeze(boneMap)
-  const playerData = createPlayerData()
 
   const player: Player = createEntity({
     get [symbol]() {
@@ -212,17 +186,8 @@ export const createPlayer = (
       return { width, height }
     },
 
-    get playerData() {
-      return playerData
-    },
-
     get bones(): Readonly<Record<Bone, Vector>> {
       return boneMap
-    },
-
-    get weaponUrl(): string {
-      const { weaponURL } = dataManager.getRenderData(this)
-      return weaponURL.value
     },
 
     teleport(position: LooseVector, resetVelocity = true) {
@@ -274,7 +239,7 @@ export const createPlayer = (
       sprite.anchor.set(...PLAYER_SPRITE_ANCHOR)
       sprite.play()
 
-      const objects = getObjects(playerData)
+      const objects = PlayerDataManager.objects
       const weaponSpriteUrl =
         objects?.[weaponIndex]?.imageTasks?.[weaponIndex]?.imageURL ??
         'https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693261056400.png'
@@ -538,7 +503,7 @@ export const createPlayer = (
         gfxWeaponBounds.visible = Boolean(attack)
 
         if (cycleWeapon && !didRespondToCycleWeapon) {
-          const objects = getObjects(playerData)
+          const objects = PlayerDataManager.objects
 
           if (objects.length <= weaponIndex) {
             weaponIndex = 0

@@ -20,7 +20,6 @@ import { v, Vec } from '~/math/vector.js'
 import type { LooseVector, Vector } from '~/math/vector.js'
 import type { Physics } from '~/physics.js'
 import type { PlayerAnimationMap } from '~/textures/playerAnimations.js'
-import { createPlayerData } from '~/textures/playerDataHandler.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
 
@@ -198,7 +197,6 @@ export const createNetPlayer = (
       gfxBounds.position = pos
       gfxBounds.alpha = debug.value ? 0.5 : 0
     },
-    playerData: createPlayerData(),
   })
 
   return netPlayer
