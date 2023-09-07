@@ -88,7 +88,7 @@ async function initRenderContext<Server extends boolean>(
 async function initRenderContext<Server extends boolean>(
   options: Options<Server>,
 ): Promise<RenderContextExt | undefined> {
-  console.log('init render context!');
+  console.log('init render context!')
 
   console.log('I did not get stuck loading textures!')
 

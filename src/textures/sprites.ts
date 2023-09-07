@@ -15,26 +15,26 @@ export interface SpriteOptions {
 }
 
 interface TextureMap {
-  [key: string]: Texture;
-};
+  [key: string]: Texture
+}
 
 export class TextureManager {
-  private static sprites: TextureMap = {};
+  private static sprites: TextureMap = {}
 
   public static async loadTexture(url: string) {
-    let _t = this.sprites[url];
+    let _t = this.sprites[url]
 
     if (_t !== undefined) {
-      return;
+      return
     }
 
-    _t = await Texture.fromURL(url);
+    _t = await Texture.fromURL(url)
     this.sprites[url] = _t
     return _t
   }
 
   public static getTexture(url: string): Texture | undefined {
-    return this.sprites[url];
+    return this.sprites[url]
   }
 }
 
@@ -73,7 +73,7 @@ export const changeSpriteTexture = (
   const { url }: SpriteSourceOptions =
     typeof source === 'string' ? { url: source } : source
 
-  const newTexture = TextureManager.getTexture(url);
+  const newTexture = TextureManager.getTexture(url)
 
   if (newTexture !== undefined) {
     sprite.texture = newTexture

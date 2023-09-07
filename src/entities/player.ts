@@ -99,7 +99,7 @@ export const createPlayer = (
 
   let cycleWeapon = false
   let weaponIndex = 0
-  let didRespondToCycleWeapon = false;
+  let didRespondToCycleWeapon = false
 
   const onToggleNoclip = (pressed: boolean) => {
     // TODO(Charlotte): if a player is noclipping, we should network this
@@ -520,7 +520,7 @@ export const createPlayer = (
         }
 
         if (!cycleWeapon) {
-          didRespondToCycleWeapon = false;
+          didRespondToCycleWeapon = false
         }
 
         const pos = Vec.add(
