@@ -70,11 +70,10 @@ export interface PlayerSize {
   height: number
 }
 
-export type KnownPlayerAnimation = 'idle' | 'jump' | 'walk';
-export type KnownAttackAnimation = 'bow' | 'greatsword';
+export type KnownPlayerAnimation = 'idle' | 'jump' | 'walk'
+export type KnownAttackAnimation = 'bow' | 'greatsword'
 
-
-export type KnownAnimation = KnownAttackAnimation | KnownPlayerAnimation;
+export type KnownAnimation = KnownAttackAnimation | KnownPlayerAnimation
 export enum PlayerInput {
   Attack = '@player/attack',
   Crouch = '@player/crouch',
@@ -131,16 +130,17 @@ export const createPlayer = (
   })
 
   const getAnimation = (direction: number): KnownAnimation => {
-    if (noclip) return 'idle';
-    if (hasJumped && !attack) return 'jump';
+    if (noclip) return 'idle'
+    if (hasJumped && !attack) return 'jump'
 
-    const animationName = PlayerInventory.currentWeapon().animationName.toLowerCase();
-    if (attack && ['greatsword', 'bow'].includes(animationName)) return animationName as KnownAnimation;
-    if (direction !== 0) return 'walk';
+    const animationName =
+      PlayerInventory.currentWeapon().animationName.toLowerCase()
+    if (attack && ['greatsword', 'bow'].includes(animationName))
+      return animationName as KnownAnimation
+    if (direction !== 0) return 'walk'
 
-    return 'idle';
-  };
-
+    return 'idle'
+  }
 
   const bonePosition = (bone: Bone): Vector => {
     const animation = animations[currentAnimation]
