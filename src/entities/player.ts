@@ -98,7 +98,6 @@ export const createPlayer = (
   let attack = false
 
   let cycleWeapon = false
-  let weaponIndex = 0
   let didRespondToCycleWeapon = false
 
   const onToggleNoclip = (pressed: boolean) => {
@@ -237,10 +236,8 @@ export const createPlayer = (
       sprite.anchor.set(...PLAYER_SPRITE_ANCHOR)
       sprite.play()
 
-      const objects = PlayerDataManager.objects
-      const weaponSpriteUrl =
-        objects?.[weaponIndex]?.imageTasks?.[weaponIndex]?.imageURL ??
-        'https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693261056400.png'
+      const weapon = PlayerDataManager.getCurrentWeapon()
+      const weaponSpriteUrl = weapon.imageTasks[0]!.imageURL
 
       const weaponURL = ref(weaponSpriteUrl)
       const weaponSprite = createSprite(weaponSpriteUrl, {
@@ -501,17 +498,8 @@ export const createPlayer = (
         gfxWeaponBounds.visible = Boolean(attack)
 
         if (cycleWeapon && !didRespondToCycleWeapon) {
-          const objects = PlayerDataManager.objects
-
-          if (objects.length - 1 <= weaponIndex) {
-            weaponIndex = 0
-          } else {
-            weaponIndex++
-          }
-
-          const weaponSpriteUrl =
-            objects?.[weaponIndex]?.imageTasks?.[0]?.imageURL ??
-            'https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693261056400.png'
+          const weapon = PlayerDataManager.nextWeapon()
+          const weaponSpriteUrl = weapon.imageTasks[0]!.imageURL
 
           changeSpriteTexture(weaponSprite, weaponSpriteUrl)
           didRespondToCycleWeapon = true
