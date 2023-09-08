@@ -1,4 +1,5 @@
 import Matter from 'matter-js'
+import type { Sprite } from 'pixi.js'
 import { AnimatedSprite, Graphics } from 'pixi.js'
 import type { Camera } from '~/entities/camera.js'
 import type { Entity } from '~/entity.js'
@@ -11,6 +12,8 @@ import { onlyNetClient } from '~/network/shared.js'
 import type { Physics } from '~/physics.js'
 import { bones } from '~/textures/playerAnimations.js'
 import type { Bone, PlayerAnimationMap } from '~/textures/playerAnimations.js'
+import { PlayerDataManager } from '~/textures/playerDataManager.js'
+import { changeSpriteTexture, createSprite } from '~/textures/sprites.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
 import { ref } from '~/utils/ref.js'
@@ -30,6 +33,7 @@ interface Data {
   direction: Ref<-1 | 0 | 1>
   facing: Ref<'left' | 'right'>
   colliding: Ref<boolean>
+  weaponColliding: Ref<boolean>
 }
 
 interface Render {
@@ -38,6 +42,10 @@ interface Render {
   sprite: AnimatedSprite
   gfxBounds: Graphics
   gfxFeet: Graphics
+
+  weaponURL: Ref<string>
+  weaponSprite: Sprite
+  gfxWeaponBounds: Graphics
 }
 
 const symbol = Symbol.for('@dreamlab/core/entities/player')
@@ -63,9 +71,11 @@ export interface PlayerSize {
   height: number
 }
 
-export type KnownPlayerAnimation = 'idle' | 'jump' | 'walk'
+export type KnownPlayerAnimation = 'attack' | 'idle' | 'jump' | 'walk'
 export enum PlayerInput {
+  Attack = '@player/attack',
   Crouch = '@player/crouch',
+  CycleWeapon = '@player/cycle-weapon',
   Jump = '@player/jump',
   ToggleNoclip = '@player/toggle-noclip',
   WalkLeft = '@player/walk-left',
@@ -85,6 +95,11 @@ export const createPlayer = (
 
   let noclip = false
   const noclipSpeed = 15
+  let attack = false
+
+  let cycleWeapon = false
+  let weaponIndex = 0
+  let didRespondToCycleWeapon = false
 
   const onToggleNoclip = (pressed: boolean) => {
     // TODO(Charlotte): if a player is noclipping, we should network this
@@ -107,9 +122,16 @@ export const createPlayer = (
     friction: 0,
   })
 
+  const weaponBody = Matter.Bodies.rectangle(0, 0, 150, 150, {
+    label: 'weapon',
+    render: { visible: false },
+    isSensor: true,
+  })
+
   const getAnimation = (direction: number): KnownPlayerAnimation => {
     if (noclip) return 'idle'
     if (hasJumped) return 'jump'
+    if (attack) return 'attack'
     if (direction !== 0) return 'walk'
 
     return 'idle'
@@ -150,6 +172,7 @@ export const createPlayer = (
   }
 
   Object.freeze(boneMap)
+
   const player: Player = createEntity({
     get [symbol]() {
       return true as const
@@ -181,8 +204,12 @@ export const createPlayer = (
 
       Matter.Composite.add(physics.world, body)
 
+      Matter.Composite.add(physics.world, weaponBody)
+
       if (inputs) {
         inputs.registerInput(PlayerInput.WalkLeft, 'KeyA')
+        inputs.registerInput(PlayerInput.Attack, 'KeyE')
+        inputs.registerInput(PlayerInput.CycleWeapon, 'KeyQ')
         inputs.registerInput(PlayerInput.WalkRight, 'KeyD')
         inputs.registerInput(PlayerInput.Jump, 'Space')
         inputs.registerInput(PlayerInput.Crouch, 'KeyS')
@@ -199,6 +226,7 @@ export const createPlayer = (
         direction: ref(0),
         facing: ref('left'),
         colliding: ref(false),
+        weaponColliding: ref(false),
       }
     },
 
@@ -209,20 +237,41 @@ export const createPlayer = (
       sprite.anchor.set(...PLAYER_SPRITE_ANCHOR)
       sprite.play()
 
+      const objects = PlayerDataManager.objects
+      const weaponSpriteUrl =
+        objects?.[weaponIndex]?.imageTasks?.[weaponIndex]?.imageURL ??
+        'https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693261056400.png'
+
+      const weaponURL = ref(weaponSpriteUrl)
+      const weaponSprite = createSprite(weaponSpriteUrl, {
+        width: 150,
+        height: 150,
+      })
+
       const gfxBounds = new Graphics()
       const gfxFeet = new Graphics()
+      const gfxWeaponBounds = new Graphics()
 
       sprite.zIndex = 10
       gfxBounds.zIndex = sprite.zIndex + 1
       gfxFeet.zIndex = sprite.zIndex + 2
+      gfxWeaponBounds.zIndex = sprite.zIndex + 3
 
       drawBox(gfxBounds, { width, height }, { stroke: '#00f' })
+      drawBox(gfxWeaponBounds, { width, height }, { stroke: '#00f' })
 
-      stage.addChild(sprite)
-      stage.addChild(gfxBounds)
-      stage.addChild(gfxFeet)
+      stage.addChild(sprite, gfxBounds, gfxFeet)
+      stage.addChild(weaponSprite, gfxWeaponBounds)
 
-      return { camera, sprite, gfxBounds, gfxFeet }
+      return {
+        camera,
+        sprite,
+        gfxBounds,
+        gfxFeet,
+        weaponURL,
+        weaponSprite,
+        gfxWeaponBounds,
+      }
     },
 
     teardown({ inputs, physics }) {
@@ -230,19 +279,37 @@ export const createPlayer = (
       Matter.Composite.remove(physics.world, body)
     },
 
-    teardownRenderContext({ sprite, gfxBounds, gfxFeet }) {
+    teardownRenderContext({
+      sprite,
+      weaponSprite,
+      gfxBounds,
+      gfxFeet,
+      gfxWeaponBounds,
+    }) {
       sprite.destroy()
+      weaponSprite.destroy()
       gfxBounds.destroy()
       gfxFeet.destroy()
+      gfxWeaponBounds.destroy()
     },
 
     onPhysicsStep(
       { delta },
-      { inputs, physics, network, direction, facing, colliding },
+      {
+        inputs,
+        physics,
+        network,
+        direction,
+        facing,
+        colliding,
+        weaponColliding,
+      },
     ) {
       const left = inputs?.getInput(PlayerInput.WalkLeft) ?? false
       const right = inputs?.getInput(PlayerInput.WalkRight) ?? false
       const jump = inputs?.getInput(PlayerInput.Jump) ?? false
+      attack = inputs?.getInput(PlayerInput.Attack) ?? false
+      cycleWeapon = inputs?.getInput(PlayerInput.CycleWeapon) ?? false
       const crouch = inputs?.getInput(PlayerInput.Crouch) ?? false
 
       direction.value = left ? -1 : right ? 1 : 0
@@ -258,6 +325,7 @@ export const createPlayer = (
       // on both the client and server
 
       body.isStatic = noclip
+
       if (noclip) {
         const movement = Vec.create()
 
@@ -343,7 +411,33 @@ export const createPlayer = (
         walkLeft: left,
         walkRight: right,
         toggleNoclip: false, // TODO: Actually send this
+        attack,
+        cycleWeapon,
       })
+
+      if (attack) {
+        const swordBodies = physics.world.bodies
+          .filter(other => other !== body)
+          .filter(other => !other.isSensor)
+          .filter(other =>
+            Matter.Detector.canCollide(
+              weaponBody.collisionFilter,
+              other.collisionFilter,
+            ),
+          )
+
+        const swordQuery = Matter.Query.region(swordBodies, weaponBody.bounds)
+        const isSwordColliding = swordQuery.length > 0
+        weaponColliding.value = isSwordColliding
+
+        if (isSwordColliding) {
+          for (const collidedEntity of swordQuery) {
+            const label = collidedEntity.label
+            network?.sendCustomMessage('@dreamlab/Hittable/hit', { label })
+            console.log('Sending hit packet for:', label)
+          }
+        }
+      }
     },
 
     onRenderFrame(
@@ -354,8 +448,9 @@ export const createPlayer = (
         direction: { value: direction },
         facing: { value: facing },
         colliding: { value: colliding },
+        weaponColliding: { value: weaponColliding },
       },
-      { camera, sprite, gfxBounds, gfxFeet },
+      { camera, sprite, weaponSprite, gfxBounds, gfxFeet, gfxWeaponBounds },
     ) {
       const scale = facing === 'left' ? 1 : -1
       const newScale = scale * PLAYER_SPRITE_SCALE
@@ -368,6 +463,10 @@ export const createPlayer = (
       if (newAnimation !== currentAnimation) {
         currentAnimation = newAnimation
         sprite.textures = animations[newAnimation].textures
+        sprite.animationSpeed =
+          currentAnimation === 'attack'
+            ? PLAYER_ANIMATION_SPEED * 5
+            : PLAYER_ANIMATION_SPEED
         sprite.loop = newAnimation !== 'jump'
 
         sprite.gotoAndPlay(0)
@@ -396,6 +495,75 @@ export const createPlayer = (
         { width: width - feetSensor, height: feetSensor },
         { strokeAlpha: 0, fill: colliding ? active : inactive, fillAlpha: 1 },
       )
+
+      if (weaponSprite) {
+        weaponSprite.visible = Boolean(attack)
+        gfxWeaponBounds.visible = Boolean(attack)
+
+        if (cycleWeapon && !didRespondToCycleWeapon) {
+          const objects = PlayerDataManager.objects
+
+          if (objects.length <= weaponIndex) {
+            weaponIndex = 0
+          } else {
+            weaponIndex++
+          }
+
+          const weaponSpriteUrl =
+            objects?.[weaponIndex]?.imageTasks?.[0]?.imageURL ??
+            'https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693261056400.png'
+
+          changeSpriteTexture(weaponSprite, weaponSpriteUrl)
+          didRespondToCycleWeapon = true
+        }
+
+        if (!cycleWeapon) {
+          didRespondToCycleWeapon = false
+        }
+
+        const pos = Vec.add(
+          { x: boneMap.handLeft.x, y: boneMap.handLeft.y },
+          camera.offset,
+        )
+        weaponSprite.position = pos
+
+        const animation = animations[currentAnimation]
+        const handOffsets =
+          animation.boneData.handOffsets.handLeft[currentFrame]
+
+        let rotation = Math.atan2(
+          handOffsets!.y.y - handOffsets!.x.y,
+          handOffsets!.y.x - handOffsets!.x.x,
+        )
+        rotation *= scale === -1 ? -1 : 1
+
+        weaponSprite.rotation = rotation
+        const initialWidth = weaponSprite.width
+        const initialHeight = weaponSprite.height
+
+        weaponSprite.scale.x = -scale
+
+        weaponSprite.width = initialWidth
+        weaponSprite.height = initialHeight
+
+        weaponSprite.anchor.set(0, 1)
+
+        Matter.Body.setAngle(weaponBody, rotation)
+
+        gfxWeaponBounds.position.set(weaponSprite.x, weaponSprite.y)
+        gfxWeaponBounds.rotation = rotation
+        gfxWeaponBounds.alpha = debug.value ? 0.5 : 0
+
+        drawBox(
+          gfxWeaponBounds,
+          { width: weaponSprite.width, height: weaponSprite.height },
+          {
+            strokeAlpha: 0,
+            fill: weaponColliding ? active : inactive,
+            fillAlpha: 1,
+          },
+        )
+      }
     },
   })
 
