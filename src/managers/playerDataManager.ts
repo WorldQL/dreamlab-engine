@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { PlayerInventory } from './playerInventory.js'
+
 interface User {
   email: string
   name: string
@@ -23,18 +25,15 @@ interface InputWrapper {
 }
 
 interface HandlePoint {
-  id: string
   x: number
   y: number
-  objectId: string | null
 }
 
 interface ImageTask {
-  id: string
   imageURL: string
 }
 
-interface ObjectItem {
+export interface ObjectItem {
   id: string
   displayName: string
   imageTasks: ImageTask[]
@@ -62,24 +61,6 @@ export class PlayerDataManager {
       },
     },
     objects: [],
-  }
-
-  private static defaultObject: ObjectItem = {
-    id: 'default',
-    displayName: 'Default Weapon',
-    imageTasks: [
-      {
-        id: 'default-image',
-        imageURL:
-          'https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693261056400.png',
-      },
-    ],
-    handlePoint: {
-      id: 'default-handle',
-      x: 0,
-      y: 0,
-      objectId: null,
-    },
   }
 
   public static get user(): User {
@@ -111,6 +92,7 @@ export class PlayerDataManager {
     }
 
     this.playerData = parsedData
+    PlayerInventory.setObjects(this.playerData.objects)
   }
 
   public static set<T = unknown>(key: keyof PlayerData, jsonStr: string): void {
@@ -143,40 +125,5 @@ export class PlayerDataManager {
 
   public static getAll(): PlayerData {
     return this.playerData
-  }
-
-  private static currentObjectIndex = 0
-
-  public static nextWeapon(): ObjectItem {
-    if (this.playerData.objects.length === 0) {
-      console.warn('No objects in the inventory. Returning default weapon.')
-      return this.defaultObject
-    }
-
-    this.currentObjectIndex =
-      (this.currentObjectIndex + 1) % this.playerData.objects.length
-    return (
-      this.playerData.objects[this.currentObjectIndex] ?? this.defaultObject
-    )
-  }
-
-  public static getCurrentWeapon(): ObjectItem {
-    if (this.playerData.objects.length === 0) {
-      console.warn('No objects in the inventory. Returning default weapon.')
-      return this.defaultObject
-    }
-
-    return (
-      this.playerData.objects[this.currentObjectIndex] ?? this.defaultObject
-    )
-  }
-
-  public static setCurrentWeaponIndex(index: number): void {
-    if (index < 0 || index >= this.playerData.objects.length) {
-      console.error('Invalid object index.')
-      return
-    }
-
-    this.currentObjectIndex = index
   }
 }

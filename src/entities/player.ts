@@ -5,6 +5,7 @@ import type { Camera } from '~/entities/camera.js'
 import type { Entity } from '~/entity.js'
 import { createEntity, isEntity } from '~/entity.js'
 import type { InputManager } from '~/input/manager.js'
+import { PlayerInventory } from '~/managers/playerInventory.js'
 import { v, Vec } from '~/math/vector.js'
 import type { LooseVector, Vector } from '~/math/vector.js'
 import type { NetClient } from '~/network/client.js'
@@ -12,7 +13,6 @@ import { onlyNetClient } from '~/network/shared.js'
 import type { Physics } from '~/physics.js'
 import { bones } from '~/textures/playerAnimations.js'
 import type { Bone, PlayerAnimationMap } from '~/textures/playerAnimations.js'
-import { PlayerDataManager } from '~/textures/playerDataManager.js'
 import { changeSpriteTexture, createSprite } from '~/textures/sprites.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
@@ -236,8 +236,8 @@ export const createPlayer = (
       sprite.anchor.set(...PLAYER_SPRITE_ANCHOR)
       sprite.play()
 
-      const weapon = PlayerDataManager.getCurrentWeapon()
-      const weaponSpriteUrl = weapon.imageTasks[0]!.imageURL
+      const weapon = PlayerInventory.currentWeapon()
+      const weaponSpriteUrl = weapon.imageURL
 
       const weaponURL = ref(weaponSpriteUrl)
       const weaponSprite = createSprite(weaponSpriteUrl, {
@@ -498,8 +498,8 @@ export const createPlayer = (
         gfxWeaponBounds.visible = Boolean(attack)
 
         if (cycleWeapon && !didRespondToCycleWeapon) {
-          const weapon = PlayerDataManager.nextWeapon()
-          const weaponSpriteUrl = weapon.imageTasks[0]!.imageURL
+          const weapon = PlayerInventory.nextWeapon()
+          const weaponSpriteUrl = weapon.imageURL
 
           changeSpriteTexture(weaponSprite, weaponSpriteUrl)
           didRespondToCycleWeapon = true
