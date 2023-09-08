@@ -534,7 +534,21 @@ export const createPlayer = (
         weaponSprite.width = initialWidth
         weaponSprite.height = initialHeight
 
-        weaponSprite.anchor.set(0, 1)
+        const { handlePointX: handleX, handlePointY: handleY } =
+          PlayerInventory.currentWeapon()
+
+        const SCALE_FACTOR = 4_096 // original player size
+        const NORMALIZATION_FACTOR = 300 // object size in editor
+
+        if (handleX && handleY) {
+          const normalizedToOriginalFactor = SCALE_FACTOR / NORMALIZATION_FACTOR
+          const anchorX = (handleX * normalizedToOriginalFactor) / SCALE_FACTOR
+          const anchorY = (handleY * normalizedToOriginalFactor) / SCALE_FACTOR
+
+          weaponSprite.anchor.set(anchorX, anchorY)
+        } else {
+          weaponSprite.anchor.set(0, 1)
+        }
 
         Matter.Body.setAngle(weaponBody, rotation)
 
