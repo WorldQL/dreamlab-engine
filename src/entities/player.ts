@@ -130,7 +130,7 @@ export const createPlayer = (
 
   const getAnimation = (direction: number): KnownPlayerAnimation => {
     if (noclip) return 'idle'
-    if (hasJumped) return 'jump'
+    if (hasJumped && !attack) return 'jump'
     if (attack) return 'attack'
     if (direction !== 0) return 'walk'
 
@@ -308,7 +308,7 @@ export const createPlayer = (
       const left = inputs?.getInput(PlayerInput.WalkLeft) ?? false
       const right = inputs?.getInput(PlayerInput.WalkRight) ?? false
       const jump = inputs?.getInput(PlayerInput.Jump) ?? false
-      attack = inputs?.getInput(PlayerInput.Attack) ?? false
+      attack = (colliding && inputs?.getInput(PlayerInput.Attack)) ?? false
       cycleWeapon = inputs?.getInput(PlayerInput.CycleWeapon) ?? false
       const crouch = inputs?.getInput(PlayerInput.Crouch) ?? false
 
@@ -503,7 +503,7 @@ export const createPlayer = (
         if (cycleWeapon && !didRespondToCycleWeapon) {
           const objects = PlayerDataManager.objects
 
-          if (objects.length <= weaponIndex) {
+          if (objects.length - 1 <= weaponIndex) {
             weaponIndex = 0
           } else {
             weaponIndex++
