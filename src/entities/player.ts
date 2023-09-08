@@ -43,7 +43,6 @@ interface Render {
   gfxBounds: Graphics
   gfxFeet: Graphics
 
-  weaponURL: Ref<string>
   weaponSprite: Sprite
   gfxWeaponBounds: Graphics
 }
@@ -71,7 +70,11 @@ export interface PlayerSize {
   height: number
 }
 
-export type KnownPlayerAnimation = 'attack' | 'idle' | 'jump' | 'walk'
+export type KnownPlayerAnimation = 'idle' | 'jump' | 'walk';
+export type KnownAttackAnimation = 'bow' | 'greatsword';
+
+
+export type KnownAnimation = KnownAttackAnimation | KnownPlayerAnimation;
 export enum PlayerInput {
   Attack = '@player/attack',
   Crouch = '@player/crouch',
@@ -83,7 +86,7 @@ export enum PlayerInput {
 }
 
 export const createPlayer = (
-  animations: PlayerAnimationMap<KnownPlayerAnimation>,
+  animations: PlayerAnimationMap<KnownAnimation>,
   { width = 80, height = 370 }: Partial<PlayerSize> = {},
 ) => {
   const moveForce = 0.5
@@ -106,7 +109,7 @@ export const createPlayer = (
     if (pressed) noclip = !noclip
   }
 
-  let currentAnimation: KnownPlayerAnimation = 'idle'
+  let currentAnimation: KnownAnimation = 'idle'
   let spriteSign = 1
   let currentFrame = 0
 
@@ -127,14 +130,17 @@ export const createPlayer = (
     isSensor: true,
   })
 
-  const getAnimation = (direction: number): KnownPlayerAnimation => {
-    if (noclip) return 'idle'
-    if (hasJumped && !attack) return 'jump'
-    if (attack) return 'attack'
-    if (direction !== 0) return 'walk'
+  const getAnimation = (direction: number): KnownAnimation => {
+    if (noclip) return 'idle';
+    if (hasJumped && !attack) return 'jump';
 
-    return 'idle'
-  }
+    const animationName = PlayerInventory.currentWeapon().animationName.toLowerCase();
+    if (attack && ['greatsword', 'bow'].includes(animationName)) return animationName as KnownAnimation;
+    if (direction !== 0) return 'walk';
+
+    return 'idle';
+  };
+
 
   const bonePosition = (bone: Bone): Vector => {
     const animation = animations[currentAnimation]
@@ -237,10 +243,7 @@ export const createPlayer = (
       sprite.play()
 
       const weapon = PlayerInventory.currentWeapon()
-      const weaponSpriteUrl = weapon.imageURL
-
-      const weaponURL = ref(weaponSpriteUrl)
-      const weaponSprite = createSprite(weaponSpriteUrl, {
+      const weaponSprite = createSprite(weapon.imageURL, {
         width: 150,
         height: 150,
       })
@@ -265,7 +268,6 @@ export const createPlayer = (
         sprite,
         gfxBounds,
         gfxFeet,
-        weaponURL,
         weaponSprite,
         gfxWeaponBounds,
       }
@@ -461,7 +463,7 @@ export const createPlayer = (
         currentAnimation = newAnimation
         sprite.textures = animations[newAnimation].textures
         sprite.animationSpeed =
-          currentAnimation === 'attack'
+          currentAnimation === 'greatsword'
             ? PLAYER_ANIMATION_SPEED * 5
             : PLAYER_ANIMATION_SPEED
         sprite.loop = newAnimation !== 'jump'
@@ -499,9 +501,7 @@ export const createPlayer = (
 
         if (cycleWeapon && !didRespondToCycleWeapon) {
           const weapon = PlayerInventory.nextWeapon()
-          const weaponSpriteUrl = weapon.imageURL
-
-          changeSpriteTexture(weaponSprite, weaponSpriteUrl)
+          changeSpriteTexture(weaponSprite, weapon.imageURL)
           didRespondToCycleWeapon = true
         }
 

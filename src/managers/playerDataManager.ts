@@ -36,6 +36,7 @@ interface ImageTask {
 export interface ObjectItem {
   id: string
   displayName: string
+  animationName: string
   imageTasks: ImageTask[]
   handlePoint: HandlePoint
 }

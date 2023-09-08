@@ -69,7 +69,6 @@ export const changeSpriteTexture = (
   sprite: Sprite | TilingSprite,
   source: SpriteSource,
 ): void => {
-  console.log('running changeSpriteTexture')
   const { url }: SpriteSourceOptions =
     typeof source === 'string' ? { url: source } : source
 

@@ -6,6 +6,7 @@ interface Weapon {
   imageURL: string
   handlePointX: number
   handlePointY: number
+  animationName: string
 }
 
 export class PlayerInventory {
@@ -16,6 +17,7 @@ export class PlayerInventory {
       'https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693261056400.png',
     handlePointX: 0,
     handlePointY: 0,
+    animationName: "greatsword"
   }
 
   private static currentObjectIndex = 0
@@ -36,6 +38,7 @@ export class PlayerInventory {
         imageURL,
         handlePointX,
         handlePointY,
+        animationName: obj.animationName
       }
     })
   }
