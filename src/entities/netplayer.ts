@@ -1,7 +1,7 @@
 import { createId } from '@paralleldrive/cuid2'
 import Matter from 'matter-js'
 import type { Body } from 'matter-js'
-import { AnimatedSprite, Graphics } from 'pixi.js'
+import { AnimatedSprite, Graphics, Sprite } from 'pixi.js'
 import type { Camera } from '~/entities/camera.js'
 import {
   PLAYER_ANIMATION_SPEED,
@@ -10,16 +10,22 @@ import {
   PLAYER_SPRITE_SCALE,
 } from '~/entities/player.js'
 import type {
-  KnownPlayerAnimation,
+  KnownAnimation,
   PlayerCommon,
   PlayerSize,
 } from '~/entities/player.js'
 import { createEntity, dataManager, isEntity } from '~/entity.js'
 import type { Entity } from '~/entity.js'
+import { PlayerInventory } from '~/managers/playerInventory'
 import { v, Vec } from '~/math/vector.js'
 import type { LooseVector, Vector } from '~/math/vector.js'
 import type { Physics } from '~/physics.js'
-import type { PlayerAnimationMap } from '~/textures/playerAnimations.js'
+import {
+  Bone,
+  bones,
+  type PlayerAnimationMap,
+} from '~/textures/playerAnimations.js'
+import { createSprite } from '~/textures/sprites'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
 
@@ -34,6 +40,8 @@ interface Render {
 
   sprite: AnimatedSprite
   gfxBounds: Graphics
+
+  weaponSprite: Sprite
 }
 
 const symbol = Symbol.for('@dreamlab/core/entities/netplayer')
@@ -52,20 +60,59 @@ export interface NetPlayer extends PlayerCommon, Entity<Data, Render> {
   setPosition(vector: LooseVector): void
   setVelocity(vector: LooseVector): void
   setFlipped(flipped: boolean): void
-  setAnimation(animation: KnownPlayerAnimation): void
+  setAnimation(animation: KnownAnimation): void
 }
 
 export const createNetPlayer = (
   peerID: string,
   entityID: string | undefined,
-  animations: PlayerAnimationMap<KnownPlayerAnimation> | undefined,
+  animations: PlayerAnimationMap<KnownAnimation>,
   { width = 80, height = 370 }: Partial<PlayerSize> = {},
 ) => {
   const _entityID = entityID ?? createId()
 
   let isFlipped = false
-  let currentAnimation: KnownPlayerAnimation = 'idle'
+  let currentAnimation: KnownAnimation = 'idle'
   let animationChanged = false
+  let currentFrame = 0
+  let spriteSign = 1
+
+  const bonePosition = (bone: Bone): Vector => {
+    const animation = animations[currentAnimation]
+
+    const animW = animation.width
+    const animH = animation.height
+    const position = animation.boneData.bones[bone][currentFrame]!
+
+    const flip = spriteSign
+    const normalized = {
+      x: flip === 1 ? position.x : animW - position.x,
+      y: position.y,
+    }
+
+    const offsetFromCenter: Vector = {
+      x: (1 - (normalized.x / animW) * 2) * (animW / -2),
+      y: (1 - (normalized.y / animH) * 2) * (animH / -2),
+    }
+
+    const offsetFromAnchor = Vec.add(offsetFromCenter, {
+      x: flip * ((1 - PLAYER_SPRITE_ANCHOR[0] * 2) * (animW / 2)),
+      y: (1 - PLAYER_SPRITE_ANCHOR[1] * 2) * (animH / 2),
+    })
+
+    const scaled = Vec.mult(offsetFromAnchor, PLAYER_SPRITE_SCALE)
+    const { body } = dataManager.getData(netPlayer)
+    return Vec.add(body.position, scaled)
+  }
+
+  const boneMap = {} as Readonly<Record<Bone, Vector>>
+  for (const bone of bones) {
+    Object.defineProperty(boneMap, bone, {
+      get: () => bonePosition(bone),
+    })
+  }
+
+  Object.freeze(boneMap)
 
   const netPlayer: NetPlayer = createEntity<NetPlayer, Data, Render>({
     get [symbol]() {
@@ -143,6 +190,12 @@ export const createNetPlayer = (
       sprite.anchor.set(...PLAYER_SPRITE_ANCHOR)
       sprite.play()
 
+      const weapon = PlayerInventory.currentWeapon()
+      const weaponSprite = createSprite(weapon.imageURL, {
+        width: 150,
+        height: 150,
+      })
+
       const gfxBounds = new Graphics()
       drawBox(gfxBounds, { width, height }, { stroke: '#00f' })
 
@@ -152,8 +205,9 @@ export const createNetPlayer = (
 
       stage.addChild(sprite)
       stage.addChild(gfxBounds)
+      stage.addChild(weaponSprite)
 
-      return { camera, sprite, gfxBounds }
+      return { camera, sprite, gfxBounds, weaponSprite }
     },
 
     teardown({ physics, body }) {
@@ -165,7 +219,11 @@ export const createNetPlayer = (
       gfxBounds.destroy()
     },
 
-    onRenderFrame({ smooth }, { debug, body }, { camera, sprite, gfxBounds }) {
+    onRenderFrame(
+      { smooth },
+      { debug, body },
+      { camera, sprite, gfxBounds, weaponSprite },
+    ) {
       if (!animations) {
         throw new Error(`missing animations for netplayer: ${_entityID}`)
       }
@@ -174,22 +232,73 @@ export const createNetPlayer = (
       const newScale = scale * PLAYER_SPRITE_SCALE
       if (sprite.scale.x !== newScale) {
         sprite.scale.x = newScale
+        spriteSign = Math.sign(sprite.scale.x)
       }
 
       if (animationChanged) {
         animationChanged = false
         sprite.textures = animations[currentAnimation].textures
+        sprite.animationSpeed =
+          currentAnimation === 'greatsword'
+            ? PLAYER_ANIMATION_SPEED * 5
+            : PLAYER_ANIMATION_SPEED
         sprite.loop = currentAnimation !== 'jump'
 
         sprite.gotoAndPlay(0)
       }
 
+      currentFrame = sprite.currentFrame
       const smoothed = Vec.add(body.position, Vec.mult(body.velocity, smooth))
       const pos = Vec.add(smoothed, camera.offset)
 
       sprite.position = pos
       gfxBounds.position = pos
       gfxBounds.alpha = debug.value ? 0.5 : 0
+
+      if (weaponSprite) {
+        weaponSprite.visible = Boolean(currentAnimation === 'greatsword')
+
+        const pos = Vec.add(
+          { x: boneMap.handLeft.x, y: boneMap.handLeft.y },
+          camera.offset,
+        )
+        weaponSprite.position = pos
+
+        const animation = animations[currentAnimation]
+        const handOffsets =
+          animation.boneData.handOffsets.handLeft[currentFrame]
+
+        let rotation = Math.atan2(
+          handOffsets!.y.y - handOffsets!.x.y,
+          handOffsets!.y.x - handOffsets!.x.x,
+        )
+        rotation *= scale === -1 ? -1 : 1
+
+        weaponSprite.rotation = rotation
+        const initialWidth = weaponSprite.width
+        const initialHeight = weaponSprite.height
+
+        weaponSprite.scale.x = -scale
+
+        weaponSprite.width = initialWidth
+        weaponSprite.height = initialHeight
+
+        const { handlePointX: handleX, handlePointY: handleY } =
+          PlayerInventory.currentWeapon()
+
+        const SCALE_FACTOR = 4_096 // original player size
+        const NORMALIZATION_FACTOR = 300 // object size in editor
+
+        if (handleX && handleY) {
+          const normalizedToOriginalFactor = SCALE_FACTOR / NORMALIZATION_FACTOR
+          const anchorX = (handleX * normalizedToOriginalFactor) / SCALE_FACTOR
+          const anchorY = (handleY * normalizedToOriginalFactor) / SCALE_FACTOR
+
+          weaponSprite.anchor.set(anchorX, anchorY)
+        } else {
+          weaponSprite.anchor.set(0, 1)
+        }
+      }
     },
   })
 
