@@ -26,6 +26,8 @@ import type {
   SpawnableFunction,
   UID,
 } from '~/spawnable/spawnableEntity.js'
+import { createClientUI } from '~/ui.js'
+import type { ClientUIManager } from '~/ui.js'
 import type { Debug } from '~/utils/debug.js'
 import { createDebug } from '~/utils/debug.js'
 
@@ -116,6 +118,7 @@ async function initRenderContext<Server extends boolean>(
 type TickListener = (delta: number) => Promise<void> | void
 
 interface GameClient {
+  get ui(): ClientUIManager
   get inputs(): InputManager
   get render(): RenderContextExt
   get network(): NetClient | undefined
@@ -339,9 +342,17 @@ export async function createGame<Server extends boolean>(
     entities.sort((a, b) => (a.priority ?? 0) - (b.priority ?? 0))
   }
 
+  const ui =
+    options.container === undefined
+      ? undefined
+      : createClientUI(options.container)
+
   const clientData: GameClient | undefined = options.isServer
     ? undefined
     : {
+        get ui() {
+          return ui as ClientUIManager
+        },
         get inputs() {
           return inputs
         },
