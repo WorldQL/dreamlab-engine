@@ -574,6 +574,7 @@ export const createPlayer = (
         )
 
         gfxWeaponBounds.position.set(pos2.x, pos2.y)
+        gfxWeaponBounds.alpha = debug.value ? 0.5 : 0
 
         drawBox(gfxWeaponBounds, weaponHitboxSize, {
           strokeAlpha: 1,
