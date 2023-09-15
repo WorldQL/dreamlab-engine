@@ -123,11 +123,19 @@ export const createPlayer = (
     friction: 0,
   })
 
-  const weaponBody = Matter.Bodies.rectangle(0, 0, 150, 150, {
-    label: 'weapon',
-    render: { visible: false },
-    isSensor: true,
-  })
+  const weaponBodyWidth = 160
+  const weaponBodyHeight = 370
+  const weaponBody = Matter.Bodies.rectangle(
+    0,
+    0,
+    weaponBodyWidth,
+    weaponBodyHeight,
+    {
+      label: 'weapon',
+      render: { visible: false },
+      isSensor: true,
+    },
+  )
 
   const getAnimation = (direction: number): KnownAnimation => {
     if (noclip) return 'idle'
@@ -415,9 +423,18 @@ export const createPlayer = (
       })
 
       if (attack) {
+        const xOffset =
+          facing.value === 'right'
+            ? width / 2 + weaponBodyWidth / 2
+            : -width / 2 - weaponBodyWidth / 2
+        Matter.Body.setPosition(weaponBody, {
+          x: body.position.x + xOffset,
+          y: body.position.y,
+        })
         const swordBodies = physics.world.bodies
           .filter(other => other !== body)
           .filter(other => !other.isSensor)
+          .filter(other => other.label !== 'solid')
           .filter(other =>
             Matter.Detector.canCollide(
               weaponBody.collisionFilter,
@@ -431,9 +448,8 @@ export const createPlayer = (
 
         if (isSwordColliding) {
           for (const collidedEntity of swordQuery) {
-            const label = collidedEntity.label
-            network?.sendCustomMessage('@dreamlab/Hittable/hit', { label })
-            console.log('Sending hit packet for:', label)
+            const uid = collidedEntity.id
+            network?.sendCustomMessage('@dreamlab/Hittable/hit', { uid })
           }
         }
       }
@@ -550,21 +566,21 @@ export const createPlayer = (
           weaponSprite.anchor.set(0, 1)
         }
 
-        Matter.Body.setAngle(weaponBody, rotation)
+        const weaponHitboxSize = { width: 120, height: 350 }
 
-        gfxWeaponBounds.position.set(weaponSprite.x, weaponSprite.y)
-        gfxWeaponBounds.rotation = rotation
-        gfxWeaponBounds.alpha = debug.value ? 0.5 : 0
-
-        drawBox(
-          gfxWeaponBounds,
-          { width: weaponSprite.width, height: weaponSprite.height },
-          {
-            strokeAlpha: 0,
-            fill: weaponColliding ? active : inactive,
-            fillAlpha: 1,
-          },
+        const pos2 = Vec.add(
+          { x: weaponBody.position.x, y: weaponBody.position.y },
+          camera.offset,
         )
+
+        gfxWeaponBounds.position.set(pos2.x, pos2.y)
+
+        drawBox(gfxWeaponBounds, weaponHitboxSize, {
+          strokeAlpha: 1,
+          stroke: '#00f',
+          fillAlpha: 0.3,
+          fill: weaponColliding ? active : inactive,
+        })
       }
     },
   })
