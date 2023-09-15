@@ -1,7 +1,7 @@
 import { createId } from '@paralleldrive/cuid2'
 import Matter from 'matter-js'
 import type { Body } from 'matter-js'
-import type { Sprite } from 'pixi.js';
+import type { Sprite } from 'pixi.js'
 import { AnimatedSprite, Graphics } from 'pixi.js'
 import type { Camera } from '~/entities/camera.js'
 import {
@@ -21,12 +21,8 @@ import { PlayerInventory } from '~/managers/playerInventory'
 import { v, Vec } from '~/math/vector.js'
 import type { LooseVector, Vector } from '~/math/vector.js'
 import type { Physics } from '~/physics.js'
-import {
-  bones
-  
-} from '~/textures/playerAnimations.js'
-import type {
-  Bone,PlayerAnimationMap} from '~/textures/playerAnimations.js';
+import { bones } from '~/textures/playerAnimations.js'
+import type { Bone, PlayerAnimationMap } from '~/textures/playerAnimations.js'
 import { createSprite } from '~/textures/sprites'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
