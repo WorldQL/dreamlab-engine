@@ -17,13 +17,13 @@ import type {
 } from '~/entities/player.js'
 import { createEntity, dataManager, isEntity } from '~/entity.js'
 import type { Entity } from '~/entity.js'
-import { PlayerInventory } from '~/managers/playerInventory'
+import { PlayerInventory } from '~/managers/playerInventory.js'
 import { v, Vec } from '~/math/vector.js'
 import type { LooseVector, Vector } from '~/math/vector.js'
 import type { Physics } from '~/physics.js'
 import { bones } from '~/textures/playerAnimations.js'
 import type { Bone, PlayerAnimationMap } from '~/textures/playerAnimations.js'
-import { createSprite } from '~/textures/sprites'
+import { createSprite } from '~/textures/sprites.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
 
@@ -75,6 +75,17 @@ export const createNetPlayer = (
   let currentFrame = 0
   let spriteSign = 1
 
+  const body = Matter.Bodies.rectangle(0, 0, width, height, {
+    label: 'player',
+    render: { visible: false },
+
+    inertia: Number.POSITIVE_INFINITY,
+    inverseInertia: 0,
+    mass: PLAYER_MASS,
+    inverseMass: 1 / PLAYER_MASS,
+    friction: 0,
+  })
+
   const bonePosition = (bone: Bone): Vector => {
     const animation = animations[currentAnimation]
 
@@ -99,7 +110,6 @@ export const createNetPlayer = (
     })
 
     const scaled = Vec.mult(offsetFromAnchor, PLAYER_SPRITE_SCALE)
-    const { body } = dataManager.getData(netPlayer)
     return Vec.add(body.position, scaled)
   }
 
@@ -160,17 +170,6 @@ export const createNetPlayer = (
 
     init({ game, physics }) {
       const debug = game.debug
-
-      const body = Matter.Bodies.rectangle(0, 0, width, height, {
-        label: 'player',
-        render: { visible: false },
-
-        inertia: Number.POSITIVE_INFINITY,
-        inverseInertia: 0,
-        mass: PLAYER_MASS,
-        inverseMass: 1 / PLAYER_MASS,
-        friction: 0,
-      })
 
       Matter.Composite.add(physics.world, body)
 
