@@ -13,6 +13,7 @@ import type { BareNetClient, NetClient } from '~/network/client'
 import type { BareNetServer, NetServer } from '~/network/server'
 import { createPhysics } from '~/physics.js'
 import type { Physics } from '~/physics.js'
+import type { ClientData } from '~/sdk/clientData.js'
 import type { KvStore } from '~/sdk/kv.js'
 import { SpawnableDefinitionSchema } from '~/spawnable/definition.js'
 import type {
@@ -47,6 +48,11 @@ interface ClientOptions {
    */
   graphicsOptions?: Partial<IApplicationOptions>
 
+  /**
+   * Additional well-known data for the current client
+   */
+  data: ClientData
+
   // Server Options
   kv?: never
 }
@@ -61,6 +67,7 @@ interface ServerOptions {
   container?: never
   dimensions?: never
   graphicsOptions?: never
+  data?: never
 }
 
 interface CommonOptions<Server extends boolean> {
@@ -122,6 +129,7 @@ interface GameClient {
   get inputs(): InputManager
   get render(): RenderContextExt
   get network(): NetClient | undefined
+  get data(): ClientData
 }
 
 interface GameServer {
@@ -361,6 +369,9 @@ export async function createGame<Server extends boolean>(
         },
         get network() {
           return network as NetClient | undefined
+        },
+        get data() {
+          return options.data as ClientData
         },
       }
 
