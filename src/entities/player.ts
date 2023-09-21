@@ -123,8 +123,8 @@ export const createPlayer = (
     friction: 0,
   })
 
-  const weaponBodyWidth = 160
-  const weaponBodyHeight = 370
+  const weaponBodyWidth = 120
+  const weaponBodyHeight = 350
   const weaponBody = Matter.Bodies.rectangle(
     0,
     0,
@@ -132,7 +132,7 @@ export const createPlayer = (
     weaponBodyHeight,
     {
       label: 'weapon',
-      render: { visible: false },
+      render: { visible: true },
       isSensor: true,
     },
   )
@@ -302,15 +302,7 @@ export const createPlayer = (
 
     onPhysicsStep(
       { delta },
-      {
-        inputs,
-        physics,
-        network,
-        direction,
-        facing,
-        colliding,
-        weaponColliding,
-      },
+      { inputs, physics, network, direction, facing, colliding },
     ) {
       const left = inputs?.getInput(PlayerInput.WalkLeft) ?? false
       const right = inputs?.getInput(PlayerInput.WalkRight) ?? false
@@ -431,27 +423,27 @@ export const createPlayer = (
           x: body.position.x + xOffset,
           y: body.position.y,
         })
-        const swordBodies = physics.world.bodies
-          .filter(other => other !== body)
-          .filter(other => !other.isSensor)
-          .filter(other => other.label !== 'solid')
-          .filter(other =>
-            Matter.Detector.canCollide(
-              weaponBody.collisionFilter,
-              other.collisionFilter,
-            ),
-          )
+        // const swordBodies = physics.world.bodies
+        //   .filter(other => other !== body)
+        //   .filter(other => !other.isSensor)
+        //   .filter(other => other.label !== 'solid')
+        //   .filter(other =>
+        //     Matter.Detector.canCollide(
+        //       weaponBody.collisionFilter,
+        //       other.collisionFilter,
+        //     ),
+        //   )
 
-        const swordQuery = Matter.Query.region(swordBodies, weaponBody.bounds)
-        const isSwordColliding = swordQuery.length > 0
-        weaponColliding.value = isSwordColliding
+        // const swordQuery = Matter.Query.region(swordBodies, weaponBody.bounds)
+        // const isSwordColliding = swordQuery.length > 0
+        // weaponColliding.value = isSwordColliding
 
-        if (isSwordColliding) {
-          for (const collidedEntity of swordQuery) {
-            const uid = collidedEntity.id
-            network?.sendCustomMessage('@dreamlab/Hittable/hit', { uid })
-          }
-        }
+        // if (isSwordColliding) {
+        //   for (const collidedEntity of swordQuery) {
+        //     const uid = collidedEntity.id
+        //     network?.sendCustomMessage('@dreamlab/Hittable/hit', { uid })
+        //   }
+        // }
       }
     },
 
@@ -463,7 +455,6 @@ export const createPlayer = (
         direction: { value: direction },
         facing: { value: facing },
         colliding: { value: colliding },
-        weaponColliding: { value: weaponColliding },
       },
       { camera, sprite, weaponSprite, gfxBounds, gfxFeet, gfxWeaponBounds },
     ) {
@@ -566,7 +557,7 @@ export const createPlayer = (
           weaponSprite.anchor.set(0, 1)
         }
 
-        const weaponHitboxSize = { width: 120, height: 350 }
+        // const weaponHitboxSize = { width: 120, height: 350 }
 
         const pos2 = Vec.add(
           { x: weaponBody.position.x, y: weaponBody.position.y },
@@ -576,12 +567,12 @@ export const createPlayer = (
         gfxWeaponBounds.position.set(pos2.x, pos2.y)
         gfxWeaponBounds.alpha = debug.value ? 0.5 : 0
 
-        drawBox(gfxWeaponBounds, weaponHitboxSize, {
-          strokeAlpha: 1,
-          stroke: '#00f',
-          fillAlpha: 0.3,
-          fill: weaponColliding ? active : inactive,
-        })
+        // drawBox(gfxWeaponBounds, weaponHitboxSize, {
+        //   strokeAlpha: 1,
+        //   stroke: '#00f',
+        //   fillAlpha: 0.3,
+        //   fill: weaponColliding ? active : inactive,
+        // })
       }
     },
   })
