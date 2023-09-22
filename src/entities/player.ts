@@ -477,13 +477,13 @@ export const createPlayer = (
       if (itemSprite) {
         itemSprite.visible = Boolean(attack)
 
-        if (cycleItem && !didRespondToCycleItem) {
-          const item = inventory.nextItem()
-          changeSpriteTexture(itemSprite, item.image)
-          didRespondToCycleItem = true
-        }
-
-        if (!cycleItem) {
+        if (cycleItem) {
+          if (!didRespondToCycleItem) {
+            const item = inventory.nextItem()
+            changeSpriteTexture(itemSprite, item.image)
+            didRespondToCycleItem = true
+          }
+        } else {
           didRespondToCycleItem = false
         }
 
@@ -521,23 +521,17 @@ export const createPlayer = (
           handOffsets!.y.x - handOffsets!.x.x,
         )
         rotation *= scale === -1 ? -1 : 1
-
         itemSprite.rotation = rotation
-        const initialWidth = itemSprite.width
-        const initialHeight = itemSprite.height
 
-        itemSprite.scale.x = -scale
-
-        itemSprite.width = initialWidth
-        itemSprite.height = initialHeight
-
-        const { anchorX, anchorY } = currentItem.itemOptions ?? {}
-
-        if (anchorX && anchorY) {
-          itemSprite.anchor.set(anchorX, anchorY)
-        } else {
-          itemSprite.anchor.set(0, 1)
+        const initialDimensions = {
+          width: itemSprite.width,
+          height: itemSprite.height,
         }
+        itemSprite.scale.x = -scale
+        Object.assign(itemSprite, initialDimensions)
+
+        const { anchorX = 0, anchorY = 1 } = currentItem.itemOptions ?? {}
+        itemSprite.anchor.set(anchorX, anchorY)
       }
     },
   })
