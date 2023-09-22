@@ -1,65 +1,110 @@
+import type { Texture } from 'pixi.js'
 import type { ObjectItem } from './playerDataManager'
+import { createSprite } from '~/textures/sprites.js'
 
-interface Weapon {
+export interface ItemOptions {
+  anchorX?: number | undefined
+  anchorY?: number | undefined
+  hand?: string // right or left
+}
+
+export interface Item {
   id: string
   displayName: string
-  imageURL: string
-  handlePointX: number
-  handlePointY: number
+  image: Texture
   animationName: string
+  itemOptions?: ItemOptions
 }
 
 export class PlayerInventory {
-  private static defaultObject: Weapon = {
-    id: 'default',
-    displayName: 'Default Weapon',
-    imageURL:
-      'https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693261056400.png',
-    handlePointX: 0,
-    handlePointY: 0,
-    animationName: 'greatsword',
+  private readonly defaultObject: Item
+  private currentObjectIndex: number
+  private items: Item[]
+
+  public constructor() {
+    this.defaultObject = {
+      id: 'default',
+      displayName: 'Default Item',
+      image: createSprite(
+        'https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693261056400.png',
+      ).texture,
+      animationName: 'greatsword',
+      itemOptions: {
+        anchorX: undefined,
+        anchorY: undefined,
+        hand: 'right',
+      },
+    }
+
+    this.currentObjectIndex = 0
+    this.items = []
   }
 
-  private static currentObjectIndex = 0
-  private static weapons: Weapon[] = []
-
-  public static setObjects(objects: ObjectItem[]): void {
-    this.weapons = objects.map(obj => {
-      const imageURL =
+  public setObjects(objects: ObjectItem[]): void {
+    this.items = objects.map(obj => {
+      const imageUrl =
         obj.imageTasks && obj.imageTasks.length > 0
           ? obj.imageTasks[0]!.imageURL
           : ''
-      const handlePointX = obj.handlePoint ? obj.handlePoint.x : 0
-      const handlePointY = obj.handlePoint ? obj.handlePoint.y : 0
+
+      const itemTexture = createSprite(imageUrl).texture
+
+      const itemOptions: ItemOptions = {}
+      if (obj.handlePoint) {
+        itemOptions.anchorX = obj.handlePoint.x
+        itemOptions.anchorY = obj.handlePoint.y
+      }
+      // if(obj.hand) {
+      //   itemOptions.hand = obj.hand;
+      // }
 
       return {
         id: obj.id,
         displayName: obj.displayName,
-        imageURL,
-        handlePointX,
-        handlePointY,
+        image: itemTexture,
         animationName: obj.animationName,
+        itemOptions,
       }
     })
   }
 
-  public static nextWeapon(): Weapon {
-    this.currentObjectIndex =
-      (this.currentObjectIndex + 1) % this.weapons.length
-    return (
-      this.weapons[this.currentObjectIndex] ?? PlayerInventory.defaultObject
-    )
+  public nextItem(): Item {
+    this.currentObjectIndex = (this.currentObjectIndex + 1) % this.items.length
+    return this.items[this.currentObjectIndex] ?? this.defaultObject
   }
 
-  public static currentWeapon(): Weapon {
-    return (
-      this.weapons[this.currentObjectIndex] ?? PlayerInventory.defaultObject
-    )
+  public currentItem(): Item {
+    return this.items[this.currentObjectIndex] ?? this.defaultObject
   }
 
-  public static setCurrentWeaponIndex(index: number): void {
-    if (index < 0 || index >= this.weapons.length) {
-      console.error('Invalid weapon index.')
+  public getItems(): Item[] {
+    return this.items
+  }
+
+  public addItem(item: Item): void {
+    this.items.push(item)
+  }
+
+  public removeItem(targetItem: Item): void {
+    const index = this.items.findIndex(item => item.id === targetItem.id)
+    if (index !== -1) {
+      this.items.splice(index, 1)
+    }
+  }
+
+  public setCurrentItem(targetItem: Item): void {
+    const index = this.items.findIndex(item => item.id === targetItem.id)
+    if (index < 0 || index >= this.items.length) {
+      console.error('Invalid item index.')
+      return
+    }
+
+    this.currentObjectIndex = index
+  }
+
+  public setItemIndex(index: number): void {
+    if (index < 0 || index >= this.items.length) {
+      console.error('Invalid item index.')
       return
     }
 

@@ -5,7 +5,7 @@ import type { Camera } from '~/entities/camera.js'
 import type { Entity } from '~/entity.js'
 import { createEntity, isEntity } from '~/entity.js'
 import type { InputManager } from '~/input/manager.js'
-import { PlayerInventory } from '~/managers/playerInventory.js'
+import type { PlayerInventory } from '~/managers/playerInventory'
 import { v, Vec } from '~/math/vector.js'
 import type { LooseVector, Vector } from '~/math/vector.js'
 import type { NetClient } from '~/network/client.js'
@@ -33,7 +33,6 @@ interface Data {
   direction: Ref<-1 | 0 | 1>
   facing: Ref<'left' | 'right'>
   colliding: Ref<boolean>
-  weaponColliding: Ref<boolean>
 }
 
 interface Render {
@@ -43,8 +42,7 @@ interface Render {
   gfxBounds: Graphics
   gfxFeet: Graphics
 
-  weaponSprite: Sprite
-  gfxWeaponBounds: Graphics
+  itemSprite: Sprite
 }
 
 const symbol = Symbol.for('@dreamlab/core/entities/player')
@@ -62,6 +60,13 @@ export interface Player extends PlayerCommon, Entity<Data, Render> {
   get [symbol](): true
   get bones(): Readonly<Record<Bone, Vector>>
 
+  get inventory(): PlayerInventory
+
+  // get inventoryItems(): Item[]
+  // addInventoryItem(item: Item): void
+  // removeInventoryItem(item: Item): void
+  // setHeldItem(item: Item): void
+
   teleport(position: LooseVector, resetVelocity?: boolean): void
 }
 
@@ -77,7 +82,7 @@ export type KnownAnimation = KnownAttackAnimation | KnownPlayerAnimation
 export enum PlayerInput {
   Attack = '@player/attack',
   Crouch = '@player/crouch',
-  CycleWeapon = '@player/cycle-weapon',
+  CycleItem = '@player/cycle-item',
   Jump = '@player/jump',
   ToggleNoclip = '@player/toggle-noclip',
   WalkLeft = '@player/walk-left',
@@ -86,6 +91,7 @@ export enum PlayerInput {
 
 export const createPlayer = (
   animations: PlayerAnimationMap<KnownAnimation>,
+  inventory: PlayerInventory,
   { width = 80, height = 370 }: Partial<PlayerSize> = {},
 ) => {
   const moveForce = 0.5
@@ -99,8 +105,8 @@ export const createPlayer = (
   const noclipSpeed = 15
   let attack = false
 
-  let cycleWeapon = false
-  let didRespondToCycleWeapon = false
+  let cycleItem = false
+  let didRespondToCycleItem = false
 
   const onToggleNoclip = (pressed: boolean) => {
     // TODO(Charlotte): if a player is noclipping, we should network this
@@ -123,16 +129,16 @@ export const createPlayer = (
     friction: 0,
   })
 
-  const weaponBodyWidth = 120
-  const weaponBodyHeight = 350
-  const weaponBody = Matter.Bodies.rectangle(
+  const itemBodyWidth = 120
+  const itemBodyHeight = 350
+  const itemBody = Matter.Bodies.rectangle(
     0,
     0,
-    weaponBodyWidth,
-    weaponBodyHeight,
+    itemBodyWidth,
+    itemBodyHeight,
     {
-      label: 'weapon',
-      render: { visible: true },
+      label: 'item',
+      render: { visible: false },
       isSensor: true,
     },
   )
@@ -141,8 +147,7 @@ export const createPlayer = (
     if (noclip) return 'idle'
     if (hasJumped && !attack) return 'jump'
 
-    const animationName =
-      PlayerInventory.currentWeapon().animationName.toLowerCase()
+    const animationName = inventory.currentItem().animationName.toLowerCase()
     if (attack && ['greatsword', 'bow'].includes(animationName))
       return animationName as KnownAnimation
     if (direction !== 0) return 'walk'
@@ -203,6 +208,26 @@ export const createPlayer = (
       return boneMap
     },
 
+    get inventory(): PlayerInventory {
+      return inventory
+    },
+
+    // get inventoryItems(): Item[] {
+    //   return PlayerInventory.getItems()
+    // },
+
+    // addInventoryItem(item: Item): void {
+    //   PlayerInventory.addItem(item)
+    // },
+
+    // removeInventoryItem(item: Item): void {
+    //   PlayerInventory.removeItem(item)
+    // },
+
+    // setHeldItem(item: Item): void {
+    //   PlayerInventory.setCurrentItem(item)
+    // },
+
     teleport(position: LooseVector, resetVelocity = true) {
       Matter.Body.setPosition(body, v(position))
       if (resetVelocity) Matter.Body.setVelocity(body, { x: 0, y: 0 })
@@ -217,12 +242,12 @@ export const createPlayer = (
 
       Matter.Composite.add(physics.world, body)
 
-      Matter.Composite.add(physics.world, weaponBody)
+      Matter.Composite.add(physics.world, itemBody)
 
       if (inputs) {
         inputs.registerInput(PlayerInput.WalkLeft, 'KeyA')
         inputs.registerInput(PlayerInput.Attack, 'KeyE')
-        inputs.registerInput(PlayerInput.CycleWeapon, 'KeyQ')
+        inputs.registerInput(PlayerInput.CycleItem, 'KeyQ')
         inputs.registerInput(PlayerInput.WalkRight, 'KeyD')
         inputs.registerInput(PlayerInput.Jump, 'Space')
         inputs.registerInput(PlayerInput.Crouch, 'KeyS')
@@ -239,7 +264,7 @@ export const createPlayer = (
         direction: ref(0),
         facing: ref('left'),
         colliding: ref(false),
-        weaponColliding: ref(false),
+        itemColliding: ref(false),
       }
     },
 
@@ -250,34 +275,31 @@ export const createPlayer = (
       sprite.anchor.set(...PLAYER_SPRITE_ANCHOR)
       sprite.play()
 
-      const weapon = PlayerInventory.currentWeapon()
-      const weaponSprite = createSprite(weapon.imageURL, {
-        width: 150,
-        height: 150,
+      const item = inventory.currentItem()
+      const itemSprite = createSprite(item.image, {
+        width: 200,
+        height: 200,
       })
 
       const gfxBounds = new Graphics()
       const gfxFeet = new Graphics()
-      const gfxWeaponBounds = new Graphics()
 
       sprite.zIndex = 10
       gfxBounds.zIndex = sprite.zIndex + 1
       gfxFeet.zIndex = sprite.zIndex + 2
-      gfxWeaponBounds.zIndex = sprite.zIndex + 3
 
       drawBox(gfxBounds, { width, height }, { stroke: '#00f' })
-      drawBox(gfxWeaponBounds, { width, height }, { stroke: '#00f' })
 
       stage.addChild(sprite, gfxBounds, gfxFeet)
-      stage.addChild(weaponSprite, gfxWeaponBounds)
+      stage.addChild(itemSprite)
 
       return {
         camera,
         sprite,
         gfxBounds,
         gfxFeet,
-        weaponSprite,
-        gfxWeaponBounds,
+        itemSprite,
+        item,
       }
     },
 
@@ -286,18 +308,11 @@ export const createPlayer = (
       Matter.Composite.remove(physics.world, body)
     },
 
-    teardownRenderContext({
-      sprite,
-      weaponSprite,
-      gfxBounds,
-      gfxFeet,
-      gfxWeaponBounds,
-    }) {
+    teardownRenderContext({ sprite, itemSprite, gfxBounds, gfxFeet }) {
       sprite.destroy()
-      weaponSprite.destroy()
+      itemSprite.destroy()
       gfxBounds.destroy()
       gfxFeet.destroy()
-      gfxWeaponBounds.destroy()
     },
 
     onPhysicsStep(
@@ -308,7 +323,7 @@ export const createPlayer = (
       const right = inputs?.getInput(PlayerInput.WalkRight) ?? false
       const jump = inputs?.getInput(PlayerInput.Jump) ?? false
       attack = (colliding && inputs?.getInput(PlayerInput.Attack)) ?? false
-      cycleWeapon = inputs?.getInput(PlayerInput.CycleWeapon) ?? false
+      cycleItem = inputs?.getInput(PlayerInput.CycleItem) ?? false
       const crouch = inputs?.getInput(PlayerInput.Crouch) ?? false
 
       direction.value = left ? -1 : right ? 1 : 0
@@ -398,6 +413,17 @@ export const createPlayer = (
         if (!jump && isColliding) hasJumped = false
       }
 
+      if (attack) {
+        const xOffset =
+          facing.value === 'right'
+            ? width / 2 + itemBodyWidth / 2
+            : -width / 2 - itemBodyWidth / 2
+        Matter.Body.setPosition(itemBody, {
+          x: body.position.x + xOffset,
+          y: body.position.y,
+        })
+      }
+
       network?.sendPlayerPosition(
         body.position,
         body.velocity,
@@ -411,40 +437,8 @@ export const createPlayer = (
         walkRight: right,
         toggleNoclip: false, // TODO: Actually send this
         attack,
-        cycleWeapon,
+        cycleItem,
       })
-
-      if (attack) {
-        const xOffset =
-          facing.value === 'right'
-            ? width / 2 + weaponBodyWidth / 2
-            : -width / 2 - weaponBodyWidth / 2
-        Matter.Body.setPosition(weaponBody, {
-          x: body.position.x + xOffset,
-          y: body.position.y,
-        })
-        // const swordBodies = physics.world.bodies
-        //   .filter(other => other !== body)
-        //   .filter(other => !other.isSensor)
-        //   .filter(other => other.label !== 'solid')
-        //   .filter(other =>
-        //     Matter.Detector.canCollide(
-        //       weaponBody.collisionFilter,
-        //       other.collisionFilter,
-        //     ),
-        //   )
-
-        // const swordQuery = Matter.Query.region(swordBodies, weaponBody.bounds)
-        // const isSwordColliding = swordQuery.length > 0
-        // weaponColliding.value = isSwordColliding
-
-        // if (isSwordColliding) {
-        //   for (const collidedEntity of swordQuery) {
-        //     const uid = collidedEntity.id
-        //     network?.sendCustomMessage('@dreamlab/Hittable/hit', { uid })
-        //   }
-        // }
-      }
     },
 
     onRenderFrame(
@@ -456,7 +450,7 @@ export const createPlayer = (
         facing: { value: facing },
         colliding: { value: colliding },
       },
-      { camera, sprite, weaponSprite, gfxBounds, gfxFeet, gfxWeaponBounds },
+      { camera, sprite, itemSprite, gfxBounds, gfxFeet },
     ) {
       const scale = facing === 'left' ? 1 : -1
       const newScale = scale * PLAYER_SPRITE_SCALE
@@ -502,29 +496,47 @@ export const createPlayer = (
         { strokeAlpha: 0, fill: colliding ? active : inactive, fillAlpha: 1 },
       )
 
-      if (weaponSprite) {
-        weaponSprite.visible = Boolean(attack)
-        gfxWeaponBounds.visible = Boolean(attack)
+      if (itemSprite) {
+        itemSprite.visible = Boolean(attack)
 
-        if (cycleWeapon && !didRespondToCycleWeapon) {
-          const weapon = PlayerInventory.nextWeapon()
-          changeSpriteTexture(weaponSprite, weapon.imageURL)
-          didRespondToCycleWeapon = true
+        if (cycleItem && !didRespondToCycleItem) {
+          const item = inventory.nextItem()
+          changeSpriteTexture(itemSprite, item.image)
+          didRespondToCycleItem = true
         }
 
-        if (!cycleWeapon) {
-          didRespondToCycleWeapon = false
+        if (!cycleItem) {
+          didRespondToCycleItem = false
         }
+
+        const currentItem = inventory.currentItem()
+        if (itemSprite.texture !== currentItem.image) {
+          changeSpriteTexture(itemSprite, currentItem.image)
+        }
+
+        const handMapping: Record<string, 'handLeft' | 'handRight'> = {
+          left: 'handLeft',
+          right: 'handRight',
+        }
+
+        const currentHandKey = currentItem.itemOptions?.hand ?? 'right'
+        const mappedHand = handMapping[currentHandKey]
 
         const pos = Vec.add(
-          { x: boneMap.handLeft.x, y: boneMap.handLeft.y },
+          {
+            x: boneMap[mappedHand as 'handLeft' | 'handRight'].x,
+            y: boneMap[mappedHand as 'handLeft' | 'handRight'].y,
+          },
           camera.offset,
         )
-        weaponSprite.position = pos
+
+        itemSprite.position = pos
 
         const animation = animations[currentAnimation]
         const handOffsets =
-          animation.boneData.handOffsets.handLeft[currentFrame]
+          animation.boneData.handOffsets[
+            mappedHand as 'handLeft' | 'handRight'
+          ][currentFrame]
 
         let rotation = Math.atan2(
           handOffsets!.y.y - handOffsets!.x.y,
@@ -532,47 +544,32 @@ export const createPlayer = (
         )
         rotation *= scale === -1 ? -1 : 1
 
-        weaponSprite.rotation = rotation
-        const initialWidth = weaponSprite.width
-        const initialHeight = weaponSprite.height
+        itemSprite.rotation = rotation
+        const initialWidth = itemSprite.width
+        const initialHeight = itemSprite.height
 
-        weaponSprite.scale.x = -scale
+        itemSprite.scale.x = -scale
 
-        weaponSprite.width = initialWidth
-        weaponSprite.height = initialHeight
+        itemSprite.width = initialWidth
+        itemSprite.height = initialHeight
 
-        const { handlePointX: handleX, handlePointY: handleY } =
-          PlayerInventory.currentWeapon()
+        const { anchorX: handleX, anchorY: handleY } =
+          currentItem.itemOptions ?? {}
 
         const SCALE_FACTOR = 4_096 // original player size
         const NORMALIZATION_FACTOR = 300 // object size in editor
 
-        if (handleX && handleY) {
+        if (handleX !== undefined && handleY !== undefined) {
           const normalizedToOriginalFactor = SCALE_FACTOR / NORMALIZATION_FACTOR
           const anchorX = (handleX * normalizedToOriginalFactor) / SCALE_FACTOR
           const anchorY = (handleY * normalizedToOriginalFactor) / SCALE_FACTOR
 
-          weaponSprite.anchor.set(anchorX, anchorY)
+          itemSprite.anchor.set(anchorX, anchorY)
+        } else if (currentAnimation === 'bow') {
+          itemSprite.anchor.set(0.5)
         } else {
-          weaponSprite.anchor.set(0, 1)
+          itemSprite.anchor.set(0, 1)
         }
-
-        // const weaponHitboxSize = { width: 120, height: 350 }
-
-        const pos2 = Vec.add(
-          { x: weaponBody.position.x, y: weaponBody.position.y },
-          camera.offset,
-        )
-
-        gfxWeaponBounds.position.set(pos2.x, pos2.y)
-        gfxWeaponBounds.alpha = debug.value ? 0.5 : 0
-
-        // drawBox(gfxWeaponBounds, weaponHitboxSize, {
-        //   strokeAlpha: 1,
-        //   stroke: '#00f',
-        //   fillAlpha: 0.3,
-        //   fill: weaponColliding ? active : inactive,
-        // })
       }
     },
   })

@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { PlayerInventory } from './playerInventory.js'
 
 interface User {
   email: string
@@ -76,7 +75,7 @@ export class PlayerDataManager {
     return this.playerData.objects
   }
 
-  public static setAll(data: PlayerData | string): void {
+  public static setAll(data: PlayerData | string): PlayerData | undefined {
     let parsedData: PlayerData
     if (typeof data === 'string') {
       try {
@@ -93,7 +92,7 @@ export class PlayerDataManager {
     }
 
     this.playerData = parsedData
-    PlayerInventory.setObjects(this.playerData.objects)
+    return this.playerData
   }
 
   public static set<T = unknown>(key: keyof PlayerData, jsonStr: string): void {

@@ -23,7 +23,7 @@ import type { LooseVector, Vector } from '~/math/vector.js'
 import type { Physics } from '~/physics.js'
 import { bones } from '~/textures/playerAnimations.js'
 import type { Bone, PlayerAnimationMap } from '~/textures/playerAnimations.js'
-import { createSprite } from '~/textures/sprites.js'
+import { changeSpriteTexture, createSprite } from '~/textures/sprites.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
 
@@ -39,7 +39,7 @@ interface Render {
   sprite: AnimatedSprite
   gfxBounds: Graphics
 
-  weaponSprite: Sprite
+  itemSprite: Sprite
 }
 
 const symbol = Symbol.for('@dreamlab/core/entities/netplayer')
@@ -54,6 +54,7 @@ export interface NetPlayer extends PlayerCommon, Entity<Data, Render> {
   get peerID(): string
   get entityID(): string
   get body(): Body
+  get inventory(): PlayerInventory
 
   setPosition(vector: LooseVector): void
   setVelocity(vector: LooseVector): void
@@ -67,6 +68,7 @@ export const createNetPlayer = (
   animations: PlayerAnimationMap<KnownAnimation>,
   { width = 80, height = 370 }: Partial<PlayerSize> = {},
 ) => {
+  const playerInventory = new PlayerInventory() // we need to populate the inventory somehow for netplayer
   const _entityID = entityID ?? createId()
 
   let isFlipped = false
@@ -144,6 +146,10 @@ export const createNetPlayer = (
       return { width, height }
     },
 
+    get inventory() {
+      return playerInventory
+    },
+
     setPosition(vector: LooseVector) {
       const { body } = dataManager.getData(this)
       Matter.Body.setPosition(body, v(vector))
@@ -187,8 +193,8 @@ export const createNetPlayer = (
       sprite.anchor.set(...PLAYER_SPRITE_ANCHOR)
       sprite.play()
 
-      const weapon = PlayerInventory.currentWeapon()
-      const weaponSprite = createSprite(weapon.imageURL, {
+      const item = playerInventory.currentItem()
+      const itemSprite = createSprite(item.image, {
         width: 150,
         height: 150,
       })
@@ -202,9 +208,9 @@ export const createNetPlayer = (
 
       stage.addChild(sprite)
       stage.addChild(gfxBounds)
-      stage.addChild(weaponSprite)
+      stage.addChild(itemSprite)
 
-      return { camera, sprite, gfxBounds, weaponSprite }
+      return { camera, sprite, gfxBounds, itemSprite }
     },
 
     teardown({ physics, body }) {
@@ -219,7 +225,7 @@ export const createNetPlayer = (
     onRenderFrame(
       { smooth },
       { debug, body },
-      { camera, sprite, gfxBounds, weaponSprite },
+      { camera, sprite, gfxBounds, itemSprite },
     ) {
       if (!animations) {
         throw new Error(`missing animations for netplayer: ${_entityID}`)
@@ -252,18 +258,37 @@ export const createNetPlayer = (
       gfxBounds.position = pos
       gfxBounds.alpha = debug.value ? 0.5 : 0
 
-      if (weaponSprite) {
-        weaponSprite.visible = Boolean(currentAnimation === 'greatsword')
+      if (itemSprite) {
+        itemSprite.visible = Boolean(currentAnimation === 'greatsword')
+
+        const currentItem = playerInventory.currentItem()
+        if (itemSprite.texture !== currentItem.image) {
+          changeSpriteTexture(itemSprite, currentItem.image)
+        }
+
+        const handMapping: Record<string, 'handLeft' | 'handRight'> = {
+          left: 'handLeft',
+          right: 'handRight',
+        }
+
+        const currentHandKey = currentItem.itemOptions?.hand ?? 'right'
+        const mappedHand = handMapping[currentHandKey]
 
         const pos = Vec.add(
-          { x: boneMap.handLeft.x, y: boneMap.handLeft.y },
+          {
+            x: boneMap[mappedHand as 'handLeft' | 'handRight'].x,
+            y: boneMap[mappedHand as 'handLeft' | 'handRight'].y,
+          },
           camera.offset,
         )
-        weaponSprite.position = pos
+
+        itemSprite.position = pos
 
         const animation = animations[currentAnimation]
         const handOffsets =
-          animation.boneData.handOffsets.handLeft[currentFrame]
+          animation.boneData.handOffsets[
+            mappedHand as 'handLeft' | 'handRight'
+          ][currentFrame]
 
         let rotation = Math.atan2(
           handOffsets!.y.y - handOffsets!.x.y,
@@ -271,29 +296,31 @@ export const createNetPlayer = (
         )
         rotation *= scale === -1 ? -1 : 1
 
-        weaponSprite.rotation = rotation
-        const initialWidth = weaponSprite.width
-        const initialHeight = weaponSprite.height
+        itemSprite.rotation = rotation
+        const initialWidth = itemSprite.width
+        const initialHeight = itemSprite.height
 
-        weaponSprite.scale.x = -scale
+        itemSprite.scale.x = -scale
 
-        weaponSprite.width = initialWidth
-        weaponSprite.height = initialHeight
+        itemSprite.width = initialWidth
+        itemSprite.height = initialHeight
 
-        const { handlePointX: handleX, handlePointY: handleY } =
-          PlayerInventory.currentWeapon()
+        const { anchorX: handleX, anchorY: handleY } =
+          currentItem.itemOptions ?? {}
 
         const SCALE_FACTOR = 4_096 // original player size
         const NORMALIZATION_FACTOR = 300 // object size in editor
 
-        if (handleX && handleY) {
+        if (handleX !== undefined && handleY !== undefined) {
           const normalizedToOriginalFactor = SCALE_FACTOR / NORMALIZATION_FACTOR
           const anchorX = (handleX * normalizedToOriginalFactor) / SCALE_FACTOR
           const anchorY = (handleY * normalizedToOriginalFactor) / SCALE_FACTOR
 
-          weaponSprite.anchor.set(anchorX, anchorY)
+          itemSprite.anchor.set(anchorX, anchorY)
+        } else if (currentAnimation === 'bow') {
+          itemSprite.anchor.set(0.5)
         } else {
-          weaponSprite.anchor.set(0, 1)
+          itemSprite.anchor.set(0, 1)
         }
       }
     },

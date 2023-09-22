@@ -2,10 +2,11 @@ import { Sprite, Texture, TilingSprite } from 'pixi.js'
 
 export interface SpriteSourceOptions {
   url: string
+  texture?: Texture
   tile?: boolean | number
 }
 
-export type SpriteSource = SpriteSourceOptions | string
+export type SpriteSource = SpriteSourceOptions | Texture | string
 
 export interface SpriteOptions {
   width?: number
@@ -42,15 +43,27 @@ export const createSprite = (
   source: SpriteSource,
   { width, height, zIndex }: SpriteOptions = {},
 ): Sprite => {
-  const { url, tile = false }: SpriteSourceOptions =
-    typeof source === 'string' ? { url: source } : source
+  let texture: Texture
 
-  const texture = Texture.from(url)
+  if (typeof source === 'string') {
+    texture = Texture.from(source)
+  } else if (source && 'baseTexture' in source) {
+    texture = source
+  } else {
+    throw new TypeError('Invalid sprite source provided.')
+  }
+
+  const isTiling = typeof source !== 'string' && 'tile' in source && source.tile
+
   const createSprite = () => {
-    if (!tile) return new Sprite(texture)
+    if (!isTiling) {
+      return new Sprite(texture)
+    }
 
     const sprite = new TilingSprite(texture)
-    if (typeof tile === 'number') sprite.tileScale.set(tile)
+    if (source && typeof source.tile === 'number') {
+      sprite.tileScale.set(source.tile)
+    }
 
     return sprite
   }
@@ -69,21 +82,29 @@ export const changeSpriteTexture = (
   sprite: Sprite | TilingSprite,
   source: SpriteSource,
 ): void => {
-  const { url }: SpriteSourceOptions =
-    typeof source === 'string' ? { url: source } : source
+  if (typeof source === 'string') {
+    const newTexture = TextureManager.getTexture(source)
+    if (newTexture !== undefined) {
+      sprite.texture = newTexture
+    }
+  } else if (source && 'baseTexture' in source) {
+    sprite.texture = source
+  } else if ('url' in source) {
+    const newTexture = TextureManager.getTexture(source.url)
+    if (newTexture !== undefined) {
+      sprite.texture = newTexture
+    }
 
-  const newTexture = TextureManager.getTexture(url)
-
-  if (newTexture !== undefined) {
-    sprite.texture = newTexture
-  }
-
-  if (
-    sprite instanceof TilingSprite &&
-    typeof source !== 'string' &&
-    source.tile &&
-    typeof source.tile === 'number'
-  ) {
-    sprite.tileScale.set(source.tile)
+    if (
+      sprite instanceof TilingSprite &&
+      source.tile &&
+      typeof source.tile === 'number'
+    ) {
+      sprite.tileScale.set(source.tile)
+    }
+  } else {
+    throw new TypeError(
+      'Invalid sprite source provided for changeSpriteTexture.',
+    )
   }
 }
