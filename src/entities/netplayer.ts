@@ -305,20 +305,10 @@ export const createNetPlayer = (
         itemSprite.width = initialWidth
         itemSprite.height = initialHeight
 
-        const { anchorX: handleX, anchorY: handleY } =
-          currentItem.itemOptions ?? {}
+        const { anchorX, anchorY } = currentItem.itemOptions ?? {}
 
-        const SCALE_FACTOR = 4_096 // original player size
-        const NORMALIZATION_FACTOR = 300 // object size in editor
-
-        if (handleX !== undefined && handleY !== undefined) {
-          const normalizedToOriginalFactor = SCALE_FACTOR / NORMALIZATION_FACTOR
-          const anchorX = (handleX * normalizedToOriginalFactor) / SCALE_FACTOR
-          const anchorY = (handleY * normalizedToOriginalFactor) / SCALE_FACTOR
-
+        if (anchorX && anchorY) {
           itemSprite.anchor.set(anchorX, anchorY)
-        } else if (currentAnimation === 'bow') {
-          itemSprite.anchor.set(0.5)
         } else {
           itemSprite.anchor.set(0, 1)
         }
