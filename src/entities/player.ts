@@ -141,7 +141,10 @@ export const createPlayer = (
     if (noclip) return 'idle'
     if (hasJumped && !attack) return 'jump'
 
-    const animationName = inventory.currentItem().animationName.toLowerCase()
+    const animationName =
+      inventory.getItems().length > 0
+        ? inventory.currentItem().animationName.toLowerCase()
+        : 'idle'
     if (attack && ['greatsword', 'bow'].includes(animationName))
       return animationName as KnownAnimation
     if (direction !== 0) return 'walk'
@@ -474,7 +477,8 @@ export const createPlayer = (
         { strokeAlpha: 0, fill: colliding ? active : inactive, fillAlpha: 1 },
       )
 
-      if (itemSprite) {
+      if (itemSprite && inventory.getItems().length > 0) {
+        console.log(inventory.getItems())
         itemSprite.visible = Boolean(attack)
 
         if (cycleItem) {

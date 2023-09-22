@@ -17,25 +17,10 @@ export interface Item {
 }
 
 export class PlayerInventory {
-  private readonly defaultObject: Item
   private currentObjectIndex: number
   private items: Item[]
 
   public constructor() {
-    this.defaultObject = {
-      id: 'default',
-      displayName: 'Default Item',
-      image: createSprite(
-        'https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693261056400.png',
-      ).texture,
-      animationName: 'greatsword',
-      itemOptions: {
-        anchorX: undefined,
-        anchorY: undefined,
-        hand: 'right',
-      },
-    }
-
     this.currentObjectIndex = 0
     this.items = []
   }
@@ -70,11 +55,11 @@ export class PlayerInventory {
 
   public nextItem(): Item {
     this.currentObjectIndex = (this.currentObjectIndex + 1) % this.items.length
-    return this.items[this.currentObjectIndex] ?? this.defaultObject
+    return this.items[this.currentObjectIndex] ?? this.dummyItem()
   }
 
   public currentItem(): Item {
-    return this.items[this.currentObjectIndex] ?? this.defaultObject
+    return this.items[this.currentObjectIndex] ?? this.dummyItem()
   }
 
   public getItems(): Item[] {
@@ -109,5 +94,26 @@ export class PlayerInventory {
     }
 
     this.currentObjectIndex = index
+  }
+
+  public clear(): void {
+    this.items = []
+    this.currentObjectIndex = 0
+  }
+
+  public dummyItem(): Item {
+    return {
+      id: 'default',
+      displayName: 'Default Item',
+      image: createSprite(
+        'https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693261056400.png',
+      ).texture,
+      animationName: 'greatsword',
+      itemOptions: {
+        anchorX: undefined,
+        anchorY: undefined,
+        hand: 'right',
+      },
+    }
   }
 }

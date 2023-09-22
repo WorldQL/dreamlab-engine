@@ -258,7 +258,7 @@ export const createNetPlayer = (
       gfxBounds.position = pos
       gfxBounds.alpha = debug.value ? 0.5 : 0
 
-      if (itemSprite) {
+      if (itemSprite && playerInventory.getItems().length > 0) {
         itemSprite.visible = Boolean(currentAnimation === 'greatsword')
 
         const currentItem = playerInventory.currentItem()
