@@ -59,13 +59,7 @@ export interface PlayerCommon {
 export interface Player extends PlayerCommon, Entity<Data, Render> {
   get [symbol](): true
   get bones(): Readonly<Record<Bone, Vector>>
-
   get inventory(): PlayerInventory
-
-  // get inventoryItems(): Item[]
-  // addInventoryItem(item: Item): void
-  // removeInventoryItem(item: Item): void
-  // setHeldItem(item: Item): void
 
   teleport(position: LooseVector, resetVelocity?: boolean): void
 }
@@ -211,22 +205,6 @@ export const createPlayer = (
     get inventory(): PlayerInventory {
       return inventory
     },
-
-    // get inventoryItems(): Item[] {
-    //   return PlayerInventory.getItems()
-    // },
-
-    // addInventoryItem(item: Item): void {
-    //   PlayerInventory.addItem(item)
-    // },
-
-    // removeInventoryItem(item: Item): void {
-    //   PlayerInventory.removeItem(item)
-    // },
-
-    // setHeldItem(item: Item): void {
-    //   PlayerInventory.setCurrentItem(item)
-    // },
 
     teleport(position: LooseVector, resetVelocity = true) {
       Matter.Body.setPosition(body, v(position))
