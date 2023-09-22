@@ -478,7 +478,6 @@ export const createPlayer = (
       )
 
       if (itemSprite && inventory.getItems().length > 0) {
-        console.log(inventory.getItems())
         itemSprite.visible = Boolean(attack)
 
         if (cycleItem) {
