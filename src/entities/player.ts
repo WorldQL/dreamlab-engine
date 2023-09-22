@@ -497,7 +497,7 @@ export const createPlayer = (
           right: 'handRight',
         }
 
-        const currentHandKey = currentItem.itemOptions?.hand ?? 'right'
+        const currentHandKey = currentItem.itemOptions?.hand ?? 'left'
         const mappedHand = handMapping[currentHandKey]
 
         const pos = Vec.add(
