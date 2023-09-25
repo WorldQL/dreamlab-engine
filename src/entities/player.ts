@@ -394,7 +394,7 @@ export const createPlayer = (
         if (!jump && isColliding) hasJumped = false
       }
 
-      if (attack) {
+      if (attack && inventory.getItems.length > 0) {
         const xOffset =
           facing.value === 'right'
             ? width / 2 + itemBodyWidth / 2
