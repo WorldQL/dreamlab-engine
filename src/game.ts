@@ -6,6 +6,8 @@ import { createCamera } from '~/entities/camera.js'
 import { registerDefaultSpawnables } from '~/entities/spawnable/index.js'
 import { dataManager, isEntity } from '~/entity.js'
 import type { Entity, InitContext, RenderContext } from '~/entity.js'
+import type { EventsManager } from '~/events.js'
+import { createEventsManager } from '~/events.js'
 import { InputManager } from '~/input/manager.js'
 import { v } from '~/math/vector.js'
 import type { LooseVector } from '~/math/vector.js'
@@ -140,6 +142,7 @@ interface GameServer {
 export interface Game<Server extends boolean> {
   get debug(): Debug
   get physics(): Physics
+  get events(): EventsManager<Server>
 
   get client(): Server extends true ? undefined : GameClient
   get server(): Server extends true ? GameServer : undefined
@@ -391,6 +394,10 @@ export async function createGame<Server extends boolean>(
 
     get physics() {
       return physics
+    },
+
+    get events() {
+      return events
     },
 
     get client() {
