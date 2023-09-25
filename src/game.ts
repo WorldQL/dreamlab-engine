@@ -124,8 +124,6 @@ async function initRenderContext<Server extends boolean>(
   return ctx
 }
 
-type TickListener = (delta: number) => Promise<void> | void
-
 interface GameClient {
   get ui(): ClientUIManager
   get inputs(): InputManager
@@ -256,20 +254,6 @@ export interface Game<Server extends boolean> {
   ): T[]
 
   /**
-   * Add a listener function for physics ticks
-   *
-   * @param listener - Listener Function
-   */
-  addTickListener(listener: TickListener): void
-
-  /**
-   * Remove a tick listener
-   *
-   * @param listener - Listener Function
-   */
-  removeTickListener(listener: TickListener): void
-
-  /**
    * Destroy all entities and stop all game logic
    */
   shutdown(): Promise<void>
@@ -287,17 +271,16 @@ export async function createGame<Server extends boolean>(
   const renderContext = await initRenderContext(options)
   const entities: Entity[] = []
   const spawnables = new Map<string, SpawnableEntity>()
+  const spawnableFunctions = new Map<string, BareSpawnableFunction>()
 
   const inputs = new InputManager()
   const unregister = renderContext ? inputs.registerListeners() : undefined
-
-  const spawnableFunctions = new Map<string, BareSpawnableFunction>()
-  const tickListeners: Set<TickListener> = new Set()
 
   const physicsTickDelta = 1_000 / physicsTickrate
   let time = performance.now()
   let physicsTickAcc = 0
 
+  const events = createEventsManager(options.isServer)
   let network: (Server extends true ? NetServer : NetClient) | undefined
 
   const onTick = async () => {
@@ -311,11 +294,9 @@ export async function createGame<Server extends boolean>(
       physicsTickAcc -= physicsTickDelta
       Matter.Engine.update(physics.engine, physicsTickDelta)
 
-      for (const tickListener of tickListeners) {
-        void tickListener(physicsTickDelta)
-      }
-
       const timeState = { delta: physicsTickDelta / 1_000, time: time / 1_000 }
+      events.common.emit('onPhysicsStep', timeState)
+
       for (const entity of entities) {
         if (typeof entity.onPhysicsStep !== 'function') continue
 
@@ -327,6 +308,7 @@ export async function createGame<Server extends boolean>(
     if (renderContext) {
       const smooth = physicsTickAcc / physicsTickDelta
       const timeState = { delta: delta / 1_000, time: time / 1_000, smooth }
+      events.client!.emit('onRenderFrame', timeState)
 
       for (const entity of entities) {
         if (typeof entity.onRenderFrame !== 'function') continue
@@ -458,6 +440,8 @@ export async function createGame<Server extends boolean>(
 
       entities.push(entity)
       sortEntities()
+
+      events.common.emit('onInstantiate', entity)
     },
 
     async destroy(entity) {
@@ -479,6 +463,8 @@ export async function createGame<Server extends boolean>(
 
       const data = dataManager.getData(entity)
       await entity.teardown(data)
+
+      events.common.emit('onDestroy', entity)
     },
 
     async spawn(loose, preview = false) {
@@ -504,6 +490,7 @@ export async function createGame<Server extends boolean>(
       await this.instantiate(entity)
       spawnables.set(entity.uid, entity)
 
+      events.common.emit('onSpawn', entity)
       return entity
     },
 
@@ -566,14 +553,6 @@ export async function createGame<Server extends boolean>(
     queryTypeAll(fn) {
       // eslint-disable-next-line unicorn/no-array-callback-reference
       return [...spawnables.values()].filter(fn)
-    },
-
-    addTickListener(listener) {
-      tickListeners.add(listener)
-    },
-
-    removeTickListener(listener) {
-      tickListeners.delete(listener)
     },
 
     async shutdown() {

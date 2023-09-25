@@ -1,8 +1,9 @@
 import EventEmitter from 'eventemitter3'
-import type { Player } from '~/entities/player.js'
+import type { Entity, RenderTime, Time } from '~/entity.js'
+import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
 
 interface ClientEvents {
-  onPlayerSpawned: [player: Player]
+  onRenderFrame: [time: RenderTime]
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -10,9 +11,12 @@ interface ServerEvents {
   // TODO
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface CommonEvents {
-  // TODO
+  onInstantiate: [entity: Entity]
+  onDestroy: [entity: Entity]
+  onSpawn: [entity: SpawnableEntity]
+
+  onPhysicsStep: [time: Time]
 }
 
 class ClientEventManager extends EventEmitter<ClientEvents> {}
