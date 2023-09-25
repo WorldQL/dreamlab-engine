@@ -5,7 +5,7 @@ import type { NetServer } from './server.js'
 
 export type Listeners<T extends {}> = {
   [K in keyof T as `${'add' | 'remove'}${PascalCase<K & string>}Listener`]: (
-    ...args: T[K]
+    ...args: unknown[]
   ) => void
 }
 
