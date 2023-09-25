@@ -1,6 +1,6 @@
 import type { Texture } from 'pixi.js'
-import type { ObjectItem } from './playerDataManager'
 import { createSprite } from '~/textures/sprites.js'
+import type { ObjectItem } from './playerDataManager'
 
 export interface ItemOptions {
   anchorX?: number | undefined
