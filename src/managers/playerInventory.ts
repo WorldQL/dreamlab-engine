@@ -11,7 +11,7 @@ export interface ItemOptions {
 export interface Item {
   id: string
   displayName: string
-  image: Texture
+  texture: Texture
   animationName: string
   itemOptions?: ItemOptions
 }
@@ -46,7 +46,7 @@ export class PlayerInventory {
       return {
         id: obj.id,
         displayName: obj.displayName,
-        image: itemTexture,
+        texture: itemTexture,
         animationName: obj.animationName,
         itemOptions,
       }
@@ -105,7 +105,7 @@ export class PlayerInventory {
     return {
       id: 'default',
       displayName: 'Default Item',
-      image: createSprite(
+      texture: createSprite(
         'https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693261056400.png',
       ).texture,
       animationName: 'greatsword',

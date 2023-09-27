@@ -1,5 +1,5 @@
 import Matter from 'matter-js'
-import type { Sprite } from 'pixi.js'
+import { Sprite } from 'pixi.js'
 import { AnimatedSprite, Graphics } from 'pixi.js'
 import type { Camera } from '~/entities/camera.js'
 import type { Entity } from '~/entity.js'
@@ -13,7 +13,6 @@ import { onlyNetClient } from '~/network/shared.js'
 import type { Physics } from '~/physics.js'
 import { bones } from '~/textures/playerAnimations.js'
 import type { Bone, PlayerAnimationMap } from '~/textures/playerAnimations.js'
-import { changeSpriteTexture, createSprite } from '~/textures/sprites.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
 import { ref } from '~/utils/ref.js'
@@ -76,7 +75,6 @@ export type KnownAnimation = KnownAttackAnimation | KnownPlayerAnimation
 export enum PlayerInput {
   Attack = '@player/attack',
   Crouch = '@player/crouch',
-  CycleItem = '@player/cycle-item',
   Jump = '@player/jump',
   ToggleNoclip = '@player/toggle-noclip',
   WalkLeft = '@player/walk-left',
@@ -98,9 +96,6 @@ export const createPlayer = (
   let noclip = false
   const noclipSpeed = 15
   let attack = false
-
-  let cycleItem = false
-  let didRespondToCycleItem = false
 
   const onToggleNoclip = (pressed: boolean) => {
     // TODO(Charlotte): if a player is noclipping, we should network this
@@ -228,7 +223,6 @@ export const createPlayer = (
       if (inputs) {
         inputs.registerInput(PlayerInput.WalkLeft, 'KeyA')
         inputs.registerInput(PlayerInput.Attack, 'KeyE')
-        inputs.registerInput(PlayerInput.CycleItem, 'KeyQ')
         inputs.registerInput(PlayerInput.WalkRight, 'KeyD')
         inputs.registerInput(PlayerInput.Jump, 'Space')
         inputs.registerInput(PlayerInput.Crouch, 'KeyS')
@@ -257,10 +251,9 @@ export const createPlayer = (
       sprite.play()
 
       const item = inventory.currentItem()
-      const itemSprite = createSprite(item.image, {
-        width: 200,
-        height: 200,
-      })
+      const itemSprite = new Sprite(item.texture)
+      itemSprite.width = 200
+      itemSprite.height = 200
 
       const gfxBounds = new Graphics()
       const gfxFeet = new Graphics()
@@ -304,7 +297,6 @@ export const createPlayer = (
       const right = inputs?.getInput(PlayerInput.WalkRight) ?? false
       const jump = inputs?.getInput(PlayerInput.Jump) ?? false
       attack = (colliding && inputs?.getInput(PlayerInput.Attack)) ?? false
-      cycleItem = inputs?.getInput(PlayerInput.CycleItem) ?? false
       const crouch = inputs?.getInput(PlayerInput.Crouch) ?? false
 
       direction.value = left ? -1 : right ? 1 : 0
@@ -418,7 +410,6 @@ export const createPlayer = (
         walkRight: right,
         toggleNoclip: false, // TODO: Actually send this
         attack,
-        cycleItem,
       })
     },
 
@@ -480,19 +471,9 @@ export const createPlayer = (
       if (itemSprite && inventory.getItems().length > 0) {
         itemSprite.visible = Boolean(attack)
 
-        if (cycleItem) {
-          if (!didRespondToCycleItem) {
-            const item = inventory.nextItem()
-            changeSpriteTexture(itemSprite, item.image)
-            didRespondToCycleItem = true
-          }
-        } else {
-          didRespondToCycleItem = false
-        }
-
         const currentItem = inventory.currentItem()
-        if (itemSprite.texture !== currentItem.image) {
-          changeSpriteTexture(itemSprite, currentItem.image)
+        if (itemSprite.texture !== currentItem.texture) {
+          itemSprite.texture = currentItem.texture
         }
 
         const handMapping: Record<string, 'handLeft' | 'handRight'> = {

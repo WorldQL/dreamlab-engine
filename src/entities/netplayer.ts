@@ -1,7 +1,7 @@
 import { createId } from '@paralleldrive/cuid2'
 import Matter from 'matter-js'
 import type { Body } from 'matter-js'
-import type { Sprite } from 'pixi.js'
+import { Sprite } from 'pixi.js'
 import { AnimatedSprite, Graphics } from 'pixi.js'
 import type { Camera } from '~/entities/camera.js'
 import {
@@ -23,7 +23,6 @@ import type { LooseVector, Vector } from '~/math/vector.js'
 import type { Physics } from '~/physics.js'
 import { bones } from '~/textures/playerAnimations.js'
 import type { Bone, PlayerAnimationMap } from '~/textures/playerAnimations.js'
-import { changeSpriteTexture, createSprite } from '~/textures/sprites.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
 
@@ -194,10 +193,9 @@ export const createNetPlayer = (
       sprite.play()
 
       const item = playerInventory.currentItem()
-      const itemSprite = createSprite(item.image, {
-        width: 150,
-        height: 150,
-      })
+      const itemSprite = new Sprite(item.texture)
+      itemSprite.width = 200
+      itemSprite.height = 200
 
       const gfxBounds = new Graphics()
       drawBox(gfxBounds, { width, height }, { stroke: '#00f' })
@@ -262,8 +260,8 @@ export const createNetPlayer = (
         itemSprite.visible = Boolean(currentAnimation === 'greatsword')
 
         const currentItem = playerInventory.currentItem()
-        if (itemSprite.texture !== currentItem.image) {
-          changeSpriteTexture(itemSprite, currentItem.image)
+        if (itemSprite.texture !== currentItem.texture) {
+          itemSprite.texture = currentItem.texture
         }
 
         const handMapping: Record<string, 'handLeft' | 'handRight'> = {

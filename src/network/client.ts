@@ -1,7 +1,7 @@
 import type { CamelCase, Except } from 'type-fest'
+import type { Data, Listeners } from './shared.js'
 import type { PlayerInput } from '~/entities/player.js'
 import type { Vector } from '~/math/vector.js'
-import type { Data, Listeners } from './shared.js'
 
 type Inputs = `${PlayerInput}` extends `@player/${infer T}` ? T : never
 type InputMap = Record<CamelCase<Inputs>, boolean>

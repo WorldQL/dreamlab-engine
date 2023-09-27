@@ -1,7 +1,7 @@
 import type { PascalCase } from 'type-fest'
-import type { Game } from '~/game.js'
 import type { NetClient } from './client.js'
 import type { NetServer } from './server.js'
+import type { Game } from '~/game.js'
 
 export type Listeners<T extends {}> = {
   [K in keyof T as `${'add' | 'remove'}${PascalCase<K & string>}Listener`]: (
