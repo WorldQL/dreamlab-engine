@@ -24,10 +24,7 @@ export interface Physics {
 }
 
 const randomID = (): number => {
-  // this results in a number exceeding MAX_SAFE_INTEGER but it's still an improvement
-  const buf = new Uint32Array(2)
-  crypto.getRandomValues(buf)
-  return (buf[0]! << 32) | buf[1]!
+  return Math.floor(Number.MAX_SAFE_INTEGER * Math.random())
 }
 
 export const createPhysics = (): Physics => {
