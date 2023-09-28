@@ -1,6 +1,5 @@
 import Matter from 'matter-js'
-import { Sprite } from 'pixi.js'
-import { AnimatedSprite, Graphics } from 'pixi.js'
+import { AnimatedSprite , Graphics, Sprite } from 'pixi.js'
 import type { Camera } from '~/entities/camera.js'
 import type { Entity } from '~/entity.js'
 import { createEntity, isEntity } from '~/entity.js'

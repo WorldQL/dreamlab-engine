@@ -1,8 +1,7 @@
 import { createId } from '@paralleldrive/cuid2'
 import Matter from 'matter-js'
 import type { Body } from 'matter-js'
-import { Sprite } from 'pixi.js'
-import { AnimatedSprite, Graphics } from 'pixi.js'
+import { AnimatedSprite , Graphics, Sprite } from 'pixi.js'
 import type { Camera } from '~/entities/camera.js'
 import {
   PLAYER_ANIMATION_SPEED,
