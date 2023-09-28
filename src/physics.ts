@@ -24,10 +24,7 @@ export interface Physics {
 }
 
 const randomID = (): number => {
-  const buf = new Uint32Array(1)
-  crypto.getRandomValues(buf)
-
-  return buf[0]!
+  return Math.floor(Number.MAX_SAFE_INTEGER * Math.random())
 }
 
 export const createPhysics = (): Physics => {
