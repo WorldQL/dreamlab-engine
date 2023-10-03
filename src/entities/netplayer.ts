@@ -47,7 +47,6 @@ export interface NetPlayer extends PlayerCommon, Entity<Data, Render> {
 
   get peerID(): string
   get entityID(): string
-  get body(): Body
 
   setPosition(vector: LooseVector): void
   setVelocity(vector: LooseVector): void

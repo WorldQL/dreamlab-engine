@@ -1,5 +1,7 @@
 import Matter from 'matter-js'
 import type { Body, Engine, World } from 'matter-js'
+import { isPlayer } from '~/entities/player.js'
+import type { Player } from '~/entities/player.js'
 import { isSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type {
   PartializeSpawnable,
@@ -23,9 +25,10 @@ export interface Physics {
     ...bodies: Body[]
   ): void
 
-  registerPlayer(body: Body): void
+  registerPlayer(player: Player): void
   clearPlayer(): void
   isPlayer(body: Body): boolean
+  getPlayer(body: Body): Player | undefined
 }
 
 const randomID = (): number => {
@@ -36,7 +39,7 @@ export const createPhysics = (): Physics => {
   const engine = Matter.Engine.create()
   const entities = new Map<string, Body[]>()
   const bodiesMap = new Map<number, SpawnableEntity>()
-  const playerBodyRef = ref<Body | undefined>(undefined)
+  const playerRef = ref<Player | undefined>(undefined)
 
   const physics: Physics = {
     get engine() {
@@ -101,24 +104,35 @@ export const createPhysics = (): Physics => {
       Matter.Composite.remove(engine.world, bodies)
     },
 
-    registerPlayer(body) {
-      body.id = randomID()
-      playerBodyRef.value = body
+    registerPlayer(player) {
+      if (!isPlayer(player)) {
+        throw new TypeError('not a player')
+      }
 
-      Matter.Composite.add(engine.world, body)
+      player.body.id = randomID()
+      playerRef.value = player
+
+      Matter.Composite.add(engine.world, player.body)
     },
 
     clearPlayer() {
-      if (playerBodyRef.value) {
-        Matter.Composite.remove(engine.world, playerBodyRef.value)
+      if (playerRef.value) {
+        Matter.Composite.remove(engine.world, playerRef.value.body)
       }
 
-      playerBodyRef.value = undefined
+      playerRef.value = undefined
     },
 
     isPlayer(body) {
-      if (!playerBodyRef.value) return false
-      return body.id === playerBodyRef.value.id
+      if (!playerRef.value) return false
+      return body.id === playerRef.value.body.id
+    },
+
+    getPlayer(body) {
+      if (!playerRef.value) return undefined
+      if (body.id !== playerRef.value.body.id) return undefined
+
+      return playerRef.value
     },
   }
 

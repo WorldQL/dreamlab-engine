@@ -49,6 +49,7 @@ export const isPlayer = (player: unknown): player is Player => {
 export interface PlayerCommon {
   get position(): Vector
   get size(): PlayerSize
+  get body(): Matter.Body
 }
 
 export interface Player extends PlayerCommon, Entity<Data, Render> {
@@ -163,6 +164,10 @@ export const createPlayer = (
       return { width, height }
     },
 
+    get body() {
+      return body
+    },
+
     get bones(): Readonly<Record<Bone, Vector>> {
       return boneMap
     },
@@ -179,7 +184,7 @@ export const createPlayer = (
 
       // TODO: Reimplement spawnpoints
 
-      physics.registerPlayer(body)
+      physics.registerPlayer(this as Player)
 
       if (inputs) {
         inputs.registerInput(PlayerInput.WalkLeft, 'KeyA')
