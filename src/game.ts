@@ -296,7 +296,7 @@ export async function createGame<Server extends boolean>(
       events.common.emit(
         type === 'start' ? 'onCollisionStart' : 'onCollisionEnd',
         [a, b],
-        ev,
+        pair.collision,
       )
     }
 
@@ -312,7 +312,7 @@ export async function createGame<Server extends boolean>(
       events.common.emit(
         type === 'start' ? 'onPlayerCollisionStart' : 'onPlayerCollisionEnd',
         [player, other],
-        ev,
+        pair.collision,
       )
     }
 

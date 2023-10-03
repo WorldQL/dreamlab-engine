@@ -16,12 +16,12 @@ interface ServerEvents {
 
 type CollisionEvent = [
   pair: readonly [a: SpawnableEntity, b: SpawnableEntity],
-  raw: Matter.IEventCollision<Matter.Engine>,
+  raw: Matter.Collision,
 ]
 
 type PlayerCollisionEvent = [
   pair: readonly [player: Player, other: Matter.Body],
-  raw: Matter.IEventCollision<Matter.Engine>,
+  raw: Matter.Collision,
 ]
 
 interface CommonEvents {
