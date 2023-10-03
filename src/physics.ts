@@ -5,6 +5,7 @@ import type {
   PartializeSpawnable,
   SpawnableEntity,
 } from '~/spawnable/spawnableEntity.js'
+import { ref } from '~/utils/ref.js'
 
 export interface Physics {
   get engine(): Engine
@@ -21,6 +22,10 @@ export interface Physics {
     entity: E | PartializeSpawnable<E, Data, Render>,
     ...bodies: Body[]
   ): void
+
+  registerPlayer(body: Body): void
+  clearPlayer(): void
+  isPlayer(body: Body): boolean
 }
 
 const randomID = (): number => {
@@ -31,6 +36,7 @@ export const createPhysics = (): Physics => {
   const engine = Matter.Engine.create()
   const entities = new Map<string, Body[]>()
   const bodiesMap = new Map<number, SpawnableEntity>()
+  const playerBodyRef = ref<Body | undefined>(undefined)
 
   const physics: Physics = {
     get engine() {
@@ -93,6 +99,26 @@ export const createPhysics = (): Physics => {
       }
 
       Matter.Composite.remove(engine.world, bodies)
+    },
+
+    registerPlayer(body) {
+      body.id = randomID()
+      playerBodyRef.value = body
+
+      Matter.Composite.add(engine.world, body)
+    },
+
+    clearPlayer() {
+      if (playerBodyRef.value) {
+        Matter.Composite.remove(engine.world, playerBodyRef.value)
+      }
+
+      playerBodyRef.value = undefined
+    },
+
+    isPlayer(body) {
+      if (!playerBodyRef.value) return false
+      return body.id === playerBodyRef.value.id
     },
   }
 

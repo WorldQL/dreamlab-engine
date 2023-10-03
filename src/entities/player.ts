@@ -179,7 +179,7 @@ export const createPlayer = (
 
       // TODO: Reimplement spawnpoints
 
-      Matter.Composite.add(physics.world, body)
+      physics.registerPlayer(body)
 
       if (inputs) {
         inputs.registerInput(PlayerInput.WalkLeft, 'KeyA')
@@ -227,7 +227,7 @@ export const createPlayer = (
 
     teardown({ inputs, physics }) {
       inputs?.removeListener(PlayerInput.ToggleNoclip, onToggleNoclip)
-      Matter.Composite.remove(physics.world, body)
+      physics.clearPlayer()
     },
 
     teardownRenderContext({ sprite, gfxBounds, gfxFeet }) {
