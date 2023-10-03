@@ -288,16 +288,37 @@ export async function createGame<Server extends boolean>(
     type: 'end' | 'start',
     ev: Matter.IEventCollision<Matter.Engine>,
   ) => {
-    for (const pair of ev.pairs) {
+    const testSpawnables = (pair: Matter.Pair) => {
       const a = physics.getEntity(pair.bodyA)
       const b = physics.getEntity(pair.bodyB)
-      if (!a || !b) continue
+      if (!a || !b) return
 
-      const entities = [a, b] as const
-      const event = type === 'start' ? 'onCollisionStart' : 'onCollisionEnd'
+      events.common.emit(
+        type === 'start' ? 'onCollisionStart' : 'onCollisionEnd',
+        [a, b],
+        ev,
+      )
+    }
 
-      // TODO: Specialisation for player collision events
-      events.common.emit(event, entities, ev)
+    const testPlayer = (pair: Matter.Pair) => {
+      const player =
+        physics.getPlayer(pair.bodyA) ??
+        physics.getPlayer(pair.bodyB) ??
+        undefined
+
+      if (!player) return
+      const other = physics.isPlayer(pair.bodyA) ? pair.bodyB : pair.bodyA
+
+      events.common.emit(
+        type === 'start' ? 'onPlayerCollisionStart' : 'onPlayerCollisionEnd',
+        [player, other],
+        ev,
+      )
+    }
+
+    for (const pair of ev.pairs) {
+      testSpawnables(pair)
+      testPlayer(pair)
     }
   }
 
