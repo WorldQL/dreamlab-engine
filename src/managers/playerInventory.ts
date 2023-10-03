@@ -1,4 +1,4 @@
-import type { Texture } from 'pixi.js'
+import { Texture } from 'pixi.js'
 import type { ObjectItem } from './playerDataManager'
 import type { KnownAnimation } from '~/entities/player'
 import { createSprite } from '~/textures/sprites.js'
@@ -96,11 +96,7 @@ export class PlayerInventory {
 
   public nextItem(): PlayerInventoryItem {
     this.currentObjectIndex = (this.currentObjectIndex + 1) % this.items.length
-    return this.items[this.currentObjectIndex] ?? this.dummyItem()
-  }
-
-  public currentItem(): PlayerInventoryItem {
-    return this.items[this.currentObjectIndex] ?? this.dummyItem()
+    return this.items[this.currentObjectIndex] ?? this.defaultPunchAction()
   }
 
   public getItems(): PlayerInventoryItem[] {
@@ -118,19 +114,27 @@ export class PlayerInventory {
     }
   }
 
-  public setCurrentItem(targetItem: PlayerInventoryItem): void {
-    const index = this.items.findIndex(item => item.id === targetItem.id)
-    if (index < 0 || index >= this.items.length) {
-      console.error('Invalid item index.')
-      return
-    }
+  public getItemInHand(): PlayerInventoryItem {
+    return this.items[this.currentObjectIndex] ?? this.defaultPunchAction()
+  }
 
-    this.currentObjectIndex = index
+  public setItemInHand(targetItem: PlayerInventoryItem | undefined): void {
+    if (targetItem) {
+      const index = this.items.findIndex(item => item.id === targetItem.id)
+      if (index < 0 || index >= this.items.length) {
+        this.currentObjectIndex = -1
+        return
+      }
+
+      this.currentObjectIndex = index
+    } else {
+      this.currentObjectIndex = -1
+    }
   }
 
   public setItemIndex(index: number): void {
     if (index < 0 || index >= this.items.length) {
-      console.error('Invalid item index.')
+      this.currentObjectIndex = -1
       return
     }
 
@@ -142,16 +146,13 @@ export class PlayerInventory {
     this.currentObjectIndex = 0
   }
 
-  public dummyItem(): PlayerInventoryItem {
+  public defaultPunchAction(): PlayerInventoryItem {
     return {
-      id: 'default',
-      displayName: 'Default Item',
-      texture: createSprite(
-        'https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693261056400.png',
-      ).texture,
-      textureURL:
-        'https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693261056400.png',
-      animationName: 'greatsword',
+      id: 'DefaultPunch',
+      displayName: 'Punch',
+      texture: Texture.EMPTY,
+      textureURL: 'undefined',
+      animationName: 'punch',
       itemOptions: {
         anchorX: undefined,
         anchorY: undefined,

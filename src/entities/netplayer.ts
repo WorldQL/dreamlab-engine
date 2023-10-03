@@ -1,7 +1,7 @@
 import { createId } from '@paralleldrive/cuid2'
 import Matter from 'matter-js'
 import type { Body } from 'matter-js'
-import { AnimatedSprite , Graphics, Sprite } from 'pixi.js'
+import { AnimatedSprite, Graphics, Sprite } from 'pixi.js'
 import type { Camera } from '~/entities/camera.js'
 import {
   PLAYER_ANIMATION_SPEED,
@@ -191,7 +191,7 @@ export const createNetPlayer = (
       sprite.anchor.set(...PLAYER_SPRITE_ANCHOR)
       sprite.play()
 
-      const item = playerInventory.currentItem()
+      const item = playerInventory.getItemInHand()
       const itemSprite = new Sprite(item.texture)
       itemSprite.width = 200
       itemSprite.height = 200
@@ -258,7 +258,7 @@ export const createNetPlayer = (
       if (itemSprite && playerInventory.getItems().length > 0) {
         itemSprite.visible = Boolean(currentAnimation === 'greatsword')
 
-        const currentItem = playerInventory.currentItem()
+        const currentItem = playerInventory.getItemInHand()
         if (itemSprite.texture !== currentItem.texture) {
           itemSprite.texture = currentItem.texture
         }

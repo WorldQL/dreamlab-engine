@@ -1,5 +1,5 @@
 import Matter from 'matter-js'
-import { AnimatedSprite , Graphics, Sprite } from 'pixi.js'
+import { AnimatedSprite, Graphics, Sprite } from 'pixi.js'
 import type { Camera } from '~/entities/camera.js'
 import type { Entity } from '~/entity.js'
 import { createEntity, isEntity } from '~/entity.js'
@@ -137,7 +137,7 @@ export const createPlayer = (
 
     const animationName =
       inventory.getItems().length > 0
-        ? inventory.currentItem().animationName.toLowerCase()
+        ? inventory.getItemInHand().animationName.toLowerCase()
         : 'idle'
     if (attack && ['greatsword', 'bow'].includes(animationName))
       return animationName as KnownAnimation
@@ -249,7 +249,7 @@ export const createPlayer = (
       sprite.anchor.set(...PLAYER_SPRITE_ANCHOR)
       sprite.play()
 
-      const item = inventory.currentItem()
+      const item = inventory.getItemInHand()
       const itemSprite = new Sprite(item.texture)
       itemSprite.width = 200
       itemSprite.height = 200
@@ -385,7 +385,7 @@ export const createPlayer = (
         if (!jump && isColliding) hasJumped = false
       }
 
-      if (attack && inventory.getItems.length > 0) {
+      if (attack && inventory.getItemInHand().animationName !== 'punch') {
         const xOffset =
           facing.value === 'right'
             ? width / 2 + itemBodyWidth / 2
@@ -467,10 +467,10 @@ export const createPlayer = (
         { strokeAlpha: 0, fill: colliding ? active : inactive, fillAlpha: 1 },
       )
 
-      if (itemSprite && inventory.getItems().length > 0) {
+      if (itemSprite && inventory.getItemInHand().animationName !== 'punch') {
         itemSprite.visible = Boolean(attack)
 
-        const currentItem = inventory.currentItem()
+        const currentItem = inventory.getItemInHand()
         if (itemSprite.texture !== currentItem.texture) {
           itemSprite.texture = currentItem.texture
         }
@@ -515,6 +515,8 @@ export const createPlayer = (
 
         const { anchorX = 0, anchorY = 1 } = currentItem.itemOptions ?? {}
         itemSprite.anchor.set(anchorX, anchorY)
+      } else {
+        itemSprite.visible = false
       }
     },
   })
