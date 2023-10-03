@@ -1,5 +1,6 @@
 import type { Texture } from 'pixi.js'
 import type { ObjectItem } from './playerDataManager'
+import type { KnownAnimation } from '~/entities/player'
 import { createSprite } from '~/textures/sprites.js'
 import { generateCUID, IDType } from '~/utils/cuid.js'
 
@@ -26,12 +27,25 @@ export const createNewItem = (
   const texture = createSprite(textureURL).texture
   const id = generateCUID(IDType.Object)
 
+  const validAnimations: KnownAnimation[] = [
+    'idle',
+    'jump',
+    'walk',
+    'bow',
+    'greatsword',
+  ]
+  const finalAnimationName = validAnimations.includes(
+    animationName as KnownAnimation,
+  )
+    ? animationName
+    : 'greatsword'
+
   const newItem: PlayerInventoryItem = {
     id,
     displayName,
     texture,
     textureURL,
-    animationName,
+    animationName: finalAnimationName,
   }
 
   if (itemOptions) {
