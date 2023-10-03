@@ -8,7 +8,7 @@ export interface ItemOptions {
   hand?: string // right or left
 }
 
-export interface Item {
+export interface PlayerInventoryItem {
   id: string
   displayName: string
   texture: Texture
@@ -19,7 +19,7 @@ export interface Item {
 
 export class PlayerInventory {
   private currentObjectIndex: number
-  private items: Item[]
+  private items: PlayerInventoryItem[]
 
   public constructor() {
     this.currentObjectIndex = 0
@@ -55,31 +55,31 @@ export class PlayerInventory {
     })
   }
 
-  public nextItem(): Item {
+  public nextItem(): PlayerInventoryItem {
     this.currentObjectIndex = (this.currentObjectIndex + 1) % this.items.length
     return this.items[this.currentObjectIndex] ?? this.dummyItem()
   }
 
-  public currentItem(): Item {
+  public currentItem(): PlayerInventoryItem {
     return this.items[this.currentObjectIndex] ?? this.dummyItem()
   }
 
-  public getItems(): Item[] {
+  public getItems(): PlayerInventoryItem[] {
     return this.items
   }
 
-  public addItem(item: Item): void {
+  public addItem(item: PlayerInventoryItem): void {
     this.items.push(item)
   }
 
-  public removeItem(targetItem: Item): void {
+  public removeItem(targetItem: PlayerInventoryItem): void {
     const index = this.items.findIndex(item => item.id === targetItem.id)
     if (index !== -1) {
       this.items.splice(index, 1)
     }
   }
 
-  public setCurrentItem(targetItem: Item): void {
+  public setCurrentItem(targetItem: PlayerInventoryItem): void {
     const index = this.items.findIndex(item => item.id === targetItem.id)
     if (index < 0 || index >= this.items.length) {
       console.error('Invalid item index.')
@@ -103,7 +103,7 @@ export class PlayerInventory {
     this.currentObjectIndex = 0
   }
 
-  public dummyItem(): Item {
+  public dummyItem(): PlayerInventoryItem {
     return {
       id: 'default',
       displayName: 'Default Item',
