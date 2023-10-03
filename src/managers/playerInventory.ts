@@ -18,42 +18,6 @@ export interface PlayerInventoryItem {
   animationName: string
   itemOptions?: ItemOptions
 }
-export const createNewItem = (
-  displayName: string,
-  textureURL: string,
-  animationName: string,
-  itemOptions?: ItemOptions,
-): PlayerInventoryItem => {
-  const texture = createSprite(textureURL).texture
-  const id = generateCUID(IDType.Object)
-
-  const validAnimations: KnownAnimation[] = [
-    'idle',
-    'jump',
-    'walk',
-    'bow',
-    'greatsword',
-  ]
-  const finalAnimationName = validAnimations.includes(
-    animationName as KnownAnimation,
-  )
-    ? animationName
-    : 'greatsword'
-
-  const newItem: PlayerInventoryItem = {
-    id,
-    displayName,
-    texture,
-    textureURL,
-    animationName: finalAnimationName,
-  }
-
-  if (itemOptions) {
-    newItem.itemOptions = itemOptions
-  }
-
-  return newItem
-}
 
 export class PlayerInventory {
   private currentObjectIndex: number
@@ -91,6 +55,43 @@ export class PlayerInventory {
         itemOptions,
       }
     })
+  }
+
+  public createNewItem = (
+    displayName: string,
+    textureURL: string,
+    animationName: string,
+    itemOptions?: ItemOptions,
+  ): PlayerInventoryItem => {
+    const texture = createSprite(textureURL).texture
+    const id = generateCUID(IDType.Object)
+
+    const validAnimations: KnownAnimation[] = [
+      'idle',
+      'jump',
+      'walk',
+      'bow',
+      'greatsword',
+    ]
+    const finalAnimationName = validAnimations.includes(
+      animationName as KnownAnimation,
+    )
+      ? animationName
+      : 'greatsword'
+
+    const newItem: PlayerInventoryItem = {
+      id,
+      displayName,
+      texture,
+      textureURL,
+      animationName: finalAnimationName,
+    }
+
+    if (itemOptions) {
+      newItem.itemOptions = itemOptions
+    }
+
+    return newItem
   }
 
   public nextItem(): PlayerInventoryItem {
