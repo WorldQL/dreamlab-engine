@@ -1,4 +1,5 @@
 import EventEmitter from 'eventemitter3'
+import type Matter from 'matter-js'
 import type { NetPlayer } from '~/entities/netplayer'
 import type { Entity, RenderTime, Time } from '~/entity.js'
 import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
@@ -12,12 +13,19 @@ interface ServerEvents {
   // TODO
 }
 
+type CollisionEvent = [
+  pair: readonly [a: SpawnableEntity, b: SpawnableEntity],
+  raw: Matter.IEventCollision<Matter.Engine>,
+]
+
 interface CommonEvents {
   onInstantiate: [entity: Entity]
   onDestroy: [entity: Entity]
   onSpawn: [entity: SpawnableEntity]
 
   onPhysicsStep: [time: Time]
+  onCollisionStart: CollisionEvent
+  onCollisionEnd: CollisionEvent
 
   onPlayerJoin: [player: NetPlayer]
   onPlayerLeave: [player: NetPlayer]

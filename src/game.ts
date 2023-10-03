@@ -284,6 +284,30 @@ export async function createGame<Server extends boolean>(
   const events = createEventsManager(options.isServer)
   let network: (Server extends true ? NetServer : NetClient) | undefined
 
+  const onCollision = (
+    type: 'end' | 'start',
+    ev: Matter.IEventCollision<Matter.Engine>,
+  ) => {
+    for (const pair of ev.pairs) {
+      const a = physics.getEntity(pair.bodyA)
+      const b = physics.getEntity(pair.bodyB)
+      if (!a || !b) continue
+
+      const entities = [a, b] as const
+      const event = type === 'start' ? 'onCollisionStart' : 'onCollisionEnd'
+
+      // TODO: Specialisation for player collision events
+      events.common.emit(event, entities, ev)
+    }
+  }
+
+  type CollisionEvent = (ev: Matter.IEventCollision<Matter.Engine>) => void
+  const onCollisionStart: CollisionEvent = ev => onCollision('start', ev)
+  const onCollisionEnd: CollisionEvent = ev => onCollision('end', ev)
+
+  Matter.Events.on(physics.engine, 'collisionStart', onCollisionStart)
+  Matter.Events.on(physics.engine, 'collisionEnd', onCollisionEnd)
+
   const onTick = async () => {
     const now = performance.now()
     const delta = now - time
@@ -563,6 +587,9 @@ export async function createGame<Server extends boolean>(
 
       const jobs = entities.map(async entity => this.destroy(entity))
       await Promise.all(jobs)
+
+      Matter.Events.off(physics.engine, 'collisionStart', onCollisionStart)
+      Matter.Events.off(physics.engine, 'collisionEnd', onCollisionEnd)
 
       Matter.Composite.clear(physics.world, false, true)
       Matter.Engine.clear(physics.engine)
