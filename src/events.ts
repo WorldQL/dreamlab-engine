@@ -43,13 +43,11 @@ interface CommonEvents {
 class ClientEventManager extends EventEmitter<ClientEvents> {}
 class ServerEventManager extends EventEmitter<ServerEvents> {}
 class CommonEventManager extends EventEmitter<CommonEvents> {}
-class CustomEventManager extends EventEmitter<any> {}
 
 export interface EventsManager<Server extends boolean> {
   client: Server extends false ? ClientEventManager : undefined
   server: Server extends true ? ServerEventManager : undefined
   common: CommonEventManager
-  custom: CustomEventManager
 }
 
 export const createEventsManager = <Server extends boolean>(
@@ -63,7 +61,5 @@ export const createEventsManager = <Server extends boolean>(
     server: isServer === true ? new ServerEventManager() : undefined,
 
     common: new CommonEventManager(),
-
-    custom: new CustomEventManager(),
   }
 }
