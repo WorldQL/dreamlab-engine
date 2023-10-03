@@ -1,6 +1,7 @@
 import type { Texture } from 'pixi.js'
 import type { ObjectItem } from './playerDataManager'
 import { createSprite } from '~/textures/sprites.js'
+import { generateCUID, IDType } from '~/utils/cuid.js'
 
 export interface ItemOptions {
   anchorX?: number | undefined
@@ -15,6 +16,29 @@ export interface PlayerInventoryItem {
   textureURL: string
   animationName: string
   itemOptions?: ItemOptions
+}
+export const createNewItem = (
+  displayName: string,
+  textureURL: string,
+  animationName: string,
+  itemOptions?: ItemOptions,
+): PlayerInventoryItem => {
+  const texture = createSprite(textureURL).texture
+  const id = generateCUID(IDType.Object)
+
+  const newItem: PlayerInventoryItem = {
+    id,
+    displayName,
+    texture,
+    textureURL,
+    animationName,
+  }
+
+  if (itemOptions) {
+    newItem.itemOptions = itemOptions
+  }
+
+  return newItem
 }
 
 export class PlayerInventory {
@@ -110,7 +134,8 @@ export class PlayerInventory {
       texture: createSprite(
         'https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693261056400.png',
       ).texture,
-      textureURL: 'https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693261056400.png',
+      textureURL:
+        'https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693261056400.png',
       animationName: 'greatsword',
       itemOptions: {
         anchorX: undefined,
