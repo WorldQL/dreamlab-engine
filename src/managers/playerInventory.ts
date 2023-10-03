@@ -110,6 +110,7 @@ export class PlayerInventory {
       texture: createSprite(
         'https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693261056400.png',
       ).texture,
+      textureURL: 'https://dreamlab-user-assets.s3.us-east-1.amazonaws.com/path-in-s3/1693261056400.png',
       animationName: 'greatsword',
       itemOptions: {
         anchorX: undefined,
