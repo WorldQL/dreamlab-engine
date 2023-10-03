@@ -3,6 +3,7 @@ import Matter from 'matter-js'
 import { Application } from 'pixi.js'
 import type { IApplicationOptions } from 'pixi.js'
 import { createCamera } from '~/entities/camera.js'
+import { isNetPlayer } from '~/entities/netplayer.js'
 import { registerDefaultSpawnables } from '~/entities/spawnable/index.js'
 import { dataManager, isEntity } from '~/entity.js'
 import type { Entity, InitContext, RenderContext } from '~/entity.js'
@@ -442,6 +443,7 @@ export async function createGame<Server extends boolean>(
       sortEntities()
 
       events.common.emit('onInstantiate', entity)
+      if (isNetPlayer(entity)) events.common.emit('onPlayerJoin', entity)
     },
 
     async destroy(entity) {
@@ -465,6 +467,7 @@ export async function createGame<Server extends boolean>(
       await entity.teardown(data)
 
       events.common.emit('onDestroy', entity)
+      if (isNetPlayer(entity)) events.common.emit('onPlayerLeave', entity)
     },
 
     async spawn(loose, preview = false) {
