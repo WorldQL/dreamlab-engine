@@ -12,6 +12,7 @@ export interface Item {
   id: string
   displayName: string
   texture: Texture
+  textureURL: string
   animationName: string
   itemOptions?: ItemOptions
 }
@@ -47,6 +48,7 @@ export class PlayerInventory {
         id: obj.id,
         displayName: obj.displayName,
         texture: itemTexture,
+        textureURL: imageUrl,
         animationName: obj.animationName,
         itemOptions,
       }
