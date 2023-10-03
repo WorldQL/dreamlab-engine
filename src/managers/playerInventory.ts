@@ -7,7 +7,7 @@ import { generateCUID, IDType } from '~/utils/cuid.js'
 export interface ItemOptions {
   anchorX?: number | undefined
   anchorY?: number | undefined
-  hand?: string // right or left
+  hand?: 'left' | 'right'
 }
 
 export interface PlayerInventoryItem {
