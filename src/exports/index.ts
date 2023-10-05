@@ -8,6 +8,7 @@ export {
   type Partialize,
   type RenderContext,
 } from '~/entity.js'
+export type { Event, EventArgs, EventHandler } from '~/events.js'
 export {
   SpawnableDefinitionSchema,
   type SpawnableDefinition,

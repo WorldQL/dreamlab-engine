@@ -50,6 +50,17 @@ export interface EventsManager<Server extends boolean> {
   common: CommonEventManager
 }
 
+export type Event = keyof ClientEvents | keyof CommonEvents | keyof ServerEvents
+export type EventArgs<T extends Event> = T extends keyof ClientEvents
+  ? ClientEvents[T]
+  : T extends keyof ServerEvents
+  ? ServerEvents[T]
+  : T extends keyof CommonEvents
+  ? CommonEvents[T]
+  : never
+
+export type EventHandler<T extends Event> = (...args: EventArgs<T>) => void
+
 export const createEventsManager = <Server extends boolean>(
   isServer: Server,
 ): EventsManager<Server> => {
