@@ -39,9 +39,11 @@ interface CommonEvents {
 
   onPhysicsStep: [time: Time]
   onCollisionStart: CollisionEvent
+  onCollisionActive: CollisionEvent
   onCollisionEnd: CollisionEvent
 
   onPlayerCollisionStart: PlayerCollisionEvent
+  onPlayerCollisionActive: PlayerCollisionEvent
   onPlayerCollisionEnd: PlayerCollisionEvent
 
   onPlayerJoin: [player: NetPlayer]

@@ -285,7 +285,7 @@ export async function createGame<Server extends boolean>(
   let network: (Server extends true ? NetServer : NetClient) | undefined
 
   const onCollision = (
-    type: 'end' | 'start',
+    type: 'active' | 'end' | 'start',
     ev: Matter.IEventCollision<Matter.Engine>,
   ) => {
     const testSpawnables = (pair: Matter.Pair) => {
@@ -293,11 +293,13 @@ export async function createGame<Server extends boolean>(
       const b = physics.getEntity(pair.bodyB)
       if (!a || !b) return
 
-      events.common.emit(
-        type === 'start' ? 'onCollisionStart' : 'onCollisionEnd',
-        [a, b],
-        pair.collision,
-      )
+      if (type === 'start') {
+        events.common.emit('onCollisionStart', [a, b], pair.collision)
+      } else if (type === 'end') {
+        events.common.emit('onCollisionEnd', [a, b], pair.collision)
+      } else {
+        events.common.emit('onCollisionActive', [a, b], pair.collision)
+      }
     }
 
     const testPlayer = (pair: Matter.Pair) => {
@@ -309,11 +311,25 @@ export async function createGame<Server extends boolean>(
       if (!player) return
       const other = physics.isPlayer(pair.bodyA) ? pair.bodyB : pair.bodyA
 
-      events.common.emit(
-        type === 'start' ? 'onPlayerCollisionStart' : 'onPlayerCollisionEnd',
-        [player, other],
-        pair.collision,
-      )
+      if (type === 'start') {
+        events.common.emit(
+          'onPlayerCollisionStart',
+          [player, other],
+          pair.collision,
+        )
+      } else if (type === 'end') {
+        events.common.emit(
+          'onPlayerCollisionEnd',
+          [player, other],
+          pair.collision,
+        )
+      } else {
+        events.common.emit(
+          'onPlayerCollisionActive',
+          [player, other],
+          pair.collision,
+        )
+      }
     }
 
     for (const pair of ev.pairs) {
@@ -324,9 +340,11 @@ export async function createGame<Server extends boolean>(
 
   type CollisionEvent = (ev: Matter.IEventCollision<Matter.Engine>) => void
   const onCollisionStart: CollisionEvent = ev => onCollision('start', ev)
+  const onCollisionActive: CollisionEvent = ev => onCollision('active', ev)
   const onCollisionEnd: CollisionEvent = ev => onCollision('end', ev)
 
   Matter.Events.on(physics.engine, 'collisionStart', onCollisionStart)
+  Matter.Events.on(physics.engine, 'collisionActive', onCollisionActive)
   Matter.Events.on(physics.engine, 'collisionEnd', onCollisionEnd)
 
   const onTick = async () => {
