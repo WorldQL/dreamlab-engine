@@ -67,7 +67,7 @@ export const createNetPlayer = (
   animations: PlayerAnimationMap<KnownAnimation>,
   { width = 80, height = 370 }: Partial<PlayerSize> = {},
 ) => {
-  const playerInventory = new PlayerInventory() // we need to populate the inventory somehow for netplayer
+  let playerInventory: PlayerInventory // we need to populate the inventory somehow for netplayer
   const _entityID = entityID ?? createId()
 
   let isFlipped = false
@@ -175,6 +175,7 @@ export const createNetPlayer = (
 
     init({ game, physics }) {
       const debug = game.debug
+      playerInventory = new PlayerInventory(game)
 
       Matter.Composite.add(physics.world, body)
 
