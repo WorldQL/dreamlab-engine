@@ -81,20 +81,6 @@ export enum PlayerInput {
   WalkRight = '@player/walk-right',
 }
 
-// These should match offsets in https://github.com/WorldQL/painter-shoggoth/blob/trunk/prepare_animations.py
-const getFrameOffset = (animation_name: string) => {
-  switch (animation_name) {
-    case 'jump':
-      return 3
-    case 'greatsword':
-      return 52
-    case 'punch':
-      return 11
-    default:
-      return 0
-  }
-}
-
 export const createPlayer = (
   animations: PlayerAnimationMap<KnownAnimation>,
   inventory: PlayerInventory,
@@ -161,6 +147,20 @@ export const createPlayer = (
     return 'idle'
   }
 
+  // These should match offsets in https://github.com/WorldQL/painter-shoggoth/blob/trunk/prepare_animations.py
+  const getFrameOffset = () => {
+    switch (currentAnimation) {
+      case 'jump':
+        return 3
+      case 'greatsword':
+        return 52
+      case 'punch':
+        return 11
+      default:
+        return 0
+    }
+  }
+
   const isAttackFrame = () => {
     switch (currentAnimation) {
       case 'greatsword':
@@ -178,9 +178,7 @@ export const createPlayer = (
     const animW = animation.width
     const animH = animation.height
     const position =
-      animation.boneData.bones[bone][
-        currentFrame + getFrameOffset(currentAnimation)
-      ]!
+      animation.boneData.bones[bone][currentFrame + getFrameOffset()]!
 
     const flip = spriteSign
     const normalized = {
@@ -419,7 +417,6 @@ export const createPlayer = (
       }
 
       if (attack && isAttackFrame()) {
-        console.log('ATTACK')
         const xOffset =
           facing.value === 'right'
             ? width / 2 + itemBodyWidth / 2
@@ -476,6 +473,7 @@ export const createPlayer = (
               return 1
           }
         }
+
         sprite.animationSpeed =
           PLAYER_ANIMATION_SPEED * getSpeedMultiplier(currentAnimation)
         sprite.loop = newAnimation !== 'jump'
@@ -537,7 +535,7 @@ export const createPlayer = (
         const handOffsets =
           animation.boneData.handOffsets[
             mappedHand as 'handLeft' | 'handRight'
-          ][currentFrame + getFrameOffset(currentAnimation)]
+          ][currentFrame + getFrameOffset()]
 
         let rotation = Math.atan2(
           handOffsets!.y.y - handOffsets!.x.y,
