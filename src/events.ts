@@ -43,7 +43,7 @@ interface CommonEvents {
   onPlayerJoin: [player: NetPlayer]
   onPlayerLeave: [player: NetPlayer]
 
-  onPlayerAttack: [player: NetPlayer]
+  onPlayerAttack: [body: Matter.Body, animation: String]
 
   onInventoryAddItem: [item: PlayerInventoryItem, inventory: PlayerInventory]
   onInventoryRemoveItem: [item: PlayerInventoryItem, inventory: PlayerInventory]

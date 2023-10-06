@@ -3,6 +3,7 @@ import { AnimatedSprite, Graphics, Sprite } from 'pixi.js'
 import type { Camera } from '~/entities/camera.js'
 import type { Entity } from '~/entity.js'
 import { createEntity, isEntity } from '~/entity.js'
+import type { Game } from '~/game'
 import type { InputManager } from '~/input/manager.js'
 import type { PlayerInventory } from '~/managers/playerInventory'
 import { v, Vec } from '~/math/vector.js'
@@ -23,6 +24,7 @@ export const PLAYER_ANIMATION_SPEED = 0.4
 export const PLAYER_SPRITE_ANCHOR = [0.45, 0.535] as const
 
 interface Data {
+  game: Game<false>
   debug: Debug
   inputs: InputManager | undefined
   physics: Physics
@@ -267,6 +269,7 @@ export const createPlayer = (
       }
 
       return {
+        game,
         debug,
         inputs,
         physics,
@@ -326,7 +329,7 @@ export const createPlayer = (
 
     onPhysicsStep(
       { delta },
-      { inputs, physics, network, direction, facing, colliding },
+      { game, inputs, physics, network, direction, facing, colliding },
     ) {
       const left = inputs?.getInput(PlayerInput.WalkLeft) ?? false
       const right = inputs?.getInput(PlayerInput.WalkRight) ?? false
@@ -426,6 +429,7 @@ export const createPlayer = (
         isAttackFrame() &&
         ['greatsword', 'punch'].includes(currentAnimation)
       ) {
+        game.events.common.emit('onPlayerAttack', this.body, currentAnimation)
         const xOffset =
           facing.value === 'right'
             ? width / 2 + itemBodyWidth / 2
