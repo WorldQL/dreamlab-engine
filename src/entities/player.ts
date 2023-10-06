@@ -69,9 +69,14 @@ export interface PlayerSize {
 }
 
 export type KnownPlayerAnimation = 'idle' | 'jump' | 'walk'
-export type KnownAttackAnimation = 'bow' | 'greatsword' | 'punch'
+export type KnownAttackAnimation = 'greatsword' | 'punch'
+export type KnownRangedAttackAnimation = 'bow'
 
-export type KnownAnimation = KnownAttackAnimation | KnownPlayerAnimation
+export type KnownAnimation =
+  | KnownAttackAnimation
+  | KnownPlayerAnimation
+  | KnownRangedAttackAnimation
+
 export enum PlayerInput {
   Attack = '@player/attack',
   Crouch = '@player/crouch',
@@ -416,7 +421,11 @@ export const createPlayer = (
         if (!jump && isColliding) hasJumped = false
       }
 
-      if (attack && isAttackFrame()) {
+      if (
+        attack &&
+        isAttackFrame() &&
+        ['greatsword', 'punch'].includes(currentAnimation)
+      ) {
         const xOffset =
           facing.value === 'right'
             ? width / 2 + itemBodyWidth / 2
@@ -468,7 +477,7 @@ export const createPlayer = (
         const getSpeedMultiplier = (animation_name: string) => {
           switch (animation_name) {
             case 'greatsword':
-              return 3
+              return 2.2
             default:
               return 1
           }
