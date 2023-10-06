@@ -81,6 +81,20 @@ export enum PlayerInput {
   WalkRight = '@player/walk-right',
 }
 
+// These should match offsets in https://github.com/WorldQL/painter-shoggoth/blob/trunk/prepare_animations.py
+const getFrameOffset = (animation_name: string) => {
+  switch (animation_name) {
+    case 'jump':
+      return 3
+    case 'greatsword':
+      return 52
+    case 'punch':
+      return 11
+    default:
+      return 0
+  }
+}
+
 export const createPlayer = (
   animations: PlayerAnimationMap<KnownAnimation>,
   inventory: PlayerInventory,
@@ -163,7 +177,10 @@ export const createPlayer = (
 
     const animW = animation.width
     const animH = animation.height
-    const position = animation.boneData.bones[bone][currentFrame]!
+    const position =
+      animation.boneData.bones[bone][
+        currentFrame + getFrameOffset(currentAnimation)
+      ]!
 
     const flip = spriteSign
     const normalized = {
@@ -451,10 +468,16 @@ export const createPlayer = (
       if (newAnimation !== currentAnimation) {
         currentAnimation = newAnimation
         sprite.textures = animations[newAnimation].textures
+        const getSpeedMultiplier = (animation_name: string) => {
+          switch (animation_name) {
+            case 'greatsword':
+              return 3
+            default:
+              return 1
+          }
+        }
         sprite.animationSpeed =
-          currentAnimation === 'greatsword'
-            ? PLAYER_ANIMATION_SPEED * 5
-            : PLAYER_ANIMATION_SPEED
+          PLAYER_ANIMATION_SPEED * getSpeedMultiplier(currentAnimation)
         sprite.loop = newAnimation !== 'jump'
 
         sprite.gotoAndPlay(0)
@@ -514,7 +537,7 @@ export const createPlayer = (
         const handOffsets =
           animation.boneData.handOffsets[
             mappedHand as 'handLeft' | 'handRight'
-          ][currentFrame]
+          ][currentFrame + getFrameOffset(currentAnimation)]
 
         let rotation = Math.atan2(
           handOffsets!.y.y - handOffsets!.x.y,
