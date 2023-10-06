@@ -51,6 +51,7 @@ export interface NetPlayer extends PlayerCommon, Entity<Data, Render> {
 
   get peerID(): string
   get entityID(): string
+
   get body(): Body
   get inventory(): PlayerInventory
 

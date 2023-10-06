@@ -52,6 +52,7 @@ export const isPlayer = (player: unknown): player is Player => {
 export interface PlayerCommon {
   get position(): Vector
   get size(): PlayerSize
+  get body(): Matter.Body
 }
 
 export interface Player extends PlayerCommon, Entity<Data, Render> {
@@ -195,6 +196,10 @@ export const createPlayer = (
       return { width, height }
     },
 
+    get body() {
+      return body
+    },
+
     get bones(): Readonly<Record<Bone, Vector>> {
       return boneMap
     },
@@ -215,7 +220,7 @@ export const createPlayer = (
 
       // TODO: Reimplement spawnpoints
 
-      Matter.Composite.add(physics.world, body)
+      physics.registerPlayer(this as Player)
 
       Matter.Composite.add(physics.world, itemBody)
 
@@ -278,7 +283,7 @@ export const createPlayer = (
 
     teardown({ inputs, physics }) {
       inputs?.removeListener(PlayerInput.ToggleNoclip, onToggleNoclip)
-      Matter.Composite.remove(physics.world, body)
+      physics.clearPlayer()
     },
 
     teardownRenderContext({ sprite, itemSprite, gfxBounds, gfxFeet }) {

@@ -3,6 +3,7 @@ import Matter from 'matter-js'
 import { Application } from 'pixi.js'
 import type { IApplicationOptions } from 'pixi.js'
 import { createCamera } from '~/entities/camera.js'
+import { isNetPlayer } from '~/entities/netplayer.js'
 import { registerDefaultSpawnables } from '~/entities/spawnable/index.js'
 import { dataManager, isEntity } from '~/entity.js'
 import type { Entity, InitContext, RenderContext } from '~/entity.js'
@@ -283,6 +284,51 @@ export async function createGame<Server extends boolean>(
   const events = createEventsManager(options.isServer)
   let network: (Server extends true ? NetServer : NetClient) | undefined
 
+  const onCollision = (
+    type: 'end' | 'start',
+    ev: Matter.IEventCollision<Matter.Engine>,
+  ) => {
+    const testSpawnables = (pair: Matter.Pair) => {
+      const a = physics.getEntity(pair.bodyA)
+      const b = physics.getEntity(pair.bodyB)
+      if (!a || !b) return
+
+      events.common.emit(
+        type === 'start' ? 'onCollisionStart' : 'onCollisionEnd',
+        [a, b],
+        pair.collision,
+      )
+    }
+
+    const testPlayer = (pair: Matter.Pair) => {
+      const player =
+        physics.getPlayer(pair.bodyA) ??
+        physics.getPlayer(pair.bodyB) ??
+        undefined
+
+      if (!player) return
+      const other = physics.isPlayer(pair.bodyA) ? pair.bodyB : pair.bodyA
+
+      events.common.emit(
+        type === 'start' ? 'onPlayerCollisionStart' : 'onPlayerCollisionEnd',
+        [player, other],
+        pair.collision,
+      )
+    }
+
+    for (const pair of ev.pairs) {
+      testSpawnables(pair)
+      testPlayer(pair)
+    }
+  }
+
+  type CollisionEvent = (ev: Matter.IEventCollision<Matter.Engine>) => void
+  const onCollisionStart: CollisionEvent = ev => onCollision('start', ev)
+  const onCollisionEnd: CollisionEvent = ev => onCollision('end', ev)
+
+  Matter.Events.on(physics.engine, 'collisionStart', onCollisionStart)
+  Matter.Events.on(physics.engine, 'collisionEnd', onCollisionEnd)
+
   const onTick = async () => {
     const now = performance.now()
     const delta = now - time
@@ -442,6 +488,7 @@ export async function createGame<Server extends boolean>(
       sortEntities()
 
       events.common.emit('onInstantiate', entity)
+      if (isNetPlayer(entity)) events.common.emit('onPlayerJoin', entity)
     },
 
     async destroy(entity) {
@@ -465,6 +512,7 @@ export async function createGame<Server extends boolean>(
       await entity.teardown(data)
 
       events.common.emit('onDestroy', entity)
+      if (isNetPlayer(entity)) events.common.emit('onPlayerLeave', entity)
     },
 
     async spawn(loose, preview = false) {
@@ -560,6 +608,9 @@ export async function createGame<Server extends boolean>(
 
       const jobs = entities.map(async entity => this.destroy(entity))
       await Promise.all(jobs)
+
+      Matter.Events.off(physics.engine, 'collisionStart', onCollisionStart)
+      Matter.Events.off(physics.engine, 'collisionEnd', onCollisionEnd)
 
       Matter.Composite.clear(physics.world, false, true)
       Matter.Engine.clear(physics.engine)
