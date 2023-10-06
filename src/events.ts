@@ -13,6 +13,10 @@ interface ClientEvents {
   onRenderFrame: [time: RenderTime]
 }
 
+interface CustomEvents {
+  [eventName: string]: unknown[]
+}
+
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface ServerEvents {
   // TODO
@@ -52,7 +56,7 @@ interface CommonEvents {
 class ClientEventManager extends EventEmitter<ClientEvents> {}
 class ServerEventManager extends EventEmitter<ServerEvents> {}
 class CommonEventManager extends EventEmitter<CommonEvents> {}
-class CustomEventManager extends EventEmitter<any> {}
+class CustomEventManager extends EventEmitter<CustomEvents> {}
 
 export interface EventsManager<Server extends boolean> {
   client: Server extends false ? ClientEventManager : undefined
