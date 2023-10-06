@@ -69,7 +69,7 @@ export interface PlayerSize {
 }
 
 export type KnownPlayerAnimation = 'idle' | 'jump' | 'walk'
-export type KnownAttackAnimation = 'bow' | 'greatsword'
+export type KnownAttackAnimation = 'bow' | 'greatsword' | 'punch'
 
 export type KnownAnimation = KnownAttackAnimation | KnownPlayerAnimation
 export enum PlayerInput {
@@ -140,11 +140,22 @@ export const createPlayer = (
       inventory.getItems().length > 0
         ? inventory.getItemInHand().animationName.toLowerCase()
         : 'idle'
-    if (attack && ['greatsword', 'bow'].includes(animationName))
+    if (attack && ['greatsword', 'bow', 'punch'].includes(animationName))
       return animationName as KnownAnimation
     if (direction !== 0) return 'walk'
 
     return 'idle'
+  }
+
+  const isAttackFrame = () => {
+    switch (currentAnimation) {
+      case 'greatsword':
+        return currentFrame >= 24
+      case 'punch':
+        return currentFrame >= 5
+      default:
+        return false
+    }
   }
 
   const bonePosition = (bone: Bone): Vector => {
@@ -390,7 +401,8 @@ export const createPlayer = (
         if (!jump && isColliding) hasJumped = false
       }
 
-      if (attack && inventory.getItemInHand().animationName !== 'punch') {
+      if (attack && isAttackFrame()) {
+        console.log('ATTACK')
         const xOffset =
           facing.value === 'right'
             ? width / 2 + itemBodyWidth / 2

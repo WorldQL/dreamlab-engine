@@ -1,6 +1,7 @@
 import { Texture } from 'pixi.js'
 import type { ObjectItem } from './playerDataManager'
 import type { KnownAnimation } from '~/entities/player'
+import type { Game } from '~/game'
 import { createSprite } from '~/textures/sprites.js'
 import { generateCUID, IDType } from '~/utils/cuid.js'
 
@@ -23,7 +24,7 @@ export class PlayerInventory {
   private currentObjectIndex: number
   private items: PlayerInventoryItem[]
 
-  public constructor() {
+  public constructor(private readonly game: Game<false>) {
     this.currentObjectIndex = 0
     this.items = []
   }
@@ -105,12 +106,14 @@ export class PlayerInventory {
 
   public addItem(item: PlayerInventoryItem): void {
     this.items.push(item)
+    this.game.events.common.emit('onInventoryAddItem', item, this)
   }
 
   public removeItem(targetItem: PlayerInventoryItem): void {
     const index = this.items.findIndex(item => item.id === targetItem.id)
     if (index !== -1) {
       this.items.splice(index, 1)
+      this.game.events.common.emit('onInventoryRemoveItem', targetItem, this)
     }
   }
 
