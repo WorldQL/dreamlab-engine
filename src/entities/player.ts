@@ -125,19 +125,19 @@ export const createPlayer = (
     friction: 0,
   })
 
-  const itemBodyWidth = 120
-  const itemBodyHeight = 350
-  const itemBody = Matter.Bodies.rectangle(
-    0,
-    0,
-    itemBodyWidth,
-    itemBodyHeight,
-    {
-      label: 'item',
-      render: { visible: false },
-      isSensor: true,
-    },
-  )
+  // const itemBodyWidth = 120
+  // const itemBodyHeight = 350
+  // const itemBody = Matter.Bodies.rectangle(
+  //   0,
+  //   0,
+  //   itemBodyWidth,
+  //   itemBodyHeight,
+  //   {
+  //     label: 'item',
+  //     render: { visible: false },
+  //     isSensor: true,
+  //   },
+  // )
 
   const getAnimation = (direction: number): KnownAnimation => {
     if (noclip) return 'idle'
@@ -255,14 +255,14 @@ export const createPlayer = (
 
       physics.registerPlayer(this as Player)
 
-      Matter.Composite.add(physics.world, itemBody)
+      // Matter.Composite.add(physics.world, itemBody)
 
       if (inputs) {
         inputs.registerInput(PlayerInput.WalkLeft, 'KeyA')
-        inputs.registerInput(PlayerInput.Attack, 'MouseLeft')
         inputs.registerInput(PlayerInput.WalkRight, 'KeyD')
         inputs.registerInput(PlayerInput.Jump, 'Space')
         inputs.registerInput(PlayerInput.Crouch, 'KeyS')
+        inputs.registerInput(PlayerInput.Attack, 'MouseLeft')
         inputs.registerInput(PlayerInput.ToggleNoclip, 'KeyV')
 
         inputs.addListener(PlayerInput.ToggleNoclip, onToggleNoclip)
@@ -424,20 +424,18 @@ export const createPlayer = (
         if (!jump && isColliding) hasJumped = false
       }
 
-      if (
-        attack &&
-        isAttackFrame() &&
-        ['greatsword', 'punch'].includes(currentAnimation)
-      ) {
+      if (attack && isAttackFrame()) {
         game.events.common.emit('onPlayerAttack', this.body, currentAnimation)
-        const xOffset =
-          facing.value === 'right'
-            ? width / 2 + itemBodyWidth / 2
-            : -width / 2 - itemBodyWidth / 2
-        Matter.Body.setPosition(itemBody, {
-          x: body.position.x + xOffset,
-          y: body.position.y,
-        })
+        // if (['greatsword', 'punch'].includes(currentAnimation)) {
+        //   const xOffset =
+        //     facing.value === 'right'
+        //       ? width / 2 + itemBodyWidth / 2
+        //       : -width / 2 - itemBodyWidth / 2
+        //   Matter.Body.setPosition(itemBody, {
+        //     x: body.position.x + xOffset,
+        //     y: body.position.y,
+        //   })
+        // }
       }
 
       network?.sendPlayerPosition(
