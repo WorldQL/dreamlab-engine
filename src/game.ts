@@ -274,7 +274,7 @@ export async function createGame<Server extends boolean>(
   const spawnables = new Map<string, SpawnableEntity>()
   const spawnableFunctions = new Map<string, BareSpawnableFunction>()
 
-  const inputs = new InputManager()
+  const inputs = new InputManager(renderContext?.canvas)
   const unregister = renderContext ? inputs.registerListeners() : undefined
 
   const physicsTickDelta = 1_000 / physicsTickrate

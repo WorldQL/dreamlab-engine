@@ -89,7 +89,7 @@ export class InputManager extends EventEmitter<KeyEvents> {
 
   private readonly inputCount = new CountMap<string>()
 
-  public constructor() {
+  public constructor(private readonly canvas: HTMLCanvasElement | undefined) {
     super()
   }
 
@@ -103,14 +103,18 @@ export class InputManager extends EventEmitter<KeyEvents> {
 
     window.addEventListener('keydown', onKeyDown)
     window.addEventListener('keyup', onKeyUp)
-    window.addEventListener('mousedown', boundOnMouseDown)
-    window.addEventListener('mouseup', boundOnMouseUp)
+    if (this.canvas) {
+      this.canvas.addEventListener('mousedown', boundOnMouseDown)
+      this.canvas.addEventListener('mouseup', boundOnMouseUp)
+    }
 
     const unregister: Unregister = () => {
       window.removeEventListener('keydown', onKeyDown)
       window.removeEventListener('keyup', onKeyUp)
-      window.removeEventListener('mousedown', boundOnMouseDown)
-      window.removeEventListener('mouseup', boundOnMouseUp)
+      if (this.canvas) {
+        this.canvas.removeEventListener('mousedown', boundOnMouseDown)
+        this.canvas.removeEventListener('mouseup', boundOnMouseUp)
+      }
     }
 
     return unregister
