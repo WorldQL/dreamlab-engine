@@ -259,7 +259,7 @@ export const createPlayer = (
 
       if (inputs) {
         inputs.registerInput(PlayerInput.WalkLeft, 'KeyA')
-        inputs.registerInput(PlayerInput.Attack, 'KeyE')
+        inputs.registerInput(PlayerInput.Attack, 'MouseLeft')
         inputs.registerInput(PlayerInput.WalkRight, 'KeyD')
         inputs.registerInput(PlayerInput.Jump, 'Space')
         inputs.registerInput(PlayerInput.Crouch, 'KeyS')
