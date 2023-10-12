@@ -38,6 +38,10 @@ export const createBouncyBall = createSpawnableEntity(
         }
       },
 
+      get body() {
+        return [body]
+      },
+
       get tags() {
         return tags
       },

@@ -17,6 +17,7 @@ export interface SpawnableEntity<Data = unknown, Render = unknown>
   get [symbol](): true
 
   get uid(): UID
+  get body(): Matter.Body[] | undefined
   get tags(): string[]
   get preview(): boolean
   get transform(): Transform

@@ -22,6 +22,10 @@ export const createNonsolid = createSpawnableEntity(
       return tags
     },
 
+    get body() {
+      return undefined
+    },
+
     isInBounds(point) {
       return simpleBoundsTest(width, height, transform, point)
     },

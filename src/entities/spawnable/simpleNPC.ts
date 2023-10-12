@@ -93,6 +93,10 @@ export const createSimpleNPC = createSpawnableEntity<
       return tags
     },
 
+    get body() {
+      return [body]
+    },
+
     isInBounds(position) {
       return Matter.Query.point([body], position).length > 0
     },
