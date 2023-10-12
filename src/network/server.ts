@@ -22,4 +22,5 @@ export interface NetServer extends Listeners<NetServerListeners> {
 
   sendCustomMessage(peerID: string, channel: string, data: Data): void
   broadcastCustomMessage(channel: string, data: Data): void
+  broadcastSyncedValue(entityID: string, key: string, value: unknown): void
 }
