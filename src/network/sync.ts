@@ -1,3 +1,4 @@
+import equal from 'fast-deep-equal/es6'
 import { dataManager } from '~/entity.js'
 import type { Game } from '~/game.js'
 import { isSpawnableEntity } from '~/spawnable/spawnableEntity.js'
@@ -48,7 +49,7 @@ export const syncedValue = <T, Server extends boolean>(
       }
 
       prev = value
-      const changed = val !== prev
+      const changed = !equal(prev, val)
       value = val
 
       if (changed) server.network?.broadcastSyncedValue(entityID, key, value)
