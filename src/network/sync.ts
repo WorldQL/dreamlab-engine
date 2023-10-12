@@ -3,6 +3,8 @@ import type { Game } from '~/game.js'
 import { isSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 
 export const symbol = Symbol.for('@dreamlab/core/syncedValue')
+export const setter = Symbol.for('@dreamlab/core/syncedValue/setter')
+
 export interface SyncedValue<T> {
   readonly [symbol]: true
   readonly entityID: string
@@ -12,6 +14,7 @@ export interface SyncedValue<T> {
   set value(v: T)
 
   sync(): void
+  [setter](value: T): void
 }
 
 export const syncedValue = <T, Server extends boolean>(
@@ -53,6 +56,10 @@ export const syncedValue = <T, Server extends boolean>(
 
     sync() {
       game.server?.network?.broadcastSyncedValue(entityID, key, value)
+    },
+
+    [setter](val) {
+      value = val
     },
   }
 
@@ -104,5 +111,5 @@ export const updateSyncedValue = (
     .find(value => value.key === key)
 
   if (!syncedValue) return
-  syncedValue.value = value
+  syncedValue[setter](value)
 }
