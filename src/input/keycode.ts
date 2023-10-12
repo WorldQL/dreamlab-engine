@@ -58,11 +58,17 @@ const special = [
 ] as const
 const SpecialSchema = z.enum(special)
 
+const mouseButtons = ['MouseLeft', 'MouseMiddle', 'MouseRight'] as const
+const MouseButtonSchema = z.enum(mouseButtons)
+
 export type KeyCode = z.infer<typeof KeyCodeSchema>
-export const KeyCodeSchema = LetterSchema.or(DigitSchema).or(SpecialSchema)
+export const KeyCodeSchema = LetterSchema.or(DigitSchema)
+  .or(SpecialSchema)
+  .or(MouseButtonSchema)
 
 export const keyCodes = Object.freeze([
   ...letters,
   ...digits,
   ...special,
+  ...mouseButtons,
 ] as const)

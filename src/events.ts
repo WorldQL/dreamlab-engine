@@ -1,5 +1,9 @@
 import EventEmitter from 'eventemitter3'
 import type Matter from 'matter-js'
+import type {
+  PlayerInventory,
+  PlayerInventoryItem,
+} from './managers/playerInventory'
 import type { NetPlayer } from '~/entities/netplayer'
 import type { Player } from '~/entities/player.js'
 import type { Entity, RenderTime, Time } from '~/entity.js'
@@ -31,13 +35,20 @@ interface CommonEvents {
 
   onPhysicsStep: [time: Time]
   onCollisionStart: CollisionEvent
+  onCollisionActive: CollisionEvent
   onCollisionEnd: CollisionEvent
 
   onPlayerCollisionStart: PlayerCollisionEvent
+  onPlayerCollisionActive: PlayerCollisionEvent
   onPlayerCollisionEnd: PlayerCollisionEvent
 
   onPlayerJoin: [player: NetPlayer]
   onPlayerLeave: [player: NetPlayer]
+
+  onPlayerAttack: [body: Matter.Body, animation: string]
+
+  onInventoryAddItem: [item: PlayerInventoryItem, inventory: PlayerInventory]
+  onInventoryRemoveItem: [item: PlayerInventoryItem, inventory: PlayerInventory]
 }
 
 class ClientEventManager extends EventEmitter<ClientEvents> {}

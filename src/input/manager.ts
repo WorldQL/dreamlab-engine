@@ -42,6 +42,41 @@ function onKey(this: InputManager, ev: KeyboardEvent, pressed: boolean): void {
   this.setKey(result.data, pressed)
 }
 
+function onMouseDown(this: InputManager, ev: MouseEvent): void {
+  onMouseEvent.bind(this)(ev, true)
+}
+
+function onMouseUp(this: InputManager, ev: MouseEvent): void {
+  onMouseEvent.bind(this)(ev, false)
+}
+
+function onMouseEvent(
+  this: InputManager,
+  ev: MouseEvent,
+  pressed: boolean,
+): void {
+  let mouseCode: string
+
+  switch (ev.button) {
+    case 0:
+      mouseCode = 'MouseLeft'
+      break
+    case 1:
+      mouseCode = 'MouseMiddle'
+      break
+    case 2:
+      mouseCode = 'MouseRight'
+      break
+    default:
+      return
+  }
+
+  const result = KeyCodeSchema.safeParse(mouseCode)
+  if (!result.success) return
+
+  this.setKey(result.data, pressed)
+}
+
 export class InputManager extends EventEmitter<KeyEvents> {
   private readonly keys = new Set<KeyCode>()
   private readonly held = new Set<KeyCode>()
@@ -54,22 +89,32 @@ export class InputManager extends EventEmitter<KeyEvents> {
 
   private readonly inputCount = new CountMap<string>()
 
-  public constructor() {
+  public constructor(private readonly canvas: HTMLCanvasElement | undefined) {
     super()
   }
 
   public registerListeners(): Unregister {
     const boundOnKey = onKey.bind(this)
+    const boundOnMouseDown = onMouseDown.bind(this)
+    const boundOnMouseUp = onMouseUp.bind(this)
 
     const onKeyDown = (ev: KeyboardEvent) => boundOnKey(ev, true)
     const onKeyUp = (ev: KeyboardEvent) => boundOnKey(ev, false)
 
     window.addEventListener('keydown', onKeyDown)
     window.addEventListener('keyup', onKeyUp)
+    if (this.canvas) {
+      this.canvas.addEventListener('mousedown', boundOnMouseDown)
+      this.canvas.addEventListener('mouseup', boundOnMouseUp)
+    }
 
     const unregister: Unregister = () => {
       window.removeEventListener('keydown', onKeyDown)
       window.removeEventListener('keyup', onKeyUp)
+      if (this.canvas) {
+        this.canvas.removeEventListener('mousedown', boundOnMouseDown)
+        this.canvas.removeEventListener('mouseup', boundOnMouseUp)
+      }
     }
 
     return unregister

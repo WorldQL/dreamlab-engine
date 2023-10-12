@@ -1,7 +1,7 @@
 import { createId } from '@paralleldrive/cuid2'
 import Matter from 'matter-js'
 import type { Body } from 'matter-js'
-import { AnimatedSprite, Graphics } from 'pixi.js'
+import { AnimatedSprite, Graphics, Sprite } from 'pixi.js'
 import type { Camera } from '~/entities/camera.js'
 import {
   PLAYER_ANIMATION_SPEED,
@@ -10,16 +10,18 @@ import {
   PLAYER_SPRITE_SCALE,
 } from '~/entities/player.js'
 import type {
-  KnownPlayerAnimation,
+  KnownAnimation,
   PlayerCommon,
   PlayerSize,
 } from '~/entities/player.js'
 import { createEntity, dataManager, isEntity } from '~/entity.js'
 import type { Entity } from '~/entity.js'
+import { PlayerInventory } from '~/managers/playerInventory.js'
 import { v, Vec } from '~/math/vector.js'
 import type { LooseVector, Vector } from '~/math/vector.js'
 import type { Physics } from '~/physics.js'
-import type { PlayerAnimationMap } from '~/textures/playerAnimations.js'
+import { bones } from '~/textures/playerAnimations.js'
+import type { Bone, PlayerAnimationMap } from '~/textures/playerAnimations.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
 
@@ -34,6 +36,8 @@ interface Render {
 
   sprite: AnimatedSprite
   gfxBounds: Graphics
+
+  itemSprite: Sprite
 }
 
 const symbol = Symbol.for('@dreamlab/core/entities/netplayer')
@@ -48,23 +52,76 @@ export interface NetPlayer extends PlayerCommon, Entity<Data, Render> {
   get peerID(): string
   get entityID(): string
 
+  get body(): Body
+  get inventory(): PlayerInventory
+
   setPosition(vector: LooseVector): void
   setVelocity(vector: LooseVector): void
   setFlipped(flipped: boolean): void
-  setAnimation(animation: KnownPlayerAnimation): void
+  setAnimation(animation: KnownAnimation): void
 }
 
 export const createNetPlayer = (
   peerID: string,
   entityID: string | undefined,
-  animations: PlayerAnimationMap<KnownPlayerAnimation> | undefined,
+  animations: PlayerAnimationMap<KnownAnimation>,
   { width = 80, height = 370 }: Partial<PlayerSize> = {},
 ) => {
+  let playerInventory: PlayerInventory // we need to populate the inventory somehow for netplayer
   const _entityID = entityID ?? createId()
 
   let isFlipped = false
-  let currentAnimation: KnownPlayerAnimation = 'idle'
+  let currentAnimation: KnownAnimation = 'idle'
   let animationChanged = false
+  let currentFrame = 0
+  let spriteSign = 1
+
+  const body = Matter.Bodies.rectangle(0, 0, width, height, {
+    label: 'player',
+    render: { visible: false },
+
+    inertia: Number.POSITIVE_INFINITY,
+    inverseInertia: 0,
+    mass: PLAYER_MASS,
+    inverseMass: 1 / PLAYER_MASS,
+    friction: 0,
+  })
+
+  const bonePosition = (bone: Bone): Vector => {
+    const animation = animations[currentAnimation]
+
+    const animW = animation.width
+    const animH = animation.height
+    const position = animation.boneData.bones[bone][currentFrame]!
+
+    const flip = spriteSign
+    const normalized = {
+      x: flip === 1 ? position.x : animW - position.x,
+      y: position.y,
+    }
+
+    const offsetFromCenter: Vector = {
+      x: (1 - (normalized.x / animW) * 2) * (animW / -2),
+      y: (1 - (normalized.y / animH) * 2) * (animH / -2),
+    }
+
+    const offsetFromAnchor = Vec.add(offsetFromCenter, {
+      x: flip * ((1 - PLAYER_SPRITE_ANCHOR[0] * 2) * (animW / 2)),
+      y: (1 - PLAYER_SPRITE_ANCHOR[1] * 2) * (animH / 2),
+    })
+
+    const scaled = Vec.mult(offsetFromAnchor, PLAYER_SPRITE_SCALE)
+    return Vec.add(body.position, scaled)
+  }
+
+  const boneMap = {} as Readonly<Record<Bone, Vector>>
+  for (const bone of bones) {
+    Object.defineProperty(boneMap, bone, {
+      get: () => bonePosition(bone),
+    })
+  }
+
+  Object.freeze(boneMap)
 
   const netPlayer: NetPlayer = createEntity<NetPlayer, Data, Render>({
     get [symbol]() {
@@ -86,6 +143,10 @@ export const createNetPlayer = (
 
     get size() {
       return { width, height }
+    },
+
+    get inventory() {
+      return playerInventory
     },
 
     setPosition(vector: LooseVector) {
@@ -114,17 +175,7 @@ export const createNetPlayer = (
 
     init({ game, physics }) {
       const debug = game.debug
-
-      const body = Matter.Bodies.rectangle(0, 0, width, height, {
-        label: 'player',
-        render: { visible: false },
-
-        inertia: Number.POSITIVE_INFINITY,
-        inverseInertia: 0,
-        mass: PLAYER_MASS,
-        inverseMass: 1 / PLAYER_MASS,
-        friction: 0,
-      })
+      playerInventory = new PlayerInventory(game)
 
       Matter.Composite.add(physics.world, body)
 
@@ -142,6 +193,11 @@ export const createNetPlayer = (
       sprite.anchor.set(...PLAYER_SPRITE_ANCHOR)
       sprite.play()
 
+      const item = playerInventory.getItemInHand()
+      const itemSprite = new Sprite(item.texture)
+      itemSprite.width = 200
+      itemSprite.height = 200
+
       const gfxBounds = new Graphics()
       drawBox(gfxBounds, { width, height }, { stroke: '#00f' })
 
@@ -151,8 +207,9 @@ export const createNetPlayer = (
 
       stage.addChild(sprite)
       stage.addChild(gfxBounds)
+      stage.addChild(itemSprite)
 
-      return { camera, sprite, gfxBounds }
+      return { camera, sprite, gfxBounds, itemSprite }
     },
 
     teardown({ physics, body }) {
@@ -164,7 +221,11 @@ export const createNetPlayer = (
       gfxBounds.destroy()
     },
 
-    onRenderFrame({ smooth }, { debug, body }, { camera, sprite, gfxBounds }) {
+    onRenderFrame(
+      { smooth },
+      { debug, body },
+      { camera, sprite, gfxBounds, itemSprite },
+    ) {
       if (!animations) {
         throw new Error(`missing animations for netplayer: ${_entityID}`)
       }
@@ -173,22 +234,78 @@ export const createNetPlayer = (
       const newScale = scale * PLAYER_SPRITE_SCALE
       if (sprite.scale.x !== newScale) {
         sprite.scale.x = newScale
+        spriteSign = Math.sign(sprite.scale.x)
       }
 
       if (animationChanged) {
         animationChanged = false
         sprite.textures = animations[currentAnimation].textures
+        sprite.animationSpeed =
+          currentAnimation === 'greatsword'
+            ? PLAYER_ANIMATION_SPEED * 5
+            : PLAYER_ANIMATION_SPEED
         sprite.loop = currentAnimation !== 'jump'
 
         sprite.gotoAndPlay(0)
       }
 
+      currentFrame = sprite.currentFrame
       const smoothed = Vec.add(body.position, Vec.mult(body.velocity, smooth))
       const pos = Vec.add(smoothed, camera.offset)
 
       sprite.position = pos
       gfxBounds.position = pos
       gfxBounds.alpha = debug.value ? 0.5 : 0
+
+      if (itemSprite && playerInventory.getItems().length > 0) {
+        itemSprite.visible = Boolean(currentAnimation === 'greatsword')
+
+        const currentItem = playerInventory.getItemInHand()
+        if (itemSprite.texture !== currentItem.texture) {
+          itemSprite.texture = currentItem.texture
+        }
+
+        const handMapping: Record<string, 'handLeft' | 'handRight'> = {
+          left: 'handLeft',
+          right: 'handRight',
+        }
+
+        const currentHandKey = currentItem.itemOptions?.hand ?? 'left'
+        const mappedHand = handMapping[currentHandKey]
+
+        const pos = Vec.add(
+          {
+            x: boneMap[mappedHand as 'handLeft' | 'handRight'].x,
+            y: boneMap[mappedHand as 'handLeft' | 'handRight'].y,
+          },
+          camera.offset,
+        )
+
+        itemSprite.position = pos
+
+        const animation = animations[currentAnimation]
+        const handOffsets =
+          animation.boneData.handOffsets[
+            mappedHand as 'handLeft' | 'handRight'
+          ][currentFrame]
+
+        let rotation = Math.atan2(
+          handOffsets!.y.y - handOffsets!.x.y,
+          handOffsets!.y.x - handOffsets!.x.x,
+        )
+        rotation *= scale === -1 ? -1 : 1
+        itemSprite.rotation = rotation
+
+        const initialDimensions = {
+          width: itemSprite.width,
+          height: itemSprite.height,
+        }
+        itemSprite.scale.x = -scale
+        Object.assign(itemSprite, initialDimensions)
+
+        const { anchorX = 0, anchorY = 1 } = currentItem.itemOptions ?? {}
+        itemSprite.anchor.set(anchorX, anchorY)
+      }
     },
   })
 
