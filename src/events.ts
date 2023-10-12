@@ -13,10 +13,6 @@ interface ClientEvents {
   onRenderFrame: [time: RenderTime]
 }
 
-interface CustomEvents {
-  [eventName: string]: unknown[]
-}
-
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface ServerEvents {
   // TODO
