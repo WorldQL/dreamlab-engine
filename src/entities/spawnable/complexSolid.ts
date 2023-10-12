@@ -38,11 +38,6 @@ export const createComplexSolid = createSpawnableEntity<
     return cloneTransform(transform)
   },
 
-  get body() {
-    const { bodies } = dataManager.getData(this)
-    return bodies
-  },
-
   get tags() {
     return tags
   },
