@@ -1,4 +1,4 @@
-import equal from 'fast-deep-equal/es6'
+import equal from 'fast-deep-equal'
 import { dataManager } from '~/entity.js'
 import type { Game } from '~/game.js'
 import { isSpawnableEntity } from '~/spawnable/spawnableEntity.js'
