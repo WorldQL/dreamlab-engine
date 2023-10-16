@@ -70,7 +70,7 @@ export interface PlayerSize {
   height: number
 }
 
-export type KnownPlayerAnimation = 'idle' | 'jump' | 'walk'
+export type KnownPlayerAnimation = 'idle' | 'jog' | 'jump' | 'walk'
 export type KnownAttackAnimation = 'greatsword' | 'punch'
 export type KnownRangedAttackAnimation = 'bow'
 
@@ -82,6 +82,7 @@ export type KnownAnimation =
 export enum PlayerInput {
   Attack = '@player/attack',
   Crouch = '@player/crouch',
+  Jog = '@player/jog',
   Jump = '@player/jump',
   ToggleNoclip = '@player/toggle-noclip',
   WalkLeft = '@player/walk-left',
@@ -93,12 +94,12 @@ export const createPlayer = (
   inventory: PlayerInventory,
   { width = 80, height = 370 }: Partial<PlayerSize> = {},
 ) => {
-  const moveForce = 0.5
   const maxSpeed = 1
   const jumpForce = 5
   const feetSensor = 4
 
   let hasJumped = false
+  let isJogging = false
 
   let noclip = false
   const noclipSpeed = 15
@@ -149,7 +150,7 @@ export const createPlayer = (
         : 'idle'
     if (attack && ['greatsword', 'bow', 'punch'].includes(animationName))
       return animationName as KnownAnimation
-    if (direction !== 0) return 'walk'
+    if (direction !== 0) return isJogging ? 'jog' : 'walk'
 
     return 'idle'
   }
@@ -264,6 +265,7 @@ export const createPlayer = (
         inputs.registerInput(PlayerInput.WalkRight, 'KeyD')
         inputs.registerInput(PlayerInput.Jump, 'Space')
         inputs.registerInput(PlayerInput.Crouch, 'KeyS')
+        inputs.registerInput(PlayerInput.Jog, 'ShiftLeft')
         inputs.registerInput(PlayerInput.Attack, 'MouseLeft')
         inputs.registerInput(PlayerInput.ToggleNoclip, 'KeyV')
 
@@ -337,6 +339,7 @@ export const createPlayer = (
       const right = inputs?.getInput(PlayerInput.WalkRight) ?? false
       const jump = inputs?.getInput(PlayerInput.Jump) ?? false
       attack = (colliding && inputs?.getInput(PlayerInput.Attack)) ?? false
+      isJogging = inputs?.getInput(PlayerInput.Jog) ?? false
       const crouch = inputs?.getInput(PlayerInput.Crouch) ?? false
 
       direction.value = left ? -1 : right ? 1 : 0
@@ -374,7 +377,8 @@ export const createPlayer = (
           if (targetVelocity !== 0) {
             const velocityVector = targetVelocity / body.velocity.x
             const forcePercent = Math.min(Math.abs(velocityVector) / 2, 1)
-            const newForce = moveForce * forcePercent * direction.value
+            const newForce =
+              (isJogging ? 1 : 0.5) * forcePercent * direction.value
 
             Matter.Body.applyForce(body, body.position, Vec.create(newForce, 0))
           }
@@ -451,8 +455,9 @@ export const createPlayer = (
         crouch,
         walkLeft: left,
         walkRight: right,
-        toggleNoclip: false, // TODO: Actually send this
+        toggleNoclip: false,
         attack,
+        jog: false,
       })
     },
 
