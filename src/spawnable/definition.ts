@@ -6,7 +6,7 @@ import type { SpawnableFunction, UID } from '~/spawnable/spawnableEntity.js'
 
 export interface SpawnableDefinition<
   Name extends string = string,
-  Args extends unknown[] = unknown[],
+  Args extends Record<string, unknown> = Record<string, unknown>,
 > {
   entity: Name
   args: Args
@@ -18,7 +18,7 @@ export interface SpawnableDefinition<
 
 export interface LooseSpawnableDefinition<
   Name extends string = string,
-  Args extends unknown[] = unknown[],
+  Args extends Record<string, unknown> = Record<string, unknown>,
 > {
   entity: Name
   args: Args
@@ -30,7 +30,7 @@ export interface LooseSpawnableDefinition<
 
 export const SpawnableDefinitionSchemaInternal = z.object({
   entity: z.string(),
-  args: z.any().array(),
+  args: z.record(z.string(), z.unknown()),
   transform: TransformSchema,
   uid: z.string().cuid2().optional(),
   tags: z.string().array().optional(),
@@ -42,7 +42,7 @@ export const SpawnableDefinitionSchema =
 
 export interface SpawnableContext<
   Name extends string = string,
-  Args extends unknown[] = unknown[],
+  Args extends Record<string, unknown> = Record<string, unknown>,
 > extends Except<Required<SpawnableDefinition>, 'args' | 'entity'> {
   preview: boolean
   definition: SpawnableDefinition<Name, Args>
@@ -54,5 +54,5 @@ export type InferDefinition<F> = F extends SpawnableFunction<
   infer _Data,
   infer _Render
 >
-  ? SpawnableDefinition<string, Args>
+  ? SpawnableDefinition<string, z.infer<Args>>
   : never

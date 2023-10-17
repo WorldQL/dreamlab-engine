@@ -1,4 +1,5 @@
 import type { Except } from 'type-fest'
+import type { z, ZodObject } from 'zod'
 import { symbol as entitySymbol } from '~/entity.js'
 import type { Entity } from '~/entity.js'
 import type { Transform } from '~/math/transform.js'
@@ -21,6 +22,7 @@ export interface SpawnableEntity<Data = unknown, Render = unknown>
   get preview(): boolean
   get transform(): Transform
   get definition(): SpawnableDefinition
+  get argsSchema(): z.ZodSchema
 
   isInBounds(position: Vector): boolean
 }
@@ -28,6 +30,7 @@ export interface SpawnableEntity<Data = unknown, Render = unknown>
 type PartialFields =
   | typeof entitySymbol
   | typeof symbol
+  | 'argsSchema'
   | 'definition'
   | 'preview'
   | 'uid'
@@ -38,36 +41,47 @@ export type PartializeSpawnable<
   Render,
 > = Except<E, PartialFields>
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ZodObjectAny = ZodObject<any, z.UnknownKeysParam>
+
 export type SpawnableFunction<
-  Args extends unknown[],
+  ArgsSchema extends ZodObjectAny,
   E extends SpawnableEntity<Data, Render>,
   Data,
   Render,
-> = (ctx: SpawnableContext, ...args: Args) => E
+> = (ctx: SpawnableContext, args: z.infer<ArgsSchema>) => E
 
 export type BareSpawnableFunction = SpawnableFunction<
-  unknown[],
+  ZodObjectAny,
   SpawnableEntity,
   unknown,
   unknown
 >
 
 export const createSpawnableEntity = <
-  Args extends unknown[],
+  ArgsSchema extends ZodObjectAny,
   E extends SpawnableEntity<Data, Render>,
   Data,
   Render,
 >(
+  argsSchema: ArgsSchema,
   fn: (
     ctx: SpawnableContext,
-    ...args: Args
+    args: z.infer<ArgsSchema>,
   ) => PartializeSpawnable<E, Data, Render>,
-): SpawnableFunction<Args, E, Data, Render> => {
-  const spawnFn: SpawnableFunction<Args, E, Data, Render> = (ctx, ...args) => {
-    const partial = fn(ctx, ...args)
+): SpawnableFunction<ArgsSchema, E, Data, Render> => {
+  const spawnFn: SpawnableFunction<ArgsSchema, E, Data, Render> = (
+    ctx,
+    args,
+  ) => {
+    const partial = fn(ctx, args)
     const getter: Pick<E, PartialFields> = {
       get [entitySymbol]() {
         return true as const
+      },
+
+      get argsSchema() {
+        return argsSchema
       },
 
       get [symbol]() {
