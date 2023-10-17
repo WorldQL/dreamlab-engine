@@ -2,6 +2,7 @@ import cuid2 from '@paralleldrive/cuid2'
 import Matter from 'matter-js'
 import { Application } from 'pixi.js'
 import type { IApplicationOptions } from 'pixi.js'
+import type { z } from 'zod'
 import { createCamera } from '~/entities/camera.js'
 import { isNetPlayer } from '~/entities/netplayer.js'
 import { registerDefaultSpawnables } from '~/entities/spawnable/index.js'
@@ -165,7 +166,8 @@ export interface Game<Server extends boolean> {
    * @param spawnableFn - Spawnable Function
    */
   register<
-    Args extends unknown[],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    Args extends z.ZodObject<any, z.UnknownKeysParam>,
     E extends SpawnableEntity<Data, Render>,
     Data,
     Render,
@@ -552,7 +554,7 @@ export async function createGame<Server extends boolean>(
         definition,
       }
 
-      const entity = fn(context, ...definition.args)
+      const entity = fn(context, definition.args)
       await this.instantiate(entity)
       spawnables.set(entity.uid, entity)
 
