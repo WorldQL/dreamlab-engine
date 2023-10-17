@@ -1,18 +1,42 @@
 import Matter from 'matter-js'
+import type { Sprite } from 'pixi.js'
 import { Graphics } from 'pixi.js'
+import { z } from 'zod'
+import type { Camera } from '~/entities/camera.js'
 import { toDegrees, toRadians } from '~/math/general.js'
 import { Vec } from '~/math/vector.js'
+import type { Physics } from '~/physics.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
-import { createSprite } from '~/textures/sprites.js'
-import type { SpriteSource } from '~/textures/sprites.js'
+import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
+import { createSprite, SpriteSourceSchema } from '~/textures/sprites.js'
+import type { Debug } from '~/utils/debug.js'
 import { drawCircle } from '~/utils/draw.js'
 
-export const createBouncyBall = createSpawnableEntity(
-  (
-    { transform, zIndex, tags, preview },
-    radius: number,
-    spriteSource?: SpriteSource,
-  ) => {
+const ArgsSchema = z.object({
+  radius: z.number().positive().min(1),
+  spriteSource: SpriteSourceSchema.optional(),
+})
+
+interface Data {
+  debug: Debug
+  physics: Physics
+  body: Matter.Body
+}
+
+interface Render {
+  camera: Camera
+  gfx: Graphics
+  sprite: Sprite | undefined
+}
+
+export const createBouncyBall = createSpawnableEntity<
+  typeof ArgsSchema,
+  SpawnableEntity<Data, Render>,
+  Data,
+  Render
+>(
+  ArgsSchema,
+  ({ transform, zIndex, tags, preview }, { radius, spriteSource }) => {
     const { position, rotation } = transform
 
     const mass = 20

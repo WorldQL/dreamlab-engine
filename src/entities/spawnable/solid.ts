@@ -1,20 +1,44 @@
 import Matter from 'matter-js'
+import type { Sprite } from 'pixi.js'
 import { Graphics } from 'pixi.js'
+import { z } from 'zod'
+import type { Camera } from '~/entities/camera.js'
 import { toRadians } from '~/math/general.js'
 import { cloneTransform } from '~/math/transform.js'
 import { Vec } from '~/math/vector.js'
+import type { Physics } from '~/physics.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
-import { createSprite } from '~/textures/sprites.js'
-import type { SpriteSource } from '~/textures/sprites.js'
+import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
+import { createSprite, SpriteSourceSchema } from '~/textures/sprites.js'
+import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
 
-export const createSolid = createSpawnableEntity(
-  (
-    { transform, zIndex, tags, preview },
-    width: number,
-    height: number,
-    spriteSource?: SpriteSource,
-  ) => {
+const ArgsSchema = z.object({
+  width: z.number().positive().min(1),
+  height: z.number().positive().min(1),
+  spriteSource: SpriteSourceSchema.optional(),
+})
+
+interface Data {
+  debug: Debug
+  physics: Physics
+  body: Matter.Body
+}
+
+interface Render {
+  camera: Camera
+  gfx: Graphics
+  sprite: Sprite | undefined
+}
+
+export const createSolid = createSpawnableEntity<
+  typeof ArgsSchema,
+  SpawnableEntity<Data, Render>,
+  Data,
+  Render
+>(
+  ArgsSchema,
+  ({ transform, zIndex, tags, preview }, { width, height, spriteSource }) => {
     const { position, rotation } = transform
     const body = Matter.Bodies.rectangle(
       position.x,

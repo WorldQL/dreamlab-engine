@@ -1,19 +1,40 @@
+import type { Sprite } from 'pixi.js'
 import { Graphics } from 'pixi.js'
+import { z } from 'zod'
+import type { Camera } from '~/entities/camera.js'
 import { simpleBoundsTest } from '~/math/bounds.js'
 import { cloneTransform } from '~/math/transform.js'
 import { Vec } from '~/math/vector.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
-import { createSprite } from '~/textures/sprites.js'
-import type { SpriteSource } from '~/textures/sprites.js'
+import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
+import { createSprite, SpriteSourceSchema } from '~/textures/sprites.js'
+import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
 
-export const createNonsolid = createSpawnableEntity(
-  (
-    { transform, zIndex, tags },
-    width: number,
-    height: number,
-    spriteSource?: SpriteSource,
-  ) => ({
+const ArgsSchema = z.object({
+  width: z.number().positive().min(1),
+  height: z.number().positive().min(1),
+  spriteSource: SpriteSourceSchema.optional(),
+})
+
+interface Data {
+  debug: Debug
+}
+
+interface Render {
+  camera: Camera
+  gfx: Graphics
+  sprite: Sprite | undefined
+}
+
+export const createNonsolid = createSpawnableEntity<
+  typeof ArgsSchema,
+  SpawnableEntity<Data, Render>,
+  Data,
+  Render
+>(
+  ArgsSchema,
+  ({ transform, zIndex, tags }, { width, height, spriteSource }) => ({
     get transform() {
       return cloneTransform(transform)
     },

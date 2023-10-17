@@ -1,56 +1,74 @@
 import { Graphics } from 'pixi.js'
+import { z } from 'zod'
+import type { Camera } from '~/entities/camera.js'
 import { simpleBoundsTest } from '~/math/bounds.js'
 import { cloneTransform } from '~/math/transform.js'
 import { Vec } from '~/math/vector.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
+import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
+import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
 
-const width = 30
-const height = 30
+const ArgsSchema = z.object({
+  width: z.number().positive().min(1).default(30),
+  height: z.number().positive().min(1).default(30),
+})
 
-export const createMarker = createSpawnableEntity(
-  ({ transform, zIndex, tags }) => ({
-    get transform() {
-      return cloneTransform(transform)
-    },
+interface Data {
+  debug: Debug
+}
 
-    get tags() {
-      return tags
-    },
+interface Render {
+  camera: Camera
+  gfx: Graphics
+}
 
-    isInBounds(point) {
-      return simpleBoundsTest(width, height, transform, point)
-    },
+export const createMarker = createSpawnableEntity<
+  typeof ArgsSchema,
+  SpawnableEntity<Data, Render>,
+  Data,
+  Render
+>(ArgsSchema, ({ transform, zIndex, tags }, { width, height }) => ({
+  get transform() {
+    return cloneTransform(transform)
+  },
 
-    init({ game }) {
-      const debug = game.debug
-      return { debug }
-    },
+  get tags() {
+    return tags
+  },
 
-    initRenderContext(_, { stage, camera }) {
-      const gfx = new Graphics()
-      gfx.zIndex = zIndex
+  isInBounds(point) {
+    return simpleBoundsTest(width, height, transform, point)
+  },
 
-      drawBox(gfx, { width, height }, { stroke: '#00bcff' })
+  init({ game }) {
+    const debug = game.debug
+    return { debug }
+  },
 
-      stage.addChild(gfx)
+  initRenderContext(_, { stage, camera }) {
+    const gfx = new Graphics()
+    gfx.zIndex = zIndex
 
-      return { camera, gfx }
-    },
+    drawBox(gfx, { width, height }, { stroke: '#00bcff' })
 
-    teardown(_) {
-      // No-op
-    },
+    stage.addChild(gfx)
 
-    teardownRenderContext({ gfx }) {
-      gfx.destroy()
-    },
+    return { camera, gfx }
+  },
 
-    onRenderFrame(_, { debug }, { camera, gfx }) {
-      const pos = Vec.add(transform.position, camera.offset)
+  teardown(_) {
+    // No-op
+  },
 
-      gfx.position = pos
-      gfx.alpha = debug.value ? 0.5 : 0
-    },
-  }),
-)
+  teardownRenderContext({ gfx }) {
+    gfx.destroy()
+  },
+
+  onRenderFrame(_, { debug }, { camera, gfx }) {
+    const pos = Vec.add(transform.position, camera.offset)
+
+    gfx.position = pos
+    gfx.alpha = debug.value ? 0.5 : 0
+  },
+}))

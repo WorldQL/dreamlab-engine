@@ -1,10 +1,11 @@
 import Matter from 'matter-js'
 import type { Body } from 'matter-js'
 import { Graphics } from 'pixi.js'
+import { z } from 'zod'
 import type { Camera } from '~/entities/camera.js'
 import { dataManager } from '~/entity.js'
 import { cloneTransform } from '~/math/transform.js'
-import { Vec } from '~/math/vector.js'
+import { Vec, VectorSchema } from '~/math/vector.js'
 import type { Vector } from '~/math/vector.js'
 import type { Physics } from '~/physics.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
@@ -12,6 +13,10 @@ import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawComplexPolygon } from '~/utils/draw.js'
 import { decodePolygons } from '~/utils/polygons.js'
+
+const ArgsSchema = z.object({
+  polygon: VectorSchema.array().array().or(z.string()),
+})
 
 interface Data {
   debug: Debug
@@ -26,14 +31,12 @@ interface Render {
   gfx: Graphics
 }
 
-type Args = [points: Vector[][] | string]
-
 export const createComplexSolid = createSpawnableEntity<
-  Args,
+  typeof ArgsSchema,
   SpawnableEntity<Data, Render>,
   Data,
   Render
->(({ transform, zIndex, tags, preview }, poly) => ({
+>(ArgsSchema, ({ transform, zIndex, tags, preview }, { polygon: poly }) => ({
   get transform() {
     return cloneTransform(transform)
   },
