@@ -5,8 +5,8 @@ import { lerp } from '~/math/general.js'
 import type { Transform } from '~/math/transform.js'
 import { distance, lerp2, v, Vec } from '~/math/vector.js'
 import type { LooseVector, Vector } from '~/math/vector.js'
-import type { Debug, DebugText } from '~/utils/debug.js'
 import { createDebugText } from '~/utils/debug.js'
+import type { Debug, DebugText } from '~/utils/debug.js'
 
 const SCALE_LEVELS = [
   0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2,

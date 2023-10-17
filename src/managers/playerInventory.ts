@@ -1,7 +1,7 @@
 import { Texture } from 'pixi.js'
-import type { ObjectItem } from './playerDataManager'
-import type { KnownAnimation } from '~/entities/player'
-import type { Game } from '~/game'
+import type { KnownAnimation } from '~/entities/player.js'
+import type { Game } from '~/game.js'
+import type { ObjectItem } from '~/managers/playerDataManager.js'
 import { createSprite } from '~/textures/sprites.js'
 import { generateCUID, IDType } from '~/utils/cuid.js'
 

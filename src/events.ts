@@ -1,12 +1,12 @@
 import EventEmitter from 'eventemitter3'
 import type Matter from 'matter-js'
-import type {
-  PlayerInventory,
-  PlayerInventoryItem,
-} from './managers/playerInventory'
 import type { NetPlayer } from '~/entities/netplayer'
 import type { Player } from '~/entities/player.js'
 import type { Entity, RenderTime, Time } from '~/entity.js'
+import type {
+  PlayerInventory,
+  PlayerInventoryItem,
+} from '~/managers/playerInventory.js'
 import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
 
 export interface ClientEvents {

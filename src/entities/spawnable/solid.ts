@@ -1,6 +1,6 @@
 import Matter from 'matter-js'
-import type { Sprite } from 'pixi.js'
 import { Graphics } from 'pixi.js'
+import type { Sprite } from 'pixi.js'
 import { z } from 'zod'
 import type { Camera } from '~/entities/camera.js'
 import { toRadians } from '~/math/general.js'

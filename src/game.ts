@@ -8,8 +8,8 @@ import { isNetPlayer } from '~/entities/netplayer.js'
 import { registerDefaultSpawnables } from '~/entities/spawnable/index.js'
 import { dataManager, isEntity } from '~/entity.js'
 import type { Entity, InitContext, RenderContext } from '~/entity.js'
-import type { EventsManager } from '~/events.js'
 import { createEventsManager } from '~/events.js'
+import type { EventsManager } from '~/events.js'
 import { InputManager } from '~/input/manager.js'
 import { v } from '~/math/vector.js'
 import type { LooseVector } from '~/math/vector.js'
@@ -33,8 +33,8 @@ import type {
 } from '~/spawnable/spawnableEntity.js'
 import { createClientUI } from '~/ui.js'
 import type { ClientUIManager } from '~/ui.js'
-import type { Debug } from '~/utils/debug.js'
 import { createDebug } from '~/utils/debug.js'
+import type { Debug } from '~/utils/debug.js'
 
 interface ClientOptions {
   /**
