@@ -387,7 +387,7 @@ export async function createGame<Server extends boolean>(
     }
   }
 
-  let interval: NodeJS.Timer | undefined
+  let interval: NodeJS.Timeout | undefined
   if (renderContext) {
     const { app } = renderContext
 
