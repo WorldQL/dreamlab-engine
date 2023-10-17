@@ -544,6 +544,8 @@ export async function createGame<Server extends boolean>(
         return undefined
       }
 
+      // TODO: Verify args schema
+
       const context: SpawnableContext = {
         uid: definition.uid ?? cuid2.createId(),
         transform: definition.transform,
