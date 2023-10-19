@@ -240,10 +240,17 @@ export const createNetPlayer = (
       if (animationChanged) {
         animationChanged = false
         sprite.textures = animations[currentAnimation].textures
+        const getSpeedMultiplier = (animation_name: string) => {
+          switch (animation_name) {
+            case 'greatsword':
+              return 2.2
+            default:
+              return 1
+          }
+        }
+
         sprite.animationSpeed =
-          currentAnimation === 'greatsword'
-            ? PLAYER_ANIMATION_SPEED * 5
-            : PLAYER_ANIMATION_SPEED
+          PLAYER_ANIMATION_SPEED * getSpeedMultiplier(currentAnimation)
         sprite.loop = currentAnimation !== 'jump'
 
         sprite.gotoAndPlay(0)
@@ -257,8 +264,13 @@ export const createNetPlayer = (
       gfxBounds.position = pos
       gfxBounds.alpha = debug.value ? 0.5 : 0
 
-      if (itemSprite && playerInventory.getItems().length > 0) {
-        itemSprite.visible = Boolean(currentAnimation === 'greatsword')
+      if (
+        itemSprite &&
+        playerInventory.getItemInHand().animationName !== 'punch'
+      ) {
+        itemSprite.visible = Boolean(
+          currentAnimation === 'greatsword' || currentAnimation === 'bow',
+        )
 
         const currentItem = playerInventory.getItemInHand()
         if (itemSprite.texture !== currentItem.texture) {
@@ -305,6 +317,8 @@ export const createNetPlayer = (
 
         const { anchorX = 0, anchorY = 1 } = currentItem.itemOptions ?? {}
         itemSprite.anchor.set(anchorX, anchorY)
+      } else {
+        itemSprite.visible = false
       }
     },
   })
