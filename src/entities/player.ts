@@ -431,7 +431,12 @@ export const createPlayer = (
       }
 
       if (attack && isAttackFrame()) {
-        game.events.common.emit('onPlayerAttack', this.body, currentAnimation)
+        game.events.common.emit(
+          'onPlayerAttack',
+          this.body,
+          currentAnimation,
+          direction.value,
+        )
         // if (['greatsword', 'punch'].includes(currentAnimation)) {
         //   const xOffset =
         //     facing.value === 'right'
