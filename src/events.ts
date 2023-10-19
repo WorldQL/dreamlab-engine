@@ -49,6 +49,10 @@ export interface CommonEvents {
 
   onInventoryAddItem: [item: PlayerInventoryItem, inventory: PlayerInventory]
   onInventoryRemoveItem: [item: PlayerInventoryItem, inventory: PlayerInventory]
+  onPlayerSwitchedItem: [
+    item: PlayerInventoryItem | undefined,
+    inventory: PlayerInventory,
+  ]
 }
 
 class ClientEventManager extends EventEmitter<ClientEvents> {}
