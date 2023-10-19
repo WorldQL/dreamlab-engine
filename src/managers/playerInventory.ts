@@ -95,11 +95,6 @@ export class PlayerInventory {
     return newItem
   }
 
-  public nextItem(): PlayerInventoryItem {
-    this.currentObjectIndex = (this.currentObjectIndex + 1) % this.items.length
-    return this.items[this.currentObjectIndex] ?? this.defaultPunchAction()
-  }
-
   public getItems(): PlayerInventoryItem[] {
     return this.items
   }
@@ -133,6 +128,8 @@ export class PlayerInventory {
     } else {
       this.currentObjectIndex = -1
     }
+
+    this.game.events.common.emit('onPlayerSwitchedItem', targetItem, this)
   }
 
   public setItemIndex(index: number): void {
