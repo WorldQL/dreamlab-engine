@@ -435,7 +435,7 @@ export const createPlayer = (
           'onPlayerAttack',
           this.body,
           currentAnimation,
-          direction.value,
+          facing.value === 'right' ? 1 : -1,
         )
         // if (['greatsword', 'punch'].includes(currentAnimation)) {
         //   const xOffset =
