@@ -45,7 +45,7 @@ export interface CommonEvents {
   onPlayerJoin: [player: NetPlayer]
   onPlayerLeave: [player: NetPlayer]
 
-  onPlayerAttack: [player: Player, facingDirection: number]
+  onPlayerAttack: [player: Player, item: PlayerInventoryItem]
 
   onInventoryAddItem: [item: PlayerInventoryItem, inventory: PlayerInventory]
   onInventoryRemoveItem: [item: PlayerInventoryItem, inventory: PlayerInventory]

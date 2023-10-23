@@ -62,6 +62,7 @@ export interface Player extends PlayerCommon, Entity<Data, Render> {
   get bones(): Readonly<Record<Bone, Vector>>
   get inventory(): PlayerInventory
   get currentAnimation(): string
+  get facingDirection(): number
 
   teleport(position: LooseVector, resetVelocity?: boolean): void
 }
@@ -249,6 +250,10 @@ export const createPlayer = (
       return currentAnimation
     },
 
+    get facingDirection(): number {
+      return -spriteSign
+    },
+
     teleport(position: LooseVector, resetVelocity = true) {
       Matter.Body.setPosition(body, v(position))
       if (resetVelocity) Matter.Body.setVelocity(body, { x: 0, y: 0 })
@@ -260,11 +265,9 @@ export const createPlayer = (
       const network = onlyNetClient(game)
 
       // TODO: Reimplement spawnpoints
-
       physics.registerPlayer(this as Player)
 
       // Matter.Composite.add(physics.world, itemBody)
-
       if (inputs) {
         inputs.registerInput(PlayerInput.WalkLeft, 'KeyA')
         inputs.registerInput(PlayerInput.WalkRight, 'KeyD')
@@ -358,7 +361,6 @@ export const createPlayer = (
       // TODO(Charlotte): factor out movement code into its own place,
       // so that we can apply it to NetPlayers for prediction (based on inputs)
       // on both the client and server
-
       body.isStatic = noclip
 
       if (noclip) {
@@ -439,7 +441,7 @@ export const createPlayer = (
         game.events.common.emit(
           'onPlayerAttack',
           this as Player,
-          facing.value === 'right' ? 1 : -1,
+          inventory.getItemInHand(),
         )
         // if (['greatsword', 'punch'].includes(currentAnimation)) {
         //   const xOffset =
