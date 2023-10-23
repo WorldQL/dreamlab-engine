@@ -61,6 +61,7 @@ export interface Player extends PlayerCommon, Entity<Data, Render> {
   get [symbol](): true
   get bones(): Readonly<Record<Bone, Vector>>
   get inventory(): PlayerInventory
+  get currentAnimation(): string
 
   teleport(position: LooseVector, resetVelocity?: boolean): void
 }
@@ -242,6 +243,10 @@ export const createPlayer = (
 
     get inventory(): PlayerInventory {
       return inventory
+    },
+
+    get currentAnimation(): string {
+      return currentAnimation
     },
 
     teleport(position: LooseVector, resetVelocity = true) {
@@ -433,8 +438,7 @@ export const createPlayer = (
       if (attack && isAttackFrame()) {
         game.events.common.emit(
           'onPlayerAttack',
-          this.body,
-          currentAnimation,
+          this as Player,
           facing.value === 'right' ? 1 : -1,
         )
         // if (['greatsword', 'punch'].includes(currentAnimation)) {
