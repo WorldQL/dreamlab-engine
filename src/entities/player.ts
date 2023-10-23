@@ -178,7 +178,7 @@ export const createPlayer = (
       case 'punch':
         return currentFrame >= 5
       case 'bow':
-        return true
+        return currentFrame === 9
       default:
         return false
     }
