@@ -54,6 +54,8 @@ export interface NetPlayer extends PlayerCommon, Entity<Data, Render> {
 
   get body(): Body
   get inventory(): PlayerInventory
+  get currentAnimation(): string
+  get facingDirection(): number
 
   setPosition(vector: LooseVector): void
   setVelocity(vector: LooseVector): void
@@ -147,6 +149,14 @@ export const createNetPlayer = (
 
     get inventory() {
       return playerInventory
+    },
+
+    get currentAnimation() {
+      return currentAnimation
+    },
+
+    get facingDirection() {
+      return -spriteSign
     },
 
     setPosition(vector: LooseVector) {
