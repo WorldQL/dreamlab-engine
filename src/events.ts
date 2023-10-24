@@ -58,11 +58,13 @@ export interface CommonEvents {
 class ClientEventManager extends EventEmitter<ClientEvents> {}
 class ServerEventManager extends EventEmitter<ServerEvents> {}
 class CommonEventManager extends EventEmitter<CommonEvents> {}
+class CustomEventManager extends EventEmitter<Record<string, unknown[]>> {}
 
 export interface EventsManager<Server extends boolean> {
   client: Server extends false ? ClientEventManager : undefined
   server: Server extends true ? ServerEventManager : undefined
   common: CommonEventManager
+  custom: CustomEventManager
 }
 
 export type Event = keyof ClientEvents | keyof CommonEvents | keyof ServerEvents
@@ -85,7 +87,7 @@ export const createEventsManager = <Server extends boolean>(
 
     // @ts-expect-error Generic type coersion
     server: isServer === true ? new ServerEventManager() : undefined,
-
     common: new CommonEventManager(),
+    custom: new CustomEventManager(),
   }
 }
