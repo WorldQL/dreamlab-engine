@@ -9,26 +9,26 @@ import type {
 } from '~/managers/playerInventory.js'
 import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
 
-export interface ClientEvents {
+interface ClientEvents {
   onRenderFrame: [time: RenderTime]
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface ServerEvents {
+interface ServerEvents {
   // TODO
 }
 
-export type CollisionEvent = [
+type CollisionEvent = [
   pair: readonly [a: SpawnableEntity, b: SpawnableEntity],
   raw: Matter.Collision,
 ]
 
-export type PlayerCollisionEvent = [
+type PlayerCollisionEvent = [
   pair: readonly [player: Player, other: Matter.Body],
   raw: Matter.Collision,
 ]
 
-export interface CommonEvents {
+interface CommonEvents {
   onInstantiate: [entity: Entity]
   onDestroy: [entity: Entity]
   onSpawn: [entity: SpawnableEntity]
