@@ -70,6 +70,10 @@ export const createSolid = createSpawnableEntity<
         return rectangleBounds(width, height, transform.rotation)
       },
 
+      isInBounds(position) {
+        return Matter.Query.point([body], position).length > 0
+      },
+
       init({ game, physics }) {
         const debug = game.debug
         physics.register(this, body)

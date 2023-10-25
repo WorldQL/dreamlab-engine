@@ -47,6 +47,10 @@ export const createNonsolid = createSpawnableEntity<
       return rectangleBounds(width, height, transform.rotation)
     },
 
+    isInBounds(point) {
+      return simpleBoundsTest({ width, height }, transform, point)
+    },
+
     init({ game }) {
       return { debug: game.debug }
     },

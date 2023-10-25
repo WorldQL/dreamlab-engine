@@ -105,6 +105,10 @@ export const createSimpleNPC = createSpawnableEntity<
         return boundsFromBodies(body)
       },
 
+      isInBounds(position) {
+        return Matter.Query.point([body], position).length > 0
+      },
+
       init({ game, physics }) {
         physics.register(this, body)
         return { debug: game.debug, physics, body }

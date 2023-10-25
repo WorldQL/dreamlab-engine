@@ -2,7 +2,6 @@ import type { Except } from 'type-fest'
 import type { z, ZodObject } from 'zod'
 import { symbol as entitySymbol } from '~/entity.js'
 import type { Entity } from '~/entity.js'
-import { simpleBoundsTest } from '~/math/bounds'
 import type { Bounds } from '~/math/bounds.js'
 import type { Transform } from '~/math/transform.js'
 import type { Vector } from '~/math/vector.js'
@@ -35,7 +34,6 @@ type PartialFields =
   | typeof symbol
   | 'argsSchema'
   | 'definition'
-  | 'isInBounds'
   | 'preview'
   | 'uid'
 
@@ -102,15 +100,6 @@ export const createSpawnableEntity = <
 
       get uid() {
         return ctx.uid
-      },
-
-      isInBounds(position: Vector): boolean {
-        const entity = this as SpawnableEntity
-
-        const bounds = entity.bounds()
-        if (!bounds) return false
-
-        return simpleBoundsTest(bounds, entity.transform, position)
       },
     }
 
