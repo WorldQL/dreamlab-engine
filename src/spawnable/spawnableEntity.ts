@@ -2,6 +2,7 @@ import type { Except } from 'type-fest'
 import type { z, ZodObject } from 'zod'
 import { symbol as entitySymbol } from '~/entity.js'
 import type { Entity } from '~/entity.js'
+import { simpleBoundsTest } from '~/math/bounds'
 import type { Transform } from '~/math/transform.js'
 import type { Vector } from '~/math/vector.js'
 import type {
@@ -12,6 +13,11 @@ import { mergeObjects } from '~/utils/types.js'
 
 export type UID = string
 const symbol = Symbol.for('@dreamlab/core/spawnable-entity')
+
+export interface EntityBounds {
+  width: number
+  height: number
+}
 
 export interface SpawnableEntity<Data = unknown, Render = unknown>
   extends Entity<Data, Render> {
@@ -24,6 +30,7 @@ export interface SpawnableEntity<Data = unknown, Render = unknown>
   get definition(): SpawnableDefinition
   get argsSchema(): z.ZodSchema
 
+  bounds(): EntityBounds | undefined
   isInBounds(position: Vector): boolean
 }
 
@@ -32,6 +39,7 @@ type PartialFields =
   | typeof symbol
   | 'argsSchema'
   | 'definition'
+  | 'isInBounds'
   | 'preview'
   | 'uid'
 
@@ -98,6 +106,20 @@ export const createSpawnableEntity = <
 
       get uid() {
         return ctx.uid
+      },
+
+      isInBounds(position: Vector): boolean {
+        const entity = this as SpawnableEntity
+
+        const bounds = entity.bounds()
+        if (!bounds) return false
+
+        return simpleBoundsTest(
+          bounds.width,
+          bounds.height,
+          entity.transform,
+          position,
+        )
       },
     }
 
