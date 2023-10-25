@@ -45,9 +45,9 @@ export const createComplexSolid = createSpawnableEntity<
     return tags
   },
 
-  isInBounds(position) {
-    const { bodies } = dataManager.getData(this)
-    return Matter.Query.point(bodies, position).length > 0
+  bounds() {
+    // TODO: Get bounding box of complex solid
+    return undefined
   },
 
   init({ game, physics }) {

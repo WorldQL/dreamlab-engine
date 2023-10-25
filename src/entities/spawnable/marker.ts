@@ -1,7 +1,6 @@
 import { Graphics } from 'pixi.js'
 import { z } from 'zod'
 import type { Camera } from '~/entities/camera.js'
-import { simpleBoundsTest } from '~/math/bounds.js'
 import { cloneTransform } from '~/math/transform.js'
 import { Vec } from '~/math/vector.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
@@ -37,8 +36,8 @@ export const createMarker = createSpawnableEntity<
     return tags
   },
 
-  isInBounds(point) {
-    return simpleBoundsTest(width, height, transform, point)
+  bounds() {
+    return { width, height }
   },
 
   init({ game }) {

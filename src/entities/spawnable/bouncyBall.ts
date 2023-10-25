@@ -66,8 +66,8 @@ export const createBouncyBall = createSpawnableEntity<
         return tags
       },
 
-      isInBounds(position) {
-        return Matter.Query.point([body], position).length > 0
+      bounds() {
+        return { width: radius * 2, height: radius * 2 }
       },
 
       init({ game, physics }) {

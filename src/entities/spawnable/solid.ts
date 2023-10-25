@@ -65,8 +65,8 @@ export const createSolid = createSpawnableEntity<
         return tags
       },
 
-      isInBounds(position) {
-        return Matter.Query.point([body], position).length > 0
+      bounds() {
+        return { width, height }
       },
 
       init({ game, physics }) {
