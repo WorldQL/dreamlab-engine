@@ -1,4 +1,5 @@
 export * from './entities.js'
+export * from './events.js'
 export * from './index.js'
 export * from './input.js'
 export * from './managers.js'
