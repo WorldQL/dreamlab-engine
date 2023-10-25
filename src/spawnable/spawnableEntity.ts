@@ -25,8 +25,8 @@ export interface SpawnableEntity<Data = unknown, Render = unknown>
   get definition(): SpawnableDefinition
   get argsSchema(): z.ZodSchema
 
-  bounds(): Bounds | undefined
-  isInBounds(position: Vector): boolean
+  rectangleBounds(): Bounds | undefined
+  isPointInside(position: Vector): boolean
 }
 
 type PartialFields =

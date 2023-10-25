@@ -46,12 +46,12 @@ export const createComplexSolid = createSpawnableEntity<
     return tags
   },
 
-  bounds() {
+  rectangleBounds() {
     const { bodies } = dataManager.getData(this)
     return boundsFromBodies(...bodies)
   },
 
-  isInBounds(position) {
+  isPointInside(position) {
     const { bodies } = dataManager.getData(this)
     return Matter.Query.point(bodies, position).length > 0
   },

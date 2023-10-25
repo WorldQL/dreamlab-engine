@@ -2,7 +2,7 @@ import { Graphics } from 'pixi.js'
 import type { Sprite } from 'pixi.js'
 import { z } from 'zod'
 import type { Camera } from '~/entities/camera.js'
-import { rectangleBounds } from '~/math/bounds.js'
+import { rectangleBounds, simpleBoundsTest } from '~/math/bounds.js'
 import { cloneTransform } from '~/math/transform.js'
 import { Vec } from '~/math/vector.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
@@ -43,11 +43,11 @@ export const createNonsolid = createSpawnableEntity<
       return tags
     },
 
-    bounds() {
+    rectangleBounds() {
       return rectangleBounds(width, height, transform.rotation)
     },
 
-    isInBounds(point) {
+    isPointInside(point) {
       return simpleBoundsTest({ width, height }, transform, point)
     },
 

@@ -66,11 +66,11 @@ export const createSolid = createSpawnableEntity<
         return tags
       },
 
-      bounds() {
+      rectangleBounds() {
         return rectangleBounds(width, height, transform.rotation)
       },
 
-      isInBounds(position) {
+      isPointInside(position) {
         return Matter.Query.point([body], position).length > 0
       },
 

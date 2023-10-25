@@ -66,11 +66,11 @@ export const createBouncyBall = createSpawnableEntity<
         return tags
       },
 
-      bounds() {
+      rectangleBounds() {
         return { width: radius * 2, height: radius * 2 }
       },
 
-      isInBounds(position) {
+      isPointInside(position) {
         return Matter.Query.point([body], position).length > 0
       },
 

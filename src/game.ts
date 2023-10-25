@@ -580,7 +580,7 @@ export async function createGame<Server extends boolean>(
     queryPosition(position) {
       const pos = v(position)
       return [...spawnables.values()].filter(
-        entity => !entity.preview && entity.isInBounds(pos),
+        entity => !entity.preview && entity.isPointInside(pos),
       )
     },
 

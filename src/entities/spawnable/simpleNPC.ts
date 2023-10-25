@@ -101,11 +101,11 @@ export const createSimpleNPC = createSpawnableEntity<
         return tags
       },
 
-      bounds() {
+      rectangleBounds() {
         return boundsFromBodies(body)
       },
 
-      isInBounds(position) {
+      isPointInside(position) {
         return Matter.Query.point([body], position).length > 0
       },
 

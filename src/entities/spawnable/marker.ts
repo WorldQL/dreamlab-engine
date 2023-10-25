@@ -37,11 +37,11 @@ export const createMarker = createSpawnableEntity<
     return tags
   },
 
-  bounds() {
+  rectangleBounds() {
     return { width, height }
   },
 
-  isInBounds(point) {
+  isPointInside(point) {
     return simpleBoundsTest({ width, height }, transform, point)
   },
 
