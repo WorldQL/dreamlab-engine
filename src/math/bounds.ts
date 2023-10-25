@@ -2,7 +2,11 @@ import { toRadians } from '~/math/general.js'
 import type { Transform } from '~/math/transform.js'
 import { Vec } from '~/math/vector.js'
 import type { Vector } from '~/math/vector.js'
-import type { EntityBounds } from '~/spawnable/spawnableEntity'
+
+export interface Bounds {
+  width: number
+  height: number
+}
 
 const fastBoundsTest = (
   width: number,
@@ -18,11 +22,12 @@ const fastBoundsTest = (
 }
 
 export const simpleBoundsTest = (
-  width: number,
-  height: number,
+  bounds: Bounds,
   transform: Transform,
   point: Vector,
 ): boolean => {
+  const { width, height } = bounds
+
   const fast = fastBoundsTest(width, height, transform.position, point)
   if (!fast) return false
 
@@ -47,7 +52,7 @@ export const simpleBoundsTest = (
   return x >= minX && x <= maxX && y >= minY && y <= maxY
 }
 
-export const boundsFromBodies = (...bodies: Matter.Body[]): EntityBounds => {
+export const boundsFromBodies = (...bodies: Matter.Body[]): Bounds => {
   // TODO
   throw new Error('not implemented')
 }

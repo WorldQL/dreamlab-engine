@@ -3,6 +3,7 @@ import type { z, ZodObject } from 'zod'
 import { symbol as entitySymbol } from '~/entity.js'
 import type { Entity } from '~/entity.js'
 import { simpleBoundsTest } from '~/math/bounds'
+import type { Bounds } from '~/math/bounds.js'
 import type { Transform } from '~/math/transform.js'
 import type { Vector } from '~/math/vector.js'
 import type {
@@ -13,11 +14,6 @@ import { mergeObjects } from '~/utils/types.js'
 
 export type UID = string
 const symbol = Symbol.for('@dreamlab/core/spawnable-entity')
-
-export interface EntityBounds {
-  width: number
-  height: number
-}
 
 export interface SpawnableEntity<Data = unknown, Render = unknown>
   extends Entity<Data, Render> {
@@ -30,7 +26,7 @@ export interface SpawnableEntity<Data = unknown, Render = unknown>
   get definition(): SpawnableDefinition
   get argsSchema(): z.ZodSchema
 
-  bounds(): EntityBounds | undefined
+  bounds(): Bounds | undefined
   isInBounds(position: Vector): boolean
 }
 
@@ -114,12 +110,7 @@ export const createSpawnableEntity = <
         const bounds = entity.bounds()
         if (!bounds) return false
 
-        return simpleBoundsTest(
-          bounds.width,
-          bounds.height,
-          entity.transform,
-          position,
-        )
+        return simpleBoundsTest(bounds, entity.transform, position)
       },
     }
 
