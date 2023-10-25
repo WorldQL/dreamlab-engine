@@ -2,6 +2,7 @@ import { toRadians } from '~/math/general.js'
 import type { Transform } from '~/math/transform.js'
 import { Vec } from '~/math/vector.js'
 import type { Vector } from '~/math/vector.js'
+import type { EntityBounds } from '~/spawnable/spawnableEntity'
 
 const fastBoundsTest = (
   width: number,
@@ -44,4 +45,9 @@ export const simpleBoundsTest = (
   const { x: maxX, y: maxY } = Vec.add(transform.position, half)
 
   return x >= minX && x <= maxX && y >= minY && y <= maxY
+}
+
+export const boundsFromBodies = (...bodies: Matter.Body[]): EntityBounds => {
+  // TODO
+  throw new Error('not implemented')
 }
