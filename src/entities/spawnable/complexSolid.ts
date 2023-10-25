@@ -4,6 +4,7 @@ import { Graphics } from 'pixi.js'
 import { z } from 'zod'
 import type { Camera } from '~/entities/camera.js'
 import { dataManager } from '~/entity.js'
+import { boundsFromBodies } from '~/math/bounds.js'
 import { cloneTransform } from '~/math/transform.js'
 import { Vec, VectorSchema } from '~/math/vector.js'
 import type { Vector } from '~/math/vector.js'
@@ -46,8 +47,8 @@ export const createComplexSolid = createSpawnableEntity<
   },
 
   bounds() {
-    // TODO: Get bounding box of complex solid
-    return undefined
+    const { bodies } = dataManager.getData(this)
+    return boundsFromBodies(...bodies)
   },
 
   init({ game, physics }) {

@@ -52,7 +52,20 @@ export const simpleBoundsTest = (
   return x >= minX && x <= maxX && y >= minY && y <= maxY
 }
 
+export const rectangleBounds = (
+  width: number,
+  height: number,
+  rotation: number,
+): Bounds => {
+  // TODO: Account for rotation
+  return { width, height }
+}
+
 export const boundsFromBodies = (...bodies: Matter.Body[]): Bounds => {
+  if (bodies.length === 0) {
+    throw new Error('must specify at least 1 body')
+  }
+
   // TODO
   throw new Error('not implemented')
 }

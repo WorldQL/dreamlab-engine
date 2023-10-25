@@ -3,6 +3,7 @@ import { Graphics } from 'pixi.js'
 import type { Sprite } from 'pixi.js'
 import { z } from 'zod'
 import type { Camera } from '~/entities/camera.js'
+import { rectangleBounds } from '~/math/bounds.js'
 import { toRadians } from '~/math/general.js'
 import { cloneTransform } from '~/math/transform.js'
 import { Vec } from '~/math/vector.js'
@@ -66,7 +67,7 @@ export const createSolid = createSpawnableEntity<
       },
 
       bounds() {
-        return { width, height }
+        return rectangleBounds(width, height, transform.rotation)
       },
 
       init({ game, physics }) {
