@@ -385,7 +385,7 @@ export const createPlayer = (
             const velocityVector = targetVelocity / body.velocity.x
             const forcePercent = Math.min(Math.abs(velocityVector) / 2, 1)
             const newForce =
-              (isJogging ? 1 : 0.5) * forcePercent * direction.value
+              (isJogging ? 2 : 0.5) * forcePercent * direction.value
 
             Matter.Body.applyForce(body, body.position, Vec.create(newForce, 0))
           }
