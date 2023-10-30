@@ -10,6 +10,10 @@ import type {
 import { ref } from '~/utils/ref.js'
 
 export interface Physics {
+  get running(): boolean
+  suspend(): void
+  resume(): void
+
   get engine(): Engine
   get world(): World
 
@@ -36,12 +40,26 @@ const randomID = (): number => {
 }
 
 export const createPhysics = (): Physics => {
+  let running = true
+
   const engine = Matter.Engine.create()
   const entities = new Map<string, Body[]>()
   const bodiesMap = new Map<number, SpawnableEntity>()
   const playerRef = ref<Player | undefined>(undefined)
 
   const physics: Physics = {
+    get running() {
+      return running
+    },
+
+    suspend() {
+      running = false
+    },
+
+    resume() {
+      running = true
+    },
+
     get engine() {
       return engine
     },

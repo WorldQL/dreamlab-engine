@@ -358,21 +358,28 @@ export async function createGame<Server extends boolean>(
 
     while (physicsTickAcc >= physicsTickDelta) {
       physicsTickAcc -= physicsTickDelta
-      Matter.Engine.update(physics.engine, physicsTickDelta)
 
-      const timeState = { delta: physicsTickDelta / 1_000, time: time / 1_000 }
-      events.common.emit('onPhysicsStep', timeState)
+      if (physics.running) {
+        Matter.Engine.update(physics.engine, physicsTickDelta)
 
-      for (const entity of entities) {
-        if (typeof entity.onPhysicsStep !== 'function') continue
+        const timeState = {
+          delta: physicsTickDelta / 1_000,
+          time: time / 1_000,
+        }
 
-        const data = dataManager.getData(entity)
-        entity.onPhysicsStep(timeState, data)
+        events.common.emit('onPhysicsStep', timeState)
+
+        for (const entity of entities) {
+          if (typeof entity.onPhysicsStep !== 'function') continue
+
+          const data = dataManager.getData(entity)
+          entity.onPhysicsStep(timeState, data)
+        }
       }
     }
 
     if (renderContext) {
-      const smooth = physicsTickAcc / physicsTickDelta
+      const smooth = physics.running ? physicsTickAcc / physicsTickDelta : 0
       const timeState = { delta: delta / 1_000, time: time / 1_000, smooth }
       events.client!.emit('onRenderFrame', timeState)
 
