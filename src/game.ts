@@ -35,6 +35,7 @@ import { createClientUI } from '~/ui.js'
 import type { ClientUIManager } from '~/ui.js'
 import { createDebug } from '~/utils/debug.js'
 import type { Debug } from '~/utils/debug.js'
+import { trackTransform } from './math/transform'
 
 interface ClientOptions {
   /**
@@ -555,7 +556,7 @@ export async function createGame<Server extends boolean>(
 
       const context: SpawnableContext = {
         uid: definition.uid ?? cuid2.createId(),
-        transform: definition.transform,
+        transform: trackTransform(definition.transform),
         tags: definition.tags ?? [],
         zIndex: definition.zIndex ?? 0,
 

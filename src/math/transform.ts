@@ -33,8 +33,7 @@ interface TrackedTransformAugment {
 }
 
 // eslint-disable-next-line @typescript-eslint/sort-type-constituents
-type TrackedTransform = Transform & TrackedTransformAugment
-
+export type TrackedTransform = Transform & TrackedTransformAugment
 export const trackTransform = (transform: Transform): TrackedTransform => {
   const positionListeners = new Set<PositionListener>()
   const rotationListeners = new Set<RotationListener>()
