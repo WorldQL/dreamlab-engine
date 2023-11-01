@@ -3,7 +3,7 @@ import { Graphics } from 'pixi.js'
 import type { Sprite } from 'pixi.js'
 import { z } from 'zod'
 import type { Camera } from '~/entities/camera.js'
-import { toDegrees, toRadians } from '~/math/general.js'
+import { toRadians } from '~/math/general.js'
 import { Vec } from '~/math/vector.js'
 import type { Physics } from '~/physics.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
@@ -37,29 +37,29 @@ export const createBouncyBall = createSpawnableEntity<
 >(
   ArgsSchema,
   ({ transform, zIndex, tags, preview }, { radius, spriteSource }) => {
-    const { position, rotation } = transform
-
     const mass = 20
-    const body = Matter.Bodies.circle(position.x, position.y, radius, {
-      label: 'bouncyBall',
-      render: { visible: false },
-      angle: toRadians(rotation),
-      isStatic: preview,
-      isSensor: preview,
+    const body = Matter.Bodies.circle(
+      transform.position.x,
+      transform.position.y,
+      radius,
+      {
+        label: 'bouncyBall',
+        render: { visible: false },
+        angle: toRadians(transform.rotation),
+        isStatic: preview,
+        isSensor: preview,
 
-      // inertia: Number.POSITIVE_INFINITY,
-      // inverseInertia: 0,
-      mass,
-      inverseMass: 1 / mass,
-      restitution: 0.95,
-    })
+        // inertia: Number.POSITIVE_INFINITY,
+        // inverseInertia: 0,
+        mass,
+        inverseMass: 1 / mass,
+        restitution: 0.95,
+      },
+    )
 
     return {
       get transform() {
-        return {
-          position: Vec.clone(body.position),
-          rotation: toDegrees(body.angle),
-        }
+        return transform
       },
 
       get tags() {
@@ -77,6 +77,7 @@ export const createBouncyBall = createSpawnableEntity<
       init({ game, physics }) {
         const debug = game.debug
         physics.register(this, body)
+        physics.linkTransform(body, transform)
 
         return { debug, physics, body }
       },
@@ -100,6 +101,7 @@ export const createBouncyBall = createSpawnableEntity<
 
       teardown({ physics, body }) {
         physics.unregister(this, body)
+        physics.unlinkTransform(body, transform)
       },
 
       teardownRenderContext({ gfx, sprite }) {
@@ -117,7 +119,7 @@ export const createBouncyBall = createSpawnableEntity<
 
         if (sprite) {
           sprite.position = pos
-          sprite.angle = rotation
+          sprite.rotation = body.angle
         }
       },
     }
