@@ -5,7 +5,6 @@ import { z } from 'zod'
 import type { Camera } from '~/entities/camera.js'
 import { rectangleBounds } from '~/math/bounds.js'
 import { toRadians } from '~/math/general.js'
-import { cloneTransform } from '~/math/transform.js'
 import { Vec } from '~/math/vector.js'
 import type { Physics } from '~/physics.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
@@ -40,16 +39,15 @@ export const createSolid = createSpawnableEntity<
 >(
   ArgsSchema,
   ({ transform, zIndex, tags, preview }, { width, height, spriteSource }) => {
-    const { position, rotation } = transform
     const body = Matter.Bodies.rectangle(
-      position.x,
-      position.y,
+      transform.position.x,
+      transform.position.y,
       width,
       height,
       {
         label: 'solid',
         render: { visible: false },
-        angle: toRadians(rotation),
+        angle: toRadians(transform.rotation),
 
         isStatic: true,
         isSensor: preview,
@@ -59,7 +57,7 @@ export const createSolid = createSpawnableEntity<
 
     return {
       get transform() {
-        return cloneTransform(transform)
+        return transform
       },
 
       get tags() {
@@ -77,6 +75,7 @@ export const createSolid = createSpawnableEntity<
       init({ game, physics }) {
         const debug = game.debug
         physics.register(this, body)
+        physics.linkTransform(body, transform)
 
         return { debug, physics, body }
       },
@@ -98,6 +97,7 @@ export const createSolid = createSpawnableEntity<
 
       teardown({ physics, body }) {
         physics.unregister(this, body)
+        physics.unlinkTransform(body, transform)
       },
 
       teardownRenderContext({ gfx, sprite }) {
@@ -106,15 +106,15 @@ export const createSolid = createSpawnableEntity<
       },
 
       onRenderFrame(_, { debug }, { camera, gfx, sprite }) {
-        const pos = Vec.add(position, camera.offset)
+        const pos = Vec.add(transform.position, camera.offset)
 
         gfx.position = pos
-        gfx.angle = rotation
+        gfx.angle = transform.rotation
         gfx.alpha = debug.value ? 0.5 : 0
 
         if (sprite) {
           sprite.position = pos
-          sprite.angle = rotation
+          sprite.angle = transform.rotation
         }
       },
     }

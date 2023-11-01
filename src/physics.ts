@@ -2,6 +2,8 @@ import Matter from 'matter-js'
 import type { Body, Engine, World } from 'matter-js'
 import { isPlayer } from '~/entities/player.js'
 import type { Player } from '~/entities/player.js'
+import { toRadians } from '~/math/general.js'
+import type { TrackedTransform } from '~/math/transform.js'
 import { isSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type {
   PartializeSpawnable,
@@ -29,6 +31,9 @@ export interface Physics {
     ...bodies: Body[]
   ): void
 
+  linkTransform(body: Body, transform: TrackedTransform): void
+  unlinkTransform(body: Body, transform: TrackedTransform): void
+
   registerPlayer(player: Player): void
   clearPlayer(): void
   isPlayer(body: Body): boolean
@@ -45,6 +50,7 @@ export const createPhysics = (): Physics => {
   const engine = Matter.Engine.create()
   const entities = new Map<string, Body[]>()
   const bodiesMap = new Map<number, SpawnableEntity>()
+  const linksMap = new Map<number, ((...args: unknown[]) => void)[]>()
   const playerRef = ref<Player | undefined>(undefined)
 
   const physics: Physics = {
@@ -120,6 +126,28 @@ export const createPhysics = (): Physics => {
       }
 
       Matter.Composite.remove(engine.world, bodies)
+    },
+
+    linkTransform(body, transform) {
+      const positionListener = () => {
+        Matter.Body.setPosition(body, transform.position)
+      }
+
+      const rotationListener = () => {
+        Matter.Body.setAngle(body, toRadians(transform.rotation))
+      }
+
+      transform.addPositionListener(positionListener)
+      transform.addRotationListener(rotationListener)
+      linksMap.set(body.id, [positionListener, rotationListener])
+    },
+
+    unlinkTransform(body, transform) {
+      const fns = linksMap.get(body.id)
+      if (fns) {
+        linksMap.delete(body.id)
+        for (const fn of fns) transform.removeListener(fn)
+      }
     },
 
     registerPlayer(player) {
