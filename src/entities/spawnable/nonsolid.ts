@@ -36,7 +36,7 @@ export const createNonsolid = createSpawnableEntity<
   ArgsSchema,
   ({ transform, zIndex, tags }, { width, height, spriteSource }) => ({
     get transform() {
-      return cloneTransform(transform)
+      return transform
     },
 
     get tags() {
