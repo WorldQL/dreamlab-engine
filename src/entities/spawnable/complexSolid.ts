@@ -5,6 +5,7 @@ import { z } from 'zod'
 import type { Camera } from '~/entities/camera.js'
 import { dataManager } from '~/entity.js'
 import { boundsFromBodies } from '~/math/bounds.js'
+import type { PositionListener } from '~/math/transform.js'
 import { Vec, VectorSchema } from '~/math/vector.js'
 import type { Vector } from '~/math/vector.js'
 import type { Physics } from '~/physics.js'
@@ -21,6 +22,7 @@ const ArgsSchema = z.object({
 interface Data {
   debug: Debug
   physics: Physics
+  onPositionChanged: PositionListener
 
   polygons: Vector[][]
   bodies: Body[]
@@ -71,8 +73,17 @@ export const createComplexSolid = createSpawnableEntity<
       })
     })
 
+    const onPositionChanged: PositionListener = (component, _, delta) => {
+      const vector = component === 'x' ? { x: delta, y: 0 } : { x: 0, y: delta }
+      for (const body of bodies) {
+        Matter.Body.setPosition(body, Vec.add(body.position, vector))
+      }
+    }
+
     physics.register(this, ...bodies)
-    return { debug, physics, polygons, bodies }
+    transform.addPositionListener(onPositionChanged)
+
+    return { debug, physics, onPositionChanged, polygons, bodies }
   },
 
   initRenderContext(_, { stage, camera }) {
@@ -87,8 +98,9 @@ export const createComplexSolid = createSpawnableEntity<
     return { camera, gfx }
   },
 
-  teardown({ physics, bodies }) {
+  teardown({ physics, onPositionChanged, bodies }) {
     physics.unregister(this, ...bodies)
+    transform.removeListener(onPositionChanged)
   },
 
   teardownRenderContext({ gfx }) {
