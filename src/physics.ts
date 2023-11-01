@@ -2,7 +2,8 @@ import Matter from 'matter-js'
 import type { Body, Engine, World } from 'matter-js'
 import { isPlayer } from '~/entities/player.js'
 import type { Player } from '~/entities/player.js'
-import { toRadians } from '~/math/general.js'
+import { toDegrees, toRadians } from '~/math/general.js'
+import { trackedSymbol } from '~/math/transform.js'
 import type { TrackedTransform } from '~/math/transform.js'
 import { isSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type {
@@ -50,8 +51,15 @@ export const createPhysics = (): Physics => {
   const engine = Matter.Engine.create()
   const entities = new Map<string, Body[]>()
   const bodiesMap = new Map<number, SpawnableEntity>()
-  const linksMap = new Map<number, ((...args: unknown[]) => void)[]>()
   const playerRef = ref<Player | undefined>(undefined)
+
+  interface LinkData {
+    positionListener(this: void, ...args: unknown[]): void
+    rotationListener(this: void, ...args: unknown[]): void
+    onTick(this: void, ...args: unknown[]): void
+  }
+
+  const linksMap = new Map<number, LinkData>()
 
   const physics: Physics = {
     get running() {
@@ -137,18 +145,27 @@ export const createPhysics = (): Physics => {
         Matter.Body.setAngle(body, toRadians(transform.rotation))
       }
 
+      const onTick = () => {
+        transform[trackedSymbol].position.x = body.position.x
+        transform[trackedSymbol].position.y = body.position.y
+        transform[trackedSymbol].transform.rotation = toDegrees(body.angle)
+      }
+
       transform.addPositionListener(positionListener)
       transform.addRotationListener(rotationListener)
-      linksMap.set(body.id, [positionListener, rotationListener])
+      Matter.Events.on(engine, 'afterUpdate', onTick)
 
-      // TODO: Link the other way, on physics tick read value and manually set
+      linksMap.set(body.id, { positionListener, rotationListener, onTick })
     },
 
     unlinkTransform(body, transform) {
-      const fns = linksMap.get(body.id)
-      if (fns) {
+      const linked = linksMap.get(body.id)
+      if (linked) {
         linksMap.delete(body.id)
-        for (const fn of fns) transform.removeListener(fn)
+
+        transform.removeListener(linked.positionListener)
+        transform.removeListener(linked.rotationListener)
+        Matter.Events.off(engine, 'afterUpdate', linked.onTick)
       }
     },
 
