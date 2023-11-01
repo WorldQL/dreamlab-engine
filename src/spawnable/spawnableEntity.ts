@@ -46,12 +46,21 @@ export type PartializeSpawnable<
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ZodObjectAny = ZodObject<any, z.UnknownKeysParam>
 
-export type SpawnableFunction<
+type BaseSpawnableFunction<
   ArgsSchema extends ZodObjectAny,
   E extends SpawnableEntity<Data, Render>,
   Data,
   Render,
 > = (ctx: SpawnableContext, args: z.infer<ArgsSchema>) => E
+
+export interface SpawnableFunction<
+  ArgsSchema extends ZodObjectAny,
+  E extends SpawnableEntity<Data, Render>,
+  Data,
+  Render,
+> extends BaseSpawnableFunction<ArgsSchema, E, Data, Render> {
+  argsSchema: ArgsSchema
+}
 
 export type BareSpawnableFunction = SpawnableFunction<
   ZodObjectAny,
@@ -72,7 +81,7 @@ export const createSpawnableEntity = <
     args: z.infer<ArgsSchema>,
   ) => PartializeSpawnable<E, Data, Render>,
 ): SpawnableFunction<ArgsSchema, E, Data, Render> => {
-  const spawnFn: SpawnableFunction<ArgsSchema, E, Data, Render> = (
+  const spawnFn: BaseSpawnableFunction<ArgsSchema, E, Data, Render> = (
     ctx,
     args,
   ) => {
@@ -106,7 +115,7 @@ export const createSpawnableEntity = <
     return mergeObjects(partial, getter) as E
   }
 
-  return spawnFn
+  return Object.assign(spawnFn, { argsSchema })
 }
 
 export const isSpawnableEntity = (

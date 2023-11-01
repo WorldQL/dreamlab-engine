@@ -552,8 +552,8 @@ export async function createGame<Server extends boolean>(
         return undefined
       }
 
-      // TODO: Verify args schema
-
+      // Verify args schema
+      const args = fn.argsSchema.parse(definition.args)
       const context: SpawnableContext = {
         uid: definition.uid ?? cuid2.createId(),
         transform: trackTransform(definition.transform),
@@ -564,7 +564,7 @@ export async function createGame<Server extends boolean>(
         definition,
       }
 
-      const entity = fn(context, definition.args)
+      const entity = fn(context, args)
       await this.instantiate(entity)
       spawnables.set(entity.uid, entity)
 
