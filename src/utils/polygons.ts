@@ -53,6 +53,7 @@ export const calculatePolygons = (
   // ensure correct schema
   PointsSchema.parse(points)
 
+  Matter.Vertices.clockwiseSort(points)
   const center = truncateVector(Matter.Vertices.centre(points))
   const offsetPoints = points.map(point => Vec.sub(point, center))
 
