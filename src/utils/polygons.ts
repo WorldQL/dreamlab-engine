@@ -5,9 +5,9 @@ import { makeCCW, quickDecomp } from 'poly-decomp-es'
 import type { Polygon } from 'poly-decomp-es'
 import type { z } from 'zod'
 import { truncateVector, Vec, VectorSchema } from '~/math/vector.js'
-import type { Vector } from '~/math/vector.js'
+import type { LooseVector, Vector } from '~/math/vector.js'
 
-type Points = z.infer<typeof PointsSchema>
+type Points = LooseVector[]
 const PointsSchema = VectorSchema.array()
 
 type Polygons = z.infer<typeof PolygonsSchema>
@@ -18,11 +18,11 @@ export const calculatePolygons = (
   truncate = 5,
 ): readonly [center: Vector, polygons: Polygons] => {
   // ensure correct schema
-  PointsSchema.parse(points)
+  const pts = PointsSchema.parse(points)
 
-  Matter.Vertices.clockwiseSort(points)
-  const center = truncateVector(Matter.Vertices.centre(points))
-  const offsetPoints = points.map(point => Vec.sub(point, center))
+  Matter.Vertices.clockwiseSort(pts)
+  const center = truncateVector(Matter.Vertices.centre(pts))
+  const offsetPoints = pts.map(point => Vec.sub(point, center))
 
   if (Matter.Vertices.isConvex(offsetPoints)) {
     const truncated = offsetPoints.map(point => truncateVector(point, truncate))
