@@ -7,39 +7,6 @@ import type { z } from 'zod'
 import { truncateVector, Vec, VectorSchema } from '~/math/vector.js'
 import type { Vector } from '~/math/vector.js'
 
-const isPolygonConvex = (vertices: Vector[]): boolean => {
-  const len = vertices.length
-  if (len < 3) {
-    // A polygon must have at least 3 vertices
-    return false
-  }
-
-  let crossProductSign = 0
-  for (let idx = 0; idx < len; idx++) {
-    const p1 = vertices[idx]!
-    const p2 = vertices[(idx + 1) % len]!
-    const p3 = vertices[(idx + 2) % len]!
-
-    const crossProduct =
-      (p2.x - p1.x) * (p3.y - p2.y) - (p2.y - p1.y) * (p3.x - p2.x)
-
-    if (crossProduct === 0) {
-      // Collinear points, continue to the next edge
-      continue
-    }
-
-    if (crossProductSign === 0) {
-      crossProductSign = Math.sign(crossProduct)
-    } else if (Math.sign(crossProduct) !== crossProductSign) {
-      // Cross products have different signs, the polygon is concave
-      return false
-    }
-  }
-
-  // All cross products have the same sign, the polygon is convex
-  return true
-}
-
 type Points = z.infer<typeof PointsSchema>
 const PointsSchema = VectorSchema.array()
 
@@ -57,7 +24,7 @@ export const calculatePolygons = (
   const center = truncateVector(Matter.Vertices.centre(points))
   const offsetPoints = points.map(point => Vec.sub(point, center))
 
-  if (isPolygonConvex(offsetPoints)) {
+  if (Matter.Vertices.isConvex(offsetPoints)) {
     const truncated = offsetPoints.map(point => truncateVector(point, truncate))
     return [center, [truncated]]
   }
