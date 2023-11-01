@@ -87,6 +87,45 @@ export const boundsFromBodies = (...bodies: Matter.Body[]): Bounds => {
     throw new Error('must specify at least 1 body')
   }
 
-  // TODO
-  throw new Error('not implemented')
+  const maxX = Math.max(
+    ...bodies.map(body =>
+      body.vertices.reduce(
+        (acc, verts) => Math.max(acc, verts.x),
+        body.vertices[0]!.x,
+      ),
+    ),
+  )
+
+  const maxY = Math.max(
+    ...bodies.map(body =>
+      body.vertices.reduce(
+        (acc, verts) => Math.max(acc, verts.y),
+        body.vertices[0]!.y,
+      ),
+    ),
+  )
+
+  const minX = Math.min(
+    ...bodies.map(body =>
+      body.vertices.reduce(
+        (acc, verts) => Math.min(acc, verts.x),
+        body.vertices[0]!.x,
+      ),
+    ),
+  )
+
+  const minY = Math.min(
+    ...bodies.map(body =>
+      body.vertices.reduce(
+        (acc, verts) => Math.min(acc, verts.y),
+        body.vertices[0]!.y,
+      ),
+    ),
+  )
+
+  const width = maxX - minX
+  const height = maxY - minY
+
+  // TODO: WIP, not perfect
+  return { width, height }
 }
