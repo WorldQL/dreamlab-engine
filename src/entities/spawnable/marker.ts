@@ -2,7 +2,6 @@ import { Graphics } from 'pixi.js'
 import { z } from 'zod'
 import type { Camera } from '~/entities/camera.js'
 import { simpleBoundsTest } from '~/math/bounds.js'
-import { cloneTransform } from '~/math/transform.js'
 import { Vec } from '~/math/vector.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
@@ -29,10 +28,6 @@ export const createMarker = createSpawnableEntity<
   Data,
   Render
 >(ArgsSchema, ({ transform, zIndex, tags }, { width, height }) => ({
-  get transform() {
-    return cloneTransform(transform)
-  },
-
   get tags() {
     return tags
   },

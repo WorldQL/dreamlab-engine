@@ -5,7 +5,6 @@ import { z } from 'zod'
 import type { Camera } from '~/entities/camera.js'
 import { dataManager } from '~/entity.js'
 import { boundsFromBodies } from '~/math/bounds.js'
-import { cloneTransform } from '~/math/transform.js'
 import { Vec, VectorSchema } from '~/math/vector.js'
 import type { Vector } from '~/math/vector.js'
 import type { Physics } from '~/physics.js'
@@ -38,10 +37,6 @@ export const createComplexSolid = createSpawnableEntity<
   Data,
   Render
 >(ArgsSchema, ({ transform, zIndex, tags, preview }, { polygon: poly }) => ({
-  get transform() {
-    return cloneTransform(transform)
-  },
-
   get tags() {
     return tags
   },

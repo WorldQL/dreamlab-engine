@@ -58,10 +58,6 @@ export const createBouncyBall = createSpawnableEntity<
     )
 
     return {
-      get transform() {
-        return transform
-      },
-
       get tags() {
         return tags
       },

@@ -93,10 +93,6 @@ export const createSimpleNPC = createSpawnableEntity<
       )
 
     const npc: PartializeSpawnable<SimpleNPC, Data, Render> = {
-      get transform() {
-        return { position: Vec.clone(body.position), rotation: 0 }
-      },
-
       get tags() {
         return tags
       },

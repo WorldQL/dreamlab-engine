@@ -35,6 +35,7 @@ type PartialFields =
   | 'argsSchema'
   | 'definition'
   | 'preview'
+  | 'transform'
   | 'uid'
 
 export type PartializeSpawnable<
@@ -101,6 +102,10 @@ export const createSpawnableEntity = <
 
       get definition() {
         return ctx.definition
+      },
+
+      get transform() {
+        return ctx.transform
       },
 
       get preview() {

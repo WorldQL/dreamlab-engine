@@ -56,10 +56,6 @@ export const createSolid = createSpawnableEntity<
     )
 
     return {
-      get transform() {
-        return transform
-      },
-
       get tags() {
         return tags
       },
