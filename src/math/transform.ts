@@ -25,10 +25,13 @@ export const t = (transform: LooseTransform): Transform => {
 
 type PositionListener = (component: 'x' | 'y', value: number) => void
 type RotationListener = (rotation: number) => void
+
+export const trackedSymbol = Symbol.for('@dreamlab/core/trackedTransform')
 interface TrackedTransformAugment {
+  [trackedSymbol]: { transform: Transform; position: Vector }
+
   addPositionListener(fn: PositionListener): void
   addRotationListener(fn: RotationListener): void
-
   removeListener(fn: (...args: unknown[]) => void): void
 }
 
@@ -38,56 +41,55 @@ export const trackTransform = (transform: Transform): TrackedTransform => {
   const positionListeners = new Set<PositionListener>()
   const rotationListeners = new Set<RotationListener>()
 
-  const createPositionProxy = (position: Vector) =>
-    new Proxy<Vector>(
-      { x: position.x, y: position.y },
-      {
-        set: (target, property, value, _receiver) => {
-          if (property !== 'x' && property !== 'y') return false
+  const innerPosition: Vector = {
+    x: transform.position.x,
+    y: transform.position.y,
+  }
 
-          target[property] = value
-          for (const fn of positionListeners) fn(property, value)
+  const positionProxy = new Proxy<Vector>(innerPosition, {
+    set: (target, property, value, _receiver) => {
+      if (property !== 'x' && property !== 'y') return false
 
-          return true
-        },
-      },
-    )
+      target[property] = value
+      for (const fn of positionListeners) fn(property, value)
 
-  const transformProxy = new Proxy<Transform>(
-    {
-      position: createPositionProxy(transform.position),
-      rotation: transform.rotation,
+      return true
     },
-    {
-      set: (target, property, value, receiver) => {
-        if (
-          property === 'addPositionListener' ||
-          property === 'addRotationListener' ||
-          property === 'removeListener'
-        ) {
-          return Reflect.set(target, property, value, receiver)
-        }
+  })
 
-        if (property !== 'position' && property !== 'rotation') return false
+  const innerTransform: Transform = {
+    position: positionProxy,
+    rotation: transform.rotation,
+  }
 
-        if (property === 'rotation') {
-          target.rotation = value
-          for (const fn of rotationListeners) fn(value)
-          return true
-        }
+  const transformProxy = new Proxy<Transform>(innerTransform, {
+    set: (target, property, value, receiver) => {
+      if (
+        property === trackedSymbol ||
+        property === 'addPositionListener' ||
+        property === 'addRotationListener' ||
+        property === 'removeListener'
+      ) {
+        return Reflect.set(target, property, value, receiver)
+      }
 
-        target.position = createPositionProxy(value)
-        for (const fn of positionListeners) {
-          fn('x', target.position.x)
-          fn('y', target.position.y)
-        }
-
+      if (property !== 'position' && property !== 'rotation') return false
+      if (property === 'rotation') {
+        target.rotation = value
+        for (const fn of rotationListeners) fn(value)
         return true
-      },
+      }
+
+      target.position.x = value.x
+      target.position.y = value.y
+
+      return true
     },
-  )
+  })
 
   const augment: TrackedTransformAugment = {
+    [trackedSymbol]: { transform: innerTransform, position: innerPosition },
+
     addPositionListener: fn => void positionListeners.add(fn),
     addRotationListener: fn => void rotationListeners.add(fn),
 

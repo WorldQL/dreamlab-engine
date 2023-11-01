@@ -140,6 +140,8 @@ export const createPhysics = (): Physics => {
       transform.addPositionListener(positionListener)
       transform.addRotationListener(rotationListener)
       linksMap.set(body.id, [positionListener, rotationListener])
+
+      // TODO: Link the other way, on physics tick read value and manually set
     },
 
     unlinkTransform(body, transform) {
