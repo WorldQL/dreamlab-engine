@@ -23,8 +23,12 @@ export const t = (transform: LooseTransform): Transform => {
   return TransformSchema.parse(transform)
 }
 
-type PositionListener = (component: 'x' | 'y', value: number) => void
-type RotationListener = (rotation: number) => void
+export type PositionListener = (
+  component: 'x' | 'y',
+  value: number,
+  delta: number,
+) => void
+export type RotationListener = (rotation: number, delta: number) => void
 
 export const trackedSymbol = Symbol.for('@dreamlab/core/trackedTransform')
 interface TrackedTransformAugment {
@@ -32,7 +36,7 @@ interface TrackedTransformAugment {
 
   addPositionListener(fn: PositionListener): void
   addRotationListener(fn: RotationListener): void
-  removeListener(fn: (...args: unknown[]) => void): void
+  removeListener(fn: PositionListener | RotationListener): void
 }
 
 // eslint-disable-next-line @typescript-eslint/sort-type-constituents
@@ -50,8 +54,11 @@ export const trackTransform = (transform: Transform): TrackedTransform => {
     set: (target, property, value, _receiver) => {
       if (property !== 'x' && property !== 'y') return false
 
+      const previous = target[property]
+      const delta = value - previous
+
       target[property] = value
-      for (const fn of positionListeners) fn(property, value)
+      for (const fn of positionListeners) fn(property, value, delta)
 
       return true
     },
@@ -75,8 +82,12 @@ export const trackTransform = (transform: Transform): TrackedTransform => {
 
       if (property !== 'position' && property !== 'rotation') return false
       if (property === 'rotation') {
+        const previous = target.rotation
+        const delta = value - previous
+
         target.rotation = value
-        for (const fn of rotationListeners) fn(value)
+        for (const fn of rotationListeners) fn(value, delta)
+
         return true
       }
 
@@ -94,7 +105,10 @@ export const trackTransform = (transform: Transform): TrackedTransform => {
     addRotationListener: fn => void rotationListeners.add(fn),
 
     removeListener: fn => {
+      // @ts-expect-error Ignore Types
       positionListeners.delete(fn)
+
+      // @ts-expect-error Ignore Types
       rotationListeners.delete(fn)
     },
   }

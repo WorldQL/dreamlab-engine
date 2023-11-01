@@ -6,6 +6,8 @@ export {
   type LooseTransform,
   type TrackedTransform,
   type Transform,
+  type PositionListener,
+  type RotationListener,
   TransformSchema,
   cloneTransform,
   t,
