@@ -5,7 +5,8 @@ import { z } from 'zod'
 import type { Camera } from '~/entities/camera.js'
 import { dataManager } from '~/entity.js'
 import { boundsFromBodies } from '~/math/bounds.js'
-import type { PositionListener } from '~/math/transform.js'
+import { toRadians } from '~/math/general.js'
+import type { PositionListener, RotationListener } from '~/math/transform.js'
 import { Vec, VectorSchema } from '~/math/vector.js'
 import type { Vector } from '~/math/vector.js'
 import type { Physics } from '~/physics.js'
@@ -23,6 +24,7 @@ interface Data {
   debug: Debug
   physics: Physics
   onPositionChanged: PositionListener
+  onRotationChanged: RotationListener
 
   polygons: Vector[][]
   bodies: Body[]
@@ -73,6 +75,13 @@ export const createComplexSolid = createSpawnableEntity<
       })
     })
 
+    const composite = Matter.Composite.create({ bodies })
+    Matter.Composite.rotate(
+      composite,
+      toRadians(transform.rotation),
+      transform.position,
+    )
+
     const onPositionChanged: PositionListener = (component, _, delta) => {
       const vector = component === 'x' ? { x: delta, y: 0 } : { x: 0, y: delta }
       for (const body of bodies) {
@@ -80,10 +89,22 @@ export const createComplexSolid = createSpawnableEntity<
       }
     }
 
+    const onRotationChanged: RotationListener = (_, delta) => {
+      Matter.Composite.rotate(composite, toRadians(delta), transform.position)
+    }
+
     physics.register(this, ...bodies)
     transform.addPositionListener(onPositionChanged)
+    transform.addRotationListener(onRotationChanged)
 
-    return { debug, physics, onPositionChanged, polygons, bodies }
+    return {
+      debug,
+      physics,
+      onPositionChanged,
+      onRotationChanged,
+      polygons,
+      bodies,
+    }
   },
 
   initRenderContext(_, { stage, camera }) {
@@ -98,9 +119,10 @@ export const createComplexSolid = createSpawnableEntity<
     return { camera, gfx }
   },
 
-  teardown({ physics, onPositionChanged, bodies }) {
+  teardown({ physics, onPositionChanged, onRotationChanged, bodies }) {
     physics.unregister(this, ...bodies)
     transform.removeListener(onPositionChanged)
+    transform.removeListener(onRotationChanged)
   },
 
   teardownRenderContext({ gfx }) {
@@ -112,5 +134,6 @@ export const createComplexSolid = createSpawnableEntity<
 
     gfx.position = pos
     gfx.alpha = debug.value ? 0.5 : 0
+    gfx.angle = transform.rotation
   },
 }))
