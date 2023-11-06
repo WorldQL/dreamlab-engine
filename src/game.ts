@@ -277,9 +277,7 @@ export async function createGame<Server extends boolean>(
   const spawnables = new Map<string, SpawnableEntity>()
   const spawnableFunctions = new Map<string, BareSpawnableFunction>()
 
-  const inputs = renderContext?.canvas
-    ? new InputManager(renderContext.canvas)
-    : undefined
+  const inputs = renderContext ? new InputManager(renderContext) : undefined
   const unregister = inputs?.registerListeners()
 
   const physicsTickDelta = 1_000 / physicsTickrate
@@ -382,6 +380,9 @@ export async function createGame<Server extends boolean>(
     }
 
     if (renderContext) {
+      // @ts-expect-error Private access
+      inputs!.updateCursor()
+
       const smooth = physics.running ? physicsTickAcc / physicsTickDelta : 0
       const timeState = { delta: delta / 1_000, time: time / 1_000, smooth }
       events.client!.emit('onRenderFrame', timeState)

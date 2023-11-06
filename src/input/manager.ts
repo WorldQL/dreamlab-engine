@@ -1,5 +1,7 @@
 import EventEmitter from 'eventemitter3'
 import type { LiteralUnion } from 'type-fest'
+import type { Camera } from '~/entities/camera.js'
+import type { Vector } from '~/math/vector.js'
 import { inputCodes, InputCodeSchema } from './keycode.js'
 import type { InputCode, MouseButton } from './keycode.js'
 
@@ -58,6 +60,9 @@ function onMouse(this: InputManager, ev: MouseEvent, pressed: boolean): void {
 }
 
 export class InputManager extends EventEmitter<InputEvents> {
+  private readonly canvas: HTMLCanvasElement
+  private readonly camera: Camera
+
   private readonly keys = new Set<InputCode>()
   private readonly held = new Set<InputCode>()
 
@@ -69,8 +74,14 @@ export class InputManager extends EventEmitter<InputEvents> {
 
   private readonly inputCount = new CountMap<string>()
 
-  public constructor(private readonly canvas: HTMLCanvasElement) {
+  private mousePosition: Vector | undefined
+  private cursorPosition: Vector | undefined
+
+  public constructor(ctx: { canvas: HTMLCanvasElement; camera: Camera }) {
     super()
+
+    this.canvas = ctx.canvas
+    this.camera = ctx.camera
   }
 
   public registerListeners(): Unregister {
@@ -81,17 +92,25 @@ export class InputManager extends EventEmitter<InputEvents> {
     const onKeyUp = (ev: KeyboardEvent) => boundOnKey(ev, false)
     const onMouseDown = (ev: MouseEvent) => boundOnMouse(ev, true)
     const onMouseUp = (ev: MouseEvent) => boundOnMouse(ev, false)
+    const onMouseMove = this.onMouseMove.bind(this)
+    const onMouseOut = this.onMouseOut.bind(this)
 
     window.addEventListener('keydown', onKeyDown)
     window.addEventListener('keyup', onKeyUp)
     this.canvas.addEventListener('mousedown', onMouseDown)
     this.canvas.addEventListener('mouseup', onMouseUp)
+    this.canvas.addEventListener('mouseover', onMouseMove)
+    this.canvas.addEventListener('mousemove', onMouseMove)
+    this.canvas.addEventListener('mouseout', onMouseOut)
 
     const unregister: Unregister = () => {
       window.removeEventListener('keydown', onKeyDown)
       window.removeEventListener('keyup', onKeyUp)
       this.canvas.removeEventListener('mousedown', onMouseDown)
       this.canvas.removeEventListener('mouseup', onMouseUp)
+      this.canvas.removeEventListener('mouseover', onMouseMove)
+      this.canvas.removeEventListener('mousemove', onMouseMove)
+      this.canvas.removeEventListener('mouseout', onMouseOut)
     }
 
     return unregister
@@ -156,6 +175,32 @@ export class InputManager extends EventEmitter<InputEvents> {
     if (!keys || keys.size === 0) return undefined
 
     return [...keys].some(key => this.getKey(key))
+  }
+  // #endregion
+
+  // #region Mouse
+  private onMouseMove(this: InputManager, ev: MouseEvent): void {
+    this.mousePosition = {
+      x: ev.offsetX,
+      y: ev.offsetY,
+    }
+
+    this.cursorPosition = this.camera.localToWorld(this.mousePosition)
+  }
+
+  private onMouseOut(): void {
+    this.mousePosition = undefined
+    this.cursorPosition = undefined
+  }
+
+  private updateCursor(): void {
+    this.cursorPosition = this.mousePosition
+      ? this.camera.localToWorld(this.mousePosition)
+      : undefined
+  }
+
+  public get cursor(): Vector | undefined {
+    return this.cursorPosition
   }
   // #endregion
 
