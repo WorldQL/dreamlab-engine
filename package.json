@@ -56,10 +56,10 @@
     "url": "git+https://github.com/WorldQL/dreamlab-core.git"
   },
   "devDependencies": {
-    "@luludev/eslint-config": "^0.5.0",
-    "@types/matter-js": "^0.19.1",
-    "@types/pako": "^2.0.1",
-    "eslint": "^8.51.0",
+    "@luludev/eslint-config": "^0.5.1",
+    "@types/matter-js": "^0.19.3",
+    "@types/pako": "^2.0.2",
+    "eslint": "^8.53.0",
     "prettier": "^3.0.3",
     "tsup": "^7.2.0",
     "typescript": "^5.2.2",
@@ -74,7 +74,7 @@
     "pako": "^2.1.0",
     "pixi.js": "^7.3.2",
     "poly-decomp-es": "^0.4.2",
-    "type-fest": "^4.4.0",
+    "type-fest": "^4.6.0",
     "zod": "^3.22.4"
   }
 }
