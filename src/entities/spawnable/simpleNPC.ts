@@ -4,7 +4,6 @@ import { Graphics } from 'pixi.js'
 import type { Sprite } from 'pixi.js'
 import { z } from 'zod'
 import type { Camera } from '~/entities/camera.js'
-import { boundsFromBodies } from '~/math/bounds.js'
 import { Vec } from '~/math/vector.js'
 import type { Physics } from '~/physics.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
@@ -98,7 +97,7 @@ export const createSimpleNPC = createSpawnableEntity<
       },
 
       rectangleBounds() {
-        return boundsFromBodies(body)
+        return { width: size, height: size }
       },
 
       isPointInside(position) {

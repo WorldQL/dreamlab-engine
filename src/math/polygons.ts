@@ -4,6 +4,7 @@ import pako from 'pako'
 import { makeCCW, quickDecomp } from 'poly-decomp-es'
 import type { Polygon } from 'poly-decomp-es'
 import type { z } from 'zod'
+import type { Bounds } from '~/math/bounds.js'
 import { truncateVector, Vec, VectorSchema } from '~/math/vector.js'
 import type { LooseVector, Vector } from '~/math/vector.js'
 
@@ -62,6 +63,17 @@ const pointsMinMax = (
   const minY = points.reduce((max, { y }) => Math.min(max, y), points[0]!.y)
 
   return { min: { x: minX, y: minY }, max: { x: maxX, y: maxY } }
+}
+
+export const pointsBounds = (input: PointsOrPolygons): Bounds | undefined => {
+  const minmax = pointsMinMax(input)
+  if (!minmax) return undefined
+
+  const { min, max } = minmax
+  const width = max.x - min.x
+  const height = max.y - min.y
+
+  return { width, height }
 }
 
 const calculateCenter = (points: Vector[]): Vector => {
