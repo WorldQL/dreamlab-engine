@@ -32,18 +32,7 @@ export const simpleBoundsTest = (
   if (!fast) return false
 
   const radians = toRadians(transform.rotation)
-  const sin = Math.sin(radians)
-  const cos = Math.cos(radians)
-
-  const x =
-    (point.x - transform.position.x) * cos -
-    (point.y - transform.position.y) * sin +
-    transform.position.x
-
-  const y =
-    (point.x - transform.position.x) * sin +
-    (point.y - transform.position.y) * cos +
-    transform.position.y
+  const { x, y } = Vec.rotateAbout(point, radians, transform.position)
 
   const half = Vec.create(width / 2, height / 2)
   const { x: minX, y: minY } = Vec.sub(transform.position, half)
