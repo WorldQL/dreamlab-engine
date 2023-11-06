@@ -185,12 +185,12 @@ export class InputManager extends EventEmitter<InputEvents> {
       y: ev.offsetY,
     }
 
-    this.cursorPosition = this.camera.localToWorld(this.mousePosition)
+    this.updateCursor()
   }
 
   private onMouseOut(): void {
     this.mousePosition = undefined
-    this.cursorPosition = undefined
+    this.updateCursor()
   }
 
   private updateCursor(): void {
@@ -199,8 +199,14 @@ export class InputManager extends EventEmitter<InputEvents> {
       : undefined
   }
 
-  public get cursor(): Vector | undefined {
-    return this.cursorPosition
+  /**
+   * Get current cursor position in local or world space
+   *
+   * @param type - Defaults to `world`
+   * @returns
+   */
+  public getCursor(type: 'local' | 'world' = 'world'): Vector | undefined {
+    return type === 'local' ? this.mousePosition : this.cursorPosition
   }
   // #endregion
 
