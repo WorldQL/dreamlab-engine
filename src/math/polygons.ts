@@ -25,9 +25,50 @@ export const deduplicatePoints = (points: Points): Vector[] => {
   return output
 }
 
+type PointsOrPolygons = Vector[] | Vector[][]
+const getPoints = (input: PointsOrPolygons): Vector[] => {
+  if (input.length === 0) return []
+
+  const first = input[0]!
+  if (Array.isArray(first)) {
+    const polygons = input as Vector[][]
+    return polygons.flat()
+  }
+
+  return input as Vector[]
+}
+
 export const pointsFromPolys = (polygons: Polygons): Vector[] => {
   const points = polygons.flat()
   return deduplicatePoints(points)
+}
+
+const pointsMinMax = (
+  input: PointsOrPolygons,
+): { min: Vector; max: Vector } | undefined => {
+  const points = getPoints(input)
+  if (points.length === 0) return undefined
+
+  const maxX = points.reduce((max, { x }) => Math.max(max, x), points[0]!.x)
+  const maxY = points.reduce((max, { y }) => Math.max(max, y), points[0]!.y)
+
+  const minX = points.reduce((max, { x }) => Math.min(max, x), points[0]!.x)
+  const minY = points.reduce((max, { y }) => Math.min(max, y), points[0]!.y)
+
+  return { min: { x: minX, y: minY }, max: { x: maxX, y: maxY } }
+}
+
+const calculateCenter = (points: Vector[]): Vector => {
+  // return Matter.Vertices.centre(points)
+
+  const minmax = pointsMinMax(points)
+  if (!minmax) throw new Error('no points')
+
+  const { min, max } = minmax
+  const x = min.x + (max.x - min.x) / 2
+  const y = min.y + (max.y - min.y) / 2
+
+  return { x, y }
 }
 
 export const calculatePolygons = (
@@ -38,7 +79,7 @@ export const calculatePolygons = (
   const pts = deduplicatePoints(points)
 
   Matter.Vertices.clockwiseSort(pts)
-  const center = truncateVector(Matter.Vertices.centre(pts))
+  const center = truncateVector(calculateCenter(pts))
   const offsetPoints = pts.map(point => Vec.sub(point, center))
 
   if (Matter.Vertices.isConvex(offsetPoints)) {
