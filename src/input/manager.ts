@@ -1,7 +1,7 @@
 import EventEmitter from 'eventemitter3'
 import type { LiteralUnion } from 'type-fest'
-import { keyCodes, KeyCodeSchema } from './keycode.js'
-import type { KeyCode } from './keycode.js'
+import { inputCodes, InputCodeSchema } from './keycode.js'
+import type { InputCode, MouseButton } from './keycode.js'
 
 class CountMap<K> {
   private readonly _map: Map<K, number> = new Map()
@@ -32,100 +32,77 @@ class CountMap<K> {
 }
 
 type Unregister = (this: unknown) => void
-type KeyEvents = Record<LiteralUnion<KeyCode, string>, [pressed: boolean]>
+type KeyOrInput = LiteralUnion<InputCode, string>
+type InputEvents = Record<KeyOrInput, [pressed: boolean]>
 
 function onKey(this: InputManager, ev: KeyboardEvent, pressed: boolean): void {
-  const result = KeyCodeSchema.safeParse(ev.code)
+  const result = InputCodeSchema.safeParse(ev.code)
   if (!result.success) return
 
   // ev.preventDefault()
   this.setKey(result.data, pressed)
 }
 
-function onMouseDown(this: InputManager, ev: MouseEvent): void {
-  onMouseEvent.bind(this)(ev, true)
+function onMouse(this: InputManager, ev: MouseEvent, pressed: boolean): void {
+  const mouseButton: MouseButton | undefined =
+    ev.button === 0
+      ? 'MouseLeft'
+      : ev.button === 1
+      ? 'MouseMiddle'
+      : ev.button === 2
+      ? 'MouseRight'
+      : undefined
+
+  if (!mouseButton) throw new Error(`unexpected mouse button: ${ev.button}`)
+  this.setKey(mouseButton, pressed)
 }
 
-function onMouseUp(this: InputManager, ev: MouseEvent): void {
-  onMouseEvent.bind(this)(ev, false)
-}
+export class InputManager extends EventEmitter<InputEvents> {
+  private readonly keys = new Set<InputCode>()
+  private readonly held = new Set<InputCode>()
 
-function onMouseEvent(
-  this: InputManager,
-  ev: MouseEvent,
-  pressed: boolean,
-): void {
-  let mouseCode: string
+  private readonly inputs = new Map<string, InputCode>()
+  private readonly bindings = new Map<InputCode, string>()
 
-  switch (ev.button) {
-    case 0:
-      mouseCode = 'MouseLeft'
-      break
-    case 1:
-      mouseCode = 'MouseMiddle'
-      break
-    case 2:
-      mouseCode = 'MouseRight'
-      break
-    default:
-      return
-  }
-
-  const result = KeyCodeSchema.safeParse(mouseCode)
-  if (!result.success) return
-
-  this.setKey(result.data, pressed)
-}
-
-export class InputManager extends EventEmitter<KeyEvents> {
-  private readonly keys = new Set<KeyCode>()
-  private readonly held = new Set<KeyCode>()
-
-  private readonly inputs = new Map<string, KeyCode>()
-  private readonly bindings = new Map<KeyCode, string>()
-
-  private readonly inputMap = new Map<string, Set<KeyCode>>()
-  private readonly reverseInputMap = new Map<KeyCode, string>()
+  private readonly inputMap = new Map<string, Set<InputCode>>()
+  private readonly reverseInputMap = new Map<InputCode, string>()
 
   private readonly inputCount = new CountMap<string>()
 
-  public constructor(private readonly canvas: HTMLCanvasElement | undefined) {
+  public constructor(private readonly canvas: HTMLCanvasElement) {
     super()
   }
 
   public registerListeners(): Unregister {
     const boundOnKey = onKey.bind(this)
-    const boundOnMouseDown = onMouseDown.bind(this)
-    const boundOnMouseUp = onMouseUp.bind(this)
+    const boundOnMouse = onMouse.bind(this)
 
     const onKeyDown = (ev: KeyboardEvent) => boundOnKey(ev, true)
     const onKeyUp = (ev: KeyboardEvent) => boundOnKey(ev, false)
+    const onMouseDown = (ev: MouseEvent) => boundOnMouse(ev, true)
+    const onMouseUp = (ev: MouseEvent) => boundOnMouse(ev, false)
 
     window.addEventListener('keydown', onKeyDown)
     window.addEventListener('keyup', onKeyUp)
-    if (this.canvas) {
-      this.canvas.addEventListener('mousedown', boundOnMouseDown)
-      this.canvas.addEventListener('mouseup', boundOnMouseUp)
-    }
+    this.canvas.addEventListener('mousedown', onMouseDown)
+    this.canvas.addEventListener('mouseup', onMouseUp)
 
     const unregister: Unregister = () => {
       window.removeEventListener('keydown', onKeyDown)
       window.removeEventListener('keyup', onKeyUp)
-      if (this.canvas) {
-        this.canvas.removeEventListener('mousedown', boundOnMouseDown)
-        this.canvas.removeEventListener('mouseup', boundOnMouseUp)
-      }
+      this.canvas.removeEventListener('mousedown', onMouseDown)
+      this.canvas.removeEventListener('mouseup', onMouseUp)
     }
 
     return unregister
   }
 
   // #region Key Access
-  public getKey(key: KeyCode): boolean {
+  public getKey(key: InputCode): boolean {
     return this.keys.has(key)
   }
 
-  public setKey(key: KeyCode, pressed: boolean): void {
+  public setKey(key: InputCode, pressed: boolean): void {
     if (pressed) this.keys.add(key)
     else this.keys.delete(key)
 
@@ -138,12 +115,12 @@ export class InputManager extends EventEmitter<KeyEvents> {
     this.inputMap.clear()
     this.reverseInputMap.clear()
 
-    const defaultKeyBindings = new Map<KeyCode, string>()
+    const defaultKeyBindings = new Map<InputCode, string>()
     for (const [input, defaultKey] of this.inputs.entries()) {
       defaultKeyBindings.set(defaultKey, input)
     }
 
-    for (const key of keyCodes) {
+    for (const key of inputCodes) {
       const input = this.bindings.get(key) ?? defaultKeyBindings.get(key)
       if (!input) continue
 
@@ -155,9 +132,9 @@ export class InputManager extends EventEmitter<KeyEvents> {
     }
   }
 
-  public registerInput(name: string, defaultKey: KeyCode): void {
+  public registerInput(name: string, defaultKey: InputCode): void {
     // @ts-expect-error String Union
-    if (keyCodes.includes(name)) {
+    if (inputCodes.includes(name)) {
       throw new Error('input name cannot be a key code')
     }
 
@@ -165,7 +142,7 @@ export class InputManager extends EventEmitter<KeyEvents> {
     this.updateInputs()
   }
 
-  public bindInput(key: KeyCode, input: string | undefined): void {
+  public bindInput(key: InputCode, input: string | undefined): void {
     if (input) this.bindings.set(key, input)
     else this.bindings.delete(key)
 
@@ -182,7 +159,7 @@ export class InputManager extends EventEmitter<KeyEvents> {
   }
   // #endregion
 
-  private fireEvents(key: KeyCode): void {
+  private fireEvents(key: InputCode): void {
     // Check for being held
     const wasPressed = this.held.has(key)
     const isPressed = this.getKey(key)

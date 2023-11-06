@@ -277,8 +277,10 @@ export async function createGame<Server extends boolean>(
   const spawnables = new Map<string, SpawnableEntity>()
   const spawnableFunctions = new Map<string, BareSpawnableFunction>()
 
-  const inputs = new InputManager(renderContext?.canvas)
-  const unregister = renderContext ? inputs.registerListeners() : undefined
+  const inputs = renderContext?.canvas
+    ? new InputManager(renderContext.canvas)
+    : undefined
+  const unregister = inputs?.registerListeners()
 
   const physicsTickDelta = 1_000 / physicsTickrate
   let time = performance.now()
@@ -421,7 +423,7 @@ export async function createGame<Server extends boolean>(
           return ui as ClientUIManager
         },
         get inputs() {
-          return inputs
+          return inputs as InputManager
         },
         get render() {
           return renderContext as RenderContextExt
@@ -624,12 +626,10 @@ export async function createGame<Server extends boolean>(
     },
 
     queryType(fn) {
-      // eslint-disable-next-line unicorn/no-array-callback-reference
       return [...spawnables.values()].find(fn)
     },
 
     queryTypeAll(fn) {
-      // eslint-disable-next-line unicorn/no-array-callback-reference
       return [...spawnables.values()].filter(fn)
     },
 

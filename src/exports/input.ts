@@ -1,2 +1,2 @@
-export { KeyCodeSchema, type KeyCode } from '~/input/keycode.js'
+export { InputCodeSchema, type InputCode } from '~/input/keycode.js'
 export { InputManager } from '~/input/manager.js'

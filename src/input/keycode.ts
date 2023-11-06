@@ -28,6 +28,7 @@ const letters = [
   'KeyY',
   'KeyZ',
 ] as const
+export type LetterKey = z.infer<typeof LetterSchema>
 const LetterSchema = z.enum(letters)
 
 const digits = [
@@ -42,6 +43,7 @@ const digits = [
   'Digit8',
   'Digit9',
 ] as const
+export type DigitKey = z.infer<typeof DigitSchema>
 const DigitSchema = z.enum(digits)
 
 const special = [
@@ -56,17 +58,19 @@ const special = [
   'Space',
   'Tab',
 ] as const
+export type SpecialKey = z.infer<typeof SpecialSchema>
 const SpecialSchema = z.enum(special)
 
 const mouseButtons = ['MouseLeft', 'MouseMiddle', 'MouseRight'] as const
+export type MouseButton = z.infer<typeof MouseButtonSchema>
 const MouseButtonSchema = z.enum(mouseButtons)
 
-export type KeyCode = z.infer<typeof KeyCodeSchema>
-export const KeyCodeSchema = LetterSchema.or(DigitSchema)
+export type InputCode = z.infer<typeof InputCodeSchema>
+export const InputCodeSchema = LetterSchema.or(DigitSchema)
   .or(SpecialSchema)
   .or(MouseButtonSchema)
 
-export const keyCodes = Object.freeze([
+export const inputCodes = Object.freeze([
   ...letters,
   ...digits,
   ...special,
