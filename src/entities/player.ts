@@ -376,8 +376,8 @@ export const createPlayer = (
           Vec.mult(movement, noclipSpeed * delta * 50),
         )
 
-        Matter.Body.setPosition(body, newPosition)
-        Matter.Body.setVelocity(body, Vec.create())
+        // @ts-expect-error Incorrect typings
+        Matter.Body.setPosition(body, newPosition, true)
       } else {
         if (xor) {
           const targetVelocity = maxSpeed * direction.value
