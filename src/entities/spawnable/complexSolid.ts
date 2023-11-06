@@ -6,6 +6,7 @@ import type { Camera } from '~/entities/camera.js'
 import { dataManager } from '~/entity.js'
 import { boundsFromBodies } from '~/math/bounds.js'
 import { toRadians } from '~/math/general.js'
+import { decodePolygons } from '~/math/polygons.js'
 import type { PositionListener, RotationListener } from '~/math/transform.js'
 import { Vec, VectorSchema } from '~/math/vector.js'
 import type { Vector } from '~/math/vector.js'
@@ -14,7 +15,6 @@ import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawComplexPolygon } from '~/utils/draw.js'
-import { decodePolygons } from '~/utils/polygons.js'
 
 const ArgsSchema = z.object({
   polygon: VectorSchema.array().array().or(z.string()),
