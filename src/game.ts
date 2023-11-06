@@ -372,6 +372,7 @@ export async function createGame<Server extends boolean>(
 
         for (const entity of entities) {
           if (typeof entity.onPhysicsStep !== 'function') continue
+          if (isSpawnableEntity(entity) && physics.isFrozen(entity)) continue
 
           const data = dataManager.getData(entity)
           entity.onPhysicsStep(timeState, data)
@@ -393,7 +394,11 @@ export async function createGame<Server extends boolean>(
         const data = dataManager.getData(entity)
         const render = dataManager.getRenderData(entity)
 
-        entity.onRenderFrame(timeState, data, render)
+        if (isSpawnableEntity(entity) && physics.isFrozen(entity)) {
+          entity.onRenderFrame({ ...timeState, smooth: 0 }, data, render)
+        } else {
+          entity.onRenderFrame(timeState, data, render)
+        }
       }
     }
   }

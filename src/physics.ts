@@ -14,8 +14,9 @@ import { ref } from '~/utils/ref.js'
 
 export interface Physics {
   get running(): boolean
-  suspend(): void
-  resume(): void
+  suspend(...entities: SpawnableEntity[]): void
+  resume(...entities: SpawnableEntity[]): void
+  isFrozen(entity: SpawnableEntity): boolean
 
   get engine(): Engine
   get world(): World
@@ -51,6 +52,7 @@ export const createPhysics = (): Physics => {
   const engine = Matter.Engine.create()
   const entities = new Map<string, Body[]>()
   const bodiesMap = new Map<number, SpawnableEntity>()
+  const frozenSet = new Set<string>()
   const playerRef = ref<Player | undefined>(undefined)
 
   interface LinkData {
@@ -66,12 +68,30 @@ export const createPhysics = (): Physics => {
       return running
     },
 
-    suspend() {
-      running = false
+    suspend(...entities) {
+      if (entities.length === 0) {
+        running = false
+        return
+      }
+
+      const bodies = entities.flatMap(entity => this.getBodies(entity))
+      Matter.Composite.remove(engine.world, bodies)
+      for (const entity of entities) frozenSet.add(entity.uid)
     },
 
-    resume() {
-      running = true
+    resume(...entities) {
+      if (entities.length === 0) {
+        running = true
+        return
+      }
+
+      const bodies = entities.flatMap(entity => this.getBodies(entity))
+      Matter.Composite.add(engine.world, bodies)
+      for (const entity of entities) frozenSet.delete(entity.uid)
+    },
+
+    isFrozen(entity) {
+      return frozenSet.has(entity.uid)
     },
 
     get engine() {
