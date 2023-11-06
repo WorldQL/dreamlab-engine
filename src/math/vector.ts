@@ -35,6 +35,10 @@ export const truncateVector = (vector: Vector, places = 5): Vector => {
   return Vec.create(x, y)
 }
 
+export const angleBetween = (a: Vector, b: Vector): number => {
+  return Math.atan2(b.y - a.y, b.x - a.x)
+}
+
 export const VectorSchema = z
   .object({
     x: z.number(),
