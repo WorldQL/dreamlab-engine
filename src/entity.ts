@@ -19,6 +19,10 @@ export interface InitContext {
   physics: Physics
 }
 
+export interface InitContextClient extends Except<InitContext, 'game'> {
+  game: Game<false>
+}
+
 export interface RenderContext {
   container: HTMLDivElement
   canvas: HTMLCanvasElement
@@ -33,7 +37,10 @@ export interface Entity<Data = unknown, Render = unknown> {
   readonly priority?: number
 
   init(init: InitContext): Awaitable<Data>
-  initRenderContext(init: InitContext, render: RenderContext): Awaitable<Render>
+  initRenderContext(
+    init: InitContextClient,
+    render: RenderContext,
+  ): Awaitable<Render>
 
   onPhysicsStep?(time: Time, data: Data): void
   onRenderFrame?(time: RenderTime, data: Data, render: Render): void
