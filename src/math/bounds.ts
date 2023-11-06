@@ -52,35 +52,35 @@ export const simpleBoundsTest = (
   return x >= minX && x <= maxX && y >= minY && y <= maxY
 }
 
-export const rectangleBounds = (
-  width: number,
-  height: number,
-  rotation: number,
-): Bounds => {
-  // Fast path for no rotation
-  if (rotation % 360 === 0) {
-    return { width, height }
-  }
+// export const rectangleBounds = (
+//   width: number,
+//   height: number,
+//   rotation: number,
+// ): Bounds => {
+//   // Fast path for no rotation
+//   if (rotation % 360 === 0) {
+//     return { width, height }
+//   }
 
-  const radians = toRadians(rotation)
-  const ux = Math.cos(radians)
-  const uy = Math.sin(radians)
+//   const radians = toRadians(rotation)
+//   const ux = Math.cos(radians)
+//   const uy = Math.sin(radians)
 
-  const wx = width * ux
-  const wy = width * uy
-  const hx = height * -uy
-  const hy = height * ux
+//   const wx = width * ux
+//   const wy = width * uy
+//   const hx = height * -uy
+//   const hy = height * ux
 
-  if (ux > 0) {
-    return uy > 0
-      ? { width: wx - hx, height: hy + wy }
-      : { width: wx + hx, height: hy - wy }
-  }
+//   if (ux > 0) {
+//     return uy > 0
+//       ? { width: wx - hx, height: hy + wy }
+//       : { width: wx + hx, height: hy - wy }
+//   }
 
-  return uy > 0
-    ? { width: 0 - (hx + wx), height: wy - hy }
-    : { width: hx - wx, height: 0 - (wy + hy) }
-}
+//   return uy > 0
+//     ? { width: 0 - (hx + wx), height: wy - hy }
+//     : { width: hx - wx, height: 0 - (wy + hy) }
+// }
 
 export const boundsFromBodies = (...bodies: Matter.Body[]): Bounds => {
   if (bodies.length === 0) {
