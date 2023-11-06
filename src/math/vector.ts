@@ -2,7 +2,7 @@
 import Matter from 'matter-js'
 import type { Vector } from 'matter-js'
 import { z } from 'zod'
-import { truncateFloat } from '~/math/general.js'
+import { snap, truncateFloat } from '~/math/general.js'
 
 export const Vec = Matter.Vector
 export type { Vector } from 'matter-js'
@@ -21,9 +21,9 @@ export const distance = (a: Vector, b: Vector): number => {
   return Math.sqrt(a2 + b2)
 }
 
-export const snap = (vec: Vector, factor: number): Vector => {
-  const x = Math.round(vec.x / factor) * factor
-  const y = Math.round(vec.y / factor) * factor
+export const snapVector = (vec: Vector, factor: number): Vector => {
+  const x = snap(vec.x, factor)
+  const y = snap(vec.y, factor)
 
   return Vec.create(x, y)
 }
