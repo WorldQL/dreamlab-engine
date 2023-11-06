@@ -13,12 +13,29 @@ const PointsSchema = VectorSchema.array()
 type Polygons = z.infer<typeof PolygonsSchema>
 const PolygonsSchema = VectorSchema.array().array()
 
+export const deduplicatePoints = (points: Points): Vector[] => {
+  const pts = PointsSchema.parse(points)
+  const output: Vector[] = []
+
+  for (const point of pts) {
+    const exists = output.some(pt => pt.x === point.x && pt.y === point.y)
+    if (!exists) output.push(point)
+  }
+
+  return output
+}
+
+export const pointsFromPolys = (polygons: Polygons): Vector[] => {
+  const points = polygons.flat()
+  return deduplicatePoints(points)
+}
+
 export const calculatePolygons = (
   points: Points,
   truncate = 5,
 ): readonly [center: Vector, polygons: Polygons] => {
   // ensure correct schema
-  const pts = PointsSchema.parse(points)
+  const pts = deduplicatePoints(points)
 
   Matter.Vertices.clockwiseSort(pts)
   const center = truncateVector(Matter.Vertices.centre(pts))
