@@ -38,9 +38,15 @@ const getPoints = (input: PointsOrPolygons): Vector[] => {
   return input as Vector[]
 }
 
-export const pointsFromPolys = (polygons: Polygons): Vector[] => {
+export const pointsFromPolys = (
+  polygons: Polygons,
+  center?: Vector,
+): Vector[] => {
   const points = polygons.flat()
-  return deduplicatePoints(points)
+  const dedup = deduplicatePoints(points)
+
+  if (!center) return dedup
+  return dedup.map(point => Vec.add(point, center))
 }
 
 const pointsMinMax = (
