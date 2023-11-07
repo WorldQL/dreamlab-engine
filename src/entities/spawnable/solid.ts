@@ -99,7 +99,10 @@ export const createSolid = createSpawnableEntity<
 
       const scaleX = width / originalWidth
       const scaleY = height / originalHeight
+
+      Matter.Body.setAngle(data.body, 0)
       Matter.Body.scale(data.body, scaleX, scaleY)
+      Matter.Body.setAngle(body, toRadians(transform.rotation))
 
       if (!render) return
       drawBox(render.gfx, { width, height })

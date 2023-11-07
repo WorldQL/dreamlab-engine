@@ -101,7 +101,9 @@ export const createBouncyBall = createSpawnableEntity<
       args.radius = radius
 
       const scale = radius / originalRadius
+      Matter.Body.setAngle(data.body, 0)
       Matter.Body.scale(data.body, scale, scale)
+      Matter.Body.setAngle(body, toRadians(transform.rotation))
       Matter.Body.setMass(data.body, mass)
 
       if (!render) return
