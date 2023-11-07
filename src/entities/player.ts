@@ -5,7 +5,7 @@ import { createEntity, isEntity } from '~/entity.js'
 import type { Entity } from '~/entity.js'
 import type { Game } from '~/game'
 import type { InputManager } from '~/input/manager.js'
-import type { PlayerInventory } from '~/managers/playerInventory'
+import type { PlayerItem } from '~/managers/playerItem'
 import { v, Vec } from '~/math/vector.js'
 import type { LooseVector, Vector } from '~/math/vector.js'
 import type { NetClient } from '~/network/client.js'
@@ -60,10 +60,11 @@ export interface PlayerCommon {
 export interface Player extends PlayerCommon, Entity<Data, Render> {
   get [symbol](): true
   get bones(): Readonly<Record<Bone, Vector>>
-  get inventory(): PlayerInventory
+  get itemInHand(): PlayerItem
   get currentAnimation(): string
   get facingDirection(): number
 
+  setItemInHand(item: PlayerItem): void
   teleport(position: LooseVector, resetVelocity?: boolean): void
 }
 
@@ -93,7 +94,6 @@ export enum PlayerInput {
 
 export const createPlayer = (
   animations: PlayerAnimationMap<KnownAnimation>,
-  inventory: PlayerInventory,
   { width = 80, height = 370 }: Partial<PlayerSize> = {},
 ) => {
   const maxSpeed = 1
@@ -114,6 +114,7 @@ export const createPlayer = (
   }
 
   let currentAnimation: KnownAnimation = 'idle'
+  let playerItem: PlayerItem
   let spriteSign = 1
   let currentFrame = 0
 
@@ -128,28 +129,13 @@ export const createPlayer = (
     friction: 0,
   })
 
-  // const itemBodyWidth = 120
-  // const itemBodyHeight = 350
-  // const itemBody = Matter.Bodies.rectangle(
-  //   0,
-  //   0,
-  //   itemBodyWidth,
-  //   itemBodyHeight,
-  //   {
-  //     label: 'item',
-  //     render: { visible: false },
-  //     isSensor: true,
-  //   },
-  // )
-
   const getAnimation = (direction: number): KnownAnimation => {
     if (noclip) return 'idle'
     if (hasJumped && !attack) return 'jump'
 
-    const animationName =
-      inventory.getItems().length > 0
-        ? inventory.getItemInHand().animationName.toLowerCase()
-        : 'idle'
+    const animationName = playerItem
+      ? playerItem.animationName.toLowerCase()
+      : 'idle'
     if (attack && ['greatsword', 'bow', 'punch'].includes(animationName))
       return animationName as KnownAnimation
     if (direction !== 0) return isJogging ? 'jog' : 'walk'
@@ -242,8 +228,8 @@ export const createPlayer = (
       return boneMap
     },
 
-    get inventory(): PlayerInventory {
-      return inventory
+    get itemInHand(): PlayerItem {
+      return playerItem
     },
 
     get currentAnimation(): string {
@@ -252,6 +238,10 @@ export const createPlayer = (
 
     get facingDirection(): number {
       return -spriteSign
+    },
+
+    setItemInHand(item: PlayerItem) {
+      playerItem = item
     },
 
     teleport(position: LooseVector, resetVelocity = true) {
@@ -300,8 +290,8 @@ export const createPlayer = (
       sprite.anchor.set(...PLAYER_SPRITE_ANCHOR)
       sprite.play()
 
-      const item = inventory.getItemInHand()
-      const itemSprite = new Sprite(item.texture)
+      const item = playerItem
+      const itemSprite = item ? new Sprite(item.texture) : new Sprite()
       itemSprite.width = 200
       itemSprite.height = 200
 
@@ -438,21 +428,7 @@ export const createPlayer = (
       }
 
       if (attack && isAttackFrame()) {
-        game.events.common.emit(
-          'onPlayerAttack',
-          this as Player,
-          inventory.getItemInHand(),
-        )
-        // if (['greatsword', 'punch'].includes(currentAnimation)) {
-        //   const xOffset =
-        //     facing.value === 'right'
-        //       ? width / 2 + itemBodyWidth / 2
-        //       : -width / 2 - itemBodyWidth / 2
-        //   Matter.Body.setPosition(itemBody, {
-        //     x: body.position.x + xOffset,
-        //     y: body.position.y,
-        //   })
-        // }
+        game.events.common.emit('onPlayerAttack', this as Player, playerItem)
       }
 
       network?.sendPlayerPosition(
@@ -534,10 +510,10 @@ export const createPlayer = (
         { strokeAlpha: 0, fill: colliding ? active : inactive, fillAlpha: 1 },
       )
 
-      if (itemSprite && inventory.getItemInHand().animationName !== 'punch') {
+      if (playerItem) {
         itemSprite.visible = Boolean(attack)
 
-        const currentItem = inventory.getItemInHand()
+        const currentItem = playerItem
         if (itemSprite.texture !== currentItem.texture) {
           itemSprite.texture = currentItem.texture
         }

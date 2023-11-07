@@ -3,10 +3,7 @@ import type Matter from 'matter-js'
 import type { NetPlayer } from '~/entities/netplayer'
 import type { Player } from '~/entities/player.js'
 import type { Entity, RenderTime, Time } from '~/entity.js'
-import type {
-  PlayerInventory,
-  PlayerInventoryItem,
-} from '~/managers/playerInventory.js'
+import type { PlayerItem } from '~/managers/playerItem.js'
 import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
 
 export interface ClientEvents {
@@ -45,14 +42,7 @@ export interface CommonEvents {
   onPlayerJoin: [player: NetPlayer]
   onPlayerLeave: [player: NetPlayer]
 
-  onPlayerAttack: [player: Player, item: PlayerInventoryItem]
-
-  onInventoryAddItem: [item: PlayerInventoryItem, inventory: PlayerInventory]
-  onInventoryRemoveItem: [item: PlayerInventoryItem, inventory: PlayerInventory]
-  onPlayerSwitchedItem: [
-    item: PlayerInventoryItem | undefined,
-    inventory: PlayerInventory,
-  ]
+  onPlayerAttack: [player: Player, item: PlayerItem]
 }
 
 class ClientEventManager extends EventEmitter<ClientEvents> {}
