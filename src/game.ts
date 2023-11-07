@@ -1,5 +1,6 @@
 import cuid2 from '@paralleldrive/cuid2'
 import Matter from 'matter-js'
+import onChange from 'on-change'
 import { Application } from 'pixi.js'
 import type { IApplicationOptions } from 'pixi.js'
 import type { z } from 'zod'
@@ -570,16 +571,32 @@ export async function createGame<Server extends boolean>(
         return undefined
       }
 
+      // Assign unique identifier
+      const uid = definition.uid ?? cuid2.createId()
+
       // Verify args schema
       const args = fn.argsSchema.parse(definition.args)
       definition.args = args
+
+      // Track changes to args and trigger entity callback
+      const watchedArgs = onChange(args, path => {
+        const entity = this.lookup(uid)
+        if (!entity || typeof entity.onArgsUpdate !== 'function') return
+
+        const data = dataManager.getData(entity)
+        const render = renderContext
+          ? dataManager.getRenderData(entity)
+          : undefined
+
+        entity.onArgsUpdate(path, data, render)
+      })
 
       // Automatically track transform for the definition
       const transform = trackTransform(definition.transform)
       definition.transform = transform
 
       const context: SpawnableContext = {
-        uid: definition.uid ?? cuid2.createId(),
+        uid,
         transform,
         tags: definition.tags ?? [],
         zIndex: definition.zIndex ?? 0,
@@ -588,7 +605,7 @@ export async function createGame<Server extends boolean>(
         definition,
       }
 
-      const entity = fn(context, args)
+      const entity = fn(context, watchedArgs)
       await this.instantiate(entity)
       spawnables.set(entity.uid, entity)
 

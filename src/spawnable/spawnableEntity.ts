@@ -25,9 +25,12 @@ export interface SpawnableEntity<Data = unknown, Render = unknown>
   get definition(): SpawnableDefinition
   get argsSchema(): z.ZodSchema
 
+  // TODO: Strongly type paths
+  onArgsUpdate?(path: string, data: Data, render: Render | undefined): void
+  onResize?(bounds: Bounds, data: Data, render: Render | undefined): void
+
   rectangleBounds(): Bounds | undefined
   isPointInside(position: Vector): boolean
-  onResize?(bounds: Bounds, data: Data, render: Render | undefined): void
 }
 
 type PartialFields =
