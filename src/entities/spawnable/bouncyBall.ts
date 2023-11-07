@@ -34,90 +34,103 @@ export const createBouncyBall = createSpawnableEntity<
   SpawnableEntity<Data, Render>,
   Data,
   Render
->(
-  ArgsSchema,
-  ({ transform, zIndex, tags, preview }, { radius, spriteSource }) => {
-    const mass = 20
-    const body = Matter.Bodies.circle(
-      transform.position.x,
-      transform.position.y,
-      radius,
-      {
-        label: 'bouncyBall',
-        render: { visible: false },
-        angle: toRadians(transform.rotation),
-        isStatic: preview,
-        isSensor: preview,
+>(ArgsSchema, ({ transform, zIndex, tags, preview }, args) => {
+  const mass = 20
+  const body = Matter.Bodies.circle(
+    transform.position.x,
+    transform.position.y,
+    args.radius,
+    {
+      label: 'bouncyBall',
+      render: { visible: false },
+      angle: toRadians(transform.rotation),
+      isStatic: preview,
+      isSensor: preview,
 
-        // inertia: Number.POSITIVE_INFINITY,
-        // inverseInertia: 0,
-        mass,
-        inverseMass: 1 / mass,
-        restitution: 0.95,
-      },
-    )
+      // inertia: Number.POSITIVE_INFINITY,
+      // inverseInertia: 0,
+      mass,
+      inverseMass: 1 / mass,
+      restitution: 0.95,
+    },
+  )
 
-    return {
-      get tags() {
-        return tags
-      },
+  return {
+    get tags() {
+      return tags
+    },
 
-      rectangleBounds() {
-        return { width: radius * 2, height: radius * 2 }
-      },
+    rectangleBounds() {
+      return { width: args.radius * 2, height: args.radius * 2 }
+    },
 
-      isPointInside(position) {
-        return Matter.Query.point([body], position).length > 0
-      },
+    isPointInside(position) {
+      return Matter.Query.point([body], position).length > 0
+    },
 
-      init({ game, physics }) {
-        const debug = game.debug
-        physics.register(this, body)
-        physics.linkTransform(body, transform)
+    init({ game, physics }) {
+      const debug = game.debug
+      physics.register(this, body)
+      physics.linkTransform(body, transform)
 
-        return { debug, physics, body }
-      },
+      return { debug, physics, body }
+    },
 
-      initRenderContext(_, { stage, camera }) {
-        const gfx = new Graphics()
-        gfx.zIndex = zIndex + 1
-        drawCircle(gfx, { radius })
+    initRenderContext(_, { stage, camera }) {
+      const { radius, spriteSource } = args
 
-        const width = radius * 2
-        const height = radius * 2
-        const sprite = spriteSource
-          ? createSprite(spriteSource, { width, height, zIndex })
-          : undefined
+      const gfx = new Graphics()
+      gfx.zIndex = zIndex + 1
+      drawCircle(gfx, { radius })
 
-        stage.addChild(gfx)
-        if (sprite) stage.addChild(sprite)
+      const width = radius * 2
+      const height = radius * 2
+      const sprite = spriteSource
+        ? createSprite(spriteSource, { width, height, zIndex })
+        : undefined
 
-        return { camera, gfx, sprite }
-      },
+      stage.addChild(gfx)
+      if (sprite) stage.addChild(sprite)
 
-      teardown({ physics, body }) {
-        physics.unregister(this, body)
-        physics.unlinkTransform(body, transform)
-      },
+      return { camera, gfx, sprite }
+    },
 
-      teardownRenderContext({ gfx, sprite }) {
-        gfx.destroy()
-        sprite?.destroy()
-      },
+    onResize({ width, height }, _data, render) {
+      const radius = Math.max(width / 2, height / 2)
+      args.radius = radius
 
-      onRenderFrame({ smooth }, { debug, body }, { camera, gfx, sprite }) {
-        const smoothed = Vec.add(body.position, Vec.mult(body.velocity, smooth))
-        const pos = Vec.add(smoothed, camera.offset)
+      // TODO: Resize physics body
 
-        gfx.position = pos
-        gfx.rotation = body.angle
-        gfx.alpha = debug.value ? 0.5 : 0
+      if (!render) return
+      drawCircle(render.gfx, { radius })
+      if (render.sprite) {
+        render.sprite.width = radius * 2
+        render.sprite.height = radius * 2
+      }
+    },
 
-        if (sprite) {
-          sprite.position = pos
-          sprite.rotation = body.angle
-        }
-      },
-    }
-  },
-)
+    teardown({ physics, body }) {
+      physics.unregister(this, body)
+      physics.unlinkTransform(body, transform)
+    },
+
+    teardownRenderContext({ gfx, sprite }) {
+      gfx.destroy()
+      sprite?.destroy()
+    },
+
+    onRenderFrame({ smooth }, { debug, body }, { camera, gfx, sprite }) {
+      const smoothed = Vec.add(body.position, Vec.mult(body.velocity, smooth))
+      const pos = Vec.add(smoothed, camera.offset)
+
+      gfx.position = pos
+      gfx.rotation = body.angle
+      gfx.alpha = debug.value ? 0.5 : 0
+
+      if (sprite) {
+        sprite.position = pos
+        sprite.rotation = body.angle
+      }
+    },
+  }
+})

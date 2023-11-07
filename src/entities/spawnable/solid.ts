@@ -35,83 +35,96 @@ export const createSolid = createSpawnableEntity<
   SpawnableEntity<Data, Render>,
   Data,
   Render
->(
-  ArgsSchema,
-  ({ transform, zIndex, tags, preview }, { width, height, spriteSource }) => {
-    const body = Matter.Bodies.rectangle(
-      transform.position.x,
-      transform.position.y,
-      width,
-      height,
-      {
-        label: 'solid',
-        render: { visible: false },
-        angle: toRadians(transform.rotation),
+>(ArgsSchema, ({ transform, zIndex, tags, preview }, args) => {
+  const body = Matter.Bodies.rectangle(
+    transform.position.x,
+    transform.position.y,
+    args.width,
+    args.height,
+    {
+      label: 'solid',
+      render: { visible: false },
+      angle: toRadians(transform.rotation),
 
-        isStatic: true,
-        isSensor: preview,
-        friction: 0,
-      },
-    )
+      isStatic: true,
+      isSensor: preview,
+      friction: 0,
+    },
+  )
 
-    return {
-      get tags() {
-        return tags
-      },
+  return {
+    get tags() {
+      return tags
+    },
 
-      rectangleBounds() {
-        return { width, height }
-      },
+    rectangleBounds() {
+      return { width: args.width, height: args.height }
+    },
 
-      isPointInside(position) {
-        return Matter.Query.point([body], position).length > 0
-      },
+    isPointInside(position) {
+      return Matter.Query.point([body], position).length > 0
+    },
 
-      init({ game, physics }) {
-        const debug = game.debug
-        physics.register(this, body)
-        physics.linkTransform(body, transform)
+    init({ game, physics }) {
+      const debug = game.debug
+      physics.register(this, body)
+      physics.linkTransform(body, transform)
 
-        return { debug, physics, body }
-      },
+      return { debug, physics, body }
+    },
 
-      initRenderContext(_, { stage, camera }) {
-        const gfx = new Graphics()
-        gfx.zIndex = zIndex + 1
-        drawBox(gfx, { width, height })
+    initRenderContext(_, { stage, camera }) {
+      const { width, height, spriteSource } = args
 
-        const sprite = spriteSource
-          ? createSprite(spriteSource, { width, height, zIndex })
-          : undefined
+      const gfx = new Graphics()
+      gfx.zIndex = zIndex + 1
+      drawBox(gfx, { width, height })
 
-        stage.addChild(gfx)
-        if (sprite) stage.addChild(sprite)
+      const sprite = spriteSource
+        ? createSprite(spriteSource, { width, height, zIndex })
+        : undefined
 
-        return { camera, gfx, sprite }
-      },
+      stage.addChild(gfx)
+      if (sprite) stage.addChild(sprite)
 
-      teardown({ physics, body }) {
-        physics.unregister(this, body)
-        physics.unlinkTransform(body, transform)
-      },
+      return { camera, gfx, sprite }
+    },
 
-      teardownRenderContext({ gfx, sprite }) {
-        gfx.destroy()
-        sprite?.destroy()
-      },
+    onResize({ width, height }, _data, render) {
+      args.width = width
+      args.height = height
 
-      onRenderFrame(_, { debug }, { camera, gfx, sprite }) {
-        const pos = Vec.add(transform.position, camera.offset)
+      // TODO: Resize physics body
 
-        gfx.position = pos
-        gfx.angle = transform.rotation
-        gfx.alpha = debug.value ? 0.5 : 0
+      if (!render) return
+      drawBox(render.gfx, { width, height })
+      if (render.sprite) {
+        render.sprite.width = width
+        render.sprite.height = height
+      }
+    },
 
-        if (sprite) {
-          sprite.position = pos
-          sprite.angle = transform.rotation
-        }
-      },
-    }
-  },
-)
+    teardown({ physics, body }) {
+      physics.unregister(this, body)
+      physics.unlinkTransform(body, transform)
+    },
+
+    teardownRenderContext({ gfx, sprite }) {
+      gfx.destroy()
+      sprite?.destroy()
+    },
+
+    onRenderFrame(_, { debug }, { camera, gfx, sprite }) {
+      const pos = Vec.add(transform.position, camera.offset)
+
+      gfx.position = pos
+      gfx.angle = transform.rotation
+      gfx.alpha = debug.value ? 0.5 : 0
+
+      if (sprite) {
+        sprite.position = pos
+        sprite.angle = transform.rotation
+      }
+    },
+  }
+})

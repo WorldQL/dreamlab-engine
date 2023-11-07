@@ -31,60 +31,75 @@ export const createNonsolid = createSpawnableEntity<
   SpawnableEntity<Data, Render>,
   Data,
   Render
->(
-  ArgsSchema,
-  ({ transform, zIndex, tags }, { width, height, spriteSource }) => ({
-    get tags() {
-      return tags
-    },
+>(ArgsSchema, ({ transform, zIndex, tags }, args) => ({
+  get tags() {
+    return tags
+  },
 
-    rectangleBounds() {
-      return { width, height }
-    },
+  rectangleBounds() {
+    return { width: args.width, height: args.height }
+  },
 
-    isPointInside(point) {
-      return simpleBoundsTest({ width, height }, transform, point)
-    },
+  isPointInside(point) {
+    return simpleBoundsTest(
+      { width: args.width, height: args.height },
+      transform,
+      point,
+    )
+  },
 
-    init({ game }) {
-      return { debug: game.debug }
-    },
+  init({ game }) {
+    return { debug: game.debug }
+  },
 
-    initRenderContext(_, { stage, camera }) {
-      const gfx = new Graphics()
-      gfx.zIndex = zIndex + 1
-      drawBox(gfx, { width, height }, { stroke: 'blue' })
+  initRenderContext(_, { stage, camera }) {
+    const { width, height, spriteSource } = args
 
-      const sprite = spriteSource
-        ? createSprite(spriteSource, { width, height, zIndex })
-        : undefined
+    const gfx = new Graphics()
+    gfx.zIndex = zIndex + 1
+    drawBox(gfx, { width, height }, { stroke: 'blue' })
 
-      stage.addChild(gfx)
-      if (sprite) stage.addChild(sprite)
+    const sprite = spriteSource
+      ? createSprite(spriteSource, { width, height, zIndex })
+      : undefined
 
-      return { camera, gfx, sprite }
-    },
+    stage.addChild(gfx)
+    if (sprite) stage.addChild(sprite)
 
-    teardown(_) {
-      // No-op
-    },
+    return { camera, gfx, sprite }
+  },
 
-    teardownRenderContext({ gfx, sprite }) {
-      gfx.destroy()
-      sprite?.destroy()
-    },
+  onResize({ width, height }, _, render) {
+    args.width = width
+    args.height = height
 
-    onRenderFrame(_, { debug }, { camera, gfx, sprite }) {
-      const pos = Vec.add(transform.position, camera.offset)
+    if (!render) return
+    drawBox(render.gfx, { width, height }, { stroke: 'blue' })
+    if (render.sprite) {
+      render.sprite.width = width
+      render.sprite.height = height
+    }
+  },
 
-      gfx.position = pos
-      gfx.angle = transform.rotation
-      gfx.alpha = debug.value ? 0.5 : 0
+  teardown(_) {
+    // No-op
+  },
 
-      if (sprite) {
-        sprite.position = pos
-        sprite.angle = transform.rotation
-      }
-    },
-  }),
-)
+  teardownRenderContext({ gfx, sprite }) {
+    gfx.destroy()
+    sprite?.destroy()
+  },
+
+  onRenderFrame(_, { debug }, { camera, gfx, sprite }) {
+    const pos = Vec.add(transform.position, camera.offset)
+
+    gfx.position = pos
+    gfx.angle = transform.rotation
+    gfx.alpha = debug.value ? 0.5 : 0
+
+    if (sprite) {
+      sprite.position = pos
+      sprite.angle = transform.rotation
+    }
+  },
+}))
