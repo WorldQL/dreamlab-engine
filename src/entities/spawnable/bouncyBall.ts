@@ -1,6 +1,6 @@
 import Matter from 'matter-js'
 import { Graphics } from 'pixi.js'
-import type { Sprite } from 'pixi.js'
+import type { Container, Sprite } from 'pixi.js'
 import { z } from 'zod'
 import type { Camera } from '~/entities/camera.js'
 import { toRadians } from '~/math/general.js'
@@ -16,6 +16,7 @@ type Args = typeof ArgsSchema
 const ArgsSchema = z.object({
   radius: z.number().positive().min(1),
   spriteSource: SpriteSourceSchema.optional(),
+  zIndex: z.number().default(0),
 })
 
 interface Data {
@@ -26,6 +27,7 @@ interface Data {
 
 interface Render {
   camera: Camera
+  stage: Container
   gfx: Graphics
   sprite: Sprite | undefined
 }
@@ -35,7 +37,7 @@ export const createBouncyBall = createSpawnableEntity<
   SpawnableEntity<Data, Render, Args>,
   Data,
   Render
->(ArgsSchema, ({ transform, zIndex, tags, preview }, args) => {
+>(ArgsSchema, ({ transform, tags, preview }, args) => {
   const mass = 20
   const body = Matter.Bodies.circle(
     transform.position.x,
@@ -78,7 +80,7 @@ export const createBouncyBall = createSpawnableEntity<
     },
 
     initRenderContext(_, { stage, camera }) {
-      const { radius, spriteSource } = args
+      const { radius, spriteSource, zIndex } = args
 
       const gfx = new Graphics()
       gfx.zIndex = zIndex + 1
@@ -93,7 +95,28 @@ export const createBouncyBall = createSpawnableEntity<
       stage.addChild(gfx)
       if (sprite) stage.addChild(sprite)
 
-      return { camera, gfx, sprite }
+      return { camera, stage, gfx, sprite }
+    },
+
+    onArgsUpdate(path, _data, render) {
+      const { radius, spriteSource, zIndex } = args
+
+      if (render && path === 'spriteSource') {
+        const width = radius * 2
+        const height = radius * 2
+
+        render.sprite?.destroy()
+        render.sprite = spriteSource
+          ? createSprite(spriteSource, { width, height, zIndex })
+          : undefined
+
+        if (render.sprite) render.stage.addChild(render.sprite)
+      }
+
+      if (render && path === 'zIndex') {
+        render.gfx.zIndex = zIndex + 1
+        if (render.sprite) render.sprite.zIndex = zIndex
+      }
     },
 
     onResize({ width, height }, data, render) {

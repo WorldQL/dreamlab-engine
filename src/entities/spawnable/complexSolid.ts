@@ -8,7 +8,6 @@ import { toRadians } from '~/math/general.js'
 import { decodePolygons, pointsBounds } from '~/math/polygons.js'
 import type { PositionListener, RotationListener } from '~/math/transform.js'
 import { Vec, VectorSchema } from '~/math/vector.js'
-import type { Vector } from '~/math/vector.js'
 import type { Physics } from '~/physics.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
@@ -18,6 +17,7 @@ import { drawComplexPolygon } from '~/utils/draw.js'
 type Args = typeof ArgsSchema
 const ArgsSchema = z.object({
   polygon: VectorSchema.array().array().or(z.string()),
+  zIndex: z.number().default(0),
 })
 
 interface Data {
@@ -26,7 +26,6 @@ interface Data {
   onPositionChanged: PositionListener
   onRotationChanged: RotationListener
 
-  polygons: Vector[][]
   bodies: Body[]
 }
 
@@ -40,8 +39,12 @@ export const createComplexSolid = createSpawnableEntity<
   SpawnableEntity<Data, Render, Args>,
   Data,
   Render
->(ArgsSchema, ({ transform, zIndex, tags, preview }, { polygon: poly }) => {
-  const polygons = typeof poly === 'string' ? decodePolygons(poly) : poly
+>(ArgsSchema, ({ transform, tags, preview }, args) => {
+  const polygons =
+    typeof args.polygon === 'string'
+      ? decodePolygons(args.polygon)
+      : args.polygon
+
   const bounds = pointsBounds(polygons)
 
   return {
@@ -105,13 +108,12 @@ export const createComplexSolid = createSpawnableEntity<
         physics,
         onPositionChanged,
         onRotationChanged,
-        polygons,
         bodies,
       }
     },
 
     initRenderContext(_, { stage, camera }) {
-      const { polygons } = dataManager.getData(this)
+      const { zIndex } = args
 
       const gfx = new Graphics()
       gfx.zIndex = zIndex + 1
@@ -120,6 +122,12 @@ export const createComplexSolid = createSpawnableEntity<
       stage.addChild(gfx)
 
       return { camera, gfx }
+    },
+
+    onArgsUpdate(path, _data, render) {
+      if (render && path === 'zIndex') {
+        render.gfx.zIndex = args.zIndex
+      }
     },
 
     teardown({ physics, onPositionChanged, onRotationChanged, bodies }) {

@@ -19,6 +19,7 @@ type Args = typeof ArgsSchema
 const ArgsSchema = z.object({
   size: z.number().positive().min(1),
   spriteSource: SpriteSourceSchema,
+  zIndex: z.number().default(0),
 })
 
 interface Data {
@@ -47,7 +48,7 @@ export const createSimpleNPC = createSpawnableEntity<
   Render
 >(
   ArgsSchema,
-  ({ transform, zIndex, tags, preview }, { size, spriteSource }) => {
+  ({ transform, tags, preview }, { size, spriteSource, zIndex }) => {
     const { position } = transform
 
     const mass = 20

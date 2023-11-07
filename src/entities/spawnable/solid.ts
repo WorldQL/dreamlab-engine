@@ -1,6 +1,6 @@
 import Matter from 'matter-js'
 import { Graphics } from 'pixi.js'
-import type { Sprite } from 'pixi.js'
+import type { Container, Sprite } from 'pixi.js'
 import { z } from 'zod'
 import type { Camera } from '~/entities/camera.js'
 import { toRadians } from '~/math/general.js'
@@ -17,6 +17,7 @@ const ArgsSchema = z.object({
   width: z.number().positive().min(1),
   height: z.number().positive().min(1),
   spriteSource: SpriteSourceSchema.optional(),
+  zIndex: z.number().default(0),
 })
 
 interface Data {
@@ -27,6 +28,7 @@ interface Data {
 
 interface Render {
   camera: Camera
+  stage: Container
   gfx: Graphics
   sprite: Sprite | undefined
 }
@@ -36,7 +38,7 @@ export const createSolid = createSpawnableEntity<
   SpawnableEntity<Data, Render, Args>,
   Data,
   Render
->(ArgsSchema, ({ transform, zIndex, tags, preview }, args) => {
+>(ArgsSchema, ({ transform, tags, preview }, args) => {
   const body = Matter.Bodies.rectangle(
     transform.position.x,
     transform.position.y,
@@ -75,7 +77,7 @@ export const createSolid = createSpawnableEntity<
     },
 
     initRenderContext(_, { stage, camera }) {
-      const { width, height, spriteSource } = args
+      const { width, height, spriteSource, zIndex } = args
 
       const gfx = new Graphics()
       gfx.zIndex = zIndex + 1
@@ -88,7 +90,25 @@ export const createSolid = createSpawnableEntity<
       stage.addChild(gfx)
       if (sprite) stage.addChild(sprite)
 
-      return { camera, gfx, sprite }
+      return { camera, stage, gfx, sprite }
+    },
+
+    onArgsUpdate(path, _data, render) {
+      const { width, height, spriteSource, zIndex } = args
+
+      if (render && path === 'spriteSource') {
+        render.sprite?.destroy()
+        render.sprite = spriteSource
+          ? createSprite(spriteSource, { width, height, zIndex })
+          : undefined
+
+        if (render.sprite) render.stage.addChild(render.sprite)
+      }
+
+      if (render && path === 'zIndex') {
+        render.gfx.zIndex = zIndex + 1
+        if (render.sprite) render.sprite.zIndex = zIndex
+      }
     },
 
     onResize({ width, height }, data, render) {

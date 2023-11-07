@@ -15,6 +15,7 @@ const ArgsSchema = z.object({
   width: z.number().positive().min(1),
   height: z.number().positive().min(1),
   spriteSource: SpriteSourceSchema.optional(),
+  zIndex: z.number().default(0),
 })
 
 interface Data {
@@ -33,7 +34,7 @@ export const createNonsolid = createSpawnableEntity<
   SpawnableEntity<Data, Render, Args>,
   Data,
   Render
->(ArgsSchema, ({ transform, zIndex, tags }, args) => ({
+>(ArgsSchema, ({ transform, tags }, args) => ({
   get tags() {
     return tags
   },
@@ -55,7 +56,7 @@ export const createNonsolid = createSpawnableEntity<
   },
 
   initRenderContext(_, { stage, camera }) {
-    const { width, height, spriteSource } = args
+    const { width, height, spriteSource, zIndex } = args
 
     const gfx = new Graphics()
     gfx.zIndex = zIndex + 1
@@ -72,15 +73,20 @@ export const createNonsolid = createSpawnableEntity<
   },
 
   onArgsUpdate(path, _data, render) {
-    if (render && path === 'spriteSource') {
-      const { width, height, spriteSource } = args
+    const { width, height, spriteSource, zIndex } = args
 
+    if (render && path === 'spriteSource') {
       render.sprite?.destroy()
       render.sprite = spriteSource
         ? createSprite(spriteSource, { width, height, zIndex })
         : undefined
 
       if (render.sprite) render.stage.addChild(render.sprite)
+    }
+
+    if (render && path === 'zIndex') {
+      render.gfx.zIndex = zIndex + 1
+      if (render.sprite) render.sprite.zIndex = zIndex
     }
   },
 

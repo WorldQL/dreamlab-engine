@@ -12,6 +12,7 @@ type Args = typeof ArgsSchema
 const ArgsSchema = z.object({
   width: z.number().positive().min(1).default(30),
   height: z.number().positive().min(1).default(30),
+  zIndex: z.number().default(0),
 })
 
 interface Data {
@@ -28,7 +29,7 @@ export const createMarker = createSpawnableEntity<
   SpawnableEntity<Data, Render, Args>,
   Data,
   Render
->(ArgsSchema, ({ transform, zIndex, tags }, args) => ({
+>(ArgsSchema, ({ transform, tags }, args) => ({
   get tags() {
     return tags
   },
@@ -50,7 +51,7 @@ export const createMarker = createSpawnableEntity<
   },
 
   initRenderContext(_, { stage, camera }) {
-    const { width, height } = args
+    const { width, height, zIndex } = args
 
     const gfx = new Graphics()
     gfx.zIndex = zIndex
@@ -59,6 +60,13 @@ export const createMarker = createSpawnableEntity<
     stage.addChild(gfx)
 
     return { camera, gfx }
+  },
+
+  onArgsUpdate(path, _data, render) {
+    if (render && path === 'zIndex') {
+      const { zIndex } = args
+      render.gfx.zIndex = zIndex
+    }
   },
 
   onResize({ width, height }, _, render) {
