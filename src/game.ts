@@ -171,7 +171,7 @@ export interface Game<Server extends boolean> {
   register<
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Args extends z.ZodObject<any, z.UnknownKeysParam>,
-    E extends SpawnableEntity<Data, Render>,
+    E extends SpawnableEntity<Data, Render, Args>,
     Data,
     Render,
   >(

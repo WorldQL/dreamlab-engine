@@ -14,8 +14,11 @@ import { mergeObjects } from '~/utils/types.js'
 export type UID = string
 const symbol = Symbol.for('@dreamlab/core/spawnable-entity')
 
-export interface SpawnableEntity<Data = unknown, Render = unknown>
-  extends Entity<Data, Render> {
+export interface SpawnableEntity<
+  Data = unknown,
+  Render = unknown,
+  ArgsSchema extends ZodObjectAny = ZodObjectAny,
+> extends Entity<Data, Render> {
   get [symbol](): true
 
   get uid(): UID
@@ -23,7 +26,8 @@ export interface SpawnableEntity<Data = unknown, Render = unknown>
   get preview(): boolean
   get transform(): Transform
   get definition(): SpawnableDefinition
-  get argsSchema(): z.ZodSchema
+  get args(): z.infer<ArgsSchema>
+  get argsSchema(): ArgsSchema
 
   // TODO: Strongly type paths
   onArgsUpdate?(path: string, data: Data, render: Render | undefined): void
@@ -36,6 +40,7 @@ export interface SpawnableEntity<Data = unknown, Render = unknown>
 type PartialFields =
   | typeof entitySymbol
   | typeof symbol
+  | 'args'
   | 'argsSchema'
   | 'definition'
   | 'preview'
@@ -53,14 +58,14 @@ type ZodObjectAny = ZodObject<any, z.UnknownKeysParam>
 
 type BaseSpawnableFunction<
   ArgsSchema extends ZodObjectAny,
-  E extends SpawnableEntity<Data, Render>,
+  E extends SpawnableEntity<Data, Render, ArgsSchema>,
   Data,
   Render,
 > = (ctx: SpawnableContext, args: z.infer<ArgsSchema>) => E
 
 export interface SpawnableFunction<
   ArgsSchema extends ZodObjectAny,
-  E extends SpawnableEntity<Data, Render>,
+  E extends SpawnableEntity<Data, Render, ArgsSchema>,
   Data,
   Render,
 > extends BaseSpawnableFunction<ArgsSchema, E, Data, Render> {
@@ -76,7 +81,7 @@ export type BareSpawnableFunction = SpawnableFunction<
 
 export const createSpawnableEntity = <
   ArgsSchema extends ZodObjectAny,
-  E extends SpawnableEntity<Data, Render>,
+  E extends SpawnableEntity<Data, Render, ArgsSchema>,
   Data,
   Render,
 >(
@@ -98,6 +103,10 @@ export const createSpawnableEntity = <
 
       get argsSchema() {
         return argsSchema
+      },
+
+      get args() {
+        return args
       },
 
       get [symbol]() {
