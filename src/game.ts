@@ -603,7 +603,6 @@ export async function createGame<Server extends boolean>(
         uid,
         transform,
         tags: definition.tags ?? [],
-        zIndex: definition.zIndex ?? 0,
 
         preview,
         definition,

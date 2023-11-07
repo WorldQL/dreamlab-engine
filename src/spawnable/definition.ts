@@ -17,7 +17,6 @@ export interface SpawnableDefinition<
   transform: Transform
   uid?: UID
   tags?: string[]
-  zIndex?: number
 }
 
 export interface LooseSpawnableDefinition<
@@ -29,7 +28,6 @@ export interface LooseSpawnableDefinition<
   transform: LooseTransform
   uid?: UID
   tags?: string[]
-  zIndex?: number
 }
 
 export const SpawnableDefinitionSchemaInternal = z.object({
@@ -38,7 +36,6 @@ export const SpawnableDefinitionSchemaInternal = z.object({
   transform: TransformSchema,
   uid: z.string().cuid2().optional(),
   tags: z.string().array().optional(),
-  zIndex: z.number().optional(),
 })
 
 export const SpawnableDefinitionSchema =
