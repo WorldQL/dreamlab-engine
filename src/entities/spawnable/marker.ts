@@ -28,33 +28,45 @@ export const createMarker = createSpawnableEntity<
   SpawnableEntity<Data, Render, Args>,
   Data,
   Render
->(ArgsSchema, ({ transform, zIndex, tags }, { width, height }) => ({
+>(ArgsSchema, ({ transform, zIndex, tags }, args) => ({
   get tags() {
     return tags
   },
 
   rectangleBounds() {
-    return { width, height }
+    return { width: args.width, height: args.height }
   },
 
   isPointInside(point) {
-    return simpleBoundsTest({ width, height }, transform, point)
+    return simpleBoundsTest(
+      { width: args.width, height: args.height },
+      transform,
+      point,
+    )
   },
 
   init({ game }) {
-    const debug = game.debug
-    return { debug }
+    return { debug: game.debug }
   },
 
   initRenderContext(_, { stage, camera }) {
+    const { width, height } = args
+
     const gfx = new Graphics()
     gfx.zIndex = zIndex
-
     drawBox(gfx, { width, height }, { stroke: '#00bcff' })
 
     stage.addChild(gfx)
 
     return { camera, gfx }
+  },
+
+  onResize({ width, height }, _, render) {
+    args.width = width
+    args.height = height
+
+    if (!render) return
+    drawBox(render.gfx, { width, height }, { stroke: '#00bcff' })
   },
 
   teardown(_) {
@@ -69,6 +81,7 @@ export const createMarker = createSpawnableEntity<
     const pos = Vec.add(transform.position, camera.offset)
 
     gfx.position = pos
+    gfx.angle = transform.rotation
     gfx.alpha = debug.value ? 0.5 : 0
   },
 }))
