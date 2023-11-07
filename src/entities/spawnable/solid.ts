@@ -17,7 +17,6 @@ const ArgsSchema = z.object({
   width: z.number().positive().min(1),
   height: z.number().positive().min(1),
   spriteSource: SpriteSourceSchema.optional(),
-  zIndex: z.number().default(0),
 })
 
 interface Data {
@@ -77,37 +76,45 @@ export const createSolid = createSpawnableEntity<
     },
 
     initRenderContext(_, { stage, camera }) {
-      const { width, height, spriteSource, zIndex } = args
+      const { width, height, spriteSource } = args
 
       const gfx = new Graphics()
-      gfx.zIndex = zIndex + 1
+      gfx.zIndex = transform.zIndex + 1
       drawBox(gfx, { width, height })
 
       const sprite = spriteSource
-        ? createSprite(spriteSource, { width, height, zIndex })
+        ? createSprite(spriteSource, {
+            width,
+            height,
+            zIndex: transform.zIndex,
+          })
         : undefined
 
       stage.addChild(gfx)
       if (sprite) stage.addChild(sprite)
 
+      transform.addZIndexListener(() => {
+        gfx.zIndex = transform.zIndex + 1
+        if (sprite) sprite.zIndex = transform.zIndex
+      })
+
       return { camera, stage, gfx, sprite }
     },
 
     onArgsUpdate(path, _data, render) {
-      const { width, height, spriteSource, zIndex } = args
-
       if (render && path === 'spriteSource') {
+        const { width, height, spriteSource } = args
+
         render.sprite?.destroy()
         render.sprite = spriteSource
-          ? createSprite(spriteSource, { width, height, zIndex })
+          ? createSprite(spriteSource, {
+              width,
+              height,
+              zIndex: transform.zIndex,
+            })
           : undefined
 
         if (render.sprite) render.stage.addChild(render.sprite)
-      }
-
-      if (render && path === 'zIndex') {
-        render.gfx.zIndex = zIndex + 1
-        if (render.sprite) render.sprite.zIndex = zIndex
       }
     },
 

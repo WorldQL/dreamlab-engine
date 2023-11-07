@@ -6,7 +6,6 @@ import type { Camera } from '~/entities/camera.js'
 import { dataManager } from '~/entity.js'
 import { toRadians } from '~/math/general.js'
 import { decodePolygons, pointsBounds } from '~/math/polygons.js'
-import type { PositionListener, RotationListener } from '~/math/transform.js'
 import { Vec, VectorSchema } from '~/math/vector.js'
 import type { Physics } from '~/physics.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
@@ -17,14 +16,11 @@ import { drawComplexPolygon } from '~/utils/draw.js'
 type Args = typeof ArgsSchema
 const ArgsSchema = z.object({
   polygon: VectorSchema.array().array().or(z.string()),
-  zIndex: z.number().default(0),
 })
 
 interface Data {
   debug: Debug
   physics: Physics
-  onPositionChanged: PositionListener
-  onRotationChanged: RotationListener
 
   bodies: Body[]
 }
@@ -87,36 +83,34 @@ export const createComplexSolid = createSpawnableEntity<
         transform.position,
       )
 
-      const onPositionChanged: PositionListener = (component, _, delta) => {
+      transform.addPositionListener((component, _, delta) => {
         const vector =
           component === 'x' ? { x: delta, y: 0 } : { x: 0, y: delta }
         for (const body of bodies) {
           Matter.Body.setPosition(body, Vec.add(body.position, vector))
         }
-      }
+      })
 
-      const onRotationChanged: RotationListener = (_, delta) => {
+      transform.addRotationListener((_, delta) => {
         Matter.Composite.rotate(composite, toRadians(delta), transform.position)
-      }
+      })
 
       physics.register(this, ...bodies)
-      transform.addPositionListener(onPositionChanged)
-      transform.addRotationListener(onRotationChanged)
 
       return {
         debug,
         physics,
-        onPositionChanged,
-        onRotationChanged,
         bodies,
       }
     },
 
     initRenderContext(_, { stage, camera }) {
-      const { zIndex } = args
-
       const gfx = new Graphics()
-      gfx.zIndex = zIndex + 1
+      gfx.zIndex = transform.zIndex
+
+      transform.addZIndexListener(() => {
+        gfx.zIndex = transform.zIndex
+      })
 
       drawComplexPolygon(gfx, polygons)
       stage.addChild(gfx)
@@ -124,16 +118,8 @@ export const createComplexSolid = createSpawnableEntity<
       return { camera, gfx }
     },
 
-    onArgsUpdate(path, _data, render) {
-      if (render && path === 'zIndex') {
-        render.gfx.zIndex = args.zIndex
-      }
-    },
-
-    teardown({ physics, onPositionChanged, onRotationChanged, bodies }) {
+    teardown({ physics, bodies }) {
       physics.unregister(this, ...bodies)
-      transform.removeListener(onPositionChanged)
-      transform.removeListener(onRotationChanged)
     },
 
     teardownRenderContext({ gfx }) {

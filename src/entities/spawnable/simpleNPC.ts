@@ -19,7 +19,6 @@ type Args = typeof ArgsSchema
 const ArgsSchema = z.object({
   size: z.number().positive().min(1),
   spriteSource: SpriteSourceSchema,
-  zIndex: z.number().default(0),
 })
 
 interface Data {
@@ -46,180 +45,177 @@ export const createSimpleNPC = createSpawnableEntity<
   SimpleNPC,
   Data,
   Render
->(
-  ArgsSchema,
-  ({ transform, tags, preview }, { size, spriteSource, zIndex }) => {
-    const { position } = transform
+>(ArgsSchema, ({ transform, tags, preview }, { size, spriteSource }) => {
+  const { position, zIndex } = transform
 
-    const mass = 20
-    const sensorSize = 4
-    const moveForce = 0.01
-    const maxSpeed = 0.2
+  const mass = 20
+  const sensorSize = 4
+  const moveForce = 0.01
+  const maxSpeed = 0.2
 
-    let collidingL = false
-    let collidingR = false
-    let currentDirection: 'left' | 'right' = 'right'
+  let collidingL = false
+  let collidingR = false
+  let currentDirection: 'left' | 'right' = 'right'
 
-    const body = Matter.Bodies.rectangle(position.x, position.y, size, size, {
-      label: 'simpleNPC',
-      render: { visible: false },
+  const body = Matter.Bodies.rectangle(position.x, position.y, size, size, {
+    label: 'simpleNPC',
+    render: { visible: false },
 
-      inertia: Number.POSITIVE_INFINITY,
-      inverseInertia: 0,
-      mass,
-      inverseMass: 1 / mass,
-      friction: 0,
+    inertia: Number.POSITIVE_INFINITY,
+    inverseInertia: 0,
+    mass,
+    inverseMass: 1 / mass,
+    friction: 0,
 
-      // TODO
-      // collisionFilter: {
-      //   category: 0b100,
-      //   mask: -1 & ~playerLayer,
-      // },
-    })
+    // TODO
+    // collisionFilter: {
+    //   category: 0b100,
+    //   mask: -1 & ~playerLayer,
+    // },
+  })
 
-    const getSensorL = () =>
-      Matter.Bodies.rectangle(
-        body.position.x - size / 2 + sensorSize / 2,
-        body.position.y,
-        sensorSize,
-        size - sensorSize,
-      )
+  const getSensorL = () =>
+    Matter.Bodies.rectangle(
+      body.position.x - size / 2 + sensorSize / 2,
+      body.position.y,
+      sensorSize,
+      size - sensorSize,
+    )
 
-    const getSensorR = () =>
-      Matter.Bodies.rectangle(
-        body.position.x + size / 2 - sensorSize / 2,
-        body.position.y,
-        sensorSize,
-        size - sensorSize,
-      )
+  const getSensorR = () =>
+    Matter.Bodies.rectangle(
+      body.position.x + size / 2 - sensorSize / 2,
+      body.position.y,
+      sensorSize,
+      size - sensorSize,
+    )
 
-    const npc: PartializeSpawnable<SimpleNPC, Data, Render> = {
-      get tags() {
-        return tags
-      },
+  const npc: PartializeSpawnable<SimpleNPC, Data, Render> = {
+    get tags() {
+      return tags
+    },
 
-      rectangleBounds() {
-        return { width: size, height: size }
-      },
+    rectangleBounds() {
+      return { width: size, height: size }
+    },
 
-      isPointInside(position) {
-        return Matter.Query.point([body], position).length > 0
-      },
+    isPointInside(position) {
+      return Matter.Query.point([body], position).length > 0
+    },
 
-      init({ game, physics }) {
-        physics.register(this, body)
-        return { debug: game.debug, physics, body }
-      },
+    init({ game, physics }) {
+      physics.register(this, body)
+      return { debug: game.debug, physics, body }
+    },
 
-      initRenderContext(_, { camera, stage }) {
-        const gfxBounds = new Graphics()
-        drawBox(gfxBounds, { width: size, height: size }, { stroke: '#00f' })
+    initRenderContext(_, { camera, stage }) {
+      const gfxBounds = new Graphics()
+      drawBox(gfxBounds, { width: size, height: size }, { stroke: '#00f' })
 
-        const gfxSensorL = new Graphics()
-        const gfxSensorR = new Graphics()
+      const gfxSensorL = new Graphics()
+      const gfxSensorR = new Graphics()
 
-        gfxBounds.zIndex = zIndex + 1
-        gfxSensorL.zIndex = zIndex + 2
-        gfxSensorR.zIndex = zIndex + 2
+      gfxBounds.zIndex = zIndex + 1
+      gfxSensorL.zIndex = zIndex + 2
+      gfxSensorR.zIndex = zIndex + 2
 
-        const sprite = spriteSource
-          ? createSprite(spriteSource, { width: size, height: size, zIndex })
-          : undefined
+      const sprite = spriteSource
+        ? createSprite(spriteSource, { width: size, height: size, zIndex })
+        : undefined
 
-        stage.addChild(gfxBounds)
-        stage.addChild(gfxSensorL)
-        stage.addChild(gfxSensorR)
-        if (sprite) stage.addChild(sprite)
+      stage.addChild(gfxBounds)
+      stage.addChild(gfxSensorL)
+      stage.addChild(gfxSensorR)
+      if (sprite) stage.addChild(sprite)
 
-        return { camera, gfxBounds, gfxSensorL, gfxSensorR, sprite }
-      },
+      return { camera, gfxBounds, gfxSensorL, gfxSensorR, sprite }
+    },
 
-      teardown({ physics, body }) {
-        physics.unregister(this, body)
-      },
+    teardown({ physics, body }) {
+      physics.unregister(this, body)
+    },
 
-      teardownRenderContext({ gfxBounds, gfxSensorL, gfxSensorR, sprite }) {
-        gfxBounds.destroy()
-        gfxSensorL.destroy()
-        gfxSensorR.destroy()
-        sprite?.destroy()
-      },
+    teardownRenderContext({ gfxBounds, gfxSensorL, gfxSensorR, sprite }) {
+      gfxBounds.destroy()
+      gfxSensorL.destroy()
+      gfxSensorR.destroy()
+      sprite?.destroy()
+    },
 
-      onPhysicsStep(_, { physics }) {
-        if (preview) return
+    onPhysicsStep(_, { physics }) {
+      if (preview) return
 
-        const bodies = physics.world.bodies
-          .filter(x => x !== body)
-          .filter(x => !x.isSensor)
-          .filter(x =>
-            Matter.Detector.canCollide(body.collisionFilter, x.collisionFilter),
-          )
-
-        const queryL = Matter.Query.region(bodies, getSensorL().bounds)
-        collidingL = queryL.length > 0
-        const queryR = Matter.Query.region(bodies, getSensorR().bounds)
-        collidingR = queryR.length > 0
-
-        if (collidingL) currentDirection = 'right'
-        else if (collidingR) currentDirection = 'left'
-
-        const direction = currentDirection === 'left' ? -1 : 1
-        const targetVelocity = maxSpeed * direction
-
-        const velocityVector = targetVelocity / body.velocity.x
-        const forcePercent = Math.min(Math.abs(velocityVector) / 2, 1)
-        const newForce = moveForce * forcePercent * direction
-
-        Matter.Body.applyForce(body, body.position, Vec.create(newForce, 0))
-      },
-
-      onRenderFrame(
-        { smooth },
-        { debug },
-        { camera, gfxBounds, gfxSensorL, gfxSensorR, sprite },
-      ) {
-        const smoothed = Vec.add(body.position, Vec.mult(body.velocity, smooth))
-        const pos = Vec.add(smoothed, camera.offset)
-
-        if (sprite) sprite.position = pos
-
-        const sensorL = getSensorL()
-        const sensorR = getSensorR()
-
-        gfxBounds.position = pos
-        gfxSensorL.position = Vec.add(sensorL.position, camera.offset)
-        gfxSensorR.position = Vec.add(sensorR.position, camera.offset)
-
-        const alpha = debug.value ? 0.5 : 0
-        gfxBounds.alpha = alpha
-        gfxSensorL.alpha = alpha
-        gfxSensorR.alpha = alpha
-
-        const inactive = '#f00'
-        const active = '#0f0'
-
-        const sensorLcolor = collidingL ? active : inactive
-        drawBox(
-          gfxSensorL,
-          {
-            width: sensorSize,
-            height: size - sensorSize,
-          },
-          { fill: sensorLcolor, fillAlpha: 1, strokeAlpha: 0 },
+      const bodies = physics.world.bodies
+        .filter(x => x !== body)
+        .filter(x => !x.isSensor)
+        .filter(x =>
+          Matter.Detector.canCollide(body.collisionFilter, x.collisionFilter),
         )
 
-        const sensorRcolor = collidingR ? active : inactive
-        drawBox(
-          gfxSensorR,
-          {
-            width: sensorSize,
-            height: size - sensorSize,
-          },
-          { fill: sensorRcolor, fillAlpha: 1, strokeAlpha: 0 },
-        )
-      },
-    }
+      const queryL = Matter.Query.region(bodies, getSensorL().bounds)
+      collidingL = queryL.length > 0
+      const queryR = Matter.Query.region(bodies, getSensorR().bounds)
+      collidingR = queryR.length > 0
 
-    return npc
-  },
-)
+      if (collidingL) currentDirection = 'right'
+      else if (collidingR) currentDirection = 'left'
+
+      const direction = currentDirection === 'left' ? -1 : 1
+      const targetVelocity = maxSpeed * direction
+
+      const velocityVector = targetVelocity / body.velocity.x
+      const forcePercent = Math.min(Math.abs(velocityVector) / 2, 1)
+      const newForce = moveForce * forcePercent * direction
+
+      Matter.Body.applyForce(body, body.position, Vec.create(newForce, 0))
+    },
+
+    onRenderFrame(
+      { smooth },
+      { debug },
+      { camera, gfxBounds, gfxSensorL, gfxSensorR, sprite },
+    ) {
+      const smoothed = Vec.add(body.position, Vec.mult(body.velocity, smooth))
+      const pos = Vec.add(smoothed, camera.offset)
+
+      if (sprite) sprite.position = pos
+
+      const sensorL = getSensorL()
+      const sensorR = getSensorR()
+
+      gfxBounds.position = pos
+      gfxSensorL.position = Vec.add(sensorL.position, camera.offset)
+      gfxSensorR.position = Vec.add(sensorR.position, camera.offset)
+
+      const alpha = debug.value ? 0.5 : 0
+      gfxBounds.alpha = alpha
+      gfxSensorL.alpha = alpha
+      gfxSensorR.alpha = alpha
+
+      const inactive = '#f00'
+      const active = '#0f0'
+
+      const sensorLcolor = collidingL ? active : inactive
+      drawBox(
+        gfxSensorL,
+        {
+          width: sensorSize,
+          height: size - sensorSize,
+        },
+        { fill: sensorLcolor, fillAlpha: 1, strokeAlpha: 0 },
+      )
+
+      const sensorRcolor = collidingR ? active : inactive
+      drawBox(
+        gfxSensorR,
+        {
+          width: sensorSize,
+          height: size - sensorSize,
+        },
+        { fill: sensorRcolor, fillAlpha: 1, strokeAlpha: 0 },
+      )
+    },
+  }
+
+  return npc
+})

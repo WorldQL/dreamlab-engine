@@ -16,7 +16,6 @@ type Args = typeof ArgsSchema
 const ArgsSchema = z.object({
   radius: z.number().positive().min(1),
   spriteSource: SpriteSourceSchema.optional(),
-  zIndex: z.number().default(0),
 })
 
 interface Data {
@@ -80,42 +79,50 @@ export const createBouncyBall = createSpawnableEntity<
     },
 
     initRenderContext(_, { stage, camera }) {
-      const { radius, spriteSource, zIndex } = args
+      const { radius, spriteSource } = args
 
       const gfx = new Graphics()
-      gfx.zIndex = zIndex + 1
+      gfx.zIndex = transform.zIndex + 1
       drawCircle(gfx, { radius })
 
       const width = radius * 2
       const height = radius * 2
       const sprite = spriteSource
-        ? createSprite(spriteSource, { width, height, zIndex })
+        ? createSprite(spriteSource, {
+            width,
+            height,
+            zIndex: transform.zIndex,
+          })
         : undefined
 
       stage.addChild(gfx)
       if (sprite) stage.addChild(sprite)
 
+      transform.addZIndexListener(() => {
+        gfx.zIndex = transform.zIndex + 1
+        if (sprite) sprite.zIndex = transform.zIndex
+      })
+
       return { camera, stage, gfx, sprite }
     },
 
     onArgsUpdate(path, _data, render) {
-      const { radius, spriteSource, zIndex } = args
-
       if (render && path === 'spriteSource') {
+        const { radius, spriteSource } = args
+
         const width = radius * 2
         const height = radius * 2
 
         render.sprite?.destroy()
         render.sprite = spriteSource
-          ? createSprite(spriteSource, { width, height, zIndex })
+          ? createSprite(spriteSource, {
+              width,
+              height,
+              zIndex: transform.zIndex,
+            })
           : undefined
 
         if (render.sprite) render.stage.addChild(render.sprite)
-      }
-
-      if (render && path === 'zIndex') {
-        render.gfx.zIndex = zIndex + 1
-        if (render.sprite) render.sprite.zIndex = zIndex
       }
     },
 
