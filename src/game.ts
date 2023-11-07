@@ -572,9 +572,15 @@ export async function createGame<Server extends boolean>(
 
       // Verify args schema
       const args = fn.argsSchema.parse(definition.args)
+      definition.args = args
+
+      // Automatically track transform for the definition
+      const transform = trackTransform(definition.transform)
+      definition.transform = transform
+
       const context: SpawnableContext = {
         uid: definition.uid ?? cuid2.createId(),
-        transform: trackTransform(definition.transform),
+        transform,
         tags: definition.tags ?? [],
         zIndex: definition.zIndex ?? 0,
 
