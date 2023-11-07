@@ -543,10 +543,14 @@ export async function createGame<Server extends boolean>(
         throw new Error('not an entity')
       }
 
-      if (isSpawnableEntity(entity)) spawnables.delete(entity.uid)
-      const idx = entities.indexOf(entity)
+      if (isSpawnableEntity(entity)) {
+        onChange.unsubscribe(entity.args)
+        spawnables.delete(entity.uid)
+      }
 
+      const idx = entities.indexOf(entity)
       if (idx === -1) return
+
       entities.splice(idx, 1)
       sortEntities()
 
