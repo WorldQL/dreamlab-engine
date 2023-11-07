@@ -36,7 +36,9 @@ interface TrackedTransformAugment {
 
   addPositionListener(fn: PositionListener): void
   addRotationListener(fn: RotationListener): void
+
   removeListener(fn: PositionListener | RotationListener): void
+  removeAllListeners(): void
 }
 
 // eslint-disable-next-line @typescript-eslint/sort-type-constituents
@@ -75,7 +77,8 @@ export const trackTransform = (transform: Transform): TrackedTransform => {
         property === trackedSymbol ||
         property === 'addPositionListener' ||
         property === 'addRotationListener' ||
-        property === 'removeListener'
+        property === 'removeListener' ||
+        property === 'removeAllListeners'
       ) {
         return Reflect.set(target, property, value, receiver)
       }
@@ -111,7 +114,18 @@ export const trackTransform = (transform: Transform): TrackedTransform => {
       // @ts-expect-error Ignore Types
       rotationListeners.delete(fn)
     },
+
+    removeAllListeners: () => {
+      positionListeners.clear()
+      rotationListeners.clear()
+    },
   }
 
   return Object.assign(transformProxy, augment)
+}
+
+export const isTrackedTransform = (
+  transform: TrackedTransform | Transform,
+): transform is TrackedTransform => {
+  return trackedSymbol in transform
 }

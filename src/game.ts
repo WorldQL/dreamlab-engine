@@ -13,7 +13,7 @@ import { createEventsManager } from '~/events.js'
 import type { EventsManager } from '~/events.js'
 import { InputManager } from '~/input/manager.js'
 import type { Bounds } from '~/math/bounds.js'
-import { trackTransform } from '~/math/transform.js'
+import { isTrackedTransform, trackTransform } from '~/math/transform.js'
 import { v } from '~/math/vector.js'
 import type { LooseVector } from '~/math/vector.js'
 import type { BareNetClient, NetClient } from '~/network/client'
@@ -544,6 +544,10 @@ export async function createGame<Server extends boolean>(
       }
 
       if (isSpawnableEntity(entity)) {
+        if (isTrackedTransform(entity.transform)) {
+          entity.transform.removeAllListeners()
+        }
+
         onChange.unsubscribe(entity.args)
         spawnables.delete(entity.uid)
       }
