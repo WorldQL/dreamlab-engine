@@ -77,7 +77,6 @@ export const isSyncedValue = (
 }
 
 export const syncEntities = (game: Game<true>) => {
-  // eslint-disable-next-line unicorn/no-array-callback-reference
   const spawnables = game.entities.filter(isSpawnableEntity)
 
   for (const entity of spawnables) {
@@ -97,7 +96,6 @@ export const updateSyncedValue = (
   key: string,
   value: unknown,
 ) => {
-  // eslint-disable-next-line unicorn/no-array-callback-reference
   const spawnables = game.entities.filter(isSpawnableEntity)
   const entity = spawnables.find(({ uid }) => uid === entityID)
   if (!entity) return
@@ -107,7 +105,6 @@ export const updateSyncedValue = (
   if (typeof data !== 'object') return
 
   const syncedValue = Object.values(data)
-    // eslint-disable-next-line unicorn/no-array-callback-reference
     .filter(isSyncedValue)
     .find(value => value.key === key)
 
