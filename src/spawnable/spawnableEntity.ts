@@ -27,6 +27,7 @@ export interface SpawnableEntity<Data = unknown, Render = unknown>
 
   rectangleBounds(): Bounds | undefined
   isPointInside(position: Vector): boolean
+  onResize?(bounds: Bounds, data: Data, render: Render | undefined): void
 }
 
 type PartialFields =

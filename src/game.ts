@@ -11,6 +11,8 @@ import type { Entity, InitContext, RenderContext } from '~/entity.js'
 import { createEventsManager } from '~/events.js'
 import type { EventsManager } from '~/events.js'
 import { InputManager } from '~/input/manager.js'
+import type { Bounds } from '~/math/bounds.js'
+import { trackTransform } from '~/math/transform.js'
 import { v } from '~/math/vector.js'
 import type { LooseVector } from '~/math/vector.js'
 import type { BareNetClient, NetClient } from '~/network/client'
@@ -35,7 +37,6 @@ import { createClientUI } from '~/ui.js'
 import type { ClientUIManager } from '~/ui.js'
 import { createDebug } from '~/utils/debug.js'
 import type { Debug } from '~/utils/debug.js'
-import { trackTransform } from './math/transform'
 
 interface ClientOptions {
   /**
@@ -214,6 +215,15 @@ export interface Game<Server extends boolean> {
   spawnMany(
     ...definitions: LooseSpawnableDefinition[]
   ): Promise<SpawnableEntity[]>
+
+  /**
+   * Issue a resize call to a spawnable entity
+   *
+   * @param entity - Spawnable Entity
+   * @param size - New Size
+   * @returns A boolean representing whether the entity supports resizing
+   */
+  resize(entity: SpawnableEntity, size: Bounds): boolean
 
   /**
    * Lookup a spawnable entity by UID
@@ -587,6 +597,22 @@ export async function createGame<Server extends boolean>(
       return entities.filter(
         (entity): entity is SpawnableEntity => entity !== undefined,
       )
+    },
+
+    resize(entity, size) {
+      if (size.width < 1 || size.height < 1) {
+        throw new Error('size width and height must be >= 1')
+      }
+
+      if (typeof entity.onResize !== 'function') return false
+
+      const data = dataManager.getData(entity)
+      const render = renderContext
+        ? dataManager.getRenderData(entity)
+        : undefined
+
+      entity.onResize(size, data, render)
+      return true
     },
 
     lookup(uid) {
