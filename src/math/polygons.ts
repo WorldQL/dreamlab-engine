@@ -113,6 +113,7 @@ export const calculatePolygons = (
     polygon.map(([x, y]) => truncateVector(Vec.create(x, y), truncate)),
   )
 
+  for (const points of polygons) Matter.Vertices.clockwiseSort(points)
   return [center, polygons]
 }
 
