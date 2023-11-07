@@ -42,6 +42,10 @@ export const angleBetween = (a: Vector, b: Vector): number => {
   return Math.atan2(b.y - a.y, b.x - a.x)
 }
 
+export const absolute = (vector: Vector): Vector => {
+  return Vec.create(Math.abs(vector.x), Math.abs(vector.y))
+}
+
 export const VectorSchema = z
   .object({
     x: z.number(),
