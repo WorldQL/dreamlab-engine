@@ -15,6 +15,7 @@ import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawComplexPolygon } from '~/utils/draw.js'
 
+type Args = typeof ArgsSchema
 const ArgsSchema = z.object({
   polygon: VectorSchema.array().array().or(z.string()),
 })
@@ -35,8 +36,8 @@ interface Render {
 }
 
 export const createComplexSolid = createSpawnableEntity<
-  typeof ArgsSchema,
-  SpawnableEntity<Data, Render>,
+  Args,
+  SpawnableEntity<Data, Render, Args>,
   Data,
   Render
 >(ArgsSchema, ({ transform, zIndex, tags, preview }, { polygon: poly }) => {

@@ -1,5 +1,5 @@
 import { Graphics } from 'pixi.js'
-import type { Sprite } from 'pixi.js'
+import type { Container, Sprite } from 'pixi.js'
 import { z } from 'zod'
 import type { Camera } from '~/entities/camera.js'
 import { simpleBoundsTest } from '~/math/bounds.js'
@@ -10,6 +10,7 @@ import { createSprite, SpriteSourceSchema } from '~/textures/sprites.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
 
+type Args = typeof ArgsSchema
 const ArgsSchema = z.object({
   width: z.number().positive().min(1),
   height: z.number().positive().min(1),
@@ -22,13 +23,14 @@ interface Data {
 
 interface Render {
   camera: Camera
+  stage: Container
   gfx: Graphics
   sprite: Sprite | undefined
 }
 
 export const createNonsolid = createSpawnableEntity<
-  typeof ArgsSchema,
-  SpawnableEntity<Data, Render>,
+  Args,
+  SpawnableEntity<Data, Render, Args>,
   Data,
   Render
 >(ArgsSchema, ({ transform, zIndex, tags }, args) => ({
@@ -66,7 +68,20 @@ export const createNonsolid = createSpawnableEntity<
     stage.addChild(gfx)
     if (sprite) stage.addChild(sprite)
 
-    return { camera, gfx, sprite }
+    return { camera, stage, gfx, sprite }
+  },
+
+  onArgsUpdate(path, _data, render) {
+    if (render && path === 'spriteSource') {
+      const { width, height, spriteSource } = args
+
+      render.sprite?.destroy()
+      render.sprite = spriteSource
+        ? createSprite(spriteSource, { width, height, zIndex })
+        : undefined
+
+      if (render.sprite) render.stage.addChild(render.sprite)
+    }
   },
 
   onResize({ width, height }, _, render) {

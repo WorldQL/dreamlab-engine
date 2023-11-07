@@ -15,6 +15,7 @@ import { createSprite, SpriteSourceSchema } from '~/textures/sprites.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
 
+type Args = typeof ArgsSchema
 const ArgsSchema = z.object({
   size: z.number().positive().min(1),
   spriteSource: SpriteSourceSchema,
@@ -37,10 +38,10 @@ interface Render {
   sprite: Sprite | undefined
 }
 
-interface SimpleNPC extends SpawnableEntity<Data, Render> {}
+interface SimpleNPC extends SpawnableEntity<Data, Render, Args> {}
 
 export const createSimpleNPC = createSpawnableEntity<
-  typeof ArgsSchema,
+  Args,
   SimpleNPC,
   Data,
   Render

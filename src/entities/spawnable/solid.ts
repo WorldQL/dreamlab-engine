@@ -12,6 +12,7 @@ import { createSprite, SpriteSourceSchema } from '~/textures/sprites.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
 
+type Args = typeof ArgsSchema
 const ArgsSchema = z.object({
   width: z.number().positive().min(1),
   height: z.number().positive().min(1),
@@ -31,8 +32,8 @@ interface Render {
 }
 
 export const createSolid = createSpawnableEntity<
-  typeof ArgsSchema,
-  SpawnableEntity<Data, Render>,
+  Args,
+  SpawnableEntity<Data, Render, Args>,
   Data,
   Render
 >(ArgsSchema, ({ transform, zIndex, tags, preview }, args) => {

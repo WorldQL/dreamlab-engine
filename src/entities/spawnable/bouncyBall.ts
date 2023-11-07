@@ -12,6 +12,7 @@ import { createSprite, SpriteSourceSchema } from '~/textures/sprites.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawCircle } from '~/utils/draw.js'
 
+type Args = typeof ArgsSchema
 const ArgsSchema = z.object({
   radius: z.number().positive().min(1),
   spriteSource: SpriteSourceSchema.optional(),
@@ -30,8 +31,8 @@ interface Render {
 }
 
 export const createBouncyBall = createSpawnableEntity<
-  typeof ArgsSchema,
-  SpawnableEntity<Data, Render>,
+  Args,
+  SpawnableEntity<Data, Render, Args>,
   Data,
   Render
 >(ArgsSchema, ({ transform, zIndex, tags, preview }, args) => {
