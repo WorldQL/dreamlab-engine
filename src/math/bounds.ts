@@ -14,7 +14,9 @@ const fastBoundsTest = (
   position: Vector,
   { x, y }: Vector,
 ): boolean => {
-  const size = Vec.create(width, height)
+  const max = Math.max(width, height)
+  const size = Vec.create(max * 2, max * 2)
+
   const { x: minX, y: minY } = Vec.sub(position, size)
   const { x: maxX, y: maxY } = Vec.add(position, size)
 
@@ -31,7 +33,7 @@ export const simpleBoundsTest = (
   const fast = fastBoundsTest(width, height, transform.position, point)
   if (!fast) return false
 
-  const radians = toRadians(transform.rotation)
+  const radians = toRadians(0 - transform.rotation)
   const { x, y } = Vec.rotateAbout(point, radians, transform.position)
 
   const half = Vec.create(width / 2, height / 2)
