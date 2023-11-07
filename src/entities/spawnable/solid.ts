@@ -90,11 +90,16 @@ export const createSolid = createSpawnableEntity<
       return { camera, gfx, sprite }
     },
 
-    onResize({ width, height }, _data, render) {
+    onResize({ width, height }, data, render) {
+      const originalWidth = args.width
+      const originalHeight = args.height
+
       args.width = width
       args.height = height
 
-      // TODO: Resize physics body
+      const scaleX = width / originalWidth
+      const scaleY = height / originalHeight
+      Matter.Body.scale(data.body, scaleX, scaleY)
 
       if (!render) return
       drawBox(render.gfx, { width, height })

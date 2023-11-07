@@ -95,11 +95,14 @@ export const createBouncyBall = createSpawnableEntity<
       return { camera, gfx, sprite }
     },
 
-    onResize({ width, height }, _data, render) {
+    onResize({ width, height }, data, render) {
+      const originalRadius = args.radius
       const radius = Math.max(width / 2, height / 2)
       args.radius = radius
 
-      // TODO: Resize physics body
+      const scale = radius / originalRadius
+      Matter.Body.scale(data.body, scale, scale)
+      Matter.Body.setMass(data.body, mass)
 
       if (!render) return
       drawCircle(render.gfx, { radius })
