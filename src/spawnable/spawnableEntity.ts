@@ -79,7 +79,7 @@ export const createSpawnableEntity = <
 >(
   argsSchema: ArgsSchema,
   fn: (
-    ctx: SpawnableContext,
+    ctx: SpawnableContext<string, z.infer<ArgsSchema>>,
     args: z.infer<ArgsSchema>,
   ) => PartializeSpawnable<E, Data, Render>,
 ): SpawnableFunction<ArgsSchema, E, Data, Render> => {
