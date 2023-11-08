@@ -135,7 +135,7 @@ export const createPlayer = (
 
     const animationName = playerItem
       ? playerItem.animationName.toLowerCase()
-      : 'idle'
+      : 'punch'
     if (attack && ['greatsword', 'bow', 'punch'].includes(animationName))
       return animationName as KnownAnimation
     if (direction !== 0) return isJogging ? 'jog' : 'walk'
