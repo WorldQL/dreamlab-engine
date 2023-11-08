@@ -587,7 +587,7 @@ export async function createGame<Server extends boolean>(
       definition.args = args
 
       // Track changes to args and trigger entity callback
-      const watchedArgs = onChange(args, path => {
+      const watchedArgs = onChange(args, (path: string) => {
         const entity = this.lookup(uid)
         if (!entity || typeof entity.onArgsUpdate !== 'function') return
 
