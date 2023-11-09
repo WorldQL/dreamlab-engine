@@ -39,6 +39,7 @@ import type { ClientUIManager } from '~/ui.js'
 import { createDebug } from '~/utils/debug.js'
 import type { Debug } from '~/utils/debug.js'
 
+// #region Options
 interface ClientOptions {
   /**
    * HTML `div` element for the Pixi.js canvas to mount inside
@@ -96,7 +97,9 @@ interface CommonOptions<Server extends boolean> {
 
 type Options<Server extends boolean> = CommonOptions<Server> &
   (Server extends true ? ServerOptions : ClientOptions)
+// #endregion
 
+// #region Render Context Setup
 type RenderContextExt = RenderContext & { app: Application }
 async function initRenderContext<Server extends boolean>(
   options: Options<Server>,
@@ -128,7 +131,9 @@ async function initRenderContext<Server extends boolean>(
 
   return ctx
 }
+// #endregion
 
+// #region Game Interface
 interface GameClient {
   get ui(): ClientUIManager
   get inputs(): InputManager
@@ -273,6 +278,7 @@ export interface Game<Server extends boolean> {
    */
   shutdown(): Promise<void>
 }
+// #endregion
 
 export async function createGame<Server extends boolean>(
   options: Options<Server>,
@@ -298,6 +304,7 @@ export async function createGame<Server extends boolean>(
   const events = createEventsManager(options.isServer)
   let network: (Server extends true ? NetServer : NetClient) | undefined
 
+  // #region Collision Events
   const onCollision = (
     type: 'active' | 'end' | 'start',
     ev: Matter.IEventCollision<Matter.Engine>,
@@ -360,7 +367,9 @@ export async function createGame<Server extends boolean>(
   Matter.Events.on(physics.engine, 'collisionStart', onCollisionStart)
   Matter.Events.on(physics.engine, 'collisionActive', onCollisionActive)
   Matter.Events.on(physics.engine, 'collisionEnd', onCollisionEnd)
+  // #endregion
 
+  // #region Tick Loop
   const onTick = async () => {
     const now = performance.now()
     const delta = now - time
@@ -423,11 +432,13 @@ export async function createGame<Server extends boolean>(
   } else {
     interval = setInterval(onTick, 1_000 / physicsTickrate / 2)
   }
+  // #endregion
 
   const sortEntities = () => {
     entities.sort((a, b) => (a.priority ?? 0) - (b.priority ?? 0))
   }
 
+  // #region Client / Server Data
   const ui =
     options.container === undefined
       ? undefined
@@ -461,6 +472,7 @@ export async function createGame<Server extends boolean>(
           return network as NetServer | undefined
         },
       }
+  // #endregion
 
   const game: Game<Server> = {
     get debug() {
@@ -645,6 +657,7 @@ export async function createGame<Server extends boolean>(
       return true
     },
 
+    // #region Query Functions
     lookup(uid) {
       return spawnables.get(uid)
     },
@@ -694,6 +707,7 @@ export async function createGame<Server extends boolean>(
     queryTypeAll(fn) {
       return [...spawnables.values()].filter(fn)
     },
+    // #endregion
 
     async shutdown() {
       unregister?.()
