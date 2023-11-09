@@ -1,6 +1,9 @@
 name: Node.js CI
 on: [push, pull_request]
 
+env:
+  NODE_VERSION: 20.x
+
 jobs:
   test:
     if: contains(github.ref, 'refs/tags/') == false
@@ -17,7 +20,42 @@ jobs:
         with:
           cache: npm
           node-version: ${{ matrix.node-version }}
+      - name: Update npm
+        run: npm install -g npm
       - name: Install packages
         run: npm ci
       - name: Test
         run: npm run test
+
+  publish-dev:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/trunk'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          cache: npm
+          node-version: ${{ env.NODE_VERSION }}
+          registry-url: 'https://registry.npmjs.org'
+      - name: Update npm
+        run: npm install -g npm
+      - name: Install packages
+        run: npm ci
+      - name: Read version info
+        id: info
+        run: |
+          PKG_VERSION=`cat package.json | jq -r .version`
+          COMMIT_HASH=`git rev-parse --short HEAD`
+
+          echo "pkg_version=${PKG_VERSION}" >> $GITHUB_OUTPUT
+          echo "hash=${COMMIT_HASH}" >> $GITHUB_OUTPUT
+      - name: Edit version
+        run: npm --ignore-scripts --no-git-tag-version version ${{ steps.info.outputs.pkg_version }}-dev-${{ steps.info.outputs.hash }}
+      - name: Publish to NPM
+        run: npm publish --access=public --tag=dev
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

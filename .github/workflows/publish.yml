@@ -4,7 +4,7 @@ on:
     types: [published]
 
 env:
-  NODE_VERSION: 18.x
+  NODE_VERSION: 20.x
 
 jobs:
   publish:
@@ -26,7 +26,6 @@ jobs:
       - name: Install packages
         run: npm ci
       - name: Publish to NPM
-        run: npm publish --provenance --access public
-        # run: npm publish --access public
+        run: npm publish --provenance --access=public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
