@@ -70,6 +70,7 @@ export interface SpawnableFunction<
   Render,
 > extends BaseSpawnableFunction<ArgsSchema, E, Data, Render> {
   argsSchema: ArgsSchema
+  hasDefaults: boolean
 }
 
 export type BareSpawnableFunction = SpawnableFunction<
@@ -133,7 +134,8 @@ export const createSpawnableEntity = <
     return mergeObjects(partial, getter) as E
   }
 
-  return Object.assign(spawnFn, { argsSchema })
+  const { success: hasDefaults } = argsSchema.safeParse({})
+  return Object.assign(spawnFn, { argsSchema, hasDefaults })
 }
 
 export const isSpawnableEntity = (
