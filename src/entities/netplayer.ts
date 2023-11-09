@@ -67,7 +67,7 @@ export interface NetPlayer extends PlayerCommon, Entity<Data, Render> {
 export const createNetPlayer = (
   peerID: string,
   entityID: string | undefined,
-  animations: PlayerAnimationMap<KnownAnimation>,
+  animations: PlayerAnimationMap<KnownAnimation> | undefined,
   { width = 80, height = 370 }: Partial<PlayerSize> = {},
 ) => {
   const _entityID = entityID ?? createId()
@@ -91,6 +91,10 @@ export const createNetPlayer = (
   })
 
   const bonePosition = (bone: Bone): Vector => {
+    if (!animations) {
+      throw new Error(`missing animations for netplayer: ${_entityID}`)
+    }
+
     const animation = animations[currentAnimation]
 
     const animW = animation.width
