@@ -4,7 +4,10 @@ import type { NetPlayer } from '~/entities/netplayer'
 import type { Player } from '~/entities/player.js'
 import type { Entity, RenderTime, Time } from '~/entity.js'
 import type { PlayerItem } from '~/managers/playerItem.js'
-import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
+import type {
+  BareSpawnableFunction,
+  SpawnableEntity,
+} from '~/spawnable/spawnableEntity.js'
 
 export interface ClientEvents {
   onRenderFrame: [time: RenderTime]
@@ -26,6 +29,7 @@ type PlayerCollisionEvent = [
 ]
 
 export interface CommonEvents {
+  onRegister: [name: string, fn: BareSpawnableFunction]
   onInstantiate: [entity: Entity]
   onDestroy: [entity: Entity]
   onSpawn: [entity: SpawnableEntity]

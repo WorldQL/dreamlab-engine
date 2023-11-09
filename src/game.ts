@@ -529,10 +529,9 @@ export async function createGame<Server extends boolean>(
         throw new Error(`duplicate spawnable function: ${name}`)
       }
 
-      spawnableFunctions.set(
-        name,
-        spawnableFn as unknown as BareSpawnableFunction,
-      )
+      const fn = spawnableFn as unknown as BareSpawnableFunction
+      spawnableFunctions.set(name, fn)
+      events.common.emit('onRegister', name, fn)
     },
 
     async instantiate(entity) {
