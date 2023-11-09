@@ -158,7 +158,15 @@ export interface Game<Server extends boolean> {
   /**
    * List of all entities
    */
-  get entities(): Entity[]
+  get entities(): readonly Entity[]
+
+  /**
+   * Get a map of all registered spawnable entities
+   */
+  get registered(): readonly (readonly [
+    name: string,
+    fn: BareSpawnableFunction,
+  ])[]
 
   /**
    * Initialize the network interface
@@ -505,6 +513,10 @@ export async function createGame<Server extends boolean>(
 
     get entities() {
       return [...entities, ...spawnables.values()]
+    },
+
+    get registered() {
+      return [...spawnableFunctions.entries()]
     },
 
     initNetwork(net) {
