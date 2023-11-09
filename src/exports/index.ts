@@ -19,5 +19,7 @@ export {
   type PartializeSpawnable,
   type SpawnableEntity,
   type UID,
+  type SpawnableFunction,
+  type BareSpawnableFunction,
 } from '~/spawnable/spawnableEntity.js'
 export type { Physics } from '~/physics.js'
