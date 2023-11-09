@@ -1,3 +1,4 @@
+import EventEmitter from 'eventemitter3'
 import Matter from 'matter-js'
 import { AnimatedSprite, Graphics, Sprite } from 'pixi.js'
 import type { Camera } from '~/entities/camera.js'
@@ -51,6 +52,10 @@ export const isPlayer = (player: unknown): player is Player => {
   return symbol in player && player[symbol] === true
 }
 
+export interface PlayerEvents {
+  onToggleNoclip: [enabled: boolean]
+}
+
 export interface PlayerCommon {
   get position(): Vector
   get size(): PlayerSize
@@ -60,6 +65,7 @@ export interface PlayerCommon {
 export interface Player extends PlayerCommon, Entity<Data, Render> {
   get [symbol](): true
   get bones(): Readonly<Record<Bone, Vector>>
+  get events(): EventEmitter<PlayerEvents>
   get itemInHand(): PlayerItem
   get currentAnimation(): string
   get facingDirection(): number
@@ -96,6 +102,8 @@ export const createPlayer = (
   animations: PlayerAnimationMap<KnownAnimation>,
   { width = 80, height = 370 }: Partial<PlayerSize> = {},
 ) => {
+  const events = new EventEmitter<PlayerEvents>()
+
   const maxSpeed = 1
   const jumpForce = 5
   const feetSensor = 4
@@ -110,7 +118,10 @@ export const createPlayer = (
   const onToggleNoclip = (pressed: boolean) => {
     // TODO(Charlotte): if a player is noclipping, we should network this
     // so that the serverside prediction can take that into account
-    if (pressed) noclip = !noclip
+    if (pressed) {
+      noclip = !noclip
+      events.emit('onToggleNoclip', noclip)
+    }
   }
 
   let currentAnimation: KnownAnimation = 'idle'
@@ -228,6 +239,10 @@ export const createPlayer = (
       return boneMap
     },
 
+    get events(): EventEmitter<PlayerEvents> {
+      return events
+    },
+
     get itemInHand(): PlayerItem {
       return playerItem
     },
@@ -318,6 +333,8 @@ export const createPlayer = (
     },
 
     teardown({ inputs, physics }) {
+      events.removeAllListeners()
+
       inputs?.removeListener(PlayerInput.ToggleNoclip, onToggleNoclip)
       physics.clearPlayer()
     },
