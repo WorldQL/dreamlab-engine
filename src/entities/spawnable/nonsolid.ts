@@ -12,8 +12,8 @@ import { drawBox } from '~/utils/draw.js'
 
 type Args = typeof ArgsSchema
 const ArgsSchema = z.object({
-  width: z.number().positive().min(1),
-  height: z.number().positive().min(1),
+  width: z.number().positive().min(1).default(100),
+  height: z.number().positive().min(1).default(100),
   spriteSource: SpriteSourceSchema.optional(),
 })
 

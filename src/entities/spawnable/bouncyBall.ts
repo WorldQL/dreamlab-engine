@@ -14,7 +14,7 @@ import { drawCircle } from '~/utils/draw.js'
 
 type Args = typeof ArgsSchema
 const ArgsSchema = z.object({
-  radius: z.number().positive().min(1),
+  radius: z.number().positive().min(1).default(60),
   spriteSource: SpriteSourceSchema.optional(),
 })
 
