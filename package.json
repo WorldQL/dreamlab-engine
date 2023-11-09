@@ -47,6 +47,7 @@
     "fmt": "npm run format",
     "test": "npm run check && npm run lint",
     "prepack": "npm run test && npm run build",
+    "preversion": "npm run test",
     "postversion": "git push --follow-tags",
     "clobber-mp": "del /S /Q ..\\dreamlab-mp-server\\runtime\\node_modules\\@dreamlab.gg\\core\\dist\\* && xcopy /E /I .\\dist\\* ..\\dreamlab-mp-server\\runtime\\node_modules\\@dreamlab.gg\\core\\dist\\",
     "build-and-clobber": "npm run build && npm run clobber-mp"
