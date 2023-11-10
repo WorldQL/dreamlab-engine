@@ -81,7 +81,7 @@ export interface PlayerSize {
 
 export type KnownPlayerAnimation = 'idle' | 'jog' | 'jump' | 'walk'
 export type KnownAttackAnimation = 'greatsword' | 'punch'
-export type KnownRangedAttackAnimation = 'bow'
+export type KnownRangedAttackAnimation = 'bow' | 'shoot'
 
 export type KnownAnimation =
   | KnownAttackAnimation
@@ -147,7 +147,10 @@ export const createPlayer = (
     const animationName = playerItem
       ? playerItem.animationName.toLowerCase()
       : 'punch'
-    if (attack && ['greatsword', 'bow', 'punch'].includes(animationName))
+    if (
+      attack &&
+      ['greatsword', 'bow', 'punch', 'shoot'].includes(animationName)
+    )
       return animationName as KnownAnimation
     if (direction !== 0) return isJogging ? 'jog' : 'walk'
 
@@ -176,6 +179,8 @@ export const createPlayer = (
         return currentFrame >= 5
       case 'bow':
         return currentFrame === 9
+      case 'shoot':
+        return currentFrame === 1
       default:
         return false
     }

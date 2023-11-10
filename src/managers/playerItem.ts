@@ -33,6 +33,7 @@ export const createItem = (
     'walk',
     'bow',
     'greatsword',
+    'shoot',
   ]
   const finalAnimationName = validAnimations.includes(
     animationName as KnownAnimation,

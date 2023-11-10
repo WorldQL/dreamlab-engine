@@ -284,7 +284,9 @@ export const createNetPlayer = (
 
       if (playerItem) {
         itemSprite.visible = Boolean(
-          currentAnimation === 'greatsword' || currentAnimation === 'bow',
+          currentAnimation === 'greatsword' ||
+            currentAnimation === 'bow' ||
+            currentAnimation === 'shoot',
         )
 
         const currentItem = playerItem
