@@ -488,6 +488,10 @@ export const createPlayer = (
         currentAnimation = newAnimation
         sprite.textures = animations[newAnimation].textures
         const getSpeedMultiplier = (animation_name: string) => {
+          if (playerItem?.itemOptions?.speedMultiplier) {
+            return playerItem.itemOptions.speedMultiplier
+          }
+
           switch (animation_name) {
             case 'greatsword':
               return 2.2
