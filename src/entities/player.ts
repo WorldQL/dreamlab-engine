@@ -495,6 +495,8 @@ export const createPlayer = (
           switch (animation_name) {
             case 'greatsword':
               return 2.2
+            case 'punch':
+              return 2
             default:
               return 1
           }
