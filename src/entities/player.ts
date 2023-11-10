@@ -194,6 +194,10 @@ export const createPlayer = (
     const position =
       animation.boneData.bones[bone][currentFrame + getFrameOffset()]!
 
+    if (position == undefined) {
+      console.error(`Missing bone data for this frame!!
+      Current animation: ${currentAnimation} at ${currentFrame} with offset ${getFrameOffset}`)
+    }
     const flip = spriteSign
     const normalized = {
       x: flip === 1 ? position.x : animW - position.x,
