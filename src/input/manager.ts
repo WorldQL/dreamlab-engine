@@ -41,7 +41,10 @@ export class InputManager extends EventEmitter<InputEvents> {
   private readonly keys = new Set<InputCode>()
   private readonly held = new Set<InputCode>()
 
-  private readonly inputs = new Map<string, InputCode>()
+  private readonly inputs = new Map<
+    string,
+    { defaultKey: InputCode; name: string }
+  >()
   private readonly bindings = new Map<InputCode, string>()
 
   private readonly inputMap = new Map<string, Set<InputCode>>()
@@ -139,7 +142,7 @@ export class InputManager extends EventEmitter<InputEvents> {
     this.reverseInputMap.clear()
 
     const defaultKeyBindings = new Map<InputCode, string>()
-    for (const [input, defaultKey] of this.inputs.entries()) {
+    for (const [input, { defaultKey }] of this.inputs.entries()) {
       defaultKeyBindings.set(defaultKey, input)
     }
 
@@ -155,13 +158,17 @@ export class InputManager extends EventEmitter<InputEvents> {
     }
   }
 
-  public registerInput(name: string, defaultKey: InputCode): void {
+  public registerInput(id: string, name: string, defaultKey: InputCode): void {
     // @ts-expect-error String Union
-    if (inputCodes.includes(name)) {
+    if (inputCodes.includes(id)) {
       throw new Error('input name cannot be a key code')
     }
 
-    this.inputs.set(name, defaultKey)
+    if (this.inputs.has(id)) {
+      throw new Error(`the input "${id}" has already been registered`)
+    }
+
+    this.inputs.set(id, { defaultKey, name })
     this.updateInputs()
   }
 
@@ -174,6 +181,13 @@ export class InputManager extends EventEmitter<InputEvents> {
   // #endregion
 
   // #region Input Access
+  public getInputName(input: string): string | undefined {
+    const mapped = this.inputs.get(input)
+    if (!mapped) return undefined
+
+    return mapped.name
+  }
+
   public getInput(input: string): boolean | undefined {
     const keys = this.inputMap.get(input)
     if (!keys || keys.size === 0) return undefined
