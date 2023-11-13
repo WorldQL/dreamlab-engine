@@ -33,6 +33,8 @@ function onMouse(this: InputManager, ev: MouseEvent, pressed: boolean): void {
 }
 
 export class InputManager extends EventEmitter<InputEvents> {
+  private _enabled: boolean
+
   private readonly canvas: HTMLCanvasElement
   private readonly camera: Camera
 
@@ -53,6 +55,7 @@ export class InputManager extends EventEmitter<InputEvents> {
   public constructor(ctx: { canvas: HTMLCanvasElement; camera: Camera }) {
     super()
 
+    this._enabled = true
     this.canvas = ctx.canvas
     this.camera = ctx.camera
   }
@@ -89,12 +92,29 @@ export class InputManager extends EventEmitter<InputEvents> {
     return unregister
   }
 
+  // #region Enable / Disable
+  public get enabled(): boolean {
+    return this._enabled
+  }
+
+  public enable(): void {
+    this._enabled = true
+  }
+
+  public disable(): void {
+    this._enabled = false
+  }
+  // #endregion
+
   // #region Key Access
   public getKey(key: InputCode): boolean {
+    if (!this._enabled) return false
     return this.keys.has(key)
   }
 
   public setKey(key: InputCode, pressed: boolean): void {
+    if (!this._enabled) return
+
     if (pressed) this.keys.add(key)
     else this.keys.delete(key)
 
