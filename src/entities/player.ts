@@ -283,13 +283,13 @@ export const createPlayer = (
 
       // Matter.Composite.add(physics.world, itemBody)
       if (inputs) {
-        inputs.registerInput(PlayerInput.WalkLeft, 'KeyA')
-        inputs.registerInput(PlayerInput.WalkRight, 'KeyD')
-        inputs.registerInput(PlayerInput.Jump, 'Space')
-        inputs.registerInput(PlayerInput.Crouch, 'KeyS')
-        inputs.registerInput(PlayerInput.Jog, 'ShiftLeft')
-        inputs.registerInput(PlayerInput.Attack, 'MouseLeft')
-        inputs.registerInput(PlayerInput.ToggleNoclip, 'KeyV')
+        inputs.registerInput(PlayerInput.WalkLeft, 'Walk Left', 'KeyA')
+        inputs.registerInput(PlayerInput.WalkRight, 'Walk Right', 'KeyD')
+        inputs.registerInput(PlayerInput.Jump, 'Jump', 'Space')
+        inputs.registerInput(PlayerInput.Crouch, 'Crouch', 'KeyS')
+        inputs.registerInput(PlayerInput.Jog, 'Jog', 'ShiftLeft')
+        inputs.registerInput(PlayerInput.Attack, 'Attack', 'MouseLeft')
+        inputs.registerInput(PlayerInput.ToggleNoclip, 'Toggle Noclip', 'KeyV')
 
         inputs.addListener(PlayerInput.ToggleNoclip, onToggleNoclip)
       }
