@@ -96,14 +96,29 @@ export class InputManager extends EventEmitter<InputEvents> {
   }
 
   // #region Enable / Disable
+  /**
+   * Returns true if the no contexts have requested the input system be disabled
+   */
   public get enabled(): boolean {
     return this.disabledBy.size === 0
   }
 
+  /**
+   * Request the input system be enabled. A unique (enough) identifier is required
+   * in case multiple contexts want to enable / disable the input system.
+   *
+   * @param by - Context Identifier
+   */
   public enable(by: string): void {
     this.disabledBy.delete(by)
   }
 
+  /**
+   * Request the input system be disabled. A unique (enough) identifier is required
+   * in case multiple contexts want to enable / disable the input system.
+   *
+   * @param by - Context Identifier
+   */
   public disable(by: string): void {
     this.disabledBy.add(by)
   }
@@ -111,21 +126,32 @@ export class InputManager extends EventEmitter<InputEvents> {
 
   // #region Key Access
   /**
-   * Returns the human readable name of an input code
+   * Returns the human readable name of a key
    *
    * eg: `LetterA` becomes `A`, `MouseRight` becomes `RMB`
    *
-   * @param key - Input Code
+   * @param key - Key Code
    */
   public getKeyName(key: InputCode): string {
     return inputNames[key] ?? key
   }
 
+  /**
+   * Get whether a key is currently pressed
+   *
+   * @param key - Key Code
+   */
   public getKey(key: InputCode): boolean {
     if (!this.enabled) return false
     return this.keys.has(key)
   }
 
+  /**
+   * Set key pressed state
+   *
+   * @param key - Key Code
+   * @returns
+   */
   public setKey(key: InputCode, pressed: boolean): void {
     if (!this.enabled) return
 
@@ -158,6 +184,13 @@ export class InputManager extends EventEmitter<InputEvents> {
     }
   }
 
+  /**
+   * Register a named input that can be rebound at runtime
+   *
+   * @param id - Input ID, must be unique
+   * @param name - Human readable name, used in rebinding UI
+   * @param defaultKey - Key used as a fallback when no keys are bound
+   */
   public registerInput(id: string, name: string, defaultKey: InputCode): void {
     // @ts-expect-error String Union
     if (inputCodes.includes(id)) {
@@ -172,6 +205,14 @@ export class InputManager extends EventEmitter<InputEvents> {
     this.updateInputs()
   }
 
+  /**
+   * Bind a key to a named input.
+   *
+   * Pass `undefined` as the input to unbind the key from any inputs.
+   *
+   * @param key - Key Code
+   * @param input - Input ID
+   */
   public bindInput(key: InputCode, input: string | undefined): void {
     if (input) this.bindings.set(key, input)
     else this.bindings.delete(key)
@@ -181,6 +222,11 @@ export class InputManager extends EventEmitter<InputEvents> {
   // #endregion
 
   // #region Input Access
+  /**
+   * Get the human readable name for a named input
+   *
+   * @param input - Input ID
+   */
   public getInputName(input: string): string | undefined {
     const mapped = this.inputs.get(input)
     if (!mapped) return undefined
@@ -188,6 +234,11 @@ export class InputManager extends EventEmitter<InputEvents> {
     return mapped.name
   }
 
+  /**
+   * Get the current pressed state of a named input
+   *
+   * @param input - Input ID
+   */
   public getInput(input: string): boolean | undefined {
     const keys = this.inputMap.get(input)
     if (!keys || keys.size === 0) return undefined
