@@ -3,6 +3,7 @@ import type { LiteralUnion } from 'type-fest'
 import type { Camera } from '~/entities/camera.js'
 import type { Vector } from '~/math/vector.js'
 import { CountMap } from './countmap.js'
+import { inputNames } from './inputNames.js'
 import { inputCodes, InputCodeSchema } from './inputcode.js'
 import type { InputCode, MouseButton } from './inputcode.js'
 
@@ -106,6 +107,17 @@ export class InputManager extends EventEmitter<InputEvents> {
   // #endregion
 
   // #region Key Access
+  /**
+   * Returns the human readable name of an input code
+   *
+   * eg: `LetterA` becomes `A`, `MouseRight` becomes `RMB`
+   *
+   * @param key - Input Code
+   */
+  public getKeyName(key: InputCode): string {
+    return inputNames[key] ?? key
+  }
+
   public getKey(key: InputCode): boolean {
     if (!this.enabled) return false
     return this.keys.has(key)
