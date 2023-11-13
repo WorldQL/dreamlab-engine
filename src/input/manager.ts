@@ -2,8 +2,8 @@ import EventEmitter from 'eventemitter3'
 import type { LiteralUnion } from 'type-fest'
 import type { Camera } from '~/entities/camera.js'
 import type { Vector } from '~/math/vector.js'
-import { inputCodes, InputCodeSchema } from './keycode.js'
-import type { InputCode, MouseButton } from './keycode.js'
+import { inputCodes, InputCodeSchema } from './inputcode.js'
+import type { InputCode, MouseButton } from './inputcode.js'
 
 class CountMap<K> {
   private readonly _map: Map<K, number> = new Map()
