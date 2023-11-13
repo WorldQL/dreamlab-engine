@@ -206,6 +206,21 @@ export class InputManager extends EventEmitter<InputEvents> {
   }
 
   /**
+   * Get a list of all registered inputs, their human readable names, and assigned keys
+   */
+  public getRegisteredInputs(): readonly (readonly [
+    input: string,
+    name: string,
+    keys: readonly InputCode[],
+  ])[] {
+    const inputs = [...this.inputs.entries()]
+    return inputs.map(([input, { name }]) => {
+      const keys = this.inputMap.get(input) ?? new Set()
+      return [input, name, [...keys]] as const
+    })
+  }
+
+  /**
    * Bind a key to a named input.
    *
    * Pass `undefined` as the input to unbind the key from any inputs.
