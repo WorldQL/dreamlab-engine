@@ -1,66 +1,52 @@
-export interface ClientUIManager {
+const applyStyles = (element: HTMLElement, interactable: boolean) => {
+  element.style.position = 'absolute'
+  element.style.width = '100%'
+  element.style.height = '100%'
+  element.style.top = '0'
+  element.style.left = '0'
+
+  element.style.pointerEvents = interactable ? 'auto' : 'none'
+  element.style.userSelect = interactable ? 'auto' : 'none'
+}
+
+export interface UIManager {
   /**
-   * Add a DOM node to the UI overlay
+   * Create and attach a new DOM root in the UI system
    *
-   * @param node - HTML Node
+   * @param interactable - Set to `true` to allow `pointer-events` and `user-select`
    */
-  add(node: Node): void
+  create(this: void, interactable?: boolean): ShadowRoot
 
   /**
-   * Remove a DOM node from the UI overlay
+   * Remove a DOM root from the UI system
    *
-   * @param node - HTML Node
+   * @param root - UI DOM root
    */
-  remove(node: Node): void
-
-  /**
-   * Get a list of CSS Style Sheets for the UI root
-   */
-  styles(): CSSStyleSheet[]
-
-  /**
-   * Enable `user-select` and `pointer-events` on a UI element
-   *
-   * @param element - HTML Element
-   */
-  makeInteractable(element: HTMLElement): void
+  remove(this: void, root: ShadowRoot): void
 }
 
 export const createClientUI = (
   canvasContainer: Element,
-  id = 'client-ui-container',
-): ClientUIManager => {
-  const rootElement = document.createElement('div')
-  rootElement.id = id
+  id = 'dreamlab-ui',
+): UIManager => {
+  const uiRoot = document.createElement('div')
+  uiRoot.id = id
+  applyStyles(uiRoot, false)
 
-  // always on top, mouse click-through:
-  rootElement.style.pointerEvents = 'none'
-  rootElement.style.userSelect = 'none'
-  rootElement.style.position = 'absolute'
-  rootElement.style.width = '100%'
-  rootElement.style.height = '100%'
-  rootElement.style.top = '0'
-  rootElement.style.left = '0'
+  canvasContainer.appendChild(uiRoot)
+  const shadowRoot = uiRoot.attachShadow({ mode: 'closed' })
 
-  canvasContainer.appendChild(rootElement)
-  const shadowRoot = rootElement.attachShadow({ mode: 'closed' })
+  const ui: UIManager = {
+    create: (interactable = false) => {
+      const div = document.createElement('div')
+      applyStyles(div, interactable)
 
-  const ui: ClientUIManager = {
-    add(node) {
-      shadowRoot.appendChild(node)
+      shadowRoot.appendChild(div)
+      return div.attachShadow({ mode: 'closed' })
     },
 
-    remove(node) {
-      shadowRoot.removeChild(node)
-    },
-
-    styles() {
-      return shadowRoot.adoptedStyleSheets
-    },
-
-    makeInteractable(element) {
-      element.style.userSelect = 'auto'
-      element.style.pointerEvents = 'auto'
+    remove: root => {
+      shadowRoot.removeChild(root.host)
     },
   }
 

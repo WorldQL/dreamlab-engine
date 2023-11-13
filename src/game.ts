@@ -35,7 +35,7 @@ import type {
   UID,
 } from '~/spawnable/spawnableEntity.js'
 import { createClientUI } from '~/ui.js'
-import type { ClientUIManager } from '~/ui.js'
+import type { UIManager } from '~/ui.js'
 import { createDebug } from '~/utils/debug.js'
 import type { Debug } from '~/utils/debug.js'
 
@@ -135,7 +135,7 @@ async function initRenderContext<Server extends boolean>(
 
 // #region Game Interface
 interface GameClient {
-  get ui(): ClientUIManager
+  get ui(): UIManager
   get inputs(): InputManager
   get render(): RenderContextExt
   get network(): NetClient | undefined
@@ -456,7 +456,7 @@ export async function createGame<Server extends boolean>(
     ? undefined
     : {
         get ui() {
-          return ui as ClientUIManager
+          return ui as UIManager
         },
         get inputs() {
           return inputs as InputManager
