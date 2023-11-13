@@ -2,36 +2,9 @@ import EventEmitter from 'eventemitter3'
 import type { LiteralUnion } from 'type-fest'
 import type { Camera } from '~/entities/camera.js'
 import type { Vector } from '~/math/vector.js'
+import { CountMap } from './countmap.js'
 import { inputCodes, InputCodeSchema } from './inputcode.js'
 import type { InputCode, MouseButton } from './inputcode.js'
-
-class CountMap<K> {
-  private readonly _map: Map<K, number> = new Map()
-
-  public increment(key: K): number {
-    const count = (this._map.get(key) ?? 0) + 1
-    this._map.set(key, count)
-
-    return count
-  }
-
-  public decrement(key: K): number {
-    const count = (this._map.get(key) ?? 0) - 1
-    if (count > 0) this._map.set(key, count)
-    else this._map.delete(key)
-
-    return Math.max(count, 0)
-  }
-
-  public has(key: K): boolean {
-    const count = this._map.get(key) ?? 0
-    return count > 0
-  }
-
-  public count(key: K): number {
-    return this._map.get(key) ?? 0
-  }
-}
 
 type Unregister = (this: unknown) => void
 type KeyOrInput = LiteralUnion<InputCode, string>
