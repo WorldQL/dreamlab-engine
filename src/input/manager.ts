@@ -9,7 +9,9 @@ import type { InputCode, MouseButton } from './inputcode.js'
 
 type Unregister = (this: unknown) => void
 type KeyOrInput = LiteralUnion<InputCode, string>
-type InputEvents = Record<KeyOrInput, [pressed: boolean]>
+type InputEvents = Record<KeyOrInput, [pressed: boolean]> & {
+  onRegistered: [id: string]
+}
 
 function onKey(this: InputManager, ev: KeyboardEvent, pressed: boolean): void {
   const result = InputCodeSchema.safeParse(ev.code)
@@ -238,6 +240,10 @@ export class InputManager extends EventEmitter<InputEvents> {
    * @param defaultKey - Key used as a fallback when no keys are bound
    */
   public registerInput(id: string, name: string, defaultKey: InputCode): void {
+    if (id === 'onRegistered') {
+      throw new Error('illegal input id')
+    }
+
     // @ts-expect-error String Union
     if (inputCodes.includes(id)) {
       throw new Error('input name cannot be a key code')
@@ -249,6 +255,7 @@ export class InputManager extends EventEmitter<InputEvents> {
 
     this.inputs.set(id, { defaultKey, name })
     this.updateInputs()
+    this.emit('onRegistered', id)
   }
 
   /**
