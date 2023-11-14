@@ -2,19 +2,16 @@ import type { Texture } from 'pixi.js'
 import type { KnownAnimation } from '~/entities/player.js'
 import { createSprite } from '~/textures/sprites.js'
 
-export interface ItemOptions {
-  anchorX?: number | undefined
-  anchorY?: number | undefined
-  hand?: 'left' | 'right'
-  speedMultiplier?: number
-}
-
 export interface Item {
   displayName: string
   texture: Texture
   textureURL: string
   animationName: string
-  itemOptions?: ItemOptions
+  anchorX: number
+  anchorY: number
+  rotation: number
+  bone: 'handLeft' | 'handRight'
+  speedMultiplier: number | undefined
 }
 
 export type PlayerItem = Item | undefined
@@ -23,7 +20,11 @@ export const createItem = (
   displayName: string,
   textureURL: string,
   animationName: string,
-  itemOptions?: ItemOptions,
+  speedMultiplier: number | undefined,
+  anchorX = 0.5,
+  anchorY = 0.5,
+  rotation = 0,
+  bone: 'handLeft' | 'handRight' = 'handRight',
 ): PlayerItem => {
   const texture = createSprite(textureURL).texture
 
@@ -46,10 +47,11 @@ export const createItem = (
     texture,
     textureURL,
     animationName: finalAnimationName,
-  }
-
-  if (itemOptions) {
-    newItem.itemOptions = itemOptions
+    anchorX,
+    anchorY,
+    rotation,
+    bone,
+    speedMultiplier,
   }
 
   return newItem

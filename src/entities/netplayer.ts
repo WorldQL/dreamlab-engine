@@ -259,9 +259,15 @@ export const createNetPlayer = (
         animationChanged = false
         sprite.textures = animations[currentAnimation].textures
         const getSpeedMultiplier = (animation_name: string) => {
+          if (playerItem?.speedMultiplier) {
+            return playerItem.speedMultiplier
+          }
+
           switch (animation_name) {
             case 'greatsword':
               return 2.2
+            case 'punch':
+              return 2
             default:
               return 1
           }
@@ -299,7 +305,7 @@ export const createNetPlayer = (
           right: 'handRight',
         }
 
-        const currentHandKey = currentItem.itemOptions?.hand ?? 'left'
+        const currentHandKey = currentItem.bone ?? 'left'
         const mappedHand = handMapping[currentHandKey]
 
         const pos = Vec.add(
@@ -318,12 +324,15 @@ export const createNetPlayer = (
             mappedHand as 'handLeft' | 'handRight'
           ][currentFrame]
 
-        let rotation = Math.atan2(
+        let handRotation = Math.atan2(
           handOffsets!.y.y - handOffsets!.x.y,
           handOffsets!.y.x - handOffsets!.x.x,
         )
-        rotation *= scale === -1 ? -1 : 1
-        itemSprite.rotation = rotation
+        let itemRotation = currentItem.rotation * (Math.PI / 180)
+
+        itemRotation *= scale === -1 ? -1 : 1
+        handRotation *= scale === -1 ? -1 : 1
+        itemSprite.rotation = handRotation + itemRotation
 
         const initialDimensions = {
           width: itemSprite.width,
@@ -332,8 +341,7 @@ export const createNetPlayer = (
         itemSprite.scale.x = -scale
         Object.assign(itemSprite, initialDimensions)
 
-        const { anchorX = 0, anchorY = 1 } = currentItem.itemOptions ?? {}
-        itemSprite.anchor.set(anchorX, anchorY)
+        itemSprite.anchor.set(currentItem.anchorX, currentItem.anchorY)
       } else {
         itemSprite.visible = false
       }

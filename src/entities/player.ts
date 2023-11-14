@@ -499,8 +499,8 @@ export const createPlayer = (
         currentAnimation = newAnimation
         sprite.textures = animations[newAnimation].textures
         const getSpeedMultiplier = (animation_name: string) => {
-          if (playerItem?.itemOptions?.speedMultiplier) {
-            return playerItem.itemOptions.speedMultiplier
+          if (playerItem?.speedMultiplier) {
+            return playerItem.speedMultiplier
           }
 
           switch (animation_name) {
@@ -553,11 +553,11 @@ export const createPlayer = (
         }
 
         const handMapping: Record<string, 'handLeft' | 'handRight'> = {
-          left: 'handLeft',
-          right: 'handRight',
+          handLeft: 'handLeft',
+          handRight: 'handRight',
         }
 
-        const currentHandKey = currentItem.itemOptions?.hand ?? 'left'
+        const currentHandKey = currentItem.bone ?? 'handLeft'
         const mappedHand = handMapping[currentHandKey]
 
         const pos = Vec.add(
@@ -576,12 +576,15 @@ export const createPlayer = (
             mappedHand as 'handLeft' | 'handRight'
           ][currentFrame + getFrameOffset()]
 
-        let rotation = Math.atan2(
+        let handRotation = Math.atan2(
           handOffsets!.y.y - handOffsets!.x.y,
           handOffsets!.y.x - handOffsets!.x.x,
         )
-        rotation *= scale === -1 ? -1 : 1
-        itemSprite.rotation = rotation
+        let itemRotation = currentItem.rotation * (Math.PI / 180)
+
+        itemRotation *= scale === -1 ? -1 : 1
+        handRotation *= scale === -1 ? -1 : 1
+        itemSprite.rotation = handRotation + itemRotation
 
         const initialDimensions = {
           width: itemSprite.width,
@@ -590,8 +593,7 @@ export const createPlayer = (
         itemSprite.scale.x = -scale
         Object.assign(itemSprite, initialDimensions)
 
-        const { anchorX = 0, anchorY = 1 } = currentItem.itemOptions ?? {}
-        itemSprite.anchor.set(anchorX, anchorY)
+        itemSprite.anchor.set(currentItem.anchorX, currentItem.anchorY)
       } else {
         itemSprite.visible = false
       }
