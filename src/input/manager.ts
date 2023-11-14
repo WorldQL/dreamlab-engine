@@ -33,10 +33,14 @@ function onMouse(this: InputManager, ev: MouseEvent, pressed: boolean): void {
   this.setKey(mouseButton, pressed)
 }
 
+type DisabledType = 'all' | 'keyboard' | 'mouse'
+
 export class InputManager extends EventEmitter<InputEvents> {
   private readonly canvas: HTMLCanvasElement
   private readonly camera: Camera
-  private readonly disabledBy: Set<string>
+
+  private readonly keyboardDisabledBy: Set<string>
+  private readonly mouseDisabledBy: Set<string>
 
   private readonly keys = new Set<InputCode>()
   private readonly held = new Set<InputCode>()
@@ -60,7 +64,9 @@ export class InputManager extends EventEmitter<InputEvents> {
 
     this.canvas = ctx.canvas
     this.camera = ctx.camera
-    this.disabledBy = new Set()
+
+    this.keyboardDisabledBy = new Set()
+    this.mouseDisabledBy = new Set()
   }
 
   public registerListeners(): Unregister {
@@ -97,30 +103,51 @@ export class InputManager extends EventEmitter<InputEvents> {
 
   // #region Enable / Disable
   /**
-   * Returns true if the no contexts have requested the input system be disabled
+   * Get if any input types have been disabled
    */
-  public get enabled(): boolean {
-    return this.disabledBy.size === 0
+  public get disabled(): DisabledType | undefined {
+    const keyboard = this.keyboardDisabledBy.size
+    const mouse = this.mouseDisabledBy.size
+
+    if (keyboard > 0 && mouse > 0) return 'all'
+    if (keyboard > 0 && mouse === 0) return 'keyboard'
+    if (keyboard === 0 && mouse > 0) return 'mouse'
+
+    return undefined
   }
 
   /**
    * Request the input system be enabled. A unique (enough) identifier is required
    * in case multiple contexts want to enable / disable the input system.
    *
+   * @param type - Input type to disable
    * @param by - Context Identifier
    */
-  public enable(by: string): void {
-    this.disabledBy.delete(by)
+  public enable(type: DisabledType, by: string): void {
+    if (type === 'all' || type === 'keyboard') {
+      this.keyboardDisabledBy.delete(by)
+    }
+
+    if (type === 'all' || type === 'mouse') {
+      this.mouseDisabledBy.delete(by)
+    }
   }
 
   /**
    * Request the input system be disabled. A unique (enough) identifier is required
    * in case multiple contexts want to enable / disable the input system.
    *
+   * @param type - Input type to disable
    * @param by - Context Identifier
    */
-  public disable(by: string): void {
-    this.disabledBy.add(by)
+  public disable(type: DisabledType, by: string): void {
+    if (type === 'all' || type === 'keyboard') {
+      this.keyboardDisabledBy.add(by)
+    }
+
+    if (type === 'all' || type === 'mouse') {
+      this.mouseDisabledBy.add(by)
+    }
   }
   // #endregion
 
@@ -142,7 +169,17 @@ export class InputManager extends EventEmitter<InputEvents> {
    * @param key - Key Code
    */
   public getKey(key: InputCode): boolean {
-    if (!this.enabled) return false
+    const disabled = this.disabled
+    const isMouse = this.isMouseInput(key)
+
+    if ((disabled === 'all' || disabled === 'keyboard') && !isMouse) {
+      return false
+    }
+
+    if ((disabled === 'all' || disabled === 'mouse') && isMouse) {
+      return false
+    }
+
     return this.keys.has(key)
   }
 
@@ -153,7 +190,16 @@ export class InputManager extends EventEmitter<InputEvents> {
    * @returns
    */
   public setKey(key: InputCode, pressed: boolean): void {
-    if (!this.enabled) return
+    const disabled = this.disabled
+    const isMouse = this.isMouseInput(key)
+
+    if ((disabled === 'all' || disabled === 'keyboard') && !isMouse) {
+      return
+    }
+
+    if ((disabled === 'all' || disabled === 'mouse') && isMouse) {
+      return
+    }
 
     if (pressed) this.keys.add(key)
     else this.keys.delete(key)
@@ -263,6 +309,10 @@ export class InputManager extends EventEmitter<InputEvents> {
   // #endregion
 
   // #region Mouse
+  private isMouseInput(key: InputCode): boolean {
+    return key.startsWith('Mouse')
+  }
+
   private onMouseMove(this: InputManager, ev: MouseEvent): void {
     this.mousePosition = {
       x: ev.offsetX,
