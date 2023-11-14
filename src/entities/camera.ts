@@ -1,6 +1,7 @@
 import type { Container } from 'pixi.js'
 import { createEntity } from '~/entity.js'
 import type { Entity } from '~/entity.js'
+import type { Game } from '~/game.js'
 import { lerp } from '~/math/general.js'
 import type { Transform } from '~/math/transform.js'
 import { distance, lerp2, v, Vec } from '~/math/vector.js'
@@ -27,7 +28,7 @@ interface Data {
 }
 
 interface Render {
-  container: HTMLDivElement
+  game: Game<false>
   stage: Container
 
   text: DebugText
@@ -69,8 +70,6 @@ export const createCamera = (
 
   let zoomScaleLevelIdx = 3
   const onWheel = (ev: WheelEvent) => {
-    ev.preventDefault()
-
     const delta = -Math.sign(ev.deltaY)
     zoomScaleLevelIdx = Math.max(
       0,
@@ -133,7 +132,7 @@ export const createCamera = (
       return { debug: game.debug }
     },
 
-    async initRenderContext(_, { container, stage }) {
+    async initRenderContext({ game }, { stage }) {
       if (targetRef) {
         const targetPosition =
           'position' in targetRef
@@ -147,18 +146,18 @@ export const createCamera = (
       const text = createDebugText(0)
       stage.addChild(text.gfx)
 
-      container.addEventListener('wheel', onWheel)
+      game.client.inputs.addListener('onWheel', onWheel)
 
-      return { container, stage, text }
+      return { game, stage, text }
     },
 
     teardown(_) {
       // No-op
     },
 
-    teardownRenderContext({ container, text }) {
+    teardownRenderContext({ game, text }) {
       text.gfx.destroy()
-      container.removeEventListener('wheel', onWheel)
+      game.client.inputs.addListener('onWheel', onWheel)
     },
 
     onRenderFrame({ delta }, { debug }, { stage, text }) {
