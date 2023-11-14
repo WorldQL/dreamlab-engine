@@ -259,6 +259,24 @@ export class InputManager extends EventEmitter<InputEvents> {
   }
 
   /**
+   * Get the human readable name and assigned keys for a registered input
+   *
+   * @param id - Input ID
+   */
+  public getRegisteredInput(id: string):
+    | {
+        name: string
+        keys: readonly InputCode[]
+      }
+    | undefined {
+    const input = this.inputs.get(id)
+    if (!input) return undefined
+
+    const keys = this.inputMap.get(id) ?? new Set()
+    return { name: input.name, keys: [...keys] }
+  }
+
+  /**
    * Get a list of all registered inputs, their human readable names, and assigned keys
    */
   public getRegisteredInputs(): readonly (readonly [
