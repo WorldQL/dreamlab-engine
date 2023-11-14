@@ -180,7 +180,7 @@ export const createPlayer = (
       case 'bow':
         return currentFrame === 9
       case 'shoot':
-        return currentFrame === 1
+        return currentFrame === 0
       default:
         return false
     }
