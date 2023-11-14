@@ -215,13 +215,8 @@ export class InputManager extends EventEmitter<InputEvents> {
     this.inputMap.clear()
     this.reverseInputMap.clear()
 
-    const defaultKeyBindings = new Map<InputCode, string>()
-    for (const [input, { defaultKey }] of this.inputs.entries()) {
-      defaultKeyBindings.set(defaultKey, input)
-    }
-
     for (const key of inputCodes) {
-      const input = this.bindings.get(key) ?? defaultKeyBindings.get(key)
+      const input = this.bindings.get(key)
       if (!input) continue
 
       const set = this.inputMap.get(input) ?? new Set()
@@ -229,6 +224,15 @@ export class InputManager extends EventEmitter<InputEvents> {
 
       this.inputMap.set(input, set)
       this.reverseInputMap.set(key, input)
+    }
+
+    for (const [input, { defaultKey }] of this.inputs.entries()) {
+      if (this.inputMap.has(input)) continue
+
+      this.reverseInputMap.set(defaultKey, input)
+      const set = this.inputMap.get(input) ?? new Set()
+      set.add(defaultKey)
+      this.inputMap.set(input, set)
     }
   }
 
