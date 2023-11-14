@@ -11,7 +11,11 @@ type Unregister = (this: unknown) => void
 type KeyOrInput = LiteralUnion<InputCode, string>
 type InputEvents = Record<KeyOrInput, [pressed: boolean]> & {
   onRegistered: [id: string]
+  onWheel: [ev: WheelEvent]
 }
+
+// Keep this in sync with any special events added above
+const reserved = new Set(['onRegistered', 'onWheel'])
 
 function onKey(this: InputManager, ev: KeyboardEvent, pressed: boolean): void {
   const result = InputCodeSchema.safeParse(ev.code)
@@ -81,6 +85,7 @@ export class InputManager extends EventEmitter<InputEvents> {
     const onMouseUp = (ev: MouseEvent) => boundOnMouse(ev, false)
     const onMouseMove = this.onMouseMove.bind(this)
     const onMouseOut = this.onMouseOut.bind(this)
+    const onWheel = this.onWheel.bind(this)
 
     window.addEventListener('keydown', onKeyDown)
     window.addEventListener('keyup', onKeyUp)
@@ -89,6 +94,7 @@ export class InputManager extends EventEmitter<InputEvents> {
     this.canvas.addEventListener('mouseover', onMouseMove)
     this.canvas.addEventListener('mousemove', onMouseMove)
     this.canvas.addEventListener('mouseout', onMouseOut)
+    this.canvas.addEventListener('wheel', onWheel)
 
     const unregister: Unregister = () => {
       window.removeEventListener('keydown', onKeyDown)
@@ -98,6 +104,7 @@ export class InputManager extends EventEmitter<InputEvents> {
       this.canvas.removeEventListener('mouseover', onMouseMove)
       this.canvas.removeEventListener('mousemove', onMouseMove)
       this.canvas.removeEventListener('mouseout', onMouseOut)
+      this.canvas.removeEventListener('wheel', onWheel)
     }
 
     return unregister
@@ -244,7 +251,7 @@ export class InputManager extends EventEmitter<InputEvents> {
    * @param defaultKey - Key used as a fallback when no keys are bound
    */
   public registerInput(id: string, name: string, defaultKey: InputCode): void {
-    if (id === 'onRegistered') {
+    if (reserved.has(id)) {
       throw new Error('illegal input id')
     }
 
@@ -354,6 +361,13 @@ export class InputManager extends EventEmitter<InputEvents> {
   private onMouseOut(): void {
     this.mousePosition = undefined
     this.updateCursor()
+  }
+
+  private onWheel(ev: WheelEvent): void {
+    const disabled = this.disabled
+    if (disabled === 'all' || disabled === 'mouse') return
+
+    this.emit('onWheel', ev)
   }
 
   private updateCursor(): void {
