@@ -604,6 +604,9 @@ export async function createGame<Server extends boolean>(
 
       // Assign unique identifier
       const uid = definition.uid ?? cuid2.createId()
+      if (spawnables.has(uid)) {
+        throw new Error('entity already spawned')
+      }
 
       // Verify args schema
       const args = fn.argsSchema.parse(definition.args)
