@@ -512,7 +512,7 @@ export async function createGame<Server extends boolean>(
     },
 
     get entities() {
-      return [...entities, ...spawnables.values()]
+      return [...entities]
     },
 
     get registered() {
