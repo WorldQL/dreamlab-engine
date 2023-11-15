@@ -389,9 +389,10 @@ export const createPlayer = (
         if (jump) movement.y -= 1
         if (crouch) movement.y += 1
 
+        const speed = isJogging ? noclipSpeed * 2.5 : noclipSpeed
         const newPosition = Vec.add(
           body.position,
-          Vec.mult(movement, noclipSpeed * delta * 50),
+          Vec.mult(movement, speed * delta * 50),
         )
 
         // @ts-expect-error Incorrect typings
