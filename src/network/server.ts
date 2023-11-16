@@ -1,4 +1,5 @@
 import type { Except } from 'type-fest'
+import type { Transform } from '~/math/transform.js'
 import type { Data, Listeners } from './shared.js'
 
 export interface PeerInfo {
@@ -23,4 +24,7 @@ export interface NetServer extends Listeners<NetServerListeners> {
   sendCustomMessage(peerID: string, channel: string, data: Data): void
   broadcastCustomMessage(channel: string, data: Data): void
   broadcastSyncedValue(entityID: string, key: string, value: unknown): void
+
+  sendTransformUpdate(entityID: string, transform: Transform): void
+  sendArgsUpdate(entityID: string, path: string, value: unknown): void
 }

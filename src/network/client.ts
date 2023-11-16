@@ -1,5 +1,6 @@
 import type { CamelCase, Except } from 'type-fest'
 import type { PlayerInput } from '~/entities/player.js'
+import type { Transform } from '~/math/transform.js'
 import type { Vector } from '~/math/vector.js'
 import type { Data, Listeners } from './shared.js'
 
@@ -20,4 +21,7 @@ export interface NetClient extends Listeners<NetClientListeners> {
   sendPlayerPosition(position: Vector, velocity: Vector, flipped: boolean): void
   sendPlayerMotionInputs(inputs: InputMap): void
   sendPlayerAnimation(animation: string): void
+
+  sendTransformUpdate(entityID: string, transform: Transform): void
+  sendArgsUpdate(entityID: string, path: string, value: unknown): void
 }

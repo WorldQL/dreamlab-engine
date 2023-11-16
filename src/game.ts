@@ -615,7 +615,7 @@ export async function createGame<Server extends boolean>(
       definition.args = args
 
       // Track changes to args and trigger entity callback
-      const watchedArgs = onChange(args, (path: string) => {
+      const watchedArgs = onChange(args, (path: string, value: unknown) => {
         const entity = this.lookup(uid)
         if (!entity || typeof entity.onArgsUpdate !== 'function') return
 
@@ -625,11 +625,17 @@ export async function createGame<Server extends boolean>(
           : undefined
 
         entity.onArgsUpdate(path, data, render)
+        network?.sendArgsUpdate(uid, path, value)
       })
 
       // Automatically track transform for the definition
       const transform = trackTransform(definition.transform)
       definition.transform = transform
+
+      const syncTransform = () => network?.sendTransformUpdate(uid, transform)
+      transform.addPositionListener(syncTransform)
+      transform.addRotationListener(syncTransform)
+      transform.addZIndexListener(syncTransform)
 
       const context: SpawnableContext = {
         uid,
