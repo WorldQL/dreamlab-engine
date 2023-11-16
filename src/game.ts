@@ -38,6 +38,7 @@ import { createClientUI } from '~/ui.js'
 import type { UIManager } from '~/ui.js'
 import { createDebug } from '~/utils/debug.js'
 import type { Debug } from '~/utils/debug.js'
+import { onlyNetClient } from './network/shared'
 
 // #region Options
 interface ClientOptions {
@@ -625,14 +626,20 @@ export async function createGame<Server extends boolean>(
           : undefined
 
         entity.onArgsUpdate(path, data, render)
-        network?.sendArgsUpdate(uid, path, value)
+
+        if (network?.type !== 'client') return
+        network.sendArgsUpdate(uid, path, value)
       })
 
       // Automatically track transform for the definition
       const transform = trackTransform(definition.transform)
       definition.transform = transform
 
-      const syncTransform = () => network?.sendTransformUpdate(uid, transform)
+      const syncTransform = () => {
+        if (network?.type !== 'client') return
+        network.sendTransformUpdate(uid, transform)
+      }
+
       transform.addPositionListener(syncTransform)
       transform.addRotationListener(syncTransform)
       transform.addZIndexListener(syncTransform)
