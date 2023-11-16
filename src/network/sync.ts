@@ -76,7 +76,15 @@ export const isSyncedValue = (
   return symbol in value && value[symbol] === true
 }
 
-export const syncEntities = (game: Game<true>) => {
+/**
+ * **Interal Dreamlab use only.**
+ * **Not to be used in userscripts.**
+ *
+ * Send sync packets for all spawnable entities with synced values
+ *
+ * @param game - Server Side Game
+ */
+export const syncEntities = (game: Game<true>): void => {
   const spawnables = game.entities.filter(isSpawnableEntity)
 
   for (const entity of spawnables) {
@@ -90,6 +98,17 @@ export const syncEntities = (game: Game<true>) => {
   }
 }
 
+/**
+ * **Interal Dreamlab use only.**
+ * **Not to be used in userscripts.**
+ *
+ * Update a synced value from an incoming server packet
+ *
+ * @param game - Client Side Game
+ * @param entityID - Entity Unique ID
+ * @param key - Synced Value Key
+ * @param value - Value
+ */
 export const updateSyncedValue = (
   game: Game<false>,
   entityID: string,
