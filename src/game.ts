@@ -38,7 +38,6 @@ import { createClientUI } from '~/ui.js'
 import type { UIManager } from '~/ui.js'
 import { createDebug } from '~/utils/debug.js'
 import type { Debug } from '~/utils/debug.js'
-import { onlyNetClient } from './network/shared'
 
 // #region Options
 interface ClientOptions {
