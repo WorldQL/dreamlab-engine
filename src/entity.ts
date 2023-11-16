@@ -6,11 +6,21 @@ import type { Physics } from '~/physics.js'
 import { mergeObjects } from '~/utils/types.js'
 
 export interface Time {
+  /**
+   * Time since the last physics tick or rendered frame, in seconds
+   */
   delta: number
+
+  /**
+   * Monotonic clock representing the time since game start, in seconds
+   */
   time: number
 }
 
 export interface RenderTime extends Time {
+  /**
+   * Physics smoothing factor
+   */
   smooth: number
 }
 

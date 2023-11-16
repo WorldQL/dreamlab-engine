@@ -85,7 +85,9 @@ interface CommonOptions<Server extends boolean> {
   isServer: Server
 
   /**
-   * Physics Tickrate in Hz [default: 60]
+   * Physics Tickrate in Hz
+   *
+   * @defaultValue 60
    */
   physicsTickrate?: number
 

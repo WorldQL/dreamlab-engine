@@ -14,10 +14,23 @@ export interface SyncedValue<T> {
   get value(): T
   set value(v: T)
 
+  /**
+   * **Interal Dreamlab use only.**
+   * **Not to be used in userscripts.**
+   */
   sync(): void
   [setter](value: T): void
 }
 
+/**
+ * Created a synced value that will be managed by Dreamlab
+ *
+ * Changes to the value on the server will be replicated to all clients.
+ *
+ * @param game - Game
+ * @param entityID - Entity Unique ID
+ * @param key - Unique ID for this synced value
+ */
 export const syncedValue = <T, Server extends boolean>(
   game: Game<Server>,
   entityID: string,

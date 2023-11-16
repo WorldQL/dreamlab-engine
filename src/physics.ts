@@ -14,26 +14,76 @@ import { ref } from '~/utils/ref.js'
 
 export interface Physics {
   get running(): boolean
+
+  /**
+   * Suspend all physics bodies on entities.
+   *
+   * If no entities are passed, will suspend the entire physics system.
+   */
   suspend(...entities: SpawnableEntity[]): void
+
+  /**
+   * Opposite of {@link Physics.suspend | suspend()}
+   */
   resume(...entities: SpawnableEntity[]): void
   isFrozen(entity: SpawnableEntity): boolean
 
   get engine(): Engine
   get world(): World
 
+  /**
+   * Get all physics bodies for a given entity
+   *
+   * @param entity - Spawnable Entity
+   */
   getBodies(entity: SpawnableEntity): Body[]
+
+  /**
+   * Get the entity that a physics body is registered to
+   *
+   * @param body - Physics Body
+   */
   getEntity(body: Body): SpawnableEntity | undefined
 
+  /**
+   * Register a spawnable entity and its physics bodies with the physics system
+   *
+   * @param entity - Spawnable Entitiy
+   * @param bodies - Physics Bodies
+   */
   register<E extends SpawnableEntity<Data, Render>, Data, Render>(
     entity: E | PartializeSpawnable<E, Data, Render>,
     ...bodies: Body[]
   ): void
+
+  /**
+   * Removes a spawnable entity and its physics bodies from the physics system
+   *
+   * @param entity - Spawnable Entity
+   * @param bodies - Physics Bodies
+   */
   unregister<E extends SpawnableEntity<Data, Render>, Data, Render>(
     entity: E | PartializeSpawnable<E, Data, Render>,
     ...bodies: Body[]
   ): void
 
+  /**
+   * Link a transform object to a physics body
+   *
+   * Changes to the transform will be applied to the physics body,
+   * and updates to the physics body will propagate back to the transform object
+   *
+   * @param body - Physics Body
+   * @param transform - Entity Transform
+   */
   linkTransform(body: Body, transform: TrackedTransform): void
+
+  /**
+   * Undo linking by {@link Physics.linkTransform | linkTransform()}
+   *
+   * @param body - Physics Body
+   * @param transform - Entity Transform
+   */
   unlinkTransform(body: Body, transform: TrackedTransform): void
 
   registerPlayer(player: Player): void
