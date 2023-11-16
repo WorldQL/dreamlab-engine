@@ -34,6 +34,10 @@ export type PositionListener = (
 export type RotationListener = (rotation: number, delta: number) => void
 export type ZIndexListener = (zIndex: number) => void
 
+/**
+ * **Interal Dreamlab use only.**
+ * **Not to be used in userscripts.**
+ */
 export const trackedSymbol = Symbol.for('@dreamlab/core/trackedTransform')
 interface TrackedTransformAugment {
   [trackedSymbol]: { transform: Transform; position: Vector }
@@ -151,6 +155,10 @@ export const trackTransform = (transform: Transform): TrackedTransform => {
   return Object.assign(transformProxy, augment)
 }
 
+/**
+ * **Interal Dreamlab use only.**
+ * **Not to be used in userscripts.**
+ */
 export const isTrackedTransform = (
   transform: TrackedTransform | Transform,
 ): transform is TrackedTransform => {

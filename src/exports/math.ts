@@ -13,4 +13,6 @@ export {
   cloneTransform,
   t,
   trackTransform,
+  isTrackedTransform,
+  trackedSymbol,
 } from '~/math/transform.js'
