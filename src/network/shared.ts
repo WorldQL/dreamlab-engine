@@ -1,5 +1,6 @@
 import type { PascalCase } from 'type-fest'
 import type { Game } from '~/game.js'
+import type { Transform } from '~/math/transform.js'
 import type { NetClient } from './client.js'
 import type { NetServer } from './server.js'
 
@@ -10,6 +11,10 @@ export type Listeners<T extends {}> = {
 }
 
 export type Data = Record<string, unknown>
+export interface NetCommon {
+  sendTransformUpdate(entityID: string, transform: Transform): void
+  sendArgsUpdate(entityID: string, path: string, value: unknown): void
+}
 
 export const onlyNetClient = (game: Game<boolean>): NetClient | undefined => {
   const network = game.server?.network ?? game.client?.network
