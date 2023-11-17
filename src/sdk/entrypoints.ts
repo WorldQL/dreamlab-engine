@@ -1,4 +1,5 @@
 import type { Game } from '~/game.js'
+import { SpawnableDefinitionSchema } from '~/spawnable/definition.js'
 import type { LooseSpawnableDefinition } from '~/spawnable/definition.js'
 
 type InitFn<Server extends boolean> = (
@@ -8,4 +9,6 @@ type InitFn<Server extends boolean> = (
 export type InitClient = InitFn<false>
 export type InitServer = InitFn<false>
 export type InitShared = InitFn<boolean>
+
 export type Level = LooseSpawnableDefinition[]
+export const LevelSchema = SpawnableDefinitionSchema.array()
