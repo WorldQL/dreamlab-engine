@@ -2,5 +2,13 @@ import rfdc from 'rfdc'
 
 export const clone = rfdc()
 
-export * from 'dot-prop'
-export * from 'on-change'
+export {
+  deepKeys,
+  deleteProperty,
+  escapePath,
+  getProperty,
+  hasProperty,
+  setProperty,
+} from 'dot-prop'
+
+export { default as onChange } from 'on-change'
