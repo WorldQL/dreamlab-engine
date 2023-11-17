@@ -106,7 +106,7 @@ export const createBouncyBall = createSpawnableEntity<
       return { camera, stage, gfx, sprite }
     },
 
-    onArgsUpdate(path, _data, render) {
+    onArgsUpdate(path, previous, data, render) {
       if (render && path === 'spriteSource') {
         const { radius, spriteSource } = args
 
@@ -124,25 +124,29 @@ export const createBouncyBall = createSpawnableEntity<
 
         if (render.sprite) render.stage.addChild(render.sprite)
       }
+
+      if (path === 'radius') {
+        const originalRadius = previous.radius
+        const radius = args.radius
+
+        const scale = radius / originalRadius
+        Matter.Body.setAngle(data.body, 0)
+        Matter.Body.scale(data.body, scale, scale)
+        Matter.Body.setAngle(body, toRadians(transform.rotation))
+        Matter.Body.setMass(data.body, mass)
+
+        if (render) {
+          drawCircle(render.gfx, { radius })
+          if (render.sprite) {
+            render.sprite.width = radius * 2
+            render.sprite.height = radius * 2
+          }
+        }
+      }
     },
 
-    onResize({ width, height }, data, render) {
-      const originalRadius = args.radius
-      const radius = Math.max(width / 2, height / 2)
-      args.radius = radius
-
-      const scale = radius / originalRadius
-      Matter.Body.setAngle(data.body, 0)
-      Matter.Body.scale(data.body, scale, scale)
-      Matter.Body.setAngle(body, toRadians(transform.rotation))
-      Matter.Body.setMass(data.body, mass)
-
-      if (!render) return
-      drawCircle(render.gfx, { radius })
-      if (render.sprite) {
-        render.sprite.width = radius * 2
-        render.sprite.height = radius * 2
-      }
+    onResize({ width, height }) {
+      args.radius = Math.max(width / 2, height / 2)
     },
 
     teardown({ physics, body }) {

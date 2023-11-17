@@ -101,7 +101,7 @@ export const createSolid = createSpawnableEntity<
       return { camera, stage, gfx, sprite }
     },
 
-    onArgsUpdate(path, _data, render) {
+    onArgsUpdate(path, previous, data, render) {
       if (render && path === 'spriteSource') {
         const { width, height, spriteSource } = args
 
@@ -116,28 +116,31 @@ export const createSolid = createSpawnableEntity<
 
         if (render.sprite) render.stage.addChild(render.sprite)
       }
+
+      if (path === 'width' || path === 'height') {
+        const { width: originalWidth, height: originalHeight } = previous
+        const { width, height } = args
+
+        const scaleX = width / originalWidth
+        const scaleY = height / originalHeight
+
+        Matter.Body.setAngle(data.body, 0)
+        Matter.Body.scale(data.body, scaleX, scaleY)
+        Matter.Body.setAngle(body, toRadians(transform.rotation))
+
+        if (render) {
+          drawBox(render.gfx, { width, height })
+          if (render.sprite) {
+            render.sprite.width = width
+            render.sprite.height = height
+          }
+        }
+      }
     },
 
-    onResize({ width, height }, data, render) {
-      const originalWidth = args.width
-      const originalHeight = args.height
-
+    onResize({ width, height }) {
       args.width = width
       args.height = height
-
-      const scaleX = width / originalWidth
-      const scaleY = height / originalHeight
-
-      Matter.Body.setAngle(data.body, 0)
-      Matter.Body.scale(data.body, scaleX, scaleY)
-      Matter.Body.setAngle(body, toRadians(transform.rotation))
-
-      if (!render) return
-      drawBox(render.gfx, { width, height })
-      if (render.sprite) {
-        render.sprite.width = width
-        render.sprite.height = height
-      }
     },
 
     teardown({ physics, body }) {

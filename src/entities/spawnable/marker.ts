@@ -64,12 +64,16 @@ export const createMarker = createSpawnableEntity<
     return { camera, gfx }
   },
 
-  onResize({ width, height }, _, render) {
+  onArgsUpdate(path, _, _data, render) {
+    if (render && (path === 'width' || path === 'height')) {
+      const { width, height } = args
+      drawBox(render.gfx, { width, height }, { stroke: '#00bcff' })
+    }
+  },
+
+  onResize({ width, height }) {
     args.width = width
     args.height = height
-
-    if (!render) return
-    drawBox(render.gfx, { width, height }, { stroke: '#00bcff' })
   },
 
   teardown(_) {

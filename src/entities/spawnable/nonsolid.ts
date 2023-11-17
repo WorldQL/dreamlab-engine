@@ -76,7 +76,7 @@ export const createNonsolid = createSpawnableEntity<
     return { camera, stage, gfx, sprite }
   },
 
-  onArgsUpdate(path, _data, render) {
+  onArgsUpdate(path, _previous, _data, render) {
     if (render && path === 'spriteSource') {
       const { width, height, spriteSource } = args
 
@@ -91,18 +91,20 @@ export const createNonsolid = createSpawnableEntity<
 
       if (render.sprite) render.stage.addChild(render.sprite)
     }
+
+    if (render && (path === 'width' || path === 'height')) {
+      const { width, height } = args
+      drawBox(render.gfx, { width, height }, { stroke: 'blue' })
+      if (render.sprite) {
+        render.sprite.width = width
+        render.sprite.height = height
+      }
+    }
   },
 
-  onResize({ width, height }, _, render) {
+  onResize({ width, height }) {
     args.width = width
     args.height = height
-
-    if (!render) return
-    drawBox(render.gfx, { width, height }, { stroke: 'blue' })
-    if (render.sprite) {
-      render.sprite.width = width
-      render.sprite.height = height
-    }
   },
 
   teardown(_) {
