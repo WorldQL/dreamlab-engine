@@ -1,5 +1,5 @@
 import type { Game } from '~/game.js'
-import type { BareSpawnableFunction } from '~/spawnable/spawnableEntity.js'
+import type { LooseSpawnableDefinition } from '~/spawnable/definition.js'
 
 type InitFn<Server extends boolean> = (
   game: Game<Server>,
@@ -8,4 +8,4 @@ type InitFn<Server extends boolean> = (
 export type InitClient = InitFn<false>
 export type InitServer = InitFn<false>
 export type InitShared = InitFn<boolean>
-export type Level = BareSpawnableFunction[]
+export type Level = LooseSpawnableDefinition[]
