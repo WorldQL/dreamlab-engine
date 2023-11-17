@@ -1,4 +1,5 @@
 import cuid2 from '@paralleldrive/cuid2'
+import { setProperty } from 'dot-prop'
 import Matter from 'matter-js'
 import onChange from 'on-change'
 import { Application } from 'pixi.js'
@@ -38,6 +39,7 @@ import { createClientUI } from '~/ui.js'
 import type { UIManager } from '~/ui.js'
 import { createDebug } from '~/utils/debug.js'
 import type { Debug } from '~/utils/debug.js'
+import { clone } from '~/utils/object.js'
 
 // #region Options
 interface ClientOptions {
@@ -615,7 +617,7 @@ export async function createGame<Server extends boolean>(
       definition.args = args
 
       // Track changes to args and trigger entity callback
-      const watchedArgs = onChange(args, (path: string, value: unknown) => {
+      const watchedArgs = onChange(args, (path, value, previous) => {
         const entity = this.lookup(uid)
         if (!entity || typeof entity.onArgsUpdate !== 'function') return
 
@@ -624,7 +626,10 @@ export async function createGame<Server extends boolean>(
           ? dataManager.getRenderData(entity)
           : undefined
 
-        entity.onArgsUpdate(path, data, render)
+        const previousArgs = clone(args)
+        setProperty(previousArgs, path, previous)
+
+        entity.onArgsUpdate(path, previousArgs, data, render)
 
         if (network?.type !== 'client') return
         network.sendArgsUpdate(uid, path, value)
@@ -675,13 +680,8 @@ export async function createGame<Server extends boolean>(
       }
 
       if (typeof entity.onResize !== 'function') return false
+      entity.onResize(size)
 
-      const data = dataManager.getData(entity)
-      const render = renderContext
-        ? dataManager.getRenderData(entity)
-        : undefined
-
-      entity.onResize(size, data, render)
       return true
     },
 

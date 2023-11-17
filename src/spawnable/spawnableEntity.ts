@@ -1,3 +1,4 @@
+import type { Path } from 'dot-path-value'
 import type { Except } from 'type-fest'
 import type { z, ZodObject } from 'zod'
 import { symbol as entitySymbol } from '~/entity.js'
@@ -29,9 +30,13 @@ export interface SpawnableEntity<
   get args(): z.infer<ArgsSchema>
   get argsSchema(): ArgsSchema
 
-  // TODO: Strongly type paths
-  onArgsUpdate?(path: string, data: Data, render: Render | undefined): void
-  onResize?(bounds: Bounds, data: Data, render: Render | undefined): void
+  onArgsUpdate?<T extends Path<z.infer<ArgsSchema>>>(
+    path: T,
+    previousArgs: z.infer<ArgsSchema>,
+    data: Data,
+    render: Render | undefined,
+  ): void
+  onResize?(bounds: Bounds): void
 
   rectangleBounds(): Bounds | undefined
   isPointInside(position: Vector): boolean
