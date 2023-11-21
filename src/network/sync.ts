@@ -1,7 +1,9 @@
 import equal from 'fast-deep-equal/es6/index.js'
+import type { Jsonifiable } from 'type-fest'
 import { dataManager } from '~/entity.js'
 import type { Game } from '~/game.js'
 import { isSpawnableEntity } from '~/spawnable/spawnableEntity.js'
+import { onChange } from '~/utils/object.js'
 
 export const symbol = Symbol.for('@dreamlab/core/syncedValue')
 export const setter = Symbol.for('@dreamlab/core/syncedValue/setter')
@@ -20,6 +22,12 @@ export interface SyncedValue<T> {
    */
   sync(): void
   [setter](value: T): void
+
+  /**
+   * **Interal Dreamlab use only.**
+   * **Not to be used in userscripts.**
+   */
+  destroy(): void
 }
 
 /**
@@ -30,15 +38,36 @@ export interface SyncedValue<T> {
  * @param game - Game
  * @param entityID - Entity Unique ID
  * @param key - Unique ID for this synced value
+ * @param initialValue - Initial value, must be a JSON compatible type for syncing round trips
  */
-export const syncedValue = <T, Server extends boolean>(
+export const syncedValue = <T extends Jsonifiable, Server extends boolean>(
   game: Game<Server>,
   entityID: string,
   key: string,
   initialValue: T,
 ): SyncedValue<T> => {
-  let prev: T = initialValue
-  let value: T = initialValue
+  let destroyed = false
+  const sync = (value: T) => {
+    if (destroyed) {
+      throw new Error('attempt to sync a destroyed synced value')
+    }
+
+    game.server?.network?.broadcastSyncedValue(entityID, key, value)
+  }
+
+  function onChanged(this: T): void {
+    const server = game.server
+    if (!server) {
+      throw new Error('cannot assign to synced values on the client')
+    }
+
+    sync(this)
+  }
+
+  let value: T =
+    initialValue !== null && typeof initialValue === 'object'
+      ? onChange(initialValue, onChanged)
+      : initialValue
 
   const synced: SyncedValue<T> = {
     [symbol]: true,
@@ -52,28 +81,47 @@ export const syncedValue = <T, Server extends boolean>(
     },
 
     get value() {
+      if (destroyed) {
+        throw new Error('attempt to get a destroyed synced value')
+      }
+
       return value
     },
 
-    set value(val) {
+    set value(newValue) {
+      if (destroyed) {
+        throw new Error('attempt to set a destroyed synced value')
+      }
+
       const server = game.server
       if (!server) {
         throw new Error('cannot assign to synced values on the client')
       }
 
-      prev = value
-      const changed = !equal(prev, val)
-      value = val
+      const changed = !equal(value, newValue)
+      value =
+        newValue !== null && typeof newValue === 'object'
+          ? onChange(newValue, onChanged)
+          : newValue
 
-      if (changed) server.network?.broadcastSyncedValue(entityID, key, value)
+      if (changed) sync(value)
     },
 
     sync() {
-      game.server?.network?.broadcastSyncedValue(entityID, key, value)
+      sync(value)
     },
 
     [setter](val) {
       value = val
+    },
+
+    destroy() {
+      if (destroyed) return
+      destroyed = true
+
+      if (value !== null && typeof value === 'object') {
+        onChange.unsubscribe(value)
+      }
     },
   }
 
