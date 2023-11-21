@@ -336,6 +336,8 @@ export async function createGame<Server extends boolean>(
     }
 
     const testPlayer = (pair: Matter.Pair) => {
+      if (!events.client) return
+
       const player =
         physics.getPlayer(pair.bodyA) ??
         physics.getPlayer(pair.bodyB) ??
@@ -345,19 +347,19 @@ export async function createGame<Server extends boolean>(
       const other = physics.isPlayer(pair.bodyA) ? pair.bodyB : pair.bodyA
 
       if (type === 'start') {
-        events.common.emit(
+        events.client.emit(
           'onPlayerCollisionStart',
           [player, other],
           pair.collision,
         )
       } else if (type === 'end') {
-        events.common.emit(
+        events.client.emit(
           'onPlayerCollisionEnd',
           [player, other],
           pair.collision,
         )
       } else {
-        events.common.emit(
+        events.client.emit(
           'onPlayerCollisionActive',
           [player, other],
           pair.collision,

@@ -11,6 +11,10 @@ import type {
 
 export interface ClientEvents {
   onRenderFrame: [time: RenderTime]
+
+  onPlayerCollisionStart: PlayerCollisionEvent
+  onPlayerCollisionActive: PlayerCollisionEvent
+  onPlayerCollisionEnd: PlayerCollisionEvent
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -38,10 +42,6 @@ export interface CommonEvents {
   onCollisionStart: CollisionEvent
   onCollisionActive: CollisionEvent
   onCollisionEnd: CollisionEvent
-
-  onPlayerCollisionStart: PlayerCollisionEvent
-  onPlayerCollisionActive: PlayerCollisionEvent
-  onPlayerCollisionEnd: PlayerCollisionEvent
 
   onPlayerJoin: [player: NetPlayer]
   onPlayerLeave: [player: NetPlayer]
