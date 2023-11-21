@@ -40,6 +40,7 @@ import type { UIManager } from '~/ui.js'
 import { createDebug } from '~/utils/debug.js'
 import type { Debug } from '~/utils/debug.js'
 import { clone } from '~/utils/object.js'
+import { isSyncedValue } from './network/sync'
 
 // #region Options
 interface ClientOptions {
@@ -575,6 +576,14 @@ export async function createGame<Server extends boolean>(
       if (isSpawnableEntity(entity)) {
         if (isTrackedTransform(entity.transform)) {
           entity.transform.removeAllListeners()
+        }
+
+        const data = dataManager.getData(entity)
+        if (data !== undefined && data !== null && typeof data === 'object') {
+          const syncedValues = Object.values(data).filter(isSyncedValue)
+          for (const value of syncedValues) {
+            value.destroy()
+          }
         }
 
         onChange.unsubscribe(entity.args)
