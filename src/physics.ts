@@ -86,6 +86,14 @@ export interface Physics {
    */
   unlinkTransform(body: Body, transform: TrackedTransform): void
 
+  /**
+   * Check if a physics body is linked to a Transform
+   *
+   * @param body - Physics Body
+   * @param transform - Entity Transform
+   */
+  isLinked(body: Body, transform: TrackedTransform): boolean
+
   registerPlayer(player: Player): void
   clearPlayer(): void
   isPlayer(body: Body): boolean
@@ -106,6 +114,7 @@ export const createPhysics = (): Physics => {
   const playerRef = ref<Player | undefined>(undefined)
 
   interface LinkData {
+    transform: TrackedTransform
     positionListener(this: void, ...args: unknown[]): void
     rotationListener(this: void, ...args: unknown[]): void
     onTick(this: void, ...args: unknown[]): void
@@ -225,7 +234,12 @@ export const createPhysics = (): Physics => {
       transform.addRotationListener(rotationListener)
       Matter.Events.on(engine, 'afterUpdate', onTick)
 
-      linksMap.set(body.id, { positionListener, rotationListener, onTick })
+      linksMap.set(body.id, {
+        transform,
+        positionListener,
+        rotationListener,
+        onTick,
+      })
     },
 
     unlinkTransform(body, transform) {
@@ -237,6 +251,13 @@ export const createPhysics = (): Physics => {
         transform.removeListener(linked.rotationListener)
         Matter.Events.off(engine, 'afterUpdate', linked.onTick)
       }
+    },
+
+    isLinked(body, transform) {
+      const linked = linksMap.get(body.id)
+      if (!linked) return false
+
+      return linked.transform === transform
     },
 
     registerPlayer(player) {
