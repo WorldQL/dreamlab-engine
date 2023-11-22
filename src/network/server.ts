@@ -1,5 +1,6 @@
 import type { Except } from 'type-fest'
 import type { Transform } from '~/math/transform.js'
+import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type { Data, Listeners } from './shared.js'
 
 export interface PeerInfo {
@@ -25,6 +26,8 @@ export interface NetServer extends Listeners<NetServerListeners> {
   broadcastCustomMessage(channel: string, data: Data): void
   broadcastSyncedValue(entityID: string, key: string, value: unknown): void
 
+  sendEntityCreate(peerID: string, entity: SpawnableEntity): void
+  sendEntityDestroy(peerID: string, entityID: string): void
   sendTransformUpdate(
     peerID: string,
     entityID: string,

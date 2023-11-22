@@ -2,6 +2,7 @@ import type { CamelCase, Except } from 'type-fest'
 import type { PlayerInput } from '~/entities/player.js'
 import type { Transform } from '~/math/transform.js'
 import type { Vector } from '~/math/vector.js'
+import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type { Data, Listeners } from './shared.js'
 
 type Inputs = `${PlayerInput}` extends `@player/${infer T}` ? T : never
@@ -22,6 +23,8 @@ export interface NetClient extends Listeners<NetClientListeners> {
   sendPlayerMotionInputs(inputs: InputMap): void
   sendPlayerAnimation(animation: string): void
 
+  sendEntityCreate(entity: SpawnableEntity): void
+  sendEntityDestroy(entityID: string): void
   sendTransformUpdate(entityID: string, transform: Transform): void
   sendArgsUpdate(entityID: string, path: string, value: unknown): void
 }
