@@ -3,6 +3,7 @@ import type { Jsonifiable } from 'type-fest'
 import { dataManager } from '~/entity.js'
 import type { Game } from '~/game.js'
 import { isSpawnableEntity } from '~/spawnable/spawnableEntity.js'
+import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import { onChange } from '~/utils/object.js'
 
 export const symbol = Symbol.for('@dreamlab/core/syncedValue')
@@ -141,22 +142,31 @@ export const isSyncedValue = (
  * **Interal Dreamlab use only.**
  * **Not to be used in userscripts.**
  *
+ * Send sync packets for a spawnable entity with synced values
+ *
+ * @param entity - Spawnable Entity
+ */
+export const syncEntity = (entity: SpawnableEntity): void => {
+  const data = dataManager.getData(entity)
+  if (data === undefined || data === null) return
+  if (typeof data !== 'object') return
+
+  for (const value of Object.values(data)) {
+    if (isSyncedValue(value)) value.sync()
+  }
+}
+
+/**
+ * **Interal Dreamlab use only.**
+ * **Not to be used in userscripts.**
+ *
  * Send sync packets for all spawnable entities with synced values
  *
  * @param game - Server Side Game
  */
 export const syncEntities = (game: Game<true>): void => {
   const spawnables = game.entities.filter(isSpawnableEntity)
-
-  for (const entity of spawnables) {
-    const data = dataManager.getData(entity)
-    if (data === undefined || data === null) continue
-    if (typeof data !== 'object') continue
-
-    for (const value of Object.values(data)) {
-      if (isSyncedValue(value)) value.sync()
-    }
-  }
+  for (const entity of spawnables) syncEntity(entity)
 }
 
 /**
