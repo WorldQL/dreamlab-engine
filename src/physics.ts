@@ -119,7 +119,8 @@ export const createPhysics = (): Physics => {
   const engine = Matter.Engine.create()
   const entities = new Map<string, Body[]>()
   const bodiesMap = new Map<number, SpawnableEntity>()
-  const frozenMap = new Map<string, Set<number>>()
+  const linksMap = new Map<number, LinkData>()
+  const frozenMap = new Map<string, Set<Body>>()
   const playerRef = ref<Player | undefined>(undefined)
 
   interface LinkData {
@@ -129,7 +130,10 @@ export const createPhysics = (): Physics => {
     onTick(this: void, ...args: unknown[]): void
   }
 
-  const linksMap = new Map<number, LinkData>()
+  const frozenBodies = (): Set<Body> => {
+    const allBodiesIter = [...frozenMap.values()].flatMap(set => set.values())
+    return new Set<Body>(...allBodiesIter)
+  }
 
   const physics: Physics = {
     get running() {
@@ -145,15 +149,23 @@ export const createPhysics = (): Physics => {
       const bodies = entities.flatMap(entity => this.getBodies(entity))
       if (bodies.length === 0) return
 
+      const beforeFrozen = frozenBodies()
       const set = frozenMap.get(source) ?? new Set()
       for (const body of bodies) {
-        if (body.isStatic) continue
-
-        Matter.Body.setStatic(body, true)
-        set.add(body.id)
+        if (!beforeFrozen.has(body) && body.isStatic) continue
+        set.add(body)
       }
 
       frozenMap.set(source, set)
+
+      const afterFrozen = frozenBodies()
+      const difference = new Set(
+        [...afterFrozen].filter(x => !beforeFrozen.has(x)),
+      )
+
+      for (const body of difference) {
+        Matter.Body.setStatic(body, true)
+      }
     },
 
     resume(source, entities) {
@@ -161,14 +173,21 @@ export const createPhysics = (): Physics => {
       const bodies = entities.flatMap(entity => this.getBodies(entity))
       if (bodies.length === 0) return
 
+      const beforeResumed = frozenBodies()
       const set = frozenMap.get(source) ?? new Set()
-      for (const body of bodies) {
-        const deleted = set.delete(body.id)
-        if (deleted) Matter.Body.setStatic(body, false)
-      }
+      for (const body of bodies) set.delete(body)
 
       if (set.size === 0) frozenMap.delete(source)
       else frozenMap.set(source, set)
+
+      const afterResumed = frozenBodies()
+      const difference = new Set(
+        [...beforeResumed].filter(x => !afterResumed.has(x)),
+      )
+
+      for (const body of difference) {
+        Matter.Body.setStatic(body, false)
+      }
     },
 
     isFrozen(entity, source) {
@@ -178,7 +197,7 @@ export const createPhysics = (): Physics => {
       if (source === undefined) {
         for (const set of frozenMap.values()) {
           for (const body of bodies) {
-            if (set.has(body.id)) return true
+            if (set.has(body)) return true
           }
         }
 
@@ -189,7 +208,7 @@ export const createPhysics = (): Physics => {
       if (!set) return false
 
       for (const body of bodies) {
-        if (set.has(body.id)) return true
+        if (set.has(body)) return true
       }
 
       return false
