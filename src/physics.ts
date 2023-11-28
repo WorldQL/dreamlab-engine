@@ -14,19 +14,28 @@ import { ref } from '~/utils/ref.js'
 
 export interface Physics {
   get running(): boolean
+  set running(value: boolean)
 
   /**
    * Suspend all physics bodies on entities.
-   *
-   * If no entities are passed, will suspend the entire physics system.
    */
-  suspend(...entities: SpawnableEntity[]): void
+  suspend(source: string, entities: SpawnableEntity[]): void
 
   /**
    * Opposite of {@link Physics.suspend | suspend()}
    */
-  resume(...entities: SpawnableEntity[]): void
-  isFrozen(entity: SpawnableEntity): boolean
+  resume(source: string, entities: SpawnableEntity[]): void
+
+  /**
+   * Check if an entity is frozen.
+   *
+   * Leave `by` blank to check if the entity has been frozen by anything,
+   * otherwise checks for a specific freezing source.
+   *
+   * @param entity - Spawnable Entity
+   * @param source - Freeze Source
+   */
+  isFrozen(entity: SpawnableEntity, source?: string): boolean
 
   get engine(): Engine
   get world(): World
@@ -110,7 +119,7 @@ export const createPhysics = (): Physics => {
   const engine = Matter.Engine.create()
   const entities = new Map<string, Body[]>()
   const bodiesMap = new Map<number, SpawnableEntity>()
-  const frozenSet = new Set<string>()
+  const frozenMap = new Map<string, Set<number>>()
   const playerRef = ref<Player | undefined>(undefined)
 
   interface LinkData {
@@ -127,30 +136,63 @@ export const createPhysics = (): Physics => {
       return running
     },
 
-    suspend(...entities) {
-      if (entities.length === 0) {
-        running = false
-        return
-      }
-
-      const bodies = entities.flatMap(entity => this.getBodies(entity))
-      Matter.Composite.remove(engine.world, bodies)
-      for (const entity of entities) frozenSet.add(entity.uid)
+    set running(value) {
+      running = value
     },
 
-    resume(...entities) {
-      if (entities.length === 0) {
-        running = true
-        return
+    suspend(source, entities) {
+      if (entities.length === 0) return
+      const bodies = entities.flatMap(entity => this.getBodies(entity))
+      if (bodies.length === 0) return
+
+      const set = frozenMap.get(source) ?? new Set()
+      for (const body of bodies) {
+        if (body.isStatic) continue
+
+        Matter.Body.setStatic(body, true)
+        set.add(body.id)
       }
 
-      const bodies = entities.flatMap(entity => this.getBodies(entity))
-      Matter.Composite.add(engine.world, bodies)
-      for (const entity of entities) frozenSet.delete(entity.uid)
+      frozenMap.set(source, set)
     },
 
-    isFrozen(entity) {
-      return frozenSet.has(entity.uid)
+    resume(source, entities) {
+      if (entities.length === 0) return
+      const bodies = entities.flatMap(entity => this.getBodies(entity))
+      if (bodies.length === 0) return
+
+      const set = frozenMap.get(source) ?? new Set()
+      for (const body of bodies) {
+        const deleted = set.delete(body.id)
+        if (deleted) Matter.Body.setStatic(body, false)
+      }
+
+      if (set.size === 0) frozenMap.delete(source)
+      else frozenMap.set(source, set)
+    },
+
+    isFrozen(entity, source) {
+      const bodies = this.getBodies(entity)
+      if (bodies.length === 0) return false
+
+      if (source === undefined) {
+        for (const set of frozenMap.values()) {
+          for (const body of bodies) {
+            if (set.has(body.id)) return true
+          }
+        }
+
+        return false
+      }
+
+      const set = frozenMap.get(source)
+      if (!set) return false
+
+      for (const body of bodies) {
+        if (set.has(body.id)) return true
+      }
+
+      return false
     },
 
     get engine() {
