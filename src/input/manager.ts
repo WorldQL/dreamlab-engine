@@ -365,7 +365,7 @@ export class InputManager extends EventEmitter<InputEvents> {
 
   private onWheel(ev: WheelEvent): void {
     const disabled = this.disabled
-    if (disabled === 'all' || disabled === 'mouse') return
+    if (disabled === 'all') return
 
     this.emit('onWheel', ev)
   }
