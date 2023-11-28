@@ -59,7 +59,7 @@ export const createBouncyBall = createSpawnableEntity<
 
   return {
     get tags() {
-      return tags
+      return [...tags, 'net/replicated']
     },
 
     rectangleBounds() {
