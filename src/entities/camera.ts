@@ -184,8 +184,8 @@ export const createCamera = (
         targetRef === undefined
           ? Vec.create()
           : 'position' in targetRef
-          ? targetRef.position
-          : targetRef.transform.position
+            ? targetRef.position
+            : targetRef.transform.position
 
       // TODO: Calculate camera speed based on S curve of the distance
       // (fast when close and when far, medium speed when at normal movement distances)
