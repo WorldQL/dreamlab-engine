@@ -94,7 +94,6 @@ export enum PlayerInput {
   Drag = '@editor/drag',
   Jog = '@player/jog',
   Jump = '@player/jump',
-  Panning = '@editor/panning',
   ToggleNoclip = '@player/toggle-noclip',
   WalkLeft = '@player/walk-left',
   WalkRight = '@player/walk-right',
@@ -297,13 +296,7 @@ export const createPlayer = (
         inputs.registerInput(PlayerInput.Jog, 'Jog', 'ShiftLeft')
         inputs.registerInput(PlayerInput.Attack, 'Attack', 'MouseLeft')
         inputs.registerInput(PlayerInput.ToggleNoclip, 'Toggle Noclip', 'KeyV')
-        inputs.registerInput(
-          PlayerInput.Panning,
-          'Editor Panning',
-          'MouseMiddle',
-        )
         inputs.registerInput(PlayerInput.Drag, 'Editor Drag', 'MouseLeft')
-
         inputs.addListener(PlayerInput.ToggleNoclip, onToggleNoclip)
       }
 
@@ -378,7 +371,6 @@ export const createPlayer = (
       attack = (colliding && inputs?.getInput(PlayerInput.Attack)) ?? false
       isJogging = inputs?.getInput(PlayerInput.Jog) ?? false
       const crouch = inputs?.getInput(PlayerInput.Crouch) ?? false
-      const panning = inputs?.getInput(PlayerInput.Panning) ?? false
       const drag = inputs?.getInput(PlayerInput.Drag) ?? false
 
       direction.value = left ? -1 : right ? 1 : 0
@@ -430,22 +422,6 @@ export const createPlayer = (
             previousCursorPosition = null
             initialClickOnEntity = false
           }
-        }
-
-        if (panning && cursorPosition) {
-          const directionToMouse = Vec.sub(cursorPosition, body.position)
-          const normalizedDirection = Vec.normalise(directionToMouse)
-
-          const panningSpeed = 50
-          const panningVector = Vec.mult(
-            normalizedDirection,
-            panningSpeed * delta * 50,
-          )
-
-          newPosition = Vec.add(body.position, panningVector)
-
-          // @ts-expect-error Incorrect typings
-          Matter.Body.setPosition(body, newPosition, true)
         } else {
           const movement = Vec.create()
           if (left) movement.x -= 1
