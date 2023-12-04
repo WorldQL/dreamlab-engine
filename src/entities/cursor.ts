@@ -46,6 +46,12 @@ export const createCursor = () => {
         const query = game.queryPosition({ x, y })
         const entities = query.map(({ definition: { entity } }) => entity)
 
+        // TODO: use noclip instead of debug value
+        if (game.client?.render.container && debug.value) {
+          game.client.render.container.style.cursor =
+            entities.length > 0 ? 'pointer' : 'auto'
+        }
+
         const xcoord = x.toFixed(0)
         const ycoord = y.toFixed(0)
 
