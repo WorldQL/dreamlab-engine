@@ -390,7 +390,7 @@ export const createPlayer = (
         let newPosition
         const cursorPosition = inputs?.getCursor()
 
-        if (cursorPosition) {
+        if (drag && cursorPosition) {
           const query = game.queryPosition(cursorPosition)
           const queryResults = query.map(({ definition: { tags } }) => tags)
 
@@ -398,31 +398,26 @@ export const createPlayer = (
             tags => !tags?.includes('editorLocked'),
           )
 
-          if (drag) {
-            if (!isDragging && !initialClickOnEntity) {
-              initialClickOnEntity = isCursorOverNonLockedEntity
-              isDragging = true
-              previousCursorPosition = cursorPosition
-            } else if (
-              isDragging &&
-              !initialClickOnEntity &&
-              previousCursorPosition
-            ) {
-              const cursorDelta = Vec.sub(
-                previousCursorPosition,
-                cursorPosition,
-              )
-              const amplifiedMovement = Vec.mult(cursorDelta, 2)
-              newPosition = Vec.add(body.position, amplifiedMovement)
-              Matter.Body.setPosition(body, newPosition)
-              previousCursorPosition = cursorPosition
-            }
-          } else {
-            isDragging = false
-            previousCursorPosition = null
-            initialClickOnEntity = false
+          if (!isDragging && !initialClickOnEntity) {
+            initialClickOnEntity = isCursorOverNonLockedEntity
+            isDragging = true
+            previousCursorPosition = cursorPosition
+          } else if (
+            isDragging &&
+            !initialClickOnEntity &&
+            previousCursorPosition
+          ) {
+            const cursorDelta = Vec.sub(previousCursorPosition, cursorPosition)
+            const amplifiedMovement = Vec.mult(cursorDelta, 2)
+            newPosition = Vec.add(body.position, amplifiedMovement)
+            Matter.Body.setPosition(body, newPosition)
+            previousCursorPosition = cursorPosition
           }
         } else {
+          isDragging = false
+          previousCursorPosition = null
+          initialClickOnEntity = false
+
           const movement = Vec.create()
           if (left) movement.x -= 1
           if (right) movement.x += 1
