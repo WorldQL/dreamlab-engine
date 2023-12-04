@@ -91,8 +91,10 @@ export type KnownAnimation =
 export enum PlayerInput {
   Attack = '@player/attack',
   Crouch = '@player/crouch',
+  Drag = '@editor/drag',
   Jog = '@player/jog',
   Jump = '@player/jump',
+  Panning = '@editor/panning',
   ToggleNoclip = '@player/toggle-noclip',
   WalkLeft = '@player/walk-left',
   WalkRight = '@player/walk-right',
@@ -113,6 +115,9 @@ export const createPlayer = (
 
   let noclip = false
   const noclipSpeed = 15
+  let isDragging = false
+  let initialClickOnEntity = false
+  let previousCursorPosition: Matter.Vector | null | undefined = null
   let attack = false
 
   const onToggleNoclip = (pressed: boolean) => {
@@ -292,6 +297,12 @@ export const createPlayer = (
         inputs.registerInput(PlayerInput.Jog, 'Jog', 'ShiftLeft')
         inputs.registerInput(PlayerInput.Attack, 'Attack', 'MouseLeft')
         inputs.registerInput(PlayerInput.ToggleNoclip, 'Toggle Noclip', 'KeyV')
+        inputs.registerInput(
+          PlayerInput.Panning,
+          'Editor Panning',
+          'MouseMiddle',
+        )
+        inputs.registerInput(PlayerInput.Drag, 'Editor Drag', 'MouseLeft')
 
         inputs.addListener(PlayerInput.ToggleNoclip, onToggleNoclip)
       }
@@ -367,6 +378,8 @@ export const createPlayer = (
       attack = (colliding && inputs?.getInput(PlayerInput.Attack)) ?? false
       isJogging = inputs?.getInput(PlayerInput.Jog) ?? false
       const crouch = inputs?.getInput(PlayerInput.Crouch) ?? false
+      const panning = inputs?.getInput(PlayerInput.Panning) ?? false
+      const drag = inputs?.getInput(PlayerInput.Drag) ?? false
 
       direction.value = left ? -1 : right ? 1 : 0
       const xor = left ? !right : right
@@ -380,23 +393,75 @@ export const createPlayer = (
       // so that we can apply it to NetPlayers for prediction (based on inputs)
       // on both the client and server
       body.isStatic = noclip
-
+      body.isSensor = noclip
       if (noclip) {
-        const movement = Vec.create()
+        let newPosition
+        const cursorPosition = inputs?.getCursor()
 
-        if (left) movement.x -= 1
-        if (right) movement.x += 1
-        if (jump) movement.y -= 1
-        if (crouch) movement.y += 1
+        if (cursorPosition) {
+          const query = game.queryPosition(cursorPosition)
+          const queryResults = query.map(({ definition: { tags } }) => tags)
 
-        const speed = isJogging ? noclipSpeed * 2.5 : noclipSpeed
-        const newPosition = Vec.add(
-          body.position,
-          Vec.mult(movement, speed * delta * 50),
-        )
+          const isCursorOverNonLockedEntity = queryResults.some(
+            tags => !tags?.includes('editorLocked'),
+          )
 
-        // @ts-expect-error Incorrect typings
-        Matter.Body.setPosition(body, newPosition, true)
+          if (drag) {
+            if (!isDragging && !initialClickOnEntity) {
+              initialClickOnEntity = isCursorOverNonLockedEntity
+              isDragging = true
+              previousCursorPosition = cursorPosition
+            } else if (
+              isDragging &&
+              !initialClickOnEntity &&
+              previousCursorPosition
+            ) {
+              const cursorDelta = Vec.sub(
+                previousCursorPosition,
+                cursorPosition,
+              )
+              const amplifiedMovement = Vec.mult(cursorDelta, 2)
+              newPosition = Vec.add(body.position, amplifiedMovement)
+              Matter.Body.setPosition(body, newPosition)
+              previousCursorPosition = cursorPosition
+            }
+          } else {
+            isDragging = false
+            previousCursorPosition = null
+            initialClickOnEntity = false
+          }
+        }
+
+        if (panning && cursorPosition) {
+          const directionToMouse = Vec.sub(cursorPosition, body.position)
+          const normalizedDirection = Vec.normalise(directionToMouse)
+
+          const panningSpeed = 50
+          const panningVector = Vec.mult(
+            normalizedDirection,
+            panningSpeed * delta * 50,
+          )
+
+          newPosition = Vec.add(body.position, panningVector)
+
+          // @ts-expect-error Incorrect typings
+          Matter.Body.setPosition(body, newPosition, true)
+        } else {
+          const movement = Vec.create()
+          if (left) movement.x -= 1
+          if (right) movement.x += 1
+          if (jump) movement.y -= 1
+          if (crouch) movement.y += 1
+
+          const speed = isJogging ? noclipSpeed * 2.5 : noclipSpeed
+          newPosition = Vec.add(
+            body.position,
+            Vec.mult(movement, speed * delta * 50),
+          )
+
+          // @ts-expect-error Incorrect typings
+          Matter.Body.setPosition(body, newPosition, true)
+        }
       } else {
         if (xor) {
           const targetVelocity = maxSpeed * direction.value
@@ -480,6 +545,7 @@ export const createPlayer = (
     onRenderFrame(
       { smooth },
       {
+        game,
         debug,
         network,
         direction: { value: direction },
@@ -488,6 +554,31 @@ export const createPlayer = (
       },
       { camera, sprite, itemSprite, gfxBounds, gfxFeet },
     ) {
+      const cursorPosition = game.client?.inputs.getCursor()
+
+      if (cursorPosition && noclip) {
+        const query = game.queryPosition(cursorPosition)
+        const queryResults = query.map(({ definition: { tags } }) => tags)
+
+        const isCursorOverNonLockedEntity = queryResults.some(
+          tags => !tags?.includes('editorLocked'),
+        )
+
+        if (isDragging && !initialClickOnEntity) {
+          game.client.render.container.style.cursor = 'grabbing'
+        } else if (!isDragging && !isCursorOverNonLockedEntity) {
+          game.client.render.container.style.cursor = 'grab'
+        } else if (!isDragging && isCursorOverNonLockedEntity) {
+          game.client.render.container.style.cursor = 'pointer'
+        } else {
+          game.client.render.container.style.cursor = 'default'
+        }
+      }
+
+      sprite.visible = !noclip
+      gfxBounds.visible = !noclip
+      gfxFeet.visible = !noclip
+
       const scale = facing === 'left' ? 1 : -1
       const newScale = scale * PLAYER_SPRITE_SCALE
       if (sprite.scale.x !== newScale) {
@@ -545,7 +636,7 @@ export const createPlayer = (
         { strokeAlpha: 0, fill: colliding ? active : inactive, fillAlpha: 1 },
       )
 
-      if (playerItem) {
+      if (playerItem && !noclip) {
         itemSprite.visible = Boolean(attack)
 
         const currentItem = playerItem
