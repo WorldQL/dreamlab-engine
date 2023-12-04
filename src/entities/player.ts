@@ -524,31 +524,36 @@ export const createPlayer = (
         game,
         debug,
         network,
+        inputs,
         direction: { value: direction },
         facing: { value: facing },
         colliding: { value: colliding },
       },
       { camera, sprite, itemSprite, gfxBounds, gfxFeet },
     ) {
-      const cursorPosition = game.client?.inputs.getCursor()
+      if (noclip) {
+        const cursorPosition = inputs?.getCursor()
+        let cursorStyle = 'default'
 
-      if (cursorPosition && noclip) {
-        const query = game.queryPosition(cursorPosition)
-        const queryResults = query.map(({ definition: { tags } }) => tags)
+        if (cursorPosition) {
+          const query = game.queryPosition(cursorPosition)
+          const queryResults = query.map(({ definition: { tags } }) => tags)
+          const isCursorOverNonLockedEntity = queryResults.some(
+            tags => !tags?.includes('editorLocked'),
+          )
 
-        const isCursorOverNonLockedEntity = queryResults.some(
-          tags => !tags?.includes('editorLocked'),
-        )
-
-        if (isDragging && !initialClickOnEntity) {
-          game.client.render.container.style.cursor = 'grabbing'
-        } else if (!isDragging && !isCursorOverNonLockedEntity) {
-          game.client.render.container.style.cursor = 'grab'
-        } else if (!isDragging && isCursorOverNonLockedEntity) {
-          game.client.render.container.style.cursor = 'pointer'
-        } else {
-          game.client.render.container.style.cursor = 'default'
+          if (isDragging && !initialClickOnEntity) {
+            cursorStyle = 'grabbing'
+          } else if (!isDragging && isCursorOverNonLockedEntity) {
+            cursorStyle = 'pointer'
+          } else if (!isDragging) {
+            cursorStyle = 'grab'
+          }
         }
+
+        game.client.render.container.style.cursor = cursorStyle
+      } else {
+        game.client.render.container.style.cursor = 'default'
       }
 
       sprite.visible = !noclip
