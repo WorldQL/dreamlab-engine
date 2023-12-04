@@ -359,6 +359,9 @@ export class InputManager extends EventEmitter<InputEvents> {
   }
 
   private onMouseOut(): void {
+    this.setKey('MouseLeft', false)
+    this.setKey('MouseRight', false)
+    this.setKey('MouseMiddle', false)
     this.mousePosition = undefined
     this.updateCursor()
   }
