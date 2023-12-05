@@ -6,7 +6,7 @@ import { VectorSchema } from '~/math/vector.js'
 import { enumMap } from '~/utils/types.js'
 
 export type Bone = (typeof bones)[number]
-const handBones = ['handLeft', 'handRight'] as const
+export const handBones = ['handLeft', 'handRight'] as const
 export const bones = [...handBones] as const
 
 const BoneOffsetSchema = z

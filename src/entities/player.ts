@@ -6,7 +6,7 @@ import { createEntity, dataManager, isEntity } from '~/entity.js'
 import type { Entity } from '~/entity.js'
 import type { Game } from '~/game'
 import type { InputManager } from '~/input/manager.js'
-import type { PlayerItem } from '~/managers/playerItem'
+import type { Gear } from '~/managers/gear.js'
 import { v, Vec } from '~/math/vector.js'
 import type { LooseVector, Vector } from '~/math/vector.js'
 import type { NetClient } from '~/network/client.js'
@@ -54,7 +54,7 @@ export const isPlayer = (player: unknown): player is Player => {
 
 export interface PlayerEvents {
   onToggleNoclip: [enabled: boolean]
-  onItemChanged: [item: PlayerItem]
+  onGearChanged: [item: Gear | undefined]
 }
 
 export interface PlayerCommon {
@@ -67,11 +67,11 @@ export interface Player extends PlayerCommon, Entity<Data, Render> {
   get [symbol](): true
   get bones(): Readonly<Record<Bone, Vector>>
   get events(): EventEmitter<PlayerEvents>
-  get itemInHand(): PlayerItem
+  get gear(): Gear | undefined
   get currentAnimation(): string
   get facingDirection(): number
 
-  setItemInHand(item: PlayerItem): void
+  setGear(gear: Gear | undefined): void
   teleport(position: LooseVector, resetVelocity?: boolean): void
 }
 
@@ -144,7 +144,7 @@ export const createPlayer = (
   }
 
   let currentAnimation: KnownAnimation = 'idle'
-  let playerItem: PlayerItem
+  let gear: Gear | undefined
   let spriteSign = 1
   let currentFrame = 0
 
@@ -163,9 +163,7 @@ export const createPlayer = (
     if (noclip) return 'idle'
     if (hasJumped && !attack) return 'jump'
 
-    const animationName = playerItem
-      ? playerItem.animationName.toLowerCase()
-      : 'punch'
+    const animationName = gear ? gear.animationName.toLowerCase() : 'punch'
     if (
       attack &&
       ['greatsword', 'bow', 'punch', 'shoot'].includes(animationName)
@@ -273,8 +271,8 @@ export const createPlayer = (
       return events
     },
 
-    get itemInHand(): PlayerItem {
-      return playerItem
+    get gear(): Gear | undefined {
+      return gear
     },
 
     get currentAnimation(): string {
@@ -285,12 +283,12 @@ export const createPlayer = (
       return -spriteSign
     },
 
-    setItemInHand(item: PlayerItem) {
-      playerItem = item
-      events.emit('onItemChanged', item)
+    setGear(newGear: Gear | undefined) {
+      gear = newGear
+      events.emit('onGearChanged', gear)
 
       const { game } = dataManager.getData(this)
-      void game.client.network?.sendPlayerItem(item)
+      void game.client.network?.sendPlayerGear(gear)
     },
 
     teleport(position: LooseVector, resetVelocity = true) {
@@ -339,7 +337,7 @@ export const createPlayer = (
       sprite.anchor.set(...PLAYER_SPRITE_ANCHOR)
       sprite.play()
 
-      const item = playerItem
+      const item = gear
       const itemSprite = item ? new Sprite(item.texture) : new Sprite()
       itemSprite.width = 200
       itemSprite.height = 200
@@ -512,7 +510,7 @@ export const createPlayer = (
       }
 
       if (attack && isAttackFrame()) {
-        game.events.common.emit('onPlayerAttack', this as Player, playerItem)
+        game.events.common.emit('onPlayerAttack', this as Player, gear)
       }
 
       void network?.sendPlayerPosition(
@@ -586,8 +584,8 @@ export const createPlayer = (
         currentAnimation = newAnimation
         sprite.textures = animations[newAnimation].textures
         const getSpeedMultiplier = (animation_name: string) => {
-          if (playerItem?.speedMultiplier) {
-            return playerItem.speedMultiplier
+          if (gear?.speedMultiplier) {
+            return gear.speedMultiplier
           }
 
           switch (animation_name) {
@@ -631,10 +629,10 @@ export const createPlayer = (
         { strokeAlpha: 0, fill: colliding ? active : inactive, fillAlpha: 1 },
       )
 
-      if (playerItem && !noclip) {
+      if (gear && !noclip) {
         itemSprite.visible = Boolean(attack)
 
-        const currentItem = playerItem
+        const currentItem = gear
         if (itemSprite.texture !== currentItem.texture) {
           itemSprite.texture = currentItem.texture
         }
@@ -680,7 +678,7 @@ export const createPlayer = (
         itemSprite.scale.x = -scale
         Object.assign(itemSprite, initialDimensions)
 
-        itemSprite.anchor.set(currentItem.anchorX, currentItem.anchorY)
+        itemSprite.anchor.set(currentItem.anchor.x, currentItem.anchor.y)
       } else {
         itemSprite.visible = false
       }

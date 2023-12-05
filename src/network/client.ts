@@ -1,6 +1,6 @@
 import type { CamelCase, Except } from 'type-fest'
 import type { PlayerInput } from '~/entities/player.js'
-import type { PlayerItem } from '~/managers/playerItem.js'
+import type { Gear } from '~/managers/gear.js'
 import type { Transform } from '~/math/transform.js'
 import type { Vector } from '~/math/vector.js'
 import type { LooseSpawnableDefinition } from '~/spawnable/definition.js'
@@ -27,7 +27,7 @@ export interface NetClient extends Listeners<NetClientListeners> {
   ): Promise<void> | void
   sendPlayerMotionInputs(inputs: InputMap): Promise<void> | void
   sendPlayerAnimation(animation: string): Promise<void> | void
-  sendPlayerItem(item: PlayerItem): Promise<void> | void
+  sendPlayerGear(gear: Gear | undefined): Promise<void> | void
 
   sendEntityCreate(definition: LooseSpawnableDefinition): Promise<void> | void
   sendEntityDestroy(entityID: string): Promise<void> | void

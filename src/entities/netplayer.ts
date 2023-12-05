@@ -16,7 +16,7 @@ import type {
 } from '~/entities/player.js'
 import { createEntity, dataManager, isEntity } from '~/entity.js'
 import type { Entity } from '~/entity.js'
-import type { PlayerItem } from '~/managers/playerItem'
+import type { Gear } from '~/managers/gear.js'
 import { v, Vec } from '~/math/vector.js'
 import type { LooseVector, Vector } from '~/math/vector.js'
 import type { Physics } from '~/physics.js'
@@ -53,11 +53,11 @@ export interface NetPlayer extends PlayerCommon, Entity<Data, Render> {
   get entityID(): string
 
   get body(): Body
-  get itemInHand(): PlayerItem
+  get gear(): Gear | undefined
   get currentAnimation(): string
   get facingDirection(): number
 
-  setItemInHand(item: PlayerItem): void
+  setGear(item: Gear | undefined): void
   setPosition(vector: LooseVector): void
   setVelocity(vector: LooseVector): void
   setFlipped(flipped: boolean): void
@@ -74,7 +74,7 @@ export const createNetPlayer = (
 
   let isFlipped = false
   let currentAnimation: KnownAnimation = 'idle'
-  let playerItem: PlayerItem
+  let gear: Gear | undefined
   let animationChanged = false
   let currentFrame = 0
   let spriteSign = 1
@@ -152,8 +152,8 @@ export const createNetPlayer = (
       return { width, height }
     },
 
-    get itemInHand() {
-      return playerItem
+    get gear() {
+      return gear
     },
 
     get currentAnimation() {
@@ -164,8 +164,8 @@ export const createNetPlayer = (
       return -spriteSign
     },
 
-    setItemInHand(item: PlayerItem) {
-      playerItem = item
+    setGear(newGear: Gear | undefined) {
+      gear = newGear
     },
 
     setPosition(vector: LooseVector) {
@@ -211,7 +211,7 @@ export const createNetPlayer = (
       sprite.anchor.set(...PLAYER_SPRITE_ANCHOR)
       sprite.play()
 
-      const item = playerItem
+      const item = gear
       const itemSprite = item ? new Sprite(item.texture) : new Sprite()
       itemSprite.width = 200
       itemSprite.height = 200
@@ -259,8 +259,8 @@ export const createNetPlayer = (
         animationChanged = false
         sprite.textures = animations[currentAnimation].textures
         const getSpeedMultiplier = (animation_name: string) => {
-          if (playerItem?.speedMultiplier) {
-            return playerItem.speedMultiplier
+          if (gear?.speedMultiplier) {
+            return gear.speedMultiplier
           }
 
           switch (animation_name) {
@@ -288,14 +288,14 @@ export const createNetPlayer = (
       gfxBounds.position = pos
       gfxBounds.alpha = debug.value ? 0.5 : 0
 
-      if (playerItem) {
+      if (gear) {
         itemSprite.visible = Boolean(
           currentAnimation === 'greatsword' ||
             currentAnimation === 'bow' ||
             currentAnimation === 'shoot',
         )
 
-        const currentItem = playerItem
+        const currentItem = gear
         if (itemSprite.texture !== currentItem.texture) {
           itemSprite.texture = currentItem.texture
         }
@@ -341,7 +341,7 @@ export const createNetPlayer = (
         itemSprite.scale.x = -scale
         Object.assign(itemSprite, initialDimensions)
 
-        itemSprite.anchor.set(currentItem.anchorX, currentItem.anchorY)
+        itemSprite.anchor.set(currentItem.anchor.x, currentItem.anchor.y)
       } else {
         itemSprite.visible = false
       }
