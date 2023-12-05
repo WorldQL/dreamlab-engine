@@ -2,7 +2,7 @@ import EventEmitter from 'eventemitter3'
 import Matter from 'matter-js'
 import { AnimatedSprite, Graphics, Sprite } from 'pixi.js'
 import type { Camera } from '~/entities/camera.js'
-import { createEntity, isEntity } from '~/entity.js'
+import { createEntity, dataManager, isEntity } from '~/entity.js'
 import type { Entity } from '~/entity.js'
 import type { Game } from '~/game'
 import type { InputManager } from '~/input/manager.js'
@@ -274,6 +274,9 @@ export const createPlayer = (
     setItemInHand(item: PlayerItem) {
       playerItem = item
       events.emit('onItemChanged', item)
+
+      const { game } = dataManager.getData(this)
+      game.client.network?.sendPlayerItem(item)
     },
 
     teleport(position: LooseVector, resetVelocity = true) {
