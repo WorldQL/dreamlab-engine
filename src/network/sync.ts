@@ -53,7 +53,7 @@ export const syncedValue = <T extends Jsonifiable, Server extends boolean>(
       throw new Error('attempt to sync a destroyed synced value')
     }
 
-    game.server?.network?.broadcastSyncedValue(entityID, key, value)
+    void game.server?.network?.broadcastSyncedValue(entityID, key, value)
   }
 
   function onChanged(this: T): void {

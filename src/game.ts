@@ -643,7 +643,7 @@ export async function createGame<Server extends boolean>(
         entity.onArgsUpdate(path, previousArgs, data, render)
 
         if (network?.type !== 'client') return
-        network.sendArgsUpdate(uid, path, value)
+        void network.sendArgsUpdate(uid, path, value)
       })
 
       // Automatically track transform for the definition
@@ -652,7 +652,7 @@ export async function createGame<Server extends boolean>(
 
       const syncTransform = () => {
         if (network?.type !== 'client') return
-        network.sendTransformUpdate(uid, transform)
+        void network.sendTransformUpdate(uid, transform)
       }
 
       transform.addPositionListener(syncTransform)

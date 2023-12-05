@@ -290,7 +290,7 @@ export const createPlayer = (
       events.emit('onItemChanged', item)
 
       const { game } = dataManager.getData(this)
-      game.client.network?.sendPlayerItem(item)
+      void game.client.network?.sendPlayerItem(item)
     },
 
     teleport(position: LooseVector, resetVelocity = true) {
@@ -515,13 +515,13 @@ export const createPlayer = (
         game.events.common.emit('onPlayerAttack', this as Player, playerItem)
       }
 
-      network?.sendPlayerPosition(
+      void network?.sendPlayerPosition(
         body.position,
         body.velocity,
         facing.value !== 'left',
       )
 
-      network?.sendPlayerMotionInputs({
+      void network?.sendPlayerMotionInputs({
         jump,
         crouch,
         walkLeft: left,
@@ -605,7 +605,7 @@ export const createPlayer = (
         sprite.loop = newAnimation !== 'jump'
 
         sprite.gotoAndPlay(0)
-        network?.sendPlayerAnimation(newAnimation)
+        void network?.sendPlayerAnimation(newAnimation)
       }
 
       currentFrame = sprite.currentFrame
