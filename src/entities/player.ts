@@ -54,6 +54,7 @@ export const isPlayer = (player: unknown): player is Player => {
 
 export interface PlayerEvents {
   onToggleNoclip: [enabled: boolean]
+  onItemChanged: [item: PlayerItem]
 }
 
 export interface PlayerCommon {
@@ -272,6 +273,7 @@ export const createPlayer = (
 
     setItemInHand(item: PlayerItem) {
       playerItem = item
+      events.emit('onItemChanged', item)
     },
 
     teleport(position: LooseVector, resetVelocity = true) {
