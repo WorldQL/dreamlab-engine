@@ -1,20 +1,24 @@
 import type { Texture } from 'pixi.js'
+import { z } from 'zod'
+import { isKnownAnimation } from '~/entities/player.js'
 import type { KnownAnimation } from '~/entities/player.js'
 import { createSprite } from '~/textures/sprites.js'
 
-export interface Item {
-  displayName: string
-  texture: Texture
-  textureURL: string
-  animationName: string
-  anchorX: number
-  anchorY: number
-  rotation: number
-  bone: 'handLeft' | 'handRight'
-  speedMultiplier: number | undefined
-}
+export type Item = z.infer<typeof ItemSchema>
+export const ItemSchema = z.object({
+  displayName: z.string(),
+  texture: z.any() as z.ZodType<Texture>,
+  textureURL: z.string().url(),
+  animationName: z.string(),
+  anchorX: z.number(),
+  anchorY: z.number(),
+  rotation: z.number(),
+  bone: z.enum(['handLeft', 'handRight']),
+  speedMultiplier: z.number().optional(),
+})
 
-export type PlayerItem = Item | undefined
+export type PlayerItem = z.infer<typeof PlayerItemSchema>
+export const PlayerItemSchema = ItemSchema.optional()
 
 export const createItem = (
   displayName: string,
@@ -28,17 +32,7 @@ export const createItem = (
 ): PlayerItem => {
   const texture = createSprite(textureURL).texture
 
-  const validAnimations: KnownAnimation[] = [
-    'idle',
-    'jump',
-    'walk',
-    'bow',
-    'greatsword',
-    'shoot',
-  ]
-  const finalAnimationName = validAnimations.includes(
-    animationName as KnownAnimation,
-  )
+  const finalAnimationName: KnownAnimation = isKnownAnimation(animationName)
     ? animationName
     : 'greatsword'
 
