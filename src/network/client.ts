@@ -19,14 +19,25 @@ export type BareNetClient = Except<NetClient, 'type'>
 export interface NetClient extends Listeners<NetClientListeners> {
   type: 'client'
 
-  sendCustomMessage(channel: string, data: Data): void
-  sendPlayerPosition(position: Vector, velocity: Vector, flipped: boolean): void
-  sendPlayerMotionInputs(inputs: InputMap): void
-  sendPlayerAnimation(animation: string): void
-  sendPlayerItem(item: PlayerItem): void
+  sendCustomMessage(channel: string, data: Data): Promise<void> | void
+  sendPlayerPosition(
+    position: Vector,
+    velocity: Vector,
+    flipped: boolean,
+  ): Promise<void> | void
+  sendPlayerMotionInputs(inputs: InputMap): Promise<void> | void
+  sendPlayerAnimation(animation: string): Promise<void> | void
+  sendPlayerItem(item: PlayerItem): Promise<void> | void
 
-  sendEntityCreate(definition: LooseSpawnableDefinition): void
-  sendEntityDestroy(entityID: string): void
-  sendTransformUpdate(entityID: string, transform: Transform): void
-  sendArgsUpdate(entityID: string, path: string, value: unknown): void
+  sendEntityCreate(definition: LooseSpawnableDefinition): Promise<void> | void
+  sendEntityDestroy(entityID: string): Promise<void> | void
+  sendTransformUpdate(
+    entityID: string,
+    transform: Transform,
+  ): Promise<void> | void
+  sendArgsUpdate(
+    entityID: string,
+    path: string,
+    value: unknown,
+  ): Promise<void> | void
 }

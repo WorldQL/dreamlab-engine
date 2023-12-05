@@ -22,21 +22,32 @@ export type BareNetServer = Except<NetServer, 'type'>
 export interface NetServer extends Listeners<NetServerListeners> {
   type: 'server'
 
-  sendCustomMessage(peerID: string, channel: string, data: Data): void
-  broadcastCustomMessage(channel: string, data: Data): void
-  broadcastSyncedValue(entityID: string, key: string, value: unknown): void
+  sendCustomMessage(
+    peerID: string,
+    channel: string,
+    data: Data,
+  ): Promise<void> | void
+  broadcastCustomMessage(channel: string, data: Data): Promise<void> | void
+  broadcastSyncedValue(
+    entityID: string,
+    key: string,
+    value: unknown,
+  ): Promise<void> | void
 
-  sendEntityCreate(peerID: string, definition: LooseSpawnableDefinition): void
-  sendEntityDestroy(peerID: string, entityID: string): void
+  sendEntityCreate(
+    peerID: string,
+    definition: LooseSpawnableDefinition,
+  ): Promise<void> | void
+  sendEntityDestroy(peerID: string, entityID: string): Promise<void> | void
   sendTransformUpdate(
     peerID: string,
     entityID: string,
     transform: Transform,
-  ): void
+  ): Promise<void> | void
   sendArgsUpdate(
     peerID: string,
     entityID: string,
     path: string,
     value: unknown,
-  ): void
+  ): Promise<void> | void
 }
