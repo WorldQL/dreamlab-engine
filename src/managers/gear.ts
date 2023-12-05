@@ -9,7 +9,7 @@ import { handBones } from '~/textures/playerAnimations'
 export type BaseGear = z.infer<typeof BaseGearSchema>
 export const BaseGearSchema = z.object({
   displayName: z.string(),
-  textureURL: z.string().url(),
+  textureURL: z.string(),
   animationName: z.string(),
   anchor: VectorSchema,
   rotation: z.number(),
