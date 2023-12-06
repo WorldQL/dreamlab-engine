@@ -174,20 +174,6 @@ export const createPlayer = (
     return 'idle'
   }
 
-  // These should match offsets in https://github.com/WorldQL/painter-shoggoth/blob/trunk/prepare_animations.py
-  const getFrameOffset = () => {
-    switch (currentAnimation) {
-      case 'jump':
-        return 3
-      case 'greatsword':
-        return 52
-      case 'punch':
-        return 11
-      default:
-        return 0
-    }
-  }
-
   const isAttackFrame = () => {
     switch (currentAnimation) {
       case 'greatsword':
@@ -209,11 +195,11 @@ export const createPlayer = (
     const animW = animation.width
     const animH = animation.height
     const position =
-      animation.boneData.bones[bone][currentFrame + getFrameOffset()]!
+      animation.boneData.bones[bone][currentFrame]!
 
     if (position === undefined) {
       console.error(
-        `Missing bone data for this frame!!\nCurrent animation: ${currentAnimation} at ${currentFrame} with offset ${getFrameOffset}`,
+        `Missing bone data for this frame!!\nCurrent animation: ${currentAnimation} at ${currentFrame}`,
       )
     }
 
@@ -659,7 +645,7 @@ export const createPlayer = (
         const handOffsets =
           animation.boneData.handOffsets[
             mappedHand as 'handLeft' | 'handRight'
-          ][currentFrame + getFrameOffset()]
+          ][currentFrame]
 
         let handRotation = Math.atan2(
           handOffsets!.y.y - handOffsets!.x.y,
