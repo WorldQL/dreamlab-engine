@@ -43,7 +43,8 @@ export interface Camera extends Entity<Data, Render> {
   get zoomScale(): number
   get renderScale(): number
   get scale(): number
-  get offset(): Vector
+  get offset(): Readonly<Vector>
+  get position(): Readonly<Vector>
 
   rescale(scale: RescaleOptions): void
   localToWorld(position: Vector): Vector
@@ -109,7 +110,11 @@ export const createCamera = (
       return zoomScale * renderScale
     },
 
-    get offset(): Vector {
+    get position(): Readonly<Vector> {
+      return Vec.clone(position)
+    },
+
+    get offset(): Readonly<Vector> {
       const x = canvasWidth / this.zoomScale / 2 - position.x
       const y = canvasHeight / this.zoomScale / 2 - position.y
 

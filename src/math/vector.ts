@@ -7,6 +7,10 @@ import { snap, truncateFloat } from '~/math/general.js'
 export const Vec = Matter.Vector
 export type { Vector } from 'matter-js'
 
+export const multiply2 = (a: Vector, b: Vector): Vector => {
+  return Vec.create(a.x * b.x, a.y * b.y)
+}
+
 export const lerp2 = (a: Vector, b: Vector, t: number): Vector => {
   const x = a.x + (b.x - a.x) * t
   const y = a.y + (b.y - a.y) * t
