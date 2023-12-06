@@ -17,6 +17,7 @@ import { drawBox } from '~/utils/draw.js'
 const BackgroundActionSetSchema = z.object({
   action: z.literal('set'),
   textureURL: z.string(),
+  fadeTime: z.number().min(0.01).optional(),
   scale: VectorSchema.optional(),
   parallax: VectorSchema.optional(),
 })
@@ -25,10 +26,15 @@ const BackgroundActionClearSchema = z.object({
   action: z.literal('clear'),
 })
 
+const BackgroundActionKeepSchema = z.object({
+  action: z.literal('keep'),
+})
+
 export type BackgroundAction = z.infer<typeof BackgroundActionSchema>
 const BackgroundActionSchema = z.discriminatedUnion('action', [
   BackgroundActionSetSchema,
   BackgroundActionClearSchema,
+  BackgroundActionKeepSchema,
 ])
 
 type Args = typeof ArgsSchema
@@ -115,12 +121,27 @@ export const createBackgroundTrigger = createSpawnableEntity<
         action: z.infer<typeof BackgroundActionSchema>,
       ) => {
         const background = await getBackground()
-        if (action.action === 'set') {
-          background.args.textureURL = action.textureURL
-          if (action.scale) background.args.scale = action.scale
-          if (action.parallax) background.args.parallax = action.parallax
-        } else {
-          background.args.textureURL = undefined
+        switch (action.action) {
+          case 'set': {
+            if (action.fadeTime) background.args.fadeTime = action.fadeTime
+            if (action.scale) background.args.scale = action.scale
+            if (action.parallax) background.args.parallax = action.parallax
+
+            background.args.textureURL = action.textureURL
+
+            break
+          }
+
+          case 'clear': {
+            background.args.textureURL = undefined
+
+            break
+          }
+
+          case 'keep': {
+            // No-op
+            break
+          }
         }
       }
 
