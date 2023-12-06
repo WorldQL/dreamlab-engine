@@ -194,8 +194,7 @@ export const createPlayer = (
 
     const animW = animation.width
     const animH = animation.height
-    const position =
-      animation.boneData.bones[bone][currentFrame]!
+    const position = animation.boneData.bones[bone][currentFrame]!
 
     if (position === undefined) {
       console.error(
