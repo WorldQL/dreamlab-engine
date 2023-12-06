@@ -1,7 +1,7 @@
 import { Container, Texture, TilingSprite } from 'pixi.js'
 import { z } from 'zod'
 import type { Camera } from '~/entities/camera.js'
-import { multiply2, Vec, VectorSchema } from '~/math/vector.js'
+import { Vec, VectorSchema } from '~/math/vector.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type {
   PartializeSpawnable,
@@ -47,8 +47,9 @@ const textureAndSize = async (
 ): Promise<[texture: Texture, width: number, height: number]> => {
   const texture = await Texture.fromURL(textureURL ?? BLANK_PNG)
 
-  const width = textureURL ? texture.width * 100 : 16_000
-  const height = textureURL ? texture.height * 100 : 9_000
+  const scale = 100
+  const width = textureURL ? texture.width * scale : 16_000
+  const height = textureURL ? texture.height * scale : 9_000
 
   return [texture, width, height]
 }
@@ -60,6 +61,7 @@ export const createBackground = createSpawnableEntity<
   Render
 >(ArgsSchema, ({ tags }, args) => {
   let fadeTarget = 0
+  const origin = Vec.create(0, 0)
 
   const background: PartializeSpawnable<Background, Data, Render> = {
     get [symbol]() {
@@ -161,13 +163,28 @@ export const createBackground = createSpawnableEntity<
         }
       }
 
-      const position = multiply2(camera.position, args.parallax)
+      const distance = Vec.create(
+        camera.position.x * args.parallax.x,
+        camera.position.y * args.parallax.y,
+      )
+
+      const inverseDistance = Vec.create(
+        camera.position.x * (1 - args.parallax.x),
+        camera.position.y * (1 - args.parallax.y),
+      )
+
+      const { width, height } = spriteBack.texture
+      if (inverseDistance.x > origin.x + width) origin.x += width
+      else if (inverseDistance.x < origin.x - width) origin.x -= width
+
+      if (inverseDistance.y > origin.y + height) origin.y += height
+      else if (inverseDistance.y < origin.y - height) origin.y -= height
+
+      const position = Vec.add(origin, distance)
       const pos = Vec.add(position, camera.offset)
 
       container.position = pos
       container.alpha = args.opacity
-
-      // TODO: Check distance and update offset root
     },
   }
 
