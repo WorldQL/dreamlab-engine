@@ -305,7 +305,7 @@ export const createNetPlayer = (
           right: 'handRight',
         }
 
-        const currentHandKey = currentItem.bone ?? 'left'
+        const currentHandKey = currentItem.bone ?? 'handLeft'
         const mappedHand = handMapping[currentHandKey]
 
         const pos = Vec.add(
