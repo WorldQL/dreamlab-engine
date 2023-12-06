@@ -7,17 +7,37 @@ import { isBackground } from '~/entities/spawnable/background.js'
 import type { EventHandler } from '~/events.js'
 import type { Game } from '~/game.js'
 import { toRadians } from '~/math/general.js'
-import { Vec } from '~/math/vector.js'
+import { Vec, VectorSchema } from '~/math/vector.js'
 import type { Physics } from '~/physics.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
 
+const BackgroundActionSetSchema = z.object({
+  action: z.literal('set'),
+  textureURL: z.string(),
+  scale: VectorSchema.optional(),
+  parallax: VectorSchema.optional(),
+})
+
+const BackgroundActionClearSchema = z.object({
+  action: z.literal('clear'),
+})
+
+export type BackgroundAction = z.infer<typeof BackgroundActionSchema>
+const BackgroundActionSchema = z.discriminatedUnion('action', [
+  BackgroundActionSetSchema,
+  BackgroundActionClearSchema,
+])
+
 type Args = typeof ArgsSchema
 const ArgsSchema = z.object({
   width: z.number().positive().min(1).default(30),
   height: z.number().positive().min(1).default(30),
+
+  onEnter: BackgroundActionSchema.default({ action: 'clear' }),
+  onLeave: BackgroundActionSchema.default({ action: 'clear' }),
 })
 
 interface Data {
@@ -91,26 +111,31 @@ export const createBackgroundTrigger = createSpawnableEntity<
         return spawned as Background
       }
 
-      const onPlayerCollisionStart: EventHandler<
-        'onPlayerCollisionStart'
-      > = async ([player, other]) => {
-        if (other !== trigger) return
-
+      const updateBackground = async (
+        action: z.infer<typeof BackgroundActionSchema>,
+      ) => {
         const background = await getBackground()
-        console.log(background.uid)
-
-        // TODO
-        void 0
+        if (action.action === 'set') {
+          background.args.textureURL = action.textureURL
+          if (action.scale) background.args.scale = action.scale
+          if (action.parallax) background.args.parallax = action.parallax
+        } else {
+          background.args.textureURL = undefined
+        }
       }
 
-      const onPlayerCollisionEnd: EventHandler<'onPlayerCollisionEnd'> = ([
-        player,
-        other,
-      ]) => {
+      const onPlayerCollisionStart: EventHandler<
+        'onPlayerCollisionStart'
+      > = async ([_player, other]) => {
         if (other !== trigger) return
+        await updateBackground(args.onEnter)
+      }
 
-        // TODO
-        void 0
+      const onPlayerCollisionEnd: EventHandler<
+        'onPlayerCollisionEnd'
+      > = async ([_player, other]) => {
+        if (other !== trigger) return
+        await updateBackground(args.onLeave)
       }
 
       game.events.client?.addListener(
