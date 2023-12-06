@@ -301,8 +301,8 @@ export const createNetPlayer = (
         }
 
         const handMapping: Record<string, 'handLeft' | 'handRight'> = {
-          left: 'handLeft',
-          right: 'handRight',
+          handLeft: 'handLeft',
+          handRight: 'handRight',
         }
 
         const currentHandKey = currentItem.bone ?? 'handLeft'
