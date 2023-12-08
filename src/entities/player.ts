@@ -106,12 +106,15 @@ export const isKnownAnimation = (
 export enum PlayerInput {
   Attack = '@player/attack',
   Crouch = '@player/crouch',
-  Drag = '@editor/drag',
   Jog = '@player/jog',
   Jump = '@player/jump',
   ToggleNoclip = '@player/toggle-noclip',
   WalkLeft = '@player/walk-left',
   WalkRight = '@player/walk-right',
+}
+
+export enum EditorInput {
+  Drag = '@editor/drag',
 }
 
 export const createPlayer = (
@@ -298,7 +301,7 @@ export const createPlayer = (
         inputs.registerInput(PlayerInput.Jog, 'Jog', 'ShiftLeft')
         inputs.registerInput(PlayerInput.Attack, 'Attack', 'MouseLeft')
         inputs.registerInput(PlayerInput.ToggleNoclip, 'Toggle Noclip', 'KeyV')
-        inputs.registerInput(PlayerInput.Drag, 'Editor Drag', 'MouseLeft')
+        inputs.registerInput(EditorInput.Drag, 'Editor Drag', 'MouseLeft')
         inputs.addListener(PlayerInput.ToggleNoclip, onToggleNoclip)
       }
 
@@ -373,7 +376,7 @@ export const createPlayer = (
       attack = (colliding && inputs?.getInput(PlayerInput.Attack)) ?? false
       isJogging = inputs?.getInput(PlayerInput.Jog) ?? false
       const crouch = inputs?.getInput(PlayerInput.Crouch) ?? false
-      const drag = inputs?.getInput(PlayerInput.Drag) ?? false
+      const drag = inputs?.getInput(EditorInput.Drag) ?? false
 
       direction.value = left ? -1 : right ? 1 : 0
       const xor = left ? !right : right
