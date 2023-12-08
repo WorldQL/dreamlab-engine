@@ -436,6 +436,16 @@ export async function createGame<Server extends boolean>(
         }
       }
     }
+
+    const endOfTickNow = performance.now()
+    const endOfTickDelta = endOfTickNow - now
+    if (endOfTickDelta > 17) {
+      console.warn(
+        'Tick took: ' +
+          (endOfTickNow - now) +
+          'ms. Should take less than 16ms.',
+      )
+    }
   }
 
   let interval: NodeJS.Timeout | undefined
