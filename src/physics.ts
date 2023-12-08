@@ -116,7 +116,7 @@ const randomID = (): number => {
 export const createPhysics = (): Physics => {
   let running = true
 
-  const engine = Matter.Engine.create({ enableSleeping: true })
+  const engine = Matter.Engine.create()
   const entities = new Map<string, Body[]>()
   const bodiesMap = new Map<number, SpawnableEntity>()
   const linksMap = new Map<number, LinkData>()
