@@ -52,6 +52,7 @@ export const inputNames = {
   ShiftRight: 'Right Shift',
   Space: undefined,
   Tab: 'TAB',
+  Backspace: 'Backspace',
 
   // Mouse
   MouseLeft: 'LMB',
