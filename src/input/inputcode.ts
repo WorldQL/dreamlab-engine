@@ -58,6 +58,9 @@ const special = [
   'Space',
   'Tab',
   'Backspace',
+  'BracketLeft',
+  'BracketRight',
+  'Backslash',
 ] as const
 export type SpecialKey = z.infer<typeof SpecialSchema>
 const SpecialSchema = z.enum(special)
