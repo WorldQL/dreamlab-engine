@@ -53,6 +53,9 @@ export const inputNames = {
   Space: undefined,
   Tab: 'TAB',
   Backspace: 'Backspace',
+  BracketLeft: 'Left Bracket',
+  BracketRight: 'Right Bracket',
+  Backslash: 'Backslash',
 
   // Mouse
   MouseLeft: 'LMB',
