@@ -179,16 +179,18 @@ export const createPlatform = createSpawnableEntity<
 
       const inputs = game.client?.inputs
       const isCrouching = inputs?.getInput('@player/crouch') ?? false
-
       if (isPlatformActive) {
         if (isCrouching) {
+          isPlatformActive = false
+        }
+
+        if (Matter.Query.collides(body, [playerBody]).length === 0) {
           isPlatformActive = false
         }
       } else if (
         Matter.Query.collides(body, [playerBody]).length > 0 &&
         !isCrouching
       ) {
-        console.log('here')
         const playerHeight = 350 // need to add player.height to the player entity
         const playerAbovePlatform =
           playerBody.position.y + playerHeight / 2 <
