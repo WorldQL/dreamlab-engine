@@ -331,7 +331,7 @@ export const createNetPlayer = (
           handOffsets!.y.y - handOffsets!.x.y,
           handOffsets!.y.x - handOffsets!.x.x,
         )
-        let itemRotation = currentItem.rotation * (Math.PI / 180)
+        let itemRotation = -currentItem.rotation * (Math.PI / 180)
 
         itemRotation *= scale === -1 ? -1 : 1
         handRotation *= scale === -1 ? -1 : 1
