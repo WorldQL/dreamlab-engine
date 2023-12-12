@@ -222,7 +222,7 @@ export const createPlatform = createSpawnableEntity<
     onRenderFrame(
       { smooth },
       { game },
-      { camera, stage: container, gfx: gfxBounds, sprite },
+      { camera, stage: container, gfx: gfxBounds },
     ) {
       const debug = game.debug
       const smoothed = Vec.add(body.position, Vec.mult(body.velocity, smooth))
