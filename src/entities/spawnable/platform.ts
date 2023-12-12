@@ -12,6 +12,7 @@ import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import { createSprite, SpriteSourceSchema } from '~/textures/sprites.js'
 import { drawBox } from '~/utils/draw.js'
 import { isPlayer } from '../player'
+import { isNetPlayer } from '../netplayer'
 
 type Args = typeof ArgsSchema
 const ArgsSchema = z.object({
@@ -40,9 +41,6 @@ export const createPlatform = createSpawnableEntity<
 >(ArgsSchema, ({ tags, transform }, args) => {
   const { position, zIndex } = transform
 
-  const PLAYER_CATEGORY = 0x0001
-  const PLATFORM_CATEGORY = 0x0002
-
   const body = Matter.Bodies.rectangle(
     position.x,
     position.y,
@@ -52,10 +50,6 @@ export const createPlatform = createSpawnableEntity<
       label: 'platform',
       render: { visible: true },
       isStatic: true,
-      collisionFilter: {
-        category: PLATFORM_CATEGORY,
-        mask: PLAYER_CATEGORY,
-      },
       friction: 0,
     },
   )
@@ -168,14 +162,37 @@ export const createPlatform = createSpawnableEntity<
     },
 
     onPhysicsStep(_, { game }) {
+      if (!game.client) {
+        return
+      }
+
       Matter.Body.setAngle(body, 0)
       Matter.Body.setAngularVelocity(body, 0)
 
       // TODO: Can we avoid looking this up every tick?
       const player = game.entities.find(isPlayer)
       const playerBody = player?.body
+      const playerHeight = player?.size.height
+      if (!playerHeight) {
+        return
+      }
 
       if (!playerBody) return
+
+      let inactiveCollisionMask = 0b11111111111111111111111111111001
+      // don't collide with players or netplayers, prevent jitter when netplayers run thru platform
+
+      const netPlayers = game.entities.filter(isNetPlayer)
+      for (const netPlayer of netPlayers) {
+        const netPlayerAbovePlatform =
+          netPlayer.position.y + playerHeight / 2 <
+          (body.position.y + body.bounds.min.y) / 2
+        const netPlayerYDistance = netPlayer.position.y - body.position.y
+        if (netPlayerAbovePlatform && netPlayerYDistance > -500) {
+          // should activate netplayer collision for this platform!
+          inactiveCollisionMask = 0b11111111111111111111111111111101
+        }
+      }
 
       const playerOnX =
         playerBody.position.x > body.bounds.min.x &&
@@ -201,7 +218,6 @@ export const createPlatform = createSpawnableEntity<
         Matter.Query.collides(body, [playerBody]).length > 0 &&
         !isCrouching
       ) {
-        const playerHeight = 350 // need to add player.height to the player entity
         const playerAbovePlatform =
           playerBody.position.y + playerHeight / 2 <
           (body.position.y + body.bounds.min.y) / 2
@@ -215,8 +231,9 @@ export const createPlatform = createSpawnableEntity<
         isPlatformActive = true
       }
 
-      body.collisionFilter.mask = isPlatformActive ? PLAYER_CATEGORY : 0x0000
-      body.isSensor = !isPlatformActive
+      body.collisionFilter.mask = isPlatformActive
+        ? 0b11111111111111111111111111111111
+        : inactiveCollisionMask
     },
 
     onRenderFrame(

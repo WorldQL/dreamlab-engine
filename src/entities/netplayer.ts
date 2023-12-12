@@ -88,6 +88,9 @@ export const createNetPlayer = (
     mass: PLAYER_MASS,
     inverseMass: 1 / PLAYER_MASS,
     friction: 0,
+    collisionFilter: {
+      category: 0x0004,
+    },
   })
 
   const bonePosition = (bone: Bone): Vector => {

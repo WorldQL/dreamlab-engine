@@ -160,6 +160,9 @@ export const createPlayer = (
     mass: PLAYER_MASS,
     inverseMass: 1 / PLAYER_MASS,
     friction: 0,
+    collisionFilter: {
+      category: 0x002,
+    },
   })
 
   const getAnimation = (direction: number): KnownAnimation => {
