@@ -189,6 +189,7 @@ export const createPlatform = createSpawnableEntity<
         const netPlayerYDistance = netPlayer.position.y - body.position.y
         if (netPlayerAbovePlatform && netPlayerYDistance > -500) {
           platformShouldCollideWithNetPlayers = true
+          break
         }
       }
 
