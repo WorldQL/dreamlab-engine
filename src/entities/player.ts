@@ -556,7 +556,7 @@ export const createPlayer = (
         game.client.render.container.style.cursor = 'default'
       }
 
-      sprite.visible = !noclip
+      // sprite.visible = !noclip
       gfxBounds.visible = !noclip
       gfxFeet.visible = !noclip
 
