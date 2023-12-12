@@ -179,8 +179,7 @@ export const createPlatform = createSpawnableEntity<
 
       if (!playerBody) return
 
-      let inactiveCollisionMask = 0b11111111111111111111111111111001
-      // don't collide with players or netplayers, prevent jitter when netplayers run thru platform
+      let platformShouldCollideWithNetPlayers = false
 
       const netPlayers = game.entities.filter(isNetPlayer)
       for (const netPlayer of netPlayers) {
@@ -189,8 +188,7 @@ export const createPlatform = createSpawnableEntity<
           (body.position.y + body.bounds.min.y) / 2
         const netPlayerYDistance = netPlayer.position.y - body.position.y
         if (netPlayerAbovePlatform && netPlayerYDistance > -500) {
-          // should activate netplayer collision for this platform!
-          inactiveCollisionMask = 0b11111111111111111111111111111101
+          platformShouldCollideWithNetPlayers = true
         }
       }
 
@@ -227,13 +225,21 @@ export const createPlatform = createSpawnableEntity<
         isPlatformActive = Boolean(playerAbovePlatform && playerMovingDownward)
       }
 
-      if (!isPlatformActive && shouldProactivelyEnable) {
+      if (!isPlatformActive && shouldProactivelyEnable && !isCrouching) {
         isPlatformActive = true
       }
 
+      // by default, don't collide with netplayers on active platforms
+      let activePlatformMask = 0b11111111111111111111111111111011
+      let inactivePlatformMask = 0
+      if (platformShouldCollideWithNetPlayers) {
+        activePlatformMask = 0b11111111111111111111111111111111
+        inactivePlatformMask = 0b100
+      }
+
       body.collisionFilter.mask = isPlatformActive
-        ? 0b11111111111111111111111111111111
-        : inactiveCollisionMask
+        ? 0b11111111111111111111111111111111 & activePlatformMask
+        : 0b11111111111111111111111111111001 | inactivePlatformMask
     },
 
     onRenderFrame(
