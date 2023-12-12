@@ -11,8 +11,8 @@ import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import { createSprite, SpriteSourceSchema } from '~/textures/sprites.js'
 import { drawBox } from '~/utils/draw.js'
-import { isPlayer } from '../player'
 import { isNetPlayer } from '../netplayer'
+import { isPlayer } from '../player'
 
 type Args = typeof ArgsSchema
 const ArgsSchema = z.object({
