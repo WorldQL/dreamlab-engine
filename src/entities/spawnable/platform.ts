@@ -177,6 +177,13 @@ export const createPlatform = createSpawnableEntity<
 
       if (!playerBody) return
 
+      const playerOnX =
+        playerBody.position.x > body.bounds.min.x &&
+        playerBody.position.x < body.bounds.max.x
+      const playerYDistance = playerBody.position.y - body.position.y
+      const inYThreshold = playerYDistance < -194 && playerYDistance > -500
+      const shouldProactivelyEnable = playerOnX && inYThreshold
+
       const inputs = game.client?.inputs
       const isCrouching = inputs?.getInput('@player/crouch') ?? false
       if (isPlatformActive) {
@@ -184,7 +191,10 @@ export const createPlatform = createSpawnableEntity<
           isPlatformActive = false
         }
 
-        if (Matter.Query.collides(body, [playerBody]).length === 0) {
+        if (
+          Matter.Query.collides(body, [playerBody]).length === 0 &&
+          !shouldProactivelyEnable
+        ) {
           isPlatformActive = false
         }
       } else if (
@@ -199,6 +209,10 @@ export const createPlatform = createSpawnableEntity<
         const playerMovingDownward = playerBody.velocity.y > 0
 
         isPlatformActive = Boolean(playerAbovePlatform && playerMovingDownward)
+      }
+
+      if (!isPlatformActive && shouldProactivelyEnable) {
+        isPlatformActive = true
       }
 
       body.collisionFilter.mask = isPlatformActive ? PLAYER_CATEGORY : 0x0000
