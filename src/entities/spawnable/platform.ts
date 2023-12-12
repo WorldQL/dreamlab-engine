@@ -3,16 +3,16 @@ import { Container, Graphics } from 'pixi.js'
 import type { Sprite } from 'pixi.js'
 import { z } from 'zod'
 import type { Camera } from '~/entities/camera.js'
-import type { Game } from '~/game'
-import { toRadians } from '~/math/general'
-import { cloneTransform } from '~/math/transform'
+import { isNetPlayer } from '~/entities/netplayer.js'
+import { isPlayer } from '~/entities/player.js'
+import type { Game } from '~/game.js'
+import { toRadians } from '~/math/general.js'
+import { cloneTransform } from '~/math/transform.js'
 import { Vec } from '~/math/vector.js'
 import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import { createSprite, SpriteSourceSchema } from '~/textures/sprites.js'
 import { drawBox } from '~/utils/draw.js'
-import { isNetPlayer } from '../netplayer'
-import { isPlayer } from '../player'
 
 type Args = typeof ArgsSchema
 const ArgsSchema = z.object({
@@ -39,11 +39,9 @@ export const createPlatform = createSpawnableEntity<
   Data,
   Render
 >(ArgsSchema, ({ tags, transform }, args) => {
-  const { position, zIndex } = transform
-
   const body = Matter.Bodies.rectangle(
-    position.x,
-    position.y,
+    transform.position.x,
+    transform.position.y,
     args.width,
     args.height,
     {
@@ -125,14 +123,14 @@ export const createPlatform = createSpawnableEntity<
     initRenderContext(_, { camera, stage }) {
       const container = new Container()
       container.sortableChildren = true
-      container.zIndex = zIndex
+      container.zIndex = transform.zIndex
       const gfxBounds = new Graphics()
-      gfxBounds.zIndex = zIndex
+      gfxBounds.zIndex = transform.zIndex
       const sprite = args.spriteSource
         ? createSprite(args.spriteSource, {
             width: args.width,
             height: args.height,
-            zIndex,
+            zIndex: transform.zIndex,
           })
         : undefined
 
@@ -173,10 +171,8 @@ export const createPlatform = createSpawnableEntity<
       const player = game.entities.find(isPlayer)
       const playerBody = player?.body
       const playerHeight = player?.size.height
-      if (!playerHeight) {
-        return
-      }
 
+      if (!playerHeight) return
       if (!playerBody) return
 
       let platformShouldCollideWithNetPlayers = false
