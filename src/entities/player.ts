@@ -12,8 +12,8 @@ import type { LooseVector, Vector } from '~/math/vector.js'
 import type { NetClient } from '~/network/client.js'
 import { onlyNetClient } from '~/network/shared.js'
 import type { Physics } from '~/physics.js'
-import { bones } from '~/textures/playerAnimations.js'
-import type { Bone, PlayerAnimationMap } from '~/textures/playerAnimations.js'
+import { bones, loadCharacterAnimations } from '~/textures/playerAnimations.js'
+import type { Bone } from '~/textures/playerAnimations.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
 import { ref } from '~/utils/ref.js'
@@ -62,19 +62,21 @@ export interface PlayerCommon {
   get size(): PlayerSize
   get body(): Matter.Body
 
+  get characterId(): string | undefined
   get gear(): Gear | undefined
   get currentAnimation(): string
   get facingDirection(): number
 
-  updateAnimations(animations: PlayerAnimationMap<KnownAnimation>): void
+  setCharacterId(characterId: string | undefined): Promise<void>
+  setGear(gear: Gear | undefined): void
 }
 
 export interface Player extends PlayerCommon, Entity<Data, Render> {
   get [symbol](): true
+
   get bones(): Readonly<Record<Bone, Vector>>
   get events(): EventEmitter<PlayerEvents>
 
-  setGear(gear: Gear | undefined): void
   teleport(position: LooseVector, resetVelocity?: boolean): void
 }
 
@@ -120,8 +122,8 @@ export enum EditorInput {
   Drag = '@editor/drag',
 }
 
-export const createPlayer = (
-  defaultAnimations: PlayerAnimationMap<KnownAnimation>,
+export const createPlayer = async (
+  characterId: string | undefined,
   { width = 80, height = 370 }: Partial<PlayerSize> = {},
 ) => {
   const events = new EventEmitter<PlayerEvents>()
@@ -149,7 +151,8 @@ export const createPlayer = (
     }
   }
 
-  let animations = defaultAnimations
+  let _characterId = characterId
+  let animations = await loadCharacterAnimations(_characterId)
   let currentAnimation: KnownAnimation = 'idle'
   let gear: Gear | undefined
   let spriteSign = 1
@@ -266,6 +269,10 @@ export const createPlayer = (
       return events
     },
 
+    get characterId(): string | undefined {
+      return _characterId
+    },
+
     get gear(): Gear | undefined {
       return gear
     },
@@ -278,8 +285,12 @@ export const createPlayer = (
       return -spriteSign
     },
 
-    updateAnimations(newAnimations: PlayerAnimationMap<KnownAnimation>): void {
-      animations = newAnimations
+    async setCharacterId(characterId: string | undefined): Promise<void> {
+      const { game } = dataManager.getData(this)
+      void game.client.network?.sendPlayerCharacterId(characterId)
+
+      _characterId = characterId
+      animations = await loadCharacterAnimations(_characterId)
 
       const { sprite } = dataManager.getRenderData(this)
       sprite.textures = animations[currentAnimation].textures

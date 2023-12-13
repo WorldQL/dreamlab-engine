@@ -20,8 +20,8 @@ import type { Gear } from '~/managers/gear.js'
 import { v, Vec } from '~/math/vector.js'
 import type { LooseVector, Vector } from '~/math/vector.js'
 import type { Physics } from '~/physics.js'
-import { bones } from '~/textures/playerAnimations.js'
-import type { Bone, PlayerAnimationMap } from '~/textures/playerAnimations.js'
+import { bones, loadCharacterAnimations } from '~/textures/playerAnimations.js'
+import type { Bone } from '~/textures/playerAnimations.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
 
@@ -51,30 +51,26 @@ export interface NetPlayer extends PlayerCommon, Entity<Data, Render> {
 
   get peerID(): string
   get entityID(): string
-  get characterID(): string | undefined
   get nickname(): string | undefined
 
-  setCharacterId(characterId: string | undefined): void
-  setGear(item: Gear | undefined): void
   setPosition(vector: LooseVector): void
   setVelocity(vector: LooseVector): void
   setFlipped(flipped: boolean): void
   setAnimation(animation: KnownAnimation): void
 }
 
-export const createNetPlayer = (
+export const createNetPlayer = async (
   peerID: string,
   entityID: string | undefined,
-  defaultAnimations: PlayerAnimationMap<KnownAnimation> | undefined,
-  defaultCharacterId: string | undefined,
+  characterId: string | undefined,
   nickname: string | undefined,
   { width = 80, height = 370 }: Partial<PlayerSize> = {},
 ) => {
   const _entityID = entityID ?? createId()
 
-  let characterId = defaultCharacterId
+  let _characterId = characterId
+  let animations = await loadCharacterAnimations(_characterId)
   let isFlipped = false
-  let animations = defaultAnimations
   let currentAnimation: KnownAnimation = 'idle'
   let gear: Gear | undefined
   let animationChanged = false
@@ -148,8 +144,8 @@ export const createNetPlayer = (
       return _entityID
     },
 
-    get characterID(): string | undefined {
-      return characterId
+    get characterId(): string | undefined {
+      return _characterId
     },
 
     get nickname(): string {
@@ -177,12 +173,9 @@ export const createNetPlayer = (
       return -spriteSign
     },
 
-    setCharacterId(newId) {
-      characterId = newId
-    },
-
-    updateAnimations(newAnimations: PlayerAnimationMap<KnownAnimation>): void {
-      animations = newAnimations
+    async setCharacterId(characterId: string | undefined): Promise<void> {
+      _characterId = characterId
+      animations = await loadCharacterAnimations(_characterId)
 
       const { sprite } = dataManager.getRenderData(this)
       sprite.textures = animations[currentAnimation].textures
