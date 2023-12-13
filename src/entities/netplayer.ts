@@ -54,6 +54,7 @@ export interface NetPlayer extends PlayerCommon, Entity<Data, Render> {
   get characterID(): string | undefined
   get nickname(): string | undefined
 
+  setCharacterId(characterId: string | undefined): void
   setGear(item: Gear | undefined): void
   setPosition(vector: LooseVector): void
   setVelocity(vector: LooseVector): void
@@ -65,12 +66,13 @@ export const createNetPlayer = (
   peerID: string,
   entityID: string | undefined,
   defaultAnimations: PlayerAnimationMap<KnownAnimation> | undefined,
-  characterID: string | undefined,
+  defaultCharacterId: string | undefined,
   nickname: string | undefined,
   { width = 80, height = 370 }: Partial<PlayerSize> = {},
 ) => {
   const _entityID = entityID ?? createId()
 
+  let characterId = defaultCharacterId
   let isFlipped = false
   let animations = defaultAnimations
   let currentAnimation: KnownAnimation = 'idle'
@@ -147,7 +149,7 @@ export const createNetPlayer = (
     },
 
     get characterID(): string | undefined {
-      return characterID
+      return characterId
     },
 
     get nickname(): string {
@@ -173,6 +175,10 @@ export const createNetPlayer = (
 
     get facingDirection() {
       return -spriteSign
+    },
+
+    setCharacterId(newId) {
+      characterId = newId
     },
 
     updateAnimations(newAnimations: PlayerAnimationMap<KnownAnimation>): void {
