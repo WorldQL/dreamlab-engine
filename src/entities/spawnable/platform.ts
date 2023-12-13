@@ -175,13 +175,16 @@ export const createPlatform = createSpawnableEntity<
       if (!playerHeight) return
       if (!playerBody) return
 
+      const platformHeight = body.bounds.max.y - body.bounds.min.y
+
       let platformShouldCollideWithNetPlayers = false
 
       const netPlayers = game.entities.filter(isNetPlayer)
       for (const netPlayer of netPlayers) {
         const netPlayerAbovePlatform =
           netPlayer.position.y + playerHeight / 2 <
-          (body.position.y + body.bounds.min.y) / 2
+          body.position.y - platformHeight / 2 + 1 // when resting on a platform we're technically not on top of it, 1 unit fixes this.
+
         const netPlayerYDistance = netPlayer.position.y - body.position.y
         if (netPlayerAbovePlatform && netPlayerYDistance > -500) {
           platformShouldCollideWithNetPlayers = true
@@ -189,41 +192,25 @@ export const createPlatform = createSpawnableEntity<
         }
       }
 
-      const playerOnX =
-        playerBody.position.x > body.bounds.min.x &&
-        playerBody.position.x < body.bounds.max.x
-      const playerYDistance = playerBody.position.y - body.position.y
-      const inYThreshold = playerYDistance < -194 && playerYDistance > -500
-      const shouldProactivelyEnable = playerOnX && inYThreshold
-
       const inputs = game.client?.inputs
       const isCrouching = inputs?.getInput('@player/crouch') ?? false
+
+      const playerAbovePlatform =
+        playerBody.position.y + playerHeight / 2 <
+        body.position.y - platformHeight / 2 + 1 // when resting on a platform we're technically not on top of it, 1 unit fixes this.
+
       if (isPlatformActive) {
         if (isCrouching) {
           isPlatformActive = false
         }
 
-        if (
-          Matter.Query.collides(body, [playerBody]).length === 0 &&
-          !shouldProactivelyEnable
-        ) {
+        if (!playerAbovePlatform) {
           isPlatformActive = false
         }
-      } else if (
-        Matter.Query.collides(body, [playerBody]).length > 0 &&
-        !isCrouching
-      ) {
-        const playerAbovePlatform =
-          playerBody.position.y + playerHeight / 2 <
-          (body.position.y + body.bounds.min.y) / 2
-
+      } else if (!isCrouching) {
         const playerMovingDownward = playerBody.velocity.y > 0
 
         isPlatformActive = Boolean(playerAbovePlatform && playerMovingDownward)
-      }
-
-      if (!isPlatformActive && shouldProactivelyEnable && !isCrouching) {
-        isPlatformActive = true
       }
 
       // by default, don't collide with netplayers on active platforms
