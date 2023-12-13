@@ -303,7 +303,11 @@ export const createPlayer = (
         inputs.registerInput(PlayerInput.Crouch, 'Crouch', 'KeyS')
         inputs.registerInput(PlayerInput.Jog, 'Jog', 'ShiftLeft')
         inputs.registerInput(PlayerInput.Attack, 'Attack', 'MouseLeft')
-        inputs.registerInput(PlayerInput.ToggleNoclip, 'Toggle Noclip', 'KeyV')
+        inputs.registerInput(
+          PlayerInput.ToggleNoclip,
+          'Toggle Noclip',
+          'Backquote',
+        )
         inputs.registerInput(EditorInput.Drag, 'Editor Drag', 'MouseLeft')
         inputs.addListener(PlayerInput.ToggleNoclip, onToggleNoclip)
       }

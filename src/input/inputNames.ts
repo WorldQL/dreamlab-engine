@@ -58,6 +58,7 @@ export const inputNames = {
   BracketLeft: 'Left Bracket',
   BracketRight: 'Right Bracket',
   Backslash: 'Backslash',
+  Backquote: 'Backquote',
 
   // Mouse
   MouseLeft: 'LMB',
