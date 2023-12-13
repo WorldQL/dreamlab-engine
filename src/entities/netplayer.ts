@@ -51,6 +51,8 @@ export interface NetPlayer extends PlayerCommon, Entity<Data, Render> {
 
   get peerID(): string
   get entityID(): string
+  get characterID(): string | undefined
+  get nickname(): string | undefined
 
   get body(): Body
   get gear(): Gear | undefined
@@ -68,6 +70,8 @@ export const createNetPlayer = (
   peerID: string,
   entityID: string | undefined,
   animations: PlayerAnimationMap<KnownAnimation> | undefined,
+  characterID: string | undefined,
+  nickname: string | undefined,
   { width = 80, height = 370 }: Partial<PlayerSize> = {},
 ) => {
   const _entityID = entityID ?? createId()
@@ -144,6 +148,14 @@ export const createNetPlayer = (
 
     get entityID(): string {
       return _entityID
+    },
+
+    get characterID(): string | undefined {
+      return characterID
+    },
+
+    get nickname(): string {
+      return nickname ?? 'Player'
     },
 
     get position(): Vector {
