@@ -171,9 +171,9 @@ export const createPlatform = createSpawnableEntity<
       const player = game.entities.find(isPlayer)
       const playerBody = player?.body
       const playerHeight = player?.size.height
+      const playerWidth = player?.size.width
 
-      if (!playerHeight) return
-      if (!playerBody) return
+      if (!playerBody || !playerWidth || !playerHeight) return
 
       const platformHeight = body.bounds.max.y - body.bounds.min.y
 
@@ -181,12 +181,20 @@ export const createPlatform = createSpawnableEntity<
 
       const netPlayers = game.entities.filter(isNetPlayer)
       for (const netPlayer of netPlayers) {
+        const netPlayerWithinXBoundsOfPlatform =
+          netPlayer.position.x + playerWidth > body.bounds.min.x &&
+          netPlayer.position.x - playerWidth < body.bounds.max.x
+
         const netPlayerAbovePlatform =
           netPlayer.position.y + playerHeight / 2 <
           body.position.y - platformHeight / 2 + 1 // when resting on a platform we're technically not on top of it, 1 unit fixes this.
 
         const netPlayerYDistance = netPlayer.position.y - body.position.y
-        if (netPlayerAbovePlatform && netPlayerYDistance > -500) {
+        if (
+          netPlayerAbovePlatform &&
+          netPlayerYDistance > -350 &&
+          netPlayerWithinXBoundsOfPlatform
+        ) {
           platformShouldCollideWithNetPlayers = true
           break
         }
@@ -210,7 +218,7 @@ export const createPlatform = createSpawnableEntity<
       } else if (!isCrouching) {
         const playerMovingDownward = playerBody.velocity.y > 0
 
-        isPlatformActive = Boolean(playerAbovePlatform && playerMovingDownward)
+        isPlatformActive = playerAbovePlatform && playerMovingDownward
       }
 
       // by default, don't collide with netplayers on active platforms
