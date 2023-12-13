@@ -55,6 +55,8 @@ const special = [
   'Semicolon',
   'ShiftLeft',
   'ShiftRight',
+  'ControlLeft',
+  'ControlRight',
   'Space',
   'Tab',
   'Backspace',

@@ -50,6 +50,8 @@ export const inputNames = {
   Semicolon: undefined,
   ShiftLeft: 'Left Shift',
   ShiftRight: 'Right Shift',
+  ControlLeft: 'Left Ctrl',
+  ControlRight: 'Right Ctrl',
   Space: undefined,
   Tab: 'TAB',
   Backspace: 'Backspace',
