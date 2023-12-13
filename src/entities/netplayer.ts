@@ -16,6 +16,7 @@ import type {
 } from '~/entities/player.js'
 import { createEntity, dataManager, isEntity } from '~/entity.js'
 import type { Entity } from '~/entity.js'
+import type { Game } from '~/game'
 import type { Gear } from '~/managers/gear.js'
 import { v, Vec } from '~/math/vector.js'
 import type { LooseVector, Vector } from '~/math/vector.js'
@@ -62,14 +63,19 @@ export interface NetPlayer extends PlayerCommon, Entity<Data, Render> {
 export const createNetPlayer = async (
   peerID: string,
   entityID: string | undefined,
+  game: Game<boolean>,
   characterId: string | undefined,
   nickname: string | undefined,
   { width = 80, height = 370 }: Partial<PlayerSize> = {},
 ) => {
+  const isServer = game.server !== undefined
   const _entityID = entityID ?? createId()
 
   let _characterId = characterId
-  let animations = await loadCharacterAnimations(_characterId)
+  let animations = isServer
+    ? undefined
+    : await loadCharacterAnimations(_characterId)
+
   let isFlipped = false
   let currentAnimation: KnownAnimation = 'idle'
   let gear: Gear | undefined
@@ -175,10 +181,11 @@ export const createNetPlayer = async (
 
     async setCharacterId(characterId: string | undefined): Promise<void> {
       _characterId = characterId
-      animations = await loadCharacterAnimations(_characterId)
-
-      const { sprite } = dataManager.getRenderData(this)
-      sprite.textures = animations[currentAnimation].textures
+      if (!isServer) {
+        animations = await loadCharacterAnimations(_characterId)
+        const { sprite } = dataManager.getRenderData(this)
+        sprite.textures = animations[currentAnimation].textures
+      }
     },
 
     setGear(newGear: Gear | undefined) {
