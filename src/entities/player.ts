@@ -93,7 +93,7 @@ export type KnownRangedAttackAnimation =
   (typeof knownRangedAttackAnimation)[number]
 
 export type KnownAnimation = (typeof knownAnimation)[number]
-const knownAnimation = [
+export const knownAnimation = [
   ...knownPlayerAnimation,
   ...knownAttackAnimation,
   ...knownRangedAttackAnimation,

@@ -2,8 +2,10 @@ import { Assets, Spritesheet } from 'pixi.js'
 import type { Resource, Texture } from 'pixi.js'
 import type { Except } from 'type-fest'
 import { z } from 'zod'
+import { knownAnimation } from '~/entities/player.js'
+import type { KnownAnimation } from '~/entities/player.js'
 import { VectorSchema } from '~/math/vector.js'
-import { enumMap } from '~/utils/types.js'
+import { enumMap, typedFromEntries as fromEntries } from '~/utils/types.js'
 
 export type Bone = (typeof bones)[number]
 export const handBones = ['handLeft', 'handRight'] as const
@@ -117,4 +119,46 @@ export const loadPlayerAnimations = async <
     T[number],
     F extends undefined ? true : false
   >
+}
+
+export const loadCharacterAnimations = async (
+  characterId: string | undefined,
+): Promise<PlayerAnimationMap<KnownAnimation>> => {
+  const animations = knownAnimation
+
+  const animationURL = (animation: string, fallback = false): string => {
+    const stockURL = `https://s3-assets.dreamlab.gg/characters/default/${animation}.json`
+    if (fallback === true) return stockURL
+    if (characterId === undefined) return stockURL
+    if (characterId === 'default') return stockURL
+
+    return `https://s3-assets.dreamlab.gg/characters/${characterId}/${animation}.json`
+  }
+
+  const fallback: Fallback<KnownAnimation> = async animation => {
+    const url = animationURL(animation, true)
+    return loadPlayerSpritesheet(url)
+  }
+
+  const loadBones: BoneMap<KnownAnimation> = async animation => {
+    const url = () => {
+      const stockURL = `https://s3-assets.dreamlab.gg/characters/default/${animation}.meta.json`
+      if (characterId === undefined) return stockURL
+      if (characterId === 'default') return stockURL
+
+      return `https://s3-assets.dreamlab.gg/characters/${characterId}/${animation}.meta.json`
+    }
+
+    const resp = await fetch(url())
+    const json = await resp.json()
+
+    return PlayerAnimationBonesSchema.parse(json)
+  }
+
+  const bones = fromEntries(animations.map(anim => [anim, loadBones] as const))
+  const fallbackMap = fromEntries(
+    animations.map(anim => [anim, fallback] as const),
+  )
+
+  return loadPlayerAnimations(animations, animationURL, bones, fallbackMap)
 }
