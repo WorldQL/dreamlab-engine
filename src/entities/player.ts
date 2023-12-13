@@ -61,15 +61,18 @@ export interface PlayerCommon {
   get position(): Vector
   get size(): PlayerSize
   get body(): Matter.Body
+
+  get gear(): Gear | undefined
+  get currentAnimation(): string
+  get facingDirection(): number
+
+  updateAnimations(animations: PlayerAnimationMap<KnownAnimation>): void
 }
 
 export interface Player extends PlayerCommon, Entity<Data, Render> {
   get [symbol](): true
   get bones(): Readonly<Record<Bone, Vector>>
   get events(): EventEmitter<PlayerEvents>
-  get gear(): Gear | undefined
-  get currentAnimation(): string
-  get facingDirection(): number
 
   setGear(gear: Gear | undefined): void
   teleport(position: LooseVector, resetVelocity?: boolean): void
@@ -118,7 +121,7 @@ export enum EditorInput {
 }
 
 export const createPlayer = (
-  animations: PlayerAnimationMap<KnownAnimation>,
+  defaultAnimations: PlayerAnimationMap<KnownAnimation>,
   { width = 80, height = 370 }: Partial<PlayerSize> = {},
 ) => {
   const events = new EventEmitter<PlayerEvents>()
@@ -146,6 +149,7 @@ export const createPlayer = (
     }
   }
 
+  let animations = defaultAnimations
   let currentAnimation: KnownAnimation = 'idle'
   let gear: Gear | undefined
   let spriteSign = 1
@@ -272,6 +276,13 @@ export const createPlayer = (
 
     get facingDirection(): number {
       return -spriteSign
+    },
+
+    updateAnimations(newAnimations: PlayerAnimationMap<KnownAnimation>): void {
+      animations = newAnimations
+
+      const { sprite } = dataManager.getRenderData(this)
+      sprite.textures = animations[currentAnimation].textures
     },
 
     setGear(newGear: Gear | undefined) {
