@@ -26,6 +26,7 @@ export interface NetClient extends Listeners<NetClientListeners> {
     flipped: boolean,
   ): Promise<void> | void
   sendPlayerMotionInputs(inputs: InputMap): Promise<void> | void
+  sendPlayerCharacterId(characterId: string | undefined): Promise<void> | void
   sendPlayerAnimation(animation: string): Promise<void> | void
   sendPlayerGear(gear: Gear | undefined): Promise<void> | void
 
