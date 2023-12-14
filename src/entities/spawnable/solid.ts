@@ -93,12 +93,13 @@ export const createSolid = createSpawnableEntity<
       stage.addChild(gfx)
       if (sprite) stage.addChild(sprite)
 
+      const render = { camera, stage, gfx, sprite }
       transform.addZIndexListener(() => {
-        gfx.zIndex = transform.zIndex + 1
-        if (sprite) sprite.zIndex = transform.zIndex
+        render.gfx.zIndex = transform.zIndex + 1
+        if (render.sprite) render.sprite.zIndex = transform.zIndex
       })
 
-      return { camera, stage, gfx, sprite }
+      return render
     },
 
     onArgsUpdate(path, previous, data, render) {
