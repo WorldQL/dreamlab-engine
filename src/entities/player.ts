@@ -203,6 +203,18 @@ export const createPlayer = async (
     }
   }
 
+  const isAttackAnimation = () => {
+    switch (currentAnimation) {
+      case 'greatsword':
+      case 'punch':
+      case 'bow':
+      case 'shoot':
+        return true
+      default:
+        return false
+    }
+  }
+
   const bonePosition = (bone: Bone): Vector => {
     const animation = animations[currentAnimation]
 
@@ -599,16 +611,14 @@ export const createPlayer = async (
 
       const newAnimation = getAnimation(direction)
       if (
-        (currentAnimation === 'punch' || currentAnimation === 'shoot') &&
+        isAttackAnimation() &&
         sprite.currentFrame === animations[currentAnimation].textures.length - 1
       ) {
         isAnimationLocked = false
       }
 
       if (newAnimation !== currentAnimation && !isAnimationLocked) {
-        if (newAnimation === 'punch' || newAnimation === 'shoot') {
-          isAnimationLocked = true
-        }
+        if (isAttackAnimation()) isAnimationLocked = true
 
         currentAnimation = newAnimation
         sprite.textures = animations[newAnimation].textures
@@ -659,7 +669,7 @@ export const createPlayer = async (
       )
 
       if (gear && !noclip) {
-        itemSprite.visible = Boolean(attack)
+        itemSprite.visible = isAttackAnimation() && currentAnimation !== 'punch'
 
         const currentItem = gear
         if (itemSprite.texture !== currentItem.texture) {
