@@ -193,9 +193,9 @@ export const createPlayer = async (
       case 'greatsword':
         return currentFrame >= 24
       case 'punch':
-        return currentFrame >= 5
+        return currentFrame >= 3
       case 'bow':
-        return currentFrame === 9
+        return currentFrame === 8
       case 'shoot':
         return currentFrame === 0
       default:
@@ -539,7 +539,7 @@ export const createPlayer = async (
         if (!jump && isColliding) hasJumped = false
       }
 
-      if (attack && isAttackFrame()) {
+      if (isAttackAnimation() && isAttackFrame()) {
         game.events.common.emit('onPlayerAttack', this as Player, gear)
       }
 
