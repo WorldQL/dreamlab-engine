@@ -141,6 +141,7 @@ export const createPlayer = async (
   let initialClickOnEntity = false
   let previousCursorPosition: Matter.Vector | null | undefined = null
   let attack = false
+  let isAnimationLocked = false
 
   const onToggleNoclip = (pressed: boolean) => {
     // TODO(Charlotte): if a player is noclipping, we should network this
@@ -597,7 +598,18 @@ export const createPlayer = async (
       }
 
       const newAnimation = getAnimation(direction)
-      if (newAnimation !== currentAnimation) {
+      if (
+        (currentAnimation === 'punch' || currentAnimation === 'shoot') &&
+        sprite.currentFrame === animations[currentAnimation].textures.length - 1
+      ) {
+        isAnimationLocked = false
+      }
+
+      if (newAnimation !== currentAnimation && !isAnimationLocked) {
+        if (newAnimation === 'punch' || newAnimation === 'shoot') {
+          isAnimationLocked = true
+        }
+
         currentAnimation = newAnimation
         sprite.textures = animations[newAnimation].textures
         const getSpeedMultiplier = (animation_name: string) => {
