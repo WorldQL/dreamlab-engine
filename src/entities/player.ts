@@ -611,16 +611,17 @@ export const createPlayer = async (
 
       const newAnimation = getAnimation(direction)
       if (
-        isAttackAnimation() &&
-        sprite.currentFrame === animations[currentAnimation].textures.length - 1
+        isAnimationLocked &&
+        (sprite.currentFrame ===
+          animations[currentAnimation].textures.length - 1 ||
+          !isAttackAnimation())
       ) {
         isAnimationLocked = false
       }
 
       if (newAnimation !== currentAnimation && !isAnimationLocked) {
-        if (isAttackAnimation()) isAnimationLocked = true
-
         currentAnimation = newAnimation
+        if (isAttackAnimation()) isAnimationLocked = true
         sprite.textures = animations[newAnimation].textures
         const getSpeedMultiplier = (animation_name: string) => {
           if (gear?.speedMultiplier) {
