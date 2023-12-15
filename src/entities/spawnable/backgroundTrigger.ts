@@ -1,5 +1,6 @@
 import Matter from 'matter-js'
-import { Graphics } from 'pixi.js'
+import { Container, Graphics } from 'pixi.js'
+import type { Sprite } from 'pixi.js'
 import { z } from 'zod'
 import type { Camera } from '~/entities/camera.js'
 import type { Background } from '~/entities/spawnable/background.js'
@@ -11,6 +12,7 @@ import { Vec, VectorSchema } from '~/math/vector.js'
 import type { Physics } from '~/physics.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
+import { createSprite } from '~/textures/sprites'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
 
@@ -57,7 +59,10 @@ interface Data {
 
 interface Render {
   camera: Camera
+
+  container: Container
   gfx: Graphics
+  sprite: Sprite | undefined
 }
 
 export const createBackgroundTrigger = createSpawnableEntity<
@@ -181,16 +186,27 @@ export const createBackgroundTrigger = createSpawnableEntity<
     initRenderContext(_, { stage, camera }) {
       const { width, height } = args
 
+      const container = new Container()
+      container.sortableChildren = true
+
       const gfx = new Graphics()
-      gfx.zIndex = transform.zIndex
+      gfx.zIndex = -1
       drawBox(gfx, { width, height }, { stroke: colour })
 
-      stage.addChild(gfx)
+      const sprite =
+        args.onEnter.action === 'set'
+          ? createSprite(args.onEnter.textureURL, { width, height })
+          : undefined
+
+      container.addChild(gfx)
+      if (sprite) container.addChild(sprite)
+      stage.addChild(container)
+
       transform.addZIndexListener(() => {
-        gfx.zIndex = transform.zIndex
+        container.zIndex = transform.zIndex
       })
 
-      return { camera, gfx }
+      return { camera, container, gfx, sprite }
     },
 
     onArgsUpdate(path, previous, _data, render) {
@@ -207,7 +223,24 @@ export const createBackgroundTrigger = createSpawnableEntity<
 
         if (render) {
           drawBox(render.gfx, { width, height }, { stroke: colour })
+
+          if (render.sprite) {
+            render.sprite.width = width
+            render.sprite.height = height
+          }
         }
+      }
+
+      if (render && path.startsWith('onEnter')) {
+        const { width, height } = args
+
+        render.sprite?.destroy()
+        render.sprite =
+          args.onEnter.action === 'set'
+            ? createSprite(args.onEnter.textureURL, { width, height })
+            : undefined
+
+        if (render.sprite) render.container.addChild(render.sprite)
       }
     },
 
@@ -231,16 +264,16 @@ export const createBackgroundTrigger = createSpawnableEntity<
       )
     },
 
-    teardownRenderContext({ gfx }) {
-      gfx.destroy()
+    teardownRenderContext({ container }) {
+      container.destroy({ children: true })
     },
 
-    onRenderFrame(_, { debug }, { camera, gfx }) {
+    onRenderFrame(_, { debug }, { camera, container }) {
       const pos = Vec.add(transform.position, camera.offset)
 
-      gfx.position = pos
-      gfx.angle = transform.rotation
-      gfx.alpha = debug.value ? 0.5 : 0
+      container.position = pos
+      container.angle = transform.rotation
+      container.alpha = debug.value ? 0.5 : 0
     },
   }
 })
