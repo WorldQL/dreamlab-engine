@@ -1,4 +1,5 @@
 import type { Container } from 'pixi.js'
+import type { NonNegative } from 'type-fest'
 import { createEntity } from '~/entity.js'
 import type { Entity } from '~/entity.js'
 import type { Game } from '~/game.js'
@@ -40,6 +41,9 @@ export interface Camera extends Entity<Data, Render> {
   setPosition(position: LooseVector): void
   clearTarget(): void
 
+  get smoothing(): number
+  setSmoothing(smoothing: number): void
+
   get zoomScale(): number
   get renderScale(): number
   get scale(): number
@@ -62,6 +66,7 @@ export const createCamera = (
 ) => {
   const position = Vec.create()
   let targetRef = target
+  let smoothing = 0.125
 
   let zoomScaleTarget = 1
   let zoomScale = 1
@@ -85,6 +90,10 @@ export const createCamera = (
       return targetRef
     },
 
+    get smoothing() {
+      return smoothing
+    },
+
     setTarget(target: CameraTarget) {
       targetRef = target
     },
@@ -96,6 +105,14 @@ export const createCamera = (
 
     clearTarget() {
       targetRef = undefined
+    },
+
+    setSmoothing(value: NonNegative<number>) {
+      if (smoothing < 0) {
+        throw new Error('`smoothing` cannot be less than 0')
+      }
+
+      smoothing = value
     },
 
     get zoomScale() {
@@ -192,15 +209,24 @@ export const createCamera = (
             ? targetRef.position
             : targetRef.transform.position
 
-      // TODO: Calculate camera speed based on S curve of the distance
-      // (fast when close and when far, medium speed when at normal movement distances)
-      const dist = Math.min(distance(position, targetPosition), 500)
-      const { x, y } = lerp2(position, targetPosition, 1 - 0.5 ** (delta * 8))
+      if (smoothing > 0) {
+        // TODO: Calculate camera speed based on S curve of the distance
+        // (fast when close and when far, medium speed when at normal movement distances)
+        const dist = Math.min(distance(position, targetPosition), 500)
+        const { x, y } = lerp2(
+          position,
+          targetPosition,
+          1 - 0.5 ** (delta * (1 / smoothing)),
+        )
 
-      position.x = x
-      position.y = y
+        position.x = x
+        position.y = y
 
-      if (dist < 1) {
+        if (dist < 1) {
+          position.x = targetPosition.x
+          position.y = targetPosition.y
+        }
+      } else {
         position.x = targetPosition.x
         position.y = targetPosition.y
       }
