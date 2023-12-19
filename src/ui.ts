@@ -13,7 +13,7 @@ export interface UIManager {
   /**
    * Get all registered UI layers
    */
-  get ui(): ShadowRoot[]
+  get roots(): ShadowRoot[]
 
   /**
    * Create and attach a new DOM root in the UI system
@@ -43,7 +43,7 @@ export const createClientUI = (
 
   const set = new Set<ShadowRoot>()
   const ui: UIManager = {
-    get ui() {
+    get roots() {
       return [...set]
     },
 
