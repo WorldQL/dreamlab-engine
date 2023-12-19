@@ -435,9 +435,10 @@ export const createPlayer = async (
       body.isSensor = noclip
       if (noclip) {
         let newPosition
-        const cursorPosition = inputs?.getCursor()
+        const mousePosition = inputs?.getCursor('screen')
+        const cursorPosition = inputs?.getCursor('world')
 
-        if (drag && cursorPosition) {
+        if (drag && mousePosition && cursorPosition) {
           const query = game.queryPosition(cursorPosition)
           const queryResults = query.map(({ definition: { tags } }) => tags)
 
@@ -448,17 +449,20 @@ export const createPlayer = async (
           if (!isDragging && !initialClickOnEntity) {
             initialClickOnEntity = isCursorOverNonLockedEntity
             isDragging = true
-            previousCursorPosition = cursorPosition
+            previousCursorPosition = mousePosition
           } else if (
             isDragging &&
             !initialClickOnEntity &&
             previousCursorPosition
           ) {
-            const cursorDelta = Vec.sub(previousCursorPosition, cursorPosition)
-            const amplifiedMovement = Vec.mult(cursorDelta, 2)
+            const cursorDelta = Vec.sub(previousCursorPosition, mousePosition)
+            const amplifiedMovement = Vec.div(
+              cursorDelta,
+              game.client.render.camera.scale,
+            )
             newPosition = Vec.add(body.position, amplifiedMovement)
             Matter.Body.setPosition(body, newPosition)
-            previousCursorPosition = cursorPosition
+            previousCursorPosition = mousePosition
           }
         } else {
           isDragging = false
