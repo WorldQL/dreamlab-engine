@@ -136,10 +136,6 @@ export const createPlayer = async (
   let isJogging = false
 
   let noclip = false
-  const noclipSpeed = 15
-  let isDragging = false
-  let initialClickOnEntity = false
-  let previousCursorPosition: Matter.Vector | null | undefined = null
   let attack = false
   let isAnimationLocked = false
 
@@ -409,7 +405,7 @@ export const createPlayer = async (
     },
 
     onPhysicsStep(
-      { delta },
+      _,
       { game, inputs, physics, network, direction, facing, colliding },
     ) {
       const left = inputs?.getInput(PlayerInput.WalkLeft) ?? false
@@ -418,7 +414,7 @@ export const createPlayer = async (
       attack = (colliding && inputs?.getInput(PlayerInput.Attack)) ?? false
       isJogging = inputs?.getInput(PlayerInput.Jog) ?? false
       const crouch = inputs?.getInput(PlayerInput.Crouch) ?? false
-      const drag = inputs?.getInput(EditorInput.Drag) ?? false
+      // const drag = inputs?.getInput(EditorInput.Drag) ?? false
 
       direction.value = left ? -1 : right ? 1 : 0
       const xor = left ? !right : right
@@ -433,58 +429,7 @@ export const createPlayer = async (
       // on both the client and server
       body.isStatic = noclip
       body.isSensor = noclip
-      if (noclip) {
-        let newPosition
-        const mousePosition = inputs?.getCursor('screen')
-        const cursorPosition = inputs?.getCursor('world')
-
-        if (drag && mousePosition && cursorPosition) {
-          const query = game.queryPosition(cursorPosition)
-          const queryResults = query.map(({ definition: { tags } }) => tags)
-
-          const isCursorOverNonLockedEntity = queryResults.some(
-            tags => !tags?.includes('editorLocked'),
-          )
-
-          if (!isDragging && !initialClickOnEntity) {
-            initialClickOnEntity = isCursorOverNonLockedEntity
-            isDragging = true
-            previousCursorPosition = mousePosition
-          } else if (
-            isDragging &&
-            !initialClickOnEntity &&
-            previousCursorPosition
-          ) {
-            const cursorDelta = Vec.sub(previousCursorPosition, mousePosition)
-            const amplifiedMovement = Vec.div(
-              cursorDelta,
-              game.client.render.camera.scale,
-            )
-            newPosition = Vec.add(body.position, amplifiedMovement)
-            Matter.Body.setPosition(body, newPosition)
-            previousCursorPosition = mousePosition
-          }
-        } else {
-          isDragging = false
-          previousCursorPosition = null
-          initialClickOnEntity = false
-
-          const movement = Vec.create()
-          if (left) movement.x -= 1
-          if (right) movement.x += 1
-          if (jump) movement.y -= 1
-          if (crouch) movement.y += 1
-
-          const speed = isJogging ? noclipSpeed * 2.5 : noclipSpeed
-          newPosition = Vec.add(
-            body.position,
-            Vec.mult(movement, speed * delta * 50),
-          )
-
-          // @ts-expect-error Incorrect typings
-          Matter.Body.setPosition(body, newPosition, true)
-        }
-      } else {
+      if (!noclip) {
         if (xor) {
           const targetVelocity = maxSpeed * direction.value
           if (targetVelocity !== 0) {
@@ -567,41 +512,14 @@ export const createPlayer = async (
     onRenderFrame(
       { smooth },
       {
-        game,
         debug,
         network,
-        inputs,
         direction: { value: direction },
         facing: { value: facing },
         colliding: { value: colliding },
       },
       { camera, sprite, itemSprite, gfxBounds, gfxFeet },
     ) {
-      if (noclip) {
-        const cursorPosition = inputs?.getCursor()
-        let cursorStyle = 'default'
-
-        if (cursorPosition) {
-          const query = game.queryPosition(cursorPosition)
-          const queryResults = query.map(({ definition: { tags } }) => tags)
-          const isCursorOverNonLockedEntity = queryResults.some(
-            tags => !tags?.includes('editorLocked'),
-          )
-
-          if (isDragging && !initialClickOnEntity) {
-            cursorStyle = 'grabbing'
-          } else if (!isDragging && isCursorOverNonLockedEntity) {
-            cursorStyle = 'pointer'
-          } else if (!isDragging) {
-            cursorStyle = 'grab'
-          }
-        }
-
-        game.client.render.container.style.cursor = cursorStyle
-      } else {
-        game.client.render.container.style.cursor = 'default'
-      }
-
       sprite.visible = !noclip
       gfxBounds.visible = !noclip
       gfxFeet.visible = !noclip
