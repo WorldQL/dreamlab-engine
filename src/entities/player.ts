@@ -54,6 +54,7 @@ export const isPlayer = (player: unknown): player is Player => {
 
 export interface PlayerEvents {
   onToggleNoclip: [enabled: boolean]
+  onTeleport: [oldPosition: Vector, newPosition: Vector]
   onGearChanged: [item: Gear | undefined]
 }
 
@@ -314,8 +315,10 @@ export const createPlayer = async (
     },
 
     teleport(position: LooseVector, resetVelocity = true) {
+      const oldPosition = body.position
       Matter.Body.setPosition(body, v(position))
       if (resetVelocity) Matter.Body.setVelocity(body, { x: 0, y: 0 })
+      events.emit('onTeleport', oldPosition, body.position)
     },
 
     init({ game, physics }) {
