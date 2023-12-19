@@ -16,6 +16,7 @@ export interface SpawnableDefinition<
   args: Args
   transform: Transform
   uid?: UID
+  label?: string
   tags?: string[]
 }
 
@@ -27,6 +28,7 @@ export interface LooseSpawnableDefinition<
   args: Args
   transform: LooseTransform
   uid?: UID
+  label?: string
   tags?: string[]
 }
 
@@ -35,6 +37,7 @@ export const SpawnableDefinitionSchemaInternal = z.object({
   args: z.record(z.string(), z.unknown()),
   transform: TransformSchema,
   uid: z.string().cuid2().optional(),
+  label: z.string().optional(),
   tags: z.string().array().optional(),
 })
 
@@ -46,8 +49,9 @@ export interface SpawnableContext<
   Args extends Record<string, unknown> = Record<string, unknown>,
 > extends Except<
     Required<SpawnableDefinition>,
-    'args' | 'entity' | 'transform'
+    'args' | 'entity' | 'label' | 'transform'
   > {
+  label: string | undefined
   transform: TrackedTransform
   preview: boolean
   definition: SpawnableDefinition<Name, Args>

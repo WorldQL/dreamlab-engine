@@ -672,6 +672,7 @@ export async function createGame<Server extends boolean>(
       const context: SpawnableContext = {
         uid,
         transform,
+        label: definition.label,
         tags: definition.tags ?? [],
 
         preview,
