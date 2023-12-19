@@ -51,7 +51,7 @@ export interface Camera extends Entity<Data, Render> {
   get position(): Readonly<Vector>
 
   rescale(scale: RescaleOptions): void
-  localToWorld(position: Vector): Vector
+  screenToWorld(position: Vector): Vector
 }
 
 interface RescaleOptions {
@@ -146,7 +146,7 @@ export const createCamera = (
       }
     },
 
-    localToWorld(pos: Vector) {
+    screenToWorld(pos: Vector) {
       return Vec.sub(Vec.div(pos, this.scale), this.offset)
     },
 

@@ -41,7 +41,7 @@ export const createCursor = () => {
 
     onRenderFrame(_, { game, debug }, { camera, text }) {
       if (cursorPosition) {
-        const { x, y } = camera.localToWorld(cursorPosition)
+        const { x, y } = camera.screenToWorld(cursorPosition)
 
         const query = game.queryPosition({ x, y })
         const entities = query.map(({ definition: { entity } }) => entity)
