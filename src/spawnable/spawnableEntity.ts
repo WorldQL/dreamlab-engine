@@ -23,6 +23,7 @@ export interface SpawnableEntity<
   get [symbol](): true
 
   get uid(): UID
+  get label(): string | undefined
   get tags(): string[]
   get preview(): boolean
   get transform(): Transform
@@ -48,6 +49,7 @@ type PartialFields =
   | 'args'
   | 'argsSchema'
   | 'definition'
+  | 'label'
   | 'preview'
   | 'transform'
   | 'uid'
@@ -121,6 +123,10 @@ export const createSpawnableEntity = <
 
       get definition() {
         return ctx.definition
+      },
+
+      get label() {
+        return ctx.definition.label ?? undefined
       },
 
       get transform() {
