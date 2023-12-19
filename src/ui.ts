@@ -11,6 +11,11 @@ const applyStyles = (element: HTMLElement, interactable: boolean) => {
 
 export interface UIManager {
   /**
+   * Get all registered UI layers
+   */
+  get ui(): ShadowRoot[]
+
+  /**
    * Create and attach a new DOM root in the UI system
    *
    * @param interactable - Set to `true` to allow `pointer-events` and `user-select`
@@ -36,16 +41,25 @@ export const createClientUI = (
   canvasContainer.appendChild(uiRoot)
   const shadowRoot = uiRoot.attachShadow({ mode: 'closed' })
 
+  const set = new Set<ShadowRoot>()
   const ui: UIManager = {
+    get ui() {
+      return [...set]
+    },
+
     create: (interactable = false) => {
       const div = document.createElement('div')
       applyStyles(div, interactable)
 
       shadowRoot.appendChild(div)
-      return div.attachShadow({ mode: 'closed' })
+      const shadow = div.attachShadow({ mode: 'closed' })
+
+      set.add(shadow)
+      return shadow
     },
 
     remove: root => {
+      set.delete(root)
       shadowRoot.removeChild(root.host)
     },
   }
