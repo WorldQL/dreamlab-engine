@@ -76,13 +76,17 @@ export const createCamera = (
 
   let zoomScaleLevelIdx = 3
   const onWheel = (ev: WheelEvent) => {
-    const delta = -Math.sign(ev.deltaY)
-    zoomScaleLevelIdx = Math.max(
-      0,
-      Math.min(SCALE_LEVELS.length - 1, zoomScaleLevelIdx + delta),
-    )
+    const isTouchpad = Math.abs(ev.deltaX) !== 0 || Math.abs(ev.deltaY) < 15;
 
-    zoomScaleTarget = SCALE_LEVELS[zoomScaleLevelIdx] as number
+    if (!isTouchpad) {
+      const delta = -Math.sign(ev.deltaY)
+      zoomScaleLevelIdx = Math.max(
+        0,
+        Math.min(SCALE_LEVELS.length - 1, zoomScaleLevelIdx + delta),
+      )
+
+      zoomScaleTarget = SCALE_LEVELS[zoomScaleLevelIdx] as number
+    }
   }
 
   const camera: Camera = createEntity({
