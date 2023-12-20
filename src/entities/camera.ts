@@ -76,9 +76,7 @@ export const createCamera = (
 
   let zoomScaleLevelIdx = 3
   const onWheel = (ev: WheelEvent) => {
-    const isTouchpad = Math.abs(ev.deltaX) !== 0 || Math.abs(ev.deltaY) < 15
-
-    if (!isTouchpad || (isTouchpad && ev.ctrlKey)) {
+    if (ev.ctrlKey) {
       const delta = -Math.sign(ev.deltaY)
       zoomScaleLevelIdx = Math.max(
         0,
