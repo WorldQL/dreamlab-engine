@@ -119,10 +119,6 @@ export enum PlayerInput {
   WalkRight = '@player/walk-right',
 }
 
-export enum EditorInput {
-  Drag = '@editor/drag',
-}
-
 export const createPlayer = async (
   characterId: string | undefined,
   { width = 80, height = 370 }: Partial<PlayerSize> = {},
@@ -342,7 +338,6 @@ export const createPlayer = async (
           'Toggle Noclip',
           'Backquote',
         )
-        inputs.registerInput(EditorInput.Drag, 'Editor Drag', 'MouseLeft')
         inputs.addListener(PlayerInput.ToggleNoclip, onToggleNoclip)
       }
 
@@ -417,7 +412,6 @@ export const createPlayer = async (
       attack = (colliding && inputs?.getInput(PlayerInput.Attack)) ?? false
       isJogging = inputs?.getInput(PlayerInput.Jog) ?? false
       const crouch = inputs?.getInput(PlayerInput.Crouch) ?? false
-      // const drag = inputs?.getInput(EditorInput.Drag) ?? false
 
       direction.value = left ? -1 : right ? 1 : 0
       const xor = left ? !right : right
