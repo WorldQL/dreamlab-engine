@@ -30,10 +30,10 @@ function onMouse(this: InputManager, ev: MouseEvent, pressed: boolean): void {
     ev.button === 0
       ? 'MouseLeft'
       : ev.button === 1
-        ? 'MouseMiddle'
-        : ev.button === 2
-          ? 'MouseRight'
-          : undefined
+      ? 'MouseMiddle'
+      : ev.button === 2
+      ? 'MouseRight'
+      : undefined
 
   if (!mouseButton) throw new Error(`unexpected mouse button: ${ev.button}`)
   this.setKey(mouseButton, pressed)

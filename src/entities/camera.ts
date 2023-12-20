@@ -76,7 +76,7 @@ export const createCamera = (
 
   let zoomScaleLevelIdx = 3
   const onWheel = (ev: WheelEvent) => {
-    const isTouchpad = Math.abs(ev.deltaX) !== 0 || Math.abs(ev.deltaY) < 15;
+    const isTouchpad = Math.abs(ev.deltaX) !== 0 || Math.abs(ev.deltaY) < 15
 
     if (!isTouchpad) {
       const delta = -Math.sign(ev.deltaY)
@@ -210,8 +210,8 @@ export const createCamera = (
         targetRef === undefined
           ? Vec.create()
           : 'position' in targetRef
-            ? targetRef.position
-            : targetRef.transform.position
+          ? targetRef.position
+          : targetRef.transform.position
 
       if (smoothing > 0) {
         // TODO: Calculate camera speed based on S curve of the distance
