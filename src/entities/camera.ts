@@ -77,6 +77,7 @@ export const createCamera = (
   let zoomScaleLevelIdx = 3
   const onWheel = (ev: WheelEvent) => {
     if (ev.ctrlKey) {
+      ev.preventDefault()
       const delta = -Math.sign(ev.deltaY)
       zoomScaleLevelIdx = Math.max(
         0,
