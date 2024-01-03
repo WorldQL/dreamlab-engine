@@ -50,4 +50,14 @@ export interface NetServer extends Listeners<NetServerListeners> {
     path: string,
     value: unknown,
   ): Promise<void> | void
+  sendLabelUpdate(
+    peerID: string,
+    entityID: string,
+    label: string | undefined,
+  ): Promise<void> | void
+  sendTagsUpdate(
+    peerID: string,
+    entityID: string,
+    tags: string[] | undefined,
+  ): Promise<void> | void
 }
