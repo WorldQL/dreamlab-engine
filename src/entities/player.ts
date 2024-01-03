@@ -469,8 +469,16 @@ export const createPlayer = async (
             ),
           )
 
-        const query = Matter.Query.region(bodies, feet.bounds)
-        const isColliding = query.length > 0
+        let didCollide = false
+        for (const collisionCandidate of bodies) {
+          // @ts-expect-error: The types are wrong for this function.
+          if (Matter.Collision.collides(collisionCandidate, feet)) {
+            didCollide = true
+            break
+          }
+        }
+
+        const isColliding = didCollide
         colliding.value = isColliding
 
         if (isColliding && jump && !hasJumped) {
