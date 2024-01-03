@@ -597,6 +597,7 @@ export async function createGame<Server extends boolean>(
         }
 
         onChange.unsubscribe(entity.args)
+        onChange.unsubscribe(entity.definition)
         spawnables.delete(entity.uid)
       }
 
@@ -668,6 +669,17 @@ export async function createGame<Server extends boolean>(
       transform.addPositionListener(syncTransform)
       transform.addRotationListener(syncTransform)
       transform.addZIndexListener(syncTransform)
+
+      // Automatically track tags and label
+      onChange(definition, path => {
+        if (network?.type !== 'client') return
+
+        if (path.startsWith('tags')) {
+          void network.sendTagsUpdate(uid, definition.tags)
+        } else if (path.startsWith('label')) {
+          void network.sendLabelUpdate(uid, definition.label)
+        }
+      })
 
       const context: SpawnableContext = {
         uid,

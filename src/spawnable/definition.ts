@@ -16,7 +16,7 @@ export interface SpawnableDefinition<
   args: Args
   transform: Transform
   uid?: UID
-  label?: string
+  label?: string | undefined
   tags?: string[]
 }
 
@@ -28,7 +28,7 @@ export interface LooseSpawnableDefinition<
   args: Args
   transform: LooseTransform
   uid?: UID
-  label?: string
+  label?: string | undefined
   tags?: string[]
 }
 
