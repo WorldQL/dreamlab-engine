@@ -671,7 +671,7 @@ export async function createGame<Server extends boolean>(
       transform.addZIndexListener(syncTransform)
 
       // Automatically track tags and label
-      onChange(definition, path => {
+      const trackedDefinition = onChange(definition, path => {
         if (network?.type !== 'client') return
 
         if (path.startsWith('tags')) {
@@ -684,11 +684,11 @@ export async function createGame<Server extends boolean>(
       const context: SpawnableContext = {
         uid,
         transform,
-        label: definition.label,
-        tags: definition.tags ?? [],
+        label: trackedDefinition.label,
+        tags: trackedDefinition.tags ?? [],
 
         preview,
-        definition,
+        definition: trackedDefinition,
       }
 
       const entity = fn(context, watchedArgs)
