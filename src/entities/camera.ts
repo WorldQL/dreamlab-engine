@@ -17,7 +17,7 @@ const SCALE_LEVELS = [
   0.239_1, 0.252_8, 0.267_3, 0.282_7, 0.299, 0.316_2, 0.334_3, 0.353_6, 0.373_9,
   0.395_4, 0.418_1, 0.442_1, 0.467_6, 0.494_4, 0.522_9, 0.552_9, 0.584_7,
   0.618_3, 0.653_9, 0.691_5, 0.731_2, 0.773_3, 0.817_7, 0.864_7, 0.914_4, 0.967,
-  1.022_6, 1.081_4, 1.143_6, 1.209_3, 1.278_8, 1.352_4, 1.430_1, 1.512_3,
+  1, 1.022_6, 1.081_4, 1.143_6, 1.209_3, 1.278_8, 1.352_4, 1.430_1, 1.512_3,
   1.599_3, 1.691_2, 1.788_4, 1.891_3, 2,
 ] as const satisfies readonly number[]
 
@@ -81,7 +81,7 @@ export const createCamera = (
   let renderScale = 1
   let renderScaleChanged = false
 
-  let zoomScaleLevelIdx = 3
+  let zoomScaleLevelIdx = 50
   const onWheel = (ev: WheelEvent) => {
     if (ev.ctrlKey) {
       ev.preventDefault()
