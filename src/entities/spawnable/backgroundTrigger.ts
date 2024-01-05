@@ -195,7 +195,7 @@ export const createBackgroundTrigger = createSpawnableEntity<
 
       const sprite =
         args.onEnter.action === 'set'
-          ? createSprite(args.onEnter.textureURL, { width, height })
+          ? createSprite({ url: args.onEnter.textureURL }, { width, height })
           : undefined
 
       container.addChild(gfx)
@@ -237,7 +237,7 @@ export const createBackgroundTrigger = createSpawnableEntity<
         render.sprite?.destroy()
         render.sprite =
           args.onEnter.action === 'set'
-            ? createSprite(args.onEnter.textureURL, { width, height })
+            ? createSprite({ url: args.onEnter.textureURL }, { width, height })
             : undefined
 
         if (render.sprite) render.container.addChild(render.sprite)

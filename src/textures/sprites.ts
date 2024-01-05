@@ -4,7 +4,7 @@ import { z } from 'zod'
 export type SpriteSource = z.infer<typeof SpriteSourceSchema>
 export const SpriteSourceSchema = z.object({
   url: z.string(),
-  tile: z.boolean().default(false),
+  tile: z.boolean().default(false).optional(),
   tileScale: z.number().optional(),
 })
 
