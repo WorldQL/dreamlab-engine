@@ -107,7 +107,7 @@ export const createBouncyBall = createSpawnableEntity<
     },
 
     onArgsUpdate(path, previous, data, render) {
-      if (render && path === 'spriteSource') {
+      if (render && path.startsWith('spriteSource')) {
         const { radius, spriteSource } = args
 
         const width = radius * 2

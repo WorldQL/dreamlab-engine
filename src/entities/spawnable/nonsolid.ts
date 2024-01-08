@@ -78,7 +78,7 @@ export const createNonsolid = createSpawnableEntity<
   },
 
   onArgsUpdate(path, _previous, _data, render) {
-    if (render && path === 'spriteSource') {
+    if (render && path.startsWith('spriteSource')) {
       const { width, height, spriteSource } = args
 
       render.sprite?.destroy()

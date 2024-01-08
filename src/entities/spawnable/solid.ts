@@ -103,7 +103,7 @@ export const createSolid = createSpawnableEntity<
     },
 
     onArgsUpdate(path, previous, data, render) {
-      if (render && path === 'spriteSource') {
+      if (render && path.startsWith('spriteSource')) {
         const { width, height, spriteSource } = args
 
         render.sprite?.destroy()
