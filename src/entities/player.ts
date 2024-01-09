@@ -497,21 +497,23 @@ export const createPlayer = async (
         game.events.common.emit('onPlayerAttack', this as Player, gear)
       }
 
-      void network?.sendPlayerPosition(
-        body.position,
-        body.velocity,
-        facing.value !== 'left',
-      )
+      if (!noclip) {
+        void network?.sendPlayerPosition(
+          body.position,
+          body.velocity,
+          facing.value !== 'left',
+        )
 
-      void network?.sendPlayerMotionInputs({
-        jump,
-        crouch,
-        walkLeft: left,
-        walkRight: right,
-        toggleNoclip: false,
-        attack,
-        jog: false,
-      })
+        void network?.sendPlayerMotionInputs({
+          jump,
+          crouch,
+          walkLeft: left,
+          walkRight: right,
+          toggleNoclip: false,
+          attack,
+          jog: false,
+        })
+      }
     },
 
     onRenderFrame(
