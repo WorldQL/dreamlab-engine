@@ -498,6 +498,10 @@ export const createPlayer = async (
       }
 
       if (!noclip) {
+        // temporary fix for jittery noclipping netplayers in edit mode.
+        // TODO: Send a proper packet that communicates a player is in edit mode.
+        // We can even have it display an indicator to other player's that they're editing!
+
         void network?.sendPlayerPosition(
           body.position,
           body.velocity,
