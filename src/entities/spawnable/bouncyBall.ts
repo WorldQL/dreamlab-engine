@@ -58,10 +58,6 @@ export const createBouncyBall = createSpawnableEntity<
   )
 
   return {
-    get tags() {
-      return [...tags, 'net/replicated']
-    },
-
     rectangleBounds() {
       return { width: args.radius * 2, height: args.radius * 2 }
     },
@@ -74,6 +70,10 @@ export const createBouncyBall = createSpawnableEntity<
       const debug = game.debug
       physics.register(this, body)
       physics.linkTransform(body, transform)
+
+      if (!tags.includes('net/replicated')) {
+        tags.push('net/replicated')
+      }
 
       return { debug, physics, body }
     },

@@ -28,11 +28,7 @@ export const createMarker = createSpawnableEntity<
   SpawnableEntity<Data, Render, Args>,
   Data,
   Render
->(ArgsSchema, ({ transform, tags }, args) => ({
-  get tags() {
-    return tags
-  },
-
+>(ArgsSchema, ({ transform }, args) => ({
   rectangleBounds() {
     return { width: args.width, height: args.height }
   },

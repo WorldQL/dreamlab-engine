@@ -37,7 +37,7 @@ export const createSolid = createSpawnableEntity<
   SpawnableEntity<Data, Render, Args>,
   Data,
   Render
->(ArgsSchema, ({ transform, tags, preview }, args) => {
+>(ArgsSchema, ({ transform, preview }, args) => {
   const body = Matter.Bodies.rectangle(
     transform.position.x,
     transform.position.y,
@@ -55,10 +55,6 @@ export const createSolid = createSpawnableEntity<
   )
 
   return {
-    get tags() {
-      return tags
-    },
-
     rectangleBounds() {
       return { width: args.width, height: args.height }
     },

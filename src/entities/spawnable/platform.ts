@@ -38,7 +38,7 @@ export const createPlatform = createSpawnableEntity<
   SpawnableEntity<Data, Render, Args>,
   Data,
   Render
->(ArgsSchema, ({ tags, transform }, args) => {
+>(ArgsSchema, ({ transform }, args) => {
   const body = Matter.Bodies.rectangle(
     transform.position.x,
     transform.position.y,
@@ -55,10 +55,6 @@ export const createPlatform = createSpawnableEntity<
   let isPlatformActive = false
 
   return {
-    get tags() {
-      return tags
-    },
-
     get transform() {
       return cloneTransform(transform)
     },

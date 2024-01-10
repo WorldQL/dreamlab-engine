@@ -35,7 +35,7 @@ export const createComplexSolid = createSpawnableEntity<
   SpawnableEntity<Data, Render, Args>,
   Data,
   Render
->(ArgsSchema, ({ transform, tags, preview }, args) => {
+>(ArgsSchema, ({ transform, preview }, args) => {
   const polygons =
     typeof args.polygon === 'string'
       ? decodePolygons(args.polygon)
@@ -44,10 +44,6 @@ export const createComplexSolid = createSpawnableEntity<
   const bounds = pointsBounds(polygons)
 
   return {
-    get tags() {
-      return tags
-    },
-
     rectangleBounds() {
       return bounds
     },

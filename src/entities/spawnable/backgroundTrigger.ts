@@ -70,7 +70,7 @@ export const createBackgroundTrigger = createSpawnableEntity<
   SpawnableEntity<Data, Render, Args>,
   Data,
   Render
->(ArgsSchema, ({ transform, tags }, args) => {
+>(ArgsSchema, ({ transform }, args) => {
   const colour = '#cc87ff'
   const trigger = Matter.Bodies.rectangle(
     transform.position.x,
@@ -88,10 +88,6 @@ export const createBackgroundTrigger = createSpawnableEntity<
   )
 
   return {
-    get tags() {
-      return tags
-    },
-
     rectangleBounds() {
       return { width: args.width, height: args.height }
     },

@@ -741,7 +741,9 @@ export async function createGame<Server extends boolean>(
           throw new TypeError('`fn` must be a function')
         }
 
-        return [...spawnables.values()].filter(entity => fnOrTags(entity.tags))
+        return [...spawnables.values()].filter(entity =>
+          fnOrTags(entity.definition.tags),
+        )
       }
 
       if (!Array.isArray(fnOrTags)) {
@@ -755,11 +757,11 @@ export async function createGame<Server extends boolean>(
 
       return [...spawnables.values()].filter(entity => {
         if (query === 'all') {
-          return fnOrTags.every(tag => entity.tags.includes(tag))
+          return fnOrTags.every(tag => entity.definition.tags.includes(tag))
         }
 
         if (query === 'any') {
-          return fnOrTags.some(tag => entity.tags.includes(tag))
+          return fnOrTags.some(tag => entity.definition.tags.includes(tag))
         }
 
         return false

@@ -59,17 +59,13 @@ export const createBackground = createSpawnableEntity<
   Background,
   Data,
   Render
->(ArgsSchema, ({ tags }, args) => {
+>(ArgsSchema, (_ctx, args) => {
   let fadeTarget = 0
   const origin = Vec.create(0, 0)
 
   const background: PartializeSpawnable<Background, Data, Render> = {
     get [symbol]() {
       return true as const
-    },
-
-    get tags() {
-      return [...tags]
     },
 
     rectangleBounds() {

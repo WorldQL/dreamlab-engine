@@ -45,7 +45,7 @@ export const createSimpleNPC = createSpawnableEntity<
   SimpleNPC,
   Data,
   Render
->(ArgsSchema, ({ transform, tags, preview }, { size, spriteSource }) => {
+>(ArgsSchema, ({ transform, preview }, { size, spriteSource }) => {
   const { position, zIndex } = transform
 
   const mass = 20
@@ -91,10 +91,6 @@ export const createSimpleNPC = createSpawnableEntity<
     )
 
   const npc: PartializeSpawnable<SimpleNPC, Data, Render> = {
-    get tags() {
-      return tags
-    },
-
     rectangleBounds() {
       return { width: size, height: size }
     },

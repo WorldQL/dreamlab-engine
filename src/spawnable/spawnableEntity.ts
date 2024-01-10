@@ -24,7 +24,6 @@ export interface SpawnableEntity<
 
   get uid(): UID
   get label(): string | undefined
-  get tags(): string[]
   get preview(): boolean
   get transform(): Transform
   get definition(): SpawnableDefinition
