@@ -45,8 +45,5 @@ export interface NetClient extends Listeners<NetClientListeners> {
     entityID: string,
     label: string | undefined,
   ): Promise<void> | void
-  sendTagsUpdate(
-    entityID: string,
-    tags: string[] | undefined,
-  ): Promise<void> | void
+  sendTagsUpdate(entityID: string, tags: string[]): Promise<void> | void
 }

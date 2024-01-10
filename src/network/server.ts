@@ -58,6 +58,6 @@ export interface NetServer extends Listeners<NetServerListeners> {
   sendTagsUpdate(
     peerID: string,
     entityID: string,
-    tags: string[] | undefined,
+    tags: string[],
   ): Promise<void> | void
 }
