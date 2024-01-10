@@ -652,6 +652,7 @@ export async function createGame<Server extends boolean>(
         setProperty(previousArgs, path, previous)
 
         entity.onArgsUpdate(path, previousArgs, data, render)
+        events.common.emit('onArgsChanged', entity)
 
         if (network?.type !== 'client') return
         void network.sendArgsUpdate(uid, path, value)
@@ -672,8 +673,11 @@ export async function createGame<Server extends boolean>(
 
       // Automatically track tags and label
       const trackedDefinition = onChange(definition, path => {
-        if (network?.type !== 'client') return
+        const entity = this.lookup(uid)
+        if (!entity) return
+        events.common.emit('onDefinitionChanged', entity)
 
+        if (network?.type !== 'client') return
         if (path.startsWith('tags')) {
           void network.sendTagsUpdate(uid, definition.tags)
         } else if (path.startsWith('label')) {

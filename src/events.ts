@@ -38,6 +38,9 @@ export interface CommonEvents {
   onDestroy: [entity: Entity]
   onSpawn: [entity: SpawnableEntity]
 
+  onArgsChanged: [entity: SpawnableEntity]
+  onDefinitionChanged: [entity: SpawnableEntity]
+
   onPhysicsStep: [time: Time]
   onCollisionStart: CollisionEvent
   onCollisionActive: CollisionEvent
