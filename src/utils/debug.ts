@@ -32,7 +32,7 @@ export interface DebugText {
   render(scale: number, visible?: boolean): void
 }
 
-export const createDebugText = (line: number, zIndex = 10): DebugText => {
+export const createDebugText = (line: number, zIndex = 100_000): DebugText => {
   const lineHeight = 24
   const [padX, padY] = [10, 7]
 
@@ -44,7 +44,7 @@ export const createDebugText = (line: number, zIndex = 10): DebugText => {
 
   const text = new Text(undefined, style)
   text.alpha = 0
-  if (zIndex) text.zIndex = zIndex
+  text.zIndex = zIndex
 
   const x = padX
   const y = padY + line * lineHeight
