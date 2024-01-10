@@ -158,7 +158,10 @@ export const createCamera = (
       const heightOffset = heightDifference / offsetScaleFactor
 
       const x = targetWidth / this.zoomScale / 2 - position.x
-      const y = targetHeight / this.zoomScale / 2 - position.y + heightOffset
+      const y =
+        targetHeight / this.zoomScale / 2 -
+        position.y +
+        heightOffset / this.zoomScale
 
       return Vec.create(x, y)
     },
