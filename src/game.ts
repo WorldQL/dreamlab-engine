@@ -689,7 +689,7 @@ export async function createGame<Server extends boolean>(
         uid,
         transform,
         label: trackedDefinition.label,
-        tags: trackedDefinition.tags ?? [],
+        tags: trackedDefinition.tags,
 
         preview,
         definition: trackedDefinition,
