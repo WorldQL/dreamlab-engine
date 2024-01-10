@@ -67,8 +67,9 @@ interface RescaleOptions {
 }
 
 export const createCamera = (
-  canvasWidth: number,
-  canvasHeight: number,
+  targetWidth: number,
+  targetHeight: number,
+  canvas: HTMLCanvasElement,
   target?: CameraTarget,
 ) => {
   const position = Vec.create()
@@ -142,8 +143,22 @@ export const createCamera = (
     },
 
     get offset(): Readonly<Vector> {
-      const x = canvasWidth / this.zoomScale / 2 - position.x
-      const y = canvasHeight / this.zoomScale / 2 - position.y
+      const targetAspectRatio = targetWidth / targetHeight
+      const actualWidth = canvas.width
+      const actualHeight = canvas.height
+
+      // Calculate the expected height for the target aspect ratio with the actual width
+      const targetCanvasHeight = actualWidth / targetAspectRatio
+      // Calculate the difference in height
+      const heightDifference = actualHeight - targetCanvasHeight
+
+      // Calculate scaling factor for height offset
+      const offsetScaleFactor = (actualWidth / targetWidth) * 2
+      // Calculate final height offset
+      const heightOffset = heightDifference / offsetScaleFactor
+
+      const x = targetWidth / this.zoomScale / 2 - position.x
+      const y = targetHeight / this.zoomScale / 2 - position.y + heightOffset
 
       return Vec.create(x, y)
     },

@@ -125,7 +125,7 @@ async function initRenderContext<Server extends boolean>(
   app.stage.sortableChildren = true
   const canvas = app.view as HTMLCanvasElement
 
-  const camera = createCamera(dimensions.width, dimensions.height)
+  const camera = createCamera(dimensions.width, dimensions.height, canvas)
   const ctx: RenderContextExt = {
     app,
     stage: app.stage,
