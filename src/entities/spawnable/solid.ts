@@ -75,7 +75,7 @@ export const createSolid = createSpawnableEntity<
       const { width, height, spriteSource } = args
 
       const gfx = new Graphics()
-      gfx.zIndex = transform.zIndex + 1
+      gfx.zIndex = transform.zIndex
       drawBox(gfx, { width, height })
 
       const sprite = spriteSource
@@ -91,7 +91,7 @@ export const createSolid = createSpawnableEntity<
 
       const render = { camera, stage, gfx, sprite }
       transform.addZIndexListener(() => {
-        render.gfx.zIndex = transform.zIndex + 1
+        render.gfx.zIndex = transform.zIndex
         if (render.sprite) render.sprite.zIndex = transform.zIndex
       })
 

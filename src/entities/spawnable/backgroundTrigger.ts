@@ -186,7 +186,8 @@ export const createBackgroundTrigger = createSpawnableEntity<
       container.sortableChildren = true
 
       const gfx = new Graphics()
-      gfx.zIndex = -1
+      gfx.zIndex = transform.zIndex
+      container.zIndex = transform.zIndex
       drawBox(gfx, { width, height }, { stroke: colour })
 
       const sprite =
@@ -199,6 +200,7 @@ export const createBackgroundTrigger = createSpawnableEntity<
       stage.addChild(container)
 
       transform.addZIndexListener(() => {
+        gfx.zIndex = transform.zIndex
         container.zIndex = transform.zIndex
       })
 

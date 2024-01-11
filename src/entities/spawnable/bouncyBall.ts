@@ -82,7 +82,7 @@ export const createBouncyBall = createSpawnableEntity<
       const { radius, spriteSource } = args
 
       const gfx = new Graphics()
-      gfx.zIndex = transform.zIndex + 1
+      gfx.zIndex = transform.zIndex
       drawCircle(gfx, { radius })
 
       const width = radius * 2
@@ -99,7 +99,7 @@ export const createBouncyBall = createSpawnableEntity<
       if (sprite) stage.addChild(sprite)
 
       transform.addZIndexListener(() => {
-        gfx.zIndex = transform.zIndex + 1
+        gfx.zIndex = transform.zIndex
         if (sprite) sprite.zIndex = transform.zIndex
       })
 
