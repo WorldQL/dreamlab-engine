@@ -82,11 +82,7 @@ export const createNonsolid = createSpawnableEntity<
 
       render.sprite?.destroy()
       render.sprite = spriteSource
-        ? createSprite(spriteSource, {
-            width,
-            height,
-            zIndex: transform.zIndex,
-          })
+        ? createSprite(spriteSource, { width, height })
         : undefined
 
       if (render.sprite) render.container.addChild(render.sprite)
