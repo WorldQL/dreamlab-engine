@@ -16,8 +16,14 @@ import { createSprite } from '~/textures/sprites'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
 
+enum BackgroundActionType {
+  Clear = 'clear',
+  Keep = 'keep',
+  Set = 'set',
+}
+
 const BackgroundActionSetSchema = z.object({
-  action: z.literal('set'),
+  action: z.enum([BackgroundActionType.Set]),
   textureURL: z.string(),
   fadeTime: z.number().min(0.01).optional(),
   scale: VectorSchema.optional(),
@@ -25,11 +31,11 @@ const BackgroundActionSetSchema = z.object({
 })
 
 const BackgroundActionClearSchema = z.object({
-  action: z.literal('clear'),
+  action: z.enum([BackgroundActionType.Clear]),
 })
 
 const BackgroundActionKeepSchema = z.object({
-  action: z.literal('keep'),
+  action: z.enum([BackgroundActionType.Keep]),
 })
 
 export type BackgroundAction = z.infer<typeof BackgroundActionSchema>
@@ -44,8 +50,12 @@ const ArgsSchema = z.object({
   width: z.number().positive().min(1).default(30),
   height: z.number().positive().min(1).default(30),
 
-  onEnter: BackgroundActionSchema.default({ action: 'clear' }),
-  onLeave: BackgroundActionSchema.default({ action: 'clear' }),
+  onEnter: BackgroundActionSchema.default({
+    action: BackgroundActionType.Clear,
+  }),
+  onLeave: BackgroundActionSchema.default({
+    action: BackgroundActionType.Clear,
+  }),
 })
 
 interface Data {
@@ -123,7 +133,7 @@ export const createBackgroundTrigger = createSpawnableEntity<
       ) => {
         const background = await getBackground()
         switch (action.action) {
-          case 'set': {
+          case BackgroundActionType.Set: {
             if (action.fadeTime) background.args.fadeTime = action.fadeTime
             if (action.scale) background.args.scale = action.scale
             if (action.parallax) background.args.parallax = action.parallax
@@ -133,13 +143,13 @@ export const createBackgroundTrigger = createSpawnableEntity<
             break
           }
 
-          case 'clear': {
+          case BackgroundActionType.Clear: {
             background.args.textureURL = undefined
 
             break
           }
 
-          case 'keep': {
+          case BackgroundActionType.Keep: {
             // No-op
             break
           }
