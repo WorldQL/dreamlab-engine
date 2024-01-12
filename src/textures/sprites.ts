@@ -25,7 +25,10 @@ export const createSprite = (
     if (!tile) return new Sprite(texture)
 
     const sprite = new TilingSprite(texture)
-    if (typeof tileScale === 'number') sprite.tileScale.set(tileScale)
+    if (typeof tileScale === 'number') {
+      const scale = tileScale === 0 ? Number.MAX_SAFE_INTEGER : 1 / tileScale
+      sprite.tileScale.set(scale)
+    }
 
     return sprite
   }
