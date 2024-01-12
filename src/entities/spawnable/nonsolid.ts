@@ -1,5 +1,5 @@
-import { Graphics } from 'pixi.js'
-import type { Container, Sprite } from 'pixi.js'
+import { Container, Graphics } from 'pixi.js'
+import type { Sprite } from 'pixi.js'
 import { z } from 'zod'
 import type { Camera } from '~/entities/camera.js'
 import { simpleBoundsTest } from '~/math/bounds.js'
@@ -23,7 +23,7 @@ interface Data {
 
 interface Render {
   camera: Camera
-  stage: Container
+  container: Container
   gfx: Graphics
   sprite: Sprite | undefined
 }
@@ -53,24 +53,27 @@ export const createNonsolid = createSpawnableEntity<
   initRenderContext(_, { stage, camera }) {
     const { width, height, spriteSource } = args
 
+    const container = new Container()
+    container.sortableChildren = true
+    container.zIndex = transform.zIndex
+
     const gfx = new Graphics()
-    gfx.zIndex = transform.zIndex
+    gfx.zIndex = 100
     drawBox(gfx, { width, height }, { stroke: 'blue' })
 
     const sprite = spriteSource
-      ? createSprite(spriteSource, { width, height, zIndex: transform.zIndex })
+      ? createSprite(spriteSource, { width, height })
       : undefined
 
-    stage.addChild(gfx)
-    if (sprite) stage.addChild(sprite)
+    container.addChild(gfx)
+    if (sprite) container.addChild(sprite)
+    stage.addChild(container)
 
-    const render = { camera, stage, gfx, sprite }
     transform.addZIndexListener(() => {
-      render.gfx.zIndex = transform.zIndex
-      if (render.sprite) render.sprite.zIndex = transform.zIndex
+      container.zIndex = transform.zIndex
     })
 
-    return render
+    return { camera, container, gfx, sprite }
   },
 
   onArgsUpdate(path, _previous, _data, render) {
@@ -86,7 +89,7 @@ export const createNonsolid = createSpawnableEntity<
           })
         : undefined
 
-      if (render.sprite) render.stage.addChild(render.sprite)
+      if (render.sprite) render.container.addChild(render.sprite)
     }
 
     if (render && (path === 'width' || path === 'height')) {
@@ -113,16 +116,11 @@ export const createNonsolid = createSpawnableEntity<
     sprite?.destroy()
   },
 
-  onRenderFrame(_, { debug }, { camera, gfx, sprite }) {
+  onRenderFrame(_, { debug }, { camera, container, gfx }) {
     const pos = Vec.add(transform.position, camera.offset)
 
-    gfx.position = pos
-    gfx.angle = transform.rotation
+    container.position = pos
+    container.angle = transform.rotation
     gfx.alpha = debug.value ? 0.5 : 0
-
-    if (sprite) {
-      sprite.position = pos
-      sprite.angle = transform.rotation
-    }
   },
 }))
