@@ -392,6 +392,13 @@ export async function createGame<Server extends boolean>(
     time = now
     physicsTickAcc += delta
 
+    // 2s time between frames
+    if (delta >= 2_000) {
+      console.warn('unusually long tick delta, skipping ahead')
+      events.common.emit('onTickSkipped')
+      return
+    }
+
     while (physicsTickAcc >= physicsTickDelta) {
       physicsTickAcc -= physicsTickDelta
 

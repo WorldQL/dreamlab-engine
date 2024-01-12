@@ -45,6 +45,7 @@ export interface CommonEvents {
   onCollisionStart: CollisionEvent
   onCollisionActive: CollisionEvent
   onCollisionEnd: CollisionEvent
+  onTickSkipped: []
 
   onPlayerJoin: [player: NetPlayer]
   onPlayerLeave: [player: NetPlayer]
