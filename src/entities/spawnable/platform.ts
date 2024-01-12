@@ -7,11 +7,12 @@ import { isNetPlayer } from '~/entities/netplayer.js'
 import { isPlayer } from '~/entities/player.js'
 import type { Game } from '~/game.js'
 import { toRadians } from '~/math/general.js'
-import { cloneTransform } from '~/math/transform.js'
 import { Vec } from '~/math/vector.js'
+import type { Physics } from '~/physics.js'
 import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import { createSprite, SpriteSourceSchema } from '~/textures/sprites.js'
+import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
 
 type Args = typeof ArgsSchema
@@ -23,12 +24,14 @@ const ArgsSchema = z.object({
 
 interface Data {
   game: Game<boolean>
+  debug: Debug
+  physics: Physics
   body: Matter.Body
 }
 
 interface Render {
   camera: Camera
-  stage: Container
+  container: Container
   gfx: Graphics
   sprite: Sprite | undefined
 }
@@ -55,10 +58,6 @@ export const createPlatform = createSpawnableEntity<
   let isPlatformActive = false
 
   return {
-    get transform() {
-      return cloneTransform(transform)
-    },
-
     rectangleBounds() {
       return { width: args.width, height: args.height }
     },
@@ -67,20 +66,50 @@ export const createPlatform = createSpawnableEntity<
       return Matter.Query.point([body], position).length > 0
     },
 
+    init({ game, physics }) {
+      const debug = game.debug
+      physics.register(this, body)
+      physics.linkTransform(body, transform)
+
+      return { game, debug, physics, body }
+    },
+
+    initRenderContext(_, { camera, stage }) {
+      const { width, height, spriteSource } = args
+
+      const container = new Container()
+      container.sortableChildren = true
+      container.zIndex = transform.zIndex
+
+      const gfx = new Graphics()
+      gfx.zIndex = 100
+      drawBox(gfx, { width: args.width, height: args.height })
+
+      const sprite = spriteSource
+        ? createSprite(spriteSource, { width, height })
+        : undefined
+
+      container.addChild(gfx)
+      if (sprite) container.addChild(sprite)
+      stage.addChild(container)
+
+      transform.addZIndexListener(() => {
+        container.zIndex = transform.zIndex
+      })
+
+      return { camera, container, gfx, sprite }
+    },
+
     onArgsUpdate(path, _previous, _data, render) {
       if (render && path === 'spriteSource') {
         const { width, height, spriteSource } = args
 
         render.sprite?.destroy()
         render.sprite = spriteSource
-          ? createSprite(spriteSource, {
-              width,
-              height,
-              zIndex: transform.zIndex,
-            })
+          ? createSprite(spriteSource, { width, height })
           : undefined
 
-        if (render.sprite) render.stage.addChild(render.sprite)
+        if (render.sprite) render.container.addChild(render.sprite)
       }
 
       if (path === 'width' || path === 'height') {
@@ -109,53 +138,16 @@ export const createPlatform = createSpawnableEntity<
       args.height = height
     },
 
-    init({ game, physics }) {
-      game.physics.register(this, body)
-      physics.linkTransform(body, transform)
-
-      return { game, body }
+    teardown({ physics }) {
+      physics.unregister(this, body)
     },
 
-    initRenderContext(_, { camera, stage }) {
-      const container = new Container()
-      container.sortableChildren = true
-      container.zIndex = transform.zIndex
-      const gfxBounds = new Graphics()
-      gfxBounds.zIndex = transform.zIndex
-      const sprite = args.spriteSource
-        ? createSprite(args.spriteSource, {
-            width: args.width,
-            height: args.height,
-            zIndex: transform.zIndex,
-          })
-        : undefined
-
-      if (sprite) {
-        container.addChild(sprite)
-      } else {
-        drawBox(gfxBounds, { width: args.width, height: args.height })
-        container.addChild(gfxBounds)
-      }
-
-      stage.addChild(container)
-
-      return {
-        camera,
-        stage: container,
-        gfx: gfxBounds,
-        sprite,
-      }
-    },
-
-    teardown({ game }) {
-      game.physics.unregister(this, body)
-    },
-
-    teardownRenderContext({ stage: container }) {
+    teardownRenderContext({ container }) {
       container.destroy({ children: true })
     },
 
     onPhysicsStep(_, { game }) {
+      // don't run on the server
       if (!game.client) {
         return
       }
@@ -165,11 +157,11 @@ export const createPlatform = createSpawnableEntity<
 
       // TODO: Can we avoid looking this up every tick?
       const player = game.entities.find(isPlayer)
-      const playerBody = player?.body
-      const playerHeight = player?.size.height
-      const playerWidth = player?.size.width
+      if (!player) return
 
-      if (!playerBody || !playerWidth || !playerHeight) return
+      const playerBody = player.body
+      const playerHeight = player.size.height
+      const playerWidth = player.size.width
 
       const platformHeight = body.bounds.max.y - body.bounds.min.y
 
@@ -230,12 +222,7 @@ export const createPlatform = createSpawnableEntity<
         : 0b11111111111111111111111111111001 | inactivePlatformMask
     },
 
-    onRenderFrame(
-      { smooth },
-      { game },
-      { camera, stage: container, gfx: gfxBounds },
-    ) {
-      const debug = game.debug
+    onRenderFrame({ smooth }, { debug }, { camera, container, gfx }) {
       const smoothed = Vec.add(body.position, Vec.mult(body.velocity, smooth))
       const pos = Vec.add(smoothed, camera.offset)
 
@@ -255,8 +242,7 @@ export const createPlatform = createSpawnableEntity<
 
       */
       const platformAlpha = isPlatformActive ? 1 : 0.1
-
-      gfxBounds.alpha = debug.value ? platformAlpha : 0
+      gfx.alpha = debug.value ? platformAlpha : 0
     },
   }
 })
