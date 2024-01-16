@@ -649,24 +649,41 @@ export async function createGame<Server extends boolean>(
       definition.args = args
 
       // Track changes to args and trigger entity callback
-      const watchedArgs = onChange(args, (path, value, previous) => {
-        const entity = this.lookup(uid)
-        if (!entity || typeof entity.onArgsUpdate !== 'function') return
+      const watchedArgs = onChange(
+        args,
+        (pathArray, value, previous) => {
+          const entity = this.lookup(uid)
+          if (!entity || typeof entity.onArgsUpdate !== 'function') return
 
-        const data = dataManager.getData(entity)
-        const render = renderContext
-          ? dataManager.getRenderData(entity)
-          : undefined
+          const path = pathArray.reduce<string>((acc, value) => {
+            if (typeof value === 'symbol') {
+              return `${acc}[${String(value)}]`
+            }
 
-        const previousArgs = clone(args)
-        setProperty(previousArgs, path, previous)
+            const idx = Number.parseInt(value, 10)
+            if (!Number.isNaN(idx)) {
+              return `${acc}[${idx}]`
+            }
 
-        entity.onArgsUpdate(path, previousArgs, data, render)
-        events.common.emit('onArgsChanged', entity)
+            return acc === '' ? value : `${acc}.${value}`
+          }, '')
 
-        if (network?.type !== 'client') return
-        void network.sendArgsUpdate(uid, path, value)
-      })
+          const data = dataManager.getData(entity)
+          const render = renderContext
+            ? dataManager.getRenderData(entity)
+            : undefined
+
+          const previousArgs = clone(args)
+          setProperty(previousArgs, path, previous)
+
+          entity.onArgsUpdate(path, previousArgs, data, render)
+          events.common.emit('onArgsChanged', entity)
+
+          if (network?.type !== 'client') return
+          void network.sendArgsUpdate(uid, path, value)
+        },
+        { pathAsArray: true },
+      )
 
       // Automatically track transform for the definition
       const transform = trackTransform(definition.transform)
