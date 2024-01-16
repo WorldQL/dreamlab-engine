@@ -1,3 +1,8 @@
+/**
+ * Create a new signal
+ *
+ * @returns Tuple containing a linked trigger function and a promise
+ */
 export const createSignal = <T = void>(): [
   fn: (data: T) => void,
   signal: Promise<T>,

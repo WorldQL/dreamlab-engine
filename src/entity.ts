@@ -65,6 +65,11 @@ export type Partialize<E extends Entity<Data, Render>, Data, Render> = Except<
   PartialFields
 >
 
+/**
+ * Create a new {@link Entity}
+ *
+ * @param partial - Partial Entity object
+ */
 export const createEntity = <E extends Entity<Data, Render>, Data, Render>(
   partial: Partialize<E, Data, Render>,
 ): E => {
@@ -77,6 +82,9 @@ export const createEntity = <E extends Entity<Data, Render>, Data, Render>(
   return mergeObjects(partial, getter) as E
 }
 
+/**
+ * Type guard to check if an object is of type {@link Entity}
+ */
 export const isEntity = (entity: unknown): entity is Entity => {
   if (entity === null) return false
   if (typeof entity === 'undefined') return false

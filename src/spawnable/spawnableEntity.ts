@@ -86,6 +86,12 @@ export type BareSpawnableFunction = SpawnableFunction<
   unknown
 >
 
+/**
+ * Create a new {@link SpawnableEntity}
+ *
+ * @param argsSchema - {@link https://zod.dev | Zod} schema for this entities arguments
+ * @param fn - Spawnable entity creation function
+ */
 export const createSpawnableEntity = <
   ArgsSchema extends ZodObjectAny,
   E extends SpawnableEntity<Data, Render, ArgsSchema>,
@@ -148,6 +154,9 @@ export const createSpawnableEntity = <
   return Object.assign(spawnFn, { argsSchema, hasDefaults })
 }
 
+/**
+ * Type guard to check if an object is of type {@link SpawnableEntity}
+ */
 export const isSpawnableEntity = (
   entity: unknown,
 ): entity is SpawnableEntity => {

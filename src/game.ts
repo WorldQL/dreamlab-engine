@@ -293,6 +293,11 @@ export interface Game<Server extends boolean> {
 }
 // #endregion
 
+/**
+ * Create a new instance of a Dreamlab Game
+ *
+ * @param options - Game context options
+ */
 export async function createGame<Server extends boolean>(
   options: Options<Server>,
 ): Promise<Game<Server>> {
