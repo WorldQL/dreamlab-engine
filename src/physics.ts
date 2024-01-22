@@ -13,9 +13,6 @@ import type {
 import { ref } from '~/utils/ref.js'
 
 export interface Physics {
-  get running(): boolean
-  set running(value: boolean)
-
   /**
    * Suspend all physics bodies on entities.
    */
@@ -114,8 +111,6 @@ const randomID = (): number => {
 }
 
 export const createPhysics = (): Physics => {
-  let running = true
-
   const engine = Matter.Engine.create()
   const entities = new Map<string, Body[]>()
   const bodiesMap = new Map<number, SpawnableEntity>()
@@ -136,14 +131,6 @@ export const createPhysics = (): Physics => {
   }
 
   const physics: Physics = {
-    get running() {
-      return running
-    },
-
-    set running(value) {
-      running = value
-    },
-
     suspend(source, entities) {
       if (entities.length === 0) return
       const bodies = entities.flatMap(entity => this.getBodies(entity))
