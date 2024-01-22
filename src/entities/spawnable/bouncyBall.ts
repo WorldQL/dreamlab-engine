@@ -21,7 +21,6 @@ const ArgsSchema = z.object({
 interface Data {
   debug: Debug
   physics: Physics
-  body: Matter.Body
 }
 
 interface Render {
@@ -50,8 +49,6 @@ export const createBouncyBall = createSpawnableEntity<
       isStatic: preview,
       isSensor: preview,
 
-      // inertia: Number.POSITIVE_INFINITY,
-      // inverseInertia: 0,
       mass,
       inverseMass: 1 / mass,
       restitution: 0.95,
@@ -107,7 +104,7 @@ export const createBouncyBall = createSpawnableEntity<
       return { camera, container, gfx, sprite }
     },
 
-    onArgsUpdate(path, previous, data, render) {
+    onArgsUpdate(path, previous, _data, render) {
       if (render && path.startsWith('spriteSource')) {
         const { radius, spriteSource } = args
 
@@ -127,10 +124,10 @@ export const createBouncyBall = createSpawnableEntity<
         const radius = args.radius
 
         const scale = radius / originalRadius
-        Matter.Body.setAngle(data.body, 0)
-        Matter.Body.scale(data.body, scale, scale)
+        Matter.Body.setAngle(body, 0)
+        Matter.Body.scale(body, scale, scale)
         Matter.Body.setAngle(body, toRadians(transform.rotation))
-        Matter.Body.setMass(data.body, mass)
+        Matter.Body.setMass(body, mass)
 
         if (render) {
           drawCircle(render.gfx, { radius })
@@ -146,17 +143,16 @@ export const createBouncyBall = createSpawnableEntity<
       args.radius = Math.max(width / 2, height / 2)
     },
 
-    teardown({ physics, body }) {
+    teardown({ physics }) {
       physics.unregister(this, body)
       physics.unlinkTransform(body, transform)
     },
 
-    teardownRenderContext({ gfx, sprite }) {
-      gfx.destroy()
-      sprite?.destroy()
+    teardownRenderContext({ container }) {
+      container.destroy({ children: true })
     },
 
-    onRenderFrame({ smooth }, { debug, body }, { camera, container, gfx }) {
+    onRenderFrame({ smooth }, { debug }, { camera, container, gfx }) {
       const smoothed = Vec.add(body.position, Vec.mult(body.velocity, smooth))
       const pos = Vec.add(smoothed, camera.offset)
 
