@@ -130,6 +130,7 @@ export const createPlayer = async (
   const feetSensor = 4
 
   let hasJumped = false
+  let jumpTicks = 0
   let isJogging = false
 
   let noclip = false
@@ -479,16 +480,32 @@ export const createPlayer = async (
         const isColliding = didCollide
         colliding.value = isColliding
 
-        if (isColliding && jump && !hasJumped) {
-          hasJumped = true
-          Matter.Body.applyForce(
-            body,
-            body.position,
-            Vec.create(0, -1 * jumpForce),
-          )
+        if (isColliding) {
+          jumpTicks = 0
+          hasJumped = jump
         }
 
-        if (!jump && isColliding) hasJumped = false
+        if (hasJumped) {
+          jumpTicks++
+
+          if (jump) {
+            if (jumpTicks === 1) {
+              Matter.Body.applyForce(
+                body,
+                body.position,
+                Vec.create(0, -0.5 * jumpForce),
+              )
+            } else if (jumpTicks <= 8) {
+              Matter.Body.applyForce(
+                body,
+                body.position,
+                Vec.create(0, (-1 / 10) * jumpForce),
+              )
+            }
+          } else {
+            jumpTicks = 999
+          }
+        }
       }
 
       if (isAttackAnimation() && isAttackFrame()) {
