@@ -137,8 +137,6 @@ export const createPlayer = async (
   let isAnimationLocked = false
 
   const onToggleNoclip = (pressed: boolean) => {
-    // TODO(Charlotte): if a player is noclipping, we should network this
-    // so that the serverside prediction can take that into account
     if (pressed) {
       noclip = !noclip
       events.emit('onToggleNoclip', noclip)
