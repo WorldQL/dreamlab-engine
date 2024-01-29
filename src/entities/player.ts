@@ -480,30 +480,36 @@ export const createPlayer = async (
         const isColliding = didCollide
         colliding.value = isColliding
 
-        if (isColliding) {
+        if (isColliding && !jump) {
+          hasJumped = false
+        }
+
+        if (isColliding && jump && !hasJumped) {
+          hasJumped = true
           jumpTicks = 0
-          hasJumped = jump
+        }
+
+        if (jump || hasJumped) {
+          jumpTicks++
+        }
+
+        if (hasJumped && !jump) {
+          jumpTicks = 999
         }
 
         if (hasJumped) {
-          jumpTicks++
-
-          if (jump) {
-            if (jumpTicks === 1) {
-              Matter.Body.applyForce(
-                body,
-                body.position,
-                Vec.create(0, -0.5 * jumpForce),
-              )
-            } else if (jumpTicks <= 8) {
-              Matter.Body.applyForce(
-                body,
-                body.position,
-                Vec.create(0, (-1 / 10) * jumpForce),
-              )
-            }
-          } else {
-            jumpTicks = 999
+          if (jumpTicks === 1) {
+            Matter.Body.applyForce(
+              body,
+              body.position,
+              Vec.create(0, -0.5 * jumpForce),
+            )
+          } else if (jumpTicks <= 8) {
+            Matter.Body.applyForce(
+              body,
+              body.position,
+              Vec.create(0, (-1 / 10) * jumpForce),
+            )
           }
         }
       }
