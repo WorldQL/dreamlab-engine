@@ -453,7 +453,7 @@ export const createPlayer = async (
 
         const feet = Matter.Bodies.rectangle(
           body.position.x,
-          body.position.y + height / 2 - feetSensor / 2,
+          body.position.y + height / 2 + feetSensor / 2,
           width - feetSensor,
           feetSensor,
         )
@@ -470,7 +470,6 @@ export const createPlayer = async (
 
         let didCollide = false
         for (const collisionCandidate of bodies) {
-          // @ts-expect-error: The types are wrong for this function.
           if (Matter.Collision.collides(collisionCandidate, feet)) {
             didCollide = true
             break

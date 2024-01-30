@@ -58,7 +58,7 @@
   },
   "devDependencies": {
     "@luludev/eslint-config": "^0.5.1",
-    "@types/matter-js": "^0.19.5",
+    "@types/matter-js": "^0.19.6",
     "@types/pako": "^2.0.3",
     "eslint": "^8.56.0",
     "prettier": "^3.1.1",
