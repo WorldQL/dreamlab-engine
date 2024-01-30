@@ -49,6 +49,11 @@ export const loadPlayerSpritesheet = async (
   url: string,
   { sort = true, id }: { sort?: boolean; id?: string | undefined } = {},
 ): Promise<SpritesheetData> => {
+  let _id = id
+  if (_id === undefined) {
+    _id = url.split('/').at(-1)
+  }
+
   const sheet = await Assets.load({ src: url, data: { cachePrefix: id } })
   if (!(sheet instanceof Spritesheet)) {
     throw new TypeError('is not a sprite sheet')
