@@ -167,6 +167,6 @@ export const loadCharacterAnimations = async (
     animationURL,
     bones,
     fallbackMap,
-    characterId,
+    characterId ?? 'default',
   )
 }
