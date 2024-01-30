@@ -4,10 +4,10 @@
  * @param url - `world://` URL
  */
 export const resolve = (url: string): string => {
-  // eslint-disable-next-line n/prefer-global/url
-  const uri = new URL(url)
-  if (uri.protocol !== 'world') return url
+  const prefix = 'world://'
+  if (!url.startsWith(prefix)) return url
 
-  // TODO: Grab base URL of world
-  return ''
+  const filename = url.slice(prefix.length)
+  // @ts-expect-error Global
+  return `${window.dreamlab_world_script_url_base}/${filename}`
 }
