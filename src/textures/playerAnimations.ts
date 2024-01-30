@@ -162,5 +162,11 @@ export const loadCharacterAnimations = async (
     animations.map(anim => [anim, fallback] as const),
   )
 
-  return loadPlayerAnimations(animations, animationURL, bones, fallbackMap)
+  return loadPlayerAnimations(
+    animations,
+    animationURL,
+    bones,
+    fallbackMap,
+    characterId,
+  )
 }
