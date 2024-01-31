@@ -1,5 +1,6 @@
 import { Sprite, Texture, TilingSprite } from 'pixi.js'
 import { z } from 'zod'
+import { resolve } from '~/sdk/resolve.js'
 
 export type SpriteSource = z.infer<typeof SpriteSourceSchema>
 export const SpriteSourceSchema = z.object({
@@ -20,7 +21,7 @@ export const createSprite = (
 ): Sprite => {
   const { url, tile, tileScale }: SpriteSource = source
 
-  const texture = Texture.from(url)
+  const texture = Texture.from(resolve(url))
   const createSprite = () => {
     if (!tile) return new Sprite(texture)
 

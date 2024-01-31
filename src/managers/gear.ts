@@ -4,7 +4,8 @@ import { z } from 'zod'
 import { isKnownAnimation } from '~/entities/player.js'
 import type { KnownAnimation } from '~/entities/player.js'
 import { VectorSchema } from '~/math/vector.js'
-import { handBones } from '~/textures/playerAnimations'
+import { resolve } from '~/sdk/resolve.js'
+import { handBones } from '~/textures/playerAnimations.js'
 
 export type BaseGear = z.infer<typeof BaseGearSchema>
 export const BaseGearSchema = z.object({
@@ -23,7 +24,7 @@ export interface Gear extends Except<BaseGear, 'animationName'> {
 }
 
 export const createGear = (base: BaseGear): Gear => {
-  const texture = Texture.from(base.textureURL)
+  const texture = Texture.from(resolve(base.textureURL))
   const animationName = isKnownAnimation(base.animationName)
     ? base.animationName
     : 'greatsword'

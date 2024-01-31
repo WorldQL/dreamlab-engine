@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { knownAnimation } from '~/entities/player.js'
 import type { KnownAnimation } from '~/entities/player.js'
 import { VectorSchema } from '~/math/vector.js'
+import { resolve } from '~/sdk/resolve.js'
 import { enumMap, typedFromEntries as fromEntries } from '~/utils/types.js'
 
 export type Bone = (typeof bones)[number]
@@ -50,7 +51,11 @@ export const loadPlayerSpritesheet = async (
   url: string,
   { sort = true }: { sort?: boolean } = {},
 ): Promise<SpritesheetData> => {
-  const sheet = await Assets.load({ src: url, data: { cachePrefix: id } })
+  const sheet = await Assets.load({
+    src: resolve(url),
+    data: { cachePrefix: id },
+  })
+
   if (!(sheet instanceof Spritesheet)) {
     throw new TypeError('is not a sprite sheet')
   }

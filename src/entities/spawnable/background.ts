@@ -2,6 +2,7 @@ import { Container, Texture, TilingSprite } from 'pixi.js'
 import { z } from 'zod'
 import type { Camera } from '~/entities/camera.js'
 import { Vec, VectorSchema } from '~/math/vector.js'
+import { resolve } from '~/sdk/resolve.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type {
   PartializeSpawnable,
@@ -45,7 +46,8 @@ export const isBackground = (entity: SpawnableEntity): entity is Background => {
 const textureAndSize = async (
   textureURL: string | undefined,
 ): Promise<[texture: Texture, width: number, height: number]> => {
-  const texture = await Texture.fromURL(textureURL ?? BLANK_PNG)
+  const url = textureURL ? resolve(textureURL) : BLANK_PNG
+  const texture = await Texture.fromURL(url)
 
   const scale = 100
   const width = textureURL ? texture.width * scale : 16_000
