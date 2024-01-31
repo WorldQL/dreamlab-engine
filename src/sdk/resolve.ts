@@ -1,9 +1,11 @@
+import type { LiteralUnion } from 'type-fest'
+
 /**
  * Resolve a `world://` URL to a world's `public` directory
  *
  * @param url - `world://` URL
  */
-export const resolve = (url: string): string => {
+export const resolve = (url: LiteralUnion<'world://', string>): string => {
   const prefix = 'world://'
   if (!url.startsWith(prefix)) return url
 
