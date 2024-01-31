@@ -46,15 +46,11 @@ export type PlayerAnimationMap<
 
 type SpritesheetData = Except<PlayerAnimation, 'boneData'>
 export const loadPlayerSpritesheet = async (
+  id: string,
   url: string,
-  { sort = true, id }: { sort?: boolean; id?: string | undefined } = {},
+  { sort = true }: { sort?: boolean } = {},
 ): Promise<SpritesheetData> => {
-  let _id = id
-  if (_id === undefined) {
-    _id = url.split('/').at(-1)
-  }
-
-  const sheet = await Assets.load({ src: url, data: { cachePrefix: _id } })
+  const sheet = await Assets.load({ src: url, data: { cachePrefix: id } })
   if (!(sheet instanceof Spritesheet)) {
     throw new TypeError('is not a sprite sheet')
   }
@@ -88,7 +84,7 @@ export const loadPlayerAnimations = async <
   urlFn: (animation: T[number]) => string,
   bones: Record<T[number], BoneMap<T[number]>>,
   fallback: F,
-  id?: string,
+  id: string,
 ): Promise<
   PlayerAnimationMap<T[number], F extends undefined ? true : false>
 > => {
@@ -104,8 +100,11 @@ export const loadPlayerAnimations = async <
         typeof boneFn === 'function' ? await boneFn(animation) : boneFn
 
       try {
-        const cacheID = id ? `${animation}-${id}` : undefined
-        const spritesheet = await loadPlayerSpritesheet(url, { id: cacheID })
+        const spritesheet = await loadPlayerSpritesheet(
+          `${animation}-${id}`,
+          url,
+        )
+
         return [animation, { ...spritesheet, boneData }] as const
       } catch (error) {
         if (error instanceof Error) console.error(error)
@@ -144,7 +143,7 @@ export const loadCharacterAnimations = async (
 
   const fallback: Fallback<KnownAnimation> = async animation => {
     const url = animationURL(animation, true)
-    return loadPlayerSpritesheet(url, { id: `${animation}-fallback` })
+    return loadPlayerSpritesheet(`${animation}-fallback`, url)
   }
 
   const loadBones: BoneMap<KnownAnimation> = async animation => {
