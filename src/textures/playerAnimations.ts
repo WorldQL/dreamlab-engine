@@ -47,9 +47,11 @@ export type PlayerAnimationMap<
 
 type SpritesheetData = Except<PlayerAnimation, 'boneData'>
 export const loadPlayerSpritesheet = async (
-  id: string,
   url: string,
-  { sort = true }: { sort?: boolean } = {},
+  {
+    id = url.split('/').at(-1),
+    sort = true,
+  }: { id?: string; sort?: boolean } = {},
 ): Promise<SpritesheetData> => {
   const sheet = await Assets.load({
     src: resolve(url),
@@ -105,10 +107,9 @@ export const loadPlayerAnimations = async <
         typeof boneFn === 'function' ? await boneFn(animation) : boneFn
 
       try {
-        const spritesheet = await loadPlayerSpritesheet(
-          `${animation}-${id}`,
-          url,
-        )
+        const spritesheet = await loadPlayerSpritesheet(url, {
+          id: `${animation}-${id}`,
+        })
 
         return [animation, { ...spritesheet, boneData }] as const
       } catch (error) {
@@ -148,7 +149,7 @@ export const loadCharacterAnimations = async (
 
   const fallback: Fallback<KnownAnimation> = async animation => {
     const url = animationURL(animation, true)
-    return loadPlayerSpritesheet(`${animation}-fallback`, url)
+    return loadPlayerSpritesheet(url, { id: `${animation}-fallback` })
   }
 
   const loadBones: BoneMap<KnownAnimation> = async animation => {
