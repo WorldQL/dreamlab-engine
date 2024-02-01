@@ -53,14 +53,27 @@ export const loadPlayerSpritesheet = async (
     sort = true,
   }: { id?: string; sort?: boolean } = {},
 ): Promise<SpritesheetData> => {
-  const sheet = await Assets.load({
-    src: resolve(url),
-    data: { cachePrefix: id },
-  })
+  const getSheet = async (): Promise<Spritesheet> => {
+    const resolved = resolve(url)
+    const cached = Assets.get(resolved)
 
-  if (!(sheet instanceof Spritesheet)) {
-    throw new TypeError('is not a sprite sheet')
+    if (cached && cached instanceof Spritesheet) {
+      return cached
+    }
+
+    const sheet = await Assets.load({
+      src: resolved,
+      data: { cachePrefix: id + '.' },
+    })
+
+    if (!(sheet instanceof Spritesheet)) {
+      throw new TypeError('is not a sprite sheet')
+    }
+
+    return sheet
   }
+
+  const sheet = await getSheet()
 
   const textures = Object.values(sheet.textures)
   const width = textures.reduce((acc, tex) => Math.max(acc, tex.width), 0)
