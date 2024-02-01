@@ -45,6 +45,32 @@ export type PlayerAnimationMap<
   Fallible extends true ? PlayerAnimation | undefined : PlayerAnimation
 >
 
+const loadSpritesheet = async (
+  url: string,
+  id: string | undefined,
+): Promise<Spritesheet> => {
+  const sheet = await Assets.load({
+    src: url,
+    data: { cachePrefix: id ? id + '.' : undefined },
+  })
+
+  if (!(sheet instanceof Spritesheet)) {
+    throw new TypeError('is not a sprite sheet')
+  }
+
+  return sheet
+}
+
+export const preloadPlayerSpritesheet = async (
+  url: string,
+  { id = url.split('/').at(-1) }: { id?: string | undefined } = {},
+): Promise<void> => {
+  const resolved = resolve(url)
+  if (Assets.get(resolved)) return
+
+  await loadSpritesheet(url, id)
+}
+
 type SpritesheetData = Except<PlayerAnimation, 'boneData'>
 export const loadPlayerSpritesheet = async (
   url: string,
@@ -61,16 +87,7 @@ export const loadPlayerSpritesheet = async (
       return cached
     }
 
-    const sheet = await Assets.load({
-      src: resolved,
-      data: { cachePrefix: id + '.' },
-    })
-
-    if (!(sheet instanceof Spritesheet)) {
-      throw new TypeError('is not a sprite sheet')
-    }
-
-    return sheet
+    return loadSpritesheet(resolved, id)
   }
 
   const sheet = await getSheet()
