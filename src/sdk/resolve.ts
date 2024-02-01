@@ -1,9 +1,12 @@
 import type { LiteralUnion } from 'type-fest'
 
 /**
- * Resolve a `world://` URL to a world's `public` directory
+ * Resolve a `world://` URL for static assets
  *
- * @param url - `world://` URL (which refers to files in the current world's repository) or an `https://` URL for external resources
+ * `world://` URLs refer to files in the current world's repository.
+ * If any other URL (eg: `https://`) is passed, they will be returned as-is.
+ *
+ * @param url - `world://` URL
  */
 export const resolve = (url: LiteralUnion<'world://', string>): string => {
   const prefix = 'world://'
