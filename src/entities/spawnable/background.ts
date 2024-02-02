@@ -61,7 +61,7 @@ export const createBackground = createSpawnableEntity<
   Background,
   Data,
   Render
->(ArgsSchema, (_ctx, args) => {
+>(ArgsSchema, ({ tags }, args) => {
   let fadeTarget = 0
   const origin = Vec.create(0, 0)
 
@@ -79,6 +79,7 @@ export const createBackground = createSpawnableEntity<
     },
 
     init({ game }) {
+      tags.push('editor/doNotSave')
       return { debug: game.debug }
     },
 
