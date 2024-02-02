@@ -96,6 +96,7 @@ export const trackTransform = (transform: Transform): TrackedTransform => {
     set: (target, property, value, receiver) => {
       if (
         property === trackedSymbol ||
+        property === 'addListener' ||
         property === 'addPositionListener' ||
         property === 'addRotationListener' ||
         property === 'addZIndexListener' ||
