@@ -81,6 +81,8 @@ export const createBackgroundTrigger = createSpawnableEntity<
   Data,
   Render
 >(ArgsSchema, ({ transform }, args) => {
+  let inside = false
+
   const colour = '#cc87ff'
   const trigger = Matter.Bodies.rectangle(
     transform.position.x,
@@ -160,6 +162,7 @@ export const createBackgroundTrigger = createSpawnableEntity<
         'onPlayerCollisionStart'
       > = async ([_player, other]) => {
         if (other !== trigger) return
+        inside = true
         await updateBackground(args.onEnter)
       }
 
@@ -167,6 +170,7 @@ export const createBackgroundTrigger = createSpawnableEntity<
         'onPlayerCollisionEnd'
       > = async ([_player, other]) => {
         if (other !== trigger) return
+        inside = false
         await updateBackground(args.onLeave)
       }
 
@@ -275,12 +279,13 @@ export const createBackgroundTrigger = createSpawnableEntity<
       container.destroy({ children: true })
     },
 
-    onRenderFrame(_, { debug }, { camera, container }) {
+    onRenderFrame(_, { debug }, { camera, container, sprite }) {
       const pos = Vec.add(transform.position, camera.offset)
 
       container.position = pos
       container.angle = transform.rotation
       container.alpha = debug.value ? 0.5 : 0
+      if (sprite) sprite.alpha = inside ? 0 : 1
     },
   }
 })
