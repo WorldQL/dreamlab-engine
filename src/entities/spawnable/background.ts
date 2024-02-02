@@ -172,7 +172,10 @@ export const createBackground = createSpawnableEntity<
         camera.position.y * (1 - args.parallax.y),
       )
 
-      const { width, height } = spriteBack.texture
+      const { width: _w, height: _h } = spriteBack.texture
+      const width = _w * spriteBack.tileScale.x
+      const height = _h * spriteBack.tileScale.y
+
       if (inverseDistance.x > origin.x + width) origin.x += width
       else if (inverseDistance.x < origin.x - width) origin.x -= width
 
