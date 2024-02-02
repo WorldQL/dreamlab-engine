@@ -130,7 +130,7 @@ export const createBackground = createSpawnableEntity<
         fadeTarget = args.fadeTime
       }
 
-      if (render && path.startsWith('scale.')) {
+      if (render && (path === 'scale' || path.startsWith('scale.'))) {
         render.spriteFront.tileScale.set(args.scale.x, args.scale.y)
         render.spriteBack.tileScale.set(args.scale.x, args.scale.y)
       }
