@@ -146,6 +146,13 @@ export const trackTransform = (transform: Transform): TrackedTransform => {
       position: innerPosition,
       sync: () => {
         for (const fn of transformListeners) fn(true)
+        for (const fn of positionListeners) {
+          fn('x', innerPosition.x, 0)
+          fn('y', innerPosition.y, 0)
+        }
+
+        for (const fn of rotationListeners) fn(innerTransform.rotation, 0)
+        for (const fn of zIndexListeners) fn(innerTransform.zIndex)
       },
     },
 
