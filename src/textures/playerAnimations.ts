@@ -66,7 +66,7 @@ export const preloadPlayerSpritesheet = async (
   { id = url.split('/').at(-1) }: { id?: string | undefined } = {},
 ): Promise<void> => {
   const resolved = resolve(url)
-  if (Assets.get(resolved)) return
+  if (Assets.cache.has(resolved)) return
 
   await loadSpritesheet(url, id)
 }
@@ -81,7 +81,7 @@ export const loadPlayerSpritesheet = async (
 ): Promise<SpritesheetData> => {
   const getSheet = async (): Promise<Spritesheet> => {
     const resolved = resolve(url)
-    const cached = Assets.get(resolved)
+    const cached = Assets.cache.has(resolved) ? Assets.get(resolved) : undefined
 
     if (cached && cached instanceof Spritesheet) {
       return cached
