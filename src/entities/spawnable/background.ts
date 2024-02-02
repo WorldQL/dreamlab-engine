@@ -1,4 +1,10 @@
-import { Container, Texture, TilingSprite } from 'pixi.js'
+import {
+  Container,
+  SCALE_MODES,
+  Texture,
+  TilingSprite,
+  WRAP_MODES,
+} from 'pixi.js'
 import { z } from 'zod'
 import type { Camera } from '~/entities/camera.js'
 import { Vec, VectorSchema } from '~/math/vector.js'
@@ -88,9 +94,16 @@ export const createBackground = createSpawnableEntity<
         args.textureURL,
       )
 
+      texture.baseTexture.wrapMode = WRAP_MODES.CLAMP
       const container = new Container()
       const spriteFront = new TilingSprite(texture)
       const spriteBack = new TilingSprite(texture)
+
+      spriteBack.clampMargin = 0
+      spriteFront.clampMargin = 0
+
+      spriteFront.texture.baseTexture.scaleMode = SCALE_MODES.NEAREST
+      spriteBack.texture.baseTexture.scaleMode = SCALE_MODES.NEAREST
 
       spriteFront.tileScale.set(args.scale.x, args.scale.y)
       spriteBack.tileScale.set(args.scale.x, args.scale.y)

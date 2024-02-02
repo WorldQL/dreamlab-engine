@@ -47,8 +47,8 @@ const BackgroundActionSchema = z.discriminatedUnion('action', [
 
 type Args = typeof ArgsSchema
 const ArgsSchema = z.object({
-  width: z.number().positive().min(1).default(30),
-  height: z.number().positive().min(1).default(30),
+  width: z.number().positive().min(1).default(1_000),
+  height: z.number().positive().min(1).default(1_000),
 
   onEnter: BackgroundActionSchema.default({
     action: BackgroundActionType.Clear,
