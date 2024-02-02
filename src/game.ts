@@ -692,14 +692,13 @@ export async function createGame<Server extends boolean>(
       const transform = trackTransform(definition.transform)
       definition.transform = transform
 
-      const syncTransform = () => {
+      const syncTransform = (sync: boolean) => {
+        if (sync) return
         if (network?.type !== 'client') return
         void network.sendTransformUpdate(uid, transform)
       }
 
-      transform.addPositionListener(syncTransform)
-      transform.addRotationListener(syncTransform)
-      transform.addZIndexListener(syncTransform)
+      transform.addListener(syncTransform)
 
       // Automatically track tags and label
       const trackedDefinition = onChange(definition, path => {

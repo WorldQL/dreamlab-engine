@@ -26,6 +26,7 @@ export const t = (transform: LooseTransform): Transform => {
   return TransformSchema.parse(transform)
 }
 
+export type TransformListener = (sync: boolean) => void
 export type PositionListener = (
   component: 'x' | 'y',
   value: number,
@@ -40,19 +41,27 @@ export type ZIndexListener = (zIndex: number) => void
  */
 export const trackedSymbol = Symbol.for('@dreamlab/core/trackedTransform')
 interface TrackedTransformAugment {
-  [trackedSymbol]: { transform: Transform; position: Vector }
+  [trackedSymbol]: { transform: Transform; position: Vector; sync(): void }
 
+  addListener(fn: TransformListener): void
   addPositionListener(fn: PositionListener): void
   addRotationListener(fn: RotationListener): void
   addZIndexListener(fn: ZIndexListener): void
 
-  removeListener(fn: PositionListener | RotationListener | ZIndexListener): void
+  removeListener(
+    fn:
+      | PositionListener
+      | RotationListener
+      | TransformListener
+      | ZIndexListener,
+  ): void
   removeAllListeners(): void
 }
 
 // eslint-disable-next-line @typescript-eslint/sort-type-constituents
 export type TrackedTransform = Transform & TrackedTransformAugment
 export const trackTransform = (transform: Transform): TrackedTransform => {
+  const transformListeners = new Set<TransformListener>()
   const positionListeners = new Set<PositionListener>()
   const rotationListeners = new Set<RotationListener>()
   const zIndexListeners = new Set<ZIndexListener>()
@@ -71,6 +80,7 @@ export const trackTransform = (transform: Transform): TrackedTransform => {
 
       target[property] = value
       for (const fn of positionListeners) fn(property, value, delta)
+      for (const fn of transformListeners) fn(false)
 
       return true
     },
@@ -109,6 +119,7 @@ export const trackTransform = (transform: Transform): TrackedTransform => {
 
         target.rotation = value
         for (const fn of rotationListeners) fn(value, delta)
+        for (const fn of transformListeners) fn(false)
 
         return true
       }
@@ -116,6 +127,7 @@ export const trackTransform = (transform: Transform): TrackedTransform => {
       if (property === 'zIndex') {
         target.zIndex = value
         for (const fn of zIndexListeners) fn(value)
+        for (const fn of transformListeners) fn(false)
 
         return true
       }
@@ -128,13 +140,23 @@ export const trackTransform = (transform: Transform): TrackedTransform => {
   })
 
   const augment: TrackedTransformAugment = {
-    [trackedSymbol]: { transform: innerTransform, position: innerPosition },
+    [trackedSymbol]: {
+      transform: innerTransform,
+      position: innerPosition,
+      sync: () => {
+        for (const fn of transformListeners) fn(true)
+      },
+    },
 
+    addListener: fn => void transformListeners.add(fn),
     addPositionListener: fn => void positionListeners.add(fn),
     addRotationListener: fn => void rotationListeners.add(fn),
     addZIndexListener: fn => void zIndexListeners.add(fn),
 
     removeListener: fn => {
+      // @ts-expect-error Ignore Types
+      transformListeners.delete(fn)
+
       // @ts-expect-error Ignore Types
       positionListeners.delete(fn)
 
@@ -146,6 +168,7 @@ export const trackTransform = (transform: Transform): TrackedTransform => {
     },
 
     removeAllListeners: () => {
+      transformListeners.clear()
       positionListeners.clear()
       rotationListeners.clear()
       zIndexListeners.clear()
