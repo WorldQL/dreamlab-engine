@@ -14,5 +14,5 @@ export const resolve = (url: LiteralUnion<'world://', string>): string => {
 
   const filename = url.slice(prefix.length)
   // @ts-expect-error Global
-  return `${window.dreamlab_world_script_url_base}/${filename}`
+  return `${globalThis.dreamlab_world_script_url_base}/${filename}`
 }
