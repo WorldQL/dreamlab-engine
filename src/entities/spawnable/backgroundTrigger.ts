@@ -5,6 +5,7 @@ import { z } from 'zod'
 import type { Camera } from '~/entities/camera.js'
 import type { Background } from '~/entities/spawnable/background.js'
 import { isBackground } from '~/entities/spawnable/background.js'
+import { dataManager } from '~/entity'
 import type { EventHandler } from '~/events.js'
 import type { Game } from '~/game.js'
 import { toRadians } from '~/math/general.js'
@@ -15,6 +16,7 @@ import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import { createSprite } from '~/textures/sprites'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
+import { onChange } from '~/utils/object'
 
 enum BackgroundActionType {
   Clear = 'clear',
@@ -134,19 +136,25 @@ export const createBackgroundTrigger = createSpawnableEntity<
         action: z.infer<typeof BackgroundActionSchema>,
       ) => {
         const background = await getBackground()
+        // This allows us to update the args without networking them
+        const bgDirectRef = onChange.target<typeof background.definition>(
+          background.definition,
+        )
+        const data = dataManager.getData(background)
+        const render = dataManager.getRenderData(background)
+
         switch (action.action) {
           case BackgroundActionType.Set: {
-            if (action.fadeTime) background.args.fadeTime = action.fadeTime
-            if (action.scale) background.args.scale = action.scale
-            if (action.parallax) background.args.parallax = action.parallax
+            if (action.fadeTime) bgDirectRef.args.fadeTime = action.fadeTime
+            if (action.scale) bgDirectRef.args.scale = action.scale
+            if (action.parallax) bgDirectRef.args.parallax = action.parallax
 
-            background.args.textureURL = action.textureURL
-
+            bgDirectRef.args.textureURL = action.textureURL
             break
           }
 
           case BackgroundActionType.Clear: {
-            background.args.textureURL = undefined
+            bgDirectRef.args.textureURL = undefined
 
             break
           }
@@ -155,6 +163,21 @@ export const createBackgroundTrigger = createSpawnableEntity<
             // No-op
             break
           }
+        }
+
+        if (background.onArgsUpdate && render) {
+          background.onArgsUpdate(
+            'textureURL',
+            background.args,
+            data,
+            render ?? undefined,
+          )
+          background.onArgsUpdate(
+            'scale',
+            background.args,
+            data,
+            render ?? undefined,
+          )
         }
       }
 
