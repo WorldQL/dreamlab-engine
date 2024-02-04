@@ -211,9 +211,9 @@ export const createPlayer = async (
       case 'punch':
         return currentFrame >= 3
       case 'bow':
-        return currentFrame === 8
+        return currentFrame === 8 || currentFrame === 9
       case 'shoot':
-        return currentFrame === 0
+        return currentFrame > 0 && currentFrame < 4
       default:
         return false
     }
