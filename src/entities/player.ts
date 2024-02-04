@@ -119,6 +119,30 @@ export enum PlayerInput {
   WalkRight = '@player/walk-right',
 }
 
+export const getSpeedMultiplier = (
+  animation_name: string,
+  gear: Gear | undefined,
+) => {
+  if (
+    gear?.speedMultiplier &&
+    ((knownAttackAnimation as readonly string[]).includes(animation_name) ||
+      (knownRangedAttackAnimation as readonly string[]).includes(
+        animation_name,
+      ))
+  ) {
+    return gear.speedMultiplier
+  }
+
+  switch (animation_name) {
+    case 'greatsword':
+      return 2.2
+    case 'punch':
+      return 2.5
+    default:
+      return 1
+  }
+}
+
 export const createPlayer = async (
   characterId: string | undefined,
   { width = 80, height = 370 }: Partial<PlayerSize> = {},
@@ -576,23 +600,9 @@ export const createPlayer = async (
         currentAnimation = newAnimation
         if (isAttackAnimation()) isAnimationLocked = true
         sprite.textures = animations[newAnimation].textures
-        const getSpeedMultiplier = (animation_name: string) => {
-          if (gear?.speedMultiplier) {
-            return gear.speedMultiplier
-          }
-
-          switch (animation_name) {
-            case 'greatsword':
-              return 2.2
-            case 'punch':
-              return 2
-            default:
-              return 1
-          }
-        }
 
         sprite.animationSpeed =
-          PLAYER_ANIMATION_SPEED * getSpeedMultiplier(currentAnimation)
+          PLAYER_ANIMATION_SPEED * getSpeedMultiplier(currentAnimation, gear)
         sprite.loop = newAnimation !== 'jump'
 
         sprite.gotoAndPlay(0)

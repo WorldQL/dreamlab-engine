@@ -8,6 +8,7 @@ import {
   PLAYER_MASS,
   PLAYER_SPRITE_ANCHOR,
   PLAYER_SPRITE_SCALE,
+  getSpeedMultiplier,
 } from '~/entities/player.js'
 import type {
   KnownAnimation,
@@ -282,23 +283,9 @@ export const createNetPlayer = async (
       if (animationChanged) {
         animationChanged = false
         sprite.textures = animations[currentAnimation].textures
-        const getSpeedMultiplier = (animation_name: string) => {
-          if (gear?.speedMultiplier) {
-            return gear.speedMultiplier
-          }
-
-          switch (animation_name) {
-            case 'greatsword':
-              return 2.2
-            case 'punch':
-              return 2
-            default:
-              return 1
-          }
-        }
 
         sprite.animationSpeed =
-          PLAYER_ANIMATION_SPEED * getSpeedMultiplier(currentAnimation)
+          PLAYER_ANIMATION_SPEED * getSpeedMultiplier(currentAnimation, gear)
         sprite.loop = currentAnimation !== 'jump'
 
         sprite.gotoAndPlay(0)
