@@ -207,7 +207,7 @@ export const createPlayer = async (
   const isAttackFrame = () => {
     switch (currentAnimation) {
       case 'greatsword':
-        return currentFrame >= 24
+        return currentFrame >= 16
       case 'punch':
         return currentFrame >= 3
       case 'bow':
