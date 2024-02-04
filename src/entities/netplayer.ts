@@ -243,7 +243,7 @@ export const createNetPlayer = async (
       const gfxBounds = new Graphics()
       drawBox(gfxBounds, { width, height }, { stroke: '#00f' })
 
-      const zIndex = 5
+      const zIndex = 10
       sprite.zIndex = zIndex
       gfxBounds.zIndex = zIndex + 1
 
