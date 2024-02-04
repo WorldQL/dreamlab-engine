@@ -4,11 +4,11 @@ import type { Body } from 'matter-js'
 import { AnimatedSprite, Graphics, Sprite } from 'pixi.js'
 import type { Camera } from '~/entities/camera.js'
 import {
+  getSpeedMultiplier,
   PLAYER_ANIMATION_SPEED,
   PLAYER_MASS,
   PLAYER_SPRITE_ANCHOR,
   PLAYER_SPRITE_SCALE,
-  getSpeedMultiplier,
 } from '~/entities/player.js'
 import type {
   KnownAnimation,
