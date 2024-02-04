@@ -76,13 +76,13 @@ export const createCamera = (
   let targetRef = target
   let smoothing = 0.125
 
-  let zoomScaleTarget = 1
-  let zoomScale = 1
+  let zoomScaleTarget = 0.373_9
+  let zoomScale = 0.373_9
 
   let renderScale = 1
   let renderScaleChanged = false
 
-  let zoomScaleLevelIdx = 50
+  let zoomScaleLevelIdx = 32
   const onWheel = (ev: WheelEvent) => {
     if (ev.ctrlKey) {
       ev.preventDefault()
