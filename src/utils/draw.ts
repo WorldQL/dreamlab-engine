@@ -20,15 +20,17 @@ export interface DrawBoxArgs {
 export const drawBox = (
   graphics: Graphics,
   { width, height }: DrawBoxArgs,
-  {
+  options: DrawOptions = {},
+): ((args: DrawBoxArgs) => void) => {
+  const {
     fill = '#000',
     fillAlpha = 0,
     stroke = '#f00',
     strokeWidth = 8,
     strokeAlpha = 1,
     strokeAlign = 0,
-  }: DrawOptions = {},
-) => {
+  } = options
+
   graphics.clear()
 
   graphics.beginFill(fill, fillAlpha)
@@ -40,6 +42,8 @@ export const drawBox = (
   })
 
   graphics.drawRect(0 - width / 2, 0 - height / 2, width, height)
+
+  return args => drawBox(graphics, args, options)
 }
 // #endregion
 
@@ -51,15 +55,17 @@ export interface DrawCircleArgs {
 export const drawCircle = (
   graphics: Graphics,
   { radius }: DrawCircleArgs,
-  {
+  options: DrawOptions = {},
+): ((args: DrawCircleArgs) => void) => {
+  const {
     fill = '#000',
     fillAlpha = 0,
     stroke = '#f00',
     strokeWidth = 8,
     strokeAlpha = 1,
     strokeAlign = 0,
-  }: DrawOptions = {},
-) => {
+  } = options
+
   graphics.clear()
 
   graphics.beginFill(fill, fillAlpha)
@@ -71,6 +77,8 @@ export const drawCircle = (
   })
 
   graphics.drawCircle(0, 0, radius)
+
+  return args => drawCircle(graphics, args, options)
 }
 // #endregion
 
