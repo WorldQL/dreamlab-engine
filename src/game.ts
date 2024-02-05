@@ -398,7 +398,7 @@ export async function createGame<Server extends boolean>(
     physicsTickAcc += delta
 
     // 2s time between frames
-    if (physicsTickAcc >= 2_000) {
+    if (renderContext && physicsTickAcc >= 2_000) {
       console.warn(
         `unusually long physicsTickAcc, was ${physicsTickAcc} setting it to zero`,
       )
