@@ -22,7 +22,6 @@ const ArgsSchema = z.object({
 interface Data {
   debug: Debug
   physics: Physics
-  body: Matter.Body
 }
 
 interface Render {
@@ -68,7 +67,7 @@ export const createSolid = createSpawnableEntity<
       physics.register(this, body)
       physics.linkTransform(body, transform)
 
-      return { debug, physics, body }
+      return { debug, physics }
     },
 
     initRenderContext(_, { stage, camera }) {
@@ -97,7 +96,7 @@ export const createSolid = createSpawnableEntity<
       return { camera, container, gfx, sprite }
     },
 
-    onArgsUpdate(path, previous, data, render) {
+    onArgsUpdate(path, previous, _data, render) {
       if (render && path.startsWith('spriteSource')) {
         const { width, height, spriteSource } = args
 
@@ -116,8 +115,8 @@ export const createSolid = createSpawnableEntity<
         const scaleX = width / originalWidth
         const scaleY = height / originalHeight
 
-        Matter.Body.setAngle(data.body, 0)
-        Matter.Body.scale(data.body, scaleX, scaleY)
+        Matter.Body.setAngle(body, 0)
+        Matter.Body.scale(body, scaleX, scaleY)
         Matter.Body.setAngle(body, toRadians(transform.rotation))
 
         if (render) {
@@ -135,7 +134,7 @@ export const createSolid = createSpawnableEntity<
       args.height = height
     },
 
-    teardown({ physics, body }) {
+    teardown({ physics }) {
       physics.unregister(this, body)
       physics.unlinkTransform(body, transform)
     },
