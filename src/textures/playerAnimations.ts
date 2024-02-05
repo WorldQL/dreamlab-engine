@@ -68,7 +68,7 @@ export const preloadPlayerSpritesheet = async (
   const resolved = resolve(url)
   if (Assets.cache.has(resolved)) return
 
-  await loadSpritesheet(url, id)
+  await loadSpritesheet(resolved, id)
 }
 
 type SpritesheetData = Except<PlayerAnimation, 'boneData'>
