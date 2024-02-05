@@ -17,6 +17,10 @@ type InputEvents = Record<KeyOrInput, [pressed: boolean]> & {
 // Keep this in sync with any special events added above
 const reserved = new Set(['onRegistered', 'onWheel'])
 
+function onVisibilityChange(this: InputManager): void {
+  if (document.visibilityState === 'hidden') this.clearKeys()
+}
+
 function onKey(this: InputManager, ev: KeyboardEvent, pressed: boolean): void {
   const result = InputCodeSchema.safeParse(ev.code)
   if (!result.success) return
@@ -76,6 +80,7 @@ export class InputManager extends EventEmitter<InputEvents> {
   }
 
   public registerListeners(): Unregister {
+    const boundOnVisibilityChange = onVisibilityChange.bind(this)
     const boundOnKey = onKey.bind(this)
     const boundOnMouse = onMouse.bind(this)
 
@@ -87,6 +92,7 @@ export class InputManager extends EventEmitter<InputEvents> {
     const onMouseOut = this.onMouseOut.bind(this)
     const onWheel = this.onWheel.bind(this)
 
+    document.addEventListener('visibilitychange', boundOnVisibilityChange)
     window.addEventListener('keydown', onKeyDown)
     window.addEventListener('keyup', onKeyUp)
     this.canvas.addEventListener('mousedown', onMouseDown)
@@ -97,6 +103,7 @@ export class InputManager extends EventEmitter<InputEvents> {
     this.canvas.addEventListener('wheel', onWheel)
 
     const unregister: Unregister = () => {
+      document.removeEventListener('visibilitychange', boundOnVisibilityChange)
       window.removeEventListener('keydown', onKeyDown)
       window.removeEventListener('keyup', onKeyUp)
       this.canvas.removeEventListener('mousedown', onMouseDown)
@@ -214,6 +221,18 @@ export class InputManager extends EventEmitter<InputEvents> {
     else this.keys.delete(key)
 
     this.fireEvents(key)
+  }
+
+  /**
+   * Clear all pressed keys
+   *
+   * **Warning:** Ignores all disabled states
+   */
+  public clearKeys(): void {
+    for (const key of this.keys) {
+      this.keys.delete(key)
+      this.fireEvents(key)
+    }
   }
   // #endregion
 
