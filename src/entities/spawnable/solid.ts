@@ -8,6 +8,7 @@ import { Vec } from '~/math/vector.js'
 import type { Physics } from '~/physics.js'
 import {
   updateBodyWidthHeight,
+  updateSpriteSource,
   updateSpriteWidthHeight,
 } from '~/spawnable/args.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
@@ -108,13 +109,12 @@ export const createSolid = createSpawnableEntity<
         (path === 'spriteSource' || path.startsWith('spriteSource.'))
       ) {
         const { width, height, spriteSource } = args
+        const { container } = render
 
-        render.sprite?.destroy()
-        render.sprite = spriteSource
-          ? createSprite(spriteSource, { width, height })
-          : undefined
-
-        if (render.sprite) render.container.addChild(render.sprite)
+        updateSpriteSource(spriteSource, 'sprite', render, container, {
+          width,
+          height,
+        })
       }
 
       if (path === 'width' || path === 'height') {

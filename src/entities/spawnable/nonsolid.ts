@@ -4,7 +4,10 @@ import { z } from 'zod'
 import type { Camera } from '~/entities/camera.js'
 import { simpleBoundsTest } from '~/math/bounds.js'
 import { Vec } from '~/math/vector.js'
-import { updateSpriteWidthHeight } from '~/spawnable/args.js'
+import {
+  updateSpriteSource,
+  updateSpriteWidthHeight,
+} from '~/spawnable/args.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import { createSprite, SpriteSourceSchema } from '~/textures/sprites.js'
@@ -80,15 +83,17 @@ export const createNonsolid = createSpawnableEntity<
   },
 
   onArgsUpdate(path, _previous, _data, render) {
-    if (render && path.startsWith('spriteSource')) {
+    if (
+      render &&
+      (path === 'spriteSource' || path.startsWith('spriteSource.'))
+    ) {
       const { width, height, spriteSource } = args
+      const { container } = render
 
-      render.sprite?.destroy()
-      render.sprite = spriteSource
-        ? createSprite(spriteSource, { width, height })
-        : undefined
-
-      if (render.sprite) render.container.addChild(render.sprite)
+      updateSpriteSource(spriteSource, 'sprite', render, container, {
+        width,
+        height,
+      })
     }
 
     if (render && (path === 'width' || path === 'height')) {

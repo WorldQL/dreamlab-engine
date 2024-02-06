@@ -1,5 +1,7 @@
 import Matter from 'matter-js'
-import type { Sprite } from 'pixi.js'
+import type { Container, Sprite } from 'pixi.js'
+import { createSprite } from '~/textures/sprites.js'
+import type { SpriteOptions, SpriteSource } from '~/textures/sprites.js'
 
 export const updateBodyWidthHeight = (
   body: Matter.Body,
@@ -26,4 +28,20 @@ export const updateSpriteWidthHeight = (
 
   sprite.width = args.width
   sprite.height = args.height
+}
+
+export const updateSpriteSource = <K extends string>(
+  source: SpriteSource | undefined,
+  key: K,
+  render: { [k in K]: Sprite | undefined },
+  container: Container,
+  options?: SpriteOptions,
+) => {
+  if (!render) return
+  render[key]?.destroy()
+
+  const sprite = source ? createSprite(source, options) : undefined
+  render[key] = sprite
+
+  if (sprite) container.addChild(sprite)
 }
