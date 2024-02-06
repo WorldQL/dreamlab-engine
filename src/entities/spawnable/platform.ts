@@ -9,6 +9,7 @@ import type { Game } from '~/game.js'
 import { toRadians } from '~/math/general.js'
 import { Vec } from '~/math/vector.js'
 import type { Physics } from '~/physics.js'
+import { updateSpriteSource } from '~/spawnable/args.js'
 import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import { createSprite, SpriteSourceSchema } from '~/textures/sprites.js'
@@ -101,16 +102,14 @@ export const createPlatform = createSpawnableEntity<
     },
 
     onArgsUpdate(path, _previous, _data, render) {
-      if (render && path === 'spriteSource') {
-        const { width, height, spriteSource } = args
-
-        render.sprite?.destroy()
-        render.sprite = spriteSource
-          ? createSprite(spriteSource, { width, height })
-          : undefined
-
-        if (render.sprite) render.container.addChild(render.sprite)
-      }
+      updateSpriteSource(
+        path,
+        'sprite',
+        'spriteSource',
+        'container',
+        args,
+        render,
+      )
 
       if (path === 'width' || path === 'height') {
         const { width: originalWidth, height: originalHeight } = _previous
