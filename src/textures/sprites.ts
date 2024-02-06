@@ -4,7 +4,7 @@ import { resolve } from '~/sdk/resolve.js'
 
 export type SpriteSource = z.infer<typeof SpriteSourceSchema>
 export const SpriteSourceSchema = z.object({
-  url: z.string(),
+  url: z.string().optional(),
   tile: z.boolean().default(false).optional(),
   tileScale: z.number().optional(),
 })
@@ -17,8 +17,9 @@ export interface SpriteOptions {
 export const createSprite = (
   source: SpriteSource,
   { width, height }: SpriteOptions = {},
-): Sprite => {
+): Sprite | undefined => {
   const { url, tile, tileScale }: SpriteSource = source
+  if (!url) return undefined
 
   const texture = Texture.from(resolve(url))
   const createSprite = () => {
