@@ -83,18 +83,14 @@ export const createNonsolid = createSpawnableEntity<
   },
 
   onArgsUpdate(path, _previous, _data, render) {
-    if (
-      render &&
-      (path === 'spriteSource' || path.startsWith('spriteSource.'))
-    ) {
-      const { width, height, spriteSource } = args
-      const { container } = render
-
-      updateSpriteSource(spriteSource, 'sprite', render, container, {
-        width,
-        height,
-      })
-    }
+    updateSpriteSource(
+      path,
+      'sprite',
+      'spriteSource',
+      'container',
+      args,
+      render,
+    )
 
     if (render && (path === 'width' || path === 'height')) {
       render.redrawGfx(args)

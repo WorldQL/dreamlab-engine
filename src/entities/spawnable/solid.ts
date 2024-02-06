@@ -104,18 +104,14 @@ export const createSolid = createSpawnableEntity<
     },
 
     onArgsUpdate(path, previous, _data, render) {
-      if (
-        render &&
-        (path === 'spriteSource' || path.startsWith('spriteSource.'))
-      ) {
-        const { width, height, spriteSource } = args
-        const { container } = render
-
-        updateSpriteSource(spriteSource, 'sprite', render, container, {
-          width,
-          height,
-        })
-      }
+      updateSpriteSource(
+        path,
+        'sprite',
+        'spriteSource',
+        'container',
+        args,
+        render,
+      )
 
       if (path === 'width' || path === 'height') {
         updateBodyWidthHeight(body, args, previous)

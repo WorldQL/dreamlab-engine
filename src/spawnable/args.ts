@@ -30,18 +30,33 @@ export const updateSpriteWidthHeight = (
   sprite.height = args.height
 }
 
-export const updateSpriteSource = <K extends string>(
-  source: SpriteSource | undefined,
-  key: K,
-  render: { [k in K]: Sprite | undefined },
-  container: Container,
-  options?: SpriteOptions,
+export const updateSpriteSource = <
+  SpriteKey extends string,
+  SourceKey extends string,
+  ContainerKey extends string,
+>(
+  path: string,
+  spriteKey: SpriteKey,
+  sourceKey: SourceKey,
+  containerKey: ContainerKey,
+  args: SpriteOptions & { [k in SourceKey]?: SpriteSource | undefined },
+  render:
+    | ({
+        [k in ContainerKey]: Container
+      } & { [k in SpriteKey]: Sprite | undefined })
+    | undefined,
 ) => {
   if (!render) return
-  render[key]?.destroy()
+  if (path !== sourceKey && !path.startsWith(sourceKey + '.')) return
 
-  const sprite = source ? createSprite(source, options) : undefined
-  render[key] = sprite
+  const sprite = spriteKey
+  const source = args[sourceKey]
+  const container = render[containerKey]
 
-  if (sprite) container.addChild(sprite)
+  render[sprite]?.destroy()
+  const newSprite = source ? createSprite(source, args) : undefined
+
+  // @ts-expect-error generic narrowing
+  render[sprite] = newSprite
+  if (newSprite) container.addChild(newSprite)
 }
