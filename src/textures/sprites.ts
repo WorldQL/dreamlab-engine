@@ -12,12 +12,11 @@ export const SpriteSourceSchema = z.object({
 export interface SpriteOptions {
   width?: number
   height?: number
-  zIndex?: number
 }
 
 export const createSprite = (
   source: SpriteSource,
-  { width, height, zIndex }: SpriteOptions = {},
+  { width, height }: SpriteOptions = {},
 ): Sprite => {
   const { url, tile, tileScale }: SpriteSource = source
 
@@ -39,7 +38,6 @@ export const createSprite = (
 
   if (width) sprite.width = width
   if (height) sprite.height = height
-  if (zIndex) sprite.zIndex = zIndex
 
   return sprite
 }

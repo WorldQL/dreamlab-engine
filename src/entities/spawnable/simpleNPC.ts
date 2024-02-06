@@ -116,7 +116,7 @@ export const createSimpleNPC = createSpawnableEntity<
       gfxSensorR.zIndex = zIndex + 2
 
       const sprite = spriteSource
-        ? createSprite(spriteSource, { width: size, height: size, zIndex })
+        ? createSprite(spriteSource, { width: size, height: size })
         : undefined
 
       stage.addChild(gfxBounds)
