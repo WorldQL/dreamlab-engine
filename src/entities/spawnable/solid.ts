@@ -6,11 +6,16 @@ import type { Camera } from '~/entities/camera.js'
 import { toRadians } from '~/math/general.js'
 import { Vec } from '~/math/vector.js'
 import type { Physics } from '~/physics.js'
+import {
+  updateBodyWidthHeight,
+  updateSpriteWidthHeight,
+} from '~/spawnable/args.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import { createSprite, SpriteSourceSchema } from '~/textures/sprites.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
+import type { RedrawBox } from '~/utils/draw.js'
 
 type Args = typeof ArgsSchema
 const ArgsSchema = z.object({
@@ -28,6 +33,7 @@ interface Render {
   camera: Camera
   container: Container
   gfx: Graphics
+  redrawGfx: RedrawBox
   sprite: Sprite | undefined
 }
 
@@ -79,7 +85,7 @@ export const createSolid = createSpawnableEntity<
 
       const gfx = new Graphics()
       gfx.zIndex = 100
-      drawBox(gfx, { width, height })
+      const redrawGfx = drawBox(gfx, { width, height })
 
       const sprite = spriteSource
         ? createSprite(spriteSource, { width, height })
@@ -93,11 +99,14 @@ export const createSolid = createSpawnableEntity<
         container.zIndex = transform.zIndex
       })
 
-      return { camera, container, gfx, sprite }
+      return { camera, container, gfx, redrawGfx, sprite }
     },
 
     onArgsUpdate(path, previous, _data, render) {
-      if (render && path.startsWith('spriteSource')) {
+      if (
+        render &&
+        (path === 'spriteSource' || path.startsWith('spriteSource.'))
+      ) {
         const { width, height, spriteSource } = args
 
         render.sprite?.destroy()
@@ -109,22 +118,11 @@ export const createSolid = createSpawnableEntity<
       }
 
       if (path === 'width' || path === 'height') {
-        const { width: originalWidth, height: originalHeight } = previous
-        const { width, height } = args
-
-        const scaleX = width / originalWidth
-        const scaleY = height / originalHeight
-
-        Matter.Body.setAngle(body, 0)
-        Matter.Body.scale(body, scaleX, scaleY)
-        Matter.Body.setAngle(body, toRadians(transform.rotation))
+        updateBodyWidthHeight(body, args, previous)
 
         if (render) {
-          drawBox(render.gfx, { width, height })
-          if (render.sprite) {
-            render.sprite.width = width
-            render.sprite.height = height
-          }
+          render.redrawGfx(args)
+          updateSpriteWidthHeight(render.sprite, args)
         }
       }
     },

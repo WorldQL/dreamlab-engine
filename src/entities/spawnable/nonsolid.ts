@@ -4,11 +4,13 @@ import { z } from 'zod'
 import type { Camera } from '~/entities/camera.js'
 import { simpleBoundsTest } from '~/math/bounds.js'
 import { Vec } from '~/math/vector.js'
+import { updateSpriteWidthHeight } from '~/spawnable/args.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import { createSprite, SpriteSourceSchema } from '~/textures/sprites.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
+import type { RedrawBox } from '~/utils/draw.js'
 
 type Args = typeof ArgsSchema
 const ArgsSchema = z.object({
@@ -25,6 +27,7 @@ interface Render {
   camera: Camera
   container: Container
   gfx: Graphics
+  redrawGfx: RedrawBox
   sprite: Sprite | undefined
 }
 
@@ -59,7 +62,7 @@ export const createNonsolid = createSpawnableEntity<
 
     const gfx = new Graphics()
     gfx.zIndex = 100
-    drawBox(gfx, { width, height }, { stroke: 'blue' })
+    const redrawGfx = drawBox(gfx, { width, height }, { stroke: 'blue' })
 
     const sprite = spriteSource
       ? createSprite(spriteSource, { width, height })
@@ -73,7 +76,7 @@ export const createNonsolid = createSpawnableEntity<
       container.zIndex = transform.zIndex
     })
 
-    return { camera, container, gfx, sprite }
+    return { camera, container, gfx, redrawGfx, sprite }
   },
 
   onArgsUpdate(path, _previous, _data, render) {
@@ -89,12 +92,8 @@ export const createNonsolid = createSpawnableEntity<
     }
 
     if (render && (path === 'width' || path === 'height')) {
-      const { width, height } = args
-      drawBox(render.gfx, { width, height }, { stroke: 'blue' })
-      if (render.sprite) {
-        render.sprite.width = width
-        render.sprite.height = height
-      }
+      render.redrawGfx(args)
+      updateSpriteWidthHeight(render.sprite, args)
     }
   },
 
