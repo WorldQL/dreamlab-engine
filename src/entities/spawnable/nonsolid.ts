@@ -83,6 +83,12 @@ export const createNonsolid = createSpawnableEntity<
   },
 
   onArgsUpdate(path, _previous, _data, render) {
+    updateSpriteWidthHeight(path, render?.sprite, args)
+
+    if (render && (path === 'width' || path === 'height')) {
+      render.redrawGfx(args)
+    }
+
     updateSpriteSource(
       path,
       'sprite',
@@ -91,11 +97,6 @@ export const createNonsolid = createSpawnableEntity<
       args,
       render,
     )
-
-    if (render && (path === 'width' || path === 'height')) {
-      render.redrawGfx(args)
-      updateSpriteWidthHeight(render.sprite, args)
-    }
   },
 
   onResize({ width, height }) {

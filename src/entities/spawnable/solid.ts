@@ -104,6 +104,13 @@ export const createSolid = createSpawnableEntity<
     },
 
     onArgsUpdate(path, previous, _data, render) {
+      updateBodyWidthHeight(path, body, args, previous)
+      updateSpriteWidthHeight(path, render?.sprite, args)
+
+      if (render && (path === 'width' || path === 'height')) {
+        render.redrawGfx(args)
+      }
+
       updateSpriteSource(
         path,
         'sprite',
@@ -112,15 +119,6 @@ export const createSolid = createSpawnableEntity<
         args,
         render,
       )
-
-      if (path === 'width' || path === 'height') {
-        updateBodyWidthHeight(body, args, previous)
-
-        if (render) {
-          render.redrawGfx(args)
-          updateSpriteWidthHeight(render.sprite, args)
-        }
-      }
     },
 
     onResize({ width, height }) {

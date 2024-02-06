@@ -4,10 +4,13 @@ import { createSprite } from '~/textures/sprites.js'
 import type { SpriteOptions, SpriteSource } from '~/textures/sprites.js'
 
 export const updateBodyWidthHeight = (
+  path: string,
   body: Matter.Body,
   args: { width: number; height: number },
   previous: { width: number; height: number },
 ) => {
+  if (path !== 'width' && path !== 'height') return
+
   const { width: originalWidth, height: originalHeight } = previous
   const { width, height } = args
 
@@ -21,9 +24,11 @@ export const updateBodyWidthHeight = (
 }
 
 export const updateSpriteWidthHeight = (
+  path: string,
   sprite: Sprite | undefined,
   args: { width: number; height: number },
 ) => {
+  if (path !== 'width' && path !== 'height') return
   if (!sprite) return
 
   sprite.width = args.width
