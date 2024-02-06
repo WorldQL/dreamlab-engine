@@ -11,11 +11,16 @@ import type { Game } from '~/game.js'
 import { toRadians } from '~/math/general.js'
 import { Vec, VectorSchema } from '~/math/vector.js'
 import type { Physics } from '~/physics.js'
+import {
+  updateBodyWidthHeight,
+  updateSpriteWidthHeight,
+} from '~/spawnable/args.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import { createSprite } from '~/textures/sprites'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
+import type { RedrawBox } from '~/utils/draw.js'
 import { onChange } from '~/utils/object'
 
 enum BackgroundActionType {
@@ -71,9 +76,9 @@ interface Data {
 
 interface Render {
   camera: Camera
-
   container: Container
   gfx: Graphics
+  redrawGfx: RedrawBox
   sprite: Sprite | undefined
 }
 
@@ -225,7 +230,7 @@ export const createBackgroundTrigger = createSpawnableEntity<
 
       const gfx = new Graphics()
       gfx.zIndex = 100
-      drawBox(gfx, { width, height }, { stroke: colour })
+      const redrawGfx = drawBox(gfx, { width, height }, { stroke: colour })
 
       const sprite =
         args.onEnter.action === 'set'
@@ -240,29 +245,15 @@ export const createBackgroundTrigger = createSpawnableEntity<
         container.zIndex = transform.zIndex
       })
 
-      return { camera, container, gfx, sprite }
+      return { camera, container, gfx, redrawGfx, sprite }
     },
 
     onArgsUpdate(path, previous, _data, render) {
-      if (path === 'width' || path === 'height') {
-        const { width: originalWidth, height: originalHeight } = previous
-        const { width, height } = args
+      updateBodyWidthHeight(path, trigger, args, previous)
+      updateSpriteWidthHeight(path, render?.sprite, args)
 
-        const scaleX = width / originalWidth
-        const scaleY = height / originalHeight
-
-        Matter.Body.setAngle(trigger, 0)
-        Matter.Body.scale(trigger, scaleX, scaleY)
-        Matter.Body.setAngle(trigger, toRadians(transform.rotation))
-
-        if (render) {
-          drawBox(render.gfx, { width, height }, { stroke: colour })
-
-          if (render.sprite) {
-            render.sprite.width = width
-            render.sprite.height = height
-          }
-        }
+      if (render && (path === 'width' || path === 'height')) {
+        render.redrawGfx(args)
       }
 
       if (render && path.startsWith('onEnter')) {

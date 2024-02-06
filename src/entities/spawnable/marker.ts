@@ -7,6 +7,7 @@ import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
+import type { RedrawBox } from '~/utils/draw.js'
 
 type Args = typeof ArgsSchema
 const ArgsSchema = z.object({
@@ -21,6 +22,7 @@ interface Data {
 interface Render {
   camera: Camera
   gfx: Graphics
+  redrawGfx: RedrawBox
 }
 
 export const createMarker = createSpawnableEntity<
@@ -50,20 +52,19 @@ export const createMarker = createSpawnableEntity<
 
     const gfx = new Graphics()
     gfx.zIndex = transform.zIndex
-    drawBox(gfx, { width, height }, { stroke: '#00bcff' })
+    const redrawGfx = drawBox(gfx, { width, height }, { stroke: '#00bcff' })
 
     stage.addChild(gfx)
     transform.addZIndexListener(() => {
       gfx.zIndex = transform.zIndex
     })
 
-    return { camera, gfx }
+    return { camera, gfx, redrawGfx }
   },
 
   onArgsUpdate(path, _, _data, render) {
     if (render && (path === 'width' || path === 'height')) {
-      const { width, height } = args
-      drawBox(render.gfx, { width, height }, { stroke: '#00bcff' })
+      render.redrawGfx(args)
     }
   },
 

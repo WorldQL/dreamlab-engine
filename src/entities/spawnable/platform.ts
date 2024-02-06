@@ -9,12 +9,17 @@ import type { Game } from '~/game.js'
 import { toRadians } from '~/math/general.js'
 import { Vec } from '~/math/vector.js'
 import type { Physics } from '~/physics.js'
-import { updateSpriteSource } from '~/spawnable/args.js'
+import {
+  updateBodyWidthHeight,
+  updateSpriteSource,
+  updateSpriteWidthHeight,
+} from '~/spawnable/args.js'
 import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import { createSprite, SpriteSourceSchema } from '~/textures/sprites.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
+import type { RedrawBox } from '~/utils/draw.js'
 
 type Args = typeof ArgsSchema
 const ArgsSchema = z.object({
@@ -34,6 +39,7 @@ interface Render {
   camera: Camera
   container: Container
   gfx: Graphics
+  redrawGfx: RedrawBox
   sprite: Sprite | undefined
 }
 
@@ -51,6 +57,8 @@ export const createPlatform = createSpawnableEntity<
     {
       label: 'platform',
       render: { visible: true },
+      angle: toRadians(transform.rotation),
+
       isStatic: true,
       friction: 0,
     },
@@ -84,7 +92,7 @@ export const createPlatform = createSpawnableEntity<
 
       const gfx = new Graphics()
       gfx.zIndex = 100
-      drawBox(gfx, { width: args.width, height: args.height })
+      const redrawGfx = drawBox(gfx, { width: args.width, height: args.height })
 
       const sprite = spriteSource
         ? createSprite(spriteSource, { width, height })
@@ -98,10 +106,17 @@ export const createPlatform = createSpawnableEntity<
         container.zIndex = transform.zIndex
       })
 
-      return { camera, container, gfx, sprite }
+      return { camera, container, gfx, redrawGfx, sprite }
     },
 
-    onArgsUpdate(path, _previous, _data, render) {
+    onArgsUpdate(path, previous, _data, render) {
+      updateBodyWidthHeight(path, body, args, previous)
+      updateSpriteWidthHeight(path, render?.sprite, args)
+
+      if (render && (path === 'width' || path === 'height')) {
+        render.redrawGfx(args)
+      }
+
       updateSpriteSource(
         path,
         'sprite',
@@ -110,26 +125,6 @@ export const createPlatform = createSpawnableEntity<
         args,
         render,
       )
-
-      if (path === 'width' || path === 'height') {
-        const { width: originalWidth, height: originalHeight } = _previous
-        const { width, height } = args
-
-        const scaleX = width / originalWidth
-        const scaleY = height / originalHeight
-
-        Matter.Body.setAngle(_data.body, 0)
-        Matter.Body.scale(_data.body, scaleX, scaleY)
-        Matter.Body.setAngle(body, toRadians(transform.rotation))
-
-        if (render) {
-          drawBox(render.gfx, { width, height })
-          if (render.sprite) {
-            render.sprite.width = width
-            render.sprite.height = height
-          }
-        }
-      }
     },
 
     onResize({ width, height }) {
@@ -146,10 +141,8 @@ export const createPlatform = createSpawnableEntity<
     },
 
     onPhysicsStep(_, { game }) {
-      // don't run on the server
-      if (!game.client) {
-        return
-      }
+      // Don't run on the server
+      if (!game.client) return
 
       Matter.Body.setAngle(body, 0)
       Matter.Body.setAngularVelocity(body, 0)
