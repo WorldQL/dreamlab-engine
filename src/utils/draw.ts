@@ -17,11 +17,12 @@ export interface DrawBoxArgs {
   height: number
 }
 
+export type RedrawBox = (args: DrawBoxArgs) => void
 export const drawBox = (
   graphics: Graphics,
   { width, height }: DrawBoxArgs,
   options: DrawOptions = {},
-): ((args: DrawBoxArgs) => void) => {
+): RedrawBox => {
   const {
     fill = '#000',
     fillAlpha = 0,
@@ -52,11 +53,12 @@ export interface DrawCircleArgs {
   radius: number
 }
 
+export type RedrawCircle = (args: DrawCircleArgs) => void
 export const drawCircle = (
   graphics: Graphics,
   { radius }: DrawCircleArgs,
   options: DrawOptions = {},
-): ((args: DrawCircleArgs) => void) => {
+): RedrawCircle => {
   const {
     fill = '#000',
     fillAlpha = 0,
