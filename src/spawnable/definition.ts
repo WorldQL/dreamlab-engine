@@ -7,6 +7,7 @@ import type {
   Transform,
 } from '~/math/transform.js'
 import type { SpawnableFunction, UID } from '~/spawnable/spawnableEntity.js'
+import type { Ref } from '~/utils/ref.js'
 
 export interface SpawnableDefinition<
   Name extends string = string,
@@ -55,6 +56,7 @@ export interface SpawnableContext<
   transform: TrackedTransform
   preview: boolean
   definition: SpawnableDefinition<Name, Args>
+  selected: Ref<boolean>
 }
 
 export type InferDefinition<F> = F extends SpawnableFunction<

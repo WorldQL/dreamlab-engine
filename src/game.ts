@@ -19,6 +19,7 @@ import { v } from '~/math/vector.js'
 import type { LooseVector } from '~/math/vector.js'
 import type { BareNetClient, NetClient } from '~/network/client'
 import type { BareNetServer, NetServer } from '~/network/server'
+import { isSyncedValue } from '~/network/sync.js'
 import { createPhysics } from '~/physics.js'
 import type { Physics } from '~/physics.js'
 import type { ClientData } from '~/sdk/clientData.js'
@@ -40,7 +41,7 @@ import type { UIManager } from '~/ui.js'
 import { createDebug } from '~/utils/debug.js'
 import type { Debug } from '~/utils/debug.js'
 import { clone } from '~/utils/object.js'
-import { isSyncedValue } from './network/sync'
+import { ref } from '~/utils/ref.js'
 
 // #region Options
 interface ClientOptions {
@@ -736,6 +737,7 @@ export async function createGame<Server extends boolean>(
         }
       })
 
+      const selected = ref(false)
       const context: SpawnableContext = {
         uid,
         transform,
@@ -744,6 +746,7 @@ export async function createGame<Server extends boolean>(
 
         preview,
         definition: trackedDefinition,
+        selected,
       }
 
       const entity = fn(context, watchedArgs)
@@ -751,7 +754,7 @@ export async function createGame<Server extends boolean>(
       spawnables.set(entity.uid, entity)
 
       events.common.emit('onSpawn', entity)
-      return entity
+      return Object.assign(entity, { _selected: selected })
     },
 
     async spawnMany(...definitions) {
