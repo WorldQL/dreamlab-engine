@@ -315,6 +315,28 @@ export async function createGame<Server extends boolean>(
   const inputs = renderContext ? new InputManager(renderContext) : undefined
   const unregister = inputs?.registerListeners()
 
+  const onClick = (ev: MouseEvent) => {
+    if (!renderContext) return
+
+    const { camera } = renderContext
+    const pos = camera.screenToWorld({ x: ev.offsetX, y: ev.offsetY })
+
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    const entities = game.queryPosition(pos)
+    for (const entity of entities) {
+      if (typeof entity.onClick !== 'function') continue
+
+      const data = dataManager.getData(entity)
+      const render = dataManager.getRenderData(entity)
+      entity.onClick(data, render, pos)
+    }
+  }
+
+  if (renderContext) {
+    const { canvas } = renderContext
+    canvas.addEventListener('click', onClick)
+  }
+
   const physicsTickDelta = 1_000 / physicsTickrate
   let time = performance.now()
   let physicsTickAcc = 0
@@ -819,10 +841,11 @@ export async function createGame<Server extends boolean>(
       Matter.Engine.clear(physics.engine)
 
       if (renderContext) {
-        const { app } = renderContext
+        const { app, canvas } = renderContext
 
         app.stop()
         app.destroy()
+        canvas.removeEventListener('click', onClick)
       }
 
       if (interval) clearInterval(interval)

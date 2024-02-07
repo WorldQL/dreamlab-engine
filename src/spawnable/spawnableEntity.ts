@@ -30,6 +30,7 @@ export interface SpawnableEntity<
   get args(): z.infer<ArgsSchema>
   get argsSchema(): ArgsSchema
 
+  onClick?(data: Data, render: Render, position: Vector): void
   onArgsUpdate?<T extends Path<z.infer<ArgsSchema>>>(
     path: T,
     previousArgs: z.infer<ArgsSchema>,
