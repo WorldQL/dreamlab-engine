@@ -749,12 +749,14 @@ export async function createGame<Server extends boolean>(
         selected,
       }
 
-      const entity = fn(context, watchedArgs)
+      const _entity = fn(context, watchedArgs)
+      const entity = Object.assign(_entity, { _selected: selected })
+
       await this.instantiate(entity)
       spawnables.set(entity.uid, entity)
 
       events.common.emit('onSpawn', entity)
-      return Object.assign(entity, { _selected: selected })
+      return entity
     },
 
     async spawnMany(...definitions) {
