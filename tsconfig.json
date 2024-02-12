@@ -37,7 +37,7 @@
     "emitDecoratorMetadata": false,
     "experimentalDecorators": false,
     "lib": ["ESNext", "DOM"],
-    "target": "ES2021",
+    "target": "ES2022",
     "useDefineForClassFields": true,
 
     "baseUrl": ".",
