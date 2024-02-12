@@ -11,7 +11,7 @@ export default defineConfig(async options => {
     outDir,
     entry: modules.map(path => join(entryDir, path)),
 
-    target: 'es2021',
+    target: 'es2022',
     format: 'esm',
     platform: 'neutral',
 
