@@ -1,158 +1,99 @@
 import type { Path } from 'dot-path-value'
-import type { Except } from 'type-fest'
+import type { LiteralUnion } from 'type-fest'
 import type { z, ZodObject } from 'zod'
-import { symbol as entitySymbol } from '~/entity.js'
-import type { Entity } from '~/entity.js'
-import type { Bounds } from '~/math/bounds.js'
-import type { Transform } from '~/math/transform.js'
-import type { Vector } from '~/math/vector.js'
-import type {
-  SpawnableContext,
-  SpawnableDefinition,
-} from '~/spawnable/definition.js'
-import { mergeObjects } from '~/utils/types.js'
-
-export type UID = string
-const symbol = Symbol.for('@dreamlab/core/spawnable-entity')
-
-export interface SpawnableEntity<
-  Data = unknown,
-  Render = unknown,
-  ArgsSchema extends ZodObjectAny = ZodObjectAny,
-> extends Entity<Data, Render> {
-  get [symbol](): true
-
-  get uid(): UID
-  get label(): string | undefined
-  get preview(): boolean
-  get transform(): Transform
-  get definition(): SpawnableDefinition
-  get args(): z.infer<ArgsSchema>
-  get argsSchema(): ArgsSchema
-
-  onClick?(data: Data, render: Render, position: Vector): void
-  onArgsUpdate?<T extends Path<z.infer<ArgsSchema>>>(
-    path: T,
-    previousArgs: z.infer<ArgsSchema>,
-    data: Data,
-    render: Render | undefined,
-  ): void
-  onResize?(bounds: Bounds): void
-
-  rectangleBounds(): Bounds | undefined
-  isPointInside(position: Vector): boolean
-}
-
-type PartialFields =
-  | typeof entitySymbol
-  | typeof symbol
-  | 'args'
-  | 'argsSchema'
-  | 'definition'
-  | 'label'
-  | 'preview'
-  | 'transform'
-  | 'uid'
-
-export type PartializeSpawnable<
-  E extends SpawnableEntity<Data, Render>,
-  Data,
-  Render,
-> = Except<E, PartialFields>
+import { Entity, symbol as entitySymbol } from '~/entity'
+import type { Bounds } from '~/math/bounds'
+import type { TrackedTransform } from '~/math/transform'
+import type { Vector } from '~/math/vector'
+import type { SpawnableDefinition } from '~/spawnable/definition'
+import type { Ref } from '~/utils/ref'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ZodObjectAny = ZodObject<any, z.UnknownKeysParam>
+export type ZodObjectAny = ZodObject<any, z.UnknownKeysParam>
 
-type BaseSpawnableFunction<
-  ArgsSchema extends ZodObjectAny,
-  E extends SpawnableEntity<Data, Render, ArgsSchema>,
-  Data,
-  Render,
-> = (ctx: SpawnableContext, args: z.infer<ArgsSchema>) => E
+export interface SpawnableContext<T extends SpawnableEntity> {
+  uid: string
+  transform: TrackedTransform
+  label: string | undefined
+  tags: string[]
+  preview: boolean
+  selected: Ref<boolean>
 
-export interface SpawnableFunction<
-  ArgsSchema extends ZodObjectAny,
-  E extends SpawnableEntity<Data, Render, ArgsSchema>,
-  Data,
-  Render,
-> extends BaseSpawnableFunction<ArgsSchema, E, Data, Render> {
-  argsSchema: ArgsSchema
-  hasDefaults: boolean
+  args: T extends SpawnableEntity<infer Args> ? z.infer<Args> : never
+  definition: T extends SpawnableEntity<infer Args>
+    ? SpawnableDefinition<z.infer<Args>>
+    : never
 }
 
-export type BareSpawnableFunction = SpawnableFunction<
-  ZodObjectAny,
-  SpawnableEntity,
-  unknown,
-  unknown
+export type ArgsPath<Args extends ZodObjectAny> = LiteralUnion<
+  Path<z.infer<Args>>,
+  string
 >
+export type PreviousArgs<Args extends ZodObjectAny> = z.infer<Args>
 
-/**
- * Create a new {@link SpawnableEntity}
- *
- * @param argsSchema - {@link https://zod.dev | Zod} schema for this entities arguments
- * @param fn - Spawnable entity creation function
- */
-export const createSpawnableEntity = <
-  ArgsSchema extends ZodObjectAny,
-  E extends SpawnableEntity<Data, Render, ArgsSchema>,
-  Data,
-  Render,
->(
-  argsSchema: ArgsSchema,
-  fn: (
-    ctx: SpawnableContext<string, z.infer<ArgsSchema>>,
-    args: z.infer<ArgsSchema>,
-  ) => PartializeSpawnable<E, Data, Render>,
-): SpawnableFunction<ArgsSchema, E, Data, Render> => {
-  const spawnFn: BaseSpawnableFunction<ArgsSchema, E, Data, Render> = (
-    ctx,
-    args,
-  ) => {
-    const partial = fn(ctx, args)
-    const getter: Pick<E, PartialFields> = {
-      get [entitySymbol]() {
-        return true as const
-      },
+const symbol = Symbol.for('@dreamlab/core/spawnable-entity')
+export abstract class SpawnableEntity<
+  // NOTE: We should investigate better ergonomics around generic args
+  // Ideally we want to infer the generic from a class property but I dont
+  // think thats even possible in TypeScript
+  // Also we have to contend with constructor arg generics :(
+  Args extends ZodObjectAny = ZodObjectAny,
+> extends Entity {
+  // TODO: Write TSDoc for all methods and properties
 
-      get argsSchema() {
-        return argsSchema
-      },
+  public readonly [symbol] = true as const
 
-      get args() {
-        return args
-      },
+  public readonly uid: string
+  public readonly transform: TrackedTransform
+  public readonly label: string | undefined
+  public readonly tags: string[]
+  public readonly preview: boolean
+  public readonly selected: Ref<boolean>
 
-      get [symbol]() {
-        return true as const
-      },
+  public readonly args: z.infer<Args>
+  public readonly definition: SpawnableDefinition<z.infer<Args>>
 
-      get definition() {
-        return ctx.definition
-      },
+  // NOTE: We need this to be static to be able to reference it before instantiating
+  // But we cannot have static generic types
+  public static readonly argsSchema: ZodObjectAny // T
 
-      get label() {
-        return ctx.definition.label ?? undefined
-      },
+  // NOTE: Current design assumes the first constructor arg is always the context
+  // Is this the best way of doing it? We want to enforce setting uid/transform/etc properties in
+  // the constructor so I dont think a separate factory method is the best way of going about it.
+  // We could go into unsafe-land and manually set them (or just a context property) on instantiation
+  // but that would require a lot of // @ts-expect-error to make TS happy
+  public constructor(ctx: SpawnableContext<SpawnableEntity<Args>>) {
+    super()
 
-      get transform() {
-        return ctx.transform
-      },
+    this.uid = ctx.uid
+    this.transform = ctx.transform
+    this.label = ctx.label
+    this.tags = ctx.tags
+    this.preview = ctx.preview
+    this.selected = ctx.selected
 
-      get preview() {
-        return ctx.preview
-      },
-
-      get uid() {
-        return ctx.uid
-      },
-    }
-
-    return mergeObjects(partial, getter) as E
+    this.args = ctx.args
+    this.definition = ctx.definition
   }
 
-  const { success: hasDefaults } = argsSchema.safeParse({})
-  return Object.assign(spawnFn, { argsSchema, hasDefaults })
+  public abstract aabb(): Bounds | undefined
+  public abstract isPointInside(point: Vector): boolean
+
+  public onClick(position: Vector): void {
+    void position
+  }
+
+  public onArgsUpdate(
+    path: ArgsPath<Args>,
+    previousArgs: PreviousArgs<Args>,
+  ): void {
+    void path
+    void previousArgs
+  }
+
+  public onResize(bounds: Bounds): void {
+    void bounds
+  }
 }
 
 /**
@@ -172,3 +113,6 @@ export const isSpawnableEntity = (
     entity[symbol] === true
   )
 }
+
+export type SpawnableConstructor<Args extends ZodObjectAny = ZodObjectAny> =
+  new (ctx: SpawnableContext<SpawnableEntity<Args>>) => SpawnableEntity<Args>

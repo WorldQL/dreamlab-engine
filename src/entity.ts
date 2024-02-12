@@ -1,9 +1,20 @@
 import type { Container } from 'pixi.js'
-import type { Promisable as Awaitable, Except } from 'type-fest'
-import type { Camera } from '~/entities/camera.js'
-import type { Game } from '~/game.js'
-import type { Physics } from '~/physics.js'
-import { mergeObjects } from '~/utils/types.js'
+import type { Camera } from '~/entities/camera'
+import type { Game } from '~/game'
+import type { Physics } from '~/physics'
+
+export interface InitContext {
+  game: Game<boolean>
+  physics: Physics
+}
+
+export interface InitRenderContext {
+  // NOTE: Do we want to include a reference to game here?
+  container: HTMLDivElement
+  canvas: HTMLCanvasElement
+  stage: Container
+  camera: Camera
+}
 
 export interface Time {
   /**
@@ -24,62 +35,31 @@ export interface RenderTime extends Time {
   smooth: number
 }
 
-export interface InitContext {
-  game: Game<boolean>
-  physics: Physics
-}
-
-export interface InitContextClient extends Except<InitContext, 'game'> {
-  game: Game<false>
-}
-
-export interface RenderContext {
-  container: HTMLDivElement
-  canvas: HTMLCanvasElement
-
-  stage: Container
-  camera: Camera
-}
-
 export const symbol = Symbol.for('@dreamlab/core/entity')
-export interface Entity<Data = unknown, Render = unknown> {
-  get [symbol](): true
-  readonly priority?: number
+export abstract class Entity {
+  // TODO: Write TSDoc for all methods and properties
 
-  init(init: InitContext): Awaitable<Data>
-  initRenderContext(
-    init: InitContextClient,
-    render: RenderContext,
-  ): Awaitable<Render>
+  public readonly [symbol] = true as const
+  public readonly priority?: number
 
-  onPhysicsStep?(time: Time, data: Data): void
-  onRenderFrame?(time: RenderTime, data: Data, render: Render): void
+  // NOTE: Do we want to support shared/client/server init?
+  // How would that work with teardown?
+  // Do we want to enforce all of them to be implemented?
+  public abstract init(ctx: InitContext): Promise<void> | void
+  public abstract initRender(ctx: InitRenderContext): Promise<void> | void
 
-  teardownRenderContext(render: Render): Awaitable<void>
-  teardown(data: Data): Awaitable<void>
-}
-
-type PartialFields = typeof symbol
-export type Partialize<E extends Entity<Data, Render>, Data, Render> = Except<
-  E,
-  PartialFields
->
-
-/**
- * Create a new {@link Entity}
- *
- * @param partial - Partial Entity object
- */
-export const createEntity = <E extends Entity<Data, Render>, Data, Render>(
-  partial: Partialize<E, Data, Render>,
-): E => {
-  const getter: Pick<E, PartialFields> = {
-    get [symbol]() {
-      return true as const
-    },
+  // NOTE: Is there a better way of marking these as optional to implement
+  public onPhysicsStep(time: Time): void {
+    // NOTE: Is there a better way of telling TS these should be used?
+    void time
   }
 
-  return mergeObjects(partial, getter) as E
+  public onRenderFrame(time: RenderTime): void {
+    void time
+  }
+
+  public abstract teardown(): Promise<void> | void
+  public abstract teardownRender(): Promise<void> | void
 }
 
 /**
@@ -92,42 +72,3 @@ export const isEntity = (entity: unknown): entity is Entity => {
 
   return symbol in entity && entity[symbol] === true
 }
-
-const symbols = {
-  data: Symbol.for('@dreamlab/core/entity/data'),
-  render: Symbol.for('@dreamlab/core/entity/render-data'),
-} as const
-
-export const dataManager = {
-  getData<E extends Entity<Data>, Data>(
-    entity: E | Partialize<E, Data, unknown>,
-  ): Data {
-    if (!(symbols.data in entity)) {
-      throw new Error('invalid entity data access')
-    }
-
-    // @ts-expect-error Meta Property
-    return entity[symbols.data]
-  },
-
-  setData<Data>(entity: Entity<Data>, data: Data): void {
-    // @ts-expect-error Meta Property
-    entity[symbols.data] = data
-  },
-
-  getRenderData<E extends Entity<unknown, Render>, Render>(
-    entity: E | Partialize<E, unknown, Render>,
-  ): Render {
-    if (!(symbols.render in entity)) {
-      throw new Error('invalid entity render data access')
-    }
-
-    // @ts-expect-error Meta Property
-    return entity[symbols.render]
-  },
-
-  setRenderData<Render>(entity: Entity<unknown, Render>, render: Render): void {
-    // @ts-expect-error Meta Property
-    entity[symbols.render] = render
-  },
-} as const
