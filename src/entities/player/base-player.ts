@@ -32,11 +32,11 @@ export abstract class BasePlayer extends Entity {
     // TODO: Implement BasePlayer
   }
 
-  public override init(_ctx: InitContext): Promise<void> | void {
+  public init(_ctx: InitContext): Promise<void> | void {
     throw new Error('not implemented')
   }
 
-  public override initRender(_ctx: InitRenderContext): Promise<void> | void {
+  public initRender(_ctx: InitRenderContext): Promise<void> | void {
     throw new Error('not implemented')
   }
 
@@ -44,7 +44,7 @@ export abstract class BasePlayer extends Entity {
     throw new Error('not implemented')
   }
 
-  public override teardownRender(): Promise<void> | void {
+  public teardownRender(): Promise<void> | void {
     throw new Error('not implemented')
   }
 }
