@@ -1,16 +1,16 @@
 import { Graphics } from 'pixi.js'
 import { z } from 'zod'
 import type { Camera } from '~/entities/camera.js'
+import { createSpawnableEntity } from '~/labs/compat'
+import type { LegacySpawnableEntity as SpawnableEntity } from '~/labs/compat'
 import { simpleBoundsTest } from '~/math/bounds.js'
 import { Vec } from '~/math/vector.js'
-import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
-import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
 import type { RedrawBox } from '~/utils/draw.js'
 
 type Args = typeof ArgsSchema
-const ArgsSchema = z.object({
+export const ArgsSchema = z.object({
   width: z.number().positive().min(1).default(30),
   height: z.number().positive().min(1).default(30),
 })

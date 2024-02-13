@@ -5,9 +5,10 @@ import { z } from 'zod'
 import type { Camera } from '~/entities/camera.js'
 import type { Background } from '~/entities/spawnable/background.js'
 import { isBackground } from '~/entities/spawnable/background.js'
-import { dataManager } from '~/entity'
 import type { EventHandler } from '~/events.js'
 import type { Game } from '~/game.js'
+import { createSpawnableEntity, dataManager } from '~/labs/compat'
+import type { LegacySpawnableEntity as SpawnableEntity } from '~/labs/compat'
 import { toRadians } from '~/math/general.js'
 import { Vec, VectorSchema } from '~/math/vector.js'
 import type { Physics } from '~/physics.js'
@@ -15,8 +16,6 @@ import {
   updateBodyWidthHeight,
   updateSpriteWidthHeight,
 } from '~/spawnable/args.js'
-import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
-import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import { createSprite } from '~/textures/sprites'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
@@ -53,7 +52,7 @@ const BackgroundActionSchema = z.discriminatedUnion('action', [
 ])
 
 type Args = typeof ArgsSchema
-const ArgsSchema = z.object({
+export const ArgsSchema = z.object({
   width: z.number().positive().min(1).default(1_000),
   height: z.number().positive().min(1).default(1_000),
 
@@ -87,7 +86,7 @@ export const createBackgroundTrigger = createSpawnableEntity<
   SpawnableEntity<Data, Render, Args>,
   Data,
   Render
->(ArgsSchema, ({ transform }, args) => {
+>(ArgsSchema, ({ _this, transform }, args) => {
   let inside = false
 
   const colour = '#cc87ff'
@@ -117,7 +116,7 @@ export const createBackgroundTrigger = createSpawnableEntity<
 
     init({ game, physics }) {
       const debug = game.debug
-      physics.register(this, trigger)
+      physics.register(_this, trigger)
       physics.linkTransform(trigger, transform)
 
       const getBackground = async (): Promise<Background> => {
@@ -275,7 +274,7 @@ export const createBackgroundTrigger = createSpawnableEntity<
     },
 
     teardown({ game, physics, onPlayerCollisionStart, onPlayerCollisionEnd }) {
-      physics.unregister(this, trigger)
+      physics.unregister(_this, trigger)
       physics.unlinkTransform(trigger, transform)
 
       game.events.client?.removeListener(
