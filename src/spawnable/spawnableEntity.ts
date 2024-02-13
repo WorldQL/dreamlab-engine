@@ -9,7 +9,7 @@ import type { Ref } from '~/utils/ref'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ZodObjectAny = ZodObject<any, z.UnknownKeysParam>
 
-export interface SpawnableContext<T extends SpawnableEntity> {
+export interface SpawnableContext<Args extends ZodObjectAny> {
   uid: string
   transform: TrackedTransform
   label: string | undefined
@@ -17,10 +17,8 @@ export interface SpawnableContext<T extends SpawnableEntity> {
   preview: boolean
   selected: Ref<boolean>
 
-  args: T extends SpawnableEntity<infer Args> ? z.infer<Args> : never
-  definition: T extends SpawnableEntity<infer Args>
-    ? SpawnableDefinition<z.infer<Args>>
-    : never
+  args: z.infer<Args>
+  definition: SpawnableDefinition<z.infer<Args>>
 }
 
 // TODO: Make this work like it used to
@@ -64,7 +62,7 @@ export abstract class SpawnableEntity<
   // the constructor so I dont think a separate factory method is the best way of going about it.
   // We could go into unsafe-land and manually set them (or just a context property) on instantiation
   // but that would require a lot of // @ts-expect-error to make TS happy
-  public constructor(ctx: SpawnableContext<SpawnableEntity<Args>>) {
+  public constructor(ctx: SpawnableContext<Args>) {
     super()
 
     this.uid = ctx.uid
@@ -107,4 +105,4 @@ export const isSpawnableEntity = (
 }
 
 export type SpawnableConstructor<Args extends ZodObjectAny = ZodObjectAny> =
-  new (ctx: SpawnableContext<SpawnableEntity<Args>>) => SpawnableEntity<Args>
+  new (ctx: SpawnableContext<Args>) => SpawnableEntity<Args>
