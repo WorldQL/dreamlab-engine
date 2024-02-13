@@ -5,13 +5,13 @@ import { setProperty } from 'dot-prop'
 import Matter from 'matter-js'
 import onChange from 'on-change'
 import { Application } from 'pixi.js'
-import type { IApplicationOptions } from 'pixi.js'
+import type { Container, IApplicationOptions } from 'pixi.js'
 import { getGlobalGame, setGlobalGame } from '~/_internal/global-state'
 import { Camera } from '~/entities/camera.js'
 import { isNetPlayer } from '~/entities/player'
 import { registerDefaultSpawnables } from '~/entities/spawnable/index.js'
 import { isEntity } from '~/entity.js'
-import type { Entity, InitRenderContext } from '~/entity.js'
+import type { Entity } from '~/entity.js'
 import { createEventsManager } from '~/events.js'
 import type { EventsManager } from '~/events.js'
 import { InputManager } from '~/input/manager.js'
@@ -105,7 +105,14 @@ type Options<Server extends boolean> = CommonOptions<Server> &
 // #endregion
 
 // #region Render Context Setup
-type RenderContextExt = InitRenderContext & { app: Application }
+interface RenderContextExt {
+  app: Application
+  stage: Container
+  canvas: HTMLCanvasElement
+  container: HTMLDivElement
+  camera: Camera
+}
+
 async function initRenderContext<Server extends boolean>(
   options: Options<Server>,
   debug: Debug,

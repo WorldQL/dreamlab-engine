@@ -4,7 +4,7 @@ import type { Container } from 'pixi.js'
 import type { Except } from 'type-fest'
 import type { z } from 'zod'
 import type { Camera } from '~/entities/camera'
-import type { InitContext, RenderTime, Time } from '~/entity'
+import type { RenderTime, Time } from '~/entity'
 import type { Game } from '~/game'
 import type { Bounds } from '~/math/bounds'
 import type { TrackedTransform } from '~/math/transform'
@@ -25,7 +25,7 @@ interface LegacyInitContext {
   physics: Physics
 }
 
-interface LegacyInitContextClient extends Except<InitContext, 'game'> {
+interface LegacyInitContextClient extends Except<LegacyInitContext, 'game'> {
   game: Game<false>
 }
 
@@ -104,7 +104,7 @@ export const createSpawnableEntity = <
       super(ctx)
 
       const _game = game()
-      const context: InitContext = { game: _game, physics: _game.physics }
+      const context: LegacyInitContext = { game: _game, physics: _game.physics }
 
       this.#inner = fn.bind(this)({ ...ctx, _this: this }, this.args)
       this._data = this.#inner.init(context)
