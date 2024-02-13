@@ -78,22 +78,12 @@ export abstract class SpawnableEntity<
 
   public abstract bounds(): Bounds | undefined
   public abstract isPointInside(point: Vector): boolean
+}
 
-  public onClick(position: Vector): void {
-    void position
-  }
-
-  public onArgsUpdate(
-    path: ArgsPath<Args>,
-    previousArgs: PreviousArgs<Args>,
-  ): void {
-    void path
-    void previousArgs
-  }
-
-  public onResize(bounds: Bounds): void {
-    void bounds
-  }
+export interface SpawnableEntity<Args extends ZodObjectAny = ZodObjectAny> {
+  onClick?(position: Vector): void
+  onArgsUpdate?(path: ArgsPath<Args>, previousArgs: PreviousArgs<Args>): void
+  onResize?(bounds: Bounds): void
 }
 
 /**
