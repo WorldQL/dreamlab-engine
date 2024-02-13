@@ -1,5 +1,3 @@
-import type { Path } from 'dot-path-value'
-import type { LiteralUnion } from 'type-fest'
 import type { z, ZodObject } from 'zod'
 import { Entity, symbol as entitySymbol } from '~/entity'
 import type { Bounds } from '~/math/bounds'
@@ -25,10 +23,11 @@ export interface SpawnableContext<T extends SpawnableEntity> {
     : never
 }
 
-export type ArgsPath<Args extends ZodObjectAny> = LiteralUnion<
+// TODO: Make this work like it used to
+export type ArgsPath<_Args extends ZodObjectAny> = string /* LiteralUnion<
   Path<z.infer<Args>>,
   string
->
+> */
 export type PreviousArgs<Args extends ZodObjectAny> = z.infer<Args>
 
 const symbol = Symbol.for('@dreamlab/core/spawnable-entity')
