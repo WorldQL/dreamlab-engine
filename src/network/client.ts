@@ -1,5 +1,5 @@
 import type { CamelCase, Except } from 'type-fest'
-import type { PlayerInput } from '~/entities/player.js'
+import type { PlayerInput } from '~/entities/player'
 import type { Gear } from '~/managers/gear.js'
 import type { Transform } from '~/math/transform.js'
 import type { Vector } from '~/math/vector.js'

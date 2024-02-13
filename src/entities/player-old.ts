@@ -2,8 +2,8 @@ import EventEmitter from 'eventemitter3'
 import Matter from 'matter-js'
 import { AnimatedSprite, Graphics, Sprite } from 'pixi.js'
 import type { Camera } from '~/entities/camera.js'
-import { createEntity, dataManager, isEntity } from '~/entity.js'
 import type { Entity } from '~/entity.js'
+import { isEntity } from '~/entity.js'
 import type { Game } from '~/game'
 import type { InputManager } from '~/input/manager.js'
 import type { Gear } from '~/managers/gear.js'
@@ -72,51 +72,13 @@ export interface PlayerCommon {
   setGear(gear: Gear | undefined): void
 }
 
-export interface Player extends PlayerCommon, Entity<Data, Render> {
+export interface Player2 extends PlayerCommon, Entity<Data, Render> {
   get [symbol](): true
 
   get bones(): Readonly<Record<Bone, Vector>>
   get events(): EventEmitter<PlayerEvents>
 
   teleport(position: LooseVector, resetVelocity?: boolean): void
-}
-
-export interface PlayerSize {
-  width: number
-  height: number
-}
-
-const knownPlayerAnimation = ['idle', 'jog', 'jump', 'walk'] as const
-const knownAttackAnimation = ['greatsword', 'punch'] as const
-const knownRangedAttackAnimation = ['bow', 'shoot'] as const
-
-export type KnownPlayerAnimation = (typeof knownPlayerAnimation)[number]
-export type KnownAttackAnimation = (typeof knownAttackAnimation)[number]
-export type KnownRangedAttackAnimation =
-  (typeof knownRangedAttackAnimation)[number]
-
-export type KnownAnimation = (typeof knownAnimation)[number]
-export const knownAnimation = [
-  ...knownPlayerAnimation,
-  ...knownAttackAnimation,
-  ...knownRangedAttackAnimation,
-] as const
-
-export const isKnownAnimation = (
-  animation: string,
-): animation is KnownAnimation => {
-  // @ts-expect-error union narrowing
-  return knownAnimation.includes(animation)
-}
-
-export enum PlayerInput {
-  Attack = '@player/attack',
-  Crouch = '@player/crouch',
-  Jog = '@player/jog',
-  Jump = '@player/jump',
-  ToggleNoclip = '@player/toggle-noclip',
-  WalkLeft = '@player/walk-left',
-  WalkRight = '@player/walk-right',
 }
 
 export const getSpeedMultiplier = (

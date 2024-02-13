@@ -1,8 +1,7 @@
 export type { Camera, CameraTarget } from '~/entities/camera.js'
 
 export * from '~/entities/cursor.js'
-export * from '~/entities/netplayer.js'
-export * from '~/entities/player.js'
+export * from '~/entities/player'
 
 export * from '~/entities/spawnable/bouncyBall.js'
 export * from '~/entities/spawnable/complexSolid.js'
