@@ -1,5 +1,7 @@
 import { getGlobalGame } from '~/_internal/global-state'
 import type { Game } from '~/game'
+import type { NetClient } from '~/network/client'
+import type { NetServer } from '~/network/server'
 
 // #region Magic Functions
 export function game(): Game<boolean>
@@ -46,6 +48,19 @@ const magicClient =
 export const stage = magicClient('stage', game => game.client.render.stage)
 export const camera = magicClient('camera', game => game.client.render.camera)
 export const inputs = magicClient('inputs', game => game.client.inputs)
+
+export function network(type: 'client'): NetClient | undefined
+export function network(type: 'server'): NetServer | undefined
+export function network(
+  type: 'client' | 'server',
+): NetClient | NetServer | undefined {
+  const _game = game()
+
+  if (type === 'client') return _game.client?.network
+  if (type === 'server') return _game.server?.network
+
+  throw new Error('invalid parameter: type')
+}
 // #endregion
 
 // #region Type-Safe Class Members
