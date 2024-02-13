@@ -1,8 +1,8 @@
 import type { Container } from 'pixi.js'
 import type { NonNegative } from 'type-fest'
-import { createEntity } from '~/entity.js'
-import type { Entity } from '~/entity.js'
-import type { Game } from '~/game.js'
+import type { InitContext, InitRenderContext, RenderTime } from '~/entity.js'
+import { Entity } from '~/entity.js'
+import type { InputManager } from '~/input/manager'
 import { lerp } from '~/math/general.js'
 import type { Transform } from '~/math/transform.js'
 import { distance, lerp2, v, Vec } from '~/math/vector.js'
@@ -31,242 +31,234 @@ interface TransformTarget {
 
 export type CameraTarget = PositionTarget | TransformTarget
 
-interface Data {
-  get debug(): Debug
-}
+export class Camera extends Entity {
+  readonly #targetWidth: number
+  readonly #targetHeight: number
+  readonly #canvas: HTMLCanvasElement
+  private declare debug: Debug
+  private declare inputs: InputManager | undefined
+  private declare stage: Container
+  private declare text: DebugText
 
-interface Render {
-  game: Game<false>
-  stage: Container
+  #position = Vec.create()
+  #target: CameraTarget | undefined
+  #smoothing: NonNegative<number> = 0.125
 
-  text: DebugText
-}
+  #zoomScaleTarget = 0.373_9
+  #zoomScale = 0.373_9
+  #zoomScaleLevelIdx = 32
 
-export interface Camera extends Entity<Data, Render> {
-  get target(): CameraTarget | undefined
-  setTarget(target: CameraTarget): void
-  setPosition(position: LooseVector): void
-  clearTarget(): void
+  #renderScale = 1
+  #renderScaleChanged = false
 
-  get smoothing(): number
-  setSmoothing(smoothing: number): void
+  #onWheelInner(ev: WheelEvent) {
+    if (!ev.ctrlKey) return
+    ev.preventDefault()
 
-  get zoomScale(): number
-  get renderScale(): number
-  get scale(): number
-  get offset(): Readonly<Vector>
-  get position(): Readonly<Vector>
+    const delta = -Math.sign(ev.deltaY)
+    this.#zoomScaleLevelIdx = Math.max(
+      0,
+      Math.min(SCALE_LEVELS.length - 1, this.#zoomScaleLevelIdx + delta),
+    )
 
-  rescale(scale: RescaleOptions): void
-  screenToWorld(position: Vector): Vector
+    this.#zoomScaleTarget = SCALE_LEVELS[this.#zoomScaleLevelIdx] as number
+  }
+
+  #onWheel = this.#onWheelInner.bind(this)
+
+  public constructor(
+    targetWidth: number,
+    targetHeight: number,
+    canvas: HTMLCanvasElement,
+    target?: CameraTarget,
+  ) {
+    super()
+
+    this.#targetWidth = targetWidth
+    this.#targetHeight = targetHeight
+    this.#canvas = canvas
+    this.#target = target ?? undefined
+  }
+
+  // #region Target
+  public get target(): CameraTarget | undefined {
+    return this.#target
+  }
+
+  public set target(value: CameraTarget | undefined) {
+    this.#target = value
+  }
+
+  public setPosition(postion: LooseVector): void {
+    const pos = v(postion)
+    this.#target = { position: pos }
+  }
+
+  public clearTarget(): void {
+    this.#target = undefined
+  }
+  // #endregion
+
+  // #region Smoothing
+  public get smoothing(): NonNegative<number> {
+    return this.#smoothing
+  }
+
+  public set smoothing(value: NonNegative<number>) {
+    if (value < 0) {
+      throw new Error('`smoothing` cannot be less than 0')
+    }
+
+    this.#smoothing = value
+  }
+  // #endregion
+
+  public get zoomScale(): number {
+    return this.#zoomScale
+  }
+
+  public get renderScale(): number {
+    return this.#renderScale
+  }
+
+  public get scale(): number {
+    return this.#zoomScale * this.#renderScale
+  }
+
+  public get position(): Readonly<Vector> {
+    return Vec.clone(this.#position)
+  }
+
+  public get offset(): Readonly<Vector> {
+    const targetAspectRatio = this.#targetWidth / this.#targetHeight
+    const actualWidth = this.#canvas.width
+    const actualHeight = this.#canvas.height
+
+    // Calculate the expected height for the target aspect ratio with the actual width
+    const targetCanvasHeight = actualWidth / targetAspectRatio
+    // Calculate the difference in height
+    const heightDifference = actualHeight - targetCanvasHeight
+
+    // Calculate scaling factor for height offset
+    const offsetScaleFactor = (actualWidth / this.#targetWidth) * 2
+    // Calculate final height offset
+    const heightOffset = heightDifference / offsetScaleFactor
+
+    const x = this.#targetWidth / this.zoomScale / 2 - this.#position.x
+    const y =
+      this.#targetHeight / this.zoomScale / 2 -
+      this.#position.y +
+      heightOffset / this.zoomScale
+
+    return Vec.create(x, y)
+  }
+
+  public rescale(options: RescaleOptions) {
+    const { scale: newScale, renderScale: newRenderScale } = options
+
+    if (newScale) this.#zoomScaleTarget = newScale
+    if (newRenderScale) {
+      this.#renderScale = newRenderScale
+      this.#renderScaleChanged = true
+    }
+  }
+
+  public screenToWorld(position: Vector): Vector {
+    return Vec.sub(Vec.div(position, this.scale), this.offset)
+  }
+
+  public override init({ game }: InitContext): void {
+    this.debug = game.debug
+    this.inputs = game.client?.inputs
+  }
+
+  public override initRender({ stage }: InitRenderContext): void {
+    this.stage = stage
+
+    if (this.#target) {
+      const targetPosition =
+        'position' in this.#target
+          ? this.#target.position
+          : this.#target.transform.position
+
+      this.#position.x = targetPosition.x
+      this.#position.y = targetPosition.y
+    }
+
+    this.text = createDebugText(0)
+    stage.addChild(this.text.gfx)
+
+    this.inputs?.addListener('onWheel', this.#onWheel)
+  }
+
+  public override teardown(): void {
+    // No-op
+  }
+
+  public override teardownRender(): void {
+    this.text.gfx.destroy()
+    this.inputs?.removeListener('onWheel', this.#onWheel)
+  }
+
+  public override onRenderFrame({ delta }: RenderTime): void {
+    let scaleChanged = false
+    if (this.#zoomScale !== this.#zoomScaleTarget) {
+      this.#zoomScale = lerp(this.#zoomScale, this.#zoomScaleTarget, delta * 12)
+      const dist = Math.abs(1 - this.#zoomScale / this.#zoomScaleTarget)
+      if (dist < 0.001) this.#zoomScale = this.#zoomScaleTarget
+
+      scaleChanged = true
+    }
+
+    if (this.#renderScaleChanged) {
+      this.#renderScaleChanged = false
+      scaleChanged = true
+    }
+
+    if (scaleChanged) {
+      const finalScale = this.#zoomScale * this.#renderScale
+      this.stage.scale.set(finalScale)
+    }
+
+    const targetPosition =
+      this.#target === undefined
+        ? Vec.create()
+        : 'position' in this.#target
+          ? this.#target.position
+          : this.#target.transform.position
+
+    if (this.#smoothing > 0) {
+      // TODO: Calculate camera speed based on S curve of the distance
+      // (fast when close and when far, medium speed when at normal movement distances)
+      const dist = Math.min(distance(this.#position, targetPosition), 500)
+      const { x, y } = lerp2(
+        this.#position,
+        targetPosition,
+        1 - 0.5 ** (delta * (1 / this.#smoothing)),
+      )
+
+      this.#position.x = x
+      this.#position.y = y
+
+      if (dist < 1) {
+        this.#position.x = targetPosition.x
+        this.#position.y = targetPosition.y
+      }
+    } else {
+      this.#position.x = targetPosition.x
+      this.#position.y = targetPosition.y
+    }
+
+    const xcoord = this.#position.x.toFixed(0)
+    const ycoord = this.#position.y.toFixed(0)
+    const content = `camera position: { x: ${xcoord}, y: ${ycoord} }`
+
+    this.text.update(content)
+    this.text.render(this.scale, this.debug.value)
+  }
 }
 
 interface RescaleOptions {
   scale?: number
   renderScale?: number
-}
-
-export const createCamera = (
-  targetWidth: number,
-  targetHeight: number,
-  canvas: HTMLCanvasElement,
-  target?: CameraTarget,
-) => {
-  const position = Vec.create()
-  let targetRef = target
-  let smoothing = 0.125
-
-  let zoomScaleTarget = 0.373_9
-  let zoomScale = 0.373_9
-
-  let renderScale = 1
-  let renderScaleChanged = false
-
-  let zoomScaleLevelIdx = 32
-  const onWheel = (ev: WheelEvent) => {
-    if (ev.ctrlKey) {
-      ev.preventDefault()
-      const delta = -Math.sign(ev.deltaY)
-      zoomScaleLevelIdx = Math.max(
-        0,
-        Math.min(SCALE_LEVELS.length - 1, zoomScaleLevelIdx + delta),
-      )
-
-      zoomScaleTarget = SCALE_LEVELS[zoomScaleLevelIdx] as number
-    }
-  }
-
-  const camera: Camera = createEntity({
-    get target() {
-      return targetRef
-    },
-
-    get smoothing() {
-      return smoothing
-    },
-
-    setTarget(target: CameraTarget) {
-      targetRef = target
-    },
-
-    setPosition(position: LooseVector) {
-      const pos = v(position)
-      this.setTarget({ position: pos })
-    },
-
-    clearTarget() {
-      targetRef = undefined
-    },
-
-    setSmoothing(value: NonNegative<number>) {
-      if (smoothing < 0) {
-        throw new Error('`smoothing` cannot be less than 0')
-      }
-
-      smoothing = value
-    },
-
-    get zoomScale() {
-      return zoomScale
-    },
-
-    get renderScale() {
-      return renderScale
-    },
-
-    get scale() {
-      return zoomScale * renderScale
-    },
-
-    get position(): Readonly<Vector> {
-      return Vec.clone(position)
-    },
-
-    get offset(): Readonly<Vector> {
-      const targetAspectRatio = targetWidth / targetHeight
-      const actualWidth = canvas.width
-      const actualHeight = canvas.height
-
-      // Calculate the expected height for the target aspect ratio with the actual width
-      const targetCanvasHeight = actualWidth / targetAspectRatio
-      // Calculate the difference in height
-      const heightDifference = actualHeight - targetCanvasHeight
-
-      // Calculate scaling factor for height offset
-      const offsetScaleFactor = (actualWidth / targetWidth) * 2
-      // Calculate final height offset
-      const heightOffset = heightDifference / offsetScaleFactor
-
-      const x = targetWidth / this.zoomScale / 2 - position.x
-      const y =
-        targetHeight / this.zoomScale / 2 -
-        position.y +
-        heightOffset / this.zoomScale
-
-      return Vec.create(x, y)
-    },
-
-    rescale({ scale: newScale, renderScale: newRenderScale }: RescaleOptions) {
-      if (newScale) zoomScaleTarget = newScale
-      if (newRenderScale) {
-        renderScale = newRenderScale
-        renderScaleChanged = true
-      }
-    },
-
-    screenToWorld(pos: Vector) {
-      return Vec.sub(Vec.div(pos, this.scale), this.offset)
-    },
-
-    async init({ game }) {
-      return { debug: game.debug }
-    },
-
-    async initRenderContext({ game }, { stage }) {
-      if (targetRef) {
-        const targetPosition =
-          'position' in targetRef
-            ? targetRef.position
-            : targetRef.transform.position
-
-        position.x = targetPosition.x
-        position.y = targetPosition.y
-      }
-
-      const text = createDebugText(0)
-      stage.addChild(text.gfx)
-
-      game.client.inputs.addListener('onWheel', onWheel)
-
-      return { game, stage, text }
-    },
-
-    teardown(_) {
-      // No-op
-    },
-
-    teardownRenderContext({ game, text }) {
-      text.gfx.destroy()
-      game.client.inputs.addListener('onWheel', onWheel)
-    },
-
-    onRenderFrame({ delta }, { debug }, { stage, text }) {
-      let scaleChanged = false
-      if (zoomScale !== zoomScaleTarget) {
-        zoomScale = lerp(zoomScale, zoomScaleTarget, delta * 12)
-        const dist = Math.abs(1 - zoomScale / zoomScaleTarget)
-        if (dist < 0.001) zoomScale = zoomScaleTarget
-
-        scaleChanged = true
-      }
-
-      if (renderScaleChanged) {
-        renderScaleChanged = false
-        scaleChanged = true
-      }
-
-      if (scaleChanged) {
-        const finalScale = zoomScale * renderScale
-        stage.scale.set(finalScale)
-      }
-
-      const targetPosition =
-        targetRef === undefined
-          ? Vec.create()
-          : 'position' in targetRef
-            ? targetRef.position
-            : targetRef.transform.position
-
-      if (smoothing > 0) {
-        // TODO: Calculate camera speed based on S curve of the distance
-        // (fast when close and when far, medium speed when at normal movement distances)
-        const dist = Math.min(distance(position, targetPosition), 500)
-        const { x, y } = lerp2(
-          position,
-          targetPosition,
-          1 - 0.5 ** (delta * (1 / smoothing)),
-        )
-
-        position.x = x
-        position.y = y
-
-        if (dist < 1) {
-          position.x = targetPosition.x
-          position.y = targetPosition.y
-        }
-      } else {
-        position.x = targetPosition.x
-        position.y = targetPosition.y
-      }
-
-      const xcoord = position.x.toFixed(0)
-      const ycoord = position.y.toFixed(0)
-      const content = `camera position: { x: ${xcoord}, y: ${ycoord} }`
-
-      text.update(content)
-      text.render(this.scale, debug.value)
-    },
-  })
-
-  return camera
 }

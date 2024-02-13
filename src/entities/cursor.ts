@@ -1,62 +1,83 @@
-import { createEntity } from '~/entity.js'
-import { Vec } from '~/math/vector.js'
-import type { Vector } from '~/math/vector.js'
-import { createDebugText } from '~/utils/debug.js'
+import type { Camera } from '~/entities/camera'
+import type { InitContext, InitRenderContext, RenderTime } from '~/entity'
+import { Entity } from '~/entity'
+import type { Game } from '~/game'
+import type { Vector } from '~/math/vector'
+import { createDebugText } from '~/utils/debug'
+import type { Debug, DebugText } from '~/utils/debug'
 
-export const createCursor = () => {
-  let cursorPosition: Vector | undefined
+function onPointerOut(this: Cursor) {
+  this.cursorPosition = undefined
+}
 
-  const onPointerOut = () => (cursorPosition = undefined)
-  const onPointerMove = (ev: PointerEvent) => {
-    cursorPosition = Vec.create(ev.offsetX, ev.offsetY)
+function onPointerMove(this: Cursor, ev: PointerEvent) {
+  this.cursorPosition = { x: ev.offsetX, y: ev.offsetY }
+}
+
+export class Cursor extends Entity {
+  protected cursorPosition: Vector | undefined = undefined
+  readonly #onPointerOut = onPointerOut.bind(this)
+  readonly #onPointerMove = onPointerMove.bind(this)
+
+  private declare game: Game<boolean>
+  private declare debug: Debug
+  private declare container: HTMLDivElement
+  private declare camera: Camera
+  private declare text: DebugText
+
+  public override init({ game }: InitContext): void {
+    this.game = game
+    this.debug = game.debug
   }
 
-  return createEntity({
-    init({ game }) {
-      return { game, debug: game.debug }
-    },
+  public override initRender({
+    container,
+    stage,
+    camera,
+  }: InitRenderContext): void {
+    this.container = container
+    this.camera = camera
 
-    initRenderContext(_, { container, stage, camera }) {
-      const text = createDebugText(1)
-      stage.addChild(text.gfx)
+    this.text = createDebugText(1)
+    stage.addChild(this.text.gfx)
 
-      container.addEventListener('pointerover', onPointerMove)
-      container.addEventListener('pointerout', onPointerOut)
-      container.addEventListener('pointermove', onPointerMove)
+    container.addEventListener('pointerover', this.#onPointerMove)
+    container.addEventListener('pointerout', this.#onPointerOut)
+    container.addEventListener('pointermove', this.#onPointerMove)
+  }
 
-      return { container, camera, text }
-    },
+  public override teardown(): void {
+    // No-op
+  }
 
-    teardown(_) {
-      // No-op
-    },
+  public override teardownRender(): void {
+    this.text.gfx.destroy()
 
-    teardownRenderContext({ container, text }) {
-      text.gfx.destroy()
+    this.container.removeEventListener('pointerover', this.#onPointerMove)
+    this.container.removeEventListener('pointerout', this.#onPointerOut)
+    this.container.removeEventListener('pointermove', this.#onPointerMove)
+  }
 
-      container.removeEventListener('pointerover', onPointerMove)
-      container.removeEventListener('pointerout', onPointerOut)
-      container.removeEventListener('pointermove', onPointerMove)
-    },
+  public override onRenderFrame(_: RenderTime): void {
+    if (this.cursorPosition) {
+      const { x, y } = this.camera.screenToWorld(this.cursorPosition)
 
-    onRenderFrame(_, { game, debug }, { camera, text }) {
-      if (cursorPosition) {
-        const { x, y } = camera.screenToWorld(cursorPosition)
+      const query = this.game.queryPosition({ x, y })
+      const entities = query.map(({ definition: { entity } }) => entity)
 
-        const query = game.queryPosition({ x, y })
-        const entities = query.map(({ definition: { entity } }) => entity)
+      const xcoord = x.toFixed(0)
+      const ycoord = y.toFixed(0)
 
-        const xcoord = x.toFixed(0)
-        const ycoord = y.toFixed(0)
+      const content =
+        `cursor coordinates: { x: ${xcoord}, y: ${ycoord} }\n` +
+        `entities: ${JSON.stringify(entities)}`
 
-        const content =
-          `cursor coordinates: { x: ${xcoord}, y: ${ycoord} }\n` +
-          `entities: ${JSON.stringify(entities)}`
+      this.text.update(content)
+    }
 
-        text.update(content)
-      }
-
-      text.render(camera.scale, debug.value && cursorPosition !== undefined)
-    },
-  })
+    this.text.render(
+      this.camera.scale,
+      this.debug.value && this.cursorPosition !== undefined,
+    )
+  }
 }
