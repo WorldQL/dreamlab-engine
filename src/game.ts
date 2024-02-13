@@ -1,3 +1,5 @@
+import '~/_internal/symbols'
+
 import cuid2 from '@paralleldrive/cuid2'
 import { setProperty } from 'dot-prop'
 import Matter from 'matter-js'
@@ -279,6 +281,8 @@ export interface Game<Server extends boolean> {
    * Destroy all entities and stop all game logic
    */
   shutdown(): Promise<void>
+
+  [Symbol.asyncDispose](): Promise<void>
 }
 // #endregion
 
@@ -826,6 +830,10 @@ export async function createGame<Server extends boolean>(
       }
 
       if (interval) clearInterval(interval)
+    },
+
+    async [Symbol.asyncDispose](): Promise<void> {
+      await this.shutdown()
     },
   }
 
