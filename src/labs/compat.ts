@@ -4,7 +4,7 @@ import type { Container } from 'pixi.js'
 import type { Except } from 'type-fest'
 import type { z } from 'zod'
 import type { Camera } from '~/entities/camera'
-import type { InitContext, InitRenderContext, RenderTime, Time } from '~/entity'
+import type { InitContext, RenderTime, Time } from '~/entity'
 import type { Game } from '~/game'
 import type { Bounds } from '~/math/bounds'
 import type { TrackedTransform } from '~/math/transform'
@@ -18,6 +18,7 @@ import type {
   ZodObjectAny,
 } from '~/spawnable/spawnableEntity'
 import type { Ref } from '~/utils/ref'
+import { game } from './magic'
 
 interface LegacyInitContext {
   game: Game<boolean>
@@ -41,17 +42,17 @@ export interface LegacySpawnableEntity<
   Render = unknown,
   ArgsSchema extends ZodObjectAny = ZodObjectAny,
 > {
-  init(init: LegacyInitContext): Data | Promise<Data>
+  init(init: LegacyInitContext): Data
   initRenderContext(
     init: LegacyInitContextClient,
     render: LegacyRenderContext,
-  ): Promise<Render> | Render
+  ): Render
 
   onPhysicsStep?(time: Time, data: Data): void
   onRenderFrame?(time: RenderTime, data: Data, render: Render): void
 
-  teardownRenderContext(render: Render): Promise<void> | void
-  teardown(data: Data): Promise<void> | void
+  teardownRenderContext(render: Render): void
+  teardown(data: Data): void
 
   onClick?(data: Data, render: Render, position: Vector): void
   onArgsUpdate?<T extends Path<z.infer<ArgsSchema>>>(
@@ -96,14 +97,34 @@ export const createSpawnableEntity = <
   class extends SpawnableEntity<ArgsSchema> {
     readonly #inner: LegacySpawnableEntity<Data, Render, ArgsSchema>
 
-    #ctx: InitContext | undefined
-    private _data: Data | undefined
-    private _render: Render | undefined
+    private readonly _data: Data
+    private readonly _render: Render | undefined
 
-    public constructor(ctx: SpawnableContext<SpawnableEntity<ArgsSchema>>) {
+    public constructor(ctx: SpawnableContext<ArgsSchema>) {
       super(ctx)
 
+      const _game = game()
+      const context: InitContext = { game: _game, physics: _game.physics }
+
       this.#inner = fn.bind(this)({ ...ctx, _this: this }, this.args)
+      this._data = this.#inner.init(context)
+
+      if (_game.client) {
+        this._render = this.#inner.initRenderContext(
+          context,
+          _game.client.render,
+        )
+      }
+    }
+
+    public override teardown(): void {
+      if (!this._data) throw new Error('invalid data access')
+      this.#inner.teardown(this._data)
+
+      if (game('client')) {
+        if (!this._render) throw new Error('invalid render data access')
+        this.#inner.teardownRenderContext(this._render)
+      }
     }
 
     public override bounds(): Bounds | undefined {
@@ -112,15 +133,6 @@ export const createSpawnableEntity = <
 
     public override isPointInside(point: Vector): boolean {
       return this.#inner.isPointInside(point)
-    }
-
-    public override async init(ctx: InitContext): Promise<void> {
-      this.#ctx = ctx
-      this._data = await this.#inner.init(ctx)
-    }
-
-    public override async initRender(ctx: InitRenderContext): Promise<void> {
-      this._render = await this.#inner.initRenderContext(this.#ctx!, ctx)
     }
 
     public override onClick(position: Vector): void {
@@ -147,16 +159,6 @@ export const createSpawnableEntity = <
 
     public override onResize(bounds: Bounds): void {
       this.#inner.onResize?.(bounds)
-    }
-
-    public override async teardown(): Promise<void> {
-      if (!this._data) throw new Error('invalid data access')
-      await this.#inner.teardown(this._data)
-    }
-
-    public override async teardownRender(): Promise<void> {
-      if (!this._render) throw new Error('invalid render data access')
-      await this.#inner.teardownRenderContext(this._render)
     }
 
     public override onPhysicsStep(time: Time): void {

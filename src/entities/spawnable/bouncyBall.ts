@@ -2,16 +2,17 @@ import Matter from 'matter-js'
 import { Container, Graphics } from 'pixi.js'
 import type { Sprite } from 'pixi.js'
 import { z } from 'zod'
-import type { Camera } from '~/entities/camera.js'
-import type { InitContext, InitRenderContext, RenderTime } from '~/entity'
+import type { RenderTime } from '~/entity'
+import { camera, debug, game, physics, stage } from '~/labs/magic'
 import type { Bounds } from '~/math/bounds'
 import { toRadians } from '~/math/general.js'
 import { Vec } from '~/math/vector.js'
-import type { Physics } from '~/physics.js'
-import type { PreviousArgs } from '~/spawnable/spawnableEntity.js'
+import type {
+  PreviousArgs,
+  SpawnableContext,
+} from '~/spawnable/spawnableEntity.js'
 import { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import { createSprite, SpriteSourceSchema } from '~/textures/sprites.js'
-import type { Debug } from '~/utils/debug.js'
 import { drawCircle } from '~/utils/draw.js'
 
 type Args = typeof ArgsSchema
@@ -20,15 +21,67 @@ export const ArgsSchema = z.object({
   spriteSource: SpriteSourceSchema.optional(),
 })
 
-export class BouncyBall extends SpawnableEntity<typeof ArgsSchema> {
-  private declare debug: Debug
-  private declare physics: Physics
+export class BouncyBall extends SpawnableEntity<Args> {
+  private readonly body: Matter.Body
+  private readonly container: Container | undefined
+  private readonly gfx: Graphics | undefined
+  private readonly sprite: Sprite | undefined
 
-  private declare body: Matter.Body
-  private declare camera: Camera
-  private declare container: Container
-  private declare gfx: Graphics
-  private declare sprite: Sprite | undefined
+  public constructor(ctx: SpawnableContext<Args>) {
+    super(ctx)
+
+    const mass = 20
+    this.body = Matter.Bodies.circle(
+      this.transform.position.x,
+      this.transform.position.y,
+      this.args.radius,
+      {
+        label: 'bouncyBall',
+        render: { visible: false },
+        angle: toRadians(this.transform.rotation),
+        isStatic: this.preview,
+        isSensor: this.preview,
+
+        mass,
+        inverseMass: 1 / mass,
+        restitution: 0.95,
+      },
+    )
+
+    physics().register(this, this.body)
+    physics().linkTransform(this.body, this.transform)
+
+    if (!this.tags.includes('net/replicated')) {
+      this.tags.push('net/replicated')
+    }
+
+    const _game = game('client')
+    if (_game) {
+      const { radius, spriteSource } = this.args
+
+      this.container = new Container()
+      this.container.sortableChildren = true
+      this.container.zIndex = this.transform.zIndex
+
+      this.gfx = new Graphics()
+      this.gfx.zIndex = 100
+      drawCircle(this.gfx, { radius })
+
+      const width = radius * 2
+      const height = radius * 2
+      this.sprite = spriteSource
+        ? createSprite(spriteSource, { width, height })
+        : undefined
+
+      this.container.addChild(this.gfx)
+      if (this.sprite) this.container.addChild(this.sprite)
+      stage().addChild(this.container)
+
+      this.transform.addZIndexListener(() => {
+        if (this.container) this.container.zIndex = this.transform.zIndex
+      })
+    }
+  }
 
   public override bounds(): Bounds | undefined {
     const { radius } = this.args
@@ -37,67 +90,6 @@ export class BouncyBall extends SpawnableEntity<typeof ArgsSchema> {
 
   public override isPointInside(point: Matter.Vector): boolean {
     return Matter.Query.point([this.body], point).length > 0
-  }
-
-  public override init({ game, physics }: InitContext): void {
-    this.debug = game.debug
-    this.physics = physics
-
-    const { transform, args, preview } = this
-    const mass = 20
-
-    this.body = Matter.Bodies.circle(
-      transform.position.x,
-      transform.position.y,
-      args.radius,
-      {
-        label: 'bouncyBall',
-        render: { visible: false },
-        angle: toRadians(transform.rotation),
-        isStatic: preview,
-        isSensor: preview,
-
-        mass,
-        inverseMass: 1 / mass,
-        restitution: 0.95,
-      },
-    )
-
-    physics.register(this, this.body)
-    physics.linkTransform(this.body, transform)
-
-    if (!this.tags.includes('net/replicated')) {
-      this.tags.push('net/replicated')
-    }
-  }
-
-  public override initRender({ stage, camera }: InitRenderContext): void {
-    this.camera = camera
-
-    const { transform, args } = this
-    const { radius, spriteSource } = args
-
-    this.container = new Container()
-    this.container.sortableChildren = true
-    this.container.zIndex = transform.zIndex
-
-    this.gfx = new Graphics()
-    this.gfx.zIndex = 100
-    drawCircle(this.gfx, { radius })
-
-    const width = radius * 2
-    const height = radius * 2
-    this.sprite = spriteSource
-      ? createSprite(spriteSource, { width, height })
-      : undefined
-
-    this.container.addChild(this.gfx)
-    if (this.sprite) this.container.addChild(this.sprite)
-    stage.addChild(this.container)
-
-    transform.addZIndexListener(() => {
-      this.container.zIndex = transform.zIndex
-    })
   }
 
   public override onArgsUpdate(
@@ -138,24 +130,24 @@ export class BouncyBall extends SpawnableEntity<typeof ArgsSchema> {
   }
 
   public override teardown(): Promise<void> | void {
-    this.physics.unregister(this, this.body)
-    this.physics.unlinkTransform(this.body, this.transform)
-  }
+    physics().unregister(this, this.body)
+    physics().unlinkTransform(this.body, this.transform)
 
-  public override teardownRender(): Promise<void> | void {
-    this.container.destroy({ children: true })
+    this.container?.destroy({ children: true })
   }
 
   public override onRenderFrame({ smooth }: RenderTime): void {
-    const smoothed = Vec.add(
-      this.body.position,
-      Vec.mult(this.body.velocity, smooth),
-    )
+    if (this.container) {
+      const smoothed = Vec.add(
+        this.body.position,
+        Vec.mult(this.body.velocity, smooth),
+      )
 
-    const pos = Vec.add(smoothed, this.camera.offset)
+      const pos = Vec.add(smoothed, camera().offset)
+      this.container.position = pos
+      this.container.rotation = this.body.angle
+    }
 
-    this.container.position = pos
-    this.container.rotation = this.body.angle
-    this.gfx.alpha = this.debug.value ? 0.5 : 0
+    if (this.gfx) this.gfx.alpha = debug() ? 0.5 : 0
   }
 }

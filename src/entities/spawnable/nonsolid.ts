@@ -2,17 +2,19 @@ import type { Vector } from 'matter-js'
 import type { Sprite } from 'pixi.js'
 import { Container, Graphics } from 'pixi.js'
 import { z } from 'zod'
-import type { Camera } from '~/entities/camera'
-import type { InitContext, InitRenderContext, RenderTime } from '~/entity'
+import type { RenderTime } from '~/entity'
+import { camera, debug, game, stage } from '~/labs/magic'
 import { simpleBoundsTest } from '~/math/bounds'
 import type { Bounds } from '~/math/bounds'
 import { Vec } from '~/math/vector'
-import type { ArgsPath, PreviousArgs } from '~/spawnable/spawnableEntity'
+import type {
+  ArgsPath,
+  PreviousArgs,
+  SpawnableContext,
+} from '~/spawnable/spawnableEntity'
 import { SpawnableEntity } from '~/spawnable/spawnableEntity'
 import { createSprite, SpriteSourceSchema } from '~/textures/sprites'
-import type { Debug } from '~/utils/debug'
 import { drawBox } from '~/utils/draw'
-import type { RedrawBox } from '~/utils/draw'
 
 type Args = typeof ArgsSchema
 export const ArgsSchema = z.object({
@@ -24,12 +26,38 @@ export const ArgsSchema = z.object({
 export class NonSolid extends SpawnableEntity<Args> {
   protected readonly stroke: string = 'blue'
 
-  protected declare debug: Debug
-  protected declare camera: Camera
-  protected declare container: Container
-  protected declare gfx: Graphics
-  protected declare redrawGfx: RedrawBox
-  protected declare sprite: Sprite | undefined
+  protected readonly container: Container | undefined
+  protected readonly gfx: Graphics | undefined
+  protected readonly sprite: Sprite | undefined
+
+  public constructor(ctx: SpawnableContext<Args>) {
+    super(ctx)
+
+    const _game = game('client')
+    if (_game) {
+      const { width, height, spriteSource } = this.args
+
+      this.container = new Container()
+      this.container.sortableChildren = true
+      this.container.zIndex = this.transform.zIndex
+
+      this.gfx = new Graphics()
+      this.gfx.zIndex = 100
+      drawBox(this.gfx, { width, height }, { stroke: this.stroke })
+
+      this.sprite = spriteSource
+        ? createSprite(spriteSource, { width, height })
+        : undefined
+
+      this.container.addChild(this.gfx)
+      if (this.sprite) this.container.addChild(this.sprite)
+      stage().addChild(this.container)
+
+      this.transform.addZIndexListener(() => {
+        if (this.container) this.container.zIndex = this.transform.zIndex
+      })
+    }
+  }
 
   public override bounds(): Bounds | undefined {
     const { width, height } = this.args
@@ -39,39 +67,6 @@ export class NonSolid extends SpawnableEntity<Args> {
   public override isPointInside(point: Vector): boolean {
     const { width, height } = this.args
     return simpleBoundsTest({ width, height }, this.transform, point)
-  }
-
-  public override init({ game }: InitContext): void {
-    this.debug = game.debug
-  }
-
-  public override initRender({ stage, camera }: InitRenderContext): void {
-    this.camera = camera
-    const { width, height, spriteSource } = this.args
-
-    this.container = new Container()
-    this.container.sortableChildren = true
-    this.container.zIndex = this.transform.zIndex
-
-    this.gfx = new Graphics()
-    this.gfx.zIndex = 100
-    this.redrawGfx = drawBox(
-      this.gfx,
-      { width, height },
-      { stroke: this.stroke },
-    )
-
-    this.sprite = spriteSource
-      ? createSprite(spriteSource, { width, height })
-      : undefined
-
-    this.container.addChild(this.gfx)
-    if (this.sprite) this.container.addChild(this.sprite)
-    stage.addChild(this.container)
-
-    this.transform.addZIndexListener(() => {
-      this.container.zIndex = this.transform.zIndex
-    })
   }
 
   public override onArgsUpdate(
@@ -87,19 +82,18 @@ export class NonSolid extends SpawnableEntity<Args> {
   }
 
   public override teardown(): void {
-    // No-op
-  }
-
-  public override teardownRender(): void {
-    this.container.destroy({ children: true })
+    this.container?.destroy({ children: true })
   }
 
   public override onRenderFrame(_time: RenderTime): void {
-    const pos = Vec.add(this.transform.position, this.camera.offset)
+    const pos = Vec.add(this.transform.position, camera().offset)
 
-    this.container.position = pos
-    this.container.angle = this.transform.rotation
-    this.gfx.alpha = this.debug.value ? 0.5 : 0
+    if (this.container) {
+      this.container.position = pos
+      this.container.angle = this.transform.rotation
+    }
+
+    if (this.gfx) this.gfx.alpha = debug() ? 0.5 : 0
   }
 }
 

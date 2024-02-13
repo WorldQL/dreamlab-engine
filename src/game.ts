@@ -11,7 +11,7 @@ import { Camera } from '~/entities/camera.js'
 import { isNetPlayer } from '~/entities/player'
 import { registerDefaultSpawnables } from '~/entities/spawnable/index.js'
 import { isEntity } from '~/entity.js'
-import type { Entity, InitContext, InitRenderContext } from '~/entity.js'
+import type { Entity, InitRenderContext } from '~/entity.js'
 import { createEventsManager } from '~/events.js'
 import type { EventsManager } from '~/events.js'
 import { InputManager } from '~/input/manager.js'
@@ -108,9 +108,11 @@ type Options<Server extends boolean> = CommonOptions<Server> &
 type RenderContextExt = InitRenderContext & { app: Application }
 async function initRenderContext<Server extends boolean>(
   options: Options<Server>,
+  debug: Debug,
 ): Promise<Server extends false ? RenderContextExt : undefined>
 async function initRenderContext<Server extends boolean>(
   options: Options<Server>,
+  debug: Debug,
 ): Promise<RenderContextExt | undefined> {
   if (options.isServer === true) return undefined
   const { container, dimensions, graphicsOptions } = options as Options<false>
@@ -125,7 +127,14 @@ async function initRenderContext<Server extends boolean>(
   app.stage.sortableChildren = true
   const canvas = app.view as HTMLCanvasElement
 
-  const camera = new Camera(dimensions.width, dimensions.height, canvas)
+  const camera = new Camera(
+    dimensions.width,
+    dimensions.height,
+    debug,
+    canvas,
+    app.stage,
+  )
+
   const ctx: RenderContextExt = {
     app,
     stage: app.stage,
@@ -308,7 +317,7 @@ export async function createGame<Server extends boolean>(
   const physics = createPhysics()
   physics.engine.gravity.scale *= 3
 
-  const renderContext = await initRenderContext(options)
+  const renderContext = await initRenderContext(options, debug)
   const entities: Entity[] = []
   const spawnables = new Map<string, SpawnableEntity>()
   const spawnableFunctions = new Map<
@@ -591,18 +600,6 @@ export async function createGame<Server extends boolean>(
         throw new Error('not an entity')
       }
 
-      const init: InitContext = {
-        game: this,
-        physics,
-      }
-
-      await entity.init(init)
-
-      if (renderContext) {
-        const { app: _, ...ctx } = renderContext
-        await entity.initRender(ctx)
-      }
-
       entities.push(entity)
       sortEntities()
 
@@ -636,10 +633,9 @@ export async function createGame<Server extends boolean>(
       entities.splice(idx, 1)
       sortEntities()
 
-      if (renderContext) await entity.teardownRender()
-      await entity.teardown()
-
+      entity.teardown()
       events.common.emit('onDestroy', entity)
+
       if (isNetPlayer(entity)) events.common.emit('onPlayerLeave', entity)
     },
 
@@ -723,7 +719,7 @@ export async function createGame<Server extends boolean>(
       })
 
       const selected = ref(false)
-      const context: SpawnableContext<SpawnableEntity> = {
+      const context: SpawnableContext<ZodObjectAny> = {
         uid,
         transform,
         label: trackedDefinition.label,

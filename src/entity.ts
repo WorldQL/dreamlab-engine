@@ -42,24 +42,12 @@ export abstract class Entity {
   public readonly [symbol] = true as const
   public readonly priority?: number
 
-  // NOTE: Do we want to support shared/client/server init?
-  // How would that work with teardown?
-  // Do we want to enforce all of them to be implemented?
-  public abstract init(ctx: InitContext): Promise<void> | void
-  public abstract initRender(ctx: InitRenderContext): Promise<void> | void
+  public abstract teardown(): void
+}
 
-  // NOTE: Is there a better way of marking these as optional to implement
-  public onPhysicsStep(time: Time): void {
-    // NOTE: Is there a better way of telling TS these should be used?
-    void time
-  }
-
-  public onRenderFrame(time: RenderTime): void {
-    void time
-  }
-
-  public abstract teardown(): Promise<void> | void
-  public abstract teardownRender(): Promise<void> | void
+export interface Entity {
+  onPhysicsStep?(time: Time): void
+  onRenderFrame(time: RenderTime): void
 }
 
 /**

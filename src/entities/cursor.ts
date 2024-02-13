@@ -1,10 +1,9 @@
-import type { Camera } from '~/entities/camera'
-import type { InitContext, InitRenderContext, RenderTime } from '~/entity'
+import type { RenderTime } from '~/entity'
 import { Entity } from '~/entity'
-import type { Game } from '~/game'
+import { camera, debug, game } from '~/labs/magic'
 import type { Vector } from '~/math/vector'
 import { createDebugText } from '~/utils/debug'
-import type { Debug, DebugText } from '~/utils/debug'
+import type { DebugText } from '~/utils/debug'
 
 function onPointerOut(this: Cursor) {
   this.cursorPosition = undefined
@@ -19,50 +18,41 @@ export class Cursor extends Entity {
   readonly #onPointerOut = onPointerOut.bind(this)
   readonly #onPointerMove = onPointerMove.bind(this)
 
-  private declare game: Game<boolean>
-  private declare debug: Debug
-  private declare container: HTMLDivElement
-  private declare camera: Camera
-  private declare text: DebugText
+  readonly #text: DebugText | undefined
 
-  public override init({ game }: InitContext): void {
-    this.game = game
-    this.debug = game.debug
-  }
+  public constructor() {
+    super()
 
-  public override initRender({
-    container,
-    stage,
-    camera,
-  }: InitRenderContext): void {
-    this.container = container
-    this.camera = camera
+    const _game = game('client')
+    if (_game) {
+      const { container, stage } = _game.client.render
 
-    this.text = createDebugText(1)
-    stage.addChild(this.text.gfx)
+      this.#text = createDebugText(1)
+      stage.addChild(this.#text.gfx)
 
-    container.addEventListener('pointerover', this.#onPointerMove)
-    container.addEventListener('pointerout', this.#onPointerOut)
-    container.addEventListener('pointermove', this.#onPointerMove)
+      container.addEventListener('pointerover', this.#onPointerMove)
+      container.addEventListener('pointerout', this.#onPointerOut)
+      container.addEventListener('pointermove', this.#onPointerMove)
+    }
   }
 
   public override teardown(): void {
-    // No-op
-  }
+    this.#text?.gfx.destroy()
 
-  public override teardownRender(): void {
-    this.text.gfx.destroy()
-
-    this.container.removeEventListener('pointerover', this.#onPointerMove)
-    this.container.removeEventListener('pointerout', this.#onPointerOut)
-    this.container.removeEventListener('pointermove', this.#onPointerMove)
+    const _game = game('client')
+    if (_game) {
+      const { container } = _game.client.render
+      container.removeEventListener('pointerover', this.#onPointerMove)
+      container.removeEventListener('pointerout', this.#onPointerOut)
+      container.removeEventListener('pointermove', this.#onPointerMove)
+    }
   }
 
   public override onRenderFrame(_: RenderTime): void {
     if (this.cursorPosition) {
-      const { x, y } = this.camera.screenToWorld(this.cursorPosition)
+      const { x, y } = camera().screenToWorld(this.cursorPosition)
 
-      const query = this.game.queryPosition({ x, y })
+      const query = game().queryPosition({ x, y })
       const entities = query.map(({ definition: { entity } }) => entity)
 
       const xcoord = x.toFixed(0)
@@ -72,12 +62,12 @@ export class Cursor extends Entity {
         `cursor coordinates: { x: ${xcoord}, y: ${ycoord} }\n` +
         `entities: ${JSON.stringify(entities)}`
 
-      this.text.update(content)
+      this.#text?.update(content)
     }
 
-    this.text.render(
-      this.camera.scale,
-      this.debug.value && this.cursorPosition !== undefined,
+    this.#text?.render(
+      camera().scale,
+      debug() && this.cursorPosition !== undefined,
     )
   }
 }
