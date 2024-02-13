@@ -24,13 +24,14 @@ export const ArgsSchema = z.object({
 })
 
 export class NonSolid extends SpawnableEntity<Args> {
-  protected readonly stroke: string = 'blue'
-
   protected readonly container: Container | undefined
   protected readonly gfx: Graphics | undefined
   protected readonly sprite: Sprite | undefined
 
-  public constructor(ctx: SpawnableContext<Args>) {
+  public constructor(
+    ctx: SpawnableContext<Args>,
+    { stroke = 'blue' }: { stroke?: string } = {},
+  ) {
     super(ctx)
 
     const _game = game('client')
@@ -43,7 +44,7 @@ export class NonSolid extends SpawnableEntity<Args> {
 
       this.gfx = new Graphics()
       this.gfx.zIndex = 100
-      drawBox(this.gfx, { width, height }, { stroke: this.stroke })
+      drawBox(this.gfx, { width, height }, { stroke })
 
       this.sprite = spriteSource
         ? createSprite(spriteSource, { width, height })
