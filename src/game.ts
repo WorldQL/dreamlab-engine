@@ -6,6 +6,7 @@ import Matter from 'matter-js'
 import onChange from 'on-change'
 import { Application } from 'pixi.js'
 import type { IApplicationOptions } from 'pixi.js'
+import { getGlobalGame, setGlobalGame } from '~/_internal/global-state'
 import { Camera } from '~/entities/camera.js'
 import { isNetPlayer } from '~/entities/player'
 import { registerDefaultSpawnables } from '~/entities/spawnable/index.js'
@@ -294,6 +295,13 @@ export interface Game<Server extends boolean> {
 export async function createGame<Server extends boolean>(
   options: Options<Server>,
 ): Promise<Game<Server>> {
+  if (getGlobalGame() !== undefined) {
+    throw new Error('Only one instance of Dreamlab may be created at a time')
+  }
+
+  // Set this immediately so race conditions don't occur
+  setGlobalGame('pending')
+
   const debug = createDebug(options.debug ?? false)
   const { physicsTickrate = 60 } = options
 
@@ -830,12 +838,15 @@ export async function createGame<Server extends boolean>(
       }
 
       if (interval) clearInterval(interval)
+      setGlobalGame(undefined)
     },
 
     async [Symbol.asyncDispose](): Promise<void> {
       await this.shutdown()
     },
   }
+
+  setGlobalGame(game)
 
   registerDefaultSpawnables(game)
   if (renderContext) await game.instantiate(renderContext.camera)
