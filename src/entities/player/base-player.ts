@@ -1,5 +1,4 @@
 import Matter from 'matter-js'
-import type { InitContext, InitRenderContext } from '~/entity'
 import { Entity } from '~/entity'
 import type { Bounds } from '~/math/bounds'
 
@@ -32,19 +31,7 @@ export abstract class BasePlayer extends Entity {
     // TODO: Implement BasePlayer
   }
 
-  public init(_ctx: InitContext): Promise<void> | void {
-    throw new Error('not implemented')
-  }
-
-  public initRender(_ctx: InitRenderContext): Promise<void> | void {
-    throw new Error('not implemented')
-  }
-
   public override teardown(): Promise<void> | void {
-    throw new Error('not implemented')
-  }
-
-  public teardownRender(): Promise<void> | void {
     throw new Error('not implemented')
   }
 }

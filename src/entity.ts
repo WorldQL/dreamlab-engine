@@ -1,21 +1,3 @@
-import type { Container } from 'pixi.js'
-import type { Camera } from '~/entities/camera'
-import type { Game } from '~/game'
-import type { Physics } from '~/physics'
-
-export interface InitContext {
-  game: Game<boolean>
-  physics: Physics
-}
-
-export interface InitRenderContext {
-  // NOTE: Do we want to include a reference to game here?
-  container: HTMLDivElement
-  canvas: HTMLCanvasElement
-  stage: Container
-  camera: Camera
-}
-
 export interface Time {
   /**
    * Time since the last physics tick or rendered frame, in seconds
