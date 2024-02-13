@@ -1,8 +1,7 @@
 import type { Container } from 'pixi.js'
 import type { NonNegative } from 'type-fest'
-import type { InitContext, InitRenderContext, RenderTime } from '~/entity.js'
+import type { RenderTime } from '~/entity.js'
 import { Entity } from '~/entity.js'
-import type { InputManager } from '~/input/manager'
 import { lerp } from '~/math/general.js'
 import type { Transform } from '~/math/transform.js'
 import { distance, lerp2, v, Vec } from '~/math/vector.js'
@@ -34,11 +33,9 @@ export type CameraTarget = PositionTarget | TransformTarget
 export class Camera extends Entity {
   readonly #targetWidth: number
   readonly #targetHeight: number
+  readonly #debug: Debug
   readonly #canvas: HTMLCanvasElement
-  private declare debug: Debug
-  private declare inputs: InputManager | undefined
-  private declare stage: Container
-  private declare text: DebugText
+  readonly #stage: Container
 
   #position = Vec.create()
   #target: CameraTarget | undefined
@@ -50,6 +47,8 @@ export class Camera extends Entity {
 
   #renderScale = 1
   #renderScaleChanged = false
+
+  readonly #text: DebugText
 
   #onWheelInner(ev: WheelEvent) {
     if (!ev.ctrlKey) return
@@ -69,15 +68,41 @@ export class Camera extends Entity {
   public constructor(
     targetWidth: number,
     targetHeight: number,
+    debug: Debug,
     canvas: HTMLCanvasElement,
+    stage: Container,
     target?: CameraTarget,
   ) {
     super()
 
     this.#targetWidth = targetWidth
     this.#targetHeight = targetHeight
+    this.#debug = debug
     this.#canvas = canvas
+    this.#stage = stage
     this.#target = target ?? undefined
+
+    if (this.#target) {
+      const targetPosition =
+        'position' in this.#target
+          ? this.#target.position
+          : this.#target.transform.position
+
+      this.#position.x = targetPosition.x
+      this.#position.y = targetPosition.y
+    }
+
+    this.#text = createDebugText(0)
+    stage.addChild(this.#text.gfx)
+
+    // TODO: Re-add input manager disable logic
+    canvas.addEventListener('wheel', this.#onWheel)
+  }
+
+  public override teardown(): void {
+    this.#text.gfx.destroy()
+    // TODO: Same as above
+    this.#canvas.removeEventListener('wheel', this.#onWheel)
   }
 
   // #region Target
@@ -167,39 +192,6 @@ export class Camera extends Entity {
     return Vec.sub(Vec.div(position, this.scale), this.offset)
   }
 
-  public override init({ game }: InitContext): void {
-    this.debug = game.debug
-    this.inputs = game.client?.inputs
-  }
-
-  public override initRender({ stage }: InitRenderContext): void {
-    this.stage = stage
-
-    if (this.#target) {
-      const targetPosition =
-        'position' in this.#target
-          ? this.#target.position
-          : this.#target.transform.position
-
-      this.#position.x = targetPosition.x
-      this.#position.y = targetPosition.y
-    }
-
-    this.text = createDebugText(0)
-    stage.addChild(this.text.gfx)
-
-    this.inputs?.addListener('onWheel', this.#onWheel)
-  }
-
-  public override teardown(): void {
-    // No-op
-  }
-
-  public override teardownRender(): void {
-    this.text.gfx.destroy()
-    this.inputs?.removeListener('onWheel', this.#onWheel)
-  }
-
   public override onRenderFrame({ delta }: RenderTime): void {
     let scaleChanged = false
     if (this.#zoomScale !== this.#zoomScaleTarget) {
@@ -217,7 +209,7 @@ export class Camera extends Entity {
 
     if (scaleChanged) {
       const finalScale = this.#zoomScale * this.#renderScale
-      this.stage.scale.set(finalScale)
+      this.#stage.scale.set(finalScale)
     }
 
     const targetPosition =
@@ -253,8 +245,8 @@ export class Camera extends Entity {
     const ycoord = this.#position.y.toFixed(0)
     const content = `camera position: { x: ${xcoord}, y: ${ycoord} }`
 
-    this.text.update(content)
-    this.text.render(this.scale, this.debug.value)
+    this.#text.update(content)
+    this.#text.render(this.scale, this.#debug.value)
   }
 }
 
