@@ -3,18 +3,17 @@ import type { Body } from 'matter-js'
 import { Graphics } from 'pixi.js'
 import { z } from 'zod'
 import type { Camera } from '~/entities/camera.js'
-import { dataManager } from '~/entity.js'
+import { createSpawnableEntity, dataManager } from '~/labs/compat'
+import type { LegacySpawnableEntity as SpawnableEntity } from '~/labs/compat'
 import { toRadians } from '~/math/general.js'
 import { decodePolygons, pointsBounds } from '~/math/polygons.js'
 import { Vec, VectorSchema } from '~/math/vector.js'
 import type { Physics } from '~/physics.js'
-import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
-import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawComplexPolygon } from '~/utils/draw.js'
 
 type Args = typeof ArgsSchema
-const ArgsSchema = z.object({
+export const ArgsSchema = z.object({
   polygon: VectorSchema.array().array().or(z.string()),
 })
 
@@ -35,7 +34,7 @@ export const createComplexSolid = createSpawnableEntity<
   SpawnableEntity<Data, Render, Args>,
   Data,
   Render
->(ArgsSchema, ({ transform, preview }, args) => {
+>(ArgsSchema, ({ _this, transform, preview }, args) => {
   const polygons =
     typeof args.polygon === 'string'
       ? decodePolygons(args.polygon)
@@ -49,7 +48,7 @@ export const createComplexSolid = createSpawnableEntity<
     },
 
     isPointInside(position) {
-      const { bodies } = dataManager.getData(this)
+      const { bodies } = dataManager.getData(_this)
       return Matter.Query.point(bodies, position).length > 0
     },
 
@@ -91,7 +90,8 @@ export const createComplexSolid = createSpawnableEntity<
         Matter.Composite.rotate(composite, toRadians(delta), transform.position)
       })
 
-      physics.register(this, ...bodies)
+      // @ts-expect-error Tuple Spread
+      physics.register(_this, ...bodies)
 
       return {
         debug,
@@ -115,7 +115,8 @@ export const createComplexSolid = createSpawnableEntity<
     },
 
     teardown({ physics, bodies }) {
-      physics.unregister(this, ...bodies)
+      // @ts-expect-error Tuple Spread
+      physics.unregister(_this, ...bodies)
     },
 
     teardownRenderContext({ gfx }) {

@@ -3,9 +3,10 @@ import { Container, Graphics } from 'pixi.js'
 import type { Sprite } from 'pixi.js'
 import { z } from 'zod'
 import type { Camera } from '~/entities/camera.js'
-import { isNetPlayer } from '~/entities/netplayer.js'
-import { isPlayer } from '~/entities/player.js'
+import { isNetPlayer, isPlayer } from '~/entities/player'
 import type { Game } from '~/game.js'
+import { createSpawnableEntity } from '~/labs/compat'
+import type { LegacySpawnableEntity as SpawnableEntity } from '~/labs/compat'
 import { toRadians } from '~/math/general.js'
 import { Vec } from '~/math/vector.js'
 import type { Physics } from '~/physics.js'
@@ -14,15 +15,13 @@ import {
   updateSpriteSource,
   updateSpriteWidthHeight,
 } from '~/spawnable/args.js'
-import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
-import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import { createSprite, SpriteSourceSchema } from '~/textures/sprites.js'
 import type { Debug } from '~/utils/debug.js'
 import { drawBox } from '~/utils/draw.js'
 import type { RedrawBox } from '~/utils/draw.js'
 
 type Args = typeof ArgsSchema
-const ArgsSchema = z.object({
+export const ArgsSchema = z.object({
   width: z.number().positive().min(1).default(100),
   height: z.number().positive().min(1).default(100),
   spriteSource: SpriteSourceSchema.optional(),
@@ -48,7 +47,7 @@ export const createPlatform = createSpawnableEntity<
   SpawnableEntity<Data, Render, Args>,
   Data,
   Render
->(ArgsSchema, ({ transform }, args) => {
+>(ArgsSchema, ({ _this, transform }, args) => {
   const body = Matter.Bodies.rectangle(
     transform.position.x,
     transform.position.y,
@@ -77,7 +76,7 @@ export const createPlatform = createSpawnableEntity<
 
     init({ game, physics }) {
       const debug = game.debug
-      physics.register(this, body)
+      physics.register(_this, body)
       physics.linkTransform(body, transform)
 
       return { game, debug, physics, body }
@@ -133,7 +132,7 @@ export const createPlatform = createSpawnableEntity<
     },
 
     teardown({ physics }) {
-      physics.unregister(this, body)
+      physics.unregister(_this, body)
     },
 
     teardownRenderContext({ container }) {

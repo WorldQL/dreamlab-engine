@@ -7,20 +7,17 @@ import {
 } from 'pixi.js'
 import { z } from 'zod'
 import type { Camera } from '~/entities/camera.js'
+import { createSpawnableEntity } from '~/labs/compat'
+import type { LegacySpawnableEntity as SpawnableEntity } from '~/labs/compat'
 import { Vec, VectorSchema } from '~/math/vector.js'
 import { resolve } from '~/sdk/resolve.js'
-import { createSpawnableEntity } from '~/spawnable/spawnableEntity.js'
-import type {
-  PartializeSpawnable,
-  SpawnableEntity,
-} from '~/spawnable/spawnableEntity.js'
 import type { Debug } from '~/utils/debug.js'
 
 const BLANK_PNG =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAUSURBVBhXY/wPBAxAwAQiGBgYGAA9+AQAag6xEAAAAABJRU5ErkJggg=='
 
 type Args = typeof ArgsSchema
-const ArgsSchema = z.object({
+export const ArgsSchema = z.object({
   textureURL: z.string().optional(),
   opacity: z.number().min(0).max(1).default(1),
   fadeTime: z.number().min(0.01).default(0.2),
@@ -49,11 +46,11 @@ export const isBackground = (entity: SpawnableEntity): entity is Background => {
   return symbol in entity && entity[symbol] === true
 }
 
-const textureAndSize = async (
+const textureAndSize = (
   textureURL: string | undefined,
-): Promise<[texture: Texture, width: number, height: number]> => {
+): [texture: Texture, width: number, height: number] => {
   const url = textureURL ? resolve(textureURL) : BLANK_PNG
-  const texture = await Texture.fromURL(url)
+  const texture = Texture.from(url)
 
   const scale = 100
   const width = textureURL ? texture.width * scale : 16_000
@@ -71,7 +68,7 @@ export const createBackground = createSpawnableEntity<
   let fadeTarget = 0
   const origin = Vec.create(0, 0)
 
-  const background: PartializeSpawnable<Background, Data, Render> = {
+  const background: Background = {
     get [symbol]() {
       return true as const
     },
@@ -89,10 +86,8 @@ export const createBackground = createSpawnableEntity<
       return { debug: game.debug }
     },
 
-    async initRenderContext(_, { stage, camera }) {
-      const [texture, texWidth, texHeight] = await textureAndSize(
-        args.textureURL,
-      )
+    initRenderContext(_, { stage, camera }) {
+      const [texture, texWidth, texHeight] = textureAndSize(args.textureURL)
 
       texture.baseTexture.wrapMode = WRAP_MODES.CLAMP
       const container = new Container()
@@ -130,15 +125,11 @@ export const createBackground = createSpawnableEntity<
 
     async onArgsUpdate(path, _previous, _data, render) {
       if (render && path === 'textureURL') {
-        const [texture, texWidth, texHeight] = await textureAndSize(
-          args.textureURL,
-        )
+        const [texture, texWidth, texHeight] = textureAndSize(args.textureURL)
 
-        /* eslint-disable require-atomic-updates */
         render.spriteBack.texture = texture
         render.spriteBack.width = texWidth
         render.spriteBack.height = texHeight
-        /* eslint-enable require-atomic-updates */
 
         fadeTarget = args.fadeTime
       }
