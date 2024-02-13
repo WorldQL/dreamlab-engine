@@ -47,7 +47,10 @@ export abstract class SpawnableEntity<
   public readonly label: string | undefined
   public readonly tags: string[]
   public readonly preview: boolean
-  public readonly selected: Ref<boolean>
+  readonly #selected: Ref<boolean>
+  public get selected(): boolean {
+    return this.#selected.value
+  }
 
   public readonly args: z.infer<Args>
   public readonly definition: SpawnableDefinition<z.infer<Args>>
@@ -69,7 +72,7 @@ export abstract class SpawnableEntity<
     this.label = ctx.label
     this.tags = ctx.tags
     this.preview = ctx.preview
-    this.selected = ctx.selected
+    this.#selected = ctx.selected
 
     this.args = ctx.args
     this.definition = ctx.definition
