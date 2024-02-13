@@ -575,10 +575,12 @@ export async function createGame<Server extends boolean>(
       network = { type, ...net } as Server extends true ? NetServer : NetClient
     },
 
-    register(name, fn, argsSchema) {
+    register(name, spawnableFn, argsSchema) {
       if (spawnableFunctions.has(name)) {
         throw new Error(`duplicate spawnable function: ${name}`)
       }
+
+      const fn = spawnableFn as unknown as SpawnableConstructor
 
       spawnableFunctions.set(name, [fn, argsSchema])
       events.common.emit('onRegister', name, fn)
