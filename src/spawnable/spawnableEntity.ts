@@ -76,7 +76,7 @@ export abstract class SpawnableEntity<
     this.definition = ctx.definition
   }
 
-  public abstract aabb(): Bounds | undefined
+  public abstract bounds(): Bounds | undefined
   public abstract isPointInside(point: Vector): boolean
 
   public onClick(position: Vector): void {
