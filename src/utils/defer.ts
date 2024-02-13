@@ -1,5 +1,5 @@
-import { isPlayer } from '~/entities/player.js'
-import type { Player } from '~/entities/player.js'
+import { isPlayer } from '~/entities/player'
+import type { Player } from '~/entities/player'
 import type { RenderTime, Time } from '~/entity.js'
 import type { EventHandler } from '~/events.js'
 import type { Game } from '~/game.js'
