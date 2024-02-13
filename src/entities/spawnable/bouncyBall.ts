@@ -129,7 +129,7 @@ export class BouncyBall extends SpawnableEntity<Args> {
     this.args.radius = Math.max(width / 2, height / 2)
   }
 
-  public override teardown(): Promise<void> | void {
+  public override teardown(): void {
     physics().unregister(this, this.body)
     physics().unlinkTransform(this.body, this.transform)
 
