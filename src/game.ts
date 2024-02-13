@@ -214,14 +214,14 @@ export interface Game<Server extends boolean> {
    *
    * @param entity - Entity
    */
-  instantiate<E extends Entity>(entity: E): Promise<void>
+  instantiate<E extends Entity>(entity: E): void
 
   /**
    * Destroy an entity
    *
    * @param entity - Entity
    */
-  destroy<E extends Entity>(entity: E): Promise<void>
+  destroy<E extends Entity>(entity: E): void
 
   /**
    * Spawn a new entity
@@ -232,16 +232,14 @@ export interface Game<Server extends boolean> {
   spawn(
     definition: LooseSpawnableDefinition,
     preview?: boolean,
-  ): Promise<SpawnableEntity | undefined>
+  ): SpawnableEntity | undefined
 
   /**
    * Spawn multiple entities in one go
    *
    * @param definitions - Entity Definitions
    */
-  spawnMany(
-    ...definitions: LooseSpawnableDefinition[]
-  ): Promise<SpawnableEntity[]>
+  spawnMany(...definitions: LooseSpawnableDefinition[]): SpawnableEntity[]
 
   /**
    * Issue a resize call to a spawnable entity
@@ -646,7 +644,7 @@ export async function createGame<Server extends boolean>(
       if (isNetPlayer(entity)) events.common.emit('onPlayerLeave', entity)
     },
 
-    async spawn(loose, preview = false) {
+    spawn(loose, preview = false) {
       const definition = SpawnableDefinitionSchema.parse(loose)
       const spawnable = spawnableFunctions.get(definition.entity)
 
@@ -741,17 +739,15 @@ export async function createGame<Server extends boolean>(
       const _entity = new Spawnable(context)
       const entity = Object.assign(_entity, { _selected: selected })
 
-      await this.instantiate(entity)
+      this.instantiate(entity)
       spawnables.set(entity.uid, entity)
 
       events.common.emit('onSpawn', entity)
       return entity
     },
 
-    async spawnMany(...definitions) {
-      const jobs = definitions.map(async def => this.spawn(def, false))
-      const entities = await Promise.all(jobs)
-
+    spawnMany(...definitions) {
+      const entities = definitions.map(def => this.spawn(def, false))
       return entities.filter(
         (entity): entity is SpawnableEntity => entity !== undefined,
       )
@@ -854,7 +850,7 @@ export async function createGame<Server extends boolean>(
   setGlobalGame(game)
 
   registerDefaultSpawnables(game)
-  if (renderContext) await game.instantiate(renderContext.camera)
+  if (renderContext) game.instantiate(renderContext.camera)
 
   return game
 }
