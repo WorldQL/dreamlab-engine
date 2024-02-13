@@ -28,9 +28,24 @@ export const isClient = (): boolean => {
   return _game.client !== undefined
 }
 
-export const debug = () => game().debug
+export const debug = () => game().debug.value
 export const physics = () => game().physics
 export const events = () => game().events
+
+const magicClient =
+  <T>(name: string, fn: (game: Game<false>) => T) =>
+  () => {
+    const _game = game('client')
+    if (!_game) {
+      throw new Error(`tried to access \`${name}()\` on the server`)
+    }
+
+    return fn(_game)
+  }
+
+export const stage = magicClient('stage', game => game.client.render.stage)
+export const camera = magicClient('camera', game => game.client.render.camera)
+export const inputs = magicClient('inputs', game => game.client.inputs)
 // #endregion
 
 // #region Type-Safe Class Members
