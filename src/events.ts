@@ -1,11 +1,10 @@
 import EventEmitter from 'eventemitter3'
 import type Matter from 'matter-js'
-import type { NetPlayer } from '~/entities/netplayer'
-import type { Player } from '~/entities/player.js'
+import type { NetPlayer, Player } from '~/entities/player'
 import type { Entity, RenderTime, Time } from '~/entity.js'
 import type { Gear } from '~/managers/gear.js'
 import type {
-  BareSpawnableFunction,
+  SpawnableConstructor,
   SpawnableEntity,
 } from '~/spawnable/spawnableEntity.js'
 
@@ -33,7 +32,7 @@ type PlayerCollisionEvent = [
 ]
 
 export interface CommonEvents {
-  onRegister: [name: string, fn: BareSpawnableFunction]
+  onRegister: [name: string, fn: SpawnableConstructor]
   onInstantiate: [entity: Entity]
   onDestroy: [entity: Entity]
   onSpawn: [entity: SpawnableEntity]

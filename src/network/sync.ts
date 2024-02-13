@@ -1,6 +1,5 @@
 import equal from 'fast-deep-equal/es6/index.js'
 import type { Jsonifiable } from 'type-fest'
-import { dataManager } from '~/entity.js'
 import type { Game } from '~/game.js'
 import { isSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
@@ -147,11 +146,7 @@ export const isSyncedValue = (
  * @param entity - Spawnable Entity
  */
 export const syncEntity = (entity: SpawnableEntity): void => {
-  const data = dataManager.getData(entity)
-  if (data === undefined || data === null) return
-  if (typeof data !== 'object') return
-
-  for (const value of Object.values(data)) {
+  for (const value of Object.values(entity)) {
     if (isSyncedValue(value)) value.sync()
   }
 }
@@ -190,11 +185,7 @@ export const updateSyncedValue = (
   const entity = spawnables.find(({ uid }) => uid === entityID)
   if (!entity) return
 
-  const data = dataManager.getData(entity)
-  if (data === undefined || data === null) return
-  if (typeof data !== 'object') return
-
-  const syncedValue = Object.values(data)
+  const syncedValue = Object.values(entity)
     .filter(isSyncedValue)
     .find(value => value.key === key)
 

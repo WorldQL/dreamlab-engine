@@ -1,15 +1,12 @@
 import Matter from 'matter-js'
 import type { Body, Engine, World } from 'matter-js'
-import { isPlayer } from '~/entities/player.js'
-import type { Player } from '~/entities/player.js'
+import { isPlayer } from '~/entities/player'
+import type { Player } from '~/entities/player'
 import { toDegrees, toRadians } from '~/math/general.js'
 import { trackedSymbol } from '~/math/transform.js'
 import type { TrackedTransform } from '~/math/transform.js'
 import { isSpawnableEntity } from '~/spawnable/spawnableEntity.js'
-import type {
-  PartializeSpawnable,
-  SpawnableEntity,
-} from '~/spawnable/spawnableEntity.js'
+import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import { ref } from '~/utils/ref.js'
 
 export interface Physics {
@@ -57,9 +54,9 @@ export interface Physics {
    * @param entity - Spawnable Entitiy
    * @param bodies - Physics Bodies
    */
-  register<E extends SpawnableEntity<Data, Render>, Data, Render>(
-    entity: E | PartializeSpawnable<E, Data, Render>,
-    ...bodies: Body[]
+  register<E extends SpawnableEntity>(
+    entity: E,
+    ...bodies: [body: Body, ...bodies: Body[]]
   ): void
 
   /**
@@ -68,9 +65,9 @@ export interface Physics {
    * @param entity - Spawnable Entity
    * @param bodies - Physics Bodies
    */
-  unregister<E extends SpawnableEntity<Data, Render>, Data, Render>(
-    entity: E | PartializeSpawnable<E, Data, Render>,
-    ...bodies: Body[]
+  unregister<E extends SpawnableEntity>(
+    entity: E,
+    ...bodies: [body: Body, ...bodies: Body[]]
   ): void
 
   /**

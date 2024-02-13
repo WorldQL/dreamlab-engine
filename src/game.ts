@@ -4,12 +4,11 @@ import Matter from 'matter-js'
 import onChange from 'on-change'
 import { Application } from 'pixi.js'
 import type { IApplicationOptions } from 'pixi.js'
-import type { z } from 'zod'
-import { createCamera } from '~/entities/camera.js'
-import { isNetPlayer } from '~/entities/netplayer.js'
+import { Camera } from '~/entities/camera.js'
+import { isNetPlayer } from '~/entities/player'
 import { registerDefaultSpawnables } from '~/entities/spawnable/index.js'
-import { dataManager, isEntity } from '~/entity.js'
-import type { Entity, InitContext, RenderContext } from '~/entity.js'
+import { isEntity } from '~/entity.js'
+import type { Entity, InitContext, InitRenderContext } from '~/entity.js'
 import { createEventsManager } from '~/events.js'
 import type { EventsManager } from '~/events.js'
 import { InputManager } from '~/input/manager.js'
@@ -25,17 +24,14 @@ import type { Physics } from '~/physics.js'
 import type { ClientData } from '~/sdk/clientData.js'
 import type { KvStore } from '~/sdk/kv.js'
 import { SpawnableDefinitionSchema } from '~/spawnable/definition.js'
+import type { LooseSpawnableDefinition } from '~/spawnable/definition.js'
+import { isSpawnableEntity } from '~/spawnable/spawnableEntity'
 import type {
-  LooseSpawnableDefinition,
+  SpawnableConstructor,
   SpawnableContext,
-} from '~/spawnable/definition.js'
-import { isSpawnableEntity } from '~/spawnable/spawnableEntity.js'
-import type {
-  BareSpawnableFunction,
   SpawnableEntity,
-  SpawnableFunction,
-  UID,
-} from '~/spawnable/spawnableEntity.js'
+  ZodObjectAny,
+} from '~/spawnable/spawnableEntity'
 import { createClientUI } from '~/ui.js'
 import type { UIManager } from '~/ui.js'
 import { createDebug } from '~/utils/debug.js'
@@ -106,7 +102,7 @@ type Options<Server extends boolean> = CommonOptions<Server> &
 // #endregion
 
 // #region Render Context Setup
-type RenderContextExt = RenderContext & { app: Application }
+type RenderContextExt = InitRenderContext & { app: Application }
 async function initRenderContext<Server extends boolean>(
   options: Options<Server>,
 ): Promise<Server extends false ? RenderContextExt : undefined>
@@ -126,7 +122,7 @@ async function initRenderContext<Server extends boolean>(
   app.stage.sortableChildren = true
   const canvas = app.view as HTMLCanvasElement
 
-  const camera = createCamera(dimensions.width, dimensions.height, canvas)
+  const camera = new Camera(dimensions.width, dimensions.height, canvas)
   const ctx: RenderContextExt = {
     app,
     stage: app.stage,
@@ -171,7 +167,8 @@ export interface Game<Server extends boolean> {
    */
   get registered(): readonly (readonly [
     name: string,
-    fn: BareSpawnableFunction,
+    fn: SpawnableConstructor,
+    argsSchema: ZodObjectAny,
   ])[]
 
   /**
@@ -187,15 +184,10 @@ export interface Game<Server extends boolean> {
    * @param name - Entity name
    * @param spawnableFn - Spawnable Function
    */
-  register<
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    Args extends z.ZodObject<any, z.UnknownKeysParam>,
-    E extends SpawnableEntity<Data, Render, Args>,
-    Data,
-    Render,
-  >(
+  register<Args extends ZodObjectAny>(
     name: string,
-    spawnableFn: SpawnableFunction<Args, E, Data, Render>,
+    spawnableFn: SpawnableConstructor<Args>,
+    argsSchema: Args,
   ): void
 
   /**
@@ -203,18 +195,14 @@ export interface Game<Server extends boolean> {
    *
    * @param entity - Entity
    */
-  instantiate<Data, Render, E extends Entity<Data, Render>>(
-    entity: E,
-  ): Promise<void>
+  instantiate<E extends Entity>(entity: E): Promise<void>
 
   /**
    * Destroy an entity
    *
    * @param entity - Entity
    */
-  destroy<Data, Render, E extends Entity<Data, Render>>(
-    entity: E,
-  ): Promise<void>
+  destroy<E extends Entity>(entity: E): Promise<void>
 
   /**
    * Spawn a new entity
@@ -250,7 +238,7 @@ export interface Game<Server extends boolean> {
    *
    * @param uid - Entity UID
    */
-  lookup(uid: UID): SpawnableEntity | undefined
+  lookup(uid: string): SpawnableEntity | undefined
 
   /**
    * Query spawnable entities at a single point
@@ -311,7 +299,10 @@ export async function createGame<Server extends boolean>(
   const renderContext = await initRenderContext(options)
   const entities: Entity[] = []
   const spawnables = new Map<string, SpawnableEntity>()
-  const spawnableFunctions = new Map<string, BareSpawnableFunction>()
+  const spawnableFunctions = new Map<
+    string,
+    [SpawnableConstructor, ZodObjectAny]
+  >()
 
   const inputs = renderContext ? new InputManager(renderContext) : undefined
   const unregister = inputs?.registerListeners()
@@ -326,10 +317,7 @@ export async function createGame<Server extends boolean>(
     const entities = game.queryPosition(pos)
     for (const entity of entities) {
       if (typeof entity.onClick !== 'function') continue
-
-      const data = dataManager.getData(entity)
-      const render = dataManager.getRenderData(entity)
-      entity.onClick(data, render, pos)
+      entity.onClick(pos)
     }
   }
 
@@ -446,8 +434,7 @@ export async function createGame<Server extends boolean>(
         if (typeof entity.onPhysicsStep !== 'function') continue
         if (isSpawnableEntity(entity) && physics.isFrozen(entity)) continue
 
-        const data = dataManager.getData(entity)
-        entity.onPhysicsStep(timeState, data)
+        entity.onPhysicsStep(timeState)
       }
     }
 
@@ -462,13 +449,10 @@ export async function createGame<Server extends boolean>(
       for (const entity of entities) {
         if (typeof entity.onRenderFrame !== 'function') continue
 
-        const data = dataManager.getData(entity)
-        const render = dataManager.getRenderData(entity)
-
         if (isSpawnableEntity(entity) && physics.isFrozen(entity)) {
-          entity.onRenderFrame({ ...timeState, smooth: 0 }, data, render)
+          entity.onRenderFrame({ ...timeState, smooth: 0 })
         } else {
-          entity.onRenderFrame(timeState, data, render)
+          entity.onRenderFrame(timeState)
         }
       }
     }
@@ -569,7 +553,9 @@ export async function createGame<Server extends boolean>(
     },
 
     get registered() {
-      return [...spawnableFunctions.entries()]
+      return [...spawnableFunctions.entries()].map(
+        ([name, [fn, args]]) => [name, fn, args] as const,
+      )
     },
 
     initNetwork(net) {
@@ -577,13 +563,12 @@ export async function createGame<Server extends boolean>(
       network = { type, ...net } as Server extends true ? NetServer : NetClient
     },
 
-    register(name, spawnableFn) {
+    register(name, fn, argsSchema) {
       if (spawnableFunctions.has(name)) {
         throw new Error(`duplicate spawnable function: ${name}`)
       }
 
-      const fn = spawnableFn as unknown as BareSpawnableFunction
-      spawnableFunctions.set(name, fn)
+      spawnableFunctions.set(name, [fn, argsSchema])
       events.common.emit('onRegister', name, fn)
     },
 
@@ -597,14 +582,11 @@ export async function createGame<Server extends boolean>(
         physics,
       }
 
-      const data = await entity.init(init)
-      dataManager.setData(entity, data)
+      await entity.init(init)
 
       if (renderContext) {
         const { app: _, ...ctx } = renderContext
-
-        const render = await entity.initRenderContext(init, ctx)
-        dataManager.setRenderData(entity, render)
+        await entity.initRender(ctx)
       }
 
       entities.push(entity)
@@ -624,15 +606,12 @@ export async function createGame<Server extends boolean>(
           entity.transform.removeAllListeners()
         }
 
-        const data = dataManager.getData(entity)
-        if (data !== undefined && data !== null && typeof data === 'object') {
-          const syncedValues = Object.values(data).filter(isSyncedValue)
-          for (const value of syncedValues) {
-            value.destroy()
-          }
+        const syncedValues = Object.values(entity).filter(isSyncedValue)
+        for (const value of syncedValues) {
+          value.destroy()
         }
 
-        onChange.unsubscribe(entity.args)
+        onChange.unsubscribe(entity.definition.args)
         onChange.unsubscribe(entity.definition)
         spawnables.delete(entity.uid)
       }
@@ -643,13 +622,8 @@ export async function createGame<Server extends boolean>(
       entities.splice(idx, 1)
       sortEntities()
 
-      if (renderContext) {
-        const render = dataManager.getRenderData(entity)
-        await entity.teardownRenderContext(render)
-      }
-
-      const data = dataManager.getData(entity)
-      await entity.teardown(data)
+      if (renderContext) await entity.teardownRender()
+      await entity.teardown()
 
       events.common.emit('onDestroy', entity)
       if (isNetPlayer(entity)) events.common.emit('onPlayerLeave', entity)
@@ -657,12 +631,14 @@ export async function createGame<Server extends boolean>(
 
     async spawn(loose, preview = false) {
       const definition = SpawnableDefinitionSchema.parse(loose)
-      const fn = spawnableFunctions.get(definition.entity)
+      const spawnable = spawnableFunctions.get(definition.entity)
 
-      if (fn === undefined) {
+      if (spawnable === undefined) {
         console.warn(`unknown spawnable function: ${definition.entity}`)
         return undefined
       }
+
+      const [Spawnable, argsSchema] = spawnable
 
       // Assign unique identifier
       const uid = definition.uid ?? cuid2.createId()
@@ -671,7 +647,7 @@ export async function createGame<Server extends boolean>(
       }
 
       // Verify args schema
-      const args = fn.argsSchema.parse(definition.args)
+      const args = argsSchema.parse(definition.args)
       definition.args = args
 
       // Track changes to args and trigger entity callback
@@ -694,15 +670,10 @@ export async function createGame<Server extends boolean>(
             return acc === '' ? value : `${acc}.${value}`
           }, '')
 
-          const data = dataManager.getData(entity)
-          const render = renderContext
-            ? dataManager.getRenderData(entity)
-            : undefined
-
           const previousArgs = clone(args)
           setProperty(previousArgs, path, previous)
 
-          entity.onArgsUpdate(path, previousArgs, data, render)
+          entity.onArgsUpdate(path, previousArgs)
           events.common.emit('onArgsChanged', entity)
 
           if (network?.type !== 'client') return
@@ -738,18 +709,19 @@ export async function createGame<Server extends boolean>(
       })
 
       const selected = ref(false)
-      const context: SpawnableContext = {
+      const context: SpawnableContext<SpawnableEntity> = {
         uid,
         transform,
         label: trackedDefinition.label,
         tags: trackedDefinition.tags,
+        args: watchedArgs,
 
         preview,
         definition: trackedDefinition,
         selected,
       }
 
-      const _entity = fn(context, watchedArgs)
+      const _entity = new Spawnable(context)
       const entity = Object.assign(_entity, { _selected: selected })
 
       await this.instantiate(entity)
