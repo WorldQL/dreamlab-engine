@@ -5,11 +5,10 @@ import type { Vector } from '~/math/vector'
 import { NonSolid } from './nonsolid'
 
 export class Solid extends NonSolid {
-  protected override readonly stroke = 'red'
   protected readonly body: Matter.Body
 
-  public constructor(...args: ConstructorParameters<typeof NonSolid>) {
-    super(...args)
+  public constructor(ctx: ConstructorParameters<typeof NonSolid>[0]) {
+    super(ctx, { stroke: 'red' })
 
     this.body = Matter.Bodies.rectangle(
       this.transform.position.x,
