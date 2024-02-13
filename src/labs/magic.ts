@@ -27,6 +27,10 @@ export const isClient = (): boolean => {
   const _game = game()
   return _game.client !== undefined
 }
+
+export const debug = () => game().debug
+export const physics = () => game().physics
+export const events = () => game().events
 // #endregion
 
 // #region Type-Safe Class Members
