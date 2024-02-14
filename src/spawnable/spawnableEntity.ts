@@ -41,14 +41,17 @@ export abstract class SpawnableEntity<
 
   public readonly [symbol] = true as const
 
+  /**
+   * Unique identifier for this spawnable entity
+   */
   public readonly uid: string
   public readonly transform: TrackedTransform
   public readonly label: string | undefined
   public readonly tags: string[]
   public readonly preview: boolean
-  readonly #selected: Ref<boolean>
+  private readonly _selected: Ref<boolean>
   public get selected(): boolean {
-    return this.#selected.value
+    return this._selected.value
   }
 
   public readonly definition: SpawnableDefinition<z.infer<Args>>
@@ -68,7 +71,7 @@ export abstract class SpawnableEntity<
     this.label = ctx.label
     this.tags = ctx.tags
     this.preview = ctx.preview
-    this.#selected = ctx.selected
+    this._selected = ctx.selected
 
     this.definition = ctx.definition
     this.args = ctx.args
