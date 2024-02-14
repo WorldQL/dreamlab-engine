@@ -65,6 +65,11 @@ const magicClient =
     return fn(_game)
   }
 
+export const container = magicClient(
+  'container',
+  game => game.client.render.container,
+)
+export const canvas = magicClient('canvas', game => game.client.render.canvas)
 export const stage = magicClient('stage', game => game.client.render.stage)
 export const camera = magicClient('camera', game => game.client.render.camera)
 export const inputs = magicClient('inputs', game => game.client.inputs)
