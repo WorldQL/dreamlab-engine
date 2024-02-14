@@ -184,11 +184,12 @@ export interface Game<Server extends boolean> {
   /**
    * Get a map of all registered spawnable entities
    */
-  get registered(): readonly (readonly [
-    name: string,
-    fn: SpawnableConstructor,
-    argsSchema: ZodObjectAny,
-  ])[]
+  get registered(): readonly {
+    readonly name: string
+    readonly fn: SpawnableConstructor
+    readonly argsSchema: ZodObjectAny
+    readonly hasDefaults: boolean
+  }[]
 
   /**
    * Initialize the network interface
@@ -327,7 +328,7 @@ export async function createGame<Server extends boolean>(
   const spawnables = new Map<string, SpawnableEntity>()
   const spawnableFunctions = new Map<
     string,
-    [SpawnableConstructor, ZodObjectAny]
+    { fn: SpawnableConstructor; argsSchema: ZodObjectAny; hasDefaults: boolean }
   >()
 
   const inputs = renderContext ? new InputManager(renderContext) : undefined
@@ -580,7 +581,12 @@ export async function createGame<Server extends boolean>(
 
     get registered() {
       return [...spawnableFunctions.entries()].map(
-        ([name, [fn, args]]) => [name, fn, args] as const,
+        ([name, { fn, argsSchema, hasDefaults }]) => ({
+          name,
+          fn,
+          argsSchema,
+          hasDefaults,
+        }),
       )
     },
 
@@ -595,8 +601,9 @@ export async function createGame<Server extends boolean>(
       }
 
       const fn = spawnableFn as unknown as SpawnableConstructor
+      const { success: hasDefaults } = argsSchema.safeParse({})
 
-      spawnableFunctions.set(name, [fn, argsSchema])
+      spawnableFunctions.set(name, { fn, argsSchema, hasDefaults })
       events.common.emit('onRegister', name, fn)
     },
 
@@ -653,7 +660,7 @@ export async function createGame<Server extends boolean>(
         return undefined
       }
 
-      const [Spawnable, argsSchema] = spawnable
+      const { fn: Spawnable, argsSchema } = spawnable
 
       // Assign unique identifier
       const uid = definition.uid ?? cuid2.createId()
