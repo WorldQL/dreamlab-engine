@@ -25,13 +25,13 @@ export const ArgsSchema = z.object({
   spriteSource: SpriteSourceSchema.optional(),
 })
 
-export class NonSolid extends SpawnableEntity<Args> {
+export class NonSolid<A extends Args = Args> extends SpawnableEntity<A> {
   protected readonly container: Container | undefined
   protected readonly gfx: BoxGraphics | undefined
   protected readonly sprite: Sprite | undefined
 
   public constructor(
-    ctx: SpawnableContext<Args>,
+    ctx: SpawnableContext<A>,
     { stroke = 'blue' }: { stroke?: string } = {},
   ) {
     super(ctx)
