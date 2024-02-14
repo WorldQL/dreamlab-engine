@@ -1,4 +1,3 @@
-import { Graphics } from 'pixi.js'
 import { z } from 'zod'
 import type { Camera } from '~/entities/camera.js'
 import { createSpawnableEntity } from '~/labs/compat'
@@ -6,8 +5,8 @@ import type { LegacySpawnableEntity as SpawnableEntity } from '~/labs/compat'
 import { simpleBoundsTest } from '~/math/bounds.js'
 import { Vec } from '~/math/vector.js'
 import type { Debug } from '~/utils/debug.js'
+import type { BoxGraphics } from '~/utils/draw.js'
 import { drawBox } from '~/utils/draw.js'
-import type { RedrawBox } from '~/utils/draw.js'
 
 type Args = typeof ArgsSchema
 export const ArgsSchema = z.object({
@@ -21,8 +20,7 @@ interface Data {
 
 interface Render {
   camera: Camera
-  gfx: Graphics
-  redrawGfx: RedrawBox
+  gfx: BoxGraphics
 }
 
 export const createMarker = createSpawnableEntity<
@@ -50,21 +48,20 @@ export const createMarker = createSpawnableEntity<
   initRenderContext(_, { stage, camera }) {
     const { width, height } = args
 
-    const gfx = new Graphics()
+    const gfx = drawBox({ width, height }, { stroke: '#00bcff' })
     gfx.zIndex = transform.zIndex
-    const redrawGfx = drawBox(gfx, { width, height }, { stroke: '#00bcff' })
 
     stage.addChild(gfx)
     transform.addZIndexListener(() => {
       gfx.zIndex = transform.zIndex
     })
 
-    return { camera, gfx, redrawGfx }
+    return { camera, gfx }
   },
 
   onArgsUpdate(path, _, _data, render) {
     if (render && (path === 'width' || path === 'height')) {
-      render.redrawGfx(args)
+      render.gfx.redraw(args)
     }
   },
 
