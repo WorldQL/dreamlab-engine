@@ -1,6 +1,6 @@
 import EventEmitter from 'eventemitter3'
 import Matter from 'matter-js'
-import type { Time } from '~/entity'
+import type { RenderTime, Time } from '~/entity'
 import { isEntity } from '~/entity'
 import { inputs, network, physics } from '~/labs/magic'
 import type { Gear } from '~/managers/gear'
@@ -222,5 +222,10 @@ export class Player extends BasePlayer {
     }
 
     // TODO
+  }
+
+  public override onRenderFrame(time: RenderTime): void {
+    super.onRenderFrame(time)
+    if (this.container) this.container.alpha = this.#noclip ? 0 : 1
   }
 }
