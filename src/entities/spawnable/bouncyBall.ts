@@ -56,8 +56,8 @@ export class BouncyBall extends SpawnableEntity<Args> {
       this.tags.push('net/replicated')
     }
 
-    const _game = game('client')
-    if (_game) {
+    const $game = game('client')
+    if ($game) {
       const { radius, spriteSource } = this.args
 
       this.container = new Container()

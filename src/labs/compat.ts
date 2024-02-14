@@ -103,16 +103,16 @@ export const createSpawnableEntity = <
     public constructor(ctx: SpawnableContext<ArgsSchema>) {
       super(ctx)
 
-      const _game = game()
-      const context: LegacyInitContext = { game: _game, physics: _game.physics }
+      const $game = game()
+      const context: LegacyInitContext = { game: $game, physics: $game.physics }
 
       this.#inner = fn.bind(this)({ ...ctx, _this: this }, this.args)
       this._data = this.#inner.init(context)
 
-      if (_game.client) {
+      if ($game.client) {
         this._render = this.#inner.initRenderContext(
           context,
-          _game.client.render,
+          $game.client.render,
         )
       }
     }

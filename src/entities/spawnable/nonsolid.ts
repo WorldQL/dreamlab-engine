@@ -36,8 +36,8 @@ export class NonSolid extends SpawnableEntity<Args> {
   ) {
     super(ctx)
 
-    const _game = game('client')
-    if (_game) {
+    const $game = game('client')
+    if ($game) {
       const { width, height, spriteSource } = this.args
 
       this.container = new Container()

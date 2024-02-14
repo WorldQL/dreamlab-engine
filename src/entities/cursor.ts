@@ -20,9 +20,9 @@ export class Cursor extends Entity {
   public constructor() {
     super()
 
-    const _game = game('client')
-    if (_game) {
-      const { container, stage } = _game.client.render
+    const $game = game('client')
+    if ($game) {
+      const { container, stage } = $game.client.render
 
       this.#text = createDebugText(1)
       stage.addChild(this.#text.gfx)
@@ -36,9 +36,9 @@ export class Cursor extends Entity {
   public override teardown(): void {
     this.#text?.gfx.destroy()
 
-    const _game = game('client')
-    if (_game) {
-      const { container } = _game.client.render
+    const $game = game('client')
+    if ($game) {
+      const { container } = $game.client.render
       container.removeEventListener('pointerover', this.#onPointerMove)
       container.removeEventListener('pointerout', this.#onPointerOut)
       container.removeEventListener('pointermove', this.#onPointerMove)
