@@ -122,7 +122,7 @@ export class Player extends BasePlayer {
     const jump = $inputs?.getInput(PlayerInput.Jump) ?? false
     // const attack = (colliding && $inputs?.getInput(PlayerInput.Attack)) ?? false
     const isJogging = $inputs?.getInput(PlayerInput.Jog) ?? false
-    // const crouch = $inputs?.getInput(PlayerInput.Crouch) ?? false
+    const crouch = $inputs?.getInput(PlayerInput.Crouch) ?? false
 
     this.direction = left ? -1 : right ? 1 : 0
     const xor = left ? !right : right
@@ -224,6 +224,32 @@ export class Player extends BasePlayer {
     }
 
     // TODO
+    // if (isAttackAnimation() && isAttackFrame()) {
+    //   game.events.common.emit('onPlayerAttack', this as Player, gear)
+    // }
+
+    if (!this.#noclip) {
+      // temporary fix for jittery noclipping netplayers in edit mode.
+      // TODO: Send a proper packet that communicates a player is in edit mode.
+      // We can even have it display an indicator to other player's that they're editing!
+
+      void network('client')?.sendPlayerPosition(
+        body.position,
+        body.velocity,
+        this.facing !== 'left',
+      )
+
+      void network('client')?.sendPlayerMotionInputs({
+        jump,
+        crouch,
+        walkLeft: left,
+        walkRight: right,
+        toggleNoclip: false,
+        // TODO: attack
+        attack: false,
+        jog: false,
+      })
+    }
   }
 
   private getAnimation(): KnownAnimation {
