@@ -12,6 +12,7 @@ import { loadCharacterAnimations } from '~/textures/playerAnimations'
 import type { BoxGraphics } from '~/utils/draw'
 import { drawBox } from '~/utils/draw'
 import type { KnownAnimation } from './animations'
+import { getSpeedMultiplier } from './animations'
 
 export abstract class BasePlayer extends Entity {
   protected static readonly PLAYER_MASS = 50
@@ -25,9 +26,44 @@ export abstract class BasePlayer extends Entity {
   protected facing: 'left' | 'right' = 'left'
 
   protected _characterId: string | undefined
-  protected _animations: PlayerAnimationMap<KnownAnimation> | undefined
-  protected _currentAnimation: KnownAnimation = 'idle'
+  public get characterId(): string | undefined {
+    return this._characterId
+  }
+
+  public set characterId(value: string | undefined) {
+    this._characterId = value
+    void this._loadAnimations()
+  }
+
+  protected animations: PlayerAnimationMap<KnownAnimation> | undefined
+  private _currentAnimation: KnownAnimation = 'idle'
+
+  protected get currentAnimation(): KnownAnimation {
+    return this._currentAnimation
+  }
+
+  protected set currentAnimation(value: KnownAnimation) {
+    if (this._currentAnimation === value) return
+    this._currentAnimation = value
+
+    if (!this.sprite || !this.animations) return
+
+    this.sprite.textures = this.animations[value].textures
+    this.sprite.animationSpeed =
+      BasePlayer.PLAYER_ANIMATION_SPEED * getSpeedMultiplier(value, this.gear)
+
+    this.sprite.loop = value !== 'jump'
+    this.sprite.gotoAndPlay(0)
+  }
+
   protected _gear: Gear | undefined
+  public get gear(): Gear | undefined {
+    return this._gear
+  }
+
+  public set gear(value: Gear | undefined) {
+    this._gear = value
+  }
 
   protected container: Container | undefined
   protected gfx: BoxGraphics | undefined
@@ -81,21 +117,12 @@ export abstract class BasePlayer extends Entity {
     this.container?.destroy({ children: true })
   }
 
-  public get characterId(): string | undefined {
-    return this._characterId
-  }
-
-  public set characterId(value: string | undefined) {
-    this._characterId = value
-    void this._loadAnimations()
-  }
-
   private async _loadAnimations(): Promise<void> {
     // Only load animations on the client
     if (!isClient() || !this.container) return
 
-    this._animations = await loadCharacterAnimations(this._characterId)
-    const textures = this._animations[this._currentAnimation].textures
+    this.animations = await loadCharacterAnimations(this._characterId)
+    const textures = this.animations[this._currentAnimation].textures
 
     if (this.sprite) this.sprite.textures = textures
     else {
@@ -110,15 +137,16 @@ export abstract class BasePlayer extends Entity {
     }
   }
 
-  public get gear(): Gear | undefined {
-    return this._gear
-  }
-
-  public set gear(value: Gear | undefined) {
-    this._gear = value
-  }
-
   public override onRenderFrame({ smooth }: RenderTime): void {
+    const scale = this.facing === 'left' ? 1 : -1
+    const newScale = scale * BasePlayer.PLAYER_SPRITE_SCALE
+    if (this.sprite && this.sprite.scale.x !== newScale) {
+      this.sprite.scale.x = newScale
+      // spriteSign = Math.sign(sprite.scale.x)
+    }
+
+    // currentFrame = sprite.currentFrame
+
     const smoothed = Vec.add(
       this.body.position,
       Vec.mult(this.body.velocity, smooth),
@@ -127,5 +155,8 @@ export abstract class BasePlayer extends Entity {
     const pos = Vec.add(smoothed, camera().offset)
     if (this.container) this.container.position = pos
     if (this.gfx) this.gfx.alpha = debug() ? 0.5 : 0
+
+    // TODO: Feet sensor
+    // TODO: Gear rendering
   }
 }
