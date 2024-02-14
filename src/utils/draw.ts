@@ -1,4 +1,5 @@
-import type { ColorSource, Graphics } from 'pixi.js'
+import type { ColorSource } from 'pixi.js'
+import { Graphics } from 'pixi.js'
 import type { Vector } from '~/math/vector.js'
 
 export interface DrawOptions {
@@ -17,12 +18,13 @@ export interface DrawBoxArgs {
   height: number
 }
 
-export type RedrawBox = (args: DrawBoxArgs) => void
+type RedrawBox = (args: DrawBoxArgs) => void
+export type BoxGraphics = Graphics & { readonly redraw: RedrawBox }
 export const drawBox = (
-  graphics: Graphics,
   { width, height }: DrawBoxArgs,
   options: DrawOptions = {},
-): RedrawBox => {
+  graphics = new Graphics(),
+): BoxGraphics => {
   const {
     fill = '#000',
     fillAlpha = 0,
@@ -44,7 +46,8 @@ export const drawBox = (
 
   graphics.drawRect(0 - width / 2, 0 - height / 2, width, height)
 
-  return args => drawBox(graphics, args, options)
+  const redraw: RedrawBox = args => drawBox(args, options, graphics)
+  return Object.assign(graphics, { redraw })
 }
 // #endregion
 
@@ -53,12 +56,13 @@ export interface DrawCircleArgs {
   radius: number
 }
 
-export type RedrawCircle = (args: DrawCircleArgs) => void
+type RedrawCircle = (args: DrawCircleArgs) => void
+export type CircleGraphics = Graphics & { readonly redraw: RedrawCircle }
 export const drawCircle = (
-  graphics: Graphics,
   { radius }: DrawCircleArgs,
   options: DrawOptions = {},
-): RedrawCircle => {
+  graphics = new Graphics(),
+): CircleGraphics => {
   const {
     fill = '#000',
     fillAlpha = 0,
@@ -80,7 +84,8 @@ export const drawCircle = (
 
   graphics.drawCircle(0, 0, radius)
 
-  return args => drawCircle(graphics, args, options)
+  const redraw: RedrawCircle = args => drawCircle(args, options, graphics)
+  return Object.assign(graphics, { redraw })
 }
 // #endregion
 
