@@ -2,12 +2,18 @@ import Matter from 'matter-js'
 import { physics } from '~/labs/magic'
 import { toRadians } from '~/math/general'
 import type { Vector } from '~/math/vector'
+import { updateBodyWidthHeight } from '~/spawnable/args'
+import type {
+  PreviousArgs,
+  SpawnableContext,
+} from '~/spawnable/spawnableEntity'
+import type { ArgsSchema } from './nonsolid'
 import { NonSolid } from './nonsolid'
 
 export class Solid extends NonSolid {
   protected readonly body: Matter.Body
 
-  public constructor(ctx: ConstructorParameters<typeof NonSolid>[0]) {
+  public constructor(ctx: SpawnableContext<typeof ArgsSchema>) {
     super(ctx, { stroke: 'red' })
 
     this.body = Matter.Bodies.rectangle(
@@ -39,5 +45,13 @@ export class Solid extends NonSolid {
 
     physics().unregister(this, this.body)
     physics().unlinkTransform(this.body, this.transform)
+  }
+
+  public override onArgsUpdate(
+    path: string,
+    previousArgs: PreviousArgs<typeof ArgsSchema>,
+  ): void {
+    super.onArgsUpdate(path, previousArgs)
+    updateBodyWidthHeight(path, this.body, this.args, previousArgs)
   }
 }
