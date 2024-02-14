@@ -1,3 +1,5 @@
+import type { Gear } from '~/managers/gear'
+
 const knownPlayerAnimation = ['idle', 'jog', 'jump', 'walk'] as const
 const knownAttackAnimation = ['greatsword', 'punch'] as const
 const knownRangedAttackAnimation = ['bow', 'shoot'] as const
@@ -19,4 +21,38 @@ export const isKnownAnimation = (
 ): animation is KnownAnimation => {
   // @ts-expect-error union narrowing
   return knownAnimation.includes(animation)
+}
+
+export const isAttackAnimation = (animation: KnownAnimation): boolean => {
+  switch (animation) {
+    case 'greatsword':
+    case 'punch':
+    case 'bow':
+    case 'shoot':
+      return true
+    default:
+      return false
+  }
+}
+
+export const getSpeedMultiplier = (
+  animation: string,
+  gear: Gear | undefined,
+) => {
+  if (
+    gear?.speedMultiplier &&
+    ((knownAttackAnimation as readonly string[]).includes(animation) ||
+      (knownRangedAttackAnimation as readonly string[]).includes(animation))
+  ) {
+    return gear.speedMultiplier
+  }
+
+  switch (animation) {
+    case 'greatsword':
+      return 2.2
+    case 'punch':
+      return 2.5
+    default:
+      return 1
+  }
 }

@@ -4,8 +4,10 @@ import type { RenderTime, Time } from '~/entity'
 import { isEntity } from '~/entity'
 import { inputs, network, physics } from '~/labs/magic'
 import type { Gear } from '~/managers/gear'
-import { v, Vec } from '~/math/vector'
 import type { LooseVector, Vector } from '~/math/vector'
+import { v, Vec } from '~/math/vector'
+import type { KnownAnimation } from './animations'
+import { isAttackAnimation } from './animations'
 import { BasePlayer } from './base-player'
 
 const symbol = Symbol.for('@dreamlab/core/entities/player')
@@ -103,10 +105,10 @@ export class Player extends BasePlayer {
 
   #hasJumped = false
   #jumpTicks = 0
-  // #isJogging = false
+  #isJogging = false
   #noclip = false
-  // #attack = false
-  // #isAnimationLocked = false
+  #attack = false
+  #isAnimationLocked = false
 
   public override onPhysicsStep(_time: Time): void {
     const {
@@ -224,7 +226,49 @@ export class Player extends BasePlayer {
     // TODO
   }
 
+  private getAnimation(): KnownAnimation {
+    if (this.#noclip) return 'idle'
+    if (this.#hasJumped && !this.#attack) return 'jump'
+
+    const animationName = this.gear
+      ? this.gear.animationName.toLowerCase()
+      : 'punch'
+    if (
+      this.#attack &&
+      ['greatsword', 'bow', 'punch', 'shoot'].includes(animationName)
+    )
+      return animationName as KnownAnimation
+    if (this.direction !== 0) return this.#isJogging ? 'jog' : 'walk'
+
+    return 'idle'
+  }
+
   public override onRenderFrame(time: RenderTime): void {
+    if (!this.sprite || !this.animations) {
+      super.onRenderFrame(time)
+      return
+    }
+
+    const frames = this.animations[this.currentAnimation].textures.length - 1
+    const isLastFrame = this.sprite.currentFrame === frames
+
+    if (
+      this.#isAnimationLocked &&
+      (isLastFrame || !isAttackAnimation(this.currentAnimation))
+    ) {
+      this.#isAnimationLocked = false
+    }
+
+    const newAnimation = this.getAnimation()
+    if (newAnimation !== this.currentAnimation && !this.#isAnimationLocked) {
+      if (isAttackAnimation(this.currentAnimation)) {
+        this.#isAnimationLocked = true
+      }
+
+      this.currentAnimation = newAnimation
+      void network('client')?.sendPlayerAnimation(newAnimation)
+    }
+
     super.onRenderFrame(time)
     if (this.container) this.container.alpha = this.#noclip ? 0 : 1
   }
