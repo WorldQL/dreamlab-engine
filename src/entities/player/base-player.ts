@@ -1,5 +1,5 @@
 import Matter from 'matter-js'
-import { AnimatedSprite, Container, Graphics } from 'pixi.js'
+import { AnimatedSprite, Container } from 'pixi.js'
 import type { RenderTime } from '~/entity'
 import { Entity } from '~/entity'
 import { camera, debug, isClient, physics, stage } from '~/labs/magic'
@@ -9,6 +9,7 @@ import type { Vector } from '~/math/vector'
 import { Vec } from '~/math/vector'
 import type { PlayerAnimationMap } from '~/textures/playerAnimations'
 import { loadCharacterAnimations } from '~/textures/playerAnimations'
+import type { BoxGraphics } from '~/utils/draw'
 import { drawBox } from '~/utils/draw'
 import type { KnownAnimation } from './animations'
 
@@ -29,7 +30,7 @@ export abstract class BasePlayer extends Entity {
   protected _gear: Gear | undefined
 
   protected container: Container | undefined
-  protected gfx: Graphics | undefined
+  protected gfx: BoxGraphics | undefined
   protected sprite: AnimatedSprite | undefined
 
   public get position(): Vector {
@@ -62,8 +63,7 @@ export abstract class BasePlayer extends Entity {
       this.container.sortableChildren = true
       this.container.zIndex = 10
 
-      this.gfx = new Graphics()
-      drawBox(this.gfx, { width, height }, { stroke: this.stroke })
+      this.gfx = drawBox({ width, height }, { stroke: this.stroke })
       this.container.addChild(this.gfx)
 
       stage().addChild(this.container)

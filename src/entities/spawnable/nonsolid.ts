@@ -1,12 +1,13 @@
 import type { Vector } from 'matter-js'
 import type { Sprite } from 'pixi.js'
-import { Container, Graphics } from 'pixi.js'
+import { Container } from 'pixi.js'
 import { z } from 'zod'
 import type { RenderTime } from '~/entity'
 import { camera, debug, game, stage } from '~/labs/magic'
 import { simpleBoundsTest } from '~/math/bounds'
 import type { Bounds } from '~/math/bounds'
 import { Vec } from '~/math/vector'
+import { updateSpriteSource, updateSpriteWidthHeight } from '~/spawnable/args'
 import type {
   ArgsPath,
   PreviousArgs,
@@ -14,6 +15,7 @@ import type {
 } from '~/spawnable/spawnableEntity'
 import { SpawnableEntity } from '~/spawnable/spawnableEntity'
 import { createSprite, SpriteSourceSchema } from '~/textures/sprites'
+import type { BoxGraphics } from '~/utils/draw'
 import { drawBox } from '~/utils/draw'
 
 type Args = typeof ArgsSchema
@@ -25,7 +27,7 @@ export const ArgsSchema = z.object({
 
 export class NonSolid extends SpawnableEntity<Args> {
   protected readonly container: Container | undefined
-  protected readonly gfx: Graphics | undefined
+  protected readonly gfx: BoxGraphics | undefined
   protected readonly sprite: Sprite | undefined
 
   public constructor(
@@ -42,9 +44,8 @@ export class NonSolid extends SpawnableEntity<Args> {
       this.container.sortableChildren = true
       this.container.zIndex = this.transform.zIndex
 
-      this.gfx = new Graphics()
+      this.gfx = drawBox({ width, height }, { stroke })
       this.gfx.zIndex = 100
-      drawBox(this.gfx, { width, height }, { stroke })
 
       this.sprite = spriteSource
         ? createSprite(spriteSource, { width, height })

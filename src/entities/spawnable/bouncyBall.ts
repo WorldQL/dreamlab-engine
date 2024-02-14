@@ -1,5 +1,5 @@
 import Matter from 'matter-js'
-import { Container, Graphics } from 'pixi.js'
+import { Container } from 'pixi.js'
 import type { Sprite } from 'pixi.js'
 import { z } from 'zod'
 import type { RenderTime } from '~/entity'
@@ -13,6 +13,7 @@ import type {
 } from '~/spawnable/spawnableEntity.js'
 import { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import { createSprite, SpriteSourceSchema } from '~/textures/sprites.js'
+import type { CircleGraphics } from '~/utils/draw.js'
 import { drawCircle } from '~/utils/draw.js'
 
 type Args = typeof ArgsSchema
@@ -24,7 +25,7 @@ export const ArgsSchema = z.object({
 export class BouncyBall extends SpawnableEntity<Args> {
   private readonly body: Matter.Body
   private readonly container: Container | undefined
-  private readonly gfx: Graphics | undefined
+  private readonly gfx: CircleGraphics | undefined
   private readonly sprite: Sprite | undefined
 
   public constructor(ctx: SpawnableContext<Args>) {
@@ -63,9 +64,8 @@ export class BouncyBall extends SpawnableEntity<Args> {
       this.container.sortableChildren = true
       this.container.zIndex = this.transform.zIndex
 
-      this.gfx = new Graphics()
+      this.gfx = drawCircle({ radius })
       this.gfx.zIndex = 100
-      drawCircle(this.gfx, { radius })
 
       const width = radius * 2
       const height = radius * 2
