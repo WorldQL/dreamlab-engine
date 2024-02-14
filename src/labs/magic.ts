@@ -5,17 +5,37 @@ import type { NetServer } from '~/network/server'
 
 // #region Magic Functions
 export function game(): Game<boolean>
-export function game(type: 'client'): Game<false> | undefined
-export function game(type: 'server'): Game<true> | undefined
-export function game(type?: 'client' | 'server'): Game<boolean> | undefined {
+export function game(type: 'client', force: true): Game<false>
+export function game(type: 'client', force?: false): Game<false> | undefined
+export function game(type: 'server', force: true): Game<true>
+export function game(type: 'server', force?: false): Game<true> | undefined
+export function game(
+  type?: 'client' | 'server',
+  force?: boolean,
+): Game<boolean> | undefined {
   const game = getGlobalGame()
   if (game === undefined || game === 'pending') {
     throw new Error('failed to get game')
   }
 
   if (type === undefined) return game
-  if (type === 'client') return game.client ? game : undefined
-  if (type === 'server') return game.server ? game : undefined
+  if (type === 'client') {
+    if (force === true) {
+      if (!game.client) throw new Error('not in a client context')
+      return game
+    }
+
+    return game.client ? game : undefined
+  }
+
+  if (type === 'server') {
+    if (force === true) {
+      if (!game.server) throw new Error('not in a server context')
+      return game
+    }
+
+    return game.server ? game : undefined
+  }
 
   throw new Error('invalid parameter: type')
 }
