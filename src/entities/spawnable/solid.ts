@@ -10,10 +10,11 @@ import type {
 import type { ArgsSchema } from './nonsolid'
 import { NonSolid } from './nonsolid'
 
-export class Solid extends NonSolid {
+type Args = typeof ArgsSchema
+export class Solid<A extends Args = Args> extends NonSolid<A> {
   protected readonly body: Matter.Body
 
-  public constructor(ctx: SpawnableContext<typeof ArgsSchema>) {
+  public constructor(ctx: SpawnableContext<A>) {
     super(ctx, { stroke: 'red' })
 
     this.body = Matter.Bodies.rectangle(
