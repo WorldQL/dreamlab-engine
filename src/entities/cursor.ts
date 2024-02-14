@@ -5,18 +5,15 @@ import type { Vector } from '~/math/vector'
 import { createDebugText } from '~/utils/debug'
 import type { DebugText } from '~/utils/debug'
 
-function onPointerOut(this: Cursor) {
-  this.cursorPosition = undefined
-}
-
-function onPointerMove(this: Cursor, ev: PointerEvent) {
-  this.cursorPosition = { x: ev.offsetX, y: ev.offsetY }
-}
-
 export class Cursor extends Entity {
   protected cursorPosition: Vector | undefined = undefined
-  readonly #onPointerOut = onPointerOut.bind(this)
-  readonly #onPointerMove = onPointerMove.bind(this)
+  readonly #onPointerOut = () => {
+    this.cursorPosition = undefined
+  }
+
+  readonly #onPointerMove = (ev: PointerEvent) => {
+    this.cursorPosition = { x: ev.offsetX, y: ev.offsetY }
+  }
 
   readonly #text: DebugText | undefined
 
