@@ -87,14 +87,12 @@ export class Player extends BasePlayer {
     this.events.emit('onTeleport', previousPosition, this.body.position)
   }
 
-  #_onToggleNoclip(pressed: boolean) {
+  readonly #onToggleNoclip = (pressed: boolean) => {
     if (!pressed) return
 
     this.#noclip = !this.#noclip
     this.events.emit('onToggleNoclip', this.#noclip)
   }
-
-  #onToggleNoclip = this.#_onToggleNoclip.bind(this)
 
   private static readonly MAX_SPEED = 1
   private static readonly JUMP_FORCE = 5

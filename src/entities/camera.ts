@@ -50,7 +50,7 @@ export class Camera extends Entity {
 
   readonly #text: DebugText
 
-  #onWheelInner(ev: WheelEvent) {
+  readonly #onWheel = (ev: WheelEvent) => {
     if (!ev.ctrlKey) return
     ev.preventDefault()
 
@@ -62,8 +62,6 @@ export class Camera extends Entity {
 
     this.#zoomScaleTarget = SCALE_LEVELS[this.#zoomScaleLevelIdx] as number
   }
-
-  #onWheel = this.#onWheelInner.bind(this)
 
   public constructor(
     targetWidth: number,
