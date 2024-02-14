@@ -31,6 +31,8 @@ export abstract class BasePlayer extends Entity {
   }
 
   public set characterId(value: string | undefined) {
+    if (this._characterId === value) return
+
     this._characterId = value
     void this._loadAnimations()
   }
@@ -107,6 +109,7 @@ export abstract class BasePlayer extends Entity {
 
     this.bounds = { width, height }
     this.characterId = characterId
+    void this._loadAnimations()
 
     // TODO: Implement BasePlayer
   }
