@@ -41,13 +41,13 @@ export function game(
 }
 
 export const isServer = (): boolean => {
-  const _game = game()
-  return _game.server !== undefined
+  const $game = game()
+  return $game.server !== undefined
 }
 
 export const isClient = (): boolean => {
-  const _game = game()
-  return _game.client !== undefined
+  const $game = game()
+  return $game.client !== undefined
 }
 
 export const debug = () => game().debug.value
@@ -57,12 +57,12 @@ export const events = () => game().events
 const magicClient =
   <T>(name: string, fn: (game: Game<false>) => T) =>
   () => {
-    const _game = game('client')
-    if (!_game) {
+    const $game = game('client')
+    if (!$game) {
       throw new Error(`tried to access \`${name}()\` on the server`)
     }
 
-    return fn(_game)
+    return fn($game)
   }
 
 export const container = magicClient(
@@ -79,10 +79,10 @@ export function network(type: 'server'): NetServer | undefined
 export function network(
   type: 'client' | 'server',
 ): NetClient | NetServer | undefined {
-  const _game = game()
+  const $game = game()
 
-  if (type === 'client') return _game.client?.network
-  if (type === 'server') return _game.server?.network
+  if (type === 'client') return $game.client?.network
+  if (type === 'server') return $game.server?.network
 
   throw new Error('invalid parameter: type')
 }
