@@ -17,8 +17,9 @@ export interface SpawnableContext<Args extends ZodObjectAny> {
   preview: boolean
   selected: Ref<boolean>
 
-  args: z.infer<Args>
   definition: SpawnableDefinition<z.infer<Args>>
+  args: z.infer<Args>
+  argsSchema: Args
 }
 
 // TODO: Make this work like it used to
@@ -50,12 +51,9 @@ export abstract class SpawnableEntity<
     return this.#selected.value
   }
 
-  public readonly args: z.infer<Args>
   public readonly definition: SpawnableDefinition<z.infer<Args>>
-
-  // NOTE: We need this to be static to be able to reference it before instantiating
-  // But we cannot have static generic types
-  public static readonly argsSchema: ZodObjectAny // T
+  public readonly args: z.infer<Args>
+  public readonly argsSchema: Args
 
   // NOTE: Current design assumes the first constructor arg is always the context
   // Is this the best way of doing it? We want to enforce setting uid/transform/etc properties in
@@ -72,8 +70,9 @@ export abstract class SpawnableEntity<
     this.preview = ctx.preview
     this.#selected = ctx.selected
 
-    this.args = ctx.args
     this.definition = ctx.definition
+    this.args = ctx.args
+    this.argsSchema = ctx.argsSchema
   }
 
   public abstract bounds(): Bounds | undefined
