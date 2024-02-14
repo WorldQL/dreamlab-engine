@@ -729,11 +729,12 @@ export async function createGame<Server extends boolean>(
         transform,
         label: trackedDefinition.label,
         tags: trackedDefinition.tags,
-        args: watchedArgs,
-
         preview,
-        definition: trackedDefinition,
         selected,
+
+        definition: trackedDefinition,
+        args: watchedArgs,
+        argsSchema,
       }
 
       const _entity = new Spawnable(context)
