@@ -4,6 +4,7 @@ import { isEntity } from '~/entity'
 import type { Bounds } from '~/math/bounds'
 import type { LooseVector } from '~/math/vector'
 import { v } from '~/math/vector'
+import type { KnownAnimation } from './animations'
 import { BasePlayer } from './base-player'
 
 const symbol = Symbol.for('@dreamlab/core/entities/net-player')
@@ -16,16 +17,19 @@ export class NetPlayer extends BasePlayer {
   public readonly [symbol] = true as const
 
   public readonly entityId: string
+  public readonly nickname: string
 
   public constructor(
     public readonly connectionId: string,
     entityId: string | undefined,
     characterId: string | undefined,
-    public readonly nickname: string | undefined,
+    nickname: string | undefined,
     bounds?: Partial<Bounds>,
   ) {
     super(characterId, bounds)
+
     this.entityId = entityId ?? createId()
+    this.nickname = nickname ?? 'Player'
   }
 
   public setPosition(vector: LooseVector): void {
@@ -36,5 +40,11 @@ export class NetPlayer extends BasePlayer {
     Matter.Body.setVelocity(this.body, v(vector))
   }
 
-  // TODO: Implement NetPlayer
+  public setFlipped(flipped: boolean): void {
+    this.facing = flipped ? 'right' : 'left'
+  }
+
+  public setAnimation(animation: KnownAnimation): void {
+    this.currentAnimation = animation
+  }
 }
