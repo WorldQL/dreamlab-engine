@@ -1,13 +1,17 @@
 import Matter from 'matter-js'
+import { z } from 'zod'
 import type { Time } from '~/entity'
 import { game } from '~/labs/magic'
 import type { SpawnableContext } from '~/spawnable/spawnableEntity'
-import type { ArgsSchema } from './nonsolid'
-import { Solid } from './solid'
+import { ArgsSchema } from './nonsolid'
+import { Platform } from './platform'
 
-type Args = typeof ArgsSchema
+type Args = typeof MovingPlatformArgs
+export const MovingPlatformArgs = ArgsSchema.extend({
+  changeDirectionEveryNTicks: z.number().default(200),
+})
 
-export class MovingPlatform<A extends Args = Args> extends Solid<A> {
+export class MovingPlatform<A extends Args = Args> extends Platform<A> {
   private count = 0
 
   public constructor(ctx: SpawnableContext<A>) {
@@ -29,7 +33,8 @@ export class MovingPlatform<A extends Args = Args> extends Solid<A> {
     }
   }
 
-  public override onPhysicsStep(_time: Time): void {
+  public override onPhysicsStep(time: Time): void {
+    super.onPhysicsStep(time)
     const $server = game('server')
 
     if ($server) {
@@ -37,7 +42,7 @@ export class MovingPlatform<A extends Args = Args> extends Solid<A> {
 
       this.count++
 
-      if (this.count % 200 === 0) {
+      if (this.count % this.args.changeDirectionEveryNTicks === 0) {
         Matter.Body.setVelocity(this.body, { x: -this.body.velocity.x, y: 0 })
       }
     }
