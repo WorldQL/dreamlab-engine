@@ -1,6 +1,8 @@
 import Matter from 'matter-js'
-import { physics } from '~/labs/magic'
+import type { RenderTime } from '~/entity'
+import { camera, debug, physics } from '~/labs/magic'
 import { toRadians } from '~/math/general'
+import { Vec } from '~/math/vector'
 import type { Vector } from '~/math/vector'
 import { updateBodyWidthHeight } from '~/spawnable/args'
 import type {
@@ -57,5 +59,19 @@ export class Solid<A extends Args = Args> extends NonSolid<A> {
   ): void {
     super.onArgsUpdate(path, previousArgs)
     updateBodyWidthHeight(path, this.body, this.args, previousArgs)
+  }
+  public override onRenderFrame({ smooth }: RenderTime): void {
+    if (this.container) {
+      const smoothed = Vec.add(
+        this.body.position,
+        Vec.mult(this.body.velocity, smooth),
+      )
+
+      const pos = Vec.add(smoothed, camera().offset)
+      this.container.position = pos
+      this.container.rotation = this.body.angle
+    }
+
+    if (this.gfx) this.gfx.alpha = debug() ? 0.5 : 0
   }
 }
