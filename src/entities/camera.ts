@@ -21,11 +21,12 @@ const SCALE_LEVELS = [
 ] as const satisfies readonly number[]
 
 interface PositionTarget {
-  get position(): Vector
+  readonly position: Vector
+  readonly velocity?: Vector
 }
 
 interface TransformTarget {
-  get transform(): Transform
+  readonly transform: Transform
 }
 
 export type CameraTarget = PositionTarget | TransformTarget
@@ -190,7 +191,7 @@ export class Camera extends Entity {
     return Vec.sub(Vec.div(position, this.scale), this.offset)
   }
 
-  public override onRenderFrame({ delta }: RenderTime): void {
+  public override onRenderFrame({ delta, smooth }: RenderTime): void {
     let scaleChanged = false
     if (this.#zoomScale !== this.#zoomScaleTarget) {
       this.#zoomScale = lerp(this.#zoomScale, this.#zoomScaleTarget, delta * 12)
@@ -210,12 +211,17 @@ export class Camera extends Entity {
       this.#stage.scale.set(finalScale)
     }
 
-    const targetPosition =
+    const rawTargetPosition: Vector =
       this.#target === undefined
         ? Vec.create()
         : 'position' in this.#target
           ? this.#target.position
           : this.#target.transform.position
+
+    const targetPosition: Vector =
+      this.#target && 'velocity' in this.#target
+        ? Vec.add(rawTargetPosition, Vec.mult(this.#target.velocity, smooth))
+        : rawTargetPosition
 
     if (this.#smoothing > 0) {
       // TODO: Calculate camera speed based on S curve of the distance

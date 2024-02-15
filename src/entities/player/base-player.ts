@@ -72,7 +72,11 @@ export abstract class BasePlayer extends Entity {
   protected sprite: AnimatedSprite | undefined
 
   public get position(): Vector {
-    return this.body.position
+    return Vec.clone(this.body.position)
+  }
+
+  public get velocity(): Vector {
+    return Vec.clone(this.body.velocity)
   }
 
   public constructor(
