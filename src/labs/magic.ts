@@ -1,4 +1,10 @@
 import { getGlobalGame } from '~/_internal/global-state'
+import type {
+  ClientEventManager,
+  CommonEventManager,
+  EventsManager,
+  ServerEventManager,
+} from '~/events'
 import type { Game } from '~/game'
 import type { NetClient } from '~/network/client'
 import type { NetServer } from '~/network/server'
@@ -52,7 +58,28 @@ export const isClient = (): boolean => {
 
 export const debug = () => game().debug.value
 export const physics = () => game().physics
-export const events = () => game().events
+
+export function events(): EventsManager<boolean>
+export function events(type: 'common'): CommonEventManager
+export function events(type: 'client'): ClientEventManager | undefined
+export function events(type: 'server'): ServerEventManager | undefined
+export function events(
+  type?: 'client' | 'common' | 'server',
+):
+  | ClientEventManager
+  | CommonEventManager
+  | EventsManager<boolean>
+  | ServerEventManager
+  | undefined {
+  const $game = game()
+
+  if (!type) return $game.events
+  if (type === 'common') return $game.events.common
+  if (type === 'client') return $game.events?.client
+  if (type === 'server') return $game.events?.server
+
+  throw new Error('invalid parameter: type')
+}
 
 const magicClient =
   <T>(name: string, fn: (game: Game<false>) => T) =>
