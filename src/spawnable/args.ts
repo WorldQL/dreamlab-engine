@@ -43,7 +43,6 @@ export const updateSpriteSource = (
   spriteSource: SpriteSource | undefined,
   args: { width: number; height: number },
 ) => {
-  console.log(path, sourceKey)
   if (path !== sourceKey && !path.startsWith(sourceKey + '.')) return sprite
   if (!container || !spriteSource) return sprite
 
