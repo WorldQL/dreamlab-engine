@@ -38,6 +38,8 @@ export interface CommonEvents {
   onSpawn: [entity: SpawnableEntity]
 
   onArgsChanged: [entity: SpawnableEntity]
+  onTagsChanged: [entity: SpawnableEntity]
+  onLabelChanged: [entity: SpawnableEntity]
   onDefinitionChanged: [entity: SpawnableEntity]
 
   onPhysicsStep: [time: Time]
