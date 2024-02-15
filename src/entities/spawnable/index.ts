@@ -12,7 +12,7 @@ import {
 import { createForceField, ArgsSchema as ForceFieldArgs } from './forceField.js'
 import { createMarker, ArgsSchema as MarkerArgs } from './marker.js'
 import { NonSolid, ArgsSchema as NonSolidArgs } from './nonsolid'
-import { createPlatform, ArgsSchema as PlatformArgs } from './platform.js'
+import { Platform, ArgsSchema as PlatformArgs } from './platform.js'
 import { Solid } from './solid'
 
 export const registerDefaultSpawnables = (game: Game<boolean>) => {
@@ -27,6 +27,6 @@ export const registerDefaultSpawnables = (game: Game<boolean>) => {
   game.register('@dreamlab/ForceField', createForceField, ForceFieldArgs)
   game.register('@dreamlab/Marker', createMarker, MarkerArgs)
   game.register('@dreamlab/Nonsolid', NonSolid, NonSolidArgs)
-  game.register('@dreamlab/Platform', createPlatform, PlatformArgs)
+  game.register('@dreamlab/Platform', Platform, PlatformArgs)
   game.register('@dreamlab/Solid', Solid, NonSolidArgs)
 }

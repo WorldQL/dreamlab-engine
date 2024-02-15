@@ -1,7 +1,7 @@
 import Matter from 'matter-js'
 import type { Container, Sprite } from 'pixi.js'
 import { createSprite } from '~/textures/sprites.js'
-import type { SpriteOptions, SpriteSource } from '~/textures/sprites.js'
+import type { SpriteSource } from '~/textures/sprites.js'
 
 export const updateBodyWidthHeight = (
   path: string,
@@ -35,33 +35,22 @@ export const updateSpriteWidthHeight = (
   sprite.height = args.height
 }
 
-export const updateSpriteSource = <
-  SpriteKey extends string,
-  SourceKey extends string,
-  ContainerKey extends string,
->(
+export const updateSpriteSource = (
   path: string,
-  spriteKey: SpriteKey,
-  sourceKey: SourceKey,
-  containerKey: ContainerKey,
-  args: SpriteOptions & { [k in SourceKey]?: SpriteSource | undefined },
-  render:
-    | ({
-        [k in ContainerKey]: Container
-      } & { [k in SpriteKey]: Sprite | undefined })
-    | undefined,
+  sourceKey: string,
+  container: Container | undefined,
+  sprite: Sprite | undefined,
+  spriteSource: SpriteSource | undefined,
+  args: { width: number; height: number },
 ) => {
-  if (!render) return
-  if (path !== sourceKey && !path.startsWith(sourceKey + '.')) return
+  if (path !== sourceKey && !path.startsWith(sourceKey + '.')) return sprite
+  if (!container || !spriteSource) return sprite
 
-  const sprite = spriteKey
-  const source = args[sourceKey]
-  const container = render[containerKey]
+  const source = spriteSource
 
-  render[sprite]?.destroy()
+  sprite?.destroy()
   const newSprite = source ? createSprite(source, args) : undefined
 
-  // @ts-expect-error generic narrowing
-  render[sprite] = newSprite
   if (newSprite) container.addChild(newSprite)
+  return newSprite
 }

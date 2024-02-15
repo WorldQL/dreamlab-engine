@@ -7,7 +7,7 @@ import { camera, debug, game, stage } from '~/labs/magic'
 import { simpleBoundsTest } from '~/math/bounds'
 import type { Bounds } from '~/math/bounds'
 import { Vec } from '~/math/vector'
-import { updateSpriteWidthHeight } from '~/spawnable/args'
+import { updateSpriteSource, updateSpriteWidthHeight } from '~/spawnable/args'
 import type {
   ArgsPath,
   PreviousArgs,
@@ -28,7 +28,7 @@ export const ArgsSchema = z.object({
 export class NonSolid<A extends Args = Args> extends SpawnableEntity<A> {
   protected readonly container: Container | undefined
   protected readonly gfx: BoxGraphics | undefined
-  protected readonly sprite: Sprite | undefined
+  protected sprite: Sprite | undefined
 
   public constructor(
     ctx: SpawnableContext<A>,
@@ -81,14 +81,14 @@ export class NonSolid<A extends Args = Args> extends SpawnableEntity<A> {
       this.gfx.redraw(this.args)
     }
 
-    // updateSpriteSource(
-    //   path,
-    //   'sprite',
-    //   'spriteSource',
-    //   'container',
-    //   this.args,
-    //   this,
-    // )
+    this.sprite = updateSpriteSource(
+      path,
+      'spriteSource',
+      this.container,
+      this.sprite,
+      this.args.spriteSource,
+      this.args,
+    )
   }
 
   public override onResize(bounds: Bounds): void {
