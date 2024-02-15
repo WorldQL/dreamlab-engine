@@ -1,4 +1,4 @@
-import EventEmitter from 'eventemitter3'
+import { EventEmitter } from 'eventemitter3'
 import type { LiteralUnion } from 'type-fest'
 import type { Camera } from '~/entities/camera.js'
 import type { Vector } from '~/math/vector.js'

@@ -1,4 +1,4 @@
-import EventEmitter from 'eventemitter3'
+import { EventEmitter } from 'eventemitter3'
 import Matter from 'matter-js'
 import { AnimatedSprite, Graphics, Sprite } from 'pixi.js'
 import type { Camera } from '~/entities/camera.js'

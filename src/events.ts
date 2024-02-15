@@ -1,4 +1,4 @@
-import EventEmitter from 'eventemitter3'
+import { EventEmitter } from 'eventemitter3'
 import type Matter from 'matter-js'
 import type { NetPlayer } from '~/entities/netplayer'
 import type { Player } from '~/entities/player.js'
