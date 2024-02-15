@@ -7,7 +7,7 @@ import { camera, debug, game, physics, stage } from '~/labs/magic'
 import type { Bounds } from '~/math/bounds'
 import { toRadians } from '~/math/general.js'
 import { Vec } from '~/math/vector.js'
-import { updateSpriteSource, updateSpriteWidthHeight } from '~/spawnable/args'
+import { updateSpriteSource } from '~/spawnable/args'
 import type {
   PreviousArgs,
   SpawnableContext,
@@ -28,6 +28,7 @@ export class BouncyBall extends SpawnableEntity<Args> {
 
   private readonly body: Matter.Body
   private readonly container: Container | undefined
+  private readonly mask: CircleGraphics | undefined
   private readonly gfx: CircleGraphics | undefined
   private sprite: Sprite | undefined
 
@@ -69,13 +70,21 @@ export class BouncyBall extends SpawnableEntity<Args> {
       this.gfx = drawCircle({ radius })
       this.gfx.zIndex = 100
 
+      this.mask = drawCircle(
+        { radius },
+        { strokeAlpha: 0, fillAlpha: 1, fill: 'transparent' },
+      )
+
       const width = radius * 2
       const height = radius * 2
       this.sprite = spriteSource
         ? createSprite(spriteSource, { width, height })
         : undefined
 
+      if (this.sprite) this.sprite.mask = this.mask
+
       this.container.addChild(this.gfx)
+      this.container.addChild(this.mask)
       if (this.sprite) this.container.addChild(this.sprite)
       stage().addChild(this.container)
 
@@ -98,11 +107,14 @@ export class BouncyBall extends SpawnableEntity<Args> {
     path: string,
     previousArgs: PreviousArgs<Args>,
   ): void {
-    const bounds = { width: this.args.radius, height: this.args.radius }
-    updateSpriteWidthHeight(path, this?.sprite, bounds)
+    const bounds = { width: this.args.radius * 2, height: this.args.radius * 2 }
 
-    if (this.gfx && path === 'radius') {
-      this.gfx.redraw(this.args)
+    if (path === 'radius') {
+      if (this.gfx) this.gfx.redraw(this.args)
+      if (this.sprite) {
+        this.sprite.width = bounds.width
+        this.sprite.height = bounds.height
+      }
     }
 
     this.sprite = updateSpriteSource(
@@ -113,6 +125,11 @@ export class BouncyBall extends SpawnableEntity<Args> {
       this.args.spriteSource,
       bounds,
     )
+
+    if (this.sprite && this.mask) {
+      this.mask.redraw(this.args)
+      this.sprite.mask = this.mask
+    }
 
     const angle = this.body.angle
     const scale = this.args.radius / previousArgs.radius
