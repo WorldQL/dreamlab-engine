@@ -7,6 +7,7 @@ import { camera, debug, game, physics, stage } from '~/labs/magic'
 import type { Bounds } from '~/math/bounds'
 import { toRadians } from '~/math/general.js'
 import { Vec } from '~/math/vector.js'
+import { updateSpriteSource, updateSpriteWidthHeight } from '~/spawnable/args'
 import type {
   PreviousArgs,
   SpawnableContext,
@@ -23,15 +24,16 @@ export const ArgsSchema = z.object({
 })
 
 export class BouncyBall extends SpawnableEntity<Args> {
+  private static MASS = 20
+
   private readonly body: Matter.Body
   private readonly container: Container | undefined
   private readonly gfx: CircleGraphics | undefined
-  private readonly sprite: Sprite | undefined
+  private sprite: Sprite | undefined
 
   public constructor(ctx: SpawnableContext<Args>) {
     super(ctx)
 
-    const mass = 20
     this.body = Matter.Bodies.circle(
       this.transform.position.x,
       this.transform.position.y,
@@ -43,8 +45,8 @@ export class BouncyBall extends SpawnableEntity<Args> {
         isStatic: this.preview,
         isSensor: this.preview,
 
-        mass,
-        inverseMass: 1 / mass,
+        mass: BouncyBall.MASS,
+        inverseMass: 1 / BouncyBall.MASS,
         restitution: 0.95,
       },
     )
@@ -93,36 +95,32 @@ export class BouncyBall extends SpawnableEntity<Args> {
   }
 
   public override onArgsUpdate(
-    _path: string,
-    _previousArgs: PreviousArgs<Args>,
+    path: string,
+    previousArgs: PreviousArgs<Args>,
   ): void {
-    // TODO: Implement onArgsUpdate
-    // if (render && path.startsWith('spriteSource')) {
-    //   const { radius, spriteSource } = args
-    //   const width = radius * 2
-    //   const height = radius * 2
-    //   render.sprite?.destroy()
-    //   render.sprite = spriteSource
-    //     ? createSprite(spriteSource, { width, height })
-    //     : undefined
-    //   if (render.sprite) render.container.addChild(render.sprite)
-    // }
-    // if (path === 'radius') {
-    //   const originalRadius = previous.radius
-    //   const radius = args.radius
-    //   const scale = radius / originalRadius
-    //   Matter.Body.setAngle(body, 0)
-    //   Matter.Body.scale(body, scale, scale)
-    //   Matter.Body.setAngle(body, toRadians(transform.rotation))
-    //   Matter.Body.setMass(body, mass)
-    //   if (render) {
-    //     drawCircle(render.gfx, { radius })
-    //     if (render.sprite) {
-    //       render.sprite.width = radius * 2
-    //       render.sprite.height = radius * 2
-    //     }
-    //   }
-    // }
+    const bounds = { width: this.args.radius, height: this.args.radius }
+    updateSpriteWidthHeight(path, this?.sprite, bounds)
+
+    if (this.gfx && path === 'radius') {
+      this.gfx.redraw(this.args)
+    }
+
+    this.sprite = updateSpriteSource(
+      path,
+      'spriteSource',
+      this.container,
+      this.sprite,
+      this.args.spriteSource,
+      bounds,
+    )
+
+    const angle = this.body.angle
+    const scale = this.args.radius / previousArgs.radius
+
+    Matter.Body.setAngle(this.body, 0)
+    Matter.Body.scale(this.body, scale, scale)
+    Matter.Body.setAngle(this.body, angle)
+    Matter.Body.setMass(this.body, BouncyBall.MASS)
   }
 
   public override onResize({ width, height }: Bounds): void {
