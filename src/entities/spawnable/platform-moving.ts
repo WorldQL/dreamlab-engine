@@ -9,7 +9,9 @@ import { Solid } from './solid'
 
 type Args = typeof ArgsSchema
 
-export class MovingPlatform<A extends Args = Args> extends Solid<A> {
+export class MovingPlatform<A extends Args = Args> extends Platform<A> {
+  public platformSpeed = 5
+
   public constructor(ctx: SpawnableContext<A>) {
     super(ctx)
 
@@ -25,18 +27,18 @@ export class MovingPlatform<A extends Args = Args> extends Solid<A> {
         const other = event[1]
 
         if (other.id === this.body.id) {
-          Matter.Body.translate(player.body, { x: 5, y: 0 })
+          Matter.Body.translate(player.body, { x: this.platformSpeed, y: 0 })
         }
       })
     }
   }
 
   public override onPhysicsStep(time: Time): void {
-    const $server = game('server')
-
-    if ($server) {
+    super.onPhysicsStep(time)
+    const $game = game('client')
+    if ($game) {
       Matter.Body.translate(this.body, {
-        x: 5,
+        x: this.platformSpeed,
         y: 0,
       })
     }
