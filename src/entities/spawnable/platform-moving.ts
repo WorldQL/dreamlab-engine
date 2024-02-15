@@ -1,7 +1,7 @@
 import Matter from 'matter-js'
 import { z } from 'zod'
 import type { Time } from '~/entity'
-import { game } from '~/labs/magic'
+import { events, game } from '~/labs/magic'
 import type { SpawnableContext } from '~/spawnable/spawnableEntity'
 import { ArgsSchema } from './nonsolid'
 import { Platform } from './platform'
@@ -23,14 +23,11 @@ export class MovingPlatform<A extends Args = Args> extends Platform<A> {
 
     Matter.Body.setVelocity(this.body, { x: 5, y: 0 })
 
-    const $client = game('client')
-    if ($client) {
-      $client.events.client.on('onPlayerCollisionActive', ([player, other]) => {
-        if (other.id === this.body.id) {
-          Matter.Body.translate(player.body, { x: this.body.velocity.x, y: 0 })
-        }
-      })
-    }
+    events('client')?.on('onPlayerCollisionActive', ([player, other]) => {
+      if (other.id === this.body.id) {
+        Matter.Body.translate(player.body, { x: this.body.velocity.x, y: 0 })
+      }
+    })
   }
 
   public override onPhysicsStep(time: Time): void {
