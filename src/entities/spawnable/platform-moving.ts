@@ -1,16 +1,14 @@
 import Matter from 'matter-js'
 import type { Time } from '~/entity'
-import { game, physics } from '~/labs/magic'
+import { game } from '~/labs/magic'
 import type { SpawnableContext } from '~/spawnable/spawnableEntity'
-import { isPlayer } from '../player'
 import type { ArgsSchema } from './nonsolid'
-import { Platform } from './platform'
 import { Solid } from './solid'
 
 type Args = typeof ArgsSchema
 
-export class MovingPlatform<A extends Args = Args> extends Platform<A> {
-  public platformSpeed = 5
+export class MovingPlatform<A extends Args = Args> extends Solid<A> {
+  private count = 0
 
   public constructor(ctx: SpawnableContext<A>) {
     super(ctx)
@@ -19,28 +17,29 @@ export class MovingPlatform<A extends Args = Args> extends Platform<A> {
       this.tags.push('net/replicated', 'net/server-authoritative')
     }
 
+    Matter.Body.setVelocity(this.body, { x: 5, y: 0 })
+
     const $client = game('client')
-
     if ($client) {
-      $client.events.client.on('onPlayerCollisionActive', event => {
-        const player = event[0]
-        const other = event[1]
-
+      $client.events.client.on('onPlayerCollisionActive', ([player, other]) => {
         if (other.id === this.body.id) {
-          Matter.Body.translate(player.body, { x: this.platformSpeed, y: 0 })
+          Matter.Body.translate(player.body, { x: this.body.velocity.x, y: 0 })
         }
       })
     }
   }
 
-  public override onPhysicsStep(time: Time): void {
-    super.onPhysicsStep(time)
-    const $game = game('client')
-    if ($game) {
-      Matter.Body.translate(this.body, {
-        x: this.platformSpeed,
-        y: 0,
-      })
+  public override onPhysicsStep(_time: Time): void {
+    const $server = game('server')
+
+    if ($server) {
+      Matter.Body.translate(this.body, { x: this.body.velocity.x, y: 0 })
+
+      this.count++
+
+      if (this.count % 200 === 0) {
+        Matter.Body.setVelocity(this.body, { x: -this.body.velocity.x, y: 0 })
+      }
     }
   }
 }
