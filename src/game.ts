@@ -722,13 +722,16 @@ export async function createGame<Server extends boolean>(
         if (!entity) return
         events.common.emit('onDefinitionChanged', entity)
 
-        if (network?.type !== 'client') return
         if (path.startsWith('tags')) {
           events.common.emit('onTagsChanged', entity)
-          void network.sendTagsUpdate(uid, definition.tags)
+          if (network?.type === 'client') {
+            void network.sendTagsUpdate(uid, definition.tags)
+          }
         } else if (path.startsWith('label')) {
           events.common.emit('onLabelChanged', entity)
-          void network.sendLabelUpdate(uid, definition.label)
+          if (network?.type === 'client') {
+            void network.sendLabelUpdate(uid, definition.label)
+          }
         }
       })
 
