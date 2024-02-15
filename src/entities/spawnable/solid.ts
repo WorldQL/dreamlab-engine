@@ -11,6 +11,9 @@ import type { ArgsSchema } from './nonsolid'
 import { NonSolid } from './nonsolid'
 
 type Args = typeof ArgsSchema
+
+// TODO: Give the solid more args like restitution, friction, etc...
+
 export class Solid<A extends Args = Args> extends NonSolid<A> {
   protected readonly body: Matter.Body
 
