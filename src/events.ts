@@ -54,9 +54,9 @@ export interface CommonEvents {
   onPlayerAttack: [player: Player, gear: Gear | undefined]
 }
 
-class ClientEventManager extends EventEmitter<ClientEvents> {}
-class ServerEventManager extends EventEmitter<ServerEvents> {}
-class CommonEventManager extends EventEmitter<CommonEvents> {}
+export class ClientEventManager extends EventEmitter<ClientEvents> {}
+export class ServerEventManager extends EventEmitter<ServerEvents> {}
+export class CommonEventManager extends EventEmitter<CommonEvents> {}
 
 export interface EventsManager<Server extends boolean> {
   client: Server extends false ? ClientEventManager : undefined
