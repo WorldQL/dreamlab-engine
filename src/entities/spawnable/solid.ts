@@ -9,13 +9,14 @@ import type {
   PreviousArgs,
   SpawnableContext,
 } from '~/spawnable/spawnableEntity'
-import type { ArgsSchema } from './nonsolid'
-import { NonSolid } from './nonsolid'
+import { NonSolid, NonSolidArgs } from './nonsolid'
 
 type Args = typeof ArgsSchema
+const ArgsSchema = NonSolidArgs.extend({
+  // TODO: Give the solid more args like restitution, friction, etc...
+})
 
-// TODO: Give the solid more args like restitution, friction, etc...
-
+export { ArgsSchema as SolidArgs }
 export class Solid<A extends Args = Args> extends NonSolid<A> {
   protected readonly body: Matter.Body
 

@@ -18,11 +18,12 @@ import type { CircleGraphics } from '~/utils/draw.js'
 import { drawCircle } from '~/utils/draw.js'
 
 type Args = typeof ArgsSchema
-export const ArgsSchema = z.object({
+const ArgsSchema = z.object({
   radius: z.number().positive().min(1).default(60),
   spriteSource: SpriteSourceSchema.optional(),
 })
 
+export { ArgsSchema as BouncyBallArgs }
 export class BouncyBall extends SpawnableEntity<Args> {
   private static MASS = 20
 

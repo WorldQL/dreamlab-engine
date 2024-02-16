@@ -4,14 +4,15 @@ import { z } from 'zod'
 import { events } from '~/labs/magic'
 import type { SpawnableContext } from '~/spawnable/spawnableEntity'
 import { deferUntilPhysicsStep } from '~/utils/defer'
-import { ArgsSchema } from './nonsolid'
+import { NonSolidArgs } from './nonsolid'
 import { Solid } from './solid'
 
-type Args = typeof ForceFieldArgs
-export const ForceFieldArgs = ArgsSchema.extend({
+type Args = typeof ArgsSchema
+const ArgsSchema = NonSolidArgs.extend({
   force: z.number().default(20),
 })
 
+export { ArgsSchema as ForceFieldArgs }
 export class ForceField<A extends Args = Args> extends Solid<A> {
   public constructor(ctx: SpawnableContext<A>) {
     super(ctx)

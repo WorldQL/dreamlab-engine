@@ -13,9 +13,11 @@ import type { Debug } from '~/utils/debug.js'
 import { drawComplexPolygon } from '~/utils/draw.js'
 
 type Args = typeof ArgsSchema
-export const ArgsSchema = z.object({
+const ArgsSchema = z.object({
   polygon: VectorSchema.array().array().or(z.string()),
 })
+
+export { ArgsSchema as ComplexSolidArgs }
 
 interface Data {
   debug: Debug
