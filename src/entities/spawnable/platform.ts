@@ -94,8 +94,8 @@ export class Platform<A extends Args = Args> extends Solid<A> {
       : 0b11111111111111111111111111111001 | inactivePlatformMask
   }
 
-  public override onRenderFrame(_time: RenderTime) {
-    super.onRenderFrame(_time)
+  public override onRenderFrame(time: RenderTime) {
+    super.onRenderFrame(time)
 
     const platformAlpha = this.isPlatformActive ? 1 : 0.1
     this.gfx!.alpha = game().debug.value ? platformAlpha : 0
