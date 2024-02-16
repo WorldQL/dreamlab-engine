@@ -17,6 +17,7 @@ export class MovingPlatform<A extends Args = Args> extends Platform<A> {
   public constructor(ctx: SpawnableContext<A>) {
     super(ctx)
 
+    this.body.label = 'movingPlatform'
     if (!this.tags.includes('net/replicated')) {
       this.tags.push('net/replicated', 'net/server-authoritative')
     }

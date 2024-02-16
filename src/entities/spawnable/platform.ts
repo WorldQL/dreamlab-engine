@@ -14,9 +14,10 @@ export class Platform<A extends Args = Args> extends Solid<A> {
   public constructor(ctx: SpawnableContext<A>) {
     super(ctx)
     this.body.friction = 0
+    this.body.label = 'platform'
   }
 
-  public override onPhysicsStep(time: Time): void {
+  public override onPhysicsStep(_time: Time): void {
     const $game = game('client')
     if (!$game) {
       return
