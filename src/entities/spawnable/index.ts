@@ -10,7 +10,7 @@ import {
   createComplexSolid,
 } from './complexSolid.js'
 import { ForceField, ForceFieldArgs } from './forceField.js'
-import { createMarker, ArgsSchema as MarkerArgs } from './marker.js'
+import { Marker, ArgsSchema as MarkerArgs } from './marker.js'
 import { NonSolid, ArgsSchema as NonSolidArgs } from './nonsolid'
 import { MovingPlatform, MovingPlatformArgs } from './platform-moving.js'
 import { Platform, ArgsSchema as PlatformArgs } from './platform.js'
@@ -26,7 +26,7 @@ export const registerDefaultSpawnables = (game: Game<boolean>) => {
   game.register('@dreamlab/BouncyBall', BouncyBall, BouncyBallArgs)
   game.register('@dreamlab/ComplexSolid', createComplexSolid, ComplexSolidArgs)
   game.register('@dreamlab/ForceField', ForceField, ForceFieldArgs)
-  game.register('@dreamlab/Marker', createMarker, MarkerArgs)
+  game.register('@dreamlab/Marker', Marker, MarkerArgs)
   game.register('@dreamlab/Nonsolid', NonSolid, NonSolidArgs)
   game.register('@dreamlab/Platform', Platform, PlatformArgs)
   game.register('@dreamlab/MovingPlatform', MovingPlatform, MovingPlatformArgs)
