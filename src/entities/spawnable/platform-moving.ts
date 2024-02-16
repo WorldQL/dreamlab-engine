@@ -3,14 +3,14 @@ import { z } from 'zod'
 import type { Time } from '~/entity'
 import { events, game } from '~/labs/magic'
 import type { SpawnableContext } from '~/spawnable/spawnableEntity'
-import { ArgsSchema } from './nonsolid'
-import { Platform } from './platform'
+import { Platform, PlatformArgs } from './platform'
 
-type Args = typeof MovingPlatformArgs
-export const MovingPlatformArgs = ArgsSchema.extend({
+type Args = typeof ArgsSchema
+const ArgsSchema = PlatformArgs.extend({
   changeDirectionEveryNTicks: z.number().default(200),
 })
 
+export { ArgsSchema as MovingPlatformArgs }
 export class MovingPlatform<A extends Args = Args> extends Platform<A> {
   private count = 0
 

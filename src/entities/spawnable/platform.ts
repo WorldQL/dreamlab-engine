@@ -3,11 +3,12 @@ import type { RenderTime, Time } from '~/entity'
 import { game } from '~/labs/magic'
 import type { SpawnableContext } from '~/spawnable/spawnableEntity'
 import { isNetPlayer, isPlayer } from '../player'
-import type { ArgsSchema } from './nonsolid'
-import { Solid } from './solid'
+import { Solid, SolidArgs } from './solid'
 
 type Args = typeof ArgsSchema
+const ArgsSchema = SolidArgs.extend({})
 
+export { ArgsSchema as PlatformArgs }
 export class Platform<A extends Args = Args> extends Solid<A> {
   private isPlatformActive = false
 
@@ -100,4 +101,3 @@ export class Platform<A extends Args = Args> extends Solid<A> {
     this.gfx!.alpha = game().debug.value ? platformAlpha : 0
   }
 }
-export { ArgsSchema } from './nonsolid'

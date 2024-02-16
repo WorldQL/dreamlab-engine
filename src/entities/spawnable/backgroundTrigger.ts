@@ -52,7 +52,7 @@ const BackgroundActionSchema = z.discriminatedUnion('action', [
 ])
 
 type Args = typeof ArgsSchema
-export const ArgsSchema = z.object({
+const ArgsSchema = z.object({
   width: z.number().positive().min(1).default(1_000),
   height: z.number().positive().min(1).default(1_000),
 
@@ -63,6 +63,8 @@ export const ArgsSchema = z.object({
     action: BackgroundActionType.Clear,
   }),
 })
+
+export { ArgsSchema as BackgroundTriggerArgs }
 
 interface Data {
   game: Game<boolean>

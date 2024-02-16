@@ -1,19 +1,16 @@
 import type { Game } from '~/game'
 import { ArgsSchema as BackgroundArgs, createBackground } from './background.js'
 import {
-  ArgsSchema as BackgroundTriggerArgs,
+  BackgroundTriggerArgs,
   createBackgroundTrigger,
 } from './backgroundTrigger.js'
-import { BouncyBall, ArgsSchema as BouncyBallArgs } from './bouncyBall.js'
-import {
-  ArgsSchema as ComplexSolidArgs,
-  createComplexSolid,
-} from './complexSolid.js'
+import { BouncyBall, BouncyBallArgs } from './bouncyBall.js'
+import { ComplexSolidArgs, createComplexSolid } from './complexSolid.js'
 import { ForceField, ForceFieldArgs } from './forceField.js'
-import { Marker, ArgsSchema as MarkerArgs } from './marker.js'
-import { NonSolid, ArgsSchema as NonSolidArgs } from './nonsolid'
+import { Marker, MarkerArgs } from './marker.js'
+import { NonSolid, NonSolidArgs } from './nonsolid'
 import { MovingPlatform, MovingPlatformArgs } from './platform-moving.js'
-import { Platform, ArgsSchema as PlatformArgs } from './platform.js'
+import { Platform, PlatformArgs } from './platform.js'
 import { Solid } from './solid'
 
 export const registerDefaultSpawnables = (game: Game<boolean>) => {

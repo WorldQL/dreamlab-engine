@@ -10,11 +10,12 @@ import type { BoxGraphics } from '~/utils/draw.js'
 import { drawBox } from '~/utils/draw.js'
 
 type Args = typeof ArgsSchema
-export const ArgsSchema = z.object({
+const ArgsSchema = z.object({
   width: z.number().positive().min(1).default(30),
   height: z.number().positive().min(1).default(30),
 })
 
+export { ArgsSchema as MarkerArgs }
 export class Marker extends SpawnableEntity<Args> {
   private readonly gfx: BoxGraphics | undefined
 

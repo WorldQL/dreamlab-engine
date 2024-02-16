@@ -19,12 +19,13 @@ import type { BoxGraphics } from '~/utils/draw'
 import { drawBox } from '~/utils/draw'
 
 type Args = typeof ArgsSchema
-export const ArgsSchema = z.object({
+const ArgsSchema = z.object({
   width: z.number().positive().min(1).default(100),
   height: z.number().positive().min(1).default(100),
   spriteSource: SpriteSourceSchema.optional(),
 })
 
+export { ArgsSchema as NonSolidArgs }
 export class NonSolid<A extends Args = Args> extends SpawnableEntity<A> {
   protected readonly container: Container | undefined
   protected readonly gfx: BoxGraphics | undefined
