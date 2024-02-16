@@ -1,8 +1,8 @@
 import type { Game } from '~/game'
-import { ArgsSchema as BackgroundArgs, createBackground } from './background.js'
+import { Background, BackgroundArgs } from './background.js'
 import {
+  BackgroundTrigger,
   BackgroundTriggerArgs,
-  createBackgroundTrigger,
 } from './backgroundTrigger.js'
 import { BouncyBall, BouncyBallArgs } from './bouncyBall.js'
 import { ComplexSolidArgs, createComplexSolid } from './complexSolid.js'
@@ -14,10 +14,10 @@ import { Platform, PlatformArgs } from './platform.js'
 import { Solid } from './solid'
 
 export const registerDefaultSpawnables = (game: Game<boolean>) => {
-  game.register('@dreamlab/Background', createBackground, BackgroundArgs)
+  game.register('@dreamlab/Background', Background, BackgroundArgs)
   game.register(
     '@dreamlab/BackgroundTrigger',
-    createBackgroundTrigger,
+    BackgroundTrigger,
     BackgroundTriggerArgs,
   )
   game.register('@dreamlab/BouncyBall', BouncyBall, BouncyBallArgs)

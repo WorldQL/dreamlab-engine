@@ -6,18 +6,26 @@ import {
   WRAP_MODES,
 } from 'pixi.js'
 import { z } from 'zod'
-import type { Camera } from '~/entities/camera.js'
-import { createSpawnableEntity } from '~/labs/compat'
-import type { LegacySpawnableEntity as SpawnableEntity } from '~/labs/compat'
-import { Vec, VectorSchema } from '~/math/vector.js'
-import { resolve } from '~/sdk/resolve.js'
-import type { Debug } from '~/utils/debug.js'
+import type { RenderTime } from '~/entity'
+import { camera, game, stage } from '~/labs/magic'
+import type { Bounds } from '~/math/bounds'
+import type { Vector } from '~/math/vector'
+import { Vec, VectorSchema } from '~/math/vector'
+import { resolve } from '~/sdk/resolve'
+import type {
+  PreviousArgs,
+  SpawnableContext,
+} from '~/spawnable/spawnableEntity'
+import { isSpawnableEntity, SpawnableEntity } from '~/spawnable/spawnableEntity'
 
-const BLANK_PNG =
-  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAUSURBVBhXY/wPBAxAwAQiGBgYGAA9+AQAag6xEAAAAABJRU5ErkJggg=='
+const symbol = Symbol.for('@dreamlab/core/entities/background')
+export const isBackground = (background: unknown): background is Background => {
+  if (!isSpawnableEntity(background)) return false
+  return symbol in background && background[symbol] === true
+}
 
 type Args = typeof ArgsSchema
-export const ArgsSchema = z.object({
+const ArgsSchema = z.object({
   textureURL: z.string().optional(),
   opacity: z.number().min(0).max(1).default(1),
   fadeTime: z.number().min(0.01).default(0.2),
@@ -25,174 +33,150 @@ export const ArgsSchema = z.object({
   parallax: VectorSchema.default({ x: -0.2, y: -0.2 }),
 })
 
-interface Data {
-  debug: Debug
-}
+export { ArgsSchema as BackgroundArgs }
+export class Background extends SpawnableEntity<Args> {
+  public static readonly BLANK_PNG =
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAUSURBVBhXY/wPBAxAwAQiGBgYGAA9+AQAag6xEAAAAABJRU5ErkJggg=='
 
-interface Render {
-  camera: Camera
+  static readonly #textureAndSize = (
+    textureURL: string | undefined,
+  ): [texture: Texture, width: number, height: number] => {
+    const url = textureURL ? resolve(textureURL) : Background.BLANK_PNG
+    const texture = Texture.from(url)
 
-  container: Container
-  spriteFront: TilingSprite
-  spriteBack: TilingSprite
-}
+    const scale = 100
+    const width = textureURL ? texture.width * scale : 16_000
+    const height = textureURL ? texture.height * scale : 9_000
 
-const symbol = Symbol.for('@dreamlab/core/background')
-export interface Background extends SpawnableEntity<Data, Render, Args> {
-  [symbol]: true
-}
-
-export const isBackground = (entity: SpawnableEntity): entity is Background => {
-  return symbol in entity && entity[symbol] === true
-}
-
-const textureAndSize = (
-  textureURL: string | undefined,
-): [texture: Texture, width: number, height: number] => {
-  const url = textureURL ? resolve(textureURL) : BLANK_PNG
-  const texture = Texture.from(url)
-
-  const scale = 100
-  const width = textureURL ? texture.width * scale : 16_000
-  const height = textureURL ? texture.height * scale : 9_000
-
-  return [texture, width, height]
-}
-
-export const createBackground = createSpawnableEntity<
-  Args,
-  Background,
-  Data,
-  Render
->(ArgsSchema, ({ tags }, args) => {
-  let fadeTarget = 0
-  const origin = Vec.create(0, 0)
-
-  const background: Background = {
-    get [symbol]() {
-      return true as const
-    },
-
-    rectangleBounds() {
-      return undefined
-    },
-
-    isPointInside(_position) {
-      return false
-    },
-
-    init({ game }) {
-      tags.push('editor/doNotSave')
-      return { debug: game.debug }
-    },
-
-    initRenderContext(_, { stage, camera }) {
-      const [texture, texWidth, texHeight] = textureAndSize(args.textureURL)
-
-      texture.baseTexture.wrapMode = WRAP_MODES.CLAMP
-      const container = new Container()
-      const spriteFront = new TilingSprite(texture)
-      const spriteBack = new TilingSprite(texture)
-
-      spriteBack.clampMargin = 0
-      spriteFront.clampMargin = 0
-
-      spriteFront.texture.baseTexture.scaleMode = SCALE_MODES.NEAREST
-      spriteBack.texture.baseTexture.scaleMode = SCALE_MODES.NEAREST
-
-      spriteFront.tileScale.set(args.scale.x, args.scale.y)
-      spriteBack.tileScale.set(args.scale.x, args.scale.y)
-
-      spriteFront.width = texWidth
-      spriteFront.height = texHeight
-      spriteBack.width = spriteFront.width
-      spriteBack.height = spriteFront.height
-
-      spriteFront.anchor.set(0.5, 0.5)
-      spriteBack.anchor.set(0.5, 0.5)
-
-      container.sortableChildren = true
-      container.zIndex = -1_000
-      spriteFront.zIndex = -999
-      spriteBack.zIndex = -1_000
-
-      container.addChild(spriteFront)
-      container.addChild(spriteBack)
-      stage.addChild(container)
-
-      return { camera, container, spriteFront, spriteBack }
-    },
-
-    async onArgsUpdate(path, _previous, _data, render) {
-      if (render && path === 'textureURL') {
-        const [texture, texWidth, texHeight] = textureAndSize(args.textureURL)
-
-        render.spriteBack.texture = texture
-        render.spriteBack.width = texWidth
-        render.spriteBack.height = texHeight
-
-        fadeTarget = args.fadeTime
-      }
-
-      if (render && (path === 'scale' || path.startsWith('scale.'))) {
-        render.spriteFront.tileScale.set(args.scale.x, args.scale.y)
-        render.spriteBack.tileScale.set(args.scale.x, args.scale.y)
-      }
-    },
-
-    teardown(_) {
-      // No-op
-    },
-
-    teardownRenderContext({ container }) {
-      container.destroy({ children: true })
-    },
-
-    onRenderFrame(
-      { delta },
-      _data,
-      { camera, container, spriteFront, spriteBack },
-    ) {
-      if (fadeTarget > 0) {
-        fadeTarget -= delta
-        spriteFront.alpha = fadeTarget / args.fadeTime
-
-        if (fadeTarget <= 0) {
-          fadeTarget = 0
-          spriteFront.texture = spriteBack.texture
-          spriteFront.width = spriteBack.width
-          spriteFront.height = spriteBack.height
-          spriteFront.alpha = 1
-        }
-      }
-
-      const distance = Vec.create(
-        camera.position.x * args.parallax.x,
-        camera.position.y * args.parallax.y,
-      )
-
-      const inverseDistance = Vec.create(
-        camera.position.x * (1 - args.parallax.x),
-        camera.position.y * (1 - args.parallax.y),
-      )
-
-      const { width: _w, height: _h } = spriteBack.texture
-      const width = _w * spriteBack.tileScale.x
-      const height = _h * spriteBack.tileScale.y
-
-      if (inverseDistance.x > origin.x + width) origin.x += width
-      else if (inverseDistance.x < origin.x - width) origin.x -= width
-
-      if (inverseDistance.y > origin.y + height) origin.y += height
-      else if (inverseDistance.y < origin.y - height) origin.y -= height
-
-      const position = Vec.add(origin, distance)
-      const pos = Vec.add(position, camera.offset)
-
-      container.position = pos
-      container.alpha = args.opacity
-    },
+    return [texture, width, height]
   }
 
-  return background
-})
+  public readonly [symbol] = true as const
+
+  private readonly container: Container | undefined
+  private readonly spriteFront: TilingSprite | undefined
+  private readonly spriteBack: TilingSprite | undefined
+
+  private fadeTarget = 0
+  private readonly origin = Vec.create(0, 0)
+
+  public constructor(ctx: SpawnableContext<Args>) {
+    super(ctx)
+    this.tags.push('editor/doNotSave')
+
+    const $game = game('client')
+    if ($game) {
+      const [texture, texWidth, texHeight] = Background.#textureAndSize(
+        this.args.textureURL,
+      )
+
+      this.container = new Container()
+      this.container.sortableChildren = true
+      this.container.zIndex = -1_000
+
+      texture.baseTexture.wrapMode = WRAP_MODES.CLAMP
+      this.spriteFront = new TilingSprite(texture, texWidth, texHeight)
+      this.spriteBack = new TilingSprite(texture, texWidth, texHeight)
+
+      this.spriteFront.zIndex = -999
+      this.spriteBack.zIndex = -1_000
+      this.spriteFront.clampMargin = 0
+      this.spriteBack.clampMargin = 0
+      this.spriteFront.texture.baseTexture.scaleMode = SCALE_MODES.NEAREST
+      this.spriteBack.texture.baseTexture.scaleMode = SCALE_MODES.NEAREST
+      this.spriteFront.tileScale.set(this.args.scale.x, this.args.scale.y)
+      this.spriteBack.tileScale.set(this.args.scale.x, this.args.scale.y)
+      this.spriteFront.anchor.set(0.5, 0.5)
+      this.spriteBack.anchor.set(0.5, 0.5)
+
+      this.container.addChild(this.spriteFront)
+      this.container.addChild(this.spriteBack)
+      stage().addChild(this.container)
+    }
+  }
+
+  public override teardown(): void {
+    this.container?.destroy({ children: true })
+  }
+
+  public override bounds(): Bounds | undefined {
+    return undefined
+  }
+
+  public override isPointInside(_: Vector): boolean {
+    return false
+  }
+
+  public override onArgsUpdate(path: string, _: PreviousArgs<Args>): void {
+    if (this.spriteBack && path === 'textureURL') {
+      const [texture, texWidth, texHeight] = Background.#textureAndSize(
+        this.args.textureURL,
+      )
+
+      this.spriteBack.texture = texture
+      this.spriteBack.width = texWidth
+      this.spriteBack.height = texHeight
+
+      this.fadeTarget = this.args.fadeTime
+    }
+
+    if (path === 'scale' || path.startsWith('scale.')) {
+      if (this.spriteFront) {
+        this.spriteFront.tileScale.set(this.args.scale.x, this.args.scale.y)
+      }
+
+      if (this.spriteBack) {
+        this.spriteBack.tileScale.set(this.args.scale.x, this.args.scale.y)
+      }
+    }
+  }
+
+  public override onRenderFrame({ delta }: RenderTime): void {
+    if (!this.spriteFront || !this.spriteBack) {
+      console.warn('missing sprites')
+      return
+    }
+
+    if (this.fadeTarget > 0) {
+      this.fadeTarget -= delta
+      this.spriteFront.alpha = this.fadeTarget / this.args.fadeTime
+
+      if (this.fadeTarget <= 0) {
+        this.fadeTarget = 0
+        this.spriteFront.texture = this.spriteBack.texture
+        this.spriteFront.width = this.spriteBack.width
+        this.spriteFront.height = this.spriteBack.height
+        this.spriteFront.alpha = 1
+      }
+    }
+
+    const $camera = camera()
+
+    const distance = Vec.create(
+      $camera.position.x * this.args.parallax.x,
+      $camera.position.y * this.args.parallax.y,
+    )
+
+    const inverseDistance = Vec.create(
+      $camera.position.x * (1 - this.args.parallax.x),
+      $camera.position.y * (1 - this.args.parallax.y),
+    )
+
+    const { width: _w, height: _h } = this.spriteBack.texture
+    const width = _w * this.spriteBack.tileScale.x
+    const height = _h * this.spriteBack.tileScale.y
+
+    if (inverseDistance.x > this.origin.x + width) this.origin.x += width
+    else if (inverseDistance.x < this.origin.x - width) this.origin.x -= width
+
+    if (inverseDistance.y > this.origin.y + height) this.origin.y += height
+    else if (inverseDistance.y < this.origin.y - height) this.origin.y -= height
+
+    const position = Vec.add(this.origin, distance)
+    const pos = Vec.add(position, $camera.offset)
+    if (this.container) {
+      this.container.position = pos
+      this.container.alpha = this.args.opacity
+    }
+  }
+}
