@@ -1,10 +1,11 @@
 import { z } from 'zod'
-import type { Camera } from '~/entities/camera.js'
-import { createSpawnableEntity } from '~/labs/compat'
-import type { LegacySpawnableEntity as SpawnableEntity } from '~/labs/compat'
+import { camera, debug, isClient, stage } from '~/labs/magic'
+import type { Bounds } from '~/math/bounds.js'
 import { simpleBoundsTest } from '~/math/bounds.js'
+import type { Vector } from '~/math/vector.js'
 import { Vec } from '~/math/vector.js'
-import type { Debug } from '~/utils/debug.js'
+import type { SpawnableContext } from '~/spawnable/spawnableEntity'
+import { SpawnableEntity } from '~/spawnable/spawnableEntity'
 import type { BoxGraphics } from '~/utils/draw.js'
 import { drawBox } from '~/utils/draw.js'
 
@@ -14,75 +15,57 @@ export const ArgsSchema = z.object({
   height: z.number().positive().min(1).default(30),
 })
 
-interface Data {
-  debug: Debug
-}
+export class Marker extends SpawnableEntity<Args> {
+  private readonly gfx: BoxGraphics | undefined
 
-interface Render {
-  camera: Camera
-  gfx: BoxGraphics
-}
+  public constructor(ctx: SpawnableContext<Args>) {
+    super(ctx)
 
-export const createMarker = createSpawnableEntity<
-  Args,
-  SpawnableEntity<Data, Render, Args>,
-  Data,
-  Render
->(ArgsSchema, ({ transform }, args) => ({
-  rectangleBounds() {
-    return { width: args.width, height: args.height }
-  },
+    if (isClient()) {
+      this.gfx = drawBox(this.args, { stroke: '#00bcff' })
+      this.gfx.zIndex = this.transform.zIndex
 
-  isPointInside(point) {
+      stage().addChild(this.gfx)
+      this.transform.addZIndexListener(() => {
+        if (this.gfx) this.gfx.zIndex = this.transform.zIndex
+      })
+    }
+  }
+
+  public override teardown(): void {
+    this.gfx?.destroy()
+  }
+
+  public override bounds(): Bounds | undefined {
+    return { width: this.args.width, height: this.args.height }
+  }
+
+  public override isPointInside(point: Vector): boolean {
     return simpleBoundsTest(
-      { width: args.width, height: args.height },
-      transform,
+      { width: this.args.width, height: this.args.height },
+      this.transform,
       point,
     )
-  },
+  }
 
-  init({ game }) {
-    return { debug: game.debug }
-  },
-
-  initRenderContext(_, { stage, camera }) {
-    const { width, height } = args
-
-    const gfx = drawBox({ width, height }, { stroke: '#00bcff' })
-    gfx.zIndex = transform.zIndex
-
-    stage.addChild(gfx)
-    transform.addZIndexListener(() => {
-      gfx.zIndex = transform.zIndex
-    })
-
-    return { camera, gfx }
-  },
-
-  onArgsUpdate(path, _, _data, render) {
-    if (render && (path === 'width' || path === 'height')) {
-      render.gfx.redraw(args)
+  public override onArgsUpdate(path: string): void {
+    if (this.gfx && (path === 'width' || path === 'height')) {
+      this.gfx.redraw(this.args)
     }
-  },
+  }
 
-  onResize({ width, height }) {
-    args.width = width
-    args.height = height
-  },
+  public override onResize({ width, height }: Bounds): void {
+    this.args.width = width
+    this.args.height = height
+  }
 
-  teardown(_) {
-    // No-op
-  },
+  public override onRenderFrame(): void {
+    if (!this.gfx) return
 
-  teardownRenderContext({ gfx }) {
-    gfx.destroy()
-  },
+    const pos = Vec.add(this.transform.position, camera().offset)
 
-  onRenderFrame(_, { debug }, { camera, gfx }) {
-    const pos = Vec.add(transform.position, camera.offset)
-
-    gfx.position = pos
-    gfx.angle = transform.rotation
-    gfx.alpha = debug.value ? 0.5 : 0
-  },
-}))
+    this.gfx.position = pos
+    this.gfx.angle = this.transform.rotation
+    this.gfx.alpha = debug() ? 0.5 : 0
+  }
+}
