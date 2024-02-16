@@ -1,8 +1,8 @@
 import Matter from 'matter-js'
+import { isNetPlayer, isPlayer } from '~/entities/player'
 import type { RenderTime, Time } from '~/entity'
 import { game } from '~/labs/magic'
 import type { SpawnableContext } from '~/spawnable/spawnableEntity'
-import { isNetPlayer, isPlayer } from '../player'
 import { Solid, SolidArgs } from './solid'
 
 type Args = typeof ArgsSchema
@@ -18,7 +18,7 @@ export class Platform<A extends Args = Args> extends Solid<A> {
     this.body.label = 'platform'
   }
 
-  public override onPhysicsStep(_time: Time): void {
+  public override onPhysicsStep(_: Time): void {
     const $game = game('client')
     if (!$game) {
       return

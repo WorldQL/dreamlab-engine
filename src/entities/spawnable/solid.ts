@@ -61,6 +61,7 @@ export class Solid<A extends Args = Args> extends NonSolid<A> {
     super.onArgsUpdate(path, previousArgs)
     updateBodyWidthHeight(path, this.body, this.args, previousArgs)
   }
+
   public override onRenderFrame({ smooth }: RenderTime): void {
     if (this.container) {
       const smoothed = Vec.add(
