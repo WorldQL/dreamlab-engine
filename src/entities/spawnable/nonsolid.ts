@@ -74,7 +74,7 @@ export class NonSolid<A extends Args = Args> extends SpawnableEntity<A> {
 
   public override onArgsUpdate(
     path: ArgsPath<Args>,
-    _previousArgs: PreviousArgs<Args>,
+    _: PreviousArgs<Args>,
   ): void {
     updateSpriteWidthHeight(path, this?.sprite, this.args)
 
@@ -101,7 +101,7 @@ export class NonSolid<A extends Args = Args> extends SpawnableEntity<A> {
     this.container?.destroy({ children: true })
   }
 
-  public override onRenderFrame(_time: RenderTime): void {
+  public override onRenderFrame(_: RenderTime): void {
     const pos = Vec.add(this.transform.position, camera().offset)
 
     if (this.container) {

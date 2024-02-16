@@ -110,7 +110,7 @@ export class Player extends BasePlayer {
   #attack = false
   #isAnimationLocked = false
 
-  public override onPhysicsStep(_time: Time): void {
+  public override onPhysicsStep(_: Time): void {
     const {
       body,
       bounds: { width, height },
