@@ -40,7 +40,7 @@ export abstract class BasePlayer extends Entity {
   protected animations: PlayerAnimationMap<KnownAnimation> | undefined
   private _currentAnimation: KnownAnimation = 'idle'
 
-  protected get currentAnimation(): KnownAnimation {
+  public get currentAnimation(): KnownAnimation {
     return this._currentAnimation
   }
 
