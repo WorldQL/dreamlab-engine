@@ -23,7 +23,18 @@ export abstract class BasePlayer extends Entity {
 
   public readonly body: Matter.Body
   public readonly bounds: Bounds
-  protected facing: 'left' | 'right' = 'left'
+  protected _facing: 'left' | 'right' = 'left'
+
+  public get facing(): 'left' | 'right' {
+    return this._facing
+  }
+
+  /**
+   * @deprecated Use {@link BasePlayer.facing} instead
+   */
+  public get facingDirection(): number {
+    return this._facing === 'left' ? -1 : 1
+  }
 
   protected _characterId: string | undefined
   public get characterId(): string | undefined {
@@ -35,6 +46,13 @@ export abstract class BasePlayer extends Entity {
 
     this._characterId = value
     void this._loadAnimations()
+  }
+
+  /**
+   * @deprecated Assign the character ID to {@link BasePlayer.characterId} instead
+   */
+  public setCharacterId(characterId: string | undefined): void {
+    this.characterId = characterId
   }
 
   protected animations: PlayerAnimationMap<KnownAnimation> | undefined
@@ -65,6 +83,13 @@ export abstract class BasePlayer extends Entity {
 
   public set gear(value: Gear | undefined) {
     this._gear = value
+  }
+
+  /**
+   * @deprecated Assign the character ID to {@link BasePlayer.gear} instead
+   */
+  public setGear(gear: Gear | undefined): void {
+    this.gear = gear
   }
 
   protected container: Container | undefined
@@ -145,7 +170,7 @@ export abstract class BasePlayer extends Entity {
   }
 
   public override onRenderFrame({ smooth }: RenderTime): void {
-    const scale = this.facing === 'left' ? 1 : -1
+    const scale = this._facing === 'left' ? 1 : -1
     const newScale = scale * BasePlayer.PLAYER_SPRITE_SCALE
     if (this.sprite && this.sprite.scale.x !== newScale) {
       this.sprite.scale.x = newScale

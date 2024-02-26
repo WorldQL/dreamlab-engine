@@ -128,7 +128,7 @@ export class Player extends BasePlayer {
     const xor = left ? !right : right
 
     if (this.direction !== 0) {
-      this.facing = this.direction === -1 ? 'left' : 'right'
+      this._facing = this.direction === -1 ? 'left' : 'right'
     }
 
     // TODO(Charlotte): factor out movement code into its own place,

@@ -41,7 +41,7 @@ export class NetPlayer extends BasePlayer {
   }
 
   public setFlipped(flipped: boolean): void {
-    this.facing = flipped ? 'right' : 'left'
+    this._facing = flipped ? 'right' : 'left'
   }
 
   public setAnimation(animation: KnownAnimation): void {
