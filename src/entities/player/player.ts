@@ -62,6 +62,7 @@ export class Player extends BasePlayer {
 
   public override teardown(): void {
     super.teardown()
+    physics().clearPlayer()
 
     inputs().removeListener(PlayerInput.ToggleNoclip, this.#onToggleNoclip)
     this.events.removeAllListeners()

@@ -1,6 +1,7 @@
 import { createId } from '@paralleldrive/cuid2'
 import Matter from 'matter-js'
 import { isEntity } from '~/entity'
+import { physics } from '~/labs/magic'
 import type { Bounds } from '~/math/bounds'
 import type { LooseVector } from '~/math/vector'
 import { v } from '~/math/vector'
@@ -30,6 +31,13 @@ export class NetPlayer extends BasePlayer {
 
     this.entityId = entityId ?? createId()
     this.nickname = nickname ?? 'Player'
+
+    Matter.Composite.add(physics().world, this.body)
+  }
+
+  public override teardown(): void {
+    super.teardown()
+    Matter.Composite.remove(physics().world, this.body)
   }
 
   public setPosition(vector: LooseVector): void {
