@@ -1,5 +1,5 @@
 import Matter from 'matter-js'
-import { AnimatedSprite, Container } from 'pixi.js'
+import { AnimatedSprite, Container, Sprite } from 'pixi.js'
 import type { RenderTime } from '~/entity'
 import { Entity } from '~/entity'
 import { camera, debug, isClient, physics, stage } from '~/labs/magic'
@@ -7,12 +7,12 @@ import type { Gear } from '~/managers/gear'
 import type { Bounds } from '~/math/bounds'
 import type { Vector } from '~/math/vector'
 import { Vec } from '~/math/vector'
-import type { PlayerAnimationMap } from '~/textures/playerAnimations'
-import { loadCharacterAnimations } from '~/textures/playerAnimations'
+import type { Bone, PlayerAnimationMap } from '~/textures/playerAnimations'
+import { bones, loadCharacterAnimations } from '~/textures/playerAnimations'
 import type { BoxGraphics } from '~/utils/draw'
 import { drawBox } from '~/utils/draw'
 import type { KnownAnimation } from './animations'
-import { getSpeedMultiplier } from './animations'
+import { getSpeedMultiplier, isAttackAnimation } from './animations'
 
 export abstract class BasePlayer extends Entity {
   protected static readonly PLAYER_MASS = 50
@@ -23,7 +23,9 @@ export abstract class BasePlayer extends Entity {
 
   public readonly body: Matter.Body
   public readonly bounds: Bounds
+  public readonly bones: Readonly<Record<Bone, Vector>>
   protected _facing: 'left' | 'right' = 'left'
+  protected _currentFrame = 0
 
   public get facing(): 'left' | 'right' {
     return this._facing
@@ -83,6 +85,7 @@ export abstract class BasePlayer extends Entity {
 
   public set gear(value: Gear | undefined) {
     this._gear = value
+    if (this.gearSprite && value) this.gearSprite.texture = value.texture
   }
 
   /**
@@ -95,6 +98,7 @@ export abstract class BasePlayer extends Entity {
   protected container: Container | undefined
   protected gfx: BoxGraphics | undefined
   protected sprite: AnimatedSprite | undefined
+  protected gearSprite: Sprite | undefined
 
   public get position(): Vector {
     return Vec.clone(this.body.position)
@@ -102,6 +106,42 @@ export abstract class BasePlayer extends Entity {
 
   public get velocity(): Vector {
     return Vec.clone(this.body.velocity)
+  }
+
+  readonly #bonePosition = (bone: Bone): Vector => {
+    if (!this.animations) {
+      throw new Error('player has no animations')
+    }
+
+    const animation = this.animations[this.currentAnimation]
+    const animW = animation.width
+    const animH = animation.height
+    const position = animation.boneData.bones[bone][this._currentFrame]
+
+    if (!position) {
+      throw new Error(
+        `missing bone data for "${this.currentAnimation}" at frame ${this._currentFrame}`,
+      )
+    }
+
+    const flip = this.facing === 'left' ? -1 : 1
+    const normalized = {
+      x: flip === 1 ? position.x : animW - position.x,
+      y: position.y,
+    }
+
+    const offsetFromCenter: Vector = {
+      x: (1 - (normalized.x / animW) * 2) * (animW / -2),
+      y: (1 - (normalized.y / animH) * 2) * (animH / -2),
+    }
+
+    const offsetFromAnchor = Vec.add(offsetFromCenter, {
+      x: flip * ((1 - BasePlayer.PLAYER_SPRITE_ANCHOR[0] * 2) * (animW / 2)),
+      y: (1 - BasePlayer.PLAYER_SPRITE_ANCHOR[1] * 2) * (animH / 2),
+    })
+
+    const scaled = Vec.mult(offsetFromAnchor, BasePlayer.PLAYER_SPRITE_SCALE)
+    return Vec.add(this.body.position, scaled)
   }
 
   public constructor(
@@ -133,12 +173,26 @@ export abstract class BasePlayer extends Entity {
       this.gfx = drawBox({ width, height }, { stroke: this.stroke })
       this.container.addChild(this.gfx)
 
+      this.gearSprite = new Sprite(this.gear?.texture)
+      this.gearSprite.width = 200
+      this.gearSprite.height = 200
+      this.container.addChild(this.gearSprite)
+
       stage().addChild(this.container)
     }
 
     this.bounds = { width, height }
     this.characterId = characterId
     void this._loadAnimations()
+
+    const boneMap = {} as Readonly<Record<Bone, Vector>>
+    for (const bone of bones) {
+      Object.defineProperty(boneMap, bone, {
+        get: () => this.#bonePosition(bone),
+      })
+    }
+
+    this.bones = Object.freeze(boneMap)
 
     // TODO: Implement BasePlayer
   }
@@ -170,14 +224,18 @@ export abstract class BasePlayer extends Entity {
   }
 
   public override onRenderFrame({ smooth }: RenderTime): void {
+    if (!this.container) return
+    if (!this.sprite) return
+    if (!this.gfx) return
+    if (!this.gearSprite) return
+
+    this._currentFrame = this.sprite.currentFrame
+
     const scale = this._facing === 'left' ? 1 : -1
     const newScale = scale * BasePlayer.PLAYER_SPRITE_SCALE
-    if (this.sprite && this.sprite.scale.x !== newScale) {
+    if (this.sprite.scale.x !== newScale) {
       this.sprite.scale.x = newScale
-      // spriteSign = Math.sign(sprite.scale.x)
     }
-
-    // currentFrame = sprite.currentFrame
 
     const smoothed = Vec.add(
       this.body.position,
@@ -185,10 +243,63 @@ export abstract class BasePlayer extends Entity {
     )
 
     const pos = Vec.add(smoothed, camera().offset)
-    if (this.container) this.container.position = pos
-    if (this.gfx) this.gfx.alpha = debug() ? 0.5 : 0
+    this.container.position = pos
+    this.gfx.alpha = debug() ? 0.5 : 0
 
     // TODO: Feet sensor
-    // TODO: Gear rendering
+
+    if (this.gear && this.animations) {
+      this.gearSprite.visible =
+        isAttackAnimation(this.currentAnimation) &&
+        this.currentAnimation !== 'punch'
+
+      const handMapping: Record<string, 'handLeft' | 'handRight'> = {
+        handLeft: 'handLeft',
+        handRight: 'handRight',
+      }
+
+      const currentGear = this.gear
+      const currentHandKey = currentGear.bone ?? 'handLeft'
+      const mappedHand = handMapping[currentHandKey]
+
+      const pos = Vec.add(
+        {
+          x: this.bones[mappedHand as 'handLeft' | 'handRight'].x,
+          y: this.bones[mappedHand as 'handLeft' | 'handRight'].y,
+        },
+        camera().offset,
+      )
+
+      this.gearSprite.position = pos
+
+      const animation = this.animations[this.currentAnimation]
+      const handOffsets =
+        animation.boneData.handOffsets[mappedHand as 'handLeft' | 'handRight'][
+          this._currentFrame
+        ]
+
+      let handRotation = Math.atan2(
+        handOffsets!.y.y - handOffsets!.x.y,
+        handOffsets!.y.x - handOffsets!.x.x,
+      )
+      let itemRotation = -currentGear.rotation * (Math.PI / 180)
+
+      const scale = this.sprite.scale.x
+      itemRotation *= scale === -1 ? -1 : 1
+      handRotation *= scale === -1 ? -1 : 1
+      this.gearSprite.rotation = handRotation + itemRotation
+
+      const initialDimensions = {
+        width: this.gearSprite.width,
+        height: this.gearSprite.height,
+      }
+
+      this.gearSprite.scale.x = -scale
+      Object.assign(this.gearSprite, initialDimensions)
+
+      this.gearSprite.anchor.set(currentGear.anchor.x, currentGear.anchor.y)
+    } else {
+      this.gearSprite.visible = false
+    }
   }
 }

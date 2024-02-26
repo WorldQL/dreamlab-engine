@@ -6,8 +6,6 @@ import { inputs, network, physics } from '~/labs/magic'
 import type { Gear } from '~/managers/gear'
 import type { LooseVector, Vector } from '~/math/vector'
 import { v, Vec } from '~/math/vector'
-import type { Bone } from '~/textures/playerAnimations'
-import { bones } from '~/textures/playerAnimations'
 import type { KnownAnimation } from './animations'
 import { isAttackAnimation } from './animations'
 import { BasePlayer } from './base-player'
@@ -38,21 +36,10 @@ export class Player extends BasePlayer {
   public readonly [symbol] = true as const
 
   public readonly events = new EventEmitter<PlayerEvents>()
-  public readonly bones: Readonly<Record<Bone, Vector>>
-
-  #currentFrame = 0
 
   public constructor(...args: ConstructorParameters<typeof BasePlayer>) {
     super(...args)
 
-    const boneMap = {} as Readonly<Record<Bone, Vector>>
-    for (const bone of bones) {
-      Object.defineProperty(boneMap, bone, {
-        get: () => this.#bonePosition(bone),
-      })
-    }
-
-    this.bones = Object.freeze(boneMap)
     physics().registerPlayer(this)
 
     const $inputs = inputs()
@@ -107,42 +94,6 @@ export class Player extends BasePlayer {
 
     this.#noclip = !this.#noclip
     this.events.emit('onToggleNoclip', this.#noclip)
-  }
-
-  readonly #bonePosition = (bone: Bone): Vector => {
-    if (!this.animations) {
-      throw new Error('player has no animations')
-    }
-
-    const animation = this.animations[this.currentAnimation]
-    const animW = animation.width
-    const animH = animation.height
-    const position = animation.boneData.bones[bone][this.#currentFrame]
-
-    if (!position) {
-      throw new Error(
-        `missing bone data for "${this.currentAnimation}" at frame ${this.#currentFrame}`,
-      )
-    }
-
-    const flip = this.facing === 'left' ? -1 : 1
-    const normalized = {
-      x: flip === 1 ? position.x : animW - position.x,
-      y: position.y,
-    }
-
-    const offsetFromCenter: Vector = {
-      x: (1 - (normalized.x / animW) * 2) * (animW / -2),
-      y: (1 - (normalized.y / animH) * 2) * (animH / -2),
-    }
-
-    const offsetFromAnchor = Vec.add(offsetFromCenter, {
-      x: flip * ((1 - BasePlayer.PLAYER_SPRITE_ANCHOR[0] * 2) * (animW / 2)),
-      y: (1 - BasePlayer.PLAYER_SPRITE_ANCHOR[1] * 2) * (animH / 2),
-    })
-
-    const scaled = Vec.mult(offsetFromAnchor, BasePlayer.PLAYER_SPRITE_SCALE)
-    return Vec.add(this.body.position, scaled)
   }
 
   private static readonly MAX_SPEED = 1
@@ -324,7 +275,6 @@ export class Player extends BasePlayer {
       return
     }
 
-    this.#currentFrame = this.sprite.currentFrame
     const frames = this.animations[this.currentAnimation].textures.length - 1
     const isLastFrame = this.sprite.currentFrame === frames
 
