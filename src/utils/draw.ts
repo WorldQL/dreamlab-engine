@@ -18,7 +18,7 @@ export interface DrawBoxArgs {
   height: number
 }
 
-type RedrawBox = (args: DrawBoxArgs) => void
+type RedrawBox = (args: DrawBoxArgs, options?: DrawOptions) => void
 export type BoxGraphics = Graphics & { readonly redraw: RedrawBox }
 export const drawBox = (
   { width, height }: DrawBoxArgs,
@@ -46,7 +46,10 @@ export const drawBox = (
 
   graphics.drawRect(0 - width / 2, 0 - height / 2, width, height)
 
-  const redraw: RedrawBox = args => drawBox(args, options, graphics)
+  const redraw: RedrawBox = (args, newOptions) => {
+    drawBox(args, newOptions ? newOptions : options, graphics)
+  }
+
   return Object.assign(graphics, { redraw })
 }
 // #endregion
@@ -56,7 +59,7 @@ export interface DrawCircleArgs {
   radius: number
 }
 
-type RedrawCircle = (args: DrawCircleArgs) => void
+type RedrawCircle = (args: DrawCircleArgs, options?: DrawOptions) => void
 export type CircleGraphics = Graphics & { readonly redraw: RedrawCircle }
 export const drawCircle = (
   { radius }: DrawCircleArgs,
@@ -84,7 +87,10 @@ export const drawCircle = (
 
   graphics.drawCircle(0, 0, radius)
 
-  const redraw: RedrawCircle = args => drawCircle(args, options, graphics)
+  const redraw: RedrawCircle = (args, newOptions) => {
+    drawCircle(args, newOptions ? newOptions : options, graphics)
+  }
+
   return Object.assign(graphics, { redraw })
 }
 // #endregion
