@@ -37,9 +37,15 @@ export interface CommonEvents {
   onDestroy: [entity: Entity]
   onSpawn: [entity: SpawnableEntity]
 
-  onArgsChanged: [entity: SpawnableEntity]
-  onTagsChanged: [entity: SpawnableEntity]
-  onLabelChanged: [entity: SpawnableEntity]
+  onTransformChanged: [entity: Entity, noBroadcast?: boolean]
+  onArgsChanged: [
+    entity: SpawnableEntity,
+    path: string,
+    value: unknown,
+    noBroadcast?: boolean,
+  ]
+  onTagsChanged: [entity: SpawnableEntity, tags: string[]]
+  onLabelChanged: [entity: SpawnableEntity, label: string | undefined]
   onDefinitionChanged: [entity: SpawnableEntity]
 
   onPhysicsStep: [time: Time]

@@ -696,10 +696,7 @@ export async function createGame<Server extends boolean>(
           setProperty(previousArgs, path, previous)
 
           entity.onArgsUpdate(path, previousArgs)
-          events.common.emit('onArgsChanged', entity)
-
-          if (network?.type !== 'client') return
-          void network.sendArgsUpdate(uid, path, value)
+          events.common.emit('onArgsChanged', entity, path, value)
         },
         { pathAsArray: true },
       )
@@ -710,8 +707,11 @@ export async function createGame<Server extends boolean>(
 
       const syncTransform = (sync: boolean) => {
         if (sync) return
-        if (network?.type !== 'client') return
-        void network.sendTransformUpdate(uid, transform)
+
+        const entity = this.lookup(uid)
+        if (!entity) return
+
+        events.common.emit('onTransformChanged', entity, sync)
       }
 
       transform.addListener(syncTransform)
@@ -723,15 +723,9 @@ export async function createGame<Server extends boolean>(
         events.common.emit('onDefinitionChanged', entity)
 
         if (path.startsWith('tags')) {
-          events.common.emit('onTagsChanged', entity)
-          if (network?.type === 'client') {
-            void network.sendTagsUpdate(uid, definition.tags)
-          }
+          events.common.emit('onTagsChanged', entity, definition.tags)
         } else if (path.startsWith('label')) {
-          events.common.emit('onLabelChanged', entity)
-          if (network?.type === 'client') {
-            void network.sendLabelUpdate(uid, definition.label)
-          }
+          events.common.emit('onLabelChanged', entity, definition.label)
         }
       })
 

@@ -1,6 +1,4 @@
 import type { Except } from 'type-fest'
-import type { Transform } from '~/math/transform.js'
-import type { LooseSpawnableDefinition } from '~/spawnable/definition.js'
 import type { Data, Listeners } from './shared.js'
 
 export interface PeerInfo {
@@ -32,32 +30,5 @@ export interface NetServer extends Listeners<NetServerListeners> {
     entityID: string,
     key: string,
     value: unknown,
-  ): Promise<void> | void
-
-  sendEntityCreate(
-    peerID: string,
-    definition: LooseSpawnableDefinition,
-  ): Promise<void> | void
-  sendEntityDestroy(peerID: string, entityID: string): Promise<void> | void
-  sendTransformUpdate(
-    peerID: string,
-    entityID: string,
-    transform: Transform,
-  ): Promise<void> | void
-  sendArgsUpdate(
-    peerID: string,
-    entityID: string,
-    path: string,
-    value: unknown,
-  ): Promise<void> | void
-  sendLabelUpdate(
-    peerID: string,
-    entityID: string,
-    label: string | undefined,
-  ): Promise<void> | void
-  sendTagsUpdate(
-    peerID: string,
-    entityID: string,
-    tags: string[],
   ): Promise<void> | void
 }

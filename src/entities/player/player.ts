@@ -1,8 +1,9 @@
 import EventEmitter from 'eventemitter3'
 import Matter from 'matter-js'
+import type { CamelCase } from 'type-fest'
 import type { RenderTime, Time } from '~/entity'
 import { isEntity } from '~/entity'
-import { inputs, network, physics } from '~/labs/magic'
+import { inputs, physics } from '~/labs/magic'
 import type { Gear } from '~/managers/gear'
 import type { LooseVector, Vector } from '~/math/vector'
 import { v, Vec } from '~/math/vector'
@@ -26,9 +27,16 @@ export enum PlayerInput {
   WalkRight = '@player/walk-right',
 }
 
+type Inputs = `${PlayerInput}` extends `@player/${infer T}` ? T : never
+type InputMap = Record<CamelCase<Inputs>, boolean>
+
 export interface PlayerEvents {
+  onMove: [position: Vector, velocity: Vector, flipped: boolean]
+  onInput: [inputs: InputMap]
+
   onToggleNoclip: [enabled: boolean]
   onTeleport: [oldPosition: Vector, newPosition: Vector]
+  onAnimationChanged: [animation: KnownAnimation]
   onGearChanged: [item: Gear | undefined]
 }
 
@@ -75,8 +83,6 @@ export class Player extends BasePlayer {
   public override set gear(value: Gear | undefined) {
     super.gear = value
     this.events.emit('onGearChanged', value)
-
-    void network('client')?.sendPlayerGear(value)
   }
 
   public teleport(position: LooseVector, resetVelocity = true): void {
@@ -234,13 +240,14 @@ export class Player extends BasePlayer {
       // TODO: Send a proper packet that communicates a player is in edit mode.
       // We can even have it display an indicator to other player's that they're editing!
 
-      void network('client')?.sendPlayerPosition(
+      this.events.emit(
+        'onMove',
         body.position,
         body.velocity,
         this.facing !== 'left',
       )
 
-      void network('client')?.sendPlayerMotionInputs({
+      this.events.emit('onInput', {
         jump,
         crouch,
         walkLeft: left,
@@ -293,7 +300,7 @@ export class Player extends BasePlayer {
       }
 
       this.currentAnimation = newAnimation
-      void network('client')?.sendPlayerAnimation(newAnimation)
+      this.events.emit('onAnimationChanged', newAnimation)
     }
 
     super.onRenderFrame(time)
