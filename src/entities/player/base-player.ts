@@ -103,7 +103,7 @@ export abstract class BasePlayer extends Entity {
       )
     }
 
-    const flip = this.facing === 'left' ? -1 : 1
+    const flip = this.sprite ? Math.sign(this.sprite.scale.x) : 1
     const normalized = {
       x: flip === 1 ? position.x : animW - position.x,
       y: position.y,
@@ -263,7 +263,6 @@ export abstract class BasePlayer extends Entity {
       )
       let itemRotation = -currentGear.rotation * (Math.PI / 180)
 
-      const scale = this.sprite.scale.x
       itemRotation *= scale === -1 ? -1 : 1
       handRotation *= scale === -1 ? -1 : 1
       this.gearSprite.rotation = handRotation + itemRotation
