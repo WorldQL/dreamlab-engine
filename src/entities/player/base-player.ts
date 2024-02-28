@@ -155,8 +155,8 @@ export abstract class BasePlayer extends Entity {
       this.gearSprite = new Sprite(this.gear?.texture)
       this.gearSprite.width = 200
       this.gearSprite.height = 200
-      this.container.addChild(this.gearSprite)
 
+      stage().addChild(this.gearSprite)
       stage().addChild(this.container)
     }
 
