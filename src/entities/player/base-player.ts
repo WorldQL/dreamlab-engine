@@ -31,13 +31,6 @@ export abstract class BasePlayer extends Entity {
     return this._facing
   }
 
-  /**
-   * @deprecated Use {@link BasePlayer.facing} instead
-   */
-  public get facingDirection(): number {
-    return this._facing === 'left' ? -1 : 1
-  }
-
   protected _characterId: string | undefined
   public get characterId(): string | undefined {
     return this._characterId
@@ -48,13 +41,6 @@ export abstract class BasePlayer extends Entity {
 
     this._characterId = value
     void this._loadAnimations()
-  }
-
-  /**
-   * @deprecated Assign the character ID to {@link BasePlayer.characterId} instead
-   */
-  public setCharacterId(characterId: string | undefined): void {
-    this.characterId = characterId
   }
 
   protected animations: PlayerAnimationMap<KnownAnimation> | undefined
@@ -86,13 +72,6 @@ export abstract class BasePlayer extends Entity {
   public set gear(value: Gear | undefined) {
     this._gear = value
     if (this.gearSprite && value) this.gearSprite.texture = value.texture
-  }
-
-  /**
-   * @deprecated Assign the character ID to {@link BasePlayer.gear} instead
-   */
-  public setGear(gear: Gear | undefined): void {
-    this.gear = gear
   }
 
   protected container: Container | undefined
