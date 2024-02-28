@@ -3,7 +3,7 @@ import Matter from 'matter-js'
 import type { CamelCase } from 'type-fest'
 import type { RenderTime, Time } from '~/entity'
 import { isEntity } from '~/entity'
-import { inputs, physics } from '~/labs/magic'
+import { events, inputs, physics } from '~/labs/magic'
 import type { Gear } from '~/managers/gear'
 import type { LooseVector, Vector } from '~/math/vector'
 import { v, Vec } from '~/math/vector'
@@ -107,7 +107,6 @@ export class Player extends BasePlayer {
   private static readonly JUMP_FORCE = 5
   private static readonly FEET_SENSOR = 4
 
-  // private colliding = false
   private direction: -1 | 0 | 1 = 0
 
   #hasJumped = false
@@ -127,7 +126,7 @@ export class Player extends BasePlayer {
     const left = $inputs?.getInput(PlayerInput.WalkLeft) ?? false
     const right = $inputs?.getInput(PlayerInput.WalkRight) ?? false
     const jump = $inputs?.getInput(PlayerInput.Jump) ?? false
-    // const attack = (colliding && $inputs?.getInput(PlayerInput.Attack)) ?? false
+    const attack = $inputs?.getInput(PlayerInput.Attack) ?? false
     const isJogging = $inputs?.getInput(PlayerInput.Jog) ?? false
     const crouch = $inputs?.getInput(PlayerInput.Crouch) ?? false
 
@@ -194,7 +193,6 @@ export class Player extends BasePlayer {
       }
 
       const isColliding = didCollide
-      // this.colliding = isColliding
 
       if (isColliding && !jump) {
         this.#hasJumped = false
@@ -228,12 +226,21 @@ export class Player extends BasePlayer {
           )
         }
       }
+
+      this.#attack = attack
     }
 
-    // TODO
-    // if (isAttackAnimation() && isAttackFrame()) {
-    //   game.events.common.emit('onPlayerAttack', this as Player, gear)
-    // }
+    if (
+      (this.currentAnimation === 'greatsword' && this._currentFrame >= 16) ||
+      (this.currentAnimation === 'punch' && this._currentFrame >= 3) ||
+      (this.currentAnimation === 'bow' &&
+        (this._currentFrame === 8 || this._currentFrame === 9)) ||
+      (this.currentAnimation === 'shoot' &&
+        this._currentFrame > 0 &&
+        this._currentFrame < 4)
+    ) {
+      events().common.emit('onPlayerAttack', this as Player, this.gear)
+    }
 
     if (!this.#noclip) {
       // temporary fix for jittery noclipping netplayers in edit mode.
@@ -253,8 +260,7 @@ export class Player extends BasePlayer {
         walkLeft: left,
         walkRight: right,
         toggleNoclip: false,
-        // TODO: attack
-        attack: false,
+        attack,
         jog: false,
       })
     }
