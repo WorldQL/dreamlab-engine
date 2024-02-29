@@ -27,11 +27,11 @@ export { ArgsSchema as PhysicsBallArgs }
 export class PhysicsBall extends SpawnableEntity<Args> {
   private static MASS = 20
 
-  private readonly body: Matter.Body
-  private readonly container: Container | undefined
-  private readonly mask: CircleGraphics | undefined
-  private readonly gfx: CircleGraphics | undefined
-  private sprite: Sprite | undefined
+  protected readonly body: Matter.Body
+  protected readonly container: Container | undefined
+  protected readonly mask: CircleGraphics | undefined
+  protected readonly gfx: CircleGraphics | undefined
+  protected sprite: Sprite | undefined
 
   public constructor(ctx: SpawnableContext<Args>) {
     super(ctx)

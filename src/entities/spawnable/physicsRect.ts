@@ -16,12 +16,12 @@ const ArgsSchema = NonSolidArgs.extend({
 })
 
 export { ArgsSchema as PhysicsRectArgs }
-export class PhysicsRect extends NonSolid<Args> {
+export class PhysicsRect<A extends Args = Args> extends NonSolid<A> {
   private static MASS = 20
 
-  private readonly body: Matter.Body
+  protected readonly body: Matter.Body
 
-  public constructor(ctx: SpawnableContext<Args>) {
+  public constructor(ctx: SpawnableContext<A>) {
     super(ctx, { stroke: 'red' })
 
     this.body = Matter.Bodies.rectangle(
