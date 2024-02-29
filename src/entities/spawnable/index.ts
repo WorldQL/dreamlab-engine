@@ -4,11 +4,12 @@ import {
   BackgroundTrigger,
   BackgroundTriggerArgs,
 } from './backgroundTrigger.js'
-import { BouncyBall, BouncyBallArgs } from './bouncyBall.js'
 import { ComplexSolidArgs, createComplexSolid } from './complexSolid.js'
 import { ForceField, ForceFieldArgs } from './forceField.js'
 import { Marker, MarkerArgs } from './marker.js'
 import { NonSolid, NonSolidArgs } from './nonsolid'
+import { PhysicsBall, PhysicsBallArgs } from './physicsBall.js'
+import { PhysicsRect, PhysicsRectArgs } from './physicsRect.js'
 import { MovingPlatform, MovingPlatformArgs } from './platform-moving.js'
 import { Platform, PlatformArgs } from './platform.js'
 import { Solid } from './solid'
@@ -20,7 +21,8 @@ export const registerDefaultSpawnables = (game: Game<boolean>) => {
     BackgroundTrigger,
     BackgroundTriggerArgs,
   )
-  game.register('@dreamlab/BouncyBall', BouncyBall, BouncyBallArgs)
+  game.register('@dreamlab/PhysicsBall', PhysicsBall, PhysicsBallArgs)
+  game.register('@dreamlab/PhysicsRect', PhysicsRect, PhysicsRectArgs)
   game.register('@dreamlab/ComplexSolid', createComplexSolid, ComplexSolidArgs)
   game.register('@dreamlab/ForceField', ForceField, ForceFieldArgs)
   game.register('@dreamlab/Marker', Marker, MarkerArgs)

@@ -23,8 +23,8 @@ const ArgsSchema = z.object({
   spriteSource: SpriteSourceSchema.optional(),
 })
 
-export { ArgsSchema as BouncyBallArgs }
-export class BouncyBall extends SpawnableEntity<Args> {
+export { ArgsSchema as PhysicsBallArgs }
+export class PhysicsBall extends SpawnableEntity<Args> {
   private static MASS = 20
 
   private readonly body: Matter.Body
@@ -41,14 +41,14 @@ export class BouncyBall extends SpawnableEntity<Args> {
       this.transform.position.y,
       this.args.radius,
       {
-        label: 'bouncyBall',
+        label: 'physicsBall',
         render: { visible: false },
         angle: toRadians(this.transform.rotation),
         isStatic: this.preview,
         isSensor: this.preview,
 
-        mass: BouncyBall.MASS,
-        inverseMass: 1 / BouncyBall.MASS,
+        mass: PhysicsBall.MASS,
+        inverseMass: 1 / PhysicsBall.MASS,
         restitution: 0.95,
       },
     )
@@ -73,7 +73,7 @@ export class BouncyBall extends SpawnableEntity<Args> {
 
       this.mask = drawCircle(
         { radius },
-        { strokeAlpha: 0, fillAlpha: 1, fill: 'transparent' },
+        { strokeAlpha: 0, fillAlpha: 0, fill: 'transparent' },
       )
 
       const width = radius * 2
@@ -138,7 +138,7 @@ export class BouncyBall extends SpawnableEntity<Args> {
     Matter.Body.setAngle(this.body, 0)
     Matter.Body.scale(this.body, scale, scale)
     Matter.Body.setAngle(this.body, angle)
-    Matter.Body.setMass(this.body, BouncyBall.MASS)
+    Matter.Body.setMass(this.body, PhysicsBall.MASS)
   }
 
   public override onResize({ width, height }: Bounds): void {
