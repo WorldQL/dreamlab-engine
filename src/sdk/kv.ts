@@ -1,7 +1,7 @@
 export interface KvOps {
   get(key: string): Promise<string | undefined>
-  set(key: string, value: string): Promise<void>
-  delete(key: string): Promise<void>
+  set(key: string, value: string): Promise<void> | void
+  delete(key: string): Promise<void> | void
 }
 
 export interface KvStore {
