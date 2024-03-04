@@ -1,6 +1,7 @@
+import * as particles from '@pixi/particle-emitter'
 import Matter from 'matter-js'
-import { Container } from 'pixi.js'
 import type { Sprite } from 'pixi.js'
+import { Container, Graphics, ParticleContainer } from 'pixi.js'
 import { z } from 'zod'
 import type { RenderTime } from '~/entity'
 import { camera, debug, game, physics, stage } from '~/labs/magic'
@@ -26,12 +27,16 @@ const ArgsSchema = z.object({
 export { ArgsSchema as PhysicsBallArgs }
 export class PhysicsBall extends SpawnableEntity<Args> {
   private static MASS = 20
+  private static PARTICLE_THRESHOLD = 2
 
   protected readonly body: Matter.Body
   protected readonly container: Container | undefined
   protected readonly mask: CircleGraphics | undefined
   protected readonly gfx: CircleGraphics | undefined
   protected sprite: Sprite | undefined
+
+  protected readonly particleContainer: ParticleContainer | undefined
+  private readonly emitter: particles.Emitter | undefined
 
   public constructor(ctx: SpawnableContext<Args>) {
     super(ctx)
@@ -68,6 +73,8 @@ export class PhysicsBall extends SpawnableEntity<Args> {
       this.container.sortableChildren = true
       this.container.zIndex = this.transform.zIndex
 
+      this.particleContainer = new ParticleContainer()
+
       this.gfx = drawCircle({ radius })
       this.gfx.zIndex = 100
 
@@ -88,9 +95,91 @@ export class PhysicsBall extends SpawnableEntity<Args> {
       this.container.addChild(this.mask)
       if (this.sprite) this.container.addChild(this.sprite)
       stage().addChild(this.container)
+      stage().addChild(this.particleContainer)
+
+      const goldDotTexture = $game.client.render.app.renderer.generateTexture(
+        new Graphics().beginFill(0xffd700).drawCircle(0, 0, 5).endFill(),
+      )
+      this.emitter = new particles.Emitter(this.particleContainer, {
+        lifetime: {
+          min: 0.5,
+          max: 0.5,
+        },
+        frequency: 0.008,
+        spawnChance: 1,
+        particlesPerWave: 1,
+        emitterLifetime: 10,
+        maxParticles: 200,
+        pos: {
+          x: 0,
+          y: 0,
+        },
+        addAtBack: false,
+        behaviors: [
+          {
+            type: 'scale',
+            config: {
+              scale: {
+                list: [
+                  {
+                    value: 0.5,
+                    time: 0,
+                  },
+                  {
+                    value: 0.1,
+                    time: 1,
+                  },
+                ],
+              },
+            },
+          },
+          {
+            type: 'moveSpeed',
+            config: {
+              speed: {
+                list: [
+                  {
+                    value: 200,
+                    time: 0,
+                  },
+                  {
+                    value: 100,
+                    time: 1,
+                  },
+                ],
+                isStepped: false,
+              },
+            },
+          },
+          {
+            type: 'rotationStatic',
+            config: {
+              min: 0,
+              max: 360,
+            },
+          },
+          {
+            type: 'spawnShape',
+            config: {
+              type: 'torus',
+              data: {
+                x: 0,
+                y: 0,
+                radius: 10,
+              },
+            },
+          },
+          {
+            type: 'textureSingle',
+            config: { texture: goldDotTexture },
+          },
+        ],
+      })
 
       this.transform.addZIndexListener(() => {
         if (this.container) this.container.zIndex = this.transform.zIndex
+        if (this.particleContainer)
+          this.particleContainer.zIndex = this.transform.zIndex
       })
     }
   }
@@ -150,18 +239,37 @@ export class PhysicsBall extends SpawnableEntity<Args> {
     physics().unlinkTransform(this.body, this.transform)
 
     this.container?.destroy({ children: true })
+    this.particleContainer?.destroy({ children: true })
   }
 
-  public override onRenderFrame({ smooth }: RenderTime): void {
-    if (this.container) {
+  public override onRenderFrame(time: RenderTime): void {
+    this.emitter?.update(time.delta)
+
+    if (this.container && this.particleContainer) {
       const smoothed = Vec.add(
         this.body.position,
-        Vec.mult(this.body.velocity, smooth),
+        Vec.mult(this.body.velocity, time.smooth),
       )
 
       const pos = Vec.add(smoothed, camera().offset)
       this.container.position = pos
       this.container.rotation = this.body.angle
+
+      this.particleContainer.position = camera().offset
+
+      if (this.emitter) {
+        const velocityMagnitude = Math.hypot(
+          this.body.velocity.x,
+          this.body.velocity.y,
+        )
+
+        if (velocityMagnitude > PhysicsBall.PARTICLE_THRESHOLD) {
+          this.emitter.emit = true
+          this.emitter.updateSpawnPos(smoothed.x, smoothed.y + this.args.radius)
+        } else {
+          this.emitter.emit = false
+        }
+      }
     }
 
     if (this.gfx) this.gfx.alpha = debug() ? 0.5 : 0
