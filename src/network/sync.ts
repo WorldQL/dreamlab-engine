@@ -1,6 +1,7 @@
 import equal from 'fast-deep-equal/es6/index.js'
 import type { Jsonifiable } from 'type-fest'
 import type { Game } from '~/game.js'
+import { network } from '~/labs/magic'
 import { isSpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import type { SpawnableEntity } from '~/spawnable/spawnableEntity.js'
 import { onChange } from '~/utils/object.js'
@@ -35,13 +36,11 @@ export interface SyncedValue<T> {
  *
  * Changes to the value on the server will be replicated to all clients.
  *
- * @param game - Game
  * @param entityID - Entity Unique ID
  * @param key - Unique ID for this synced value
  * @param initialValue - Initial value, must be a JSON compatible type for syncing round trips
  */
-export const syncedValue = <T extends Jsonifiable, Server extends boolean>(
-  game: Game<Server>,
+export const syncedValue = <T extends Jsonifiable>(
   entityID: string,
   key: string,
   initialValue: T,
@@ -52,15 +51,11 @@ export const syncedValue = <T extends Jsonifiable, Server extends boolean>(
       throw new Error('attempt to sync a destroyed synced value')
     }
 
-    void game.server?.network?.broadcastSyncedValue(entityID, key, value)
+    void network('client')?.updateSyncedValue(entityID, key, value)
+    void network('server')?.broadcastSyncedValue(entityID, key, value)
   }
 
   function onChanged(this: T): void {
-    const server = game.server
-    if (!server) {
-      throw new Error('cannot assign to synced values on the client')
-    }
-
     sync(this)
   }
 
@@ -91,11 +86,6 @@ export const syncedValue = <T extends Jsonifiable, Server extends boolean>(
     set value(newValue) {
       if (destroyed) {
         throw new Error('attempt to set a destroyed synced value')
-      }
-
-      const server = game.server
-      if (!server) {
-        throw new Error('cannot assign to synced values on the client')
       }
 
       const changed = !equal(value, newValue)
@@ -159,7 +149,7 @@ export const syncEntity = (entity: SpawnableEntity): void => {
  *
  * @param game - Server Side Game
  */
-export const syncEntities = (game: Game<true>): void => {
+export const syncEntities = (game: Game<boolean>): void => {
   const spawnables = game.entities.filter(isSpawnableEntity)
   for (const entity of spawnables) syncEntity(entity)
 }
@@ -176,7 +166,7 @@ export const syncEntities = (game: Game<true>): void => {
  * @param value - Value
  */
 export const updateSyncedValue = (
-  game: Game<false>,
+  game: Game<boolean>,
   entityID: string,
   key: string,
   value: unknown,

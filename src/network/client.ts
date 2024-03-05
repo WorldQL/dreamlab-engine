@@ -12,4 +12,9 @@ export interface NetClient extends Listeners<NetClientListeners> {
   type: 'client'
 
   sendCustomMessage(channel: string, data: Data): Promise<void> | void
+  updateSyncedValue(
+    entityID: string,
+    key: string,
+    value: unknown,
+  ): Promise<void> | void
 }
