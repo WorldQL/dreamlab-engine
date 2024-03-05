@@ -34,6 +34,7 @@ export interface PlayerEvents {
   onMove: [position: Vector, velocity: Vector, flipped: boolean]
   onInput: [inputs: InputMap]
 
+  onCharacterIdChange: [characterId: string | undefined]
   onToggleNoclip: [enabled: boolean]
   onTeleport: [oldPosition: Vector, newPosition: Vector]
   onAnimationChanged: [animation: KnownAnimation]
@@ -76,11 +77,24 @@ export class Player extends BasePlayer {
     this.events.removeAllListeners()
   }
 
+  public override get characterId(): string | undefined {
+    return super.characterId
+  }
+
+  public override set characterId(value: string | undefined) {
+    if (this.characterId === value) return
+
+    super.characterId = value
+    this.events.emit('onCharacterIdChange', value)
+  }
+
   public override get gear(): Gear | undefined {
     return super.gear
   }
 
   public override set gear(value: Gear | undefined) {
+    if (this.gear === value) return
+
     super.gear = value
     this.events.emit('onGearChanged', value)
   }
