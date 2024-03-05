@@ -235,9 +235,7 @@ export class Player extends BasePlayer {
       (this.currentAnimation === 'punch' && this._currentFrame >= 3) ||
       (this.currentAnimation === 'bow' &&
         (this._currentFrame === 8 || this._currentFrame === 9)) ||
-      (this.currentAnimation === 'shoot' &&
-        this._currentFrame > 0 &&
-        this._currentFrame < 4)
+      (this.currentAnimation === 'shoot' && this._currentFrame < 4)
     ) {
       events().common.emit('onPlayerAttack', this as Player, this.gear)
     }
