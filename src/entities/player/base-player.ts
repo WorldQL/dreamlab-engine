@@ -147,7 +147,7 @@ export abstract class BasePlayer extends Entity {
     if (isClient()) {
       this.container = new Container()
       this.container.sortableChildren = true
-      this.container.zIndex = 10
+      this.container.zIndex = 100
 
       this.gfx = drawBox({ width, height }, { stroke: this.stroke })
       this.container.addChild(this.gfx)

@@ -16,3 +16,5 @@ export const generateCUID = <T extends IDType>(type: T): `${T}_${string}` => {
   const id = createId()
   return `${type}_${id}`
 }
+
+export { createId } from '@paralleldrive/cuid2'
