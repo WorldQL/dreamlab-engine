@@ -7,7 +7,7 @@ type InitFn<Server extends boolean> = (
 ) => Promise<void> | void
 
 export type InitClient = InitFn<false>
-export type InitServer = InitFn<false>
+export type InitServer = InitFn<true>
 export type InitShared = InitFn<boolean>
 
 export type Level = LooseSpawnableDefinition[]
