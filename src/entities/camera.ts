@@ -141,6 +141,12 @@ export class Camera extends Entity {
     return this.#zoomScale
   }
 
+  public set zoomScale(level: number) {
+    const clampedLevel = Math.max(0, Math.min(SCALE_LEVELS.length - 1, level))
+    this.#zoomScaleLevelIdx = clampedLevel
+    this.#zoomScaleTarget = SCALE_LEVELS[clampedLevel] as number
+  }
+
   public get renderScale(): number {
     return this.#renderScale
   }
