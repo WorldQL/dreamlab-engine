@@ -2,8 +2,8 @@ import type { Except } from 'type-fest'
 import type { Data, Listeners } from './shared.js'
 
 export interface PeerInfo {
-  readonly peerID: string
-  readonly playerID: string
+  readonly connectionId: string
+  readonly playerId: string
 }
 
 export type MessageListenerServer = (
@@ -21,13 +21,13 @@ export interface NetServer extends Listeners<NetServerListeners> {
   type: 'server'
 
   sendCustomMessage(
-    peerID: string,
+    connectionId: string,
     channel: string,
     data: Data,
   ): Promise<void> | void
   broadcastCustomMessage(channel: string, data: Data): Promise<void> | void
   broadcastSyncedValue(
-    entityID: string,
+    entityId: string,
     key: string,
     value: unknown,
   ): Promise<void> | void

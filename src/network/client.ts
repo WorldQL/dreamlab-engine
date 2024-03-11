@@ -13,7 +13,7 @@ export interface NetClient extends Listeners<NetClientListeners> {
 
   sendCustomMessage(channel: string, data: Data): Promise<void> | void
   updateSyncedValue(
-    entityID: string,
+    entityId: string,
     key: string,
     value: unknown,
   ): Promise<void> | void
