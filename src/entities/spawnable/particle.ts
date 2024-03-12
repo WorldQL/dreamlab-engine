@@ -87,7 +87,7 @@ export class Particle<A extends Args = Args> extends SpawnableEntity<A> {
   public override onResize(_bounds: Bounds): void {}
 
   public override teardown(): void {
-    this.particleContainer?.destroy({ children: true })
+    this.particleContainer?.destroy()
   }
 
   public override onRenderFrame(time: RenderTime): void {
