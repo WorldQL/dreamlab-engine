@@ -59,7 +59,7 @@ export class InputManager extends EventEmitter<InputEvents> {
     string,
     { defaultKey: InputCode; name: string }
   >()
-  private readonly bindings = new Map<InputCode, string>()
+  private readonly bindings = new Map<InputCode, Set<string>>()
 
   private readonly inputMap = new Map<string, Set<InputCode>>()
   private readonly reverseInputMap = new Map<InputCode, string>()
@@ -242,14 +242,16 @@ export class InputManager extends EventEmitter<InputEvents> {
     this.reverseInputMap.clear()
 
     for (const key of inputCodes) {
-      const input = this.bindings.get(key)
-      if (!input) continue
+      const inputs = this.bindings.get(key)
+      if (!inputs) continue
 
-      const set = this.inputMap.get(input) ?? new Set()
-      set.add(key)
+      for (const input of inputs) {
+        const set = this.inputMap.get(input) ?? new Set()
+        set.add(key)
 
-      this.inputMap.set(input, set)
-      this.reverseInputMap.set(key, input)
+        this.inputMap.set(input, set)
+        this.reverseInputMap.set(key, input)
+      }
     }
 
     for (const [input, { defaultKey }] of this.inputs.entries()) {
@@ -330,10 +332,27 @@ export class InputManager extends EventEmitter<InputEvents> {
    * @param input - Input ID
    */
   public bindInput(key: InputCode, input: string | undefined): void {
-    if (input) this.bindings.set(key, input)
-    else this.bindings.delete(key)
+    if (input) {
+      if (!this.bindings.has(key)) {
+        this.bindings.set(key, new Set())
+      }
+
+      this.bindings.get(key)!.add(input)
+    } else {
+      this.bindings.delete(key)
+    }
 
     this.updateInputs()
+  }
+
+  /**
+   * Unbind a single input from a key.
+   *
+   * @param key - Key Code
+   * @param input - Input ID
+   */
+  public unbindInput(key: InputCode, input: string): void {
+    this.bindings.get(key)?.delete(input)
   }
   // #endregion
 
