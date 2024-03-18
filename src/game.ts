@@ -492,6 +492,7 @@ export async function createGame<Server extends boolean>(
           (endOfTickNow - now) +
           'ms. Should take less than 16ms.',
       )
+      events.common.emit('onTickTooLong', endOfTickNow - now)
     }
   }
 
