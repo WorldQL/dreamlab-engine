@@ -52,6 +52,7 @@ export class Camera extends Entity {
   readonly #text: DebugText
 
   readonly #onWheel = (ev: WheelEvent) => {
+    if (!this.zoomEnabled) return
     if (!ev.ctrlKey) return
     ev.preventDefault()
 
@@ -103,6 +104,8 @@ export class Camera extends Entity {
     // TODO: Same as above
     this.#canvas.removeEventListener('wheel', this.#onWheel)
   }
+
+  public zoomEnabled = true
 
   // #region Target
   public get target(): CameraTarget | undefined {
