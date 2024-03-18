@@ -62,7 +62,7 @@ export class InputManager extends EventEmitter<InputEvents> {
   private readonly bindings = new Map<InputCode, Set<string>>()
 
   private readonly inputMap = new Map<string, Set<InputCode>>()
-  private readonly reverseInputMap = new Map<InputCode, string>()
+  private readonly reverseInputMap = new Map<InputCode, Set<string>>()
 
   private readonly inputCount = new CountMap<string>()
 
@@ -250,14 +250,18 @@ export class InputManager extends EventEmitter<InputEvents> {
         set.add(key)
 
         this.inputMap.set(input, set)
-        this.reverseInputMap.set(key, input)
       }
+
+      this.reverseInputMap.set(key, inputs)
     }
 
     for (const [input, { defaultKey }] of this.inputs.entries()) {
       if (this.inputMap.has(input)) continue
 
-      this.reverseInputMap.set(defaultKey, input)
+      const inputs = this.reverseInputMap.get(defaultKey) ?? new Set()
+      inputs.add(input)
+      this.reverseInputMap.set(defaultKey, inputs)
+
       const set = this.inputMap.get(input) ?? new Set()
       set.add(defaultKey)
       this.inputMap.set(input, set)
@@ -441,17 +445,19 @@ export class InputManager extends EventEmitter<InputEvents> {
     this.emit(key, isPressed)
 
     // Check if this key is mapped to an input
-    const input = this.reverseInputMap.get(key)
-    if (!input) return
+    const inputs = this.reverseInputMap.get(key)
+    if (!inputs) return
 
-    // Update internal state
-    const prevCount = this.inputCount.count(input)
-    if (isPressed) this.inputCount.increment(input)
-    else this.inputCount.decrement(input)
+    for (const input of inputs) {
+      // Update internal state
+      const prevCount = this.inputCount.count(input)
+      if (isPressed) this.inputCount.increment(input)
+      else this.inputCount.decrement(input)
 
-    // Emit if needed
-    const count = this.inputCount.count(input)
-    if (prevCount === 0 && count === 1) this.emit(input, true)
-    else if (count === 0) this.emit(input, false)
+      // Emit if needed
+      const count = this.inputCount.count(input)
+      if (prevCount === 0 && count === 1) this.emit(input, true)
+      else if (count === 0) this.emit(input, false)
+    }
   }
 }
