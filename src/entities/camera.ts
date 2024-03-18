@@ -52,9 +52,10 @@ export class Camera extends Entity {
   readonly #text: DebugText
 
   readonly #onWheel = (ev: WheelEvent) => {
-    if (!this.zoomEnabled) return
     if (!ev.ctrlKey) return
     ev.preventDefault()
+
+    if (!this.zoomEnabled) return
 
     const delta = -Math.sign(ev.deltaY)
     this.#zoomScaleLevelIdx = Math.max(
