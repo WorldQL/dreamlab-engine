@@ -79,7 +79,11 @@ export interface Physics {
    * @param body - Physics Body
    * @param transform - Entity Transform
    */
-  linkTransform(body: Body, transform: TrackedTransform): void
+  linkTransform(
+    body: Body,
+    transform: TrackedTransform,
+    options?: { updateVelocity?: boolean; updateAngularVelocity?: boolean },
+  ): void
 
   /**
    * Undo linking by {@link Physics.linkTransform | linkTransform()}
@@ -260,13 +264,23 @@ export const createPhysics = (): Physics => {
       Matter.Composite.remove(engine.world, bodies)
     },
 
-    linkTransform(body, transform) {
+    linkTransform(body, transform, options) {
       const positionListener = () => {
-        Matter.Body.setPosition(body, transform.position)
+        Matter.Body.setPosition(
+          body,
+          transform.position,
+          // @ts-expect-error incorrect typings
+          options?.updateVelocity ?? false,
+        )
       }
 
       const rotationListener = () => {
-        Matter.Body.setAngle(body, toRadians(transform.rotation))
+        Matter.Body.setAngle(
+          body,
+          toRadians(transform.rotation),
+          // @ts-expect-error incorrect typings
+          options?.updateAngularVelocity ?? false,
+        )
       }
 
       const onTick = () => {
