@@ -430,7 +430,7 @@ export async function createGame<Server extends boolean>(
 
   // #region Tick Loop
   const onTick = async () => {
-    tracing.enter('tick')
+    tracing.enter('core_tick')
 
     const now = performance.now()
     const delta = now - time
@@ -448,21 +448,21 @@ export async function createGame<Server extends boolean>(
       return
     }
 
-    tracing.enter('physics')
     while (physicsTickAcc >= physicsTickDelta) {
+      tracing.enter('physics')
       physicsTickAcc -= physicsTickDelta
 
-      tracing.enter('matter update')
+      tracing.enter('matter_update')
       Matter.Engine.update(physics.engine, physicsTickDelta)
 
-      tracing.replace('global event')
+      tracing.replace('step_event')
       const timeState = {
         delta: physicsTickDelta / 1_000,
         time: time / 1_000,
       }
       events.common.emit('onPhysicsStep', timeState)
 
-      tracing.replace('entities', { count: entities.length })
+      tracing.replace('step_entities', { count: entities.length })
       for (const entity of entities) {
         if (typeof entity.onPhysicsStep !== 'function') continue
 
@@ -479,9 +479,8 @@ export async function createGame<Server extends boolean>(
       }
 
       tracing.exit()
+      tracing.exit()
     }
-
-    tracing.exit()
 
     if (renderContext) {
       tracing.enter('render')
