@@ -448,8 +448,8 @@ export async function createGame<Server extends boolean>(
       return
     }
 
+    tracing.enter('physics')
     while (physicsTickAcc >= physicsTickDelta) {
-      tracing.enter('physics')
       physicsTickAcc -= physicsTickDelta
 
       tracing.enter('matter update')
@@ -480,6 +480,8 @@ export async function createGame<Server extends boolean>(
 
       tracing.exit()
     }
+
+    tracing.exit()
 
     if (renderContext) {
       tracing.enter('render')
