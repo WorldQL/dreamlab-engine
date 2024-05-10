@@ -1,0 +1,8 @@
+{
+  "tasks": {
+    "dev": "deno run --watch main.ts"
+  },
+  "imports": {
+    "@std/ulid": "jsr:@std/ulid@^0.224.0"
+  }
+}
