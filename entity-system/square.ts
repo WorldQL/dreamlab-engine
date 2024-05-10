@@ -5,4 +5,4 @@ export class SquareEntity extends Entity {
     super(ctx);
   }
 }
-Entity.register(SquareEntity, "@core");
+Entity.registerType(SquareEntity, "@core");

@@ -38,4 +38,4 @@ export class Rigidbody2D extends Entity {
     });
   }
 }
-Entity.register(Rigidbody2D, "@core");
+Entity.registerType(Rigidbody2D, "@core");

@@ -224,7 +224,7 @@ export abstract class Entity implements ISignalHandler {
   readonly uid: string = ulid();
 
   constructor(ctx: EntityContext) {
-    Entity.#ensureEntityIsRegistered(new.target);
+    Entity.#ensureEntityTypeIsRegistered(new.target);
 
     this.game = ctx.game;
 
@@ -332,24 +332,24 @@ export abstract class Entity implements ISignalHandler {
   }
 
   // #region Registry
-  static #entityRegistry = new Map<
+  static #entityTypeRegistry = new Map<
     EntityConstructor<unknown & Entity>,
     string
   >();
-  static register<T extends Entity>(
+  static registerType<T extends Entity>(
     type: EntityConstructor<T>,
     namespace: string
   ) {
-    this.#entityRegistry.set(type, namespace);
+    this.#entityTypeRegistry.set(type, namespace);
   }
-  static #ensureEntityIsRegistered = (newTarget: unknown) => {
+  static #ensureEntityTypeIsRegistered = (newTarget: unknown) => {
     const target = newTarget as new (...args: unknown[]) => Entity;
 
     if (
-      !Entity.#entityRegistry.has(target) &&
+      !Entity.#entityTypeRegistry.has(target) &&
       !Reflect.get(target, internal.internalEntity)
     ) {
-      throw new Error(`Entity registry is missing ${target.name}!`);
+      throw new Error(`Entity type registry is missing ${target.name}!`);
     }
   };
   // #endregion
