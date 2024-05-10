@@ -52,7 +52,10 @@ export abstract class Entity {
   }
   set parent(parent: Entity | undefined) {
     if (parent) parent.append(this);
-    else this.#parent = undefined;
+    else {
+      this.parent?.removeChild(this);
+      this.#parent = undefined;
+    }
 
     this.#recomputeId();
   }
@@ -99,6 +102,7 @@ export abstract class Entity {
     },
   });
 
+  /// utility for safely hardcasting an entity to a type
   cast<T extends Entity>(type: EntityConstructor<T>) {
     if (this instanceof type) return this;
     throw new Error(`Failed to cast ${this} to '${type.name}'`);
@@ -202,6 +206,8 @@ export abstract class Entity {
   readonly uid: string = ulid();
 
   constructor(ctx: EntityContext) {
+    Entity.#ensureEntityIsRegistered(new.target);
+
     this.game = ctx.game;
 
     // TODO: validate ctx.name to not be a restricted
@@ -263,6 +269,10 @@ export abstract class Entity {
     for (const child of this.#children.values()) child[internal.tickEntities]();
   }
 
+  destroy() {
+    this.parent = undefined;
+  }
+
   [Symbol.for("Deno.customInspect")]() {
     return this.toString();
   }
@@ -270,6 +280,29 @@ export abstract class Entity {
   toString() {
     return `${this.id} (${this.constructor.name})`;
   }
+
+  // #region Registry
+  static #entityRegistry = new Map<
+    EntityConstructor<unknown & Entity>,
+    string
+  >();
+  static register<T extends Entity>(
+    type: EntityConstructor<T>,
+    namespace: string
+  ) {
+    this.#entityRegistry.set(type, namespace);
+  }
+  static #ensureEntityIsRegistered = (newTarget: unknown) => {
+    const target = newTarget as new (...args: unknown[]) => Entity;
+
+    if (
+      !Entity.#entityRegistry.has(target) &&
+      !Reflect.get(target, internal.internalEntity)
+    ) {
+      throw new Error(`Entity registry is missing ${target.name}!`);
+    }
+  };
+  // #endregion
 }
 
 const ID_REGEX = /^\p{ID_Start}\p{ID_Continue}*$/v;

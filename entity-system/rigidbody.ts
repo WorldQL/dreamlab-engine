@@ -17,6 +17,7 @@ export class Rigidbody2D extends Entity {
     );
   }
 
+  // look at game.ts to see the reason here
   onPreUpdate(): void {
     Matter.Body.setPosition(
       this.body,
@@ -34,3 +35,4 @@ export class Rigidbody2D extends Entity {
     this.globalTransform.rotation = this.body.angle;
   }
 }
+Entity.register(Rigidbody2D, "@core");

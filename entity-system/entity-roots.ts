@@ -1,7 +1,10 @@
+import * as internal from "./internal.ts";
 import { Entity } from "./entity.ts";
 import { Game } from "./game.ts";
 
 export class WorldRoot extends Entity {
+  static [internal.internalEntity] = true;
+
   constructor(game: Game) {
     super({ game, name: "world" });
 
@@ -12,6 +15,8 @@ export class WorldRoot extends Entity {
 }
 
 export class RemoteRoot extends Entity {
+  static [internal.internalEntity] = true;
+
   constructor(game: Game) {
     super({ game, name: "remote" });
 
@@ -22,6 +27,8 @@ export class RemoteRoot extends Entity {
 }
 
 export class LocalRoot extends Entity {
+  static [internal.internalEntity] = true;
+
   constructor(game: Game) {
     super({ game, name: "local" });
 
@@ -32,6 +39,8 @@ export class LocalRoot extends Entity {
 }
 
 export class PrefabsRoot extends Entity {
+  static [internal.internalEntity] = true;
+
   constructor(game: Game) {
     super({ game, name: "prefabs" });
 
