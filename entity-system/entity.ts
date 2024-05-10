@@ -8,6 +8,24 @@ import {
   v,
 } from "./math.ts";
 import * as internal from "./internal.ts";
+import {
+  ISignalHandler,
+  Signal,
+  SignalConstructor,
+  SignalListener,
+} from "./signals.ts";
+import {
+  EntityChildSpawned,
+  EntityDescendentSpawned,
+  EntitySpawned,
+} from "./signals/entity-lifecycle.ts";
+import {
+  EntityMove,
+  EntityPreUpdate,
+  EntityResize,
+  EntityRotate,
+  EntityUpdate,
+} from "./signals/entity-updates.ts";
 
 export interface EntityContext {
   game: Game;
@@ -26,7 +44,7 @@ export interface EntityDefinition<T extends Entity> {
   children?: EntityDefinition<Entity>[];
 }
 
-export abstract class Entity {
+export abstract class Entity implements ISignalHandler {
   game: Game;
 
   // #region Name / ID / Hierarchy
@@ -210,7 +228,6 @@ export abstract class Entity {
 
     this.game = ctx.game;
 
-    // TODO: validate ctx.name to not be a restricted
     this.#name = ctx.name;
     this.id = serializeIdentifier(ctx.parent?.id, this.#name);
     this.parent = ctx.parent;
@@ -218,23 +235,54 @@ export abstract class Entity {
     if (ctx.uid) this.uid = ctx.uid;
   }
 
-  // TODO: i think it would be cooler to replace these with a signal / event system
-  #spawned = false;
-  onSpawn() {}
-  #spawn() {
-    this.#spawned = true;
-    this.onSpawn();
+  // #region Signals
+  #signalListenerMap = new Map<SignalConstructor, SignalListener[]>();
 
-    // TODO (after signal system)
-    // parent : onChildSpawned(this)
-    // parents + grand*parents : onAncestorSpawned(this)
+  fire<
+    T extends Signal,
+    C extends SignalConstructor<T>,
+    A extends ConstructorParameters<C>
+  >(ctor: C, ...args: A) {
+    const signal = new ctor(...args);
+    for (const [type, listeners] of this.#signalListenerMap.entries()) {
+      if (!(signal instanceof type)) continue;
+      listeners.forEach((l) => l(signal));
+    }
   }
 
-  onPreUpdate() {}
-  onUpdate() {}
-  onPositionUpdate(_before: Vector2, _now: Vector2) {}
-  onResize(_before: Vector2, _now: Vector2) {}
-  onRotate(_before: number, _now: number) {}
+  on<T extends Signal>(
+    type: SignalConstructor<T>,
+    listener: SignalListener<T>
+  ) {
+    const listeners = this.#signalListenerMap.get(type) ?? [];
+    listeners.push(listener as SignalListener);
+    this.#signalListenerMap.set(type, listeners);
+  }
+
+  unregister<T extends Signal>(
+    type: SignalConstructor<T>,
+    listener: SignalListener<T>
+  ) {
+    const listeners = this.#signalListenerMap.get(type);
+    if (!listeners) return;
+    const idx = listeners.indexOf(listener as SignalListener);
+    if (idx !== -1) listeners.splice(idx, 1);
+  }
+  // #endregion
+
+  #spawned = false;
+  #spawn() {
+    this.#spawned = true;
+
+    this.fire(EntitySpawned);
+    this.parent?.fire(EntityChildSpawned, this);
+
+    let ancestor = this.parent;
+    while (ancestor) {
+      ancestor.fire(EntityDescendentSpawned, this);
+      ancestor = ancestor.parent;
+    }
+  }
 
   #origPosition: Vector2 = new Vector2(NaN, NaN);
   #origScale: Vector2 = new Vector2(NaN, NaN);
@@ -243,7 +291,7 @@ export abstract class Entity {
   [internal.preTickEntities]() {
     if (!this.#spawned) this.#spawn();
 
-    this.onPreUpdate();
+    this.fire(EntityPreUpdate);
 
     const tr = this.globalTransform;
     this.#origPosition.x = tr.position.x;
@@ -257,14 +305,16 @@ export abstract class Entity {
   }
 
   [internal.tickEntities]() {
-    this.onUpdate();
+    this.fire(EntityUpdate);
 
     const tr = this.globalTransform;
+
     if (!this.#origPosition.eq(tr.position))
-      this.onPositionUpdate(this.#origPosition, tr.position);
-    if (!this.#origScale.eq(tr.scale)) this.onResize(this.#origScale, tr.scale);
+      this.fire(EntityMove, this.#origPosition, tr.position);
+    if (!this.#origScale.eq(tr.scale))
+      this.fire(EntityResize, this.#origScale, tr.scale);
     if (this.#origRotation !== tr.rotation)
-      this.onRotate(this.#origRotation, tr.rotation);
+      this.fire(EntityRotate, this.#origRotation, tr.rotation);
 
     for (const child of this.#children.values()) child[internal.tickEntities]();
   }
