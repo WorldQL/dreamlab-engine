@@ -1,7 +1,13 @@
 import { ServerGame } from "./game.ts";
+import { EntityDescendentSpawned } from "./signals/entity-lifecycle.ts";
 import { SquareEntity } from "./square.ts";
 
 const game = new ServerGame();
+
+game.world.on(EntityDescendentSpawned, ({ descendent }) => {
+  console.log("[+]", descendent);
+});
+
 const parent = game.world.spawn({
   type: SquareEntity,
   name: "DefaultSquare",
@@ -12,6 +18,8 @@ const parent = game.world.spawn({
     },
   ],
 });
+game.tick();
+
 const child = parent._.Child;
 
 console.log("+(10, 0) +(5, 0):");
