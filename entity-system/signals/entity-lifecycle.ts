@@ -2,28 +2,16 @@ import { Entity } from "../entity.ts";
 
 export class EntitySpawned {}
 export class EntityChildSpawned {
-  child: Entity;
-  constructor(child: Entity) {
-    this.child = child;
-  }
+  constructor(public child: Entity) {}
 }
 export class EntityDescendentSpawned {
-  descendent: Entity;
-  constructor(child: Entity) {
-    this.descendent = child;
-  }
+  constructor(public descendent: Entity) {}
 }
 
 export class EntityDestroyed {}
 export class EntityChildDestroyed {
-  child: Entity;
-  constructor(child: Entity) {
-    this.child = child;
-  }
+  constructor(public child: Entity) {}
 }
 export class EntityDescendentDestroyed {
-  descendent: Entity;
-  constructor(child: Entity) {
-    this.descendent = child;
-  }
+  constructor(public descendent: Entity) {}
 }
