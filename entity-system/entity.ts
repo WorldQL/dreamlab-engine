@@ -69,13 +69,15 @@ export abstract class Entity implements ISignalHandler {
     return this.#parent;
   }
   set parent(parent: Entity | undefined) {
-    if (parent) parent.append(this);
-    else {
-      this.parent?.removeChild(this);
-      this.#parent = undefined;
-    }
+    if (this.parent) this.parent.removeChild(this);
 
-    this.#recomputeId();
+    if (parent) {
+      // sets #parent:
+      parent.append(this);
+      this.#recomputeId();
+    } else {
+      this.destroy();
+    }
   }
 
   #children: Map<string, Entity> = new Map();
@@ -127,9 +129,13 @@ export abstract class Entity implements ISignalHandler {
   }
 
   #recomputeId() {
+    const oldId = this.id;
+
     // @ts-expect-error assign to readonly id
     this.id = serializeIdentifier(this.#parent?.id, this.#name);
-    for (const child of Object.values(this.children)) child.#recomputeId();
+    for (const child of this.children.values()) child.#recomputeId();
+
+    this.game.entities._register(this, oldId);
 
     this.#hierarchyGeneration = this.parent
       ? this.parent.#hierarchyGeneration + 1
@@ -233,6 +239,8 @@ export abstract class Entity implements ISignalHandler {
     this.parent = ctx.parent;
 
     if (ctx.uid) this.uid = ctx.uid;
+
+    this.game.entities._register(this);
   }
 
   // #region Signals
@@ -320,7 +328,11 @@ export abstract class Entity implements ISignalHandler {
   }
 
   destroy() {
-    this.parent = undefined;
+    this.#parent = undefined;
+    this.game.entities._unregister(this);
+    for (const child of this.#children.values()) {
+      child.destroy();
+    }
   }
 
   [Symbol.for("Deno.customInspect")]() {

@@ -4,6 +4,7 @@
     "specifiers": {
       "jsr:@std/ulid": "jsr:@std/ulid@0.224.0",
       "jsr:@std/ulid@^0.224.0": "jsr:@std/ulid@0.224.0",
+      "npm:@dimforge/rapier2d-compat@0.12.0": "npm:@dimforge/rapier2d-compat@0.12.0",
       "npm:@types/matter-js": "npm:@types/matter-js@0.19.6",
       "npm:matter-js": "npm:matter-js@0.19.0"
     },
@@ -13,6 +14,10 @@
       }
     },
     "npm": {
+      "@dimforge/rapier2d-compat@0.12.0": {
+        "integrity": "sha512-7mvskl7Ql3nrrwkrv8fa0spukV1XS6nI42+YG6RW2HNBgxomASXS1Yx+VOH39SFs65OJcx86Ygmxqy1f2T9csw==",
+        "dependencies": {}
+      },
       "@types/matter-js@0.19.6": {
         "integrity": "sha512-ffk6tqJM5scla+ThXmnox+mdfCo3qYk6yMjQsNcrbo6eQ5DqorVdtnaL+1agCoYzxUjmHeiNB7poBMAmhuLY7w==",
         "dependencies": {}

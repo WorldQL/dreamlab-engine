@@ -1,33 +1,60 @@
+import RAPIER from "./deps/rapier.ts";
 import {
   LocalRoot,
   PrefabsRoot,
   RemoteRoot,
   WorldRoot,
 } from "./entity-roots.ts";
+import { EntityStore } from "./entity-store.ts";
 import * as internal from "./internal.ts";
+import { PhysicsEngine } from "./physics.ts";
+import {
+  ISignalHandler,
+  Signal,
+  SignalConstructor,
+  SignalListener,
+} from "./signals.ts";
 
-abstract class BaseGame {
-  world: WorldRoot = new WorldRoot(this as unknown as Game);
-  prefabs: PrefabsRoot = new PrefabsRoot(this as unknown as Game);
-
-  physics = {
-    update() {
-      // you get the idea
-    },
-  };
-
+abstract class BaseGame implements ISignalHandler {
   constructor() {
     if (!(this instanceof ServerGame || this instanceof ClientGame))
       throw new Error("BaseGame is sealed to ServerGame and ClientGame!");
   }
 
+  world: WorldRoot = new WorldRoot(this as unknown as Game);
+  prefabs: PrefabsRoot = new PrefabsRoot(this as unknown as Game);
+
+  #initialized: boolean = false;
+
+  #physics: PhysicsEngine | undefined;
+  get physics(): PhysicsEngine {
+    if (this.#physics) return this.#physics;
+    throw new Error("physics are not yet initialized!");
+  }
+
+  entities = new EntityStore(this as unknown as Game);
+
+  async initialize() {
+    if (this.#initialized) return;
+    this.#initialized = true;
+
+    await RAPIER.init();
+
+    this.#physics = new PhysicsEngine(this as unknown as Game);
+  }
+
   tick() {
+    if (!this.#initialized)
+      throw new Error(
+        "Illegal state: Game was not initialized before tick loop began!"
+      );
+
     // run the pre tick phase, then a physics update, then the tick phase
     // so e.g. in Rigidbody2D we can move the body to the entity's transform,
     // have the physics world update, and then move the transform to the new position of the body.
 
     this[internal.preTickEntities]();
-    this.physics.update();
+    this.physics.tick();
     this[internal.tickEntities]();
   }
 
@@ -38,6 +65,49 @@ abstract class BaseGame {
   [internal.tickEntities]() {
     this.world[internal.tickEntities]();
   }
+
+  shutdown() {
+    this.physics.shutdown();
+  }
+
+  [Symbol.dispose]() {
+    this.shutdown();
+  }
+
+  // #region SignalHandler impl
+  #signalListenerMap = new Map<SignalConstructor, SignalListener[]>();
+
+  fire<
+    T extends Signal,
+    C extends SignalConstructor<T>,
+    A extends ConstructorParameters<C>
+  >(ctor: C, ...args: A) {
+    const signal = new ctor(...args);
+    for (const [type, listeners] of this.#signalListenerMap.entries()) {
+      if (!(signal instanceof type)) continue;
+      listeners.forEach((l) => l(signal));
+    }
+  }
+
+  on<T extends Signal>(
+    type: SignalConstructor<T>,
+    listener: SignalListener<T>
+  ) {
+    const listeners = this.#signalListenerMap.get(type) ?? [];
+    listeners.push(listener as SignalListener);
+    this.#signalListenerMap.set(type, listeners);
+  }
+
+  unregister<T extends Signal>(
+    type: SignalConstructor<T>,
+    listener: SignalListener<T>
+  ) {
+    const listeners = this.#signalListenerMap.get(type);
+    if (!listeners) return;
+    const idx = listeners.indexOf(listener as SignalListener);
+    if (idx !== -1) listeners.splice(idx, 1);
+  }
+  // #endregion
 }
 
 export class ServerGame extends BaseGame {

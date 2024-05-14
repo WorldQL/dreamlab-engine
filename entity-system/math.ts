@@ -1,9 +1,24 @@
+interface LooseVector2 {
+  x: number;
+  y: number;
+}
+
 export class Vector2 {
   x: number;
   y: number;
-  constructor(x: number, y: number) {
-    this.x = x;
-    this.y = y;
+
+  constructor(x: number, y: number);
+  constructor(v: LooseVector2);
+  constructor(xOrVector: number | LooseVector2, y?: number) {
+    if (typeof xOrVector === "object") {
+      this.x = xOrVector.x;
+      this.y = xOrVector.y;
+    } else if (y !== undefined) {
+      this.x = xOrVector;
+      this.y = y;
+    } else {
+      throw new TypeError("y was undefined");
+    }
   }
 
   magnitudeSq() {
