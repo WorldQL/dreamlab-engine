@@ -1,6 +1,6 @@
 import { ServerGame } from "./game.ts";
 import { EntityDescendentSpawned } from "./signals/entity-lifecycle.ts";
-import { SquareEntity } from "./square.ts";
+import { SquareEntity } from "./entities/square.ts";
 
 const game = new ServerGame();
 

@@ -1,7 +1,7 @@
-import RAPIER from "./deps/rapier.ts";
-import { Entity, EntityContext } from "./entity.ts";
-import { Vector2 } from "./math.ts";
-import { EntityPreUpdate, EntityUpdate } from "./signals/entity-updates.ts";
+import RAPIER from "../deps/rapier.ts";
+import { Entity, EntityContext } from "../entity.ts";
+import { Vector2 } from "../math.ts";
+import { EntityPreUpdate, EntityUpdate } from "../signals/entity-updates.ts";
 
 export class Rigidbody2D extends Entity {
   body: RAPIER.RigidBody;
