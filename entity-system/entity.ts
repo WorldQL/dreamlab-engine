@@ -75,7 +75,7 @@ export abstract class Entity implements ISignalHandler {
       // sets #parent:
       parent.append(this);
       this.#recomputeId();
-    } else {
+    } else if (this.parent) {
       this.destroy();
     }
   }

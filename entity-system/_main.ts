@@ -3,6 +3,7 @@ import { EntityDescendentSpawned } from "./signals/entity-lifecycle.ts";
 import { SquareEntity } from "./entities/square.ts";
 
 const game = new ServerGame();
+await game.initialize();
 
 game.world.on(EntityDescendentSpawned, ({ descendent }) => {
   console.log("[+]", descendent);
@@ -18,9 +19,9 @@ const parent = game.world.spawn({
     },
   ],
 });
-game.tick();
+game.tick(); // EntitySpawned events fire on the next tick after spawn, so force-tick here
 
-const child = parent._.Child;
+const child = parent._.Child; // shorthand for parent.children.get("Child")
 
 console.log("+(10, 0) +(5, 0):");
 parent.transform.position.x = 10.0;

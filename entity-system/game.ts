@@ -21,6 +21,8 @@ abstract class BaseGame implements ISignalHandler {
       throw new Error("BaseGame is sealed to ServerGame and ClientGame!");
   }
 
+  entities: EntityStore = new EntityStore(this as unknown as Game);
+
   world: WorldRoot = new WorldRoot(this as unknown as Game);
   prefabs: PrefabsRoot = new PrefabsRoot(this as unknown as Game);
 
@@ -31,8 +33,6 @@ abstract class BaseGame implements ISignalHandler {
     if (this.#physics) return this.#physics;
     throw new Error("physics are not yet initialized!");
   }
-
-  entities = new EntityStore(this as unknown as Game);
 
   async initialize() {
     if (this.#initialized) return;

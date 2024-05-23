@@ -81,10 +81,12 @@ export function transformWorldToLocal(
   }
 
   const th = a.rotation;
+  const cth = Math.cos(-th);
+  const sth = Math.sin(-th);
   // prettier-ignore
   const inverseRotation = {
-    xx: Math.cos(-th), xy: -Math.sin(-th),
-    yx: Math.sin(-th), yy: Math.cos(-th),
+    xx: cth, xy: -sth,
+    yx: sth, yy: cth,
   }
 
   const inverseM = mult2x2(inverseRotation, inverseScale);
@@ -110,10 +112,12 @@ export function transformLocalToWorld(
   }
 
   const th = a.rotation;
+  const cth = Math.cos(th);
+  const sth = Math.sin(th);
   // prettier-ignore
   const rotation = {
-    xx: Math.cos(th), xy: -Math.sin(th),
-    yx: Math.sin(th), yy: Math.cos(th),
+    xx: cth, xy: -sth,
+    yx: sth, yy: cth,
   }
   const m = mult2x2(scale, rotation);
 
