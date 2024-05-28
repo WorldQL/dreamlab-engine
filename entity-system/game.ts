@@ -14,6 +14,7 @@ import {
   SignalConstructor,
   SignalListener,
 } from "./signals.ts";
+import { SyncedValueRegistry } from "./synced-value.ts";
 
 abstract class BaseGame implements ISignalHandler {
   constructor() {
@@ -114,6 +115,8 @@ export class ServerGame extends BaseGame {
   remote: RemoteRoot = new RemoteRoot(this);
   local: undefined;
 
+  syncedValues: SyncedValueRegistry = new SyncedValueRegistry(undefined);
+
   [internal.preTickEntities]() {
     super[internal.preTickEntities]();
     this.remote[internal.preTickEntities]();
@@ -126,8 +129,15 @@ export class ServerGame extends BaseGame {
 }
 
 export class ClientGame extends BaseGame {
+  // TODO: replace connectionId with actual networking stack
+  constructor(connectionId: string) {
+    super();
+    this.syncedValues = new SyncedValueRegistry(connectionId);
+  }
+
   local: LocalRoot = new LocalRoot(this);
   remote: undefined;
+  syncedValues: SyncedValueRegistry;
 
   [internal.preTickEntities]() {
     super[internal.preTickEntities]();

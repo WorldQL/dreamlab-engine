@@ -1,6 +1,7 @@
 import { ServerGame } from "./game.ts";
 import { EntityDescendentSpawned } from "./signals/entity-lifecycle.ts";
 import { SquareEntity } from "./entities/square.ts";
+import { SquareWithHealth } from "./entities/square-with-health.ts";
 
 const game = new ServerGame();
 await game.initialize();
@@ -42,3 +43,12 @@ console.log(child.globalTransform.position);
 
 console.log();
 console.log(parent);
+
+const squareWithHealth = game.world.spawn({
+  type: SquareWithHealth,
+  name: "SquareWithHealth.001",
+  values: {
+    health: 100,
+  },
+});
+squareWithHealth.set({ health: 250.0, maxHealth: 500.0 });

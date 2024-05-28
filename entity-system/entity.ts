@@ -26,6 +26,8 @@ import {
   EntityRotate,
   EntityUpdate,
 } from "./signals/entity-updates.ts";
+import { EntityValues } from "./entity-values.ts";
+import { SyncedValue } from "./synced-value.ts";
 
 export interface EntityContext {
   game: Game;
@@ -38,9 +40,16 @@ export type EntityConstructor<T extends Entity = Entity> = new (
   ctx: EntityContext
 ) => T;
 
+export type EntitySyncedValueProps<E extends Entity> = {
+  [K in keyof E as E[K] extends SyncedValue<infer _>
+    ? K
+    : never]: E[K] extends SyncedValue<infer V> ? V : never;
+};
+
 export interface EntityDefinition<T extends Entity> {
   type: EntityConstructor<T>;
   name: string;
+  values?: Partial<EntitySyncedValueProps<T>>;
   children?: EntityDefinition<Entity>[];
 }
 
@@ -153,6 +162,7 @@ export abstract class Entity implements ISignalHandler {
       name: def.name,
       parent: this,
     });
+    if (def.values) entity.set(def.values);
     def.children?.forEach((c) => entity.spawn(c));
     return entity;
   }
@@ -229,6 +239,8 @@ export abstract class Entity implements ISignalHandler {
   // internal uid for stable internal reference. we only really need this for networking
   readonly uid: string = ulid();
 
+  readonly values = new EntityValues(this);
+
   constructor(ctx: EntityContext) {
     Entity.#ensureEntityTypeIsRegistered(new.target);
 
@@ -278,6 +290,7 @@ export abstract class Entity implements ISignalHandler {
   }
   // #endregion
 
+  // #region Lifecycle
   #spawned = false;
   #spawn() {
     this.#spawned = true;
@@ -328,10 +341,32 @@ export abstract class Entity implements ISignalHandler {
   }
 
   destroy() {
+    this.values.destroy();
     this.#parent = undefined;
     this.game.entities._unregister(this);
     for (const child of this.#children.values()) {
       child.destroy();
+    }
+  }
+  // #endregion
+
+  set(values: Partial<EntitySyncedValueProps<this>>) {
+    for (const [name, value] of Object.entries(values)) {
+      if (!(name in this)) {
+        throw new Error(
+          "property name passed to Entity.set(..) does not exist!"
+        );
+      }
+
+      // @ts-expect-error index self
+      const syncedValue: unknown = this[name];
+      if (!(syncedValue instanceof SyncedValue)) {
+        throw new Error(
+          "property name passed to Entity.set(..) is not a SyncedValue!"
+        );
+      }
+
+      syncedValue.value = value;
     }
   }
 
