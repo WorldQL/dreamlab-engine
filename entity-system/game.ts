@@ -1,4 +1,4 @@
-import RAPIER from "./deps/rapier.ts";
+import RAPIER from "./_deps/rapier.ts";
 import {
   LocalRoot,
   PrefabsRoot,
@@ -14,6 +14,7 @@ import {
   SignalConstructor,
   SignalListener,
 } from "./signals.ts";
+import { GameRender, GameShutdown, GameTick } from "./signals/game-events.ts";
 import { SyncedValueRegistry } from "./synced-value.ts";
 
 abstract class BaseGame implements ISignalHandler {
@@ -57,6 +58,8 @@ abstract class BaseGame implements ISignalHandler {
     this[internal.preTickEntities]();
     this.physics.tick();
     this[internal.tickEntities]();
+
+    this.fire(GameTick);
   }
 
   [internal.preTickEntities]() {
@@ -68,6 +71,7 @@ abstract class BaseGame implements ISignalHandler {
   }
 
   shutdown() {
+    this.fire(GameShutdown);
     this.physics.shutdown();
   }
 
@@ -117,6 +121,8 @@ export class ServerGame extends BaseGame {
 
   syncedValues: SyncedValueRegistry = new SyncedValueRegistry(undefined);
 
+  drawFrame: undefined;
+
   [internal.preTickEntities]() {
     super[internal.preTickEntities]();
     this.remote[internal.preTickEntities]();
@@ -138,6 +144,10 @@ export class ClientGame extends BaseGame {
   local: LocalRoot = new LocalRoot(this);
   remote: undefined;
   syncedValues: SyncedValueRegistry;
+
+  drawFrame(delta: number) {
+    this.fire(GameRender, delta);
+  }
 
   [internal.preTickEntities]() {
     super[internal.preTickEntities]();
