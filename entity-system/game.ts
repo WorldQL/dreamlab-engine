@@ -21,6 +21,8 @@ abstract class BaseGame implements ISignalHandler {
   constructor() {
     if (!(this instanceof ServerGame || this instanceof ClientGame))
       throw new Error("BaseGame is sealed to ServerGame and ClientGame!");
+
+    // now that we know we are ServerGame | ClientGame, we can safely cast to Game
   }
 
   entities: EntityStore = new EntityStore(this as unknown as Game);
