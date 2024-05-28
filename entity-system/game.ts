@@ -17,10 +17,27 @@ import {
 import { GameRender, GameShutdown, GameTick } from "./signals/game-events.ts";
 import { SyncedValueRegistry } from "./synced-value.ts";
 
+export interface GameOptions {
+  instanceId: string;
+  worldId: string;
+}
+
+export interface ClientGameOptions extends GameOptions {
+  // TODO: replace connectionId with actual networking stack
+  connectionId: string;
+}
+export interface ServerGameOptions extends GameOptions {}
+
 abstract class BaseGame implements ISignalHandler {
-  constructor() {
+  instanceId: string;
+  worldId: string;
+
+  constructor(opts: GameOptions) {
     if (!(this instanceof ServerGame || this instanceof ClientGame))
       throw new Error("BaseGame is sealed to ServerGame and ClientGame!");
+
+    this.instanceId = opts.instanceId;
+    this.worldId = opts.worldId;
 
     // now that we know we are ServerGame | ClientGame, we can safely cast to Game
   }
@@ -125,6 +142,10 @@ export class ServerGame extends BaseGame {
 
   drawFrame: undefined;
 
+  constructor(opts: ServerGameOptions) {
+    super(opts);
+  }
+
   [internal.preTickEntities]() {
     super[internal.preTickEntities]();
     this.remote[internal.preTickEntities]();
@@ -137,10 +158,9 @@ export class ServerGame extends BaseGame {
 }
 
 export class ClientGame extends BaseGame {
-  // TODO: replace connectionId with actual networking stack
-  constructor(connectionId: string) {
-    super();
-    this.syncedValues = new SyncedValueRegistry(connectionId);
+  constructor(opts: ClientGameOptions) {
+    super(opts);
+    this.syncedValues = new SyncedValueRegistry(opts.connectionId);
   }
 
   local: LocalRoot = new LocalRoot(this);

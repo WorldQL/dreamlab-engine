@@ -3,7 +3,10 @@ import { EntityDescendentSpawned } from "./signals/entity-lifecycle.ts";
 import { SquareEntity } from "./entities/square.ts";
 import { SquareWithHealth } from "./entities/square-with-health.ts";
 
-const game = new ServerGame();
+const game = new ServerGame({
+  instanceId: "0",
+  worldId: "dummy-world",
+});
 await game.initialize();
 
 game.world.on(EntityDescendentSpawned, ({ descendent }) => {
