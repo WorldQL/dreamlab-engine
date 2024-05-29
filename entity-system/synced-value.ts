@@ -1,4 +1,5 @@
 import { BasicSignalHandler, SignalListener } from "./signals.ts";
+import * as internal from "./internal.ts";
 
 export type Primitive = string | number | boolean | undefined;
 export type PrimitiveTypeTag = typeof String | typeof Number | typeof Boolean;
@@ -14,7 +15,16 @@ export class SyncedValueChanged {
 
 export class SyncedValueRegistry extends BasicSignalHandler {
   #values = new Map<string, SyncedValue>();
-  constructor(public readonly originator: string | undefined) {
+
+  #originator: string | undefined;
+  get originator() {
+    return this.#originator;
+  }
+  [internal.setSyncedValueRegistryOriginator](value: string | undefined) {
+    this.#originator = value;
+  }
+
+  constructor() {
     super();
   }
 

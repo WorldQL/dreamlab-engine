@@ -42,6 +42,8 @@ abstract class BaseGame implements ISignalHandler {
     // now that we know we are ServerGame | ClientGame, we can safely cast to Game
   }
 
+  readonly syncedValues = new SyncedValueRegistry();
+
   entities: EntityStore = new EntityStore(this as unknown as Game);
 
   world: WorldRoot = new WorldRoot(this as unknown as Game);
@@ -138,8 +140,6 @@ export class ServerGame extends BaseGame {
   remote: RemoteRoot = new RemoteRoot(this);
   local: undefined;
 
-  syncedValues: SyncedValueRegistry = new SyncedValueRegistry(undefined);
-
   drawFrame: undefined;
 
   constructor(opts: ServerGameOptions) {
@@ -160,12 +160,14 @@ export class ServerGame extends BaseGame {
 export class ClientGame extends BaseGame {
   constructor(opts: ClientGameOptions) {
     super(opts);
-    this.syncedValues = new SyncedValueRegistry(opts.connectionId);
+
+    this.syncedValues[internal.setSyncedValueRegistryOriginator](
+      opts.connectionId
+    );
   }
 
   local: LocalRoot = new LocalRoot(this);
   remote: undefined;
-  syncedValues: SyncedValueRegistry;
 
   drawFrame(delta: number) {
     this.fire(GameRender, delta);
