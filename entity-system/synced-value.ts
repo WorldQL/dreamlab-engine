@@ -113,7 +113,7 @@ export class SyncedValue<T extends Primitive = Primitive> {
       }
     }
 
-    this.value = incomingValue;
+    this.#value = incomingValue;
     this.#originator = incomingOriginator;
     this.generation = incomingGeneration;
   }

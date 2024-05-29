@@ -239,7 +239,7 @@ export abstract class Entity implements ISignalHandler {
   // internal uid for stable internal reference. we only really need this for networking
   readonly uid: string = ulid();
 
-  readonly values = new EntityValues(this);
+  readonly values: EntityValues;
 
   constructor(ctx: EntityContext) {
     Entity.#ensureEntityTypeIsRegistered(new.target);
@@ -251,6 +251,8 @@ export abstract class Entity implements ISignalHandler {
     this.parent = ctx.parent;
 
     if (ctx.uid) this.uid = ctx.uid;
+
+    this.values = new EntityValues(this);
 
     this.game.entities._register(this);
   }
