@@ -29,8 +29,8 @@ export interface ClientGameOptions extends GameOptions {
 export interface ServerGameOptions extends GameOptions {}
 
 abstract class BaseGame implements ISignalHandler {
-  instanceId: string;
-  worldId: string;
+  readonly instanceId: string;
+  readonly worldId: string;
 
   constructor(opts: GameOptions) {
     if (!(this instanceof ServerGame || this instanceof ClientGame))
@@ -44,10 +44,10 @@ abstract class BaseGame implements ISignalHandler {
 
   readonly syncedValues = new SyncedValueRegistry();
 
-  entities: EntityStore = new EntityStore(this as unknown as Game);
+  readonly entities: EntityStore = new EntityStore(this as unknown as Game);
 
-  world: WorldRoot = new WorldRoot(this as unknown as Game);
-  prefabs: PrefabsRoot = new PrefabsRoot(this as unknown as Game);
+  readonly world: WorldRoot = new WorldRoot(this as unknown as Game);
+  readonly prefabs: PrefabsRoot = new PrefabsRoot(this as unknown as Game);
 
   #initialized: boolean = false;
 
@@ -137,8 +137,8 @@ abstract class BaseGame implements ISignalHandler {
 }
 
 export class ServerGame extends BaseGame {
-  remote: RemoteRoot = new RemoteRoot(this);
-  local: undefined;
+  readonly remote: RemoteRoot = new RemoteRoot(this);
+  readonly local: undefined;
 
   drawFrame: undefined;
 
@@ -166,8 +166,8 @@ export class ClientGame extends BaseGame {
     );
   }
 
-  local: LocalRoot = new LocalRoot(this);
-  remote: undefined;
+  readonly local: LocalRoot = new LocalRoot(this);
+  readonly remote: undefined;
 
   drawFrame(delta: number) {
     this.fire(GameRender, delta);
