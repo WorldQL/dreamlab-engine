@@ -12,8 +12,8 @@ import {
   ISignalHandler,
   Signal,
   SignalConstructor,
+  SignalConstructorMatching,
   SignalListener,
-  SignalMatching,
 } from "./signals.ts";
 import { GameRender, GameShutdown, GameTick } from "./signals/game-events.ts";
 import { SyncedValueRegistry } from "./synced-value.ts";
@@ -117,8 +117,8 @@ export abstract class BaseGame implements ISignalHandler {
   }
 
   on<S extends Signal>(
-    type: SignalConstructor<SignalMatching<S, this>>,
-    listener: SignalListener<SignalMatching<S, this>>
+    type: SignalConstructorMatching<S, BaseGame>,
+    listener: SignalListener<S>
   ) {
     const listeners = this.#signalListenerMap.get(type) ?? [];
     listeners.push(listener as SignalListener);

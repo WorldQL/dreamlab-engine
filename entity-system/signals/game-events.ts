@@ -1,11 +1,13 @@
 import { BaseGame } from "../game.ts";
-import { ExclusiveSignal, exclusiveSignalType } from "../signals.ts";
+import { exclusiveSignalType } from "../signals.ts";
 
-export class GameTick {}
-export class GameRender implements ExclusiveSignal<BaseGame> {
-  constructor(public delta: number) {}
-  [exclusiveSignalType]() {
-    return BaseGame;
-  }
+export class GameTick {
+  [exclusiveSignalType] = BaseGame;
 }
-export class GameShutdown {}
+export class GameRender {
+  constructor(public delta: number) {}
+  [exclusiveSignalType] = BaseGame;
+}
+export class GameShutdown {
+  [exclusiveSignalType] = BaseGame;
+}

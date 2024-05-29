@@ -12,8 +12,8 @@ import {
   ISignalHandler,
   Signal,
   SignalConstructor,
+  SignalConstructorMatching,
   SignalListener,
-  SignalMatching,
 } from "./signals.ts";
 import {
   EntityChildSpawned,
@@ -274,8 +274,8 @@ export abstract class Entity implements ISignalHandler {
   }
 
   on<S extends Signal>(
-    type: SignalConstructor<SignalMatching<S, this>>,
-    listener: SignalListener<SignalMatching<S, this>>
+    type: SignalConstructorMatching<S, Entity>,
+    listener: SignalListener<S>
   ) {
     const listeners = this.#signalListenerMap.get(type) ?? [];
     listeners.push(listener as SignalListener);

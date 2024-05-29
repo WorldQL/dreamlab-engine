@@ -2,16 +2,17 @@ export type Signal = object;
 
 export const exclusiveSignalType = Symbol.for("dreamlab.exclusiveSignalType");
 export interface ExclusiveSignal<T> {
-  [exclusiveSignalType]():
+  [exclusiveSignalType]:
     | // deno-lint-ignore no-explicit-any
     (new (...args: any[]) => T)
     // deno-lint-ignore no-explicit-any
     | (abstract new (...args: any[]) => T);
 }
 
-export type SignalMatching<Sig, Recv> = Sig extends ExclusiveSignal<
-  infer ExclType
->
+export type SignalMatching<
+  Sig extends Signal,
+  Recv
+> = Sig extends ExclusiveSignal<infer ExclType>
   ? Recv extends ExclType
     ? Sig
     : never
@@ -22,6 +23,15 @@ export type SignalConstructor<T extends Signal = Signal> = new (
   ...args: any[]
 ) => T;
 export type SignalListener<T extends Signal = Signal> = (signal: T) => void;
+
+export type SignalConstructorMatching<
+  Sig extends Signal,
+  Recv
+> = Sig extends ExclusiveSignal<infer ExclType>
+  ? Recv extends ExclType
+    ? SignalConstructor<Sig>
+    : never
+  : SignalConstructor<Sig>;
 
 export interface ISignalHandler {
   fire<
@@ -42,7 +52,7 @@ export interface ISignalHandler {
   ): void;
 }
 
-export class BasicSignalHandler implements ISignalHandler {
+export class BasicSignalHandler<Self> implements ISignalHandler {
   #signalListenerMap = new Map<SignalConstructor, SignalListener[]>();
 
   fire<
@@ -58,8 +68,8 @@ export class BasicSignalHandler implements ISignalHandler {
   }
 
   on<S extends Signal>(
-    type: SignalConstructor<SignalMatching<S, this>>,
-    listener: SignalListener<SignalMatching<S, this>>
+    type: SignalConstructorMatching<S, Self>,
+    listener: SignalListener<S>
   ) {
     const listeners = this.#signalListenerMap.get(type) ?? [];
     listeners.push(listener as SignalListener);

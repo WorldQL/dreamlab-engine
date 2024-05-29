@@ -1,4 +1,8 @@
-import { BasicSignalHandler, SignalListener } from "./signals.ts";
+import {
+  BasicSignalHandler,
+  SignalListener,
+  exclusiveSignalType,
+} from "./signals.ts";
 import * as internal from "./internal.ts";
 
 export type Primitive = string | number | boolean | undefined;
@@ -11,9 +15,11 @@ export class SyncedValueChanged {
     public generation: number,
     public originator: string | undefined
   ) {}
+
+  [exclusiveSignalType] = SyncedValueRegistry;
 }
 
-export class SyncedValueRegistry extends BasicSignalHandler {
+export class SyncedValueRegistry extends BasicSignalHandler<SyncedValueRegistry> {
   #values = new Map<string, SyncedValue>();
 
   #originator: string | undefined;
