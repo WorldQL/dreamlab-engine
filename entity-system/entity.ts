@@ -47,11 +47,15 @@ export type EntitySyncedValueProps<E extends Entity> = {
     : never]: E[K] extends SyncedValue<infer V> ? V : never;
 };
 
-export interface EntityDefinition<T extends Entity> {
+export interface EntityDefinition<
+  T extends Entity,
+  // deno-lint-ignore no-explicit-any
+  Children extends any[] = any[]
+> {
   type: EntityConstructor<T>;
   name: string;
   values?: Partial<EntitySyncedValueProps<T>>;
-  children?: EntityDefinition<Entity>[];
+  children?: { [T in keyof Children]: EntityDefinition<Children[T]> };
 }
 
 export abstract class Entity implements ISignalHandler {
@@ -157,7 +161,7 @@ export abstract class Entity implements ISignalHandler {
       );
   }
 
-  spawn<T extends Entity>(def: EntityDefinition<T>): T {
+  spawn<T extends Entity, C extends any[]>(def: EntityDefinition<T, C>): T {
     const entity = new def.type({
       game: this.game,
       name: def.name,
