@@ -29,7 +29,11 @@ import {
 } from "./signals/entity-updates.ts";
 import { EntityValues } from "./entity-values.ts";
 import { SyncedValue } from "./synced-value.ts";
-import { Behavior, BehaviorDefinition } from "./behavior.ts";
+import {
+  Behavior,
+  BehaviorConstructor,
+  BehaviorDefinition,
+} from "./behavior.ts";
 
 export interface EntityContext {
   game: Game;
@@ -196,14 +200,6 @@ export abstract class Entity implements ISignalHandler {
 
     def.children?.forEach((c) => entity.spawn(c));
 
-    const spawnEntity = (e: Entity) => {
-      e.#spawn();
-      for (const child of e.children.values()) {
-        spawnEntity(child);
-      }
-    };
-    spawnEntity(entity);
-
     return entity;
   }
   // #endregion
@@ -351,6 +347,8 @@ export abstract class Entity implements ISignalHandler {
     }
 
     for (const behavior of this.behaviors) {
+      const behaviorType = behavior.constructor as BehaviorConstructor;
+      this.game[internal.behaviorScriptLoader].initialize(behaviorType);
       behavior.spawn();
     }
   }

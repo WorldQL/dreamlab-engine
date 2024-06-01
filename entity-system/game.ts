@@ -17,6 +17,7 @@ import {
 } from "./signals.ts";
 import { GameRender, GameShutdown, GameTick } from "./signals/game-events.ts";
 import { SyncedValueRegistry } from "./synced-value.ts";
+import { BehaviorLoader } from "./behavior-loader.ts";
 
 export interface GameOptions {
   instanceId: string;
@@ -45,10 +46,12 @@ export abstract class BaseGame implements ISignalHandler {
 
   readonly syncedValues = new SyncedValueRegistry();
 
-  readonly entities: EntityStore = new EntityStore(this as unknown as Game);
+  readonly entities = new EntityStore(this as unknown as Game);
 
-  readonly world: WorldRoot = new WorldRoot(this as unknown as Game);
-  readonly prefabs: PrefabsRoot = new PrefabsRoot(this as unknown as Game);
+  readonly world = new WorldRoot(this as unknown as Game);
+  readonly prefabs = new PrefabsRoot(this as unknown as Game);
+
+  [internal.behaviorScriptLoader] = new BehaviorLoader(this as unknown as Game);
 
   #initialized: boolean = false;
 

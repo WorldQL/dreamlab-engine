@@ -4,3 +4,6 @@ export const tickEntities = Symbol.for("dreamlab.internal.tickEntities");
 export const setSyncedValueRegistryOriginator = Symbol.for(
   "dreamlab.internal.setSyncedValueRegistryOriginator"
 );
+export const behaviorScriptLoader = Symbol.for(
+  "dreamlab.internal.behaviorScriptLoader"
+);

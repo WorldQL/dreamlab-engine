@@ -23,7 +23,7 @@ export type BehaviorConstructor<
   E extends Entity = Entity,
   B extends Behavior<E> = Behavior<E>
 > = (new (ctx: BehaviorContext<E>) => B) & {
-  registerInputs?(): void;
+  onLoaded?(game: Game): void;
 };
 
 export type BehaviorSyncedValueProps<
@@ -35,14 +35,17 @@ export type BehaviorSyncedValueProps<
     : never]: B[K] extends SyncedValue<infer V> ? V : never;
 };
 
-interface BehaviorDefinitionWithType<E extends Entity, B extends Behavior<E>> {
+export interface BehaviorDefinitionWithType<
+  E extends Entity,
+  B extends Behavior<E>
+> {
   type: BehaviorConstructor<E, B>;
   script: undefined;
   values?: BehaviorSyncedValueProps<E, B>;
   _uid?: string;
 }
 
-interface BehaviorDefinitionWithScript<
+export interface BehaviorDefinitionWithScript<
   E extends Entity,
   B extends Behavior<E>
 > {
