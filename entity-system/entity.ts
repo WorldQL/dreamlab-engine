@@ -29,6 +29,7 @@ import {
 } from "./signals/entity-updates.ts";
 import { EntityValues } from "./entity-values.ts";
 import { SyncedValue } from "./synced-value.ts";
+import { Behavior, BehaviorDefinition } from "./behavior.ts";
 
 export interface EntityContext {
   game: Game;
@@ -50,12 +51,16 @@ export type EntitySyncedValueProps<E extends Entity> = {
 export interface EntityDefinition<
   T extends Entity,
   // deno-lint-ignore no-explicit-any
-  Children extends any[] = any[]
+  Children extends any[] = any[],
+  // deno-lint-ignore no-explicit-any
+  Behaviors extends any[] = any[]
 > {
   type: EntityConstructor<T>;
   name: string;
   values?: Partial<EntitySyncedValueProps<T>>;
-  children?: { [T in keyof Children]: EntityDefinition<Children[T]> };
+  children?: { [I in keyof Children]: EntityDefinition<Children[I]> };
+  behaviors?: { [I in keyof Behaviors]: BehaviorDefinition<T, Behaviors[I]> };
+  _uid?: string;
 }
 
 export abstract class Entity implements ISignalHandler {
@@ -161,14 +166,44 @@ export abstract class Entity implements ISignalHandler {
       );
   }
 
-  spawn<T extends Entity, C extends any[]>(def: EntityDefinition<T, C>): T {
+  // deno-lint-ignore no-explicit-any
+  spawn<T extends Entity, C extends any[], B extends any[]>(
+    def: EntityDefinition<T, C, B>
+  ): T {
     const entity = new def.type({
       game: this.game,
       name: def.name,
       parent: this,
+      uid: def._uid,
     });
     if (def.values) entity.set(def.values);
+
+    if (def.behaviors) {
+      def.behaviors.forEach((b) => {
+        if (!b.type)
+          throw new Error(
+            `Cannot synchronously spawn untyped behavior '${b.script}'`
+          );
+
+        const behavior = new b.type({
+          game: this.game,
+          entity,
+          uid: b._uid,
+        });
+        entity.behaviors.push(behavior);
+      });
+    }
+
     def.children?.forEach((c) => entity.spawn(c));
+
+    const spawnEntity = (e: Entity) => {
+      e.#spawn();
+      for (const child of e.children.values()) {
+        spawnEntity(child);
+      }
+    };
+    spawnEntity(entity);
+
     return entity;
   }
   // #endregion
@@ -241,6 +276,10 @@ export abstract class Entity implements ISignalHandler {
   }
   // #endregion
 
+  // #region Behaviors
+  readonly behaviors: Behavior[] = [];
+  // #endregion
+
   // internal uid for stable internal reference. we only really need this for networking
   readonly uid: string = ulid();
 
@@ -310,6 +349,10 @@ export abstract class Entity implements ISignalHandler {
       ancestor.fire(EntityDescendentSpawned, this);
       ancestor = ancestor.parent;
     }
+
+    for (const behavior of this.behaviors) {
+      behavior.spawn();
+    }
   }
 
   #origPosition: Vector2 = new Vector2(NaN, NaN);
@@ -348,6 +391,9 @@ export abstract class Entity implements ISignalHandler {
   }
 
   destroy() {
+    for (const behavior of this.behaviors) {
+      behavior.destroy();
+    }
     this.values.destroy();
     this.#parent = undefined;
     this.game.entities._unregister(this);
