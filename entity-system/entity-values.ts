@@ -28,7 +28,7 @@ export class EntityValues {
   ): SyncedValue {
     const value = new SyncedValue(
       this.#registry,
-      `${this.#entity.uid}/${name}`,
+      `${this.#entity.ref}/${name}`,
       defaultValue,
       typeTag
     );

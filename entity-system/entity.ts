@@ -39,7 +39,7 @@ export interface EntityContext {
   game: Game;
   name: string;
   parent?: Entity;
-  uid?: string;
+  ref?: string;
 }
 
 export type EntityConstructor<T extends Entity = Entity> = new (
@@ -64,7 +64,7 @@ export interface EntityDefinition<
   values?: Partial<EntitySyncedValueProps<T>>;
   children?: { [I in keyof Children]: EntityDefinition<Children[I]> };
   behaviors?: { [I in keyof Behaviors]: BehaviorDefinition<T, Behaviors[I]> };
-  _uid?: string;
+  _ref?: string;
 }
 
 export abstract class Entity implements ISignalHandler {
@@ -178,21 +178,16 @@ export abstract class Entity implements ISignalHandler {
       game: this.game,
       name: def.name,
       parent: this,
-      uid: def._uid,
+      ref: def._ref,
     });
     if (def.values) entity.set(def.values);
 
     if (def.behaviors) {
       def.behaviors.forEach((b) => {
-        if (!b.type)
-          throw new Error(
-            `Cannot synchronously spawn untyped behavior '${b.script}'`
-          );
-
         const behavior = new b.type({
           game: this.game,
           entity,
-          uid: b._uid,
+          ref: b._ref,
         });
         entity.behaviors.push(behavior);
       });
@@ -276,8 +271,8 @@ export abstract class Entity implements ISignalHandler {
   readonly behaviors: Behavior[] = [];
   // #endregion
 
-  // internal uid for stable internal reference. we only really need this for networking
-  readonly uid: string = ulid();
+  // internal id for stable internal reference. we only really need this for networking
+  readonly ref: string = ulid();
 
   readonly values: EntityValues;
 
@@ -290,7 +285,7 @@ export abstract class Entity implements ISignalHandler {
     this.id = serializeIdentifier(ctx.parent?.id, this.#name);
     this.parent = ctx.parent;
 
-    if (ctx.uid) this.uid = ctx.uid;
+    if (ctx.ref) this.ref = ctx.ref;
 
     this.values = new EntityValues(this);
 

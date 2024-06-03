@@ -31,7 +31,7 @@ export class BehaviorValues<
     const registry = this.#behavior.entity.game.syncedValues;
     const value = new SyncedValue(
       registry,
-      `${this.#behavior.entity.uid}/${this.#behavior.uid}/${name}`,
+      `${this.#behavior.entity.ref}/${this.#behavior.ref}/${name}`,
       defaultValue,
       typeTag
     );

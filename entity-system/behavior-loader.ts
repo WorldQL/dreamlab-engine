@@ -31,7 +31,7 @@ export class BehaviorLoader {
     return {
       type: type as unknown as BehaviorConstructor<E, B>,
       script: undefined,
-      _uid: scriptDef._uid,
+      _ref: scriptDef._ref,
       values: scriptDef.values,
     };
   }

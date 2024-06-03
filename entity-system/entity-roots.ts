@@ -11,6 +11,8 @@ export class WorldRoot extends Entity {
     this.name = "game.world";
     // @ts-expect-error assign readonly id
     this.id = "game.world";
+    // @ts-expect-error assign readonly ref
+    this.ref = "WORLD";
   }
 }
 
@@ -23,6 +25,8 @@ export class RemoteRoot extends Entity {
     this.name = "game.remote";
     // @ts-expect-error assign readonly id
     this.id = "game.remote";
+    // @ts-expect-error assign readonly ref
+    this.ref = "REMOTE";
   }
 }
 
@@ -35,6 +39,8 @@ export class LocalRoot extends Entity {
     this.name = "game.local";
     // @ts-expect-error assign readonly id
     this.id = "game.local";
+    // @ts-expect-error assign readonly ref
+    this.ref = "LOCAL";
   }
 }
 
@@ -47,5 +53,7 @@ export class PrefabsRoot extends Entity {
     this.name = "game.prefabs";
     // @ts-expect-error assign readonly id
     this.id = "game.prefabs";
+    // @ts-expect-error assign readonly ref
+    this.ref = "PREFABS";
   }
 }

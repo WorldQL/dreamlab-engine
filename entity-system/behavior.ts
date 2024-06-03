@@ -16,7 +16,7 @@ import { GameRender } from "./signals/game-events.ts";
 export interface BehaviorContext<E extends Entity = Entity> {
   game: Game;
   entity: E;
-  uid?: string;
+  ref?: string;
 }
 
 export type BehaviorConstructor<
@@ -35,36 +35,17 @@ export type BehaviorSyncedValueProps<
     : never]: B[K] extends SyncedValue<infer V> ? V : never;
 };
 
-export interface BehaviorDefinitionWithType<
-  E extends Entity,
-  B extends Behavior<E>
-> {
+export interface BehaviorDefinition<E extends Entity, B extends Behavior<E>> {
   type: BehaviorConstructor<E, B>;
-  script?: undefined;
   values?: BehaviorSyncedValueProps<E, B>;
-  _uid?: string;
+  _ref?: string;
 }
-
-export interface BehaviorDefinitionWithScript<
-  E extends Entity,
-  B extends Behavior<E>
-> {
-  type?: undefined;
-  script: string;
-  values?: BehaviorSyncedValueProps<E, B>;
-  _uid?: string;
-}
-
-export type BehaviorDefinition<
-  E extends Entity = Entity,
-  B extends Behavior<E> = Behavior<E>
-> = BehaviorDefinitionWithType<E, B> | BehaviorDefinitionWithScript<E, B>;
 
 export class Behavior<E extends Entity = Entity> {
   readonly game: Game;
   readonly entity: E;
 
-  readonly uid: string = ulid();
+  readonly ref: string = ulid();
 
   readonly values = new BehaviorValues<E, this>(this);
 
@@ -78,7 +59,7 @@ export class Behavior<E extends Entity = Entity> {
     this.game = ctx.game;
     this.entity = ctx.entity;
 
-    if (ctx.uid) this.uid = ctx.uid;
+    if (ctx.ref) this.ref = ctx.ref;
   }
 
   listen<S extends Signal, T extends ISignalHandler>(

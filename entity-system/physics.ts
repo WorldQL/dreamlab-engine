@@ -23,7 +23,7 @@ export class PhysicsEngine {
   registerBody(entity: Entity, body: RigidBody) {
     const ud =
       (typeof body.userData === "object" ? body.userData : undefined) ?? {};
-    body.userData = { ...ud, entityUid: entity.uid };
+    body.userData = { ...ud, entityRef: entity.ref };
   }
 
   tick() {
@@ -35,18 +35,18 @@ export class PhysicsEngine {
       const udata1 = body1?.userData;
       const udata2 = body2?.userData;
 
-      let entityUid1: string | undefined;
-      let entityUid2: string | undefined;
-      if (udata1 && typeof udata1 === "object" && "entityUid" in udata1) {
-        entityUid1 = udata1.entityUid as string;
+      let entityRef1: string | undefined;
+      let entityRef2: string | undefined;
+      if (udata1 && typeof udata1 === "object" && "entityRef" in udata1) {
+        entityRef1 = udata1.entityRef as string;
       }
-      if (udata2 && typeof udata2 === "object" && "entityUid" in udata2) {
-        entityUid2 = udata2.entityUid as string;
+      if (udata2 && typeof udata2 === "object" && "entityRef" in udata2) {
+        entityRef2 = udata2.entityRef as string;
       }
 
-      if (!entityUid1 || !entityUid2) return;
-      const entity1 = this.game.entities.lookupByUid(entityUid1);
-      const entity2 = this.game.entities.lookupByUid(entityUid2);
+      if (!entityRef1 || !entityRef2) return;
+      const entity1 = this.game.entities.lookupByRef(entityRef1);
+      const entity2 = this.game.entities.lookupByRef(entityRef2);
       if (!entity1 || !entity2) return;
 
       entity1.fire(EntityCollision, started, entity2);

@@ -1,4 +1,9 @@
 import { z } from "zod";
+import {
+  EntityDefinitionSchema,
+  EntityReferenceSchema,
+  PrimitiveValueSchema,
+} from "./datamodel.ts";
 
 export const PLAY_PROTO_VERSION = 1;
 
@@ -24,7 +29,7 @@ export const ServerChatMessagePacketSchema =
 export const ClientSetSyncedValuePacketSchema = z.object({
   t: z.literal("SetSyncedValue"),
   identifier: z.string(),
-  value: z.any().optional(),
+  value: PrimitiveValueSchema.optional(),
   generation: z.number(),
 });
 
@@ -33,9 +38,31 @@ export const ServerSetSyncedValuePacketSchema =
     originator: z.string().optional(),
   });
 
+export const ClientSpawnEntityPacket = z.object({
+  t: z.literal("SpawnEntity"),
+  definition: EntityDefinitionSchema,
+});
+
+export const ServerSpawnEntityPacket = ClientSpawnEntityPacket.extend({
+  originator: z.string().optional(),
+});
+
+export const ClientDeleteEntityPacket = z.object({
+  t: z.literal("DeleteEntity"),
+  entity: EntityReferenceSchema,
+});
+
+export const ServerDeleteEntityPacket = ClientDeleteEntityPacket.extend({
+  originator: z.string().optional(),
+});
+
+// TODO: entity rename, reparent, etc etc
+
 export const ClientPacketSchema = z.discriminatedUnion("t", [
   ClientChatMessagePacketSchema,
   ClientSetSyncedValuePacketSchema,
+  ClientSpawnEntityPacket,
+  ClientDeleteEntityPacket,
 ]);
 export type ClientPacket = z.infer<typeof ClientPacketSchema>;
 
@@ -43,6 +70,8 @@ export const ServerPacketSchema = z.discriminatedUnion("t", [
   HandshakePacketSchema,
   ServerChatMessagePacketSchema,
   ServerSetSyncedValuePacketSchema,
+  ServerSpawnEntityPacket,
+  ServerDeleteEntityPacket,
 ]);
 export type ServerPacket = z.infer<typeof ServerPacketSchema>;
 
