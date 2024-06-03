@@ -1,3 +1,4 @@
+import * as PIXI from "pixi.js";
 import RAPIER from "./_deps/rapier.ts";
 import {
   LocalRoot,
@@ -27,6 +28,7 @@ export interface GameOptions {
 export interface ClientGameOptions extends GameOptions {
   // TODO: replace connectionId with actual networking stack
   connectionId: string;
+  container: HTMLDivElement;
 }
 export interface ServerGameOptions extends GameOptions {}
 
@@ -162,12 +164,40 @@ export class ServerGame extends BaseGame {
 }
 
 export class ClientGame extends BaseGame {
+  readonly container: HTMLDivElement;
+  readonly app: PIXI.Application;
+  // readonly camera: Camera;
+
+  #time = performance.now();
+
   constructor(opts: ClientGameOptions) {
     super(opts);
+
+    this.container = opts.container;
+    this.app = new PIXI.Application();
 
     this.syncedValues[internal.setSyncedValueRegistryOriginator](
       opts.connectionId
     );
+  }
+
+  async initialize() {
+    await super.initialize();
+    await this.app.init({
+      autoDensity: true,
+      resizeTo: this.container,
+
+      antialias: true,
+    });
+
+    this.app.ticker.add(() => {
+      const now = performance.now();
+      const delta = now - this.#time;
+
+      this.drawFrame(delta);
+    });
+
+    this.container.append(this.app.canvas);
   }
 
   readonly local: LocalRoot = new LocalRoot(this);
