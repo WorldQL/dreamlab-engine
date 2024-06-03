@@ -1,19 +1,8 @@
 import * as esbuild from "npm:esbuild@0.20.2";
 import { denoPlugins } from "jsr:@luca/esbuild-deno-loader";
 
-const envPlugin: esbuild.Plugin = {
-  name: "env",
-  setup(build) {
-    build.onResolve({ filter: /^(url|punycode)$/ }, ({ path }) => ({
-      path: `esm.sh/v135/${path}`,
-      namespace: "https",
-    }));
-  },
-};
-
 await esbuild.build({
   plugins: [
-    envPlugin,
     ...denoPlugins({
       loader: "native",
       configPath: await Deno.realPath("./deno.json"),
