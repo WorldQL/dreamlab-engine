@@ -104,7 +104,25 @@ const body2 = game.world.spawn({
   name: "DefaultSquare",
 });
 
-game.tick();
-console.log(body);
-console.log(game);
-window.game = game;
+const tps = 60;
+const tickDelta = 1000 / tps;
+let tickAccumulator = 0;
+let now = performance.now();
+
+const onTick = (time: number) => {
+  const delta = time - now;
+  now = time;
+  tickAccumulator += delta;
+
+  while (tickAccumulator >= tickDelta) {
+    tickAccumulator -= tickDelta;
+    game.tick();
+  }
+
+  requestAnimationFrame(onTick);
+};
+
+requestAnimationFrame(onTick);
+
+// Assign `game` to global
+Object.defineProperty(window, "game", { value: game });
