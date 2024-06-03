@@ -3,12 +3,11 @@
     "dev": "deno run --watch _main.ts",
     "web:build": "deno run -A _web/build.ts",
     "web:dev": "deno run -A --watch _web/build.ts",
-    "web:serve": "deno run -A jsr:@std/http/file_server --port 3000 _web"
+    "web:serve": "deno run -A jsr:@std/http/file-server --port 3000 _web"
   },
   "imports": {
-    "@std/ulid": "jsr:@std/ulid@^0.224.0",
-    "pixi.js": "./_deps/pixi.ts",
-    "zod": "./_deps/zod.ts"
+    "@dreamlab/vendor/": "./_deps/",
+    "@dreamlab/engine": "./mod.ts"
   },
   "compilerOptions": {
     "lib": ["deno.window", "dom"]

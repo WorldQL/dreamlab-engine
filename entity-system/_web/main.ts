@@ -1,8 +1,8 @@
-import { ulid } from "@std/ulid";
+import { ulid } from "@dreamlab/vendor/std-ulid.ts";
 import { ClientGame } from "../game.ts";
 import { GameRender } from "../signals/game-events.ts";
 import { Entity, EntityContext } from "../entity.ts";
-import { Color, Graphics } from "pixi.js";
+import { Color, Graphics } from "@dreamlab/vendor/pixi.ts";
 import { Rigidbody2D } from "../entities/rigidbody.ts";
 
 const container = document.createElement("div");

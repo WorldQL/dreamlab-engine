@@ -12,12 +12,10 @@ export class BehaviorValues<
   B extends Behavior<E> = Behavior<E>
 > {
   #behavior: B;
-  #registry: SyncedValueRegistry;
   #values: SyncedValue[];
 
   constructor(behavior: B) {
     this.#behavior = behavior;
-    this.#registry = behavior.entity.game.syncedValues;
     this.#values = [];
   }
 
@@ -30,8 +28,9 @@ export class BehaviorValues<
     name: string,
     defaultValue: Primitive
   ): SyncedValue {
+    const registry = this.#behavior.entity.game.syncedValues;
     const value = new SyncedValue(
-      this.#registry,
+      registry,
       `${this.#behavior.entity.uid}/${this.#behavior.uid}/${name}`,
       defaultValue,
       typeTag

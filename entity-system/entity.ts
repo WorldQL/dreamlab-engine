@@ -1,4 +1,4 @@
-import { ulid } from "@std/ulid";
+import { ulid } from "@dreamlab/vendor/std-ulid.ts";
 import { type Game } from "./game.ts";
 import {
   Transform,

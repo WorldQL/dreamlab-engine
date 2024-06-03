@@ -11,7 +11,7 @@ function hasHealthValue(entity: Entity): entity is Entity & HasHealth {
   return (
     "health" in entity &&
     entity.health instanceof SyncedValue &&
-    typeof entity.health.value === "number"
+    entity.health.typeTag === Number
   );
 }
 
@@ -27,7 +27,7 @@ export default class BulletBehavior extends Behavior {
   onCollide(other: Entity) {
     if (!hasHealthValue(other)) return;
 
-    other.health.value = other.health.value - this.damage.value;
+    other.health.value -= this.damage.value;
     this.entity.destroy();
   }
 }

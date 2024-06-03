@@ -1,4 +1,4 @@
-import { ulid } from "@std/ulid";
+import { ulid } from "@dreamlab/vendor/std-ulid.ts";
 import { Entity } from "./entity.ts";
 import { Game } from "./game.ts";
 import { SyncedValue } from "./synced-value.ts";
@@ -40,7 +40,7 @@ export interface BehaviorDefinitionWithType<
   B extends Behavior<E>
 > {
   type: BehaviorConstructor<E, B>;
-  script: undefined;
+  script?: undefined;
   values?: BehaviorSyncedValueProps<E, B>;
   _uid?: string;
 }
@@ -49,7 +49,7 @@ export interface BehaviorDefinitionWithScript<
   E extends Entity,
   B extends Behavior<E>
 > {
-  type: undefined;
+  type?: undefined;
   script: string;
   values?: BehaviorSyncedValueProps<E, B>;
   _uid?: string;
