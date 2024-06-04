@@ -18,6 +18,7 @@ import {
 import {
   EntityChildSpawned,
   EntityDescendentSpawned,
+  EntityRenamed,
   EntitySpawned,
 } from "./signals/entity-lifecycle.ts";
 import {
@@ -83,6 +84,7 @@ export abstract class Entity implements ISignalHandler {
       this.parent.append(this);
     }
     this.#recomputeId();
+    this.fire(EntityRenamed, oldName);
   }
 
   readonly id: string;
@@ -108,19 +110,44 @@ export abstract class Entity implements ISignalHandler {
     return this.#children;
   }
   append(child: Entity) {
+    let nonConflictingName: string | undefined;
+    if (this.#children.has(child.name))
+      nonConflictingName = this.#findNonConflictingName(child);
+
     const oldParent = child.#parent;
     if (oldParent) {
       const oldChildren = oldParent.#children;
       oldChildren.delete(child.#name);
     }
 
-    this.#children.set(child.name, child);
+    this.#children.set(nonConflictingName ?? child.name, child);
     child.#parent = this;
+
+    if (nonConflictingName) {
+      const oldName = child.#name;
+      child.#name = nonConflictingName;
+      child.#recomputeId();
+      child.fire(EntityRenamed, oldName);
+    }
   }
   removeChild(child: Entity, name?: string) {
     if (child.parent !== this) return;
     this.#children.delete(name ?? child.name);
     child.#parent = undefined;
+  }
+
+  #findNonConflictingName(child: Entity): string | undefined {
+    const matches = child.name.match(/(?<base>.*)\.(?<n>\d+)/)?.groups;
+    const baseName = matches?.base ?? child.#name;
+    for (let n = matches?.n ? +matches.n : 1; n <= 999; n++) {
+      const suffix = String(n).padStart(3, "0");
+      const potentialName = baseName + "." + suffix;
+      if (!this.#children.has(potentialName)) {
+        return potentialName;
+      }
+    }
+
+    throw new Error("Could not find free unique name for entity (999 tries)");
   }
 
   // tracks how deeply nested we are in the tree.

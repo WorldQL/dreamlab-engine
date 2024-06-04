@@ -24,3 +24,8 @@ export class EntityDescendentDestroyed {
   constructor(public descendent: Entity) {}
   [exclusiveSignalType] = Entity;
 }
+
+export class EntityRenamed {
+  constructor(public oldName: string) {}
+  [exclusiveSignalType] = Entity;
+}

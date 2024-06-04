@@ -55,3 +55,11 @@ const squareWithHealth = game.world.spawn({
   },
 });
 squareWithHealth.set({ health: 250.0, maxHealth: 500.0 });
+
+console.log("\nconflicting child:");
+
+parent.spawn({
+  type: SquareEntity,
+  name: child.name,
+});
+console.log([...parent.children.values()]);
