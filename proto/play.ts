@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
   EntityDefinitionSchema,
   EntityReferenceSchema,
+  OriginatorSchema,
   PrimitiveValueSchema,
 } from "./datamodel.ts";
 
@@ -35,7 +36,7 @@ export const ClientSetSyncedValuePacketSchema = z.object({
 
 export const ServerSetSyncedValuePacketSchema =
   ClientSetSyncedValuePacketSchema.extend({
-    originator: z.string().optional(),
+    originator: OriginatorSchema,
   });
 
 export const ClientSpawnEntityPacket = z.object({
@@ -44,7 +45,7 @@ export const ClientSpawnEntityPacket = z.object({
 });
 
 export const ServerSpawnEntityPacket = ClientSpawnEntityPacket.extend({
-  originator: z.string().optional(),
+  originator: OriginatorSchema,
 });
 
 export const ClientDeleteEntityPacket = z.object({
@@ -53,16 +54,44 @@ export const ClientDeleteEntityPacket = z.object({
 });
 
 export const ServerDeleteEntityPacket = ClientDeleteEntityPacket.extend({
-  originator: z.string().optional(),
+  originator: OriginatorSchema,
 });
 
 // TODO: entity rename, reparent, etc etc
+const BaseRenameEntityPacket = z.object({
+  t: z.literal("RenameEntity"),
+  entity: EntityReferenceSchema,
+  name: z.string(),
+});
+
+export const ClientRenameEntityPacket = BaseRenameEntityPacket.extend({
+  // the server will drop your request if the current server-side name does not match old_name
+  old_name: z.string(),
+});
+
+export const ServerRenameEntityPacket = BaseRenameEntityPacket.extend({
+  originator: OriginatorSchema,
+});
+
+const BaseReparentEntityPacket = z.object({
+  t: z.literal("ReparentEntity"),
+  entity: EntityReferenceSchema,
+  parent: EntityReferenceSchema,
+});
+export const ClientReparentEntityPacket = BaseReparentEntityPacket.extend({
+  old_parent: EntityReferenceSchema,
+});
+export const ServerReparentEntityPacket = BaseReparentEntityPacket.extend({
+  originator: OriginatorSchema,
+});
 
 export const ClientPacketSchema = z.discriminatedUnion("t", [
   ClientChatMessagePacketSchema,
   ClientSetSyncedValuePacketSchema,
   ClientSpawnEntityPacket,
   ClientDeleteEntityPacket,
+  ClientRenameEntityPacket,
+  ClientReparentEntityPacket,
 ]);
 export type ClientPacket = z.infer<typeof ClientPacketSchema>;
 
@@ -72,6 +101,8 @@ export const ServerPacketSchema = z.discriminatedUnion("t", [
   ServerSetSyncedValuePacketSchema,
   ServerSpawnEntityPacket,
   ServerDeleteEntityPacket,
+  ClientRenameEntityPacket,
+  ClientReparentEntityPacket,
 ]);
 export type ServerPacket = z.infer<typeof ServerPacketSchema>;
 
