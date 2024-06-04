@@ -1,5 +1,6 @@
 import * as esbuild from "npm:esbuild@0.20.2";
 import { denoPlugins } from "jsr:@luca/esbuild-deno-loader";
+import * as _throwaway from './main.ts'
 
 await esbuild.build({
   plugins: [
