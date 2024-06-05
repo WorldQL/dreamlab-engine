@@ -1,7 +1,7 @@
 import { ulid } from "@dreamlab/vendor/std-ulid.ts";
-import { Entity } from "./entity.ts";
-import { Game } from "./game.ts";
-import { SyncedValue } from "./synced-value.ts";
+import { Entity } from "../entity/mod.ts";
+import { Game } from "../game.ts";
+import { SyncedValue } from "../value.ts";
 import { BehaviorValues } from "./behavior-values.ts";
 import {
   ISignalHandler,
@@ -9,9 +9,9 @@ import {
   SignalMatching,
   SignalConstructor,
   SignalListener,
-} from "./signals.ts";
-import { EntityUpdate } from "./signals/entity-updates.ts";
-import { GameRender } from "./signals/game-events.ts";
+} from "../signal.ts";
+import { EntityUpdate } from "../signals/entity-updates.ts";
+import { GameRender } from "../signals/game-events.ts";
 
 export interface BehaviorContext<E extends Entity = Entity> {
   game: Game;

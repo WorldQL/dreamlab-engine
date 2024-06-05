@@ -1,5 +1,5 @@
-import { Entity } from "../entity.ts";
-import { exclusiveSignalType } from "../signals.ts";
+import { Entity } from "../entity/mod.ts";
+import { exclusiveSignalType } from "../signal.ts";
 
 export class EntitySpawned {
   [exclusiveSignalType] = Entity;

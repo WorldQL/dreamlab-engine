@@ -1,5 +1,5 @@
 import { BaseGame } from "../game.ts";
-import { exclusiveSignalType } from "../signals.ts";
+import { exclusiveSignalType } from "../signal.ts";
 
 export class GameTick {
   [exclusiveSignalType] = BaseGame;

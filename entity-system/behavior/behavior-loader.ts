@@ -1,11 +1,10 @@
 import {
   Behavior,
   BehaviorConstructor,
-  BehaviorDefinitionWithScript,
-  BehaviorDefinitionWithType,
+  BehaviorDefinition,
 } from "./behavior.ts";
-import { Entity } from "./entity.ts";
-import { Game } from "./game.ts";
+import { Entity } from "../entity/mod.ts";
+import { Game } from "../game.ts";
 
 export class BehaviorLoader {
   #game: Game;
@@ -24,13 +23,12 @@ export class BehaviorLoader {
   }
 
   async convert<E extends Entity, B extends Behavior<E>>(
-    scriptDef: BehaviorDefinitionWithScript<E, B>
-  ): Promise<BehaviorDefinitionWithType<E, B>> {
+    scriptDef: Omit<BehaviorDefinition<E, B>, "type"> & { script: string }
+  ): Promise<BehaviorDefinition<E, B>> {
     const type = await this.loadScript(scriptDef.script);
 
     return {
       type: type as unknown as BehaviorConstructor<E, B>,
-      script: undefined,
       _ref: scriptDef._ref,
       values: scriptDef.values,
     };

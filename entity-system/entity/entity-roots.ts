@@ -1,6 +1,6 @@
-import * as internal from "./internal.ts";
+import * as internal from "../internal.ts";
 import { Entity } from "./entity.ts";
-import { Game } from "./game.ts";
+import { Game } from "../game.ts";
 
 export class WorldRoot extends Entity {
   static [internal.internalEntity] = true;

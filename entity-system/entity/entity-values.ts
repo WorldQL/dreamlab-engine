@@ -1,21 +1,19 @@
-import { Behavior } from "./behavior.ts";
 import { Entity } from "./entity.ts";
 import {
   Primitive,
   PrimitiveTypeTag,
   SyncedValue,
   SyncedValueRegistry,
-} from "./synced-value.ts";
+} from "../value.ts";
 
-export class BehaviorValues<
-  E extends Entity = Entity,
-  B extends Behavior<E> = Behavior<E>
-> {
-  #behavior: B;
+export class EntityValues {
+  #entity: Entity;
+  #registry: SyncedValueRegistry;
   #values: SyncedValue[];
 
-  constructor(behavior: B) {
-    this.#behavior = behavior;
+  constructor(entity: Entity) {
+    this.#entity = entity;
+    this.#registry = entity.game.syncedValues;
     this.#values = [];
   }
 
@@ -28,10 +26,9 @@ export class BehaviorValues<
     name: string,
     defaultValue: Primitive
   ): SyncedValue {
-    const registry = this.#behavior.entity.game.syncedValues;
     const value = new SyncedValue(
-      registry,
-      `${this.#behavior.entity.ref}/${this.#behavior.ref}/${name}`,
+      this.#registry,
+      `${this.#entity.ref}/${name}`,
       defaultValue,
       typeTag
     );

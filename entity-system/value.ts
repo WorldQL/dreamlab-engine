@@ -2,7 +2,7 @@ import {
   BasicSignalHandler,
   SignalListener,
   exclusiveSignalType,
-} from "./signals.ts";
+} from "./signal.ts";
 import * as internal from "./internal.ts";
 
 export type Primitive = string | number | boolean | undefined;

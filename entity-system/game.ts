@@ -5,8 +5,8 @@ import {
   PrefabsRoot,
   RemoteRoot,
   WorldRoot,
-} from "./entity-roots.ts";
-import { EntityStore } from "./entity-store.ts";
+  EntityStore,
+} from "./entity/mod.ts";
 import * as internal from "./internal.ts";
 import { PhysicsEngine } from "./physics.ts";
 import {
@@ -15,10 +15,10 @@ import {
   SignalConstructor,
   SignalConstructorMatching,
   SignalListener,
-} from "./signals.ts";
+} from "./signal.ts";
 import { GameRender, GameShutdown, GameTick } from "./signals/game-events.ts";
-import { SyncedValueRegistry } from "./synced-value.ts";
-import { BehaviorLoader } from "./behavior-loader.ts";
+import { SyncedValueRegistry } from "./value.ts";
+import { BehaviorLoader } from "./behavior/behavior-loader.ts";
 
 export interface GameOptions {
   instanceId: string;

@@ -1,8 +1,8 @@
 import { Entity, EntityContext } from "../entity.ts";
-import { EntityUpdate } from "../signals/entity-updates.ts";
-import { SquareEntity } from "./square.ts";
+import { EntityUpdate } from "../../signals/entity-updates.ts";
+import { BasicEntity } from "./basic.ts";
 
-export class SquareWithHealth extends SquareEntity {
+export class BasicLivingEntity extends BasicEntity {
   health = this.values.number("health", 100);
   maxHealth = this.values.number("maxHealth", 100);
 
@@ -23,4 +23,4 @@ export class SquareWithHealth extends SquareEntity {
     }
   }
 }
-Entity.registerType(SquareWithHealth, "@core");
+Entity.registerType(BasicLivingEntity, "@core");

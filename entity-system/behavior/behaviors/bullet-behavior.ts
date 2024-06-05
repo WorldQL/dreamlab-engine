@@ -1,8 +1,7 @@
 import { Behavior } from "../behavior.ts";
-import { Rigidbody2D } from "../entities/rigidbody.ts";
-import { Entity } from "../entity.ts";
-import { EntityCollision } from "../signals/entity-collision.ts";
-import { SyncedValue } from "../synced-value.ts";
+import { Entity } from "../../entity/mod.ts";
+import { EntityCollision } from "../../signals/entity-collision.ts";
+import { SyncedValue } from "../../value.ts";
 
 interface HasHealth {
   health: SyncedValue<number>;

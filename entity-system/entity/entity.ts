@@ -1,40 +1,40 @@
 import { ulid } from "@dreamlab/vendor/std-ulid.ts";
-import { type Game } from "./game.ts";
+import { type Game } from "../game.ts";
 import {
   Transform,
   Vector2,
   transformLocalToWorld,
   transformWorldToLocal,
   v,
-} from "./math.ts";
-import * as internal from "./internal.ts";
+} from "../math.ts";
+import * as internal from "../internal.ts";
 import {
   ISignalHandler,
   Signal,
   SignalConstructor,
   SignalConstructorMatching,
   SignalListener,
-} from "./signals.ts";
+} from "../signal.ts";
 import {
   EntityChildSpawned,
   EntityDescendentSpawned,
   EntityRenamed,
   EntitySpawned,
-} from "./signals/entity-lifecycle.ts";
+} from "../signals/entity-lifecycle.ts";
 import {
   EntityMove,
   EntityPreUpdate,
   EntityResize,
   EntityRotate,
   EntityUpdate,
-} from "./signals/entity-updates.ts";
-import { EntityValues } from "./entity-values.ts";
-import { SyncedValue } from "./synced-value.ts";
+} from "../signals/entity-updates.ts";
+import { EntityValues } from "../entity/entity-values.ts";
+import { SyncedValue } from "../value.ts";
 import {
   Behavior,
   BehaviorConstructor,
   BehaviorDefinition,
-} from "./behavior.ts";
+} from "../behavior/behavior.ts";
 
 export interface EntityContext {
   game: Game;

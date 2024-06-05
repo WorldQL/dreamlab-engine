@@ -1,5 +1,5 @@
 import RAPIER, { RigidBody } from "./_deps/rapier.ts";
-import { Entity } from "./entity.ts";
+import { Entity } from "./entity/mod.ts";
 import { Game } from "./game.ts";
 import { EntityCollision } from "./signals/entity-collision.ts";
 

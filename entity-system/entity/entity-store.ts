@@ -1,5 +1,5 @@
 import { Entity } from "./entity.ts";
-import { Game } from "./game.ts";
+import { Game } from "../game.ts";
 
 export class EntityStore {
   game: Game;

@@ -1,6 +1,6 @@
-import { Entity } from "../entity.ts";
+import { Entity } from "../entity/mod.ts";
 import { Vector2 } from "../math.ts";
-import { exclusiveSignalType } from "../signals.ts";
+import { exclusiveSignalType } from "../signal.ts";
 
 export class EntityPreUpdate {
   [exclusiveSignalType] = Entity;
