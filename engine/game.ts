@@ -15,7 +15,12 @@ import {
   SignalConstructorMatching,
   SignalListener,
 } from "./signal.ts";
-import { GameRender, GameShutdown, GameTick } from "./signals/game-events.ts";
+import {
+  GamePreRender,
+  GameRender,
+  GameShutdown,
+  GameTick,
+} from "./signals/game-events.ts";
 import { SyncedValueRegistry } from "./value.ts";
 import { BehaviorLoader } from "./behavior/behavior-loader.ts";
 import { GameRenderer } from "./renderer/mod.ts";
@@ -197,6 +202,7 @@ export class ClientGame extends BaseGame {
   readonly remote: undefined;
 
   drawFrame(delta: number) {
+    this.fire(GamePreRender, delta);
     this.renderer.renderFrame(delta);
     this.fire(GameRender, delta);
   }
