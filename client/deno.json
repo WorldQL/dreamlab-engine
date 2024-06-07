@@ -1,0 +1,13 @@
+{
+  "tasks": {
+    "build": "deno run -A ./_build.ts",
+    "watch": "deno run -A ./_build.ts --watch"
+  },
+  "imports": {
+    "@dreamlab/engine": "../engine/mod.ts",
+    "@dreamlab/vendor/": "../engine/_deps/"
+  },
+  "compilerOptions": {
+    "lib": ["deno.window", "dom"]
+  }
+}

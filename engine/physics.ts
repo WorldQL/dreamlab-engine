@@ -10,6 +10,9 @@ export class PhysicsEngine {
   #events: RAPIER.EventQueue;
   readonly tickDelta: number;
 
+  // TODO: figure out how to network sync this
+  enabled: boolean = true;
+
   constructor(game: Game) {
     this.game = game;
 
@@ -27,7 +30,7 @@ export class PhysicsEngine {
   }
 
   tick() {
-    this.world.step(this.#events);
+    if (this.enabled) this.world.step(this.#events);
     this.#events.drainCollisionEvents((handle1, handle2, started) => {
       const body1 = this.world.bodies.get(handle1);
       const body2 = this.world.bodies.get(handle2);

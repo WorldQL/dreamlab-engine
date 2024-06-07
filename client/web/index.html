@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Dreamlab</title>
+  </head>
+
+  <body>
+    <div id="app"></div>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "@dreamlab/vendor/": "./dist/vendor/",
+          "@dreamlab/engine": "./dist/engine.mjs"
+        }
+      }
+    </script>
+    <script type="module" src="./dist/client-main.mjs"></script>
+  </body>
+</html>
