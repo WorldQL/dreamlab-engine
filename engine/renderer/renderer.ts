@@ -11,7 +11,6 @@ export class GameRenderer {
     this.#game = game;
 
     this.app = new PIXI.Application();
-    game.container.append(this.app.canvas);
   }
 
   async initialize() {
