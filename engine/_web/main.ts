@@ -8,6 +8,7 @@ import {
 import { ulid } from "@dreamlab/vendor/std-ulid.ts";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { Camera } from "../entity/entities/camera.ts";
+import { Sprite } from "../entity/entities/sprite.ts";
 
 const container = document.createElement("div");
 document.body.append(container);
@@ -105,15 +106,10 @@ const body2 = game.world.spawn({
   name: "DefaultSquare",
 });
 
-// White sprite to test with
-const sprite = new PIXI.Sprite({
-  texture: PIXI.Texture.WHITE,
-  width: 1,
-  height: 1,
-  anchor: 0.5,
+const sprite = game.world.spawn({
+  type: Sprite,
+  name: "Sprite",
 });
-
-game.renderer.scene.addChild(sprite);
 
 const camera = game.local.spawn({
   type: Camera,
@@ -143,4 +139,4 @@ const onTick = (time: number) => {
 requestAnimationFrame(onTick);
 
 // Assign `game` to global
-Object.assign(window, { game, camera });
+Object.assign(window, { game, camera, sprite });
