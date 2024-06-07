@@ -32,6 +32,8 @@ export class Rigidbody2D extends Entity {
 
     // EntityPreUpdate happens before physics runs, so we can set the physics body to match our transform
     this.on(EntityPreUpdate, () => {
+      if (!this.game.physics.enabled) return;
+
       this.body.setTranslation(
         {
           x: this.globalTransform.position.x,
@@ -49,6 +51,8 @@ export class Rigidbody2D extends Entity {
     // EntityUpdate happens after physics runs, so we can update our transform
     // to reflect the movement of the physics body
     this.on(EntityUpdate, () => {
+      if (!this.game.physics.enabled) return;
+
       this.globalTransform.position = new Vector2(this.body.translation());
       this.globalTransform.rotation = this.body.rotation();
       this.globalTransform.scale = new Vector2(
