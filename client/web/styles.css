@@ -6,14 +6,33 @@ body {
   margin: 0;
 }
 
-#app {
-  width: 1280px;
-  height: 720px;
+#ui {
 }
 
-#ui {
-  position: absolute;
-  top: 0;
-  width: 1280px;
-  height: 720px;
+.container {
+  display: grid;
+  grid-template-columns: 15% 70% 15%;
+  grid-template-rows: 100vh;
+  height: 100vh;
+}
+
+.left-column {
+  background-color: #f1f1f1;
+}
+
+.middle-column {
+  display: grid;
+  grid-template-rows: 90% 10%;
+}
+
+.middle-top {
+  background-color: #e0e0e0;
+}
+
+.middle-bottom {
+  background-color: #c0c0c0;
+}
+
+.right-column {
+  background-color: #f1f1f1;
 }
