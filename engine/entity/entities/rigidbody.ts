@@ -1,4 +1,4 @@
-import RAPIER from "../../_deps/rapier.ts";
+import RAPIER from "@dreamlab/vendor/rapier.ts";
 import { Entity, EntityContext } from "../entity.ts";
 import { Vector2 } from "../../math.ts";
 import { EntityPreUpdate, EntityUpdate } from "../../signals/entity-updates.ts";

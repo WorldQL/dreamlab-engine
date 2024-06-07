@@ -1,5 +1,5 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import RAPIER from "./_deps/rapier.ts";
+import RAPIER from "@dreamlab/vendor/rapier.ts";
 import {
   LocalRoot,
   PrefabsRoot,

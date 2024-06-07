@@ -1,4 +1,4 @@
-import RAPIER, { RigidBody } from "./_deps/rapier.ts";
+import RAPIER, { RigidBody } from "@dreamlab/vendor/rapier.ts";
 import { Entity } from "./entity/mod.ts";
 import { Game } from "./game.ts";
 import { EntityCollision } from "./signals/entity-collision.ts";
