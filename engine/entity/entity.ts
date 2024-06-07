@@ -373,7 +373,11 @@ export abstract class Entity implements ISignalHandler {
       this.game[internal.behaviorScriptLoader].initialize(behaviorType);
       behavior.spawn();
     }
+
+    this.onInitialize();
   }
+
+  onInitialize(): void {}
 
   #origPosition: Vector2 = new Vector2(NaN, NaN);
   #origScale: Vector2 = new Vector2(NaN, NaN);
