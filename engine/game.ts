@@ -33,6 +33,9 @@ export interface ClientGameOptions extends GameOptions {
 export interface ServerGameOptions extends GameOptions {}
 
 export abstract class BaseGame implements ISignalHandler {
+  public abstract isClient(): this is ClientGame;
+  public abstract isServer(): this is ServerGame;
+
   readonly instanceId: string;
   readonly worldId: string;
 
@@ -143,6 +146,9 @@ export abstract class BaseGame implements ISignalHandler {
 }
 
 export class ServerGame extends BaseGame {
+  public isClient = (): this is ClientGame => false;
+  public isServer = (): this is ServerGame => true;
+
   readonly remote: RemoteRoot = new RemoteRoot(this);
   readonly local: undefined;
 
@@ -164,6 +170,9 @@ export class ServerGame extends BaseGame {
 }
 
 export class ClientGame extends BaseGame {
+  public isClient = (): this is ClientGame => true;
+  public isServer = (): this is ServerGame => false;
+
   readonly container: HTMLDivElement;
   readonly renderer: GameRenderer;
   // readonly camera: Camera;
