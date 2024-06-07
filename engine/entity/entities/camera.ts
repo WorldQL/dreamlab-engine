@@ -1,5 +1,6 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import { ClientGame } from "../../game.ts";
+import { Game, ClientGame } from "../../game.ts";
+import { Vector2 } from "../../math.ts";
 import { GamePreRender } from "../../signals/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
 
@@ -8,6 +9,26 @@ export class Camera extends Entity {
 
   // TODO: Smoothed position/rotation/scale
   public readonly container: PIXI.Container;
+
+  #active = false;
+  get active(): boolean {
+    return this.#active;
+  }
+  set active(value: boolean) {
+    if (!value) {
+      this.#active = false;
+      return;
+    }
+
+    const cameras = this.game.entities.lookupByType(Camera);
+    for (const camera of cameras) camera.active = false;
+    this.#active = true;
+  }
+
+  // TODO: Look into improving this API maybe?
+  public static getActive(game: Game): Camera | undefined {
+    return game.entities.lookupByType(Camera).find((camera) => camera.active);
+  }
 
   constructor(ctx: EntityContext) {
     super(ctx);
@@ -25,6 +46,8 @@ export class Camera extends Entity {
       this.container.setFromMatrix(this.matrix);
       // TODO: Lerp smoothing for position/rotation/scale
     });
+
+    this.active = true;
   }
 
   destroy(): void {
@@ -52,6 +75,16 @@ export class Camera extends Entity {
         game.renderer.app.canvas.width / 2,
         game.renderer.app.canvas.height / 2
       );
+  }
+
+  public worldToScreen(position: Vector2): Vector2 {
+    const { x, y } = this.matrix.apply(position);
+    return new Vector2(x, y);
+  }
+
+  public screenToWorld(position: Vector2): Vector2 {
+    const { x, y } = this.matrix.applyInverse(position);
+    return new Vector2(x, y);
   }
 }
 Entity.registerType(Camera, "@core");

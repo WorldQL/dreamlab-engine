@@ -1,4 +1,4 @@
-import { Entity } from "./entity.ts";
+import { Entity, EntityConstructor } from "./entity.ts";
 import { Game } from "../game.ts";
 
 export class EntityStore {
@@ -17,6 +17,12 @@ export class EntityStore {
 
   lookupByRef(ref: string): Entity | undefined {
     return this.#entitiesByRef.get(ref);
+  }
+
+  lookupByType<T extends Entity>(type: EntityConstructor<T>): T[] {
+    return [...this.#entitiesById.values()].filter(
+      (entity): entity is T => entity instanceof type
+    );
   }
 
   /** for internal use */
