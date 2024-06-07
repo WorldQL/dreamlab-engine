@@ -30,7 +30,7 @@ class PhysicsDebug extends Entity {
     super(ctx);
 
     // TODO: rendering system that abstracts better over pixi?
-    game.renderer.app.stage.addChild(this.#gfx);
+    game.renderer.scene.addChild(this.#gfx);
 
     this.game.on(GameRender, () => {
       this.#gfx.clear();
@@ -77,13 +77,13 @@ class PhysicsDebug extends Entity {
           a: a * 255,
         });
 
-        const start = { x: (x1 + 5) * 100, y: (y1 - 1) * -100 };
-        const end = { x: (x2 + 5) * 100, y: (y2 - 1) * -100 };
+        const start = { x: x1, y: -y1 };
+        const end = { x: x2, y: -y2 };
 
         this.#gfx
           .moveTo(start.x, start.y)
           .lineTo(end.x, end.y)
-          .stroke({ width: 1, color, alpha: 1 });
+          .stroke({ width: 0.01, color, alpha: 1 });
 
         // this.#graphics.push(gfx);
         // game.app.stage.addChild(gfx);
@@ -93,17 +93,17 @@ class PhysicsDebug extends Entity {
 }
 Entity.registerType(PhysicsDebug, "@core");
 
-// game.local.spawn({ type: PhysicsDebug, name: "PhysicsDebug" });
+game.local.spawn({ type: PhysicsDebug, name: "PhysicsDebug" });
 
-// const body = game.world.spawn({
-//   type: Rigidbody2D,
-//   name: "DefaultSquare",
-// });
+const body = game.world.spawn({
+  type: Rigidbody2D,
+  name: "DefaultSquare",
+});
 
-// const body2 = game.world.spawn({
-//   type: Rigidbody2D,
-//   name: "DefaultSquare",
-// });
+const body2 = game.world.spawn({
+  type: Rigidbody2D,
+  name: "DefaultSquare",
+});
 
 // White sprite to test with
 const sprite = new PIXI.Sprite({
