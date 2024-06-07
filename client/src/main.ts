@@ -1,4 +1,5 @@
 import { ClientGame } from "@dreamlab/engine";
+import { renderReact } from "./react-test.tsx";
 
 const container = document.querySelector("#app") as HTMLDivElement;
 container.style.width = "1280px";
@@ -36,3 +37,5 @@ const onFrame = (time: number) => {
 requestAnimationFrame(onFrame);
 
 Object.defineProperty(window, "game", { value: game });
+
+renderReact();

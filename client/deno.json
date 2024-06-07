@@ -6,9 +6,15 @@
   },
   "imports": {
     "@dreamlab/engine": "../engine/mod.ts",
-    "@dreamlab/vendor/": "../engine/_deps/"
+    "@dreamlab/vendor/": "../engine/_deps/",
+    "react": "https://esm.sh/react@18.3.1",
+    "react/": "https://esm.sh/react@18.3.1/",
+    "react-dom": "https://esm.sh/react-dom@18.3.1",
+    "react-dom/": "https://esm.sh/react-dom@18.3.1/"
   },
   "compilerOptions": {
+    "jsx": "precompile",
+    "jsxImportSource": "react-jsx",
     "lib": ["deno.window", "dom"]
   }
 }

@@ -18,7 +18,7 @@ Symbol.asyncDispose ??= Symbol.for("Symbol.asyncDispose");`,
 async function bundle(
   target: string,
   opts: esbuild.BuildOptions,
-  watch: boolean,
+  watch: boolean
 ) {
   if (watch) {
     const ctx = await esbuild.context(opts);
@@ -57,6 +57,8 @@ export async function bundleClient(watch: boolean = false) {
     ],
     entryPoints: ["./src/main.ts"],
     outfile: "./web/dist/client-main.mjs",
+    jsx: "automatic",
+    external: ["https://*"],
   };
 
   await bundle("client", opts, watch);
@@ -76,7 +78,7 @@ export async function bundleEngine(watch: boolean = false) {
       },
       ...denoPlugins({
         loader: "native",
-        configPath: await Deno.realPath("./deno.json"),
+        configPath: await Deno.realPath("../engine/deno.json"),
       }),
     ],
     entryPoints: ["../engine/mod.ts"],
@@ -98,7 +100,7 @@ export async function bundleEngineDeps() {
     plugins: [
       ...denoPlugins({
         loader: "native",
-        configPath: await Deno.realPath("./deno.json"),
+        configPath: await Deno.realPath("../engine/deno.json"),
       }),
     ],
     entryPoints,
