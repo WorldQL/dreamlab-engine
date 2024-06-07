@@ -1,4 +1,3 @@
-import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import RAPIER from "@dreamlab/vendor/rapier.ts";
 import {
   LocalRoot,
@@ -19,6 +18,7 @@ import {
 import { GameRender, GameShutdown, GameTick } from "./signals/game-events.ts";
 import { SyncedValueRegistry } from "./value.ts";
 import { BehaviorLoader } from "./behavior/behavior-loader.ts";
+import { GameRenderer } from "./renderer/mod.ts";
 
 export interface GameOptions {
   instanceId: string;
@@ -165,16 +165,14 @@ export class ServerGame extends BaseGame {
 
 export class ClientGame extends BaseGame {
   readonly container: HTMLDivElement;
-  readonly app: PIXI.Application;
+  readonly renderer: GameRenderer;
   // readonly camera: Camera;
-
-  #time = performance.now();
 
   constructor(opts: ClientGameOptions) {
     super(opts);
 
     this.container = opts.container;
-    this.app = new PIXI.Application();
+    this.renderer = new GameRenderer(this);
 
     this.syncedValues[internal.setSyncedValueRegistryOriginator](
       opts.connectionId
@@ -183,27 +181,14 @@ export class ClientGame extends BaseGame {
 
   async initialize() {
     await super.initialize();
-    await this.app.init({
-      autoDensity: true,
-      resizeTo: this.container,
-
-      antialias: true,
-    });
-
-    this.app.ticker.add(() => {
-      const now = performance.now();
-      const delta = now - this.#time;
-
-      this.drawFrame(delta);
-    });
-
-    this.container.append(this.app.canvas);
+    await this.renderer.initialize();
   }
 
   readonly local: LocalRoot = new LocalRoot(this);
   readonly remote: undefined;
 
   drawFrame(delta: number) {
+    this.renderer.renderFrame(delta);
     this.fire(GameRender, delta);
   }
 

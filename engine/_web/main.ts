@@ -29,7 +29,8 @@ class PhysicsDebug extends Entity {
   constructor(ctx: EntityContext) {
     super(ctx);
 
-    game.app.stage.addChild(this.#graphic);
+    // TODO: rendering system that abstracts better over pixi?
+    game.renderer.app.stage.addChild(this.#graphic);
 
     this.game.on(GameRender, () => {
       // TODO: Re-use graphics objects
@@ -121,6 +122,8 @@ const onTick = (time: number) => {
     tickAccumulator -= tickDelta;
     game.tick();
   }
+
+  game.drawFrame(delta);
 
   requestAnimationFrame(onTick);
 };
