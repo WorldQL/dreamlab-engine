@@ -13,6 +13,7 @@ const BASE_OPTIONS: Partial<esbuild.BuildOptions> = {
 Symbol.dispose ??= Symbol.for("Symbol.dispose");
 Symbol.asyncDispose ??= Symbol.for("Symbol.asyncDispose");`,
   },
+  sourcemap: 'linked'
 };
 
 async function bundle(
