@@ -36,6 +36,10 @@ export class Vector2 {
     return new Vector2(this.x - other.x, this.y - other.y);
   }
 
+  multiply(scalar: number): Vector2 {
+    return new Vector2(this.x * scalar, this.y * scalar);
+  }
+
   eq(other: Vector2): boolean {
     return other.x === this.x && other.y === this.y;
   }
