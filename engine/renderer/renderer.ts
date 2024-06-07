@@ -4,6 +4,7 @@ import * as PIXI from "@dreamlab/vendor/pixi.ts";
 export class GameRenderer {
   #game: ClientGame;
   app: PIXI.Application;
+  scene: PIXI.Container;
 
   #initialized: boolean = false;
 
@@ -11,6 +12,8 @@ export class GameRenderer {
     this.#game = game;
 
     this.app = new PIXI.Application();
+    this.scene = new PIXI.Container();
+    this.app.stage.addChild(this.scene);
   }
 
   async initialize() {
