@@ -27,8 +27,11 @@ export class Sprite extends Entity {
       texture,
       width: this.width.value,
       height: this.height.value,
-      position: { x: this.transform.position.x, y: -this.transform.position.y },
-      rotation: this.transform.rotation,
+      position: {
+        x: this.globalTransform.position.x,
+        y: -this.globalTransform.position.y,
+      },
+      rotation: this.globalTransform.rotation,
       // TODO: Scale (pixi sets the scale based on the desired width/height)
       anchor: 0.5,
     });
