@@ -6,7 +6,8 @@ import {
   Rigidbody2D,
 } from "@dreamlab/engine";
 import { ulid } from "@dreamlab/vendor/std-ulid.ts";
-import { Color, Graphics } from "@dreamlab/vendor/pixi.ts";
+import * as PIXI from "@dreamlab/vendor/pixi.ts";
+import { Camera } from "../entity/entities/camera.ts";
 
 const container = document.createElement("div");
 document.body.append(container);
@@ -23,20 +24,16 @@ const game = new ClientGame({
 await game.initialize();
 
 class PhysicsDebug extends Entity {
-  // #graphics: Graphics[] = [];
-  #graphic: Graphics = new Graphics();
+  #gfx = new PIXI.Graphics();
 
   constructor(ctx: EntityContext) {
     super(ctx);
 
     // TODO: rendering system that abstracts better over pixi?
-    game.renderer.app.stage.addChild(this.#graphic);
+    game.renderer.app.stage.addChild(this.#gfx);
 
     this.game.on(GameRender, () => {
-      // TODO: Re-use graphics objects
-      // this.#graphics.forEach((gfx) => gfx.destroy());
-      // this.#graphics = [];
-      this.#graphic.clear();
+      this.#gfx.clear();
 
       const { vertices, colors } = this.game.physics.world.debugRender();
       const vtx = vertices;
@@ -73,7 +70,7 @@ class PhysicsDebug extends Entity {
         }
 
         // const gfx = new Graphics();
-        const color = new Color({
+        const color = new PIXI.Color({
           r: r * 255,
           g: g * 255,
           b: b * 255,
@@ -83,7 +80,7 @@ class PhysicsDebug extends Entity {
         const start = { x: (x1 + 5) * 100, y: (y1 - 1) * -100 };
         const end = { x: (x2 + 5) * 100, y: (y2 - 1) * -100 };
 
-        this.#graphic
+        this.#gfx
           .moveTo(start.x, start.y)
           .lineTo(end.x, end.y)
           .stroke({ width: 1, color, alpha: 1 });
@@ -96,16 +93,31 @@ class PhysicsDebug extends Entity {
 }
 Entity.registerType(PhysicsDebug, "@core");
 
-game.local.spawn({ type: PhysicsDebug, name: "PhysicsDebug" });
+// game.local.spawn({ type: PhysicsDebug, name: "PhysicsDebug" });
 
-const body = game.world.spawn({
-  type: Rigidbody2D,
-  name: "DefaultSquare",
+// const body = game.world.spawn({
+//   type: Rigidbody2D,
+//   name: "DefaultSquare",
+// });
+
+// const body2 = game.world.spawn({
+//   type: Rigidbody2D,
+//   name: "DefaultSquare",
+// });
+
+// White sprite to test with
+const sprite = new PIXI.Sprite({
+  texture: PIXI.Texture.WHITE,
+  width: 1,
+  height: 1,
+  anchor: 0.5,
 });
 
-const body2 = game.world.spawn({
-  type: Rigidbody2D,
-  name: "DefaultSquare",
+game.renderer.scene.addChild(sprite);
+
+const camera = game.local.spawn({
+  type: Camera,
+  name: "Camera",
 });
 
 const tps = 60;
@@ -131,4 +143,4 @@ const onTick = (time: number) => {
 requestAnimationFrame(onTick);
 
 // Assign `game` to global
-Object.defineProperty(window, "game", { value: game });
+Object.assign(window, { game, camera });
