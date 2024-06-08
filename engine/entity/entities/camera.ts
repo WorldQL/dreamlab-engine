@@ -1,6 +1,6 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { Game, ClientGame } from "../../game.ts";
-import { Vector2 } from "../../math.ts";
+import { Vector2 } from "../../math/mod.ts";
 import { GamePreRender } from "../../signals/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
 
