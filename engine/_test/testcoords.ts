@@ -1,4 +1,4 @@
-import { Vector2, v } from "./math/mod.ts";
+import { Vector2, v } from "../math/mod.ts";
 
 const PIXEL_TO_METERS = 10;
 
