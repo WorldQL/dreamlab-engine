@@ -228,6 +228,13 @@ export abstract class Entity implements ISignalHandler {
 
   readonly transform: Transform;
   readonly globalTransform: Transform;
+  get pos() {
+    return this.globalTransform.position;
+  }
+  set pos(value) {
+    this.globalTransform.position = value;
+  }
+
   readonly behaviors: Behavior[] = [];
 
   // internal id for stable internal reference. we only really need this for networking

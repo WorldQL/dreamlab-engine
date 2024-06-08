@@ -35,30 +35,30 @@ class TransformVector implements Vector2 {
 
 // prettier-ignore
 export class Transform {
-  #position: Vector2 = new TransformVector(this, v(0.0, 0.0));
-  get position() { return this.#position; }
-  set position(value) {
+  #position = new TransformVector(this, v(0.0, 0.0));
+  get position(): Vector2 { return this.#position; }
+  set position(value: Vector2) {
     this.#position = new TransformVector(this, value);
     this[transformOnChanged]();
   }
 
-  #scale: Vector2 = new TransformVector(this, v(1.0, 1.0));
-  get scale() { return this.#scale; }
-  set scale(value) {
+  #scale = new TransformVector(this, v(1.0, 1.0));
+  get scale(): Vector2 { return this.#scale; }
+  set scale(value: Vector2) {
     this.#scale = new TransformVector(this, value);
     this[transformOnChanged]();
   }
 
   #rotation: number = 0;
-  get rotation() { return this.#rotation; }
-  set rotation(value) {
+  get rotation(): number { return this.#rotation; }
+  set rotation(value: number) {
     this.#rotation = value;
     this[transformOnChanged]();
   }
   
   constructor(opts?: { position?: Vector2; scale?: Vector2; rotation?: number; }) {
-    if (opts?.position) this.#position = opts.position;
-    if (opts?.scale) this.#scale = opts.scale;
+    if (opts?.position) this.#position = new TransformVector(this, opts.position);
+    if (opts?.scale) this.#scale = new TransformVector(this, opts.scale);
     if (opts?.rotation) this.#rotation = opts.rotation;
   }
 
