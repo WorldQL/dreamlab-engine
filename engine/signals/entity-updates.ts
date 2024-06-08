@@ -1,5 +1,5 @@
 import { Entity } from "../entity/mod.ts";
-import { Vector2 } from "../math.ts";
+import { Vector2 } from "../math/mod.ts";
 import { exclusiveSignalType } from "../signal.ts";
 
 export class EntityPreUpdate {
@@ -7,6 +7,11 @@ export class EntityPreUpdate {
 }
 
 export class EntityUpdate {
+  [exclusiveSignalType] = Entity;
+}
+
+export class EntityTransformUpdate {
+  constructor() {}
   [exclusiveSignalType] = Entity;
 }
 

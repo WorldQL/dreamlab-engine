@@ -5,8 +5,7 @@ import {
   Vector2,
   transformLocalToWorld,
   transformWorldToLocal,
-  v,
-} from "../math.ts";
+} from "../math/mod.ts";
 import * as internal from "../internal.ts";
 import {
   ISignalHandler,
@@ -26,6 +25,7 @@ import {
   EntityPreUpdate,
   EntityResize,
   EntityRotate,
+  EntityTransformUpdate,
   EntityUpdate,
 } from "../signals/entity-updates.ts";
 import { EntityValues } from "../entity/entity-values.ts";
@@ -226,87 +226,50 @@ export abstract class Entity implements ISignalHandler {
   }
   // #endregion
 
-  // #region Transform / Inheritance
-  readonly transform: Transform = {
-    position: v(0.0, 0.0),
-    scale: v(1.0, 1.0),
-    rotation: 0.0,
-  };
-  get globalTransform(): Transform {
-    if (!this.parent) {
-      return this.transform;
-    }
-
-    const worldTransform = transformLocalToWorld(
-      this.parent.globalTransform,
-      this.transform
-    );
-
-    return new Proxy(worldTransform, {
-      get: (targetTxfm, txfmProp) => {
-        if (txfmProp === "position" || txfmProp === "scale") {
-          return new Proxy(targetTxfm[txfmProp], {
-            set: (targetVec, vecProp, value) => {
-              // @ts-expect-error pass through
-              targetVec[vecProp] = value;
-
-              if (this.parent && (vecProp === "x" || vecProp === "y")) {
-                const newLocalTransform = transformWorldToLocal(
-                  this.parent.globalTransform,
-                  targetTxfm
-                );
-                this.transform.position = newLocalTransform.position;
-                this.transform.rotation = newLocalTransform.rotation;
-                this.transform.scale = newLocalTransform.scale;
-              }
-
-              return true;
-            },
-          });
-        }
-
-        // @ts-expect-error pass through
-        return targetTxfm[txfmProp];
-      },
-
-      set: (targetTxfm, txfmProp, value) => {
-        // @ts-expect-error pass through
-        targetTxfm[txfmProp] = value;
-
-        if (
-          this.parent &&
-          (txfmProp === "position" ||
-            txfmProp === "scale" ||
-            txfmProp === "rotation")
-        ) {
-          const newLocalTransform = transformWorldToLocal(
-            this.parent.globalTransform,
-            targetTxfm
-          );
-          this.transform.position = newLocalTransform.position;
-          this.transform.rotation = newLocalTransform.rotation;
-          this.transform.scale = newLocalTransform.scale;
-        }
-
-        return true;
-      },
-    });
-  }
-  // #endregion
-
-  // #region Behaviors
+  readonly transform: Transform;
+  readonly globalTransform: Transform;
   readonly behaviors: Behavior[] = [];
-  // #endregion
 
   // internal id for stable internal reference. we only really need this for networking
   readonly ref: string = ulid();
 
   readonly values: EntityValues;
 
+  #updateTransform(fromGlobal: boolean) {
+    if (fromGlobal) {
+      const parentTransform = this.parent?.globalTransform;
+      const localSpaceTransform = parentTransform
+        ? transformWorldToLocal(parentTransform, this.globalTransform)
+        : this.globalTransform;
+      this.transform[internal.transformForceUpdate](localSpaceTransform);
+    } else {
+      const parentTransform = this.parent?.globalTransform;
+      const worldSpaceTransform = parentTransform
+        ? transformLocalToWorld(parentTransform, this.transform)
+        : this.transform;
+      this.globalTransform[internal.transformForceUpdate](worldSpaceTransform);
+    }
+
+    this.fire(EntityTransformUpdate);
+
+    for (const child of this.children.values()) {
+      child.#updateTransform(false);
+    }
+  }
+
   constructor(ctx: EntityContext) {
     Entity.#ensureEntityTypeIsRegistered(new.target);
 
     this.game = ctx.game;
+
+    this.transform = new Transform();
+    this.globalTransform = new Transform();
+    this.transform[internal.transformOnChanged] = () => {
+      this.#updateTransform(false);
+    };
+    this.globalTransform[internal.transformOnChanged] = () => {
+      this.#updateTransform(true);
+    };
 
     this.#name = ctx.name;
     this.id = serializeIdentifier(ctx.parent?.id, this.#name);

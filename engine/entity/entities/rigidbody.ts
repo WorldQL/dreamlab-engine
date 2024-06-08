@@ -1,6 +1,6 @@
 import RAPIER from "@dreamlab/vendor/rapier.ts";
 import { Entity, EntityContext } from "../entity.ts";
-import { Vector2 } from "../../math.ts";
+import { Vector2 } from "../../math/mod.ts";
 import { EntityPreUpdate, EntityUpdate } from "../../signals/entity-updates.ts";
 
 export class Rigidbody2D extends Entity {

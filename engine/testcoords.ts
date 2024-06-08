@@ -1,4 +1,4 @@
-import { Vector2, v } from "./math.ts";
+import { Vector2, v } from "./math/mod.ts";
 
 const PIXEL_TO_METERS = 10;
 
@@ -28,5 +28,5 @@ console.log(
   worldToScreen(v(1, 1), 1).eq(v(50, 10)),
 
   // with scaling
-  worldToScreen(v(-2, -2), 2).eq(v(10,50))
+  worldToScreen(v(-2, -2), 2).eq(v(10, 50))
 );
