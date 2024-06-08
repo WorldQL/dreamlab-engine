@@ -1,5 +1,6 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { Entity, EntityContext } from "../entity.ts";
+import { EntityTransformUpdate } from "../../signals/mod.ts";
 
 export class Sprite extends Entity {
   static readonly WHITE_PNG =
@@ -16,7 +17,15 @@ export class Sprite extends Entity {
 
     PIXI.Assets.backgroundLoad(this.texture.value);
 
-    // TODO: Listen to change events for transform/value changes
+    this.on(EntityTransformUpdate, () => {
+      if (!this.#sprite) return;
+      this.#sprite.position = {
+        x: this.globalTransform.position.x,
+        y: -this.globalTransform.position.y,
+      };
+      this.#sprite.rotation = this.globalTransform.rotation;
+      // TODO: update scale
+    });
   }
 
   async onInitialize() {
