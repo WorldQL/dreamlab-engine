@@ -4,10 +4,12 @@ import { renderReact } from "./react-test.tsx";
 renderReact();
 
 const initializeRender = async () => {
-  const container = document.querySelector("#dreamlab-render") as HTMLDivElement;
+  const container = document.querySelector(
+    "#dreamlab-render"
+  ) as HTMLDivElement;
 
   // Try again if the container doesn't exist yet. This line never runs on my machine.
-  if (!container) setTimeout(initializeRender)
+  if (!container) setTimeout(initializeRender);
 
   container.style.width = "1280px";
   container.style.height = "720px";
@@ -37,7 +39,7 @@ const initializeRender = async () => {
       game.tick();
     }
 
-    game.drawFrame(delta);
+    game.drawFrame(time, delta);
 
     requestAnimationFrame(onFrame);
   };
@@ -46,4 +48,4 @@ const initializeRender = async () => {
   Object.defineProperty(window, "game", { value: game });
 };
 
-setTimeout(initializeRender)
+setTimeout(initializeRender);

@@ -24,12 +24,15 @@ export class GameRenderer {
       autoDensity: true,
       resizeTo: this.#game.container,
       antialias: true,
+      autoStart: false,
+      sharedTicker: false,
     });
 
     this.#game.container.append(this.app.canvas);
   }
 
-  renderFrame(_delta: number) {
-    // TODO: how?
+  renderFrame(time: number, _delta: number) {
+    this.app.ticker.update(time);
+    this.app.render();
   }
 }

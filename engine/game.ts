@@ -201,9 +201,9 @@ export class ClientGame extends BaseGame {
   readonly local: LocalRoot = new LocalRoot(this);
   readonly remote: undefined;
 
-  drawFrame(delta: number) {
+  drawFrame(time: number, delta: number) {
     this.fire(GamePreRender, delta);
-    this.renderer.renderFrame(delta);
+    this.renderer.renderFrame(time, delta);
     this.fire(GameRender, delta);
   }
 

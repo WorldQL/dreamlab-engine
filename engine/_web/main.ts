@@ -143,7 +143,7 @@ const onTick = (time: number) => {
     game.tick();
   }
 
-  game.drawFrame(delta);
+  game.drawFrame(time, delta);
 
   requestAnimationFrame(onTick);
 };
