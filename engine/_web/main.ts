@@ -4,6 +4,8 @@ import {
   Entity,
   EntityContext,
   Rigidbody2D,
+  EntityUpdate,
+  BasicEntity,
 } from "@dreamlab/engine";
 import { ulid } from "@dreamlab/vendor/std-ulid.ts";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
@@ -106,9 +108,19 @@ const body2 = game.world.spawn({
   name: "DefaultSquare",
 });
 
-const sprite = game.world.spawn({
+const spriteParent = game.world.spawn({
+  type: BasicEntity,
+  name: "SpriteContainer",
+});
+spriteParent.transform.scale.x = 2;
+const sprite = spriteParent.spawn({
   type: Sprite,
   name: "Sprite",
+});
+sprite.on(EntityUpdate, () => {
+  const t = Date.now() / 1000;
+  sprite.transform.position.x = Math.sin(t);
+  spriteParent.transform.position.y = Math.cos(t);
 });
 
 const camera = game.local.spawn({
