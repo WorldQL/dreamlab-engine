@@ -68,7 +68,7 @@ export class Camera extends Entity {
     this.container = new PIXI.Container();
     this.game.renderer.app.stage.addChild(this.container);
 
-    this.game.on(GamePreRender, ({ delta }) => {
+    this.listen(this.game, GamePreRender, ({ delta }) => {
       if (!this.#active) return;
       const smooth = this.smooth.value;
 

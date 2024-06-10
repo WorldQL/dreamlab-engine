@@ -13,6 +13,7 @@ import {
   SignalConstructor,
   SignalConstructorMatching,
   SignalListener,
+  SignalMatching,
 } from "../signal.ts";
 import {
   EntityChildSpawned,
@@ -317,6 +318,33 @@ export abstract class Entity implements ISignalHandler {
   }
   // #endregion
 
+  // #region Listeners
+  readonly #listeners: [
+    receiver: WeakRef<ISignalHandler>,
+    type: SignalConstructor,
+    listener: SignalListener,
+  ][] = [];
+
+  protected listen<S extends Signal, T extends ISignalHandler>(
+    receiver: T,
+    signalType: SignalConstructor<SignalMatching<S, T>>,
+    signalListener: SignalListener<SignalMatching<S, T>>,
+  ) {
+    // redirect to this.on(..) if listening to self
+    if ((receiver as unknown) === this) {
+      // @ts-expect-error can't expect TypeScript to know that T is Entity
+      return this.on(signalType, signalListener);
+    }
+
+    receiver.on(signalType, signalListener);
+    this.#listeners.push([
+      new WeakRef(receiver as ISignalHandler),
+      signalType as SignalConstructor,
+      signalListener as SignalListener,
+    ]);
+  }
+  // #endregion
+
   // #region Lifecycle
   #spawned = false;
   #spawn() {
@@ -376,15 +404,23 @@ export abstract class Entity implements ISignalHandler {
   }
 
   destroy() {
-    for (const behavior of this.behaviors) {
-      behavior.destroy();
-    }
-    this.values.destroy();
-    this.#parent = undefined;
-    this.game.entities._unregister(this);
     for (const child of this.#children.values()) {
       child.destroy();
     }
+
+    for (const behavior of this.behaviors) {
+      behavior.destroy();
+    }
+
+    for (const [receiverRef, type, listener] of this.#listeners) {
+      const receiver = receiverRef.deref();
+      if (!receiver) continue;
+      receiver.unregister(type, listener);
+    }
+
+    this.values.destroy();
+    this.#parent = undefined;
+    this.game.entities._unregister(this);
   }
   // #endregion
 
