@@ -3,12 +3,17 @@ import { Game, ClientGame } from "../../game.ts";
 import { Vector2 } from "../../math/mod.ts";
 import { GamePreRender } from "../../signals/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
+import { smoothLerp, smoothLerp2 } from "../../math/lerp.ts";
 
 export class Camera extends Entity {
   public static METERS_TO_PIXELS = 100;
 
-  // TODO: Smoothed position/rotation/scale
   public readonly container: PIXI.Container;
+  public readonly smooth = this.values.number("smooth", 0.01);
+
+  #position: Vector2 = new Vector2(this.globalTransform.position);
+  #rotation: number = this.globalTransform.rotation;
+  #scale: Vector2 = new Vector2(this.globalTransform.scale);
 
   #active = false;
   get active(): boolean {
@@ -23,6 +28,15 @@ export class Camera extends Entity {
     const cameras = this.game.entities.lookupByType(Camera);
     for (const camera of cameras) camera.active = false;
     this.#active = true;
+
+    // Instantly set smoothed values
+    this.#position = new Vector2(this.globalTransform.position);
+    this.#rotation = this.globalTransform.rotation;
+    this.#scale = new Vector2(this.globalTransform.scale);
+
+    // Reparent scene container
+    const game = this.game as ClientGame;
+    this.container.addChild(game.renderer.scene);
   }
 
   // TODO: Look into improving this API maybe?
@@ -39,12 +53,45 @@ export class Camera extends Entity {
     }
 
     this.container = new PIXI.Container();
-    this.container.addChild(this.game.renderer.scene);
     this.game.renderer.app.stage.addChild(this.container);
 
-    this.game.on(GamePreRender, () => {
+    this.game.on(GamePreRender, ({ delta }) => {
+      if (!this.#active) return;
+      const smooth = this.smooth.value;
+
+      // No smoothing
+      if (smooth === 1) {
+        this.#position.x = this.globalTransform.position.x;
+        this.#position.y = this.globalTransform.position.y;
+        this.#rotation = this.globalTransform.rotation;
+        this.#scale.x = this.globalTransform.scale.x;
+        this.#scale.y = this.globalTransform.scale.y;
+
+        return;
+      }
+
+      this.#position = smoothLerp2(
+        this.#position,
+        this.globalTransform.position,
+        this.smooth.value,
+        delta,
+      );
+
+      this.#rotation = smoothLerp(
+        this.#rotation,
+        this.globalTransform.rotation,
+        this.smooth.value,
+        delta,
+      );
+
+      this.#scale = smoothLerp2(
+        this.#scale,
+        this.globalTransform.scale,
+        this.smooth.value,
+        delta,
+      );
+
       this.container.setFromMatrix(this.matrix);
-      // TODO: Lerp smoothing for position/rotation/scale
     });
 
     this.active = true;
@@ -64,10 +111,10 @@ export class Camera extends Entity {
     const game = this.game as ClientGame;
 
     return new PIXI.Matrix()
-      .translate(-this.globalTransform.position.x, -this.globalTransform.position.y)
-      .rotate(-this.globalTransform.rotation)
+      .translate(-this.#position.x, -this.#position.y)
+      .rotate(-this.#rotation)
       .scale(Camera.METERS_TO_PIXELS, Camera.METERS_TO_PIXELS)
-      .scale(1 / this.globalTransform.scale.x, 1 / this.globalTransform.scale.y)
+      .scale(1 / this.#scale.x, 1 / this.#scale.y)
       .translate(game.renderer.app.canvas.width / 2, game.renderer.app.canvas.height / 2);
   }
 
