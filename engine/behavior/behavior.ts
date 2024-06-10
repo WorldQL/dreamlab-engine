@@ -22,18 +22,18 @@ export interface BehaviorContext<E extends Entity = Entity> {
 
 export type BehaviorConstructor<
   E extends Entity = Entity,
-  B extends Behavior<E> = Behavior<E>
+  B extends Behavior<E> = Behavior<E>,
 > = (new (ctx: BehaviorContext<E>) => B) & {
   onLoaded?(game: Game): void;
 };
 
+// prettier-ignore
 export type BehaviorSyncedValueProps<
   E extends Entity = Entity,
-  B extends Behavior<E> = Behavior<E>
+  B extends Behavior<E> = Behavior<E>,
 > = {
-  [K in keyof B as B[K] extends SyncedValue<infer _>
-    ? K
-    : never]: B[K] extends SyncedValue<infer V> ? V : never;
+  [K in keyof B as B[K] extends SyncedValue<infer _> ? K : never]:
+    B[K] extends SyncedValue<infer V> ? V : never;
 };
 
 export interface BehaviorDefinition<E extends Entity, B extends Behavior<E>> {
@@ -53,7 +53,7 @@ export class Behavior<E extends Entity = Entity> {
   readonly listeners: [
     receiver: WeakRef<ISignalHandler>,
     type: SignalConstructor,
-    listener: SignalListener
+    listener: SignalListener,
   ][] = [];
 
   constructor(ctx: BehaviorContext<E>) {
@@ -68,7 +68,7 @@ export class Behavior<E extends Entity = Entity> {
   listen<S extends Signal, T extends ISignalHandler>(
     receiver: T,
     signalType: SignalConstructor<SignalMatching<S, T>>,
-    signalListener: SignalListener<SignalMatching<S, T>>
+    signalListener: SignalListener<SignalMatching<S, T>>,
   ) {
     receiver.on(signalType, signalListener);
     this.listeners.push([
@@ -100,7 +100,7 @@ export class Behavior<E extends Entity = Entity> {
 
     if (this.onFrame) {
       const onFrame = this.onFrame.bind(this);
-      this.listen(this.entity.game, GameRender, (e) => onFrame(e.delta));
+      this.listen(this.entity.game, GameRender, e => onFrame(e.delta));
     }
 
     this.onInitialize();

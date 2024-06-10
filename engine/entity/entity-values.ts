@@ -1,10 +1,5 @@
 import { Entity } from "./entity.ts";
-import {
-  Primitive,
-  PrimitiveTypeTag,
-  SyncedValue,
-  SyncedValueRegistry,
-} from "../value.ts";
+import { Primitive, PrimitiveTypeTag, SyncedValue, SyncedValueRegistry } from "../value.ts";
 
 export class EntityValues {
   #entity: Entity;
@@ -23,16 +18,10 @@ export class EntityValues {
     return this.#values;
   }
 
-  value(
-    typeTag: PrimitiveTypeTag,
-    name: string,
-    defaultValue: Primitive
-  ): SyncedValue {
+  value(typeTag: PrimitiveTypeTag, name: string, defaultValue: Primitive): SyncedValue {
     const identifier = `${this.#entity.ref}/${name}`;
-    if (this.#values.some((v) => v.identifier === identifier))
-      throw new Error(
-        `A value with the name '${name}' already exists on this entity!`
-      );
+    if (this.#values.some(v => v.identifier === identifier))
+      throw new Error(`A value with the name '${name}' already exists on this entity!`);
 
     const initial = this.#initialValues[name];
     const initialMatches =
@@ -44,7 +33,7 @@ export class EntityValues {
       this.#registry,
       identifier,
       initialMatches ? initial : defaultValue,
-      typeTag
+      typeTag,
     );
     this.#values.push(value);
     return value;

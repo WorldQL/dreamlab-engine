@@ -16,10 +16,7 @@ export class BasicLivingEntity extends BasicEntity {
 
   regen() {
     if (this.health.value < this.maxHealth.value) {
-      this.health.value += Math.min(
-        10.0 / 60.0,
-        this.maxHealth.value - this.health.value
-      );
+      this.health.value += Math.min(10.0 / 60.0, this.maxHealth.value - this.health.value);
     }
   }
 }

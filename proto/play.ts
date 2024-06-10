@@ -20,12 +20,11 @@ export const ClientChatMessagePacketSchema = z.object({
   message: z.string(),
 });
 
-export const ServerChatMessagePacketSchema =
-  ClientChatMessagePacketSchema.extend({
-    from_player_id: z.string(),
-    from_connection_id: z.string(),
-    from_nickname: z.string(),
-  });
+export const ServerChatMessagePacketSchema = ClientChatMessagePacketSchema.extend({
+  from_player_id: z.string(),
+  from_connection_id: z.string(),
+  from_nickname: z.string(),
+});
 
 export const ClientSetSyncedValuePacketSchema = z.object({
   t: z.literal("SetSyncedValue"),
@@ -34,10 +33,9 @@ export const ClientSetSyncedValuePacketSchema = z.object({
   generation: z.number(),
 });
 
-export const ServerSetSyncedValuePacketSchema =
-  ClientSetSyncedValuePacketSchema.extend({
-    originator: OriginatorSchema,
-  });
+export const ServerSetSyncedValuePacketSchema = ClientSetSyncedValuePacketSchema.extend({
+  originator: OriginatorSchema,
+});
 
 export const ClientSpawnEntityPacket = z.object({
   t: z.literal("SpawnEntity"),
@@ -108,10 +106,10 @@ export type ServerPacket = z.infer<typeof ServerPacketSchema>;
 
 export type PlayPacket<
   T extends string | undefined = undefined,
-  Side extends "server" | "client" | "any" = "any"
+  Side extends "server" | "client" | "any" = "any",
 > = (Side extends "any"
   ? ClientPacket | ServerPacket
   : Side extends "client"
-  ? ClientPacket
-  : ServerPacket) &
+    ? ClientPacket
+    : ServerPacket) &
   (T extends string ? { t: T } : object);

@@ -9,14 +9,8 @@ export interface ExclusiveSignal<T> {
     | (abstract new (...args: any[]) => T);
 }
 
-export type SignalMatching<
-  Sig extends Signal,
-  Recv
-> = Sig extends ExclusiveSignal<infer ExclType>
-  ? Recv extends ExclType
-    ? Sig
-    : never
-  : Sig;
+export type SignalMatching<Sig extends Signal, Recv> =
+  Sig extends ExclusiveSignal<infer ExclType> ? (Recv extends ExclType ? Sig : never) : Sig;
 
 export type SignalConstructor<T extends Signal = Signal> = new (
   // deno-lint-ignore no-explicit-any
@@ -24,62 +18,46 @@ export type SignalConstructor<T extends Signal = Signal> = new (
 ) => T;
 export type SignalListener<T extends Signal = Signal> = (signal: T) => void;
 
-export type SignalConstructorMatching<
-  Sig extends Signal,
-  Recv
-> = Sig extends ExclusiveSignal<infer ExclType>
-  ? Recv extends ExclType
-    ? SignalConstructor<Sig>
-    : never
-  : SignalConstructor<Sig>;
+export type SignalConstructorMatching<Sig extends Signal, Recv> =
+  Sig extends ExclusiveSignal<infer ExclType>
+    ? Recv extends ExclType
+      ? SignalConstructor<Sig>
+      : never
+    : SignalConstructor<Sig>;
 
 export interface ISignalHandler {
-  fire<
-    T extends Signal,
-    C extends SignalConstructor<T>,
-    A extends ConstructorParameters<C>
-  >(
+  fire<T extends Signal, C extends SignalConstructor<T>, A extends ConstructorParameters<C>>(
     ctor: C,
     ...args: A
   ): void;
   on<S extends Signal>(
     type: SignalConstructor<SignalMatching<S, this>>,
-    listener: SignalListener<SignalMatching<S, this>>
+    listener: SignalListener<SignalMatching<S, this>>,
   ): void;
-  unregister<T extends Signal>(
-    type: SignalConstructor<T>,
-    listener: SignalListener<T>
-  ): void;
+  unregister<T extends Signal>(type: SignalConstructor<T>, listener: SignalListener<T>): void;
 }
 
 export class BasicSignalHandler<Self> implements ISignalHandler {
   #signalListenerMap = new Map<SignalConstructor, SignalListener[]>();
 
-  fire<
-    T extends Signal,
-    C extends SignalConstructor<T>,
-    A extends ConstructorParameters<C>
-  >(ctor: C, ...args: A) {
+  fire<T extends Signal, C extends SignalConstructor<T>, A extends ConstructorParameters<C>>(
+    ctor: C,
+    ...args: A
+  ) {
     const signal = new ctor(...args);
     for (const [type, listeners] of this.#signalListenerMap.entries()) {
       if (!(signal instanceof type)) continue;
-      listeners.forEach((l) => l(signal));
+      listeners.forEach(l => l(signal));
     }
   }
 
-  on<S extends Signal>(
-    type: SignalConstructorMatching<S, Self>,
-    listener: SignalListener<S>
-  ) {
+  on<S extends Signal>(type: SignalConstructorMatching<S, Self>, listener: SignalListener<S>) {
     const listeners = this.#signalListenerMap.get(type) ?? [];
     listeners.push(listener as SignalListener);
     this.#signalListenerMap.set(type, listeners);
   }
 
-  unregister<T extends Signal>(
-    type: SignalConstructor<T>,
-    listener: SignalListener<T>
-  ) {
+  unregister<T extends Signal>(type: SignalConstructor<T>, listener: SignalListener<T>) {
     const listeners = this.#signalListenerMap.get(type);
     if (!listeners) return;
     const idx = listeners.indexOf(listener as SignalListener);

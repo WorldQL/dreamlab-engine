@@ -8,11 +8,7 @@ export const OriginatorSchema = z
   .optional()
   .describe("Originating connection ID (or undefined for server)");
 
-export const PrimitiveValueSchema = z.union([
-  z.string(),
-  z.number(),
-  z.boolean(),
-]);
+export const PrimitiveValueSchema = z.union([z.string(), z.number(), z.boolean()]);
 
 export const BehaviorSchema = z.object({
   script: z.string(),
@@ -29,9 +25,9 @@ const BaseEntityDefinitionSchema = z.object({
   behaviors: BehaviorSchema.array(),
   ref: EntityReferenceSchema.optional(),
 });
-export type EntityDefinitionSchemaType = z.infer<
-  typeof BaseEntityDefinitionSchema
-> & { children: EntityDefinitionSchemaType[] };
+export type EntityDefinitionSchemaType = z.infer<typeof BaseEntityDefinitionSchema> & {
+  children: EntityDefinitionSchemaType[];
+};
 export const EntityDefinitionSchema: z.ZodType<EntityDefinitionSchemaType> =
   BaseEntityDefinitionSchema.extend({
     children: z.lazy(() => EntityDefinitionSchema.array()),

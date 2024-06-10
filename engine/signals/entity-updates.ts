@@ -16,14 +16,23 @@ export class EntityTransformUpdate {
 }
 
 export class EntityMove {
-  constructor(public before: Vector2, public current: Vector2) {}
+  constructor(
+    public before: Vector2,
+    public current: Vector2,
+  ) {}
   [exclusiveSignalType] = Entity;
 }
 export class EntityResize {
-  constructor(public before: Vector2, public current: Vector2) {}
+  constructor(
+    public before: Vector2,
+    public current: Vector2,
+  ) {}
   [exclusiveSignalType] = Entity;
 }
 export class EntityRotate {
-  constructor(public before: number, public current: number) {}
+  constructor(
+    public before: number,
+    public current: number,
+  ) {}
   [exclusiveSignalType] = Entity;
 }

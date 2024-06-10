@@ -19,7 +19,7 @@ export default class BulletBehavior extends Behavior {
   damage = this.values.number("damage", 15.0);
 
   onInitialize(): void {
-    this.listen(this.entity, EntityCollision, (e) => {
+    this.listen(this.entity, EntityCollision, e => {
       if (e.started) this.onCollide(e.other);
     });
   }

@@ -27,7 +27,7 @@ export class Camera extends Entity {
 
   // TODO: Look into improving this API maybe?
   public static getActive(game: Game): Camera | undefined {
-    return game.entities.lookupByType(Camera).find((camera) => camera.active);
+    return game.entities.lookupByType(Camera).find(camera => camera.active);
   }
 
   constructor(ctx: EntityContext) {
@@ -64,17 +64,11 @@ export class Camera extends Entity {
     const game = this.game as ClientGame;
 
     return new PIXI.Matrix()
-      .translate(
-        -this.globalTransform.position.x,
-        -this.globalTransform.position.y
-      )
+      .translate(-this.globalTransform.position.x, -this.globalTransform.position.y)
       .rotate(-this.globalTransform.rotation)
       .scale(Camera.METERS_TO_PIXELS, Camera.METERS_TO_PIXELS)
       .scale(1 / this.globalTransform.scale.x, 1 / this.globalTransform.scale.y)
-      .translate(
-        game.renderer.app.canvas.width / 2,
-        game.renderer.app.canvas.height / 2
-      );
+      .translate(game.renderer.app.canvas.width / 2, game.renderer.app.canvas.height / 2);
   }
 
   public worldToScreen(position: Vector2): Vector2 {

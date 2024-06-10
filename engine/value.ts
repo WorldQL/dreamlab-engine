@@ -1,8 +1,4 @@
-import {
-  BasicSignalHandler,
-  SignalListener,
-  exclusiveSignalType,
-} from "./signal.ts";
+import { BasicSignalHandler, SignalListener, exclusiveSignalType } from "./signal.ts";
 import * as internal from "./internal.ts";
 
 export type Primitive = string | number | boolean | undefined;
@@ -13,7 +9,7 @@ export class SyncedValueChanged {
     public identifier: string,
     public value: Primitive,
     public generation: number,
-    public originator: string | undefined
+    public originator: string | undefined,
   ) {}
 
   [exclusiveSignalType] = SyncedValueRegistry;
@@ -40,9 +36,7 @@ export class SyncedValueRegistry extends BasicSignalHandler<SyncedValueRegistry>
 
   register(value: SyncedValue) {
     if (this.#values.has(value.identifier))
-      throw new Error(
-        `SyncedValue with identifier '${value.identifier}' already exists!`
-      );
+      throw new Error(`SyncedValue with identifier '${value.identifier}' already exists!`);
 
     this.#values.set(value.identifier, value);
   }
@@ -74,7 +68,7 @@ export class SyncedValue<T extends Primitive = Primitive> {
       this.identifier,
       newValue,
       this.generation + 1,
-      this.#registry.originator
+      this.#registry.originator,
     );
   }
 
@@ -82,7 +76,7 @@ export class SyncedValue<T extends Primitive = Primitive> {
     registry: SyncedValueRegistry,
     identifier: string,
     defaultValue: T,
-    typeTag: PrimitiveTypeTag
+    typeTag: PrimitiveTypeTag,
   ) {
     this.#registry = registry;
     this.identifier = identifier;
@@ -107,19 +101,15 @@ export class SyncedValue<T extends Primitive = Primitive> {
     this.destroy();
   }
 
-  #changeListener: SignalListener<SyncedValueChanged> = (signal) => {
+  #changeListener: SignalListener<SyncedValueChanged> = signal => {
     if (signal.identifier === this.identifier)
-      this.#applyUpdate(
-        signal.value as T,
-        signal.generation,
-        signal.originator
-      );
+      this.#applyUpdate(signal.value as T, signal.generation, signal.originator);
   };
 
   #applyUpdate(
     incomingValue: T,
     incomingGeneration: number,
-    incomingOriginator: string | undefined
+    incomingOriginator: string | undefined,
   ) {
     if (incomingGeneration < this.generation) return;
     if (incomingGeneration === this.generation) {

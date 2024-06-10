@@ -21,14 +21,13 @@ export class EntityStore {
 
   lookupByType<T extends Entity>(type: EntityConstructor<T>): T[] {
     return [...this.#entitiesById.values()].filter(
-      (entity): entity is T => entity instanceof type
+      (entity): entity is T => entity instanceof type,
     );
   }
 
   /** for internal use */
   _register(entity: Entity, oldId?: string) {
-    if (oldId && this.#entitiesById.get(oldId) === entity)
-      this.#entitiesById.delete(oldId);
+    if (oldId && this.#entitiesById.get(oldId) === entity) this.#entitiesById.delete(oldId);
 
     this.#entitiesByRef.set(entity.ref, entity);
     this.#entitiesById.set(entity.id, entity);

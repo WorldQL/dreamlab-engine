@@ -24,8 +24,7 @@ export class PhysicsEngine {
   }
 
   registerBody(entity: Entity, body: RigidBody) {
-    const ud =
-      (typeof body.userData === "object" ? body.userData : undefined) ?? {};
+    const ud = (typeof body.userData === "object" ? body.userData : undefined) ?? {};
     body.userData = { ...ud, entityRef: entity.ref };
   }
 

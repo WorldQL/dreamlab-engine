@@ -13,18 +13,15 @@ export class Rigidbody2D extends Entity {
 
     this.body = this.game.physics.world.createRigidBody(
       RAPIER.RigidBodyDesc.dynamic()
-        .setTranslation(
-          this.globalTransform.position.x,
-          this.globalTransform.position.y
-        )
-        .setRotation(this.globalTransform.rotation)
+        .setTranslation(this.globalTransform.position.x, this.globalTransform.position.y)
+        .setRotation(this.globalTransform.rotation),
     );
     this.collider = this.game.physics.world.createCollider(
       RAPIER.ColliderDesc.cuboid(
         this.globalTransform.scale.x / 2,
-        this.globalTransform.scale.y / 2
+        this.globalTransform.scale.y / 2,
       ),
-      this.body
+      this.body,
     );
     this.#shape = this.collider.shape as RAPIER.Cuboid;
 
@@ -39,7 +36,7 @@ export class Rigidbody2D extends Entity {
           x: this.globalTransform.position.x,
           y: this.globalTransform.position.y,
         },
-        false
+        false,
       );
       this.body.setRotation(this.globalTransform.rotation, false);
       this.#shape.halfExtents = {
@@ -57,7 +54,7 @@ export class Rigidbody2D extends Entity {
       this.globalTransform.rotation = this.body.rotation();
       this.globalTransform.scale = new Vector2(
         this.#shape.halfExtents.x * 2,
-        this.#shape.halfExtents.y * 2
+        this.#shape.halfExtents.y * 2,
       );
     });
   }

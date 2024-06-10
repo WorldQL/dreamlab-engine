@@ -1,8 +1,4 @@
-import {
-  Behavior,
-  BehaviorConstructor,
-  BehaviorDefinition,
-} from "./behavior.ts";
+import { Behavior, BehaviorConstructor, BehaviorDefinition } from "./behavior.ts";
 import { Entity } from "../entity/mod.ts";
 import { Game } from "../game.ts";
 
@@ -23,7 +19,7 @@ export class BehaviorLoader {
   }
 
   async convert<E extends Entity, B extends Behavior<E>>(
-    scriptDef: Omit<BehaviorDefinition<E, B>, "type"> & { script: string }
+    scriptDef: Omit<BehaviorDefinition<E, B>, "type"> & { script: string },
   ): Promise<BehaviorDefinition<E, B>> {
     const type = await this.loadScript(scriptDef.script);
 
@@ -43,9 +39,7 @@ export class BehaviorLoader {
 
     const module = await import(location);
     if (!("default" in module))
-      throw new Error(
-        `Module '${location}' must have a Behavior as its default export!`
-      );
+      throw new Error(`Module '${location}' must have a Behavior as its default export!`);
 
     const behaviorType = module.default;
     if (
@@ -54,9 +48,7 @@ export class BehaviorLoader {
         Object.prototype.isPrototypeOf.call(Behavior, behaviorType)
       )
     )
-      throw new Error(
-        `Module '${location}' must have a Behavior as its default export!`
-      );
+      throw new Error(`Module '${location}' must have a Behavior as its default export!`);
 
     this.#cache.set(location, behaviorType);
 

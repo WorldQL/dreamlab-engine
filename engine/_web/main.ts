@@ -47,12 +47,7 @@ class PhysicsDebug extends Entity {
         const x2 = vtx[i * 4 + 2];
         const y2 = vtx[i * 4 + 3];
 
-        if (
-          x1 === undefined ||
-          y1 === undefined ||
-          x2 === undefined ||
-          y2 === undefined
-        ) {
+        if (x1 === undefined || y1 === undefined || x2 === undefined || y2 === undefined) {
           console.warn("invalid vertex buffer");
           continue;
         }
@@ -62,12 +57,7 @@ class PhysicsDebug extends Entity {
         const b = colors[i * 4 + 2];
         const a = colors[i * 4 + 3];
 
-        if (
-          r === undefined ||
-          g === undefined ||
-          b === undefined ||
-          a === undefined
-        ) {
+        if (r === undefined || g === undefined || b === undefined || a === undefined) {
           console.warn("invalid colour buffer");
           continue;
         }

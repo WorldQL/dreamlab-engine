@@ -18,7 +18,7 @@ const mult2x2Point = (m: Matrix2x2, p: Vector2): Vector2 =>
 
 export function transformWorldToLocal(
   parentWorldTransform: Transform,
-  worldTransform: Transform
+  worldTransform: Transform,
 ): Transform {
   const a = parentWorldTransform;
   const b = worldTransform;
@@ -49,7 +49,7 @@ export function transformWorldToLocal(
 
 export function transformLocalToWorld(
   parentWorldTransform: Transform,
-  localTransform: Transform
+  localTransform: Transform,
 ): Transform {
   const a = parentWorldTransform;
   const b = localTransform;

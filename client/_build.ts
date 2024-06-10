@@ -13,14 +13,10 @@ const BASE_OPTIONS: Partial<esbuild.BuildOptions> = {
 Symbol.dispose ??= Symbol.for("Symbol.dispose");
 Symbol.asyncDispose ??= Symbol.for("Symbol.asyncDispose");`,
   },
-  sourcemap: 'linked'
+  sourcemap: "linked",
 };
 
-async function bundle(
-  target: string,
-  opts: esbuild.BuildOptions,
-  watch: boolean
-) {
+async function bundle(target: string, opts: esbuild.BuildOptions, watch: boolean) {
   if (watch) {
     const ctx = await esbuild.context(opts);
     console.log(`Watching ${target}...`);
@@ -38,7 +34,7 @@ export async function bundleClient(watch: boolean = false) {
       {
         name: "dreamlab-engine-external",
         setup: (build: esbuild.PluginBuild) => {
-          build.onResolve({ filter: /^@dreamlab\/engine/ }, (args) => {
+          build.onResolve({ filter: /^@dreamlab\/engine/ }, args => {
             return { path: args.path, external: true };
           });
         },
@@ -46,7 +42,7 @@ export async function bundleClient(watch: boolean = false) {
       {
         name: "dreamlab-vendor-external",
         setup: (build: esbuild.PluginBuild) => {
-          build.onResolve({ filter: /^@dreamlab\/vendor/ }, (args) => {
+          build.onResolve({ filter: /^@dreamlab\/vendor/ }, args => {
             return { path: args.path.replace(/\.ts$/, ".js"), external: true };
           });
         },
@@ -72,7 +68,7 @@ export async function bundleEngine(watch: boolean = false) {
       {
         name: "dreamlab-vendor-external",
         setup: (build: esbuild.PluginBuild) => {
-          build.onResolve({ filter: /^@dreamlab\/vendor/ }, (args) => {
+          build.onResolve({ filter: /^@dreamlab\/vendor/ }, args => {
             return { path: args.path.replace(/\.ts$/, ".js"), external: true };
           });
         },

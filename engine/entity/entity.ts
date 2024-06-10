@@ -30,11 +30,7 @@ import {
 } from "../signals/entity-updates.ts";
 import { EntityValues } from "../entity/entity-values.ts";
 import { Primitive, SyncedValue } from "../value.ts";
-import {
-  Behavior,
-  BehaviorConstructor,
-  BehaviorDefinition,
-} from "../behavior/behavior.ts";
+import { Behavior, BehaviorConstructor, BehaviorDefinition } from "../behavior/behavior.ts";
 
 export interface EntityContext {
   game: Game;
@@ -44,14 +40,12 @@ export interface EntityContext {
   values?: Record<string, Primitive>;
 }
 
-export type EntityConstructor<T extends Entity = Entity> = new (
-  ctx: EntityContext
-) => T;
+export type EntityConstructor<T extends Entity = Entity> = new (ctx: EntityContext) => T;
 
+// prettier-ignore
 export type EntitySyncedValueProps<E extends Entity> = {
-  [K in keyof E as E[K] extends SyncedValue<infer _>
-    ? K
-    : never]: E[K] extends SyncedValue<infer V> ? V : never;
+  [K in keyof E as E[K] extends SyncedValue<infer _> ? K : never]:
+    E[K] extends SyncedValue<infer V> ? V : never;
 };
 
 export interface EntityDefinition<
@@ -59,7 +53,7 @@ export interface EntityDefinition<
   // deno-lint-ignore no-explicit-any
   Children extends any[] = any[],
   // deno-lint-ignore no-explicit-any
-  Behaviors extends any[] = any[]
+  Behaviors extends any[] = any[],
 > {
   type: EntityConstructor<T>;
   name: string;
@@ -162,10 +156,7 @@ export abstract class Entity implements ISignalHandler {
       if (typeof prop !== "string") return _target[prop];
 
       const entity = this.#children.get(prop);
-      if (!entity)
-        throw new Error(
-          `${serializeIdentifier(this.id, prop)} does not exist!`
-        );
+      if (!entity) throw new Error(`${serializeIdentifier(this.id, prop)} does not exist!`);
       return entity;
     },
     set: (_target, _prop) => {
@@ -188,20 +179,14 @@ export abstract class Entity implements ISignalHandler {
 
     this.game.entities._register(this, oldId);
 
-    this.#hierarchyGeneration = this.parent
-      ? this.parent.#hierarchyGeneration + 1
-      : 0;
+    this.#hierarchyGeneration = this.parent ? this.parent.#hierarchyGeneration + 1 : 0;
 
     if (this.#hierarchyGeneration > 255)
-      console.warn(
-        `${this.id} is very deeply nested!! You may run into issues.`
-      );
+      console.warn(`${this.id} is very deeply nested!! You may run into issues.`);
   }
 
   // deno-lint-ignore no-explicit-any
-  spawn<T extends Entity, C extends any[], B extends any[]>(
-    def: EntityDefinition<T, C, B>
-  ): T {
+  spawn<T extends Entity, C extends any[], B extends any[]>(def: EntityDefinition<T, C, B>): T {
     const entity = new def.type({
       game: this.game,
       name: def.name,
@@ -211,7 +196,7 @@ export abstract class Entity implements ISignalHandler {
     if (def.values) entity.set(def.values);
 
     if (def.behaviors) {
-      def.behaviors.forEach((b) => {
+      def.behaviors.forEach(b => {
         const behavior = new b.type({
           game: this.game,
           entity,
@@ -221,7 +206,7 @@ export abstract class Entity implements ISignalHandler {
       });
     }
 
-    def.children?.forEach((c) => entity.spawn(c));
+    def.children?.forEach(c => entity.spawn(c));
 
     return entity;
   }
@@ -293,31 +278,27 @@ export abstract class Entity implements ISignalHandler {
   // #region Signals
   #signalListenerMap = new Map<SignalConstructor, SignalListener[]>();
 
-  fire<
-    T extends Signal,
-    C extends SignalConstructor<T>,
-    A extends ConstructorParameters<C>
-  >(ctor: C, ...args: A) {
+  fire<T extends Signal, C extends SignalConstructor<T>, A extends ConstructorParameters<C>>(
+    ctor: C,
+    ...args: A
+  ) {
     const signal = new ctor(...args);
     for (const [type, listeners] of this.#signalListenerMap.entries()) {
       if (!(signal instanceof type)) continue;
-      listeners.forEach((l) => l(signal));
+      listeners.forEach(l => l(signal));
     }
   }
 
   on<S extends Signal>(
     type: SignalConstructorMatching<S, Entity>,
-    listener: SignalListener<S>
+    listener: SignalListener<S>,
   ) {
     const listeners = this.#signalListenerMap.get(type) ?? [];
     listeners.push(listener as SignalListener);
     this.#signalListenerMap.set(type, listeners);
   }
 
-  unregister<T extends Signal>(
-    type: SignalConstructor<T>,
-    listener: SignalListener<T>
-  ) {
+  unregister<T extends Signal>(type: SignalConstructor<T>, listener: SignalListener<T>) {
     const listeners = this.#signalListenerMap.get(type);
     if (!listeners) return;
     const idx = listeners.indexOf(listener as SignalListener);
@@ -366,8 +347,7 @@ export abstract class Entity implements ISignalHandler {
     this.#origScale.y = tr.scale.y;
     this.#origRotation = tr.rotation;
 
-    for (const child of this.#children.values())
-      child[internal.preTickEntities]();
+    for (const child of this.#children.values()) child[internal.preTickEntities]();
   }
 
   [internal.tickEntities]() {
@@ -377,8 +357,7 @@ export abstract class Entity implements ISignalHandler {
 
     if (!this.#origPosition.eq(tr.position))
       this.fire(EntityMove, this.#origPosition, tr.position);
-    if (!this.#origScale.eq(tr.scale))
-      this.fire(EntityResize, this.#origScale, tr.scale);
+    if (!this.#origScale.eq(tr.scale)) this.fire(EntityResize, this.#origScale, tr.scale);
     if (this.#origRotation !== tr.rotation)
       this.fire(EntityRotate, this.#origRotation, tr.rotation);
 
@@ -401,17 +380,13 @@ export abstract class Entity implements ISignalHandler {
   set(values: Partial<EntitySyncedValueProps<this>>) {
     for (const [name, value] of Object.entries(values)) {
       if (!(name in this)) {
-        throw new Error(
-          "property name passed to Entity.set(..) does not exist!"
-        );
+        throw new Error("property name passed to Entity.set(..) does not exist!");
       }
 
       // @ts-expect-error index self
       const syncedValue: unknown = this[name];
       if (!(syncedValue instanceof SyncedValue)) {
-        throw new Error(
-          "property name passed to Entity.set(..) is not a SyncedValue!"
-        );
+        throw new Error("property name passed to Entity.set(..) is not a SyncedValue!");
       }
 
       syncedValue.value = value;
@@ -427,14 +402,8 @@ export abstract class Entity implements ISignalHandler {
   }
 
   // #region Registry
-  static #entityTypeRegistry = new Map<
-    EntityConstructor<unknown & Entity>,
-    string
-  >();
-  static registerType<T extends Entity>(
-    type: EntityConstructor<T>,
-    namespace: string
-  ) {
+  static #entityTypeRegistry = new Map<EntityConstructor<unknown & Entity>, string>();
+  static registerType<T extends Entity>(type: EntityConstructor<T>, namespace: string) {
     this.#entityTypeRegistry.set(type, namespace);
   }
   static #ensureEntityTypeIsRegistered = (newTarget: unknown) => {
@@ -452,10 +421,7 @@ export abstract class Entity implements ISignalHandler {
 
 const ID_REGEX = /^\p{ID_Start}\p{ID_Continue}*$/v;
 export const isValidPlainIdentifier = (s: string) => ID_REGEX.test(s);
-export const serializeIdentifier = (
-  parent: string | undefined,
-  child: string
-) =>
+export const serializeIdentifier = (parent: string | undefined, child: string) =>
   isValidPlainIdentifier(child)
     ? parent
       ? `${parent}._.${child}`

@@ -4,9 +4,7 @@ import { renderReact } from "./react-test.tsx";
 renderReact();
 
 const initializeRender = async () => {
-  const container = document.querySelector(
-    "#dreamlab-render"
-  ) as HTMLDivElement;
+  const container = document.querySelector("#dreamlab-render") as HTMLDivElement;
 
   // Try again if the container doesn't exist yet. This line never runs on my machine.
   if (!container) setTimeout(initializeRender);

@@ -1,11 +1,5 @@
 import RAPIER from "@dreamlab/vendor/rapier.ts";
-import {
-  LocalRoot,
-  PrefabsRoot,
-  RemoteRoot,
-  WorldRoot,
-  EntityStore,
-} from "./entity/mod.ts";
+import { LocalRoot, PrefabsRoot, RemoteRoot, WorldRoot, EntityStore } from "./entity/mod.ts";
 import * as internal from "./internal.ts";
 import { PhysicsEngine } from "./physics.ts";
 import {
@@ -15,12 +9,7 @@ import {
   SignalConstructorMatching,
   SignalListener,
 } from "./signal.ts";
-import {
-  GamePreRender,
-  GameRender,
-  GameShutdown,
-  GameTick,
-} from "./signals/game-events.ts";
+import { GamePreRender, GameRender, GameShutdown, GameTick } from "./signals/game-events.ts";
 import { SyncedValueRegistry } from "./value.ts";
 import { BehaviorLoader } from "./behavior/behavior-loader.ts";
 import { GameRenderer } from "./renderer/mod.ts";
@@ -82,9 +71,7 @@ export abstract class BaseGame implements ISignalHandler {
 
   tick() {
     if (!this.#initialized)
-      throw new Error(
-        "Illegal state: Game was not initialized before tick loop began!"
-      );
+      throw new Error("Illegal state: Game was not initialized before tick loop began!");
 
     // run the pre tick phase, then a physics update, then the tick phase
     // so e.g. in Rigidbody2D we can move the body to the entity's transform,
@@ -117,31 +104,27 @@ export abstract class BaseGame implements ISignalHandler {
   // #region SignalHandler impl
   #signalListenerMap = new Map<SignalConstructor, SignalListener[]>();
 
-  fire<
-    T extends Signal,
-    C extends SignalConstructor<T>,
-    A extends ConstructorParameters<C>
-  >(ctor: C, ...args: A) {
+  fire<T extends Signal, C extends SignalConstructor<T>, A extends ConstructorParameters<C>>(
+    ctor: C,
+    ...args: A
+  ) {
     const signal = new ctor(...args);
     for (const [type, listeners] of this.#signalListenerMap.entries()) {
       if (!(signal instanceof type)) continue;
-      listeners.forEach((l) => l(signal));
+      listeners.forEach(l => l(signal));
     }
   }
 
   on<S extends Signal>(
     type: SignalConstructorMatching<S, BaseGame>,
-    listener: SignalListener<S>
+    listener: SignalListener<S>,
   ) {
     const listeners = this.#signalListenerMap.get(type) ?? [];
     listeners.push(listener as SignalListener);
     this.#signalListenerMap.set(type, listeners);
   }
 
-  unregister<T extends Signal>(
-    type: SignalConstructor<T>,
-    listener: SignalListener<T>
-  ) {
+  unregister<T extends Signal>(type: SignalConstructor<T>, listener: SignalListener<T>) {
     const listeners = this.#signalListenerMap.get(type);
     if (!listeners) return;
     const idx = listeners.indexOf(listener as SignalListener);
@@ -188,9 +171,7 @@ export class ClientGame extends BaseGame {
     this.container = opts.container;
     this.renderer = new GameRenderer(this);
 
-    this.syncedValues[internal.setSyncedValueRegistryOriginator](
-      opts.connectionId
-    );
+    this.syncedValues[internal.setSyncedValueRegistryOriginator](opts.connectionId);
   }
 
   async initialize() {
