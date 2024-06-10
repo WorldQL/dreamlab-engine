@@ -255,8 +255,13 @@ export abstract class Entity implements ISignalHandler {
 
     this.game = ctx.game;
 
+    this.#name = ctx.name;
+    this.id = serializeIdentifier(ctx.parent?.id, this.#name);
+    this.parent = ctx.parent;
+
     this.transform = new Transform();
     this.globalTransform = new Transform();
+
     this.transform[internal.transformOnChanged] = () => {
       this.#updateTransform(false);
     };
@@ -264,9 +269,14 @@ export abstract class Entity implements ISignalHandler {
       this.#updateTransform(true);
     };
 
-    this.#name = ctx.name;
-    this.id = serializeIdentifier(ctx.parent?.id, this.#name);
-    this.parent = ctx.parent;
+    {
+      // set globalTransform to correct values immediately
+      const parentTransform = this.parent?.globalTransform;
+      const worldSpaceTransform = parentTransform
+        ? transformLocalToWorld(parentTransform, this.transform)
+        : this.transform;
+      this.globalTransform[internal.transformForceUpdate](worldSpaceTransform);
+    }
 
     if (ctx.ref) this.ref = ctx.ref;
 

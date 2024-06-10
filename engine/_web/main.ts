@@ -141,6 +141,8 @@ const sprite = spriteParent.spawn({
   type: Sprite,
   name: "Sprite",
 });
+console.log(sprite.globalTransform.scale.x);
+
 // sprite.on(EntityUpdate, () => {
 //   const t = Date.now() / 1000;
 //   sprite.transform.position.x = Math.sin(t);
