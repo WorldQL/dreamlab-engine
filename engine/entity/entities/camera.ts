@@ -3,7 +3,7 @@ import { Game, ClientGame } from "../../game.ts";
 import { Vector2 } from "../../math/mod.ts";
 import { GamePreRender } from "../../signals/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
-import { smoothLerp, smoothLerp2 } from "../../math/lerp.ts";
+import { smoothLerp } from "../../math/lerp.ts";
 
 export class Camera extends Entity {
   public static METERS_TO_PIXELS = 100;
@@ -84,7 +84,7 @@ export class Camera extends Entity {
         return;
       }
 
-      this.#position = smoothLerp2(
+      this.#position = Vector2.smoothLerp(
         this.#position,
         this.globalTransform.position,
         this.smooth.value,
@@ -98,7 +98,7 @@ export class Camera extends Entity {
         delta,
       );
 
-      this.#scale = smoothLerp2(
+      this.#scale = Vector2.smoothLerp(
         this.#scale,
         this.globalTransform.scale,
         this.smooth.value,
