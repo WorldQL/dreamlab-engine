@@ -104,15 +104,16 @@ export abstract class BaseGame implements ISignalHandler {
   // #region SignalHandler impl
   #signalListenerMap = new Map<SignalConstructor, SignalListener[]>();
 
-  fire<T extends Signal, C extends SignalConstructor<T>, A extends ConstructorParameters<C>>(
-    ctor: C,
-    ...args: A
-  ) {
+  fire<
+    S extends Signal,
+    C extends SignalConstructorMatching<S, BaseGame>,
+    A extends ConstructorParameters<C>,
+  >(ctor: C, ...args: A) {
+    const listeners = this.#signalListenerMap.get(ctor);
+    if (!listeners) return;
+
     const signal = new ctor(...args);
-    for (const [type, listeners] of this.#signalListenerMap.entries()) {
-      if (!(signal instanceof type)) continue;
-      listeners.forEach(l => l(signal));
-    }
+    listeners.forEach(l => l(signal));
   }
 
   on<S extends Signal>(

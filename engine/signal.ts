@@ -26,7 +26,7 @@ export type SignalConstructorMatching<Sig extends Signal, Recv> =
     : SignalConstructor<Sig>;
 
 export interface ISignalHandler {
-  fire<T extends Signal, C extends SignalConstructor<T>, A extends ConstructorParameters<C>>(
+  fire<S extends Signal, C extends SignalConstructor<S>, A extends ConstructorParameters<C>>(
     ctor: C,
     ...args: A
   ): void;
@@ -40,15 +40,15 @@ export interface ISignalHandler {
 export class BasicSignalHandler<Self> implements ISignalHandler {
   #signalListenerMap = new Map<SignalConstructor, SignalListener[]>();
 
-  fire<T extends Signal, C extends SignalConstructor<T>, A extends ConstructorParameters<C>>(
+  fire<S extends Signal, C extends SignalConstructor<S>, A extends ConstructorParameters<C>>(
     ctor: C,
     ...args: A
   ) {
+    const listeners = this.#signalListenerMap.get(ctor);
+    if (!listeners) return;
+
     const signal = new ctor(...args);
-    for (const [type, listeners] of this.#signalListenerMap.entries()) {
-      if (!(signal instanceof type)) continue;
-      listeners.forEach(l => l(signal));
-    }
+    listeners.forEach(l => l(signal));
   }
 
   on<S extends Signal>(type: SignalConstructorMatching<S, Self>, listener: SignalListener<S>) {
