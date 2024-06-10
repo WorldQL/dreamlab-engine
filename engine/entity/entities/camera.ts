@@ -80,6 +80,7 @@ export class Camera extends Entity {
         this.#scale.x = this.globalTransform.scale.x;
         this.#scale.y = this.globalTransform.scale.y;
 
+        this.container.setFromMatrix(this.#updateMatrix());
         return;
       }
 
