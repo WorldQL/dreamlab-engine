@@ -10,11 +10,13 @@ export class EntityValues {
   #entity: Entity;
   #registry: SyncedValueRegistry;
   #values: SyncedValue[];
+  #initialValues: Record<string, Primitive>;
 
-  constructor(entity: Entity) {
+  constructor(entity: Entity, initialValues: Record<string, Primitive>) {
     this.#entity = entity;
     this.#registry = entity.game.syncedValues;
     this.#values = [];
+    this.#initialValues = initialValues;
   }
 
   get all() {
@@ -26,10 +28,20 @@ export class EntityValues {
     name: string,
     defaultValue: Primitive
   ): SyncedValue {
+    const initial = this.#initialValues[name];
+    const initialMatches =
+      (typeof initial === "string" && typeTag === String) ||
+      (typeof initial === "number" && typeTag === Number) ||
+      (typeof initial === "boolean" && typeTag === Boolean);
+
+    const identifier = `${this.#entity.ref}/${name}`;
+    if (this.#values.some((v) => v.identifier === identifier))
+      throw new Error(`A value with the name '${name}' already exists!`);
+
     const value = new SyncedValue(
       this.#registry,
-      `${this.#entity.ref}/${name}`,
-      defaultValue,
+      identifier,
+      initialMatches ? initial : defaultValue,
       typeTag
     );
     this.#values.push(value);

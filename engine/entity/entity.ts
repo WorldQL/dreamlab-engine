@@ -29,7 +29,7 @@ import {
   EntityUpdate,
 } from "../signals/entity-updates.ts";
 import { EntityValues } from "../entity/entity-values.ts";
-import { SyncedValue } from "../value.ts";
+import { Primitive, SyncedValue } from "../value.ts";
 import {
   Behavior,
   BehaviorConstructor,
@@ -41,6 +41,7 @@ export interface EntityContext {
   name: string;
   parent?: Entity;
   ref?: string;
+  values?: Record<string, Primitive>;
 }
 
 export type EntityConstructor<T extends Entity = Entity> = new (
@@ -284,7 +285,7 @@ export abstract class Entity implements ISignalHandler {
 
     if (ctx.ref) this.ref = ctx.ref;
 
-    this.values = new EntityValues(this);
+    this.values = new EntityValues(this, ctx.values ?? {});
 
     this.game.entities._register(this);
   }
