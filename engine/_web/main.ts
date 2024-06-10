@@ -17,6 +17,40 @@ document.body.append(container);
 container.style.width = "1280px";
 container.style.height = "720px";
 
+const slider = (
+  {
+    label,
+    value = 0,
+    min = 0,
+    max = 1,
+    step = 0.01,
+  }: {
+    label: string;
+    value?: number;
+    min?: number;
+    max?: number;
+    step?: number;
+  },
+  onChanged: (value: number) => void,
+) => {
+  const span = document.createElement("span");
+  span.innerText = label;
+
+  const input = document.createElement("input");
+  input.type = "range";
+  input.value = value.toString();
+  input.min = min.toString();
+  input.max = max.toString();
+  input.step = step.toString();
+  input.addEventListener("input", () => onChanged(input.valueAsNumber));
+
+  const container = document.createElement("div");
+  container.appendChild(span);
+  container.appendChild(input);
+
+  document.body.appendChild(container);
+};
+
 const game = new ClientGame({
   instanceId: "0",
   worldId: "dummy-world",
@@ -107,16 +141,33 @@ const sprite = spriteParent.spawn({
   type: Sprite,
   name: "Sprite",
 });
-sprite.on(EntityUpdate, () => {
-  const t = Date.now() / 1000;
-  sprite.transform.position.x = Math.sin(t);
-  spriteParent.transform.position.y = Math.cos(t);
-});
+// sprite.on(EntityUpdate, () => {
+//   const t = Date.now() / 1000;
+//   sprite.transform.position.x = Math.sin(t);
+//   spriteParent.transform.position.y = Math.cos(t);
+// });
 
 const camera = game.local.spawn({
   type: Camera,
   name: "Camera",
 });
+
+slider(
+  { label: "smooth", min: 1, max: 20, value: 10 },
+  value => (camera.smooth.value = 1 / (value * value)),
+);
+slider({ label: "pos: x" }, value => (camera.transform.position.x = value));
+slider({ label: "pos: y" }, value => (camera.transform.position.y = value));
+slider({ label: "rot", max: Math.PI * 2 }, value => (camera.transform.rotation = value));
+
+slider(
+  { label: "scale: x", value: 1, min: 1, max: 2 },
+  value => (camera.transform.scale.x = value),
+);
+slider(
+  { label: "scale: y", value: 1, min: 1, max: 2 },
+  value => (camera.transform.scale.y = value),
+);
 
 const tps = 60;
 const tickDelta = 1000 / tps;
