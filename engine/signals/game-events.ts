@@ -5,11 +5,9 @@ export class GameTick {
   [exclusiveSignalType] = BaseGame;
 }
 export class GameRender {
-  constructor(public delta: number) {}
   [exclusiveSignalType] = BaseGame;
 }
 export class GamePostRender {
-  constructor(public delta: number) {}
   [exclusiveSignalType] = BaseGame;
 }
 export class GameShutdown {
