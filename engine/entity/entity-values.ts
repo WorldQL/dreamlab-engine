@@ -28,15 +28,17 @@ export class EntityValues {
     name: string,
     defaultValue: Primitive
   ): SyncedValue {
+    const identifier = `${this.#entity.ref}/${name}`;
+    if (this.#values.some((v) => v.identifier === identifier))
+      throw new Error(
+        `A value with the name '${name}' already exists on this entity!`
+      );
+
     const initial = this.#initialValues[name];
     const initialMatches =
       (typeof initial === "string" && typeTag === String) ||
       (typeof initial === "number" && typeTag === Number) ||
       (typeof initial === "boolean" && typeTag === Boolean);
-
-    const identifier = `${this.#entity.ref}/${name}`;
-    if (this.#values.some((v) => v.identifier === identifier))
-      throw new Error(`A value with the name '${name}' already exists!`);
 
     const value = new SyncedValue(
       this.#registry,

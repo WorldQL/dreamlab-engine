@@ -1,7 +1,7 @@
 import { ulid } from "@dreamlab/vendor/std-ulid.ts";
 import { Entity } from "../entity/mod.ts";
 import { Game } from "../game.ts";
-import { SyncedValue } from "../value.ts";
+import { Primitive, SyncedValue } from "../value.ts";
 import { BehaviorValues } from "./behavior-values.ts";
 import {
   ISignalHandler,
@@ -17,6 +17,7 @@ export interface BehaviorContext<E extends Entity = Entity> {
   game: Game;
   entity: E;
   ref?: string;
+  values?: Record<string, Primitive>;
 }
 
 export type BehaviorConstructor<
@@ -47,7 +48,7 @@ export class Behavior<E extends Entity = Entity> {
 
   readonly ref: string = ulid();
 
-  readonly values = new BehaviorValues<E, this>(this);
+  readonly values: BehaviorValues<E, this>;
 
   readonly listeners: [
     receiver: WeakRef<ISignalHandler>,
@@ -60,6 +61,8 @@ export class Behavior<E extends Entity = Entity> {
     this.entity = ctx.entity;
 
     if (ctx.ref) this.ref = ctx.ref;
+
+    this.values = new BehaviorValues(this, ctx.values ?? {});
   }
 
   listen<S extends Signal, T extends ISignalHandler>(

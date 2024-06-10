@@ -8,10 +8,12 @@ export class BehaviorValues<
 > {
   #behavior: B;
   #values: SyncedValue[];
+  #initialValues: Record<string, Primitive>;
 
-  constructor(behavior: B) {
+  constructor(behavior: B, initialValues: Record<string, Primitive>) {
     this.#behavior = behavior;
     this.#values = [];
+    this.#initialValues = initialValues;
   }
 
   get all() {
@@ -23,11 +25,23 @@ export class BehaviorValues<
     name: string,
     defaultValue: Primitive
   ): SyncedValue {
+    const id = `${this.#behavior.entity.ref}/${this.#behavior.ref}/${name}`;
+    if (this.#values.some((v) => v.identifier === id))
+      throw new Error(
+        `A value with the name ${name} already exists on this behavior!`
+      );
+
+    const initial = this.#initialValues[name];
+    const initialMatches =
+      (typeof initial === "string" && typeTag === String) ||
+      (typeof initial === "number" && typeTag === Number) ||
+      (typeof initial === "boolean" && typeTag === Boolean);
+
     const registry = this.#behavior.entity.game.syncedValues;
     const value = new SyncedValue(
       registry,
-      `${this.#behavior.entity.ref}/${this.#behavior.ref}/${name}`,
-      defaultValue,
+      id,
+      initialMatches ? initial : defaultValue,
       typeTag
     );
     this.#values.push(value);
