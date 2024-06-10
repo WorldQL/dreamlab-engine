@@ -4,11 +4,11 @@ import { exclusiveSignalType } from "../signal.ts";
 export class GameTick {
   [exclusiveSignalType] = BaseGame;
 }
-export class GamePreRender {
+export class GameRender {
   constructor(public delta: number) {}
   [exclusiveSignalType] = BaseGame;
 }
-export class GameRender {
+export class GamePostRender {
   constructor(public delta: number) {}
   [exclusiveSignalType] = BaseGame;
 }

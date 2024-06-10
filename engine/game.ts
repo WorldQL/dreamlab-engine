@@ -9,7 +9,7 @@ import {
   SignalConstructorMatching,
   SignalListener,
 } from "./signal.ts";
-import { GamePreRender, GameRender, GameShutdown, GameTick } from "./signals/game-events.ts";
+import { GameRender, GamePostRender, GameShutdown, GameTick } from "./signals/game-events.ts";
 import { SyncedValueRegistry } from "./value.ts";
 import { BehaviorLoader } from "./behavior/behavior-loader.ts";
 import { GameRenderer } from "./renderer/mod.ts";
@@ -184,9 +184,9 @@ export class ClientGame extends BaseGame {
   readonly remote: undefined;
 
   drawFrame(time: number, delta: number) {
-    this.fire(GamePreRender, delta);
-    this.renderer.renderFrame(time, delta);
     this.fire(GameRender, delta);
+    this.renderer.renderFrame(time, delta);
+    this.fire(GamePostRender, delta);
   }
 
   [internal.preTickEntities]() {

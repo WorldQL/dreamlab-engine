@@ -1,6 +1,6 @@
 import {
   ClientGame,
-  GameRender,
+  GamePostRender,
   Entity,
   EntityContext,
   Rigidbody2D,
@@ -69,7 +69,7 @@ class PhysicsDebug extends Entity {
     // TODO: rendering system that abstracts better over pixi?
     game.renderer.scene.addChild(this.#gfx);
 
-    this.game.on(GameRender, () => {
+    this.game.on(GamePostRender, () => {
       this.#gfx.clear();
 
       const { vertices, colors } = this.game.physics.world.debugRender();

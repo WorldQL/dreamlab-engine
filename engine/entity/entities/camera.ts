@@ -1,7 +1,7 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { Game, ClientGame } from "../../game.ts";
 import { Vector2 } from "../../math/mod.ts";
-import { GamePreRender } from "../../signals/mod.ts";
+import { GameRender } from "../../signals/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
 import { smoothLerp } from "../../math/lerp.ts";
 
@@ -68,7 +68,7 @@ export class Camera extends Entity {
     this.container = new PIXI.Container();
     this.game.renderer.app.stage.addChild(this.container);
 
-    this.listen(this.game, GamePreRender, ({ delta }) => {
+    this.listen(this.game, GameRender, ({ delta }) => {
       if (!this.#active) return;
       const smooth = this.smooth.value;
 
