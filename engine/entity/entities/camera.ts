@@ -15,6 +15,19 @@ export class Camera extends Entity {
   #rotation: number = this.globalTransform.rotation;
   #scale: Vector2 = new Vector2(this.globalTransform.scale);
 
+  #matrix: PIXI.Matrix = new PIXI.Matrix();
+  #updateMatrix() {
+    const game = this.game as ClientGame;
+
+    return this.#matrix
+      .identity()
+      .translate(-this.#position.x, -this.#position.y)
+      .rotate(-this.#rotation)
+      .scale(Camera.METERS_TO_PIXELS, Camera.METERS_TO_PIXELS)
+      .scale(1 / this.#scale.x, 1 / this.#scale.y)
+      .translate(game.renderer.app.canvas.width / 2, game.renderer.app.canvas.height / 2);
+  }
+
   #active = false;
   get active(): boolean {
     return this.#active;
@@ -91,7 +104,7 @@ export class Camera extends Entity {
         delta,
       );
 
-      this.container.setFromMatrix(this.matrix);
+      this.container.setFromMatrix(this.#updateMatrix());
     });
 
     this.active = true;
@@ -106,25 +119,13 @@ export class Camera extends Entity {
     this.container.destroy();
   }
 
-  // TODO: Hold this matrix as a class member and react to events to update it
-  private get matrix(): PIXI.Matrix {
-    const game = this.game as ClientGame;
-
-    return new PIXI.Matrix()
-      .translate(-this.#position.x, -this.#position.y)
-      .rotate(-this.#rotation)
-      .scale(Camera.METERS_TO_PIXELS, Camera.METERS_TO_PIXELS)
-      .scale(1 / this.#scale.x, 1 / this.#scale.y)
-      .translate(game.renderer.app.canvas.width / 2, game.renderer.app.canvas.height / 2);
-  }
-
   public worldToScreen(position: Vector2): Vector2 {
-    const { x, y } = this.matrix.apply({ x: position.x, y: -position.y });
+    const { x, y } = this.#matrix.apply({ x: position.x, y: -position.y });
     return new Vector2(x, y);
   }
 
   public screenToWorld(position: Vector2): Vector2 {
-    const { x, y } = this.matrix.applyInverse(position);
+    const { x, y } = this.#matrix.applyInverse(position);
     return new Vector2(x, -y);
   }
 }
