@@ -45,33 +45,4 @@ export class Time {
   public toJSON() {
     return { now: this.now, delta: this.delta, partial: this.partial };
   }
-
-  // #now = 0;
-  // public get now(): number {
-  //   return this.#now / 1000;
-  // }
-
-  // public get nowMs(): number {
-  //   return this.#now;
-  // }
-
-  // #delta = 0;
-  // public get delta(): number {
-  //   return this.#delta / 1000;
-  // }
-
-  // public get deltaMs(): number {
-  //   return this.#delta;
-  // }
-
-  // #partial = 0;
-  // public get partial(): number {
-  //   return this.#partial;
-  // }
-
-  // increase(delta: number, partial: number): void {
-  //   this.#now += delta;
-  //   this.#delta = delta;
-  //   this.#partial = partial;
-  // }
 }
