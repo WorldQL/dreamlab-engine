@@ -119,13 +119,13 @@ export class Camera extends Entity {
   }
 
   public worldToScreen(position: Vector2): Vector2 {
-    const { x, y } = this.matrix.apply(position);
+    const { x, y } = this.matrix.apply({ x: position.x, y: -position.y });
     return new Vector2(x, y);
   }
 
   public screenToWorld(position: Vector2): Vector2 {
     const { x, y } = this.matrix.applyInverse(position);
-    return new Vector2(x, y);
+    return new Vector2(x, -y);
   }
 }
 Entity.registerType(Camera, "@core");
