@@ -31,8 +31,8 @@ export class GameRenderer {
     this.#game.container.append(this.app.canvas);
   }
 
-  renderFrame(time: number, _delta: number) {
-    this.app.ticker.update(time);
+  renderFrame() {
+    this.app.ticker.update(this.#game.time.now);
     this.app.render();
   }
 }
