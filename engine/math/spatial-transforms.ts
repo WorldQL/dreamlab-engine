@@ -1,5 +1,5 @@
 import { Transform } from "./entity-transform.ts";
-import { Vector2 } from "./vector.ts";
+import { Vector2 } from "./vector/mod.ts";
 
 // prettier-ignore
 export interface Matrix2x2 {
@@ -71,7 +71,7 @@ export function transformLocalToWorld(
   const m = mult2x2(scale, rotation);
 
   return new Transform({
-    position: mult2x2Point(m, b.position).plus(a.position),
+    position: mult2x2Point(m, b.position).add(a.position),
     scale: new Vector2(a.scale.x * b.scale.x, a.scale.y * b.scale.y),
     rotation: a.rotation + b.rotation,
   });

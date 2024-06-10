@@ -5,5 +5,6 @@ export const setSyncedValueRegistryOriginator = Symbol.for(
   "dreamlab.internal.setSyncedValueRegistryOriginator",
 );
 export const behaviorScriptLoader = Symbol.for("dreamlab.internal.behaviorScriptLoader");
+export const vectorOnChanged = Symbol.for("dreamlab.internal.vectorOnChanged");
 export const transformOnChanged = Symbol.for("dreamlab.internal.transformOnChanged");
 export const transformForceUpdate = Symbol.for("dreamlab.internal.transformForceUpdate");
