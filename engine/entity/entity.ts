@@ -213,6 +213,7 @@ export abstract class Entity implements ISignalHandler {
   }
   // #endregion
 
+  // #region Transform
   readonly transform: Transform;
   readonly globalTransform: Transform;
   get pos() {
@@ -221,6 +222,7 @@ export abstract class Entity implements ISignalHandler {
   set pos(value) {
     this.globalTransform.position = value;
   }
+  // #endregion
 
   readonly behaviors: Behavior[] = [];
 
@@ -228,6 +230,8 @@ export abstract class Entity implements ISignalHandler {
   readonly ref: string = ulid();
 
   readonly values: EntityValues;
+
+  pausable: boolean = true;
 
   #updateTransform(fromGlobal: boolean) {
     if (fromGlobal) {
@@ -375,6 +379,8 @@ export abstract class Entity implements ISignalHandler {
   #origRotation: number = NaN;
 
   [internal.preTickEntities]() {
+    if (this.pausable && this.game.paused) return;
+
     if (!this.#spawned) this.#spawn();
 
     this.fire(EntityPreUpdate);
@@ -390,6 +396,8 @@ export abstract class Entity implements ISignalHandler {
   }
 
   [internal.tickEntities]() {
+    if (this.pausable && this.game.paused) return;
+
     this.fire(EntityUpdate);
 
     const tr = this.globalTransform;

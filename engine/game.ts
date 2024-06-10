@@ -33,6 +33,8 @@ export abstract class BaseGame implements ISignalHandler {
   readonly instanceId: string;
   readonly worldId: string;
 
+  paused: boolean = false;
+
   constructor(opts: GameOptions) {
     if (!(this instanceof ServerGame || this instanceof ClientGame))
       throw new Error("BaseGame is sealed to ServerGame and ClientGame!");
