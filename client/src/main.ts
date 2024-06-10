@@ -5,7 +5,7 @@ import { createEditorGame } from "./game.ts";
 declare global {
   // you have to use var here
   // deno-lint-ignore no-var
-  var game: ClientGame | undefined
+  var game: ClientGame | undefined;
   // TODO: Store two copies of game, one for running and one for !running
 }
 
@@ -43,22 +43,11 @@ const main = async () => {
   });
   console.log(sprite.globalTransform.scale.x);
 
-  // tick loop (TODO: replace with new time system)
-  const TICKS_PER_SECOND = 60;
-  const tickDelta = 1000 / TICKS_PER_SECOND;
-  let tickAccumulator = 0;
   let now = performance.now();
   const onFrame = (time: number) => {
     const delta = time - now;
     now = time;
-    tickAccumulator += delta;
-
-    while (tickAccumulator >= tickDelta) {
-      tickAccumulator -= tickDelta;
-      game.tick();
-    }
-
-    game.drawFrame(time, delta);
+    game.tickClient(delta);
 
     requestAnimationFrame(onFrame);
   };
