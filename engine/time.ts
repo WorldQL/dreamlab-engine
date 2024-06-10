@@ -20,9 +20,11 @@ export class Time {
 
   #now = 0;
   #delta = 0;
-  [internal.timeIncrement](delta: number) {
+  #partial = 0;
+  [internal.timeIncrement](delta: number, partial: number) {
     this.#now += delta;
     this.#delta = delta;
+    this.#partial = partial;
   }
 
   public get now(): number {
@@ -35,8 +37,13 @@ export class Time {
     return this.#delta;
   }
 
+  public get partial(): number {
+    if (this.#accessMode === "tick") return 0;
+    return this.#partial;
+  }
+
   public toJSON() {
-    return { now: this.now, delta: this.delta };
+    return { now: this.now, delta: this.delta, partial: this.partial };
   }
 
   // #now = 0;

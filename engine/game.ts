@@ -201,7 +201,7 @@ export class ClientGame extends BaseGame {
     }
 
     this.time[internal.timeSetMode]("render");
-    this.time[internal.timeIncrement](delta);
+    this.time[internal.timeIncrement](delta, this.#tickAccumulator / this.physics.tickDelta);
 
     this.fire(GameRender);
     this.renderer.renderFrame();
