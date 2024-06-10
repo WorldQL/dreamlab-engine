@@ -24,7 +24,8 @@ export class Sprite extends Entity {
         y: -this.globalTransform.position.y,
       };
       this.#sprite.rotation = this.globalTransform.rotation;
-      // TODO: update scale
+      this.#sprite.width = this.width.value * this.globalTransform.scale.x;
+      this.#sprite.height = this.height.value * this.globalTransform.scale.y;
     });
   }
 
@@ -34,14 +35,13 @@ export class Sprite extends Entity {
     const texture = await PIXI.Assets.load(this.texture.value);
     this.#sprite = new PIXI.Sprite({
       texture,
-      width: this.width.value,
-      height: this.height.value,
+      width: this.width.value * this.globalTransform.scale.x,
+      height: this.height.value * this.globalTransform.scale.y,
       position: {
         x: this.globalTransform.position.x,
         y: -this.globalTransform.position.y,
       },
       rotation: this.globalTransform.rotation,
-      // TODO: Scale (pixi sets the scale based on the desired width/height)
       anchor: 0.5,
     });
 
