@@ -11,8 +11,8 @@ declare global {
 
 const main = async () => {
   const container = document.createElement("div");
-  container.style.width = "1280px"; // TODO: can pixi just handle the resizing all on its own for us?
-  container.style.height = "720px";
+  container.style.width = "100%;"; // TODO: can pixi just handle the resizing all on its own for us?
+  container.style.height = "100%";
 
   const game: ClientGame = createEditorGame(container);
   Object.defineProperty(window, "game", { value: game }); // for debugging

@@ -35,9 +35,9 @@ const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
   );
 
   return (
-    <div className="container">
+    <div className="dreamlab-container">
       <div className="left-column">
-        scene graph / file tree
+        scene graph / file tree test123
         {sceneGraph}
       </div>
       <div className="middle-column">
