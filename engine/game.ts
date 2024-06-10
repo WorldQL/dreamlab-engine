@@ -13,6 +13,7 @@ import { GameRender, GamePostRender, GameShutdown, GameTick } from "./signals/ga
 import { SyncedValueRegistry } from "./value.ts";
 import { BehaviorLoader } from "./behavior/behavior-loader.ts";
 import { GameRenderer } from "./renderer/mod.ts";
+import { Time } from "./time.ts";
 
 export interface GameOptions {
   instanceId: string;
@@ -52,6 +53,8 @@ export abstract class BaseGame implements ISignalHandler {
   readonly world = new WorldRoot(this as unknown as Game);
   readonly prefabs = new PrefabsRoot(this as unknown as Game);
 
+  readonly time = new Time(this as unknown as Game);
+
   [internal.behaviorScriptLoader] = new BehaviorLoader(this as unknown as Game);
 
   #initialized: boolean = false;
@@ -74,6 +77,9 @@ export abstract class BaseGame implements ISignalHandler {
   tick() {
     if (!this.#initialized)
       throw new Error("Illegal state: Game was not initialized before tick loop began!");
+
+    this.time[internal.timeSetMode]("tick");
+    this.time[internal.timeTick]();
 
     // run the pre tick phase, then a physics update, then the tick phase
     // so e.g. in Rigidbody2D we can move the body to the entity's transform,
@@ -185,10 +191,21 @@ export class ClientGame extends BaseGame {
   readonly local: LocalRoot = new LocalRoot(this);
   readonly remote: undefined;
 
-  drawFrame(time: number, delta: number) {
-    this.fire(GameRender, delta);
-    this.renderer.renderFrame(time, delta);
-    this.fire(GamePostRender, delta);
+  #tickAccumulator = 0;
+  tickClient(delta: number): void {
+    this.#tickAccumulator += delta;
+
+    while (this.#tickAccumulator >= this.physics.tickDelta) {
+      this.#tickAccumulator -= this.physics.tickDelta;
+      this.tick();
+    }
+
+    this.time[internal.timeSetMode]("render");
+    this.time[internal.timeIncrement](delta);
+
+    this.fire(GameRender);
+    this.renderer.renderFrame();
+    this.fire(GamePostRender);
   }
 
   [internal.preTickEntities]() {

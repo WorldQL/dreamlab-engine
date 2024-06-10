@@ -8,3 +8,6 @@ export const behaviorScriptLoader = Symbol.for("dreamlab.internal.behaviorScript
 export const vectorOnChanged = Symbol.for("dreamlab.internal.vectorOnChanged");
 export const transformOnChanged = Symbol.for("dreamlab.internal.transformOnChanged");
 export const transformForceUpdate = Symbol.for("dreamlab.internal.transformForceUpdate");
+export const timeTick = Symbol.for("dreamlab.internal.timeTick");
+export const timeIncrement = Symbol.for("dreamlab.internal.timeIncrement");
+export const timeSetMode = Symbol.for("dreamlab.internal.timeSetMode");
