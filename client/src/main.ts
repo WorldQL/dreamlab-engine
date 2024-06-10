@@ -1,13 +1,10 @@
 import { ClientGame } from "@dreamlab/engine";
-import { renderReact } from "./react-test.tsx";
+import { renderEditorUI } from "./editor-ui-main.tsx";
 
-renderReact();
+renderEditorUI();
 
-const initializeRender = async () => {
+const main = async () => {
   const container = document.querySelector("#dreamlab-render") as HTMLDivElement;
-
-  // Try again if the container doesn't exist yet. This line never runs on my machine.
-  if (!container) setTimeout(initializeRender);
 
   container.style.width = "1280px";
   container.style.height = "720px";
@@ -46,4 +43,8 @@ const initializeRender = async () => {
   Object.defineProperty(window, "game", { value: game });
 };
 
-setTimeout(initializeRender);
+if (document.readyState === "complete") {
+  void main();
+} else {
+  document.addEventListener("DOMContentLoaded", () => void main());
+}
