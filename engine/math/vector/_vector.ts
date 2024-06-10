@@ -1,5 +1,6 @@
 export interface Vector<I, T extends I> {
   clone(this: T): T;
+  bare(this: T): I;
   assign(this: T, value: Partial<I>): boolean;
 
   eq(this: T, other: I): boolean;

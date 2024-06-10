@@ -93,6 +93,10 @@ export class Vector2 implements IVector2, Vector<IVector2, Vector2> {
     return new Vector2({ x: this.#x, y: this.#y });
   }
 
+  public bare(this: Vector2): IVector2 {
+    return { x: this.#x, y: this.#y };
+  }
+
   public assign(this: Vector2, value: Partial<IVector2>): boolean {
     // Ensure at least one component has changed
     const xChanged = value.x !== undefined && value.x !== this.#x;
@@ -275,7 +279,7 @@ export class Vector2 implements IVector2, Vector<IVector2, Vector2> {
    * @ignore
    */
   public toJSON(): IVector2 {
-    return { x: this.#x, y: this.#y };
+    return this.bare();
   }
 
   /**
@@ -285,6 +289,6 @@ export class Vector2 implements IVector2, Vector<IVector2, Vector2> {
     inspect: typeof Deno.inspect,
     options: Deno.InspectOptions,
   ): string {
-    return `${this.constructor.name} ${inspect(this.toJSON(), options)}`;
+    return `${this.constructor.name} ${inspect(this.bare(), options)}`;
   }
 }
