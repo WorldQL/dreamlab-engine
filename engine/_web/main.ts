@@ -171,22 +171,12 @@ slider(
   value => (camera.transform.scale.y = value),
 );
 
-const tps = 60;
-const tickDelta = 1000 / tps;
-let tickAccumulator = 0;
 let now = performance.now();
 
 const onTick = (time: number) => {
   const delta = time - now;
   now = time;
-  tickAccumulator += delta;
-
-  while (tickAccumulator >= tickDelta) {
-    tickAccumulator -= tickDelta;
-    game.tick();
-  }
-
-  game.drawFrame(time, delta);
+  game.tickClient(delta);
 
   requestAnimationFrame(onTick);
 };
