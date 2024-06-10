@@ -1,5 +1,6 @@
 import { type FC } from "react";
 import { useEffect, useRef } from "react-jsx/jsx-runtime";
+import TestButton from "./test-button.tsx";
 
 const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
   const gameContainer = useRef<HTMLDivElement>(null);
@@ -14,7 +15,10 @@ const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
         <div className="middle-top">
           <div className="game-container" ref={gameContainer}></div>
         </div>
-        <div className="middle-bottom">console and other widgets</div>
+        <div className="middle-bottom">
+          console and other widgets
+          <TestButton></TestButton>
+        </div>
       </div>
       <div className="right-column">inspector</div>
     </div>

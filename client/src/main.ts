@@ -1,6 +1,13 @@
 import { ClientGame } from "@dreamlab/engine";
 import { renderEditorUI } from "./editor-ui-main.tsx";
 
+declare global {
+  // you have to use var here
+  // deno-lint-ignore no-var
+  var game: ClientGame | undefined
+  // TODO: Store two copies of game, one for running and one for !running
+}
+
 const main = async () => {
   const container = document.createElement("div");
   container.style.width = "1280px"; // TODO: can pixi just handle the resizing all on its own for us?
