@@ -1,12 +1,9 @@
 import { ClientGame } from "@dreamlab/engine";
 import { renderEditorUI } from "./editor-ui-main.tsx";
 
-renderEditorUI();
-
 const main = async () => {
-  const container = document.querySelector("#dreamlab-render") as HTMLDivElement;
-
-  container.style.width = "1280px";
+  const container = document.createElement("div");
+  container.style.width = "1280px"; // TODO: can pixi just handle the resizing all on its own for us?
   container.style.height = "720px";
 
   const game = new ClientGame({
@@ -15,11 +12,15 @@ const main = async () => {
     instanceId: "[editor]",
     worldId: "[editor]",
   });
-  await game.initialize();
+  Object.defineProperty(window, "game", { value: game });
 
+  renderEditorUI(container);
+
+  await game.initialize();
   // editor
   game.physics.enabled = false;
 
+  // tick loop (TODO: replace with new time system)
   const TICKS_PER_SECOND = 60;
   const tickDelta = 1000 / TICKS_PER_SECOND;
   let tickAccumulator = 0;
@@ -39,8 +40,6 @@ const main = async () => {
     requestAnimationFrame(onFrame);
   };
   requestAnimationFrame(onFrame);
-
-  Object.defineProperty(window, "game", { value: game });
 };
 
 if (document.readyState === "complete") {
