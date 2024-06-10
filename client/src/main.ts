@@ -1,5 +1,6 @@
-import { ClientGame } from "@dreamlab/engine";
+import { BasicEntity, ClientGame, Rigidbody2D, Sprite } from "@dreamlab/engine";
 import { renderEditorUI } from "./editor-ui-main.tsx";
+import { createEditorGame } from "./game.ts";
 
 declare global {
   // you have to use var here
@@ -13,19 +14,34 @@ const main = async () => {
   container.style.width = "1280px"; // TODO: can pixi just handle the resizing all on its own for us?
   container.style.height = "720px";
 
-  const game = new ClientGame({
-    connectionId: "00000000-0000-0000-0000-000000000000",
-    container,
-    instanceId: "[editor]",
-    worldId: "[editor]",
-  });
-  Object.defineProperty(window, "game", { value: game });
-
+  const game: ClientGame = createEditorGame(container);
+  Object.defineProperty(window, "game", { value: game }); // for debugging
   renderEditorUI(container);
-
   await game.initialize();
+
   // editor
   game.physics.enabled = false;
+
+  const body = game.world.spawn({
+    type: Rigidbody2D,
+    name: "DefaultSquare",
+  });
+
+  const body2 = game.world.spawn({
+    type: Rigidbody2D,
+    name: "DefaultSquare",
+  });
+
+  const spriteParent = game.world.spawn({
+    type: BasicEntity,
+    name: "SpriteContainer",
+  });
+  spriteParent.transform.scale.x = 2;
+  const sprite = spriteParent.spawn({
+    type: Sprite,
+    name: "Sprite",
+  });
+  console.log(sprite.globalTransform.scale.x);
 
   // tick loop (TODO: replace with new time system)
   const TICKS_PER_SECOND = 60;
