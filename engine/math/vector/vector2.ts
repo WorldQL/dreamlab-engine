@@ -12,19 +12,33 @@ export class Vector2 implements IVector2, Vector<IVector2, Vector2> {
 
   // #region Constants
   /** All zeroes. */
-  public static readonly ZERO: Readonly<Vector2> = Object.freeze(new Vector2(0, 0));
+  public static get ZERO(): Vector2 {
+    return new Vector2(0, 0);
+  }
   /** All ones. */
-  public static readonly ONE: Readonly<Vector2> = Object.freeze(new Vector2(1, 1));
+  public static get ONE(): Vector2 {
+    return new Vector2(1, 1);
+  }
   /** All negative ones. */
-  public static readonly NEG_ONE: Readonly<Vector2> = Object.freeze(new Vector2(-1, -1));
+  public static get NEG_ONE(): Vector2 {
+    return new Vector2(-1, -1);
+  }
   /** A unit vector pointing along the positive X axis. */
-  public static readonly X: Readonly<Vector2> = Object.freeze(new Vector2(1, 0));
+  public static get X(): Vector2 {
+    return new Vector2(1, 0);
+  }
   /** A unit vector pointing along the positive Y axis. */
-  public static readonly Y: Readonly<Vector2> = Object.freeze(new Vector2(0, 1));
+  public static get Y(): Vector2 {
+    return new Vector2(0, 1);
+  }
   /** A unit vector pointing along the negative X axis. */
-  public static readonly NEG_X: Readonly<Vector2> = Object.freeze(new Vector2(-1, 0));
+  public static get NEG_X(): Vector2 {
+    return new Vector2(-1, 0);
+  }
   /** A unit vector pointing along the negative Y axis. */
-  public static readonly NEG_Y: Readonly<Vector2> = Object.freeze(new Vector2(0, -1));
+  public static get NEG_Y(): Vector2 {
+    return new Vector2(0, -1);
+  }
   // #endregion
 
   // #region Fields
