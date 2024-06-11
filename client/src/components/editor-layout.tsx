@@ -1,12 +1,10 @@
 import { type FC, useState } from "react";
 import { useEffect, useRef } from "react-jsx/jsx-runtime";
 import TestButton from "./test-button.tsx";
-import { useForceUpdateOnEntityChange } from "../hooks/force-update-on-change.ts";
 import { SceneGraph } from "./scene-graph.tsx";
 import { Entity } from "@dreamlab/engine";
 import { SelectedEntityContext } from "../context/selected-entity-context.tsx";
 import { Inspector } from "./inspector.tsx";
-import { game } from "../global-game.ts";
 
 const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
   const [selectedEntity, setSelectedEntity] = useState<Entity | null>(null);
@@ -17,8 +15,6 @@ const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
   useEffect(() => {
     gameContainer.current?.appendChild(gameDiv);
   }, [gameContainer, gameDiv]);
-
-  useForceUpdateOnEntityChange(game.world); // TODO: we should probably rerender only the scene graph
 
   const handleLeftColumnResize = (e: React.MouseEvent<HTMLDivElement>) => {
     const startX = e.clientX;
@@ -68,13 +64,13 @@ const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
         }}
       >
         <div className="left-column">
-          <div style={{ display: "flex", flexWrap: 'nowrap', }}>
-            <div style={{maxWidth: '100%', minWidth: '1px'}}>
+          <div style={{ display: "flex", flexWrap: "nowrap" }}>
+            <div style={{ maxWidth: "100%", minWidth: "1px" }}>
               <SceneGraph />
             </div>
             <div
               className="resize-handle"
-              style={{ height: "100vh", border: "3px solid red", maxWidth: '3px' }}
+              style={{ height: "100vh", border: "3px solid red", maxWidth: "3px" }}
               onMouseDown={handleLeftColumnResize}
             >
             </div>

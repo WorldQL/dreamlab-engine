@@ -2,13 +2,14 @@ import { FC, useContext, useState } from "react-jsx/jsx-runtime";
 import { Entity } from "@dreamlab/engine";
 import { SelectedEntityContext } from "../context/selected-entity-context.tsx";
 import { game } from "../global-game.ts";
+import { useForceUpdateOnEntityChange } from "../hooks/force-update-on-change.ts";
 
 const EntityEntry: FC<{ entity: Entity; level: number }> = ({ entity, level }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { selectedEntity, setSelectedEntity } = useContext(SelectedEntityContext);
 
   // TODO: Accept a URL in addition to an emoji for icons.
-  const iconVal = (entity.constructor as typeof Entity).icon
+  const iconVal = (entity.constructor as typeof Entity).icon;
   const icon = iconVal ? iconVal : "{icon}";
 
   const toggleCollapse = () => {
@@ -43,6 +44,8 @@ const EntityEntry: FC<{ entity: Entity; level: number }> = ({ entity, level }) =
 };
 
 export const SceneGraph: FC = () => {
+  useForceUpdateOnEntityChange(game.world);
+
   return (
     <div className="bg-white rounded-lg shadow-md">
       <h2 className="text-lg font-semibold mb-4">Scene Graph</h2>
