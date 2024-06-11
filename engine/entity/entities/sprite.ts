@@ -4,7 +4,7 @@ import { EntityPreUpdate, GameRender } from "../../signals/mod.ts";
 import { IVector2, Vector2, lerp } from "../../math/mod.ts";
 
 export class Sprite2D extends Entity {
-  public static readonly icon = '🖼️'
+  public static readonly icon = "🖼️";
   static readonly WHITE_PNG =
     "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAUSURBVBhXY/wPBAxAwAQiGBgYGAA9+AQAag6xEAAAAABJRU5ErkJggg==";
 
@@ -47,7 +47,7 @@ export class Sprite2D extends Entity {
           : this.globalTransform.rotation;
 
       this.#sprite.position = { x: pos.x, y: -pos.y };
-      this.#sprite.rotation = rotation;
+      this.#sprite.rotation = -rotation;
     });
   }
 
