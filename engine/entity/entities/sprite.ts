@@ -30,9 +30,6 @@ export class Sprite2D extends Entity {
       prevRenderRot = this.globalTransform.rotation;
     });
     this.on(EntityUpdate, () => {
-      // prevRenderPos = this.globalTransform.position.bare();
-      // prevRenderRot = this.globalTransform.rotation;
-
       this.#lastRenderPos = prevRenderPos;
       this.#lastRenderRot = prevRenderRot;
     });
