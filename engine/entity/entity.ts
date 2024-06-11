@@ -434,6 +434,8 @@ export abstract class Entity implements ISignalHandler {
     this.values.destroy();
     this.#parent = undefined;
     this.game.entities._unregister(this);
+
+    this.#signalListenerMap.clear();
   }
   // #endregion
 
@@ -487,5 +489,5 @@ export const serializeIdentifier = (parent: string | undefined, child: string) =
       ? `${parent}._.${child}`
       : `${child}`
     : parent
-    ? `${parent}._[${JSON.stringify(child)}]`
-    : `[${JSON.stringify(child)}]`;
+      ? `${parent}._[${JSON.stringify(child)}]`
+      : `[${JSON.stringify(child)}]`;

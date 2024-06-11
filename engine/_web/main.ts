@@ -123,11 +123,26 @@ Entity.registerType(PhysicsDebug, "@core");
 
 game.local.spawn({ type: PhysicsDebug, name: "PhysicsDebug" });
 
-const body = game.world.spawn({
-  type: Rigidbody2D,
-  name: "DefaultSquare",
-  transform: { position: { x: -8, y: 0 } },
-});
+setInterval(() => {
+  const body = game.world.spawn({
+    type: Rigidbody2D,
+    name: "Rigidbody",
+    transform: { position: { x: -8, y: 0 } },
+    children: [
+      {
+        type: Sprite2D,
+        name: "Sprite",
+      },
+    ],
+  });
+
+  body.body.applyTorqueImpulse(-1, false);
+  body.body.applyImpulse({ x: 15 + Math.random() * 5, y: 5 + Math.random() * 1.5 }, true);
+
+  body.on(EntityUpdate, () => {
+    if (body.pos.x > 10.0) body.destroy();
+  });
+}, 500);
 
 // const body2 = game.world.spawn({
 //   type: Rigidbody2D,
@@ -139,17 +154,7 @@ const body = game.world.spawn({
 //   name: "SpriteContainer",
 // });
 // spriteParent.transform.scale.x = 2;
-const sprite = body.spawn({
-  type: Sprite2D,
-  name: "Sprite",
-});
 
-body.on(EntityUpdate, () => {
-  console.log(body.body.linvel());
-});
-
-// body.body.addTorque(1, false);
-body.body.applyImpulse({ x: 20, y: 5 }, true);
 // sprite.on(EntityUpdate, () => {
 //   const t = Date.now() / 1000;
 //   sprite.transform.position.x = Math.sin(t);
@@ -191,4 +196,4 @@ const onTick = (time: number) => {
 requestAnimationFrame(onTick);
 
 // Assign `game` to global
-Object.assign(window, { game, camera, sprite });
+Object.assign(window, { game, camera });

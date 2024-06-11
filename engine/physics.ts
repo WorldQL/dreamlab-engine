@@ -16,10 +16,9 @@ export class PhysicsEngine {
   constructor(game: Game) {
     this.game = game;
 
-    const tps = 60;
-    this.tickDelta = 1000.0 / tps;
+    this.tickDelta = 1000.0 / game.time.TPS;
     this.world = new RAPIER.World({ x: 0, y: -9.81 });
-    this.world.integrationParameters.dt = 1.0 / tps;
+    this.world.integrationParameters.dt = 1.0 / game.time.TPS;
     this.#events = new RAPIER.EventQueue(true);
   }
 

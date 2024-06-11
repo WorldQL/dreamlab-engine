@@ -78,6 +78,7 @@ export class Sprite2D extends Entity {
   }
 
   destroy(): void {
+    super.destroy();
     this.#sprite?.destroy();
   }
 }

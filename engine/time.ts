@@ -4,6 +4,8 @@ import * as internal from "./internal.ts";
 export class Time {
   #game: Game;
 
+  readonly TPS: number = 60;
+
   constructor(game: Game) {
     this.#game = game;
   }
