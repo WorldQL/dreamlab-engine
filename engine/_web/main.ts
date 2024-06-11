@@ -1,16 +1,17 @@
+import * as PIXI from "@dreamlab/vendor/pixi.ts";
+import { ulid } from "@dreamlab/vendor/std-ulid.ts";
 import {
+  Camera,
   ClientGame,
-  GamePostRender,
+  Empty,
   Entity,
   EntityContext,
+  GamePostRender,
   Rigidbody2D,
+  Sprite2D,
   EntityUpdate,
-  BasicEntity,
-} from "@dreamlab/engine";
-import { ulid } from "@dreamlab/vendor/std-ulid.ts";
-import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import { Camera } from "../entity/entities/camera.ts";
-import { Sprite } from "../entity/entities/sprite.ts";
+} from "../mod.ts";
+import { GameTick } from "../signals/mod.ts";
 
 const container = document.createElement("div");
 document.body.append(container);
@@ -125,24 +126,30 @@ game.local.spawn({ type: PhysicsDebug, name: "PhysicsDebug" });
 const body = game.world.spawn({
   type: Rigidbody2D,
   name: "DefaultSquare",
+  transform: { position: { x: -8, y: 0 } },
 });
 
-const body2 = game.world.spawn({
-  type: Rigidbody2D,
-  name: "DefaultSquare",
-});
+// const body2 = game.world.spawn({
+//   type: Rigidbody2D,
+//   name: "DefaultSquare",
+// });
 
-const spriteParent = game.world.spawn({
-  type: BasicEntity,
-  name: "SpriteContainer",
-});
-spriteParent.transform.scale.x = 2;
-const sprite = spriteParent.spawn({
-  type: Sprite,
+// const spriteParent = game.world.spawn({
+//   type: Empty,
+//   name: "SpriteContainer",
+// });
+// spriteParent.transform.scale.x = 2;
+const sprite = body.spawn({
+  type: Sprite2D,
   name: "Sprite",
 });
-console.log(sprite.globalTransform.scale.x);
 
+body.on(EntityUpdate, () => {
+  console.log(body.body.linvel());
+});
+
+// body.body.addTorque(1, false);
+body.body.applyImpulse({ x: 20, y: 5 }, true);
 // sprite.on(EntityUpdate, () => {
 //   const t = Date.now() / 1000;
 //   sprite.transform.position.x = Math.sin(t);
