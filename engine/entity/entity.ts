@@ -2,6 +2,7 @@ import { ulid } from "@dreamlab/vendor/std-ulid.ts";
 import { type Game } from "../game.ts";
 import {
   Transform,
+  IVector2,
   Vector2,
   transformLocalToWorld,
   transformWorldToLocal,
@@ -37,6 +38,7 @@ export interface EntityContext {
   game: Game;
   name: string;
   parent?: Entity;
+  transform?: { position?: IVector2; rotation?: number; scale?: IVector2 };
   ref?: string;
   values?: Record<string, Primitive>;
 }
@@ -58,6 +60,7 @@ export interface EntityDefinition<
 > {
   type: EntityConstructor<T>;
   name: string;
+  transform?: { position?: IVector2; rotation?: number; scale?: IVector2 };
   values?: Partial<EntitySyncedValueProps<T>>;
   children?: { [I in keyof Children]: EntityDefinition<Children[I]> };
   behaviors?: { [I in keyof Behaviors]: BehaviorDefinition<T, Behaviors[I]> };
@@ -193,6 +196,7 @@ export abstract class Entity implements ISignalHandler {
       game: this.game,
       name: def.name,
       parent: this,
+      transform: def.transform,
       ref: def._ref,
     });
     if (def.values) entity.set(def.values);
@@ -265,7 +269,7 @@ export abstract class Entity implements ISignalHandler {
     this.id = serializeIdentifier(ctx.parent?.id, this.#name);
     this.parent = ctx.parent;
 
-    this.transform = new Transform();
+    this.transform = new Transform(ctx.transform);
     this.globalTransform = new Transform();
 
     this.transform[internal.transformOnChanged] = () => {
@@ -483,5 +487,5 @@ export const serializeIdentifier = (parent: string | undefined, child: string) =
       ? `${parent}._.${child}`
       : `${child}`
     : parent
-      ? `${parent}._[${JSON.stringify(child)}]`
-      : `[${JSON.stringify(child)}]`;
+    ? `${parent}._[${JSON.stringify(child)}]`
+    : `[${JSON.stringify(child)}]`;
