@@ -1,4 +1,4 @@
-import React, { type FC, useState, useRef, useEffect } from "react";
+import React, { type FC, useState, useRef, useEffect } from "react-jsx/jsx-runtime";
 import TestButton from "./test-button.tsx";
 import { SceneGraph } from "./scene-graph.tsx";
 import { Entity } from "@dreamlab/engine";
