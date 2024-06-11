@@ -5,6 +5,7 @@ import { Prefabs } from "./prefabs.tsx";
 import { Entity } from "@dreamlab/engine";
 import { SelectedEntityContext } from "../context/selected-entity-context.tsx";
 import { Inspector } from "./inspector.tsx";
+import Console from "./console.tsx";
 
 const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
   const [selectedEntity, setSelectedEntity] = useState<Entity | null>(null);
@@ -109,11 +110,8 @@ const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
           <div className="relative flex-1 overflow-hidden">
             <div className="absolute inset-0" ref={gameContainer} />
           </div>
-          <div className="p-4 bg-light-background dark:bg-dark-background">
-            <div className="text-light-textSecondary dark:text-dark-textSecondary">
-              console and other widgets
-            </div>
-            <TestButton />
+          <div className="bg-light-background dark:bg-dark-background p-1">
+            <Console />
           </div>
         </div>
         <div

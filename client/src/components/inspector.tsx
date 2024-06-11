@@ -1,4 +1,4 @@
-import { FC, useContext } from "react";
+import { FC, useContext } from "react-jsx/jsx-runtime";
 import { SelectedEntityContext } from "../context/selected-entity-context.tsx";
 
 export const Inspector: FC = () => {
