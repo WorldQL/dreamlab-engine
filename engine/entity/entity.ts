@@ -355,6 +355,8 @@ export abstract class Entity implements ISignalHandler {
   #spawn() {
     this.#spawned = true;
 
+    this.onInitialize();
+
     this.fire(EntitySpawned);
     this.parent?.fire(EntityChildSpawned, this);
 
@@ -369,8 +371,6 @@ export abstract class Entity implements ISignalHandler {
       this.game[internal.behaviorScriptLoader].initialize(behaviorType);
       behavior.spawn();
     }
-
-    this.onInitialize();
   }
 
   onInitialize(): void {}
@@ -483,5 +483,5 @@ export const serializeIdentifier = (parent: string | undefined, child: string) =
       ? `${parent}._.${child}`
       : `${child}`
     : parent
-    ? `${parent}._[${JSON.stringify(child)}]`
-    : `[${JSON.stringify(child)}]`;
+      ? `${parent}._[${JSON.stringify(child)}]`
+      : `[${JSON.stringify(child)}]`;
