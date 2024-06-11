@@ -28,11 +28,9 @@ const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
       const diffX = e.clientX - startX;
       const newWidth = startWidth + (columnKey === "left" ? diffX : -diffX);
       const minWidth = 250;
-      const maxWidth = window.innerWidth - (leftColumnWidth + rightColumnWidth);
+      const maxWidth = 500;
 
       setColumnWidth(Math.max(Math.min(newWidth, maxWidth), minWidth));
-
-      console.log(Math.max(Math.min(newWidth, maxWidth), minWidth));
 
       if (columnKey === "left") {
         const gameContainerWidth = window.innerWidth - (newWidth + rightColumnWidth);
@@ -54,11 +52,14 @@ const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
 
   return (
     <SelectedEntityContext.Provider value={{ selectedEntity, setSelectedEntity }}>
-      <div className="flex h-screen">
-        <div className="relative min-w-[250px]" style={{ width: `${leftColumnWidth}px` }}>
+      <div className="flex h-screen bg-light-background dark:bg-dark-background">
+        <div
+          className="relative min-w-[250px] bg-light-cardBackground dark:bg-dark-cardBackground"
+          style={{ width: `${leftColumnWidth}px` }}
+        >
           <SceneGraph />
           <div
-            className="absolute top-0 right-0 bottom-0 w-1 cursor-col-resize"
+            className="absolute top-0 right-0 bottom-0 w-1 cursor-col-resize bg-accent-primaryLight hover:bg-accent-primary transition-colors duration-300 ease-in-out"
             onMouseDown={e => handleResize(e, setLeftColumnWidth, "left")}
           />
         </div>
@@ -66,15 +67,20 @@ const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
           <div className="relative flex-1 overflow-hidden">
             <div className="absolute inset-0" ref={gameContainer} />
           </div>
-          <div>
-            console and other widgets
+          <div className="p-4 bg-light-cardBackground dark:bg-dark-cardBackground">
+            <div className="text-light-textSecondary dark:text-dark-textSecondary">
+              console and other widgets
+            </div>
             <TestButton />
           </div>
         </div>
-        <div className="relative min-w-[250px]" style={{ width: `${rightColumnWidth}px` }}>
+        <div
+          className="relative min-w-[250px] bg-light-cardBackground dark:bg-dark-cardBackground"
+          style={{ width: `${rightColumnWidth}px` }}
+        >
           <Inspector />
           <div
-            className="absolute top-0 left-0 bottom-0 w-1 cursor-col-resize"
+            className="absolute top-0 left-0 bottom-0 w-1 cursor-col-resize bg-accent-primaryLight hover:bg-accent-primary transition-colors duration-300 ease-in-out"
             onMouseDown={e => handleResize(e, setRightColumnWidth, "right")}
           />
         </div>
