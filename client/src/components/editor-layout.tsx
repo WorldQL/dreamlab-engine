@@ -6,6 +6,7 @@ import { SceneGraph } from "./scene-graph.tsx";
 import { Entity } from "@dreamlab/engine";
 import { SelectedEntityContext } from "../context/selected-entity-context.tsx";
 import { Inspector } from "./inspector.tsx";
+import { game } from "../global-game.ts";
 
 const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
   const [selectedEntity, setSelectedEntity] = useState<Entity | null>(null);
@@ -17,7 +18,7 @@ const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
     gameContainer.current?.appendChild(gameDiv);
   }, [gameContainer, gameDiv]);
 
-  useForceUpdateOnEntityChange();
+  useForceUpdateOnEntityChange(game.world); // TODO: we should probably rerender only the scene graph
 
   const handleLeftColumnResize = (e: React.MouseEvent<HTMLDivElement>) => {
     const startX = e.clientX;

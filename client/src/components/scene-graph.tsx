@@ -1,6 +1,7 @@
 import { FC, useContext, useState } from "react-jsx/jsx-runtime";
 import { Entity } from "@dreamlab/engine";
 import { SelectedEntityContext } from "../context/selected-entity-context.tsx";
+import { game } from "../global-game.ts";
 
 const EntityEntry: FC<{ entity: Entity; level: number }> = ({ entity, level }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -42,8 +43,6 @@ const EntityEntry: FC<{ entity: Entity; level: number }> = ({ entity, level }) =
 };
 
 export const SceneGraph: FC = () => {
-  if (!game) return ""; // TODO: handle undefined game better
-
   return (
     <div className="bg-white rounded-lg shadow-md">
       <h2 className="text-lg font-semibold mb-4">Scene Graph</h2>

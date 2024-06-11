@@ -1,6 +1,8 @@
+import { game } from "../global-game.ts";
+
 const TestButton = () => {
   const onClick = () => {
-    console.log(globalThis.game);
+    console.log(game);
   };
   return <button onClick={onClick} className="bg-yellow-100">test</button>;
 };

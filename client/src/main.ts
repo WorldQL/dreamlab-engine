@@ -1,13 +1,6 @@
-// deno-lint-ignore-file no-var
-
 import { Empty, ClientGame, Rigidbody2D, Sprite2D } from "@dreamlab/engine";
 import { renderEditorUI } from "./editor-ui-main.tsx";
-import { createEditorGame } from "./game.ts";
-
-declare global {
-  // TODO: Store two copies of game, one for running and one for !running
-  var game: ClientGame | undefined;
-}
+import { createEditorGame } from "./global-game.ts";
 
 const main = async () => {
   const container = document.createElement("div");
