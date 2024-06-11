@@ -1,11 +1,11 @@
 import React, { type FC, useState, useRef, useEffect } from "react-jsx/jsx-runtime";
-import TestButton from "./test-button.tsx";
 import { SceneGraph } from "./scene-graph.tsx";
 import { Prefabs } from "./prefabs.tsx";
 import { Entity } from "@dreamlab/engine";
 import { SelectedEntityContext } from "../context/selected-entity-context.tsx";
 import { Inspector } from "./inspector.tsx";
 import Console from "./console.tsx";
+import TopSection from "./top-section.tsx";
 
 const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
   const [selectedEntity, setSelectedEntity] = useState<Entity | null>(null);
@@ -107,6 +107,9 @@ const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
           />
         </div>
         <div className="relative flex-1 flex flex-col">
+          <div className="p-1 bg-light-background dark:bg-dark-background">
+            <TopSection />
+          </div>
           <div className="relative flex-1 overflow-hidden">
             <div className="absolute inset-0" ref={gameContainer} />
           </div>
