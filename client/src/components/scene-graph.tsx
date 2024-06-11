@@ -24,19 +24,28 @@ const EntityEntry: FC<{ entity: Entity; level: number }> = ({ entity, level }) =
     <li key={entity.ref} className={`ml-${level * 4}`}>
       <div
         className={`flex cursor-pointer items-center rounded-md ${
-          selectedEntity === entity ? "bg-blue-100" : "hover:bg-gray-100"
+          selectedEntity === entity
+            ? "bg-accent-primaryLight dark:bg-accent-primaryDark"
+            : "hover:bg-light-cardBackground dark:hover:bg-dark-cardBackground"
         }`}
         onClick={handleEntityClick}
       >
         {/* TODO: replace with entity icon */}
-        <span className="mr-1 text-gray-500" onClick={toggleCollapse}>
-          {entity.children.size > 0 ? (isCollapsed ? `+ ${icon}` : `- ${icon}`) : `${icon}`}
+        <span
+          className="mr-1 text-light-textSecondary dark:text-dark-textSecondary"
+          onClick={toggleCollapse}
+        >
+          {entity.children.size > 0 ? (isCollapsed ? "+ " : "- ") : ""} {icon}
         </span>
-        <span className="text-sm">{entity.name}</span>
+        <span className="text-sm text-light-textPrimary dark:text-dark-textPrimary">
+          {entity.name}
+        </span>
       </div>
       {entity.children.size > 0 && !isCollapsed && (
         <ul className="mt-1">
-          {[...entity.children.values()].map((e) => <EntityEntry entity={e} level={level + 1} />)}
+          {[...entity.children.values()].map(e => (
+            <EntityEntry entity={e} level={level + 1} />
+          ))}
         </ul>
       )}
     </li>
@@ -47,11 +56,15 @@ export const SceneGraph: FC = () => {
   useForceUpdateOnEntityChange(game.world);
 
   return (
-    <div className="bg-white rounded-lg shadow-md">
-      <h2 className="text-lg font-semibold mb-4">Scene Graph</h2>
-      <div className="border border-gray-200 rounded-md">
+    <div className="bg-light-cardBackground rounded-lg shadow-md dark:bg-dark-cardBackground">
+      <h2 className="text-lg font-semibold mb-4 text-light-textPrimary dark:text-dark-textPrimary">
+        Scene Graph
+      </h2>
+      <div className="border border-light-textSecondary rounded-md dark:border-dark-textSecondary">
         <ul>
-          {[...game.world.children.values()].map((ent) => <EntityEntry entity={ent} level={0} />)}
+          {[...game.world.children.values()].map(ent => (
+            <EntityEntry entity={ent} level={0} />
+          ))}
         </ul>
       </div>
     </div>

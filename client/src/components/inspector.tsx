@@ -6,34 +6,49 @@ export const Inspector: FC = () => {
 
   if (!selectedEntity) {
     return (
-      <div className="p-4 bg-white rounded-lg shadow-md">
-        <h2 className="text-lg font-semibold mb-4">Inspector</h2>
-        <p>No entity selected</p>
+      <div className="p-4 bg-light-cardBackground rounded-lg shadow-md dark:bg-dark-cardBackground">
+        <h2 className="text-lg font-semibold mb-4 text-light-textPrimary dark:text-dark-textPrimary">
+          Inspector
+        </h2>
+        <p className="text-light-textSecondary dark:text-dark-textSecondary">
+          No entity selected
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="p-4 bg-white rounded-lg shadow-md">
-      <h2 className="text-lg font-semibold mb-4">Inspector</h2>
+    <div className="p-4 bg-light-cardBackground rounded-lg shadow-md dark:bg-dark-cardBackground">
+      <h2 className="text-lg font-semibold mb-4 text-light-textPrimary dark:text-dark-textPrimary">
+        Inspector
+      </h2>
       <div>
-        <h3 className="text-xl font-semibold mb-2">{selectedEntity.name}</h3>
+        <h3 className="text-xl font-semibold mb-2 text-light-textPrimary dark:text-dark-textPrimary">
+          {selectedEntity.name}
+        </h3>
         <div className="mb-4">
           <p
-            className="text-xs text-gray-500"
+            className="text-xs text-light-textSecondary dark:text-dark-textSecondary"
             style={{ maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis" }}
           >
             ID:&nbsp;{selectedEntity.ref}
           </p>
-          <p className="text-sm text-gray-500">Type: {selectedEntity.constructor.name}</p>
+          <p className="text-sm text-light-textSecondary dark:text-dark-textSecondary">
+            Type: {selectedEntity.constructor.name}
+          </p>
         </div>
         <div className="mb-4">
-          <h4 className="text-lg font-semibold mb-2">Transform</h4>
-          <p>
-            Position: ({selectedEntity.transform.position.x}, {selectedEntity.transform.position.y})
+          <h4 className="text-lg font-semibold mb-2 text-light-textPrimary dark:text-dark-textPrimary">
+            Transform
+          </h4>
+          <p className="text-light-textSecondary dark:text-dark-textSecondary">
+            Position: ({selectedEntity.transform.position.x},{" "}
+            {selectedEntity.transform.position.y})
           </p>
-          <p>Rotation: {selectedEntity.transform.rotation}</p>
-          <p>
+          <p className="text-light-textSecondary dark:text-dark-textSecondary">
+            Rotation: {selectedEntity.transform.rotation}
+          </p>
+          <p className="text-light-textSecondary dark:text-dark-textSecondary">
             Scale: ({selectedEntity.transform.scale.x}, {selectedEntity.transform.scale.y})
           </p>
         </div>
