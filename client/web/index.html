@@ -5,6 +5,50 @@
     <title>Dreamlab</title>
     <!--TODO: Remove and replace with build-step tailwind-->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              dark: {
+                background: "#1A202C",
+                cardBackground: "#2D3748",
+                textPrimary: "#E2E8F0",
+                textSecondary: "#A0AEC0",
+              },
+              light: {
+                background: "#F7FAFC",
+                cardBackground: "#FFFFFF",
+                textPrimary: "#2D3748",
+                textSecondary: "#718096",
+              },
+              accent: {
+                primary: "#3A8FFF",
+                primaryDark: "#2A7AE0",
+                primaryLight: "#E6F0FF",
+
+                secondary: "#B44AFF",
+                secondaryDark: "#9E36E6",
+                secondaryLight: "#F3E6FF",
+
+                green: "#38B2AC",
+                greenDark: "#2C8D87",
+                greenLight: "#E6FFFA",
+
+                yellow: "#ED8936",
+                yellowDark: "#D97426",
+                yellowLight: "#FFFAF0",
+
+                red: "#E53E3E",
+                redDark: "#C53030",
+                redLight: "#FFF5F5",
+              },
+            },
+            darkMode: "class",
+          },
+        },
+      };
+    </script>
   </head>
 
   <body>
