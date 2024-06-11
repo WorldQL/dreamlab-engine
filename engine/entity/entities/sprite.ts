@@ -2,6 +2,7 @@ import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { Entity, EntityContext } from "../entity.ts";
 import { EntityPreUpdate, GameRender } from "../../signals/mod.ts";
 import { IVector2, Vector2, lerp } from "../../math/mod.ts";
+import { EntityUpdate } from "@dreamlab/engine";
 
 export class Sprite2D extends Entity {
   public static readonly icon = "🖼️";
@@ -14,8 +15,6 @@ export class Sprite2D extends Entity {
 
   #sprite: PIXI.Sprite | undefined;
 
-  #currRenderPos: IVector2 | undefined;
-  #currRenderRot: number | undefined;
   #lastRenderPos: IVector2 | undefined;
   #lastRenderRot: number | undefined;
 
@@ -24,11 +23,18 @@ export class Sprite2D extends Entity {
 
     PIXI.Assets.backgroundLoad(this.texture.value);
 
+    let prevRenderPos: IVector2 | undefined;
+    let prevRenderRot: number | undefined;
     this.on(EntityPreUpdate, () => {
-      this.#lastRenderPos = this.#currRenderPos;
-      this.#lastRenderRot = this.#currRenderRot;
-      this.#currRenderPos = this.globalTransform.position.bare();
-      this.#currRenderRot = this.globalTransform.rotation;
+      prevRenderPos = this.globalTransform.position.bare();
+      prevRenderRot = this.globalTransform.rotation;
+    });
+    this.on(EntityUpdate, () => {
+      // prevRenderPos = this.globalTransform.position.bare();
+      // prevRenderRot = this.globalTransform.rotation;
+
+      this.#lastRenderPos = prevRenderPos;
+      this.#lastRenderRot = prevRenderRot;
     });
 
     this.listen(this.game, GameRender, () => {
@@ -38,12 +44,16 @@ export class Sprite2D extends Entity {
       this.#sprite.height = this.height.value * this.globalTransform.scale.y;
 
       const pos =
-        this.#currRenderPos !== undefined && this.#lastRenderPos !== undefined
-          ? Vector2.lerp(this.#lastRenderPos!, this.#currRenderPos, this.game.time.partial)
+        this.#lastRenderPos !== undefined
+          ? Vector2.lerp(
+              this.#lastRenderPos!,
+              this.globalTransform.position,
+              this.game.time.partial,
+            )
           : this.globalTransform.position;
       const rotation =
-        this.#currRenderRot !== undefined && this.#lastRenderRot !== undefined
-          ? lerp(this.#lastRenderRot!, this.#currRenderRot, this.game.time.partial)
+        this.#lastRenderRot !== undefined
+          ? lerp(this.#lastRenderRot!, this.globalTransform.rotation, this.game.time.partial)
           : this.globalTransform.rotation;
 
       this.#sprite.position = { x: pos.x, y: -pos.y };
