@@ -1,5 +1,4 @@
-import { type FC, useState } from "react";
-import { useEffect, useRef } from "react-jsx/jsx-runtime";
+import React, { type FC, useState, useRef, useEffect } from "react";
 import TestButton from "./test-button.tsx";
 import { SceneGraph } from "./scene-graph.tsx";
 import { Entity } from "@dreamlab/engine";
@@ -8,40 +7,40 @@ import { Inspector } from "./inspector.tsx";
 
 const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
   const [selectedEntity, setSelectedEntity] = useState<Entity | null>(null);
-  const [leftColumnWidth, setLeftColumnWidth] = useState(15);
-  const [rightColumnWidth, setRightColumnWidth] = useState(15);
+  const [leftColumnWidth, setLeftColumnWidth] = useState(250);
+  const [rightColumnWidth, setRightColumnWidth] = useState(250);
 
   const gameContainer = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     gameContainer.current?.appendChild(gameDiv);
   }, [gameContainer, gameDiv]);
 
-  const handleLeftColumnResize = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleResize = (
+    e: React.MouseEvent<HTMLDivElement>,
+    setColumnWidth: (width: number) => void,
+    columnKey: "left" | "right",
+  ) => {
     const startX = e.clientX;
-    const startWidth = leftColumnWidth;
+    const startWidth = e.currentTarget.parentElement?.clientWidth || 0;
 
     const handleMouseMove = (e: MouseEvent) => {
-      const newWidth = startWidth + (e.clientX - startX) / window.innerWidth * 100;
-      setLeftColumnWidth(Math.min(Math.max(newWidth, 5), 45));
-      console.log(leftColumnWidth);
-    };
+      const diffX = e.clientX - startX;
+      const newWidth = startWidth + (columnKey === "left" ? diffX : -diffX);
+      const minWidth = 250;
+      const maxWidth = window.innerWidth - (leftColumnWidth + rightColumnWidth);
 
-    const handleMouseUp = () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-    };
+      setColumnWidth(Math.max(Math.min(newWidth, maxWidth), minWidth));
 
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
-  };
+      console.log(Math.max(Math.min(newWidth, maxWidth), minWidth));
 
-  const handleRightColumnResize = (e: React.MouseEvent<HTMLDivElement>) => {
-    const startX = e.clientX;
-    const startWidth = rightColumnWidth;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const newWidth = startWidth - (e.clientX - startX) / window.innerWidth * 100;
-      setRightColumnWidth(Math.min(Math.max(newWidth, 5), 45));
+      if (columnKey === "left") {
+        const gameContainerWidth = window.innerWidth - (newWidth + rightColumnWidth);
+        gameContainer.current!.style.width = `${gameContainerWidth}px`;
+      } else {
+        const gameContainerWidth = window.innerWidth - (leftColumnWidth + newWidth);
+        gameContainer.current!.style.width = `${gameContainerWidth}px`;
+      }
     };
 
     const handleMouseUp = () => {
@@ -55,38 +54,29 @@ const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
 
   return (
     <SelectedEntityContext.Provider value={{ selectedEntity, setSelectedEntity }}>
-      <div
-        className="dreamlab-container"
-        style={{
-          gridTemplateColumns: `${leftColumnWidth}% calc(100% - ${
-            leftColumnWidth + rightColumnWidth
-          }%) ${rightColumnWidth}%`,
-        }}
-      >
-        <div className="left-column">
-          <div style={{ display: "flex", flexWrap: "nowrap" }}>
-            <div style={{ maxWidth: "100%", minWidth: "1px" }}>
-              <SceneGraph />
-            </div>
-            <div
-              className="resize-handle"
-              style={{ height: "100vh", border: "3px solid red", maxWidth: "3px" }}
-              onMouseDown={handleLeftColumnResize}
-            >
-            </div>
-          </div>
+      <div className="flex h-screen">
+        <div className="relative min-w-[250px]" style={{ width: `${leftColumnWidth}px` }}>
+          <SceneGraph />
+          <div
+            className="absolute top-0 right-0 bottom-0 w-1 cursor-col-resize"
+            onMouseDown={e => handleResize(e, setLeftColumnWidth, "left")}
+          />
         </div>
-        <div className="middle-column">
-          <div className="middle-top">
-            <div className="game-container" ref={gameContainer}></div>
+        <div className="relative flex-1 flex flex-col">
+          <div className="relative flex-1 overflow-hidden">
+            <div className="absolute inset-0" ref={gameContainer} />
           </div>
-          <div className="middle-bottom">
+          <div>
             console and other widgets
-            <TestButton></TestButton>
+            <TestButton />
           </div>
         </div>
-        <div className="right-column">
+        <div className="relative min-w-[250px]" style={{ width: `${rightColumnWidth}px` }}>
           <Inspector />
+          <div
+            className="absolute top-0 left-0 bottom-0 w-1 cursor-col-resize"
+            onMouseDown={e => handleResize(e, setRightColumnWidth, "right")}
+          />
         </div>
       </div>
     </SelectedEntityContext.Provider>
