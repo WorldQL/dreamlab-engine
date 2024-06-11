@@ -19,5 +19,8 @@
     "jsx": "precompile",
     "jsxImportSource": "react-jsx",
     "lib": ["deno.window", "dom"]
+  },
+  "fmt": {
+    "lineWidth": 120
   }
 }

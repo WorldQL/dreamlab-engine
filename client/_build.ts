@@ -14,6 +14,7 @@ Symbol.dispose ??= Symbol.for("Symbol.dispose");
 Symbol.asyncDispose ??= Symbol.for("Symbol.asyncDispose");`,
   },
   sourcemap: "linked",
+  keepNames: true
 };
 
 async function bundle(target: string, opts: esbuild.BuildOptions, watch: boolean) {

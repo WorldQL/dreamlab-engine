@@ -3,13 +3,14 @@ import { Entity, EntityContext } from "../entity.ts";
 import { EntityPreUpdate, GameRender } from "../../signals/mod.ts";
 import { IVector2, Vector2, lerp } from "../../math/mod.ts";
 
-export class Sprite extends Entity {
+export class Sprite2D extends Entity {
+  public static readonly icon = '🖼️'
   static readonly WHITE_PNG =
     "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAUSURBVBhXY/wPBAxAwAQiGBgYGAA9+AQAag6xEAAAAABJRU5ErkJggg==";
 
   width = this.values.number("width", 1);
   height = this.values.number("height", 1);
-  texture = this.values.string("texture", Sprite.WHITE_PNG);
+  texture = this.values.string("texture", Sprite2D.WHITE_PNG);
 
   #sprite: PIXI.Sprite | undefined;
 
@@ -73,4 +74,4 @@ export class Sprite extends Entity {
     this.#sprite?.destroy();
   }
 }
-Entity.registerType(Sprite, "@core");
+Entity.registerType(Sprite2D, "@core");

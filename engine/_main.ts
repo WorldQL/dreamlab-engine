@@ -1,6 +1,6 @@
 import { ServerGame } from "./game.ts";
 import { EntityDescendentSpawned } from "./signals/entity-lifecycle.ts";
-import { BasicEntity } from "./entity/entities/basic.ts";
+import { Empty } from "./entity/entities/empty.ts";
 import { BasicLivingEntity } from "./entity/entities/basic-living.ts";
 
 const game = new ServerGame({
@@ -14,11 +14,11 @@ game.world.on(EntityDescendentSpawned, ({ descendent }) => {
 });
 
 const parent = game.world.spawn({
-  type: BasicEntity,
+  type: Empty,
   name: "DefaultSquare",
   children: [
     {
-      type: BasicEntity,
+      type: Empty,
       name: "Child",
     },
   ],
@@ -63,7 +63,7 @@ squareWithHealth.set({ health: 250.0, maxHealth: 500.0 });
 console.log("\nconflicting child:");
 
 parent.spawn({
-  type: BasicEntity,
+  type: Empty,
   name: child.name,
 });
 console.log([...parent.children.values()]);

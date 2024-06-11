@@ -66,6 +66,7 @@ export interface EntityDefinition<
 
 export abstract class Entity implements ISignalHandler {
   game: Game;
+  static readonly icon: string | undefined;
 
   // #region Name / ID / Hierarchy
   #name: string;
@@ -482,5 +483,5 @@ export const serializeIdentifier = (parent: string | undefined, child: string) =
       ? `${parent}._.${child}`
       : `${child}`
     : parent
-      ? `${parent}._[${JSON.stringify(child)}]`
-      : `[${JSON.stringify(child)}]`;
+    ? `${parent}._[${JSON.stringify(child)}]`
+    : `[${JSON.stringify(child)}]`;

@@ -4,6 +4,7 @@ import { Vector2 } from "../../math/mod.ts";
 import { EntityPreUpdate, EntityUpdate } from "../../signals/entity-updates.ts";
 
 export class Rigidbody2D extends Entity {
+  public static readonly icon = '🟪'
   body: RAPIER.RigidBody;
   collider: RAPIER.Collider;
   #shape: RAPIER.Cuboid;

@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-var
 
-import { BasicEntity, ClientGame, Rigidbody2D, Sprite } from "@dreamlab/engine";
+import { Empty, ClientGame, Rigidbody2D, Sprite2D } from "@dreamlab/engine";
 import { renderEditorUI } from "./editor-ui-main.tsx";
 import { createEditorGame } from "./game.ts";
 
@@ -33,12 +33,12 @@ const main = async () => {
   });
 
   const spriteParent = game.world.spawn({
-    type: BasicEntity,
+    type: Empty,
     name: "SpriteContainer",
   });
   spriteParent.transform.scale.x = 2;
   const sprite = spriteParent.spawn({
-    type: Sprite,
+    type: Sprite2D,
     name: "Sprite",
   });
   console.log(sprite.globalTransform.scale.x);

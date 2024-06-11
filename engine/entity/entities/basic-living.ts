@@ -1,8 +1,7 @@
 import { Entity, EntityContext } from "../entity.ts";
 import { EntityUpdate } from "../../signals/entity-updates.ts";
-import { BasicEntity } from "./basic.ts";
 
-export class BasicLivingEntity extends BasicEntity {
+export class BasicLivingEntity extends Entity {
   health = this.values.number("health", 100);
   maxHealth = this.values.number("maxHealth", 100);
 
