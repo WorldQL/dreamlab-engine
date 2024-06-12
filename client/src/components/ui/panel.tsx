@@ -8,14 +8,12 @@ export const Panel: FC<{ title: string; className?: string; children: React.Reac
   return (
     <div
       className={
-        "bg-light-cardBackground border border-4 border-light-gray dark:border-dark-gray rounded-lg shadow-md dark:bg-dark-cardBackground" +
+        "bg-cardBackground border border-4 border-gray rounded-lg shadow-md" +
         (className ? ` ${className}` : "")
       }
     >
-      <div className="flex items-center justify-between p-2 bg-light-gray dark:bg-dark-gray shadow-sm">
-        <h2 className="text-lg font-semibold text-light-textPrimary dark:text-dark-textPrimary">
-          {title}
-        </h2>
+      <div className="flex items-center justify-between p-2 bg-gray shadow-sm">
+        <h2 className="text-lg font-semibold text-textPrimary">{title}</h2>
       </div>
       {children}
     </div>

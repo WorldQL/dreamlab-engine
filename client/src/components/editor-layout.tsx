@@ -25,9 +25,9 @@ const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
 
   return (
     <SelectedEntityContext.Provider value={{ selectedEntity, setSelectedEntity }}>
-      <div className="flex h-screen bg-light-background dark:bg-dark-background">
+      <div className="flex h-screen bg-background">
         <div
-          className="relative min-w-[250px] bg-light-background dark:bg-dark-background px-2 py-2 pr-3"
+          className="relative min-w-[250px] bg-background px-2 py-2 pr-3"
           style={{ width: `${leftColumnWidth}px` }}
         >
           <div
@@ -38,7 +38,7 @@ const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
             <SceneGraph />
           </div>
           <div
-            className="w-full cursor-row-resize bg-light-background rounded dark:bg-dark-background hover:bg-accent-primary transition-colors duration-300 ease-in-out active:bg-accent-primary"
+            className="w-full cursor-row-resize bg-background rounded hover:bg-primary transition-colors duration-300 ease-in-out active:bg-primary"
             style={{ height: "5px" }}
             onMouseDown={e => handleVerticalResize(e, setTopSectionHeight, topSectionRef)}
           />
@@ -49,7 +49,7 @@ const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
             <Prefabs />
           </div>
           <div
-            className="absolute top-0 right-0 bottom-0 w-1 cursor-col-resize rounded bg-light-background dark:bg-dark-background hover:bg-accent-primary transition-colors duration-300 ease-in-out active:bg-accent-primary"
+            className="absolute top-0 right-0 bottom-0 w-1 cursor-col-resize rounded bg-background hover:bg-primary transition-colors duration-300 ease-in-out active:bg-primary"
             onMouseDown={e =>
               handleResize(
                 e,
@@ -63,14 +63,14 @@ const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
           />
         </div>
         <div className="relative flex-1 flex flex-col">
-          <div className="p-1 bg-light-background dark:bg-dark-background">
+          <div className="p-1 bg-background">
             <TopSection />
           </div>
           <div className="relative flex-1 overflow-hidden">
             <div className="absolute inset-0" ref={gameContainer} />
           </div>
           <div
-            className="w-full cursor-row-resize rounded bg-light-background dark:bg-dark-background hover:bg-accent-primary transition-colors duration-300 ease-in-out active:bg-accent-primary"
+            className="w-full cursor-row-resize rounded bg-background hover:bg-primary transition-colors duration-300 ease-in-out active:bg-primary"
             style={{ height: "5px" }}
             onMouseDown={e =>
               handleConsoleResize(e, setConsoleHeight, consoleRef, topSectionRef, gameContainer)
@@ -78,19 +78,19 @@ const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
           />
           <div
             ref={consoleRef}
-            className="bg-light-background dark:bg-dark-background p-1"
+            className="bg-background p-1"
             style={{ height: `${consoleHeight}px` }}
           >
             <Console />
           </div>
         </div>
         <div
-          className="relative min-w-[250px] bg-light-background dark:bg-dark-background px-2 py-2 pl-3"
+          className="relative min-w-[250px] bg-background px-2 py-2 pl-3"
           style={{ width: `${rightColumnWidth}px` }}
         >
           <Inspector />
           <div
-            className="absolute top-0 left-0 bottom-0 w-1 rounded cursor-col-resize bg-light-background dark:bg-dark-background hover:bg-accent-primary transition-colors duration-300 ease-in-out active:bg-accent-primary"
+            className="absolute top-0 left-0 bottom-0 w-1 rounded cursor-col-resize bg-background hover:bg-primary transition-colors duration-300 ease-in-out active:bg-primary"
             onMouseDown={e =>
               handleResize(
                 e,

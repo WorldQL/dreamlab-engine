@@ -24,15 +24,13 @@ const EntityEntry: FC<{ entity: Entity; level: number }> = ({ entity, level }) =
     <li key={entity.ref} className="relative">
       {level > 0 && (
         <span
-          className="absolute left-2 top-0 h-full border-l-2 border-light-gray dark:border-dark-gray"
+          className="absolute left-2 top-0 h-full border-l-2 border-gray "
           style={{ marginLeft: `${(level - 1) * 16}px` }}
         ></span>
       )}
       <div
         className={`flex items-center cursor-pointer transition-all w-full ${
-          selectedEntity === entity
-            ? "bg-accent-primaryLight"
-            : "hover:bg-accent-secondaryLight dark:hover:bg-accent-secondary"
+          selectedEntity === entity ? "bg-primaryLight" : "hover:bg-secondaryLight"
         } hover:shadow-md`}
         onClick={handleEntityClick}
         style={{ paddingLeft: `${level * 16}px` }}
@@ -50,9 +48,7 @@ const EntityEntry: FC<{ entity: Entity; level: number }> = ({ entity, level }) =
         )}
         <span
           className={`text-sm ${
-            selectedEntity === entity
-              ? "font-medium"
-              : "text-light-textPrimary dark:text-dark-textPrimary"
+            selectedEntity === entity ? "font-medium" : "text-textPrimary"
           }`}
         >
           {icon} {entity.name}

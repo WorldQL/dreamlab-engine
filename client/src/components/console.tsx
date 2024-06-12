@@ -5,9 +5,7 @@ export const Console: FC = () => {
   return (
     <Panel title="Console" className="w-full h-full">
       <div className="p-4">
-        <p className="text-light-textSecondary dark:text-dark-textSecondary">
-          Console output will appear here
-        </p>
+        <p className="text-textSecondary">Console output will appear here</p>
       </div>
     </Panel>
   );

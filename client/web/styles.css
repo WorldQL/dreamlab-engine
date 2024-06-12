@@ -1,3 +1,35 @@
+:root {
+  --primary: 58, 143, 255;
+  --primaryDark: 42, 122, 224;
+  --primaryLight: 230, 240, 255;
+  --secondary: 180, 74, 255;
+  --secondaryDark: 158, 54, 230;
+  --secondaryLight: 243, 230, 255;
+  --green: 56, 178, 172;
+  --greenDark: 44, 141, 135;
+  --greenLight: 230, 255, 250;
+  --yellow: 237, 137, 54;
+  --yellowDark: 217, 116, 38;
+  --yellowLight: 255, 250, 240;
+  --red: 229, 62, 62;
+  --redDark: 197, 48, 48;
+  --redLight: 255, 245, 245;
+
+  --background: 247, 250, 252;
+  --cardBackground: 255, 255, 255;
+  --textPrimary: 45, 55, 72;
+  --textSecondary: 113, 128, 150;
+  --gray: 203, 213, 224;
+}
+
+.dark {
+  --background: 26, 32, 44;
+  --cardBackground: 45, 55, 72;
+  --textPrimary: 226, 232, 240;
+  --textSecondary: 160, 174, 192;
+  --gray: 74, 85, 104;
+}
+
 body.resizing-horizontally {
   cursor: col-resize;
 }

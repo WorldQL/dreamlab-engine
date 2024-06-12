@@ -17,12 +17,10 @@ export const InputField: FC<InputFieldProps> = ({
 }) => {
   return (
     <div className={`mb-2 ${className}`}>
-      <label className="block text-sm font-medium text-light-textPrimary dark:text-dark-textPrimary">
-        {label}
-      </label>
+      <label className="block text-sm font-medium text-textPrimary">{label}</label>
       <input
         type={type}
-        className="mt-1 block bg-light-background dark:bg-dark-background dark:text-white w-full rounded-md border-gray-300 shadow-sm focus:border-accent-primary focus:ring focus:ring-accent-primary focus:ring-opacity-50"
+        className="mt-1 block bg-background text-textPrimary w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50"
         value={value}
         onChange={onChange}
       />

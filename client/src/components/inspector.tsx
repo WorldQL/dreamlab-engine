@@ -76,9 +76,7 @@ export const Inspector: FC = () => {
     return (
       <Panel className="h-full" title="Inspector">
         <div className="p-4">
-          <p className="text-light-textSecondary dark:text-dark-textSecondary">
-            No entity selected
-          </p>
+          <p className="text-textSecondary">No entity selected</p>
         </div>
       </Panel>
     );
@@ -91,13 +89,9 @@ export const Inspector: FC = () => {
           <InputField label="Name" value={name} onChange={handleNameChange} />
         </div>
         <div className="mb-4">
-          <h4 className="text-lg font-semibold mb-2 text-light-textPrimary dark:text-dark-textPrimary">
-            Transform
-          </h4>
+          <h4 className="text-lg font-semibold mb-2 text-textPrimary">Transform</h4>
           <div className="mb-2">
-            <label className="block text-sm font-medium text-light-textPrimary dark:text-dark-textPrimary">
-              Position
-            </label>
+            <label className="block text-sm font-medium text-textPrimary">Position</label>
             <div className="flex space-x-2">
               <AxisInputField
                 axis="x"
@@ -118,9 +112,7 @@ export const Inspector: FC = () => {
             onChange={handleRotationChange}
           />
           <div className="mb-2">
-            <label className="block text-sm font-medium text-light-textPrimary dark:text-dark-textPrimary">
-              Scale
-            </label>
+            <label className="block text-sm font-medium text-textPrimary">Scale</label>
             <div className="flex space-x-2">
               <AxisInputField axis="x" value={scale.x} onChange={handleScaleChange("x")} />
               <AxisInputField axis="y" value={scale.y} onChange={handleScaleChange("y")} />
@@ -128,9 +120,7 @@ export const Inspector: FC = () => {
           </div>
         </div>
         <div className="mb-4">
-          <h4 className="text-lg font-semibold mb-2 text-light-textPrimary dark:text-dark-textPrimary">
-            Values
-          </h4>
+          <h4 className="text-lg font-semibold mb-2 text-textPrimary">Values</h4>
           {Object.keys(values).map(key => (
             <InputField
               key={key}
@@ -141,14 +131,10 @@ export const Inspector: FC = () => {
           ))}
         </div>
         <div className="mb-4">
-          <h4 className="text-lg font-semibold mb-2 text-light-textPrimary dark:text-dark-textPrimary">
-            Behaviors
-          </h4>
+          <h4 className="text-lg font-semibold mb-2 text-textPrimary">Behaviors</h4>
           {behaviors.map((behavior, index) => (
             <div key={index} className="mb-2">
-              <p className="text-sm font-medium text-light-textPrimary dark:text-dark-textPrimary">
-                {behavior}
-              </p>
+              <p className="text-sm font-medium text-textPrimary">{behavior}</p>
             </div>
           ))}
         </div>
