@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="light">
   <head>
     <meta charset="utf-8" />
     <title>Dreamlab</title>
@@ -9,6 +9,7 @@
     <script src="https://kit.fontawesome.com/bcd386dfeb.js" crossorigin="anonymous"></script>
     <script>
       tailwind.config = {
+        darkMode: "class",
         theme: {
           extend: {
             colors: {
@@ -30,32 +31,27 @@
                 primary: "#3A8FFF",
                 primaryDark: "#2A7AE0",
                 primaryLight: "#E6F0FF",
-
                 secondary: "#B44AFF",
                 secondaryDark: "#9E36E6",
                 secondaryLight: "#F3E6FF",
-
                 green: "#38B2AC",
                 greenDark: "#2C8D87",
                 greenLight: "#E6FFFA",
-
                 yellow: "#ED8936",
                 yellowDark: "#D97426",
                 yellowLight: "#FFFAF0",
-
                 red: "#E53E3E",
                 redDark: "#C53030",
                 redLight: "#FFF5F5",
               },
             },
-            darkMode: "class",
           },
         },
       };
     </script>
   </head>
 
-  <body>
+  <body class="light">
     <main>
       <div id="root"></div>
     </main>
