@@ -12,9 +12,11 @@ const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
   const [leftColumnWidth, setLeftColumnWidth] = useState(250);
   const [rightColumnWidth, setRightColumnWidth] = useState(250);
   const [topSectionHeight, setTopSectionHeight] = useState(50);
+  const [consoleHeight, setConsoleHeight] = useState(150);
 
   const gameContainer = useRef<HTMLDivElement>(null);
   const topSectionRef = useRef<HTMLDivElement>(null);
+  const consoleRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     gameContainer.current?.appendChild(gameDiv);
@@ -25,6 +27,7 @@ const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
     setColumnWidth: (width: number) => void,
     columnKey: "left" | "right",
   ) => {
+    e.preventDefault();
     const startX = e.clientX;
     const startWidth = e.currentTarget.parentElement?.clientWidth || 0;
 
@@ -55,6 +58,7 @@ const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
   };
 
   const handleVerticalResize = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.preventDefault();
     const startY = e.clientY;
     const startHeight = topSectionRef.current?.clientHeight || 0;
 
@@ -65,6 +69,47 @@ const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
       const maxHeight = 90;
 
       setTopSectionHeight(Math.max(Math.min(newHeight, maxHeight), minHeight));
+    };
+
+    const handleMouseUp = () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+  };
+
+  const handleConsoleResize = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const startY = e.clientY;
+    const startHeight = consoleRef.current?.clientHeight || 0;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const diffY = startY - e.clientY;
+      const newHeight = startHeight + diffY;
+      const minHeight = 150;
+      const maxHeight = 400;
+
+      if (newHeight >= minHeight && newHeight <= maxHeight) {
+        setConsoleHeight(newHeight);
+
+        const gameContainerHeight =
+          window.innerHeight - (topSectionRef.current?.clientHeight || 0) - newHeight;
+        gameContainer.current!.style.height = `${gameContainerHeight}px`;
+      } else if (newHeight < minHeight) {
+        setConsoleHeight(minHeight);
+
+        const gameContainerHeight =
+          window.innerHeight - (topSectionRef.current?.clientHeight || 0) - minHeight;
+        gameContainer.current!.style.height = `${gameContainerHeight}px`;
+      } else if (newHeight > maxHeight) {
+        setConsoleHeight(maxHeight);
+
+        const gameContainerHeight =
+          window.innerHeight - (topSectionRef.current?.clientHeight || 0) - maxHeight;
+        gameContainer.current!.style.height = `${gameContainerHeight}px`;
+      }
     };
 
     const handleMouseUp = () => {
@@ -91,7 +136,7 @@ const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
             <SceneGraph />
           </div>
           <div
-            className="w-full cursor-row-resize bg-accent-primaryLight hover:bg-accent-primary transition-colors duration-300 ease-in-out"
+            className="w-full cursor-row-resize bg-light-background rounded dark:bg-dark-background hover:bg-accent-primary transition-colors duration-300 ease-in-out"
             style={{ height: "5px" }}
             onMouseDown={handleVerticalResize}
           />
@@ -102,7 +147,7 @@ const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
             <Prefabs />
           </div>
           <div
-            className="absolute top-0 right-0 bottom-0 w-1 cursor-col-resize bg-accent-primaryLight hover:bg-accent-primary transition-colors duration-300 ease-in-out"
+            className="absolute top-0 right-0 bottom-0 w-1 cursor-col-resize rounded bg-light-background dark:bg-dark-background hover:bg-accent-primary transition-colors duration-300 ease-in-out"
             onMouseDown={e => handleResize(e, setLeftColumnWidth, "left")}
           />
         </div>
@@ -113,7 +158,16 @@ const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
           <div className="relative flex-1 overflow-hidden">
             <div className="absolute inset-0" ref={gameContainer} />
           </div>
-          <div className="bg-light-background dark:bg-dark-background p-1">
+          <div
+            className="w-full cursor-row-resize rounded bg-light-background dark:bg-dark-background hover:bg-accent-primary transition-colors duration-300 ease-in-out"
+            style={{ height: "5px" }}
+            onMouseDown={handleConsoleResize}
+          />
+          <div
+            ref={consoleRef}
+            className="bg-light-background dark:bg-dark-background p-1"
+            style={{ height: `${consoleHeight}px` }}
+          >
             <Console />
           </div>
         </div>
@@ -123,7 +177,7 @@ const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
         >
           <Inspector />
           <div
-            className="absolute top-0 left-0 bottom-0 w-1 cursor-col-resize bg-accent-primaryLight hover:bg-accent-primary transition-colors duration-300 ease-in-out"
+            className="absolute top-0 left-0 bottom-0 w-1 rounded cursor-col-resize bg-light-background dark:bg-dark-background hover:bg-accent-primary transition-colors duration-300 ease-in-out"
             onMouseDown={e => handleResize(e, setRightColumnWidth, "right")}
           />
         </div>
