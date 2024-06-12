@@ -1,4 +1,4 @@
-import { ulid } from "@dreamlab/vendor/std-ulid.ts";
+import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import { type Game } from "../game.ts";
 import {
   Transform,
@@ -232,7 +232,7 @@ export abstract class Entity implements ISignalHandler {
   readonly behaviors: Behavior[] = [];
 
   // internal id for stable internal reference. we only really need this for networking
-  readonly ref: string = ulid();
+  readonly ref: string = generateCUID("ent");
 
   readonly values: EntityValues;
 

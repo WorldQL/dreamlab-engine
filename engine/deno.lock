@@ -23,6 +23,7 @@
       "jsr:@std/path@^0.223.0": "jsr:@std/path@0.223.0",
       "jsr:@std/ulid@^0.224.0": "jsr:@std/ulid@0.224.1",
       "npm:@dimforge/rapier2d-compat@0.12.0": "npm:@dimforge/rapier2d-compat@0.12.0",
+      "npm:@paralleldrive/cuid2@2.2.2": "npm:@paralleldrive/cuid2@2.2.2",
       "npm:@pixi/ticker": "npm:@pixi/ticker@7.4.2",
       "npm:esbuild-plugin-d.ts@1.2.3": "npm:esbuild-plugin-d.ts@1.2.3_typescript@5.4.5",
       "npm:esbuild@0.20.2": "npm:esbuild@0.20.2",
@@ -213,6 +214,16 @@
       "@esbuild/win32-x64@0.20.2": {
         "integrity": "sha512-N49X4lJX27+l9jbLKSqZ6bKNjzQvHaT8IIFUy+YIqmXQdjYCToGWwOItDrfby14c78aDd5NHQl29xingXfCdLQ==",
         "dependencies": {}
+      },
+      "@noble/hashes@1.4.0": {
+        "integrity": "sha512-V1JJ1WTRUqHHrOSh597hURcMqVKVGL/ea3kv0gSnEdsEZ0/+VyPghM1lMNGc00z7CIQorSvbKpuJkxvuHbvdbg==",
+        "dependencies": {}
+      },
+      "@paralleldrive/cuid2@2.2.2": {
+        "integrity": "sha512-ZOBkgDwEdoYVlSeRbYYXs0S9MejQofiVYoTbKzy/6GQa39/q5tQU2IX46+shYnUkpEl3wc+J6wRlar7r2EK2xA==",
+        "dependencies": {
+          "@noble/hashes": "@noble/hashes@1.4.0"
+        }
       },
       "@pixi/color@7.4.2": {
         "integrity": "sha512-av1LOvhHsiaW8+T4n/FgnOKHby55/w7VcA1HzPIHRBtEcsmxvSCDanT1HU2LslNhrxLPzyVx18nlmalOyt5OBg==",

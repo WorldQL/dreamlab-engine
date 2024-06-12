@@ -1,5 +1,4 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import { ulid } from "@dreamlab/vendor/std-ulid.ts";
 import {
   Camera,
   ClientGame,
@@ -12,6 +11,7 @@ import {
   EntityUpdate,
 } from "../mod.ts";
 import { GameTick } from "../signals/mod.ts";
+import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 
 const container = document.createElement("div");
 document.body.append(container);
@@ -55,7 +55,7 @@ const slider = (
 const game = new ClientGame({
   instanceId: "0",
   worldId: "dummy-world",
-  connectionId: ulid(),
+  connectionId: generateCUID("conn"),
   container,
 });
 

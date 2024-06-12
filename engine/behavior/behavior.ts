@@ -1,4 +1,4 @@
-import { ulid } from "@dreamlab/vendor/std-ulid.ts";
+import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import { Entity } from "../entity/mod.ts";
 import { Game } from "../game.ts";
 import { Primitive, SyncedValue } from "../value.ts";
@@ -46,7 +46,7 @@ export class Behavior<E extends Entity = Entity> {
   readonly game: Game;
   readonly entity: E;
 
-  readonly ref: string = ulid();
+  readonly ref: string = generateCUID("bhv");
 
   readonly values: BehaviorValues<E, this>;
 
