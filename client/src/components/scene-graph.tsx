@@ -22,21 +22,15 @@ const EntityEntry: FC<{ entity: Entity; level: number }> = ({ entity, level }) =
 
   return (
     <li key={entity.ref} className="relative">
-      {level > 0 && (
-        <span
-          className="absolute left-2 top-0 h-full border-l-2 border-gray "
-          style={{ marginLeft: `${(level - 1) * 16}px` }}
-        ></span>
-      )}
       <div
-        className={`flex items-center cursor-pointer transition-all w-full ${
-          selectedEntity === entity ? "bg-primaryLight" : "hover:bg-secondaryLight"
+        className={`flex items-center cursor-pointer w-full relative ${
+          selectedEntity === entity ? "bg-gray border-primary border-2" : "hover:bg-secondary"
         } hover:shadow-md`}
         onClick={handleEntityClick}
         style={{ paddingLeft: `${level * 16}px` }}
       >
         {entity.children.size > 0 ? (
-          <div className="flex-shrink-0 w-4 pl-1" onClick={toggleCollapse}>
+          <div className="flex-shrink-0 w-4 pl-1 text-icon" onClick={toggleCollapse}>
             {isCollapsed ? (
               <i className="fas fa-caret-right"></i>
             ) : (
@@ -46,11 +40,7 @@ const EntityEntry: FC<{ entity: Entity; level: number }> = ({ entity, level }) =
         ) : (
           <span className="inline-block w-4"></span>
         )}
-        <span
-          className={`text-sm ${
-            selectedEntity === entity ? "font-medium" : "text-textPrimary"
-          }`}
-        >
+        <span className="text-sm text-textPrimary">
           {icon} {entity.name}
         </span>
       </div>

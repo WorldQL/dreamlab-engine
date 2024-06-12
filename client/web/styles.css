@@ -20,6 +20,7 @@
   --textPrimary: 45, 55, 72;
   --textSecondary: 113, 128, 150;
   --gray: 203, 213, 224;
+  --icon: 26, 32, 44;
 }
 
 .dark {
@@ -28,6 +29,7 @@
   --textPrimary: 226, 232, 240;
   --textSecondary: 160, 174, 192;
   --gray: 74, 85, 104;
+  --icon: 247, 250, 252;
 }
 
 body.resizing-horizontally {
