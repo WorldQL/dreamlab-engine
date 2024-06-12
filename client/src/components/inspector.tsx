@@ -3,6 +3,7 @@ import { SelectedEntityContext } from "../context/selected-entity-context.tsx";
 import { AxisInputField } from "./ui/axis-input.tsx";
 import { InputField } from "./ui/input.tsx";
 import { EntityValues } from "@dreamlab/engine";
+import { Panel } from "./ui/panel.tsx";
 
 export const Inspector: FC = () => {
   const { selectedEntity, setSelectedEntity } = useContext(SelectedEntityContext);
@@ -73,28 +74,18 @@ export const Inspector: FC = () => {
 
   if (!selectedEntity) {
     return (
-      <div className="bg-light-cardBackground border border-4 border-light-gray dark:border-dark-gray rounded-lg shadow-md dark:bg-dark-cardBackground h-full">
-        <div className="flex items-center justify-between p-2 bg-light-gray dark:bg-dark-gray rounded-t-lg shadow-sm">
-          <h2 className="text-lg font-semibold text-light-textPrimary dark:text-dark-textPrimary">
-            Inspector
-          </h2>
-        </div>
+      <Panel className="h-full" title="Inspector">
         <div className="p-4">
           <p className="text-light-textSecondary dark:text-dark-textSecondary">
             No entity selected
           </p>
         </div>
-      </div>
+      </Panel>
     );
   }
 
   return (
-    <div className="bg-light-cardBackground border border-4 border-light-gray dark:border-dark-gray rounded-lg shadow-md dark:bg-dark-cardBackground h-full">
-      <div className="flex items-center justify-between p-2 bg-light-gray dark:bg-dark-gray rounded-t-lg shadow-sm">
-        <h2 className="text-lg font-semibold text-light-textPrimary dark:text-dark-textPrimary">
-          Inspector
-        </h2>
-      </div>
+    <Panel className="h-full" title="Inspector">
       <div className="p-4">
         <div className="mb-4">
           <InputField label="Name" value={name} onChange={handleNameChange} />
@@ -162,6 +153,6 @@ export const Inspector: FC = () => {
           ))}
         </div>
       </div>
-    </div>
+    </Panel>
   );
 };

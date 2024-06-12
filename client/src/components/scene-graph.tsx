@@ -3,6 +3,7 @@ import { Entity } from "@dreamlab/engine";
 import { SelectedEntityContext } from "../context/selected-entity-context.tsx";
 import { game } from "../global-game.ts";
 import { useForceUpdateOnEntityChange } from "../hooks/force-update-on-change.ts";
+import { Panel } from "./ui/panel.tsx";
 
 const EntityEntry: FC<{ entity: Entity; level: number }> = ({ entity, level }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -72,12 +73,7 @@ export const SceneGraph: FC = () => {
   useForceUpdateOnEntityChange(game.world);
 
   return (
-    <div className="bg-light-cardBackground border border-4 border-light-gray dark:border-dark-gray rounded-lg shadow-md dark:bg-dark-cardBackground h-full">
-      <div className="flex items-center justify-between p-2 bg-light-gray dark:bg-dark-gray rounded-t-lg shadow-sm">
-        <h2 className="text-lg font-semibold text-light-textPrimary dark:text-dark-textPrimary">
-          Scene
-        </h2>
-      </div>
+    <Panel title="Scene" className="h-full">
       <div>
         <ul>
           {[...game.world.children.values()].map(ent => (
@@ -85,7 +81,7 @@ export const SceneGraph: FC = () => {
           ))}
         </ul>
       </div>
-    </div>
+    </Panel>
   );
 };
 
