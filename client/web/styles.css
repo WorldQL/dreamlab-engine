@@ -16,7 +16,7 @@
   --redLight: 255, 245, 245;
 
   --background: 247, 250, 252;
-  --cardBackground: 255, 255, 255;
+  --card: 255, 255, 255;
   --textPrimary: 45, 55, 72;
   --textSecondary: 113, 128, 150;
   --gray: 203, 213, 224;
@@ -24,7 +24,7 @@
 
 .dark {
   --background: 26, 32, 44;
-  --cardBackground: 45, 55, 72;
+  --card: 45, 55, 72;
   --textPrimary: 226, 232, 240;
   --textSecondary: 160, 174, 192;
   --gray: 74, 85, 104;

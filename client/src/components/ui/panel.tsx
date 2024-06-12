@@ -8,7 +8,7 @@ export const Panel: FC<{ title: string; className?: string; children: React.Reac
   return (
     <div
       className={
-        "bg-cardBackground border border-4 border-gray rounded-lg shadow-md" +
+        "bg-card border border-4 border-gray rounded-lg shadow-md" +
         (className ? ` ${className}` : "")
       }
     >
