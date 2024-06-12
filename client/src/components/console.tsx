@@ -1,4 +1,4 @@
-import { type FC } from "react-jsx/jsx-runtime";
+import { type FC } from "react";
 
 export const Console: FC = () => {
   return (

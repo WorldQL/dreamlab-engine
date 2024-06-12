@@ -8,16 +8,14 @@
     "@dreamlab/engine": "../engine/mod.ts",
     "@dreamlab/vendor/": "../engine/_deps/",
 
-    "React": "https://esm.sh/react@18.3.1",
     "react": "https://esm.sh/react@18.3.1",
     "react/": "https://esm.sh/react@18.3.1/",
     "react-dom": "https://esm.sh/react-dom@18.3.1",
-    "react-dom/": "https://esm.sh/react-dom@18.3.1/",
-    "react-jsx/jsx-runtime": "https://esm.sh/react@18.3.1"
+    "react-dom/": "https://esm.sh/react-dom@18.3.1/"
   },
   "compilerOptions": {
     "jsx": "precompile",
-    "jsxImportSource": "react-jsx",
+    "jsxImportSource": "react",
     "lib": ["deno.window", "dom"]
   },
   "fmt": {

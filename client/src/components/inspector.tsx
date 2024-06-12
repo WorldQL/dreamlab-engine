@@ -1,4 +1,4 @@
-import { FC, useContext, useState, useEffect, ChangeEvent } from "react-jsx/jsx-runtime";
+import { FC, useContext, useState, useEffect, ChangeEvent } from "react";
 import { SelectedEntityContext } from "../context/selected-entity-context.tsx";
 import { AxisInputField } from "./ui/axis-input.tsx";
 import { InputField } from "./ui/input.tsx";

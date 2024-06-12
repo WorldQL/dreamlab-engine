@@ -1,4 +1,4 @@
-import { createContext } from "react-jsx/jsx-runtime";
+import { createContext } from "react";
 import { Entity } from "@dreamlab/engine";
 
 export const SelectedEntityContext = createContext<{

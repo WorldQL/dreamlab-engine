@@ -1,4 +1,4 @@
-import { FC, useContext, useState, useCallback } from "react-jsx/jsx-runtime";
+import { FC, useContext, useState, useCallback } from "react";
 import { Entity } from "@dreamlab/engine";
 import { SelectedEntityContext } from "../context/selected-entity-context.tsx";
 import { game } from "../global-game.ts";

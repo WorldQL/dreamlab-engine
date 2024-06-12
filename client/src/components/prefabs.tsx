@@ -1,4 +1,4 @@
-import { FC } from "react-jsx/jsx-runtime";
+import { FC } from "react";
 
 // placeholder until its fully implemented
 export const Prefabs: FC = () => {

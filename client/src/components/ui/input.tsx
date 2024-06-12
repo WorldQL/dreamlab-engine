@@ -1,4 +1,4 @@
-import { FC, ChangeEvent } from "react-jsx/jsx-runtime";
+import { FC, ChangeEvent } from "react";
 
 interface InputFieldProps {
   label: string;
