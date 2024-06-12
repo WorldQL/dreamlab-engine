@@ -36,7 +36,10 @@ export type BehaviorSyncedValueProps<
     B[K] extends SyncedValue<infer V> ? V : never;
 };
 
-export interface BehaviorDefinition<E extends Entity, B extends Behavior<E>> {
+export interface BehaviorDefinition<
+  E extends Entity = Entity,
+  B extends Behavior<E> = Behavior<E>,
+> {
   type: BehaviorConstructor<E, B>;
   values?: BehaviorSyncedValueProps<E, B>;
   _ref?: string;

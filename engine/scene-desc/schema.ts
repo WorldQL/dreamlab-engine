@@ -27,21 +27,30 @@ export const SceneDescBehaviorSchema = z.object({
   script: ResourceLocationSchema,
   values: z.record(ValueSchema),
 });
+export type SceneDescBehavior = z.infer<typeof SceneDescBehaviorSchema>;
 
 const SceneDescEntitySchemaWithoutChildren = z.object({
   ref: EntityReferenceSchema,
   name: z.string(),
+  type: EntityTypeSchema,
   transform: SceneDescTransformSchema.default(SceneDescTransformSchema.parse({})),
   values: z.record(ValueSchema).default({}),
   behaviors: z.array(SceneDescBehaviorSchema).default([]),
 });
-type SceneDescEntity = z.input<typeof SceneDescEntitySchemaWithoutChildren> & {
-  children?: SceneDescEntity[];
+type SceneDescEntityIn = z.input<typeof SceneDescEntitySchemaWithoutChildren> & {
+  children?: SceneDescEntityIn[];
 };
-export const SceneDescEntitySchema: z.ZodType<SceneDescEntity> =
-  SceneDescEntitySchemaWithoutChildren.extend({
-    children: z.lazy(() => SceneDescEntitySchema.array().default([])),
-  });
+type SceneDescEntityOut = z.output<typeof SceneDescEntitySchemaWithoutChildren> & {
+  children: SceneDescEntityOut[];
+};
+export const SceneDescEntitySchema: z.ZodType<
+  SceneDescEntityOut,
+  z.ZodTypeDef,
+  SceneDescEntityIn
+> = SceneDescEntitySchemaWithoutChildren.extend({
+  children: z.lazy(() => SceneDescEntitySchema.array().default([])),
+});
+export type SceneDescEntity = z.infer<typeof SceneDescEntitySchema>;
 
 export const SceneDescSceneSchema = z.object({
   world: SceneDescEntitySchema.array().default([]),
@@ -49,7 +58,7 @@ export const SceneDescSceneSchema = z.object({
   local: SceneDescEntitySchema.array().default([]),
   prefabs: SceneDescEntitySchema.array().default([]),
 
-  registeredEntities: ResourceLocationSchema.array().default([]),
+  registration: ResourceLocationSchema.array().default([]),
 });
 
 export const SceneDescProjectSchema = z.object({

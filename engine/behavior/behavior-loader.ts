@@ -18,23 +18,8 @@ export class BehaviorLoader {
     if (behaviorType.onLoaded) behaviorType.onLoaded(this.#game);
   }
 
-  async convert<E extends Entity, B extends Behavior<E>>(
-    scriptDef: Omit<BehaviorDefinition<E, B>, "type"> & { script: string },
-  ): Promise<BehaviorDefinition<E, B>> {
-    const type = await this.loadScript(scriptDef.script);
-
-    return {
-      type: type as unknown as BehaviorConstructor<E, B>,
-      _ref: scriptDef._ref,
-      values: scriptDef.values,
-    };
-  }
-
   async loadScript(script: string): Promise<BehaviorConstructor> {
-    let url = new URL(script);
-    // TODO: rewrite 'dreamlab:' and 'world:' URLs
-    const location = url.toString();
-
+    const location = this.#game.resolveResource(script);
     if (this.#cache.has(location)) return this.#cache.get(location)!;
 
     const module = await import(location);

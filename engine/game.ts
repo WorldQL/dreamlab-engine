@@ -92,6 +92,12 @@ export abstract class BaseGame implements ISignalHandler {
     this.fire(GameTick);
   }
 
+  /** Resolves res: / cloud: URIs to https:// URLs */
+  resolveResource(uri: string) {
+    // TODO: not yet properly implemented
+    return uri;
+  }
+
   [internal.preTickEntities]() {
     this.world[internal.preTickEntities]();
   }

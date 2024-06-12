@@ -478,6 +478,17 @@ export abstract class Entity implements ISignalHandler {
       throw new Error(`Entity type registry is missing ${target.name}!`);
     }
   };
+  static getTypeName(type: EntityConstructor): string {
+    const namespace = this.#entityTypeRegistry.get(type);
+    if (!namespace) throw new Error(`Entity type registry is missing ${type.name}!`);
+    return `${namespace}/${type.name}`;
+  }
+  static getEntityType(typeName: string): EntityConstructor {
+    for (const [type, namespace] of this.#entityTypeRegistry.entries())
+      if (typeName === `${namespace}/${type.name}`) return type;
+
+    throw new Error(`Entity type ${typeName} is not registered!`);
+  }
   // #endregion
 }
 
