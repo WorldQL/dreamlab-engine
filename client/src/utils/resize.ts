@@ -10,6 +10,10 @@ export const handleResize = (
   const startX = e.clientX;
   const startWidth = e.currentTarget.parentElement?.clientWidth || 0;
 
+  const target = e.currentTarget;
+  target.classList.add("active");
+  document.body.classList.add("resizing-horizontally");
+
   const handleMouseMove = (e: MouseEvent) => {
     const diffX = e.clientX - startX;
     const newWidth = startWidth + (columnKey === "left" ? diffX : -diffX);
@@ -25,9 +29,13 @@ export const handleResize = (
       const gameContainerWidth = window.innerWidth - (leftColumnWidth + newWidth);
       gameContainer.current!.style.width = `${gameContainerWidth}px`;
     }
+
+    e.preventDefault();
   };
 
   const handleMouseUp = () => {
+    target.classList.remove("active");
+    document.body.classList.remove("resizing-horizontally");
     document.removeEventListener("mousemove", handleMouseMove);
     document.removeEventListener("mouseup", handleMouseUp);
   };
@@ -45,6 +53,10 @@ export const handleVerticalResize = (
   const startY = e.clientY;
   const startHeight = topSectionRef.current?.clientHeight || 0;
 
+  const target = e.currentTarget;
+  target.classList.add("active");
+  document.body.classList.add("resizing-vertically");
+
   const handleMouseMove = (e: MouseEvent) => {
     const diffY = e.clientY - startY;
     const newHeight = ((startHeight + diffY) / window.innerHeight) * 100;
@@ -52,9 +64,13 @@ export const handleVerticalResize = (
     const maxHeight = 90;
 
     setTopSectionHeight(Math.max(Math.min(newHeight, maxHeight), minHeight));
+
+    e.preventDefault();
   };
 
   const handleMouseUp = () => {
+    target.classList.remove("active");
+    document.body.classList.remove("resizing-vertically");
     document.removeEventListener("mousemove", handleMouseMove);
     document.removeEventListener("mouseup", handleMouseUp);
   };
@@ -73,6 +89,10 @@ export const handleConsoleResize = (
   e.preventDefault();
   const startY = e.clientY;
   const startHeight = consoleRef.current?.clientHeight || 0;
+
+  const target = e.currentTarget;
+  target.classList.add("active");
+  document.body.classList.add("resizing-vertically");
 
   const handleMouseMove = (e: MouseEvent) => {
     const diffY = startY - e.clientY;
@@ -99,9 +119,13 @@ export const handleConsoleResize = (
         window.innerHeight - (topSectionRef.current?.clientHeight || 0) - maxHeight;
       gameContainer.current!.style.height = `${gameContainerHeight}px`;
     }
+
+    e.preventDefault();
   };
 
   const handleMouseUp = () => {
+    target.classList.remove("active");
+    document.body.classList.remove("resizing-vertically");
     document.removeEventListener("mousemove", handleMouseMove);
     document.removeEventListener("mouseup", handleMouseUp);
   };

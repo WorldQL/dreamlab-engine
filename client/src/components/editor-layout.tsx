@@ -38,7 +38,7 @@ const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
             <SceneGraph />
           </div>
           <div
-            className="w-full cursor-row-resize bg-light-background rounded dark:bg-dark-background hover:bg-accent-primary transition-colors duration-300 ease-in-out"
+            className="w-full cursor-row-resize bg-light-background rounded dark:bg-dark-background hover:bg-accent-primary transition-colors duration-300 ease-in-out active:bg-accent-primary"
             style={{ height: "5px" }}
             onMouseDown={e => handleVerticalResize(e, setTopSectionHeight, topSectionRef)}
           />
@@ -49,7 +49,7 @@ const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
             <Prefabs />
           </div>
           <div
-            className="absolute top-0 right-0 bottom-0 w-1 cursor-col-resize rounded bg-light-background dark:bg-dark-background hover:bg-accent-primary transition-colors duration-300 ease-in-out"
+            className="absolute top-0 right-0 bottom-0 w-1 cursor-col-resize rounded bg-light-background dark:bg-dark-background hover:bg-accent-primary transition-colors duration-300 ease-in-out active:bg-accent-primary"
             onMouseDown={e =>
               handleResize(
                 e,
@@ -70,7 +70,7 @@ const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
             <div className="absolute inset-0" ref={gameContainer} />
           </div>
           <div
-            className="w-full cursor-row-resize rounded bg-light-background dark:bg-dark-background hover:bg-accent-primary transition-colors duration-300 ease-in-out"
+            className="w-full cursor-row-resize rounded bg-light-background dark:bg-dark-background hover:bg-accent-primary transition-colors duration-300 ease-in-out active:bg-accent-primary"
             style={{ height: "5px" }}
             onMouseDown={e =>
               handleConsoleResize(e, setConsoleHeight, consoleRef, topSectionRef, gameContainer)
@@ -90,7 +90,7 @@ const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
         >
           <Inspector />
           <div
-            className="absolute top-0 left-0 bottom-0 w-1 rounded cursor-col-resize bg-light-background dark:bg-dark-background hover:bg-accent-primary transition-colors duration-300 ease-in-out"
+            className="absolute top-0 left-0 bottom-0 w-1 rounded cursor-col-resize bg-light-background dark:bg-dark-background hover:bg-accent-primary transition-colors duration-300 ease-in-out active:bg-accent-primary"
             onMouseDown={e =>
               handleResize(
                 e,

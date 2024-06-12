@@ -1,0 +1,7 @@
+body.resizing-horizontally {
+  cursor: col-resize;
+}
+
+body.resizing-vertically {
+  cursor: row-resize;
+}
