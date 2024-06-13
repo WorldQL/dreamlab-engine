@@ -1,7 +1,7 @@
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import { Entity } from "../entity/mod.ts";
 import { Game } from "../game.ts";
-import { Primitive, SyncedValue } from "../value.ts";
+import { Primitive, SyncedValue } from "../value/mod.ts";
 import { BehaviorValues } from "./behavior-values.ts";
 import {
   ISignalHandler,

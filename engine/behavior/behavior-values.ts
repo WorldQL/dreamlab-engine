@@ -1,6 +1,7 @@
 import { Behavior } from "./behavior.ts";
 import { Entity } from "../entity/mod.ts";
-import { Primitive, PrimitiveTypeTag, SyncedValue } from "../value.ts";
+import { Primitive, SyncedValue } from "../value/mod.ts";
+import { ValueTypeAdapter, ValueTypeTag } from "@dreamlab/engine";
 
 export class BehaviorValues<E extends Entity = Entity, B extends Behavior<E> = Behavior<E>> {
   #behavior: B;
@@ -17,19 +18,24 @@ export class BehaviorValues<E extends Entity = Entity, B extends Behavior<E> = B
     return this.#values;
   }
 
-  value(typeTag: PrimitiveTypeTag, name: string, defaultValue: Primitive): SyncedValue {
+  value<T>(
+    typeTag: ValueTypeTag<T>,
+    name: string,
+    defaultValue: SyncedValue<T>["value"],
+  ): SyncedValue<T> {
     const id = `${this.#behavior.entity.ref}/${this.#behavior.ref}/${name}`;
     if (this.#values.some(v => v.identifier === id))
-      throw new Error(`A value with the name ${name} already exists on this behavior!`);
+      throw new Error(`A value with the name '${name}' already exists on this entity!`);
 
-    const initial = this.#initialValues[name];
+    const initial = this.#initialValues[name] as SyncedValue<T>["value"];
     const initialMatches =
       (typeof initial === "string" && typeTag === String) ||
       (typeof initial === "number" && typeTag === Number) ||
-      (typeof initial === "boolean" && typeTag === Boolean);
+      (typeof initial === "boolean" && typeTag === Boolean) ||
+      typeTag instanceof ValueTypeAdapter;
 
     const registry = this.#behavior.entity.game.syncedValues;
-    const value = new SyncedValue(
+    const value = new SyncedValue<T>(
       registry,
       id,
       initialMatches ? initial : defaultValue,
@@ -40,15 +46,15 @@ export class BehaviorValues<E extends Entity = Entity, B extends Behavior<E> = B
   }
 
   number(name: string, defaultValue: number): SyncedValue<number> {
-    return this.value(Number, name, defaultValue) as SyncedValue<number>;
+    return this.value(Number, name, defaultValue);
   }
 
   string(name: string, defaultValue: string): SyncedValue<string> {
-    return this.value(String, name, defaultValue) as SyncedValue<string>;
+    return this.value(String, name, defaultValue);
   }
 
   boolean(name: string, defaultValue: boolean): SyncedValue<boolean> {
-    return this.value(Boolean, name, defaultValue) as SyncedValue<boolean>;
+    return this.value(Boolean, name, defaultValue);
   }
 
   destroy() {

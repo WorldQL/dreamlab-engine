@@ -10,7 +10,7 @@ import {
   SignalListener,
 } from "./signal.ts";
 import { GameRender, GamePostRender, GameShutdown, GameTick } from "./signals/game-events.ts";
-import { SyncedValueRegistry } from "./value.ts";
+import { SyncedValueRegistry } from "./value/mod.ts";
 import { BehaviorLoader } from "./behavior/behavior-loader.ts";
 import { GameRenderer } from "./renderer/mod.ts";
 import { Time } from "./time.ts";

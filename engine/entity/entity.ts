@@ -31,7 +31,7 @@ import {
   EntityUpdate,
 } from "../signals/entity-updates.ts";
 import { EntityValues } from "../entity/entity-values.ts";
-import { Primitive, SyncedValue } from "../value.ts";
+import { JsonValue, SyncedValue } from "../value/mod.ts";
 import { Behavior, BehaviorConstructor, BehaviorDefinition } from "../behavior/behavior.ts";
 
 export interface EntityContext {
@@ -40,7 +40,7 @@ export interface EntityContext {
   parent?: Entity;
   transform?: { position?: IVector2; rotation?: number; scale?: IVector2 };
   ref?: string;
-  values?: Record<string, Primitive>;
+  values?: Record<string, JsonValue>;
 }
 
 export type EntityConstructor<T extends Entity = Entity> = new (ctx: EntityContext) => T;
