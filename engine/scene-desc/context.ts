@@ -61,6 +61,11 @@ export class SceneEditContext {
       behaviors,
     });
 
+    this.#descToEntityMap.set(desc, entity);
+    this.#entityToDescMap.set(entity, desc);
+
+    // TODO: bidirectional updates (probably need to Proxy all the descriptor stuff ... pensive)
+
     await Promise.all(desc.children.map(childDesc => this.#spawnEntity(entity, childDesc)));
   }
 }
