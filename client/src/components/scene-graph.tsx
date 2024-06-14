@@ -5,7 +5,12 @@ import { game } from "../global-game.ts";
 import { useForceUpdateOnEntityChange } from "../hooks/force-update-on-change.ts";
 import { Panel } from "./ui/panel.tsx";
 
-const EntityEntry: FC<{ entity: Entity; level: number }> = ({ entity, level }) => {
+interface EntityEntryProps {
+  entity: Entity;
+  level: number;
+}
+
+const EntityEntry: FC<EntityEntryProps> = ({ entity, level }: EntityEntryProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { selectedEntity, setSelectedEntity } = useContext(SelectedEntityContext);
 
@@ -13,7 +18,7 @@ const EntityEntry: FC<{ entity: Entity; level: number }> = ({ entity, level }) =
   const icon = iconVal ? iconVal : "🌟";
 
   const toggleCollapse = useCallback(() => {
-    setIsCollapsed(prev => !prev);
+    setIsCollapsed((prev: boolean) => !prev);
   }, []);
 
   const handleEntityClick = useCallback(() => {

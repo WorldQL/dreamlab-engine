@@ -6,7 +6,11 @@ interface AxisInputFieldProps {
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
 }
 
-export const AxisInputField: FC<AxisInputFieldProps> = ({ axis, value, onChange }) => {
+export const AxisInputField: FC<AxisInputFieldProps> = ({
+  axis,
+  value,
+  onChange,
+}: AxisInputFieldProps) => {
   return (
     <div className="flex items-center space-x-1">
       <label className="text-xs mt-2 mr-1 font-medium text-textPrimary">{axis}:</label>

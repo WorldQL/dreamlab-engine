@@ -14,7 +14,7 @@ export const InputField: FC<InputFieldProps> = ({
   onChange,
   type = "text",
   className = "",
-}) => {
+}: InputFieldProps) => {
   return (
     <div className={`mb-2 ${className}`}>
       <label className="block text-sm font-medium text-textPrimary">{label}</label>

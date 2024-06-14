@@ -22,7 +22,9 @@ export const Inspector: FC = () => {
       setRotation(selectedEntity.transform.rotation);
       setScale(selectedEntity.transform.scale);
       setValues(selectedEntity.values);
-      setBehaviors(selectedEntity.behaviors.map(behavior => behavior.constructor.name));
+      setBehaviors(
+        selectedEntity.behaviors.map((behavior: string[]) => behavior.constructor.name),
+      );
     }
   }, [selectedEntity]);
 
@@ -132,7 +134,7 @@ export const Inspector: FC = () => {
         </div>
         <div className="mb-4">
           <h4 className="text-lg font-semibold mb-2 text-textPrimary">Behaviors</h4>
-          {behaviors.map((behavior, index) => (
+          {behaviors.map((behavior: string[], index: number) => (
             <div key={index} className="mb-2">
               <p className="text-sm font-medium text-textPrimary">{behavior}</p>
             </div>

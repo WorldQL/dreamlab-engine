@@ -8,7 +8,11 @@ import Console from "./console.tsx";
 import TopSection from "./top-section.tsx";
 import { handleVerticalResize, handleResize, handleConsoleResize } from "../utils/resize.ts";
 
-const EditorLayout: FC<{ gameDiv: HTMLDivElement }> = ({ gameDiv }) => {
+interface EditorProps {
+  gameDiv: HTMLDivElement;
+}
+
+const EditorLayout: FC<EditorProps> = ({ gameDiv }: EditorProps) => {
   const [selectedEntity, setSelectedEntity] = useState<Entity | null>(null);
   const [leftColumnWidth, setLeftColumnWidth] = useState(250);
   const [rightColumnWidth, setRightColumnWidth] = useState(250);

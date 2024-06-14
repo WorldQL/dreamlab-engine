@@ -1,10 +1,12 @@
 import React, { FC } from "react";
 
-export const Panel: FC<{ title: string; className?: string; children: React.ReactNode }> = ({
-  title,
-  className,
-  children,
-}) => {
+interface PanelProps {
+  title: string;
+  className?: string;
+  children: React.ReactNode;
+}
+
+export const Panel: FC<PanelProps> = ({ title, className, children }: PanelProps) => {
   return (
     <div
       className={
