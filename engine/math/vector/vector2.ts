@@ -149,6 +149,16 @@ export class Vector2 implements IVector2, Vector<IVector2, Vector2> {
   }
   // #endregion
 
+  // #region Inverse
+  public static inverse(vector: IVector2): Vector2 {
+    return new Vector2(1 / vector.x, 1 / vector.y);
+  }
+
+  public inverse(this: Vector2): Vector2 {
+    return Vector2.inverse(this);
+  }
+  // #endregion
+
   // #region Add
   public static add(a: IVector2, b: IVector2): Vector2 {
     return new Vector2(a.x + b.x, a.y + b.y);

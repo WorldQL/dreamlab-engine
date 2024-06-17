@@ -10,6 +10,7 @@ export interface Vector<I, T extends I> {
    */
   abs(this: T): T;
   neg(this: T): T;
+  inverse(this: T): T;
 
   add(this: T, other: I): T;
   sub(this: T, other: I): T;
