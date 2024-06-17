@@ -1,7 +1,6 @@
 import { Behavior } from "./behavior.ts";
 import { Entity } from "../entity/mod.ts";
-import { Primitive, SyncedValue } from "../value/mod.ts";
-import { ValueTypeAdapter, ValueTypeTag } from "@dreamlab/engine";
+import { Primitive, SyncedValue, ValueTypeTag, ValueTypeAdapter } from "../value/mod.ts";
 
 export class BehaviorValues<E extends Entity = Entity, B extends Behavior<E> = Behavior<E>> {
   #behavior: B;

@@ -1,8 +1,7 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { Entity, EntityContext } from "../entity.ts";
-import { EntityPreUpdate, GameRender } from "../../signals/mod.ts";
+import { EntityPreUpdate, GameRender, EntityUpdate } from "../../signals/mod.ts";
 import { IVector2, Vector2, lerp } from "../../math/mod.ts";
-import { EntityUpdate } from "@dreamlab/engine";
 
 export class Sprite2D extends Entity {
   public static readonly icon = "🖼️";
