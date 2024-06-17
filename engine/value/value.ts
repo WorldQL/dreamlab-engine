@@ -53,7 +53,7 @@ export class SyncedValue<T = unknown> {
 
     if (this.typeTag !== Number && this.typeTag !== String && this.typeTag !== Boolean) {
       const adapterTypeTag = this.typeTag as AdapterTypeTag<T>;
-      this.adapter = new adapterTypeTag();
+      this.adapter = new adapterTypeTag(registry.game);
     }
 
     this.#registry.on(SyncedValueChanged, this.#changeListener);

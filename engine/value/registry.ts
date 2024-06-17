@@ -1,4 +1,5 @@
 import * as internal from "../internal.ts";
+import { Game } from "../mod.ts";
 
 import { BasicSignalHandler, exclusiveSignalType } from "../signal.ts";
 import { SyncedValue } from "./value.ts";
@@ -25,8 +26,11 @@ export class SyncedValueRegistry extends BasicSignalHandler<SyncedValueRegistry>
     this.#originator = value;
   }
 
-  constructor() {
+  readonly game: Game;
+
+  constructor(game: Game) {
     super();
+    this.game = game;
   }
 
   get values(): SyncedValue[] {

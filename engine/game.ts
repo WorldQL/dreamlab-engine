@@ -46,7 +46,7 @@ export abstract class BaseGame implements ISignalHandler {
     // now that we know we are ServerGame | ClientGame, we can safely cast to Game
   }
 
-  readonly syncedValues = new SyncedValueRegistry();
+  readonly syncedValues = new SyncedValueRegistry(this as unknown as Game);
 
   readonly entities = new EntityStore(this as unknown as Game);
 
