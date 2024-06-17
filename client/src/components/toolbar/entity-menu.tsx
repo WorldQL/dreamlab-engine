@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FC } from "react";
-import { game } from "../global-game.ts";
+import { game } from "../../global-game.ts";
 import { Empty, Rigidbody2D, Sprite2D } from "@dreamlab/engine";
 
 export const NewEntityMenu: FC = () => {

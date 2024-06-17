@@ -6,7 +6,7 @@ import { EditorContext } from "../context/editor-context.tsx";
 import { Inspector } from "./inspector.tsx";
 import Console from "./console.tsx";
 import { handleVerticalResize, handleResize, handleConsoleResize } from "../utils/resize.ts";
-import { TopSection } from "./top-section.tsx";
+import { TopSection } from "./toolbar/top-section.tsx";
 
 interface EditorProps {
   gameDiv: HTMLDivElement;

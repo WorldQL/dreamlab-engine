@@ -1,5 +1,5 @@
 import { FC, useContext } from "react";
-import { EditorContext } from "../context/editor-context.tsx";
+import { EditorContext } from "../../context/editor-context.tsx";
 
 export const PlaybackControls: FC = () => {
   const { isRunning, setIsRunning, isPaused, setIsPaused } = useContext(EditorContext);
