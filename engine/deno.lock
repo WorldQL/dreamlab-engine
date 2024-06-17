@@ -23,11 +23,13 @@
       "jsr:@std/path@^0.223.0": "jsr:@std/path@0.223.0",
       "jsr:@std/ulid@^0.224.0": "jsr:@std/ulid@0.224.1",
       "npm:@dimforge/rapier2d-compat@0.12.0": "npm:@dimforge/rapier2d-compat@0.12.0",
+      "npm:@dimforge/rapier2d-compat@0.13.1": "npm:@dimforge/rapier2d-compat@0.13.1",
       "npm:@paralleldrive/cuid2@2.2.2": "npm:@paralleldrive/cuid2@2.2.2",
       "npm:@pixi/ticker": "npm:@pixi/ticker@7.4.2",
       "npm:esbuild-plugin-d.ts@1.2.3": "npm:esbuild-plugin-d.ts@1.2.3_typescript@5.4.5",
       "npm:esbuild@0.20.2": "npm:esbuild@0.20.2",
-      "npm:pixi.js@8.1.5": "npm:pixi.js@8.1.5"
+      "npm:pixi.js@8.1.5": "npm:pixi.js@8.1.5",
+      "npm:pixi.js@8.1.6": "npm:pixi.js@8.1.6"
     },
     "jsr": {
       "@deno/cache-dir@0.8.0": {
@@ -121,6 +123,10 @@
     "npm": {
       "@dimforge/rapier2d-compat@0.12.0": {
         "integrity": "sha512-7mvskl7Ql3nrrwkrv8fa0spukV1XS6nI42+YG6RW2HNBgxomASXS1Yx+VOH39SFs65OJcx86Ygmxqy1f2T9csw==",
+        "dependencies": {}
+      },
+      "@dimforge/rapier2d-compat@0.13.1": {
+        "integrity": "sha512-n8g70IkhhpHHqg+KrRbfCc3rHnRvl2pcWHHwk6tJB/BrwywQhM6zWsBCa2sFVIqCjxv/Ese5qmaxSBICPUo0Sw==",
         "dependencies": {}
       },
       "@esbuild/aix-ppc64@0.20.2": {
@@ -448,6 +454,20 @@
       },
       "pixi.js@8.1.5": {
         "integrity": "sha512-6Tpx4Pe00tAOfVuqJNlEk24XHCjaQ5hVwkXbeF7CBIO28G10HQSlr9dQOuLKsWx6RMrBaSpP6ujUhQ68Ok1x+w==",
+        "dependencies": {
+          "@pixi/colord": "@pixi/colord@2.9.6",
+          "@types/css-font-loading-module": "@types/css-font-loading-module@0.0.12",
+          "@types/earcut": "@types/earcut@2.1.4",
+          "@webgpu/types": "@webgpu/types@0.1.40",
+          "@xmldom/xmldom": "@xmldom/xmldom@0.8.10",
+          "earcut": "earcut@2.2.4",
+          "eventemitter3": "eventemitter3@5.0.1",
+          "ismobilejs": "ismobilejs@1.1.1",
+          "parse-svg-path": "parse-svg-path@0.1.2"
+        }
+      },
+      "pixi.js@8.1.6": {
+        "integrity": "sha512-FZT/dLZ9Tdw8eN6odgunSQHORsgHcvLlfOWm7cpR4ZxVGPRqFgDQ4hXpwVxeY9UK4PZtlJ4U910H1QZ4XNLJxg==",
         "dependencies": {
           "@pixi/colord": "@pixi/colord@2.9.6",
           "@types/css-font-loading-module": "@types/css-font-loading-module@0.0.12",
