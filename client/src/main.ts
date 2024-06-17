@@ -36,7 +36,6 @@ const main = async () => {
     type: Sprite2D,
     name: "Sprite",
   });
-  console.log(sprite.globalTransform.scale.x);
 
   let now = performance.now();
   const onFrame = (time: number) => {
