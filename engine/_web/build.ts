@@ -17,6 +17,7 @@ const opts: esbuild.BuildOptions = {
   outfile: "./_web/main.esm.js",
   minify: false,
   keepNames: true,
+  sourcemap: "inline",
 
   banner: {
     js: 'Symbol.dispose ??= Symbol("Symbol.dispose");\nSymbol.asyncDispose ??= Symbol("Symbol.asyncDispose");',
