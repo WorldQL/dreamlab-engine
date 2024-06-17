@@ -2,7 +2,7 @@ import * as esbuild from "npm:esbuild@0.20.2";
 import { denoPlugins } from "jsr:@luca/esbuild-deno-loader";
 import * as _throwaway from "./main.ts";
 
-await esbuild.build({
+const opts: esbuild.BuildOptions = {
   plugins: [
     ...denoPlugins({
       loader: "native",
@@ -16,8 +16,21 @@ await esbuild.build({
   target: "es2022",
   outfile: "./_web/main.esm.js",
   minify: false,
+  keepNames: true,
 
   banner: {
     js: 'Symbol.dispose ??= Symbol("Symbol.dispose");\nSymbol.asyncDispose ??= Symbol("Symbol.asyncDispose");',
   },
-});
+};
+
+const dev = Deno.args[0] === "--dev";
+
+if (dev) {
+  const ctx = await esbuild.context({ ...opts, define: { ...opts.define, IS_DEV: "true" } });
+
+  await ctx.watch();
+  const { port } = await ctx.serve({ servedir: "./_web", port: 3000 });
+  console.log(`Dev server started at http://localhost:${port}`);
+} else {
+  await esbuild.build({ ...opts, define: { ...opts.define, IS_DEV: "false" } });
+}

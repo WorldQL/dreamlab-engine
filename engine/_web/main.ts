@@ -13,6 +13,11 @@ import {
 import { GameTick } from "../signals/mod.ts";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 
+// @ts-expect-error global
+if (IS_DEV) {
+  new EventSource("/esbuild").addEventListener("change", () => location.reload());
+}
+
 const container = document.createElement("div");
 document.body.append(container);
 container.style.width = "1280px";

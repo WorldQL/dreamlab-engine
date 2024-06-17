@@ -2,7 +2,7 @@
   "tasks": {
     "dev": "deno run --watch _main.ts",
     "web:build": "deno run -A _web/build.ts",
-    "web:dev": "deno run -A --watch _web/build.ts",
+    "web:dev": "deno run -A _web/build.ts --dev",
     "web:serve": "deno run -A jsr:@std/http@0.224.0/file-server --port 3000 _web"
   },
   "imports": {
