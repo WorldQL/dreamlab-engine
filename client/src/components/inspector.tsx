@@ -2,7 +2,7 @@ import { ChangeEvent, FC, useContext, useEffect, useState } from "react";
 import { SelectedEntityContext } from "../context/selected-entity-context.tsx";
 import { AxisInputField } from "./ui/axis-input.tsx";
 import { InputField } from "./ui/input.tsx";
-import { EntityValues } from "@dreamlab/engine";
+import { EntityTransformUpdate, EntityValues } from "@dreamlab/engine";
 import { Panel } from "./ui/panel.tsx";
 
 export const Inspector: FC = () => {
@@ -10,7 +10,10 @@ export const Inspector: FC = () => {
 
   const [name, setName] = useState<string>("");
   const [position, setPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-  const [globalPosition, setGlobalPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [globalPosition, setGlobalPosition] = useState<{ x: number; y: number }>({
+    x: 0,
+    y: 0,
+  });
   const [rotation, setRotation] = useState<number>(0);
   const [globalRotation, setGlobalRotation] = useState<number>(0);
   const [scale, setScale] = useState<{ x: number; y: number }>({ x: 1, y: 1 });
@@ -18,18 +21,22 @@ export const Inspector: FC = () => {
   const [behaviors, setBehaviors] = useState<string[]>([]);
 
   useEffect(() => {
-    if (selectedEntity) {
-      setName(selectedEntity.name);
-      setPosition(selectedEntity.transform.position);
-      setGlobalPosition(selectedEntity.globalTransform.position);
-      setRotation(selectedEntity.transform.rotation * (180 / Math.PI));
-      setGlobalRotation(selectedEntity.globalTransform.rotation * (180 / Math.PI));
-      setScale(selectedEntity.transform.scale);
-      setValues(selectedEntity.values);
-      setBehaviors(
-        selectedEntity.behaviors.map((behavior) => behavior.constructor.name),
-      );
-    }
+    if (!selectedEntity) return;
+
+    const entity = selectedEntity;
+    const updateValues = () => {
+      setName(entity.name);
+      setPosition(entity.transform.position);
+      setGlobalPosition(entity.globalTransform.position);
+      setRotation(entity.transform.rotation * (180 / Math.PI));
+      setGlobalRotation(entity.globalTransform.rotation * (180 / Math.PI));
+      setScale(entity.transform.scale);
+      setValues(entity.values);
+      setBehaviors(entity.behaviors.map(behavior => behavior.constructor.name));
+    };
+    updateValues();
+    entity.on(EntityTransformUpdate, updateValues);
+    return () => entity.unregister(EntityTransformUpdate, updateValues);
   }, [selectedEntity]);
 
   const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -112,7 +119,9 @@ export const Inspector: FC = () => {
               />
             </div>
           </div>
-          <div className="text-xs mb-4">Global pos: {globalPosition.x}, {globalPosition.y}</div>
+          <div className="text-xs mb-4">
+            Global pos: {globalPosition.x}, {globalPosition.y}
+          </div>
 
           <InputField
             label="Rotation"
@@ -132,7 +141,7 @@ export const Inspector: FC = () => {
         </div>
         <div className="mb-4">
           <h4 className="text-lg font-semibold mb-2 text-textPrimary">Values</h4>
-          {Object.keys(values).map((key) => (
+          {Object.keys(values).map(key => (
             <InputField
               key={key}
               label={key}
