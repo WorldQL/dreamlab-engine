@@ -7,8 +7,6 @@ export const TopSection: FC = () => {
     return localStorage.getItem("theme") || "light";
   });
 
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
   useEffect(() => {
     if (theme === "dark") {
       document.documentElement.classList.add("dark");
@@ -24,22 +22,10 @@ export const TopSection: FC = () => {
     setTheme(theme === "dark" ? "light" : "dark");
   };
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
-
   return (
     <div className="bg-background w-full flex items-center justify-between">
       <div className="flex space-x-2">
-        <div className="relative">
-          <button
-            className="bg-primary hover:bg-primaryDark text-white font-semibold px-2 py-1 rounded"
-            onClick={toggleMenu}
-          >
-            <i className="fas fa-plus"></i>
-          </button>
-          <NewEntityMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
-        </div>
+        <NewEntityMenu />
         <button className="bg-primary hover:bg-primaryDark text-white font-semibold px-2 py-1 rounded">
           <i className="fas fa-cogs"></i>
         </button>
