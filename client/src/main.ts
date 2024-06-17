@@ -2,6 +2,15 @@ import { Empty, ClientGame, Rigidbody2D, Sprite2D, Camera } from "@dreamlab/engi
 import { renderEditorUI } from "./editor-ui-main.tsx";
 import { createEditorGame } from "./global-game.ts";
 
+try {
+  // @ts-expect-error injected global
+  if (LIVE_RELOAD) {
+    new EventSource("/esbuild").addEventListener("change", () => location.reload());
+  }
+} catch {
+  // Ignore
+}
+
 const main = async () => {
   const container = document.createElement("div");
   container.style.width = "100%;"; // TODO: can pixi just handle the resizing all on its own for us?

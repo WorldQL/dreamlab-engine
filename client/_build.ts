@@ -14,14 +14,27 @@ Symbol.dispose ??= Symbol.for("Symbol.dispose");
 Symbol.asyncDispose ??= Symbol.for("Symbol.asyncDispose");`,
   },
   sourcemap: "linked",
-  keepNames: true
+  keepNames: true,
 };
 
-async function bundle(target: string, opts: esbuild.BuildOptions, watch: boolean) {
+async function bundle(
+  target: string,
+  opts: esbuild.BuildOptions,
+  watch: boolean,
+  serve: boolean,
+) {
   if (watch) {
-    const ctx = await esbuild.context(opts);
+    const ctx = await esbuild.context(
+      serve ? { ...opts, define: { ...opts.define, LIVE_RELOAD: "true" } } : opts,
+    );
+
     console.log(`Watching ${target}...`);
     await ctx.watch();
+
+    if (serve) {
+      const { port } = await ctx.serve({ servedir: "./web", port: 3026 });
+      console.log(`Dev server started at http://localhost:${port}`);
+    }
   } else {
     console.log(`Building ${target}...`);
     await esbuild.build(opts);
@@ -59,7 +72,7 @@ export async function bundleClient(watch: boolean = false) {
     external: ["https://*"],
   };
 
-  await bundle("client", opts, watch);
+  await bundle("client", opts, watch, watch);
 }
 
 export async function bundleEngine(watch: boolean = false) {
@@ -83,7 +96,7 @@ export async function bundleEngine(watch: boolean = false) {
     outfile: "./web/dist/engine.mjs",
   };
 
-  await bundle("engine", opts, watch);
+  await bundle("engine", opts, watch, false);
 }
 
 export async function bundleEngineDeps() {
@@ -105,11 +118,11 @@ export async function bundleEngineDeps() {
     outdir: "./web/dist/vendor",
   };
 
-  await bundle("engine dependencies", opts, false);
+  await bundle("engine dependencies", opts, false, false);
 }
 
 if (import.meta.main) {
-  const watch = Deno.args[0] === "--watch";
+  const watch = Deno.args.includes("--watch");
 
   await bundleEngineDeps();
   await bundleEngine(watch);
