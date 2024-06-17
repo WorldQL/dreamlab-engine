@@ -38,7 +38,7 @@ export const Inspector: FC = () => {
   };
 
   const handlePositionChange = (axis: "x" | "y") => (e: ChangeEvent<HTMLInputElement>) => {
-    const newPosition = { ...position, [axis]: parseFloat(e.target.value) };
+    const newPosition = { x: position.x, y: position.y, [axis]: parseFloat(e.target.value) };
     setPosition(newPosition);
     if (selectedEntity) {
       selectedEntity.transform.position = newPosition;
@@ -56,7 +56,7 @@ export const Inspector: FC = () => {
   };
 
   const handleScaleChange = (axis: "x" | "y") => (e: ChangeEvent<HTMLInputElement>) => {
-    const newScale = { ...scale, [axis]: parseFloat(e.target.value) };
+    const newScale = { x: scale.x, y: scale.y, [axis]: parseFloat(e.target.value) };
     setScale(newScale);
     if (selectedEntity) {
       selectedEntity.transform.scale = newScale;
