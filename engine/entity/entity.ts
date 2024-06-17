@@ -37,7 +37,9 @@ import {
 import { EntityValues } from "../entity/entity-values.ts";
 import { JsonValue, SyncedValue } from "../value/mod.ts";
 import { Behavior, BehaviorConstructor, BehaviorDefinition } from "../behavior/behavior.ts";
-import { EntityReparented } from "../mod.ts";
+import { EntityChildDestroyed, EntityReparented } from "../mod.ts";
+import { EntityDestroyed } from "../signals/entity-lifecycle.ts";
+import { EntityDescendentDestroyed } from "../signals/entity-lifecycle.ts";
 
 export interface EntityContext {
   game: Game;
@@ -448,6 +450,14 @@ export abstract class Entity implements ISignalHandler {
   }
 
   destroy() {
+    this.fire(EntityDestroyed);
+    if (this.parent) this.parent.fire(EntityChildDestroyed, this);
+    let ancestor = this.parent;
+    while (ancestor) {
+      ancestor.fire(EntityDescendentDestroyed, this);
+      ancestor = ancestor.parent;
+    }
+
     for (const child of this.#children.values()) {
       child.destroy();
     }
