@@ -1,10 +1,11 @@
 import RAPIER from "@dreamlab/vendor/rapier.ts";
 import { Entity, EntityContext } from "../entity.ts";
 import { Vector2 } from "../../math/mod.ts";
-import { EntityPreUpdate, EntityUpdate } from "../../signals/entity-updates.ts";
+import { EntityPreUpdate, EntityUpdate, EntityDestroyed } from "../../signals/mod.ts";
 
 export class Rigidbody2D extends Entity {
-  public static readonly icon = '🟪'
+  public static readonly icon = "🟪";
+
   body: RAPIER.RigidBody;
   collider: RAPIER.Collider;
   #shape: RAPIER.Cuboid;
@@ -57,6 +58,10 @@ export class Rigidbody2D extends Entity {
         this.#shape.halfExtents.x * 2,
         this.#shape.halfExtents.y * 2,
       );
+    });
+
+    this.on(EntityDestroyed, () => {
+      this.game.physics.world.removeRigidBody(this.body);
     });
   }
 }
