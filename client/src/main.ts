@@ -1,4 +1,4 @@
-import { Empty, ClientGame, Rigidbody2D, Sprite2D } from "@dreamlab/engine";
+import { Empty, ClientGame, Rigidbody2D, Sprite2D, Camera } from "@dreamlab/engine";
 import { renderEditorUI } from "./editor-ui-main.tsx";
 import { createEditorGame } from "./global-game.ts";
 
@@ -11,6 +11,8 @@ const main = async () => {
   Object.defineProperty(window, "game", { value: game }); // for debugging
   renderEditorUI(container);
   await game.initialize();
+
+  game.local.spawn({ type: Camera, name: "Camera" });
 
   // editor
   game.physics.enabled = false;
