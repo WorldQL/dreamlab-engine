@@ -119,7 +119,7 @@ export const Inspector: FC = () => {
               />
             </div>
           </div>
-          <div className="text-xs mb-4">
+          <div className="text-textSecondary text-xs mb-4">
             Global pos: {globalPosition.x}, {globalPosition.y}
           </div>
 
@@ -129,7 +129,9 @@ export const Inspector: FC = () => {
             value={rotation}
             onChange={handleRotationChange}
           />
-          <div className="text-xs mb-4">Global rotation: {globalRotation}</div>
+          <div className="text-textSecondary text-xs mb-4">
+            Global rotation: {globalRotation}
+          </div>
 
           <div className="mb-2">
             <label className="block text-sm font-medium text-textPrimary">Scale</label>
