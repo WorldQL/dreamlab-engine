@@ -7,6 +7,8 @@ import {
   EntityRenamed,
   Entity,
   EntityDescendentRenamed,
+  EntityDescendentReparented,
+  EntityReparented,
 } from "@dreamlab/engine";
 import { useForceUpdate } from "./force-update.ts";
 
@@ -19,6 +21,7 @@ export const useForceUpdateOnEntityChange = (entity: Entity) => {
     const onEntityDestroyed = () => forceUpdate();
     const onEntityDescendentDestroyed = () => forceUpdate();
     const onEntityRenamed = () => forceUpdate();
+    const onEntityReparented = () => forceUpdate();
 
     entity.on(EntitySpawned, onEntitySpawned);
     entity.on(EntityDescendentSpawned, onEntityDescendentSpawned);
@@ -26,6 +29,8 @@ export const useForceUpdateOnEntityChange = (entity: Entity) => {
     entity.on(EntityDescendentDestroyed, onEntityDescendentDestroyed);
     entity.on(EntityRenamed, onEntityRenamed);
     entity.on(EntityDescendentRenamed, onEntityRenamed);
+    entity.on(EntityReparented, onEntityReparented);
+    entity.on(EntityDescendentReparented, onEntityReparented);
 
     return () => {
       entity.unregister(EntitySpawned, onEntitySpawned);
@@ -34,6 +39,8 @@ export const useForceUpdateOnEntityChange = (entity: Entity) => {
       entity.unregister(EntityDescendentDestroyed, onEntityDescendentDestroyed);
       entity.unregister(EntityRenamed, onEntityRenamed);
       entity.unregister(EntityDescendentRenamed, onEntityRenamed);
+      entity.unregister(EntityReparented, onEntityReparented);
+      entity.unregister(EntityDescendentReparented, onEntityReparented);
     };
   }, [forceUpdate]);
 };

@@ -71,3 +71,27 @@ export class EntityDescendentRenamed {
   ) {}
   [exclusiveSignalType] = Entity;
 }
+
+/**
+ * Fired when this entity's {@link Entity#parent} changes.
+ */
+export class EntityReparented {
+  constructor(public oldParent: Entity | undefined) {}
+  [exclusiveSignalType] = Entity;
+}
+
+export class EntityChildReparented {
+  constructor(
+    public child: Entity,
+    public oldParent: Entity | undefined,
+  ) {}
+  [exclusiveSignalType] = Entity;
+}
+
+export class EntityDescendentReparented {
+  constructor(
+    public descendent: Entity,
+    public oldParent: Entity | undefined,
+  ) {}
+  [exclusiveSignalType] = Entity;
+}

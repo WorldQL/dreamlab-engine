@@ -18,8 +18,10 @@ import {
 } from "../signal.ts";
 import {
   EntityChildRenamed,
+  EntityChildReparented,
   EntityChildSpawned,
   EntityDescendentRenamed,
+  EntityDescendentReparented,
   EntityDescendentSpawned,
   EntityRenamed,
   EntitySpawned,
@@ -35,6 +37,7 @@ import {
 import { EntityValues } from "../entity/entity-values.ts";
 import { JsonValue, SyncedValue } from "../value/mod.ts";
 import { Behavior, BehaviorConstructor, BehaviorDefinition } from "../behavior/behavior.ts";
+import { EntityReparented } from "../mod.ts";
 
 export interface EntityContext {
   game: Game;
@@ -140,6 +143,16 @@ export abstract class Entity implements ISignalHandler {
 
     this.#children.set(nonConflictingName ?? child.name, child);
     child.#parent = this;
+
+    // fire reparent events:
+    child.fire(EntityReparented, oldParent);
+    this.fire(EntityChildReparented, child, oldParent);
+    // deno-lint-ignore no-this-alias
+    let ancestor: Entity | undefined = this;
+    while (ancestor) {
+      ancestor.fire(EntityDescendentReparented, child, oldParent);
+      ancestor = ancestor.parent;
+    }
 
     if (nonConflictingName) {
       const oldName = child.#name;
