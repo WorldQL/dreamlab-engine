@@ -12,6 +12,7 @@ import {
 } from "../mod.ts";
 import { GameTick } from "../signals/mod.ts";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
+import { slider } from "./debug.ts";
 
 // @ts-expect-error global
 if (IS_DEV) {
@@ -22,40 +23,6 @@ const container = document.createElement("div");
 document.body.append(container);
 container.style.width = "1280px";
 container.style.height = "720px";
-
-const slider = (
-  {
-    label,
-    value = 0,
-    min = 0,
-    max = 1,
-    step = 0.01,
-  }: {
-    label: string;
-    value?: number;
-    min?: number;
-    max?: number;
-    step?: number;
-  },
-  onChanged: (value: number) => void,
-) => {
-  const span = document.createElement("span");
-  span.innerText = label;
-
-  const input = document.createElement("input");
-  input.type = "range";
-  input.value = value.toString();
-  input.min = min.toString();
-  input.max = max.toString();
-  input.step = step.toString();
-  input.addEventListener("input", () => onChanged(input.valueAsNumber));
-
-  const container = document.createElement("div");
-  container.appendChild(span);
-  container.appendChild(input);
-
-  document.body.appendChild(container);
-};
 
 const game = new ClientGame({
   instanceId: "0",
