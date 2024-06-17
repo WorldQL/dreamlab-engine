@@ -72,16 +72,18 @@ export class Behavior<E extends Entity = Entity> {
     this.values = new BehaviorValues(this, ctx.values ?? {});
   }
 
-  listen<S extends Signal, T extends ISignalHandler>(
+  protected listen<S extends Signal, T extends ISignalHandler>(
     receiver: T,
     signalType: SignalConstructor<SignalMatching<S, T>>,
     signalListener: SignalListener<SignalMatching<S, T>>,
   ) {
-    receiver.on(signalType, signalListener);
+    const boundSignalListener = signalListener.bind(this);
+
+    receiver.on(signalType, boundSignalListener);
     this.listeners.push([
       new WeakRef(receiver as ISignalHandler),
       signalType as SignalConstructor,
-      signalListener as SignalListener,
+      boundSignalListener as SignalListener,
     ]);
   }
 

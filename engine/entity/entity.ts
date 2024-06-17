@@ -372,17 +372,19 @@ export abstract class Entity implements ISignalHandler {
     signalType: SignalConstructor<SignalMatching<S, T>>,
     signalListener: SignalListener<SignalMatching<S, T>>,
   ) {
+    const boundSignalListener = signalListener.bind(this);
+
     // redirect to this.on(..) if listening to self
     if ((receiver as unknown) === this) {
       // @ts-expect-error can't expect TypeScript to know that T is Entity
       return this.on(signalType, signalListener);
     }
 
-    receiver.on(signalType, signalListener);
+    receiver.on(signalType, boundSignalListener);
     this.#listeners.push([
       new WeakRef(receiver as ISignalHandler),
       signalType as SignalConstructor,
-      signalListener as SignalListener,
+      boundSignalListener as SignalListener,
     ]);
   }
   // #endregion
@@ -541,5 +543,5 @@ export const serializeIdentifier = (parent: string | undefined, child: string) =
       ? `${parent}._.${child}`
       : `${child}`
     : parent
-      ? `${parent}._[${JSON.stringify(child)}]`
-      : `[${JSON.stringify(child)}]`;
+    ? `${parent}._[${JSON.stringify(child)}]`
+    : `[${JSON.stringify(child)}]`;
