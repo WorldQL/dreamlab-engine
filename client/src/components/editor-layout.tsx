@@ -6,7 +6,10 @@ import { EditorContext } from "../context/editor-context.tsx";
 import { Inspector } from "./inspector.tsx";
 import Console from "./console.tsx";
 import { handleVerticalResize, handleResize, handleConsoleResize } from "../utils/resize.ts";
-import { TopSection } from "./toolbar/top-section.tsx";
+import { NewEntityMenu } from "./toolbar/entity-menu.tsx";
+import { PlaybackControls } from "./toolbar/playback-controls.tsx";
+import { SettingsMenu } from "./toolbar/settings-menu.tsx";
+import { ThemeButton } from "./toolbar/theme-button.tsx";
 
 interface EditorProps {
   gameDiv: HTMLDivElement;
@@ -79,8 +82,16 @@ const EditorLayout: FC<EditorProps> = ({ gameDiv }: EditorProps) => {
           />
         </div>
         <div className="relative flex-1 flex flex-col">
+          {/* toolbar section */}
           <div className="p-1 bg-background">
-            <TopSection />
+            <div className="bg-background w-full flex items-center justify-between">
+              <div className="flex space-x-2">
+                <NewEntityMenu />
+                <SettingsMenu />
+                <ThemeButton />
+              </div>
+              <PlaybackControls />
+            </div>
           </div>
           <div className="relative flex-1 overflow-hidden">
             <div
