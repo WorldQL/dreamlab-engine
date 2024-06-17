@@ -83,9 +83,10 @@ export abstract class Entity implements ISignalHandler {
   set name(name: string) {
     const oldName = this.#name;
     this.#name = name;
-    if (this.parent) {
-      this.parent.removeChild(this, oldName);
-      this.parent.append(this);
+    const parent = this.parent;
+    if (parent) {
+      parent.removeChild(this, oldName);
+      parent.append(this);
     }
     this.#recomputeId();
     this.fire(EntityRenamed, oldName);
@@ -504,5 +505,5 @@ export const serializeIdentifier = (parent: string | undefined, child: string) =
       ? `${parent}._.${child}`
       : `${child}`
     : parent
-    ? `${parent}._[${JSON.stringify(child)}]`
-    : `[${JSON.stringify(child)}]`;
+      ? `${parent}._[${JSON.stringify(child)}]`
+      : `[${JSON.stringify(child)}]`;
