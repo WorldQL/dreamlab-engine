@@ -17,7 +17,9 @@ import {
   SignalMatching,
 } from "../signal.ts";
 import {
+  EntityChildRenamed,
   EntityChildSpawned,
+  EntityDescendentRenamed,
   EntityDescendentSpawned,
   EntityRenamed,
   EntitySpawned,
@@ -90,6 +92,17 @@ export abstract class Entity implements ISignalHandler {
     }
     this.#recomputeId();
     this.fire(EntityRenamed, oldName);
+
+    // TODO: propagate {Child,Ancestor}Renamed events up
+    if (this.parent) {
+      this.parent.fire(EntityChildRenamed, this, oldName);
+    }
+
+    let ancestor = this.parent;
+    while (ancestor) {
+      ancestor.fire(EntityDescendentRenamed, this, oldName);
+      ancestor = ancestor.parent;
+    }
   }
 
   readonly id: string;

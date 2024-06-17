@@ -51,9 +51,11 @@ const EntityEntry: FC<EntityEntryProps> = ({ entity, level }: EntityEntryProps) 
       </div>
       {entity.children.size > 0 && !isCollapsed && (
         <ul>
-          {[...entity.children.values()].map(e => (
-            <EntityEntry entity={e} level={level + 1} key={e.ref} />
-          ))}
+          {[...entity.children.entries()]
+            .toSorted(([aName, _a], [bName, _b]) => aName.localeCompare(bName))
+            .map(([_, e]) => (
+              <EntityEntry entity={e} level={level + 1} key={e.ref} />
+            ))}
         </ul>
       )}
     </li>
@@ -67,9 +69,11 @@ export const SceneGraph: FC = () => {
     <Panel title="Scene" className="h-full">
       <div>
         <ul>
-          {[...game.world.children.values()].map(ent => (
-            <EntityEntry entity={ent} level={0} key={ent.ref} />
-          ))}
+          {[...game.world.children.entries()]
+            .toSorted(([aName, _a], [bName, _b]) => aName.localeCompare(bName))
+            .map(([_, ent]) => (
+              <EntityEntry entity={ent} level={0} key={ent.ref} />
+            ))}
         </ul>
       </div>
     </Panel>

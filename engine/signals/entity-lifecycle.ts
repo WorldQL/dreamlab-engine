@@ -55,3 +55,19 @@ export class EntityRenamed {
   constructor(public oldName: string) {}
   [exclusiveSignalType] = Entity;
 }
+
+export class EntityChildRenamed {
+  constructor(
+    public child: Entity,
+    public oldName: string,
+  ) {}
+  [exclusiveSignalType] = Entity;
+}
+
+export class EntityDescendentRenamed {
+  constructor(
+    public descendent: Entity,
+    public oldName: string,
+  ) {}
+  [exclusiveSignalType] = Entity;
+}
