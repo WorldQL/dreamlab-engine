@@ -1,4 +1,4 @@
-import { FC, useContext, useState, useCallback } from "react";
+import { FC, useContext, useState, useCallback, useRef } from "react";
 import { Entity } from "@dreamlab/engine";
 import { SelectedEntityContext } from "../context/selected-entity-context.tsx";
 import { game } from "../global-game.ts";
@@ -10,9 +10,37 @@ interface EntityEntryProps {
   level: number;
 }
 
+// TODO: refactor -- better way to do this?
+const findEntityById = (entity: Entity, id: string): Entity | undefined => {
+  if (entity.id === id) {
+    return entity;
+  }
+  for (const child of entity.children.values()) {
+    const foundEntity = findEntityById(child, id);
+    if (foundEntity) {
+      return foundEntity;
+    }
+  }
+  return undefined;
+};
+
+const isDescendant = (parent: Entity, child: Entity): boolean => {
+  if (parent === child) {
+    return true;
+  }
+  for (const childEntity of parent.children.values()) {
+    if (isDescendant(childEntity, child)) {
+      return true;
+    }
+  }
+  return false;
+};
+
 const EntityEntry: FC<EntityEntryProps> = ({ entity, level }: EntityEntryProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const { selectedEntity, setSelectedEntity } = useContext(SelectedEntityContext);
+  const dragImageRef = useRef<HTMLDivElement>(null);
 
   const iconVal = (entity.constructor as typeof Entity).icon;
   const icon = iconVal ? iconVal : "🌟";
@@ -25,13 +53,61 @@ const EntityEntry: FC<EntityEntryProps> = ({ entity, level }: EntityEntryProps) 
     setSelectedEntity(entity);
   }, [entity, setSelectedEntity]);
 
+  const handleDragStart = useCallback(
+    (event: React.DragEvent<HTMLDivElement>) => {
+      event.dataTransfer.setData("text/plain", entity.id);
+      const dragImage = dragImageRef.current;
+      if (dragImage) {
+        event.dataTransfer.setDragImage(dragImage, -10, 10);
+      }
+    },
+    [entity],
+  );
+
+  const handleDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsHovered(true);
+  }, []);
+
+  const handleDragLeave = useCallback((event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsHovered(false);
+  }, []);
+
+  const handleDrop = useCallback(
+    (event: React.DragEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      setIsHovered(false);
+      const draggedEntityId = event.dataTransfer.getData("text/plain");
+      const draggedEntity = findEntityById(game.world, draggedEntityId);
+
+      if (draggedEntity && draggedEntity !== entity && !isDescendant(draggedEntity, entity)) {
+        draggedEntity.parent = entity;
+      }
+    },
+    [entity],
+  );
+
+  const getBackgroundClass = () => {
+    if (isHovered) {
+      return "bg-primary";
+    } else {
+      return "hover:bg-secondary";
+    }
+  };
+
   return (
     <li key={entity.ref} className="relative">
       <div
         className={`flex items-center cursor-pointer w-full relative ${
-          selectedEntity === entity ? "bg-gray border-primary border-2" : "hover:bg-secondary"
-        } hover:shadow-md`}
+          selectedEntity === entity ? "bg-gray border-primary border-2" : ""
+        } ${getBackgroundClass()} hover:shadow-md`}
         onClick={handleEntityClick}
+        draggable
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
         style={{ paddingLeft: `${level * 16}px` }}
       >
         {entity.children.size > 0 ? (
@@ -58,6 +134,13 @@ const EntityEntry: FC<EntityEntryProps> = ({ entity, level }: EntityEntryProps) 
             ))}
         </ul>
       )}
+      {/* FIXME: this is always hidden */}
+      <div
+        ref={dragImageRef}
+        className="hidden bg-primaryLight text-white border border-primary rounded px-2 py-1"
+      >
+        {entity.name}
+      </div>
     </li>
   );
 };
