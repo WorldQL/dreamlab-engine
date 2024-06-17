@@ -1,4 +1,4 @@
-import { FC, useContext, useState, useEffect, ChangeEvent } from "react";
+import { ChangeEvent, FC, useContext, useEffect, useState } from "react";
 import { SelectedEntityContext } from "../context/selected-entity-context.tsx";
 import { AxisInputField } from "./ui/axis-input.tsx";
 import { InputField } from "./ui/input.tsx";
@@ -10,7 +10,9 @@ export const Inspector: FC = () => {
 
   const [name, setName] = useState<string>("");
   const [position, setPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [globalPosition, setGlobalPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [rotation, setRotation] = useState<number>(0);
+  const [globalRotation, setGlobalRotation] = useState<number>(0);
   const [scale, setScale] = useState<{ x: number; y: number }>({ x: 1, y: 1 });
   const [values, setValues] = useState<EntityValues>({} as EntityValues);
   const [behaviors, setBehaviors] = useState<string[]>([]);
@@ -19,7 +21,9 @@ export const Inspector: FC = () => {
     if (selectedEntity) {
       setName(selectedEntity.name);
       setPosition(selectedEntity.transform.position);
-      setRotation(selectedEntity.transform.rotation);
+      setGlobalPosition(selectedEntity.globalTransform.position);
+      setRotation(selectedEntity.transform.rotation * (180 / Math.PI));
+      setGlobalRotation(selectedEntity.globalTransform.rotation * (180 / Math.PI));
       setScale(selectedEntity.transform.scale);
       setValues(selectedEntity.values);
       setBehaviors(
@@ -50,7 +54,8 @@ export const Inspector: FC = () => {
     const newRotation = parseFloat(e.target.value);
     setRotation(newRotation);
     if (selectedEntity) {
-      selectedEntity.transform.rotation = newRotation;
+      const rotationInRadians = newRotation * (Math.PI / 180);
+      selectedEntity.transform.rotation = rotationInRadians;
       setSelectedEntity(selectedEntity);
     }
   };
@@ -90,7 +95,7 @@ export const Inspector: FC = () => {
         <div className="mb-4">
           <InputField label="Name" value={name} onChange={handleNameChange} />
         </div>
-        <div className="mb-4">
+        <div>
           <h4 className="text-lg font-semibold mb-2 text-textPrimary">Transform</h4>
           <div className="mb-2">
             <label className="block text-sm font-medium text-textPrimary">Position</label>
@@ -107,12 +112,16 @@ export const Inspector: FC = () => {
               />
             </div>
           </div>
+          <div className="text-xs mb-4">Global pos: {globalPosition.x}, {globalPosition.y}</div>
+
           <InputField
             label="Rotation"
             type="number"
             value={rotation}
             onChange={handleRotationChange}
           />
+          <div className="text-xs mb-4">Global rotation: {globalRotation}</div>
+
           <div className="mb-2">
             <label className="block text-sm font-medium text-textPrimary">Scale</label>
             <div className="flex space-x-2">
@@ -123,7 +132,7 @@ export const Inspector: FC = () => {
         </div>
         <div className="mb-4">
           <h4 className="text-lg font-semibold mb-2 text-textPrimary">Values</h4>
-          {Object.keys(values).map(key => (
+          {Object.keys(values).map((key) => (
             <InputField
               key={key}
               label={key}
