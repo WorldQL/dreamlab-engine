@@ -14,7 +14,7 @@ const opts: esbuild.BuildOptions = {
   format: "esm",
   platform: "browser",
   target: "es2022",
-  outfile: "./_web/main.esm.js",
+  outfile: "./_web/www/main.esm.js",
   minify: false,
   keepNames: true,
   sourcemap: "inline",
@@ -30,7 +30,7 @@ if (dev) {
   const ctx = await esbuild.context({ ...opts, define: { ...opts.define, IS_DEV: "true" } });
 
   await ctx.watch();
-  const { port } = await ctx.serve({ servedir: "./_web", port: 3000 });
+  const { port } = await ctx.serve({ servedir: "./_web/www", port: 3000 });
   console.log(`Dev server started at http://localhost:${port}`);
 } else {
   await esbuild.build({ ...opts, define: { ...opts.define, IS_DEV: "false" } });
