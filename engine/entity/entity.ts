@@ -36,7 +36,12 @@ import {
 } from "../signals/entity-updates.ts";
 import { EntityValues } from "../entity/entity-values.ts";
 import { JsonValue, SyncedValue } from "../value/mod.ts";
-import { Behavior, BehaviorConstructor, BehaviorDefinition } from "../behavior/behavior.ts";
+import {
+  BehaviorSyncedValueProps,
+  Behavior,
+  BehaviorConstructor,
+  BehaviorDefinition,
+} from "../behavior/behavior.ts";
 import { EntityChildDestroyed, EntityReparented } from "../mod.ts";
 import { EntityDestroyed } from "../signals/entity-lifecycle.ts";
 import { EntityDescendentDestroyed } from "../signals/entity-lifecycle.ts";
@@ -248,6 +253,57 @@ export abstract class Entity implements ISignalHandler {
     def.children?.forEach(c => entity.spawn(c));
 
     return entity;
+  }
+  // #endregion
+
+  // #region Cloning
+  #generatePlainDefinition(): EntityDefinition<this> {
+    const entityValues: Partial<EntitySyncedValueProps<this>> = {};
+    for (const [key, value] of Object.entries(this)) {
+      if (!(value instanceof SyncedValue)) continue;
+      const newValue = value.adapter
+        ? value.adapter.convertFromPrimitive(value.adapter.convertToPrimitive(value.value))
+        : structuredClone(value.value);
+      entityValues[key as keyof typeof entityValues] = newValue;
+    }
+
+    return {
+      name: this.name,
+      type: this.constructor as EntityConstructor<this>,
+      transform: this.transform,
+      values: entityValues,
+    };
+  }
+
+  #generateBehaviorDefinition(behavior: Behavior): BehaviorDefinition {
+    const behaviorValues: Partial<BehaviorSyncedValueProps> = {};
+    for (const [key, value] of Object.entries(behavior)) {
+      if (!(value instanceof SyncedValue)) continue;
+      const newValue = value.adapter
+        ? value.adapter.convertFromPrimitive(value.adapter.convertToPrimitive(value.value))
+        : structuredClone(value.value);
+      // @ts-expect-error Object.entries can't give us key as keyof BehaviorSyncedValueProps
+      behaviorValues[key] = newValue;
+    }
+
+    return {
+      type: behavior.constructor as BehaviorConstructor,
+      values: behaviorValues,
+    };
+  }
+
+  #generateRichDefinition(): EntityDefinition<this> {
+    const definition = this.#generatePlainDefinition();
+    definition.behaviors = this.behaviors.map(b => this.#generateBehaviorDefinition(b));
+    definition.children = [...this.children.values()].map(entity =>
+      entity.#generateRichDefinition(),
+    );
+
+    return definition;
+  }
+
+  cloneInto(other: Entity): this {
+    return other.spawn(this.#generateRichDefinition());
   }
   // #endregion
 
@@ -543,5 +599,5 @@ export const serializeIdentifier = (parent: string | undefined, child: string) =
       ? `${parent}._.${child}`
       : `${child}`
     : parent
-    ? `${parent}._[${JSON.stringify(child)}]`
-    : `[${JSON.stringify(child)}]`;
+      ? `${parent}._[${JSON.stringify(child)}]`
+      : `[${JSON.stringify(child)}]`;

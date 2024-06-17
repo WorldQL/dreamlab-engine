@@ -41,7 +41,7 @@ export interface BehaviorDefinition<
   B extends Behavior<E> = Behavior<E>,
 > {
   type: BehaviorConstructor<E, B>;
-  values?: BehaviorSyncedValueProps<E, B>;
+  values?: Partial<BehaviorSyncedValueProps<E, B>>;
   _ref?: string;
 }
 
