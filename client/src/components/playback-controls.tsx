@@ -6,7 +6,6 @@ export const PlaybackControls: FC = () => {
 
   const handlePlay = () => {
     setIsRunning(true);
-    setIsPaused(false);
   };
 
   const handlePause = () => {
@@ -15,7 +14,6 @@ export const PlaybackControls: FC = () => {
 
   const handleStop = () => {
     setIsRunning(false);
-    setIsPaused(false);
   };
 
   return (
