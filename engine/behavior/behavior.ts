@@ -103,7 +103,7 @@ export class Behavior<E extends Entity = Entity> {
 
     if (this.onFrame) {
       const onFrame = this.onFrame.bind(this);
-      this.listen(this.entity.game, GameRender, e => onFrame(e.delta));
+      this.listen(this.entity.game, GameRender, () => onFrame());
     }
 
     this.onInitialize();
@@ -111,5 +111,5 @@ export class Behavior<E extends Entity = Entity> {
 
   onInitialize(): void {}
   onTick?(): void;
-  onFrame?(delta: number): void;
+  onFrame?(): void;
 }
