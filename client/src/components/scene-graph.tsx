@@ -148,18 +148,35 @@ const EntityEntry: FC<EntityEntryProps> = ({ entity, level }: EntityEntryProps) 
 export const SceneGraph: FC = () => {
   useForceUpdateOnEntityChange(game.world);
 
+  const handleDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+  }, []);
+
+  const handleDrop = useCallback((event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    const draggedEntityId = event.dataTransfer.getData("text/plain");
+    const draggedEntity = findEntityById(game.world, draggedEntityId);
+
+    if (draggedEntity) {
+      draggedEntity.parent = game.world;
+    }
+  }, []);
+
   return (
-    <Panel title="Scene" className="h-full">
-      <div>
-        <ul>
-          {[...game.world.children.entries()]
-            .toSorted(([aName, _a], [bName, _b]) => aName.localeCompare(bName))
-            .map(([_, ent]) => (
-              <EntityEntry entity={ent} level={0} key={ent.ref} />
-            ))}
-        </ul>
-      </div>
-    </Panel>
+    <div className="h-full" onDragOver={handleDragOver} onDrop={handleDrop}>
+      <Panel className="h-full" title="Scene">
+        <div>
+          <ul>
+            {[...game.world.children.entries()]
+              .toSorted(([aName, _a], [bName, _b]) => aName.localeCompare(bName))
+              .map(([_, ent]) => (
+                <EntityEntry entity={ent} level={0} key={ent.ref} />
+              ))}
+          </ul>
+        </div>
+      </Panel>
+    </div>
   );
 };
 
