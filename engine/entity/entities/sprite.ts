@@ -1,7 +1,7 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { Entity, EntityContext } from "../entity.ts";
 import { EntityPreUpdate, GameRender, EntityUpdate } from "../../signals/mod.ts";
-import { IVector2, Vector2, lerp } from "../../math/mod.ts";
+import { IVector2, Vector2, lerpAngle } from "../../math/mod.ts";
 
 export class Sprite2D extends Entity {
   public static readonly icon = "🖼️";
@@ -49,7 +49,11 @@ export class Sprite2D extends Entity {
           : this.globalTransform.position;
       const rotation =
         this.#lastRenderRot !== undefined
-          ? lerp(this.#lastRenderRot!, this.globalTransform.rotation, this.game.time.partial)
+          ? lerpAngle(
+              this.#lastRenderRot!,
+              this.globalTransform.rotation,
+              this.game.time.partial,
+            )
           : this.globalTransform.rotation;
 
       this.#sprite.position = { x: pos.x, y: -pos.y };
