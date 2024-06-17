@@ -1,6 +1,6 @@
 import { FC, useContext, useState, useCallback, useRef } from "react";
 import { Entity } from "@dreamlab/engine";
-import { SelectedEntityContext } from "../context/selected-entity-context.tsx";
+import { EditorContext } from "../context/editor-context.tsx";
 import { game } from "../global-game.ts";
 import { useForceUpdateOnEntityChange } from "../hooks/force-update-on-change.ts";
 import { Panel } from "./ui/panel.tsx";
@@ -39,7 +39,7 @@ const isDescendant = (parent: Entity, child: Entity): boolean => {
 const EntityEntry: FC<EntityEntryProps> = ({ entity, level }: EntityEntryProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const { selectedEntity, setSelectedEntity } = useContext(SelectedEntityContext);
+  const { selectedEntity, setSelectedEntity } = useContext(EditorContext);
   const dragImageRef = useRef<HTMLDivElement>(null);
 
   const iconVal = (entity.constructor as typeof Entity).icon;

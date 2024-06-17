@@ -1,12 +1,12 @@
 import { ChangeEvent, FC, useContext, useEffect, useState } from "react";
-import { SelectedEntityContext } from "../context/selected-entity-context.tsx";
+import { EditorContext } from "../context/editor-context.tsx";
 import { AxisInputField } from "./ui/axis-input.tsx";
 import { InputField } from "./ui/input.tsx";
 import { EntityTransformUpdate, EntityValues } from "@dreamlab/engine";
 import { Panel } from "./ui/panel.tsx";
 
 export const Inspector: FC = () => {
-  const { selectedEntity, setSelectedEntity } = useContext(SelectedEntityContext);
+  const { selectedEntity, setSelectedEntity } = useContext(EditorContext);
 
   const [name, setName] = useState<string>("");
   const [position, setPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });

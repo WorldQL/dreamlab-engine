@@ -1,4 +1,5 @@
 import { useEffect, useState, type FC } from "react";
+import { PlaybackControls } from "./playback-controls.tsx";
 
 export const TopSection: FC = () => {
   const [theme, setTheme] = useState(() => {
@@ -39,17 +40,7 @@ export const TopSection: FC = () => {
           <i className="fas fa-tools"></i>
         </button>
       </div>
-      <div className="flex space-x-2">
-        <button className="bg-green hover:bg-greenDark text-white font-semibold px-2 py-1 rounded">
-          <i className="fas fa-play"></i>
-        </button>
-        <button className="bg-red hover:bg-redDark text-white font-semibold px-2 py-1 rounded">
-          <i className="fas fa-stop"></i>
-        </button>
-        <button className="bg-yellow hover:bg-yellowDark text-white font-semibold px-2 py-1 rounded">
-          <i className="fas fa-pause"></i>
-        </button>
-      </div>
+      <PlaybackControls />
     </div>
   );
 };
