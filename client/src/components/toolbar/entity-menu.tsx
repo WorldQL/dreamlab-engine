@@ -1,15 +1,19 @@
-import { useEffect, useRef, useState, type FC } from "react";
-import { game } from "../../global-game.ts";
 import { Empty, Rigidbody2D, Sprite2D } from "@dreamlab/engine";
+import { Plus } from "lucide-react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { game } from "../../global-game.ts";
+import { cn } from "../../utils/cn.ts";
+import { IconButton } from "../ui/icon-button.tsx";
 
-export const NewEntityMenu: FC = () => {
+const NewEntityMenu = () => {
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
+  const toggleMenu = useCallback(
+    () => setIsMenuOpen(isMenuOpen => !isMenuOpen),
+    [setIsMenuOpen],
+  );
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -32,25 +36,30 @@ export const NewEntityMenu: FC = () => {
     };
   }, [isMenuOpen]);
 
-  const createEntity = (entityType: typeof Empty | typeof Rigidbody2D | typeof Sprite2D) => {
-    game.world.spawn({
-      type: entityType,
-      name: entityType.name,
-    });
-    setIsMenuOpen(false);
-  };
+  const createEntity = useCallback(
+    (entityType: typeof Empty | typeof Rigidbody2D | typeof Sprite2D) => {
+      game.world.spawn({
+        type: entityType,
+        name: entityType.name,
+      });
+
+      setIsMenuOpen(false);
+    },
+    [setIsMenuOpen],
+  );
 
   return (
     <div className="relative">
-      <button
-        ref={buttonRef}
-        className={`${
-          isMenuOpen ? "bg-green" : "bg-primary hover:bg-primaryDark"
-        } text-white font-semibold px-2 py-1 rounded`}
+      <IconButton
         onClick={toggleMenu}
-      >
-        <i className="fas fa-plus"></i>
-      </button>
+        ref={buttonRef}
+        icon={Plus}
+        className={cn(
+          "bg-primary hover:bg-primaryDark",
+          isMenuOpen && "bg-green hover:bg-greenDark",
+        )}
+      />
+
       {isMenuOpen && (
         <div
           ref={menuRef}
@@ -79,3 +88,6 @@ export const NewEntityMenu: FC = () => {
     </div>
   );
 };
+
+const NewEntityMenuMemo = memo(NewEntityMenu);
+export { NewEntityMenuMemo as NewEntityMenu };

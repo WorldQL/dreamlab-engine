@@ -1,13 +1,17 @@
-import { useEffect, useRef, useState, type FC } from "react";
+import { Settings } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { cn } from "../../utils/cn.ts";
+import { IconButton } from "../ui/icon-button.tsx";
 
-export const SettingsMenu: FC = () => {
+export const SettingsMenu = () => {
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
+  const toggleMenu = useCallback(
+    () => setIsMenuOpen(isMenuOpen => !isMenuOpen),
+    [setIsMenuOpen],
+  );
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -32,15 +36,16 @@ export const SettingsMenu: FC = () => {
 
   return (
     <div className="relative">
-      <button
-        ref={buttonRef}
-        className={`${
-          isMenuOpen ? "bg-green" : "bg-primary hover:bg-primaryDark"
-        } text-white font-semibold px-2 py-1 rounded`}
+      <IconButton
         onClick={toggleMenu}
-      >
-        <i className="fas fa-cogs"></i>
-      </button>
+        ref={buttonRef}
+        icon={Settings}
+        className={cn(
+          "bg-primary hover:bg-primaryDark",
+          isMenuOpen && "bg-green hover:bg-greenDark",
+        )}
+      />
+
       {isMenuOpen && (
         <div
           ref={menuRef}

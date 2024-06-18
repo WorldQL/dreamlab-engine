@@ -1,54 +1,45 @@
-import { FC, useContext } from "react";
-import { EditorContext } from "../../context/editor-context.tsx";
+import { Pause, Play, Rocket, Square } from "lucide-react";
+import { memo, useCallback } from "react";
+import { useEditorContext } from "../../context/editor-context.tsx";
+import { IconButton } from "../ui/icon-button.tsx";
 
-export const PlaybackControls: FC = () => {
-  const { isRunning, setIsRunning, isPaused, setIsPaused } = useContext(EditorContext);
+const PlaybackControls = () => {
+  const { isRunning, setIsRunning, isPaused, setIsPaused } = useEditorContext();
 
-  const handlePlay = () => {
-    setIsRunning(true);
-  };
-
-  const handlePause = () => {
-    setIsPaused(!isPaused);
-  };
-
-  const handleStop = () => {
-    setIsRunning(false);
-  };
+  const handlePlay = useCallback(() => setIsRunning(true), [setIsRunning]);
+  const handleStop = useCallback(() => setIsRunning(false), [setIsRunning]);
+  const handlePause = useCallback(() => setIsPaused(isPaused => !isPaused), [setIsPaused]);
 
   return (
     <div className="flex space-x-2">
       {isRunning ? (
         <>
-          <button
-            className="bg-red hover:bg-redDark text-white font-semibold px-2 py-1 rounded"
-            onClick={handleStop}
-          >
-            <i className="fas fa-stop"></i>
-          </button>
-          <button
-            className="bg-yellow hover:bg-yellowDark text-white font-semibold px-2 py-1 rounded"
+          <IconButton onClick={handleStop} icon={Square} className="bg-red hover:bg-redDark" />
+
+          <IconButton
             onClick={handlePause}
-          >
-            <i className={`fas fa-${isPaused ? "play" : "pause"}`}></i>
-          </button>
+            icon={isPaused ? Play : Pause}
+            className="bg-yellow hover:bg-yellowDark"
+          />
         </>
       ) : (
         <>
-          <button
-            className="bg-green hover:bg-greenDark text-white font-semibold px-2 py-1 rounded"
+          <IconButton
             onClick={handlePlay}
-          >
-            <i className="fas fa-rocket"></i>
-          </button>
-          <button
-            className="bg-yellow hover:bg-yellowDark text-white font-semibold px-2 py-1 rounded"
+            icon={Rocket}
+            className="bg-green hover:bg-greenDark"
+          />
+
+          <IconButton
             onClick={handlePause}
-          >
-            <i className={`fas fa-${isPaused ? "play" : "pause"}`}></i>
-          </button>
+            icon={isPaused ? Play : Pause}
+            className="bg-yellow hover:bg-yellowDark"
+          />
         </>
       )}
     </div>
   );
 };
+
+const PlaybackControlsMemo = memo(PlaybackControls);
+export { PlaybackControlsMemo as PlaybackControls };
