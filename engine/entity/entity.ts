@@ -106,7 +106,6 @@ export abstract class Entity implements ISignalHandler {
     this.#recomputeId();
     this.fire(EntityRenamed, oldName);
 
-    // TODO: propagate {Child,Ancestor}Renamed events up
     if (this.parent) {
       this.parent.fire(EntityChildRenamed, this, oldName);
     }
@@ -602,5 +601,5 @@ export const serializeIdentifier = (parent: string | undefined, child: string) =
       ? `${parent}._.${child}`
       : `${child}`
     : parent
-    ? `${parent}._[${JSON.stringify(child)}]`
-    : `[${JSON.stringify(child)}]`;
+      ? `${parent}._[${JSON.stringify(child)}]`
+      : `[${JSON.stringify(child)}]`;
