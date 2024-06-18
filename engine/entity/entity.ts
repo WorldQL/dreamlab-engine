@@ -75,7 +75,7 @@ export interface EntityDefinition<
   transform?: { position?: IVector2; rotation?: number; scale?: IVector2 };
   values?: Partial<EntitySyncedValueProps<T>>;
   children?: { [I in keyof Children]: EntityDefinition<Children[I]> };
-  behaviors?: { [I in keyof Behaviors]: BehaviorDefinition<T, Behaviors[I]> };
+  behaviors?: { [I in keyof Behaviors]: BehaviorDefinition<Behaviors[I]> };
   _ref?: string;
 }
 

@@ -1,8 +1,7 @@
 import { Behavior } from "./behavior.ts";
-import { Entity } from "../entity/mod.ts";
 import { Primitive, SyncedValue, ValueTypeTag, ValueTypeAdapter } from "../value/mod.ts";
 
-export class BehaviorValues<E extends Entity = Entity, B extends Behavior<E> = Behavior<E>> {
+export class BehaviorValues<B extends Behavior> {
   #behavior: B;
   #values: SyncedValue[];
   #initialValues: Record<string, Primitive>;

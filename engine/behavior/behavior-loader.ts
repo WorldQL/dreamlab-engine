@@ -1,5 +1,4 @@
-import { Behavior, BehaviorConstructor, BehaviorDefinition } from "./behavior.ts";
-import { Entity } from "../entity/mod.ts";
+import { Behavior, BehaviorConstructor } from "./behavior.ts";
 import { Game } from "../game.ts";
 
 export class BehaviorLoader {

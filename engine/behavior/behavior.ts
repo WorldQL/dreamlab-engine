@@ -13,41 +13,36 @@ import {
 import { EntityUpdate } from "../signals/entity-updates.ts";
 import { GameRender } from "../signals/game-events.ts";
 
-export interface BehaviorContext<E extends Entity = Entity> {
+export interface BehaviorContext {
   game: Game;
-  entity: E;
+  entity: Entity;
   ref?: string;
   values?: Record<string, Primitive>;
 }
 
-export type BehaviorConstructor<
-  E extends Entity = Entity,
-  B extends Behavior<E> = Behavior<E>,
-> = (new (ctx: BehaviorContext<E>) => B) & {
+export type BehaviorConstructor<B extends Behavior = Behavior> = (new (
+  ctx: BehaviorContext,
+) => B) & {
   onLoaded?(game: Game): void;
 };
 
 // prettier-ignore
 export type BehaviorSyncedValueProps<
-  E extends Entity = Entity,
-  B extends Behavior<E> = Behavior<E>,
+  B extends Behavior = Behavior,
 > = {
   [K in keyof B as B[K] extends SyncedValue<infer _> ? K : never]:
     B[K] extends SyncedValue<infer V> ? V : never;
 };
 
-export interface BehaviorDefinition<
-  E extends Entity = Entity,
-  B extends Behavior<E> = Behavior<E>,
-> {
-  type: BehaviorConstructor<E, B>;
-  values?: Partial<BehaviorSyncedValueProps<E, B>>;
+export interface BehaviorDefinition<B extends Behavior = Behavior> {
+  type: BehaviorConstructor<B>;
+  values?: Partial<BehaviorSyncedValueProps<B>>;
   _ref?: string;
 }
 
-export class Behavior<E extends Entity = Entity> {
+export class Behavior {
   readonly game: Game;
-  readonly entity: E;
+  readonly entity: Entity;
 
   protected get time() {
     return this.game.time;
@@ -58,7 +53,7 @@ export class Behavior<E extends Entity = Entity> {
 
   readonly ref: string = generateCUID("bhv");
 
-  readonly values: BehaviorValues<E, this>;
+  readonly values: BehaviorValues<this>;
 
   readonly listeners: [
     receiver: WeakRef<ISignalHandler>,
@@ -66,7 +61,7 @@ export class Behavior<E extends Entity = Entity> {
     listener: SignalListener,
   ][] = [];
 
-  constructor(ctx: BehaviorContext<E>) {
+  constructor(ctx: BehaviorContext) {
     this.game = ctx.game;
     this.entity = ctx.entity;
 

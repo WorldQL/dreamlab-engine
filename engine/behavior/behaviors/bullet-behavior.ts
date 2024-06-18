@@ -1,7 +1,7 @@
 import { Behavior } from "../behavior.ts";
 import { Entity } from "../../entity/mod.ts";
 import { EntityCollision } from "../../signals/entity-collision.ts";
-import { SyncedValue } from "../../value.ts";
+import { SyncedValue } from "../../value/mod.ts";
 
 interface HasHealth {
   health: SyncedValue<number>;
