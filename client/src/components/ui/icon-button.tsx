@@ -8,11 +8,14 @@ type Props = Omit<ComponentProps<"button">, "children"> & { readonly icon: Lucid
 const IconButton = forwardRef<HTMLButtonElement, Props>(
   ({ icon: Icon, className, ...props }, ref) => (
     <button
-      className={cn("rounded text-white bg-secondary hover:bg-secondaryDark p-1", className)}
+      className={cn(
+        "rounded text-white bg-secondary hover:bg-secondaryDark p-1 flex items-center justify-center w-8 h-8",
+        className,
+      )}
       ref={ref}
       {...props}
     >
-      <Icon className="h-full w-auto aspect-square" />
+      <Icon className="aspect-square" />
     </button>
   ),
 );
