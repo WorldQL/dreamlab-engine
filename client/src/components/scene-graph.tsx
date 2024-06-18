@@ -1,14 +1,11 @@
-import { FC, useContext, useState, useCallback, useRef } from "react";
 import { Entity } from "@dreamlab/engine";
+import { ChevronDownIcon } from "lucide-react";
+import { memo, useCallback, useContext, useRef, useState } from "react";
 import { EditorContext } from "../context/editor-context.tsx";
 import { game } from "../global-game.ts";
 import { useForceUpdateOnEntityChange } from "../hooks/force-update-on-change.ts";
+import { cn } from "../utils/cn.ts";
 import { Panel } from "./ui/panel.tsx";
-
-interface EntityEntryProps {
-  entity: Entity;
-  level: number;
-}
 
 const isDescendant = (parent: Entity, child: Entity): boolean => {
   if (parent === child) {
@@ -22,22 +19,27 @@ const isDescendant = (parent: Entity, child: Entity): boolean => {
   return false;
 };
 
-const EntityEntry: FC<EntityEntryProps> = ({ entity, level }: EntityEntryProps) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
+const EntityEntry = ({
+  entity,
+  level,
+}: {
+  readonly entity: Entity;
+  readonly level: number;
+}) => {
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
+  const [isHovered, setIsHovered] = useState<boolean>(false);
   const { selectedEntity, setSelectedEntity } = useContext(EditorContext);
   const dragImageRef = useRef<HTMLDivElement>(null);
 
   const iconVal = (entity.constructor as typeof Entity).icon;
   const icon = iconVal ? iconVal : "🌟";
 
-  const toggleCollapse = useCallback(() => {
-    setIsCollapsed((prev: boolean) => !prev);
-  }, []);
+  const toggleCollapse = useCallback(() => setIsCollapsed(prev => !prev), []);
 
-  const handleEntityClick = useCallback(() => {
-    setSelectedEntity(entity);
-  }, [entity, setSelectedEntity]);
+  const handleEntityClick = useCallback(
+    () => setSelectedEntity(entity),
+    [entity, setSelectedEntity],
+  );
 
   const handleDragStart = useCallback(
     (event: React.DragEvent<HTMLDivElement>) => {
@@ -74,20 +76,14 @@ const EntityEntry: FC<EntityEntryProps> = ({ entity, level }: EntityEntryProps) 
     [entity],
   );
 
-  const getBackgroundClass = () => {
-    if (isHovered) {
-      return "bg-primary";
-    } else {
-      return "hover:bg-secondary";
-    }
-  };
-
   return (
     <li key={entity.ref} className="relative">
       <div
-        className={`flex items-center cursor-pointer w-full relative ${
-          selectedEntity === entity ? "bg-gray border-primary border-2" : ""
-        } ${getBackgroundClass()} hover:shadow-md`}
+        className={cn(
+          "flex items-center cursor-pointer w-full relative hover:shadow-md",
+          selectedEntity?.id === entity.id && "bg-gray ring-primary ring-2 rounded",
+          isHovered ? "bg-primary" : "hover:bg-secondary",
+        )}
         onClick={handleEntityClick}
         draggable
         onDragStart={handleDragStart}
@@ -97,12 +93,10 @@ const EntityEntry: FC<EntityEntryProps> = ({ entity, level }: EntityEntryProps) 
         style={{ paddingLeft: `${level * 16}px` }}
       >
         {entity.children.size > 0 ? (
-          <div className="flex-shrink-0 w-4 pl-1 text-icon" onClick={toggleCollapse}>
-            {isCollapsed ? (
-              <i className="fas fa-caret-right"></i>
-            ) : (
-              <i className="fas fa-caret-down"></i>
-            )}
+          <div className="flex-shrink-0 w-3 ml-1 text-icon" onClick={toggleCollapse}>
+            <ChevronDownIcon
+              className={cn("w-full h-auto transition-transform", isCollapsed && "-rotate-90")}
+            />
           </div>
         ) : (
           <span className="inline-block w-4"></span>
@@ -131,7 +125,7 @@ const EntityEntry: FC<EntityEntryProps> = ({ entity, level }: EntityEntryProps) 
   );
 };
 
-export const SceneGraph: FC = () => {
+const SceneGraph = () => {
   useForceUpdateOnEntityChange(game.world);
 
   const handleDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
@@ -166,4 +160,5 @@ export const SceneGraph: FC = () => {
   );
 };
 
-export default SceneGraph;
+const SceneGraphMemo = memo(SceneGraph);
+export { SceneGraphMemo as SceneGraph };
