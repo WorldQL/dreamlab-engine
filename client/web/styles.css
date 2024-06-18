@@ -1,4 +1,15 @@
 :root {
+  font-family: Inter, sans-serif;
+  font-feature-settings: "liga" 1, "calt" 1; /* fix for Chrome */
+}
+
+@supports (font-variation-settings: normal) {
+  :root {
+    font-family: InterVariable, sans-serif;
+  }
+}
+
+:root {
   --primary: 58, 143, 255;
   --primaryDark: 42, 122, 224;
   --primaryLight: 230, 240, 255;
