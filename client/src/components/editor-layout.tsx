@@ -101,8 +101,8 @@ const EditorLayout: FC<EditorProps> = ({ gameDiv }: EditorProps) => {
                     ? "border-4 border-yellow border-t-green border-b-green"
                     : "border-4 border-green"
                   : isPaused
-                  ? "border-4 border-yellow"
-                  : ""
+                    ? "border-4 border-yellow"
+                    : ""
               }`}
               ref={gameContainer}
             />
