@@ -1,18 +1,6 @@
-import { createContext } from "react";
 import { Entity } from "@dreamlab/engine";
+import { atom } from "jotai";
 
-export const EditorContext = createContext<{
-  selectedEntity: Entity | null;
-  setSelectedEntity: (entity: Entity | null) => void;
-  isRunning: boolean;
-  setIsRunning: (isRunning: boolean) => void;
-  isPaused: boolean;
-  setIsPaused: (isPaused: boolean) => void;
-}>({
-  selectedEntity: null,
-  setSelectedEntity: () => {},
-  isRunning: false,
-  setIsRunning: () => {},
-  isPaused: false,
-  setIsPaused: () => {},
-});
+export const selectedEntityAtom = atom<Entity | null>(null);
+export const isRunningAtom = atom<boolean>(false);
+export const isPausedAtom = atom<boolean>(false);

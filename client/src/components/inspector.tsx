@@ -1,12 +1,13 @@
 import { EntityTransformUpdate, EntityValues } from "@dreamlab/engine";
-import { memo, useCallback, useContext, useEffect, useState } from "react";
-import { EditorContext } from "../context/editor-context.tsx";
+import { useAtom } from "jotai";
+import { memo, useCallback, useEffect, useState } from "react";
+import { selectedEntityAtom } from "../context/editor-context.tsx";
 import { AxisInputField } from "./ui/axis-input.tsx";
 import { InputField } from "./ui/input.tsx";
 import { Panel } from "./ui/panel.tsx";
 
 const Inspector = () => {
-  const { selectedEntity, setSelectedEntity } = useContext(EditorContext);
+  const [selectedEntity, setSelectedEntity] = useAtom(selectedEntityAtom);
 
   const [name, setName] = useState<string>("");
   const [position, setPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });

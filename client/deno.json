@@ -15,7 +15,8 @@
 
     "clsx": "npm:clsx@2.1.1",
     "tailwind-merge": "npm:tailwind-merge@2.3.0",
-    "lucide-react": "npm:lucide-react@0.395.0"
+    "lucide-react": "npm:lucide-react@0.395.0",
+    "jotai": "https://esm.sh/jotai@2.8.3"
   },
   "compilerOptions": {
     "jsx": "precompile",

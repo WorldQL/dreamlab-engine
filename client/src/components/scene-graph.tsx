@@ -1,7 +1,8 @@
 import { Entity } from "@dreamlab/engine";
+import { useAtom } from "jotai";
 import { ChevronDownIcon } from "lucide-react";
-import { memo, useCallback, useContext, useRef, useState } from "react";
-import { EditorContext } from "../context/editor-context.tsx";
+import { memo, useCallback, useRef, useState } from "react";
+import { selectedEntityAtom } from "../context/editor-context.tsx";
 import { game } from "../global-game.ts";
 import { useForceUpdateOnEntityChange } from "../hooks/force-update-on-change.ts";
 import { cn } from "../utils/cn.ts";
@@ -28,7 +29,7 @@ const EntityEntry = ({
 }) => {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
   const [isHovered, setIsHovered] = useState<boolean>(false);
-  const { selectedEntity, setSelectedEntity } = useContext(EditorContext);
+  const [selectedEntity, setSelectedEntity] = useAtom(selectedEntityAtom);
   const dragImageRef = useRef<HTMLDivElement>(null);
 
   const iconVal = (entity.constructor as typeof Entity).icon;

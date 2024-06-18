@@ -1,14 +1,20 @@
+import { atom, useAtomValue, useSetAtom } from "jotai";
 import { Pause, Play, Rocket, Square } from "lucide-react";
-import { memo, useCallback } from "react";
-import { useEditorContext } from "../../context/editor-context.tsx";
+import { memo } from "react";
+import { isPausedAtom, isRunningAtom } from "../../context/editor-context.tsx";
 import { IconButton } from "../ui/icon-button.tsx";
 
-const PlaybackControls = () => {
-  const { isRunning, setIsRunning, isPaused, setIsPaused } = useEditorContext();
+const playAtom = atom(null, (_, set) => set(isRunningAtom, true));
+const stopAtom = atom(null, (_, set) => set(isRunningAtom, false));
+const pauseAtom = atom(null, (_, set) => set(isPausedAtom, isPaused => !isPaused));
 
-  const handlePlay = useCallback(() => setIsRunning(true), [setIsRunning]);
-  const handleStop = useCallback(() => setIsRunning(false), [setIsRunning]);
-  const handlePause = useCallback(() => setIsPaused(isPaused => !isPaused), [setIsPaused]);
+const PlaybackControls = () => {
+  const isRunning = useAtomValue(isRunningAtom);
+  const isPaused = useAtomValue(isPausedAtom);
+
+  const handlePlay = useSetAtom(playAtom);
+  const handleStop = useSetAtom(stopAtom);
+  const handlePause = useSetAtom(pauseAtom);
 
   return (
     <div className="flex space-x-2">
