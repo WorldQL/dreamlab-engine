@@ -1,11 +1,11 @@
-import { ChangeEvent, FC, useContext, useEffect, useState } from "react";
+import { EntityTransformUpdate, EntityValues } from "@dreamlab/engine";
+import { memo, useCallback, useContext, useEffect, useState } from "react";
 import { EditorContext } from "../context/editor-context.tsx";
 import { AxisInputField } from "./ui/axis-input.tsx";
 import { InputField } from "./ui/input.tsx";
-import { EntityTransformUpdate, EntityValues } from "@dreamlab/engine";
 import { Panel } from "./ui/panel.tsx";
 
-export const Inspector: FC = () => {
+const Inspector = () => {
   const { selectedEntity, setSelectedEntity } = useContext(EditorContext);
 
   const [name, setName] = useState<string>("");
@@ -39,45 +39,72 @@ export const Inspector: FC = () => {
     return () => entity.unregister(EntityTransformUpdate, updateValues);
   }, [selectedEntity]);
 
-  const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const newName = e.target.value;
-    setName(newName);
-    if (selectedEntity) {
-      selectedEntity.name = newName;
-      setSelectedEntity(selectedEntity);
-    }
-  };
+  const handleNameChange = useCallback(
+    (newName: string) => {
+      setName(newName);
+      if (selectedEntity) {
+        selectedEntity.name = newName;
+        setSelectedEntity(selectedEntity);
+      }
+    },
+    [selectedEntity, setName, setSelectedEntity],
+  );
 
-  const handlePositionChange = (axis: "x" | "y") => (e: ChangeEvent<HTMLInputElement>) => {
-    const newPosition = { x: position.x, y: position.y, [axis]: parseFloat(e.target.value) };
-    setPosition(newPosition);
-    if (selectedEntity) {
-      selectedEntity.transform.position = newPosition;
-      setSelectedEntity(selectedEntity);
-    }
-  };
+  const handlePositionChange = useCallback(
+    (axis: "x" | "y", value: number) => {
+      const newPosition = { x: position.x, y: position.y, [axis]: value };
+      setPosition(newPosition);
+      if (selectedEntity) {
+        selectedEntity.transform.position = newPosition;
+        setSelectedEntity(selectedEntity);
+      }
+    },
+    [selectedEntity, setPosition, setSelectedEntity],
+  );
 
-  const handleRotationChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const newRotation = parseFloat(e.target.value);
-    setRotation(newRotation);
-    if (selectedEntity) {
-      const rotationInRadians = newRotation * (Math.PI / 180);
-      selectedEntity.transform.rotation = rotationInRadians;
-      setSelectedEntity(selectedEntity);
-    }
-  };
+  const handlePositionChangeX = useCallback(
+    (value: number) => handlePositionChange("x", value),
+    [handlePositionChange],
+  );
+  const handlePositionChangeY = useCallback(
+    (value: number) => handlePositionChange("y", value),
+    [handlePositionChange],
+  );
 
-  const handleScaleChange = (axis: "x" | "y") => (e: ChangeEvent<HTMLInputElement>) => {
-    const newScale = { x: scale.x, y: scale.y, [axis]: parseFloat(e.target.value) };
-    setScale(newScale);
-    if (selectedEntity) {
-      selectedEntity.transform.scale = newScale;
-      setSelectedEntity(selectedEntity);
-    }
-  };
+  const handleRotationChange = useCallback(
+    (newRotation: number) => {
+      setRotation(newRotation);
+      if (selectedEntity) {
+        const rotationInRadians = newRotation * (Math.PI / 180);
+        selectedEntity.transform.rotation = rotationInRadians;
+        setSelectedEntity(selectedEntity);
+      }
+    },
+    [selectedEntity, setRotation, setSelectedEntity],
+  );
 
-  const handleValueChange = (key: string) => (e: ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
+  const handleScaleChange = useCallback(
+    (axis: "x" | "y", value: number) => {
+      const newScale = { x: scale.x, y: scale.y, [axis]: value };
+      setScale(newScale);
+      if (selectedEntity) {
+        selectedEntity.transform.scale = newScale;
+        setSelectedEntity(selectedEntity);
+      }
+    },
+    [selectedEntity, setScale, setSelectedEntity],
+  );
+
+  const handleScaleChangeX = useCallback(
+    (value: number) => handleScaleChange("x", value),
+    [handleScaleChange],
+  );
+  const handleScaleChangeY = useCallback(
+    (value: number) => handleScaleChange("y", value),
+    [handleScaleChange],
+  );
+
+  const handleValueChange = (key: string) => (newValue: string) => {
     const newValues = Object.assign({}, values, { [key]: newValue });
     setValues(newValues);
     if (selectedEntity) {
@@ -100,23 +127,15 @@ export const Inspector: FC = () => {
     <Panel className="h-full" title="Inspector">
       <div className="p-4">
         <div className="mb-4">
-          <InputField label="Name" value={name} onChange={handleNameChange} />
+          <InputField type="text" label="Name" value={name} onChange={handleNameChange} />
         </div>
         <div>
           <h4 className="text-lg font-semibold mb-2 text-textPrimary">Transform</h4>
           <div className="mb-2">
             <label className="block text-sm font-medium text-textPrimary">Position</label>
             <div className="flex space-x-2">
-              <AxisInputField
-                axis="x"
-                value={position.x}
-                onChange={handlePositionChange("x")}
-              />
-              <AxisInputField
-                axis="y"
-                value={position.y}
-                onChange={handlePositionChange("y")}
-              />
+              <AxisInputField axis="x" value={position.x} onChange={handlePositionChangeX} />
+              <AxisInputField axis="y" value={position.y} onChange={handlePositionChangeY} />
             </div>
           </div>
           <div className="text-textSecondary text-xs mb-4">
@@ -136,8 +155,8 @@ export const Inspector: FC = () => {
           <div className="mb-2">
             <label className="block text-sm font-medium text-textPrimary">Scale</label>
             <div className="flex space-x-2">
-              <AxisInputField axis="x" value={scale.x} onChange={handleScaleChange("x")} />
-              <AxisInputField axis="y" value={scale.y} onChange={handleScaleChange("y")} />
+              <AxisInputField axis="x" value={scale.x} onChange={handleScaleChangeX} />
+              <AxisInputField axis="y" value={scale.y} onChange={handleScaleChangeY} />
             </div>
           </div>
         </div>
@@ -145,6 +164,7 @@ export const Inspector: FC = () => {
           <h4 className="text-lg font-semibold mb-2 text-textPrimary">Values</h4>
           {Object.keys(values).map(key => (
             <InputField
+              type="text"
               key={key}
               label={key}
               value={String(values[key as keyof EntityValues])}
@@ -164,3 +184,6 @@ export const Inspector: FC = () => {
     </Panel>
   );
 };
+
+const InspectorMemo = memo(Inspector);
+export { InspectorMemo as Inspector };

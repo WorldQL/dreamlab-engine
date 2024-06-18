@@ -1,32 +1,49 @@
-import { FC, ChangeEvent } from "react";
+import type {
+  ChangeEvent,
+  ComponentPropsWithoutRef as ComponentProps,
+  FocusEvent,
+} from "react";
+import { memo, useCallback } from "react";
+import { cn } from "../../utils/cn.ts";
 
-interface AxisInputFieldProps {
-  axis: "x" | "y";
-  value: number;
-  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
-}
-
-export const AxisInputField: FC<AxisInputFieldProps> = ({
+const AxisInputField = ({
   axis,
   value,
   onChange,
-}: AxisInputFieldProps) => {
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    if (e.target.value === "") {
-      onChange({ ...e, target: { ...e.target, value: "0" } } as ChangeEvent<HTMLInputElement>);
-    }
-  };
+  className,
+  ...props
+}: Omit<ComponentProps<"input">, "children" | "type" | "value" | "onChange" | "onBlur"> & {
+  readonly axis: "x" | "y";
+  readonly value: number;
+  onChange(value: number): void;
+}) => {
+  const handleChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => onChange(e.target.valueAsNumber),
+    [onChange],
+  );
+
+  const handleBlur = useCallback(() => {
+    (e: FocusEvent<HTMLInputElement>) => {
+      if (e.target.value === "") onChange(0);
+    };
+  }, [onChange]);
 
   return (
-    <div className="flex items-center space-x-1">
-      <label className="text-xs mt-2 mr-1 font-medium text-textPrimary">{axis}:</label>
+    <div className={cn("flex items-center space-x-1", className)}>
+      <label className="text-xs mt-2 mr-1 font-medium text-textPrimary">
+        {axis.toUpperCase()}:
+      </label>
       <input
         type="number"
-        className="mt-1 block bg-background text-textPrimary w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50"
+        className="mt-1 px-2 py-1 block bg-background text-textPrimary w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50"
         value={value}
-        onChange={onChange}
+        onChange={handleChange}
         onBlur={handleBlur}
+        {...props}
       />
     </div>
   );
 };
+
+const AxisInputFieldMemo = memo(AxisInputField);
+export { AxisInputFieldMemo as AxisInputField };
