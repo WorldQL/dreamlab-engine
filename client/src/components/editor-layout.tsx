@@ -83,7 +83,7 @@ const EditorLayout: FC<EditorProps> = ({ gameDiv }: EditorProps) => {
         </div>
         <div className="relative flex-1 flex flex-col">
           {/* toolbar section */}
-          <div className="p-1 bg-background">
+        <div className="p-1 bg-background my-1">
             <div className="bg-background w-full flex items-center justify-between">
               <div className="flex space-x-2">
                 <NewEntityMenu />
