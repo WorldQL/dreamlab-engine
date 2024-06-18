@@ -21,6 +21,10 @@ const main = async () => {
   renderEditorUI(container);
   await game.initialize();
 
+  // resize app to fit parent
+  const ro = new ResizeObserver(() => game.renderer.app.resize());
+  ro.observe(container);
+
   game.local.spawn({ type: Camera, name: "Camera" });
 
   // editor
