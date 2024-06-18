@@ -1,7 +1,7 @@
-import { type FC } from "react";
+import { memo } from "react";
 import { Panel } from "./ui/panel.tsx";
 
-export const Console: FC = () => {
+const Console = () => {
   return (
     <Panel title="Console" className="w-full h-full">
       <div className="p-4">
@@ -11,4 +11,5 @@ export const Console: FC = () => {
   );
 };
 
-export default Console;
+const ConsoleMemo = memo(Console);
+export { ConsoleMemo as Console };

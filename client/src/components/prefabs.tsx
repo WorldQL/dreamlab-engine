@@ -1,8 +1,8 @@
-import { FC } from "react";
+import { memo } from "react";
 import { Panel } from "./ui/panel.tsx";
 
 // placeholder until its fully implemented
-export const Prefabs: FC = () => {
+const Prefabs = () => {
   return (
     <Panel title="Prefabs" className="h-full">
       <div className="p-1">
@@ -17,4 +17,5 @@ export const Prefabs: FC = () => {
   );
 };
 
-export default Prefabs;
+const PrefabsMemo = memo(Prefabs);
+export { PrefabsMemo as Prefabs };

@@ -4,7 +4,7 @@ import { Prefabs } from "./prefabs.tsx";
 import { Entity } from "@dreamlab/engine";
 import { EditorContext } from "../context/editor-context.tsx";
 import { Inspector } from "./inspector.tsx";
-import Console from "./console.tsx";
+import { Console } from "./console.tsx";
 import { handleVerticalResize, handleResize, handleConsoleResize } from "../utils/resize.ts";
 import { NewEntityMenu } from "./toolbar/entity-menu.tsx";
 import { PlaybackControls } from "./toolbar/playback-controls.tsx";
