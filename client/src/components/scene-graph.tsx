@@ -10,20 +10,6 @@ interface EntityEntryProps {
   level: number;
 }
 
-// TODO: refactor -- better way to do this?
-const findEntityById = (entity: Entity, id: string): Entity | undefined => {
-  if (entity.id === id) {
-    return entity;
-  }
-  for (const child of entity.children.values()) {
-    const foundEntity = findEntityById(child, id);
-    if (foundEntity) {
-      return foundEntity;
-    }
-  }
-  return undefined;
-};
-
 const isDescendant = (parent: Entity, child: Entity): boolean => {
   if (parent === child) {
     return true;
@@ -79,7 +65,7 @@ const EntityEntry: FC<EntityEntryProps> = ({ entity, level }: EntityEntryProps) 
       event.preventDefault();
       setIsHovered(false);
       const draggedEntityId = event.dataTransfer.getData("text/plain");
-      const draggedEntity = findEntityById(game.world, draggedEntityId);
+      const draggedEntity = game.entities.lookupById(draggedEntityId);
 
       if (draggedEntity && draggedEntity !== entity && !isDescendant(draggedEntity, entity)) {
         draggedEntity.parent = entity;
@@ -156,7 +142,7 @@ export const SceneGraph: FC = () => {
   const handleDrop = useCallback((event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     const draggedEntityId = event.dataTransfer.getData("text/plain");
-    const draggedEntity = findEntityById(game.world, draggedEntityId);
+    const draggedEntity = game.entities.lookupById(draggedEntityId);
 
     if (draggedEntity) {
       draggedEntity.parent = game.world;
