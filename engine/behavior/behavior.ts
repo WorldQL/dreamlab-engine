@@ -49,8 +49,11 @@ export class Behavior<E extends Entity = Entity> {
   readonly game: Game;
   readonly entity: E;
 
-  get time() {
+  protected get time() {
     return this.game.time;
+  }
+  protected get inputs() {
+    return this.game.inputs;
   }
 
   readonly ref: string = generateCUID("bhv");

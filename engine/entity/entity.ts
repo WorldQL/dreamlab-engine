@@ -83,8 +83,11 @@ export abstract class Entity implements ISignalHandler {
   static readonly icon: string | undefined;
 
   readonly game: Game;
-  get time() {
+  protected get time() {
     return this.game.time;
+  }
+  protected get inputs() {
+    return this.game.inputs;
   }
 
   // #region Name / ID / Hierarchy
@@ -599,5 +602,5 @@ export const serializeIdentifier = (parent: string | undefined, child: string) =
       ? `${parent}._.${child}`
       : `${child}`
     : parent
-      ? `${parent}._[${JSON.stringify(child)}]`
-      : `[${JSON.stringify(child)}]`;
+    ? `${parent}._[${JSON.stringify(child)}]`
+    : `[${JSON.stringify(child)}]`;

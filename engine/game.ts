@@ -1,7 +1,10 @@
 import RAPIER from "@dreamlab/vendor/rapier.ts";
-import { LocalRoot, PrefabsRoot, RemoteRoot, WorldRoot, EntityStore } from "./entity/mod.ts";
+import { BehaviorLoader } from "./behavior/behavior-loader.ts";
+import { EntityStore, LocalRoot, PrefabsRoot, RemoteRoot, WorldRoot } from "./entity/mod.ts";
+import { Inputs } from "./input/mod.ts";
 import * as internal from "./internal.ts";
 import { PhysicsEngine } from "./physics.ts";
+import { GameRenderer } from "./renderer/mod.ts";
 import {
   ISignalHandler,
   Signal,
@@ -9,11 +12,9 @@ import {
   SignalConstructorMatching,
   SignalListener,
 } from "./signal.ts";
-import { GameRender, GamePostRender, GameShutdown, GameTick } from "./signals/game-events.ts";
-import { SyncedValueRegistry } from "./value/mod.ts";
-import { BehaviorLoader } from "./behavior/behavior-loader.ts";
-import { GameRenderer } from "./renderer/mod.ts";
+import { GamePostRender, GameRender, GameShutdown, GameTick } from "./signals/game-events.ts";
 import { Time } from "./time.ts";
+import { SyncedValueRegistry } from "./value/mod.ts";
 
 export interface GameOptions {
   instanceId: string;
@@ -54,6 +55,7 @@ export abstract class BaseGame implements ISignalHandler {
   readonly prefabs = new PrefabsRoot(this as unknown as Game);
 
   readonly time = new Time(this as unknown as Game);
+  readonly inputs = new Inputs();
 
   [internal.behaviorScriptLoader] = new BehaviorLoader(this as unknown as Game);
 
@@ -190,6 +192,7 @@ export class ClientGame extends BaseGame {
   }
 
   async initialize() {
+    this.inputs.registerHandlers();
     await super.initialize();
     await this.renderer.initialize();
   }
