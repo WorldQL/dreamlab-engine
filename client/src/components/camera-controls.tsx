@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { Camera, GameRender, Vector2 } from "@dreamlab/engine";
 import { game } from "../global-game.ts";
 import { MousePointer2, Move, ZoomIn } from "lucide-react";
@@ -14,83 +14,100 @@ export const CameraControls: React.FC = () => {
   const [cursorPosition, setCursorPosition] = useState<Vector2>(Vector2.ZERO);
   const [zoomScale, setZoomScale] = useState<number>(1);
 
-  useEffect(() => {
-    const handleRender = () => {
-      cameraRef.current = Camera.getActive(game);
-      if (cameraRef.current) {
-        cameraRef.current.smooth.value = 1;
-        setCameraPosition(cameraRef.current.transform.position);
-        setZoomScale(cameraRef.current.transform.scale.x);
-      }
-    };
+  const updateCursor = useCallback(() => {
+    const gameContainer = gameContainerRef.current;
+    if (gameContainer) {
+      gameContainer.style.cursor = isDraggingRef.current
+        ? "grabbing"
+        : isSpaceDownRef.current
+        ? "grab"
+        : "default";
+    }
+  }, []);
 
-    const handleMouseDown = (event: MouseEvent) => {
+  const handleRender = useCallback(() => {
+    cameraRef.current = Camera.getActive(game);
+    if (cameraRef.current) {
+      cameraRef.current.smooth.value = 1;
+      setCameraPosition(cameraRef.current.transform.position);
+      setZoomScale(cameraRef.current.transform.scale.x);
+    }
+  }, []);
+
+  const handleMouseDown = useCallback(
+    (event: MouseEvent) => {
       if (event.button === 1 || (isSpaceDownRef.current && event.button === 0)) {
         isDraggingRef.current = true;
         lastMousePositionRef.current = new Vector2(event.clientX, event.clientY);
         updateCursor();
       }
-    };
+    },
+    [updateCursor],
+  );
 
-    const handleMouseMove = (event: MouseEvent) => {
-      const currentMousePosition = new Vector2(event.clientX, event.clientY);
-      setCursorPosition(currentMousePosition);
+  const handleMouseMove = useCallback((event: MouseEvent) => {
+    const currentMousePosition = new Vector2(event.clientX, event.clientY);
+    setCursorPosition(currentMousePosition);
 
-      if (isDraggingRef.current && cameraRef.current) {
-        const delta = lastMousePositionRef.current.sub(currentMousePosition);
-        lastMousePositionRef.current = currentMousePosition;
+    if (isDraggingRef.current && cameraRef.current) {
+      const delta = lastMousePositionRef.current.sub(currentMousePosition);
+      lastMousePositionRef.current = currentMousePosition;
 
-        const worldDelta = cameraRef.current
-          .screenToWorld(delta)
-          .sub(cameraRef.current.screenToWorld(Vector2.ZERO));
-        cameraRef.current.transform.position = cameraRef.current.transform.position.add(
-          new Vector2(worldDelta.x, -worldDelta.y),
-        );
-      }
-    };
+      const worldDelta = cameraRef.current
+        .screenToWorld(delta)
+        .sub(cameraRef.current.screenToWorld(Vector2.ZERO));
+      cameraRef.current.transform.position = cameraRef.current.transform.position.add(
+        new Vector2(worldDelta.x, -worldDelta.y),
+      );
+    }
+  }, []);
 
-    const handleMouseUp = (event: MouseEvent) => {
+  const handleMouseUp = useCallback(
+    (event: MouseEvent) => {
       if (event.button === 1 || (isSpaceDownRef.current && event.button === 0)) {
         isDraggingRef.current = false;
         updateCursor();
       }
-    };
+    },
+    [updateCursor],
+  );
 
-    const handleWheel = (event: WheelEvent) => {
-      if (cameraRef.current) {
-        event.preventDefault();
-        if (event.ctrlKey) {
-          const zoomFactor = 1.1;
-          const zoomDirection = event.deltaY > 0 ? 1 : -1;
-          const newScale = cameraRef.current.transform.scale.mul(
-            new Vector2(
-              Math.pow(zoomFactor, zoomDirection),
-              Math.pow(zoomFactor, zoomDirection),
-            ),
-          );
-          cameraRef.current.transform.scale = newScale;
-          setZoomScale(newScale.x);
-        } else {
-          const scrollSpeed = 50;
-          const scrollDirection = event.deltaY > 0 ? 1 : -1;
-          const scrollDelta = new Vector2(0, scrollDirection * scrollSpeed);
-          const worldDelta = cameraRef.current
-            .screenToWorld(scrollDelta)
-            .sub(cameraRef.current.screenToWorld(Vector2.ZERO));
-          cameraRef.current.transform.position =
-            cameraRef.current.transform.position.add(worldDelta);
-        }
+  const handleWheel = useCallback((event: WheelEvent) => {
+    if (cameraRef.current) {
+      event.preventDefault();
+      if (event.ctrlKey) {
+        const zoomFactor = 1.1;
+        const zoomDirection = event.deltaY > 0 ? 1 : -1;
+        const newScale = cameraRef.current.transform.scale.mul(
+          new Vector2(Math.pow(zoomFactor, zoomDirection), Math.pow(zoomFactor, zoomDirection)),
+        );
+        cameraRef.current.transform.scale = newScale;
+        setZoomScale(newScale.x);
+      } else {
+        const scrollSpeed = 50;
+        const scrollDirection = event.deltaY > 0 ? 1 : -1;
+        const scrollDelta = new Vector2(0, scrollDirection * scrollSpeed);
+        const worldDelta = cameraRef.current
+          .screenToWorld(scrollDelta)
+          .sub(cameraRef.current.screenToWorld(Vector2.ZERO));
+        cameraRef.current.transform.position =
+          cameraRef.current.transform.position.add(worldDelta);
       }
-    };
+    }
+  }, []);
 
-    const handleKeyDown = (event: KeyboardEvent) => {
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
       if (event.code === "Space") {
         isSpaceDownRef.current = true;
         updateCursor();
       }
-    };
+    },
+    [updateCursor],
+  );
 
-    const handleKeyUp = (event: KeyboardEvent) => {
+  const handleKeyUp = useCallback(
+    (event: KeyboardEvent) => {
       if (event.code === "Space") {
         isSpaceDownRef.current = false;
         if (isDraggingRef.current) {
@@ -98,16 +115,11 @@ export const CameraControls: React.FC = () => {
         }
         updateCursor();
       }
-    };
+    },
+    [updateCursor],
+  );
 
-    const updateCursor = () => {
-      const gameContainer = gameContainerRef.current;
-      if (gameContainer) {
-        gameContainer.style.cursor =
-          isDraggingRef.current || isSpaceDownRef.current ? "grabbing" : "default";
-      }
-    };
-
+  useEffect(() => {
     game.on(GameRender, handleRender);
 
     const gameContainer = gameContainerRef.current;
@@ -128,11 +140,19 @@ export const CameraControls: React.FC = () => {
         gameContainer.removeEventListener("mousemove", handleMouseMove);
         gameContainer.removeEventListener("mouseup", handleMouseUp);
         gameContainer.removeEventListener("wheel", handleWheel);
-        globalThis.removeEventListener("keydown", handleKeyDown);
-        globalThis.removeEventListener("keyup", handleKeyUp);
       }
+      globalThis.removeEventListener("keydown", handleKeyDown);
+      globalThis.removeEventListener("keyup", handleKeyUp);
     };
-  }, []);
+  }, [
+    handleRender,
+    handleMouseDown,
+    handleMouseMove,
+    handleMouseUp,
+    handleWheel,
+    handleKeyDown,
+    handleKeyUp,
+  ]);
 
   return (
     <div ref={gameContainerRef} className="absolute inset-0">
