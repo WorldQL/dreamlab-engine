@@ -6,6 +6,7 @@ import { Entity, EntityContext } from "../entity.ts";
 import { smoothLerp } from "../../math/lerp.ts";
 
 export class Camera extends Entity {
+  public static readonly icon = "🎥";
   public static METERS_TO_PIXELS = 100;
 
   public readonly container: PIXI.Container;
