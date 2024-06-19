@@ -20,9 +20,9 @@ import {
   EntityChildRenamed,
   EntityChildReparented,
   EntityChildSpawned,
-  EntityDescendentRenamed,
-  EntityDescendentReparented,
-  EntityDescendentSpawned,
+  EntityDescendantRenamed,
+  EntityDescendantReparented,
+  EntityDescendantSpawned,
   EntityRenamed,
   EntitySpawned,
 } from "../signals/entity-lifecycle.ts";
@@ -44,7 +44,7 @@ import {
 } from "../behavior/behavior.ts";
 import { EntityChildDestroyed, EntityReparented } from "../mod.ts";
 import { EntityDestroyed } from "../signals/entity-lifecycle.ts";
-import { EntityDescendentDestroyed } from "../signals/entity-lifecycle.ts";
+import { EntityDescendantDestroyed } from "../signals/entity-lifecycle.ts";
 
 export interface EntityContext {
   game: Game;
@@ -112,7 +112,7 @@ export abstract class Entity implements ISignalHandler {
 
     let ancestor = this.parent;
     while (ancestor) {
-      ancestor.fire(EntityDescendentRenamed, this, oldName);
+      ancestor.fire(EntityDescendantRenamed, this, oldName);
       ancestor = ancestor.parent;
     }
   }
@@ -159,7 +159,7 @@ export abstract class Entity implements ISignalHandler {
     // deno-lint-ignore no-this-alias
     let ancestor: Entity | undefined = this;
     while (ancestor) {
-      ancestor.fire(EntityDescendentReparented, child, oldParent);
+      ancestor.fire(EntityDescendantReparented, child, oldParent);
       ancestor = ancestor.parent;
     }
 
@@ -459,7 +459,7 @@ export abstract class Entity implements ISignalHandler {
 
     let ancestor = this.parent;
     while (ancestor) {
-      ancestor.fire(EntityDescendentSpawned, this);
+      ancestor.fire(EntityDescendantSpawned, this);
       ancestor = ancestor.parent;
     }
 
@@ -514,7 +514,7 @@ export abstract class Entity implements ISignalHandler {
     if (this.parent) this.parent.fire(EntityChildDestroyed, this);
     let ancestor = this.parent;
     while (ancestor) {
-      ancestor.fire(EntityDescendentDestroyed, this);
+      ancestor.fire(EntityDescendantDestroyed, this);
       ancestor = ancestor.parent;
     }
 

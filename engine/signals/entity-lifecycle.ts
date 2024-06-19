@@ -10,7 +10,7 @@ export class EntitySpawned {
 }
 /**
  * Fired when a child appears beneath this entity.
- * For deep hierarchy additions see {@link EntityDescendentSpawned}
+ * For deep hierarchy additions see {@link EntityDescendantSpawned}
  *
  * @see EntityChildDestroyed
  */
@@ -19,11 +19,11 @@ export class EntityChildSpawned {
   [exclusiveSignalType] = Entity;
 }
 /**
- * Fired when a child or grandchild or nth descendent appears beneath this entity.
+ * Fired when a child or grandchild or nth descendant appears beneath this entity.
  * Covers all cases of {@link EntityChildSpawned} with additions.
  */
-export class EntityDescendentSpawned {
-  constructor(public descendent: Entity) {}
+export class EntityDescendantSpawned {
+  constructor(public descendant: Entity) {}
   [exclusiveSignalType] = Entity;
 }
 
@@ -41,10 +41,10 @@ export class EntityChildDestroyed {
   [exclusiveSignalType] = Entity;
 }
 /**
- * Fired when a descendent of this entity is destroyed.
+ * Fired when a descendant of this entity is destroyed.
  */
-export class EntityDescendentDestroyed {
-  constructor(public descendent: Entity) {}
+export class EntityDescendantDestroyed {
+  constructor(public descendant: Entity) {}
   [exclusiveSignalType] = Entity;
 }
 
@@ -64,9 +64,9 @@ export class EntityChildRenamed {
   [exclusiveSignalType] = Entity;
 }
 
-export class EntityDescendentRenamed {
+export class EntityDescendantRenamed {
   constructor(
-    public descendent: Entity,
+    public descendant: Entity,
     public oldName: string,
   ) {}
   [exclusiveSignalType] = Entity;
@@ -88,9 +88,9 @@ export class EntityChildReparented {
   [exclusiveSignalType] = Entity;
 }
 
-export class EntityDescendentReparented {
+export class EntityDescendantReparented {
   constructor(
-    public descendent: Entity,
+    public descendant: Entity,
     public oldParent: Entity | undefined,
   ) {}
   [exclusiveSignalType] = Entity;

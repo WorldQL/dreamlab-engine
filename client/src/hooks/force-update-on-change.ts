@@ -1,13 +1,13 @@
 import { useEffect } from "react";
 import {
   EntitySpawned,
-  EntityDescendentSpawned,
+  EntityDescendantSpawned,
   EntityDestroyed,
-  EntityDescendentDestroyed,
+  EntityDescendantDestroyed,
   EntityRenamed,
   Entity,
-  EntityDescendentRenamed,
-  EntityDescendentReparented,
+  EntityDescendantRenamed,
+  EntityDescendantReparented,
   EntityReparented,
 } from "@dreamlab/engine";
 import { useForceUpdate } from "./force-update.ts";
@@ -17,30 +17,30 @@ export const useForceUpdateOnEntityChange = (entity: Entity) => {
 
   useEffect(() => {
     const onEntitySpawned = () => forceUpdate();
-    const onEntityDescendentSpawned = () => forceUpdate();
+    const onEntityDescendantSpawned = () => forceUpdate();
     const onEntityDestroyed = () => forceUpdate();
-    const onEntityDescendentDestroyed = () => forceUpdate();
+    const onEntityDescendantDestroyed = () => forceUpdate();
     const onEntityRenamed = () => forceUpdate();
     const onEntityReparented = () => forceUpdate();
 
     entity.on(EntitySpawned, onEntitySpawned);
-    entity.on(EntityDescendentSpawned, onEntityDescendentSpawned);
+    entity.on(EntityDescendantSpawned, onEntityDescendantSpawned);
     entity.on(EntityDestroyed, onEntityDestroyed);
-    entity.on(EntityDescendentDestroyed, onEntityDescendentDestroyed);
+    entity.on(EntityDescendantDestroyed, onEntityDescendantDestroyed);
     entity.on(EntityRenamed, onEntityRenamed);
-    entity.on(EntityDescendentRenamed, onEntityRenamed);
+    entity.on(EntityDescendantRenamed, onEntityRenamed);
     entity.on(EntityReparented, onEntityReparented);
-    entity.on(EntityDescendentReparented, onEntityReparented);
+    entity.on(EntityDescendantReparented, onEntityReparented);
 
     return () => {
       entity.unregister(EntitySpawned, onEntitySpawned);
-      entity.unregister(EntityDescendentSpawned, onEntityDescendentSpawned);
+      entity.unregister(EntityDescendantSpawned, onEntityDescendantSpawned);
       entity.unregister(EntityDestroyed, onEntityDestroyed);
-      entity.unregister(EntityDescendentDestroyed, onEntityDescendentDestroyed);
+      entity.unregister(EntityDescendantDestroyed, onEntityDescendantDestroyed);
       entity.unregister(EntityRenamed, onEntityRenamed);
-      entity.unregister(EntityDescendentRenamed, onEntityRenamed);
+      entity.unregister(EntityDescendantRenamed, onEntityRenamed);
       entity.unregister(EntityReparented, onEntityReparented);
-      entity.unregister(EntityDescendentReparented, onEntityReparented);
+      entity.unregister(EntityDescendantReparented, onEntityReparented);
     };
   }, [forceUpdate]);
 };

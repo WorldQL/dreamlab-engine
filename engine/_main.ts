@@ -1,5 +1,5 @@
 import { ServerGame } from "./game.ts";
-import { EntityDescendentSpawned } from "./signals/entity-lifecycle.ts";
+import { EntityDescendantSpawned } from "./signals/entity-lifecycle.ts";
 import { Empty } from "./entity/entities/empty.ts";
 import { BasicLivingEntity } from "./entity/entities/basic-living.ts";
 
@@ -9,8 +9,8 @@ const game = new ServerGame({
 });
 await game.initialize();
 
-game.world.on(EntityDescendentSpawned, ({ descendent }) => {
-  console.log("[+]", descendent);
+game.world.on(EntityDescendantSpawned, ({ descendant }) => {
+  console.log("[+]", descendant);
 });
 
 const parent = game.world.spawn({
