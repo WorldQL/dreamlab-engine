@@ -29,7 +29,9 @@ const EntityEntry = ({
 }) => {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
   const [isHovered, setIsHovered] = useState<boolean>(false);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
   const [selectedEntity, setSelectedEntity] = useAtom(selectedEntityAtom);
+  const [previousName, setPreviousName] = useState<string>(entity.name);
   const dragImageRef = useRef<HTMLDivElement>(null);
 
   const iconVal = (entity.constructor as typeof Entity).icon;
@@ -77,16 +79,49 @@ const EntityEntry = ({
     [entity],
   );
 
+  const handleNameBlur = useCallback(
+    (e: React.FocusEvent<HTMLInputElement>) => {
+      const newName = e.target.value.trim();
+      if (newName !== "") {
+        entity.name = newName;
+        setSelectedEntity(entity);
+      } else {
+        entity.name = previousName;
+      }
+      setIsEditing(false);
+    },
+    [entity, previousName, setSelectedEntity],
+  );
+
+  const handleNameKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter") {
+        const newName = (e.target as HTMLInputElement).value.trim();
+        if (newName !== "") {
+          entity.name = newName;
+          setSelectedEntity(entity);
+        } else {
+          entity.name = previousName;
+        }
+        setIsEditing(false);
+      } else if (e.key === "Escape") {
+        entity.name = previousName;
+        setIsEditing(false);
+      }
+    },
+    [entity, previousName, setSelectedEntity],
+  );
+
   return (
     <li key={entity.ref} className="relative">
       <div
         className={cn(
-          "flex items-center cursor-pointer w-full relative hover:shadow-md",
+          "flex items-center cursor-pointer w-full relative",
           selectedEntity?.id === entity.id && "bg-gray ring-primary ring-2 rounded",
-          isHovered ? "bg-primary" : "hover:bg-secondary",
+          !isEditing && (isHovered ? "bg-primary hover:shadow-md" : "hover:bg-secondary"),
         )}
         onClick={handleEntityClick}
-        draggable
+        draggable={!isEditing}
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -102,9 +137,27 @@ const EntityEntry = ({
         ) : (
           <span className="inline-block w-4"></span>
         )}
-        <span className="text-sm text-textPrimary">
-          {icon} {entity.name}
-        </span>
+        {isEditing ? (
+          <input
+            type="text"
+            defaultValue={entity.name}
+            onBlur={handleNameBlur}
+            onKeyDown={handleNameKeyDown}
+            autoFocus
+            className="text-sm text-textPrimary w-full px-1 outline-none bg-transparent"
+            style={{ marginLeft: `${level * 16}px` }}
+          />
+        ) : (
+          <span
+            className="text-sm text-textPrimary"
+            onDoubleClick={() => {
+              setPreviousName(entity.name);
+              setIsEditing(true);
+            }}
+          >
+            {icon} {entity.name}
+          </span>
+        )}
       </div>
       {entity.children.size > 0 && !isCollapsed && (
         <ul>

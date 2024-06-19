@@ -1,4 +1,9 @@
-import { EntityTransformUpdate, EntityValues } from "@dreamlab/engine";
+import {
+  EntityDescendantRenamed,
+  EntityRenamed,
+  EntityTransformUpdate,
+  EntityValues,
+} from "@dreamlab/engine";
 import { useAtom } from "jotai";
 import { memo, useCallback, useEffect, useState } from "react";
 import { selectedEntityAtom } from "../context/editor-context.tsx";
@@ -37,6 +42,8 @@ const Inspector = () => {
     };
     updateValues();
     entity.on(EntityTransformUpdate, updateValues);
+    entity.on(EntityRenamed, updateValues);
+    entity.on(EntityDescendantRenamed, updateValues);
     return () => entity.unregister(EntityTransformUpdate, updateValues);
   }, [selectedEntity]);
 
