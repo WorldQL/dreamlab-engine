@@ -47,6 +47,32 @@ export const CameraControls: React.FC = () => {
       }
     };
 
+    const handleWheel = (event: WheelEvent) => {
+      if (cameraRef.current) {
+        event.preventDefault();
+        if (event.ctrlKey) {
+          const zoomFactor = 1.1;
+          const zoomDirection = event.deltaY > 0 ? 1 : -1;
+          const newScale = cameraRef.current.transform.scale.mul(
+            new Vector2(
+              Math.pow(zoomFactor, zoomDirection),
+              Math.pow(zoomFactor, zoomDirection),
+            ),
+          );
+          cameraRef.current.transform.scale = newScale;
+        } else {
+          const scrollSpeed = 50;
+          const scrollDirection = event.deltaY > 0 ? 1 : -1;
+          const scrollDelta = new Vector2(0, scrollDirection * scrollSpeed);
+          const worldDelta = cameraRef.current
+            .screenToWorld(scrollDelta)
+            .sub(cameraRef.current.screenToWorld(Vector2.ZERO));
+          cameraRef.current.transform.position =
+            cameraRef.current.transform.position.add(worldDelta);
+        }
+      }
+    };
+
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.code === "Space") {
         isSpaceDownRef.current = true;
@@ -79,6 +105,7 @@ export const CameraControls: React.FC = () => {
       gameContainer.addEventListener("mousedown", handleMouseDown);
       gameContainer.addEventListener("mousemove", handleMouseMove);
       gameContainer.addEventListener("mouseup", handleMouseUp);
+      gameContainer.addEventListener("wheel", handleWheel);
       globalThis.addEventListener("keydown", handleKeyDown);
       globalThis.addEventListener("keyup", handleKeyUp);
     }
@@ -90,6 +117,7 @@ export const CameraControls: React.FC = () => {
         gameContainer.removeEventListener("mousedown", handleMouseDown);
         gameContainer.removeEventListener("mousemove", handleMouseMove);
         gameContainer.removeEventListener("mouseup", handleMouseUp);
+        gameContainer.removeEventListener("wheel", handleWheel);
         globalThis.removeEventListener("keydown", handleKeyDown);
         globalThis.removeEventListener("keyup", handleKeyUp);
       }
