@@ -10,6 +10,7 @@ import { NewEntityMenu } from "./toolbar/entity-menu.tsx";
 import { PlaybackControls } from "./toolbar/playback-controls.tsx";
 import { SettingsMenu } from "./toolbar/settings-menu.tsx";
 import { ThemeButton } from "./toolbar/theme-button.tsx";
+import { CameraControls } from "./camera-controls.tsx";
 
 export const EditorLayout = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }) => {
   const isRunning = useAtomValue(isRunningAtom);
@@ -87,7 +88,9 @@ export const EditorLayout = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }) 
                 : ""
             }`}
             ref={gameContainer}
-          />
+          >
+            <CameraControls />
+          </div>
         </div>
         <div
           className="w-full cursor-row-resize rounded bg-background hover:bg-primary transition-colors duration-300 ease-in-out active:bg-primary"
