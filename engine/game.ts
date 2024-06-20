@@ -192,9 +192,9 @@ export class ClientGame extends BaseGame {
   }
 
   async initialize() {
-    this.inputs.registerHandlers();
     await super.initialize();
     await this.renderer.initialize();
+    this.inputs.registerHandlers(this);
   }
 
   readonly local: LocalRoot = new LocalRoot(this);

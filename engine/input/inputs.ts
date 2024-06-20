@@ -1,3 +1,4 @@
+import type { ClientGame } from "../game.ts";
 import {
   ISignalHandler,
   Signal,
@@ -66,18 +67,26 @@ export class Inputs implements ISignalHandler {
     this.fire(ActionBound, ev.action, ev.input);
   };
 
+  #onContextMenu = (ev: MouseEvent) => {
+    ev.preventDefault();
+  };
+
   // TODO: Make internal
-  public registerHandlers(): () => void {
+  public registerHandlers(game: ClientGame): () => void {
     globalThis.addEventListener("keydown", this.#onKeyDown);
     globalThis.addEventListener("keyup", this.#onKeyUp);
     globalThis.addEventListener("mousedown", this.#onMouseDown);
     globalThis.addEventListener("mouseup", this.#onMouseUp);
+
+    const canvas = game.renderer.app.canvas;
+    canvas.addEventListener("contextmenu", this.#onContextMenu);
 
     return () => {
       globalThis.removeEventListener("keydown", this.#onKeyDown);
       globalThis.removeEventListener("keyup", this.#onKeyUp);
       globalThis.removeEventListener("mousedown", this.#onMouseDown);
       globalThis.removeEventListener("mouseup", this.#onMouseUp);
+      canvas.removeEventListener("contextmenu", this.#onContextMenu);
     };
   }
 
