@@ -4,6 +4,9 @@ import { exclusiveSignalType } from "../signal.ts";
 export class GameTick {
   [exclusiveSignalType] = BaseGame;
 }
+export class GamePreRender {
+  [exclusiveSignalType] = BaseGame;
+}
 export class GameRender {
   [exclusiveSignalType] = BaseGame;
 }

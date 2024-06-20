@@ -12,7 +12,13 @@ import {
   SignalConstructorMatching,
   SignalListener,
 } from "./signal.ts";
-import { GamePostRender, GameRender, GameShutdown, GameTick } from "./signals/game-events.ts";
+import {
+  GamePostRender,
+  GamePreRender,
+  GameRender,
+  GameShutdown,
+  GameTick,
+} from "./signals/game-events.ts";
 import { Time } from "./time.ts";
 import { SyncedValueRegistry } from "./value/mod.ts";
 
@@ -212,6 +218,7 @@ export class ClientGame extends BaseGame {
     this.time[internal.timeSetMode]("render");
     this.time[internal.timeIncrement](delta, this.#tickAccumulator / this.physics.tickDelta);
 
+    this.fire(GamePreRender);
     this.fire(GameRender);
     this.renderer.renderFrame();
     this.fire(GamePostRender);

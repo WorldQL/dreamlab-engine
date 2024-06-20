@@ -1,9 +1,9 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
+import { EntityDestroyed, GameRender } from "../../signals/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
-import { EntityPreUpdate, GameRender, EntityUpdate } from "../../signals/mod.ts";
-import { IVector2, Vector2, lerpAngle } from "../../math/mod.ts";
+import { InterpolatedEntity } from "../interpolated-entity.ts";
 
-export class Sprite2D extends Entity {
+export class Sprite2D extends InterpolatedEntity {
   public static readonly icon = "🖼️";
   static readonly WHITE_PNG =
     "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAUSURBVBhXY/wPBAxAwAQiGBgYGAA9+AQAag6xEAAAAABJRU5ErkJggg==";
@@ -14,24 +14,10 @@ export class Sprite2D extends Entity {
 
   #sprite: PIXI.Sprite | undefined;
 
-  #lastRenderPos: IVector2 | undefined;
-  #lastRenderRot: number | undefined;
-
   constructor(ctx: EntityContext) {
     super(ctx);
 
     PIXI.Assets.backgroundLoad(this.texture.value);
-
-    let prevRenderPos: IVector2 | undefined;
-    let prevRenderRot: number | undefined;
-    this.on(EntityPreUpdate, () => {
-      prevRenderPos = this.globalTransform.position.bare();
-      prevRenderRot = this.globalTransform.rotation;
-    });
-    this.on(EntityUpdate, () => {
-      this.#lastRenderPos = prevRenderPos;
-      this.#lastRenderRot = prevRenderRot;
-    });
 
     this.listen(this.game, GameRender, () => {
       if (!this.#sprite) return;
@@ -39,25 +25,13 @@ export class Sprite2D extends Entity {
       this.#sprite.width = this.width.value * this.globalTransform.scale.x;
       this.#sprite.height = this.height.value * this.globalTransform.scale.y;
 
-      const pos =
-        this.#lastRenderPos !== undefined
-          ? Vector2.lerp(
-              this.#lastRenderPos!,
-              this.globalTransform.position,
-              this.game.time.partial,
-            )
-          : this.globalTransform.position;
-      const rotation =
-        this.#lastRenderRot !== undefined
-          ? lerpAngle(
-              this.#lastRenderRot!,
-              this.globalTransform.rotation,
-              this.game.time.partial,
-            )
-          : this.globalTransform.rotation;
-
+      const pos = this.interpolated.position;
       this.#sprite.position = { x: pos.x, y: -pos.y };
-      this.#sprite.rotation = -rotation;
+      this.#sprite.rotation = -this.interpolated.rotation;
+    });
+
+    this.on(EntityDestroyed, () => {
+      this.#sprite?.destroy();
     });
   }
 
@@ -78,11 +52,6 @@ export class Sprite2D extends Entity {
     });
 
     this.game.renderer.scene.addChild(this.#sprite);
-  }
-
-  destroy(): void {
-    super.destroy();
-    this.#sprite?.destroy();
   }
 }
 Entity.registerType(Sprite2D, "@core");
