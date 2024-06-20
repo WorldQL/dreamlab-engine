@@ -1,4 +1,4 @@
-import type { ClientGame } from "../game.ts";
+import type { Game } from "../game.ts";
 import {
   ISignalHandler,
   Signal,
@@ -14,6 +14,11 @@ import { isInput } from "./input.ts";
 // TODO: Scroll and cursor position support
 
 export class Inputs implements ISignalHandler {
+  readonly #game: Game;
+  constructor(game: Game) {
+    this.#game = game;
+  }
+
   // #region Actions
   #actions = new Map<string, Action>();
 
@@ -112,13 +117,17 @@ export class Inputs implements ISignalHandler {
   };
 
   // TODO: Make internal
-  public registerHandlers(game: ClientGame): () => void {
+  public registerHandlers(): () => void {
+    if (!this.#game.isClient()) {
+      throw new Error("registerHandlers() can only be called on the client");
+    }
+
     globalThis.addEventListener("keydown", this.#onKeyDown);
     globalThis.addEventListener("keyup", this.#onKeyUp);
     globalThis.addEventListener("mousedown", this.#onMouseDown);
     globalThis.addEventListener("mouseup", this.#onMouseUp);
 
-    const canvas = game.renderer.app.canvas;
+    const canvas = this.#game.renderer.app.canvas;
     canvas.addEventListener("contextmenu", this.#onContextMenu);
 
     return () => {

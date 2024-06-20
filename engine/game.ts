@@ -55,7 +55,7 @@ export abstract class BaseGame implements ISignalHandler {
   readonly prefabs = new PrefabsRoot(this as unknown as Game);
 
   readonly time = new Time(this as unknown as Game);
-  readonly inputs = new Inputs();
+  readonly inputs = new Inputs(this as unknown as Game);
 
   [internal.behaviorScriptLoader] = new BehaviorLoader(this as unknown as Game);
 
@@ -194,7 +194,7 @@ export class ClientGame extends BaseGame {
   async initialize() {
     await super.initialize();
     await this.renderer.initialize();
-    this.inputs.registerHandlers(this);
+    this.inputs.registerHandlers();
   }
 
   readonly local: LocalRoot = new LocalRoot(this);
