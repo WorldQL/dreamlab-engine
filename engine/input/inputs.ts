@@ -40,6 +40,28 @@ export class Inputs implements ISignalHandler {
     }
   };
 
+  #onMouseUp = (ev: MouseEvent) => this.#onMouse(ev, true);
+  #onMouseDown = (ev: MouseEvent) => this.#onMouse(ev, false);
+
+  #onMouse = (ev: MouseEvent, pressed: boolean) => {
+    const input: Input | undefined =
+      ev.button === 0
+        ? "MouseLeft"
+        : ev.button === 1
+        ? "MouseMiddle"
+        : ev.button === 2
+        ? "MouseRight"
+        : undefined;
+
+    if (!input) return;
+    for (const action of this.actions.values()) {
+      if (action.binding !== input) continue;
+
+      // @ts-expect-error private access
+      action.pressed = pressed;
+    }
+  };
+
   #onBind = (ev: ActionBound) => {
     this.fire(ActionBound, ev.action, ev.input);
   };
@@ -48,10 +70,14 @@ export class Inputs implements ISignalHandler {
   public registerHandlers(): () => void {
     globalThis.addEventListener("keydown", this.#onKeyDown);
     globalThis.addEventListener("keyup", this.#onKeyUp);
+    globalThis.addEventListener("mousedown", this.#onMouseDown);
+    globalThis.addEventListener("mouseup", this.#onMouseUp);
 
     return () => {
       globalThis.removeEventListener("keydown", this.#onKeyDown);
       globalThis.removeEventListener("keyup", this.#onKeyUp);
+      globalThis.removeEventListener("mousedown", this.#onMouseDown);
+      globalThis.removeEventListener("mouseup", this.#onMouseUp);
     };
   }
 

@@ -28,6 +28,7 @@ export class Action implements ISignalHandler {
     return this.#value;
   }
 
+  // TODO: Convert to internal function
   private set pressed(value: boolean) {
     if (value === this.#value) return;
     this.#value = value;
