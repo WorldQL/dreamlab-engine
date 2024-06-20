@@ -14,6 +14,7 @@ import { isInput } from "./input.ts";
 // TODO: Scroll and cursor position support
 
 export class Inputs implements ISignalHandler {
+  // #region Actions
   #actions = new Map<string, Action>();
 
   public get actions(): readonly Action[] {
@@ -24,70 +25,6 @@ export class Inputs implements ISignalHandler {
     return Object.freeze(
       [...this.#actions.values()].map(action => [action, action.binding] as const),
     );
-  }
-
-  #onKeyDown = (ev: KeyboardEvent) => this.#onKey(ev, true);
-  #onKeyUp = (ev: KeyboardEvent) => this.#onKey(ev, false);
-
-  #onKey = (ev: KeyboardEvent, pressed: boolean) => {
-    const input = ev.code;
-    if (!isInput(input)) return;
-
-    for (const action of this.actions.values()) {
-      if (action.binding !== input) continue;
-
-      // @ts-expect-error private access
-      action.pressed = pressed;
-    }
-  };
-
-  #onMouseUp = (ev: MouseEvent) => this.#onMouse(ev, true);
-  #onMouseDown = (ev: MouseEvent) => this.#onMouse(ev, false);
-
-  #onMouse = (ev: MouseEvent, pressed: boolean) => {
-    const input: Input | undefined =
-      ev.button === 0
-        ? "MouseLeft"
-        : ev.button === 1
-        ? "MouseMiddle"
-        : ev.button === 2
-        ? "MouseRight"
-        : undefined;
-
-    if (!input) return;
-    for (const action of this.actions.values()) {
-      if (action.binding !== input) continue;
-
-      // @ts-expect-error private access
-      action.pressed = pressed;
-    }
-  };
-
-  #onBind = (ev: ActionBound) => {
-    this.fire(ActionBound, ev.action, ev.input);
-  };
-
-  #onContextMenu = (ev: MouseEvent) => {
-    ev.preventDefault();
-  };
-
-  // TODO: Make internal
-  public registerHandlers(game: ClientGame): () => void {
-    globalThis.addEventListener("keydown", this.#onKeyDown);
-    globalThis.addEventListener("keyup", this.#onKeyUp);
-    globalThis.addEventListener("mousedown", this.#onMouseDown);
-    globalThis.addEventListener("mouseup", this.#onMouseUp);
-
-    const canvas = game.renderer.app.canvas;
-    canvas.addEventListener("contextmenu", this.#onContextMenu);
-
-    return () => {
-      globalThis.removeEventListener("keydown", this.#onKeyDown);
-      globalThis.removeEventListener("keyup", this.#onKeyUp);
-      globalThis.removeEventListener("mousedown", this.#onMouseDown);
-      globalThis.removeEventListener("mouseup", this.#onMouseUp);
-      canvas.removeEventListener("contextmenu", this.#onContextMenu);
-    };
   }
 
   public get(action: string): Action | undefined {
@@ -122,6 +59,77 @@ export class Inputs implements ISignalHandler {
     this.#actions.delete(_action.name);
     this.fire(ActionDeleted, _action);
   }
+  // #endregion
+
+  // #region Event Handlers
+  // #region Keyboard
+  #onKeyDown = (ev: KeyboardEvent) => this.#onKey(ev, true);
+  #onKeyUp = (ev: KeyboardEvent) => this.#onKey(ev, false);
+
+  #onKey = (ev: KeyboardEvent, pressed: boolean) => {
+    const input = ev.code;
+    if (!isInput(input)) return;
+
+    for (const action of this.actions.values()) {
+      if (action.binding !== input) continue;
+
+      // @ts-expect-error private access
+      action.pressed = pressed;
+    }
+  };
+  // #endregion
+
+  // #region Mouse
+  #onMouseUp = (ev: MouseEvent) => this.#onMouse(ev, true);
+  #onMouseDown = (ev: MouseEvent) => this.#onMouse(ev, false);
+
+  #onMouse = (ev: MouseEvent, pressed: boolean) => {
+    const input: Input | undefined =
+      ev.button === 0
+        ? "MouseLeft"
+        : ev.button === 1
+        ? "MouseMiddle"
+        : ev.button === 2
+        ? "MouseRight"
+        : undefined;
+
+    if (!input) return;
+    for (const action of this.actions.values()) {
+      if (action.binding !== input) continue;
+
+      // @ts-expect-error private access
+      action.pressed = pressed;
+    }
+  };
+  // #endregion
+
+  #onBind = (ev: ActionBound) => {
+    this.fire(ActionBound, ev.action, ev.input);
+  };
+
+  #onContextMenu = (ev: MouseEvent) => {
+    ev.preventDefault();
+  };
+
+  // TODO: Make internal
+  public registerHandlers(game: ClientGame): () => void {
+    globalThis.addEventListener("keydown", this.#onKeyDown);
+    globalThis.addEventListener("keyup", this.#onKeyUp);
+    globalThis.addEventListener("mousedown", this.#onMouseDown);
+    globalThis.addEventListener("mouseup", this.#onMouseUp);
+
+    const canvas = game.renderer.app.canvas;
+    canvas.addEventListener("contextmenu", this.#onContextMenu);
+
+    return () => {
+      globalThis.removeEventListener("keydown", this.#onKeyDown);
+      globalThis.removeEventListener("keyup", this.#onKeyUp);
+      globalThis.removeEventListener("mousedown", this.#onMouseDown);
+      globalThis.removeEventListener("mouseup", this.#onMouseUp);
+      canvas.removeEventListener("contextmenu", this.#onContextMenu);
+    };
+  }
+  // #endregion
 
   // #region Signals
   #signalListenerMap = new Map<SignalConstructor, SignalListener[]>();
