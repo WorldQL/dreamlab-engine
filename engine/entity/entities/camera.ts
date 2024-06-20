@@ -22,7 +22,7 @@ export class Camera extends Entity {
 
     return this.#matrix
       .identity()
-      .translate(-this.#position.x, -this.#position.y)
+      .translate(-this.#position.x, this.#position.y)
       .rotate(this.#rotation)
       .scale(Camera.METERS_TO_PIXELS, Camera.METERS_TO_PIXELS)
       .scale(1 / this.#scale.x, 1 / this.#scale.y)
