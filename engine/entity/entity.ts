@@ -511,7 +511,11 @@ export abstract class Entity implements ISignalHandler {
 
   destroy() {
     this.fire(EntityDestroyed);
-    if (this.parent) this.parent.fire(EntityChildDestroyed, this);
+    if (this.parent) {
+      this.parent.fire(EntityChildDestroyed, this);
+      this.parent.removeChild(this);
+    }
+
     let ancestor = this.parent;
     while (ancestor) {
       ancestor.fire(EntityDescendantDestroyed, this);
@@ -533,7 +537,7 @@ export abstract class Entity implements ISignalHandler {
     }
 
     this.values.destroy();
-    this.parent = undefined;
+    this.#parent = undefined;
     this.game.entities._unregister(this);
 
     this.#signalListenerMap.clear();
