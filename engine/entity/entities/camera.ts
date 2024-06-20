@@ -1,9 +1,9 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import { Game, ClientGame } from "../../game.ts";
-import { Vector2 } from "../../math/mod.ts";
+import { ClientGame, Game } from "../../game.ts";
+import { smoothLerp } from "../../math/lerp.ts";
+import { IVector2, Vector2 } from "../../math/mod.ts";
 import { GameRender } from "../../signals/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
-import { smoothLerp } from "../../math/lerp.ts";
 
 export class Camera extends Entity {
   public static readonly icon = "🎥";
@@ -122,12 +122,12 @@ export class Camera extends Entity {
     this.container.destroy();
   }
 
-  public worldToScreen(position: Vector2): Vector2 {
+  public worldToScreen(position: IVector2): Vector2 {
     const { x, y } = this.#matrix.apply({ x: position.x, y: -position.y });
     return new Vector2(x, y);
   }
 
-  public screenToWorld(position: Vector2): Vector2 {
+  public screenToWorld(position: IVector2): Vector2 {
     const { x, y } = this.#matrix.applyInverse(position);
     return new Vector2(x, -y);
   }

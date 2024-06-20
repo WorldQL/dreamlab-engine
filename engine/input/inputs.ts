@@ -1,4 +1,6 @@
+import { Camera } from "../entity/mod.ts";
 import type { Game } from "../game.ts";
+import { IVector2, Vector2 } from "../math/mod.ts";
 import {
   ISignalHandler,
   Signal,
@@ -66,6 +68,20 @@ export class Inputs implements ISignalHandler {
   }
   // #endregion
 
+  // #region Cursor
+  #cursorPosition: IVector2 | undefined = undefined;
+  get cursor(): { readonly screen: Vector2; world: Vector2 } | undefined {
+    if (!this.#cursorPosition) return undefined;
+
+    const camera = Camera.getActive(this.#game);
+    if (!camera) return undefined;
+
+    const screen = new Vector2(this.#cursorPosition);
+    const world = camera.screenToWorld(this.#cursorPosition);
+    return Object.freeze({ screen, world });
+  }
+  // #endregion
+
   // #region Event Handlers
   // #region Keyboard
   #onKeyDown = (ev: KeyboardEvent) => this.#onKey(ev, true);
@@ -106,6 +122,28 @@ export class Inputs implements ISignalHandler {
       action.pressed = pressed;
     }
   };
+
+  #onMouseOver = (ev: MouseEvent) => {
+    if (this.#cursorPosition === undefined) {
+      this.#cursorPosition = { x: ev.offsetX, y: ev.offsetX };
+    } else {
+      this.#cursorPosition.x = ev.offsetX;
+      this.#cursorPosition.y = ev.offsetY;
+    }
+  };
+
+  #onMouseOut = (_: MouseEvent) => {
+    this.#cursorPosition = undefined;
+  };
+
+  #onMouseMove = (ev: MouseEvent) => {
+    if (this.#cursorPosition === undefined) {
+      this.#cursorPosition = { x: ev.offsetX, y: ev.offsetX };
+    } else {
+      this.#cursorPosition.x = ev.offsetX;
+      this.#cursorPosition.y = ev.offsetY;
+    }
+  };
   // #endregion
 
   #onBind = (ev: ActionBound) => {
@@ -129,13 +167,20 @@ export class Inputs implements ISignalHandler {
 
     const canvas = this.#game.renderer.app.canvas;
     canvas.addEventListener("contextmenu", this.#onContextMenu);
+    canvas.addEventListener("mouseover", this.#onMouseOver);
+    canvas.addEventListener("mouseout", this.#onMouseOut);
+    canvas.addEventListener("mousemove", this.#onMouseMove);
 
     return () => {
       globalThis.removeEventListener("keydown", this.#onKeyDown);
       globalThis.removeEventListener("keyup", this.#onKeyUp);
       globalThis.removeEventListener("mousedown", this.#onMouseDown);
       globalThis.removeEventListener("mouseup", this.#onMouseUp);
+
       canvas.removeEventListener("contextmenu", this.#onContextMenu);
+      canvas.removeEventListener("mouseover", this.#onMouseOver);
+      canvas.removeEventListener("mouseout", this.#onMouseOut);
+      canvas.removeEventListener("mousemove", this.#onMouseMove);
     };
   }
   // #endregion
