@@ -56,9 +56,8 @@ export const CameraControls: React.FC = () => {
       const worldDelta = cameraRef.current
         .screenToWorld(delta)
         .sub(cameraRef.current.screenToWorld(Vector2.ZERO));
-      cameraRef.current.transform.position = cameraRef.current.transform.position.add(
-        new Vector2(worldDelta.x, -worldDelta.y),
-      );
+      cameraRef.current.transform.position =
+        cameraRef.current.transform.position.add(worldDelta);
     }
   }, []);
 
