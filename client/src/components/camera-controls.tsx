@@ -41,6 +41,7 @@ export const CameraControls: React.FC = () => {
   const handleMouseDown = useCallback(
     (event: MouseEvent) => {
       if (event.button === 1 || (isSpaceDownRef.current && event.button === 0)) {
+        event.preventDefault();
         isDraggingRef.current = true;
         lastMousePositionRef.current = new Vector2(event.clientX, event.clientY);
         updateCursor();
