@@ -5,10 +5,12 @@ import { MousePointer2, Move, ZoomIn } from "lucide-react";
 
 export const CameraControls: React.FC = () => {
   const cameraRef = useRef<Camera | undefined>();
-  const isDraggingRef = useRef(false);
-  const lastMousePositionRef = useRef<Vector2>(Vector2.ZERO);
-  const isSpaceDownRef = useRef(false);
   const gameContainerRef = useRef<HTMLDivElement | null>(null);
+  const lastMousePositionRef = useRef<Vector2>(Vector2.ZERO);
+
+  const isSpaceDownRef = useRef(false);
+  const isCtrlDownRef = useRef(false);
+  const isDraggingRef = useRef(false);
 
   const [cameraPosition, setCameraPosition] = useState<Vector2>(Vector2.ZERO);
   const [cursorPosition, setCursorPosition] = useState<Vector2>(Vector2.ZERO);
@@ -21,6 +23,8 @@ export const CameraControls: React.FC = () => {
         ? "grabbing"
         : isSpaceDownRef.current
         ? "grab"
+        : isCtrlDownRef.current
+        ? "zoom-in"
         : "default";
     }
   }, []);
@@ -100,6 +104,9 @@ export const CameraControls: React.FC = () => {
       if (event.code === "Space") {
         isSpaceDownRef.current = true;
         updateCursor();
+      } else if (event.code === "ControlLeft" || event.code === "ControlRight") {
+        isCtrlDownRef.current = true;
+        updateCursor();
       }
     },
     [updateCursor],
@@ -112,6 +119,9 @@ export const CameraControls: React.FC = () => {
         if (isDraggingRef.current) {
           isDraggingRef.current = false;
         }
+        updateCursor();
+      } else if (event.code === "ControlLeft" || event.code === "ControlRight") {
+        isCtrlDownRef.current = false;
         updateCursor();
       }
     },
