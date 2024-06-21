@@ -81,12 +81,14 @@ const addControls = () => {
 export const slider = (
   {
     label,
+    group,
     value = 0,
     min = 0,
     max = 1,
     step = 0.01,
   }: {
     label: string;
+    group?: string;
     value?: number;
     min?: number;
     max?: number;
@@ -112,6 +114,18 @@ export const slider = (
     onChanged(input.valueAsNumber);
     display.innerText = input.valueAsNumber.toString();
   });
+
+  if (group) {
+    const groupSpan = document.createElement("span");
+    groupSpan.innerText = group;
+    groupSpan.style.fontWeight = "bold";
+    groupSpan.style.gridColumn = "span 3";
+    if (controls.childElementCount > 0) {
+      groupSpan.style.marginTop = "1rem";
+    }
+
+    controls.appendChild(groupSpan);
+  }
 
   controls.appendChild(span);
   controls.appendChild(input);

@@ -33,7 +33,7 @@ declare global {
 Object.assign(window, { game, camera });
 // #endregion
 
-const mod = await import("./test-cases/wasd.ts");
+const mod = await import("./test-cases/wasd-ui.ts");
 Object.assign(window, { ...mod });
 
 // #region Tick loop

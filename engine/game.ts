@@ -21,6 +21,7 @@ import {
 } from "./signals/game-events.ts";
 import { Time } from "./time.ts";
 import { SyncedValueRegistry } from "./value/mod.ts";
+import { UIManager } from "./ui.ts";
 
 export interface GameOptions {
   instanceId: string;
@@ -186,7 +187,8 @@ export class ClientGame extends BaseGame {
 
   readonly container: HTMLDivElement;
   readonly renderer: GameRenderer;
-  // readonly camera: Camera;
+
+  readonly ui: UIManager = new UIManager(this);
 
   constructor(opts: ClientGameOptions) {
     super(opts);
@@ -201,6 +203,12 @@ export class ClientGame extends BaseGame {
     await super.initialize();
     await this.renderer.initialize();
     this.inputs.registerHandlers();
+    this.ui.init();
+  }
+
+  override shutdown() {
+    this.ui.shutdown();
+    super.shutdown();
   }
 
   readonly local: LocalRoot = new LocalRoot(this);

@@ -29,6 +29,18 @@ export class Camera extends Entity {
       .translate(game.renderer.app.canvas.width / 2, game.renderer.app.canvas.height / 2);
   }
 
+  get smoothed(): {
+    readonly position: IVector2;
+    readonly rotation: number;
+    readonly scale: IVector2;
+  } {
+    return {
+      position: this.#position.bare(),
+      rotation: this.#rotation,
+      scale: this.#scale.bare(),
+    };
+  }
+
   #active = false;
   get active(): boolean {
     return this.#active;
