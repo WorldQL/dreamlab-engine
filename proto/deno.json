@@ -3,6 +3,6 @@
     "dev": "deno run --watch _main.ts"
   },
   "imports": {
-    "zod": "./_deps/zod.ts"
+    "zod": "../engine/_deps/zod.ts"
   }
 }
