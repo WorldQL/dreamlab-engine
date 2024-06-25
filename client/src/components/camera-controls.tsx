@@ -182,7 +182,7 @@ export const CameraControls: React.FC = () => {
         </div>
         <div className="flex items-center space-x-2">
           <ZoomIn className="w-4 h-4" />
-          <span>Zoom Scale: {zoomScale}x</span>
+          <span>Zoom Scale: {zoomScale.toFixed(2)}x</span>
         </div>
       </div>
     </div>
