@@ -16,9 +16,11 @@ function hasHealthValue(entity: Entity): entity is Entity & HasHealth {
 }
 
 export default class BulletBehavior extends Behavior {
-  damage = this.values.number("damage", 15.0);
+  damage = 15.0;
 
   onInitialize(): void {
+    this.value(BulletBehavior, "damage");
+
     this.listen(this.entity, EntityCollision, e => {
       if (e.started) this.onCollide(e.other);
     });
@@ -27,7 +29,7 @@ export default class BulletBehavior extends Behavior {
   onCollide(other: Entity) {
     if (!hasHealthValue(other)) return;
 
-    other.health.value -= this.damage.value;
+    other.health.value -= this.damage;
     this.entity.destroy();
   }
 }

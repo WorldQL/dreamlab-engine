@@ -10,7 +10,7 @@ export class Camera extends Entity {
   public static METERS_TO_PIXELS = 100;
 
   public readonly container: PIXI.Container;
-  public readonly smooth = this.values.number("smooth", 0.01);
+  public smooth: number = 0.01;
 
   #position: Vector2 = new Vector2(this.globalTransform.position);
   #rotation: number = this.globalTransform.rotation;
@@ -78,16 +78,17 @@ export class Camera extends Entity {
       throw new Error("camera must be spawned as a client local");
     }
 
+    this.value(Camera, "smooth");
+
     this.container = new PIXI.Container();
     this.game.renderer.app.stage.addChild(this.container);
 
     this.listen(this.game, GameRender, () => {
       if (!this.#active) return;
       const delta = this.game.time.delta;
-      const smooth = this.smooth.value;
 
       // No smoothing
-      if (smooth === 1) {
+      if (this.smooth === 1) {
         this.#position.x = this.globalTransform.position.x;
         this.#position.y = this.globalTransform.position.y;
         this.#rotation = this.globalTransform.rotation;
@@ -101,21 +102,21 @@ export class Camera extends Entity {
       this.#position = Vector2.smoothLerp(
         this.#position,
         this.globalTransform.position,
-        this.smooth.value,
+        this.smooth,
         delta,
       );
 
       this.#rotation = smoothLerp(
         this.#rotation,
         this.globalTransform.rotation,
-        this.smooth.value,
+        this.smooth,
         delta,
       );
 
       this.#scale = Vector2.smoothLerp(
         this.#scale,
         this.globalTransform.scale,
-        this.smooth.value,
+        this.smooth,
         delta,
       );
 
@@ -126,6 +127,8 @@ export class Camera extends Entity {
   }
 
   destroy(): void {
+    super.destroy();
+
     const game = this.game as ClientGame;
 
     // Reparent to pixi root

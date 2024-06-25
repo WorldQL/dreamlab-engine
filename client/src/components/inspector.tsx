@@ -2,7 +2,7 @@ import {
   EntityDescendantRenamed,
   EntityRenamed,
   EntityTransformUpdate,
-  EntityValues,
+  SyncedValue,
 } from "@dreamlab/engine";
 import { useAtom } from "jotai";
 import { memo, useCallback, useEffect, useState } from "react";
@@ -23,7 +23,7 @@ const Inspector = () => {
   const [rotation, setRotation] = useState<number>(0);
   const [globalRotation, setGlobalRotation] = useState<number>(0);
   const [scale, setScale] = useState<{ x: number; y: number }>({ x: 1, y: 1 });
-  const [values, setValues] = useState<EntityValues>({} as EntityValues);
+  const [values, setValues] = useState<Partial<Record<string, SyncedValue>>>({});
   const [behaviors, setBehaviors] = useState<string[]>([]);
 
   useEffect(() => {
@@ -37,7 +37,7 @@ const Inspector = () => {
       setRotation(entity.transform.rotation * (180 / Math.PI));
       setGlobalRotation(entity.globalTransform.rotation * (180 / Math.PI));
       setScale(entity.transform.scale);
-      setValues(entity.values);
+      setValues(Object.fromEntries(entity.values.entries()));
       setBehaviors(entity.behaviors.map(behavior => behavior.constructor.name));
     };
     updateValues();
@@ -116,7 +116,7 @@ const Inspector = () => {
     const newValues = Object.assign({}, values, { [key]: newValue });
     setValues(newValues);
     if (selectedEntity) {
-      selectedEntity.set({ values: newValues });
+      selectedEntity.set({ [key]: newValue });
       setSelectedEntity(selectedEntity);
     }
   };
@@ -175,8 +175,8 @@ const Inspector = () => {
               type="text"
               key={key}
               label={key}
-              value={String(values[key as keyof EntityValues])}
-              onChange={handleValueChange(key as keyof EntityValues)}
+              value={String(values[key]?.value)}
+              onChange={handleValueChange(key)}
             />
           ))}
         </div>

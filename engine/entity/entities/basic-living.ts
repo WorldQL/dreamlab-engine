@@ -1,24 +1,20 @@
-import { Entity, EntityContext } from "../entity.ts";
+import { Entity } from "../entity.ts";
 import { EntityUpdate } from "../../signals/entity-updates.ts";
 
 export class BasicLivingEntity extends Entity {
-  health = this.values.number("health", 100);
-  maxHealth = this.values.number("maxHealth", 100);
+  maxHealth = 100.0;
+  health = this.maxHealth;
 
-  constructor(ctx: EntityContext) {
-    super(ctx);
+  onInitialize(): void {
+    this.value(BasicLivingEntity, "health");
+    this.value(BasicLivingEntity, "maxHealth");
 
-    // TODO: weird footgun? requires bind(..) or arrow wrapping if its a member function of the entity
-    // maybe we can implicitly bind(..) if the function provided exists in Object.values(this)
     this.on(EntityUpdate, () => this.regen());
   }
 
   regen() {
-    if (this.health.value < this.maxHealth.value) {
-      this.health.value += Math.min(
-        10.0 / this.game.time.TPS,
-        this.maxHealth.value - this.health.value,
-      );
+    if (this.health < this.maxHealth) {
+      this.health += Math.min(10.0 / this.game.time.TPS, this.maxHealth - this.health);
     }
   }
 }

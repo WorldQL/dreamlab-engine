@@ -1,4 +1,6 @@
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
+import type { ConditionalExcept } from "@dreamlab/vendor/type-fest.ts";
+
 import { type Game } from "../game.ts";
 import {
   Transform,
@@ -34,16 +36,13 @@ import {
   EntityTransformUpdate,
   EntityUpdate,
 } from "../signals/entity-updates.ts";
-import { EntityValues } from "../entity/entity-values.ts";
-import { JsonValue, SyncedValue } from "../value/mod.ts";
+import { JsonValue, SyncedValue, ValueTypeTag, inferValueTypeTag } from "../value/mod.ts";
+import { Behavior, BehaviorConstructor, BehaviorDefinition } from "../behavior/behavior.ts";
 import {
-  BehaviorSyncedValueProps,
-  Behavior,
-  BehaviorConstructor,
-  BehaviorDefinition,
-} from "../behavior/behavior.ts";
-import { EntityChildDestroyed, EntityReparented } from "../mod.ts";
-import { EntityDestroyed } from "../signals/entity-lifecycle.ts";
+  EntityDestroyed,
+  EntityChildDestroyed,
+  EntityReparented,
+} from "../signals/entity-lifecycle.ts";
 import { EntityDescendantDestroyed } from "../signals/entity-lifecycle.ts";
 
 export interface EntityContext {
@@ -58,10 +57,6 @@ export interface EntityContext {
 export type EntityConstructor<T extends Entity = Entity> = new (ctx: EntityContext) => T;
 
 // prettier-ignore
-export type EntitySyncedValueProps<E extends Entity> = {
-  [K in keyof E as E[K] extends SyncedValue<infer _> ? K : never]:
-    E[K] extends SyncedValue<infer V> ? V : never;
-};
 
 export interface EntityDefinition<
   T extends Entity,
@@ -73,7 +68,7 @@ export interface EntityDefinition<
   type: EntityConstructor<T>;
   name: string;
   transform?: { position?: IVector2; rotation?: number; scale?: IVector2 };
-  values?: Partial<EntitySyncedValueProps<T>>;
+  values?: Partial<Omit<T, keyof Entity>>;
   children?: { [I in keyof Children]: EntityDefinition<Children[I]> };
   behaviors?: { [I in keyof Behaviors]: BehaviorDefinition<Behaviors[I]> };
   _ref?: string;
@@ -260,13 +255,13 @@ export abstract class Entity implements ISignalHandler {
 
   // #region Cloning
   #generatePlainDefinition(): EntityDefinition<this> {
-    const entityValues: Partial<EntitySyncedValueProps<this>> = {};
-    for (const [key, value] of Object.entries(this)) {
-      if (!(value instanceof SyncedValue)) continue;
+    const entityValues: Partial<Omit<this, keyof Entity>> = {};
+    for (const [key, value] of this.values.entries()) {
       const newValue = value.adapter
         ? value.adapter.convertFromPrimitive(value.adapter.convertToPrimitive(value.value))
         : structuredClone(value.value);
-      entityValues[key as keyof typeof entityValues] = newValue;
+      // @ts-expect-error can't prove that key is keyof this because the value map is keyed by string
+      entityValues[key] = newValue;
     }
 
     return {
@@ -278,13 +273,11 @@ export abstract class Entity implements ISignalHandler {
   }
 
   #generateBehaviorDefinition(behavior: Behavior): BehaviorDefinition {
-    const behaviorValues: Partial<BehaviorSyncedValueProps> = {};
-    for (const [key, value] of Object.entries(behavior)) {
-      if (!(value instanceof SyncedValue)) continue;
+    const behaviorValues: Partial<Record<string, unknown>> = {};
+    for (const [key, value] of behavior.values.entries()) {
       const newValue = value.adapter
         ? value.adapter.convertFromPrimitive(value.adapter.convertToPrimitive(value.value))
         : structuredClone(value.value);
-      // @ts-expect-error Object.entries can't give us key as keyof BehaviorSyncedValueProps
       behaviorValues[key] = newValue;
     }
 
@@ -320,12 +313,62 @@ export abstract class Entity implements ISignalHandler {
   }
   // #endregion
 
+  // #region Values
+  #defaultValues: Record<string, unknown> = {};
+  #values = new Map<string, SyncedValue>();
+  get values(): ReadonlyMap<string, SyncedValue> {
+    return this.#values;
+  }
+
+  protected value<E extends Entity>(
+    eType: EntityConstructor<E>,
+    // deno-lint-ignore ban-types
+    prop: Exclude<keyof ConditionalExcept<E, Function>, keyof Entity> & string,
+    opts: {
+      type?: ValueTypeTag<E[typeof prop]>;
+      description?: string;
+      replicated?: boolean;
+    } = {},
+  ): SyncedValue<E[typeof prop]> {
+    if (!(this instanceof eType))
+      throw new TypeError(`${this.constructor} is not an instance of ${eType}`);
+
+    const identifier = `${this.ref}/${prop}`;
+    if (this.#values.has(identifier))
+      throw new Error(`A value with the identifier '${identifier}' already exists!`);
+
+    type T = SyncedValue<E[typeof prop]>["value"];
+    let defaultValue: T = this[prop] as T;
+    if (this.#defaultValues[prop]) defaultValue = this.#defaultValues[prop] as T;
+
+    const syncedValue = new SyncedValue(
+      this.game.syncedValues,
+      identifier,
+      defaultValue,
+      opts.type ?? (inferValueTypeTag(defaultValue) as ValueTypeTag<E[typeof prop]>),
+      opts.description ?? prop,
+    );
+    if (opts.replicated) syncedValue.replicated = opts.replicated;
+
+    Object.defineProperty(this, prop, {
+      configurable: true,
+      enumerable: true,
+      set: v => {
+        syncedValue.value = v;
+      },
+      get: () => syncedValue.value,
+    });
+
+    this.#values.set(prop, syncedValue);
+
+    return syncedValue;
+  }
+  // #endregion
+
   readonly behaviors: Behavior[] = [];
 
   // internal id for stable internal reference. we only really need this for networking
   readonly ref: string = generateCUID("ent");
-
-  readonly values: EntityValues;
 
   pausable: boolean = true;
 
@@ -380,8 +423,6 @@ export abstract class Entity implements ISignalHandler {
     }
 
     if (ctx.ref) this.ref = ctx.ref;
-
-    this.values = new EntityValues(this, ctx.values ?? {});
 
     this.game.entities._register(this);
   }
@@ -536,7 +577,7 @@ export abstract class Entity implements ISignalHandler {
       receiver.unregister(type, listener);
     }
 
-    this.values.destroy();
+    for (const value of this.#values.values()) value.destroy();
     this.#parent = undefined;
     this.game.entities._unregister(this);
 
@@ -544,18 +585,18 @@ export abstract class Entity implements ISignalHandler {
   }
   // #endregion
 
-  set(values: Partial<EntitySyncedValueProps<this>>) {
+  set(values: Partial<Omit<this, keyof Entity>>) {
     for (const [name, value] of Object.entries(values)) {
       if (!(name in this)) {
         throw new Error("property name passed to Entity.set(..) does not exist!");
       }
 
-      // @ts-expect-error index self
-      const syncedValue: unknown = this[name];
-      if (!(syncedValue instanceof SyncedValue)) {
+      const syncedValue = this.values.get(name);
+      if (!syncedValue) {
         throw new Error("property name passed to Entity.set(..) is not a SyncedValue!");
       }
 
+      // @ts-expect-error can't know what T is for SyncedValue<T>
       syncedValue.value = value;
     }
   }
@@ -605,5 +646,5 @@ export const serializeIdentifier = (parent: string | undefined, child: string) =
       ? `${parent}._.${child}`
       : `${child}`
     : parent
-    ? `${parent}._[${JSON.stringify(child)}]`
-    : `[${JSON.stringify(child)}]`;
+      ? `${parent}._[${JSON.stringify(child)}]`
+      : `[${JSON.stringify(child)}]`;

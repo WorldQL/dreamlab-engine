@@ -116,6 +116,7 @@ export async function bundleEngineDeps() {
     ],
     entryPoints,
     outdir: "./web/dist/vendor",
+    external: ["type-fest"],
   };
 
   await bundle("engine dependencies", opts, false, false);

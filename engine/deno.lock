@@ -29,7 +29,8 @@
       "npm:esbuild-plugin-d.ts@1.2.3": "npm:esbuild-plugin-d.ts@1.2.3_typescript@5.4.5",
       "npm:esbuild@0.20.2": "npm:esbuild@0.20.2",
       "npm:pixi.js@8.1.5": "npm:pixi.js@8.1.5",
-      "npm:pixi.js@8.1.6": "npm:pixi.js@8.1.6"
+      "npm:pixi.js@8.1.6": "npm:pixi.js@8.1.6",
+      "npm:type-fest@4.20.1": "npm:type-fest@4.20.1"
     },
     "jsr": {
       "@deno/cache-dir@0.8.0": {
@@ -515,6 +516,10 @@
         "dependencies": {
           "has-flag": "has-flag@4.0.0"
         }
+      },
+      "type-fest@4.20.1": {
+        "integrity": "sha512-R6wDsVsoS9xYOpy8vgeBlqpdOyzJ12HNfQhC/aAKWM3YoCV9TtunJzh/QpkMgeDhkoynDcw5f1y+qF9yc/HHyg==",
+        "dependencies": {}
       },
       "typescript@5.4.5": {
         "integrity": "sha512-vcI4UpRgg81oIRUFwR0WSIHKt11nJ7SAVlYNIu+QpqeyXP+gpQJy/Z4+F0aGxSE4MqwjyXvW/TzgkLAx2AGHwQ==",

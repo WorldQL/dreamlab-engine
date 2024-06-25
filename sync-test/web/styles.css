@@ -1,6 +1,9 @@
 main {
   display: flex;
   flex-direction: row;
+  gap: 1em;
+
+  max-height: 80vh;
 }
 
 main > * {

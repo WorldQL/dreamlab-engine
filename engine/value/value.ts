@@ -10,6 +10,18 @@ type PrimitiveTypeTag<T> = T extends number
       ? typeof Boolean
       : never;
 export type ValueTypeTag<T> = PrimitiveTypeTag<T> | AdapterTypeTag<T>;
+export function inferValueTypeTag<T>(value: T): ValueTypeTag<T> {
+  switch (typeof value) {
+    case "number":
+      return Number as ValueTypeTag<T>;
+    case "string":
+      return String as ValueTypeTag<T>;
+    case "boolean":
+      return Boolean as ValueTypeTag<T>;
+  }
+
+  throw new Error(`Failed to infer type tag for value: ${value}`);
+}
 
 export class SyncedValue<T = unknown> {
   #registry: SyncedValueRegistry;
@@ -39,17 +51,23 @@ export class SyncedValue<T = unknown> {
     );
   }
 
+  description: string;
+  replicated: boolean = true;
+
   constructor(
     registry: SyncedValueRegistry,
     identifier: string,
     defaultValue: SyncedValue<T>["value"],
     typeTag: ValueTypeTag<T>,
+    description: string,
   ) {
     this.#registry = registry;
     this.identifier = identifier;
     this.#value = defaultValue;
     this.typeTag = typeTag;
     this.generation = 0;
+
+    this.description = description;
 
     if (this.typeTag !== Number && this.typeTag !== String && this.typeTag !== Boolean) {
       const adapterTypeTag = this.typeTag as AdapterTypeTag<T>;

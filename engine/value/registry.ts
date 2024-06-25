@@ -1,5 +1,5 @@
 import * as internal from "../internal.ts";
-import { Game } from "../mod.ts";
+import { Game } from "../game.ts";
 
 import { BasicSignalHandler, exclusiveSignalType } from "../signal.ts";
 import { SyncedValue } from "./value.ts";

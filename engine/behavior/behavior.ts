@@ -1,8 +1,9 @@
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
+import type { ConditionalExcept } from "@dreamlab/vendor/type-fest.ts";
+
 import { Entity } from "../entity/mod.ts";
 import { Game } from "../game.ts";
-import { Primitive, SyncedValue } from "../value/mod.ts";
-import { BehaviorValues } from "./behavior-values.ts";
+import { Primitive, SyncedValue, ValueTypeTag, inferValueTypeTag } from "../value/mod.ts";
 import {
   ISignalHandler,
   Signal,
@@ -27,16 +28,10 @@ export type BehaviorConstructor<B extends Behavior = Behavior> = (new (
 };
 
 // prettier-ignore
-export type BehaviorSyncedValueProps<
-  B extends Behavior = Behavior,
-> = {
-  [K in keyof B as B[K] extends SyncedValue<infer _> ? K : never]:
-    B[K] extends SyncedValue<infer V> ? V : never;
-};
 
 export interface BehaviorDefinition<B extends Behavior = Behavior> {
   type: BehaviorConstructor<B>;
-  values?: Partial<BehaviorSyncedValueProps<B>>;
+  values?: Partial<Omit<B, keyof Behavior>>;
   _ref?: string;
 }
 
@@ -53,7 +48,57 @@ export class Behavior {
 
   readonly ref: string = generateCUID("bhv");
 
-  readonly values: BehaviorValues<this>;
+  // #region Values
+  #defaultValues: Record<string, unknown> = {};
+  #values = new Map<string, SyncedValue>();
+  get values(): ReadonlyMap<string, SyncedValue> {
+    return this.#values;
+  }
+
+  protected value<B extends Behavior>(
+    bType: BehaviorConstructor<B>, // can't just be `this` because TypeScript :(
+    // deno-lint-ignore ban-types
+    prop: Exclude<keyof ConditionalExcept<B, Function>, keyof Entity> & string,
+    opts: {
+      type?: ValueTypeTag<B[typeof prop]>;
+      description?: string;
+      replicated?: boolean;
+    } = {},
+  ): SyncedValue<B[typeof prop]> {
+    if (!(this instanceof bType))
+      throw new TypeError(`${this.constructor} is not an instance of ${bType}`);
+
+    const identifier = `${this.entity.ref}/${this.ref}/${prop}`;
+    if (this.#values.has(identifier))
+      throw new Error(`A value with the identifier '${identifier}' already exists!`);
+
+    type T = SyncedValue<B[typeof prop]>["value"];
+    let defaultValue: T = this[prop] as T;
+    if (this.#defaultValues[prop]) defaultValue = this.#defaultValues[prop] as T;
+
+    const syncedValue = new SyncedValue(
+      this.game.syncedValues,
+      identifier,
+      defaultValue,
+      opts.type ?? (inferValueTypeTag(defaultValue) as ValueTypeTag<B[typeof prop]>),
+      opts.description ?? prop,
+    );
+    if (opts.replicated) syncedValue.replicated = opts.replicated;
+
+    Object.defineProperty(this, prop, {
+      configurable: true,
+      enumerable: true,
+      set: v => {
+        syncedValue.value = v;
+      },
+      get: () => syncedValue.value,
+    });
+
+    this.#values.set(prop, syncedValue);
+
+    return syncedValue;
+  }
+  // #endregion
 
   readonly listeners: [
     receiver: WeakRef<ISignalHandler>,
@@ -66,8 +111,7 @@ export class Behavior {
     this.entity = ctx.entity;
 
     if (ctx.ref) this.ref = ctx.ref;
-
-    this.values = new BehaviorValues(this, ctx.values ?? {});
+    if (ctx.values) this.#defaultValues = ctx.values;
   }
 
   protected listen<S extends Signal, T extends ISignalHandler>(
@@ -86,7 +130,7 @@ export class Behavior {
   }
 
   destroy() {
-    this.values.destroy();
+    for (const value of this.#values.values()) value.destroy();
     for (const [receiverRef, type, listener] of this.listeners) {
       const receiver = receiverRef.deref();
       if (!receiver) continue;
