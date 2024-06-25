@@ -7,16 +7,15 @@
   "imports": {
     "@dreamlab/engine": "../engine/mod.ts",
     "@dreamlab/vendor/": "../engine/_deps/",
-
+    "clsx": "npm:clsx@2.1.1",
+    "jotai": "https://esm.sh/jotai@2.8.3",
+    "lucide-react": "npm:lucide-react@0.395.0",
     "react": "https://esm.sh/react@18.3.1",
-    "react/": "https://esm.sh/react@18.3.1/",
     "react-dom": "https://esm.sh/react-dom@18.3.1",
     "react-dom/": "https://esm.sh/react-dom@18.3.1/",
-
-    "clsx": "npm:clsx@2.1.1",
+    "react/": "https://esm.sh/react@18.3.1/",
     "tailwind-merge": "npm:tailwind-merge@2.3.0",
-    "lucide-react": "npm:lucide-react@0.395.0",
-    "jotai": "https://esm.sh/jotai@2.8.3"
+    "tailwindcss": "npm:tailwindcss@^3.4.4"
   },
   "compilerOptions": {
     "jsx": "precompile",
