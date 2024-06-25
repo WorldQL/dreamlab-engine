@@ -7,7 +7,7 @@ export const renderEditorUI = (gameDiv: HTMLDivElement) => {
   const root = createRoot(document.querySelector("#root")!);
   root.render(
     <StrictMode>
-      <TooltipProvider>
+      <TooltipProvider delayDuration={200}>
         <EditorLayout gameDiv={gameDiv} />
       </TooltipProvider>
     </StrictMode>,

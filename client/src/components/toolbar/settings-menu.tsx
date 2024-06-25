@@ -2,6 +2,7 @@ import { Settings } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "../../utils/cn.ts";
 import { IconButton } from "../ui/icon-button.tsx";
+import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip.tsx";
 
 export const SettingsMenu = () => {
   const menuRef = useRef<HTMLDivElement>(null);
@@ -36,15 +37,22 @@ export const SettingsMenu = () => {
 
   return (
     <div className="relative">
-      <IconButton
-        onClick={toggleMenu}
-        ref={buttonRef}
-        icon={Settings}
-        className={cn(
-          "bg-primary hover:bg-primaryDark",
-          isMenuOpen && "bg-green hover:bg-greenDark",
-        )}
-      />
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <IconButton
+            onClick={toggleMenu}
+            ref={buttonRef}
+            icon={Settings}
+            className={cn(
+              "bg-primary hover:bg-primaryDark",
+              isMenuOpen && "bg-green hover:bg-greenDark",
+            )}
+          />
+        </TooltipTrigger>
+        <TooltipContent side="bottom">
+          <p>Settings</p>
+        </TooltipContent>
+      </Tooltip>
 
       {isMenuOpen && (
         <div

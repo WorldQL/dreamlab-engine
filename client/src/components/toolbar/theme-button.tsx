@@ -2,6 +2,7 @@
 import { useEffect, useState, type FC, useCallback, memo } from "react";
 import { IconButton } from "../ui/icon-button.tsx";
 import { Moon, Sun } from "lucide-react";
+import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip.tsx";
 
 const ThemeButton: FC = () => {
   const [theme, setTheme] = useState(() => {
@@ -24,7 +25,16 @@ const ThemeButton: FC = () => {
     [setTheme],
   );
 
-  return <IconButton onClick={toggleTheme} icon={theme === "dark" ? Sun : Moon} />;
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <IconButton onClick={toggleTheme} icon={theme === "dark" ? Sun : Moon} />
+      </TooltipTrigger>
+      <TooltipContent side="bottom">
+        <p>Theme</p>
+      </TooltipContent>
+    </Tooltip>
+  );
 };
 
 const ThemeButtonMemo = memo(ThemeButton);

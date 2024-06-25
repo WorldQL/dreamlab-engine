@@ -63,7 +63,7 @@ const NewEntityMenu = () => {
             )}
           />
         </TooltipTrigger>
-        <TooltipContent>
+        <TooltipContent side="bottom">
           <p>New Entity</p>
         </TooltipContent>
       </Tooltip>
