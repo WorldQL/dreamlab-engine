@@ -10,37 +10,52 @@
 }
 
 :root {
-  --primary: 58, 143, 255;
-  --primaryDark: 42, 122, 224;
-  --primaryLight: 230, 240, 255;
-  --secondary: 180, 74, 255;
-  --secondaryDark: 158, 54, 230;
-  --secondaryLight: 243, 230, 255;
-  --green: 56, 178, 172;
-  --greenDark: 44, 141, 135;
-  --greenLight: 230, 255, 250;
-  --yellow: 237, 137, 54;
-  --yellowDark: 217, 116, 38;
-  --yellowLight: 255, 250, 240;
-  --red: 229, 62, 62;
-  --redDark: 197, 48, 48;
-  --redLight: 255, 245, 245;
+  --primaryLight: 230, 240, 255; /* #E6F0FF */
+  --primary: 58, 143, 255; /* #3A8FFF */
+  --primaryDark: 42, 122, 224; /* #2A7AE0 */
 
-  --background: 247, 250, 252;
-  --card: 255, 255, 255;
-  --textPrimary: 45, 55, 72;
-  --textSecondary: 113, 128, 150;
-  --gray: 203, 213, 224;
-  --icon: 26, 32, 44;
+  --secondaryLight: 243, 230, 255; /* #F3E6FF */
+  --secondary: 180, 74, 255; /* #B44AFF */
+  --secondaryDark: 158, 54, 230; /* #9E36E6 */
+
+  --greenLight: 230, 255, 250; /* #E6FFFA */
+  --green: 56, 178, 172; /* #38B2AC */
+  --greenDark: 44, 141, 135; /* #2C8D87 */
+
+  --yellowLight: 255, 250, 240; /* #FFFAF0 */
+  --yellow: 237, 137, 54; /* #ED8936 */
+  --yellowDark: 217, 116, 38; /* #D97426 */
+
+  --redLight: 255, 245, 245; /* #FFF5F5 */
+  --red: 229, 62, 62; /* #E53E3E */
+  --redDark: 197, 48, 48; /* #C53030 */
+
+  --greyLight: 236, 242, 247; /* #ECF2F7 */
+  --grey: 203, 213, 224; /* #CBD5E0 */
+  --greyDark: 47, 54, 67; /* #2F3643 */
+
+  --background: 247, 250, 252; /* #F7FAFC */
+  --card: 255, 255, 255; /* #FFFFFF */
+  --textPrimary: 45, 55, 72; /* #2D3748 */
+  --textSecondary: 113, 128, 150; /* #718096 */
+  --icon: 26, 32, 44; /* #1A202C */
+
+  --gradient-textPrimary: 255, 255, 255; /* #FFFFFF */
+  --gradient-textSecondary: 204, 204, 204; /* #CCCCCC */
+
+  --bg-dark: 26, 32, 44; /* #1A202C */
+  --bg-light: 247, 250, 252; /* #F7FAFC */
 }
 
 .dark {
-  --background: 26, 32, 44;
-  --card: 45, 55, 72;
-  --textPrimary: 226, 232, 240;
-  --textSecondary: 160, 174, 192;
-  --gray: 74, 85, 104;
-  --icon: 247, 250, 252;
+  --greyLight: 115, 130, 146; /* #738292 */
+  --grey: 74, 85, 104; /* #4A5568 */
+
+  --background: 26, 32, 44; /* #1A202C */
+  --card: 45, 55, 72; /* #2D3748 */
+  --textPrimary: 226, 232, 240; /* #E2E8F0 */
+  --textSecondary: 160, 174, 192; /* #A0AEC0 */
+  --icon: 247, 250, 252; /* #F7FAFC */
 }
 
 body.resizing-horizontally {

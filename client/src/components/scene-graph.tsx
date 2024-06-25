@@ -117,7 +117,7 @@ const EntityEntry = ({
       <div
         className={cn(
           "flex items-center cursor-pointer w-full relative",
-          selectedEntity?.id === entity.id && "bg-gray ring-primary ring-2 rounded",
+          selectedEntity?.id === entity.id && "bg-grey ring-primary ring-2 rounded",
           !isEditing && (isHovered ? "bg-primary hover:shadow-md" : "hover:bg-secondary"),
         )}
         onClick={handleEntityClick}

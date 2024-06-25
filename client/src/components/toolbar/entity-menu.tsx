@@ -4,6 +4,7 @@ import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { game } from "../../global-game.ts";
 import { cn } from "../../utils/cn.ts";
 import { IconButton } from "../ui/icon-button.tsx";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip.tsx";
 
 const NewEntityMenu = () => {
   const menuRef = useRef<HTMLDivElement>(null);
@@ -50,15 +51,22 @@ const NewEntityMenu = () => {
 
   return (
     <div className="relative">
-      <IconButton
-        onClick={toggleMenu}
-        ref={buttonRef}
-        icon={Plus}
-        className={cn(
-          "bg-primary hover:bg-primaryDark",
-          isMenuOpen && "bg-green hover:bg-greenDark",
-        )}
-      />
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <IconButton
+            onClick={toggleMenu}
+            ref={buttonRef}
+            icon={Plus}
+            className={cn(
+              "bg-primary hover:bg-primaryDark",
+              isMenuOpen && "bg-green hover:bg-greenDark",
+            )}
+          />
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>New Entity</p>
+        </TooltipContent>
+      </Tooltip>
 
       {isMenuOpen && (
         <div

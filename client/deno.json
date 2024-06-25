@@ -7,6 +7,7 @@
   "imports": {
     "@dreamlab/engine": "../engine/mod.ts",
     "@dreamlab/vendor/": "../engine/_deps/",
+    "@radix-ui/react-tooltip": "https://esm.sh/@radix-ui/react-tooltip@1.1.1",
     "clsx": "npm:clsx@2.1.1",
     "jotai": "https://esm.sh/jotai@2.8.3",
     "lucide-react": "npm:lucide-react@0.395.0",
@@ -20,7 +21,10 @@
   "compilerOptions": {
     "jsx": "precompile",
     "jsxImportSource": "react",
-    "lib": ["deno.window", "dom"]
+    "lib": [
+      "deno.window",
+      "dom"
+    ]
   },
   "fmt": {
     "lineWidth": 120,
@@ -30,6 +34,10 @@
     "indentWidth": 2
   },
   "lint": {
-    "rules": { "exclude": ["no-window"] }
+    "rules": {
+      "exclude": [
+        "no-window"
+      ]
+    }
   }
 }
