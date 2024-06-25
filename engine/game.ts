@@ -1,6 +1,6 @@
 import RAPIER from "@dreamlab/vendor/rapier.ts";
 import { BehaviorLoader } from "./behavior/behavior-loader.ts";
-import { EntityStore, LocalRoot, PrefabsRoot, RemoteRoot, WorldRoot } from "./entity/mod.ts";
+import { EntityStore, LocalRoot, PrefabsRoot, ServerRoot, WorldRoot } from "./entity/mod.ts";
 import { Inputs } from "./input/mod.ts";
 import * as internal from "./internal.ts";
 import { PhysicsEngine } from "./physics.ts";
@@ -161,7 +161,8 @@ export class ServerGame extends BaseGame {
   public isClient = (): this is ClientGame => false;
   public isServer = (): this is ServerGame => true;
 
-  readonly remote: RemoteRoot = new RemoteRoot(this);
+  // TODO: Do we name this server?
+  readonly remote: ServerRoot = new ServerRoot(this);
   readonly local: undefined;
 
   drawFrame: undefined;
