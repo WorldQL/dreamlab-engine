@@ -1,7 +1,7 @@
 import { useAtomValue } from "jotai";
 import { useEffect, useRef, useState } from "react";
 import { isPausedAtom, isRunningAtom } from "../context/editor-context.tsx";
-import { handleConsoleResize, handleResize, handleVerticalResize } from "../utils/resize.ts";
+import { handleResize, handleVerticalResize } from "../utils/resize.ts";
 import { Console } from "./console.tsx";
 import { Inspector } from "./inspector.tsx";
 import { Prefabs } from "./prefabs.tsx";
@@ -50,23 +50,14 @@ export const EditorLayout = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }) 
         <div
           className="w-full cursor-row-resize bg-background rounded hover:bg-primary transition-colors duration-300 ease-in-out active:bg-primary"
           style={{ height: "5px" }}
-          onMouseDown={e => handleVerticalResize(e, setTopSectionHeight, topSectionRef)}
+          onMouseDown={e => handleVerticalResize(e, setTopSectionHeight, topSectionRef, 10, 90)}
         />
         <div className="overflow-y-auto pt-1" style={{ height: `${100 - topSectionHeight}%` }}>
           <Prefabs />
         </div>
         <div
           className="absolute top-0 right-0 bottom-0 w-1 cursor-col-resize rounded bg-background hover:bg-primary transition-colors duration-300 ease-in-out active:bg-primary"
-          onMouseDown={e =>
-            handleResize(
-              e,
-              setLeftColumnWidth,
-              "left",
-              leftColumnWidth,
-              rightColumnWidth,
-              gameContainer,
-            )
-          }
+          onMouseDown={e => handleResize(e, setLeftColumnWidth, "left", 250, 500)}
         />
       </div>
       <div className="relative flex-1 flex flex-col">
@@ -97,7 +88,7 @@ export const EditorLayout = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }) 
           className="w-full cursor-row-resize rounded bg-background hover:bg-primary transition-colors duration-300 ease-in-out active:bg-primary"
           style={{ height: "5px" }}
           onMouseDown={e =>
-            handleConsoleResize(e, setConsoleHeight, consoleRef, topSectionRef, gameContainer)
+            handleVerticalResize(e, setConsoleHeight, consoleRef, 150, 400, true)
           }
         />
         <div
@@ -115,16 +106,7 @@ export const EditorLayout = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }) 
         <Inspector />
         <div
           className="absolute top-0 left-0 bottom-0 w-1 rounded cursor-col-resize bg-background hover:bg-primary transition-colors duration-300 ease-in-out active:bg-primary"
-          onMouseDown={e =>
-            handleResize(
-              e,
-              setRightColumnWidth,
-              "right",
-              leftColumnWidth,
-              rightColumnWidth,
-              gameContainer,
-            )
-          }
+          onMouseDown={e => handleResize(e, setRightColumnWidth, "right", 250, 500)}
         />
       </div>
     </div>

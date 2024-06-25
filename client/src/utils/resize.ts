@@ -1,35 +1,22 @@
-export const handleResize = (
+const handleResize = (
   e: React.MouseEvent<HTMLDivElement>,
-  setColumnWidth: (width: number) => void,
+  setDimension: (dimension: number) => void,
   columnKey: "left" | "right",
-  leftColumnWidth: number,
-  rightColumnWidth: number,
-  gameContainer: React.RefObject<HTMLDivElement>,
+  minDimension: number,
+  maxDimension: number,
 ) => {
   e.preventDefault();
-  const startX = e.clientX;
-  const startWidth = e.currentTarget.parentElement?.clientWidth || 0;
+  const startCoord = e.clientX;
+  const startDimension = e.currentTarget.parentElement?.clientWidth || 0;
 
   const target = e.currentTarget;
   target.classList.add("active");
   document.body.classList.add("resizing-horizontally");
 
   const handleMouseMove = (e: MouseEvent) => {
-    const diffX = e.clientX - startX;
-    const newWidth = startWidth + (columnKey === "left" ? diffX : -diffX);
-    const minWidth = 250;
-    const maxWidth = 500;
-
-    setColumnWidth(Math.max(Math.min(newWidth, maxWidth), minWidth));
-
-    if (columnKey === "left") {
-      const gameContainerWidth = window.innerWidth - (newWidth + rightColumnWidth);
-      gameContainer.current!.style.width = `${gameContainerWidth}px`;
-    } else {
-      const gameContainerWidth = window.innerWidth - (leftColumnWidth + newWidth);
-      gameContainer.current!.style.width = `${gameContainerWidth}px`;
-    }
-
+    const diffCoord = e.clientX - startCoord;
+    const newDimension = startDimension + (columnKey === "left" ? diffCoord : -diffCoord);
+    setDimension(Math.max(Math.min(newDimension, maxDimension), minDimension));
     e.preventDefault();
   };
 
@@ -44,82 +31,35 @@ export const handleResize = (
   document.addEventListener("mouseup", handleMouseUp);
 };
 
-export const handleVerticalResize = (
+const handleVerticalResize = (
   e: React.MouseEvent<HTMLDivElement>,
-  setTopSectionHeight: (height: number) => void,
-  topSectionRef: React.RefObject<HTMLDivElement>,
+  setDimension: (dimension: number) => void,
+  elementRef: React.RefObject<HTMLDivElement>,
+  minDimension: number,
+  maxDimension: number,
+  isConsole: boolean = false,
 ) => {
   e.preventDefault();
-  const startY = e.clientY;
-  const startHeight = topSectionRef.current?.clientHeight || 0;
+  const startCoord = e.clientY;
+  const startDimension = elementRef.current?.clientHeight || 0;
 
   const target = e.currentTarget;
   target.classList.add("active");
   document.body.classList.add("resizing-vertically");
 
   const handleMouseMove = (e: MouseEvent) => {
-    const diffY = e.clientY - startY;
-    const newHeight = ((startHeight + diffY) / window.innerHeight) * 100;
-    const minHeight = 10;
-    const maxHeight = 90;
+    const diffCoord = isConsole ? startCoord - e.clientY : e.clientY - startCoord;
+    let newDimension = isConsole
+      ? startDimension + diffCoord
+      : ((startDimension + diffCoord) / window.innerHeight) * 100;
 
-    setTopSectionHeight(Math.max(Math.min(newHeight, maxHeight), minHeight));
-
-    e.preventDefault();
-  };
-
-  const handleMouseUp = () => {
-    target.classList.remove("active");
-    document.body.classList.remove("resizing-vertically");
-    document.removeEventListener("mousemove", handleMouseMove);
-    document.removeEventListener("mouseup", handleMouseUp);
-  };
-
-  document.addEventListener("mousemove", handleMouseMove);
-  document.addEventListener("mouseup", handleMouseUp);
-};
-
-export const handleConsoleResize = (
-  e: React.MouseEvent<HTMLDivElement>,
-  setConsoleHeight: (height: number) => void,
-  consoleRef: React.RefObject<HTMLDivElement>,
-  topSectionRef: React.RefObject<HTMLDivElement>,
-  gameContainer: React.RefObject<HTMLDivElement>,
-) => {
-  e.preventDefault();
-  const startY = e.clientY;
-  const startHeight = consoleRef.current?.clientHeight || 0;
-
-  const target = e.currentTarget;
-  target.classList.add("active");
-  document.body.classList.add("resizing-vertically");
-
-  const handleMouseMove = (e: MouseEvent) => {
-    const diffY = startY - e.clientY;
-    const newHeight = startHeight + diffY;
-    const minHeight = 150;
-    const maxHeight = 400;
-
-    if (newHeight >= minHeight && newHeight <= maxHeight) {
-      setConsoleHeight(newHeight);
-
-      const gameContainerHeight =
-        window.innerHeight - (topSectionRef.current?.clientHeight || 0) - newHeight;
-      gameContainer.current!.style.height = `${gameContainerHeight}px`;
-    } else if (newHeight < minHeight) {
-      setConsoleHeight(minHeight);
-
-      const gameContainerHeight =
-        window.innerHeight - (topSectionRef.current?.clientHeight || 0) - minHeight;
-      gameContainer.current!.style.height = `${gameContainerHeight}px`;
-    } else if (newHeight > maxHeight) {
-      setConsoleHeight(maxHeight);
-
-      const gameContainerHeight =
-        window.innerHeight - (topSectionRef.current?.clientHeight || 0) - maxHeight;
-      gameContainer.current!.style.height = `${gameContainerHeight}px`;
+    if (isConsole) {
+      newDimension = Math.max(Math.min(newDimension, maxDimension), minDimension);
+    } else {
+      newDimension = Math.max(Math.min(newDimension, maxDimension), minDimension);
     }
 
+    setDimension(newDimension);
     e.preventDefault();
   };
 
@@ -133,3 +73,5 @@ export const handleConsoleResize = (
   document.addEventListener("mousemove", handleMouseMove);
   document.addEventListener("mouseup", handleMouseUp);
 };
+
+export { handleResize, handleVerticalResize };
