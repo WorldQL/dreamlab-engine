@@ -22,7 +22,7 @@ if (panel.element) {
 
 slider(
   { label: "speed", group: "wasd controller", value: 1, min: 0, max: 1 },
-  value => (wasd.speed.value = value),
+  value => (wasd.speed = value),
 );
 
 slider(
@@ -57,7 +57,7 @@ slider(
 
 slider(
   { label: "smooth", group: "camera", min: 1, max: 20, value: 10 },
-  value => (camera.smooth.value = 1 / (value * value)),
+  value => (camera.smooth = 1 / (value * value)),
 );
 slider({ label: "pos: x", min: -1 }, value => (camera.transform.position.x = value));
 slider({ label: "pos: y", min: -1 }, value => (camera.transform.position.y = value));

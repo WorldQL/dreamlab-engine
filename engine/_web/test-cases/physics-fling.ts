@@ -37,7 +37,7 @@ setInterval(() => {
 
 slider(
   { label: "smooth", group: "camera", min: 1, max: 20, value: 10 },
-  value => (camera.smooth.value = 1 / (value * value)),
+  value => (camera.smooth = 1 / (value * value)),
 );
 slider({ label: "pos: x", min: -1 }, value => (camera.transform.position.x = value));
 slider({ label: "pos: y", min: -1 }, value => (camera.transform.position.y = value));
