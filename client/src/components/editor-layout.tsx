@@ -11,6 +11,7 @@ import { PlaybackControls } from "./toolbar/playback-controls.tsx";
 import { SettingsMenu } from "./toolbar/settings-menu.tsx";
 import { ThemeButton } from "./toolbar/theme-button.tsx";
 import { CameraControls } from "./camera-controls.tsx";
+import { cn } from "../utils/cn.ts";
 
 export const EditorLayout = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }) => {
   const isRunning = useAtomValue(isRunningAtom);
@@ -26,7 +27,11 @@ export const EditorLayout = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }) 
   const consoleRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    gameContainer.current?.appendChild(gameDiv);
+    const game = gameContainer.current;
+    if (!game) return;
+
+    game.appendChild(gameDiv);
+    gameDiv.style.zIndex = "-1";
   }, [gameContainer, gameDiv]);
 
   return (
@@ -78,7 +83,7 @@ export const EditorLayout = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }) 
         </div>
         <div className="relative flex-1 overflow-hidden">
           <div
-            className={`absolute inset-0 ${
+            className={`z-10 absolute inset-0 ${
               isRunning
                 ? isPaused
                   ? "border-4 border-yellow border-t-green border-b-green"
