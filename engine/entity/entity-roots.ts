@@ -18,17 +18,17 @@ export class WorldRoot extends Entity {
   }
 }
 
-export class RemoteRoot extends Entity {
+export class ServerRoot extends Entity {
   static [internal.internalEntity] = true;
 
   constructor(game: Game) {
-    super({ game, name: "remote" });
+    super({ game, name: "server" });
 
-    this.name = "game.remote";
+    this.name = "game.server";
     // @ts-expect-error assign readonly id
-    this.id = "game.remote";
+    this.id = "game.server";
     // @ts-expect-error assign readonly ref
-    this.ref = "REMOTE";
+    this.ref = "SERVER";
 
     this.pausable = false;
   }
