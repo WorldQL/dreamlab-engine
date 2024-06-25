@@ -161,7 +161,6 @@ export class ServerGame extends BaseGame {
   public isClient = (): this is ClientGame => false;
   public isServer = (): this is ServerGame => true;
 
-  // TODO: Do we name this server?
   readonly remote: ServerRoot = new ServerRoot(this);
   readonly local: undefined;
 

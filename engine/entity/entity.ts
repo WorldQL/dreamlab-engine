@@ -88,6 +88,8 @@ type EntityValueOpts<E extends Entity, P extends EntityValueProp<E>> = {
 export abstract class Entity implements ISignalHandler {
   static readonly icon: string | undefined;
 
+  disabled: boolean = false;
+
   readonly game: Game;
   protected get time() {
     return this.game.time;
