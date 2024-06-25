@@ -35,6 +35,17 @@ export interface BehaviorDefinition<B extends Behavior = Behavior> {
   _ref?: string;
 }
 
+type BehaviorValueProp<B extends Behavior> = Exclude<
+  // deno-lint-ignore ban-types
+  keyof ConditionalExcept<B, Function>,
+  keyof Entity
+>;
+type BehaviorValueOpts<B extends Behavior, P extends BehaviorValueProp<B>> = {
+  type?: ValueTypeTag<B[P]>;
+  description?: string;
+  replicated?: boolean;
+};
+
 export class Behavior {
   readonly game: Game;
   readonly entity: Entity;
@@ -55,15 +66,21 @@ export class Behavior {
     return this.#values;
   }
 
+  protected defineValues<B extends Behavior, Props extends BehaviorValueProp<B>[]>(
+    eType: BehaviorConstructor<B>,
+    ...props: {
+      [I in keyof Props]: Props[I] extends BehaviorValueProp<B> ? Props[I] : never;
+    }
+  ) {
+    for (const prop of props) {
+      this.value(eType, prop);
+    }
+  }
+
   protected value<B extends Behavior>(
     bType: BehaviorConstructor<B>, // can't just be `this` because TypeScript :(
-    // deno-lint-ignore ban-types
-    prop: Exclude<keyof ConditionalExcept<B, Function>, keyof Entity> & string,
-    opts: {
-      type?: ValueTypeTag<B[typeof prop]>;
-      description?: string;
-      replicated?: boolean;
-    } = {},
+    prop: BehaviorValueProp<B>,
+    opts: BehaviorValueOpts<B, typeof prop> = {},
   ): SyncedValue<B[typeof prop]> {
     if (!(this instanceof bType))
       throw new TypeError(`${this.constructor} is not an instance of ${bType}`);

@@ -6,8 +6,7 @@ export class BasicLivingEntity extends Entity {
   health = this.maxHealth;
 
   onInitialize(): void {
-    this.value(BasicLivingEntity, "health");
-    this.value(BasicLivingEntity, "maxHealth");
+    this.defineValues(BasicLivingEntity, "maxHealth", "health");
 
     this.on(EntityUpdate, () => this.regen());
   }

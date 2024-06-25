@@ -74,6 +74,17 @@ export interface EntityDefinition<
   _ref?: string;
 }
 
+type EntityValueProp<E extends Entity> = Exclude<
+  // deno-lint-ignore ban-types
+  keyof ConditionalExcept<E, Function>,
+  keyof Entity
+>;
+type EntityValueOpts<E extends Entity, P extends EntityValueProp<E>> = {
+  type?: ValueTypeTag<E[P]>;
+  description?: string;
+  replicated?: boolean;
+};
+
 export abstract class Entity implements ISignalHandler {
   static readonly icon: string | undefined;
 
@@ -320,15 +331,21 @@ export abstract class Entity implements ISignalHandler {
     return this.#values;
   }
 
+  protected defineValues<E extends Entity, Props extends EntityValueProp<E>[]>(
+    eType: EntityConstructor<E>,
+    ...props: {
+      [I in keyof Props]: Props[I] extends EntityValueProp<E> ? Props[I] : never;
+    }
+  ) {
+    for (const prop of props) {
+      this.value(eType, prop);
+    }
+  }
+
   protected value<E extends Entity>(
     eType: EntityConstructor<E>,
-    // deno-lint-ignore ban-types
-    prop: Exclude<keyof ConditionalExcept<E, Function>, keyof Entity> & string,
-    opts: {
-      type?: ValueTypeTag<E[typeof prop]>;
-      description?: string;
-      replicated?: boolean;
-    } = {},
+    prop: EntityValueProp<E>,
+    opts: EntityValueOpts<E, typeof prop> = {},
   ): SyncedValue<E[typeof prop]> {
     if (!(this instanceof eType))
       throw new TypeError(`${this.constructor} is not an instance of ${eType}`);
@@ -346,7 +363,7 @@ export abstract class Entity implements ISignalHandler {
       identifier,
       defaultValue,
       opts.type ?? (inferValueTypeTag(defaultValue) as ValueTypeTag<E[typeof prop]>),
-      opts.description ?? prop,
+      opts.description ?? prop, // TODO: autogenerate description (fix casing & spacing)
     );
     if (opts.replicated) syncedValue.replicated = opts.replicated;
 

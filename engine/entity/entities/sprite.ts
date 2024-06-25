@@ -18,8 +18,7 @@ export class Sprite2D extends InterpolatedEntity {
   constructor(ctx: EntityContext) {
     super(ctx);
 
-    this.value(Sprite2D, "width");
-    this.value(Sprite2D, "height");
+    this.defineValues(Sprite2D, "width", "height");
     this.value(Sprite2D, "texture", { type: TextureAdapter });
 
     PIXI.Assets.backgroundLoad(this.texture);
