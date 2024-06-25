@@ -11,7 +11,6 @@ import { PlaybackControls } from "./toolbar/playback-controls.tsx";
 import { SettingsMenu } from "./toolbar/settings-menu.tsx";
 import { ThemeButton } from "./toolbar/theme-button.tsx";
 import { CameraControls } from "./camera-controls.tsx";
-import { cn } from "../utils/cn.ts";
 
 export const EditorLayout = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }) => {
   const isRunning = useAtomValue(isRunningAtom);

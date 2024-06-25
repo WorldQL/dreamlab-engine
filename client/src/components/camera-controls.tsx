@@ -85,8 +85,9 @@ export const CameraControls: React.FC = () => {
         const newScale = cameraRef.current.transform.scale.mul(
           new Vector2(Math.pow(zoomFactor, zoomDirection), Math.pow(zoomFactor, zoomDirection)),
         );
-        cameraRef.current.transform.scale = newScale;
-        setZoomScale(newScale.x);
+        const clampedScale = new Vector2(Math.max(newScale.x, 0.1), Math.max(newScale.y, 0.1));
+        cameraRef.current.transform.scale = clampedScale;
+        setZoomScale(clampedScale.x);
       } else {
         const scrollSpeed = 50;
         const scrollDirection = event.deltaY > 0 ? 1 : -1;
@@ -181,7 +182,7 @@ export const CameraControls: React.FC = () => {
         </div>
         <div className="flex items-center space-x-2">
           <ZoomIn className="w-4 h-4" />
-          <span>Zoom Scale: {zoomScale.toFixed(2)}x</span>
+          <span>Zoom Scale: {zoomScale}x</span>
         </div>
       </div>
     </div>
