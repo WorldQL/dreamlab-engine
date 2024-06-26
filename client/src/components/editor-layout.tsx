@@ -6,9 +6,9 @@ import { Console } from "./console.tsx";
 import { Inspector } from "./inspector.tsx";
 import { Prefabs } from "./prefabs.tsx";
 import { SceneGraph } from "./scene-graph.tsx";
-import { NewEntityMenu } from "./toolbar/entity-menu.tsx";
+import { NewEntityMenu } from "./toolbar/new-entity-button.tsx";
 import { PlaybackControls } from "./toolbar/playback-controls.tsx";
-import { SettingsMenu } from "./toolbar/settings-menu.tsx";
+import { SettingsButton } from "./toolbar/settings-button.tsx";
 import { ThemeButton } from "./toolbar/theme-button.tsx";
 import { CameraControls } from "./camera-controls.tsx";
 import { cn } from "../utils/cn.ts";
@@ -37,7 +37,7 @@ export const EditorLayout = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }) 
   return (
     <div className="flex h-screen bg-background">
       <div
-        className="relative min-w-[250px] bg-background px-2 py-2 pr-3"
+        className="relative bg-background px-2 py-2 pr-3"
         style={{ width: `${leftColumnWidth}px` }}
       >
         <div
@@ -62,11 +62,11 @@ export const EditorLayout = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }) 
       </div>
       <div className="relative flex-1 flex flex-col">
         {/* toolbar section */}
-        <div className="p-1 bg-background my-1 z-50">
+        <div className="p-1 bg-background my-1 z-40">
           <div className="bg-background w-full flex items-center justify-between">
             <div className="flex space-x-2">
               <NewEntityMenu />
-              <SettingsMenu />
+              <SettingsButton />
               <ThemeButton />
             </div>
             <PlaybackControls />

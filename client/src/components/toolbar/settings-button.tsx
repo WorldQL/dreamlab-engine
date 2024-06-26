@@ -4,7 +4,7 @@ import { cn } from "../../utils/cn.ts";
 import { IconButton } from "../ui/icon-button.tsx";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip.tsx";
 
-export const SettingsMenu = () => {
+export const SettingsButton = () => {
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);

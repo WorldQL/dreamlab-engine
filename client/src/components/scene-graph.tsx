@@ -7,6 +7,7 @@ import { game } from "../global-game.ts";
 import { useForceUpdateOnEntityChange } from "../hooks/force-update-on-change.ts";
 import { cn } from "../utils/cn.ts";
 import { Panel } from "./ui/panel.tsx";
+import { SceneMenu } from "./menu/scene-menu.tsx";
 
 const isDescendant = (parent: Entity, child: Entity): boolean => {
   if (parent === child) {
@@ -33,6 +34,8 @@ const EntityEntry = ({
   const [selectedEntity, setSelectedEntity] = useAtom(selectedEntityAtom);
   const [previousName, setPreviousName] = useState<string>(entity.name);
   const dragImageRef = useRef<HTMLDivElement>(null);
+  const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
+  const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const iconVal = (entity.constructor as typeof Entity).icon;
   const icon = iconVal ? iconVal : "🌟";
@@ -112,75 +115,92 @@ const EntityEntry = ({
     [entity, previousName, setSelectedEntity],
   );
 
+  const handleContextMenu = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      setMenuPosition({ x: event.clientX, y: event.clientY });
+      setIsOpen(true);
+    },
+    [setMenuPosition, setIsOpen],
+  );
+
   return (
-    <li key={entity.ref} className="relative">
-      <div
-        className={cn(
-          "flex items-center cursor-pointer w-full relative",
-          selectedEntity?.id === entity.id && "bg-grey ring-primary ring-2 rounded",
-          !isEditing && (isHovered ? "bg-primary hover:shadow-md" : "hover:bg-secondary"),
-        )}
-        onClick={handleEntityClick}
-        draggable={!isEditing}
-        onDragStart={handleDragStart}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        style={{ paddingLeft: `${level * 16}px` }}
-      >
-        {entity.children.size > 0 ? (
-          <div className="flex-shrink-0 w-3 ml-1 text-icon" onClick={toggleCollapse}>
-            <ChevronDownIcon
-              className={cn("w-full h-auto transition-transform", isCollapsed && "-rotate-90")}
+    <div>
+      <li key={entity.ref}>
+        <div
+          className={cn(
+            "entity-entry flex items-center cursor-pointer w-full relative",
+            selectedEntity?.id === entity.id && "bg-grey ring-primary ring-2 rounded",
+            !isEditing && (isHovered ? "bg-primary hover:shadow-md" : "hover:bg-secondary"),
+          )}
+          onClick={handleEntityClick}
+          draggable={!isEditing}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          onContextMenu={handleContextMenu}
+          style={{ paddingLeft: `${level * 16}px` }}
+        >
+          {entity.children.size > 0 ? (
+            <div className="flex-shrink-0 w-3 ml-1 text-icon" onClick={toggleCollapse}>
+              <ChevronDownIcon
+                className={cn(
+                  "w-full h-auto transition-transform",
+                  isCollapsed && "-rotate-90",
+                )}
+              />
+            </div>
+          ) : (
+            <span className="inline-block w-4"></span>
+          )}
+          {isEditing ? (
+            <input
+              type="text"
+              defaultValue={entity.name}
+              onBlur={handleNameBlur}
+              onKeyDown={handleNameKeyDown}
+              autoFocus
+              className="text-sm text-textPrimary w-full px-1 outline-none bg-transparent"
+              style={{ marginLeft: `${level * 16}px` }}
             />
-          </div>
-        ) : (
-          <span className="inline-block w-4"></span>
+          ) : (
+            <span
+              className="text-sm text-textPrimary"
+              onDoubleClick={() => {
+                setPreviousName(entity.name);
+                setIsEditing(true);
+              }}
+            >
+              {icon} {entity.name}
+            </span>
+          )}
+        </div>
+        {entity.children.size > 0 && !isCollapsed && (
+          <ul>
+            {[...entity.children.entries()]
+              .toSorted(([aName, _a], [bName, _b]) => aName.localeCompare(bName))
+              .map(([_, e]) => (
+                <EntityEntry entity={e} level={level + 1} key={e.ref} />
+              ))}
+          </ul>
         )}
-        {isEditing ? (
-          <input
-            type="text"
-            defaultValue={entity.name}
-            onBlur={handleNameBlur}
-            onKeyDown={handleNameKeyDown}
-            autoFocus
-            className="text-sm text-textPrimary w-full px-1 outline-none bg-transparent"
-            style={{ marginLeft: `${level * 16}px` }}
-          />
-        ) : (
-          <span
-            className="text-sm text-textPrimary"
-            onDoubleClick={() => {
-              setPreviousName(entity.name);
-              setIsEditing(true);
-            }}
-          >
-            {icon} {entity.name}
-          </span>
-        )}
-      </div>
-      {entity.children.size > 0 && !isCollapsed && (
-        <ul>
-          {[...entity.children.entries()]
-            .toSorted(([aName, _a], [bName, _b]) => aName.localeCompare(bName))
-            .map(([_, e]) => (
-              <EntityEntry entity={e} level={level + 1} key={e.ref} />
-            ))}
-        </ul>
-      )}
-      {/* FIXME: this is always hidden */}
-      <div
-        ref={dragImageRef}
-        className="hidden bg-primaryLight text-white border border-primary rounded px-2 py-1"
-      >
-        {entity.name}
-      </div>
-    </li>
+        <div
+          ref={dragImageRef}
+          className="hidden bg-primaryLight text-white border border-primary rounded px-2 py-1"
+        >
+          {entity.name}
+        </div>
+      </li>
+      {isOpen && <SceneMenu entity={entity} position={menuPosition} setIsOpen={setIsOpen} />}
+    </div>
   );
 };
 
 const SceneGraph = () => {
   useForceUpdateOnEntityChange(game.world);
+  const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
+  const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const handleDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -197,8 +217,24 @@ const SceneGraph = () => {
     }
   }, []);
 
+  const handleContextMenu = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    const target = event.target as HTMLElement;
+    const isEntityClicked = target.closest(".entity-entry");
+
+    if (!isEntityClicked) {
+      event.preventDefault();
+      setMenuPosition({ x: event.clientX, y: event.clientY });
+      setIsOpen(true);
+    }
+  }, []);
+
   return (
-    <div className="h-full" onDragOver={handleDragOver} onDrop={handleDrop}>
+    <div
+      className="h-full z-40"
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+      onContextMenu={handleContextMenu}
+    >
       <Panel className="h-full" title="Scene">
         <div>
           <ul>
@@ -209,6 +245,9 @@ const SceneGraph = () => {
               ))}
           </ul>
         </div>
+        {isOpen && (
+          <SceneMenu entity={undefined} position={menuPosition} setIsOpen={setIsOpen} />
+        )}
       </Panel>
     </div>
   );

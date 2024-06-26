@@ -6,7 +6,7 @@ import { cn } from "../../utils/cn.ts";
 import { IconButton } from "../ui/icon-button.tsx";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip.tsx";
 
-const NewEntityMenu = () => {
+const NewEntityButton = () => {
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -97,5 +97,5 @@ const NewEntityMenu = () => {
   );
 };
 
-const NewEntityMenuMemo = memo(NewEntityMenu);
+const NewEntityMenuMemo = memo(NewEntityButton);
 export { NewEntityMenuMemo as NewEntityMenu };
