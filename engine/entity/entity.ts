@@ -27,23 +27,19 @@ import {
   EntityDescendantSpawned,
   EntityRenamed,
   EntitySpawned,
-} from "../signals/entity-lifecycle.ts";
-import {
-  EntityMove,
   EntityPreUpdate,
+  EntityMove,
+  EntityUpdate,
   EntityResize,
   EntityRotate,
   EntityTransformUpdate,
-  EntityUpdate,
-} from "../signals/entity-updates.ts";
-import { JsonValue, SyncedValue, ValueTypeTag, inferValueTypeTag } from "../value/mod.ts";
-import { Behavior, BehaviorConstructor, BehaviorDefinition } from "../behavior/behavior.ts";
-import {
   EntityDestroyed,
   EntityChildDestroyed,
+  EntityDescendantDestroyed,
   EntityReparented,
-} from "../signals/entity-lifecycle.ts";
-import { EntityDescendantDestroyed } from "../signals/entity-lifecycle.ts";
+} from "../signals/mod.ts";
+import { JsonValue, SyncedValue, ValueTypeTag, inferValueTypeTag } from "../value/mod.ts";
+import { Behavior, BehaviorConstructor, BehaviorDefinition } from "../behavior/behavior.ts";
 
 export interface EntityContext {
   game: Game;

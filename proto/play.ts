@@ -3,7 +3,6 @@ import {
   EntityDefinitionSchema,
   EntityReferenceSchema,
   OriginatorSchema,
-  PrimitiveValueSchema,
 } from "./datamodel.ts";
 
 export const PLAY_PROTO_VERSION = 1;
@@ -29,7 +28,7 @@ export const ServerChatMessagePacketSchema = ClientChatMessagePacketSchema.exten
 export const ClientSetSyncedValuePacketSchema = z.object({
   t: z.literal("SetSyncedValue"),
   identifier: z.string(),
-  value: PrimitiveValueSchema.optional(),
+  value: z.any(),
   generation: z.number(),
 });
 
@@ -124,6 +123,6 @@ export type PlayPacket<
 > = (Side extends "any"
   ? ClientPacket | ServerPacket
   : Side extends "client"
-    ? ClientPacket
-    : ServerPacket) &
+  ? ClientPacket
+  : ServerPacket) &
   (T extends string ? { t: T } : object);

@@ -1,6 +1,6 @@
 import { ServerGame, ClientGame, SyncedValueChanged, Game } from "@dreamlab/engine";
 import { setupLevel } from "./level.ts";
-import { ServerNetworkManager } from "./network.ts";
+import { ServerNetworkManager } from "./network/server.ts";
 
 const instanceId = crypto.randomUUID();
 const worldId = crypto.randomUUID();
@@ -12,6 +12,7 @@ const server = new ServerGame({
   worldId,
   network: netManager.createNetworking(),
 });
+netManager.setup(server);
 
 const conn1 = netManager.connect();
 const client1 = new ClientGame({
@@ -20,6 +21,7 @@ const client1 = new ClientGame({
   container: document.querySelector("#app1")!,
   network: conn1.createNetworking(),
 });
+conn1.setup(client1);
 
 const conn2 = netManager.connect();
 const client2 = new ClientGame({
@@ -28,6 +30,7 @@ const client2 = new ClientGame({
   container: document.querySelector("#app2")!,
   network: conn2.createNetworking(),
 });
+conn2.setup(client2);
 
 Object.defineProperties(window, {
   server: { value: server },
@@ -35,31 +38,7 @@ Object.defineProperties(window, {
   client2: { value: client2 },
 });
 
-const rebroadcastValueChanges = (game: Game, peers: Game[]) => {
-  game.syncedValues.on(SyncedValueChanged, event => {
-    if (event.originator !== game.syncedValues.originator) return;
-    const valueIdentifier = event.value.identifier;
-    for (const peer of peers) {
-      const peerValue = peer.syncedValues.values.find(v => v.identifier === valueIdentifier);
-      if (!peerValue) continue;
-      peer.syncedValues.fire(
-        SyncedValueChanged,
-        peerValue,
-        event.newValue,
-        event.generation,
-        event.originator,
-      );
-    }
-  });
-};
-
-const games: Game[] = [server, client1, client2];
-for (const game of games) {
-  const peers = games.filter(g => g !== game);
-  rebroadcastValueChanges(game, peers);
-}
-
-await Promise.all(games.map(game => setupLevel(game)));
+await Promise.all([server, client1, client2].map(game => setupLevel(game)));
 
 let serverTickAcc = 0.0;
 let serverNow = performance.now();

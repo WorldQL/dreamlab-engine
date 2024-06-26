@@ -38,6 +38,10 @@ export class SyncedValueRegistry extends BasicSignalHandler<SyncedValueRegistry>
     return [...this.#values.values()];
   }
 
+  lookup(identifier: string): SyncedValue | undefined {
+    return this.#values.get(identifier);
+  }
+
   register(value: SyncedValue) {
     if (this.#values.has(value.identifier))
       throw new Error(`SyncedValue with identifier '${value.identifier}' already exists!`);

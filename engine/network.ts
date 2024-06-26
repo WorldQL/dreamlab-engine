@@ -1,7 +1,7 @@
-import type { Jsonifiable } from "@dreamlab/vendor/type-fest.ts";
+import { JsonValue } from "./value/mod.ts";
 
 export type ConnectionId = string | undefined;
-export type CustomMessageData = object & Jsonifiable;
+export type CustomMessageData = object & JsonValue;
 
 export interface BaseNetworking {
   get peers(): ConnectionId[];

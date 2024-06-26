@@ -8,11 +8,9 @@ export const OriginatorSchema = z
   .optional()
   .describe("Originating connection ID (or undefined for server)");
 
-export const PrimitiveValueSchema = z.union([z.string(), z.number(), z.boolean()]);
-
 export const BehaviorSchema = z.object({
   script: z.string(),
-  values: z.record(z.string(), PrimitiveValueSchema.optional()),
+  values: z.record(z.string(), z.any()),
   _ref: z.string(),
 });
 
@@ -21,7 +19,7 @@ const BaseEntityDefinitionSchema = z.object({
   type: EntityTypeSchema,
   parent: EntityReferenceSchema,
   name: z.string(),
-  values: z.record(z.string(), PrimitiveValueSchema.optional()),
+  values: z.record(z.string(), z.any()),
   behaviors: BehaviorSchema.array(),
   ref: EntityReferenceSchema.optional(),
 });
