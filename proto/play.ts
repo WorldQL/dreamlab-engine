@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "@dreamlab/vendor/zod.ts";
 import {
   EntityDefinitionSchema,
   EntityReferenceSchema,
@@ -83,6 +83,18 @@ export const ServerReparentEntityPacket = BaseReparentEntityPacket.extend({
   originator: OriginatorSchema,
 });
 
+const BaseCustomMessagePacket = z.object({
+  t: z.literal("CustomMessage"),
+  channel: z.string(),
+  data: z.any(),
+});
+export const ClientCustomMessagePacket = BaseCustomMessagePacket.extend({
+  to: OriginatorSchema.or(z.literal("*")).optional(),
+});
+export const ServerCustomMessagePacket = BaseCustomMessagePacket.extend({
+  originator: OriginatorSchema,
+});
+
 export const ClientPacketSchema = z.discriminatedUnion("t", [
   ClientChatMessagePacketSchema,
   ClientSetSyncedValuePacketSchema,
@@ -90,6 +102,7 @@ export const ClientPacketSchema = z.discriminatedUnion("t", [
   ClientDeleteEntityPacket,
   ClientRenameEntityPacket,
   ClientReparentEntityPacket,
+  ClientCustomMessagePacket,
 ]);
 export type ClientPacket = z.infer<typeof ClientPacketSchema>;
 
@@ -99,8 +112,9 @@ export const ServerPacketSchema = z.discriminatedUnion("t", [
   ServerSetSyncedValuePacketSchema,
   ServerSpawnEntityPacket,
   ServerDeleteEntityPacket,
-  ClientRenameEntityPacket,
-  ClientReparentEntityPacket,
+  ServerRenameEntityPacket,
+  ServerReparentEntityPacket,
+  ServerCustomMessagePacket,
 ]);
 export type ServerPacket = z.infer<typeof ServerPacketSchema>;
 

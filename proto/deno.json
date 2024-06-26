@@ -1,8 +1,0 @@
-{
-  "tasks": {
-    "dev": "deno run --watch _main.ts"
-  },
-  "imports": {
-    "zod": "../engine/_deps/zod.ts"
-  }
-}

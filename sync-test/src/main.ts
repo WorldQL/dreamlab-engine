@@ -1,26 +1,32 @@
 import { ServerGame, ClientGame, SyncedValueChanged, Game } from "@dreamlab/engine";
 import { setupLevel } from "./level.ts";
+import { ServerNetworkManager } from "./network.ts";
 
 const instanceId = crypto.randomUUID();
 const worldId = crypto.randomUUID();
 
+const netManager = new ServerNetworkManager();
+
 const server = new ServerGame({
   instanceId,
   worldId,
+  network: netManager.createNetworking(),
 });
 
+const conn1 = netManager.connect();
 const client1 = new ClientGame({
-  connectionId: "1",
   instanceId,
   worldId,
   container: document.querySelector("#app1")!,
+  network: conn1.createNetworking(),
 });
 
+const conn2 = netManager.connect();
 const client2 = new ClientGame({
-  connectionId: "2",
   instanceId,
   worldId,
   container: document.querySelector("#app2")!,
+  network: conn2.createNetworking(),
 });
 
 Object.defineProperties(window, {

@@ -3,13 +3,14 @@ import { Game } from "../game.ts";
 
 import { BasicSignalHandler, exclusiveSignalType } from "../signal.ts";
 import { SyncedValue } from "./value.ts";
+import { ConnectionId } from "../network.ts";
 
 export class SyncedValueChanged {
   constructor(
     public value: SyncedValue,
     public newValue: unknown,
     public generation: number,
-    public originator: string | undefined,
+    public originator: ConnectionId,
   ) {}
 
   [exclusiveSignalType] = SyncedValueRegistry;
@@ -18,11 +19,11 @@ export class SyncedValueChanged {
 export class SyncedValueRegistry extends BasicSignalHandler<SyncedValueRegistry> {
   #values = new Map<string, SyncedValue>();
 
-  #originator: string | undefined;
+  #originator: ConnectionId;
   get originator() {
     return this.#originator;
   }
-  [internal.setSyncedValueRegistryOriginator](value: string | undefined) {
+  [internal.setSyncedValueRegistryOriginator](value: ConnectionId) {
     this.#originator = value;
   }
 

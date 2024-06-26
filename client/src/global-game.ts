@@ -5,7 +5,13 @@ import { ClientGame } from "@dreamlab/engine";
 export let game: ClientGame;
 export function createEditorGame(container: HTMLDivElement): ClientGame {
   game = new ClientGame({
-    connectionId: "00000000-0000-0000-0000-000000000000",
+    network: {
+      connectionId: "[editor]",
+      peers: [],
+      sendCustomMessage() {},
+      broadcastCustomMessage() {},
+      onReceiveCustomMessage() {},
+    },
     container,
     instanceId: "[editor]",
     worldId: "[editor]",

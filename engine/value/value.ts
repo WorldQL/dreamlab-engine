@@ -1,6 +1,7 @@
 import { SignalListener } from "../signal.ts";
 import { AdapterTypeTag, Primitive, ValueTypeAdapter } from "./data.ts";
 import { SyncedValueRegistry, SyncedValueChanged } from "./registry.ts";
+import { ConnectionId } from "../network.ts";
 
 type PrimitiveTypeTag<T> = T extends number
   ? typeof Number
@@ -35,7 +36,7 @@ export class SyncedValue<T = unknown> {
   /** for conflict resolution: incrementing number (greater number wins) */
   generation: number;
   /** for conflict resolution: the current client's connection ID, or undefined if on the server. */
-  #originator: string | undefined = undefined;
+  #originator: ConnectionId = undefined;
 
   get value() {
     return this.#value;
@@ -66,6 +67,7 @@ export class SyncedValue<T = unknown> {
     this.#value = defaultValue;
     this.typeTag = typeTag;
     this.generation = 0;
+    this.#originator = registry.originator;
 
     this.description = description;
 

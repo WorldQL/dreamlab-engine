@@ -22,6 +22,7 @@ import {
 import { Time } from "./time.ts";
 import { SyncedValueRegistry } from "./value/mod.ts";
 import { UIManager } from "./ui.ts";
+import { ClientNetworking, ServerNetworking } from "./network.ts";
 
 export interface GameOptions {
   instanceId: string;
@@ -29,11 +30,12 @@ export interface GameOptions {
 }
 
 export interface ClientGameOptions extends GameOptions {
-  // TODO: replace connectionId with actual networking stack
-  connectionId: string;
+  network: ClientNetworking;
   container: HTMLDivElement;
 }
-export interface ServerGameOptions extends GameOptions {}
+export interface ServerGameOptions extends GameOptions {
+  network: ServerNetworking;
+}
 
 export abstract class BaseGame implements ISignalHandler {
   public abstract isClient(): this is ClientGame;
@@ -166,8 +168,11 @@ export class ServerGame extends BaseGame {
 
   drawFrame: undefined;
 
+  readonly network: ServerNetworking;
+
   constructor(opts: ServerGameOptions) {
     super(opts);
+    this.network = opts.network;
   }
 
   [internal.preTickEntities]() {
@@ -190,13 +195,16 @@ export class ClientGame extends BaseGame {
 
   readonly ui: UIManager = new UIManager(this);
 
+  readonly network: ClientNetworking;
+
   constructor(opts: ClientGameOptions) {
     super(opts);
 
     this.container = opts.container;
     this.renderer = new GameRenderer(this);
 
-    this.syncedValues[internal.setSyncedValueRegistryOriginator](opts.connectionId);
+    this.network = opts.network;
+    this.syncedValues[internal.setSyncedValueRegistryOriginator](this.network.connectionId);
   }
 
   async initialize() {

@@ -15,7 +15,14 @@ container.style.height = "720px";
 const game = new ClientGame({
   instanceId: "0",
   worldId: "dummy-world",
-  connectionId: generateCUID("conn"),
+  // prettier-ignore
+  network: {
+    connectionId: generateCUID("conn"),
+    peers: [],
+    sendCustomMessage() {},
+    broadcastCustomMessage() {},
+    onReceiveCustomMessage() {},
+  },
   container,
 });
 
