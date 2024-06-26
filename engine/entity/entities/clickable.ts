@@ -1,4 +1,4 @@
-import { Transform, Vector2, transformWorldToLocal } from "../../math/mod.ts";
+import { Vector2, pointWorldToLocal } from "../../math/mod.ts";
 import { exclusiveSignalType } from "../../signal.ts";
 import { EntityDestroyed, GameRender } from "../../signals/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
@@ -93,15 +93,13 @@ export class Clickable extends Entity {
   };
 
   #isInBounds(worldPosition: Vector2): boolean {
-    // TODO: Transform to parent local space
-    // const transform = new Transform({ position: cursor.world });
-    // transformWorldToLocal(this.transform, transform)
+    const localPosition = pointWorldToLocal(this.globalTransform, worldPosition);
 
     return (
-      worldPosition.x >= -0.5 &&
-      worldPosition.x <= 0.5 &&
-      worldPosition.y >= -0.5 &&
-      worldPosition.y <= 0.5
+      localPosition.x >= -0.5 &&
+      localPosition.x <= 0.5 &&
+      localPosition.y >= -0.5 &&
+      localPosition.y <= 0.5
     );
   }
 }
