@@ -5,7 +5,7 @@ import {
   ServerNetworking,
 } from "@dreamlab/engine";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
-import { PlayPacket } from "./proto/play.ts";
+import { PlayPacket } from "@dreamlab/proto/play.ts";
 
 // these are directly wired up to each other instead of using a WebSocket, because we
 // are just running within one browser tab for the sync test
