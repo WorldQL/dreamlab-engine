@@ -18,6 +18,12 @@ export async function setupLevel(game: Game) {
         _ref: "bhv_custom_1",
       },
     ],
+    children: [
+      {
+        type: Sprite2D,
+        name: "Sprite",
+      },
+    ],
     _ref: "ent_custom_1",
   });
 }

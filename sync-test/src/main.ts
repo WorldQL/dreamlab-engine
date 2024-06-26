@@ -60,3 +60,27 @@ for (const game of games) {
 }
 
 await Promise.all(games.map(game => setupLevel(game)));
+
+let serverTickAcc = 0.0;
+let serverNow = performance.now();
+setInterval(() => {
+  const now = performance.now();
+  const delta = now - serverNow;
+  serverNow = now;
+  serverTickAcc += delta;
+  while (serverTickAcc > server.time.delta) {
+    serverTickAcc -= server.time.delta;
+    server.tick();
+  }
+}, server.time.delta / 2);
+
+let clientNow = performance.now();
+const onFrame = (time: number) => {
+  const delta = time - clientNow;
+  clientNow = time;
+  client1.tickClient(delta);
+  client2.tickClient(delta);
+
+  requestAnimationFrame(onFrame);
+};
+requestAnimationFrame(onFrame);
