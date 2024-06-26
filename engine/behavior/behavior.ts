@@ -38,7 +38,7 @@ export interface BehaviorDefinition<B extends Behavior = Behavior> {
 type BehaviorValueProp<B extends Behavior> = Exclude<
   // deno-lint-ignore ban-types
   keyof ConditionalExcept<B, Function>,
-  keyof Entity
+  keyof Behavior
 >;
 type BehaviorValueOpts<B extends Behavior, P extends BehaviorValueProp<B>> = {
   type?: ValueTypeTag<B[P]>;
