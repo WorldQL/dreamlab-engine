@@ -76,3 +76,42 @@ export function transformLocalToWorld(
     rotation: a.rotation + b.rotation,
   });
 }
+
+export function pointLocalToWorld(worldTransform: Transform, localPoint: Vector2): Vector2 {
+  const t = worldTransform;
+  // prettier-ignore
+  const scale = {
+    xx: t.scale.x, xy: 0.0,
+    yx: 0.0, yy: t.scale.y
+  }
+  const th = t.rotation;
+  const cth = Math.cos(th);
+  const sth = Math.sin(th);
+  // prettier-ignore
+  const rotation = {
+    xx: cth, xy: -sth,
+    yx: sth, yy: cth,
+  }
+  const m = mult2x2(scale, rotation);
+  return mult2x2Point(m, localPoint).add(t.position);
+}
+
+export function pointWorldToLocal(worldTransform: Transform, worldPoint: Vector2): Vector2 {
+  const t = worldTransform;
+  const inverseScale = {
+    xx: 1 / t.scale.x,
+    xy: 0.0,
+    yx: 0.0,
+    yy: 1 / t.scale.y,
+  };
+  const th = t.rotation;
+  const cth = Math.cos(-th);
+  const sth = Math.sin(-th);
+  // prettier-ignore
+  const inverseRotation = {
+    xx: cth, xy: -sth,
+    yx: sth, yy: cth,
+  }
+  const inverseM = mult2x2(inverseRotation, inverseScale);
+  return mult2x2Point(inverseM, worldPoint.sub(t.position));
+}
