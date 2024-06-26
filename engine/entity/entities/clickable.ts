@@ -96,10 +96,10 @@ export class Clickable extends Entity {
     const localPosition = pointWorldToLocal(this.globalTransform, worldPosition);
 
     return (
-      localPosition.x >= -0.5 &&
-      localPosition.x <= 0.5 &&
-      localPosition.y >= -0.5 &&
-      localPosition.y <= 0.5
+      localPosition.x >= this.width / -2 &&
+      localPosition.x <= this.width / 2 &&
+      localPosition.y >= this.height / -2 &&
+      localPosition.y <= this.height / 2
     );
   }
 }
