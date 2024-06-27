@@ -4,6 +4,7 @@ import {
   ClientNetworking,
   ClientGame,
   SyncedValueChanged,
+  CustomMessageListener,
 } from "@dreamlab/engine";
 import { PlayPacket } from "@dreamlab/proto/play.ts";
 
@@ -16,6 +17,8 @@ export class ClientConnection {
       throw new Error("ClientConnection tried to access game before setup");
     return this.#game;
   }
+
+  customMessageListeners: CustomMessageListener[] = [];
 
   constructor(
     public id: ConnectionId,
@@ -62,8 +65,21 @@ export class ClientConnection {
 
         break;
       }
+
+      case "CustomMessage": {
+        for (const listener of this.customMessageListeners) {
+          try {
+            const r = listener(packet.originator, packet.channel, packet.data);
+            if (r instanceof Promise) {
+              r.catch(err => console.warn("Error calling custom message listener: " + err));
+            }
+          } catch (err) {
+            console.warn("Error calling custom message listener: " + err);
+          }
+        }
+        break;
+      }
     }
-    // TODO
   }
 
   send(packet: PlayPacket<undefined, "client">) {
@@ -88,8 +104,8 @@ export class ClientConnection {
       broadcastCustomMessage(channel: string, data: CustomMessageData) {
         connection.send({ t: "CustomMessage", channel, data, to: "*" });
       },
-      onReceiveCustomMessage() {
-        throw new Error("Method not implemented.");
+      onReceiveCustomMessage(listener: CustomMessageListener) {
+        connection.customMessageListeners.push(listener);
       },
     };
   }

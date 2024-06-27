@@ -4,6 +4,7 @@ import {
   ServerNetworking,
   ServerGame,
   SyncedValueChanged,
+  CustomMessageListener,
 } from "@dreamlab/engine";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import { PlayPacket } from "@dreamlab/proto/play.ts";
@@ -25,10 +26,10 @@ export class ServerNetworkManager {
     return this.#game;
   }
 
+  customMessageListeners: CustomMessageListener[] = [];
+
   setup(game: ServerGame) {
     this.#game = game;
-
-    // TODO: register event listeners
 
     game.syncedValues.on(SyncedValueChanged, event => {
       if (!event.value.replicated) return;
@@ -64,6 +65,35 @@ export class ServerNetworkManager {
         );
         break;
       }
+
+      case "CustomMessage": {
+        if (packet.to === undefined) {
+          for (const listener of this.customMessageListeners) {
+            try {
+              const r = listener(from, packet.channel, packet.data);
+              if (r instanceof Promise) {
+                r.catch(err => console.warn("Error calling custom message listener: " + err));
+              }
+            } catch (err) {
+              console.warn("Error calling custom message listener: " + err);
+            }
+          }
+        } else if (packet.to === "*") {
+          this.broadcast({
+            t: "CustomMessage",
+            channel: packet.channel,
+            data: packet.data,
+            originator: from,
+          });
+        } else {
+          this.send(packet.to, {
+            t: "CustomMessage",
+            channel: packet.channel,
+            data: packet.data,
+            originator: from,
+          });
+        }
+      }
     }
   }
 
@@ -90,8 +120,8 @@ export class ServerNetworkManager {
       broadcastCustomMessage(channel: string, data: CustomMessageData) {
         manager.broadcast({ t: "CustomMessage", channel, data });
       },
-      onReceiveCustomMessage() {
-        throw new Error("Method not implemented.");
+      onReceiveCustomMessage(listener: CustomMessageListener) {
+        manager.customMessageListeners.push(listener);
       },
     };
   }
