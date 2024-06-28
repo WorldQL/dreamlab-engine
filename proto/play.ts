@@ -54,18 +54,15 @@ export const ServerDeleteEntityPacket = ClientDeleteEntityPacket.extend({
   originator: OriginatorSchema,
 });
 
-// TODO: entity rename, reparent, etc etc
 const BaseRenameEntityPacket = z.object({
   t: z.literal("RenameEntity"),
   entity: EntityReferenceSchema,
   name: z.string(),
 });
-
 export const ClientRenameEntityPacket = BaseRenameEntityPacket.extend({
   // the server will drop your request if the current server-side name does not match old_name
   old_name: z.string(),
 });
-
 export const ServerRenameEntityPacket = BaseRenameEntityPacket.extend({
   originator: OriginatorSchema,
 });
@@ -76,7 +73,7 @@ const BaseReparentEntityPacket = z.object({
   parent: EntityReferenceSchema,
 });
 export const ClientReparentEntityPacket = BaseReparentEntityPacket.extend({
-  old_parent: EntityReferenceSchema,
+  old_parent: EntityReferenceSchema.optional(),
 });
 export const ServerReparentEntityPacket = BaseReparentEntityPacket.extend({
   originator: OriginatorSchema,

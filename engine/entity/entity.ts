@@ -55,7 +55,7 @@ export type EntityConstructor<T extends Entity = Entity> = new (ctx: EntityConte
 // prettier-ignore
 
 export interface EntityDefinition<
-  T extends Entity,
+  T extends Entity = Entity,
   // deno-lint-ignore no-explicit-any
   Children extends any[] = any[],
   // deno-lint-ignore no-explicit-any
@@ -128,12 +128,11 @@ export abstract class Entity implements ISignalHandler {
     return this.#parent;
   }
   set parent(parent: Entity | undefined) {
-    if (this.parent) this.parent.removeChild(this);
-
     if (parent) {
       // sets #parent:
       parent.append(this);
       this.#recomputeId();
+      this.#updateTransform(true);
     } else if (this.parent) {
       this.destroy();
     }
@@ -157,14 +156,17 @@ export abstract class Entity implements ISignalHandler {
     this.#children.set(nonConflictingName ?? child.name, child);
     child.#parent = this;
 
-    // fire reparent events:
-    child.fire(EntityReparented, oldParent);
-    this.fire(EntityChildReparented, child, oldParent);
-    // deno-lint-ignore no-this-alias
-    let ancestor: Entity | undefined = this;
-    while (ancestor) {
-      ancestor.fire(EntityDescendantReparented, child, oldParent);
-      ancestor = ancestor.parent;
+    if (oldParent) {
+      // fire reparent events:
+
+      child.fire(EntityReparented, oldParent);
+      this.fire(EntityChildReparented, child, oldParent);
+      // deno-lint-ignore no-this-alias
+      let ancestor: Entity | undefined = this;
+      while (ancestor) {
+        ancestor.fire(EntityDescendantReparented, child, oldParent);
+        ancestor = ancestor.parent;
+      }
     }
 
     if (nonConflictingName) {
@@ -388,6 +390,8 @@ export abstract class Entity implements ISignalHandler {
   pausable: boolean = true;
 
   #updateTransform(fromGlobal: boolean) {
+    if (!this.transform || !this.globalTransform) return;
+
     if (fromGlobal) {
       const parentTransform = this.parent?.globalTransform;
       const localSpaceTransform = parentTransform
@@ -417,7 +421,6 @@ export abstract class Entity implements ISignalHandler {
     this.#name = ctx.name;
     this.id = serializeIdentifier(ctx.parent?.id, this.#name);
     this.parent = ctx.parent;
-
     this.transform = new Transform(ctx.transform);
     this.globalTransform = new Transform();
 
@@ -569,13 +572,13 @@ export abstract class Entity implements ISignalHandler {
     this.fire(EntityDestroyed);
     if (this.parent) {
       this.parent.fire(EntityChildDestroyed, this);
-      this.parent.removeChild(this);
-    }
+      this.parent.#children.delete(this.name);
 
-    let ancestor = this.parent;
-    while (ancestor) {
-      ancestor.fire(EntityDescendantDestroyed, this);
-      ancestor = ancestor.parent;
+      let ancestor: Entity | undefined = this.parent;
+      while (ancestor) {
+        ancestor.fire(EntityDescendantDestroyed, this);
+        ancestor = ancestor.parent;
+      }
     }
 
     for (const child of this.#children.values()) {

@@ -1,7 +1,7 @@
-import { ServerPacketHandler } from "./net-manager.ts";
+import { ServerNetworkSetupRoutine } from "./net-manager.ts";
 
-export const handleCustomMessages: ServerPacketHandler<"CustomMessage"> = (net, _game) => {
-  return (from, packet) => {
+export const handleCustomMessages: ServerNetworkSetupRoutine = (net, _game) => {
+  net.registerPacketHandler("CustomMessage", (from, packet) => {
     if (packet.to === undefined) {
       for (const listener of net.customMessageListeners) {
         try {
@@ -28,5 +28,5 @@ export const handleCustomMessages: ServerPacketHandler<"CustomMessage"> = (net, 
         originator: from,
       });
     }
-  };
+  });
 };

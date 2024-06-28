@@ -2,10 +2,9 @@ main {
   display: flex;
   flex-direction: row;
   gap: 1em;
-
-  max-height: 80vh;
 }
 
-main > * {
+main > .app-container {
   flex: 1;
+  max-height: 80vh;
 }

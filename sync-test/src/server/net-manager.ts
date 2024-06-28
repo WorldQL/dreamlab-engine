@@ -5,54 +5,45 @@ import {
   ServerGame,
   CustomMessageListener,
 } from "@dreamlab/engine";
-import { generateCUID } from "@dreamlab/vendor/cuid.ts";
+// import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import { ClientPacket, PlayPacket } from "@dreamlab/proto/play.ts";
 import { ClientConnection } from "../client/net-connection.ts";
 
 import { handleSyncedValues } from "./synced-values.ts";
 import { handleCustomMessages } from "./custom-messages.ts";
+import { handleEntitySync } from "./entity-sync.ts";
 
-export type ServerPacketHandleFunction<T extends ClientPacket["t"]> = (
+export type ServerPacketHandler<T extends ClientPacket["t"]> = (
   from: ConnectionId,
   packet: PlayPacket<T, "client">,
 ) => void;
-export type ServerPacketHandler<T extends ClientPacket["t"]> = (
-  net: ServerNetworkManager,
-  game: ServerGame,
-) => ServerPacketHandleFunction<T>;
+export type ServerNetworkSetupRoutine = (net: ServerNetworkManager, game: ServerGame) => void;
 
 export class ServerNetworkManager {
   clients = new Map<ConnectionId, ClientConnection>();
   connect(): ClientConnection {
-    const connection = new ClientConnection(generateCUID("conn"), this);
+    const connection = new ClientConnection(`conn_${this.clients.size + 1}`, this);
     this.clients.set(connection.id, connection);
     return connection;
   }
 
-  #game: ServerGame | undefined;
-
   customMessageListeners: CustomMessageListener[] = [];
 
-  #packetHandlers: Partial<
-    Record<ClientPacket["t"], ServerPacketHandleFunction<ClientPacket["t"]>>
-  > = {};
-  #setupPacketHandler<T extends ClientPacket["t"]>(t: T, handler: ServerPacketHandler<T>) {
-    const game = this.#game!;
-    this.#packetHandlers[t] = handler(this, game) as ServerPacketHandleFunction<
-      ClientPacket["t"]
-    >;
+  #packetHandlers: Partial<Record<ClientPacket["t"], ServerPacketHandler<ClientPacket["t"]>>> =
+    {};
+  registerPacketHandler<T extends ClientPacket["t"]>(t: T, handler: ServerPacketHandler<T>) {
+    this.#packetHandlers[t] = handler as ServerPacketHandler<ClientPacket["t"]>;
   }
-  getPacketHandler<T extends ClientPacket["t"]>(t: T): ServerPacketHandleFunction<T> {
+  getPacketHandler<T extends ClientPacket["t"]>(t: T): ServerPacketHandler<T> {
     const handler = this.#packetHandlers[t];
     if (handler === undefined) throw new Error("Handler for " + t + " has not been set up!");
-    return handler as ServerPacketHandleFunction<ClientPacket["t"]>;
+    return handler as ServerPacketHandler<ClientPacket["t"]>;
   }
 
   setup(game: ServerGame) {
-    this.#game = game;
-
-    this.#setupPacketHandler("SetSyncedValue", handleSyncedValues);
-    this.#setupPacketHandler("CustomMessage", handleCustomMessages);
+    handleSyncedValues(this, game);
+    handleCustomMessages(this, game);
+    handleEntitySync(this, game);
   }
 
   handle(from: ConnectionId, packet: PlayPacket<undefined, "client">) {

@@ -1,7 +1,7 @@
 import { ClientGame, SyncedValueChanged } from "@dreamlab/engine";
-import { ClientConnection, ClientPacketHandler } from "./net-connection.ts";
+import { ClientConnection, ClientNetworkSetupRoutine } from "./net-connection.ts";
 
-export const handleSyncedValues: ClientPacketHandler<"SetSyncedValue"> = (
+export const handleSyncedValues: ClientNetworkSetupRoutine = (
   conn: ClientConnection,
   game: ClientGame,
 ) => {
@@ -21,7 +21,7 @@ export const handleSyncedValues: ClientPacketHandler<"SetSyncedValue"> = (
     });
   });
 
-  return packet => {
+  conn.registerPacketHandler("SetSyncedValue", packet => {
     if (packet.originator === conn.id) return;
 
     const value = game.syncedValues.lookup(packet.identifier);
@@ -34,5 +34,5 @@ export const handleSyncedValues: ClientPacketHandler<"SetSyncedValue"> = (
       packet.generation,
       packet.originator,
     );
-  };
+  });
 };

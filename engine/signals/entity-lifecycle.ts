@@ -57,18 +57,12 @@ export class EntityRenamed {
 }
 
 export class EntityChildRenamed {
-  constructor(
-    public child: Entity,
-    public oldName: string,
-  ) {}
+  constructor(public child: Entity, public oldName: string) {}
   [exclusiveSignalType] = Entity;
 }
 
 export class EntityDescendantRenamed {
-  constructor(
-    public descendant: Entity,
-    public oldName: string,
-  ) {}
+  constructor(public descendant: Entity, public oldName: string) {}
   [exclusiveSignalType] = Entity;
 }
 
@@ -76,22 +70,16 @@ export class EntityDescendantRenamed {
  * Fired when this entity's {@link Entity#parent} changes.
  */
 export class EntityReparented {
-  constructor(public oldParent: Entity | undefined) {}
+  constructor(public oldParent: Entity) {}
   [exclusiveSignalType] = Entity;
 }
 
 export class EntityChildReparented {
-  constructor(
-    public child: Entity,
-    public oldParent: Entity | undefined,
-  ) {}
+  constructor(public child: Entity, public oldParent: Entity) {}
   [exclusiveSignalType] = Entity;
 }
 
 export class EntityDescendantReparented {
-  constructor(
-    public descendant: Entity,
-    public oldParent: Entity | undefined,
-  ) {}
+  constructor(public descendant: Entity, public oldParent: Entity) {}
   [exclusiveSignalType] = Entity;
 }

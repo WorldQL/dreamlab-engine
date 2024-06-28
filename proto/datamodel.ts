@@ -19,14 +19,14 @@ const BaseEntityDefinitionSchema = z.object({
   type: EntityTypeSchema,
   parent: EntityReferenceSchema,
   name: z.string(),
-  values: z.record(z.string(), z.any()),
-  behaviors: BehaviorSchema.array(),
-  ref: EntityReferenceSchema.optional(),
+  values: z.record(z.string(), z.any()).optional(),
+  behaviors: BehaviorSchema.array().optional(),
+  ref: EntityReferenceSchema,
 });
 export type EntityDefinitionSchemaType = z.infer<typeof BaseEntityDefinitionSchema> & {
-  children: EntityDefinitionSchemaType[];
+  children?: EntityDefinitionSchemaType[];
 };
 export const EntityDefinitionSchema: z.ZodType<EntityDefinitionSchemaType> =
   BaseEntityDefinitionSchema.extend({
-    children: z.lazy(() => EntityDefinitionSchema.array()),
+    children: z.lazy(() => EntityDefinitionSchema.array().optional()),
   });
