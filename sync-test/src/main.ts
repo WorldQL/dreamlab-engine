@@ -1,6 +1,6 @@
 import { ServerGame, ClientGame, SyncedValueChanged, Game } from "@dreamlab/engine";
 import { setupLevel } from "./level.ts";
-import { ServerNetworkManager } from "./network/server.ts";
+import { ServerNetworkManager } from "./server/net-manager.ts";
 
 const instanceId = crypto.randomUUID();
 const worldId = crypto.randomUUID();

@@ -118,7 +118,7 @@ export const ServerPacketSchema = z.discriminatedUnion("t", [
 export type ServerPacket = z.infer<typeof ServerPacketSchema>;
 
 export type PlayPacket<
-  T extends string | undefined = undefined,
+  T extends (ClientPacket | ServerPacket)["t"] | undefined = undefined,
   Side extends "server" | "client" | "any" = "any",
 > = (Side extends "any"
   ? ClientPacket | ServerPacket
