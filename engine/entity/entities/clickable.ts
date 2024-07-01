@@ -1,16 +1,29 @@
 import { Vector2, pointWorldToLocal } from "../../math/mod.ts";
-import { exclusiveSignalType } from "../../signal.ts";
 import { EntityDestroyed } from "../../signals/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
 
-export class Clicked {
+export class Click {
   public constructor(
     public readonly button: "left" | "right" | "middle",
     public readonly worldPosition: Vector2,
     public readonly screenPosition: Vector2,
   ) {}
+}
 
-  [exclusiveSignalType] = ClickRect;
+export class MouseDown {
+  public constructor(
+    public readonly button: "left" | "right" | "middle",
+    public readonly worldPosition: Vector2,
+    public readonly screenPosition: Vector2,
+  ) {}
+}
+
+export class MouseUp {
+  public constructor(
+    public readonly button: "left" | "right" | "middle",
+    public readonly worldPosition: Vector2,
+    public readonly screenPosition: Vector2,
+  ) {}
 }
 
 export class ClickRect extends Entity {
@@ -53,11 +66,10 @@ export class ClickRect extends Entity {
     canvas.addEventListener("mouseup", this.#onMouseUp);
   }
 
-  #onMouseUp = (ev: MouseEvent) => this.#onMouse(ev, true);
-  #onMouseDown = (ev: MouseEvent) => this.#onMouse(ev, false);
+  #onMouseUp = (ev: MouseEvent) => this.#onMouse(ev, false);
+  #onMouseDown = (ev: MouseEvent) => this.#onMouse(ev, true);
 
   #onMouse = (ev: MouseEvent, pressed: boolean) => {
-    if (!pressed) return;
     const button =
       ev.button === 0
         ? "left"
@@ -73,7 +85,12 @@ export class ClickRect extends Entity {
     if (!cursor) return;
     if (!this.#isInBounds(cursor.world)) return;
 
-    this.fire(Clicked, button, cursor.world, cursor.screen);
+    if (pressed) {
+      this.fire(MouseDown, button, cursor.world, cursor.screen);
+      this.fire(Click, button, cursor.world, cursor.screen);
+    } else {
+      this.fire(MouseUp, button, cursor.world, cursor.screen);
+    }
   };
 
   #isInBounds(worldPosition: Vector2): boolean {
@@ -118,8 +135,8 @@ export class ClickCircle extends Entity {
     canvas.addEventListener("mouseup", this.#onMouseUp);
   }
 
-  #onMouseUp = (ev: MouseEvent) => this.#onMouse(ev, true);
-  #onMouseDown = (ev: MouseEvent) => this.#onMouse(ev, false);
+  #onMouseUp = (ev: MouseEvent) => this.#onMouse(ev, false);
+  #onMouseDown = (ev: MouseEvent) => this.#onMouse(ev, true);
 
   #onMouse = (ev: MouseEvent, pressed: boolean) => {
     if (!pressed) return;
@@ -138,7 +155,12 @@ export class ClickCircle extends Entity {
     if (!cursor) return;
     if (!this.#isInBounds(cursor.world)) return;
 
-    this.fire(Clicked, button, cursor.world, cursor.screen);
+    if (pressed) {
+      this.fire(MouseDown, button, cursor.world, cursor.screen);
+      this.fire(Click, button, cursor.world, cursor.screen);
+    } else {
+      this.fire(MouseUp, button, cursor.world, cursor.screen);
+    }
   };
 
   #isInBounds(worldPosition: Vector2): boolean {

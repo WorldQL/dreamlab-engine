@@ -40,7 +40,7 @@ declare global {
 Object.assign(window, { game, camera });
 // #endregion
 
-const mod = await import("./test-cases/click.ts");
+const mod = await import("./test-cases/gizmo.ts");
 Object.assign(window, { ...mod });
 
 // #region Tick loop
