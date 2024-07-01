@@ -1,8 +1,7 @@
 import { Vector2, pointWorldToLocal } from "../../math/mod.ts";
 import { exclusiveSignalType } from "../../signal.ts";
-import { EntityDestroyed, GameRender } from "../../signals/mod.ts";
+import { EntityDestroyed } from "../../signals/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
-import { Camera } from "./camera.ts";
 
 export class Clicked {
   public constructor(
@@ -11,49 +10,34 @@ export class Clicked {
     public readonly screenPosition: Vector2,
   ) {}
 
-  [exclusiveSignalType] = Clickable;
+  [exclusiveSignalType] = ClickRect;
 }
 
-export class Clickable extends Entity {
+export class ClickRect extends Entity {
   public static readonly icon = "👆";
 
   width: number = 1;
   height: number = 1;
 
-  private static installed = false;
-  private static hover = new Set<string>();
-  private static onRender(this: void): void {
-    const canvas = game.renderer.app.canvas;
-    if (Clickable.hover.size > 0) canvas.style.cursor = "pointer";
-    else canvas.style.cursor = "";
-  }
-
   constructor(ctx: EntityContext) {
     super(ctx);
 
-    if (!Clickable.installed) {
-      Clickable.installed = true;
-      this.game.on(GameRender, Clickable.onRender);
-    }
+    this.defineValues(ClickRect, "width", "height");
 
-    this.defineValues(Clickable, "width", "height");
+    // TODO: Change cursor on hover
+    // this.listen(this.game, GameRender, () => {
+    //   if (!this.game.isClient()) return;
 
-    this.listen(this.game, GameRender, () => {
-      if (!this.game.isClient()) return;
+    //   const camera = Camera.getActive(this.game);
+    //   if (!camera) return;
 
-      const camera = Camera.getActive(this.game);
-      if (!camera) return;
+    //   const cursor = this.inputs.cursor;
+    //   if (!cursor) return;
 
-      const cursor = this.inputs.cursor;
-      if (!cursor) return;
-
-      const isInBounds = this.#isInBounds(cursor.world);
-      if (isInBounds) Clickable.hover.add(this.id);
-      else Clickable.hover.delete(this.id);
-    });
+    //   const isInBounds = this.#isInBounds(cursor.world);
+    // });
 
     this.on(EntityDestroyed, () => {
-      Clickable.hover.delete(this.id);
       if (this.game.isClient()) {
         const canvas = this.game.renderer.app.canvas;
         canvas.removeEventListener("mousedown", this.#onMouseDown);
@@ -103,4 +87,4 @@ export class Clickable extends Entity {
     );
   }
 }
-Entity.registerType(Clickable, "@core");
+Entity.registerType(ClickRect, "@core");
