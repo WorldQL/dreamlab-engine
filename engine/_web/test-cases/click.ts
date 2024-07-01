@@ -1,13 +1,13 @@
-import { Sprite2D, Clickable, Clicked } from "../../mod.ts";
+import { Sprite2D, ClickRect, Clicked } from "../../mod.ts";
 import { slider } from "../debug.ts";
 
 export const sprite = game.world.spawn({
   type: Sprite2D,
   name: "WASD",
-  children: [{ type: Clickable, name: "ClickRegion" }],
+  children: [{ type: ClickRect, name: "ClickRegion" }],
 });
 
-export const click = sprite._.ClickRegion.cast(Clickable);
+export const click = sprite._.ClickRegion.cast(ClickRect);
 
 click.on(Clicked, console.log);
 
