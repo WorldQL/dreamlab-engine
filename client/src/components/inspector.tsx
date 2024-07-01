@@ -23,7 +23,7 @@ const Inspector = () => {
   const [rotation, setRotation] = useState<number>(0);
   const [globalRotation, setGlobalRotation] = useState<number>(0);
   const [scale, setScale] = useState<{ x: number; y: number }>({ x: 1, y: 1 });
-  const [values, setValues] = useState<Partial<Record<string, SyncedValue>>>({});
+  const [values, setValues] = useState<Partial<Record<string, SyncedValue<unknown>>>>({});
   const [behaviors, setBehaviors] = useState<string[]>([]);
 
   useEffect(() => {
@@ -44,7 +44,11 @@ const Inspector = () => {
     entity.on(EntityTransformUpdate, updateValues);
     entity.on(EntityRenamed, updateValues);
     entity.on(EntityDescendantRenamed, updateValues);
-    return () => entity.unregister(EntityTransformUpdate, updateValues);
+    return () => {
+      entity.unregister(EntityTransformUpdate, updateValues);
+      entity.unregister(EntityRenamed, updateValues);
+      entity.unregister(EntityDescendantRenamed, updateValues);
+    };
   }, [selectedEntity]);
 
   const handleNameChange = useCallback(
@@ -67,7 +71,7 @@ const Inspector = () => {
         setSelectedEntity(selectedEntity);
       }
     },
-    [selectedEntity, setPosition, setSelectedEntity],
+    [selectedEntity, position, setPosition, setSelectedEntity],
   );
 
   const handlePositionChangeX = useCallback(
@@ -100,7 +104,7 @@ const Inspector = () => {
         setSelectedEntity(selectedEntity);
       }
     },
-    [selectedEntity, setScale, setSelectedEntity],
+    [selectedEntity, scale, setScale, setSelectedEntity],
   );
 
   const handleScaleChangeX = useCallback(
@@ -113,12 +117,17 @@ const Inspector = () => {
   );
 
   const handleValueChange = (key: string) => (newValue: string) => {
-    const newValues = Object.assign({}, values, { [key]: newValue });
-    setValues(newValues);
-    if (selectedEntity) {
-      selectedEntity.set({ [key]: newValue });
-      setSelectedEntity(selectedEntity);
-    }
+    setValues(prevValues => {
+      const newValues = { ...prevValues };
+      if (newValues[key]) {
+        newValues[key]!.value = newValue;
+      }
+      if (selectedEntity) {
+        selectedEntity.set({ [key]: newValue });
+        setSelectedEntity(selectedEntity);
+      }
+      return newValues;
+    });
   };
 
   if (!selectedEntity) {
