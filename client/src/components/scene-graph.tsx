@@ -129,11 +129,16 @@ const EntityEntry = ({
       <li key={entity.ref}>
         <div
           className={cn(
-            "entity-entry flex items-center cursor-pointer w-full relative",
-            selectedEntity?.id === entity.id && "bg-grey ring-primary ring-2 rounded",
-            !isEditing && (isHovered ? "bg-primary hover:shadow-md" : "hover:bg-secondary"),
+            "entity-entry flex items-center cursor-pointer w-full relative text-sm text-textPrimary hover:text-white",
+            selectedEntity?.id === entity.id && "bg-grey border-primary border-2",
+            !isEditing &&
+              (isHovered ? "bg-primary hover:shadow-md text-white" : "hover:bg-secondary"),
           )}
           onClick={handleEntityClick}
+          onDoubleClick={() => {
+            setPreviousName(entity.name);
+            setIsEditing(true);
+          }}
           draggable={!isEditing}
           onDragStart={handleDragStart}
           onDragOver={handleDragOver}
@@ -142,18 +147,6 @@ const EntityEntry = ({
           onContextMenu={handleContextMenu}
           style={{ paddingLeft: `${level * 16}px` }}
         >
-          {entity.children.size > 0 ? (
-            <div className="flex-shrink-0 w-3 ml-1 text-icon" onClick={toggleCollapse}>
-              <ChevronDownIcon
-                className={cn(
-                  "w-full h-auto transition-transform",
-                  isCollapsed && "-rotate-90",
-                )}
-              />
-            </div>
-          ) : (
-            <span className="inline-block w-4"></span>
-          )}
           {isEditing ? (
             <input
               type="text"
@@ -165,15 +158,23 @@ const EntityEntry = ({
               style={{ marginLeft: `${level * 16}px` }}
             />
           ) : (
-            <span
-              className="text-sm text-textPrimary"
-              onDoubleClick={() => {
-                setPreviousName(entity.name);
-                setIsEditing(true);
-              }}
-            >
-              {icon} {entity.name}
-            </span>
+            <>
+              {entity.children.size > 0 ? (
+                <div className="flex-shrink-0 w-3 ml-1" onClick={toggleCollapse}>
+                  <ChevronDownIcon
+                    className={cn(
+                      "w-full h-auto transition-transform",
+                      isCollapsed && "-rotate-90",
+                    )}
+                  />
+                </div>
+              ) : (
+                <span className="inline-block w-4"></span>
+              )}
+              <p>
+                {icon} {entity.name}
+              </p>
+            </>
           )}
         </div>
         {entity.children.size > 0 && !isCollapsed && (
