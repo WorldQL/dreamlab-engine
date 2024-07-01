@@ -88,3 +88,67 @@ export class ClickRect extends Entity {
   }
 }
 Entity.registerType(ClickRect, "@core");
+
+export class ClickCircle extends Entity {
+  public static readonly icon = "👆";
+
+  radius: number = 1;
+  innerRadus: number = 0;
+
+  constructor(ctx: EntityContext) {
+    super(ctx);
+
+    this.defineValues(ClickCircle, "radius", "innerRadus");
+
+    // TODO: Change cursor on hover
+
+    this.on(EntityDestroyed, () => {
+      if (this.game.isClient()) {
+        const canvas = this.game.renderer.app.canvas;
+        canvas.removeEventListener("mousedown", this.#onMouseDown);
+        canvas.removeEventListener("mouseup", this.#onMouseUp);
+      }
+    });
+  }
+
+  onInitialize() {
+    if (!this.game.isClient()) return;
+    const canvas = this.game.renderer.app.canvas;
+    canvas.addEventListener("mousedown", this.#onMouseDown);
+    canvas.addEventListener("mouseup", this.#onMouseUp);
+  }
+
+  #onMouseUp = (ev: MouseEvent) => this.#onMouse(ev, true);
+  #onMouseDown = (ev: MouseEvent) => this.#onMouse(ev, false);
+
+  #onMouse = (ev: MouseEvent, pressed: boolean) => {
+    if (!pressed) return;
+    const button =
+      ev.button === 0
+        ? "left"
+        : ev.button === 1
+        ? "middle"
+        : ev.button === 2
+        ? "right"
+        : undefined;
+
+    if (!button) return;
+
+    const cursor = this.inputs.cursor;
+    if (!cursor) return;
+    if (!this.#isInBounds(cursor.world)) return;
+
+    this.fire(Clicked, button, cursor.world, cursor.screen);
+  };
+
+  #isInBounds(worldPosition: Vector2): boolean {
+    const localPosition = pointWorldToLocal(this.globalTransform, worldPosition);
+
+    const radiusSq = this.radius * this.radius;
+    const innerSq = this.innerRadus * this.innerRadus;
+    const distanceSq = localPosition.magnitudeSquared();
+
+    return distanceSq >= innerSq && distanceSq <= radiusSq;
+  }
+}
+Entity.registerType(ClickCircle, "@core");
