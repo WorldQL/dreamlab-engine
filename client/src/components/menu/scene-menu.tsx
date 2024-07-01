@@ -1,7 +1,7 @@
 import { Empty, Entity, Rigidbody2D, Sprite2D } from "@dreamlab/engine";
 import { useAtom } from "jotai";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { selectedEntityAtom } from "../../context/editor-context.tsx";
+import { useCallback, useEffect, useRef } from "react";
+import { selectedEntityAtom, copiedEntityAtom } from "../../context/editor-context.tsx";
 import { game } from "../../global-game.ts";
 import { cn } from "../../utils/cn.ts";
 
@@ -13,7 +13,7 @@ interface SceneMenuProps {
 
 export const SceneMenu = ({ entity, position, setIsOpen }: SceneMenuProps) => {
   const [_selectedEntity, setSelectedEntity] = useAtom(selectedEntityAtom);
-  const [copiedEntity, setCopiedEntity] = useState<Entity | null>(null);
+  const [copiedEntity, setCopiedEntity] = useAtom(copiedEntityAtom);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const createEntity = useCallback(
@@ -38,7 +38,7 @@ export const SceneMenu = ({ entity, position, setIsOpen }: SceneMenuProps) => {
       setCopiedEntity(entity);
     }
     setIsOpen(false);
-  }, [entity, setIsOpen]);
+  }, [entity, setCopiedEntity, setIsOpen]);
 
   const handlePasteAsChild = useCallback(() => {
     if (copiedEntity && entity) {
