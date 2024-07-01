@@ -12,13 +12,14 @@ export class Sprite2D extends InterpolatedEntity {
   width: number = 1;
   height: number = 1;
   texture: string = Sprite2D.WHITE_PNG;
+  alpha: number = 1;
 
   #sprite: PIXI.Sprite | undefined;
 
   constructor(ctx: EntityContext) {
     super(ctx);
 
-    this.defineValues(Sprite2D, "width", "height");
+    this.defineValues(Sprite2D, "width", "height", "alpha");
     this.value(Sprite2D, "texture", { type: TextureAdapter });
 
     PIXI.Assets.backgroundLoad(this.texture);
@@ -32,6 +33,7 @@ export class Sprite2D extends InterpolatedEntity {
       const pos = this.interpolated.position;
       this.#sprite.position = { x: pos.x, y: -pos.y };
       this.#sprite.rotation = -this.interpolated.rotation;
+      this.#sprite.alpha = this.alpha;
     });
 
     this.on(EntityDestroyed, () => {
