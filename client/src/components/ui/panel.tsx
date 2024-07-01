@@ -10,8 +10,7 @@ export const Panel: FC<PanelProps> = ({ title, className, children }: PanelProps
   return (
     <div
       className={
-        "bg-card border border-4 border-grey rounded-lg shadow-md" +
-        (className ? ` ${className}` : "")
+        "bg-card border-4 border-grey rounded-lg shadow-md" + (className ? ` ${className}` : "")
       }
     >
       <div className="flex items-center justify-between p-2 bg-grey shadow-sm">
