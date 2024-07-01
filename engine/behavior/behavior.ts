@@ -111,7 +111,7 @@ export class Behavior {
       get: () => syncedValue.value,
     });
 
-    this.#values.set(prop, syncedValue);
+    this.#values.set(prop, syncedValue as SyncedValue<unknown>);
 
     return syncedValue;
   }

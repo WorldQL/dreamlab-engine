@@ -1,61 +1,36 @@
 import {
-  BehaviorDefinition,
-  Entity,
-  EntityDefinition,
   EntityDescendantDestroyed,
   EntityDescendantReparented,
   EntityDescendantSpawned,
-  EntityReparented,
-  Game,
 } from "@dreamlab/engine";
-import * as internal from "../../../engine/internal.ts";
 import { ClientNetworkSetupRoutine } from "./net-connection.ts";
-import { BehaviorSchema, EntityDefinitionSchema } from "@dreamlab/proto/datamodel.ts";
-import type { z } from "@dreamlab/vendor/zod.ts";
 
-const convertBehaviorDefinition = async (
-  game: Game,
-  def: z.infer<typeof BehaviorSchema>,
-): Promise<BehaviorDefinition> => {
-  const type = await game[internal.behaviorScriptLoader].loadScript(def.script);
-  return {
-    type,
-    values: def.values,
-  };
-};
-
-const convertEntityDefinition = async (
-  game: Game,
-  def: z.infer<typeof EntityDefinitionSchema>,
-): Promise<EntityDefinition> => {
-  const behaviorsPromise = def.behaviors?.map(behavior =>
-    convertBehaviorDefinition(game, behavior),
-  );
-  const behaviors = behaviorsPromise ? await Promise.all(behaviorsPromise) : undefined;
-
-  const childrenPromise = def.children?.map(child => convertEntityDefinition(game, child));
-  const children = childrenPromise ? await Promise.all(childrenPromise) : undefined;
-
-  return {
-    type: Entity.getEntityType(def.type),
-    name: def.name,
-    values: def.values,
-    behaviors,
-    children,
-  };
-};
+import { convertEntityDefinition, serializeEntityDefinition } from "../common/entity-sync.ts";
+import { PlayPacket } from "@dreamlab/proto/play.ts";
 
 export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
   const changeIgnoreSet = new Set<string>();
 
-  game.world.on(EntityDescendantSpawned, event => {
+  game.world.on(EntityDescendantSpawned, async event => {
     const entity = event.descendant;
     if (changeIgnoreSet.has(entity.ref)) return;
 
+    const packet: PlayPacket<"SpawnEntity", "client"> = {
+      t: "SpawnEntity",
+      definition: await serializeEntityDefinition(
+        game,
+        entity.getDefinition(),
+        entity.parent!.ref,
+      ),
+    };
     // TODO: send spawn entity packet (needs definition conversion)
   });
 
-  game.world.on(EntityDescendantDestroyed, event => {});
+  game.world.on(EntityDescendantDestroyed, event => {
+    const entity = event.descendant;
+    if (changeIgnoreSet.has(entity.ref)) return;
+    conn.send({ t: "DeleteEntity", entity: entity.ref });
+  });
 
   conn.registerPacketHandler("SpawnEntity", async packet => {
     if (packet.originator === conn.id) return;

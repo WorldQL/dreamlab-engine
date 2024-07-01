@@ -8,10 +8,10 @@ export const OriginatorSchema = z
   .optional()
   .describe("Originating connection ID (or undefined for server)");
 
-export const BehaviorSchema = z.object({
+export const BehaviorDefinitionSchema = z.object({
   script: z.string(),
   values: z.record(z.string(), z.any()),
-  _ref: z.string(),
+  ref: z.string(),
 });
 
 // we need to do a little ceremony since EntityDefinitionSchema is recursively defined
@@ -20,7 +20,7 @@ const BaseEntityDefinitionSchema = z.object({
   parent: EntityReferenceSchema,
   name: z.string(),
   values: z.record(z.string(), z.any()).optional(),
-  behaviors: BehaviorSchema.array().optional(),
+  behaviors: BehaviorDefinitionSchema.array().optional(),
   ref: EntityReferenceSchema,
 });
 export type EntityDefinitionSchemaType = z.infer<typeof BaseEntityDefinitionSchema> & {

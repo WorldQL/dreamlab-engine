@@ -1,7 +1,8 @@
 import { SignalListener } from "../signal.ts";
-import { AdapterTypeTag, Primitive, ValueTypeAdapter } from "./data.ts";
+import { AdapterTypeTag, ValueTypeAdapter } from "./data.ts";
 import { SyncedValueRegistry, SyncedValueChanged } from "./registry.ts";
 import { ConnectionId } from "../network.ts";
+import type { ReadonlyDeep } from "@dreamlab/vendor/type-fest.ts";
 
 type PrimitiveTypeTag<T> = T extends number
   ? typeof Number
@@ -24,11 +25,13 @@ export function inferValueTypeTag<T>(value: T): ValueTypeTag<T> {
   throw new Error(`Failed to infer type tag for value: ${value}`);
 }
 
+type ReadonlyIfObject<T> = T extends object ? ReadonlyDeep<T> : T;
+
 export class SyncedValue<T = unknown> {
   #registry: SyncedValueRegistry;
 
   identifier: string;
-  #value: T extends Primitive ? T : Readonly<T>;
+  #value: ReadonlyIfObject<T>;
   typeTag: ValueTypeTag<T>;
 
   adapter: ValueTypeAdapter<T> | undefined;
@@ -45,7 +48,7 @@ export class SyncedValue<T = unknown> {
     // this will fire `this.#changeListener` and update the internal value that way
     this.#registry.fire(
       SyncedValueChanged,
-      this,
+      this as SyncedValue<unknown>,
       newValue,
       this.generation + 1,
       this.#registry.originator,
@@ -77,12 +80,12 @@ export class SyncedValue<T = unknown> {
     }
 
     this.#registry.on(SyncedValueChanged, this.#changeListener);
-    this.#registry.register(this);
+    this.#registry.register(this as SyncedValue<unknown>);
   }
 
   destroy() {
     this.#registry.unregister(SyncedValueChanged, this.#changeListener);
-    this.#registry.remove(this);
+    this.#registry.remove(this as SyncedValue<unknown>);
   }
 
   [Symbol.dispose]() {

@@ -95,10 +95,10 @@ abstract class ClickableEntity extends Entity {
       ev.button === 0
         ? "left"
         : ev.button === 1
-        ? "middle"
-        : ev.button === 2
-        ? "right"
-        : undefined;
+          ? "middle"
+          : ev.button === 2
+            ? "right"
+            : undefined;
 
     if (!button) return;
 

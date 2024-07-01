@@ -265,7 +265,7 @@ export abstract class Entity implements ISignalHandler {
   // #endregion
 
   // #region Cloning
-  #generatePlainDefinition(): EntityDefinition<this> {
+  #generatePlainDefinition(withRefs: boolean): EntityDefinition<this> {
     const entityValues: Partial<Omit<this, keyof Entity>> = {};
     for (const [key, value] of this.values.entries()) {
       const newValue = value.adapter
@@ -276,6 +276,7 @@ export abstract class Entity implements ISignalHandler {
     }
 
     return {
+      _ref: withRefs ? this.ref : undefined,
       name: this.name,
       type: this.constructor as EntityConstructor<this>,
       transform: this.transform,
@@ -283,7 +284,7 @@ export abstract class Entity implements ISignalHandler {
     };
   }
 
-  #generateBehaviorDefinition(behavior: Behavior): BehaviorDefinition {
+  #generateBehaviorDefinition(behavior: Behavior, withRefs: boolean): BehaviorDefinition {
     const behaviorValues: Partial<Record<string, unknown>> = {};
     for (const [key, value] of behavior.values.entries()) {
       const newValue = value.adapter
@@ -293,23 +294,32 @@ export abstract class Entity implements ISignalHandler {
     }
 
     return {
+      _ref: withRefs ? behavior.ref : undefined,
       type: behavior.constructor as BehaviorConstructor,
       values: behaviorValues,
     };
   }
 
-  #generateRichDefinition(): EntityDefinition<this> {
-    const definition = this.#generatePlainDefinition();
-    definition.behaviors = this.behaviors.map(b => this.#generateBehaviorDefinition(b));
-    definition.children = [...this.children.values()].map(entity =>
-      entity.#generateRichDefinition(),
-    );
+  #generateRichDefinition(withRefs: boolean): EntityDefinition<this> {
+    const definition = this.#generatePlainDefinition(withRefs);
+    definition.behaviors =
+      this.behaviors.length === 0
+        ? undefined
+        : this.behaviors.map(b => this.#generateBehaviorDefinition(b, withRefs));
+    definition.children =
+      this.children.size === 0
+        ? undefined
+        : [...this.children.values()].map(entity => entity.#generateRichDefinition(withRefs));
 
     return definition;
   }
 
+  getDefinition(): EntityDefinition<this> {
+    return this.#generateRichDefinition(true);
+  }
+
   cloneInto(other: Entity): this {
-    return other.spawn(this.#generateRichDefinition());
+    return other.spawn(this.#generateRichDefinition(false));
   }
   // #endregion
 
@@ -376,7 +386,7 @@ export abstract class Entity implements ISignalHandler {
       get: () => syncedValue.value,
     });
 
-    this.#values.set(prop, syncedValue);
+    this.#values.set(prop, syncedValue as SyncedValue<unknown>);
 
     return syncedValue;
   }
@@ -614,7 +624,6 @@ export abstract class Entity implements ISignalHandler {
         throw new Error("property name passed to Entity.set(..) is not a SyncedValue!");
       }
 
-      // @ts-expect-error can't know what T is for SyncedValue<T>
       syncedValue.value = value;
     }
   }

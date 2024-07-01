@@ -4,8 +4,9 @@ import { Game } from "../game.ts";
 export class BehaviorLoader {
   #game: Game;
 
-  #cache = new Map<string, BehaviorConstructor>();
+  #cache = new Map<string, WeakRef<BehaviorConstructor>>();
   #initializedBehaviors = new WeakSet<BehaviorConstructor>();
+  #resourceLocationLookup = new WeakMap<BehaviorConstructor, string>();
 
   constructor(game: Game) {
     this.#game = game;
@@ -17,9 +18,15 @@ export class BehaviorLoader {
     if (behaviorType.onLoaded) behaviorType.onLoaded(this.#game);
   }
 
+  lookup(type: BehaviorConstructor): string | undefined {
+    return this.#resourceLocationLookup.get(type);
+  }
+
   async loadScript(script: string): Promise<BehaviorConstructor> {
     const location = this.#game.resolveResource(script);
-    if (this.#cache.has(location)) return this.#cache.get(location)!;
+
+    const cachedConstructor = this.#cache.get(location)?.deref();
+    if (cachedConstructor !== undefined) return cachedConstructor;
 
     const module = await import(location);
     if (!("default" in module))
@@ -34,7 +41,8 @@ export class BehaviorLoader {
     )
       throw new Error(`Module '${location}' must have a Behavior as its default export!`);
 
-    this.#cache.set(location, behaviorType);
+    this.#cache.set(location, new WeakRef(behaviorType));
+    this.#resourceLocationLookup.set(behaviorType, script);
 
     return behaviorType as BehaviorConstructor;
   }
