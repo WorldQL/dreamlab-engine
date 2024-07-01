@@ -46,6 +46,7 @@ export class GizmoScaleStart {
 }
 
 export class GizmoScaleMove {
+  constructor(public readonly scale: Vector2) {}
   [exclusiveSignalType] = Gizmo;
 }
 
@@ -146,7 +147,7 @@ export class Gizmo extends Entity {
   // #endregion
 
   // #region Mode
-  #mode: "translate" | "rotate" | "scale" | "combined" = "combined";
+  #mode: "translate" | "rotate" | "scale" | "combined" = "scale";
   get mode() {
     return this.#mode;
   }
@@ -250,10 +251,14 @@ export class Gizmo extends Entity {
       values: { width: 0.3, height: 0.3 },
     });
 
-    const onMouseDown = (axis: "x" | "y" | "both") => () => {
-      this.#action = { type: "scale", axis };
-      this.fire(GizmoScaleStart, axis);
-    };
+    const onMouseDown =
+      (axis: "x" | "y" | "both") =>
+      ({ worldPosition: world }: MouseDown) => {
+        const offset = world.sub(this.globalTransform.position);
+        const original = this.globalTransform.scale.clone();
+        this.#action = { type: "scale", axis, offset, original };
+        this.fire(GizmoScaleStart, axis);
+      };
 
     scaleX.on(MouseDown, onMouseDown("x"));
     scaleY.on(MouseDown, onMouseDown("y"));
@@ -319,6 +324,18 @@ export class Gizmo extends Entity {
       this.#action = { type: "rotate", offset: rot + this.globalTransform.rotation };
       this.fire(GizmoRotateStart);
     });
+
+    const scaleOnMouseDown =
+      (axis: "x" | "y" | "both") =>
+      ({ worldPosition: world }: MouseDown) => {
+        const offset = world.sub(this.globalTransform.position);
+        const original = this.globalTransform.scale.clone();
+        this.#action = { type: "scale", axis, offset, original };
+        this.fire(GizmoScaleStart, axis);
+      };
+
+    scaleX.on(MouseDown, scaleOnMouseDown("x"));
+    scaleY.on(MouseDown, scaleOnMouseDown("y"));
   }
   // #endregion
 
@@ -326,7 +343,7 @@ export class Gizmo extends Entity {
   #action:
     | { type: "translate"; axis: "x" | "y" | "both"; offset: Vector2 }
     | { type: "rotate"; offset: number }
-    | { type: "scale"; axis: "x" | "y" | "both" }
+    | { type: "scale"; axis: "x" | "y" | "both"; offset: Vector2; original: Vector2 }
     | undefined;
 
   #onMouseMove = (_: MouseEvent) => {
@@ -348,9 +365,14 @@ export class Gizmo extends Entity {
       const rot = Math.atan2(pos.x, pos.y);
 
       this.fire(GizmoRotateMove, -rot + this.#action.offset);
-      // TODO
     } else if (this.#action.type === "scale") {
-      // TODO
+      const originalDistance = this.#action.offset.magnitude();
+      const offset = cursor.world.sub(this.globalTransform.position);
+      const offsetDistance = offset.magnitude();
+
+      const scale = this.#action.original.mul(Vector2.splat(offsetDistance / originalDistance));
+
+      this.fire(GizmoScaleMove, scale);
     }
   };
 
