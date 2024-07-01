@@ -1,12 +1,11 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
+import { Vector2 } from "../../math/mod.ts";
 import { exclusiveSignalType } from "../../signal.ts";
 import { EntityDestroyed, GameRender } from "../../signals/mod.ts";
 import type { EntityContext } from "../entity.ts";
 import { Entity } from "../entity.ts";
 import { Camera } from "./camera.ts";
-import { ClickRect, MouseDown } from "./clickable.ts";
-import { ClickCircle } from "./mod.ts";
-import { Vector2 } from "../../math/mod.ts";
+import { ClickableCircle, ClickableRect, MouseDown } from "./clickable.ts";
 
 // #region Signals
 // #region Translate
@@ -175,21 +174,21 @@ export class Gizmo extends Entity {
     const clickSize = handleSize * 1.333;
 
     const translateX = this.spawn({
-      type: ClickRect,
+      type: ClickableRect,
       name: "TranslateX",
       transform: { position: { x: 1 + handleSize / 2, y: 0 } },
       values: { width: clickSize, height: clickSize },
     });
 
     const translateY = this.spawn({
-      type: ClickRect,
+      type: ClickableRect,
       name: "TranslateY",
       transform: { position: { x: 0, y: 1 + handleSize / 2 } },
       values: { width: clickSize, height: clickSize },
     });
 
     const translateBoth = this.spawn({
-      type: ClickRect,
+      type: ClickableRect,
       name: "TranslateBoth",
       transform: { position: { x: 0.25, y: 0.25 } },
       values: { width: 0.3, height: 0.3 },
@@ -212,7 +211,7 @@ export class Gizmo extends Entity {
     const width = 0.2;
 
     const rotate = this.spawn({
-      type: ClickCircle,
+      type: ClickableCircle,
       name: "Rotate",
       values: { radius: 1 + width / 2, innerRadus: 1 - width / 2 },
     });
@@ -231,21 +230,21 @@ export class Gizmo extends Entity {
     const clickSize = handleSize * 1.333;
 
     const scaleX = this.spawn({
-      type: ClickRect,
+      type: ClickableRect,
       name: "ScaleX",
       transform: { position: { x: 1 + handleSize / 2, y: 0 } },
       values: { width: clickSize, height: clickSize },
     });
 
     const scaleY = this.spawn({
-      type: ClickRect,
+      type: ClickableRect,
       name: "ScaleY",
       transform: { position: { x: 0, y: 1 + handleSize / 2 } },
       values: { width: clickSize, height: clickSize },
     });
 
     const scaleBoth = this.spawn({
-      type: ClickRect,
+      type: ClickableRect,
       name: "ScaleBoth",
       transform: { position: { x: 0.25, y: 0.25 } },
       values: { width: 0.3, height: 0.3 },
@@ -266,21 +265,21 @@ export class Gizmo extends Entity {
     const translateClickSize = translateHandleSize * 1.333;
 
     const translateX = this.spawn({
-      type: ClickRect,
+      type: ClickableRect,
       name: "TranslateX",
       transform: { position: { x: 1.1 + translateHandleSize / 2, y: 0 } },
       values: { width: translateClickSize, height: translateClickSize },
     });
 
     const translateY = this.spawn({
-      type: ClickRect,
+      type: ClickableRect,
       name: "TranslateY",
       transform: { position: { x: 0, y: 1.1 + translateHandleSize / 2 } },
       values: { width: translateClickSize, height: translateClickSize },
     });
 
     const rotate = this.spawn({
-      type: ClickCircle,
+      type: ClickableCircle,
       name: "Rotate",
       values: { radius: 1.05, innerRadus: 0.95 },
     });
@@ -289,14 +288,14 @@ export class Gizmo extends Entity {
     const scaleClickSize = scaleHandleSize * 1.333;
 
     const scaleX = this.spawn({
-      type: ClickRect,
+      type: ClickableRect,
       name: "ScaleX",
       transform: { position: { x: 0.7 + scaleHandleSize / 2, y: 0 } },
       values: { width: scaleClickSize, height: scaleClickSize },
     });
 
     const scaleY = this.spawn({
-      type: ClickRect,
+      type: ClickableRect,
       name: "ScaleY",
       transform: { position: { x: 0, y: 0.7 + scaleHandleSize / 2 } },
       values: { width: scaleClickSize, height: scaleClickSize },
