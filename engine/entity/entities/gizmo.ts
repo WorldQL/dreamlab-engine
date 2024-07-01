@@ -69,6 +69,8 @@ export class Gizmo extends Entity {
   static #ARROW_H = 0.15;
   static #SCALE_S = 0.15;
 
+  static #blankCtx = new PIXI.GraphicsContext();
+
   static #translateCtx = new PIXI.GraphicsContext()
     .moveTo(0, 0)
     .lineTo(1, 0)
@@ -138,6 +140,8 @@ export class Gizmo extends Entity {
   #graphics: PIXI.Graphics | undefined;
 
   get #ctx() {
+    if (!this.#target) return Gizmo.#blankCtx;
+
     if (this.mode === "translate") return Gizmo.#translateCtx;
     else if (this.mode === "rotate") return Gizmo.#rotateCtx;
     else if (this.mode === "scale") return Gizmo.#scaleCtx;
@@ -147,7 +151,7 @@ export class Gizmo extends Entity {
   // #endregion
 
   // #region Mode
-  #mode: "translate" | "rotate" | "scale" | "combined" = "scale";
+  #mode: "translate" | "rotate" | "scale" | "combined" = "combined";
   get mode() {
     return this.#mode;
   }
@@ -162,6 +166,9 @@ export class Gizmo extends Entity {
   #updateHandles() {
     // Destroy existing chilldren
     this.children.forEach(c => c.destroy());
+
+    // Don't spawn handles if no target entity
+    if (!this.#target) return;
 
     if (this.mode === "translate") this.#translateHandles();
     else if (this.mode === "rotate") this.#rotateHandles();
@@ -255,7 +262,7 @@ export class Gizmo extends Entity {
       (axis: "x" | "y" | "both") =>
       ({ worldPosition: world }: MouseDown) => {
         const offset = world.sub(this.globalTransform.position);
-        const original = this.globalTransform.scale.clone();
+        const original = this.#target!.globalTransform.scale.clone();
         this.#action = { type: "scale", axis, offset, original };
         this.fire(GizmoScaleStart, axis);
       };
@@ -329,7 +336,7 @@ export class Gizmo extends Entity {
       (axis: "x" | "y" | "both") =>
       ({ worldPosition: world }: MouseDown) => {
         const offset = world.sub(this.globalTransform.position);
-        const original = this.globalTransform.scale.clone();
+        const original = this.#target!.globalTransform.scale.clone();
         this.#action = { type: "scale", axis, offset, original };
         this.fire(GizmoScaleStart, axis);
       };
@@ -347,6 +354,7 @@ export class Gizmo extends Entity {
     | undefined;
 
   #onMouseMove = (_: MouseEvent) => {
+    if (!this.#target) return;
     if (!this.#action) return;
 
     const cursor = this.inputs.cursor;
@@ -360,19 +368,24 @@ export class Gizmo extends Entity {
       if (this.#action.axis === "y") pos.x = this.globalTransform.position.x;
 
       this.fire(GizmoTranslateMove, pos);
+      this.#target.globalTransform.position = pos;
     } else if (this.#action.type === "rotate") {
       const pos = cursor.world.sub(this.globalTransform.position);
       const rot = Math.atan2(pos.x, pos.y);
 
-      this.fire(GizmoRotateMove, -rot + this.#action.offset);
+      const rotation = -rot + this.#action.offset;
+      this.fire(GizmoRotateMove, rotation);
+      this.#target.globalTransform.rotation = rotation;
     } else if (this.#action.type === "scale") {
       const originalDistance = this.#action.offset.magnitude();
       const offset = cursor.world.sub(this.globalTransform.position);
       const offsetDistance = offset.magnitude();
 
       const scale = this.#action.original.mul(Vector2.splat(offsetDistance / originalDistance));
+      // TODO: Axis lock
 
       this.fire(GizmoScaleMove, scale);
+      this.#target.globalTransform.scale = scale;
     }
   };
 
@@ -391,11 +404,31 @@ export class Gizmo extends Entity {
   };
   // #endregion
 
+  #target: Entity | undefined;
+  get target(): Entity | undefined {
+    return this.#target;
+  }
+  set target(value: Entity | undefined) {
+    this.#target = value;
+    if (this.#graphics) this.#graphics.context = this.#ctx;
+    this.#updateHandles();
+  }
+
   constructor(ctx: EntityContext) {
     super(ctx);
 
+    // Must be a local entity
+    if (ctx.parent !== this.game.local || !this.game.isClient()) {
+      throw new Error("camera must be spawned as a client local");
+    }
+
     this.listen(this.game, GameRender, () => {
       if (!this.#graphics) return;
+
+      if (this.#target) {
+        this.globalTransform.position = this.#target.globalTransform.position;
+        this.globalTransform.rotation = this.#target.globalTransform.rotation;
+      }
 
       const pos = this.globalTransform.position;
       const rotation = this.globalTransform.rotation;
