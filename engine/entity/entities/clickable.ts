@@ -1,6 +1,7 @@
 import { Vector2, pointWorldToLocal } from "../../math/mod.ts";
-import { EntityDestroyed } from "../../signals/mod.ts";
+import { EntityDestroyed, GameRender } from "../../signals/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
+import { Camera } from "./camera.ts";
 
 export class Click {
   public constructor(
@@ -26,11 +27,47 @@ export class MouseUp {
   ) {}
 }
 
+const dataSymbol = Symbol.for("dreamlab.clickableentity.internal");
 abstract class ClickableEntity extends Entity {
+  #hover: Set<string> | undefined;
+
   constructor(ctx: EntityContext) {
     super(ctx);
 
-    // TODO: Change cursor on hover
+    if (this.game.isClient()) {
+      const canvas = this.game.renderer.app.canvas;
+      // TODO: Better API for this
+      // @ts-expect-error: internal data
+      if (!this.game[dataSymbol]) {
+        const set = new Set<string>();
+        // @ts-expect-error: internal data
+        this.game[dataSymbol] = set;
+
+        this.game.on(GameRender, () => {
+          if (set.size > 0) canvas.style.cursor = "pointer";
+          else canvas.style.cursor = "";
+        });
+      }
+
+      // @ts-expect-error: internal data
+      this.#hover = this.game[dataSymbol];
+    }
+
+    this.listen(this.game, GameRender, () => {
+      if (!this.#hover) return;
+
+      const camera = Camera.getActive(this.game);
+      if (!camera) return;
+
+      const cursor = this.inputs.cursor;
+      if (!cursor) return;
+
+      const isInBounds = this.isInBounds(cursor.world);
+      if (isInBounds) this.#hover.add(this.ref);
+      else this.#hover.delete(this.ref);
+
+      console.log(this.#hover);
+    });
 
     this.on(EntityDestroyed, () => {
       if (!this.game.isClient()) return;
