@@ -1,17 +1,18 @@
 import { SignalListener } from "../signal.ts";
-import { AdapterTypeTag, ValueTypeAdapter } from "./data.ts";
+import { AdapterTypeTag, JsonValue, ValueTypeAdapter } from "./data.ts";
 import { SyncedValueRegistry, SyncedValueChanged } from "./registry.ts";
 import { ConnectionId } from "../network.ts";
 import type { ReadonlyDeep } from "@dreamlab/vendor/type-fest.ts";
 
-type PrimitiveTypeTag<T> = T extends number
-  ? typeof Number
-  : T extends string
-    ? typeof String
-    : T extends boolean
-      ? typeof Boolean
-      : never;
-export type ValueTypeTag<T> = PrimitiveTypeTag<T> | AdapterTypeTag<T>;
+// prettier-ignore
+type BasicTypeTag<T> =
+    T extends number ? typeof Number
+  : T extends string ? typeof String
+  : T extends boolean ? typeof Boolean
+  : T extends (JsonValue & object) ? typeof Object
+  : never;
+
+export type ValueTypeTag<T> = AdapterTypeTag<T> | BasicTypeTag<T>;
 export function inferValueTypeTag<T>(value: T): ValueTypeTag<T> {
   switch (typeof value) {
     case "number":
