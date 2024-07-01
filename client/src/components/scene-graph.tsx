@@ -1,7 +1,7 @@
 import { Entity } from "@dreamlab/engine";
 import { useAtom } from "jotai";
 import { ChevronDownIcon } from "lucide-react";
-import { memo, useCallback, useRef, useState } from "react";
+import { memo, useCallback, useState } from "react";
 import { selectedEntityAtom } from "../context/editor-context.tsx";
 import { game } from "../global-game.ts";
 import { useForceUpdateOnEntityChange } from "../hooks/force-update-on-change.ts";
@@ -33,7 +33,6 @@ const EntityEntry = ({
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [selectedEntity, setSelectedEntity] = useAtom(selectedEntityAtom);
   const [previousName, setPreviousName] = useState<string>(entity.name);
-  const dragImageRef = useRef<HTMLDivElement>(null);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
@@ -50,10 +49,7 @@ const EntityEntry = ({
   const handleDragStart = useCallback(
     (event: React.DragEvent<HTMLDivElement>) => {
       event.dataTransfer.setData("text/plain", entity.id);
-      const dragImage = dragImageRef.current;
-      if (dragImage) {
-        event.dataTransfer.setDragImage(dragImage, -10, 10);
-      }
+      event.dataTransfer.setDragImage(new Image(), 0, 0);
     },
     [entity],
   );
@@ -72,10 +68,15 @@ const EntityEntry = ({
     (event: React.DragEvent<HTMLDivElement>) => {
       event.preventDefault();
       setIsHovered(false);
+
       const draggedEntityId = event.dataTransfer.getData("text/plain");
       const draggedEntity = game.entities.lookupById(draggedEntityId);
 
-      if (draggedEntity && draggedEntity !== entity && !isDescendant(draggedEntity, entity)) {
+      if (!draggedEntity || draggedEntity === entity || draggedEntity.parent === entity) {
+        return;
+      }
+
+      if (!isDescendant(draggedEntity, entity)) {
         draggedEntity.parent = entity;
       }
     },
@@ -186,12 +187,6 @@ const EntityEntry = ({
               ))}
           </ul>
         )}
-        <div
-          ref={dragImageRef}
-          className="hidden bg-primaryLight text-white border border-primary rounded px-2 py-1"
-        >
-          {entity.name}
-        </div>
       </li>
       {isOpen && <SceneMenu entity={entity} position={menuPosition} setIsOpen={setIsOpen} />}
     </div>
@@ -213,7 +208,11 @@ const SceneGraph = () => {
     const draggedEntityId = event.dataTransfer.getData("text/plain");
     const draggedEntity = game.entities.lookupById(draggedEntityId);
 
-    if (draggedEntity) {
+    if (
+      draggedEntity &&
+      draggedEntity.parent !== game.world &&
+      draggedEntity.parent !== draggedEntity
+    ) {
       draggedEntity.parent = game.world;
     }
   }, []);
