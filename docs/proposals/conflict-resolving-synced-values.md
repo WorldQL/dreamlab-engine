@@ -10,13 +10,13 @@ a network primitive we could work with are _synced values_. these store some sta
 synced values need to track three things:
 
 - the value itself
-- generation ID (sequential counter)
+- clock (monotonic sequential counter)
 - source (connection ID OR undefined as a sentinel to mean 'the server')
 
 conflicting values must be resolved deterministically. whichever peer "wins" gets to dictate the value:
 
-- whoever has the highest generation wins
-- if the generations are the same, whoever has the 'lowest' connection ID wins (server always wins)
+- whoever has the highest clock wins
+- if the clocks are the same, whoever has the 'lowest' connection ID wins (server always wins)
 
 values contained in a 'synced value' are not internally mutable.
 

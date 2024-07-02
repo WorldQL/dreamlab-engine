@@ -17,7 +17,7 @@ export const handleSyncedValues: ClientNetworkSetupRoutine = (
       t: "SetSyncedValue",
       identifier: event.value.identifier,
       value,
-      generation: event.generation,
+      clock: event.clock,
     });
   });
 
@@ -27,12 +27,6 @@ export const handleSyncedValues: ClientNetworkSetupRoutine = (
     const value = game.syncedValues.lookup(packet.identifier);
     if (!value || !value.replicated) return;
 
-    game.syncedValues.fire(
-      SyncedValueChanged,
-      value,
-      packet.value,
-      packet.generation,
-      packet.from,
-    );
+    game.syncedValues.fire(SyncedValueChanged, value, packet.value, packet.clock, packet.from);
   });
 };

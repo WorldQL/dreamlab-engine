@@ -12,7 +12,7 @@ export const handleSyncedValues: ServerNetworkSetupRoutine = (net, game) => {
     net.broadcast({
       t: "SetSyncedValue",
       identifier: event.value.identifier,
-      generation: event.generation,
+      clock: event.clock,
       value,
       from: event.from,
     });
@@ -21,6 +21,6 @@ export const handleSyncedValues: ServerNetworkSetupRoutine = (net, game) => {
   net.registerPacketHandler("SetSyncedValue", (from, packet) => {
     const value = game.syncedValues.lookup(packet.identifier);
     if (!value || !value.replicated) return;
-    game.syncedValues.fire(SyncedValueChanged, value, packet.value, packet.generation, from);
+    game.syncedValues.fire(SyncedValueChanged, value, packet.value, packet.clock, from);
   });
 };

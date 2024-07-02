@@ -9,7 +9,7 @@ export class SyncedValueChanged {
   constructor(
     public value: SyncedValue,
     public newValue: unknown,
-    public generation: number,
+    public clock: number,
     public from: ConnectionId,
   ) {}
 

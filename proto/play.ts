@@ -29,7 +29,7 @@ export const ClientSetSyncedValuePacketSchema = z.object({
   t: z.literal("SetSyncedValue"),
   identifier: z.string(),
   value: z.any(),
-  generation: z.number(),
+  clock: z.number(),
 });
 
 export const ServerSetSyncedValuePacketSchema = ClientSetSyncedValuePacketSchema.extend({

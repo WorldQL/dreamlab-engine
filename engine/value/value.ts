@@ -38,7 +38,7 @@ export class SyncedValue<T = unknown> {
   adapter: ValueTypeAdapter<T> | undefined;
 
   /** for conflict resolution: incrementing number (greater number wins) */
-  generation: number;
+  clock: number;
   /** for conflict resolution: the last setting client's connection ID, or undefined if set by the server. */
   #lastSource: ConnectionId = undefined;
 
@@ -51,7 +51,7 @@ export class SyncedValue<T = unknown> {
       SyncedValueChanged,
       this as SyncedValue<unknown>,
       newValue,
-      this.generation + 1,
+      this.clock + 1,
       this.#registry.source,
     );
   }
@@ -70,7 +70,7 @@ export class SyncedValue<T = unknown> {
     this.identifier = identifier;
     this.#value = defaultValue;
     this.typeTag = typeTag;
-    this.generation = 0;
+    this.clock = 0;
     this.#lastSource = registry.source;
 
     this.description = description;
@@ -95,20 +95,16 @@ export class SyncedValue<T = unknown> {
 
   #changeListener: SignalListener<SyncedValueChanged> = signal => {
     if (signal.value === this)
-      this.#applyUpdate(
-        signal.newValue as SyncedValue<T>["value"],
-        signal.generation,
-        signal.from,
-      );
+      this.#applyUpdate(signal.newValue as SyncedValue<T>["value"], signal.clock, signal.from);
   };
 
   #applyUpdate(
     incomingValue: SyncedValue<T>["value"],
-    incomingGeneration: number,
+    incomingClock: number,
     incomingSource: ConnectionId,
   ) {
-    if (incomingGeneration < this.generation) return;
-    if (incomingGeneration === this.generation) {
+    if (incomingClock < this.clock) return;
+    if (incomingClock === this.clock) {
       if (incomingSource !== undefined) {
         if (this.#lastSource === undefined) return;
         if (incomingSource < this.#lastSource) return;
@@ -117,6 +113,6 @@ export class SyncedValue<T = unknown> {
 
     this.#value = incomingValue;
     this.#lastSource = incomingSource;
-    this.generation = incomingGeneration;
+    this.clock = incomingClock;
   }
 }
