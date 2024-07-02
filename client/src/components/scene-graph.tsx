@@ -1,6 +1,7 @@
 import { Entity } from "@dreamlab/engine";
 import { useAtom } from "jotai";
 import { ChevronDownIcon } from "lucide-react";
+// @deno-types="npm:@types/react@18.3.1"
 import { memo, useCallback, useState } from "react";
 import { selectedEntityAtom } from "../context/editor-context.tsx";
 import { game } from "../global-game.ts";

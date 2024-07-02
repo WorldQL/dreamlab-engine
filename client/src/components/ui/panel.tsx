@@ -1,3 +1,4 @@
+// @deno-types="npm:@types/react@18.3.1"
 import React, { FC } from "react";
 
 interface PanelProps {

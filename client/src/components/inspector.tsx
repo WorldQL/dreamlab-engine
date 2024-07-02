@@ -5,6 +5,7 @@ import {
   SyncedValue,
 } from "@dreamlab/engine";
 import { useAtom } from "jotai";
+// @deno-types="npm:@types/react@18.3.1"
 import { memo, useCallback, useEffect, useState } from "react";
 import { selectedEntityAtom } from "../context/editor-context.tsx";
 import { AxisInputField } from "./ui/axis-input.tsx";

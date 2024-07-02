@@ -1,5 +1,6 @@
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import clsx from "clsx";
+// @deno-types="npm:@types/react@18.3.1"
 import * as React from "react";
 
 const TooltipProvider = TooltipPrimitive.Provider;

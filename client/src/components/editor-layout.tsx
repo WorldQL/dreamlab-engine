@@ -1,4 +1,5 @@
 import { useAtomValue } from "jotai";
+// @deno-types="npm:@types/react@18.3.1"
 import { useEffect, useRef, useState } from "react";
 import { isPausedAtom, isRunningAtom } from "../context/editor-context.tsx";
 import { handleResize, handleVerticalResize } from "../utils/resize.ts";

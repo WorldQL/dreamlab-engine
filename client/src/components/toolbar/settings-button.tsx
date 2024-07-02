@@ -1,4 +1,5 @@
 import { Settings } from "lucide-react";
+// @deno-types="npm:@types/react@18.3.1"
 import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "../../utils/cn.ts";
 import { IconButton } from "../ui/icon-button.tsx";

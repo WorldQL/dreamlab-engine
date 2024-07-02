@@ -1,3 +1,4 @@
+// @deno-types="npm:@types/react@18.3.1"
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { Camera, GameRender, Vector2 } from "@dreamlab/engine";
 import { game } from "../global-game.ts";

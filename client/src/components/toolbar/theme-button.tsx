@@ -1,4 +1,5 @@
 // This is temporary until we connect with the next app, so the user's theme preferences carry over.
+// @deno-types="npm:@types/react@18.3.1"
 import { useEffect, useState, type FC, useCallback, memo } from "react";
 import { IconButton } from "../ui/icon-button.tsx";
 import { Moon, Sun } from "lucide-react";

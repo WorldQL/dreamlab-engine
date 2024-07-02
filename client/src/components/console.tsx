@@ -1,3 +1,4 @@
+// @deno-types="npm:@types/react@18.3.1"
 import { memo } from "react";
 import { Panel } from "./ui/panel.tsx";
 

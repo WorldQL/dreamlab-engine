@@ -1,5 +1,6 @@
 import { atom, useAtomValue, useSetAtom } from "jotai";
 import { Pause, Play, Rocket, Square } from "lucide-react";
+// @deno-types="npm:@types/react@18.3.1"
 import { memo } from "react";
 import { isPausedAtom, isRunningAtom } from "../../context/editor-context.tsx";
 import { IconButton } from "../ui/icon-button.tsx";

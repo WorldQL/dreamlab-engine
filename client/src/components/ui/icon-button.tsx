@@ -1,4 +1,5 @@
-import type { ComponentPropsWithoutRef as ComponentProps } from "react";
+// @deno-types="npm:@types/react@18.3.1"
+import { ComponentPropsWithoutRef as ComponentProps } from "react";
 import { forwardRef, memo } from "react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "../../utils/cn.ts";
