@@ -3,10 +3,10 @@ import { z } from "@dreamlab/vendor/zod.ts";
 export const EntityReferenceSchema = z.string().describe("Entity Reference");
 export const EntityTypeSchema = z.string().describe("Entity Type");
 
-export const OriginatorSchema = z
+export const ConnectionIdSchema = z
   .string()
   .optional()
-  .describe("Originating connection ID (or undefined for server)");
+  .describe("Connection ID (or undefined for server)");
 
 export const BehaviorDefinitionSchema = z.object({
   script: z.string(),

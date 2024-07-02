@@ -14,7 +14,7 @@ export const handleSyncedValues: ServerNetworkSetupRoutine = (net, game) => {
       identifier: event.value.identifier,
       generation: event.generation,
       value,
-      originator: event.originator,
+      from: event.from,
     });
   });
 

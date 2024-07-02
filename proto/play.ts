@@ -2,7 +2,7 @@ import { z } from "@dreamlab/vendor/zod.ts";
 import {
   EntityDefinitionSchema,
   EntityReferenceSchema,
-  OriginatorSchema,
+  ConnectionIdSchema,
 } from "./datamodel.ts";
 
 export const PLAY_PROTO_VERSION = 1;
@@ -33,7 +33,7 @@ export const ClientSetSyncedValuePacketSchema = z.object({
 });
 
 export const ServerSetSyncedValuePacketSchema = ClientSetSyncedValuePacketSchema.extend({
-  originator: OriginatorSchema,
+  from: ConnectionIdSchema,
 });
 
 export const ClientSpawnEntityPacket = z.object({
@@ -42,7 +42,7 @@ export const ClientSpawnEntityPacket = z.object({
 });
 
 export const ServerSpawnEntityPacket = ClientSpawnEntityPacket.extend({
-  originator: OriginatorSchema,
+  from: ConnectionIdSchema,
 });
 
 export const ClientDeleteEntityPacket = z.object({
@@ -51,7 +51,7 @@ export const ClientDeleteEntityPacket = z.object({
 });
 
 export const ServerDeleteEntityPacket = ClientDeleteEntityPacket.extend({
-  originator: OriginatorSchema,
+  from: ConnectionIdSchema,
 });
 
 const BaseRenameEntityPacket = z.object({
@@ -64,7 +64,7 @@ export const ClientRenameEntityPacket = BaseRenameEntityPacket.extend({
   old_name: z.string(),
 });
 export const ServerRenameEntityPacket = BaseRenameEntityPacket.extend({
-  originator: OriginatorSchema,
+  from: ConnectionIdSchema,
 });
 
 const BaseReparentEntityPacket = z.object({
@@ -76,7 +76,7 @@ export const ClientReparentEntityPacket = BaseReparentEntityPacket.extend({
   old_parent: EntityReferenceSchema.optional(),
 });
 export const ServerReparentEntityPacket = BaseReparentEntityPacket.extend({
-  originator: OriginatorSchema,
+  from: ConnectionIdSchema,
 });
 
 const BaseCustomMessagePacket = z.object({
@@ -85,10 +85,10 @@ const BaseCustomMessagePacket = z.object({
   data: z.any(),
 });
 export const ClientCustomMessagePacket = BaseCustomMessagePacket.extend({
-  to: OriginatorSchema.or(z.literal("*")).optional(),
+  to: ConnectionIdSchema.or(z.literal("*")).optional(),
 });
 export const ServerCustomMessagePacket = BaseCustomMessagePacket.extend({
-  originator: OriginatorSchema,
+  from: ConnectionIdSchema,
 });
 
 export const ClientPacketSchema = z.discriminatedUnion("t", [
@@ -120,6 +120,6 @@ export type PlayPacket<
 > = (Side extends "any"
   ? ClientPacket | ServerPacket
   : Side extends "client"
-  ? ClientPacket
-  : ServerPacket) &
+    ? ClientPacket
+    : ServerPacket) &
   (T extends string ? { t: T } : object);

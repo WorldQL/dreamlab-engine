@@ -11,7 +11,7 @@ synced values need to track three things:
 
 - the value itself
 - generation ID (sequential counter)
-- originator (connection ID OR undefined as a sentinel to mean 'the server')
+- source (connection ID OR undefined as a sentinel to mean 'the server')
 
 conflicting values must be resolved deterministically. whichever peer "wins" gets to dictate the value:
 
@@ -25,12 +25,12 @@ all of this can mostly be handled by one packet:
 ```typescript
 // C->S, S->C
 export interface SetSyncedValuePacket {
-  t: 'SetSyncedValue'
-  entityId: string
-  key: string
-  value: Jsonifiable
-  generation: number // or numeric string? for a snowflake value?
-  setBy: string | undefined
+  t: "SetSyncedValue";
+  entityId: string;
+  key: string;
+  value: Jsonifiable;
+  generation: number; // or numeric string? for a snowflake value?
+  setBy: string | undefined;
 }
 ```
 

@@ -37,7 +37,7 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
 
     net.broadcast({
       t: "ReparentEntity",
-      originator: from,
+      from: from,
       entity: packet.entity,
       parent: packet.parent,
     });

@@ -204,7 +204,7 @@ export class ClientGame extends BaseGame {
     this.renderer = new GameRenderer(this);
 
     this.network = opts.network;
-    this.syncedValues[internal.setSyncedValueRegistryOriginator](this.network.connectionId);
+    this.syncedValues[internal.setSyncedValueRegistrySource](this.network.connectionId);
   }
 
   async initialize() {

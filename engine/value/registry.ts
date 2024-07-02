@@ -10,7 +10,7 @@ export class SyncedValueChanged {
     public value: SyncedValue,
     public newValue: unknown,
     public generation: number,
-    public originator: ConnectionId,
+    public from: ConnectionId,
   ) {}
 
   [exclusiveSignalType] = SyncedValueRegistry;
@@ -19,12 +19,12 @@ export class SyncedValueChanged {
 export class SyncedValueRegistry extends BasicSignalHandler<SyncedValueRegistry> {
   #values = new Map<string, SyncedValue>();
 
-  #originator: ConnectionId;
-  get originator() {
-    return this.#originator;
+  #source: ConnectionId;
+  get source() {
+    return this.#source;
   }
-  [internal.setSyncedValueRegistryOriginator](value: ConnectionId) {
-    this.#originator = value;
+  [internal.setSyncedValueRegistrySource](value: ConnectionId) {
+    this.#source = value;
   }
 
   readonly game: Game;

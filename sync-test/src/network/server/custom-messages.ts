@@ -18,14 +18,14 @@ export const handleCustomMessages: ServerNetworkSetupRoutine = (net, _game) => {
         t: "CustomMessage",
         channel: packet.channel,
         data: packet.data,
-        originator: from,
+        from: from,
       });
     } else {
       net.send(packet.to, {
         t: "CustomMessage",
         channel: packet.channel,
         data: packet.data,
-        originator: from,
+        from: from,
       });
     }
   });

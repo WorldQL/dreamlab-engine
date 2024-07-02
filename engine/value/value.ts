@@ -39,8 +39,8 @@ export class SyncedValue<T = unknown> {
 
   /** for conflict resolution: incrementing number (greater number wins) */
   generation: number;
-  /** for conflict resolution: the current client's connection ID, or undefined if on the server. */
-  #originator: ConnectionId = undefined;
+  /** for conflict resolution: the last setting client's connection ID, or undefined if set by the server. */
+  #lastSource: ConnectionId = undefined;
 
   get value() {
     return this.#value;
@@ -52,7 +52,7 @@ export class SyncedValue<T = unknown> {
       this as SyncedValue<unknown>,
       newValue,
       this.generation + 1,
-      this.#registry.originator,
+      this.#registry.source,
     );
   }
 
@@ -71,7 +71,7 @@ export class SyncedValue<T = unknown> {
     this.#value = defaultValue;
     this.typeTag = typeTag;
     this.generation = 0;
-    this.#originator = registry.originator;
+    this.#lastSource = registry.source;
 
     this.description = description;
 
@@ -98,25 +98,25 @@ export class SyncedValue<T = unknown> {
       this.#applyUpdate(
         signal.newValue as SyncedValue<T>["value"],
         signal.generation,
-        signal.originator,
+        signal.from,
       );
   };
 
   #applyUpdate(
     incomingValue: SyncedValue<T>["value"],
     incomingGeneration: number,
-    incomingOriginator: string | undefined,
+    incomingSource: ConnectionId,
   ) {
     if (incomingGeneration < this.generation) return;
     if (incomingGeneration === this.generation) {
-      if (incomingOriginator !== undefined) {
-        if (this.#originator === undefined) return;
-        if (incomingOriginator < this.#originator) return;
+      if (incomingSource !== undefined) {
+        if (this.#lastSource === undefined) return;
+        if (incomingSource < this.#lastSource) return;
       }
     }
 
     this.#value = incomingValue;
-    this.#originator = incomingOriginator;
+    this.#lastSource = incomingSource;
     this.generation = incomingGeneration;
   }
 }

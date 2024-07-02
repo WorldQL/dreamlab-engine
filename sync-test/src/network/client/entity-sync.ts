@@ -33,7 +33,7 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
   });
 
   conn.registerPacketHandler("SpawnEntity", async packet => {
-    if (packet.originator === conn.id) return;
+    if (packet.from === conn.id) return;
     const def = packet.definition;
 
     const parent = game.entities.lookupByRef(def.parent);
@@ -63,7 +63,7 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
   });
 
   conn.registerPacketHandler("ReparentEntity", packet => {
-    if (packet.originator === conn.id) return;
+    if (packet.from === conn.id) return;
 
     const entity = game.entities.lookupByRef(packet.entity);
     if (!entity)

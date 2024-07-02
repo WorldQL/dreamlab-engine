@@ -7,7 +7,7 @@ export const handleSyncedValues: ClientNetworkSetupRoutine = (
 ) => {
   game.syncedValues.on(SyncedValueChanged, event => {
     if (!event.value.replicated) return;
-    if (event.originator !== conn.id) return;
+    if (event.from !== conn.id) return;
 
     const value = event.value.adapter
       ? event.value.adapter.convertToPrimitive(event.newValue)
@@ -22,7 +22,7 @@ export const handleSyncedValues: ClientNetworkSetupRoutine = (
   });
 
   conn.registerPacketHandler("SetSyncedValue", packet => {
-    if (packet.originator === conn.id) return;
+    if (packet.from === conn.id) return;
 
     const value = game.syncedValues.lookup(packet.identifier);
     if (!value || !value.replicated) return;
@@ -32,7 +32,7 @@ export const handleSyncedValues: ClientNetworkSetupRoutine = (
       value,
       packet.value,
       packet.generation,
-      packet.originator,
+      packet.from,
     );
   });
 };
