@@ -1,5 +1,6 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { Vector2 } from "../../math/mod.ts";
+import { pointLocalToWorld, pointWorldToLocal } from "../../math/spatial-transforms.ts";
 import { exclusiveSignalType } from "../../signal.ts";
 import { EntityDestroyed, GameRender } from "../../signals/mod.ts";
 import type { EntityContext } from "../entity.ts";
@@ -216,7 +217,7 @@ export class Gizmo extends Entity {
   }
 
   #rotateHandles() {
-    const width = 0.2;
+    const width = 0.4;
 
     const rotate = this.spawn({
       type: ClickableCircle,
@@ -363,12 +364,13 @@ export class Gizmo extends Entity {
     if (this.#action.type === "translate") {
       const pos = cursor.world.sub(this.#action.offset);
 
-      // TODO: Axis lock in local space
-      if (this.#action.axis === "x") pos.y = this.globalTransform.position.y;
-      if (this.#action.axis === "y") pos.x = this.globalTransform.position.x;
+      const local = pointWorldToLocal(this.globalTransform, pos);
+      if (this.#action.axis === "x") local.y = 0;
+      if (this.#action.axis === "y") local.x = 0;
+      const world = pointLocalToWorld(this.globalTransform, local);
 
-      this.fire(GizmoTranslateMove, pos);
-      this.#target.globalTransform.position = pos;
+      this.fire(GizmoTranslateMove, world);
+      this.#target.globalTransform.position = world;
     } else if (this.#action.type === "rotate") {
       const pos = cursor.world.sub(this.globalTransform.position);
       const rot = Math.atan2(pos.x, pos.y);
