@@ -1,4 +1,4 @@
-import { Empty, Rigidbody2D, Sprite2D } from "@dreamlab/engine";
+import { Empty, Rigidbody2D, Sprite2D, AnimatedSprite2D } from "@dreamlab/engine";
 import { Plus } from "lucide-react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { game } from "../../global-game.ts";
@@ -38,7 +38,9 @@ const NewEntityButton = () => {
   }, [isMenuOpen]);
 
   const createEntity = useCallback(
-    (entityType: typeof Empty | typeof Rigidbody2D | typeof Sprite2D) => {
+    (
+      entityType: typeof Empty | typeof Rigidbody2D | typeof Sprite2D | typeof AnimatedSprite2D,
+    ) => {
       game.world.spawn({
         type: entityType,
         name: entityType.name,
@@ -90,6 +92,12 @@ const NewEntityButton = () => {
             onClick={() => createEntity(Sprite2D)}
           >
             Sprite2D
+          </button>
+          <button
+            className="block w-full px-4 py-2 text-sm text-textPrimary hover:bg-secondary hover:text-white"
+            onClick={() => createEntity(AnimatedSprite2D)}
+          >
+            AnimatedSprite2D
           </button>
         </div>
       )}

@@ -5,4 +5,5 @@ export * from "./empty.ts";
 export * from "./gizmo.ts";
 export * from "./rigidbody.ts";
 export * from "./sprite.ts";
+export * from "./animated-sprite.ts";
 export * from "./ui-panel.ts";
