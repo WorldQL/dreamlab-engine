@@ -466,7 +466,7 @@ export abstract class Entity implements ISignalHandler {
 
   fire<
     S extends Signal,
-    C extends SignalConstructorMatching<S, Entity>,
+    C extends SignalConstructorMatching<S, this & Entity>,
     A extends ConstructorParameters<C>,
   >(ctor: C, ...args: A) {
     const listeners = this.#signalListenerMap.get(ctor);
@@ -477,7 +477,7 @@ export abstract class Entity implements ISignalHandler {
   }
 
   on<S extends Signal>(
-    type: SignalConstructorMatching<S, Entity>,
+    type: SignalConstructorMatching<S, this & Entity>,
     listener: SignalListener<S>,
   ) {
     const listeners = this.#signalListenerMap.get(type) ?? [];
