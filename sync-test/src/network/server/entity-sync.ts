@@ -1,8 +1,67 @@
-import { EntityDescendantReparented } from "@dreamlab/engine";
+import {
+  EntityDescendantDestroyed,
+  EntityDescendantReparented,
+  EntityDescendantSpawned,
+} from "@dreamlab/engine";
 import { ServerNetworkSetupRoutine } from "./net-manager.ts";
+import { convertEntityDefinition, serializeEntityDefinition } from "../common/entity-sync.ts";
 
 export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
   const changeIgnoreSet = new Set<string>();
+
+  game.world.on(EntityDescendantSpawned, async event => {
+    const entity = event.descendant;
+    if (changeIgnoreSet.has(entity.ref)) return;
+
+    const definition = await serializeEntityDefinition(
+      game,
+      entity.getDefinition(),
+      entity.parent!.ref,
+    );
+
+    net.broadcast({
+      t: "SpawnEntity",
+      definition,
+    });
+  });
+
+  game.world.on(EntityDescendantDestroyed, event => {
+    const entity = event.descendant;
+    if (changeIgnoreSet.has(entity.ref)) return;
+    net.broadcast({ t: "DeleteEntity", entity: entity.ref });
+  });
+
+  net.registerPacketHandler("SpawnEntity", async (from, packet) => {
+    const def = packet.definition;
+
+    const parent = game.entities.lookupByRef(def.parent);
+    if (!parent) {
+      throw new Error(
+        `entity sync: Tried to spawn underneath a non-existent entity! (${def.parent})`,
+      );
+    }
+
+    const definition = await convertEntityDefinition(game, def);
+
+    changeIgnoreSet.add(def.ref);
+    parent.spawn(definition);
+    changeIgnoreSet.delete(def.ref);
+
+    net.broadcast({ t: "SpawnEntity", definition: packet.definition, from });
+  });
+
+  net.registerPacketHandler("DeleteEntity", (from, packet) => {
+    const entity = game.entities.lookupByRef(packet.entity);
+    if (!entity) {
+      throw new Error(`entity sync: Tried to delete a non-existent entity! (${packet.entity})`);
+    }
+
+    changeIgnoreSet.add(entity.ref);
+    entity.destroy();
+    changeIgnoreSet.delete(entity.ref);
+
+    net.broadcast({ t: "DeleteEntity", entity: packet.entity, from });
+  });
 
   game.world.on(EntityDescendantReparented, event => {
     const entity = event.descendant;

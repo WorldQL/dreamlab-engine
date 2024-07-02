@@ -8,6 +8,8 @@ export class WorldRoot extends Entity {
   constructor(game: Game) {
     super({ game, name: "world" });
 
+    game.entities._unregister(this);
+
     this.name = "game.world";
     // @ts-expect-error assign readonly id
     this.id = "game.world";
@@ -15,6 +17,8 @@ export class WorldRoot extends Entity {
     this.ref = "WORLD";
 
     this.pausable = false;
+
+    game.entities._register(this);
   }
 }
 

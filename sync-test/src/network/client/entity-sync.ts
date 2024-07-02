@@ -6,24 +6,25 @@ import {
 import { ClientNetworkSetupRoutine } from "./net-connection.ts";
 
 import { convertEntityDefinition, serializeEntityDefinition } from "../common/entity-sync.ts";
-import { PlayPacket } from "@dreamlab/proto/play.ts";
 
 export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
   const changeIgnoreSet = new Set<string>();
 
   game.world.on(EntityDescendantSpawned, async event => {
     const entity = event.descendant;
+    console.log(conn.id + " spawned descendant! " + entity.ref);
     if (changeIgnoreSet.has(entity.ref)) return;
 
-    const packet: PlayPacket<"SpawnEntity", "client"> = {
+    const definition = await serializeEntityDefinition(
+      game,
+      entity.getDefinition(),
+      entity.parent!.ref,
+    );
+
+    conn.send({
       t: "SpawnEntity",
-      definition: await serializeEntityDefinition(
-        game,
-        entity.getDefinition(),
-        entity.parent!.ref,
-      ),
-    };
-    // TODO: send spawn entity packet (needs definition conversion)
+      definition,
+    });
   });
 
   game.world.on(EntityDescendantDestroyed, event => {
@@ -44,9 +45,25 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
     }
 
     const definition = await convertEntityDefinition(game, def);
+
     changeIgnoreSet.add(def.ref);
+    console.log(conn.id + " spawning... " + def.ref);
     parent.spawn(definition);
+    console.log(conn.id + " spawned!");
     changeIgnoreSet.delete(def.ref);
+    console.log(conn.id + " gone!");
+  });
+
+  conn.registerPacketHandler("DeleteEntity", packet => {
+    if (packet.from === conn.id) return;
+    const entity = game.entities.lookupByRef(packet.entity);
+    if (!entity) {
+      throw new Error(`entity sync: Tried to delete a non-existent entity! (${packet.entity})`);
+    }
+
+    changeIgnoreSet.add(entity.ref);
+    entity.destroy();
+    changeIgnoreSet.delete(entity.ref);
   });
 
   game.world.on(EntityDescendantReparented, event => {

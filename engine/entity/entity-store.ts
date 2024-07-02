@@ -29,6 +29,10 @@ export class EntityStore {
   _register(entity: Entity, oldId?: string) {
     if (oldId && this.#entitiesById.get(oldId) === entity) this.#entitiesById.delete(oldId);
 
+    const existingEntity = this.#entitiesByRef.get(entity.ref);
+    if (existingEntity && existingEntity !== entity)
+      throw new Error("tried to overwrite entity ref: " + entity.ref);
+
     this.#entitiesByRef.set(entity.ref, entity);
     this.#entitiesById.set(entity.id, entity);
   }

@@ -1,6 +1,6 @@
-import { ServerGame, ClientGame, SyncedValueChanged, Game } from "@dreamlab/engine";
+import { ServerGame, ClientGame, Sprite2D } from "@dreamlab/engine";
 import { setupLevel } from "./level.ts";
-import { ServerNetworkManager } from "./server/net-manager.ts";
+import { ServerNetworkManager } from "./network/server/net-manager.ts";
 
 const instanceId = crypto.randomUUID();
 const worldId = crypto.randomUUID();
@@ -63,3 +63,37 @@ const onFrame = (time: number) => {
   requestAnimationFrame(onFrame);
 };
 requestAnimationFrame(onFrame);
+
+document.querySelector("#button1-1")!.addEventListener("click", () => {
+  client1.world.spawn({
+    type: Sprite2D,
+    name: "NewEntity",
+    transform: {
+      position: {
+        x: Math.random() * 2 - 1,
+        y: Math.random() * 2 - 1,
+      },
+      scale: {
+        x: 0.5,
+        y: 0.5,
+      },
+    },
+  });
+});
+
+document.querySelector("#button2-1")!.addEventListener("click", () => {
+  client2.world.spawn({
+    type: Sprite2D,
+    name: "NewEntity",
+    transform: {
+      position: {
+        x: Math.random() * 2 - 1,
+        y: Math.random() * 2 - 1,
+      },
+      scale: {
+        x: 0.5,
+        y: 0.5,
+      },
+    },
+  });
+});

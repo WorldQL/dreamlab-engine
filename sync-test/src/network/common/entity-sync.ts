@@ -27,9 +27,11 @@ export const convertEntityDefinition = async (
   const children = childrenPromise ? await Promise.all(childrenPromise) : undefined;
 
   return {
+    _ref: def.ref,
     type: Entity.getEntityType(def.type),
     name: def.name,
     values: def.values,
+    transform: def.transform,
     behaviors,
     children,
   };
@@ -79,6 +81,7 @@ export const serializeEntityDefinition = async (
     type: Entity.getTypeName(def.type),
     name: def.name,
     values: def.values,
+    transform: def.transform,
     behaviors,
     children,
     ref,

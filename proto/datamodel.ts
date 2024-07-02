@@ -14,6 +14,13 @@ export const BehaviorDefinitionSchema = z.object({
   ref: z.string(),
 });
 
+export const Vector2Schema = z
+  .object({
+    x: z.number(),
+    y: z.number(),
+  })
+  .describe("Vector2");
+
 // we need to do a little ceremony since EntityDefinitionSchema is recursively defined
 const BaseEntityDefinitionSchema = z.object({
   type: EntityTypeSchema,
@@ -21,6 +28,13 @@ const BaseEntityDefinitionSchema = z.object({
   name: z.string(),
   values: z.record(z.string(), z.any()).optional(),
   behaviors: BehaviorDefinitionSchema.array().optional(),
+  transform: z
+    .object({
+      position: Vector2Schema.optional(),
+      rotation: z.number().optional(),
+      scale: Vector2Schema.optional(),
+    })
+    .optional(),
   ref: EntityReferenceSchema,
 });
 export type EntityDefinitionSchemaType = z.infer<typeof BaseEntityDefinitionSchema> & {

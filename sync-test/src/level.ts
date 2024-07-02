@@ -21,37 +21,33 @@ export async function setupLevel(game: Game) {
           _ref: "bhv_custom_1",
         },
       ],
-      children: [
-        {
-          type: Sprite2D,
-          name: "Sprite",
-        },
-      ],
       _ref: "ent_custom_1",
     });
   }
 
-  game.world.spawn({
-    type: Sprite2D,
-    name: "Sprite.001",
-    transform: {
-      position: {
-        x: -1,
-        y: 0,
+  if (false) {
+    game.world.spawn({
+      type: Sprite2D,
+      name: "Sprite.001",
+      transform: {
+        position: {
+          x: -1,
+          y: 0,
+        },
       },
-    },
-    _ref: "ent_custom_2",
-  });
+      _ref: "ent_custom_2",
+    });
 
-  game.world.spawn({
-    type: Sprite2D,
-    name: "Sprite.002",
-    transform: {
-      position: {
-        x: 1,
-        y: 0,
+    game.world.spawn({
+      type: Sprite2D,
+      name: "Sprite.002",
+      transform: {
+        position: {
+          x: 1,
+          y: 0,
+        },
       },
-    },
-    _ref: "ent_custom_3",
-  });
+      _ref: "ent_custom_3",
+    });
+  }
 }

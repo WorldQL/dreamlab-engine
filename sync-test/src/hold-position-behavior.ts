@@ -8,7 +8,7 @@ export default class HoldPosBehavior extends Behavior {
     this.defineValues(HoldPosBehavior, "x", "y");
 
     if (this.game.isClient()) {
-      this.game.renderer.app.canvas.addEventListener("mousedown", ev => {
+      this.game.renderer.app.canvas.addEventListener("mousedown", _ev => {
         const cursor = this.game.inputs.cursor;
         if (!cursor) return;
         this.x = cursor.world.x;

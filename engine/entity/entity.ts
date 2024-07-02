@@ -260,6 +260,8 @@ export abstract class Entity implements ISignalHandler {
 
     def.children?.forEach(c => entity.spawn(c));
 
+    entity.#spawn();
+
     return entity;
   }
   // #endregion
@@ -279,7 +281,11 @@ export abstract class Entity implements ISignalHandler {
       _ref: withRefs ? this.ref : undefined,
       name: this.name,
       type: this.constructor as EntityConstructor<this>,
-      transform: this.transform,
+      transform: {
+        position: this.transform.position.bare(),
+        rotation: this.transform.rotation,
+        scale: this.transform.scale.bare(),
+      },
       values: entityValues,
     };
   }
@@ -426,6 +432,8 @@ export abstract class Entity implements ISignalHandler {
   constructor(ctx: EntityContext) {
     Entity.#ensureEntityTypeIsRegistered(new.target);
 
+    if (ctx.ref) this.ref = ctx.ref;
+
     this.game = ctx.game;
 
     this.#name = ctx.name;
@@ -449,8 +457,6 @@ export abstract class Entity implements ISignalHandler {
         : this.transform;
       this.globalTransform[internal.transformForceUpdate](worldSpaceTransform);
     }
-
-    if (ctx.ref) this.ref = ctx.ref;
 
     this.game.entities._register(this);
   }
@@ -673,5 +679,5 @@ export const serializeIdentifier = (parent: string | undefined, child: string) =
       ? `${parent}._.${child}`
       : `${child}`
     : parent
-      ? `${parent}._[${JSON.stringify(child)}]`
-      : `[${JSON.stringify(child)}]`;
+    ? `${parent}._[${JSON.stringify(child)}]`
+    : `[${JSON.stringify(child)}]`;
