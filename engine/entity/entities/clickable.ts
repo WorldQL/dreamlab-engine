@@ -65,8 +65,6 @@ abstract class ClickableEntity extends Entity {
       const isInBounds = this.isInBounds(cursor.world);
       if (isInBounds) this.#hover.add(this.ref);
       else this.#hover.delete(this.ref);
-
-      console.log(this.#hover);
     });
 
     this.on(EntityDestroyed, () => {
@@ -95,10 +93,10 @@ abstract class ClickableEntity extends Entity {
       ev.button === 0
         ? "left"
         : ev.button === 1
-          ? "middle"
-          : ev.button === 2
-            ? "right"
-            : undefined;
+        ? "middle"
+        : ev.button === 2
+        ? "right"
+        : undefined;
 
     if (!button) return;
 
