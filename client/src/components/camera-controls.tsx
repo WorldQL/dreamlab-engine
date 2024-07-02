@@ -32,7 +32,6 @@ export const CameraControls: React.FC = () => {
   const handleRender = useCallback(() => {
     cameraRef.current = Camera.getActive(game);
     if (cameraRef.current) {
-      cameraRef.current.smooth = 1;
       setCameraPosition(cameraRef.current.transform.position);
       setZoomScale(cameraRef.current.transform.scale.x);
     }

@@ -25,7 +25,11 @@ const main = async () => {
   const ro = new ResizeObserver(() => game.renderer.app.resize());
   ro.observe(container);
 
-  game.local.spawn({ type: Camera, name: "Camera" });
+  game.local.spawn({
+    type: Camera,
+    name: "Camera",
+    values: { smooth: 1 },
+  });
 
   // editor
   game.physics.enabled = false;
