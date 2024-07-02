@@ -1,5 +1,5 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import { EntityDestroyed, GameRender } from "../../signals/mod.ts";
+import { EntityDestroyed, GameRender, EntityUpdate } from "../../signals/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
 import { InterpolatedEntity } from "../interpolated-entity.ts";
 import { TextureAdapter } from "../../value/adapters/texture-adapter.ts";
@@ -39,25 +39,47 @@ export class Sprite2D extends InterpolatedEntity {
     this.on(EntityDestroyed, () => {
       this.#sprite?.destroy();
     });
+
+    this.listenForUpdates();
   }
 
   async onInitialize() {
     if (!this.game.isClient()) return;
 
-    const texture = await PIXI.Assets.load(this.texture);
-    this.#sprite = new PIXI.Sprite({
-      texture,
-      width: this.width * this.globalTransform.scale.x,
-      height: this.height * this.globalTransform.scale.y,
-      position: {
-        x: this.globalTransform.position.x,
-        y: -this.globalTransform.position.y,
-      },
-      rotation: this.globalTransform.rotation,
-      anchor: 0.5,
-    });
+    await this.loadTexture();
+  }
 
-    this.game.renderer.scene.addChild(this.#sprite);
+  private async loadTexture() {
+    if (!this.game.isClient()) return;
+
+    const texture = await PIXI.Assets.load(this.texture);
+    if (!this.#sprite) {
+      this.#sprite = new PIXI.Sprite({
+        texture,
+        width: this.width * this.globalTransform.scale.x,
+        height: this.height * this.globalTransform.scale.y,
+        position: {
+          x: this.globalTransform.position.x,
+          y: -this.globalTransform.position.y,
+        },
+        rotation: this.globalTransform.rotation,
+        anchor: 0.5,
+      });
+      this.game.renderer.scene.addChild(this.#sprite);
+    } else {
+      this.#sprite.texture = texture;
+    }
+  }
+
+  private listenForUpdates() {
+    let previousTexture = this.texture;
+    this.on(EntityUpdate, async () => {
+      if (this.texture !== previousTexture) {
+        previousTexture = this.texture;
+        await this.loadTexture();
+      }
+    });
   }
 }
+
 Entity.registerType(Sprite2D, "@core");

@@ -131,7 +131,7 @@ const EntityEntry = ({
         <div
           className={cn(
             "entity-entry flex items-center cursor-pointer w-full relative text-sm text-textPrimary hover:text-white",
-            selectedEntity?.id === entity.id && "bg-grey border-primary border-2",
+            selectedEntity?.id === entity.id && "bg-primary text-white",
             !isEditing &&
               (isHovered ? "bg-primary hover:shadow-md text-white" : "hover:bg-secondary"),
           )}
