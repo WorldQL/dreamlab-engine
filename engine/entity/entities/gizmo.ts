@@ -383,8 +383,10 @@ export class Gizmo extends Entity {
       const offset = cursor.world.sub(this.globalTransform.position);
       const offsetDistance = offset.magnitude();
 
-      const scale = this.#action.original.mul(Vector2.splat(offsetDistance / originalDistance));
-      // TODO: Axis lock
+      const mul = Vector2.splat(offsetDistance / originalDistance);
+      if (this.#action.axis === "x") mul.y = 1;
+      if (this.#action.axis === "y") mul.x = 1;
+      const scale = this.#action.original.mul(mul);
 
       this.fire(GizmoScaleMove, scale);
       this.#target.globalTransform.scale = scale;
