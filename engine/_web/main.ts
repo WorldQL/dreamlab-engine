@@ -41,7 +41,7 @@ declare global {
 Object.assign(window, { game, camera });
 // #endregion
 
-const mod = await import("./test-cases/gizmo.ts");
+const mod = await import("./test-cases/demo-game.ts");
 Object.assign(window, { ...mod });
 
 game.setStatus(GameStatus.Running);
