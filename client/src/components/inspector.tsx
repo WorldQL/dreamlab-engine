@@ -33,11 +33,22 @@ const Inspector = () => {
     const entity = selectedEntity;
     const updateValues = () => {
       setName(entity.name);
-      setPosition(entity.transform.position);
-      setGlobalPosition(entity.globalTransform.position);
-      setRotation(entity.transform.rotation * (180 / Math.PI));
-      setGlobalRotation(entity.globalTransform.rotation * (180 / Math.PI));
-      setScale(entity.transform.scale);
+      setPosition({
+        x: Math.round(entity.transform.position.x * 10) / 10,
+        y: Math.round(entity.transform.position.y * 10) / 10,
+      });
+      setGlobalPosition({
+        x: Math.round(entity.globalTransform.position.x * 10) / 10,
+        y: Math.round(entity.globalTransform.position.y * 10) / 10,
+      });
+      setRotation(Math.round(entity.transform.rotation * (180 / Math.PI) * 10) / 10);
+      setGlobalRotation(
+        Math.round(entity.globalTransform.rotation * (180 / Math.PI) * 10) / 10,
+      );
+      setScale({
+        x: Math.round(entity.transform.scale.x * 10) / 10,
+        y: Math.round(entity.transform.scale.y * 10) / 10,
+      });
       setValues(Object.fromEntries(entity.values.entries()));
       setBehaviors(entity.behaviors.map(behavior => behavior.constructor.name));
     };
@@ -65,7 +76,7 @@ const Inspector = () => {
 
   const handlePositionChange = useCallback(
     (axis: "x" | "y", value: number) => {
-      const newPosition = { x: position.x, y: position.y, [axis]: value };
+      const newPosition = { x: position.x, y: position.y, [axis]: Math.round(value * 10) / 10 };
       setPosition(newPosition);
       if (selectedEntity) {
         selectedEntity.transform.position = newPosition;
@@ -86,9 +97,10 @@ const Inspector = () => {
 
   const handleRotationChange = useCallback(
     (newRotation: number) => {
-      setRotation(newRotation);
+      const roundedRotation = Math.round(newRotation * 10) / 10;
+      setRotation(roundedRotation);
       if (selectedEntity) {
-        const rotationInRadians = newRotation * (Math.PI / 180);
+        const rotationInRadians = roundedRotation * (Math.PI / 180);
         selectedEntity.transform.rotation = rotationInRadians;
         setSelectedEntity(selectedEntity);
       }
@@ -98,7 +110,7 @@ const Inspector = () => {
 
   const handleScaleChange = useCallback(
     (axis: "x" | "y", value: number) => {
-      const newScale = { x: scale.x, y: scale.y, [axis]: value };
+      const newScale = { x: scale.x, y: scale.y, [axis]: Math.round(value * 10) / 10 };
       setScale(newScale);
       if (selectedEntity) {
         selectedEntity.transform.scale = newScale;
