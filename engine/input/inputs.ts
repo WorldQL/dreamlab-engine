@@ -101,8 +101,8 @@ export class Inputs implements ISignalHandler {
   // #endregion
 
   // #region Mouse
-  #onMouseUp = (ev: MouseEvent) => this.#onMouse(ev, true);
-  #onMouseDown = (ev: MouseEvent) => this.#onMouse(ev, false);
+  #onMouseDown = (ev: MouseEvent) => this.#onMouse(ev, true);
+  #onMouseUp = (ev: MouseEvent) => this.#onMouse(ev, false);
 
   #onMouse = (ev: MouseEvent, pressed: boolean) => {
     const input: Input | undefined =
