@@ -36,10 +36,19 @@ class LookAtMouse extends Behavior {
 }
 
 class BulletBehaviour extends Behavior {
+  private timer = 0;
+  private readonly lifetime = 3;
+
   onTick(): void {
     const rotation = this.entity.transform.rotation;
     const direction = new Vector2(Math.cos(rotation), Math.sin(rotation));
     this.entity.transform.position.assign(this.entity.transform.position.add(direction));
+
+    this.timer += this.time.delta / 1000;
+
+    if (this.timer >= this.lifetime) {
+      this.entity.destroy();
+    }
   }
 }
 
