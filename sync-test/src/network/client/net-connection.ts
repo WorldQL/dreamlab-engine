@@ -53,7 +53,7 @@ export class ClientConnection {
   send(packet: PlayPacket<undefined, "client">) {
     this.server.handle(this.id, packet);
 
-    // console.log(this.id + " [->] " + JSON.stringify(packet));
+    console.log(this.id + " [->] " + JSON.stringify(packet));
   }
 
   createNetworking(): ClientNetworking {

@@ -12,7 +12,6 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
 
   game.world.on(EntityDescendantSpawned, async event => {
     const entity = event.descendant;
-    console.log(conn.id + " spawned descendant! " + entity.ref);
     if (changeIgnoreSet.has(entity.ref)) return;
 
     const definition = await serializeEntityDefinition(
@@ -47,11 +46,8 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
     const definition = await convertEntityDefinition(game, def);
 
     changeIgnoreSet.add(def.ref);
-    console.log(conn.id + " spawning... " + def.ref);
     parent.spawn(definition);
-    console.log(conn.id + " spawned!");
     changeIgnoreSet.delete(def.ref);
-    console.log(conn.id + " gone!");
   });
 
   conn.registerPacketHandler("DeleteEntity", packet => {
