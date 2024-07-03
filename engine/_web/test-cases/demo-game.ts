@@ -37,7 +37,9 @@ class LookAtMouse extends Behavior {
 
 class BulletBehaviour extends Behavior {
   onTick(): void {
-    this.entity.transform.position.assign(this.entity.transform.position.add(Vector2.Y));
+    const rotation = this.entity.transform.rotation;
+    const direction = new Vector2(Math.cos(rotation), Math.sin(rotation));
+    this.entity.transform.position.assign(this.entity.transform.position.add(direction));
   }
 }
 
@@ -47,8 +49,12 @@ class ClickFire extends Behavior {
   onTick(): void {
     if (this.fire.pressed) {
       // TODO: Offset forward slightly
+      const cursor = this.inputs.cursor;
+      if (!cursor) return;
+
       const position = this.entity.globalTransform.position.bare();
-      const rotation = this.entity.globalTransform.rotation;
+      const direction = cursor.world.sub(position);
+      const rotation = Math.atan2(direction.y, direction.x);
 
       game.world.spawn({
         type: Sprite2D,
