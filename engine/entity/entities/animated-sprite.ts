@@ -70,12 +70,6 @@ export class AnimatedSprite2D extends PixiEntity {
 
     this.#sprite.width = this.width * this.globalTransform.scale.x;
     this.#sprite.height = this.height * this.globalTransform.scale.y;
-    this.#sprite.position = {
-      x: this.globalTransform.position.x,
-      y: -this.globalTransform.position.y,
-    };
-
-    this.#sprite.rotation = this.globalTransform.rotation;
     this.#sprite.anchor.set(0.5);
     this.#sprite.animationSpeed = this.speed;
     this.#sprite.loop = this.loop;

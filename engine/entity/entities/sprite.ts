@@ -67,11 +67,6 @@ export class Sprite2D extends PixiEntity {
       texture,
       width: this.width * this.globalTransform.scale.x,
       height: this.height * this.globalTransform.scale.y,
-      position: {
-        x: this.globalTransform.position.x,
-        y: -this.globalTransform.position.y,
-      },
-      rotation: this.globalTransform.rotation,
       anchor: 0.5,
     });
 
