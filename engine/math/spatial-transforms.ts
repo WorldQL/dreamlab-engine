@@ -1,5 +1,5 @@
 import { Transform } from "./entity-transform.ts";
-import { Vector2 } from "./vector/mod.ts";
+import { IVector2, Vector2 } from "./vector/mod.ts";
 
 // prettier-ignore
 export interface Matrix2x2 {
@@ -13,7 +13,7 @@ const mult2x2 = (a: Matrix2x2, b: Matrix2x2): Matrix2x2 => ({
   yx: a.yx * b.xx + a.yy * b.yx, yy: a.yx * b.xy + a.yy * b.yy,
 });
 
-const mult2x2Point = (m: Matrix2x2, p: Vector2): Vector2 =>
+const mult2x2Point = (m: Matrix2x2, p: IVector2): Vector2 =>
   new Vector2(p.x * m.xx + p.y * m.xy, p.x * m.yx + p.y * m.yy);
 
 export function transformWorldToLocal(
@@ -77,7 +77,7 @@ export function transformLocalToWorld(
   });
 }
 
-export function pointLocalToWorld(worldTransform: Transform, localPoint: Vector2): Vector2 {
+export function pointLocalToWorld(worldTransform: Transform, localPoint: IVector2): Vector2 {
   const t = worldTransform;
   // prettier-ignore
   const scale = {
@@ -96,7 +96,7 @@ export function pointLocalToWorld(worldTransform: Transform, localPoint: Vector2
   return mult2x2Point(m, localPoint).add(t.position);
 }
 
-export function pointWorldToLocal(worldTransform: Transform, worldPoint: Vector2): Vector2 {
+export function pointWorldToLocal(worldTransform: Transform, worldPoint: IVector2): Vector2 {
   const t = worldTransform;
   const inverseScale = {
     xx: 1 / t.scale.x,
@@ -113,5 +113,5 @@ export function pointWorldToLocal(worldTransform: Transform, worldPoint: Vector2
     yx: sth, yy: cth,
   }
   const inverseM = mult2x2(inverseRotation, inverseScale);
-  return mult2x2Point(inverseM, worldPoint.sub(t.position));
+  return mult2x2Point(inverseM, Vector2.sub(worldPoint, t.position));
 }
