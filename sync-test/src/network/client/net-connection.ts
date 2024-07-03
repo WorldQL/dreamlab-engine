@@ -43,6 +43,8 @@ export class ClientConnection {
   }
 
   handle(packet: PlayPacket<undefined, "server">) {
+    console.log(this.id + " [<-] " + JSON.stringify(packet));
+
     try {
       this.getPacketHandler(packet.t)(packet);
     } catch (err) {

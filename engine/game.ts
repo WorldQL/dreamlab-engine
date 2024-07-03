@@ -253,6 +253,12 @@ export class ClientGame extends BaseGame {
     this.#tickAccumulator += delta;
 
     while (this.#tickAccumulator >= this.physics.tickDelta) {
+      if (this.#tickAccumulator > 5_000) {
+        this.#tickAccumulator = 0;
+        console.warn("Skipped a bunch of ticks (tick accumulator ran over 5 seconds!)");
+        break;
+      }
+
       this.#tickAccumulator -= this.physics.tickDelta;
       this.tick();
     }

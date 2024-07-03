@@ -6,7 +6,7 @@ export const handleSyncedValues: ClientNetworkSetupRoutine = (
   game: ClientGame,
 ) => {
   game.syncedValues.on(SyncedValueChanged, event => {
-    if (game.status === GameStatus.Loading) return;
+    if (game.status !== GameStatus.Running) return;
 
     if (!event.value.replicated) return;
     if (event.from !== conn.id) return;

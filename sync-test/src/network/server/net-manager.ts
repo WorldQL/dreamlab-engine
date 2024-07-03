@@ -47,6 +47,8 @@ export class ServerNetworkManager {
   }
 
   handle(from: ConnectionId, packet: PlayPacket<undefined, "client">) {
+    console.log("server [<-] " + JSON.stringify(packet));
+
     try {
       this.getPacketHandler(packet.t)(from, packet);
     } catch (err) {
@@ -57,9 +59,12 @@ export class ServerNetworkManager {
   send(to: ConnectionId, packet: PlayPacket<undefined, "server">) {
     const client = this.clients.get(to);
     if (!client) return;
+    console.log("server => " + to + " [->] " + JSON.stringify(packet));
     client.handle(packet);
   }
   broadcast(packet: PlayPacket<undefined, "server">) {
+    console.log("server [->] " + JSON.stringify(packet));
+
     for (const client of this.clients.values()) client.handle(packet);
   }
 

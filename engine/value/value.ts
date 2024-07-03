@@ -1,5 +1,5 @@
 import { SignalListener } from "../signal.ts";
-import { AdapterTypeTag, JsonValue, ValueTypeAdapter } from "./data.ts";
+import { AdapterTypeTag, ValueTypeAdapter } from "./data.ts";
 import { SyncedValueRegistry, SyncedValueChanged } from "./registry.ts";
 import { ConnectionId } from "../network.ts";
 import type { ReadonlyDeep } from "@dreamlab/vendor/type-fest.ts";
@@ -9,7 +9,6 @@ type BasicTypeTag<T> =
     T extends number ? typeof Number
   : T extends string ? typeof String
   : T extends boolean ? typeof Boolean
-  : T extends (JsonValue & object) ? typeof Object
   : never;
 
 export type ValueTypeTag<T> = AdapterTypeTag<T> | BasicTypeTag<T>;
@@ -78,6 +77,8 @@ export class SyncedValue<T = unknown> {
     if (this.typeTag !== Number && this.typeTag !== String && this.typeTag !== Boolean) {
       const adapterTypeTag = this.typeTag as AdapterTypeTag<T>;
       this.adapter = new adapterTypeTag(registry.game);
+      if (!(this.adapter instanceof ValueTypeAdapter))
+        throw new Error("AdapterTypeTag was not the correct type!");
     }
 
     this.#registry.on(SyncedValueChanged, this.#changeListener);

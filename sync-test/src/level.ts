@@ -1,5 +1,6 @@
 import { Camera, Game, GameStatus, Sprite2D } from "@dreamlab/engine";
 import HoldPosBehavior from "./hold-position-behavior.ts";
+import { EditorEntity } from "./editor-entity-test.ts";
 
 const SYNCED_VALUE_TEST = false;
 
@@ -50,6 +51,12 @@ export async function setupLevel(game: Game) {
       _ref: "ent_custom_3",
     });
   }
+
+  game.world.spawn({
+    type: EditorEntity,
+    name: "MyEditorEntity",
+    _ref: "ent_custom_4",
+  });
 
   game.setStatus(GameStatus.Running);
 }
