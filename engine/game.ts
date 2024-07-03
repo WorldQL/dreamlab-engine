@@ -3,6 +3,7 @@ import { BehaviorLoader } from "./behavior/behavior-loader.ts";
 import { EntityStore, LocalRoot, PrefabsRoot, ServerRoot, WorldRoot } from "./entity/mod.ts";
 import { Inputs } from "./input/mod.ts";
 import * as internal from "./internal.ts";
+import { ClientNetworking, ServerNetworking } from "./network.ts";
 import { PhysicsEngine } from "./physics.ts";
 import { GameRenderer } from "./renderer/mod.ts";
 import {
@@ -19,11 +20,10 @@ import {
   GameShutdown,
   GameTick,
 } from "./signals/game-events.ts";
+import { GameStatusChange } from "./signals/mod.ts";
 import { Time } from "./time.ts";
-import { SyncedValueRegistry } from "./value/mod.ts";
 import { UIManager } from "./ui.ts";
-import { ClientNetworking, ServerNetworking } from "./network.ts";
-import { GameStatusChange } from "@dreamlab/engine";
+import { SyncedValueRegistry } from "./value/mod.ts";
 
 export interface GameOptions {
   instanceId: string;
