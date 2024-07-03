@@ -1,18 +1,18 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import { EntityDestroyed, GameRender, EntityUpdate } from "../../signals/mod.ts";
+import { EntityDestroyed, GameRender } from "../../signals/mod.ts";
+import { SpritesheetAdapter } from "../../value/adapters/texture-adapter.ts";
+import { SyncedValueChanged } from "../../value/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
-import { InterpolatedEntity } from "../interpolated-entity.ts";
-import { Sprite2D } from "./mod.ts";
-import { TextureArrayAdapter } from "../../value/adapters/texture-adapter.ts";
+import { PixiEntity } from "../pixi-entity.ts";
 
-export class AnimatedSprite2D extends InterpolatedEntity {
-  public static readonly icon = "🎨";
+export class AnimatedSprite2D extends PixiEntity {
+  public static readonly icon = "🖼️";
 
   width: number = 1;
   height: number = 1;
-  textures: string[] | string = Sprite2D.WHITE_PNG;
+  spritesheet: string = "https://s3-assets.dreamlab.gg/characters/default/walk.json";
   alpha: number = 1;
-  animationSpeed: number = 1;
+  speed: number = 1;
   loop: boolean = true;
 
   #sprite: PIXI.AnimatedSprite | undefined;
@@ -20,86 +20,68 @@ export class AnimatedSprite2D extends InterpolatedEntity {
   constructor(ctx: EntityContext) {
     super(ctx);
 
-    this.defineValues(AnimatedSprite2D, "width", "height", "alpha", "animationSpeed", "loop");
-    this.value(AnimatedSprite2D, "textures", {
-      type: TextureArrayAdapter,
-      description: "Array of texture URLs or a spritesheet URL",
-    });
+    this.defineValues(AnimatedSprite2D, "width", "height", "alpha", "speed", "loop");
+    this.value(AnimatedSprite2D, "spritesheet", { type: SpritesheetAdapter });
 
-    const textureArray = Array.isArray(this.textures) ? this.textures : [this.textures];
-    textureArray.forEach(texture => PIXI.Assets.backgroundLoad(texture));
+    if (this.spritesheet !== "") {
+      PIXI.Assets.backgroundLoad(this.spritesheet);
+    }
 
     this.listen(this.game, GameRender, () => {
       if (!this.#sprite) return;
 
       this.#sprite.width = this.width * this.globalTransform.scale.x;
       this.#sprite.height = this.height * this.globalTransform.scale.y;
-
-      const pos = this.interpolated.position;
-      this.#sprite.position = { x: pos.x, y: -pos.y };
-      this.#sprite.rotation = -this.interpolated.rotation;
       this.#sprite.alpha = this.alpha;
-      this.#sprite.animationSpeed = this.animationSpeed;
-      this.#sprite.loop = this.loop;
+    });
+
+    const spritesheetValue = this.values.get("spritesheet");
+    this.listen(this.game.syncedValues, SyncedValueChanged, async event => {
+      if (!this.#sprite) return;
+      if (event.value !== spritesheetValue) return;
+
+      const textures = await this.#getTextures();
+      this.#sprite.textures = textures;
+      this.#sprite.play();
     });
 
     this.on(EntityDestroyed, () => {
       this.#sprite?.destroy();
     });
+  }
 
-    this.listenForUpdates();
+  async #getTextures(): Promise<PIXI.Texture[]> {
+    if (this.spritesheet === "") return [PIXI.Texture.WHITE];
+
+    const spritesheet = await PIXI.Assets.load(this.spritesheet);
+    if (!(spritesheet instanceof PIXI.Spritesheet)) {
+      throw new TypeError("texture is not a pixi sritesheet");
+    }
+
+    return Object.values(spritesheet.textures);
   }
 
   async onInitialize() {
-    if (!this.game.isClient()) return;
+    super.onInitialize();
+    if (!this.container) return;
 
-    await this.loadTextures();
-  }
+    const textures = await this.#getTextures();
+    this.#sprite = new PIXI.AnimatedSprite(textures);
 
-  private async loadTextures() {
-    if (!this.game.isClient()) return;
+    this.#sprite.width = this.width * this.globalTransform.scale.x;
+    this.#sprite.height = this.height * this.globalTransform.scale.y;
+    this.#sprite.position = {
+      x: this.globalTransform.position.x,
+      y: -this.globalTransform.position.y,
+    };
 
-    let textures: PIXI.Texture[];
-    const textureArray = Array.isArray(this.textures) ? this.textures : [this.textures];
+    this.#sprite.rotation = this.globalTransform.rotation;
+    this.#sprite.anchor.set(0.5);
+    this.#sprite.animationSpeed = this.speed;
+    this.#sprite.loop = this.loop;
+    this.#sprite.play();
 
-    if (textureArray.length === 1 && textureArray[0].endsWith(".json")) {
-      const spritesheet = (await PIXI.Assets.load(textureArray[0])) as PIXI.Spritesheet;
-      textures = Object.values(spritesheet.textures);
-    } else {
-      textures = (await Promise.all(
-        textureArray.map(texture => PIXI.Assets.load(texture)),
-      )) as PIXI.Texture[];
-    }
-
-    if (!this.#sprite) {
-      this.#sprite = new PIXI.AnimatedSprite(textures);
-      this.#sprite.width = this.width * this.globalTransform.scale.x;
-      this.#sprite.height = this.height * this.globalTransform.scale.y;
-      this.#sprite.position = {
-        x: this.globalTransform.position.x,
-        y: -this.globalTransform.position.y,
-      };
-      this.#sprite.rotation = this.globalTransform.rotation;
-      this.#sprite.anchor.set(0.5);
-      this.#sprite.animationSpeed = this.animationSpeed;
-      this.#sprite.loop = this.loop;
-      this.#sprite.play();
-      this.game.renderer.scene.addChild(this.#sprite);
-    } else {
-      this.#sprite.textures = textures;
-      this.#sprite.play();
-    }
-  }
-
-  private listenForUpdates() {
-    let previousTextures = Array.isArray(this.textures) ? [...this.textures] : [this.textures];
-    this.on(EntityUpdate, async () => {
-      const currentTextures = Array.isArray(this.textures) ? this.textures : [this.textures];
-      if (JSON.stringify(currentTextures) !== JSON.stringify(previousTextures)) {
-        previousTextures = [...currentTextures];
-        await this.loadTextures();
-      }
-    });
+    this.container.addChild(this.#sprite);
   }
 }
 
