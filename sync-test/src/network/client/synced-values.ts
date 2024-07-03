@@ -1,4 +1,4 @@
-import { ClientGame, SyncedValueChanged } from "@dreamlab/engine";
+import { ClientGame, GameStatus, SyncedValueChanged } from "@dreamlab/engine";
 import { ClientConnection, ClientNetworkSetupRoutine } from "./net-connection.ts";
 
 export const handleSyncedValues: ClientNetworkSetupRoutine = (
@@ -6,6 +6,8 @@ export const handleSyncedValues: ClientNetworkSetupRoutine = (
   game: ClientGame,
 ) => {
   game.syncedValues.on(SyncedValueChanged, event => {
+    if (game.status === GameStatus.Loading) return;
+
     if (!event.value.replicated) return;
     if (event.from !== conn.id) return;
 

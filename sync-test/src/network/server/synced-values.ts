@@ -1,8 +1,9 @@
-import { SyncedValueChanged } from "@dreamlab/engine";
+import { GameStatus, SyncedValueChanged } from "@dreamlab/engine";
 import { ServerNetworkSetupRoutine } from "./net-manager.ts";
 
 export const handleSyncedValues: ServerNetworkSetupRoutine = (net, game) => {
   game.syncedValues.on(SyncedValueChanged, event => {
+    if (game.status === GameStatus.Loading) return;
     if (!event.value.replicated) return;
 
     const value = event.value.adapter

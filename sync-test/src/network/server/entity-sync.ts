@@ -2,6 +2,7 @@ import {
   EntityDescendantDestroyed,
   EntityDescendantReparented,
   EntityDescendantSpawned,
+  GameStatus,
 } from "@dreamlab/engine";
 import { ServerNetworkSetupRoutine } from "./net-manager.ts";
 import { convertEntityDefinition, serializeEntityDefinition } from "../common/entity-sync.ts";
@@ -10,6 +11,8 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
   const changeIgnoreSet = new Set<string>();
 
   game.world.on(EntityDescendantSpawned, async event => {
+    if (game.status === GameStatus.Loading) return;
+
     const entity = event.descendant;
     if (changeIgnoreSet.has(entity.ref)) return;
 
@@ -26,6 +29,8 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
   });
 
   game.world.on(EntityDescendantDestroyed, event => {
+    if (game.status === GameStatus.Loading) return;
+
     const entity = event.descendant;
     if (changeIgnoreSet.has(entity.ref)) return;
     net.broadcast({ t: "DeleteEntity", entity: entity.ref });
@@ -64,6 +69,8 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
   });
 
   game.world.on(EntityDescendantReparented, event => {
+    if (game.status === GameStatus.Loading) return;
+
     const entity = event.descendant;
     if (changeIgnoreSet.has(entity.ref)) return;
     if (entity.parent === undefined) return;
