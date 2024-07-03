@@ -23,6 +23,7 @@ import { Time } from "./time.ts";
 import { SyncedValueRegistry } from "./value/mod.ts";
 import { UIManager } from "./ui.ts";
 import { ClientNetworking, ServerNetworking } from "./network.ts";
+import { GameStatusChange } from "@dreamlab/engine";
 
 export interface GameOptions {
   instanceId: string;
@@ -82,12 +83,20 @@ export abstract class BaseGame implements ISignalHandler {
     throw new Error("physics are not yet initialized!");
   }
 
-  status: GameStatus = GameStatus.Loading;
-  statusDescription: string | undefined;
+  #status: GameStatus = GameStatus.Loading;
+  #statusDescription: string | undefined;
+
+  get status(): GameStatus {
+    return this.#status;
+  }
+  get statusDescription(): string | undefined {
+    return this.#statusDescription;
+  }
 
   setStatus(status: GameStatus, description?: string) {
-    this.status = status;
-    this.statusDescription = description;
+    this.#status = status;
+    this.#statusDescription = description;
+    this.fire(GameStatusChange);
   }
 
   /** Resolves res: / cloud: URIs to https:// URLs */

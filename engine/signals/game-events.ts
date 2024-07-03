@@ -16,3 +16,6 @@ export class GamePostRender {
 export class GameShutdown {
   [exclusiveSignalType] = BaseGame;
 }
+export class GameStatusChange {
+  [exclusiveSignalType] = BaseGame;
+}
