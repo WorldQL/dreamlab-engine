@@ -258,7 +258,13 @@ export abstract class Entity implements ISignalHandler {
       });
     }
 
-    def.children?.forEach(c => entity.spawn(c));
+    def.children?.forEach(c => {
+      try {
+        entity.spawn(c);
+      } catch (err) {
+        console.error(err);
+      }
+    });
 
     entity.#spawn();
 
@@ -569,7 +575,7 @@ export abstract class Entity implements ISignalHandler {
       try {
         child[internal.preTickEntities]();
       } catch (err) {
-        console.warn(err);
+        console.error(err);
       }
     }
   }
@@ -591,7 +597,7 @@ export abstract class Entity implements ISignalHandler {
       try {
         child[internal.tickEntities]();
       } catch (err) {
-        console.warn(err);
+        console.error(err);
       }
     }
   }
