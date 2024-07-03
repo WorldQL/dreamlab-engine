@@ -1,3 +1,4 @@
+import { GameStatus } from "../game.ts";
 import { Camera, ClientGame } from "../mod.ts";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 
@@ -42,6 +43,8 @@ Object.assign(window, { game, camera });
 
 const mod = await import("./test-cases/gizmo.ts");
 Object.assign(window, { ...mod });
+
+game.setStatus(GameStatus.Running);
 
 // #region Tick loop
 let now = performance.now();

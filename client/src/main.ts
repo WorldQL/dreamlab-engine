@@ -1,4 +1,4 @@
-import { Empty, ClientGame, Rigidbody2D, Sprite2D, Camera } from "@dreamlab/engine";
+import { Empty, ClientGame, Rigidbody2D, Sprite2D, Camera, GameStatus } from "@dreamlab/engine";
 import { renderEditorUI } from "./editor-ui-main.tsx";
 import { createEditorGame } from "./global-game.ts";
 
@@ -54,6 +54,7 @@ const main = async () => {
     name: "Sprite",
   });
 
+  game.setStatus(GameStatus.Running);
   let now = performance.now();
   const onFrame = (time: number) => {
     const delta = time - now;

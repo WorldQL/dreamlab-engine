@@ -1,4 +1,4 @@
-import { Camera, Game, Sprite2D } from "@dreamlab/engine";
+import { Camera, Game, GameStatus, Sprite2D } from "@dreamlab/engine";
 import HoldPosBehavior from "./hold-position-behavior.ts";
 
 const SYNCED_VALUE_TEST = false;
@@ -50,4 +50,6 @@ export async function setupLevel(game: Game) {
       _ref: "ent_custom_3",
     });
   }
+
+  game.setStatus(GameStatus.Running);
 }

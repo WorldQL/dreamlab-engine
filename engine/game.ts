@@ -37,6 +37,12 @@ export interface ServerGameOptions extends GameOptions {
   network: ServerNetworking;
 }
 
+export enum GameStatus {
+  Loading,
+  Running,
+  Shutdown,
+}
+
 export abstract class BaseGame implements ISignalHandler {
   public abstract isClient(): this is ClientGame;
   public abstract isServer(): this is ServerGame;
@@ -76,6 +82,21 @@ export abstract class BaseGame implements ISignalHandler {
     throw new Error("physics are not yet initialized!");
   }
 
+  status: GameStatus = GameStatus.Loading;
+  statusDescription: string | undefined;
+
+  setStatus(status: GameStatus, description?: string) {
+    this.status = status;
+    this.statusDescription = description;
+  }
+
+  /** Resolves res: / cloud: URIs to https:// URLs */
+  resolveResource(uri: string) {
+    // TODO: not yet properly implemented
+    return uri;
+  }
+
+  // #region Lifecycle
   async initialize() {
     if (this.#initialized) return;
     this.#initialized = true;
@@ -103,12 +124,6 @@ export abstract class BaseGame implements ISignalHandler {
     this.fire(GameTick);
   }
 
-  /** Resolves res: / cloud: URIs to https:// URLs */
-  resolveResource(uri: string) {
-    // TODO: not yet properly implemented
-    return uri;
-  }
-
   [internal.preTickEntities]() {
     this.world[internal.preTickEntities]();
   }
@@ -118,6 +133,7 @@ export abstract class BaseGame implements ISignalHandler {
   }
 
   shutdown() {
+    this.setStatus(GameStatus.Shutdown);
     this.fire(GameShutdown);
     this.physics.shutdown();
   }
@@ -125,6 +141,7 @@ export abstract class BaseGame implements ISignalHandler {
   [Symbol.dispose]() {
     this.shutdown();
   }
+  // #endregion
 
   // #region SignalHandler impl
   #signalListenerMap = new Map<SignalConstructor, SignalListener[]>();
