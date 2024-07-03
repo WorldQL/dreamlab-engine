@@ -2,8 +2,8 @@ import { Game } from "../game.ts";
 
 export type Primitive = string | number | boolean | undefined;
 
-type JsonArray = readonly JsonValue[];
-type JsonObject = { [Key in string]?: JsonValue };
+export type JsonArray = readonly JsonValue[];
+export type JsonObject = { [Key in string]?: JsonValue };
 export type JsonValue = Primitive | JsonArray | JsonObject;
 
 export abstract class ValueTypeAdapter<T> {

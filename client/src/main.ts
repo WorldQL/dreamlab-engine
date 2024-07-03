@@ -10,6 +10,9 @@ import {
 import { renderEditorUI } from "./editor-ui-main.tsx";
 import { createEditorGame } from "./global-game.ts";
 
+import { SceneView } from "./scene-graph/scene-view.ts";
+import { Scene, SceneDescSceneSchema } from "./scene-graph/schema.ts";
+
 try {
   // @ts-expect-error injected global
   if (LIVE_RELOAD) {
@@ -47,25 +50,46 @@ const main = async () => {
     name: "Gizmo",
   });
 
-  const body = game.world.spawn({
-    type: Rigidbody2D,
-    name: "DefaultSquare",
-  });
+  // set to false locally if you are charlotte
+  if (true) {
+    const body = game.world.spawn({
+      type: Rigidbody2D,
+      name: "DefaultSquare",
+    });
 
-  const body2 = game.world.spawn({
-    type: Rigidbody2D,
-    name: "DefaultSquare",
-  });
+    const body2 = game.world.spawn({
+      type: Rigidbody2D,
+      name: "DefaultSquare",
+    });
 
-  const spriteParent = game.world.spawn({
-    type: Empty,
-    name: "SpriteContainer",
-  });
-  spriteParent.transform.scale.x = 2;
-  const sprite = spriteParent.spawn({
-    type: Sprite2D,
-    name: "Sprite",
-  });
+    const spriteParent = game.world.spawn({
+      type: Empty,
+      name: "SpriteContainer",
+    });
+    spriteParent.transform.scale.x = 2;
+    const sprite = spriteParent.spawn({
+      type: Sprite2D,
+      name: "Sprite",
+    });
+  } else {
+    const exampleScene: Scene = SceneDescSceneSchema.parse({
+      registration: [],
+      local: [],
+      world: [
+        {
+          type: "@core/Sprite2D",
+          ref: "myrefasdghjasg",
+          name: "MySprite",
+        },
+      ],
+      prefabs: [],
+      remote: [],
+    });
+
+    const sceneView = new SceneView(game, exampleScene);
+    Object.defineProperty(window, "sceneView", { value: sceneView });
+    await sceneView.initialize();
+  }
 
   game.setStatus(GameStatus.Running);
   let now = performance.now();

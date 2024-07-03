@@ -697,5 +697,5 @@ export const serializeIdentifier = (parent: string | undefined, child: string) =
       ? `${parent}._.${child}`
       : `${child}`
     : parent
-      ? `${parent}._[${JSON.stringify(child)}]`
-      : `[${JSON.stringify(child)}]`;
+    ? `${parent}._[${JSON.stringify(child)}]`
+    : `[${JSON.stringify(child)}]`;
