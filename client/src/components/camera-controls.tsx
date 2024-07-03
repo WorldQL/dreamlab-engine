@@ -166,7 +166,7 @@ export const CameraControls: React.FC = () => {
   ]);
 
   return (
-    <div ref={gameContainerRef} className="absolute inset-0">
+    <div ref={gameContainerRef} className="absolute inset-0 pointer-events-none">
       <div className="absolute bottom-4 left-4 bg-white p-2 rounded shadow">
         <div className="flex items-center space-x-2">
           <Move className="w-4 h-4" />

@@ -1,4 +1,4 @@
-import { Entity } from "@dreamlab/engine";
+import { Entity, Gizmo } from "@dreamlab/engine";
 import { useAtom } from "jotai";
 import { ChevronDownIcon } from "lucide-react";
 // @deno-types="npm:@types/react@18.3.1"
@@ -42,10 +42,11 @@ const EntityEntry = ({
 
   const toggleCollapse = useCallback(() => setIsCollapsed(prev => !prev), []);
 
-  const handleEntityClick = useCallback(
-    () => setSelectedEntity(entity),
-    [entity, setSelectedEntity],
-  );
+  const handleEntityClick = useCallback(() => {
+    setSelectedEntity(entity);
+    const gizmo = game.local.children.get("Gizmo")?.cast(Gizmo);
+    if (gizmo) gizmo.target = entity;
+  }, [entity, setSelectedEntity]);
 
   const handleDragStart = useCallback(
     (event: React.DragEvent<HTMLDivElement>) => {

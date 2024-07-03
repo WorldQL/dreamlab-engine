@@ -1,4 +1,12 @@
-import { Empty, ClientGame, Rigidbody2D, Sprite2D, Camera, GameStatus } from "@dreamlab/engine";
+import {
+  Camera,
+  ClientGame,
+  Empty,
+  GameStatus,
+  Gizmo,
+  Rigidbody2D,
+  Sprite2D,
+} from "@dreamlab/engine";
 import { renderEditorUI } from "./editor-ui-main.tsx";
 import { createEditorGame } from "./global-game.ts";
 
@@ -33,6 +41,11 @@ const main = async () => {
 
   // editor
   game.physics.enabled = false;
+
+  game.local.spawn({
+    type: Gizmo,
+    name: "Gizmo",
+  });
 
   const body = game.world.spawn({
     type: Rigidbody2D,
