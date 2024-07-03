@@ -565,7 +565,13 @@ export abstract class Entity implements ISignalHandler {
     this.#origScale.y = tr.scale.y;
     this.#origRotation = tr.rotation;
 
-    for (const child of this.#children.values()) child[internal.preTickEntities]();
+    for (const child of this.#children.values()) {
+      try {
+        child[internal.preTickEntities]();
+      } catch (err) {
+        console.warn(err);
+      }
+    }
   }
 
   [internal.tickEntities]() {
@@ -581,7 +587,13 @@ export abstract class Entity implements ISignalHandler {
     if (this.#origRotation !== tr.rotation)
       this.fire(EntityRotate, this.#origRotation, tr.rotation);
 
-    for (const child of this.#children.values()) child[internal.tickEntities]();
+    for (const child of this.#children.values()) {
+      try {
+        child[internal.tickEntities]();
+      } catch (err) {
+        console.warn(err);
+      }
+    }
   }
 
   destroy() {
@@ -679,5 +691,5 @@ export const serializeIdentifier = (parent: string | undefined, child: string) =
       ? `${parent}._.${child}`
       : `${child}`
     : parent
-    ? `${parent}._[${JSON.stringify(child)}]`
-    : `[${JSON.stringify(child)}]`;
+      ? `${parent}._[${JSON.stringify(child)}]`
+      : `[${JSON.stringify(child)}]`;
