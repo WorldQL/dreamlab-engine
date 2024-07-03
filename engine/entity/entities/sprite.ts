@@ -1,8 +1,9 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import { EntityDestroyed, GameRender, EntityUpdate } from "../../signals/mod.ts";
+import { EntityDestroyed, GameRender } from "../../signals/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
 import { InterpolatedEntity } from "../interpolated-entity.ts";
 import { TextureAdapter } from "../../value/adapters/texture-adapter.ts";
+import { SyncedValueChanged } from "../../value/mod.ts";
 
 export class Sprite2D extends InterpolatedEntity {
   public static readonly icon = "🖼️";
@@ -73,10 +74,13 @@ export class Sprite2D extends InterpolatedEntity {
 
   private listenForUpdates() {
     let previousTexture = this.texture;
-    this.on(EntityUpdate, async () => {
+    const textureValue = this.values.get("texture");
+    this.listen(this.game.syncedValues, SyncedValueChanged, event => {
+      if (event.value !== textureValue) return;
+
       if (this.texture !== previousTexture) {
         previousTexture = this.texture;
-        await this.loadTexture();
+        void this.loadTexture();
       }
     });
   }
