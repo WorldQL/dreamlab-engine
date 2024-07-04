@@ -28,9 +28,9 @@ const TAU = Math.PI * 2;
  * Same as {@link lerp} but makes sure the values interpolate correctly when they wrap around 360 degrees
  */
 export function lerpAngle(a: number, b: number, t: number): number {
-  let delta = (b - a) % TAU;
-  if (delta > Math.PI) delta -= TAU;
-  return a + delta * clamp01(t);
+  const difference = (b - a) % TAU;
+  const distance = ((2 * difference) % TAU) - difference;
+  return a + distance * t;
 }
 
 export function smoothLerp(
