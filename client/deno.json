@@ -9,14 +9,14 @@
     "@dreamlab/engine": "../engine/mod.ts",
     "@dreamlab/vendor/": "../engine/_deps/",
     "@radix-ui/react-tooltip": "npm:@radix-ui/react-tooltip@1.1.1",
+    "@types/react@18.3.1/jsx-runtime": "npm:@types/react@18.3.1/jsx-runtime",
     "clsx": "npm:clsx@2.1.1",
     "jotai": "npm:jotai@2.8.3",
-    "react": "npm:react@18.3.1",
-    "react-dom": "npm:react-dom@18.3.1", 
     "lucide-react": "npm:lucide-react@0.395.0",
+    "react": "npm:react@18.3.1",
+    "react-dom": "npm:react-dom@18.3.1",
     "tailwind-merge": "npm:tailwind-merge@2.3.0",
-    "tailwindcss": "npm:tailwindcss@^3.4.4",
-    "@types/react@18.3.1/jsx-runtime": "npm:@types/react@18.3.1/jsx-runtime"
+    "tailwindcss": "npm:tailwindcss@^3.4.4"
   },
   "compilerOptions": {
     "jsx": "precompile",
