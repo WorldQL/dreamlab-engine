@@ -27,13 +27,6 @@
     "jsxImportSource": "react",
     "jsxImportSourceTypes": "@types/react@18.3.1"
   },
-  "fmt": {
-    "lineWidth": 120,
-    "singleQuote": false,
-    "semiColons": true,
-    "useTabs": false,
-    "indentWidth": 2
-  },
   "lint": {
     "rules": {
       "exclude": [

@@ -1,0 +1,6 @@
+# deno cache dir for the worker
+/.worker_deno_cache
+/.deno_cache_host
+/.deno_cache_runtime
+
+/.env.local

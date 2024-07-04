@@ -62,10 +62,10 @@ const PlaybackControls = () => {
       <Tooltip>
         <TooltipTrigger asChild>
           <IconButton
-          onClick={() => {
-            game.paused = true;
-            handleStop();
-          }}
+            onClick={() => {
+              game.paused = true;
+              handleStop();
+            }}
             icon={Square}
             className="bg-red hover:bg-redDark"
             disabled={!isRunning}
