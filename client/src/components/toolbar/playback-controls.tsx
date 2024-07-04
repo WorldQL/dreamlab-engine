@@ -5,6 +5,7 @@ import { memo } from "react";
 import { isPausedAtom, isRunningAtom } from "../../context/editor-context.tsx";
 import { IconButton } from "../ui/icon-button.tsx";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip.tsx";
+import { game } from "../../global-game.ts";
 
 const playAtom = atom(null, (_, set) => set(isRunningAtom, true));
 const stopAtom = atom(null, (_, set) => {
@@ -26,7 +27,10 @@ const PlaybackControls = () => {
       <Tooltip>
         <TooltipTrigger asChild>
           <IconButton
-            onClick={handlePlay}
+            onClick={() => {
+              game.paused = false;
+              handlePlay();
+            }}
             icon={Rocket}
             className="bg-green hover:bg-greenDark"
             disabled={isRunning}
@@ -40,7 +44,10 @@ const PlaybackControls = () => {
       <Tooltip>
         <TooltipTrigger asChild>
           <IconButton
-            onClick={handlePause}
+            onClick={() => {
+              game.paused = !game.paused;
+              handlePause();
+            }}
             icon={isPaused ? Play : Pause}
             className="bg-yellow hover:bg-yellowDark"
             disabled={!isRunning}

@@ -118,6 +118,7 @@ const main = async () => {
   }
 
   game.setStatus(GameStatus.Running);
+  game.paused = true
   let now = performance.now();
   const onFrame = (time: number) => {
     const delta = time - now;
