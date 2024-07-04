@@ -1,5 +1,6 @@
 import { Camera } from "../entity/mod.ts";
 import type { Game } from "../game.ts";
+import { actionSetHeld, inputsRegisterHandlers } from "../internal.ts";
 import { IVector2, Vector2 } from "../math/mod.ts";
 import {
   ISignalHandler,
@@ -93,9 +94,7 @@ export class Inputs implements ISignalHandler {
 
     for (const action of this.actions.values()) {
       if (action.binding !== input) continue;
-
-      // @ts-expect-error private access
-      action.pressed = pressed;
+      action[actionSetHeld](pressed);
     }
   };
   // #endregion
@@ -109,17 +108,15 @@ export class Inputs implements ISignalHandler {
       ev.button === 0
         ? "MouseLeft"
         : ev.button === 1
-        ? "MouseMiddle"
-        : ev.button === 2
-        ? "MouseRight"
-        : undefined;
+          ? "MouseMiddle"
+          : ev.button === 2
+            ? "MouseRight"
+            : undefined;
 
     if (!input) return;
     for (const action of this.actions.values()) {
       if (action.binding !== input) continue;
-
-      // @ts-expect-error private access
-      action.pressed = pressed;
+      action[actionSetHeld](pressed);
     }
   };
 
@@ -154,8 +151,7 @@ export class Inputs implements ISignalHandler {
     ev.preventDefault();
   };
 
-  // TODO: Make internal
-  public registerHandlers(): () => void {
+  [inputsRegisterHandlers](): () => void {
     if (!this.#game.isClient()) {
       throw new Error("registerHandlers() can only be called on the client");
     }

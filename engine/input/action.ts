@@ -1,3 +1,4 @@
+import { actionSetHeld } from "../internal.ts";
 import {
   ISignalHandler,
   Signal,
@@ -24,12 +25,11 @@ export class Action implements ISignalHandler {
   }
 
   #value = false;
-  public get pressed(): boolean {
+  public get held(): boolean {
     return this.#value;
   }
 
-  // TODO: Convert to internal function
-  private set pressed(value: boolean) {
+  [actionSetHeld](value: boolean) {
     if (value === this.#value) return;
     this.#value = value;
 

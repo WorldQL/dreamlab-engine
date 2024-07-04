@@ -11,3 +11,5 @@ export const transformForceUpdate = Symbol.for("dreamlab.internal.transformForce
 export const timeTick = Symbol.for("dreamlab.internal.timeTick");
 export const timeIncrement = Symbol.for("dreamlab.internal.timeIncrement");
 export const timeSetMode = Symbol.for("dreamlab.internal.timeSetMode");
+export const inputsRegisterHandlers = Symbol.for("dreamlab.internal.inputsRegisterHandlers");
+export const actionSetHeld = Symbol.for("dreamlab.internal.actionSetHeld");

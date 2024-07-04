@@ -236,7 +236,7 @@ export class ClientGame extends BaseGame {
   async initialize() {
     await super.initialize();
     await this.renderer.initialize();
-    this.inputs.registerHandlers();
+    this.inputs[internal.inputsRegisterHandlers]();
     this.ui.init();
   }
 
