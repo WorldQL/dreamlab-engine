@@ -38,7 +38,7 @@ export function transformWorldToLocal(
     yx: sth, yy: cth,
   }
 
-  const inverseM = mult2x2(inverseRotation, inverseScale);
+  const inverseM = mult2x2(inverseScale, inverseRotation);
 
   return new Transform({
     position: mult2x2Point(inverseM, b.position.sub(a.position)),
@@ -68,7 +68,7 @@ export function transformLocalToWorld(
     xx: cth, xy: -sth,
     yx: sth, yy: cth,
   }
-  const m = mult2x2(scale, rotation);
+  const m = mult2x2(rotation, scale);
 
   return new Transform({
     position: mult2x2Point(m, b.position).add(a.position),
@@ -92,7 +92,7 @@ export function pointLocalToWorld(worldTransform: Transform, localPoint: IVector
     xx: cth, xy: -sth,
     yx: sth, yy: cth,
   }
-  const m = mult2x2(scale, rotation);
+  const m = mult2x2(rotation, scale);
   return mult2x2Point(m, localPoint).add(t.position);
 }
 
@@ -112,6 +112,6 @@ export function pointWorldToLocal(worldTransform: Transform, worldPoint: IVector
     xx: cth, xy: -sth,
     yx: sth, yy: cth,
   }
-  const inverseM = mult2x2(inverseRotation, inverseScale);
+  const inverseM = mult2x2(inverseScale, inverseRotation);
   return mult2x2Point(inverseM, Vector2.sub(worldPoint, t.position));
 }
