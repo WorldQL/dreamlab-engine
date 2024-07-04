@@ -1,6 +1,6 @@
+import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import { GameStatus } from "../game.ts";
 import { Camera, ClientGame } from "../mod.ts";
-import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 
 // #region Setup
 // @ts-expect-error global
@@ -41,7 +41,7 @@ declare global {
 Object.assign(window, { game, camera });
 // #endregion
 
-const mod = await import("./test-cases/rotation-bug.ts");
+const mod = await import("./test-cases/demo-game.ts");
 Object.assign(window, { ...mod });
 
 game.setStatus(GameStatus.Running);
