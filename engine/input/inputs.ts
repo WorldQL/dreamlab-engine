@@ -43,7 +43,7 @@ export class Inputs implements ISignalHandler {
     const cached = this.#actions.get(name);
     if (cached) return cached;
 
-    const action = new Action(name, label, defaultBinding);
+    const action = new Action(name, label, defaultBinding, this.#game);
     action.on(ActionBound, this.#onBind);
 
     this.#actions.set(name, action);
@@ -92,9 +92,10 @@ export class Inputs implements ISignalHandler {
     const input = ev.code;
     if (!isInput(input)) return;
 
+    const tick = this.#game.time.ticks;
     for (const action of this.actions.values()) {
       if (action.binding !== input) continue;
-      action[actionSetHeld](pressed);
+      action[actionSetHeld](pressed, tick);
     }
   };
   // #endregion
@@ -114,9 +115,11 @@ export class Inputs implements ISignalHandler {
             : undefined;
 
     if (!input) return;
+
+    const tick = this.#game.time.ticks;
     for (const action of this.actions.values()) {
       if (action.binding !== input) continue;
-      action[actionSetHeld](pressed);
+      action[actionSetHeld](pressed, tick);
     }
   };
 

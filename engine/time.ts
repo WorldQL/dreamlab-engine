@@ -19,6 +19,9 @@ export class Time {
   [internal.timeTick]() {
     this.#ticks += 1;
   }
+  get ticks(): number {
+    return this.#ticks;
+  }
 
   #now = 0;
   #delta = 0;

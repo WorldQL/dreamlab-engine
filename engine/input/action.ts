@@ -1,3 +1,4 @@
+import { Game } from "../game.ts";
 import { actionSetHeld } from "../internal.ts";
 import {
   ISignalHandler,
@@ -15,25 +16,40 @@ import {
 import { Input } from "./input.ts";
 
 export class Action implements ISignalHandler {
+  #game: Game;
+
   public readonly name: string;
   public readonly label: string;
 
-  constructor(name: string, label: string, binding: Input) {
+  constructor(name: string, label: string, binding: Input, game: Game) {
+    this.#game = game;
+
     this.name = name;
     this.label = label;
     this.#binding = binding;
   }
 
-  #value = false;
+  #heldAt: number | undefined;
+
+  /**
+   * Set to `true` if the action is currently being held down.
+   */
   public get held(): boolean {
-    return this.#value;
+    return this.#heldAt !== undefined;
   }
 
-  [actionSetHeld](value: boolean) {
-    if (value === this.#value) return;
-    this.#value = value;
+  /**
+   * Set to `true` on the frame that this action was pressed.
+   */
+  public get pressed(): boolean {
+    return this.#heldAt === this.#game.time.ticks - 1;
+  }
 
-    if (this.#value) this.fire(ActionPressed);
+  [actionSetHeld](value: boolean, tick: number) {
+    if (tick === this.#heldAt) return;
+    this.#heldAt = value ? tick : undefined;
+
+    if (this.#heldAt !== undefined) this.fire(ActionPressed);
     else this.fire(ActionReleased);
 
     this.fire(ActionChanged, value);
