@@ -14,10 +14,10 @@ class Movement extends Behavior {
 
   onTick(): void {
     const movement = new Vector2(0, 0);
-    if (this.#up.pressed) movement.y += 1;
-    if (this.#down.pressed) movement.y -= 1;
-    if (this.#right.pressed) movement.x += 1;
-    if (this.#left.pressed) movement.x -= 1;
+    if (this.#up.held) movement.y += 1;
+    if (this.#down.held) movement.y -= 1;
+    if (this.#right.held) movement.x += 1;
+    if (this.#left.held) movement.x -= 1;
 
     this.entity.transform.position = this.entity.transform.position.add(
       movement.normalize().mul((this.time.delta / 100) * this.speed),
