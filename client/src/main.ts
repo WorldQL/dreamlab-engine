@@ -1,4 +1,5 @@
 import {
+Behavior,
   Camera,
   ClientGame,
   Empty,
@@ -12,7 +13,20 @@ import { createEditorGame } from "./global-game.ts";
 
 import { SceneView } from "./scene-graph/scene-view.ts";
 import { Scene, SceneDescSceneSchema } from "./scene-graph/schema.ts";
-import SpinBehavior from "../../engine/behavior/behaviors/spin-behavior.ts";
+
+class SpinBehavior extends Behavior {
+  speed: number = 1.0;
+
+  onInitialize(): void {
+    this.value(SpinBehavior, "speed");
+  }
+
+  onTick(): void {
+    this.entity.transform.rotation += this.speed * (Math.PI / this.game.time.TPS);
+    // this is never being logged on the client. it works in the engine web tests, but not in the client/editor
+    console.log('ticked spinbehavior!')
+  }
+}
 
 try {
   // @ts-expect-error injected global
@@ -69,7 +83,7 @@ const main = async () => {
     });
     spriteParent.transform.scale.x = 2;
     // sanity check, log the SpinBehavior to make sure it's what we expect (it is)
-    console.log(SpinBehavior);
+
     const sprite = spriteParent.spawn({
       type: Sprite2D,
       name: "Sprite",
