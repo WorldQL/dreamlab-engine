@@ -12,6 +12,7 @@ import { createEditorGame } from "./global-game.ts";
 
 import { SceneView } from "./scene-graph/scene-view.ts";
 import { Scene, SceneDescSceneSchema } from "./scene-graph/schema.ts";
+import SpinBehavior from "../../engine/behavior/behaviors/spin-behavior.ts";
 
 try {
   // @ts-expect-error injected global
@@ -67,9 +68,15 @@ const main = async () => {
       name: "SpriteContainer",
     });
     spriteParent.transform.scale.x = 2;
+    // sanity check, log the SpinBehavior to make sure it's what we expect (it is)
+    console.log(SpinBehavior);
     const sprite = spriteParent.spawn({
       type: Sprite2D,
       name: "Sprite",
+      behaviors: [
+        // spawn the sprite with SpinBehavior
+        { type: SpinBehavior },
+      ],
     });
   } else {
     const exampleScene: Scene = SceneDescSceneSchema.parse({
@@ -91,6 +98,7 @@ const main = async () => {
     await sceneView.initialize();
   }
 
+  // tick loop is running on the client.
   game.setStatus(GameStatus.Running);
   let now = performance.now();
   const onFrame = (time: number) => {

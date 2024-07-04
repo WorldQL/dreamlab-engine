@@ -260,6 +260,8 @@ export class ClientGame extends BaseGame {
       }
 
       this.#tickAccumulator -= this.physics.tickDelta;
+      // This is being logged in the client.
+      console.log('ticking game!')
       this.tick();
     }
 
