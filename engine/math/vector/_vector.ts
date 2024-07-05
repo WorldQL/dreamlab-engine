@@ -33,6 +33,11 @@ export interface Vector<I, T extends I> {
   normalize(this: T): T;
 
   /**
+   * Returns the rotation required to look at the target vector.
+   */
+  lookAt(this: T, target: I): number;
+
+  /**
    * @ignore
    */
   toString(): string;

@@ -30,8 +30,8 @@ class LookAtMouse extends Behavior {
     const cursor = this.inputs.cursor;
     if (!cursor) return;
 
-    const vec = cursor.world.sub(this.entity.globalTransform.position);
-    this.entity.transform.rotation = -Math.atan2(vec.x, vec.y);
+    const rotation = this.entity.globalTransform.position.lookAt(cursor.world);
+    this.entity.transform.rotation = rotation;
   }
 }
 

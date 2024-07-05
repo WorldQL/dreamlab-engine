@@ -258,6 +258,23 @@ export class Vector2 implements IVector2, Vector<IVector2, Vector2> {
   }
   // #endregion
 
+  // #region Look At
+  /**
+   * Returns the rotation required to look at the target vector.
+   */
+  public static lookAt(vector: IVector2, target: IVector2): number {
+    const { x, y } = Vector2.sub(target, vector);
+    return -Math.atan2(x, y);
+  }
+
+  /**
+   * Returns the rotation required to look at the target vector.
+   */
+  public lookAt(this: Vector2, target: IVector2): number {
+    return Vector2.lookAt(this, target);
+  }
+  // #endregion
+
   // #region Lerp
   public static lerp(a: IVector2, b: IVector2, t: number): Vector2 {
     return new Vector2(lerp(a.x, b.x, t), lerp(a.y, b.y, t));
