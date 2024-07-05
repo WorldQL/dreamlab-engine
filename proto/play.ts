@@ -79,6 +79,26 @@ export const ServerReparentEntityPacket = BaseReparentEntityPacket.extend({
   from: ConnectionIdSchema,
 });
 
+export const ClientRequestExclusiveAuthorityPacket = z.object({
+  t: z.literal("RequestExclusiveAuthority"),
+  entity: EntityReferenceSchema,
+  clock: z.number(),
+});
+
+export const ServerAnnounceExclusiveAuthorityPacket = z.object({
+  t: z.literal("AnnounceExclusiveAuthority"),
+  entity: EntityReferenceSchema,
+  to: ConnectionIdSchema,
+  clock: z.number(),
+});
+
+// sent to the requester to let them know the correct clock value
+export const ServerDenyExclusiveAuthorityPacket = z.object({
+  t: z.literal("DenyExclusiveAuthority"),
+  entity: EntityReferenceSchema,
+  clock: z.number(),
+});
+
 const BaseCustomMessagePacket = z.object({
   t: z.literal("CustomMessage"),
   channel: z.string(),
