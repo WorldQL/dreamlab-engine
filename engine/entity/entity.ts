@@ -691,11 +691,8 @@ export abstract class Entity implements ISignalHandler {
 
 const ID_REGEX = /^\p{ID_Start}\p{ID_Continue}*$/v;
 export const isValidPlainIdentifier = (s: string) => ID_REGEX.test(s);
+// prettier-ignore
 export const serializeIdentifier = (parent: string | undefined, child: string) =>
   isValidPlainIdentifier(child)
-    ? parent
-      ? `${parent}._.${child}`
-      : `${child}`
-    : parent
-    ? `${parent}._[${JSON.stringify(child)}]`
-    : `[${JSON.stringify(child)}]`;
+    ? parent ? `${parent}._.${child}` : `${child}`
+    : parent ? `${parent}._[${JSON.stringify(child)}]` : `[${JSON.stringify(child)}]`;
