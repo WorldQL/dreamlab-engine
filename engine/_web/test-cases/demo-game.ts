@@ -40,8 +40,9 @@ class BulletBehaviour extends Behavior {
   private readonly lifetime = 3;
 
   onTick(): void {
+    const speed = (this.time.delta / 1000) * 20;
     const rotation = this.entity.transform.rotation;
-    const direction = new Vector2(Math.cos(rotation), Math.sin(rotation));
+    const direction = new Vector2(Math.cos(rotation), Math.sin(rotation)).mul(speed);
     this.entity.transform.position.assign(this.entity.transform.position.add(direction));
 
     this.timer += this.time.delta / 1000;
