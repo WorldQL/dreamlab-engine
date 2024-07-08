@@ -81,6 +81,7 @@ export const EditorLayout = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }) 
               isPaused && "border-4 border-yellow",
             )}
             ref={gameContainer}
+            id="editor-pointer-style-target"
           >
             <CameraControls gameDiv={gameDiv}/>
           </div>

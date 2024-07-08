@@ -18,8 +18,8 @@ export const CameraControls = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }
   const [zoomScale, setZoomScale] = useState<number>(1);
 
   const updateCursor = useCallback(() => {
-    const gameContainer = gameContainerRef.current;
-    if (!gameContainer) return
+    const container = document.getElementById('editor-pointer-style-target');
+    if (!container) return
 
     const cursorStyle = isDraggingRef.current
       ? "grabbing"
@@ -30,9 +30,9 @@ export const CameraControls = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }
           : "default";
 
     if (cursorStyle !== "default") {
-      gameContainer.style.cursor = cursorStyle;
+      container.style.cursor = cursorStyle;
     } else {
-      gameContainer.style.cursor = ''
+      container.style.cursor = ''
     }
   }, []);
 
@@ -183,7 +183,7 @@ export const CameraControls = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }
   ]);
 
   return (
-    <div ref={gameContainerRef} className="absolute inset-0" id="dreamlab-topmost-ui">
+    <div ref={gameContainerRef} className="absolute inset-0" id="dreamlab-pointer-style-target">
       <div className="absolute bottom-4 left-4 bg-white p-2 rounded shadow">
         <div className="flex items-center space-x-2">
           <Move className="w-4 h-4" />
