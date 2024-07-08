@@ -200,8 +200,10 @@ export abstract class Entity implements ISignalHandler {
   // since updates are recursive games should not let this get too high
   #hierarchyGeneration: number = 0;
 
-  /// utility for looking up child entities
-  _: { [id: string]: Entity } = new Proxy(Object.freeze({}), {
+  /**
+   * Utility for looking up child entities
+   */
+  _: { readonly [id: string]: Entity } = new Proxy(Object.freeze({}), {
     get: (_target, prop) => {
       // @ts-expect-error Defer anything outside our typings (e.g. Symbol.toStringTag)
       if (typeof prop !== "string") return _target[prop];
@@ -215,7 +217,9 @@ export abstract class Entity implements ISignalHandler {
     },
   });
 
-  /// utility for safely hardcasting an entity to a type
+  /**
+   * Utility for safely hardcasting an entity to a type
+   */
   cast<T extends Entity>(type: EntityConstructor<T>) {
     if (this instanceof type) return this;
     throw new Error(`Failed to cast ${this} to '${type.name}'`);
