@@ -15,7 +15,7 @@ export class AnimatedSprite2D extends PixiEntity {
   speed: number = 0.1;
   loop: boolean = true;
 
-  #sprite: PIXI.AnimatedSprite | undefined;
+  sprite: PIXI.AnimatedSprite | undefined;
 
   constructor(ctx: EntityContext) {
     super(ctx);
@@ -28,25 +28,25 @@ export class AnimatedSprite2D extends PixiEntity {
     }
 
     this.listen(this.game, GameRender, () => {
-      if (!this.#sprite) return;
+      if (!this.sprite) return;
 
-      this.#sprite.width = this.width * this.globalTransform.scale.x;
-      this.#sprite.height = this.height * this.globalTransform.scale.y;
-      this.#sprite.alpha = this.alpha;
+      this.sprite.width = this.width * this.globalTransform.scale.x;
+      this.sprite.height = this.height * this.globalTransform.scale.y;
+      this.sprite.alpha = this.alpha;
     });
 
     const spritesheetValue = this.values.get("spritesheet");
     this.listen(this.game.syncedValues, SyncedValueChanged, async event => {
-      if (!this.#sprite) return;
+      if (!this.sprite) return;
       if (event.value !== spritesheetValue) return;
 
       const textures = await this.#getTextures();
-      this.#sprite.textures = textures;
-      this.#sprite.play();
+      this.sprite.textures = textures;
+      this.sprite.play();
     });
 
     this.on(EntityDestroyed, () => {
-      this.#sprite?.destroy();
+      this.sprite?.destroy();
     });
   }
 
@@ -66,17 +66,19 @@ export class AnimatedSprite2D extends PixiEntity {
     if (!this.container) return;
 
     const textures = await this.#getTextures();
-    this.#sprite = new PIXI.AnimatedSprite(textures);
+    this.sprite = new PIXI.AnimatedSprite(textures);
 
-    this.#sprite.width = this.width * this.globalTransform.scale.x;
-    this.#sprite.height = this.height * this.globalTransform.scale.y;
-    this.#sprite.anchor.set(0.5);
-    this.#sprite.alpha = this.alpha;
-    this.#sprite.animationSpeed = this.speed;
-    this.#sprite.loop = this.loop;
-    this.#sprite.play();
+    console.log(textures.map(tex => [tex.width, tex.height]));
 
-    this.container.addChild(this.#sprite);
+    this.sprite.width = this.width * this.globalTransform.scale.x;
+    this.sprite.height = this.height * this.globalTransform.scale.y;
+    this.sprite.anchor.set(0.5);
+    this.sprite.alpha = this.alpha;
+    this.sprite.animationSpeed = this.speed;
+    this.sprite.loop = this.loop;
+    this.sprite.play();
+
+    this.container.addChild(this.sprite);
   }
 }
 

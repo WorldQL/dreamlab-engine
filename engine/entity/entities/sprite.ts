@@ -13,7 +13,7 @@ export class Sprite2D extends PixiEntity {
   texture: string = "";
   alpha: number = 1;
 
-  #sprite: PIXI.Sprite | undefined;
+  sprite: PIXI.Sprite | undefined;
 
   constructor(ctx: EntityContext) {
     super(ctx);
@@ -26,24 +26,24 @@ export class Sprite2D extends PixiEntity {
     }
 
     this.listen(this.game, GameRender, () => {
-      if (!this.#sprite) return;
+      if (!this.sprite) return;
 
-      this.#sprite.width = this.width * this.globalTransform.scale.x;
-      this.#sprite.height = this.height * this.globalTransform.scale.y;
-      this.#sprite.alpha = this.alpha;
+      this.sprite.width = this.width * this.globalTransform.scale.x;
+      this.sprite.height = this.height * this.globalTransform.scale.y;
+      this.sprite.alpha = this.alpha;
     });
 
     const textureValue = this.values.get("texture");
     this.listen(this.game.syncedValues, SyncedValueChanged, async event => {
-      if (!this.#sprite) return;
+      if (!this.sprite) return;
       if (event.value !== textureValue) return;
 
       const texture = await this.#getTexture();
-      this.#sprite.texture = texture;
+      this.sprite.texture = texture;
     });
 
     this.on(EntityDestroyed, () => {
-      this.#sprite?.destroy();
+      this.sprite?.destroy();
     });
   }
 
@@ -63,14 +63,14 @@ export class Sprite2D extends PixiEntity {
     if (!this.container) return;
 
     const texture = await this.#getTexture();
-    this.#sprite = new PIXI.Sprite({
+    this.sprite = new PIXI.Sprite({
       texture,
       width: this.width * this.globalTransform.scale.x,
       height: this.height * this.globalTransform.scale.y,
       anchor: 0.5,
     });
 
-    this.container.addChild(this.#sprite);
+    this.container.addChild(this.sprite);
   }
 }
 
