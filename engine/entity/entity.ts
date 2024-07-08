@@ -182,18 +182,41 @@ export abstract class Entity implements ISignalHandler {
     child.#parent = undefined;
   }
 
-  #findNonConflictingName(child: Entity): string | undefined {
+  #findNonConflictingName(child: Entity): string {
     const matches = child.name.match(/(?<base>.*)\.(?<n>\d+)/)?.groups;
     const baseName = matches?.base ?? child.#name;
+
+    // linear search for first 1000
     for (let n = matches?.n ? +matches.n : 1; n <= 999; n++) {
-      const suffix = String(n).padStart(3, "0");
+      const suffix = n;
       const potentialName = baseName + "." + suffix;
       if (!this.#children.has(potentialName)) {
         return potentialName;
       }
     }
 
-    throw new Error("Could not find free unique name for entity (999 tries)");
+    // binary search past 1000
+    let left = 1000;
+    let right = Number.MAX_SAFE_INTEGER;
+
+    while (left <= right) {
+      const mid = Math.floor((left + right) / 2);
+      const potentialName = baseName + "." + mid;
+
+      if (!this.#children.has(potentialName)) {
+        // Check if the previous number is taken
+        if (mid === 1000 || this.#children.has(baseName + "." + (mid - 1))) {
+          return potentialName;
+        }
+        // If not, continue searching in the lower half
+        right = mid - 1;
+      } else {
+        // Continue searching in the upper half
+        left = mid + 1;
+      }
+    }
+
+    throw new Error("Could not find free unique name for entity! This should never happen.");
   }
 
   // tracks how deeply nested we are in the tree.

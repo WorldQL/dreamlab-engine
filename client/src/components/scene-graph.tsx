@@ -241,7 +241,19 @@ const SceneGraph = () => {
         <div>
           <ul>
             {[...game.world.children.entries()]
-              .toSorted(([aName, _a], [bName, _b]) => aName.localeCompare(bName))
+              .toSorted(([aName, _a], [bName, _b]) => {
+                const ap = aName.split(".").pop();
+                const bp = bName.split(".").pop();
+
+                if (isStringParseableToInt(ap) && isStringParseableToInt(bp)) {
+                  // sort by trailing number after dot
+                  const partA = parseInt(ap)
+                  const partB = parseInt(bp)
+                  return partA - partB
+                }
+                // otherwise sort alphanumerically
+                return aName.localeCompare(bName)
+              })
               .map(([_, ent]) => (
                 <EntityEntry entity={ent} level={0} key={ent.ref} />
               ))}
@@ -257,3 +269,10 @@ const SceneGraph = () => {
 
 const SceneGraphMemo = memo(SceneGraph);
 export { SceneGraphMemo as SceneGraph };
+
+function isStringParseableToInt(s: string | undefined): s is string {
+  if (s === undefined) {
+    return false;
+  }
+  return !isNaN(parseInt(s));
+}
