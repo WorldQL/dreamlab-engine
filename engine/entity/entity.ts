@@ -335,8 +335,8 @@ export abstract class Entity implements ISignalHandler {
     return this.#generateRichDefinition(true);
   }
 
-  cloneInto(other: Entity): this {
-    return other.spawn(this.#generateRichDefinition(false));
+  cloneInto(other: Entity, overrides: Partial<EntityDefinition<this>> = {}): this {
+    return other.spawn({ ...this.#generateRichDefinition(false), ...overrides });
   }
   // #endregion
 

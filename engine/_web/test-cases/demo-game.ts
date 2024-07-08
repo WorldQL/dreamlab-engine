@@ -127,21 +127,23 @@ class EnemyBehavior extends Behavior {
   }
 }
 
+const prefabEnemy = game.prefabs.spawn({
+  type: Rigidbody2D,
+  name: "Enemy",
+  behaviors: [{ type: EnemyMovement }, { type: EnemyBehavior }],
+  children: [
+    {
+      type: Sprite2D,
+      name: "EnemySprite",
+    },
+  ],
+});
+
 const spawnEnemy = () => {
   const x = Math.random() * 10 - 5;
   const y = Math.random() * 10 - 5;
-  game.world.spawn({
-    type: Rigidbody2D,
-    name: "Enemy",
-    transform: { position: { x, y } },
-    behaviors: [{ type: EnemyMovement }, { type: EnemyBehavior }],
-    children: [
-      {
-        type: Sprite2D,
-        name: "EnemySprite",
-      },
-    ],
-  });
+
+  prefabEnemy.cloneInto(game.world, { transform: { position: { x, y } } });
 };
 
 setInterval(spawnEnemy, 5000);
