@@ -1,15 +1,8 @@
 import { Entity, EntityConstructor } from "./entity.ts";
-import { Game } from "../game.ts";
 
 export class EntityStore {
-  game: Game;
-
   #entitiesById = new Map<string, Entity>();
   #entitiesByRef = new Map<string, Entity>();
-
-  constructor(game: Game) {
-    this.game = game;
-  }
 
   lookupById(id: string): Entity | undefined {
     return this.#entitiesById.get(id);

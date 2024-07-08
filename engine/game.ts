@@ -65,7 +65,7 @@ export abstract class BaseGame implements ISignalHandler {
 
   readonly syncedValues = new SyncedValueRegistry(this as unknown as Game);
 
-  readonly entities = new EntityStore(this as unknown as Game);
+  readonly entities = new EntityStore();
 
   readonly world = new WorldRoot(this as unknown as Game);
   readonly prefabs = new PrefabsRoot(this as unknown as Game);

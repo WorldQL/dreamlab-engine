@@ -12,6 +12,7 @@ import { ClientConnection } from "../client/net-connection.ts";
 import { handleSyncedValues } from "./synced-values.ts";
 import { handleCustomMessages } from "./custom-messages.ts";
 import { handleEntitySync } from "./entity-sync.ts";
+import { handleTransformSync } from "./transform-sync.ts";
 
 export type ServerPacketHandler<T extends ClientPacket["t"]> = (
   from: ConnectionId,
@@ -44,6 +45,7 @@ export class ServerNetworkManager {
     handleSyncedValues(this, game);
     handleCustomMessages(this, game);
     handleEntitySync(this, game);
+    handleTransformSync(this, game);
   }
 
   handle(from: ConnectionId, packet: PlayPacket<undefined, "client">) {

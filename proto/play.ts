@@ -3,6 +3,7 @@ import {
   EntityDefinitionSchema,
   EntityReferenceSchema,
   ConnectionIdSchema,
+  Vector2Schema,
 } from "./datamodel.ts";
 
 export const PLAY_PROTO_VERSION = 1;
@@ -85,6 +86,11 @@ export const ClientRequestExclusiveAuthorityPacket = z.object({
   clock: z.number(),
 });
 
+export const ClientRelinquishExclusiveAuthorityPacket = z.object({
+  t: z.literal("RelinquishExclusiveAuthority"),
+  entity: EntityReferenceSchema,
+});
+
 export const ServerAnnounceExclusiveAuthorityPacket = z.object({
   t: z.literal("AnnounceExclusiveAuthority"),
   entity: EntityReferenceSchema,
@@ -97,6 +103,19 @@ export const ServerDenyExclusiveAuthorityPacket = z.object({
   t: z.literal("DenyExclusiveAuthority"),
   entity: EntityReferenceSchema,
   clock: z.number(),
+});
+
+// clients can only report transform for entities over which they have exclusive authority
+export const ClientReportEntityTransformPacket = z.object({
+  t: z.literal("ReportEntityTransform"),
+  entity: EntityReferenceSchema,
+  position: Vector2Schema,
+  rotation: z.number(),
+  scale: Vector2Schema,
+});
+
+export const ServerReportEntityTransformPacket = ClientReportEntityTransformPacket.extend({
+  from: ConnectionIdSchema,
 });
 
 const BaseCustomMessagePacket = z.object({
@@ -119,6 +138,9 @@ export const ClientPacketSchema = z.discriminatedUnion("t", [
   ClientRenameEntityPacket,
   ClientReparentEntityPacket,
   ClientCustomMessagePacket,
+  ClientRequestExclusiveAuthorityPacket,
+  ClientRelinquishExclusiveAuthorityPacket,
+  ClientReportEntityTransformPacket,
 ]);
 export type ClientPacket = z.infer<typeof ClientPacketSchema>;
 
@@ -131,6 +153,9 @@ export const ServerPacketSchema = z.discriminatedUnion("t", [
   ServerRenameEntityPacket,
   ServerReparentEntityPacket,
   ServerCustomMessagePacket,
+  ServerAnnounceExclusiveAuthorityPacket,
+  ServerDenyExclusiveAuthorityPacket,
+  ServerReportEntityTransformPacket,
 ]);
 export type ServerPacket = z.infer<typeof ServerPacketSchema>;
 
