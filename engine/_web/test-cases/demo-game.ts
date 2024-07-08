@@ -1,6 +1,6 @@
-import { Empty } from "../../entity/mod.ts";
+import { Empty, Entity } from "../../entity/mod.ts";
 import { Behavior, Sprite2D, Vector2 } from "../../mod.ts";
-import { GamePostRender } from "../../signals/mod.ts";
+import { EntityCollision, GamePostRender } from "../../signals/mod.ts";
 
 class Movement extends Behavior {
   speed = 1.0;
@@ -88,6 +88,48 @@ class ClickFire extends Behavior {
     }
   }
 }
+
+class EnemyMovement extends Behavior {
+  speed = 0.5;
+
+  onTick(): void {
+    const player = game.world.children.get("Player");
+    const playerPos = player?.globalTransform.position;
+    if (!playerPos) return;
+
+    const direction = playerPos.sub(this.entity.transform.position).normalize();
+    this.entity.transform.position = this.entity.transform.position.add(
+      direction.mul((this.time.delta / 100) * this.speed),
+    );
+  }
+}
+
+class EnemyBehavior extends Behavior {
+  onInitialize(): void {
+    this.listen(this.entity, EntityCollision, e => {
+      if (e.started) this.onCollide(e.other);
+    });
+  }
+
+  onCollide(other: Entity) {
+    if (other.name !== "Bullet") return;
+
+    this.entity.destroy();
+  }
+}
+
+const spawnEnemy = () => {
+  const x = Math.random() * 10 - 5;
+  const y = Math.random() * 10 - 5;
+  game.world.spawn({
+    type: Sprite2D,
+    name: "Enemy",
+    transform: { position: { x, y } },
+    behaviors: [{ type: EnemyMovement }, { type: EnemyBehavior }],
+  });
+};
+
+setInterval(spawnEnemy, 5000);
 
 export const player = game.world.spawn({
   type: Sprite2D,
