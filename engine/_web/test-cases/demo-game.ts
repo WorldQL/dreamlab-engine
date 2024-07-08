@@ -118,7 +118,7 @@ class EnemyBehavior extends Behavior {
   }
 
   onCollide(other: Entity) {
-    if (other.name !== "Bullet") return;
+    if (!other.name.startsWith("Bullet")) return;
 
     other.destroy();
     this.entity.destroy();
