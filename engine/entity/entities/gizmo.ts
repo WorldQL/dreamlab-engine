@@ -455,6 +455,7 @@ export class Gizmo extends Entity {
       const camera = Camera.getActive(this.game);
       if (camera) {
         this.#graphics.scale = camera.smoothed.scale;
+        this.globalTransform.scale = camera.smoothed.scale;
       } else {
         this.#graphics.scale = 1;
       }
