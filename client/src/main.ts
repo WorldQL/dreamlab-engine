@@ -38,11 +38,11 @@ try {
 }
 
 const main = async () => {
-  let spinner
+  let spinner;
   if (typeof window !== "undefined") {
-    const url = "/test-behaviors/spin.js"
+    const url = "/test-behaviors/spin.js";
     const imported = await import(url);
-    spinner = imported.default
+    spinner = imported.default;
   }
   const container = document.createElement("div");
   container.style.width = "100%;"; // TODO: can pixi just handle the resizing all on its own for us?
@@ -118,7 +118,7 @@ const main = async () => {
   }
 
   game.setStatus(GameStatus.Running);
-  game.paused = true
+  game.paused = true;
   let now = performance.now();
   const onFrame = (time: number) => {
     const delta = time - now;
