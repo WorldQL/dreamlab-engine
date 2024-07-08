@@ -5,7 +5,7 @@ import { isPausedAtom, isRunningAtom } from "../context/editor-context.tsx";
 import { handleResize, handleVerticalResize } from "../utils/resize.ts";
 import { Console } from "./console.tsx";
 import { Inspector } from "./inspector.tsx";
-import { Prefabs } from "./prefabs.tsx";
+import { Prefabs } from "./file-tree.tsx";
 import { SceneGraph } from "./scene-graph.tsx";
 import { NewEntityMenu } from "./toolbar/new-entity-button.tsx";
 import { PlaybackControls } from "./toolbar/playback-controls.tsx";

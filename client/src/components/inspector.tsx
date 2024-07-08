@@ -159,7 +159,7 @@ const Inspector = () => {
         <div className="mb-4">
           <InputField type="text" label="Name" value={name} onChange={handleNameChange} />
         </div>
-        <div>
+        <div className="mb-4">
           <h4 className="text-lg font-semibold mb-2 text-textPrimary">Transform</h4>
           <div className="mb-2">
             <label className="block text-sm font-medium text-textPrimary">Position</label>
@@ -182,7 +182,7 @@ const Inspector = () => {
             Global rotation: {globalRotation}
           </div>
 
-          <div className="mb-2">
+          <div>
             <label className="block text-sm font-medium text-textPrimary">Scale</label>
             <div className="flex space-x-2">
               <AxisInputField axis="x" value={scale.x} onChange={handleScaleChangeX} />

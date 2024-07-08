@@ -5,7 +5,7 @@ import { Panel } from "./ui/panel.tsx";
 // placeholder until its fully implemented
 const Prefabs = () => {
   return (
-    <Panel title="Prefabs" className="h-full">
+    <Panel title="Files" className="h-full">
       <div className="p-1">
         <ul>
           {/* TODO: Replace with actual logic to display prefabs */}
