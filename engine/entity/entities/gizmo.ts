@@ -133,6 +133,10 @@ export class Gizmo extends Entity {
     .fill(Gizmo.#X_COLOR)
     .poly([Gizmo.#ARROW_W / 2, -1.1, -Gizmo.#ARROW_W / 2, -1.1, 0, -1.1 - Gizmo.#ARROW_H])
     .fill(Gizmo.#Y_COLOR)
+    .moveTo(0, 0)
+    .rect(-0.15, -0.15, 0.3, 0.3)
+    .fill({ alpha: 0.2, color: Gizmo.#Z_COLOR })
+    .stroke({ alpha: 0.5, color: Gizmo.#Z_COLOR, width: 0.01 })
     // Rotation circle
     .scale(0.1)
     .circle(0, 0, 10)
@@ -291,6 +295,13 @@ export class Gizmo extends Entity {
       values: { width: translateClickSize, height: translateClickSize },
     });
 
+    const translateBoth = this.spawn({
+      type: ClickableRect,
+      name: "TranslateBoth",
+      transform: { position: { x: 0, y: 0 } },
+      values: { width: 0.3, height: 0.3 },
+    });
+
     const rotate = this.spawn({
       type: ClickableCircle,
       name: "Rotate",
@@ -324,6 +335,7 @@ export class Gizmo extends Entity {
 
     translateX.on(MouseDown, translateOnMouseDown("x"));
     translateY.on(MouseDown, translateOnMouseDown("y"));
+    translateBoth.on(MouseDown, translateOnMouseDown("both"));
 
     rotate.on(MouseDown, ({ worldPosition: world }) => {
       const pos = world.sub(this.globalTransform.position);
