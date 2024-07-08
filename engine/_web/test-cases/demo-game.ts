@@ -1,4 +1,6 @@
+import { Empty } from "../../entity/mod.ts";
 import { Behavior, Sprite2D, Vector2 } from "../../mod.ts";
+import { GamePostRender } from "../../signals/mod.ts";
 
 class Movement extends Behavior {
   speed = 1.0;
@@ -81,4 +83,14 @@ export const player = game.world.spawn({
   name: "Player",
   behaviors: [{ type: Movement }, { type: LookAtMouse }, { type: ClickFire }],
   transform: { position: { x: 1, y: 1 } },
+  children: [{ type: Empty, name: "CameraTarget", transform: { position: { x: 0, y: 1 } } }],
+});
+
+camera.transform.scale = Vector2.splat(5);
+camera.smooth = 0.05;
+
+// Follow player without inheriting rotation
+const cameraTarget = player._.CameraTarget;
+game.on(GamePostRender, () => {
+  camera.pos.assign(cameraTarget.pos);
 });
