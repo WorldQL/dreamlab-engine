@@ -257,6 +257,7 @@ export abstract class Entity implements ISignalHandler {
           game: this.game,
           entity,
           ref: b._ref,
+          values: b.values,
         });
         entity.behaviors.push(behavior);
       });
