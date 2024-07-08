@@ -60,12 +60,21 @@ class BulletBehaviour extends Behavior {
 class ClickFire extends Behavior {
   fire = this.inputs.create("fire", "Fire", "MouseLeft");
 
+  cooldown = 5; // ticks
+  #lastFired = 0;
+
   onTick(): void {
-    if (this.fire.pressed) {
-      // TODO: Offset forward slightly
+    if (this.#lastFired > 0) {
+      this.#lastFired -= 1;
+      return;
+    }
+
+    if (this.fire.held) {
+      this.#lastFired = this.cooldown;
       const cursor = this.inputs.cursor;
       if (!cursor) return;
 
+      // TODO: Offset forward slightly
       const position = this.entity.globalTransform.position.bare();
       const direction = cursor.world.sub(position);
       const rotation = Math.atan2(direction.y, direction.x);
