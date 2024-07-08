@@ -25,6 +25,9 @@ export class Rigidbody2D extends Entity {
       ),
       this.body,
     );
+    this.collider.setActiveCollisionTypes(
+      RAPIER.ActiveCollisionTypes.DEFAULT | RAPIER.ActiveCollisionTypes.KINEMATIC_FIXED,
+    );
     this.#shape = this.collider.shape as RAPIER.Cuboid;
 
     this.game.physics.registerBody(this, this.body);
