@@ -38,11 +38,13 @@ class LookAtMouse extends Behavior {
 }
 
 class BulletBehaviour extends Behavior {
+  speed: number = 75;
+
   private timer = 0;
   private readonly lifetime = 3;
 
   onTick(): void {
-    const speed = (this.time.delta / 1000) * 20;
+    const speed = (this.time.delta / 1000) * this.speed;
     const rotation = this.entity.transform.rotation;
     const direction = new Vector2(Math.cos(rotation), Math.sin(rotation)).mul(speed);
     this.entity.transform.position.assign(this.entity.transform.position.add(direction));
@@ -71,7 +73,7 @@ class ClickFire extends Behavior {
       game.world.spawn({
         type: Sprite2D,
         name: "Bullet",
-        transform: { position, rotation, scale: { x: 0.2, y: 0.2 } },
+        transform: { position, rotation, scale: { x: 0.25, y: 0.15 } },
         behaviors: [{ type: BulletBehaviour }],
       });
     }
