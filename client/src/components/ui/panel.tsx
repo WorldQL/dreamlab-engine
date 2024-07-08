@@ -11,14 +11,14 @@ export const Panel: FC<PanelProps> = ({ title, className, children }: PanelProps
   return (
     <div
       className={
-        "bg-card border-4 border-grey rounded-lg shadow-md overflow-y-auto" +
+        "bg-card border-4 border-grey rounded-lg shadow-md flex flex-col" +
         (className ? ` ${className}` : "")
       }
     >
-      <div className="flex items-center justify-between p-2 bg-grey shadow-sm">
+      <div className="flex-none flex items-center justify-between p-2 bg-grey shadow-sm">
         <h2 className="text-lg font-semibold text-textPrimary">{title}</h2>
       </div>
-      {children}
+      <div className="flex-1 overflow-y-auto">{children}</div>
     </div>
   );
 };
