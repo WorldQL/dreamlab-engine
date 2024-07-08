@@ -1,5 +1,5 @@
 import { Empty, Entity } from "../../entity/mod.ts";
-import { Behavior, Sprite2D, Vector2 } from "../../mod.ts";
+import { Behavior, Rigidbody2D, Sprite2D, Vector2 } from "../../mod.ts";
 import { EntityCollision, GamePostRender } from "../../signals/mod.ts";
 
 class Movement extends Behavior {
@@ -80,10 +80,16 @@ class ClickFire extends Behavior {
       const rotation = Math.atan2(direction.y, direction.x);
 
       game.world.spawn({
-        type: Sprite2D,
+        type: Rigidbody2D,
         name: "Bullet",
         transform: { position, rotation, scale: { x: 0.25, y: 0.15 } },
         behaviors: [{ type: BulletBehaviour }],
+        children: [
+          {
+            type: Sprite2D,
+            name: "BulletSprite",
+          },
+        ],
       });
     }
   }
@@ -114,6 +120,7 @@ class EnemyBehavior extends Behavior {
   onCollide(other: Entity) {
     if (other.name !== "Bullet") return;
 
+    other.destroy();
     this.entity.destroy();
   }
 }
@@ -122,10 +129,16 @@ const spawnEnemy = () => {
   const x = Math.random() * 10 - 5;
   const y = Math.random() * 10 - 5;
   game.world.spawn({
-    type: Sprite2D,
+    type: Rigidbody2D,
     name: "Enemy",
     transform: { position: { x, y } },
     behaviors: [{ type: EnemyMovement }, { type: EnemyBehavior }],
+    children: [
+      {
+        type: Sprite2D,
+        name: "EnemySprite",
+      },
+    ],
   });
 };
 
@@ -147,3 +160,5 @@ const cameraTarget = player._.CameraTarget;
 game.on(GamePostRender, () => {
   camera.pos.assign(cameraTarget.pos);
 });
+
+game.physics.world.gravity = { x: 0, y: 0 };

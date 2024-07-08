@@ -18,6 +18,7 @@ export class RectCollider2D extends Entity {
         this.globalTransform.scale.y / 2,
       ),
     );
+    this.collider.setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS);
     this.#shape = this.collider.shape as RAPIER.Cuboid;
 
     // EntityPreUpdate happens before physics runs, so we can set the physics body to match our transform
