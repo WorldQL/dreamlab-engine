@@ -1,5 +1,7 @@
-import { Empty, Entity } from "../../entity/mod.ts";
-import { Behavior, Rigidbody2D, Sprite2D, Vector2 } from "../../mod.ts";
+import { BackgroundBehaviour } from "../../behavior/behaviors/background-behaviour.ts";
+import { Behavior } from "../../behavior/mod.ts";
+import { Empty, Entity, Sprite2D, TilingSprite2D, Rigidbody2D } from "../../entity/mod.ts";
+import { Vector2 } from "../../math/mod.ts";
 import { EntityCollision, GamePostRender } from "../../signals/mod.ts";
 
 class Movement extends Behavior {
@@ -144,15 +146,28 @@ const spawnEnemy = () => {
 
 setInterval(spawnEnemy, 5000);
 
+export const background = game.local.spawn({
+  type: TilingSprite2D,
+  name: "Background",
+  values: {
+    texture: "https://files.lulu.dev/ydQdgTIPWW73.png",
+    width: 150,
+    height: 150,
+    tileScale: Vector2.splat(1 / 3),
+  },
+  behaviors: [{ type: BackgroundBehaviour, values: { parallax: Vector2.splat(0.5) } }],
+});
+
 export const player = game.world.spawn({
   type: Sprite2D,
   name: "Player",
+  values: { texture: "https://files.lulu.dev/QPFuCn7T_YZE.svg" },
   behaviors: [{ type: Movement }, { type: LookAtMouse }, { type: ClickFire }],
   transform: { position: { x: 1, y: 1 } },
   children: [{ type: Empty, name: "CameraTarget", transform: { position: { x: 0, y: 1 } } }],
 });
 
-camera.transform.scale = Vector2.splat(5);
+camera.transform.scale = Vector2.splat(3);
 camera.smooth = 0.05;
 
 // Follow player without inheriting rotation
