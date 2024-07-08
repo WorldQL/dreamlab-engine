@@ -4,7 +4,7 @@ import { Camera, GameRender, Vector2 } from "@dreamlab/engine";
 import { game } from "../global-game.ts";
 import { MousePointer2, Move, ZoomIn } from "lucide-react";
 
-export const CameraControls: React.FC = () => {
+export const CameraControls = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }) => {
   const cameraRef = useRef<Camera | undefined>();
   const gameContainerRef = useRef<HTMLDivElement | null>(null);
   const lastMousePositionRef = useRef<Vector2>(Vector2.ZERO);
@@ -19,14 +19,20 @@ export const CameraControls: React.FC = () => {
 
   const updateCursor = useCallback(() => {
     const gameContainer = gameContainerRef.current;
-    if (gameContainer) {
-      gameContainer.style.cursor = isDraggingRef.current
-        ? "grabbing"
-        : isSpaceDownRef.current
+    if (!gameContainer) return
+
+    const cursorStyle = isDraggingRef.current
+      ? "grabbing"
+      : isSpaceDownRef.current
         ? "grab"
         : isCtrlDownRef.current
-        ? "zoom-in"
-        : "default";
+          ? "zoom-in"
+          : "default";
+
+    if (cursorStyle !== "default") {
+      gameContainer.style.cursor = cursorStyle;
+    } else {
+      gameContainer.style.cursor = ''
     }
   }, []);
 
@@ -46,6 +52,9 @@ export const CameraControls: React.FC = () => {
         lastMousePositionRef.current = new Vector2(event.clientX, event.clientY);
         updateCursor();
       }
+
+      const mouseEvent = new MouseEvent(event.type, event);
+      gameDiv.querySelector("canvas")?.dispatchEvent(mouseEvent);
     },
     [updateCursor],
   );
@@ -64,6 +73,11 @@ export const CameraControls: React.FC = () => {
       cameraRef.current.transform.position =
         cameraRef.current.transform.position.add(worldDelta);
     }
+
+    event.stopPropagation();
+
+    const mouseEvent = new MouseEvent(event.type, event);
+    gameDiv.querySelector("canvas")?.dispatchEvent(mouseEvent);
   }, []);
 
   const handleMouseUp = useCallback(
@@ -72,6 +86,9 @@ export const CameraControls: React.FC = () => {
         isDraggingRef.current = false;
         updateCursor();
       }
+
+      const mouseEvent = new MouseEvent(event.type, event);
+      gameDiv.querySelector("canvas")?.dispatchEvent(mouseEvent);
     },
     [updateCursor],
   );
@@ -166,7 +183,7 @@ export const CameraControls: React.FC = () => {
   ]);
 
   return (
-    <div ref={gameContainerRef} className="absolute inset-0 pointer-events-none">
+    <div ref={gameContainerRef} className="absolute inset-0" id="dreamlab-topmost-ui">
       <div className="absolute bottom-4 left-4 bg-white p-2 rounded shadow">
         <div className="flex items-center space-x-2">
           <Move className="w-4 h-4" />

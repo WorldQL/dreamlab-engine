@@ -7,6 +7,7 @@ import {
   Gizmo,
   Rigidbody2D,
   Sprite2D,
+  Vector2,
 } from "@dreamlab/engine";
 import { renderEditorUI } from "./editor-ui-main.tsx";
 import { createEditorGame } from "./global-game.ts";
@@ -65,8 +66,34 @@ const main = async () => {
 
   // editor
   game.physics.enabled = false;
+  class WASDMovementBehavior extends Behavior {
+    speed = 1.0;
 
-  game.local.spawn({
+    #up = this.inputs.create("@wasd/up", "Move Up", "KeyW");
+    #down = this.inputs.create("@wasd/down", "Move Down", "KeyS");
+    #left = this.inputs.create("@wasd/left", "Move Left", "KeyA");
+    #right = this.inputs.create("@wasd/right", "Move Right", "KeyD");
+
+    onInitialize(): void {
+      this.value(WASDMovementBehavior, "speed");
+    }
+
+    onTick(): void {
+      const movement = new Vector2(0, 0);
+      if (this.#up.held) movement.y += 1;
+      if (this.#down.held) movement.y -= 1;
+      if (this.#right.held) movement.x += 1;
+      if (this.#left.held) movement.x -= 1;
+
+      this.entity.transform.position = this.entity.transform.position.add(
+        movement.normalize().mul((this.time.delta / 100) * this.speed),
+      );
+    }
+
+    onFrame(): void {}
+  }
+
+  const giz = game.local.spawn({
     type: Gizmo,
     name: "Gizmo",
   });
@@ -95,8 +122,21 @@ const main = async () => {
       behaviors: [
         // spawn the sprite with SpinBehavior
         { type: spinner },
+        { type: WASDMovementBehavior },
       ],
     });
+
+    // setTimeout(() => {
+    //   for (let i = 0; i < 50000; i++) {
+    //     const start = performance.now()
+    //     const spriteParent = game.world.spawn({
+    //       type: Empty,
+    //       name: "goopy",
+    //     });
+    //     const end = performance.now();
+    //     console.log(`${i} took ${end-start}`);
+    //   }
+    // }, 2000);
   } else {
     const exampleScene: Scene = SceneDescSceneSchema.parse({
       registration: [],

@@ -35,7 +35,8 @@ abstract class ClickableEntity extends Entity {
     super(ctx);
 
     if (this.game.isClient()) {
-      const canvas = this.game.renderer.app.canvas;
+      // the normal container in play, the editor UI in edit mode
+      const canvas = document.getElementById('dreamlab-topmost-ui')!;
       // TODO: Better API for this
       // @ts-expect-error: internal data
       if (!this.game[dataSymbol]) {

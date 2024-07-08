@@ -82,7 +82,7 @@ export const EditorLayout = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }) 
             )}
             ref={gameContainer}
           >
-            <CameraControls />
+            <CameraControls gameDiv={gameDiv}/>
           </div>
         </div>
         <div
