@@ -4,6 +4,7 @@ import { Empty, Entity, Sprite2D, TilingSprite2D, Rigidbody2D } from "../../enti
 import { Vector2 } from "../../math/mod.ts";
 import { EntityCollision, GamePostRender } from "../../signals/mod.ts";
 
+// #region Movement
 class Movement extends Behavior {
   speed = 1.0;
 
@@ -48,6 +49,7 @@ class LookAtMouse extends Behavior {
   }
 }
 
+// #region Bullet
 class BulletBehavior extends Behavior {
   speed: number = 75;
 
@@ -71,7 +73,7 @@ class BulletBehavior extends Behavior {
 class ClickFire extends Behavior {
   fire = this.inputs.create("fire", "Fire", "MouseLeft");
 
-  cooldown = 5; // ticks
+  cooldown = 10; // ticks
   #lastFired = 0;
 
   onTick(): void {
@@ -105,7 +107,73 @@ class ClickFire extends Behavior {
     }
   }
 }
+// #region astroid
+class AstroidMovement extends Behavior {
+  speed = 0.2;
+  direction = new Vector2(Math.random() * 2 - 1, Math.random() * 2 - 1).normalize();
 
+  onTick(): void {
+    this.entity.transform.position = this.entity.transform.position.add(
+      this.direction.mul((this.time.delta / 100) * this.speed),
+    );
+  }
+}
+
+class AstroidBehavior extends Behavior {
+  onInitialize(): void {
+    this.listen(this.entity, EntityCollision, e => {
+      if (e.started) this.onCollide(e.other);
+    });
+  }
+
+  onCollide(other: Entity) {
+    if (!other.name.startsWith("Bullet")) return;
+
+    other.destroy();
+    this.entity.destroy();
+  }
+}
+
+const prefabAstroid = game.prefabs.spawn({
+  type: Rigidbody2D,
+  name: "Astroid",
+  behaviors: [{ type: AstroidMovement }, { type: AstroidBehavior }],
+  children: [
+    {
+      type: Sprite2D,
+      name: "AstroidSprite",
+      values: { texture: "https://files.codedred.dev/astroid.png" },
+    },
+  ],
+});
+
+const spawnAstroid = () => {
+  const player = game.world.children.get("Player");
+  if (!player) return;
+
+  const playerPos = player.globalTransform.position;
+  const rotation = player.transform.rotation;
+  const forward = new Vector2(-Math.sin(rotation), Math.cos(rotation));
+
+  const spawnDistance = 40;
+  const spawnPosition = playerPos.add(forward.mul(spawnDistance));
+
+  prefabAstroid.cloneInto(game.world, { transform: { position: spawnPosition } });
+};
+
+const spawnAsteroids = () => {
+  const numAsteroids = Math.floor(Math.random() * 5) + 1;
+  for (let i = 0; i < numAsteroids; i++) {
+    spawnAstroid();
+  }
+
+  const nextSpawnInterval = Math.random() * 5000 + 2000;
+  setTimeout(spawnAsteroids, nextSpawnInterval);
+};
+
+spawnAsteroids();
+
+// #region Enemy
 class EnemyMovement extends Behavior {
   speed = 0.5;
 
@@ -118,6 +186,9 @@ class EnemyMovement extends Behavior {
     this.entity.transform.position = this.entity.transform.position.add(
       direction.mul((this.time.delta / 100) * this.speed),
     );
+
+    const rotation = Math.atan2(direction.y, direction.x);
+    this.entity.transform.rotation = rotation - Math.PI / 2;
   }
 }
 
@@ -144,19 +215,35 @@ const prefabEnemy = game.prefabs.spawn({
     {
       type: Sprite2D,
       name: "EnemySprite",
+      values: { texture: "https://files.codedred.dev/enemy.png" },
     },
   ],
 });
 
 const spawnEnemy = () => {
-  const x = Math.random() * 10 - 5;
-  const y = Math.random() * 10 - 5;
+  const player = game.world.children.get("Player");
+  if (!player) return;
 
-  prefabEnemy.cloneInto(game.world, { transform: { position: { x, y } } });
+  const playerPos = player.globalTransform.position;
+  const rotation = player.transform.rotation;
+
+  const randomSign1 = Math.random() < 0.5 ? -1 : 1;
+  const randomSign2 = Math.random() < 0.5 ? -1 : 1;
+
+  const forward = new Vector2(
+    randomSign1 * Math.sin(rotation),
+    randomSign2 * Math.cos(rotation),
+  );
+
+  const spawnDistance = 20;
+  const spawnPosition = playerPos.add(forward.mul(spawnDistance));
+
+  prefabEnemy.cloneInto(game.world, { transform: { position: spawnPosition } });
 };
 
 setInterval(spawnEnemy, 5000);
 
+// #region game
 export const background = game.local.spawn({
   type: TilingSprite2D,
   name: "Background",
@@ -172,7 +259,7 @@ export const background = game.local.spawn({
 export const player = game.world.spawn({
   type: Sprite2D,
   name: "Player",
-  values: { texture: "https://files.lulu.dev/QPFuCn7T_YZE.svg" },
+  values: { texture: "https://files.codedred.dev/spaceship.png" },
   behaviors: [{ type: Movement }, { type: LookAtMouse }, { type: ClickFire }],
   transform: { position: { x: 1, y: 1 }, scale: { x: 1.25, y: 1.25 } },
   children: [{ type: Empty, name: "CameraTarget", transform: { position: { x: 0, y: 1 } } }],
