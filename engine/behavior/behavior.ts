@@ -164,7 +164,7 @@ export class Behavior {
       // idk why i have to cast to Entity. i think it's a typescript bug
       const onTick = this.onTick.bind(this);
       this.listen(this.entity as Entity, EntityUpdate, () => {
-        if (!game.paused) onTick();
+        if (!this.game.paused) onTick();
       });
     }
 

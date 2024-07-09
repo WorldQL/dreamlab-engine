@@ -122,9 +122,13 @@ const main = async () => {
       behaviors: [
         // spawn the sprite with SpinBehavior
         { type: spinner },
-        { type: WASDMovementBehavior },
       ],
     });
+
+    setTimeout(() => {
+      console.log('adding WASD movement')
+      sprite.addBehavior({ type: WASDMovementBehavior });
+    }, 5000)
 
     // setTimeout(() => {
     //   for (let i = 0; i < 50000; i++) {

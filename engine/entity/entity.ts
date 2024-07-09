@@ -298,6 +298,25 @@ export abstract class Entity implements ISignalHandler {
 
     return entity;
   }
+
+  addBehavior(behavior: BehaviorDefinition) {
+    const b = new behavior.type({
+      game: this.game,
+      entity: this,
+      ref: behavior._ref,
+      values: behavior.values,
+    });
+    this.behaviors.push(b);
+
+    const behaviorType = behavior.constructor as BehaviorConstructor;
+    this.game[internal.behaviorScriptLoader].initialize(behaviorType);
+    b.spawn();
+  }
+
+  removeBehavior(behavior: BehaviorDefinition) {
+    // TODO: Implement. Lookup behavior by constructor name and destroy it.
+  }
+
   // #endregion
 
   // #region Cloning
