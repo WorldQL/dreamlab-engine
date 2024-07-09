@@ -316,11 +316,6 @@ export abstract class Entity implements ISignalHandler {
 
     return b;
   }
-
-  removeBehavior(behavior: BehaviorDefinition) {
-    // TODO: Implement. Lookup behavior by constructor name and destroy it.
-  }
-
   // #endregion
 
   // #region Cloning

@@ -147,6 +147,9 @@ export class Behavior {
   }
 
   destroy() {
+    const idx = this.entity.behaviors.indexOf(this);
+    if (idx !== -1) this.entity.behaviors.splice(idx);
+
     for (const value of this.#values.values()) value.destroy();
     for (const [receiverRef, type, listener] of this.listeners) {
       const receiver = receiverRef.deref();
