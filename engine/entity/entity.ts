@@ -299,18 +299,22 @@ export abstract class Entity implements ISignalHandler {
     return entity;
   }
 
-  addBehavior(behavior: BehaviorDefinition) {
+  addBehavior<B extends Behavior>(behavior: BehaviorDefinition<B>): B {
+    // TODO: Deduplicate behaviours of the same type
     const b = new behavior.type({
       game: this.game,
       entity: this,
       ref: behavior._ref,
+      // @ts-expect-error: generic constraints
       values: behavior.values,
     });
     this.behaviors.push(b);
 
-    const behaviorType = behavior.constructor as BehaviorConstructor;
+    const behaviorType = behavior.constructor as BehaviorConstructor<B>;
     this.game[internal.behaviorScriptLoader].initialize(behaviorType);
     b.spawn();
+
+    return b;
   }
 
   removeBehavior(behavior: BehaviorDefinition) {
