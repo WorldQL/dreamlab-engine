@@ -298,9 +298,10 @@ export abstract class Entity implements ISignalHandler {
 
     return entity;
   }
+  // #endregion
 
+  // #region Behaviors
   addBehavior<B extends Behavior>(behavior: BehaviorDefinition<B>): B {
-    // TODO: Deduplicate behaviours of the same type
     const b = new behavior.type({
       game: this.game,
       entity: this,
@@ -315,6 +316,19 @@ export abstract class Entity implements ISignalHandler {
     b.spawn();
 
     return b;
+  }
+
+  getBehavior<B extends Behavior>(constructor: BehaviorConstructor<B>): B {
+    const behavior = this.behaviors.find(b => b instanceof constructor);
+    if (!behavior) {
+      throw new Error(`No behaviors with type: ${constructor.name}`);
+    }
+
+    return behavior as B;
+  }
+
+  getBehaviors<B extends Behavior>(constructor: BehaviorConstructor<B>): B[] {
+    return this.behaviors.filter((b): b is B => b instanceof constructor);
   }
   // #endregion
 
