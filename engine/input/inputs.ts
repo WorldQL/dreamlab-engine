@@ -67,6 +67,12 @@ export class Inputs implements ISignalHandler {
     this.#actions.delete(_action.name);
     this.fire(ActionDeleted, _action);
   }
+
+  #clearActions() {
+    for (const action of this.actions.values()) {
+      action[actionSetHeld](false, 0);
+    }
+  }
   // #endregion
 
   // #region Cursor
@@ -89,6 +95,9 @@ export class Inputs implements ISignalHandler {
   #onKeyUp = (ev: KeyboardEvent) => this.#onKey(ev, false);
 
   #onKey = (ev: KeyboardEvent, pressed: boolean) => {
+    // Ignore repeat events
+    if (ev.repeat) return;
+
     const input = ev.code;
     if (!isInput(input)) return;
 
@@ -150,6 +159,10 @@ export class Inputs implements ISignalHandler {
     this.fire(ActionBound, ev.action, ev.input);
   };
 
+  #onVisibilityChange = () => {
+    if (document.visibilityState === "hidden") this.#clearActions();
+  };
+
   #onContextMenu = (ev: MouseEvent) => {
     ev.preventDefault();
   };
@@ -163,6 +176,8 @@ export class Inputs implements ISignalHandler {
     globalThis.addEventListener("keyup", this.#onKeyUp);
     globalThis.addEventListener("mousedown", this.#onMouseDown);
     globalThis.addEventListener("mouseup", this.#onMouseUp);
+    globalThis.addEventListener("blur", this.#clearActions);
+    document.addEventListener("visibilitychange", this.#onVisibilityChange);
 
     const canvas = this.#game.renderer.app.canvas;
     canvas.addEventListener("contextmenu", this.#onContextMenu);
@@ -175,6 +190,8 @@ export class Inputs implements ISignalHandler {
       globalThis.removeEventListener("keyup", this.#onKeyUp);
       globalThis.removeEventListener("mousedown", this.#onMouseDown);
       globalThis.removeEventListener("mouseup", this.#onMouseUp);
+      globalThis.removeEventListener("blur", this.#clearActions);
+      document.removeEventListener("visibilitychange", this.#onVisibilityChange);
 
       canvas.removeEventListener("contextmenu", this.#onContextMenu);
       canvas.removeEventListener("mouseover", this.#onMouseOver);
