@@ -1,4 +1,4 @@
-import { BackgroundBehaviour } from "../../behavior/behaviors/background-behaviour.ts";
+import { BackgroundBehavior } from "../../behavior/behaviors/background-behavior.ts";
 import { Behavior } from "../../behavior/mod.ts";
 import { Empty, Entity, Sprite2D, TilingSprite2D, Rigidbody2D } from "../../entity/mod.ts";
 import { Vector2 } from "../../math/mod.ts";
@@ -39,7 +39,7 @@ class LookAtMouse extends Behavior {
   }
 }
 
-class BulletBehaviour extends Behavior {
+class BulletBehavior extends Behavior {
   speed: number = 75;
 
   private timer = 0;
@@ -85,7 +85,7 @@ class ClickFire extends Behavior {
         type: Rigidbody2D,
         name: "Bullet",
         transform: { position, rotation, scale: { x: 0.25, y: 0.15 } },
-        behaviors: [{ type: BulletBehaviour }],
+        behaviors: [{ type: BulletBehavior }],
         children: [
           {
             type: Sprite2D,
@@ -157,7 +157,7 @@ export const background = game.local.spawn({
     height: 150,
     tileScale: Vector2.splat(1 / 3),
   },
-  behaviors: [{ type: BackgroundBehaviour, values: { parallax: Vector2.splat(0.5) } }],
+  behaviors: [{ type: BackgroundBehavior, values: { parallax: Vector2.splat(0.5) } }],
 });
 
 export const player = game.world.spawn({

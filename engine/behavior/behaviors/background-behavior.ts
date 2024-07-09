@@ -3,7 +3,7 @@ import { Vector2 } from "../../math/mod.ts";
 import { Vector2Adapter } from "../../value/adapters/vector-adapter.ts";
 import { Behavior, BehaviorContext } from "../behavior.ts";
 
-export class BackgroundBehaviour extends Behavior {
+export class BackgroundBehavior extends Behavior {
   parallax: Vector2 = Vector2.ZERO;
 
   // TODO: AnimatedSprite2D
@@ -30,7 +30,7 @@ export class BackgroundBehaviour extends Behavior {
       throw new Error("Background can only be used on Sprite type entities");
     }
 
-    this.value(BackgroundBehaviour, "parallax", { type: Vector2Adapter });
+    this.value(BackgroundBehavior, "parallax", { type: Vector2Adapter });
   }
 
   onInitialize(): void {
