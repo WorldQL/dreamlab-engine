@@ -1,5 +1,5 @@
 import { BackgroundBehavior } from "../../behavior/behaviors/background-behavior.ts";
-import { Behavior } from "../../behavior/mod.ts";
+import { Behavior, BehaviorContext } from "../../behavior/mod.ts";
 import { Empty, Entity, Sprite2D, TilingSprite2D, Rigidbody2D } from "../../entity/mod.ts";
 import { Vector2 } from "../../math/mod.ts";
 import { EntityCollision, GamePostRender } from "../../signals/mod.ts";
@@ -51,16 +51,23 @@ class LookAtMouse extends Behavior {
 
 // #region Bullet
 class BulletBehavior extends Behavior {
-  speed: number = 75;
-
+  speed: number;
   private timer = 0;
   private readonly lifetime = 3;
+  private direction: Vector2;
+
+  constructor(ctx: BehaviorContext) {
+    super(ctx);
+    this.speed = typeof ctx.values?.speed === "number" ? ctx.values.speed : 75;
+    const rotation = this.entity.transform.rotation;
+    this.direction = new Vector2(Math.cos(rotation), Math.sin(rotation));
+  }
 
   onTick(): void {
     const speed = (this.time.delta / 1000) * this.speed;
-    const rotation = this.entity.transform.rotation;
-    const direction = new Vector2(Math.cos(rotation), Math.sin(rotation)).mul(speed);
-    this.entity.transform.position.assign(this.entity.transform.position.add(direction));
+    this.entity.transform.position.assign(
+      this.entity.transform.position.add(this.direction.mul(speed)),
+    );
 
     this.timer += this.time.delta / 1000;
 
@@ -96,7 +103,7 @@ class ClickFire extends Behavior {
         type: Rigidbody2D,
         name: "Bullet",
         transform: { position, rotation, scale: { x: 0.25, y: 0.15 } },
-        behaviors: [{ type: BulletBehavior }],
+        behaviors: [{ type: BulletBehavior, values: { speed: 75 } }],
         children: [
           {
             type: Sprite2D,
@@ -107,7 +114,8 @@ class ClickFire extends Behavior {
     }
   }
 }
-// #region astroid
+
+// #region Astroid
 class AstroidMovement extends Behavior {
   speed = 0.2;
   direction = new Vector2(Math.random() * 2 - 1, Math.random() * 2 - 1).normalize();
@@ -175,7 +183,11 @@ spawnAsteroids();
 
 // #region Enemy
 class EnemyMovement extends Behavior {
-  speed = 0.5;
+  speed = Math.random() * 0.5 + 0.5;
+  minDistance = 5;
+  shootDistance = 10;
+  lastShootTime = 0;
+  shootCooldown = Math.random() * 4000 + 3000;
 
   onTick(): void {
     const player = game.world.children.get("Player");
@@ -183,12 +195,50 @@ class EnemyMovement extends Behavior {
     if (!playerPos) return;
 
     const direction = playerPos.sub(this.entity.transform.position).normalize();
-    this.entity.transform.position = this.entity.transform.position.add(
-      direction.mul((this.time.delta / 100) * this.speed),
-    );
+    const distance = playerPos.sub(this.entity.transform.position).magnitude();
+
+    if (distance > this.minDistance + 5) {
+      let speedFactor = 1;
+      if (distance < this.minDistance + 10) {
+        speedFactor = (distance - this.minDistance) / 10;
+      }
+      this.entity.transform.position = this.entity.transform.position.add(
+        direction.mul((this.time.delta / 100) * this.speed * speedFactor),
+      );
+    }
 
     const rotation = Math.atan2(direction.y, direction.x);
     this.entity.transform.rotation = rotation - Math.PI / 2;
+
+    if (distance <= this.shootDistance) {
+      const now = Date.now();
+      if (now - this.lastShootTime > this.shootCooldown) {
+        this.lastShootTime = now;
+        this.shootAtPlayer();
+      }
+    }
+  }
+
+  shootAtPlayer(): void {
+    const rotation = this.entity.transform.rotation + Math.PI / 2;
+
+    game.world.spawn({
+      type: Rigidbody2D,
+      name: "EnemyBullet",
+      transform: {
+        position: this.entity.transform.position.clone(),
+        rotation,
+        scale: { x: 0.25, y: 0.25 },
+      },
+      behaviors: [{ type: BulletBehavior, values: { speed: 15 } }],
+      children: [
+        {
+          type: Sprite2D,
+          name: "BulletSprite",
+          values: { texture: "https://files.codedred.dev/bullet.png" },
+        },
+      ],
+    });
   }
 }
 
@@ -243,7 +293,7 @@ const spawnEnemy = () => {
 
 setInterval(spawnEnemy, 5000);
 
-// #region game
+// #region background
 export const background = game.local.spawn({
   type: TilingSprite2D,
   name: "Background",
@@ -256,13 +306,41 @@ export const background = game.local.spawn({
   behaviors: [{ type: BackgroundBehavior, values: { parallax: Vector2.splat(0.5) } }],
 });
 
+// #region player
+class PlayerBehavior extends Behavior {
+  onInitialize(): void {
+    this.listen(this.entity, EntityCollision, e => {
+      if (e.started) this.onCollide(e.other);
+    });
+  }
+
+  onCollide(other: Entity) {
+    if (!other.name.startsWith("EnemyBullet")) return;
+
+    other.destroy();
+    // TODO: player takes damage
+  }
+}
+
+// FIXME: Player is colliding with itself causing it to move?
 export const player = game.world.spawn({
-  type: Sprite2D,
+  type: Rigidbody2D,
   name: "Player",
-  values: { texture: "https://files.codedred.dev/spaceship.png" },
-  behaviors: [{ type: Movement }, { type: LookAtMouse }, { type: ClickFire }],
+  behaviors: [
+    { type: Movement },
+    { type: LookAtMouse },
+    { type: ClickFire },
+    { type: PlayerBehavior },
+  ],
   transform: { position: { x: 1, y: 1 }, scale: { x: 1.25, y: 1.25 } },
-  children: [{ type: Empty, name: "CameraTarget", transform: { position: { x: 0, y: 1 } } }],
+  children: [
+    { type: Empty, name: "CameraTarget", transform: { position: { x: 0, y: 1 } } },
+    {
+      type: Sprite2D,
+      name: "PlayerSprite",
+      values: { texture: "https://files.codedred.dev/spaceship.png" },
+    },
+  ],
 });
 
 camera.transform.scale = Vector2.splat(3);
