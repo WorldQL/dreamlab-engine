@@ -7,8 +7,8 @@ import { EntityCollision, GamePostRender } from "../../signals/mod.ts";
 class Movement extends Behavior {
   speed = 1.0;
 
-  #up = this.inputs.create("@wasd/up", "Move Up", "KeyW");
-  #down = this.inputs.create("@wasd/down", "Move Down", "KeyS");
+  #forward = this.inputs.create("@wasd/up", "Move Forward", "KeyW");
+  #backward = this.inputs.create("@wasd/down", "Move Backward", "KeyS");
   #left = this.inputs.create("@wasd/left", "Move Left", "KeyA");
   #right = this.inputs.create("@wasd/right", "Move Right", "KeyD");
   #shift = this.inputs.create("@wasd/shift", "Speed Boost", "ShiftLeft");
@@ -18,15 +18,19 @@ class Movement extends Behavior {
   }
 
   onTick(): void {
-    const movement = new Vector2(0, 0);
+    let movement = new Vector2(0, 0);
     let currentSpeed = this.speed;
 
     if (this.#shift.held) currentSpeed *= 2;
 
-    if (this.#up.held) movement.y += 1;
-    if (this.#down.held) movement.y -= 1;
-    if (this.#right.held) movement.x += 1;
-    if (this.#left.held) movement.x -= 1;
+    const rotation = this.entity.transform.rotation;
+    const forward = new Vector2(Math.sin(rotation), -Math.cos(rotation));
+    const right = new Vector2(Math.cos(rotation), Math.sin(rotation));
+
+    if (this.#forward.held) movement = movement.sub(forward);
+    if (this.#backward.held) movement = movement.add(forward);
+    if (this.#right.held) movement = movement.add(right);
+    if (this.#left.held) movement = movement.sub(right);
 
     this.entity.transform.position = this.entity.transform.position.add(
       movement.normalize().mul((this.time.delta / 100) * currentSpeed),
