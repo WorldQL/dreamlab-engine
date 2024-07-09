@@ -11,6 +11,7 @@ class Movement extends Behavior {
   #down = this.inputs.create("@wasd/down", "Move Down", "KeyS");
   #left = this.inputs.create("@wasd/left", "Move Left", "KeyA");
   #right = this.inputs.create("@wasd/right", "Move Right", "KeyD");
+  #shift = this.inputs.create("@wasd/shift", "Speed Boost", "ShiftLeft");
 
   onInitialize(): void {
     this.value(Movement, "speed");
@@ -18,13 +19,17 @@ class Movement extends Behavior {
 
   onTick(): void {
     const movement = new Vector2(0, 0);
+    let currentSpeed = this.speed;
+
+    if (this.#shift.held) currentSpeed *= 2;
+
     if (this.#up.held) movement.y += 1;
     if (this.#down.held) movement.y -= 1;
     if (this.#right.held) movement.x += 1;
     if (this.#left.held) movement.x -= 1;
 
     this.entity.transform.position = this.entity.transform.position.add(
-      movement.normalize().mul((this.time.delta / 100) * this.speed),
+      movement.normalize().mul((this.time.delta / 100) * currentSpeed),
     );
   }
 }
@@ -165,7 +170,7 @@ export const player = game.world.spawn({
   name: "Player",
   values: { texture: "https://files.lulu.dev/QPFuCn7T_YZE.svg" },
   behaviors: [{ type: Movement }, { type: LookAtMouse }, { type: ClickFire }],
-  transform: { position: { x: 1, y: 1 } },
+  transform: { position: { x: 1, y: 1 }, scale: { x: 1.25, y: 1.25 } },
   children: [{ type: Empty, name: "CameraTarget", transform: { position: { x: 0, y: 1 } } }],
 });
 
