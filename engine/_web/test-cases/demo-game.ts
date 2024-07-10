@@ -128,6 +128,29 @@ class AstroidMovement extends Behavior {
   }
 }
 
+class AstroidExplosionPieceBehavior extends Behavior {
+  private timer = 0;
+  private readonly lifetime = 1;
+  private direction: Vector2;
+
+  constructor(ctx: BehaviorContext) {
+    super(ctx);
+    this.direction = new Vector2(Math.random() * 2 - 1, Math.random() * 2 - 1).normalize();
+  }
+
+  onTick(): void {
+    const speed = 2;
+    this.entity.transform.position = this.entity.transform.position.add(
+      this.direction.mul((this.time.delta / 1000) * speed),
+    );
+
+    this.timer += this.time.delta / 1000;
+    if (this.timer >= this.lifetime) {
+      this.entity.destroy();
+    }
+  }
+}
+
 class AstroidBehavior extends Behavior {
   onInitialize(): void {
     this.listen(this.entity, EntityCollision, e => {
@@ -139,7 +162,32 @@ class AstroidBehavior extends Behavior {
     if (!other.name.startsWith("Bullet")) return;
 
     other.destroy();
+    this.spawnExplosionPieces();
     this.entity.destroy();
+  }
+
+  spawnExplosionPieces(): void {
+    const pieceCount = Math.random() * 5 + 3;
+    const pieceSize = { x: 0.15, y: 0.15 };
+
+    for (let i = 0; i < pieceCount; i++) {
+      game.world.spawn({
+        type: Rigidbody2D,
+        name: "AstroidExplosionPiece",
+        transform: {
+          position: this.entity.transform.position.clone(),
+          scale: pieceSize,
+        },
+        behaviors: [{ type: AstroidExplosionPieceBehavior }],
+        children: [
+          {
+            type: Sprite2D,
+            name: "AstroidPieceSprite",
+            values: { texture: "https://files.codedred.dev/astroid.png" },
+          },
+        ],
+      });
+    }
   }
 }
 
@@ -232,16 +280,41 @@ class EnemyMovement extends Behavior {
         rotation,
         scale: { x: 0.25, y: 0.25 },
       },
-      behaviors: [{ type: BulletBehavior, values: { speed: 15 } }],
+      behaviors: [{ type: BulletBehavior, values: { speed: 8 } }],
       values: { type: "fixed" },
       children: [
         {
           type: Sprite2D,
           name: "BulletSprite",
-          values: { texture: "https://files.codedred.dev/bullet.png" }, // TODO: get new texture + fix bullet rotation
+          transform: {
+            scale: { x: 0.5, y: 0.5 },
+          },
         },
       ],
     });
+  }
+}
+
+class ExplosionPieceBehavior extends Behavior {
+  private timer = 0;
+  private readonly lifetime = 1;
+  private direction: Vector2;
+
+  constructor(ctx: BehaviorContext) {
+    super(ctx);
+    this.direction = new Vector2(Math.random() * 2 - 1, Math.random() * 2 - 1).normalize();
+  }
+
+  onTick(): void {
+    const speed = 2;
+    this.entity.transform.position = this.entity.transform.position.add(
+      this.direction.mul((this.time.delta / 1000) * speed),
+    );
+
+    this.timer += this.time.delta / 1000;
+    if (this.timer >= this.lifetime) {
+      this.entity.destroy();
+    }
   }
 }
 
@@ -256,8 +329,33 @@ class EnemyBehavior extends Behavior {
     if (!other.name.startsWith("Bullet")) return;
 
     other.destroy();
+    this.spawnExplosionPieces();
     this.entity.destroy();
-    // TODO: add score & particle/animatedsprite explosion
+    // TODO: add score
+  }
+
+  spawnExplosionPieces(): void {
+    const pieceCount = Math.random() * 5 + 3;
+    const pieceSize = { x: 0.15, y: 0.15 };
+
+    for (let i = 0; i < pieceCount; i++) {
+      game.world.spawn({
+        type: Rigidbody2D,
+        name: "ExplosionPiece",
+        transform: {
+          position: this.entity.transform.position.clone(),
+          scale: pieceSize,
+        },
+        behaviors: [{ type: ExplosionPieceBehavior }],
+        children: [
+          {
+            type: Sprite2D,
+            name: "PieceSprite",
+            values: { texture: "https://files.codedred.dev/enemy.png" }, // maybe change texture?
+          },
+        ],
+      });
+    }
   }
 }
 
@@ -327,7 +425,6 @@ class PlayerBehavior extends Behavior {
   }
 }
 
-// FIXME: Player is colliding with itself causing it to move, not sure whats happening?
 export const player = game.world.spawn({
   type: Rigidbody2D,
   name: "Player",
