@@ -163,7 +163,7 @@ const spawnAstroid = () => {
   const rotation = player.transform.rotation;
   const forward = new Vector2(-Math.sin(rotation), Math.cos(rotation));
 
-  const spawnDistance = 40;
+  const spawnDistance = 30;
   const spawnPosition = playerPos.add(forward.mul(spawnDistance));
 
   prefabAstroid.cloneInto(game.world, { transform: { position: spawnPosition } });
@@ -235,7 +235,7 @@ class EnemyMovement extends Behavior {
         {
           type: Sprite2D,
           name: "BulletSprite",
-          values: { texture: "https://files.codedred.dev/bullet.png" },
+          values: { texture: "https://files.codedred.dev/bullet.png" }, // TODO: get new texture + fix bullet rotation
         },
       ],
     });
@@ -254,6 +254,7 @@ class EnemyBehavior extends Behavior {
 
     other.destroy();
     this.entity.destroy();
+    // TODO: add score & particle/animatedsprite explosion
   }
 }
 
@@ -322,7 +323,7 @@ class PlayerBehavior extends Behavior {
   }
 }
 
-// FIXME: Player is colliding with itself causing it to move?
+// FIXME: Player is colliding with itself causing it to move, not sure whats happening?
 export const player = game.world.spawn({
   type: Rigidbody2D,
   name: "Player",
