@@ -1,4 +1,5 @@
 import {
+  Behavior,
   EntityDescendantRenamed,
   EntityRenamed,
   EntityTransformUpdate,
@@ -26,6 +27,9 @@ const Inspector = () => {
   const [scale, setScale] = useState<{ x: number; y: number }>({ x: 1, y: 1 });
   const [values, setValues] = useState<Partial<Record<string, SyncedValue<unknown>>>>({});
   const [behaviors, setBehaviors] = useState<string[]>([]);
+  const [behaviorValues, setBehaviorValues] = useState<
+    Partial<Record<string, Partial<Record<string, SyncedValue<unknown>>>>>
+  >({});
 
   useEffect(() => {
     if (!selectedEntity) return;
@@ -51,6 +55,13 @@ const Inspector = () => {
       });
       setValues(Object.fromEntries(entity.values.entries()));
       setBehaviors(entity.behaviors.map(behavior => behavior.constructor.name));
+      const behaviorVals: Partial<
+        Record<string, Partial<Record<string, SyncedValue<unknown>>>>
+      > = {};
+      entity.behaviors.forEach((behavior, index) => {
+        behaviorVals[behavior.constructor.name] = Object.fromEntries(behavior.values.entries());
+      });
+      setBehaviorValues(behaviorVals);
     };
     updateValues();
     entity.on(EntityTransformUpdate, updateValues);
@@ -143,6 +154,35 @@ const Inspector = () => {
     });
   };
 
+  // Maybe there should be an easier way to do this in the engine?
+  const updateBehaviorValues = (behavior: Behavior, key: string, newValue: unknown) => {
+    const syncedValue = behavior.values.get(key) as SyncedValue<unknown>;
+    if (!syncedValue) {
+      throw new Error(`Property name '${key}' does not exist on Behavior!`);
+    }
+    syncedValue.value = newValue;
+  };
+
+  const handleBehaviorValueChange =
+    (behaviorName: string, key: string) => (newValue: string) => {
+      setBehaviorValues(prevValues => {
+        const newValues = { ...prevValues };
+        if (newValues[behaviorName] && newValues[behaviorName]![key]) {
+          newValues[behaviorName]![key]!.value = newValue;
+        }
+        if (selectedEntity) {
+          const behavior = selectedEntity.behaviors.find(
+            b => b.constructor.name === behaviorName,
+          );
+          if (behavior) {
+            updateBehaviorValues(behavior, key, newValue);
+            setSelectedEntity(selectedEntity);
+          }
+        }
+        return newValues;
+      });
+    };
+
   if (!selectedEntity) {
     return (
       <Panel className="h-full" title="Inspector">
@@ -207,6 +247,15 @@ const Inspector = () => {
           {behaviors.map((behavior, index: number) => (
             <div key={index} className="mb-2">
               <p className="text-sm font-medium text-textPrimary">{behavior}</p>
+              {Object.keys(behaviorValues[behavior] || {}).map(key => (
+                <InputField
+                  type="text"
+                  key={key}
+                  label={key}
+                  value={String(behaviorValues[behavior]![key]?.value)}
+                  onChange={handleBehaviorValueChange(behavior, key)}
+                />
+              ))}
             </div>
           ))}
         </div>
