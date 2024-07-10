@@ -524,6 +524,58 @@ export const player = game.world.spawn({
 });
 
 // #region Map & Coords
+class Minimap {
+  private minimapElement!: HTMLDivElement;
+  private playerDot!: HTMLDivElement;
+
+  initialize() {
+    this.minimapElement = document.createElement("div");
+    this.minimapElement.id = "minimap";
+    this.minimapElement.style.position = "absolute";
+    this.minimapElement.style.bottom = "40px";
+    this.minimapElement.style.left = "10px";
+    this.minimapElement.style.width = "150px";
+    this.minimapElement.style.height = "150px";
+    this.minimapElement.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
+    this.minimapElement.style.border = "2px solid white";
+    document.body.appendChild(this.minimapElement);
+
+    this.playerDot = document.createElement("div");
+    this.playerDot.style.position = "absolute";
+    this.playerDot.style.width = "5px";
+    this.playerDot.style.height = "5px";
+    this.playerDot.style.backgroundColor = "red";
+    this.playerDot.style.borderRadius = "50%";
+    this.minimapElement.appendChild(this.playerDot);
+
+    game.on(GamePostRender, () => {
+      this.updateMinimap();
+    });
+  }
+
+  updateMinimap() {
+    const player = game.world.children.get("Player");
+    if (!player) return;
+
+    const pos = player.transform.position;
+
+    const minimapWidth = this.minimapElement.clientWidth;
+    const minimapHeight = this.minimapElement.clientHeight;
+
+    const mapWidth = MAP_BOUNDRY * 2;
+    const mapHeight = MAP_BOUNDRY * 2;
+
+    const minimapX = ((pos.x + MAP_BOUNDRY) / mapWidth) * minimapWidth;
+    const minimapY = ((-pos.y + MAP_BOUNDRY) / mapHeight) * minimapHeight;
+
+    this.playerDot.style.left = `${minimapX - 2.5}px`;
+    this.playerDot.style.top = `${minimapY - 2.5}px`;
+  }
+}
+
+const minimap = new Minimap();
+minimap.initialize();
+
 const createMapBorder = (width: number, height: number) => {
   const borders = [
     {
@@ -587,8 +639,8 @@ class CoordsDisplay {
     this.coordsElement = document.createElement("div");
     this.coordsElement.id = "coords";
     this.coordsElement.style.position = "absolute";
-    this.coordsElement.style.bottom = "10px";
-    this.coordsElement.style.right = "10px";
+    this.coordsElement.style.bottom = "0px";
+    this.coordsElement.style.left = "0px";
     this.coordsElement.style.color = "white";
     this.coordsElement.style.fontFamily = "Arial, sans-serif";
     this.coordsElement.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
