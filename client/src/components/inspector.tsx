@@ -58,7 +58,7 @@ const Inspector = () => {
       const behaviorVals: Partial<
         Record<string, Partial<Record<string, SyncedValue<unknown>>>>
       > = {};
-      entity.behaviors.forEach((behavior, index) => {
+      entity.behaviors.forEach(behavior => {
         behaviorVals[behavior.constructor.name] = Object.fromEntries(behavior.values.entries());
       });
       setBehaviorValues(behaviorVals);

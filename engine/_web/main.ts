@@ -8,10 +8,14 @@ if (IS_DEV) {
   new EventSource("/esbuild").addEventListener("change", () => location.reload());
 }
 
+document.documentElement.style.height = "100%";
+document.body.style.height = "100%";
+document.body.style.margin = "0";
+
 const container = document.createElement("div");
 document.body.append(container);
-container.style.width = "1280px";
-container.style.height = "720px";
+container.style.width = "100%";
+container.style.height = "100%";
 
 const game = new ClientGame({
   instanceId: "0",
