@@ -60,7 +60,7 @@ class HealthBar extends Behavior {
           {
             type: Sprite2D,
             name: "PieceSprite",
-            values: { texture: "https://files.codedred.dev/enemy.png" },
+            values: { texture: "https://files.codedred.dev/asteroid.png" },
           },
         ],
       });
@@ -180,8 +180,8 @@ class ClickFire extends Behavior {
   }
 }
 
-// #region Astroid
-class AstroidMovement extends Behavior {
+// #region Asteroid
+class AsteroidMovement extends Behavior {
   speed = 0.2;
   direction = new Vector2(Math.random() * 2 - 1, Math.random() * 2 - 1).normalize();
 
@@ -192,30 +192,7 @@ class AstroidMovement extends Behavior {
   }
 }
 
-class AstroidExplosionPieceBehavior extends Behavior {
-  private timer = 0;
-  private readonly lifetime = 1;
-  private direction: Vector2;
-
-  constructor(ctx: BehaviorContext) {
-    super(ctx);
-    this.direction = new Vector2(Math.random() * 2 - 1, Math.random() * 2 - 1).normalize();
-  }
-
-  onTick(): void {
-    const speed = 2;
-    this.entity.transform.position = this.entity.transform.position.add(
-      this.direction.mul((this.time.delta / 1000) * speed),
-    );
-
-    this.timer += this.time.delta / 1000;
-    if (this.timer >= this.lifetime) {
-      this.entity.destroy();
-    }
-  }
-}
-
-class AstroidBehavior extends Behavior {
+class AsteroidBehavior extends Behavior {
   private healthBar!: HealthBar;
 
   onInitialize(): void {
@@ -237,47 +214,23 @@ class AstroidBehavior extends Behavior {
     other.destroy();
     this.healthBar.takeDamage(1);
   }
-
-  spawnExplosionPieces(): void {
-    const pieceCount = Math.random() * 5 + 3;
-    const pieceSize = { x: 0.15, y: 0.15 };
-
-    for (let i = 0; i < pieceCount; i++) {
-      this.entity.game.world.spawn({
-        type: Rigidbody2D,
-        name: "AstroidExplosionPiece",
-        transform: {
-          position: this.entity.transform.position.clone(),
-          scale: pieceSize,
-        },
-        behaviors: [{ type: AstroidExplosionPieceBehavior }],
-        children: [
-          {
-            type: Sprite2D,
-            name: "AstroidPieceSprite",
-            values: { texture: "https://files.codedred.dev/astroid.png" },
-          },
-        ],
-      });
-    }
-  }
 }
 
-const prefabAstroid = game.prefabs.spawn({
+const prefabAsteroid = game.prefabs.spawn({
   type: Rigidbody2D,
-  name: "Astroid",
-  behaviors: [{ type: AstroidMovement }, { type: AstroidBehavior }],
+  name: "Asteroid",
+  behaviors: [{ type: AsteroidMovement }, { type: AsteroidBehavior }],
   values: { type: "fixed" },
   children: [
     {
       type: Sprite2D,
-      name: "AstroidSprite",
-      values: { texture: "https://files.codedred.dev/astroid.png" },
+      name: "AsteroidSprite",
+      values: { texture: "https://files.codedred.dev/asteroid.png" },
     },
   ],
 });
 
-const spawnAstroid = () => {
+const spawnAsteroid = () => {
   const player = game.world.children.get("Player");
   if (!player) return;
 
@@ -288,13 +241,13 @@ const spawnAstroid = () => {
   const spawnDistance = 30;
   const spawnPosition = playerPos.add(forward.mul(spawnDistance));
 
-  prefabAstroid.cloneInto(game.world, { transform: { position: spawnPosition } });
+  prefabAsteroid.cloneInto(game.world, { transform: { position: spawnPosition } });
 };
 
 const spawnAsteroids = () => {
   const numAsteroids = Math.floor(Math.random() * 5) + 1;
   for (let i = 0; i < numAsteroids; i++) {
-    spawnAstroid();
+    spawnAsteroid();
   }
 
   const nextSpawnInterval = Math.random() * 5000 + 2000;
@@ -452,7 +405,7 @@ const spawnEnemy = () => {
 
 setInterval(spawnEnemy, 5000);
 
-// #region background
+// #region Background
 export const background = game.local.spawn({
   type: TilingSprite2D,
   name: "Background",
@@ -465,7 +418,7 @@ export const background = game.local.spawn({
   behaviors: [{ type: BackgroundBehavior, values: { parallax: Vector2.splat(0.5) } }],
 });
 
-// #region player
+// #region Player
 class PlayerBehavior extends Behavior {
   onInitialize(): void {
     this.listen(this.entity, EntityCollision, e => {
