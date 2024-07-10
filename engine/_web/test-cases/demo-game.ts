@@ -512,6 +512,35 @@ export const player = game.world.spawn({
   ],
 });
 
+class CoordsDisplay {
+  private coordsElement!: HTMLDivElement;
+
+  initialize() {
+    this.coordsElement = document.createElement("div");
+    this.coordsElement.id = "coords";
+    this.coordsElement.style.position = "absolute";
+    this.coordsElement.style.bottom = "10px";
+    this.coordsElement.style.right = "10px";
+    this.coordsElement.style.color = "white";
+    this.coordsElement.style.fontFamily = "Arial, sans-serif";
+    this.coordsElement.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
+    this.coordsElement.style.padding = "10px";
+    this.coordsElement.style.borderRadius = "5px";
+    document.body.appendChild(this.coordsElement);
+
+    game.on(GamePostRender, () => {
+      const player = game.world.children.get("Player");
+      if (player) {
+        const pos = player.transform.position;
+        this.coordsElement.innerHTML = `Coords: (${pos.x.toFixed(2)}, ${pos.y.toFixed(2)})`;
+      }
+    });
+  }
+}
+
+const coordsDisplay = new CoordsDisplay();
+coordsDisplay.initialize();
+
 camera.transform.scale = Vector2.splat(3);
 camera.smooth = 0.05;
 
