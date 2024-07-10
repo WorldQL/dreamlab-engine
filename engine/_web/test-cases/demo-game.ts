@@ -93,9 +93,21 @@ class Movement extends Behavior {
     if (this.#right.held) movement.x += 1;
     if (this.#left.held) movement.x -= 1;
 
-    this.entity.transform.position = this.entity.transform.position.add(
+    const newPosition = this.entity.transform.position.add(
       movement.normalize().mul((this.time.delta / 100) * currentSpeed),
     );
+
+    const halfWidth = this.entity.transform.scale.x / 2;
+    const halfHeight = this.entity.transform.scale.y / 2;
+
+    if (
+      newPosition.x - halfWidth >= -MAP_BOUNDRY &&
+      newPosition.x + halfWidth <= MAP_BOUNDRY &&
+      newPosition.y - halfHeight >= -MAP_BOUNDRY &&
+      newPosition.y + halfHeight <= MAP_BOUNDRY
+    ) {
+      this.entity.transform.position = newPosition;
+    }
   }
 }
 
@@ -237,12 +249,15 @@ const spawnAsteroid = () => {
   const player = game.world.children.get("Player");
   if (!player) return;
 
-  const playerPos = player.globalTransform.position;
-  const rotation = player.transform.rotation;
-  const forward = new Vector2(-Math.sin(rotation), Math.cos(rotation));
+  const spawnDistance = 40;
+  const spawnAngle = Math.random() * 2 * Math.PI;
 
-  const spawnDistance = 30;
-  const spawnPosition = playerPos.add(forward.mul(spawnDistance));
+  const spawnPosition = player.transform.position.add(
+    new Vector2(Math.cos(spawnAngle) * spawnDistance, Math.sin(spawnAngle) * spawnDistance),
+  );
+
+  spawnPosition.x = Math.max(-MAP_BOUNDRY, Math.min(MAP_BOUNDRY, spawnPosition.x));
+  spawnPosition.y = Math.max(-MAP_BOUNDRY, Math.min(MAP_BOUNDRY, spawnPosition.y));
 
   prefabAsteroid.cloneInto(game.world, { transform: { position: spawnPosition } });
 };
@@ -395,24 +410,20 @@ const spawnEnemy = () => {
   const player = game.world.children.get("Player");
   if (!player) return;
 
-  const playerPos = player.globalTransform.position;
-  const rotation = player.transform.rotation;
+  const spawnDistance = 40;
+  const spawnAngle = Math.random() * 2 * Math.PI;
 
-  const randomSign1 = Math.random() < 0.5 ? -1 : 1;
-  const randomSign2 = Math.random() < 0.5 ? -1 : 1;
-
-  const forward = new Vector2(
-    randomSign1 * Math.sin(rotation),
-    randomSign2 * Math.cos(rotation),
+  const spawnPosition = player.transform.position.add(
+    new Vector2(Math.cos(spawnAngle) * spawnDistance, Math.sin(spawnAngle) * spawnDistance),
   );
 
-  const spawnDistance = 20;
-  const spawnPosition = playerPos.add(forward.mul(spawnDistance));
+  spawnPosition.x = Math.max(-MAP_BOUNDRY, Math.min(MAP_BOUNDRY, spawnPosition.x));
+  spawnPosition.y = Math.max(-MAP_BOUNDRY, Math.min(MAP_BOUNDRY, spawnPosition.y));
 
   prefabEnemy.cloneInto(game.world, { transform: { position: spawnPosition } });
 };
 
-setInterval(spawnEnemy, 5000);
+setInterval(spawnEnemy, Math.random() * 3000 + 3000);
 
 // #region Background
 export const background = game.local.spawn({
@@ -512,6 +523,63 @@ export const player = game.world.spawn({
   ],
 });
 
+// #region Map & Coords
+const createMapBorder = (width: number, height: number) => {
+  const borders = [
+    {
+      x: 0,
+      y: -height / 2,
+      width,
+      height: 10,
+    },
+    {
+      x: 0,
+      y: height / 2,
+      width,
+      height: 10,
+    },
+    {
+      x: -width / 2,
+      y: 0,
+      width: 10,
+      height,
+    },
+    {
+      x: width / 2,
+      y: 0,
+      width: 10,
+      height,
+    },
+  ];
+
+  borders.forEach(border => {
+    game.world.spawn({
+      type: Rigidbody2D,
+      name: "Border",
+      transform: {
+        position: { x: border.x, y: border.y },
+        scale: { x: border.width, y: border.height },
+      },
+      values: {
+        type: "fixed",
+      },
+      children: [
+        {
+          type: TilingSprite2D,
+          name: "BorderSprite",
+          values: {
+            texture: "https://files.codedred.dev/asteroid-belt.png", // TODO: improve border design
+            tileScale: Vector2.ONE,
+          },
+        },
+      ],
+    });
+  });
+};
+
+const MAP_BOUNDRY = 500;
+createMapBorder(MAP_BOUNDRY * 2, MAP_BOUNDRY * 2);
+
 class CoordsDisplay {
   private coordsElement!: HTMLDivElement;
 
@@ -544,6 +612,7 @@ coordsDisplay.initialize();
 camera.transform.scale = Vector2.splat(3);
 camera.smooth = 0.05;
 
+// #region Camera & Game
 // Follow player without inheriting rotation
 const cameraTarget = player._.CameraTarget;
 game.on(GamePostRender, () => {
