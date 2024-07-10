@@ -446,7 +446,11 @@ class PlayerBehavior extends Behavior {
     if (other.name.startsWith("EnemyBullet")) {
       other.destroy();
       this.health -= 10;
-      this.updateUI();
+      if (this.health <= 0) {
+        this.handleGameOver();
+      } else {
+        this.updateUI();
+      }
     }
   }
 
@@ -476,6 +480,14 @@ class PlayerBehavior extends Behavior {
   increaseScore(amount: number) {
     this.score += amount;
     this.updateUI();
+  }
+
+  handleGameOver() {
+    this.uiElement.innerHTML = `
+      <div>Game Over</div>
+      <div>Final Score: ${this.score}</div>
+    `;
+    //TODO: handle game over state (e.g., restart game, show menu)
   }
 }
 
@@ -510,3 +522,13 @@ game.on(GamePostRender, () => {
 });
 
 game.physics.world.gravity = { x: 0, y: 0 };
+
+// #region Ideas
+/*
+- add score leaderboard for players
+- add powerups (faster shooting, more damage, etc)
+- add minimap? or sensors so players know an enemy is nearby
+- add start screen that spawns the player
+- add coords
+- add border to map
+*/
