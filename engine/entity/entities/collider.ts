@@ -12,12 +12,14 @@ export class RectCollider2D extends Entity {
   constructor(ctx: EntityContext) {
     super(ctx);
 
-    this.collider = this.game.physics.world.createCollider(
-      RAPIER.ColliderDesc.cuboid(
-        this.globalTransform.scale.x / 2,
-        this.globalTransform.scale.y / 2,
-      ),
-    );
+    const desc = RAPIER.ColliderDesc.cuboid(
+      this.globalTransform.scale.x / 2,
+      this.globalTransform.scale.y / 2,
+    )
+      .setTranslation(this.globalTransform.position.x, this.globalTransform.position.y)
+      .setRotation(this.globalTransform.rotation);
+
+    this.collider = this.game.physics.world.createCollider(desc);
     this.collider.setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS);
     this.#shape = this.collider.shape as RAPIER.Cuboid;
 
