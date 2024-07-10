@@ -4,6 +4,70 @@ import { Empty, Entity, Sprite2D, TilingSprite2D, Rigidbody2D } from "../../enti
 import { Vector2 } from "../../math/mod.ts";
 import { EntityCollision, GamePostRender } from "../../signals/mod.ts";
 
+// #region Health
+class HealthBar extends Behavior {
+  maxHealth!: number;
+  currentHealth!: number;
+  healthBar!: Entity;
+
+  initialize(maxHealth: number): void {
+    this.maxHealth = maxHealth;
+    this.currentHealth = maxHealth;
+
+    this.healthBar = this.entity.game.world.spawn({
+      type: Sprite2D,
+      name: "HealthBar",
+      transform: { position: { x: 0, y: 1 }, scale: { x: 1, y: 0.1 } },
+      values: { texture: "https://files.codedred.dev/healthbar.png" },
+    });
+
+    this.entity.game.on(GamePostRender, () => {
+      this.healthBar.transform.position = this.entity.transform.position.add(new Vector2(0, 1));
+      this.updateHealthBar();
+    });
+  }
+
+  updateHealthBar(): void {
+    const healthRatio = this.currentHealth / this.maxHealth;
+    this.healthBar.transform.scale.x = healthRatio;
+  }
+
+  takeDamage(damage: number): void {
+    this.currentHealth -= damage;
+    if (this.currentHealth <= 0) {
+      this.currentHealth = 0;
+      this.entity.destroy();
+      this.healthBar.destroy();
+      this.spawnExplosionPieces();
+    }
+    this.updateHealthBar();
+  }
+
+  spawnExplosionPieces(): void {
+    const pieceCount = Math.random() * 5 + 3;
+    const pieceSize = { x: 0.15, y: 0.15 };
+
+    for (let i = 0; i < pieceCount; i++) {
+      this.entity.game.world.spawn({
+        type: Rigidbody2D,
+        name: "ExplosionPiece",
+        transform: {
+          position: this.entity.transform.position.clone(),
+          scale: pieceSize,
+        },
+        behaviors: [{ type: ExplosionPieceBehavior }],
+        children: [
+          {
+            type: Sprite2D,
+            name: "PieceSprite",
+            values: { texture: "https://files.codedred.dev/enemy.png" },
+          },
+        ],
+      });
+    }
+  }
+}
+
 // #region Movement
 class Movement extends Behavior {
   speed = 1.0;
@@ -99,7 +163,7 @@ class ClickFire extends Behavior {
       const direction = cursor.world.sub(position);
       const rotation = Math.atan2(direction.y, direction.x);
 
-      game.world.spawn({
+      this.entity.game.world.spawn({
         type: Rigidbody2D,
         name: "Bullet",
         transform: { position, rotation, scale: { x: 0.25, y: 0.15 } },
@@ -152,18 +216,26 @@ class AstroidExplosionPieceBehavior extends Behavior {
 }
 
 class AstroidBehavior extends Behavior {
+  private healthBar!: HealthBar;
+
   onInitialize(): void {
+    const health = Math.floor(Math.random() * 3) + 3;
+    this.healthBar = this.entity.addBehavior({
+      type: HealthBar,
+      values: {},
+    }) as HealthBar;
+
+    this.healthBar.initialize(health);
+
     this.listen(this.entity, EntityCollision, e => {
       if (e.started) this.onCollide(e.other);
     });
   }
-
   onCollide(other: Entity) {
     if (!other.name.startsWith("Bullet")) return;
 
     other.destroy();
-    this.spawnExplosionPieces();
-    this.entity.destroy();
+    this.healthBar.takeDamage(1);
   }
 
   spawnExplosionPieces(): void {
@@ -171,7 +243,7 @@ class AstroidBehavior extends Behavior {
     const pieceSize = { x: 0.15, y: 0.15 };
 
     for (let i = 0; i < pieceCount; i++) {
-      game.world.spawn({
+      this.entity.game.world.spawn({
         type: Rigidbody2D,
         name: "AstroidExplosionPiece",
         transform: {
@@ -240,7 +312,7 @@ class EnemyMovement extends Behavior {
   shootCooldown = Math.random() * 4000 + 3000;
 
   onTick(): void {
-    const player = game.world.children.get("Player");
+    const player = this.entity.game.world.children.get("Player");
     const playerPos = player?.globalTransform.position;
     if (!playerPos) return;
 
@@ -272,7 +344,7 @@ class EnemyMovement extends Behavior {
   shootAtPlayer(): void {
     const rotation = this.entity.transform.rotation + Math.PI / 2;
 
-    game.world.spawn({
+    this.entity.game.world.spawn({
       type: Rigidbody2D,
       name: "EnemyBullet",
       transform: {
@@ -319,7 +391,17 @@ class ExplosionPieceBehavior extends Behavior {
 }
 
 class EnemyBehavior extends Behavior {
+  private healthBar!: HealthBar;
+
   onInitialize(): void {
+    const health = Math.floor(Math.random() * 3) + 3;
+    this.healthBar = this.entity.addBehavior({
+      type: HealthBar,
+      values: {},
+    }) as HealthBar;
+
+    this.healthBar.initialize(health);
+
     this.listen(this.entity, EntityCollision, e => {
       if (e.started) this.onCollide(e.other);
     });
@@ -329,33 +411,7 @@ class EnemyBehavior extends Behavior {
     if (!other.name.startsWith("Bullet")) return;
 
     other.destroy();
-    this.spawnExplosionPieces();
-    this.entity.destroy();
-    // TODO: add score
-  }
-
-  spawnExplosionPieces(): void {
-    const pieceCount = Math.random() * 5 + 3;
-    const pieceSize = { x: 0.15, y: 0.15 };
-
-    for (let i = 0; i < pieceCount; i++) {
-      game.world.spawn({
-        type: Rigidbody2D,
-        name: "ExplosionPiece",
-        transform: {
-          position: this.entity.transform.position.clone(),
-          scale: pieceSize,
-        },
-        behaviors: [{ type: ExplosionPieceBehavior }],
-        children: [
-          {
-            type: Sprite2D,
-            name: "PieceSprite",
-            values: { texture: "https://files.codedred.dev/enemy.png" }, // maybe change texture?
-          },
-        ],
-      });
-    }
+    this.healthBar.takeDamage(1);
   }
 }
 
