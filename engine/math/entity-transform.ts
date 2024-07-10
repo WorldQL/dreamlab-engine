@@ -58,4 +58,12 @@ export class Transform {
 
     this.#assignSignalListeners();
   }
+
+  toJSON() {
+    return {
+      position: this.#position.bare(),
+      rotation: this.#rotation,
+      scale: this.#scale.bare(),
+    };
+  }
 }
