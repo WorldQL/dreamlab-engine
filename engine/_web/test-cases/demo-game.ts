@@ -204,11 +204,18 @@ class AsteroidBehavior extends Behavior {
       if (e.started) this.onCollide(e.other);
     });
   }
+
   onCollide(other: Entity) {
     if (!other.name.startsWith("Bullet")) return;
 
     other.destroy();
     this.healthBar.takeDamage(1);
+    if (this.healthBar.currentHealth <= 0) {
+      const player = this.entity.game.world.children.get("Player") as Entity & {
+        behaviors: { PlayerBehavior: PlayerBehavior };
+      };
+      player.behaviors.PlayerBehavior.increaseScore(50);
+    }
   }
 }
 
@@ -361,6 +368,12 @@ class EnemyBehavior extends Behavior {
 
     other.destroy();
     this.healthBar.takeDamage(1);
+    if (this.healthBar.currentHealth <= 0) {
+      const player = this.entity.game.world.children.get("Player") as Entity & {
+        behaviors: { PlayerBehavior: PlayerBehavior };
+      };
+      player.behaviors.PlayerBehavior.increaseScore(100);
+    }
   }
 }
 
@@ -416,17 +429,53 @@ export const background = game.local.spawn({
 
 // #region Player
 class PlayerBehavior extends Behavior {
+  private score = 0;
+  private health = 100;
+  private uiElement!: HTMLDivElement;
+
   onInitialize(): void {
     this.listen(this.entity, EntityCollision, e => {
       if (e.started) this.onCollide(e.other);
     });
+
+    this.initializeUI();
+    this.updateUI();
   }
 
   onCollide(other: Entity) {
-    if (!other.name.startsWith("EnemyBullet")) return;
+    if (other.name.startsWith("EnemyBullet")) {
+      other.destroy();
+      this.health -= 10;
+      this.updateUI();
+    }
+  }
 
-    other.destroy();
-    // TODO: player takes damage
+  initializeUI() {
+    const uiContainer = document.createElement("div");
+    uiContainer.style.position = "absolute";
+    uiContainer.style.top = "10px";
+    uiContainer.style.left = "10px";
+    uiContainer.style.color = "white";
+    uiContainer.style.fontFamily = "Arial, sans-serif";
+    uiContainer.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
+    uiContainer.style.padding = "10px";
+    uiContainer.style.borderRadius = "5px";
+    document.body.appendChild(uiContainer);
+
+    this.uiElement = uiContainer;
+  }
+
+  updateUI() {
+    this.uiElement.innerHTML = `
+      <div>Score: ${this.score}</div>
+      <div>Health: ${this.health}</div>
+    `;
+  }
+
+  // FIXME: doesn't work
+  increaseScore(amount: number) {
+    this.score += amount;
+    this.updateUI();
   }
 }
 
