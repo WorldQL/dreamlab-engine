@@ -209,7 +209,8 @@ export class Gizmo extends Entity {
 
     const onMouseDown =
       (axis: "x" | "y" | "both") =>
-      ({ worldPosition: world }: MouseDown) => {
+      ({ button, worldPosition: world }: MouseDown) => {
+        if (button !== "left") return;
         const offset = world.sub(this.globalTransform.position);
         this.#action = { type: "translate", axis, offset };
         this.fire(GizmoTranslateStart, axis);
@@ -265,7 +266,8 @@ export class Gizmo extends Entity {
 
     const onMouseDown =
       (axis: "x" | "y" | "both") =>
-      ({ worldPosition: world }: MouseDown) => {
+      ({ button, worldPosition: world }: MouseDown) => {
+        if (button !== "left") return;
         const offset = world.sub(this.globalTransform.position);
         const original = this.#target!.globalTransform.scale.clone();
         this.#action = { type: "scale", axis, offset, original };
@@ -327,7 +329,8 @@ export class Gizmo extends Entity {
 
     const translateOnMouseDown =
       (axis: "x" | "y" | "both") =>
-      ({ worldPosition: world }: MouseDown) => {
+      ({ button, worldPosition: world }: MouseDown) => {
+        if (button !== "left") return;
         const offset = world.sub(this.globalTransform.position);
         this.#action = { type: "translate", axis, offset };
         this.fire(GizmoTranslateStart, axis);
@@ -347,7 +350,8 @@ export class Gizmo extends Entity {
 
     const scaleOnMouseDown =
       (axis: "x" | "y" | "both") =>
-      ({ worldPosition: world }: MouseDown) => {
+      ({ button, worldPosition: world }: MouseDown) => {
+        if (button !== "left") return;
         const offset = world.sub(this.globalTransform.position);
         const original = this.#target!.globalTransform.scale.clone();
         this.#action = { type: "scale", axis, offset, original };
