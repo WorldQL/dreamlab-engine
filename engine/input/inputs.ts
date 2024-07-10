@@ -68,11 +68,11 @@ export class Inputs implements ISignalHandler {
     this.fire(ActionDeleted, _action);
   }
 
-  #clearActions() {
+  #clearActions = () => {
     for (const action of this.actions.values()) {
       action[actionSetHeld](false, 0);
     }
-  }
+  };
   // #endregion
 
   // #region Cursor
