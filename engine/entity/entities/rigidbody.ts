@@ -2,9 +2,23 @@ import RAPIER from "@dreamlab/vendor/rapier.ts";
 import { Entity, EntityContext } from "../entity.ts";
 import { Vector2 } from "../../math/mod.ts";
 import { EntityPreUpdate, EntityUpdate, EntityDestroyed } from "../../signals/mod.ts";
+import { enumAdapter } from "../../value/adapters/enum-adapter.ts";
+
+type RigidBodyType = (typeof rigidbodyTypes)[number];
+const rigidbodyTypes = [
+  "dynamic",
+  "fixed",
+  // "kinematic-position",
+  // "kinematic-velocity",
+  // TODO: Implement these nicely
+] as const;
+
+const RigidbodyTypeAdapter = enumAdapter(rigidbodyTypes);
 
 export class Rigidbody2D extends Entity {
   public static readonly icon = "⚙️";
+
+  type: RigidBodyType = "fixed";
 
   body: RAPIER.RigidBody;
   collider: RAPIER.Collider;
@@ -13,11 +27,22 @@ export class Rigidbody2D extends Entity {
   constructor(ctx: EntityContext) {
     super(ctx);
 
-    this.body = this.game.physics.world.createRigidBody(
-      RAPIER.RigidBodyDesc.dynamic()
-        .setTranslation(this.globalTransform.position.x, this.globalTransform.position.y)
-        .setRotation(this.globalTransform.rotation),
-    );
+    this.value(Rigidbody2D, "type", { type: RigidbodyTypeAdapter });
+
+    let desc: RAPIER.RigidBodyDesc;
+    if (this.type === "dynamic") desc = RAPIER.RigidBodyDesc.dynamic();
+    else if (this.type === "fixed") desc = RAPIER.RigidBodyDesc.fixed();
+    else if (this.type === "kinematic-position")
+      desc = RAPIER.RigidBodyDesc.kinematicPositionBased();
+    else if (this.type === "kinematic-velocity")
+      desc = RAPIER.RigidBodyDesc.kinematicVelocityBased();
+    else throw new Error("invalid rigidbody type");
+
+    desc = desc
+      .setTranslation(this.globalTransform.position.x, this.globalTransform.position.y)
+      .setRotation(this.globalTransform.rotation);
+
+    this.body = this.game.physics.world.createRigidBody(desc);
     this.collider = this.game.physics.world.createCollider(
       RAPIER.ColliderDesc.cuboid(
         this.globalTransform.scale.x / 2,
@@ -26,7 +51,9 @@ export class Rigidbody2D extends Entity {
       this.body,
     );
     this.collider.setActiveCollisionTypes(
-      RAPIER.ActiveCollisionTypes.DEFAULT | RAPIER.ActiveCollisionTypes.KINEMATIC_FIXED,
+      RAPIER.ActiveCollisionTypes.DEFAULT |
+        RAPIER.ActiveCollisionTypes.KINEMATIC_FIXED |
+        RAPIER.ActiveCollisionTypes.FIXED_FIXED,
     );
     this.collider.setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS);
     this.#shape = this.collider.shape as RAPIER.Cuboid;

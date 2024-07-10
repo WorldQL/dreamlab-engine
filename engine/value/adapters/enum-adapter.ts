@@ -1,6 +1,6 @@
 import { JsonValue, ValueTypeAdapter } from "../data.ts";
 
-export function enumAdapter<const T extends string[]>(values: T) {
+export function enumAdapter<const T extends readonly string[]>(values: T) {
   function isValid(v: unknown): v is T[number] {
     if (typeof v !== "string") return false;
     return values.includes(v);

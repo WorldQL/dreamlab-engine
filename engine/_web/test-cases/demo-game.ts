@@ -104,6 +104,7 @@ class ClickFire extends Behavior {
         name: "Bullet",
         transform: { position, rotation, scale: { x: 0.25, y: 0.15 } },
         behaviors: [{ type: BulletBehavior, values: { speed: 75 } }],
+        values: { type: "fixed" },
         children: [
           {
             type: Sprite2D,
@@ -146,6 +147,7 @@ const prefabAstroid = game.prefabs.spawn({
   type: Rigidbody2D,
   name: "Astroid",
   behaviors: [{ type: AstroidMovement }, { type: AstroidBehavior }],
+  values: { type: "fixed" },
   children: [
     {
       type: Sprite2D,
@@ -231,6 +233,7 @@ class EnemyMovement extends Behavior {
         scale: { x: 0.25, y: 0.25 },
       },
       behaviors: [{ type: BulletBehavior, values: { speed: 15 } }],
+      values: { type: "fixed" },
       children: [
         {
           type: Sprite2D,
@@ -262,6 +265,7 @@ const prefabEnemy = game.prefabs.spawn({
   type: Rigidbody2D,
   name: "Enemy",
   behaviors: [{ type: EnemyMovement }, { type: EnemyBehavior }],
+  values: { type: "fixed" },
   children: [
     {
       type: Sprite2D,
@@ -334,6 +338,7 @@ export const player = game.world.spawn({
     { type: PlayerBehavior },
   ],
   transform: { position: { x: 1, y: 1 }, scale: { x: 1.25, y: 1.25 } },
+  values: { type: "fixed" },
   children: [
     { type: Empty, name: "CameraTarget", transform: { position: { x: 0, y: 1 } } },
     {
