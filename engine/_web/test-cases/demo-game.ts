@@ -208,7 +208,7 @@ class AsteroidBehavior extends Behavior {
     this.healthBar = this.entity.addBehavior({
       type: HealthBar,
       values: {},
-    }) as HealthBar;
+    });
 
     this.healthBar.initialize(health);
 
@@ -223,10 +223,8 @@ class AsteroidBehavior extends Behavior {
     other.destroy();
     this.healthBar.takeDamage(1);
     if (this.healthBar.currentHealth <= 0) {
-      const player = this.entity.game.world.children.get("Player") as Entity & {
-        behaviors: { PlayerBehavior: PlayerBehavior };
-      };
-      player.behaviors.PlayerBehavior.increaseScore(50);
+      const player = this.entity.game.world._.Player;
+      player.getBehavior(PlayerBehavior).increaseScore(50);
     }
   }
 }
@@ -369,7 +367,7 @@ class EnemyBehavior extends Behavior {
     this.healthBar = this.entity.addBehavior({
       type: HealthBar,
       values: {},
-    }) as HealthBar;
+    });
 
     this.healthBar.initialize(health);
 
@@ -384,10 +382,8 @@ class EnemyBehavior extends Behavior {
     other.destroy();
     this.healthBar.takeDamage(1);
     if (this.healthBar.currentHealth <= 0) {
-      const player = this.entity.game.world.children.get("Player") as Entity & {
-        behaviors: { PlayerBehavior: PlayerBehavior };
-      };
-      player.behaviors.PlayerBehavior.increaseScore(100);
+      const player = this.entity.game.world._.Player;
+      player.getBehavior(PlayerBehavior).increaseScore(100);
     }
   }
 }
