@@ -211,6 +211,7 @@ export class Gizmo extends Entity {
       (axis: "x" | "y" | "both") =>
       ({ button, worldPosition: world }: MouseDown) => {
         if (button !== "left") return;
+
         const offset = world.sub(this.globalTransform.position);
         this.#action = { type: "translate", axis, offset };
         this.fire(GizmoTranslateStart, axis);
@@ -230,7 +231,9 @@ export class Gizmo extends Entity {
       values: { radius: 1 + width / 2, innerRadus: 1 - width / 2 },
     });
 
-    rotate.on(MouseDown, ({ worldPosition: world }) => {
+    rotate.on(MouseDown, ({ button, worldPosition: world }) => {
+      if (button !== "left") return;
+
       const pos = world.sub(this.globalTransform.position);
       const rot = Math.atan2(pos.x, pos.y);
 
@@ -268,6 +271,7 @@ export class Gizmo extends Entity {
       (axis: "x" | "y" | "both") =>
       ({ button, worldPosition: world }: MouseDown) => {
         if (button !== "left") return;
+
         const offset = world.sub(this.globalTransform.position);
         const original = this.#target!.globalTransform.scale.clone();
         this.#action = { type: "scale", axis, offset, original };
@@ -331,6 +335,7 @@ export class Gizmo extends Entity {
       (axis: "x" | "y" | "both") =>
       ({ button, worldPosition: world }: MouseDown) => {
         if (button !== "left") return;
+
         const offset = world.sub(this.globalTransform.position);
         this.#action = { type: "translate", axis, offset };
         this.fire(GizmoTranslateStart, axis);
@@ -340,7 +345,9 @@ export class Gizmo extends Entity {
     translateY.on(MouseDown, translateOnMouseDown("y"));
     translateBoth.on(MouseDown, translateOnMouseDown("both"));
 
-    rotate.on(MouseDown, ({ worldPosition: world }) => {
+    rotate.on(MouseDown, ({ button, worldPosition: world }) => {
+      if (button !== "left") return;
+
       const pos = world.sub(this.globalTransform.position);
       const rot = Math.atan2(pos.x, pos.y);
 
@@ -352,6 +359,7 @@ export class Gizmo extends Entity {
       (axis: "x" | "y" | "both") =>
       ({ button, worldPosition: world }: MouseDown) => {
         if (button !== "left") return;
+
         const offset = world.sub(this.globalTransform.position);
         const original = this.#target!.globalTransform.scale.clone();
         this.#action = { type: "scale", axis, offset, original };
