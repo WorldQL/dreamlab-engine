@@ -433,15 +433,15 @@ class AbilityUI extends Behavior {
 }
 // #endregion
 
-// #region Powerup
-class PowerUpSelectionScreen extends Behavior {
+// #region Levelup
+class LevelUpSelectionScreen extends Behavior {
   #ui = this.entity.cast(UILayer);
 
   #element!: HTMLDivElement;
 
   onInitialize(): void {
     const css = `
-#power-up-selection-screen {
+#level-up-selection-screen {
   position: absolute;
   top: 1rem;
   right: 1rem;
@@ -502,7 +502,7 @@ button:active {
     this.#ui.root.appendChild(style);
 
     this.#element = document.createElement("div");
-    this.#element.id = "power-up-selection-screen";
+    this.#element.id = "level-up-selection-screen";
     this.#ui.element.appendChild(this.#element);
 
     const title = document.createElement("h1");
@@ -510,29 +510,29 @@ button:active {
     this.#element.appendChild(title);
 
     const subtitle = document.createElement("h2");
-    subtitle.innerText = "Choose Your Power-Up";
+    subtitle.innerText = "Choose Your Level-Up";
     this.#element.appendChild(subtitle);
 
-    const powerUps = [
-      { name: "Shield Boost", effect: () => this.#applyPowerUp("ShieldBoost") },
-      { name: "Fire Rate Boost", effect: () => this.#applyPowerUp("FireRateBoost") },
-      { name: "Speed Boost", effect: () => this.#applyPowerUp("SpeedBoost") },
+    const levelUps = [
+      { name: "Shield Boost", effect: () => this.#applyLevelUp("ShieldBoost") },
+      { name: "Fire Rate Boost", effect: () => this.#applyLevelUp("FireRateBoost") },
+      { name: "Speed Boost", effect: () => this.#applyLevelUp("SpeedBoost") },
     ];
 
-    powerUps.forEach(powerUp => {
+    levelUps.forEach(levelUp => {
       const button = document.createElement("button");
       button.type = "button";
-      button.innerText = powerUp.name;
-      button.addEventListener("click", powerUp.effect);
+      button.innerText = levelUp.name;
+      button.addEventListener("click", levelUp.effect);
       this.#element.appendChild(button);
     });
   }
 
-  #applyPowerUp(powerUp: string) {
+  #applyLevelUp(levelUp: string) {
     const player = this.entity.game.world.children.get("Player");
     if (!player) return;
 
-    switch (powerUp) {
+    switch (levelUp) {
       case "ShieldBoost":
         player.getBehavior(Shield).cooldown *= 0.9;
         break;
@@ -963,8 +963,8 @@ class PlayerBehavior extends Behavior {
 
     this.game.local?.spawn({
       type: UILayer,
-      name: "PowerUpSelectionScreen",
-      behaviors: [{ type: PowerUpSelectionScreen }],
+      name: "LevelUpSelectionScreen",
+      behaviors: [{ type: LevelUpSelectionScreen }],
     });
   }
 }
