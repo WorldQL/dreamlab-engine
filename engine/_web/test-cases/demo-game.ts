@@ -238,7 +238,8 @@ class Supercharge extends Behavior {
       name: "SuperchargeEffect",
       transform: {
         position: this.entity.transform.position.clone(),
-        scale: { x: 1.5, y: 1.5 },
+        rotation: this.entity.transform.rotation,
+        scale: { x: 2.5, y: 2.5 },
       },
       values: { texture: "https://files.codedred.dev/supercharge.png" },
     });
@@ -257,6 +258,7 @@ class Supercharge extends Behavior {
   #updateSuperchargeEffectPosition = () => {
     if (this.#superchargeEffect) {
       this.#superchargeEffect.transform.position = this.entity.transform.position;
+      this.#superchargeEffect.transform.rotation = this.entity.transform.rotation;
     }
   };
 
