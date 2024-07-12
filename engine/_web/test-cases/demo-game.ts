@@ -205,7 +205,6 @@ class Shield extends Behavior {
   }
 }
 
-// #endregion
 class Supercharge extends Behavior {
   #superchargeKey = this.inputs.create("@ability/supercharge", "Supercharge", "MouseRight");
   #superchargeDuration = 5000;
@@ -213,6 +212,7 @@ class Supercharge extends Behavior {
   #supercharged = false;
   #coolingDown = false;
   coolingDownTime = 0;
+  #superchargeEffect!: Entity;
 
   constructor(ctx: BehaviorContext) {
     super(ctx);
@@ -232,12 +232,33 @@ class Supercharge extends Behavior {
     this.#supercharged = true;
     const playerBehavior = this.entity.getBehavior(PlayerBehavior);
     playerBehavior.fireRateMultiplier = 10;
+
+    this.#superchargeEffect = this.entity.game.world.spawn({
+      type: Sprite2D,
+      name: "SuperchargeEffect",
+      transform: {
+        position: this.entity.transform.position.clone(),
+        scale: { x: 1.5, y: 1.5 },
+      },
+      values: { texture: "https://files.codedred.dev/supercharge.png" },
+    });
+
+    this.entity.game.on(GamePostRender, this.#updateSuperchargeEffectPosition);
+
     setTimeout(() => {
       playerBehavior.fireRateMultiplier = 1;
+      this.#superchargeEffect.destroy();
+      this.entity.game.unregister(GamePostRender, this.#updateSuperchargeEffectPosition);
       this.#supercharged = false;
       this.#coolDown();
     }, this.#superchargeDuration);
   }
+
+  #updateSuperchargeEffectPosition = () => {
+    if (this.#superchargeEffect) {
+      this.#superchargeEffect.transform.position = this.entity.transform.position;
+    }
+  };
 
   async #coolDown() {
     this.#coolingDown = true;
@@ -329,7 +350,7 @@ class AbilityUI extends Behavior {
 
     const boostUI = this.#createAbilityUI(
       "(Right Click)",
-      "BOOST",
+      "SUPER",
       "https://files.codedred.dev/supercharge_ability.png",
     );
     this.#boostImage = boostUI.image;
@@ -410,13 +431,129 @@ class AbilityUI extends Behavior {
 }
 // #endregion
 
+// #region Powerup
+class PowerUpSelectionScreen extends Behavior {
+  #ui = this.entity.cast(UILayer);
+
+  #element!: HTMLDivElement;
+
+  onInitialize(): void {
+    const css = `
+#power-up-selection-screen {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: white;
+  background: rgba(0, 0, 0, 0.85);
+  font-family: "Inter", sans-serif;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+  transition: opacity 0.3s ease;
+  user-select: none;
+}
+
+h1 {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1rem;
+}
+
+h2 {
+  font-size: 1rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.1rem;
+}
+
+button {
+  padding: 0.75rem 1.5rem;
+  font-size: 1.2rem;
+  cursor: pointer;
+  border: none;
+  border-radius: 0.5rem;
+  color: white;
+  background-color: #ff6600;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  margin: 0.3rem;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+
+button:hover {
+  background-color: #e65c00;
+  transform: translateY(-2px);
+}
+
+button:active {
+  background-color: #cc5200;
+  transform: translateY(0);
+}
+`;
+
+    const style = document.createElement("style");
+    style.appendChild(document.createTextNode(css));
+    this.#ui.root.appendChild(style);
+
+    this.#element = document.createElement("div");
+    this.#element.id = "power-up-selection-screen";
+    this.#ui.element.appendChild(this.#element);
+
+    const title = document.createElement("h1");
+    title.innerText = "Level Up!";
+    this.#element.appendChild(title);
+
+    const subtitle = document.createElement("h2");
+    subtitle.innerText = "Choose Your Power-Up";
+    this.#element.appendChild(subtitle);
+
+    const powerUps = [
+      { name: "Shield Boost", effect: () => this.#applyPowerUp("ShieldBoost") },
+      { name: "Fire Rate Boost", effect: () => this.#applyPowerUp("FireRateBoost") },
+      { name: "Speed Boost", effect: () => this.#applyPowerUp("SpeedBoost") },
+    ];
+
+    powerUps.forEach(powerUp => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.innerText = powerUp.name;
+      button.addEventListener("click", powerUp.effect);
+      this.#element.appendChild(button);
+    });
+  }
+
+  #applyPowerUp(powerUp: string) {
+    const player = this.entity.game.world.children.get("Player");
+    if (!player) return;
+
+    switch (powerUp) {
+      case "ShieldBoost":
+        player.getBehavior(Shield).cooldown *= 0.9;
+        break;
+      case "FireRateBoost":
+        player.getBehavior(PlayerBehavior).fireRateMultiplier *= 1.1;
+        break;
+      case "SpeedBoost":
+        player.getBehavior(Movement).speed *= 1.1;
+        break;
+    }
+
+    this.entity.destroy();
+  }
+}
+// #endregion
+
 // #region Bullet
 class BulletBehavior extends Behavior {
   readonly #lifetime = 3;
   #timer = 0;
   #direction: Vector2;
 
-  speed: number = 75;
+  speed: number = 35;
 
   constructor(ctx: BehaviorContext) {
     super(ctx);
@@ -468,7 +605,7 @@ class ClickFire extends Behavior {
         type: Rigidbody2D,
         name: "Bullet",
         transform: { position, rotation, scale: { x: 0.25, y: 0.15 } },
-        behaviors: [{ type: BulletBehavior, values: { speed: 75 } }],
+        behaviors: [{ type: BulletBehavior }],
         values: { type: "fixed" },
         children: [
           {
@@ -743,6 +880,10 @@ class PlayerBehavior extends Behavior {
   fireRateMultiplier = 1;
   invincible = false;
 
+  #level = 1;
+  #scoreForNextLevel = 100;
+  #scoreForNextLevelBase = 100;
+
   get score(): number {
     return this.#score;
   }
@@ -750,6 +891,12 @@ class PlayerBehavior extends Behavior {
     this.#score = value;
 
     const ui = this.entity._.UI.getBehavior(PlayerUI);
+    ui.updateLevelProgress(this.#score / this.#scoreForNextLevel);
+
+    if (this.#score >= this.#scoreForNextLevel) {
+      this.#levelUp();
+    }
+
     ui.score = this.#score;
   }
 
@@ -802,6 +949,21 @@ class PlayerBehavior extends Behavior {
         behaviors: [{ type: DeathScreen, values: { score: this.#score } }],
       });
     }
+  }
+
+  #levelUp() {
+    this.#level += 1;
+    this.#scoreForNextLevel = this.#scoreForNextLevelBase * Math.pow(1.2, this.#level - 1); // 20% increase per level
+
+    this.#score = 0;
+    const ui = this.entity._.UI.getBehavior(PlayerUI);
+    ui.updateLevelProgress(0);
+
+    this.game.local?.spawn({
+      type: UILayer,
+      name: "PowerUpSelectionScreen",
+      behaviors: [{ type: PowerUpSelectionScreen }],
+    });
   }
 }
 
@@ -864,6 +1026,7 @@ class PlayerUI extends Behavior {
   #element!: HTMLDivElement;
   #scoreSpan!: HTMLSpanElement;
   #healthSpan!: HTMLSpanElement;
+  #progressUI!: LevelProgressUI;
 
   onInitialize() {
     const css = `
@@ -901,6 +1064,55 @@ class PlayerUI extends Behavior {
     healthDiv.appendChild(document.createTextNode("Health: "));
     healthDiv.appendChild(this.#healthSpan);
     this.#element.appendChild(healthDiv);
+
+    this.#progressUI = this.entity.addBehavior({
+      type: LevelProgressUI,
+      values: {},
+    });
+  }
+
+  updateLevelProgress(progress: number) {
+    this.#progressUI.updateProgress(progress);
+  }
+}
+
+class LevelProgressUI extends Behavior {
+  #ui = this.entity.cast(UILayer);
+  #progressBar!: HTMLDivElement;
+
+  onInitialize(): void {
+    const css = `
+#level-progress-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1rem;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+#level-progress-bar {
+  width: 0;
+  height: 100%;
+  background-color: green;
+}
+`;
+
+    const style = document.createElement("style");
+    style.appendChild(document.createTextNode(css));
+    this.#ui.root.appendChild(style);
+
+    const container = document.createElement("div");
+    container.id = "level-progress-container";
+    this.#ui.element.appendChild(container);
+
+    this.#progressBar = document.createElement("div");
+    this.#progressBar.id = "level-progress-bar";
+    container.appendChild(this.#progressBar);
+  }
+
+  updateProgress(progress: number) {
+    this.#progressBar.style.width = `${progress * 100}%`;
   }
 }
 // #endregion
