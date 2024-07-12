@@ -50,7 +50,7 @@ export class UIPanel extends InterpolatedEntity {
   onInitialize() {
     if (!this.game.isClient()) return;
 
-    const [outer, root] = this.game.ui.create();
+    const [outer, root] = this.game.ui.create(this);
     const element = document.createElement("div");
     this.#ui = { outer, root, element };
 

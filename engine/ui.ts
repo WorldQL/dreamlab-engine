@@ -1,4 +1,6 @@
+import { Entity } from "./entity/mod.ts";
 import { ClientGame } from "./game.ts";
+import { EntityReparented } from "./signals/mod.ts";
 
 export class UIManager {
   #game: ClientGame;
@@ -31,7 +33,7 @@ export class UIManager {
     this.#container = undefined;
   }
 
-  create(): readonly [container: HTMLDivElement, root: ShadowRoot] {
+  create(entity: Entity): readonly [container: HTMLDivElement, root: ShadowRoot] {
     if (!this.#container) {
       throw new Error("game not initialized");
     }
@@ -39,6 +41,9 @@ export class UIManager {
     const div = document.createElement("div");
     const root = div.attachShadow({ mode: "open" });
     this.#container.appendChild(div);
+
+    div.id = entity.id;
+    entity.on(EntityReparented, () => (div.id = entity.id));
 
     return [div, root];
   }
