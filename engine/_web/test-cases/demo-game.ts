@@ -7,6 +7,7 @@ import {
   TilingSprite2D,
   Rigidbody2D,
   UILayer,
+  Camera,
 } from "../../entity/mod.ts";
 import { Vector2 } from "../../math/mod.ts";
 import { EntityCollision, GamePostRender } from "../../signals/mod.ts";
@@ -127,6 +128,17 @@ class LookAtMouse extends Behavior {
 
     const rotation = this.entity.globalTransform.position.lookAt(cursor.world);
     this.entity.transform.rotation = rotation;
+  }
+}
+
+class CameraFollow extends Behavior {
+  onInitialize(): void {
+    const target = this.entity._.CameraTarget;
+    const camera = Camera.getActive(this.game);
+
+    this.listen(this.game, GamePostRender, () => {
+      if (camera) camera.pos.assign(target.pos);
+    });
   }
 }
 // #endregion
@@ -617,13 +629,13 @@ class Minimap extends Behavior {
     this.#dot.id = "dot";
     this.#element.appendChild(this.#dot);
 
-    game.on(GamePostRender, () => {
+    this.listen(this.game, GamePostRender, () => {
       this.#updateMinimap();
     });
   }
 
   #updateMinimap() {
-    const player = game.world.children.get("Player");
+    const player = this.game.world.children.get("Player");
     if (!player) return;
 
     const pos = player.pos;
@@ -644,7 +656,7 @@ class Minimap extends Behavior {
 // #endregion
 
 // #region Border
-const createMapBorder = (width: number, height: number) => {
+function createMapBorder(width: number, height: number) {
   const borders = [
     {
       x: 0,
@@ -693,7 +705,7 @@ const createMapBorder = (width: number, height: number) => {
       ],
     });
   });
-};
+}
 
 const MAP_BOUNDRY = 500;
 createMapBorder(MAP_BOUNDRY * 2, MAP_BOUNDRY * 2);
@@ -725,8 +737,8 @@ class CoordsDisplay extends Behavior {
     this.#element.id = "coords";
     this.#ui.element.appendChild(this.#element);
 
-    this.game.on(GamePostRender, () => {
-      const player = game.world.children.get("Player");
+    this.listen(this.game, GamePostRender, () => {
+      const player = this.game.world.children.get("Player");
       if (!player) return;
 
       const pos = player.transform.position;
@@ -748,6 +760,7 @@ function spawnPlayer() {
     behaviors: [
       { type: Movement },
       { type: LookAtMouse },
+      { type: CameraFollow },
       { type: ClickFire },
       { type: PlayerBehavior },
     ],
@@ -843,11 +856,21 @@ button:hover {
   }
 
   #startGame() {
-    const player = spawnPlayer();
-    const cameraTarget = player._.CameraTarget;
-    game.on(GamePostRender, () => {
-      camera.pos.assign(cameraTarget.pos);
-    });
+    spawnPlayer();
+
+    if (this.game.isClient()) {
+      this.game.local.spawn({
+        type: UILayer,
+        name: "Minimap",
+        behaviors: [{ type: Minimap }],
+      });
+
+      this.game.local.spawn({
+        type: UILayer,
+        name: "CoordsDisplay",
+        behaviors: [{ type: CoordsDisplay }],
+      });
+    }
 
     this.entity.destroy();
   }
@@ -934,12 +957,7 @@ class DeathScreen extends Behavior {
   }
 
   #respawnPlayer() {
-    const player = spawnPlayer();
-    const cameraTarget = player._.CameraTarget;
-    game.on(GamePostRender, () => {
-      camera.pos.assign(cameraTarget.pos);
-    });
-
+    spawnPlayer();
     this.entity.destroy();
   }
 }
@@ -948,18 +966,6 @@ game.local.spawn({
   type: UILayer,
   name: "StartScreen",
   behaviors: [{ type: StartScreen }],
-});
-
-game.local.spawn({
-  type: UILayer,
-  name: "Minimap",
-  behaviors: [{ type: Minimap }],
-});
-
-game.local.spawn({
-  type: UILayer,
-  name: "CoordsDisplay",
-  behaviors: [{ type: CoordsDisplay }],
 });
 // #endregion
 
