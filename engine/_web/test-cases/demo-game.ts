@@ -108,15 +108,15 @@ class Movement extends Behavior {
 
     const halfWidth = this.entity.transform.scale.x / 2;
     const halfHeight = this.entity.transform.scale.y / 2;
+    const safety = 0.5;
 
-    if (
-      newPosition.x - halfWidth >= -MAP_BOUNDRY &&
-      newPosition.x + halfWidth <= MAP_BOUNDRY &&
-      newPosition.y - halfHeight >= -MAP_BOUNDRY &&
-      newPosition.y + halfHeight <= MAP_BOUNDRY
-    ) {
-      this.entity.transform.position = newPosition;
-    }
+    if (newPosition.x - halfWidth <= -MAP_BOUNDRY) newPosition.x = -MAP_BOUNDRY + safety;
+    if (newPosition.x + halfWidth >= MAP_BOUNDRY) newPosition.x = MAP_BOUNDRY - safety;
+
+    if (newPosition.y - halfHeight <= -MAP_BOUNDRY) newPosition.y = -MAP_BOUNDRY + safety;
+    if (newPosition.y + halfHeight >= MAP_BOUNDRY) newPosition.y = MAP_BOUNDRY - safety;
+
+    this.entity.transform.position = newPosition;
   }
 }
 
