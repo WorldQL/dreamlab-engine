@@ -40,10 +40,7 @@ export class UIManager {
 
     const div = document.createElement("div");
     div.style.position = "absolute";
-    div.style.top = "0";
-    div.style.left = "0";
-    div.style.bottom = "0";
-    div.style.right = "0";
+    div.style.inset = "0";
 
     const root = div.attachShadow({ mode: "open" });
     this.#container.appendChild(div);
