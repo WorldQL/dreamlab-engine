@@ -11,6 +11,7 @@ if (IS_DEV) {
 document.documentElement.style.height = "100%";
 document.body.style.height = "100%";
 document.body.style.margin = "0";
+document.body.style.overflow = "hidden";
 
 const container = document.createElement("div");
 document.body.append(container);
