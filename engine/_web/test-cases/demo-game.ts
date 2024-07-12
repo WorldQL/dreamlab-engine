@@ -469,6 +469,8 @@ export const background = game.local.spawn({
 // #region Player
 class PlayerBehavior extends Behavior {
   #score = 0;
+  private healthBar!: HealthBar;
+
   get score(): number {
     return this.#score;
   }
@@ -485,6 +487,11 @@ class PlayerBehavior extends Behavior {
   }
   set health(value: number) {
     this.#health = value;
+    if (this.#health <= 0) {
+      this.#health = 0;
+      this.#gameOver();
+    }
+    this.healthBar.currentHealth = this.#health;
 
     const ui = this.entity._.UI.getBehavior(PlayerUI);
     ui.health = this.#health;
@@ -495,6 +502,12 @@ class PlayerBehavior extends Behavior {
     ui.score = this.#score;
     ui.health = this.#health;
 
+    this.healthBar = this.entity.addBehavior({
+      type: HealthBar,
+      values: {},
+    });
+    this.healthBar.initialize(this.#health);
+
     this.listen(this.entity, EntityCollision, e => {
       if (e.started) this.#onCollide(e.other);
     });
@@ -503,9 +516,7 @@ class PlayerBehavior extends Behavior {
   #onCollide(other: Entity) {
     if (other.name.startsWith("EnemyBullet")) {
       other.destroy();
-
       this.health -= 10;
-      if (this.health <= 0) this.#gameOver();
     }
   }
 
@@ -520,6 +531,39 @@ class PlayerBehavior extends Behavior {
       });
     }
   }
+}
+
+function spawnPlayer() {
+  const x = Math.random() * (MAP_BOUNDRY * 2) - MAP_BOUNDRY;
+  const y = Math.random() * (MAP_BOUNDRY * 2) - MAP_BOUNDRY;
+  const position = { x, y };
+
+  return game.world.spawn({
+    type: Rigidbody2D,
+    name: "Player",
+    behaviors: [
+      { type: Movement },
+      { type: LookAtMouse },
+      { type: CameraFollow },
+      { type: ClickFire },
+      { type: PlayerBehavior },
+    ],
+    transform: { position, scale: { x: 1.25, y: 1.25 } },
+    values: { type: "fixed" },
+    children: [
+      { type: Empty, name: "CameraTarget", transform: { position: { x: 0, y: 1 } } },
+      {
+        type: Sprite2D,
+        name: "PlayerSprite",
+        values: { texture: "https://files.codedred.dev/spaceship.png" },
+      },
+      {
+        type: UILayer,
+        name: "UI",
+        behaviors: [{ type: PlayerUI }],
+      },
+    ],
+  });
 }
 
 class PlayerUI extends Behavior {
@@ -749,39 +793,6 @@ class CoordsDisplay extends Behavior {
 // #endregion
 
 // #region Screens
-function spawnPlayer() {
-  const x = Math.random() * (MAP_BOUNDRY * 2) - MAP_BOUNDRY;
-  const y = Math.random() * (MAP_BOUNDRY * 2) - MAP_BOUNDRY;
-  const position = { x, y };
-
-  return game.world.spawn({
-    type: Rigidbody2D,
-    name: "Player",
-    behaviors: [
-      { type: Movement },
-      { type: LookAtMouse },
-      { type: CameraFollow },
-      { type: ClickFire },
-      { type: PlayerBehavior },
-    ],
-    transform: { position, scale: { x: 1.25, y: 1.25 } },
-    values: { type: "fixed" },
-    children: [
-      { type: Empty, name: "CameraTarget", transform: { position: { x: 0, y: 1 } } },
-      {
-        type: Sprite2D,
-        name: "PlayerSprite",
-        values: { texture: "https://files.codedred.dev/spaceship.png" },
-      },
-      {
-        type: UILayer,
-        name: "UI",
-        behaviors: [{ type: PlayerUI }],
-      },
-    ],
-  });
-}
-
 class StartScreen extends Behavior {
   #ui = this.entity.cast(UILayer);
 
@@ -974,11 +985,4 @@ camera.transform.scale = Vector2.splat(3);
 camera.smooth = 0.05;
 
 game.physics.world.gravity = { x: 0, y: 0 };
-// #endregion
-
-// #region Ideas
-/*
-- add score leaderboard for players
-- add powerups (faster shooting, more damage, etc)
-*/
 // #endregion
