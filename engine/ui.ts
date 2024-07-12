@@ -39,6 +39,9 @@ export class UIManager {
     }
 
     const div = document.createElement("div");
+    div.style.width = "100%";
+    div.style.height = "100%";
+
     const root = div.attachShadow({ mode: "open" });
     this.#container.appendChild(div);
 
