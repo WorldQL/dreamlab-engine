@@ -8,4 +8,5 @@ export * from "./rigidbody.ts";
 export * from "./sprite.ts";
 export * from "./animated-sprite.ts";
 export * from "./tiling-sprite.ts";
+export * from "./ui-layer.ts";
 export * from "./ui-panel.ts";
