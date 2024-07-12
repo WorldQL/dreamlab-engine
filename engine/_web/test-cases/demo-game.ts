@@ -1,6 +1,13 @@
 import { BackgroundBehavior } from "../../behavior/behaviors/background-behavior.ts";
 import { Behavior, BehaviorContext } from "../../behavior/mod.ts";
-import { Empty, Entity, Sprite2D, TilingSprite2D, Rigidbody2D } from "../../entity/mod.ts";
+import {
+  Empty,
+  Entity,
+  Sprite2D,
+  TilingSprite2D,
+  Rigidbody2D,
+  UILayer,
+} from "../../entity/mod.ts";
 import { Vector2 } from "../../math/mod.ts";
 import { EntityCollision, GamePostRender } from "../../signals/mod.ts";
 
@@ -489,52 +496,75 @@ class PlayerBehavior extends Behavior {
     this.updateUI();
   }
 
-  handleGameOver() {
+  #gameOver() {
     this.entity.destroy();
 
-    const deathScreen = new DeathScreen();
-    deathScreen.initialize(this.score);
+    if (this.game.isClient()) {
+      this.game.local.spawn({
+        type: UILayer,
+        name: "DeathScreen",
+        behaviors: [{ type: DeathScreen, values: { score: this.score } }],
+      });
+    }
   }
 }
 
 // #region Map & Coords
-class Minimap {
-  private minimapElement!: HTMLDivElement;
-  private playerDot!: HTMLDivElement;
+class Minimap extends Behavior {
+  #ui = this.entity.cast(UILayer);
 
-  initialize() {
-    this.minimapElement = document.createElement("div");
-    this.minimapElement.id = "minimap";
-    this.minimapElement.style.position = "absolute";
-    this.minimapElement.style.bottom = "40px";
-    this.minimapElement.style.left = "10px";
-    this.minimapElement.style.width = "150px";
-    this.minimapElement.style.height = "150px";
-    this.minimapElement.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
-    this.minimapElement.style.border = "2px solid white";
-    document.body.appendChild(this.minimapElement);
+  #element!: HTMLDivElement;
+  #dot!: HTMLDivElement;
 
-    this.playerDot = document.createElement("div");
-    this.playerDot.style.position = "absolute";
-    this.playerDot.style.width = "5px";
-    this.playerDot.style.height = "5px";
-    this.playerDot.style.backgroundColor = "red";
-    this.playerDot.style.borderRadius = "50%";
-    this.minimapElement.appendChild(this.playerDot);
+  onInitialize() {
+    const css = `
+#minimap {
+  position: absolute;
+  bottom: 3rem;
+  left: 0.8rem;
+  width: 10rem;
+  height: 10rem;
+  color: white;
+  font-family: "Inter", sans-serif;
+  background-color: rgb(0 0 0 / 50%);
+  border-radius: 0.4rem;
+  border: 2px solid white;
+}
+
+#dot {
+  position: absolute;
+  width: 0.3125rem;
+  aspect-ratio: 1 / 1;
+  background-color: red;
+  border-radius: 50%;
+}
+`;
+
+    const style = document.createElement("style");
+    style.appendChild(document.createTextNode(css));
+    this.#ui.root.appendChild(style);
+
+    this.#element = document.createElement("div");
+    this.#element.id = "minimap";
+    this.#ui.element.appendChild(this.#element);
+
+    this.#dot = document.createElement("div");
+    this.#dot.id = "dot";
+    this.#element.appendChild(this.#dot);
 
     game.on(GamePostRender, () => {
-      this.updateMinimap();
+      this.#updateMinimap();
     });
   }
 
-  updateMinimap() {
+  #updateMinimap() {
     const player = game.world.children.get("Player");
     if (!player) return;
 
-    const pos = player.transform.position;
+    const pos = player.pos;
 
-    const minimapWidth = this.minimapElement.clientWidth;
-    const minimapHeight = this.minimapElement.clientHeight;
+    const minimapWidth = this.#element.clientWidth;
+    const minimapHeight = this.#element.clientHeight;
 
     const mapWidth = MAP_BOUNDRY * 2;
     const mapHeight = MAP_BOUNDRY * 2;
@@ -542,13 +572,11 @@ class Minimap {
     const minimapX = ((pos.x + MAP_BOUNDRY) / mapWidth) * minimapWidth;
     const minimapY = ((-pos.y + MAP_BOUNDRY) / mapHeight) * minimapHeight;
 
-    this.playerDot.style.left = `${minimapX - 2.5}px`;
-    this.playerDot.style.top = `${minimapY - 2.5}px`;
+    this.#dot.style.left = `${minimapX - 2.5}px`;
+    this.#dot.style.top = `${minimapY - 2.5}px`;
   }
 }
-
-const minimap = new Minimap();
-minimap.initialize();
+// #endregion
 
 // #region Border
 const createMapBorder = (width: number, height: number) => {
@@ -607,243 +635,276 @@ const createMapBorder = (width: number, height: number) => {
 const MAP_BOUNDRY = 500;
 createMapBorder(MAP_BOUNDRY * 2, MAP_BOUNDRY * 2);
 
-class CoordsDisplay {
-  private coordsElement!: HTMLDivElement;
+class CoordsDisplay extends Behavior {
+  #ui = this.entity.cast(UILayer);
 
-  initialize() {
-    this.coordsElement = document.createElement("div");
-    this.coordsElement.id = "coords";
-    this.coordsElement.style.position = "absolute";
-    this.coordsElement.style.bottom = "0px";
-    this.coordsElement.style.left = "0px";
-    this.coordsElement.style.color = "white";
-    this.coordsElement.style.fontFamily = "Arial, sans-serif";
-    this.coordsElement.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
-    this.coordsElement.style.padding = "10px";
-    this.coordsElement.style.borderRadius = "5px";
-    document.body.appendChild(this.coordsElement);
+  #element!: HTMLDivElement;
 
-    game.on(GamePostRender, () => {
+  onInitialize(): void {
+    const css = `
+#coords {
+  position: absolute;
+  bottom: 0.5rem;
+  left: 0.5rem;
+  color: white;
+  font-family: "Inter", sans-serif;
+  background-color: rgb(0 0 0 / 50%);
+  padding: 0.5rem;
+  border-radius: 0.4rem;
+}
+`;
+
+    const style = document.createElement("style");
+    style.appendChild(document.createTextNode(css));
+    this.#ui.root.appendChild(style);
+
+    this.#element = document.createElement("div");
+    this.#element.id = "coords";
+    this.#ui.element.appendChild(this.#element);
+
+    this.game.on(GamePostRender, () => {
       const player = game.world.children.get("Player");
-      if (player) {
-        const pos = player.transform.position;
-        this.coordsElement.innerHTML = `Coords: (${pos.x.toFixed(2)}, ${pos.y.toFixed(2)})`;
-      }
+      if (!player) return;
+
+      const pos = player.transform.position;
+      this.#element.innerText = `Coords: (${pos.x.toFixed(2)}, ${pos.y.toFixed(2)})`;
     });
   }
 }
+// #endregion
 
 // #region Screens
-class StartScreen {
-  private startScreenElement!: HTMLDivElement;
-  private startButton!: HTMLButtonElement;
+function spawnPlayer() {
+  const x = Math.random() * (MAP_BOUNDRY * 2) - MAP_BOUNDRY;
+  const y = Math.random() * (MAP_BOUNDRY * 2) - MAP_BOUNDRY;
+  const position = { x, y };
 
-  initialize() {
-    this.startScreenElement = document.createElement("div");
-    this.startScreenElement.id = "startScreen";
-    this.startScreenElement.style.position = "absolute";
-    this.startScreenElement.style.top = "0";
-    this.startScreenElement.style.left = "0";
-    this.startScreenElement.style.width = "100%";
-    this.startScreenElement.style.height = "100%";
-    this.startScreenElement.style.display = "flex";
-    this.startScreenElement.style.flexDirection = "column";
-    this.startScreenElement.style.alignItems = "center";
-    this.startScreenElement.style.justifyContent = "center";
-    this.startScreenElement.style.backgroundColor = "linear-gradient(135deg, #1f1c2c, #928dab)";
-    this.startScreenElement.style.color = "#ffffff";
-    this.startScreenElement.style.fontFamily = "'Roboto', sans-serif";
-    document.body.appendChild(this.startScreenElement);
+  return game.world.spawn({
+    type: Rigidbody2D,
+    name: "Player",
+    behaviors: [
+      { type: Movement },
+      { type: LookAtMouse },
+      { type: ClickFire },
+      { type: PlayerBehavior },
+    ],
+    transform: { position, scale: { x: 1.25, y: 1.25 } },
+    values: { type: "fixed" },
+    children: [
+      { type: Empty, name: "CameraTarget", transform: { position: { x: 0, y: 1 } } },
+      {
+        type: Sprite2D,
+        name: "PlayerSprite",
+        values: { texture: "https://files.codedred.dev/spaceship.png" },
+      },
+    ],
+  });
+}
+
+class StartScreen extends Behavior {
+  #ui = this.entity.cast(UILayer);
+
+  #element!: HTMLDivElement;
+  #button!: HTMLButtonElement;
+
+  onInitialize(): void {
+    const css = `
+#start-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  background: linear-gradient(135deg, #1f1c2c, #928dab);
+  font-family: "Inter", sans-serif;
+}
+
+h1 {
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 0;
+}
+
+p {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+button {
+  padding: 1rem 2rem;
+  font-size: 1.5rem;
+  cursor: pointer;
+  border: none;
+  border-radius: 0.4rem;
+  color: white;
+  background-color: #ff6600;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #e65c00;
+}
+`;
+
+    const style = document.createElement("style");
+    style.appendChild(document.createTextNode(css));
+    this.#ui.root.appendChild(style);
+
+    this.#element = document.createElement("div");
+    this.#element.id = "start-screen";
+    this.#ui.element.appendChild(this.#element);
 
     const title = document.createElement("h1");
     title.innerText = "Galactic Conquest";
-    title.style.fontSize = "48px";
-    title.style.fontWeight = "bold";
-    title.style.marginBottom = "40px";
-    this.startScreenElement.appendChild(title);
+    this.#element.appendChild(title);
 
     const description = document.createElement("p");
     description.innerText = "Embark on an epic space adventure, powered by Dreamlab v2!";
-    description.style.fontSize = "24px";
-    description.style.marginBottom = "30px";
-    this.startScreenElement.appendChild(description);
+    this.#element.appendChild(description);
 
-    this.startButton = document.createElement("button");
-    this.startButton.innerText = "Start Game";
-    this.startButton.style.padding = "15px 30px";
-    this.startButton.style.fontSize = "20px";
-    this.startButton.style.cursor = "pointer";
-    this.startButton.style.border = "none";
-    this.startButton.style.borderRadius = "5px";
-    this.startButton.style.backgroundColor = "#ff6600";
-    this.startButton.style.color = "#ffffff";
-    this.startButton.style.transition = "background-color 0.3s ease";
-    this.startButton.onmouseover = () => {
-      this.startButton.style.backgroundColor = "#e65c00";
-    };
-    this.startButton.onmouseout = () => {
-      this.startButton.style.backgroundColor = "#ff6600";
-    };
-    this.startScreenElement.appendChild(this.startButton);
-
-    this.startButton.addEventListener("click", () => this.startGame());
+    this.#button = document.createElement("button");
+    this.#button.type = "button";
+    this.#button.innerText = "Start Game";
+    this.#element.appendChild(this.#button);
+    this.#button.addEventListener("click", () => this.#startGame());
   }
 
-  startGame() {
-    this.startScreenElement.style.display = "none";
-    const player = this.spawnPlayer();
-    const cameraTarget = player.children.get("CameraTarget");
-    if (cameraTarget) {
-      game.on(GamePostRender, () => {
-        camera.pos.assign(player.transform.position); //FIXME: should use CameraTarget but its not working
-      });
-    }
-  }
-
-  spawnPlayer() {
-    const randomPosition = this.getRandomPositionWithinBorders();
-    return game.world.spawn({
-      type: Rigidbody2D,
-      name: "Player",
-      behaviors: [
-        { type: Movement },
-        { type: LookAtMouse },
-        { type: ClickFire },
-        { type: PlayerBehavior },
-      ],
-      transform: { position: randomPosition, scale: { x: 1.25, y: 1.25 } },
-      values: { type: "fixed" },
-      children: [
-        { type: Empty, name: "CameraTarget", transform: { position: { x: 0, y: 1 } } },
-        {
-          type: Sprite2D,
-          name: "PlayerSprite",
-          values: { texture: "https://files.codedred.dev/spaceship.png" },
-        },
-      ],
+  #startGame() {
+    const player = spawnPlayer();
+    const cameraTarget = player._.CameraTarget;
+    game.on(GamePostRender, () => {
+      camera.pos.assign(cameraTarget.pos);
     });
-  }
 
-  getRandomPositionWithinBorders() {
-    const x = Math.random() * (MAP_BOUNDRY * 2) - MAP_BOUNDRY;
-    const y = Math.random() * (MAP_BOUNDRY * 2) - MAP_BOUNDRY;
-    return { x, y };
+    this.entity.destroy();
   }
 }
 
-class DeathScreen {
-  private deathScreenElement!: HTMLDivElement;
-  private respawnButton!: HTMLButtonElement;
-  private finalScore!: number;
+class DeathScreen extends Behavior {
+  #ui = this.entity.cast(UILayer);
 
-  initialize(finalScore: number) {
-    this.finalScore = finalScore;
-    this.deathScreenElement = document.createElement("div");
-    this.deathScreenElement.id = "deathScreen";
-    this.deathScreenElement.style.position = "absolute";
-    this.deathScreenElement.style.top = "0";
-    this.deathScreenElement.style.left = "0";
-    this.deathScreenElement.style.width = "100%";
-    this.deathScreenElement.style.height = "100%";
-    this.deathScreenElement.style.display = "flex";
-    this.deathScreenElement.style.flexDirection = "column";
-    this.deathScreenElement.style.alignItems = "center";
-    this.deathScreenElement.style.justifyContent = "center";
-    this.deathScreenElement.style.backgroundColor = "rgba(0, 0, 0, 0.85)";
-    this.deathScreenElement.style.color = "#ffffff";
-    this.deathScreenElement.style.fontFamily = "'Roboto', sans-serif";
-    document.body.appendChild(this.deathScreenElement);
+  #element!: HTMLDivElement;
+  #button!: HTMLButtonElement;
 
-    const gameOverTitle = document.createElement("h1");
-    gameOverTitle.innerText = "Game Over";
-    gameOverTitle.style.fontSize = "48px";
-    gameOverTitle.style.fontWeight = "bold";
-    gameOverTitle.style.marginBottom = "20px";
-    this.deathScreenElement.appendChild(gameOverTitle);
+  score: number = 0;
 
-    const scoreDisplay = document.createElement("p");
-    scoreDisplay.innerText = `Final Score: ${this.finalScore}`;
-    scoreDisplay.style.fontSize = "24px";
-    scoreDisplay.style.marginBottom = "30px";
-    this.deathScreenElement.appendChild(scoreDisplay);
-
-    this.respawnButton = document.createElement("button");
-    this.respawnButton.innerText = "Respawn";
-    this.respawnButton.style.padding = "15px 30px";
-    this.respawnButton.style.fontSize = "20px";
-    this.respawnButton.style.cursor = "pointer";
-    this.respawnButton.style.border = "none";
-    this.respawnButton.style.borderRadius = "5px";
-    this.respawnButton.style.backgroundColor = "#ff6600";
-    this.respawnButton.style.color = "#ffffff";
-    this.respawnButton.style.transition = "background-color 0.3s ease";
-    this.respawnButton.onmouseover = () => {
-      this.respawnButton.style.backgroundColor = "#e65c00";
-    };
-    this.respawnButton.onmouseout = () => {
-      this.respawnButton.style.backgroundColor = "#ff6600";
-    };
-    this.deathScreenElement.appendChild(this.respawnButton);
-
-    this.respawnButton.addEventListener("click", () => this.respawnPlayer());
+  constructor(ctx: BehaviorContext) {
+    super(ctx);
+    this.defineValues(DeathScreen, "score");
   }
 
-  respawnPlayer() {
-    this.deathScreenElement.style.display = "none";
-    const player = this.spawnPlayer();
-    const cameraTarget = player.children.get("CameraTarget");
-    if (cameraTarget) {
-      game.on(GamePostRender, () => {
-        camera.pos.assign(player.transform.position); //FIXME: should use CameraTarget but its not working
-      });
+  onInitialize() {
+    const css = `
+    #death-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      background: rgb(0 0 0 / 85%);
+      font-family: "Inter", sans-serif;
     }
+
+    h1 {
+      font-size: 3rem;
+      font-weight: bold;
+      margin-bottom: 0;
+    }
+
+    p {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    button {
+      padding: 1rem 2rem;
+      font-size: 1.5rem;
+      cursor: pointer;
+      border: none;
+      border-radius: 0.4rem;
+      color: white;
+      background-color: #ff6600;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #e65c00;
+    }
+    `;
+
+    const style = document.createElement("style");
+    style.appendChild(document.createTextNode(css));
+    this.#ui.root.appendChild(style);
+
+    this.#element = document.createElement("div");
+    this.#element.id = "death-screen";
+    this.#ui.element.appendChild(this.#element);
+
+    const title = document.createElement("h1");
+    title.innerText = "Game Over";
+    this.#element.appendChild(title);
+
+    const description = document.createElement("p");
+    description.innerText = `Final Score: ${this.score}`;
+    this.#element.appendChild(description);
+
+    this.#button = document.createElement("button");
+    this.#button.type = "button";
+    this.#button.innerText = "Respawn";
+    this.#element.appendChild(this.#button);
+    this.#button.addEventListener("click", () => this.#respawnPlayer());
   }
 
-  spawnPlayer() {
-    const randomPosition = this.getRandomPositionWithinBorders();
-    return game.world.spawn({
-      type: Rigidbody2D,
-      name: "Player",
-      behaviors: [
-        { type: Movement },
-        { type: LookAtMouse },
-        { type: ClickFire },
-        { type: PlayerBehavior },
-      ],
-      transform: { position: randomPosition, scale: { x: 1.25, y: 1.25 } },
-      values: { type: "fixed" },
-      children: [
-        { type: Empty, name: "CameraTarget", transform: { position: { x: 0, y: 1 } } },
-        {
-          type: Sprite2D,
-          name: "PlayerSprite",
-          values: { texture: "https://files.codedred.dev/spaceship.png" },
-        },
-      ],
+  #respawnPlayer() {
+    const player = spawnPlayer();
+    const cameraTarget = player._.CameraTarget;
+    game.on(GamePostRender, () => {
+      camera.pos.assign(cameraTarget.pos);
     });
-  }
 
-  getRandomPositionWithinBorders() {
-    const x = Math.random() * (MAP_BOUNDRY * 2) - MAP_BOUNDRY;
-    const y = Math.random() * (MAP_BOUNDRY * 2) - MAP_BOUNDRY;
-    return { x, y };
+    this.entity.destroy();
   }
 }
 
-const startScreen = new StartScreen();
-startScreen.initialize();
+game.local.spawn({
+  type: UILayer,
+  name: "StartScreen",
+  behaviors: [{ type: StartScreen }],
+});
 
-const coordsDisplay = new CoordsDisplay();
-coordsDisplay.initialize();
+game.local.spawn({
+  type: UILayer,
+  name: "Minimap",
+  behaviors: [{ type: Minimap }],
+});
+
+game.local.spawn({
+  type: UILayer,
+  name: "CoordsDisplay",
+  behaviors: [{ type: CoordsDisplay }],
+});
+// #endregion
 
 // #region Camera & Game
 camera.transform.scale = Vector2.splat(3);
 camera.smooth = 0.05;
 
 game.physics.world.gravity = { x: 0, y: 0 };
+// #endregion
 
 // #region Ideas
 /*
 - add score leaderboard for players
 - add powerups (faster shooting, more damage, etc)
 */
+// #endregion
