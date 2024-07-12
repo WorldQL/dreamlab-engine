@@ -242,7 +242,7 @@ class AsteroidBehavior extends Behavior {
     this.healthBar.takeDamage(1);
     if (this.healthBar.currentHealth <= 0) {
       const player = this.entity.game.world._.Player;
-      player.getBehavior(PlayerBehavior).increaseScore(50);
+      player.getBehavior(PlayerBehavior).score += 50;
     }
   }
 }
@@ -401,7 +401,7 @@ class EnemyBehavior extends Behavior {
     this.healthBar.takeDamage(1);
     if (this.healthBar.currentHealth <= 0) {
       const player = this.entity.game.world._.Player;
-      player.getBehavior(PlayerBehavior).increaseScore(100);
+      player.getBehavior(PlayerBehavior).score += 100;
     }
   }
 }
@@ -457,54 +457,44 @@ export const background = game.local.spawn({
 // #region Player
 class PlayerBehavior extends Behavior {
   #score = 0;
-  #health = 100;
-  #uiElement!: HTMLDivElement;
+  get score(): number {
+    return this.#score;
+  }
+  set score(value: number) {
+    this.#score = value;
 
-  onInitialize(): void {
-    this.listen(this.entity, EntityCollision, e => {
-      if (e.started) this.onCollide(e.other);
-    });
-
-    this.initializeUI();
-    this.updateUI();
+    const ui = this.entity._.UI.getBehavior(PlayerUI);
+    ui.score = this.#score;
   }
 
-  onCollide(other: Entity) {
+  #health = 100;
+  get health(): number {
+    return this.#health;
+  }
+  set health(value: number) {
+    this.#health = value;
+
+    const ui = this.entity._.UI.getBehavior(PlayerUI);
+    ui.health = this.#health;
+  }
+
+  onInitialize(): void {
+    const ui = this.entity._.UI.getBehavior(PlayerUI);
+    ui.score = this.#score;
+    ui.health = this.#health;
+
+    this.listen(this.entity, EntityCollision, e => {
+      if (e.started) this.#onCollide(e.other);
+    });
+  }
+
+  #onCollide(other: Entity) {
     if (other.name.startsWith("EnemyBullet")) {
       other.destroy();
 
-      this.#health -= 10;
-      if (this.#health <= 0) this.#gameOver();
-      else this.updateUI();
+      this.health -= 10;
+      if (this.health <= 0) this.#gameOver();
     }
-  }
-
-  initializeUI() {
-    const uiContainer = document.createElement("div");
-    uiContainer.style.position = "absolute";
-    uiContainer.style.top = "10px";
-    uiContainer.style.left = "10px";
-    uiContainer.style.color = "white";
-    uiContainer.style.fontFamily = "Arial, sans-serif";
-    uiContainer.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
-    uiContainer.style.padding = "10px";
-    uiContainer.style.borderRadius = "5px";
-    document.body.appendChild(uiContainer);
-
-    this.#uiElement = uiContainer;
-  }
-
-  updateUI() {
-    this.#uiElement.innerHTML = `
-      <div>Score: ${this.#score}</div>
-      <div>Health: ${this.#health}</div>
-    `;
-  }
-
-  // FIXME: doesn't work
-  increaseScore(amount: number) {
-    this.#score += amount;
-    this.updateUI();
   }
 
   #gameOver() {
@@ -517,6 +507,69 @@ class PlayerBehavior extends Behavior {
         behaviors: [{ type: DeathScreen, values: { score: this.#score } }],
       });
     }
+  }
+}
+
+class PlayerUI extends Behavior {
+  #ui = this.entity.cast(UILayer);
+
+  #score = 0;
+  get score(): number {
+    return this.#score;
+  }
+  set score(value: number) {
+    this.#score = value;
+    this.#scoreSpan.innerText = this.#score.toLocaleString();
+  }
+
+  #health = 0;
+  get health(): number {
+    return this.#health;
+  }
+  set health(value: number) {
+    this.#health = value;
+    this.#healthSpan.innerText = this.#health.toLocaleString();
+  }
+
+  #element!: HTMLDivElement;
+  #scoreSpan!: HTMLSpanElement;
+  #healthSpan!: HTMLSpanElement;
+
+  onInitialize() {
+    const css = `
+#player-ui {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  color: white;
+  font-family: "Inter", sans-serif;
+  background-color: rgb(0 0 0 / 50%);
+  padding: 0.5rem;
+  border-radius: 0.4rem;
+}
+`;
+
+    const style = document.createElement("style");
+    style.appendChild(document.createTextNode(css));
+    this.#ui.root.appendChild(style);
+
+    this.#element = document.createElement("div");
+    this.#element.id = "player-ui";
+    this.#ui.element.appendChild(this.#element);
+
+    const scoreDiv = document.createElement("div");
+    this.#scoreSpan = document.createElement("span");
+    this.#scoreSpan.innerText = this.#score.toLocaleString();
+    scoreDiv.appendChild(document.createTextNode("Score: "));
+    scoreDiv.appendChild(this.#scoreSpan);
+    this.#element.appendChild(scoreDiv);
+
+    const healthDiv = document.createElement("div");
+    this.#healthSpan = document.createElement("span");
+    this.#healthSpan.innerText = this.#health.toLocaleString();
+    healthDiv.appendChild(document.createTextNode("Health: "));
+    healthDiv.appendChild(this.#healthSpan);
+    this.#element.appendChild(healthDiv);
   }
 }
 // #endregion
@@ -707,6 +760,11 @@ function spawnPlayer() {
         name: "PlayerSprite",
         values: { texture: "https://files.codedred.dev/spaceship.png" },
       },
+      {
+        type: UILayer,
+        name: "UI",
+        behaviors: [{ type: PlayerUI }],
+      },
     ],
   });
 }
@@ -865,7 +923,7 @@ class DeathScreen extends Behavior {
     this.#element.appendChild(title);
 
     const description = document.createElement("p");
-    description.innerText = `Final Score: ${this.score}`;
+    description.innerText = `Final Score: ${this.score.toLocaleString()}`;
     this.#element.appendChild(description);
 
     this.#button = document.createElement("button");
