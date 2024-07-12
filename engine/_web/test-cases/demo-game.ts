@@ -143,6 +143,273 @@ class CameraFollow extends Behavior {
 }
 // #endregion
 
+// #region Abilities
+class Shield extends Behavior {
+  #shieldKey = this.inputs.create("@ability/shield", "Shield", "Space");
+  #shieldDuration = 5000;
+  cooldown = 15000;
+  #shieldActive = false;
+  #coolingDown = false;
+  coolingDownTime = 0;
+  #shieldEffect!: Entity;
+
+  constructor(ctx: BehaviorContext) {
+    super(ctx);
+  }
+
+  get isCoolingDown(): boolean {
+    return this.#coolingDown;
+  }
+
+  onTick(): void {
+    if (this.#shieldKey.pressed && !this.#shieldActive && !this.#coolingDown) {
+      this.#activateShield();
+    }
+  }
+
+  #activateShield() {
+    this.#shieldActive = true;
+    this.entity.getBehavior(PlayerBehavior).invincible = true;
+    this.#shieldEffect = this.entity.game.world.spawn({
+      type: Sprite2D,
+      name: "ShieldEffect",
+      transform: {
+        position: this.entity.transform.position.clone(),
+        scale: { x: 2.0, y: 2.0 },
+      },
+      values: { texture: "https://files.codedred.dev/shield.png" },
+    });
+
+    this.entity.game.on(GamePostRender, this.#updateShieldEffectPosition);
+
+    setTimeout(() => {
+      this.entity.getBehavior(PlayerBehavior).invincible = false;
+      this.#shieldEffect.destroy();
+      this.entity.game.unregister(GamePostRender, this.#updateShieldEffectPosition);
+      this.#shieldActive = false;
+      this.#coolDown();
+    }, this.#shieldDuration);
+  }
+
+  #updateShieldEffectPosition = () => {
+    if (this.#shieldEffect) {
+      this.#shieldEffect.transform.position = this.entity.transform.position;
+    }
+  };
+
+  async #coolDown() {
+    this.#coolingDown = true;
+    this.coolingDownTime = Date.now();
+    await new Promise(resolve => setTimeout(resolve, this.cooldown));
+    this.#coolingDown = false;
+  }
+}
+
+// #endregion
+class Supercharge extends Behavior {
+  #superchargeKey = this.inputs.create("@ability/supercharge", "Supercharge", "MouseRight");
+  #superchargeDuration = 5000;
+  cooldown = 30000;
+  #supercharged = false;
+  #coolingDown = false;
+  coolingDownTime = 0;
+
+  constructor(ctx: BehaviorContext) {
+    super(ctx);
+  }
+
+  get isCoolingDown(): boolean {
+    return this.#coolingDown;
+  }
+
+  onTick(): void {
+    if (this.#superchargeKey.pressed && !this.#supercharged && !this.#coolingDown) {
+      this.#startSupercharge();
+    }
+  }
+
+  #startSupercharge() {
+    this.#supercharged = true;
+    const playerBehavior = this.entity.getBehavior(PlayerBehavior);
+    playerBehavior.fireRateMultiplier = 10;
+    setTimeout(() => {
+      playerBehavior.fireRateMultiplier = 1;
+      this.#supercharged = false;
+      this.#coolDown();
+    }, this.#superchargeDuration);
+  }
+
+  async #coolDown() {
+    this.#coolingDown = true;
+    this.coolingDownTime = Date.now();
+    await new Promise(resolve => setTimeout(resolve, this.cooldown));
+    this.#coolingDown = false;
+  }
+}
+// #endregion
+
+// #region Abilities UI
+class AbilityUI extends Behavior {
+  #ui = this.entity.cast(UILayer);
+  #abilities!: HTMLDivElement;
+  #shieldImage!: HTMLImageElement;
+  #shieldCooldown!: HTMLSpanElement;
+  #boostImage!: HTMLImageElement;
+  #boostCooldown!: HTMLSpanElement;
+
+  onInitialize() {
+    const css = `
+#abilities {
+  position: absolute;
+  bottom: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 1rem;
+  color: white;
+  font-family: "Inter", sans-serif;
+  background-color: rgb(0 0 0 / 50%);
+  padding: 0.5rem;
+  border-radius: 0.4rem;
+  user-select: none;
+}
+.ability {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+.ability img {
+  width: 50px;
+  height: 50px;
+  filter: grayscale(100%);
+}
+.ability img.ready {
+  filter: none;
+}
+.cooldown {
+  font-size: 0.75rem;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: red;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+.ability-title {
+  font-size: 1rem;
+  margin-bottom: 0.2rem;
+}
+.ability-keycode {
+  font-size: 0.75rem;
+  margin-top: 0.2rem;
+}
+`;
+
+    const style = document.createElement("style");
+    style.appendChild(document.createTextNode(css));
+    this.#ui.root.appendChild(style);
+
+    this.#abilities = document.createElement("div");
+    this.#abilities.id = "abilities";
+    this.#ui.element.appendChild(this.#abilities);
+
+    const shieldUI = this.#createAbilityUI(
+      "(Space)",
+      "SHIELD",
+      "https://files.codedred.dev/shield_ability.png",
+    );
+    this.#shieldImage = shieldUI.image;
+    this.#shieldCooldown = shieldUI.cooldown;
+
+    const boostUI = this.#createAbilityUI(
+      "(Right Click)",
+      "BOOST",
+      "https://files.codedred.dev/supercharge_ability.png",
+    );
+    this.#boostImage = boostUI.image;
+    this.#boostCooldown = boostUI.cooldown;
+
+    this.listen(this.game, GamePostRender, () => {
+      this.#updateCooldowns();
+    });
+  }
+
+  #createAbilityUI(key: string, name: string, imagePath: string) {
+    const ability = document.createElement("div");
+    ability.classList.add("ability");
+
+    const title = document.createElement("div");
+    title.classList.add("ability-title");
+    title.innerText = name;
+    ability.appendChild(title);
+
+    const image = document.createElement("img");
+    image.src = imagePath;
+    ability.appendChild(image);
+
+    const keycode = document.createElement("div");
+    keycode.classList.add("ability-keycode");
+    keycode.innerText = key;
+    ability.appendChild(keycode);
+
+    const cooldown = document.createElement("span");
+    cooldown.classList.add("cooldown");
+    ability.appendChild(cooldown);
+
+    this.#abilities.appendChild(ability);
+
+    return { image, cooldown };
+  }
+
+  #updateCooldowns() {
+    const player = this.entity.game.world.children.get("Player");
+    if (!player) return;
+
+    const shieldBehavior = player.getBehavior(Shield);
+    const boostBehavior = player.getBehavior(Supercharge);
+
+    this.#updateAbilityCooldown(
+      this.#shieldImage,
+      this.#shieldCooldown,
+      shieldBehavior.isCoolingDown,
+      shieldBehavior.cooldown,
+      shieldBehavior.coolingDownTime,
+    );
+
+    this.#updateAbilityCooldown(
+      this.#boostImage,
+      this.#boostCooldown,
+      boostBehavior.isCoolingDown,
+      boostBehavior.cooldown,
+      boostBehavior.coolingDownTime,
+    );
+  }
+
+  #updateAbilityCooldown(
+    image: HTMLImageElement,
+    cooldownSpan: HTMLSpanElement,
+    isCoolingDown: boolean,
+    cooldownTime: number,
+    coolingDownTime: number,
+  ) {
+    if (isCoolingDown) {
+      image.classList.remove("ready");
+      const remainingTime = Math.ceil((coolingDownTime + cooldownTime - Date.now()) / 1000);
+      cooldownSpan.innerText = remainingTime.toString();
+    } else {
+      image.classList.add("ready");
+      cooldownSpan.innerText = "";
+    }
+  }
+}
+// #endregion
+
 // #region Bullet
 class BulletBehavior extends Behavior {
   readonly #lifetime = 3;
@@ -185,7 +452,10 @@ class ClickFire extends Behavior {
     }
 
     if (this.#fire.held) {
-      this.#lastFired = this.#cooldown;
+      const playerBehavior = this.entity.getBehavior(PlayerBehavior);
+      const fireRateMultiplier = playerBehavior.fireRateMultiplier;
+
+      this.#lastFired = this.#cooldown / fireRateMultiplier;
       const cursor = this.inputs.cursor;
       if (!cursor) return;
 
@@ -470,6 +740,8 @@ export const background = game.local.spawn({
 class PlayerBehavior extends Behavior {
   #score = 0;
   private healthBar!: HealthBar;
+  fireRateMultiplier = 1;
+  invincible = false;
 
   get score(): number {
     return this.#score;
@@ -514,7 +786,7 @@ class PlayerBehavior extends Behavior {
   }
 
   #onCollide(other: Entity) {
-    if (other.name.startsWith("EnemyBullet")) {
+    if (other.name.startsWith("EnemyBullet") && !this.invincible) {
       other.destroy();
       this.health -= 10;
     }
@@ -547,6 +819,8 @@ function spawnPlayer() {
       { type: CameraFollow },
       { type: ClickFire },
       { type: PlayerBehavior },
+      { type: Shield },
+      { type: Supercharge },
     ],
     transform: { position, scale: { x: 1.25, y: 1.25 } },
     values: { type: "fixed" },
@@ -560,7 +834,7 @@ function spawnPlayer() {
       {
         type: UILayer,
         name: "UI",
-        behaviors: [{ type: PlayerUI }],
+        behaviors: [{ type: PlayerUI }, { type: AbilityUI }],
       },
     ],
   });
@@ -602,6 +876,7 @@ class PlayerUI extends Behavior {
   background-color: rgb(0 0 0 / 50%);
   padding: 0.5rem;
   border-radius: 0.4rem;
+  user-select: none;
 }
 `;
 
