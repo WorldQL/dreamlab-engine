@@ -74,6 +74,7 @@ class HealthBar extends Behavior {
     }
   }
 }
+// #endregion
 
 // #region Movement
 class Movement extends Behavior {
@@ -128,6 +129,7 @@ class LookAtMouse extends Behavior {
     this.entity.transform.rotation = rotation;
   }
 }
+// #endregion
 
 // #region Bullet
 class BulletBehavior extends Behavior {
@@ -196,6 +198,7 @@ class ClickFire extends Behavior {
     }
   }
 }
+// #endregion
 
 // #region Asteroid
 class AsteroidMovement extends Behavior {
@@ -286,6 +289,7 @@ function spawnAsteroids() {
 }
 
 spawnAsteroids();
+// #endregion
 
 // #region Enemy
 class EnemyMovement extends Behavior {
@@ -434,6 +438,7 @@ function spawnEnemy() {
 }
 
 setInterval(spawnEnemy, Math.random() * 3000 + 3000);
+// #endregion
 
 // #region Background
 export const background = game.local.spawn({
@@ -447,6 +452,7 @@ export const background = game.local.spawn({
   },
   behaviors: [{ type: BackgroundBehavior, values: { parallax: Vector2.splat(0.5) } }],
 });
+// #endregion
 
 // #region Player
 class PlayerBehavior extends Behavior {
@@ -513,6 +519,7 @@ class PlayerBehavior extends Behavior {
     }
   }
 }
+// #endregion
 
 // #region Map & Coords
 class Minimap extends Behavior {
