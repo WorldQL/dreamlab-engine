@@ -436,8 +436,8 @@ class AbilityUI extends Behavior {
 // #region Levelup
 class LevelUpSelectionScreen extends Behavior {
   #ui = this.entity.cast(UILayer);
-
   #element!: HTMLDivElement;
+  #levelTitle!: HTMLHeadingElement;
 
   onInitialize(): void {
     const css = `
@@ -505,9 +505,8 @@ button:active {
     this.#element.id = "level-up-selection-screen";
     this.#ui.element.appendChild(this.#element);
 
-    const title = document.createElement("h1");
-    title.innerText = "Level Up!";
-    this.#element.appendChild(title);
+    this.#levelTitle = document.createElement("h1");
+    this.#element.appendChild(this.#levelTitle);
 
     const subtitle = document.createElement("h2");
     subtitle.innerText = "Choose Your Level-Up";
@@ -526,6 +525,10 @@ button:active {
       button.addEventListener("click", levelUp.effect);
       this.#element.appendChild(button);
     });
+  }
+
+  setLevel(level: number): void {
+    this.#levelTitle.innerText = `Level ${level}`;
   }
 
   #applyLevelUp(levelUp: string) {
@@ -961,11 +964,12 @@ class PlayerBehavior extends Behavior {
     const ui = this.entity._.UI.getBehavior(PlayerUI);
     ui.updateLevelProgress(0);
 
-    this.game.local?.spawn({
+    const levelUpScreen = this.game.local?.spawn({
       type: UILayer,
       name: "LevelUpSelectionScreen",
       behaviors: [{ type: LevelUpSelectionScreen }],
     });
+    levelUpScreen?.getBehavior(LevelUpSelectionScreen).setLevel(this.#level);
   }
 }
 
