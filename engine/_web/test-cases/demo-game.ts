@@ -79,14 +79,15 @@ class HealthBar extends Behavior {
 class Movement extends Behavior {
   speed = 1.0;
 
-  #up = this.inputs.create("@wasd/up", "Move Up", "KeyW");
-  #down = this.inputs.create("@wasd/down", "Move Down", "KeyS");
-  #left = this.inputs.create("@wasd/left", "Move Left", "KeyA");
-  #right = this.inputs.create("@wasd/right", "Move Right", "KeyD");
-  #shift = this.inputs.create("@wasd/shift", "Speed Boost", "ShiftLeft");
+  #up = this.inputs.create("@movement/up", "Move Up", "KeyW");
+  #down = this.inputs.create("@movement/down", "Move Down", "KeyS");
+  #left = this.inputs.create("@movement/left", "Move Left", "KeyA");
+  #right = this.inputs.create("@movement/right", "Move Right", "KeyD");
+  #shift = this.inputs.create("@movement/shift", "Speed Boost", "ShiftLeft");
 
-  onInitialize(): void {
-    this.value(Movement, "speed");
+  constructor(ctx: BehaviorContext) {
+    super(ctx);
+    this.defineValues(Movement, "speed");
   }
 
   onTick(): void {
@@ -130,36 +131,37 @@ class LookAtMouse extends Behavior {
 
 // #region Bullet
 class BulletBehavior extends Behavior {
-  speed: number;
-  private timer = 0;
-  private readonly lifetime = 3;
-  private direction: Vector2;
+  readonly #lifetime = 3;
+  #timer = 0;
+  #direction: Vector2;
+
+  speed: number = 75;
 
   constructor(ctx: BehaviorContext) {
     super(ctx);
-    this.speed = typeof ctx.values?.speed === "number" ? ctx.values.speed : 75;
+    this.defineValues(BulletBehavior, "speed");
+
     const rotation = this.entity.transform.rotation;
-    this.direction = new Vector2(Math.cos(rotation), Math.sin(rotation));
+    this.#direction = new Vector2(Math.cos(rotation), Math.sin(rotation));
   }
 
   onTick(): void {
     const speed = (this.time.delta / 1000) * this.speed;
     this.entity.transform.position.assign(
-      this.entity.transform.position.add(this.direction.mul(speed)),
+      this.entity.transform.position.add(this.#direction.mul(speed)),
     );
 
-    this.timer += this.time.delta / 1000;
-
-    if (this.timer >= this.lifetime) {
+    this.#timer += this.time.delta / 1000;
+    if (this.#timer >= this.#lifetime) {
       this.entity.destroy();
     }
   }
 }
 
 class ClickFire extends Behavior {
-  fire = this.inputs.create("fire", "Fire", "MouseLeft");
+  #fire = this.inputs.create("@clickFire/fire", "Fire", "MouseLeft");
 
-  cooldown = 10; // ticks
+  readonly #cooldown = 10; // ticks
   #lastFired = 0;
 
   onTick(): void {
@@ -168,8 +170,8 @@ class ClickFire extends Behavior {
       return;
     }
 
-    if (this.fire.held) {
-      this.#lastFired = this.cooldown;
+    if (this.#fire.held) {
+      this.#lastFired = this.#cooldown;
       const cursor = this.inputs.cursor;
       if (!cursor) return;
 
@@ -197,12 +199,18 @@ class ClickFire extends Behavior {
 
 // #region Asteroid
 class AsteroidMovement extends Behavior {
+  readonly #direction = new Vector2(Math.random() * 2 - 1, Math.random() * 2 - 1).normalize();
+
   speed = 0.2;
-  direction = new Vector2(Math.random() * 2 - 1, Math.random() * 2 - 1).normalize();
+
+  constructor(ctx: BehaviorContext) {
+    super(ctx);
+    this.defineValues(AsteroidMovement, "speed");
+  }
 
   onTick(): void {
     this.entity.transform.position = this.entity.transform.position.add(
-      this.direction.mul((this.time.delta / 100) * this.speed),
+      this.#direction.mul((this.time.delta / 100) * this.speed),
     );
   }
 }
@@ -250,7 +258,7 @@ const prefabAsteroid = game.prefabs.spawn({
   ],
 });
 
-const spawnAsteroid = () => {
+function spawnAsteroid() {
   const player = game.world.children.get("Player");
   if (!player) return;
 
@@ -265,9 +273,9 @@ const spawnAsteroid = () => {
   spawnPosition.y = Math.max(-MAP_BOUNDRY, Math.min(MAP_BOUNDRY, spawnPosition.y));
 
   prefabAsteroid.cloneInto(game.world, { transform: { position: spawnPosition } });
-};
+}
 
-const spawnAsteroids = () => {
+function spawnAsteroids() {
   const numAsteroids = Math.floor(Math.random() * 5) + 1;
   for (let i = 0; i < numAsteroids; i++) {
     spawnAsteroid();
@@ -275,7 +283,7 @@ const spawnAsteroids = () => {
 
   const nextSpawnInterval = Math.random() * 5000 + 2000;
   setTimeout(spawnAsteroids, nextSpawnInterval);
-};
+}
 
 spawnAsteroids();
 
@@ -344,23 +352,22 @@ class EnemyMovement extends Behavior {
 }
 
 class ExplosionPieceBehavior extends Behavior {
-  private timer = 0;
-  private readonly lifetime = 1;
-  private direction: Vector2;
+  readonly #lifetime = 1;
+  #timer = 0;
 
-  constructor(ctx: BehaviorContext) {
-    super(ctx);
-    this.direction = new Vector2(Math.random() * 2 - 1, Math.random() * 2 - 1).normalize();
-  }
+  readonly #direction: Vector2 = new Vector2(
+    Math.random() * 2 - 1,
+    Math.random() * 2 - 1,
+  ).normalize();
 
   onTick(): void {
     const speed = 2;
     this.entity.transform.position = this.entity.transform.position.add(
-      this.direction.mul((this.time.delta / 1000) * speed),
+      this.#direction.mul((this.time.delta / 1000) * speed),
     );
 
-    this.timer += this.time.delta / 1000;
-    if (this.timer >= this.lifetime) {
+    this.#timer += this.time.delta / 1000;
+    if (this.#timer >= this.#lifetime) {
       this.entity.destroy();
     }
   }
@@ -409,7 +416,7 @@ const prefabEnemy = game.prefabs.spawn({
   ],
 });
 
-const spawnEnemy = () => {
+function spawnEnemy() {
   const player = game.world.children.get("Player");
   if (!player) return;
 
@@ -424,7 +431,7 @@ const spawnEnemy = () => {
   spawnPosition.y = Math.max(-MAP_BOUNDRY, Math.min(MAP_BOUNDRY, spawnPosition.y));
 
   prefabEnemy.cloneInto(game.world, { transform: { position: spawnPosition } });
-};
+}
 
 setInterval(spawnEnemy, Math.random() * 3000 + 3000);
 
@@ -443,9 +450,9 @@ export const background = game.local.spawn({
 
 // #region Player
 class PlayerBehavior extends Behavior {
-  private score = 0;
-  private health = 100;
-  private uiElement!: HTMLDivElement;
+  #score = 0;
+  #health = 100;
+  #uiElement!: HTMLDivElement;
 
   onInitialize(): void {
     this.listen(this.entity, EntityCollision, e => {
@@ -459,12 +466,10 @@ class PlayerBehavior extends Behavior {
   onCollide(other: Entity) {
     if (other.name.startsWith("EnemyBullet")) {
       other.destroy();
-      this.health -= 10;
-      if (this.health <= 0) {
-        this.handleGameOver();
-      } else {
-        this.updateUI();
-      }
+
+      this.#health -= 10;
+      if (this.#health <= 0) this.#gameOver();
+      else this.updateUI();
     }
   }
 
@@ -480,19 +485,19 @@ class PlayerBehavior extends Behavior {
     uiContainer.style.borderRadius = "5px";
     document.body.appendChild(uiContainer);
 
-    this.uiElement = uiContainer;
+    this.#uiElement = uiContainer;
   }
 
   updateUI() {
-    this.uiElement.innerHTML = `
-      <div>Score: ${this.score}</div>
-      <div>Health: ${this.health}</div>
+    this.#uiElement.innerHTML = `
+      <div>Score: ${this.#score}</div>
+      <div>Health: ${this.#health}</div>
     `;
   }
 
   // FIXME: doesn't work
   increaseScore(amount: number) {
-    this.score += amount;
+    this.#score += amount;
     this.updateUI();
   }
 
@@ -503,7 +508,7 @@ class PlayerBehavior extends Behavior {
       this.game.local.spawn({
         type: UILayer,
         name: "DeathScreen",
-        behaviors: [{ type: DeathScreen, values: { score: this.score } }],
+        behaviors: [{ type: DeathScreen, values: { score: this.#score } }],
       });
     }
   }
@@ -615,9 +620,7 @@ const createMapBorder = (width: number, height: number) => {
         position: { x: border.x, y: border.y },
         scale: { x: border.width, y: border.height },
       },
-      values: {
-        type: "fixed",
-      },
+      values: { type: "fixed" },
       children: [
         {
           type: TilingSprite2D,
