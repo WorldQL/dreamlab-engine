@@ -13,3 +13,5 @@ export const timeIncrement = Symbol.for("dreamlab.internal.timeIncrement");
 export const timeSetMode = Symbol.for("dreamlab.internal.timeSetMode");
 export const inputsRegisterHandlers = Symbol.for("dreamlab.internal.inputsRegisterHandlers");
 export const actionSetHeld = Symbol.for("dreamlab.internal.actionSetHeld");
+export const uiInit = Symbol.for("dreamlab.internal.uiInit");
+export const uiDestroy = Symbol.for("dreamlab.internal.uiDestroy");

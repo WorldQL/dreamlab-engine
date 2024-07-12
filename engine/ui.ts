@@ -1,5 +1,6 @@
 import { Entity } from "./entity/mod.ts";
 import { ClientGame } from "./game.ts";
+import { uiDestroy, uiInit } from "./internal.ts";
 import { EntityReparented } from "./signals/mod.ts";
 
 export class UIManager {
@@ -11,8 +12,7 @@ export class UIManager {
     this.#game = game;
   }
 
-  // TODO: Convert to internal method
-  init() {
+  [uiInit]() {
     if (this.#container) return;
 
     // Make sure parent div is relative
@@ -27,8 +27,7 @@ export class UIManager {
     this.#game.container.appendChild(this.#container);
   }
 
-  // TODO: Convert to internal method
-  shutdown() {
+  [uiDestroy]() {
     this.#container?.remove();
     this.#container = undefined;
   }

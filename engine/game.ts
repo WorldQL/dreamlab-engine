@@ -237,11 +237,11 @@ export class ClientGame extends BaseGame {
     await super.initialize();
     await this.renderer.initialize();
     this.inputs[internal.inputsRegisterHandlers]();
-    this.ui.init();
+    this.ui[internal.uiInit]();
   }
 
   override shutdown() {
-    this.ui.shutdown();
+    this.ui[internal.uiDestroy]();
     super.shutdown();
   }
 
