@@ -6,7 +6,27 @@ export class UILayer extends InterpolatedEntity {
   public static readonly icon = "🖼️";
 
   #ui: { outer: HTMLDivElement; root: ShadowRoot; element: HTMLDivElement } | undefined;
-  public get element(): HTMLDivElement | undefined {
+  public get root(): ShadowRoot {
+    if (!this.game.isClient()) {
+      throw new Error("cannot access property 'root' on the server");
+    }
+
+    if (!this.#ui) {
+      throw new Error(`${this.id} has not been initialized`);
+    }
+
+    return this.#ui?.root;
+  }
+
+  public get element(): HTMLDivElement {
+    if (!this.game.isClient()) {
+      throw new Error("cannot access property 'element' on the server");
+    }
+
+    if (!this.#ui) {
+      throw new Error(`${this.id} has not been initialized`);
+    }
+
     return this.#ui?.element;
   }
 
