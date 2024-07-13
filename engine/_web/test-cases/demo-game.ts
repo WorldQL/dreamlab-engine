@@ -111,11 +111,11 @@ class Movement extends Behavior {
     const halfHeight = this.entity.transform.scale.y / 2;
     const safety = 0.5;
 
-    if (newPosition.x - halfWidth <= -MAP_BOUNDRY) newPosition.x = -MAP_BOUNDRY + safety;
-    if (newPosition.x + halfWidth >= MAP_BOUNDRY) newPosition.x = MAP_BOUNDRY - safety;
+    if (newPosition.x - halfWidth <= -MAP_BOUNDARY) newPosition.x = -MAP_BOUNDARY + safety;
+    if (newPosition.x + halfWidth >= MAP_BOUNDARY) newPosition.x = MAP_BOUNDARY - safety;
 
-    if (newPosition.y - halfHeight <= -MAP_BOUNDRY) newPosition.y = -MAP_BOUNDRY + safety;
-    if (newPosition.y + halfHeight >= MAP_BOUNDRY) newPosition.y = MAP_BOUNDRY - safety;
+    if (newPosition.y - halfHeight <= -MAP_BOUNDARY) newPosition.y = -MAP_BOUNDARY + safety;
+    if (newPosition.y + halfHeight >= MAP_BOUNDARY) newPosition.y = MAP_BOUNDARY - safety;
 
     this.entity.transform.position = newPosition;
   }
@@ -704,8 +704,8 @@ function spawnAsteroid() {
     new Vector2(Math.cos(spawnAngle) * spawnDistance, Math.sin(spawnAngle) * spawnDistance),
   );
 
-  spawnPosition.x = Math.max(-MAP_BOUNDRY, Math.min(MAP_BOUNDRY, spawnPosition.x));
-  spawnPosition.y = Math.max(-MAP_BOUNDRY, Math.min(MAP_BOUNDRY, spawnPosition.y));
+  spawnPosition.x = Math.max(-MAP_BOUNDARY, Math.min(MAP_BOUNDARY, spawnPosition.x));
+  spawnPosition.y = Math.max(-MAP_BOUNDARY, Math.min(MAP_BOUNDARY, spawnPosition.y));
 
   prefabAsteroid.cloneInto(game.world, { transform: { position: spawnPosition } });
 }
@@ -863,8 +863,8 @@ function spawnEnemy() {
     new Vector2(Math.cos(spawnAngle) * spawnDistance, Math.sin(spawnAngle) * spawnDistance),
   );
 
-  spawnPosition.x = Math.max(-MAP_BOUNDRY, Math.min(MAP_BOUNDRY, spawnPosition.x));
-  spawnPosition.y = Math.max(-MAP_BOUNDRY, Math.min(MAP_BOUNDRY, spawnPosition.y));
+  spawnPosition.x = Math.max(-MAP_BOUNDARY, Math.min(MAP_BOUNDARY, spawnPosition.x));
+  spawnPosition.y = Math.max(-MAP_BOUNDARY, Math.min(MAP_BOUNDARY, spawnPosition.y));
 
   prefabEnemy.cloneInto(game.world, { transform: { position: spawnPosition } });
 }
@@ -1006,8 +1006,8 @@ class PlayerBehavior extends Behavior {
 }
 
 function spawnPlayer() {
-  const x = Math.random() * (MAP_BOUNDRY * 2) - MAP_BOUNDRY;
-  const y = Math.random() * (MAP_BOUNDRY * 2) - MAP_BOUNDRY;
+  const x = Math.random() * (MAP_BOUNDARY * 2) - MAP_BOUNDARY;
+  const y = Math.random() * (MAP_BOUNDARY * 2) - MAP_BOUNDARY;
   const position = { x, y };
 
   return game.world.spawn({
@@ -1270,11 +1270,11 @@ class Minimap extends Behavior {
     const minimapWidth = this.#element.clientWidth;
     const minimapHeight = this.#element.clientHeight;
 
-    const mapWidth = MAP_BOUNDRY * 2;
-    const mapHeight = MAP_BOUNDRY * 2;
+    const mapWidth = MAP_BOUNDARY * 2;
+    const mapHeight = MAP_BOUNDARY * 2;
 
-    const minimapX = ((pos.x + MAP_BOUNDRY) / mapWidth) * minimapWidth;
-    const minimapY = ((-pos.y + MAP_BOUNDRY) / mapHeight) * minimapHeight;
+    const minimapX = ((pos.x + MAP_BOUNDARY) / mapWidth) * minimapWidth;
+    const minimapY = ((-pos.y + MAP_BOUNDARY) / mapHeight) * minimapHeight;
 
     this.#dot.style.left = `${minimapX - 2.5}px`;
     this.#dot.style.top = `${minimapY - 2.5}px`;
@@ -1334,8 +1334,8 @@ function createMapBorder(width: number, height: number) {
   });
 }
 
-const MAP_BOUNDRY = 500;
-createMapBorder(MAP_BOUNDRY * 2, MAP_BOUNDRY * 2);
+const MAP_BOUNDARY = 500;
+createMapBorder(MAP_BOUNDARY * 2, MAP_BOUNDARY * 2);
 
 class CoordsDisplay extends Behavior {
   #ui = this.entity.cast(UILayer);
