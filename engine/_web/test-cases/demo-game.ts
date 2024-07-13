@@ -888,6 +888,7 @@ export const background = game.local.spawn({
 
 // #region Player
 class PlayerBehavior extends Behavior {
+  #totalScore = 0;
   #score = 0;
   private healthBar!: HealthBar;
   fireRateMultiplier = 1;
@@ -897,11 +898,16 @@ class PlayerBehavior extends Behavior {
   #scoreForNextLevel = 100;
   #scoreForNextLevelBase = 100;
 
+  get totalScore(): number {
+    return this.#totalScore;
+  }
+
   get score(): number {
     return this.#score;
   }
   set score(value: number) {
     this.#score = value;
+    this.#totalScore += this.#score;
 
     const ui = this.entity._.UI.getBehavior(PlayerUI);
     ui.updateLevelProgress(this.#score / this.#scoreForNextLevel);
@@ -910,7 +916,7 @@ class PlayerBehavior extends Behavior {
       this.#levelUp();
     }
 
-    ui.score = this.#score;
+    ui.totalScore = this.#totalScore;
   }
 
   #health = 100;
@@ -931,7 +937,7 @@ class PlayerBehavior extends Behavior {
 
   onInitialize(): void {
     const ui = this.entity._.UI.getBehavior(PlayerUI);
-    ui.score = this.#score;
+    ui.totalScore = this.#totalScore;
     ui.health = this.#health;
     ui.updateFireRate(this.fireRateMultiplier);
     ui.updateSpeed(this.entity.getBehavior(Movement).speed);
@@ -969,8 +975,8 @@ class PlayerBehavior extends Behavior {
 
   #levelUp() {
     this.#level += 1;
-    this.#scoreForNextLevel =
-      this.#score + this.#scoreForNextLevelBase * Math.pow(1.2, this.#level - 1); // 20% increase per level
+    this.#scoreForNextLevel = this.#scoreForNextLevelBase * Math.pow(1.2, this.#level - 1); // 20% increase per level
+    this.#score = 0;
 
     const ui = this.entity._.UI.getBehavior(PlayerUI);
     ui.updateLevelProgress(0);
@@ -1038,13 +1044,13 @@ function spawnPlayer() {
 class PlayerUI extends Behavior {
   #ui = this.entity.cast(UILayer);
 
-  #score = 0;
-  get score(): number {
-    return this.#score;
+  #totalScore = 0;
+  get totalScore(): number {
+    return this.#totalScore;
   }
-  set score(value: number) {
-    this.#score = value;
-    this.#scoreSpan.innerText = this.#score.toLocaleString();
+  set totalScore(value: number) {
+    this.#totalScore = value;
+    this.#scoreSpan.innerText = this.#totalScore.toLocaleString();
   }
 
   #health = 0;
@@ -1093,7 +1099,7 @@ class PlayerUI extends Behavior {
 
     const scoreDiv = document.createElement("div");
     this.#scoreSpan = document.createElement("span");
-    this.#scoreSpan.innerText = this.#score.toLocaleString();
+    this.#scoreSpan.innerText = this.#totalScore.toLocaleString();
     scoreDiv.appendChild(document.createTextNode("Score: "));
     scoreDiv.appendChild(this.#scoreSpan);
     this.#element.appendChild(scoreDiv);
