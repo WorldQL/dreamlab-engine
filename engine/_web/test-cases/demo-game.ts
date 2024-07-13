@@ -146,7 +146,7 @@ class CameraFollow extends Behavior {
 // #region Abilities
 class Shield extends Behavior {
   #shieldKey = this.inputs.create("@ability/shield", "Shield", "Space");
-  #shieldDuration = 5000;
+  shieldDuration = 5000;
   cooldown = 15000;
   #shieldActive = false;
   #coolingDown = false;
@@ -182,13 +182,15 @@ class Shield extends Behavior {
 
     this.entity.game.on(GamePostRender, this.#updateShieldEffectPosition);
 
+    this.#updateShieldUI(this.shieldDuration);
+
     setTimeout(() => {
       this.entity.getBehavior(PlayerBehavior).invincible = false;
       this.#shieldEffect.destroy();
       this.entity.game.unregister(GamePostRender, this.#updateShieldEffectPosition);
       this.#shieldActive = false;
       this.#coolDown();
-    }, this.#shieldDuration);
+    }, this.shieldDuration);
   }
 
   #updateShieldEffectPosition = () => {
@@ -200,8 +202,14 @@ class Shield extends Behavior {
   async #coolDown() {
     this.#coolingDown = true;
     this.coolingDownTime = Date.now();
+    this.#updateShieldUI(0);
     await new Promise(resolve => setTimeout(resolve, this.cooldown));
     this.#coolingDown = false;
+  }
+
+  #updateShieldUI(duration: number) {
+    const ui = this.entity._.UI.getBehavior(PlayerUI);
+    ui.updateShieldDuration(duration);
   }
 }
 
@@ -537,7 +545,7 @@ button:active {
 
     switch (levelUp) {
       case "ShieldBoost":
-        player.getBehavior(Shield).cooldown *= 0.9;
+        player.getBehavior(Shield).shieldDuration *= 1.05;
         break;
       case "FireRateBoost":
         player.getBehavior(PlayerBehavior).fireRateMultiplier *= 1.1;
@@ -925,6 +933,9 @@ class PlayerBehavior extends Behavior {
     const ui = this.entity._.UI.getBehavior(PlayerUI);
     ui.score = this.#score;
     ui.health = this.#health;
+    ui.updateFireRate(this.fireRateMultiplier);
+    ui.updateSpeed(this.entity.getBehavior(Movement).speed);
+    ui.updateShieldDuration(this.entity.getBehavior(Shield).shieldDuration);
 
     this.healthBar = this.entity.addBehavior({
       type: HealthBar,
@@ -958,9 +969,9 @@ class PlayerBehavior extends Behavior {
 
   #levelUp() {
     this.#level += 1;
-    this.#scoreForNextLevel = this.#scoreForNextLevelBase * Math.pow(1.2, this.#level - 1); // 20% increase per level
+    this.#scoreForNextLevel =
+      this.#score + this.#scoreForNextLevelBase * Math.pow(1.2, this.#level - 1); // 20% increase per level
 
-    this.#score = 0;
     const ui = this.entity._.UI.getBehavior(PlayerUI);
     ui.updateLevelProgress(0);
 
@@ -970,6 +981,21 @@ class PlayerBehavior extends Behavior {
       behaviors: [{ type: LevelUpSelectionScreen }],
     });
     levelUpScreen?.getBehavior(LevelUpSelectionScreen).setLevel(this.#level);
+  }
+
+  updateFireRate(value: number): void {
+    const ui = this.entity._.UI.getBehavior(PlayerUI);
+    ui.updateFireRate(value);
+  }
+
+  updateSpeed(value: number): void {
+    const ui = this.entity._.UI.getBehavior(PlayerUI);
+    ui.updateSpeed(value);
+  }
+
+  updateShieldDuration(value: number): void {
+    const ui = this.entity._.UI.getBehavior(PlayerUI);
+    ui.updateShieldDuration(value);
   }
 }
 
@@ -1008,6 +1034,7 @@ function spawnPlayer() {
   });
 }
 
+// #region Player UI
 class PlayerUI extends Behavior {
   #ui = this.entity.cast(UILayer);
 
@@ -1029,9 +1056,16 @@ class PlayerUI extends Behavior {
     this.#healthSpan.innerText = this.#health.toLocaleString();
   }
 
+  #fireRate = 1;
+  #speed = 1;
+  #shieldDuration = 5000;
+
   #element!: HTMLDivElement;
   #scoreSpan!: HTMLSpanElement;
   #healthSpan!: HTMLSpanElement;
+  #fireRateSpan!: HTMLSpanElement;
+  #speedSpan!: HTMLSpanElement;
+  #shieldDurationSpan!: HTMLSpanElement;
   #progressUI!: LevelProgressUI;
 
   onInitialize() {
@@ -1071,17 +1105,67 @@ class PlayerUI extends Behavior {
     healthDiv.appendChild(this.#healthSpan);
     this.#element.appendChild(healthDiv);
 
+    const fireRateDiv = document.createElement("div");
+    this.#fireRateSpan = document.createElement("span");
+    this.#fireRateSpan.innerText = this.#fireRate.toString();
+    fireRateDiv.appendChild(document.createTextNode("Fire Rate: "));
+    fireRateDiv.appendChild(this.#fireRateSpan);
+    this.#element.appendChild(fireRateDiv);
+
+    const speedDiv = document.createElement("div");
+    this.#speedSpan = document.createElement("span");
+    this.#speedSpan.innerText = this.#speed.toString();
+    speedDiv.appendChild(document.createTextNode("Speed: "));
+    speedDiv.appendChild(this.#speedSpan);
+    this.#element.appendChild(speedDiv);
+
+    const shieldDurationDiv = document.createElement("div");
+    this.#shieldDurationSpan = document.createElement("span");
+    this.#shieldDurationSpan.innerText = `${this.#shieldDuration / 1000} s`;
+    shieldDurationDiv.appendChild(document.createTextNode("Shield Duration: "));
+    shieldDurationDiv.appendChild(this.#shieldDurationSpan);
+    this.#element.appendChild(shieldDurationDiv);
+
     this.#progressUI = this.entity.addBehavior({
       type: LevelProgressUI,
       values: {},
     });
+
+    this.listen(this.game, GamePostRender, this.updateStats.bind(this));
   }
 
   updateLevelProgress(progress: number) {
     this.#progressUI.updateProgress(progress);
   }
+
+  updateFireRate(value: number) {
+    this.#fireRateSpan.innerText = (Math.round(value * 10) / 10).toFixed(1);
+  }
+
+  updateSpeed(value: number) {
+    this.#speedSpan.innerText = (Math.round(value * 10) / 10).toFixed(1);
+  }
+
+  updateShieldDuration(value: number) {
+    this.#shieldDurationSpan.innerText = `${(Math.round(value / 100) / 10).toFixed(1)} s`;
+  }
+
+  updateStats() {
+    const player = this.entity.game.world.children.get("Player");
+    if (!player) return;
+
+    const playerBehavior = player.getBehavior(PlayerBehavior);
+    const shieldBehavior = player.getBehavior(Shield);
+
+    this.updateFireRate(playerBehavior.fireRateMultiplier);
+    this.updateSpeed(playerBehavior.entity.getBehavior(Movement).speed);
+    this.updateShieldDuration(shieldBehavior.shieldDuration);
+  }
 }
 
+// #endregion
+
+// #region Level UI
 class LevelProgressUI extends Behavior {
   #ui = this.entity.cast(UILayer);
   #progressBar!: HTMLDivElement;
