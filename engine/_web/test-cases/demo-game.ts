@@ -1096,41 +1096,48 @@ class PlayerBehavior extends Behavior {
     ui.updateShieldDuration(value);
   }
 
-  activateScatterShot() {
-    console.log("ScatterShot Activated");
-    this.setShootingPattern(this.scatterShot);
-  }
-
-  activateDoubleShot() {
-    console.log("DoubleShot Activated");
-    this.setShootingPattern(this.doubleShot);
-  }
-
-  activateBackwardsShot() {
-    console.log("BackwardsShot Activated");
-    this.setShootingPattern(this.backwardsShot);
-  }
-
-  activateSideShot() {
-    console.log("SideShot Activated");
-    this.setShootingPattern(this.sideShot);
-  }
-
-  activateSpiralShot() {
-    console.log("SpiralShot Activated");
-    this.setShootingPattern(this.spiralShot);
-  }
-
-  private setShootingPattern(patternFunction: () => void) {
+  private setShootingPattern(
+    patternFunction: () => void,
+    powerUpName: string,
+    duration: number,
+  ) {
     if (this.currentPowerUpTimeout) {
       clearTimeout(this.currentPowerUpTimeout);
     }
 
     this.shootingPattern = patternFunction;
 
+    const ui = this.entity._.UI.getBehavior(PlayerUI);
+    ui.updatePowerUp(powerUpName, duration);
+
     this.currentPowerUpTimeout = setTimeout(() => {
       this.resetShootingPattern();
-    }, 15000);
+    }, duration);
+  }
+
+  activateScatterShot() {
+    console.log("ScatterShot Activated");
+    this.setShootingPattern(this.scatterShot, "ScatterShot", 15000);
+  }
+
+  activateDoubleShot() {
+    console.log("DoubleShot Activated");
+    this.setShootingPattern(this.doubleShot, "DoubleShot", 15000);
+  }
+
+  activateBackwardsShot() {
+    console.log("BackwardsShot Activated");
+    this.setShootingPattern(this.backwardsShot, "BackwardsShot", 15000);
+  }
+
+  activateSideShot() {
+    console.log("SideShot Activated");
+    this.setShootingPattern(this.sideShot, "SideShot", 15000);
+  }
+
+  activateSpiralShot() {
+    console.log("SpiralShot Activated");
+    this.setShootingPattern(this.spiralShot, "SpiralShot", 15000);
   }
 
   private resetShootingPattern() {
@@ -1268,6 +1275,8 @@ class PlayerUI extends Behavior {
   #speedSpan!: HTMLSpanElement;
   #shieldDurationSpan!: HTMLSpanElement;
   #progressUI!: LevelProgressUI;
+  #powerUpSpan!: HTMLSpanElement;
+  #powerUpTimer: number | null = null;
 
   onInitialize() {
     const css = `
@@ -1327,6 +1336,12 @@ class PlayerUI extends Behavior {
     shieldDurationDiv.appendChild(this.#shieldDurationSpan);
     this.#element.appendChild(shieldDurationDiv);
 
+    const powerUpDiv = document.createElement("div");
+    this.#powerUpSpan = document.createElement("span");
+    powerUpDiv.appendChild(document.createTextNode("Power-Up: "));
+    powerUpDiv.appendChild(this.#powerUpSpan);
+    this.#element.appendChild(powerUpDiv);
+
     this.#progressUI = this.entity.addBehavior({
       type: LevelProgressUI,
       values: {},
@@ -1351,6 +1366,24 @@ class PlayerUI extends Behavior {
     this.#shieldDurationSpan.innerText = `${(Math.round(value / 100) / 10).toFixed(1)} s`;
   }
 
+  updatePowerUp(name: string, duration: number) {
+    this.#powerUpSpan.innerText = `${name} (${duration / 1000}s)`;
+
+    if (this.#powerUpTimer) {
+      clearInterval(this.#powerUpTimer);
+    }
+
+    let remainingTime = duration / 1000;
+    this.#powerUpTimer = setInterval(() => {
+      remainingTime -= 1;
+      this.#powerUpSpan.innerText = `${name} (${remainingTime}s)`;
+      if (remainingTime <= 0) {
+        clearInterval(this.#powerUpTimer!);
+        this.#powerUpSpan.innerText = "";
+      }
+    }, 1000);
+  }
+
   updateStats() {
     const player = this.entity.game.world.children.get("Player");
     if (!player) return;
@@ -1363,7 +1396,6 @@ class PlayerUI extends Behavior {
     this.updateShieldDuration(shieldBehavior.shieldDuration);
   }
 }
-
 // #endregion
 
 // #region Level UI
