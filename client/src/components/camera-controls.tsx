@@ -1,5 +1,5 @@
 // @deno-types="npm:@types/react@18.3.1"
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Camera, GameRender, Vector2 } from "@dreamlab/engine";
 import { game } from "../global-game.ts";
 import { MousePointer2, Move, ZoomIn } from "lucide-react";
@@ -18,21 +18,21 @@ export const CameraControls = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }
   const [zoomScale, setZoomScale] = useState<number>(1);
 
   const updateCursor = useCallback(() => {
-    const container = document.getElementById('editor-pointer-style-target');
-    if (!container) return
+    const container = document.getElementById("editor-pointer-style-target");
+    if (!container) return;
 
     const cursorStyle = isDraggingRef.current
       ? "grabbing"
       : isSpaceDownRef.current
-        ? "grab"
-        : isCtrlDownRef.current
-          ? "zoom-in"
-          : "default";
+      ? "grab"
+      : isCtrlDownRef.current
+      ? "zoom-in"
+      : "default";
 
     if (cursorStyle !== "default") {
       container.style.cursor = cursorStyle;
     } else {
-      container.style.cursor = ''
+      container.style.cursor = "";
     }
   }, []);
 
@@ -108,10 +108,14 @@ export const CameraControls = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }
       } else {
         const scrollSpeed = 50;
         const scrollDirection = event.deltaY > 0 ? 1 : -1;
-        const scrollDelta = new Vector2(0, scrollDirection * scrollSpeed);
+        const scrollDelta = event.shiftKey
+          ? new Vector2(scrollDirection * scrollSpeed, 0)
+          : new Vector2(0, scrollDirection * scrollSpeed);
+
         const worldDelta = cameraRef.current
           .screenToWorld(scrollDelta)
           .sub(cameraRef.current.screenToWorld(Vector2.ZERO));
+
         cameraRef.current.transform.position =
           cameraRef.current.transform.position.add(worldDelta);
       }
