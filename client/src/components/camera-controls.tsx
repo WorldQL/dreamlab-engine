@@ -56,7 +56,7 @@ export const CameraControls = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }
       const mouseEvent = new MouseEvent(event.type, event);
       gameDiv.querySelector("canvas")?.dispatchEvent(mouseEvent);
     },
-    [updateCursor],
+    [updateCursor, gameDiv],
   );
 
   const handleMouseMove = useCallback((event: MouseEvent) => {
@@ -78,7 +78,7 @@ export const CameraControls = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }
 
     const mouseEvent = new MouseEvent(event.type, event);
     gameDiv.querySelector("canvas")?.dispatchEvent(mouseEvent);
-  }, []);
+  }, [gameDiv]);
 
   const handleMouseUp = useCallback(
     (event: MouseEvent) => {
@@ -90,7 +90,7 @@ export const CameraControls = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }
       const mouseEvent = new MouseEvent(event.type, event);
       gameDiv.querySelector("canvas")?.dispatchEvent(mouseEvent);
     },
-    [updateCursor],
+    [updateCursor, gameDiv],
   );
 
   const handleWheel = useCallback((event: WheelEvent) => {
@@ -106,11 +106,7 @@ export const CameraControls = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }
         cameraRef.current.transform.scale = clampedScale;
         setZoomScale(clampedScale.x);
       } else {
-        const scrollSpeed = 50;
-        const scrollDirection = event.deltaY > 0 ? 1 : -1;
-        const scrollDelta = event.shiftKey
-          ? new Vector2(scrollDirection * scrollSpeed, 0)
-          : new Vector2(0, scrollDirection * scrollSpeed);
+        const scrollDelta = new Vector2(event.deltaX, event.deltaY);
 
         const worldDelta = cameraRef.current
           .screenToWorld(scrollDelta)
