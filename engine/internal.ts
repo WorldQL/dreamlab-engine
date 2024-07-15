@@ -15,3 +15,7 @@ export const inputsRegisterHandlers = Symbol.for("dreamlab.internal.inputsRegist
 export const actionSetHeld = Symbol.for("dreamlab.internal.actionSetHeld");
 export const uiInit = Symbol.for("dreamlab.internal.uiInit");
 export const uiDestroy = Symbol.for("dreamlab.internal.uiDestroy");
+export const entityForceAuthorityValues = Symbol.for(
+  "dreamlab.internal.entityForceAuthorityValues",
+);
+export const entityAuthorityClock = Symbol.for("dreamlab.internal.entityAuthorityClock");

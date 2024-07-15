@@ -1,5 +1,7 @@
 import { Entity } from "../entity/mod.ts";
+import { BaseGame } from "../game.ts";
 import { Vector2 } from "../math/mod.ts";
+import { ConnectionId } from "../network.ts";
 import { exclusiveSignalType } from "../signal.ts";
 
 export class EntityPreUpdate {
@@ -35,4 +37,13 @@ export class EntityRotate {
     public current: number,
   ) {}
   [exclusiveSignalType] = Entity;
+}
+
+export class EntityExclusiveAuthorityChanged {
+  constructor(
+    public entity: Entity,
+    public authority: ConnectionId,
+    public clock: number,
+  ) {}
+  [exclusiveSignalType] = BaseGame;
 }

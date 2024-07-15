@@ -1,17 +1,27 @@
-import { ConnectionId, Entity } from "@dreamlab/engine";
+import { EntityExclusiveAuthorityChanged } from "@dreamlab/engine";
 import { ClientNetworkSetupRoutine } from "./net-connection.ts";
+import * as internal from "../../../../engine/internal.ts";
 
 export const handleTransformSync: ClientNetworkSetupRoutine = (conn, game) => {
-  // TODO: we probably want an 'authority: ConnectionId' set/get pair in Entity proper
-  // that can fire signals for us, then we can send Request/Relinquish packets when it's set -- but we use a weakmap for now
-  const entityAuthorityInfo = new WeakMap<Entity, { clock: number; authority: ConnectionId }>();
+  game.on(EntityExclusiveAuthorityChanged, event => {
+    if (event.authority === conn.id) {
+      conn.send({
+        t: "RequestExclusiveAuthority",
+        entity: event.entity.ref,
+        clock: event.clock,
+      });
+    } else if (event.entity.authority === conn.id) {
+      conn.send({
+        t: "RelinquishExclusiveAuthority",
+        entity: event.entity.ref,
+      });
+    }
+  });
 
   conn.registerPacketHandler("ReportEntityTransform", packet => {
     const entity = game.entities.lookupByRef(packet.entity);
     if (entity === undefined) return;
-    const authorityInfo = entityAuthorityInfo.get(entity);
-    if (authorityInfo === undefined) return;
-    if (packet.from === authorityInfo.authority) {
+    if (packet.from === entity.authority) {
       entity.transform.position.assign(packet.position);
       entity.transform.rotation = packet.rotation;
       entity.transform.scale.assign(packet.scale);
@@ -21,6 +31,12 @@ export const handleTransformSync: ClientNetworkSetupRoutine = (conn, game) => {
   conn.registerPacketHandler("AnnounceExclusiveAuthority", packet => {
     const entity = game.entities.lookupByRef(packet.entity);
     if (entity === undefined) return;
-    entityAuthorityInfo.set(entity, { clock: packet.clock, authority: packet.to });
+    entity[internal.entityForceAuthorityValues](packet.to, packet.clock);
+  });
+
+  conn.registerPacketHandler("DenyExclusiveAuthority", packet => {
+    const entity = game.entities.lookupByRef(packet.entity);
+    if (entity === undefined) return;
+    entity[internal.entityForceAuthorityValues](entity.authority, packet.clock);
   });
 };

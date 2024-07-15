@@ -37,9 +37,11 @@ import {
   EntityChildDestroyed,
   EntityDescendantDestroyed,
   EntityReparented,
+  EntityExclusiveAuthorityChanged,
 } from "../signals/mod.ts";
 import { JsonValue, SyncedValue, ValueTypeTag, inferValueTypeTag } from "../value/mod.ts";
 import { Behavior, BehaviorConstructor, BehaviorDefinition } from "../behavior/behavior.ts";
+import { ConnectionId } from "../network.ts";
 
 export interface EntityContext {
   game: Game;
@@ -301,6 +303,8 @@ export abstract class Entity implements ISignalHandler {
   // #endregion
 
   // #region Behaviors
+  readonly behaviors: Behavior[] = [];
+
   addBehavior<B extends Behavior>(behavior: BehaviorDefinition<B>): B {
     const b = new behavior.type({
       game: this.game,
@@ -464,7 +468,41 @@ export abstract class Entity implements ISignalHandler {
   }
   // #endregion
 
-  readonly behaviors: Behavior[] = [];
+  // #region Authority
+  #exclusiveAuthority: ConnectionId;
+  #exclusiveAuthorityClock: number = 0;
+  [internal.entityForceAuthorityValues](authority: ConnectionId, clock: number) {
+    if (clock < this.#exclusiveAuthorityClock) return;
+    if (
+      clock === this.#exclusiveAuthorityClock &&
+      this.#exclusiveAuthority !== undefined &&
+      (authority ?? "") < this.#exclusiveAuthority
+    )
+      return;
+
+    this.#exclusiveAuthority = authority;
+    this.#exclusiveAuthorityClock = clock;
+  }
+  get [internal.entityAuthorityClock]() {
+    return this.#exclusiveAuthorityClock;
+  }
+  get authority() {
+    return this.#exclusiveAuthority;
+  }
+  set authority(newAuthority: ConnectionId) {
+    // picked up by host application event handlers -> forceAuthorityValues
+    this.game.fire(
+      EntityExclusiveAuthorityChanged,
+      this,
+      newAuthority,
+      this.#exclusiveAuthorityClock + 1,
+    );
+  }
+  takeAuthority() {
+    const selfConnectionId = this.game.isClient() ? this.game.network.connectionId : undefined;
+    this.authority = selfConnectionId;
+  }
+  // #endregion
 
   // internal id for stable internal reference. we only really need this for networking
   readonly ref: string = generateCUID("ent");

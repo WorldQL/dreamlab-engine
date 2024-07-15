@@ -1,10 +1,10 @@
 import { ConnectionId, Entity } from "@dreamlab/engine";
 import { ServerNetworkSetupRoutine } from "./net-manager.ts";
+import * as internal from "../../../../engine/internal.ts";
 
 export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
-  const entityAuthorityInfo = new WeakMap<Entity, { clock: number; authority: ConnectionId }>();
-
   function announceAuthority(entity: Entity, clock: number, authority: ConnectionId) {
+    entity[internal.entityForceAuthorityValues](authority, clock);
     net.broadcast({
       t: "AnnounceExclusiveAuthority",
       entity: entity.ref,
@@ -16,17 +16,12 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
   net.registerPacketHandler("RequestExclusiveAuthority", (from, packet) => {
     const entity = game.entities.lookupByRef(packet.entity);
     if (entity === undefined) return;
-    const authorityInfo = entityAuthorityInfo.get(entity);
-    if (authorityInfo === undefined) {
-      announceAuthority(entity, packet.clock, from);
-      return;
-    }
+
+    const clock = entity[internal.entityAuthorityClock];
 
     if (
-      packet.clock > authorityInfo.clock ||
-      (packet.clock === authorityInfo.clock &&
-        authorityInfo.authority !== undefined &&
-        from! < authorityInfo.authority)
+      packet.clock > clock ||
+      (packet.clock === clock && entity.authority !== undefined && from! < entity.authority)
     ) {
       announceAuthority(entity, packet.clock, from);
     }
@@ -35,10 +30,10 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
   net.registerPacketHandler("RelinquishExclusiveAuthority", (from, packet) => {
     const entity = game.entities.lookupByRef(packet.entity);
     if (entity === undefined) return;
-    const info = entityAuthorityInfo.get(entity);
-    if (info === undefined) return;
-    if (info.authority !== from) return;
-    announceAuthority(entity, info.clock + 1, undefined);
+    if (entity.authority !== from) return;
+
+    const clock = entity[internal.entityAuthorityClock];
+    announceAuthority(entity, clock + 1, undefined);
   });
 
   // TODO: entity authority snapshot when a player joins
