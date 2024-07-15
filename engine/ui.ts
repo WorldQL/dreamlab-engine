@@ -50,3 +50,25 @@ export class UIManager {
     return [div, root];
   }
 }
+
+type ElementProps<E extends Element> = {
+  // afaik you cant detect "extends readonly" in TS so whatever
+  // deno-lint-ignore ban-types
+  [K in keyof E]?: E[K] extends Function ? never : E[K];
+};
+
+export function element<K extends keyof HTMLElementTagNameMap>(
+  tag: K,
+  props: ElementProps<HTMLElementTagNameMap[K]> = {},
+  children: (Element | string | Text)[] = [],
+): HTMLElementTagNameMap[K] {
+  const element = Object.assign(document.createElement(tag), props);
+
+  const nodes = children.map(e => (typeof e === "string" ? document.createTextNode(e) : e));
+  element.append(...nodes);
+
+  const x = document.createTextNode("");
+  x.textContent;
+
+  return element;
+}
