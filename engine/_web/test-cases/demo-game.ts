@@ -212,6 +212,8 @@ function spawnPowerUp() {
   const y = Math.random() * (MAP_BOUNDARY * 2) - MAP_BOUNDARY;
   const position = { x, y };
 
+  if (isNaN(x) || isNaN(y)) return;
+
   const type = Math.floor((Math.random() * Object.keys(PowerUpType).length) / 2);
 
   const powerUp = game.world.spawn({
