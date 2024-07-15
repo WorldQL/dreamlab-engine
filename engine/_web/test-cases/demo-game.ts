@@ -85,7 +85,7 @@ class Movement extends Behavior {
   #down = this.inputs.create("@movement/down", "Move Down", "KeyS");
   #left = this.inputs.create("@movement/left", "Move Left", "KeyA");
   #right = this.inputs.create("@movement/right", "Move Right", "KeyD");
-  #shift = this.inputs.create("@movement/shift", "Speed Boost", "ShiftLeft");
+  // #shift = this.inputs.create("@movement/shift", "Speed Boost", "ShiftLeft");
 
   constructor(ctx: BehaviorContext) {
     super(ctx);
@@ -94,9 +94,9 @@ class Movement extends Behavior {
 
   onTick(): void {
     const movement = new Vector2(0, 0);
-    let currentSpeed = this.speed;
+    const currentSpeed = this.speed;
 
-    if (this.#shift.held) currentSpeed *= 2;
+    // if (this.#shift.held) currentSpeed *= 2;
 
     if (this.#up.held) movement.y += 1;
     if (this.#down.held) movement.y -= 1;
