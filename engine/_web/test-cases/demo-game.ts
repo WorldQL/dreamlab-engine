@@ -143,6 +143,111 @@ class CameraFollow extends Behavior {
 }
 // #endregion
 
+// #region PowerUps
+enum PowerUpType {
+  ScatterShot,
+  DoubleShot,
+  BackwardsShot,
+  SideShot,
+  SpiralShot,
+}
+
+const powerUpTextures = "https://files.codedred.dev/gold-asteroid.png";
+
+class GoldAsteroidBehavior extends Behavior {
+  private healthBar!: HealthBar;
+  type!: PowerUpType;
+
+  onInitialize(): void {
+    const health = 100;
+    this.healthBar = this.entity.addBehavior({
+      type: HealthBar,
+      values: {},
+    });
+    this.healthBar.initialize(health);
+
+    this.listen(this.entity, EntityCollision, e => {
+      if (e.started) this.onCollide(e.other);
+    });
+  }
+
+  onCollide(other: Entity) {
+    if (other.name.startsWith("Bullet")) {
+      other.destroy();
+      this.healthBar.takeDamage(1);
+      if (this.healthBar.currentHealth <= 0) {
+        const player = this.entity.game.world.children.get("Player");
+        if (player) {
+          this.grantPowerUp(player);
+        }
+        this.entity.destroy();
+      }
+    }
+  }
+
+  grantPowerUp(player: Entity) {
+    const playerBehavior = player.getBehavior(PlayerBehavior);
+    switch (this.type) {
+      case PowerUpType.ScatterShot:
+        playerBehavior.activateScatterShot();
+        break;
+      case PowerUpType.DoubleShot:
+        playerBehavior.activateDoubleShot();
+        break;
+      case PowerUpType.BackwardsShot:
+        playerBehavior.activateBackwardsShot();
+        break;
+      case PowerUpType.SideShot:
+        playerBehavior.activateSideShot();
+        break;
+      case PowerUpType.SpiralShot:
+        playerBehavior.activateSpiralShot();
+        break;
+    }
+  }
+}
+
+function spawnPowerUp() {
+  const x = Math.random() * (MAP_BOUNDARY * 2) - MAP_BOUNDARY;
+  const y = Math.random() * (MAP_BOUNDARY * 2) - MAP_BOUNDARY;
+  const position = { x, y };
+
+  const type = Math.floor((Math.random() * Object.keys(PowerUpType).length) / 2);
+
+  const powerUp = game.world.spawn({
+    type: Rigidbody2D,
+    name: "PowerUp",
+    transform: { position, scale: { x: 2, y: 2 } },
+    behaviors: [{ type: GoldAsteroidBehavior }],
+    values: { type: "fixed" },
+    children: [
+      {
+        type: Sprite2D,
+        name: "PowerUpSprite",
+        values: { texture: powerUpTextures },
+      },
+    ],
+  });
+
+  const powerUpBehavior = powerUp.getBehavior(GoldAsteroidBehavior);
+  powerUpBehavior.type = type;
+}
+
+function maintainPowerUps() {
+  const existingPowerUps = [...game.world.children.values()].filter(e =>
+    e.name.startsWith("PowerUp"),
+  ).length;
+
+  if (existingPowerUps < 10) {
+    spawnPowerUp();
+  }
+
+  setTimeout(maintainPowerUps, Math.random() * 5000 + 2000);
+}
+
+maintainPowerUps();
+// #endregion
+
 // #region Abilities
 class Shield extends Behavior {
   #shieldKey = this.inputs.create("@ability/shield", "Shield", "Space");
@@ -592,7 +697,7 @@ class BulletBehavior extends Behavior {
 class ClickFire extends Behavior {
   #fire = this.inputs.create("@clickFire/fire", "Fire", "MouseLeft");
 
-  readonly #cooldown = 10; // ticks
+  readonly #cooldown = 10;
   #lastFired = 0;
 
   onTick(): void {
@@ -606,30 +711,12 @@ class ClickFire extends Behavior {
       const fireRateMultiplier = playerBehavior.fireRateMultiplier;
 
       this.#lastFired = this.#cooldown / fireRateMultiplier;
-      const cursor = this.inputs.cursor;
-      if (!cursor) return;
 
-      // TODO: Offset forward slightly
-      const position = this.entity.globalTransform.position.bare();
-      const direction = cursor.world.sub(position);
-      const rotation = Math.atan2(direction.y, direction.x);
-
-      this.entity.game.world.spawn({
-        type: Rigidbody2D,
-        name: "Bullet",
-        transform: { position, rotation, scale: { x: 0.25, y: 0.15 } },
-        behaviors: [{ type: BulletBehavior }],
-        values: { type: "fixed" },
-        children: [
-          {
-            type: Sprite2D,
-            name: "BulletSprite",
-          },
-        ],
-      });
+      playerBehavior.shootingPattern();
     }
   }
 }
+
 // #endregion
 
 // #region Asteroid
@@ -729,7 +816,7 @@ class EnemyMovement extends Behavior {
   minDistance = 5;
   shootDistance = 10;
   lastShootTime = 0;
-  shootCooldown = Math.random() * 4000 + 3000;
+  shootCooldown = Math.random() * 2000 + 1000;
 
   onTick(): void {
     const player = this.entity.game.world.children.get("Player");
@@ -779,7 +866,7 @@ class EnemyMovement extends Behavior {
           type: Sprite2D,
           name: "BulletSprite",
           transform: {
-            scale: { x: 0.5, y: 0.5 },
+            scale: { x: 0.75, y: 0.75 },
           },
         },
       ],
@@ -898,6 +985,9 @@ class PlayerBehavior extends Behavior {
   #scoreForNextLevel = 100;
   #scoreForNextLevelBase = 100;
 
+  private currentPowerUpTimeout: number | null = null;
+  shootingPattern: () => void = this.normalShot;
+
   get totalScore(): number {
     return this.#totalScore;
   }
@@ -1002,6 +1092,109 @@ class PlayerBehavior extends Behavior {
   updateShieldDuration(value: number): void {
     const ui = this.entity._.UI.getBehavior(PlayerUI);
     ui.updateShieldDuration(value);
+  }
+
+  activateScatterShot() {
+    console.log("ScatterShot Activated");
+    this.setShootingPattern(this.scatterShot);
+  }
+
+  activateDoubleShot() {
+    console.log("DoubleShot Activated");
+    this.setShootingPattern(this.doubleShot);
+  }
+
+  activateBackwardsShot() {
+    console.log("BackwardsShot Activated");
+    this.setShootingPattern(this.backwardsShot);
+  }
+
+  activateSideShot() {
+    console.log("SideShot Activated");
+    this.setShootingPattern(this.sideShot);
+  }
+
+  activateSpiralShot() {
+    console.log("SpiralShot Activated");
+    this.setShootingPattern(this.spiralShot);
+  }
+
+  private setShootingPattern(patternFunction: () => void) {
+    if (this.currentPowerUpTimeout) {
+      clearTimeout(this.currentPowerUpTimeout);
+    }
+
+    this.shootingPattern = patternFunction;
+
+    this.currentPowerUpTimeout = setTimeout(() => {
+      this.resetShootingPattern();
+    }, 15000);
+  }
+
+  private resetShootingPattern() {
+    this.shootingPattern = this.normalShot;
+    this.currentPowerUpTimeout = null;
+  }
+
+  private normalShot() {
+    this.fireBullet(0);
+  }
+
+  private scatterShot() {
+    for (let angle = -30; angle <= 30; angle += 15) {
+      this.fireBullet(angle);
+    }
+  }
+
+  private doubleShot() {
+    this.fireBullet(-5);
+    this.fireBullet(5);
+  }
+
+  private backwardsShot() {
+    this.fireBullet(0);
+    this.fireBullet(180);
+  }
+
+  private sideShot() {
+    this.fireBullet(0);
+    this.fireBullet(90);
+    this.fireBullet(-90);
+  }
+
+  private spiralShot() {
+    for (let angle = 0; angle < 360; angle += 45) {
+      this.fireBullet(angle);
+    }
+  }
+
+  private fireBullet(offsetAngle: number) {
+    const cursor = this.inputs.cursor;
+    if (!cursor) return;
+
+    const position = this.entity.globalTransform.position.bare();
+    const baseDirection = cursor.world.sub(position);
+    const baseRotation = Math.atan2(baseDirection.y, baseDirection.x);
+
+    const bulletRotation = baseRotation + offsetAngle * (Math.PI / 180);
+
+    this.entity.game.world.spawn({
+      type: Rigidbody2D,
+      name: "Bullet",
+      transform: {
+        position,
+        rotation: bulletRotation,
+        scale: { x: 0.25, y: 0.15 },
+      },
+      behaviors: [{ type: BulletBehavior }],
+      values: { type: "fixed" },
+      children: [
+        {
+          type: Sprite2D,
+          name: "BulletSprite",
+        },
+      ],
+    });
   }
 }
 
@@ -1213,12 +1406,13 @@ class LevelProgressUI extends Behavior {
 }
 // #endregion
 
-// #region Map & Coords
+// #region Minimap
 class Minimap extends Behavior {
   #ui = this.entity.cast(UILayer);
 
   #element!: HTMLDivElement;
   #dot!: HTMLDivElement;
+  #powerUpDots: HTMLDivElement[] = [];
 
   onInitialize() {
     const css = `
@@ -1240,6 +1434,14 @@ class Minimap extends Behavior {
   width: 0.3125rem;
   aspect-ratio: 1 / 1;
   background-color: red;
+  border-radius: 50%;
+}
+
+.powerUpDot {
+  position: absolute;
+  width: 0.3125rem;
+  aspect-ratio: 1 / 1;
+  background-color: green;
   border-radius: 50%;
 }
 `;
@@ -1278,6 +1480,35 @@ class Minimap extends Behavior {
 
     this.#dot.style.left = `${minimapX - 2.5}px`;
     this.#dot.style.top = `${minimapY - 2.5}px`;
+
+    this.#updatePowerUpDots(minimapWidth, minimapHeight, mapWidth, mapHeight);
+  }
+
+  #updatePowerUpDots(
+    minimapWidth: number,
+    minimapHeight: number,
+    mapWidth: number,
+    mapHeight: number,
+  ) {
+    const powerUps = [...this.game.world.children.values()].filter(e =>
+      e.name.startsWith("PowerUp"),
+    );
+
+    this.#powerUpDots.forEach(dot => dot.remove());
+    this.#powerUpDots = [];
+
+    powerUps.forEach(powerUp => {
+      const pos = powerUp.transform.position;
+      const minimapX = ((pos.x + MAP_BOUNDARY) / mapWidth) * minimapWidth;
+      const minimapY = ((-pos.y + MAP_BOUNDARY) / mapHeight) * minimapHeight;
+
+      const dot = document.createElement("div");
+      dot.classList.add("powerUpDot");
+      dot.style.left = `${minimapX - 2.5}px`;
+      dot.style.top = `${minimapY - 2.5}px`;
+      this.#element.appendChild(dot);
+      this.#powerUpDots.push(dot);
+    });
   }
 }
 // #endregion
