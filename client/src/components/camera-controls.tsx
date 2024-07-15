@@ -59,26 +59,29 @@ export const CameraControls = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }
     [updateCursor, gameDiv],
   );
 
-  const handleMouseMove = useCallback((event: MouseEvent) => {
-    const currentMousePosition = new Vector2(event.clientX, event.clientY);
-    setCursorPosition(currentMousePosition);
+  const handleMouseMove = useCallback(
+    (event: MouseEvent) => {
+      const currentMousePosition = new Vector2(event.clientX, event.clientY);
+      setCursorPosition(currentMousePosition);
 
-    if (isDraggingRef.current && cameraRef.current) {
-      const delta = lastMousePositionRef.current.sub(currentMousePosition);
-      lastMousePositionRef.current = currentMousePosition;
+      if (isDraggingRef.current && cameraRef.current) {
+        const delta = lastMousePositionRef.current.sub(currentMousePosition);
+        lastMousePositionRef.current = currentMousePosition;
 
-      const worldDelta = cameraRef.current
-        .screenToWorld(delta)
-        .sub(cameraRef.current.screenToWorld(Vector2.ZERO));
-      cameraRef.current.transform.position =
-        cameraRef.current.transform.position.add(worldDelta);
-    }
+        const worldDelta = cameraRef.current
+          .screenToWorld(delta)
+          .sub(cameraRef.current.screenToWorld(Vector2.ZERO));
+        cameraRef.current.transform.position =
+          cameraRef.current.transform.position.add(worldDelta);
+      }
 
-    event.stopPropagation();
+      event.stopPropagation();
 
-    const mouseEvent = new MouseEvent(event.type, event);
-    gameDiv.querySelector("canvas")?.dispatchEvent(mouseEvent);
-  }, [gameDiv]);
+      const mouseEvent = new MouseEvent(event.type, event);
+      gameDiv.querySelector("canvas")?.dispatchEvent(mouseEvent);
+    },
+    [gameDiv],
+  );
 
   const handleMouseUp = useCallback(
     (event: MouseEvent) => {
@@ -96,6 +99,9 @@ export const CameraControls = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }
   const handleWheel = useCallback((event: WheelEvent) => {
     if (cameraRef.current) {
       event.preventDefault();
+
+      const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.userAgent);
+
       if (event.ctrlKey) {
         const zoomFactor = 1.1;
         const zoomDirection = event.deltaY > 0 ? 1 : -1;
@@ -106,7 +112,9 @@ export const CameraControls = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }
         cameraRef.current.transform.scale = clampedScale;
         setZoomScale(clampedScale.x);
       } else {
-        const scrollDelta = new Vector2(event.deltaX, event.deltaY);
+        const deltaX = isMac ? event.deltaX : event.shiftKey ? event.deltaY : event.deltaX;
+        const deltaY = isMac ? event.deltaY : event.shiftKey ? 0 : event.deltaY;
+        const scrollDelta = new Vector2(deltaX, deltaY);
 
         const worldDelta = cameraRef.current
           .screenToWorld(scrollDelta)
