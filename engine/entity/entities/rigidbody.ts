@@ -3,6 +3,7 @@ import { Entity, EntityContext } from "../entity.ts";
 import { Vector2 } from "../../math/mod.ts";
 import { EntityPreUpdate, EntityUpdate, EntityDestroyed } from "../../signals/mod.ts";
 import { enumAdapter } from "../../value/adapters/enum-adapter.ts";
+import { SyncedValueChanged } from "../../value/mod.ts";
 
 type RigidBodyType = (typeof rigidbodyTypes)[number];
 const rigidbodyTypes = [
@@ -20,45 +21,23 @@ export class Rigidbody2D extends Entity {
 
   type: RigidBodyType = "fixed";
 
-  body: RAPIER.RigidBody;
-  collider: RAPIER.Collider;
-  #shape: RAPIER.Cuboid;
+  body!: RAPIER.RigidBody;
+  collider!: RAPIER.Collider;
+  #shape!: RAPIER.Cuboid;
 
   constructor(ctx: EntityContext) {
     super(ctx);
 
     this.value(Rigidbody2D, "type", { type: RigidbodyTypeAdapter });
 
-    let desc: RAPIER.RigidBodyDesc;
-    if (this.type === "dynamic") desc = RAPIER.RigidBodyDesc.dynamic();
-    else if (this.type === "fixed") desc = RAPIER.RigidBodyDesc.fixed();
-    else if (this.type === "kinematic-position")
-      desc = RAPIER.RigidBodyDesc.kinematicPositionBased();
-    else if (this.type === "kinematic-velocity")
-      desc = RAPIER.RigidBodyDesc.kinematicVelocityBased();
-    else throw new Error("invalid rigidbody type");
+    this.initializeRigidBody();
 
-    desc = desc
-      .setTranslation(this.globalTransform.position.x, this.globalTransform.position.y)
-      .setRotation(this.globalTransform.rotation);
+    const typeValue = this.values.get("type");
+    this.listen(this.game.syncedValues, SyncedValueChanged, event => {
+      if (event.value !== typeValue) return;
 
-    this.body = this.game.physics.world.createRigidBody(desc);
-    this.collider = this.game.physics.world.createCollider(
-      RAPIER.ColliderDesc.cuboid(
-        this.globalTransform.scale.x / 2,
-        this.globalTransform.scale.y / 2,
-      ),
-      this.body,
-    );
-    this.collider.setActiveCollisionTypes(
-      RAPIER.ActiveCollisionTypes.DEFAULT |
-        RAPIER.ActiveCollisionTypes.KINEMATIC_FIXED |
-        RAPIER.ActiveCollisionTypes.FIXED_FIXED,
-    );
-    this.collider.setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS);
-    this.#shape = this.collider.shape as RAPIER.Cuboid;
-
-    this.game.physics.registerBody(this, this.body);
+      this.initializeRigidBody();
+    });
 
     // EntityPreUpdate happens before physics runs, so we can set the physics body to match our transform
     this.on(EntityPreUpdate, () => {
@@ -94,6 +73,43 @@ export class Rigidbody2D extends Entity {
     this.on(EntityDestroyed, () => {
       this.game.physics.world.removeRigidBody(this.body);
     });
+  }
+
+  private initializeRigidBody() {
+    if (this.body) {
+      this.game.physics.world.removeRigidBody(this.body);
+    }
+
+    let desc: RAPIER.RigidBodyDesc;
+    if (this.type === "dynamic") desc = RAPIER.RigidBodyDesc.dynamic();
+    else if (this.type === "fixed") desc = RAPIER.RigidBodyDesc.fixed();
+    else if (this.type === "kinematic-position")
+      desc = RAPIER.RigidBodyDesc.kinematicPositionBased();
+    else if (this.type === "kinematic-velocity")
+      desc = RAPIER.RigidBodyDesc.kinematicVelocityBased();
+    else throw new Error("invalid rigidbody type");
+
+    desc = desc
+      .setTranslation(this.globalTransform.position.x, this.globalTransform.position.y)
+      .setRotation(this.globalTransform.rotation);
+
+    this.body = this.game.physics.world.createRigidBody(desc);
+    this.collider = this.game.physics.world.createCollider(
+      RAPIER.ColliderDesc.cuboid(
+        this.globalTransform.scale.x / 2,
+        this.globalTransform.scale.y / 2,
+      ),
+      this.body,
+    );
+    this.collider.setActiveCollisionTypes(
+      RAPIER.ActiveCollisionTypes.DEFAULT |
+        RAPIER.ActiveCollisionTypes.KINEMATIC_FIXED |
+        RAPIER.ActiveCollisionTypes.FIXED_FIXED,
+    );
+    this.collider.setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS);
+    this.#shape = this.collider.shape as RAPIER.Cuboid;
+
+    this.game.physics.registerBody(this, this.body);
   }
 }
 Entity.registerType(Rigidbody2D, "@core");
