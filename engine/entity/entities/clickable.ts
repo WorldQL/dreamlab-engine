@@ -27,6 +27,20 @@ export class MouseUp {
   ) {}
 }
 
+export class MouseOver {
+  public constructor(
+    public readonly worldPosition: Vector2,
+    public readonly screenPosition: Vector2,
+  ) {}
+}
+
+export class MouseOut {
+  public constructor(
+    public readonly worldPosition: Vector2,
+    public readonly screenPosition: Vector2,
+  ) {}
+}
+
 const dataSymbol = Symbol.for("dreamlab.clickableentity.internal");
 abstract class ClickableEntity extends Entity {
   #hover: Set<string> | undefined;
@@ -36,7 +50,9 @@ abstract class ClickableEntity extends Entity {
 
     if (this.game.isClient()) {
       // the normal container in play, the editor UI in edit mode
-      const canvas = document.getElementById('dreamlab-pointer-style-target') ?? this.game.renderer.app.canvas
+      const canvas =
+        document.getElementById("dreamlab-pointer-style-target") ??
+        this.game.renderer.app.canvas;
       // TODO: Better API for this
       // @ts-expect-error: internal data
       if (!this.game[dataSymbol]) {
@@ -63,9 +79,13 @@ abstract class ClickableEntity extends Entity {
       const cursor = this.inputs.cursor;
       if (!cursor) return;
 
+      const wasInBounds = this.#hover.has(this.ref);
       const isInBounds = this.isInBounds(cursor.world);
       if (isInBounds) this.#hover.add(this.ref);
       else this.#hover.delete(this.ref);
+
+      if (!wasInBounds && isInBounds) this.fire(MouseOver, cursor.world, cursor.screen);
+      else if (wasInBounds && !isInBounds) this.fire(MouseOut, cursor.world, cursor.screen);
     });
 
     this.on(EntityDestroyed, () => {
@@ -94,10 +114,10 @@ abstract class ClickableEntity extends Entity {
       ev.button === 0
         ? "left"
         : ev.button === 1
-        ? "middle"
-        : ev.button === 2
-        ? "right"
-        : undefined;
+          ? "middle"
+          : ev.button === 2
+            ? "right"
+            : undefined;
 
     if (!button) return;
 
