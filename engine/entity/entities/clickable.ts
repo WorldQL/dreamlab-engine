@@ -109,7 +109,6 @@ abstract class ClickableEntity extends Entity {
   #onMouseDown = (ev: MouseEvent) => this.#onMouse(ev, true);
 
   #onMouse = (ev: MouseEvent, pressed: boolean) => {
-    if (!pressed) return;
     const button =
       ev.button === 0
         ? "left"
