@@ -1,20 +1,47 @@
-import { EntityExclusiveAuthorityChanged } from "@dreamlab/engine";
+import {
+  Entity,
+  EntityExclusiveAuthorityChanged,
+  EntityTransformUpdate,
+} from "@dreamlab/engine";
 import { ClientNetworkSetupRoutine } from "./net-connection.ts";
 import * as internal from "../../../../engine/internal.ts";
 
 export const handleTransformSync: ClientNetworkSetupRoutine = (conn, game) => {
+  const authorityTransformListeners = new WeakMap<
+    Entity,
+    (event: EntityTransformUpdate) => void
+  >();
+
   game.on(EntityExclusiveAuthorityChanged, event => {
+    const entity = event.entity;
     if (event.authority === conn.id) {
       conn.send({
         t: "RequestExclusiveAuthority",
-        entity: event.entity.ref,
+        entity: entity.ref,
         clock: event.clock,
       });
-    } else if (event.entity.authority === conn.id) {
+
+      const transformListener = (event: EntityTransformUpdate) => {
+        conn.send({
+          t: "ReportEntityTransform",
+          entity: entity.ref,
+          position: entity.transform.position.bare(),
+          rotation: entity.transform.rotation,
+          scale: entity.transform.scale.bare(),
+        });
+      };
+      authorityTransformListeners.set(event.entity, transformListener);
+      entity.on(EntityTransformUpdate, transformListener);
+    } else if (entity.authority === conn.id) {
       conn.send({
         t: "RelinquishExclusiveAuthority",
-        entity: event.entity.ref,
+        entity: entity.ref,
       });
+      const transformListener = authorityTransformListeners.get(entity);
+      if (transformListener) {
+        entity.unregister(EntityTransformUpdate, transformListener);
+        authorityTransformListeners.delete(entity);
+      }
     }
   });
 
