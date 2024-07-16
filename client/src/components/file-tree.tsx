@@ -1,9 +1,10 @@
-// @deno-types="npm:@types/react@18.3.1"
-import { memo, useEffect, useState, useCallback } from "react";
-import { Panel } from "./ui/panel.tsx";
-import { game } from "../global-game.ts";
+import { useQuery } from "@tanstack/react-query";
 import { ChevronDownIcon } from "lucide-react";
+// @deno-types="npm:@types/react@18.3.1"
+import { memo, useCallback, useState } from "react";
+import { game } from "../global-game.ts";
 import { cn } from "../utils/cn.ts";
+import { Panel } from "./ui/panel.tsx";
 
 type FileTree = {
   [key: string]: FileTree | null;
@@ -126,29 +127,32 @@ const FileEntry = ({ file, name, level }: FileEntryProps) => {
 };
 
 const FileTreeComponent = () => {
-  const [files, setFiles] = useState<string[]>([]);
+  const {
+    data: files,
+    isLoading,
+    isError,
+  } = useQuery<string[]>({
+    queryKey: ["files", game.instanceId],
+    queryFn: async ({ signal }) => {
+      // TODO
+      const resp = await fetch(`http://127.0.0.1:8000/api/v1/edit/${game.instanceId}/files`, {
+        signal,
+      });
 
-  useEffect(() => {
-    const fetchFiles = async () => {
-      try {
-        const response = await fetch(
-          `http://127.0.0.1:8000/api/v1/edit/${game.instanceId}/files`,
-        );
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setFiles(data.files ?? []);
-      } catch (error) {
-        console.error("Error fetching files:", error);
-        setFiles([]);
-      }
-    };
-    fetchFiles();
+      if (!resp.ok) throw new Error(`http error: ${resp.status}`);
+      return resp.json();
+    },
 
-    // For testing purposes
-    // setFiles(fakeFiles);
-  }, []);
+    // initialData: fakeFiles,
+  });
+
+  if (!files || isLoading)
+    // TODO: Better loading state
+    return (
+      <Panel title="Files" className="h-full">
+        &nbsp;
+      </Panel>
+    );
 
   const fileTree = buildFileTree(files);
 
