@@ -10,9 +10,11 @@ import {
   SignalMatching,
   SignalConstructor,
   SignalListener,
+  SignalConstructorMatching,
 } from "../signal.ts";
 import { EntityUpdate } from "../signals/entity-updates.ts";
 import { GameRender } from "../signals/game-events.ts";
+import { BehaviorDestroyed } from "../signals/behavior-lifecycle.ts";
 
 export interface BehaviorContext {
   game: Game;
@@ -46,7 +48,7 @@ type BehaviorValueOpts<B extends Behavior, P extends BehaviorValueProp<B>> = {
   replicated?: boolean;
 };
 
-export class Behavior {
+export class Behavior implements ISignalHandler {
   readonly game: Game;
   readonly entity: Entity;
 
@@ -117,19 +119,12 @@ export class Behavior {
   }
   // #endregion
 
+  // #region External Listeners
   readonly listeners: [
     receiver: WeakRef<ISignalHandler>,
     type: SignalConstructor,
     listener: SignalListener,
   ][] = [];
-
-  constructor(ctx: BehaviorContext) {
-    this.game = ctx.game;
-    this.entity = ctx.entity;
-
-    if (ctx.ref) this.ref = ctx.ref;
-    if (ctx.values) this.#defaultValues = ctx.values;
-  }
 
   protected listen<S extends Signal, T extends ISignalHandler>(
     receiver: T,
@@ -145,8 +140,51 @@ export class Behavior {
       boundSignalListener as SignalListener,
     ]);
   }
+  // #endregion
+
+  // #region Signals
+  #signalListenerMap = new Map<SignalConstructor, SignalListener[]>();
+
+  fire<
+    S extends Signal,
+    C extends SignalConstructorMatching<S, this & Behavior>,
+    A extends ConstructorParameters<C>,
+  >(ctor: C, ...args: A) {
+    const listeners = this.#signalListenerMap.get(ctor);
+    if (!listeners) return;
+
+    const signal = new ctor(...args);
+    listeners.forEach(l => l(signal));
+  }
+
+  on<S extends Signal>(
+    type: SignalConstructorMatching<S, this & Behavior>,
+    listener: SignalListener<S>,
+  ) {
+    const listeners = this.#signalListenerMap.get(type) ?? [];
+    listeners.push(listener as SignalListener);
+    this.#signalListenerMap.set(type, listeners);
+  }
+
+  unregister<T extends Signal>(type: SignalConstructor<T>, listener: SignalListener<T>) {
+    const listeners = this.#signalListenerMap.get(type);
+    if (!listeners) return;
+    const idx = listeners.indexOf(listener as SignalListener);
+    if (idx !== -1) listeners.splice(idx, 1);
+  }
+  // #endregion
+
+  constructor(ctx: BehaviorContext) {
+    this.game = ctx.game;
+    this.entity = ctx.entity;
+
+    if (ctx.ref) this.ref = ctx.ref;
+    if (ctx.values) this.#defaultValues = ctx.values;
+  }
 
   destroy() {
+    this.fire(BehaviorDestroyed);
+
     const idx = this.entity.behaviors.indexOf(this);
     if (idx !== -1) this.entity.behaviors.splice(idx);
 
