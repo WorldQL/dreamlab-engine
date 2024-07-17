@@ -42,7 +42,7 @@ export class MouseOut {
 }
 
 const dataSymbol = Symbol.for("dreamlab.clickableentity.internal");
-abstract class ClickableEntity extends Entity {
+export abstract class ClickableEntity extends Entity {
   #clicked: boolean = false;
   get clicked(): boolean {
     return this.#clicked;
