@@ -59,16 +59,24 @@ type ElementProps<E extends Element> = {
 
 export function element<K extends keyof HTMLElementTagNameMap>(
   tag: K,
-  props: ElementProps<HTMLElementTagNameMap[K]> = {},
-  children: (Element | string | Text)[] = [],
+  {
+    id,
+    props = {},
+    style = {},
+    children = [],
+  }: {
+    id?: string;
+    props?: ElementProps<HTMLElementTagNameMap[K]>;
+    style?: Partial<CSSStyleDeclaration>;
+    children?: (Element | string | Text)[];
+  } = {},
 ): HTMLElementTagNameMap[K] {
-  const element = Object.assign(document.createElement(tag), props);
+  const element = document.createElement(tag);
+  Object.assign(element.style, style);
+  Object.assign(element, { id, ...props });
 
   const nodes = children.map(e => (typeof e === "string" ? document.createTextNode(e) : e));
   element.append(...nodes);
-
-  const x = document.createTextNode("");
-  x.textContent;
 
   return element;
 }
