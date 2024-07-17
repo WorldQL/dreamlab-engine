@@ -43,7 +43,17 @@ export class MouseOut {
 
 const dataSymbol = Symbol.for("dreamlab.clickableentity.internal");
 abstract class ClickableEntity extends Entity {
-  #hover: Set<string> | undefined;
+  #clicked: boolean = false;
+  get clicked(): boolean {
+    return this.#clicked;
+  }
+
+  #hover: boolean = false;
+  get hover(): boolean {
+    return this.#hover;
+  }
+
+  #hoverSet: Set<string> | undefined;
 
   constructor(ctx: EntityContext) {
     super(ctx);
@@ -67,11 +77,11 @@ abstract class ClickableEntity extends Entity {
       }
 
       // @ts-expect-error: internal data
-      this.#hover = this.game[dataSymbol];
+      this.#hoverSet = this.game[dataSymbol];
     }
 
     this.listen(this.game, GameRender, () => {
-      if (!this.#hover) return;
+      if (!this.#hoverSet) return;
 
       const camera = Camera.getActive(this.game);
       if (!camera) return;
@@ -79,13 +89,18 @@ abstract class ClickableEntity extends Entity {
       const cursor = this.inputs.cursor;
       if (!cursor) return;
 
-      const wasInBounds = this.#hover.has(this.ref);
+      const wasInBounds = this.#hoverSet.has(this.ref);
       const isInBounds = this.isInBounds(cursor.world);
-      if (isInBounds) this.#hover.add(this.ref);
-      else this.#hover.delete(this.ref);
+      if (isInBounds) this.#hoverSet.add(this.ref);
+      else this.#hoverSet.delete(this.ref);
 
-      if (!wasInBounds && isInBounds) this.fire(MouseOver, cursor.world, cursor.screen);
-      else if (wasInBounds && !isInBounds) this.fire(MouseOut, cursor.world, cursor.screen);
+      if (!wasInBounds && isInBounds) {
+        this.fire(MouseOver, cursor.world, cursor.screen);
+        this.#hover = true;
+      } else if (wasInBounds && !isInBounds) {
+        this.fire(MouseOut, cursor.world, cursor.screen);
+        this.#hover = false;
+      }
     });
 
     this.on(EntityDestroyed, () => {
@@ -127,8 +142,12 @@ abstract class ClickableEntity extends Entity {
     if (pressed) {
       this.fire(MouseDown, button, cursor.world, cursor.screen);
       this.fire(Click, button, cursor.world, cursor.screen);
+
+      if (button === "left") this.#clicked = true;
     } else {
       this.fire(MouseUp, button, cursor.world, cursor.screen);
+
+      if (button === "left") this.#clicked = false;
     }
   };
 
