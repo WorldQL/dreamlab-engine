@@ -52,7 +52,12 @@ export interface EntityContext {
   values?: Record<string, JsonValue>;
 }
 
-export type EntityConstructor<T extends Entity = Entity> = new (ctx: EntityContext) => T;
+export type EntityConstructor<
+  T extends Entity = Entity,
+  Abstract extends boolean = false,
+> = Abstract extends true
+  ? abstract new (ctx: EntityContext) => T
+  : new (ctx: EntityContext) => T;
 
 // prettier-ignore
 
@@ -245,7 +250,7 @@ export abstract class Entity implements ISignalHandler {
   /**
    * Utility for safely hardcasting an entity to a type
    */
-  cast<T extends Entity>(type: EntityConstructor<T>) {
+  cast<T extends Entity>(type: EntityConstructor<T, true>) {
     if (this instanceof type) return this;
     throw new Error(`Failed to cast ${this} to '${type.name}'`);
   }
