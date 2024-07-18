@@ -10,6 +10,6 @@ export default class SpinBehavior extends Behavior {
 
   onTick() {
     this.entity.transform.rotation += this.speed * (Math.PI / this.game.time.TPS);
-    hi('there!')
+    hi("there!");
   }
 }

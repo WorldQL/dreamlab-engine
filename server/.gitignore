@@ -4,3 +4,7 @@
 /.deno_cache_runtime
 
 /.env.local
+
+/runtime/worlds/*
+!/runtime/worlds/dreamlab/
+!/runtime/worlds/dreamlab/**
