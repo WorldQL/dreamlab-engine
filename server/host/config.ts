@@ -6,7 +6,7 @@ import * as log from "./util/log.ts";
 import { z } from "zod";
 
 export const readConfig = () => {
-  const bindAddress = env("BIND_ADDRESS", env.socketAddress("127.0.0.1:8080"));
+  const bindAddress = env("BIND_ADDRESS", env.socketAddress("127.0.0.1:8000"));
   const gameAuthSecret = env("GAME_AUTH_SECRET");
   const coordAuthSecret = env("COORDINATOR_AUTH_TOKEN");
   const kvServerUrl = env("KV_SERVER_URL");

@@ -106,7 +106,8 @@ const FileTreeComponent = () => {
   const { data, isLoading, isError } = useQuery<{ files: string[] }>({
     queryKey: ["files", game.instanceId],
     queryFn: async ({ signal }) => {
-      const resp = await fetch(`http://127.0.0.1:8080/api/v1/edit/${game.instanceId}/files`, {
+      // TODO: add server param
+      const resp = await fetch(`http://127.0.0.1:8000/api/v1/edit/${game.instanceId}/files`, {
         signal,
       });
 
