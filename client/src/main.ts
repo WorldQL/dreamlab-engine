@@ -1,7 +1,6 @@
 import {
   Behavior,
   Camera,
-  ClientGame,
   Empty,
   GameStatus,
   Gizmo,
@@ -25,18 +24,22 @@ try {
 }
 
 const main = async () => {
-  let spinner;
+  let instanceId = "";
+  let gameParam = "";
+
   if (typeof window !== "undefined") {
-    const url =
-      "http://127.0.0.1:8080/api/v1/edit/[editor]/files/spin-example.ts?transpile=true";
-    const imported = await import(url);
-    spinner = imported.default;
+    const params = new URLSearchParams(window.location.search);
+    instanceId = params.get("instance") || "";
+    gameParam = params.get("game") || "";
+    // server = params.get("server") || "";
+    // editmode = params.get("editmode") === "true";
   }
+
   const container = document.createElement("div");
-  container.style.width = "100%;"; // TODO: can pixi just handle the resizing all on its own for us?
+  container.style.width = "100%"; // TODO: can pixi just handle the resizing all on its own for us?
   container.style.height = "100%";
 
-  const game: ClientGame = createEditorGame(container);
+  const game = createEditorGame(container, instanceId, gameParam);
   Object.defineProperty(window, "game", { value: game }); // for debugging
   renderEditorUI(container);
   await game.initialize();
@@ -108,7 +111,7 @@ const main = async () => {
       name: "Sprite",
       behaviors: [
         // spawn the sprite with SpinBehavior
-        { type: spinner },
+        // { type: spinner },
       ],
     });
 
