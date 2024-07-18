@@ -722,7 +722,7 @@ export abstract class Entity implements ISignalHandler {
       child.destroy();
     }
 
-    for (const behavior of this.behaviors) {
+    for (const behavior of [...this.behaviors]) {
       behavior.destroy();
     }
 
