@@ -2,6 +2,7 @@ import { ClientGame, Entity, JsonObject, Vector2 } from "@dreamlab/engine";
 import { EditorEntity } from "./editor-entity.ts";
 import { Scene, SceneDescEntity } from "./schema.ts";
 
+// from Jackson: IDK what this is??
 export class SceneView {
   #game: ClientGame;
 

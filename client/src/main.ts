@@ -15,19 +15,6 @@ import { createEditorGame } from "./global-game.ts";
 import { SceneView } from "./scene-graph/scene-view.ts";
 import { Scene, SceneDescSceneSchema } from "./scene-graph/schema.ts";
 
-class SpinBehavior extends Behavior {
-  speed: number = 1.0;
-
-  onInitialize(): void {
-    this.value(SpinBehavior, "speed");
-  }
-
-  onTick(): void {
-    this.entity.transform.rotation += this.speed * (Math.PI / this.game.time.TPS);
-    // this is never being logged on the client. it works in the engine web tests, but not in the client/editor
-    console.log("ticked spinbehavior!");
-  }
-}
 
 try {
   // @ts-expect-error injected global
@@ -41,7 +28,7 @@ try {
 const main = async () => {
   let spinner;
   if (typeof window !== "undefined") {
-    const url = "/test-behaviors/spin.js";
+    const url = "http://127.0.0.1:8000/api/v1/edit/[editor]/files/spin-example.ts?transpile=true";
     const imported = await import(url);
     spinner = imported.default;
   }

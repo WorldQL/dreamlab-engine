@@ -11,7 +11,9 @@ import * as fs from "@std/fs";
 import { contentType } from "https://deno.land/std@0.224.0/media_types/mod.ts";
 import { JsonAPIError } from "./util.ts";
 import * as log from "../util/log.ts";
-import { transpile } from "@deno/emit";
+import { bundle, transpile } from "@deno/emit";
+import * as esbuild from "https://deno.land/x/esbuild@v0.23.0/mod.js";
+
 
 export const scriptEditRoutes = (router: Router, instances: Map<string, RunningInstance>) => {
   const EditModeInstanceSchema = z
@@ -120,12 +122,24 @@ export const scriptEditRoutes = (router: Router, instances: Map<string, RunningI
         ctx.response.body = "Transpilation only supported for TypeScript files.";
         return
       }
-      ctx.response.type = "text/plain";
+      
+      ctx.response.type = "application/javascript";
       ctx.response.status = Status.OK;
 
-      const url = new URL(computedPath, import.meta.url);
-      const result = await transpile(url.href)
-      ctx.response.body = result.get(url.href)
+      const suffix = "-esbuild.js"
+      await esbuild.build({
+        entryPoints: [computedPath],
+        bundle: true,
+        outfile: computedPath + suffix,
+        format: 'esm',
+        external: ['@dreamlab/engine'],
+        sourcemap: 'inline',
+        keepNames: true,
+      })
+      await ctx.send({
+        root: worldFolder,
+        path: relativePath + suffix,
+      });
     }
   });
 
