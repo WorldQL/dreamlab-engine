@@ -1,15 +1,15 @@
+import { ClientPacket, PlayPacket, ServerPacket } from "@dreamlab/proto/play.ts";
+import { PlayCodec } from "@dreamlab/proto/codecs/mod.ts";
+import { JSON_CODEC } from "@dreamlab/proto/codecs/simple-json.ts";
 import {
+  ClientGame,
+  ClientNetworking,
   ConnectionId,
   CustomMessageData,
-  ClientNetworking,
-  ClientGame,
   CustomMessageListener,
 } from "@dreamlab/engine";
-import { PlayPacket, ServerPacket } from "@dreamlab/proto/play.ts";
-
-import { ServerNetworkManager } from "../server/net-manager.ts";
-import { handleCustomMessages } from "./custom-messages.ts";
 import { handleSyncedValues } from "./synced-values.ts";
+import { handleCustomMessages } from "./custom-messages.ts";
 import { handleEntitySync } from "./entity-sync.ts";
 import { handleTransformSync } from "./transform-sync.ts";
 
@@ -19,11 +19,6 @@ export type ClientPacketHandler<T extends ServerPacket["t"]> = (
 export type ClientNetworkSetupRoutine = (conn: ClientConnection, game: ClientGame) => void;
 
 export class ClientConnection {
-  constructor(
-    public id: ConnectionId,
-    public server: ServerNetworkManager,
-  ) {}
-
   customMessageListeners: CustomMessageListener[] = [];
 
   #packetHandlers: Partial<Record<ServerPacket["t"], ClientPacketHandler<ServerPacket["t"]>>> =
@@ -37,16 +32,18 @@ export class ClientConnection {
     return handler as ClientPacketHandler<ServerPacket["t"]>;
   }
 
-  setup(game: ClientGame) {
-    handleSyncedValues(this, game);
-    handleCustomMessages(this, game);
-    handleEntitySync(this, game);
-    handleTransformSync(this, game);
-  }
+  peers = new Map<
+    ConnectionId,
+    { connectionId: ConnectionId; playerId: string; nickname: string }
+  >();
 
-  handle(packet: PlayPacket<undefined, "server">) {
-    console.log(this.id + " [<-] " + JSON.stringify(packet));
+  constructor(
+    public id: ConnectionId,
+    public socket: WebSocket,
+    public codec: PlayCodec,
+  ) {}
 
+  handle(packet: ServerPacket) {
     try {
       this.getPacketHandler(packet.t)(packet);
     } catch (err) {
@@ -54,10 +51,31 @@ export class ClientConnection {
     }
   }
 
-  send(packet: PlayPacket<undefined, "client">) {
-    this.server.handle(this.id, packet);
+  setup(game: ClientGame) {
+    this.registerPacketHandler("PeerConnected", packet => {
+      this.peers.set(packet.connection_id, {
+        connectionId: packet.connection_id,
+        nickname: packet.nickname,
+        playerId: packet.player_id,
+      });
+    });
+    this.registerPacketHandler("PeerDisconnected", packet => {
+      this.peers.delete(packet.connection_id);
+    });
+    this.registerPacketHandler("PeerChangedNickname", packet => {
+      const peer = this.peers.get(packet.connection_id);
+      if (!peer) return;
+      peer.nickname = packet.new_nickname;
+    });
 
-    console.log(this.id + " [->] " + JSON.stringify(packet));
+    handleSyncedValues(this, game);
+    handleCustomMessages(this, game);
+    handleEntitySync(this, game);
+    handleTransformSync(this, game);
+  }
+
+  send(packet: ClientPacket) {
+    this.socket.send(this.codec.encodePacket(packet));
   }
 
   createNetworking(): ClientNetworking {
@@ -69,8 +87,7 @@ export class ClientConnection {
         return conn.id;
       },
       get peers(): ConnectionId[] {
-        // TODO: track peers
-        return [];
+        return [...conn.peers.values()].map(p => p.connectionId);
       },
       sendCustomMessage(to: ConnectionId, channel: string, data: CustomMessageData) {
         conn.send({ t: "CustomMessage", channel, data, to });

@@ -4,10 +4,14 @@ import {
   EntityDescendantSpawned,
   GameStatus,
 } from "@dreamlab/engine";
-import { ServerNetworkSetupRoutine } from "./net-manager.ts";
-import { convertEntityDefinition, serializeEntityDefinition } from "../common/entity-sync.ts";
+import { ClientNetworkSetupRoutine } from "./net-connection.ts";
 
-export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
+import {
+  convertEntityDefinition,
+  serializeEntityDefinition,
+} from "../../../networking-shared/entity-sync.ts";
+
+export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
   const changeIgnoreSet = new Set<string>();
 
   game.world.on(EntityDescendantSpawned, async event => {
@@ -22,7 +26,7 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
       entity.parent!.ref,
     );
 
-    net.broadcast({
+    conn.send({
       t: "SpawnEntity",
       definition,
     });
@@ -33,10 +37,11 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
 
     const entity = event.descendant;
     if (changeIgnoreSet.has(entity.ref)) return;
-    net.broadcast({ t: "DeleteEntity", entity: entity.ref });
+    conn.send({ t: "DeleteEntity", entity: entity.ref });
   });
 
-  net.registerPacketHandler("SpawnEntity", async (from, packet) => {
+  conn.registerPacketHandler("SpawnEntity", async packet => {
+    if (packet.from === conn.id) return;
     const def = packet.definition;
 
     const parent = game.entities.lookupByRef(def.parent);
@@ -51,11 +56,10 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
     changeIgnoreSet.add(def.ref);
     parent.spawn(definition);
     changeIgnoreSet.delete(def.ref);
-
-    net.broadcast({ t: "SpawnEntity", definition: packet.definition, from });
   });
 
-  net.registerPacketHandler("DeleteEntity", (from, packet) => {
+  conn.registerPacketHandler("DeleteEntity", packet => {
+    if (packet.from === conn.id) return;
     const entity = game.entities.lookupByRef(packet.entity);
     if (!entity) {
       throw new Error(`entity sync: Tried to delete a non-existent entity! (${packet.entity})`);
@@ -64,8 +68,6 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
     changeIgnoreSet.add(entity.ref);
     entity.destroy();
     changeIgnoreSet.delete(entity.ref);
-
-    net.broadcast({ t: "DeleteEntity", entity: packet.entity, from });
   });
 
   game.world.on(EntityDescendantReparented, event => {
@@ -75,14 +77,17 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
     if (changeIgnoreSet.has(entity.ref)) return;
     if (entity.parent === undefined) return;
 
-    net.broadcast({
+    conn.send({
       t: "ReparentEntity",
       entity: entity.ref,
+      old_parent: event.oldParent.ref,
       parent: entity.parent.ref,
     });
   });
 
-  net.registerPacketHandler("ReparentEntity", (from, packet) => {
+  conn.registerPacketHandler("ReparentEntity", packet => {
+    if (packet.from === conn.id) return;
+
     const entity = game.entities.lookupByRef(packet.entity);
     if (!entity)
       throw new Error(
@@ -95,17 +100,8 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
         `entity sync: Tried to reparent to a non-existent entity (${packet.entity} -> ${packet.parent})`,
       );
 
-    if (entity.parent?.ref !== packet.old_parent) return;
-
-    changeIgnoreSet.add(entity.ref);
+    changeIgnoreSet.add(packet.entity);
     entity.parent = parent;
-    changeIgnoreSet.delete(entity.ref);
-
-    net.broadcast({
-      t: "ReparentEntity",
-      from: from,
-      entity: packet.entity,
-      parent: packet.parent,
-    });
+    changeIgnoreSet.delete(packet.entity);
   });
 };

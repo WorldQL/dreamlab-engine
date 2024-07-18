@@ -11,8 +11,27 @@ export const PLAY_PROTO_VERSION = 1;
 export const HandshakePacketSchema = z.object({
   t: z.literal("Handshake"),
   version: z.number(),
-  instance_id: z.string(),
+  connection_id: ConnectionIdSchema,
   world_id: z.string(),
+  player_id: z.string(),
+});
+
+export const ServerPeerConnectedPacketSchema = z.object({
+  t: z.literal("PeerConnected"),
+  connection_id: ConnectionIdSchema,
+  player_id: z.string(),
+  nickname: z.string(),
+});
+
+export const ServerPeerDisconnectedPacketSchema = z.object({
+  t: z.literal("PeerDisconnected"),
+  connection_id: ConnectionIdSchema,
+});
+
+export const ServerPeerChangedNicknamePacketSchema = z.object({
+  t: z.literal("PeerChangedNickname"),
+  connection_id: ConnectionIdSchema,
+  new_nickname: z.string(),
 });
 
 export const ClientChatMessagePacketSchema = z.object({
@@ -146,6 +165,9 @@ export type ClientPacket = z.infer<typeof ClientPacketSchema>;
 
 export const ServerPacketSchema = z.discriminatedUnion("t", [
   HandshakePacketSchema,
+  ServerPeerConnectedPacketSchema,
+  ServerPeerDisconnectedPacketSchema,
+  ServerPeerChangedNicknamePacketSchema,
   ServerChatMessagePacketSchema,
   ServerSetSyncedValuePacketSchema,
   ServerSpawnEntityPacket,
@@ -165,6 +187,6 @@ export type PlayPacket<
 > = (Side extends "any"
   ? ClientPacket | ServerPacket
   : Side extends "client"
-    ? ClientPacket
-    : ServerPacket) &
+  ? ClientPacket
+  : ServerPacket) &
   (T extends string ? { t: T } : object);

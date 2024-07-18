@@ -1,14 +1,17 @@
 import {
   ConnectionId,
   CustomMessageData,
-  ServerNetworking,
-  ServerGame,
   CustomMessageListener,
+  ServerGame,
+  ServerNetworking,
 } from "@dreamlab/engine";
-// import { generateCUID } from "@dreamlab/vendor/cuid.ts";
-import { ClientPacket, PlayPacket } from "@dreamlab/proto/play.ts";
-import { ClientConnection } from "../client/net-connection.ts";
-
+import {
+  ClientPacket,
+  PLAY_PROTO_VERSION,
+  PlayPacket,
+  ServerPacket,
+} from "@dreamlab/proto/play.ts";
+import { IPCMessageBus } from "../ipc.ts";
 import { handleSyncedValues } from "./synced-values.ts";
 import { handleCustomMessages } from "./custom-messages.ts";
 import { handleEntitySync } from "./entity-sync.ts";
@@ -21,12 +24,7 @@ export type ServerPacketHandler<T extends ClientPacket["t"]> = (
 export type ServerNetworkSetupRoutine = (net: ServerNetworkManager, game: ServerGame) => void;
 
 export class ServerNetworkManager {
-  clients = new Map<ConnectionId, ClientConnection>();
-  connect(): ClientConnection {
-    const connection = new ClientConnection(`conn_${this.clients.size + 1}`, this);
-    this.clients.set(connection.id, connection);
-    return connection;
-  }
+  clients = new Set<ConnectionId>();
 
   customMessageListeners: CustomMessageListener[] = [];
 
@@ -41,6 +39,42 @@ export class ServerNetworkManager {
     return handler as ServerPacketHandler<ClientPacket["t"]>;
   }
 
+  constructor(private ipc: IPCMessageBus) {
+    ipc.addMessageListener("IncomingPacket", message => {
+      if (message.op !== "IncomingPacket") return;
+
+      try {
+        this.getPacketHandler(message.packet.t)(message.from, message.packet);
+      } catch (err) {
+        console.warn(
+          `Uncaught error while handling packet of type '${message.packet.t}': ${err}`,
+        );
+      }
+    });
+
+    ipc.addMessageListener("ConnectionEstablished", message => {
+      if (message.op !== "ConnectionEstablished") return;
+
+      this.send(message.connectionId, {
+        t: "Handshake",
+        connection_id: message.connectionId,
+        version: PLAY_PROTO_VERSION,
+        world_id: ipc.workerData.worldId,
+        player_id: message.playerId,
+      });
+
+      this.broadcast({
+        t: "PeerConnected",
+        nickname: message.nickname,
+        player_id: message.playerId,
+        connection_id: message.connectionId,
+      });
+
+      // TODO: create playerconnection entity and put it in game.remote
+      this.clients.add(message.connectionId);
+    });
+  }
+
   setup(game: ServerGame) {
     handleSyncedValues(this, game);
     handleCustomMessages(this, game);
@@ -48,26 +82,13 @@ export class ServerNetworkManager {
     handleTransformSync(this, game);
   }
 
-  handle(from: ConnectionId, packet: PlayPacket<undefined, "client">) {
-    console.log("server [<-] " + JSON.stringify(packet));
-
-    try {
-      this.getPacketHandler(packet.t)(from, packet);
-    } catch (err) {
-      console.warn("Uncaught error while handling packet: " + err);
-    }
+  send(to: ConnectionId, packet: ServerPacket) {
+    if (to === undefined) return;
+    this.ipc.send({ op: "OutgoingPacket", to, packet });
   }
 
-  send(to: ConnectionId, packet: PlayPacket<undefined, "server">) {
-    const client = this.clients.get(to);
-    if (!client) return;
-    console.log("server => " + to + " [->] " + JSON.stringify(packet));
-    client.handle(packet);
-  }
-  broadcast(packet: PlayPacket<undefined, "server">) {
-    console.log("server [->] " + JSON.stringify(packet));
-
-    for (const client of this.clients.values()) client.handle(packet);
+  broadcast(packet: ServerPacket) {
+    this.ipc.send({ op: "OutgoingPacket", to: null, packet });
   }
 
   createNetworking(): ServerNetworking {
@@ -76,7 +97,7 @@ export class ServerNetworkManager {
 
     return {
       get peers(): ConnectionId[] {
-        return [...net.clients.keys()];
+        return [...net.clients.values()];
       },
       sendCustomMessage(to: ConnectionId, channel: string, data: CustomMessageData) {
         net.send(to, { t: "CustomMessage", channel, data });

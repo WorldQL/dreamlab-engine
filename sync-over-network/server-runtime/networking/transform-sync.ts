@@ -1,6 +1,6 @@
 import { ConnectionId, Entity } from "@dreamlab/engine";
 import { ServerNetworkSetupRoutine } from "./net-manager.ts";
-import * as internal from "../../../../engine/internal.ts";
+import * as internal from "../../../engine/internal.ts";
 
 export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
   function announceAuthority(entity: Entity, clock: number, authority: ConnectionId) {

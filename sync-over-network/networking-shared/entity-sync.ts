@@ -1,5 +1,5 @@
 import { BehaviorDefinition, Entity, EntityDefinition, Game } from "@dreamlab/engine";
-import * as internal from "../../../../engine/internal.ts";
+import * as internal from "../../engine/internal.ts";
 import { BehaviorDefinitionSchema, EntityDefinitionSchema } from "@dreamlab/proto/datamodel.ts";
 import type { z } from "@dreamlab/vendor/zod.ts";
 
