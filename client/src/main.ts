@@ -15,7 +15,6 @@ import { createEditorGame } from "./global-game.ts";
 import { SceneView } from "./scene-graph/scene-view.ts";
 import { Scene, SceneDescSceneSchema } from "./scene-graph/schema.ts";
 
-
 try {
   // @ts-expect-error injected global
   if (LIVE_RELOAD) {
@@ -28,7 +27,8 @@ try {
 const main = async () => {
   let spinner;
   if (typeof window !== "undefined") {
-    const url = "http://127.0.0.1:8000/api/v1/edit/[editor]/files/spin-example.ts?transpile=true";
+    const url =
+      "http://127.0.0.1:8080/api/v1/edit/[editor]/files/spin-example.ts?transpile=true";
     const imported = await import(url);
     spinner = imported.default;
   }
@@ -113,9 +113,9 @@ const main = async () => {
     });
 
     setTimeout(() => {
-      console.log('adding WASD movement')
+      console.log("adding WASD movement");
       sprite.addBehavior({ type: WASDMovementBehavior });
-    }, 5000)
+    }, 5000);
 
     // setTimeout(() => {
     //   for (let i = 0; i < 50000; i++) {

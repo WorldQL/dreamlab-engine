@@ -10,37 +10,13 @@ type FileTree = {
   [key: string]: FileTree | null;
 };
 
-// const fakeFiles = [
-//   ".gitignore",
-//   ".vscode/extensions.json",
-//   ".vscode/level.ts",
-//   "assets/bishop_black.png",
-//   "assets/bishop_white.png",
-//   "assets/king_black.png",
-//   "assets/king_white.png",
-//   "assets/knight_black.png",
-//   "assets/knight_white.png",
-//   "assets/pawn_black.png",
-//   "assets/pawn_white.png",
-//   "assets/queen_black.png",
-//   "assets/queen_white.png",
-//   "assets/rook_black.png",
-//   "assets/rook_white.png",
-//   "chess-piece.ts",
-//   "client.bundled.js",
-//   "client.bundled.js.map",
-//   "client.ts",
-//   "drag-box.ts",
-//   "drop-zone.ts",
-//   "level.ts",
-//   "level/list.ts",
-//   "level/load.ts",
-//   "server.ts",
-//   "shared.ts",
-// ];
-
 const buildFileTree = (files: string[]): FileTree => {
   const tree: FileTree = {};
+
+  if (!Array.isArray(files)) {
+    console.error("Expected files to be an array, but got:", files);
+    return tree;
+  }
 
   files.forEach(file => {
     const parts = file.split("/");
@@ -127,34 +103,36 @@ const FileEntry = ({ file, name, level }: FileEntryProps) => {
 };
 
 const FileTreeComponent = () => {
-  const {
-    data: files,
-    isLoading,
-    isError,
-  } = useQuery<string[]>({
+  const { data, isLoading, isError } = useQuery<{ files: string[] }>({
     queryKey: ["files", game.instanceId],
     queryFn: async ({ signal }) => {
-      // TODO
-      const resp = await fetch(`http://127.0.0.1:8000/api/v1/edit/${game.instanceId}/files`, {
+      const resp = await fetch(`http://127.0.0.1:8080/api/v1/edit/${game.instanceId}/files`, {
         signal,
       });
 
       if (!resp.ok) throw new Error(`http error: ${resp.status}`);
-      return resp.json();
+      const data = await resp.json();
+      return data;
     },
-
-    // initialData: fakeFiles,
   });
 
-  if (!files || isLoading)
-    // TODO: Better loading state
+  if (isLoading) {
     return (
       <Panel title="Files" className="h-full">
         &nbsp;
       </Panel>
     );
+  }
 
-  const fileTree = buildFileTree(files);
+  if (isError || !data || !data.files) {
+    return (
+      <Panel title="Files" className="h-full">
+        Error loading files.
+      </Panel>
+    );
+  }
+
+  const fileTree = buildFileTree(data.files);
 
   return (
     <Panel title="Files" className="h-full">
