@@ -32,6 +32,7 @@
       "jsr:@std/media-types@0.224": "jsr:@std/media-types@0.224.1",
       "jsr:@std/path@0.213": "jsr:@std/path@0.213.1",
       "jsr:@std/path@0.223": "jsr:@std/path@0.223.0",
+      "jsr:@std/path@1": "jsr:@std/path@1.0.0",
       "jsr:@std/path@1.0.0": "jsr:@std/path@1.0.0",
       "jsr:@std/streams@0.224.5": "jsr:@std/streams@0.224.5",
       "npm:@dimforge/rapier2d-compat@0.13.1": "npm:@dimforge/rapier2d-compat@0.13.1",

@@ -116,7 +116,11 @@ export async function bundleWorld(worldDir: string) {
     outdir: path.join(worldDir, "dist"),
   };
 
-  await Deno.mkdir(path.join(worldDir, "dist"));
+  try {
+    await Deno.mkdir(path.join(worldDir, "dist"));
+  } catch (err) {
+    // ignore
+  }
   await Deno.copyFile(
     path.join(worldDir, "world.json"),
     path.join(worldDir, "dist", "world.json"),
