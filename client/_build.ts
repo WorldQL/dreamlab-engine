@@ -32,7 +32,7 @@ async function bundle(
     await ctx.watch();
 
     if (serve) {
-      const { port } = await ctx.serve({ servedir: "./web", port: 3026 });
+      const { port } = await ctx.serve({ servedir: "./web", port: 5173 });
       console.log(`Dev server started at http://localhost:${port}`);
     }
   } else {
