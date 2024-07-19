@@ -9,7 +9,14 @@ import {
   SignalConstructorMatching,
   SignalListener,
 } from "../signal.ts";
-import { ActionBound, ActionCreated, ActionDeleted } from "../signals/actions.ts";
+import {
+  ActionBound,
+  ActionCreated,
+  ActionDeleted,
+  Click,
+  MouseDown,
+  MouseUp,
+} from "../signals/mod.ts";
 import { Action } from "./action.ts";
 import type { Input } from "./input.ts";
 import { isInput } from "./input.ts";
@@ -124,6 +131,19 @@ export class Inputs implements ISignalHandler {
             : undefined;
 
     if (!input) return;
+
+    const cursor = this.cursor;
+    if (cursor) {
+      const button =
+        input === "MouseLeft" ? "left" : input === "MouseMiddle" ? "middle" : "right";
+
+      if (pressed) {
+        this.fire(MouseDown, button, cursor.world, cursor.screen);
+        this.fire(Click, button, cursor.world, cursor.screen);
+      } else {
+        this.fire(MouseUp, button, cursor.world, cursor.screen);
+      }
+    }
 
     const tick = this.#game.time.ticks;
     for (const action of this.actions.values()) {
