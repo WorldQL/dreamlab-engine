@@ -1,45 +1,15 @@
 import { Vector2, pointWorldToLocal } from "../../math/mod.ts";
-import { EntityDestroyed, GameRender } from "../../signals/mod.ts";
+import {
+  Click,
+  EntityDestroyed,
+  GameRender,
+  MouseDown,
+  MouseOut,
+  MouseOver,
+  MouseUp,
+} from "../../signals/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
 import { Camera } from "./camera.ts";
-
-export class Click {
-  public constructor(
-    public readonly button: "left" | "right" | "middle",
-    public readonly worldPosition: Vector2,
-    public readonly screenPosition: Vector2,
-  ) {}
-}
-
-export class MouseDown {
-  public constructor(
-    public readonly button: "left" | "right" | "middle",
-    public readonly worldPosition: Vector2,
-    public readonly screenPosition: Vector2,
-  ) {}
-}
-
-export class MouseUp {
-  public constructor(
-    public readonly button: "left" | "right" | "middle",
-    public readonly worldPosition: Vector2,
-    public readonly screenPosition: Vector2,
-  ) {}
-}
-
-export class MouseOver {
-  public constructor(
-    public readonly worldPosition: Vector2,
-    public readonly screenPosition: Vector2,
-  ) {}
-}
-
-export class MouseOut {
-  public constructor(
-    public readonly worldPosition: Vector2,
-    public readonly screenPosition: Vector2,
-  ) {}
-}
 
 const dataSymbol = Symbol.for("dreamlab.clickableentity.internal");
 export abstract class ClickableEntity extends Entity {

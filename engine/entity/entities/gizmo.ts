@@ -2,11 +2,11 @@ import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { Vector2 } from "../../math/mod.ts";
 import { pointLocalToWorld, pointWorldToLocal } from "../../math/spatial-transforms.ts";
 import { exclusiveSignalType } from "../../signal.ts";
-import { EntityDestroyed, GameRender } from "../../signals/mod.ts";
+import { EntityDestroyed, GameRender, MouseDown } from "../../signals/mod.ts";
 import type { EntityContext } from "../entity.ts";
 import { Entity } from "../entity.ts";
 import { Camera } from "./camera.ts";
-import { ClickableCircle, ClickableRect, MouseDown } from "./clickable.ts";
+import { ClickableCircle, ClickableRect } from "./clickable.ts";
 
 // #region Signals
 // #region Translate
@@ -209,7 +209,7 @@ export class Gizmo extends Entity {
 
     const onMouseDown =
       (axis: "x" | "y" | "both") =>
-      ({ button, worldPosition: world }: MouseDown) => {
+      ({ button, world }: MouseDown) => {
         if (button !== "left") return;
 
         const offset = world.sub(this.globalTransform.position);
@@ -231,7 +231,7 @@ export class Gizmo extends Entity {
       values: { radius: 1 + width / 2, innerRadus: 1 - width / 2 },
     });
 
-    rotate.on(MouseDown, ({ button, worldPosition: world }) => {
+    rotate.on(MouseDown, ({ button, world }) => {
       if (button !== "left") return;
 
       const pos = world.sub(this.globalTransform.position);
@@ -269,7 +269,7 @@ export class Gizmo extends Entity {
 
     const onMouseDown =
       (axis: "x" | "y" | "both") =>
-      ({ button, worldPosition: world }: MouseDown) => {
+      ({ button, world }: MouseDown) => {
         if (button !== "left") return;
 
         const offset = world.sub(this.globalTransform.position);
@@ -333,7 +333,7 @@ export class Gizmo extends Entity {
 
     const translateOnMouseDown =
       (axis: "x" | "y" | "both") =>
-      ({ button, worldPosition: world }: MouseDown) => {
+      ({ button, world }: MouseDown) => {
         if (button !== "left") return;
 
         const offset = world.sub(this.globalTransform.position);
@@ -345,7 +345,7 @@ export class Gizmo extends Entity {
     translateY.on(MouseDown, translateOnMouseDown("y"));
     translateBoth.on(MouseDown, translateOnMouseDown("both"));
 
-    rotate.on(MouseDown, ({ button, worldPosition: world }) => {
+    rotate.on(MouseDown, ({ button, world }) => {
       if (button !== "left") return;
 
       const pos = world.sub(this.globalTransform.position);
@@ -357,7 +357,7 @@ export class Gizmo extends Entity {
 
     const scaleOnMouseDown =
       (axis: "x" | "y" | "both") =>
-      ({ button, worldPosition: world }: MouseDown) => {
+      ({ button, world }: MouseDown) => {
         if (button !== "left") return;
 
         const offset = world.sub(this.globalTransform.position);
