@@ -10,16 +10,9 @@ export const setupWeb = async (app: Application) => {
   const router = new Router();
 
   router.get("/internal/worker", workerInternalRoute);
-  router.get("/", ctx => {
-    ctx.response.body = "all good ^-^";
+  router.get("/status", ctx => {
+    ctx.response.body = "up ^-^";
   });
-  router.get("/client/:path*", ctx =>
-    ctx.send({
-      root: "./client",
-      index: "index.html",
-      path: ctx.request.url.pathname.substring("client/".length),
-    }),
-  );
   router.get("/api/v1/connect/:instance", async ctx => {
     const instanceId = ctx.params.instance;
     const instance = GameInstance.INSTANCES.get(instanceId);
@@ -34,10 +27,24 @@ export const setupWeb = async (app: Application) => {
     await handlePlayerConnectionRequest(ctx, instance);
   });
 
+  router.get("/worlds/:path*", ctx => {
+    // TODO: server from world dist
+    ctx.response.status = Status.NotImplemented;
+  });
+  router.get("/:path*", ctx =>
+    ctx
+      .send({
+        root: "./client",
+        index: "index.html",
+        path: ctx.request.url.pathname,
+      })
+      .catch(_e => {}),
+  );
+
   handleJsonAPIErrors(app);
   app.use(async (ctx, next) => {
     await next();
-    if (ctx.response.body === undefined) {
+    if (ctx.response.status === undefined) {
       ctx.response.body = "Not Found";
       ctx.response.type = "text/plain";
       ctx.response.status = Status.NotFound;

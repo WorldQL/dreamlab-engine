@@ -49,7 +49,7 @@ export class GameInstance {
     });
 
     this.ipc.addMessageListener("OutgoingPacket", message => {
-      console.log(`[->] ${message.packet.t}`);
+      console.log(`[->] ${message.packet.t} ${message.to}`);
 
       if (message.to === null) {
         for (const connection of this.connections.values()) {

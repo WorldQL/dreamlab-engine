@@ -11,13 +11,15 @@ export const handlePlayerConnectionRequest = async (ctx: Context, instance: Game
   const playerId = ctx.request.url.searchParams.get("player_id");
   if (playerId === null) throw new JsonAPIError(Status.BadRequest, "Missing player_id");
 
+  const socket = ctx.upgrade();
+
   const connection = {
     connectionId: crypto.randomUUID(),
-    socket: ctx.upgrade(),
+    socket,
     codec: JSON_CODEC,
   };
   instance.connections.set(connection.connectionId, connection);
-  connection.socket.addEventListener("close", () => {
+  socket.addEventListener("close", () => {
     instance.ipc.send({
       op: "ConnectionDropped",
       connectionId: connection.connectionId,
@@ -25,7 +27,7 @@ export const handlePlayerConnectionRequest = async (ctx: Context, instance: Game
     instance.connections.delete(connection.connectionId);
   });
 
-  connection.socket.addEventListener("message", event => {
+  socket.addEventListener("message", event => {
     try {
       const packet = ClientPacketSchema.parse(connection.codec.decodePacket(event.data));
       instance.ipc.send({
@@ -41,6 +43,7 @@ export const handlePlayerConnectionRequest = async (ctx: Context, instance: Game
   });
 
   const onReady = () => {
+    console.log(instance.connections);
     instance.ipc.send({
       op: "ConnectionEstablished",
       nickname,
@@ -49,9 +52,9 @@ export const handlePlayerConnectionRequest = async (ctx: Context, instance: Game
     });
   };
 
-  if (connection.socket.readyState === WebSocket.OPEN) {
+  if (socket.readyState === WebSocket.OPEN) {
     onReady();
   } else {
-    connection.socket.addEventListener("open", () => onReady());
+    socket.addEventListener("open", () => onReady());
   }
 };

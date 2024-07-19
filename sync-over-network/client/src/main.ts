@@ -1,4 +1,4 @@
-import { ClientGame } from "@dreamlab/engine";
+import { ClientGame, GameStatus } from "@dreamlab/engine";
 import { JSON_CODEC } from "@dreamlab/proto/codecs/simple-json.ts";
 import { ServerPacket } from "@dreamlab/proto/play.ts";
 import { ClientConnection } from "./networking/net-connection.ts";
@@ -7,6 +7,8 @@ const setup = async (conn: ClientConnection, game: ClientGame) => {
   conn.setup(game);
   await game.initialize();
 
+  game.setStatus(GameStatus.Running);
+
   // TODO: load test world
 };
 
@@ -14,8 +16,11 @@ const instanceId = "my-instance";
 const socket = new WebSocket(
   `/api/v1/connect/${instanceId}?nickname=${encodeURIComponent("Player" + Math.floor(Math.random() * 999) + 1)}&player_id=${encodeURIComponent(crypto.randomUUID())}`,
 );
+Object.defineProperty(window, "socket", { value: socket });
 const codec = JSON_CODEC;
 socket.addEventListener("message", async event => {
+  console.log(event);
+
   let conn: ClientConnection | undefined;
   let game: ClientGame | undefined;
   const packet = codec.decodePacket(event.data) as ServerPacket;

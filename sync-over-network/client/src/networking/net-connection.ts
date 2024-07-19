@@ -1,6 +1,5 @@
 import { ClientPacket, PlayPacket, ServerPacket } from "@dreamlab/proto/play.ts";
 import { PlayCodec } from "@dreamlab/proto/codecs/mod.ts";
-import { JSON_CODEC } from "@dreamlab/proto/codecs/simple-json.ts";
 import {
   ClientGame,
   ClientNetworking,
@@ -44,6 +43,8 @@ export class ClientConnection {
   ) {}
 
   handle(packet: ServerPacket) {
+    console.log(`[<-] ${packet.t}`);
+
     try {
       this.getPacketHandler(packet.t)(packet);
     } catch (err) {
@@ -75,6 +76,8 @@ export class ClientConnection {
   }
 
   send(packet: ClientPacket) {
+    console.log(`[->] ${packet.t}`);
+
     this.socket.send(this.codec.encodePacket(packet));
   }
 

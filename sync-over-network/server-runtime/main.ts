@@ -1,4 +1,4 @@
-import { ServerGame } from "@dreamlab/engine";
+import { GameStatus, ServerGame } from "@dreamlab/engine";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 import { ServerNetworkManager } from "./networking/net-manager.ts";
 import { IPCMessageBus } from "./ipc.ts";
@@ -21,3 +21,5 @@ network.setup(game);
 await game.initialize();
 
 // TODO: load test world
+
+game.setStatus(GameStatus.Running);

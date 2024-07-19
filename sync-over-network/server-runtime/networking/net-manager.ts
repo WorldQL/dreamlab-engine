@@ -41,8 +41,6 @@ export class ServerNetworkManager {
 
   constructor(private ipc: IPCMessageBus) {
     ipc.addMessageListener("IncomingPacket", message => {
-      if (message.op !== "IncomingPacket") return;
-
       try {
         this.getPacketHandler(message.packet.t)(message.from, message.packet);
       } catch (err) {
@@ -53,8 +51,6 @@ export class ServerNetworkManager {
     });
 
     ipc.addMessageListener("ConnectionEstablished", message => {
-      if (message.op !== "ConnectionEstablished") return;
-
       this.send(message.connectionId, {
         t: "Handshake",
         connection_id: message.connectionId,
