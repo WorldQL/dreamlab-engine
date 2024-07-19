@@ -2,7 +2,11 @@ import { Empty, Entity, Rigidbody2D, Sprite2D } from "@dreamlab/engine";
 import { useAtom } from "jotai";
 // @deno-types="npm:@types/react@18.3.1"
 import { useCallback, useEffect, useRef } from "react";
-import { selectedEntityAtom, copiedEntityAtom } from "../../context/editor-context.tsx";
+import {
+  selectedEntityAtom,
+  copiedEntityAtom,
+  historyAtom,
+} from "../../context/editor-context.tsx";
 import { game } from "../../global-game.ts";
 import { cn } from "../../utils/cn.ts";
 
@@ -15,6 +19,7 @@ interface SceneMenuProps {
 export const SceneMenu = ({ entity, position, setIsOpen }: SceneMenuProps) => {
   const [_selectedEntity, setSelectedEntity] = useAtom(selectedEntityAtom);
   const [copiedEntity, setCopiedEntity] = useAtom(copiedEntityAtom);
+  const [history, setHistory] = useAtom(historyAtom);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const createEntity = useCallback(
@@ -24,6 +29,8 @@ export const SceneMenu = ({ entity, position, setIsOpen }: SceneMenuProps) => {
         name: entityType.name,
       });
 
+      setHistory([...history, { type: "add", entity: newEntity }]);
+
       if (entity) {
         newEntity.parent = entity;
       }
@@ -31,7 +38,7 @@ export const SceneMenu = ({ entity, position, setIsOpen }: SceneMenuProps) => {
       setSelectedEntity(newEntity);
       setIsOpen(false);
     },
-    [entity, setSelectedEntity, setIsOpen],
+    [entity, setSelectedEntity, setIsOpen, history, setHistory],
   );
 
   const handleCopy = useCallback(() => {
@@ -44,18 +51,20 @@ export const SceneMenu = ({ entity, position, setIsOpen }: SceneMenuProps) => {
   const handlePasteAsChild = useCallback(() => {
     if (copiedEntity && entity) {
       const newEntity = copiedEntity.cloneInto(entity);
+      setHistory([...history, { type: "add", entity: newEntity }]);
       setSelectedEntity(newEntity);
     }
     setIsOpen(false);
-  }, [copiedEntity, entity, setSelectedEntity, setIsOpen]);
+  }, [copiedEntity, entity, setSelectedEntity, setIsOpen, history, setHistory]);
 
   const handlePaste = useCallback(() => {
     if (copiedEntity) {
       const newEntity = copiedEntity.cloneInto(game.world);
+      setHistory([...history, { type: "add", entity: newEntity }]);
       setSelectedEntity(newEntity);
     }
     setIsOpen(false);
-  }, [copiedEntity, setSelectedEntity, setIsOpen]);
+  }, [copiedEntity, setSelectedEntity, setIsOpen, history, setHistory]);
 
   const handleDelete = useCallback(() => {
     if (entity) {

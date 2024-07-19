@@ -3,6 +3,8 @@ import { Plus } from "lucide-react";
 // @deno-types="npm:@types/react@18.3.1"
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { game } from "../../global-game.ts";
+import { useAtom } from "jotai";
+import { historyAtom } from "../../context/editor-context.tsx";
 import { cn } from "../../utils/cn.ts";
 import { IconButton } from "../ui/icon-button.tsx";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip.tsx";
@@ -11,6 +13,7 @@ const NewEntityButton = () => {
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [history, setHistory] = useAtom(historyAtom);
 
   const toggleMenu = useCallback(
     () => setIsMenuOpen(isMenuOpen => !isMenuOpen),
@@ -42,14 +45,16 @@ const NewEntityButton = () => {
     (
       entityType: typeof Empty | typeof Rigidbody2D | typeof Sprite2D | typeof AnimatedSprite2D,
     ) => {
-      game.world.spawn({
+      const newEntity = game.world.spawn({
         type: entityType,
         name: entityType.name,
       });
 
+      setHistory([...history, { type: "add", entity: newEntity }]);
+
       setIsMenuOpen(false);
     },
-    [setIsMenuOpen],
+    [setIsMenuOpen, history, setHistory],
   );
 
   return (

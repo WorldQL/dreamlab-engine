@@ -247,12 +247,12 @@ const SceneGraph = () => {
 
                 if (isStringParseableToInt(ap) && isStringParseableToInt(bp)) {
                   // sort by trailing number after dot
-                  const partA = parseInt(ap)
-                  const partB = parseInt(bp)
-                  return partA - partB
+                  const partA = parseInt(ap);
+                  const partB = parseInt(bp);
+                  return partA - partB;
                 }
                 // otherwise sort alphanumerically
-                return aName.localeCompare(bName)
+                return aName.localeCompare(bName);
               })
               .map(([_, ent]) => (
                 <EntityEntry entity={ent} level={0} key={ent.ref} />

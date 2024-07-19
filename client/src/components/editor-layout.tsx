@@ -13,6 +13,7 @@ import { SettingsButton } from "./toolbar/settings-button.tsx";
 import { ThemeButton } from "./toolbar/theme-button.tsx";
 import { CameraControls } from "./camera-controls.tsx";
 import { cn } from "../utils/cn.ts";
+import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts.ts";
 
 export const EditorLayout = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }) => {
   const isRunning = useAtomValue(isRunningAtom);
@@ -26,6 +27,8 @@ export const EditorLayout = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }) 
   const gameContainer = useRef<HTMLDivElement>(null);
   const topSectionRef = useRef<HTMLDivElement>(null);
   const consoleRef = useRef<HTMLDivElement>(null);
+
+  useKeyboardShortcuts();
 
   useEffect(() => {
     const game = gameContainer.current;
@@ -83,7 +86,7 @@ export const EditorLayout = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }) 
             ref={gameContainer}
             id="editor-pointer-style-target"
           >
-            <CameraControls gameDiv={gameDiv}/>
+            <CameraControls gameDiv={gameDiv} />
           </div>
         </div>
         <div
