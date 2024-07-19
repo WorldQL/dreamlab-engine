@@ -16,6 +16,7 @@ import {
   element,
   lerpAngle,
   pointWorldToLocal,
+  Scroll,
 } from "../../mod.ts";
 import { enumAdapter } from "../../value/adapters/enum-adapter.ts";
 
@@ -29,7 +30,7 @@ export class DraggableBehavior extends Behavior {
   }
 
   onInitialize(): void {
-    this.listen(this.#clickable, MouseDown, ({ button, worldPosition: world }) => {
+    this.listen(this.#clickable, MouseDown, ({ button, world }) => {
       if (button !== "left") return;
 
       this.#origin = world.sub(this.entity.pos);
@@ -37,6 +38,11 @@ export class DraggableBehavior extends Behavior {
 
     this.listen(this.#clickable, MouseUp, ({ button }) => {
       if (button === "left") this.#origin = undefined;
+    });
+
+    this.listen(this.inputs, Scroll, ({ delta: { y: delta } }) => {
+      if (!this.#clickable.clicked) return;
+      this.entity.globalTransform.rotation += (delta * Math.PI) / 12;
     });
 
     this.listen(this.game, GameRender, () => {
