@@ -190,7 +190,7 @@ const Inspector = () => {
     if (filePath && selectedEntity) {
       try {
         const response = await fetch(
-          `http://127.0.0.1:8000/api/v1/edit/${game.instanceId}/file/${filePath}`,
+          `http://127.0.0.1:8000/api/v1/edit/${game.instanceId}/files/${filePath}`,
         );
         if (response.ok) {
           const scriptContent = await response.text();
@@ -217,7 +217,7 @@ const Inspector = () => {
   const addBehavior = async (scriptPath: string) => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/v1/edit/${game.instanceId}/file/${scriptPath}`,
+        `http://127.0.0.1:8000/api/v1/edit/${game.instanceId}/files/${scriptPath}`,
       );
       if (response.ok) {
         const scriptContent = await response.text();
