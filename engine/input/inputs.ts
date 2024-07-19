@@ -16,6 +16,7 @@ import {
   Click,
   MouseDown,
   MouseUp,
+  Scroll,
 } from "../signals/mod.ts";
 import { Action } from "./action.ts";
 import type { Input } from "./input.ts";
@@ -173,6 +174,11 @@ export class Inputs implements ISignalHandler {
       this.#cursorPosition.y = ev.offsetY;
     }
   };
+
+  #onWheel = (ev: WheelEvent) => {
+    const scale = Camera.METERS_TO_PIXELS;
+    this.fire(Scroll, new Vector2({ x: ev.deltaX / scale, y: ev.deltaY / scale }));
+  };
   // #endregion
 
   #onBind = (ev: ActionBound) => {
@@ -196,6 +202,7 @@ export class Inputs implements ISignalHandler {
     globalThis.addEventListener("keyup", this.#onKeyUp);
     globalThis.addEventListener("mousedown", this.#onMouseDown);
     globalThis.addEventListener("mouseup", this.#onMouseUp);
+    globalThis.addEventListener("wheel", this.#onWheel);
     globalThis.addEventListener("blur", this.#clearActions);
     document.addEventListener("visibilitychange", this.#onVisibilityChange);
 
@@ -210,6 +217,7 @@ export class Inputs implements ISignalHandler {
       globalThis.removeEventListener("keyup", this.#onKeyUp);
       globalThis.removeEventListener("mousedown", this.#onMouseDown);
       globalThis.removeEventListener("mouseup", this.#onMouseUp);
+      globalThis.removeEventListener("wheel", this.#onWheel);
       globalThis.removeEventListener("blur", this.#clearActions);
       document.removeEventListener("visibilitychange", this.#onVisibilityChange);
 

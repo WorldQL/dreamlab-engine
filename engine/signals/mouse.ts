@@ -37,3 +37,7 @@ export class MouseOut {
     public readonly screen: Vector2,
   ) {}
 }
+
+export class Scroll {
+  public constructor(public readonly delta: Vector2) {}
+}
