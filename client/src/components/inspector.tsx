@@ -189,23 +189,17 @@ const Inspector = () => {
     const filePath = event.dataTransfer.getData("text/plain");
     if (filePath && selectedEntity) {
       try {
-        const response = await fetch(
-          `http://127.0.0.1:8000/api/v1/edit/${game.instanceId}/files/${filePath}`,
-        );
-        if (response.ok) {
-          const scriptContent = await response.text();
-          const blob = new Blob([scriptContent], { type: "application/javascript" });
-          const scriptUrl = URL.createObjectURL(blob);
+        const scriptUrl = `http://127.0.0.1:8000/api/v1/edit/${game.instanceId}/files/${filePath}?transpile=true`;
+        try {
           const module = await import(scriptUrl);
-          URL.revokeObjectURL(scriptUrl);
           const behavior = module.default;
           selectedEntity.addBehavior({ type: behavior });
           setSelectedEntity(selectedEntity);
-        } else {
-          console.error(`Failed to fetch file content from ${filePath}`);
+        } catch (importError) {
+          console.error("Failed to import module from script content:", importError);
         }
-      } catch (error) {
-        console.error(`Failed to import module from fetched script content`, error);
+      } catch (fetchError) {
+        console.error("Failed to fetch or import script content:", fetchError);
       }
     }
   };
@@ -216,25 +210,19 @@ const Inspector = () => {
 
   const addBehavior = async (scriptPath: string) => {
     try {
-      const response = await fetch(
-        `http://127.0.0.1:8000/api/v1/edit/${game.instanceId}/files/${scriptPath}`,
-      );
-      if (response.ok) {
-        const scriptContent = await response.text();
-        const blob = new Blob([scriptContent], { type: "application/javascript" });
-        const scriptUrl = URL.createObjectURL(blob);
+      const scriptUrl = `http://127.0.0.1:8000/api/v1/edit/${game.instanceId}/files/${scriptPath}?transpile=true`;
+      try {
         const module = await import(scriptUrl);
-        URL.revokeObjectURL(scriptUrl);
         const behavior = module.default;
         if (selectedEntity) {
           selectedEntity.addBehavior({ type: behavior });
           setSelectedEntity(selectedEntity);
         }
-      } else {
-        console.error(`Failed to fetch script content from ${scriptPath}`);
+      } catch (importError) {
+        console.error("Failed to import module from script content:", importError);
       }
-    } catch (error) {
-      console.error(`Failed to import module from fetched script content`, error);
+    } catch (fetchError) {
+      console.error("Failed to fetch or import script content:", fetchError);
     }
   };
 
