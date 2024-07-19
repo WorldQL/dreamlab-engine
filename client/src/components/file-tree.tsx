@@ -36,10 +36,11 @@ const buildFileTree = (files: string[]): FileTree => {
 interface FileEntryProps {
   file: FileTree | null;
   name: string;
+  path: string;
   level: number;
 }
 
-const FileEntry = ({ file, name, level }: FileEntryProps) => {
+const FileEntry = ({ file, name, path, level }: FileEntryProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -47,10 +48,10 @@ const FileEntry = ({ file, name, level }: FileEntryProps) => {
 
   const handleDragStart = useCallback(
     (event: React.DragEvent<HTMLDivElement>) => {
-      event.dataTransfer.setData("text/plain", name);
+      event.dataTransfer.setData("text/plain", path);
       event.dataTransfer.setDragImage(new Image(), 0, 0);
     },
-    [name],
+    [path],
   );
 
   const handleDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
@@ -63,7 +64,6 @@ const FileEntry = ({ file, name, level }: FileEntryProps) => {
     setIsHovered(false);
   }, []);
 
-  // TODO: finish drag/drop logic
   const handleDrop = useCallback((event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     setIsHovered(false);
@@ -94,7 +94,13 @@ const FileEntry = ({ file, name, level }: FileEntryProps) => {
       {file && !isCollapsed && (
         <ul>
           {Object.entries(file).map(([childName, childFile], index) => (
-            <FileEntry key={index} name={childName} file={childFile} level={level + 1} />
+            <FileEntry
+              key={index}
+              name={childName}
+              file={childFile}
+              path={`${path}/${childName}`}
+              level={level + 1}
+            />
           ))}
         </ul>
       )}
@@ -140,7 +146,7 @@ const FileTreeComponent = () => {
       <div className="p-2 h-full">
         <ul className="file-tree space-y-1">
           {Object.entries(fileTree).map(([name, file], index) => (
-            <FileEntry key={index} name={name} file={file} level={0} />
+            <FileEntry key={index} name={name} file={file} path={name} level={0} />
           ))}
         </ul>
       </div>

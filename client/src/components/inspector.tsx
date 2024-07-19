@@ -12,6 +12,7 @@ import { selectedEntityAtom } from "../context/editor-context.tsx";
 import { AxisInputField } from "./ui/axis-input.tsx";
 import { InputField } from "./ui/input.tsx";
 import { Panel } from "./ui/panel.tsx";
+import { game } from "../global-game.ts";
 
 const Inspector = () => {
   const [selectedEntity, setSelectedEntity] = useAtom(selectedEntityAtom);
@@ -183,6 +184,62 @@ const Inspector = () => {
       });
     };
 
+  const handleDrop = async (event: React.DragEvent) => {
+    event.preventDefault();
+    const filePath = event.dataTransfer.getData("text/plain");
+    if (filePath && selectedEntity) {
+      try {
+        const response = await fetch(
+          `http://127.0.0.1:8000/api/v1/edit/${game.instanceId}/file/${filePath}`,
+        );
+        if (response.ok) {
+          const scriptContent = await response.text();
+          const blob = new Blob([scriptContent], { type: "application/javascript" });
+          const scriptUrl = URL.createObjectURL(blob);
+          const module = await import(scriptUrl);
+          URL.revokeObjectURL(scriptUrl);
+          const behavior = module.default;
+          selectedEntity.addBehavior({ type: behavior });
+          setSelectedEntity(selectedEntity);
+        } else {
+          console.error(`Failed to fetch file content from ${filePath}`);
+        }
+      } catch (error) {
+        console.error(`Failed to import module from fetched script content`, error);
+      }
+    }
+  };
+
+  const handleDragOver = (event: React.DragEvent) => {
+    event.preventDefault();
+  };
+
+  const addBehavior = async (scriptPath: string) => {
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/v1/edit/${game.instanceId}/file/${scriptPath}`,
+      );
+      if (response.ok) {
+        const scriptContent = await response.text();
+        const blob = new Blob([scriptContent], { type: "application/javascript" });
+        const scriptUrl = URL.createObjectURL(blob);
+        const module = await import(scriptUrl);
+        URL.revokeObjectURL(scriptUrl);
+        const behavior = module.default;
+        if (selectedEntity) {
+          selectedEntity.addBehavior({ type: behavior });
+          setSelectedEntity(selectedEntity);
+        }
+      } else {
+        console.error(`Failed to fetch script content from ${scriptPath}`);
+      }
+    } catch (error) {
+      console.error(`Failed to import module from fetched script content`, error);
+    }
+  };
+
+  const behaviorOptions = ["wip"];
+
   if (!selectedEntity) {
     return (
       <Panel className="h-full" title="Inspector">
@@ -194,7 +251,7 @@ const Inspector = () => {
   }
 
   return (
-    <Panel className="h-full" title="Inspector">
+    <Panel className="h-full" title="Inspector" onDrop={handleDrop} onDragOver={handleDragOver}>
       <div className="p-4">
         <div className="mb-4">
           <InputField type="text" label="Name" value={name} onChange={handleNameChange} />
@@ -258,6 +315,20 @@ const Inspector = () => {
               ))}
             </div>
           ))}
+        </div>
+        <div className="mb-4">
+          <h4 className="text-lg font-semibold mb-2 text-textPrimary">Add Behavior</h4>
+          <select
+            onChange={e => addBehavior(e.target.value)}
+            className="w-full p-2 border rounded"
+          >
+            <option value="">Select a behavior...</option>
+            {behaviorOptions.map((url, index) => (
+              <option key={index} value={url}>
+                {url}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
     </Panel>
