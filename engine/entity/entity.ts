@@ -71,7 +71,7 @@ export interface EntityDefinition<
 > {
   type: EntityConstructor<T>;
   name: string;
-  transform?: { position?: IVector2; rotation?: number; scale?: IVector2 };
+  transform?: { position?: IVector2; rotation?: number; scale?: IVector2; z?: number };
   values?: Partial<Omit<T, keyof Entity>>;
   children?: { [I in keyof Children]: EntityDefinition<Children[I]> };
   behaviors?: { [I in keyof Behaviors]: BehaviorDefinition<Behaviors[I]> };
@@ -361,6 +361,7 @@ export abstract class Entity implements ISignalHandler {
         position: this.transform.position.bare(),
         rotation: this.transform.rotation,
         scale: this.transform.scale.bare(),
+        z: this.transform.z,
       },
       values: entityValues,
     };
