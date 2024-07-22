@@ -28,6 +28,8 @@ export class ServerRoot extends Entity {
   constructor(game: Game) {
     super({ game, name: "server" });
 
+    game.entities._unregister(this);
+
     this.name = "game.server";
     // @ts-expect-error assign readonly id
     this.id = "game.server";
@@ -35,6 +37,8 @@ export class ServerRoot extends Entity {
     this.ref = "SERVER";
 
     this.pausable = false;
+
+    game.entities._register(this);
   }
 }
 
@@ -44,6 +48,8 @@ export class LocalRoot extends Entity {
   constructor(game: Game) {
     super({ game, name: "local" });
 
+    game.entities._unregister(this);
+
     this.name = "game.local";
     // @ts-expect-error assign readonly id
     this.id = "game.local";
@@ -51,6 +57,8 @@ export class LocalRoot extends Entity {
     this.ref = "LOCAL";
 
     this.pausable = false;
+
+    game.entities._register(this);
   }
 }
 
@@ -60,6 +68,8 @@ export class PrefabsRoot extends Entity {
   constructor(game: Game) {
     super({ game, name: "prefabs" });
 
+    game.entities._unregister(this);
+
     this.name = "game.prefabs";
     // @ts-expect-error assign readonly id
     this.id = "game.prefabs";
@@ -67,5 +77,7 @@ export class PrefabsRoot extends Entity {
     this.ref = "PREFABS";
 
     this.pausable = false;
+
+    game.entities._register(this);
   }
 }
