@@ -12,9 +12,8 @@ import { selectedEntityAtom } from "../context/editor-context.tsx";
 import { AxisInputField } from "./ui/axis-input.tsx";
 import { InputField } from "./ui/input.tsx";
 import { game } from "../global-game.ts";
-import { CirclePlus } from "lucide-react";
-import { Tooltip, TooltipTrigger, TooltipContent } from "./ui/tooltip.tsx";
 import { Category } from "./ui/panel.tsx";
+import { useQuery } from "@tanstack/react-query";
 
 const Inspector = () => {
   const [selectedEntity, setSelectedEntity] = useAtom(selectedEntityAtom);
@@ -33,8 +32,20 @@ const Inspector = () => {
   const [behaviorValues, setBehaviorValues] = useState<
     Partial<Record<string, Partial<Record<string, SyncedValue<unknown>>>>>
   >({});
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+
+  // wip
+  const { data, isLoading, isError } = useQuery<{ files: string[] }>({
+    queryKey: ["files", game.instanceId],
+    queryFn: async ({ signal }) => {
+      const resp = await fetch(`http://127.0.0.1:8000/api/v1/edit/${game.instanceId}/files`, {
+        signal,
+      });
+
+      if (!resp.ok) throw new Error(`http error: ${resp.status}`);
+      const data = await resp.json();
+      return data;
+    },
+  });
 
   useEffect(() => {
     if (!selectedEntity) return;
@@ -230,6 +241,11 @@ const Inspector = () => {
 
   const addBehavior = async (scriptPath: string) => {
     try {
+      if (scriptPath.endsWith(".ts")) {
+        scriptPath = scriptPath.replace(".ts", ".js");
+      } else if (scriptPath.endsWith(".tsx")) {
+        scriptPath = scriptPath.replace(".tsx", ".jsx");
+      }
       const scriptUrl = `http://127.0.0.1:8000/api/v1/edit/${game.instanceId}/files/${scriptPath}`;
       try {
         const module = await import(scriptUrl);
@@ -256,20 +272,6 @@ const Inspector = () => {
       console.error("Failed to fetch or import script content:", fetchError);
     }
   };
-
-  const behaviorOptions = ["wip"];
-
-  const handleIconClick = () => {
-    setShowDropdown(!showDropdown);
-  };
-
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(event.target.value);
-  };
-
-  const filteredOptions = behaviorOptions.filter(option =>
-    option.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
 
   if (!selectedEntity) {
     return (
@@ -326,38 +328,6 @@ const Inspector = () => {
         ))}
       </Category>
       <Category title="Behaviors">
-        <div className="flex items-center">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <CirclePlus onClick={handleIconClick} className="ml-2 w-5 h-5 cursor-pointer" />
-            </TooltipTrigger>
-            <TooltipContent side="top">
-              <p>Drag File or Click Here to Add a Behavior to the Entity</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
-        {showDropdown && (
-          <div className="mb-4">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={handleSearchChange}
-              placeholder="Search behaviors..."
-              className="w-full p-2 border rounded mb-2"
-            />
-            <select
-              onChange={e => addBehavior(e.target.value)}
-              className="w-full p-2 border rounded"
-            >
-              <option value="">Select a behavior...</option>
-              {filteredOptions.map((url, index) => (
-                <option key={index} value={url}>
-                  {url}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
         {behaviors.map((behavior, index: number) => (
           <div key={index} className="mb-2">
             <p className="text-sm font-medium text-textPrimary">{behavior}</p>
@@ -374,6 +344,27 @@ const Inspector = () => {
             </div>
           </div>
         ))}
+        <div className="mb-4">
+          <p className="text-md font-medium text-textPrimary">Add Behavior</p>
+          <p className="mt-2 text-xs text-textSecondary">
+            Drag and drop files here or use select file below to add a behavior.
+          </p>
+          {/* TODO: Make this a center screen modal */}
+          <div className="flex items-center justify-between">
+            <select
+              onChange={e => addBehavior(e.target.value)}
+              className="w-1/3 border rounded truncate"
+              style={{ maxWidth: "200px" }}
+            >
+              <option value="">Select a behavior...</option>
+              {data?.files.map((file, index) => (
+                <option key={index} value={file} title={file}>
+                  {file.length > 30 ? `${file.substring(0, 27)}...` : file}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
       </Category>
     </div>
   );
