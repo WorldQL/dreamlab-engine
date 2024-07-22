@@ -1,4 +1,4 @@
-import { Click, ClickableRect, Sprite2D } from "../../mod.ts";
+import { Click, ClickableRect, MouseOut, MouseOver, Sprite2D } from "../../mod.ts";
 import { slider } from "../debug.ts";
 
 export const sprite = game.world.spawn({
@@ -10,6 +10,8 @@ export const sprite = game.world.spawn({
 export const click = sprite._.ClickRegion.cast(ClickableRect);
 
 click.on(Click, console.log);
+click.on(MouseOver, console.log);
+click.on(MouseOut, console.log);
 
 slider(
   { label: "pos: x", min: -1, group: "sprite" },

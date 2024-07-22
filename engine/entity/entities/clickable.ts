@@ -1,7 +1,8 @@
+import { Cursor } from "../../input/inputs.ts";
 import { Vector2, pointWorldToLocal } from "../../math/mod.ts";
+import { BaseGame } from "../../mod.ts";
 import {
   Click,
-  EntityDestroyed,
   GameRender,
   MouseDown,
   MouseOut,
@@ -11,115 +12,117 @@ import {
 import { Entity, EntityContext } from "../entity.ts";
 import { Camera } from "./camera.ts";
 
-const dataSymbol = Symbol.for("dreamlab.clickableentity.internal");
+const clickedSetter = Symbol.for("dreamlab.internal.clickable.clicked-setter");
+const hoverSetter = Symbol.for("dreamlab.internal.clickable.hover-setter");
+
 export abstract class ClickableEntity extends Entity {
   #clicked: boolean = false;
   get clicked(): boolean {
     return this.#clicked;
+  }
+  [clickedSetter](value: boolean, button: "left" | "right" | "middle", cursor?: Cursor) {
+    const prev = this.#clicked;
+    this.#clicked = value;
+
+    if (!prev && value) {
+      this.fire(MouseDown, button, cursor!);
+      if (button === "left") this.fire(Click, cursor!);
+    } else if (prev && !value) {
+      this.fire(MouseUp, button, cursor);
+    }
   }
 
   #hover: boolean = false;
   get hover(): boolean {
     return this.#hover;
   }
+  [hoverSetter](value: boolean, cursor?: Cursor) {
+    const prev = this.#hover;
+    this.#hover = value;
 
-  #hoverSet: Set<string> | undefined;
+    if (!prev && value) {
+      this.fire(MouseOver, cursor!);
+    } else if (prev && !value) {
+      this.fire(MouseOut, cursor);
+    }
+  }
+
+  static #GameRenderListeners = new Map<BaseGame, (ev: GameRender) => void>();
+  static #MouseDownListeners = new Map<BaseGame, (ev: MouseDown) => void>();
+  static #MouseUpListeners = new Map<BaseGame, (ev: MouseUp) => void>();
 
   constructor(ctx: EntityContext) {
     super(ctx);
 
     if (this.game.isClient()) {
-      // the normal container in play, the editor UI in edit mode
-      const canvas =
-        document.getElementById("dreamlab-pointer-style-target") ??
-        this.game.renderer.app.canvas;
-      // TODO: Better API for this
-      // @ts-expect-error: internal data
-      if (!this.game[dataSymbol]) {
-        const set = new Set<string>();
-        // @ts-expect-error: internal data
-        this.game[dataSymbol] = set;
+      if (!ClickableEntity.#GameRenderListeners.has(this.game)) {
+        const canvas =
+          document.getElementById("dreamlab-pointer-style-target") ??
+          this.game.renderer.app.canvas;
 
-        this.game.on(GameRender, () => {
-          if (set.size > 0) canvas.style.cursor = "pointer";
+        // TODO: Make z sorting optional
+        const fn = (_: GameRender) => {
+          const cursor = this.inputs.cursor;
+          const entities = this.game.entities
+            .lookupByType(ClickableEntity)
+            .toSorted((a, b) => b.z - a.z);
+
+          let hoverCount = 0;
+          for (const entity of entities) {
+            const isInBounds =
+              hoverCount > 0 ? false : (cursor && entity.isInBounds(cursor.world)) ?? false;
+
+            entity[hoverSetter](isInBounds, cursor);
+            if (isInBounds) hoverCount++;
+          }
+
+          if (hoverCount > 0) canvas.style.cursor = "pointer";
           else canvas.style.cursor = "";
-        });
+        };
+
+        ClickableEntity.#GameRenderListeners.set(this.game, fn);
+        this.game.on(GameRender, fn);
       }
 
-      // @ts-expect-error: internal data
-      this.#hoverSet = this.game[dataSymbol];
+      if (!ClickableEntity.#MouseDownListeners.has(this.game)) {
+        const fn = ({ button, cursor }: MouseDown) => {
+          const entities = this.game.entities
+            .lookupByType(ClickableEntity)
+            .toSorted((a, b) => b.z - a.z);
+
+          let clickedCount = 0;
+          for (const entity of entities) {
+            const isInBounds = clickedCount > 0 ? false : entity.isInBounds(cursor.world);
+            if (isInBounds) {
+              entity[clickedSetter](true, button, cursor);
+              clickedCount++;
+            }
+          }
+        };
+
+        ClickableEntity.#MouseDownListeners.set(this.game, fn);
+        this.inputs.on(MouseDown, fn);
+      }
+
+      if (!ClickableEntity.#MouseUpListeners.has(this.game)) {
+        const fn = ({ button, cursor }: MouseUp) => {
+          const entities = this.game.entities.lookupByType(ClickableEntity);
+          for (const entity of entities) entity[clickedSetter](false, button, cursor);
+        };
+
+        ClickableEntity.#MouseUpListeners.set(this.game, fn);
+        this.inputs.on(MouseUp, fn);
+      }
     }
 
     this.listen(this.game, GameRender, () => {
-      if (!this.#hoverSet) return;
-
       const camera = Camera.getActive(this.game);
       if (!camera) return;
 
       const cursor = this.inputs.cursor;
       if (!cursor) return;
-
-      const wasInBounds = this.#hoverSet.has(this.ref);
-      const isInBounds = this.isInBounds(cursor.world);
-      if (isInBounds) this.#hoverSet.add(this.ref);
-      else this.#hoverSet.delete(this.ref);
-
-      if (!wasInBounds && isInBounds) {
-        this.fire(MouseOver, cursor.world, cursor.screen);
-        this.#hover = true;
-      } else if (wasInBounds && !isInBounds) {
-        this.fire(MouseOut, cursor.world, cursor.screen);
-        this.#hover = false;
-      }
-    });
-
-    this.on(EntityDestroyed, () => {
-      if (!this.game.isClient()) return;
-
-      const canvas = this.game.renderer.app.canvas;
-      canvas.removeEventListener("mousedown", this.#onMouseDown);
-      canvas.removeEventListener("mouseup", this.#onMouseUp);
     });
   }
-
-  onInitialize() {
-    if (!this.game.isClient()) return;
-
-    const canvas = this.game.renderer.app.canvas;
-    canvas.addEventListener("mousedown", this.#onMouseDown);
-    canvas.addEventListener("mouseup", this.#onMouseUp);
-  }
-
-  #onMouseUp = (ev: MouseEvent) => this.#onMouse(ev, false);
-  #onMouseDown = (ev: MouseEvent) => this.#onMouse(ev, true);
-
-  #onMouse = (ev: MouseEvent, pressed: boolean) => {
-    const button =
-      ev.button === 0
-        ? "left"
-        : ev.button === 1
-          ? "middle"
-          : ev.button === 2
-            ? "right"
-            : undefined;
-
-    if (!button) return;
-
-    const cursor = this.inputs.cursor;
-    if (!cursor) return;
-    if (!this.isInBounds(cursor.world)) return;
-
-    if (pressed) {
-      this.fire(MouseDown, button, cursor.world, cursor.screen);
-      this.fire(Click, button, cursor.world, cursor.screen);
-
-      if (button === "left") this.#clicked = true;
-    } else {
-      this.fire(MouseUp, button, cursor.world, cursor.screen);
-
-      if (button === "left") this.#clicked = false;
-    }
-  };
 
   protected abstract isInBounds(worldPosition: Vector2): boolean;
 }
@@ -135,7 +138,7 @@ export class ClickableRect extends ClickableEntity {
     this.defineValues(ClickableRect, "width", "height");
   }
 
-  protected isInBounds(worldPosition: Vector2): boolean {
+  public isInBounds(worldPosition: Vector2): boolean {
     const localPosition = pointWorldToLocal(this.globalTransform, worldPosition);
 
     return (
@@ -159,7 +162,7 @@ export class ClickableCircle extends ClickableEntity {
     this.defineValues(ClickableCircle, "radius", "innerRadus");
   }
 
-  protected isInBounds(worldPosition: Vector2): boolean {
+  public isInBounds(worldPosition: Vector2): boolean {
     const localPosition = pointWorldToLocal(this.globalTransform, worldPosition);
 
     const radiusSq = this.radius * this.radius;
