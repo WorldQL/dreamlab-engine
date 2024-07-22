@@ -1,13 +1,16 @@
-import { Entity } from "../entity.ts";
+import { Entity, EntityContext } from "../entity.ts";
 import { EntityUpdate } from "../../signals/entity-updates.ts";
 
 export class BasicLivingEntity extends Entity {
   maxHealth = 100.0;
   health = this.maxHealth;
 
-  onInitialize(): void {
+  constructor(ctx: EntityContext) {
+    super(ctx);
     this.defineValues(BasicLivingEntity, "maxHealth", "health");
+  }
 
+  onInitialize(): void {
     this.on(EntityUpdate, () => this.regen());
   }
 

@@ -6,6 +6,12 @@ import { BasicLivingEntity } from "./entity/entities/basic-living.ts";
 const game = new ServerGame({
   instanceId: "0",
   worldId: "dummy-world",
+  network: {
+    peers: [],
+    sendCustomMessage() {},
+    broadcastCustomMessage() {},
+    onReceiveCustomMessage() {},
+  },
 });
 await game.initialize();
 
