@@ -153,5 +153,5 @@ const FileTreeComponent = () => {
   );
 };
 
-const PrefabsMemo = memo(FileTreeComponent);
-export { PrefabsMemo as Prefabs };
+const FileTreeMemo = memo(FileTreeComponent);
+export { FileTreeMemo as FileTree };

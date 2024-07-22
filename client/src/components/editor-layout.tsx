@@ -5,7 +5,6 @@ import { isPausedAtom, isRunningAtom } from "../context/editor-context.tsx";
 import { handleResize, handleVerticalResize } from "../utils/resize.ts";
 import { Console } from "./console.tsx";
 import { Inspector } from "./inspector.tsx";
-import { Prefabs } from "./file-tree.tsx";
 import { SceneGraph } from "./scene-graph.tsx";
 import { NewEntityMenu } from "./toolbar/new-entity-button.tsx";
 import { PlaybackControls } from "./toolbar/playback-controls.tsx";
@@ -14,7 +13,9 @@ import { ThemeButton } from "./toolbar/theme-button.tsx";
 import { CameraControls } from "./camera-controls.tsx";
 import { cn } from "../utils/cn.ts";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts.ts";
-import { Panel, Tab } from "./ui/panel.tsx";
+import { Panel } from "./ui/panel.tsx";
+import { FileTree } from "./file-tree.tsx";
+import { Prefabs } from "./prefabs.tsx";
 
 export const EditorLayout = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }) => {
   const isRunning = useAtomValue(isRunningAtom);
@@ -43,6 +44,7 @@ export const EditorLayout = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }) 
     { id: "sceneGraph", title: "Scene Graph", content: <SceneGraph /> },
   ]);
   const [bottomLeftPanelTabs, setBottomLeftPanelTabs] = useState([
+    { id: "fileTree", title: "Project", content: <FileTree /> },
     { id: "prefabs", title: "Prefabs", content: <Prefabs /> },
   ]);
   const [rightPanelTabs, setRightPanelTabs] = useState([
