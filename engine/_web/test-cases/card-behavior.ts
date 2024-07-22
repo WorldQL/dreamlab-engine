@@ -249,6 +249,7 @@ export class CardBehavior extends Behavior {
       const dt = this.time.delta / 1000;
 
       this.#vis.pos = Vector2.smoothLerp(this.#vis.pos, this.entity.pos, 20, dt);
+      this.#vis.z = this.entity.z;
 
       this.#vis.globalTransform.rotation = lerpAngle(
         this.#vis.globalTransform.rotation,
