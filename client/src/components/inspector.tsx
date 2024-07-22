@@ -314,15 +314,17 @@ const Inspector = () => {
           {behaviors.map((behavior, index: number) => (
             <div key={index} className="mb-2">
               <p className="text-sm font-medium text-textPrimary">{behavior}</p>
-              {Object.keys(behaviorValues[behavior] || {}).map(key => (
-                <InputField
-                  type="text"
-                  key={key}
-                  label={key}
-                  value={String(behaviorValues[behavior]![key]?.value)}
-                  onChange={handleBehaviorValueChange(behavior, key)}
-                />
-              ))}
+              <div className="ml-2">
+                {Object.keys(behaviorValues[behavior] || {}).map(key => (
+                  <InputField
+                    type="text"
+                    key={key}
+                    label={key}
+                    value={String(behaviorValues[behavior]![key]?.value)}
+                    onChange={handleBehaviorValueChange(behavior, key)}
+                  />
+                ))}
+              </div>
             </div>
           ))}
         </div>
