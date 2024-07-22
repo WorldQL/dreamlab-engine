@@ -24,6 +24,8 @@ import { isInput } from "./input.ts";
 
 // TODO: Scroll and cursor position support
 
+export type Cursor = { readonly world: Vector2; readonly screen: Vector2 };
+
 export class Inputs implements ISignalHandler {
   readonly #game: Game;
   constructor(game: Game) {
@@ -85,7 +87,7 @@ export class Inputs implements ISignalHandler {
 
   // #region Cursor
   #cursorPosition: IVector2 | undefined = undefined;
-  get cursor(): { readonly screen: Vector2; world: Vector2 } | undefined {
+  get cursor(): Cursor | undefined {
     if (!this.#cursorPosition) return undefined;
 
     const camera = Camera.getActive(this.#game);
@@ -132,18 +134,17 @@ export class Inputs implements ISignalHandler {
             : undefined;
 
     if (!input) return;
+    const button =
+      input === "MouseLeft" ? "left" : input === "MouseMiddle" ? "middle" : "right";
 
     const cursor = this.cursor;
-    if (cursor) {
-      const button =
-        input === "MouseLeft" ? "left" : input === "MouseMiddle" ? "middle" : "right";
-
-      if (pressed) {
-        this.fire(MouseDown, button, cursor.world, cursor.screen);
-        if (button === "left") this.fire(Click, cursor.world, cursor.screen);
-      } else {
-        this.fire(MouseUp, button, cursor.world, cursor.screen);
+    if (pressed) {
+      if (cursor) {
+        this.fire(MouseDown, button, cursor);
+        if (button === "left") this.fire(Click, cursor);
       }
+    } else {
+      this.fire(MouseUp, button, cursor);
     }
 
     const tick = this.#game.time.ticks;
