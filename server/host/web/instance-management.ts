@@ -50,6 +50,7 @@ export const instanceManagementRoutes = (
         response: InstanceInfoSchema,
       },
       async (_ctx, { body }) => {
+        // arbitrary
         const DREAMLAB_EDIT_NAMESPACE = "b2d25565-3f12-4acd-90bb-7883eee613fe";
 
         const instanceId =
