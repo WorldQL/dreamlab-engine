@@ -283,102 +283,98 @@ const Inspector = () => {
 
   return (
     <div className="h-full" title="Inspector" onDrop={handleDrop} onDragOver={handleDragOver}>
-      <div className="p-4">
-        <Category title="Name">
-          <InputField type="text" label="Name" value={name} onChange={handleNameChange} />
-        </Category>
-        <Category title="Transform">
-          <div className="mb-2">
-            <label className="block text-sm font-medium text-textPrimary">Position</label>
-            <div className="flex space-x-2">
-              <AxisInputField axis="x" value={position.x} onChange={handlePositionChangeX} />
-              <AxisInputField axis="y" value={position.y} onChange={handlePositionChangeY} />
-            </div>
-          </div>
-          <div className="text-textSecondary text-xs mb-4">
-            Global pos: {globalPosition.x}, {globalPosition.y}
-          </div>
-
-          <InputField
-            label="Rotation"
-            type="number"
-            value={rotation}
-            onChange={handleRotationChange}
-          />
-          <div className="text-textSecondary text-xs mb-4">
-            Global rotation: {globalRotation}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-textPrimary">Scale</label>
-            <div className="flex space-x-2">
-              <AxisInputField axis="x" value={scale.x} onChange={handleScaleChangeX} />
-              <AxisInputField axis="y" value={scale.y} onChange={handleScaleChangeY} />
-            </div>
-          </div>
-        </Category>
-        <Category title="Values">
-          {Object.keys(values).map(key => (
-            <InputField
-              type="text"
-              key={key}
-              label={key}
-              value={String(values[key]?.value)}
-              onChange={handleValueChange(key)}
-            />
-          ))}
-        </Category>
-        <Category title="Behaviors">
-          <div className="flex items-center">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <CirclePlus onClick={handleIconClick} className="ml-2 w-5 h-5 cursor-pointer" />
-              </TooltipTrigger>
-              <TooltipContent side="top">
-                <p>Drag File or Click Here to Add a Behavior to the Entity</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-          {showDropdown && (
-            <div className="mb-4">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={handleSearchChange}
-                placeholder="Search behaviors..."
-                className="w-full p-2 border rounded mb-2"
-              />
-              <select
-                onChange={e => addBehavior(e.target.value)}
-                className="w-full p-2 border rounded"
-              >
-                <option value="">Select a behavior...</option>
-                {filteredOptions.map((url, index) => (
-                  <option key={index} value={url}>
-                    {url}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-          {behaviors.map((behavior, index: number) => (
-            <div key={index} className="mb-2">
-              <p className="text-sm font-medium text-textPrimary">{behavior}</p>
-              <div className="ml-2">
-                {Object.keys(behaviorValues[behavior] || {}).map(key => (
-                  <InputField
-                    type="text"
-                    key={key}
-                    label={key}
-                    value={String(behaviorValues[behavior]![key]?.value)}
-                    onChange={handleBehaviorValueChange(behavior, key)}
-                  />
-                ))}
-              </div>
-            </div>
-          ))}
-        </Category>
+      <div className="p-2">
+        <InputField type="text" label="Name" value={name} onChange={handleNameChange} />
       </div>
+      <Category title="Transform">
+        <div className="mb-2">
+          <label className="block text-sm font-medium text-textPrimary">Position</label>
+          <div className="flex space-x-2">
+            <AxisInputField axis="x" value={position.x} onChange={handlePositionChangeX} />
+            <AxisInputField axis="y" value={position.y} onChange={handlePositionChangeY} />
+          </div>
+        </div>
+        <div className="text-textSecondary text-xs mb-4">
+          Global pos: {globalPosition.x}, {globalPosition.y}
+        </div>
+
+        <InputField
+          label="Rotation"
+          type="number"
+          value={rotation}
+          onChange={handleRotationChange}
+        />
+        <div className="text-textSecondary text-xs mb-4">Global rotation: {globalRotation}</div>
+
+        <div>
+          <label className="block text-sm font-medium text-textPrimary">Scale</label>
+          <div className="flex space-x-2">
+            <AxisInputField axis="x" value={scale.x} onChange={handleScaleChangeX} />
+            <AxisInputField axis="y" value={scale.y} onChange={handleScaleChangeY} />
+          </div>
+        </div>
+      </Category>
+      <Category title="Values">
+        {Object.keys(values).map(key => (
+          <InputField
+            type="text"
+            key={key}
+            label={key}
+            value={String(values[key]?.value)}
+            onChange={handleValueChange(key)}
+          />
+        ))}
+      </Category>
+      <Category title="Behaviors">
+        <div className="flex items-center">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <CirclePlus onClick={handleIconClick} className="ml-2 w-5 h-5 cursor-pointer" />
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              <p>Drag File or Click Here to Add a Behavior to the Entity</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+        {showDropdown && (
+          <div className="mb-4">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={handleSearchChange}
+              placeholder="Search behaviors..."
+              className="w-full p-2 border rounded mb-2"
+            />
+            <select
+              onChange={e => addBehavior(e.target.value)}
+              className="w-full p-2 border rounded"
+            >
+              <option value="">Select a behavior...</option>
+              {filteredOptions.map((url, index) => (
+                <option key={index} value={url}>
+                  {url}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+        {behaviors.map((behavior, index: number) => (
+          <div key={index} className="mb-2">
+            <p className="text-sm font-medium text-textPrimary">{behavior}</p>
+            <div className="ml-2">
+              {Object.keys(behaviorValues[behavior] || {}).map(key => (
+                <InputField
+                  type="text"
+                  key={key}
+                  label={key}
+                  value={String(behaviorValues[behavior]![key]?.value)}
+                  onChange={handleBehaviorValueChange(behavior, key)}
+                />
+              ))}
+            </div>
+          </div>
+        ))}
+      </Category>
     </div>
   );
 };

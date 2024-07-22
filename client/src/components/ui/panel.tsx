@@ -1,6 +1,6 @@
 // @deno-types="npm:@types/react@18.3.1"
 import React, { FC, useEffect, useState, useRef } from "react";
-import { Minus, Plus } from "lucide-react";
+import { ChevronDown, ChevronRight, Minus, Plus } from "lucide-react";
 
 export interface Tab {
   id: string;
@@ -93,20 +93,30 @@ interface CategoryProps {
 export const Category: FC<CategoryProps> = ({ title, children }: CategoryProps) => {
   const [isOpen, setIsOpen] = useState(true);
 
-  const toggleOpen = () => {
+  const toggleOpen = (event: React.MouseEvent) => {
+    event.preventDefault();
     setIsOpen(!isOpen);
   };
 
   return (
-    <div className="mb-4">
+    <div className="mb-4 border-b border-grey select-none">
       <div
-        className="flex items-center justify-between cursor-pointer p-2 bg-grey-200"
+        className="flex items-center cursor-pointer bg-grey hover:bg-grey-dark rounded"
         onClick={toggleOpen}
+        style={{ userSelect: "none" }}
       >
-        {isOpen ? <Minus className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
-        <h4 className="text-lg font-semibold">{title}</h4>
+        {isOpen ? (
+          <ChevronDown className="w-5 h-5 text-textSecondary" />
+        ) : (
+          <ChevronRight className="w-5 h-5 text-textSecondary" />
+        )}
+        <h4 className="text-md ml-2 font-semibold text-textPrimary flex-grow">{title}</h4>
       </div>
-      {isOpen && <div className="p-2">{children}</div>}
+      {isOpen && (
+        <div className="p-2 rounded bg-card" style={{ userSelect: "none" }}>
+          {children}
+        </div>
+      )}
     </div>
   );
 };
