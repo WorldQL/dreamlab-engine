@@ -10,15 +10,15 @@ import {
   GameRender,
   MouseDown,
   MouseUp,
+  Scroll,
   SyncedValueChanged,
   UIPanel,
   Vector2,
   element,
+  enumAdapter,
   lerpAngle,
   pointWorldToLocal,
-  Scroll,
 } from "../../mod.ts";
-import { enumAdapter } from "../../value/adapters/enum-adapter.ts";
 
 export class DraggableBehavior extends Behavior {
   #clickable: ClickableEntity;
@@ -56,10 +56,10 @@ export class DraggableBehavior extends Behavior {
   }
 }
 
-type Rank = (typeof rank)[number];
-const rank = ["2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"] as const;
-type Suit = (typeof suit)[number];
-const suit = ["hearts", "clubs", "diamonds", "spades"] as const;
+type Rank = (typeof ranks)[number];
+const ranks = ["2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"] as const;
+type Suit = (typeof suits)[number];
+const suits = ["hearts", "clubs", "diamonds", "spades"] as const;
 
 export class VisualCard extends Behavior {
   // TODO: Replace these assets
@@ -80,8 +80,8 @@ export class VisualCard extends Behavior {
   }
 
   #setImage() {
-    const offsetX = rank.indexOf(this.#cardBehavior.rank) * 100;
-    const offsetY = suit.indexOf(this.#cardBehavior.suit) * 100;
+    const offsetX = ranks.indexOf(this.#cardBehavior.rank) * 100;
+    const offsetY = suits.indexOf(this.#cardBehavior.suit) * 100;
     this.#face.style.backgroundPosition = `-${offsetX}% -${offsetY}%`;
 
     const size = this.#cardBehavior.size;
@@ -210,7 +210,7 @@ export class CardBehavior extends Behavior {
   }
 
   rank: Rank = "A";
-  suit: Suit = "clubs";
+  suit: Suit = "spades";
   flipped: boolean = false;
 
   #flip = this.inputs.create("@card/flip", "Flip Card", "KeyF");
@@ -219,8 +219,8 @@ export class CardBehavior extends Behavior {
     super(ctx);
 
     this.defineValues(CardBehavior, "size", "flipped");
-    this.value(CardBehavior, "rank", { type: enumAdapter(rank) });
-    this.value(CardBehavior, "suit", { type: enumAdapter(suit) });
+    this.value(CardBehavior, "rank", { type: enumAdapter(ranks) });
+    this.value(CardBehavior, "suit", { type: enumAdapter(suits) });
 
     this.listen(this.#flip, ActionPressed, () => {
       if (this.#rect.hover) this.flipped = !this.flipped;
@@ -269,4 +269,48 @@ export const card = game.world.spawn({
   name: "Card",
   transform: { scale: Vector2.splat(1.142 * 2) },
   behaviors: [{ type: CardBehavior }, { type: DraggableBehavior }],
+});
+
+const rankButton = (rank: Rank) => {
+  const button = element("button", { props: { type: "button" }, children: [rank] });
+  button.addEventListener("click", () => (card.getBehavior(CardBehavior).rank = rank));
+
+  return button;
+};
+
+const suitButton = (suit: Suit) => {
+  const button = element("button", { props: { type: "button" }, children: [suit] });
+  button.addEventListener("click", () => (card.getBehavior(CardBehavior).suit = suit));
+
+  return button;
+};
+
+document.body.append(
+  element("div", {
+    style: {
+      position: "absolute",
+      bottom: "0",
+      left: "0",
+      right: "0",
+      display: "flex",
+      padding: "1rem",
+      gap: "0.5rem",
+      justifyContent: "space-evenly",
+    },
+    children: [...ranks.map(r => rankButton(r)), ...suits.map(s => suitButton(s))],
+  }),
+);
+
+const cardBehavior = card.getBehavior(CardBehavior);
+
+const savedRank = sessionStorage.getItem("rank");
+const savedSuit = sessionStorage.getItem("suit");
+if (savedRank) cardBehavior.rank = savedRank as Rank;
+if (savedRank) cardBehavior.suit = savedSuit as Suit;
+
+const rankValue = cardBehavior.values.get("rank");
+const suitValue = cardBehavior.values.get("suit");
+game.syncedValues.on(SyncedValueChanged, ({ value }) => {
+  if (value === rankValue) sessionStorage.setItem("rank", cardBehavior.rank);
+  if (value === suitValue) sessionStorage.setItem("suit", cardBehavior.suit);
 });
