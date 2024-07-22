@@ -134,7 +134,7 @@ export const scriptEditRoutes = (router: Router, instances: Map<string, RunningI
         external: ["@dreamlab/engine"],
         sourcemap: "inline",
         keepNames: true,
-        jsx: "automatic",
+        // jsx: "automatic",
         platform: "browser",
         target: "es2022",
       });

@@ -79,7 +79,7 @@ class HealthBar extends Behavior {
 
 // #region Movement
 class Movement extends Behavior {
-  speed = 1.0;
+  speed = 15.0;
 
   #up = this.inputs.create("@movement/up", "Move Up", "KeyW");
   #down = this.inputs.create("@movement/down", "Move Down", "KeyS");
