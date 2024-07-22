@@ -24,9 +24,9 @@ export class TilingSprite2D extends PixiEntity {
     super(ctx);
 
     this.defineValues(TilingSprite2D, "width", "height", "alpha", "tileRotation");
-    this.value(TilingSprite2D, "tilePosition", { type: Vector2Adapter });
-    this.value(TilingSprite2D, "tileScale", { type: Vector2Adapter });
-    this.value(TilingSprite2D, "texture", { type: TextureAdapter });
+    this.defineValue(TilingSprite2D, "tilePosition", { type: Vector2Adapter });
+    this.defineValue(TilingSprite2D, "tileScale", { type: Vector2Adapter });
+    this.defineValue(TilingSprite2D, "texture", { type: TextureAdapter });
 
     if (this.texture !== "") {
       PIXI.Assets.backgroundLoad(this.texture);

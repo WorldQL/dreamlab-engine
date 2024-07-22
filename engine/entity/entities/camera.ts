@@ -78,7 +78,7 @@ export class Camera extends Entity {
       throw new Error("camera must be spawned as a client local");
     }
 
-    this.value(Camera, "smooth");
+    this.defineValues(Camera, "smooth");
 
     this.container = new PIXI.Container();
     this.game.renderer.app.stage.addChild(this.container);

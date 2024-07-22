@@ -19,7 +19,7 @@ export class Sprite2D extends PixiEntity {
     super(ctx);
 
     this.defineValues(Sprite2D, "width", "height", "alpha");
-    this.value(Sprite2D, "texture", { type: TextureAdapter });
+    this.defineValue(Sprite2D, "texture", { type: TextureAdapter });
 
     if (this.texture !== "") {
       PIXI.Assets.backgroundLoad(this.texture);

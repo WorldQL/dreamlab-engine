@@ -437,11 +437,11 @@ export abstract class Entity implements ISignalHandler {
     }
   ) {
     for (const prop of props) {
-      this.value(eType, prop);
+      this.defineValue(eType, prop);
     }
   }
 
-  protected value<E extends Entity>(
+  protected defineValue<E extends Entity>(
     eType: EntityConstructor<E>,
     prop: EntityValueProp<E>,
     opts: EntityValueOpts<E, typeof prop> = {},

@@ -28,7 +28,7 @@ export class Rigidbody2D extends Entity {
   constructor(ctx: EntityContext) {
     super(ctx);
 
-    this.value(Rigidbody2D, "type", { type: RigidbodyTypeAdapter });
+    this.defineValue(Rigidbody2D, "type", { type: RigidbodyTypeAdapter });
 
     this.initializeRigidBody();
 
