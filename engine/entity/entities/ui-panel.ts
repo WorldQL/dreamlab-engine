@@ -59,6 +59,7 @@ export class UIPanel extends InterpolatedEntity {
     const pos = this.interpolated.position;
     const screen = camera.worldToScreen(pos);
 
+    element.style.zIndex = this.z.toString();
     element.style.left = screen.x.toString() + "px";
     element.style.top = screen.y.toString() + "px";
 

@@ -39,6 +39,8 @@ export class UILayer extends InterpolatedEntity {
       this.#ui.element.remove();
       this.#ui.outer.remove();
     });
+
+    // TODO: Listen to Z index changes
   }
 
   onInitialize() {
@@ -49,6 +51,7 @@ export class UILayer extends InterpolatedEntity {
     this.#ui = { outer, root, element };
 
     element.id = "root";
+    element.style.zIndex = this.z.toString();
 
     const style = document.createElement("style");
     const css = `
