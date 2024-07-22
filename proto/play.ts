@@ -149,6 +149,12 @@ export const ServerCustomMessagePacket = BaseCustomMessagePacket.extend({
   from: ConnectionIdSchema,
 });
 
+export const ServerInitialNetworkSnapshotPacket = z.object({
+  t: z.literal("InitialNetworkSnapshot"),
+  entities: z.record(EntityReferenceSchema, EntityDefinitionSchema),
+  syncedValues: z.record(z.string(), z.any()),
+});
+
 export const ClientPacketSchema = z.discriminatedUnion("t", [
   ClientChatMessagePacketSchema,
   ClientSetSyncedValuePacketSchema,
@@ -178,6 +184,7 @@ export const ServerPacketSchema = z.discriminatedUnion("t", [
   ServerAnnounceExclusiveAuthorityPacket,
   ServerDenyExclusiveAuthorityPacket,
   ServerReportEntityTransformPacket,
+  ServerInitialNetworkSnapshotPacket,
 ]);
 export type ServerPacket = z.infer<typeof ServerPacketSchema>;
 
@@ -187,6 +194,6 @@ export type PlayPacket<
 > = (Side extends "any"
   ? ClientPacket | ServerPacket
   : Side extends "client"
-  ? ClientPacket
-  : ServerPacket) &
+    ? ClientPacket
+    : ServerPacket) &
   (T extends string ? { t: T } : object);
