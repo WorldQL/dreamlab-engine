@@ -219,36 +219,36 @@ const Inspector = () => {
     event.preventDefault();
   };
 
-  const addBehavior = async (scriptPath: string) => {
-    try {
-      const scriptUrl = `http://127.0.0.1:8000/api/v1/edit/${game.instanceId}/files/${scriptPath}?transpile=true`;
-      try {
-        const module = await import(scriptUrl);
-        const behavior = module.default;
-        if (selectedEntity) {
-          selectedEntity.addBehavior({ type: behavior });
-          setSelectedEntity(selectedEntity);
-          setBehaviors(selectedEntity.behaviors.map(b => b.constructor.name));
+  // const addBehavior = async (scriptPath: string) => {
+  //   try {
+  //     const scriptUrl = `http://127.0.0.1:8000/api/v1/edit/${game.instanceId}/files/${scriptPath}?transpile=true`;
+  //     try {
+  //       const module = await import(scriptUrl);
+  //       const behavior = module.default;
+  //       if (selectedEntity) {
+  //         selectedEntity.addBehavior({ type: behavior });
+  //         setSelectedEntity(selectedEntity);
+  //         setBehaviors(selectedEntity.behaviors.map(b => b.constructor.name));
 
-          const behaviorVals: Partial<
-            Record<string, Partial<Record<string, SyncedValue<unknown>>>>
-          > = {};
-          selectedEntity.behaviors.forEach(behavior => {
-            behaviorVals[behavior.constructor.name] = Object.fromEntries(
-              behavior.values.entries(),
-            );
-          });
-          setBehaviorValues(behaviorVals);
-        }
-      } catch (importError) {
-        console.error("Failed to import module from script content:", importError);
-      }
-    } catch (fetchError) {
-      console.error("Failed to fetch or import script content:", fetchError);
-    }
-  };
+  //         const behaviorVals: Partial<
+  //           Record<string, Partial<Record<string, SyncedValue<unknown>>>>
+  //         > = {};
+  //         selectedEntity.behaviors.forEach(behavior => {
+  //           behaviorVals[behavior.constructor.name] = Object.fromEntries(
+  //             behavior.values.entries(),
+  //           );
+  //         });
+  //         setBehaviorValues(behaviorVals);
+  //       }
+  //     } catch (importError) {
+  //       console.error("Failed to import module from script content:", importError);
+  //     }
+  //   } catch (fetchError) {
+  //     console.error("Failed to fetch or import script content:", fetchError);
+  //   }
+  // };
 
-  const behaviorOptions = ["wip"];
+  // const behaviorOptions = ["wip"];
 
   if (!selectedEntity) {
     return (
@@ -326,7 +326,7 @@ const Inspector = () => {
             </div>
           ))}
         </div>
-        <div className="mb-4">
+        {/* <div className="mb-4">
           <h4 className="text-lg font-semibold mb-2 text-textPrimary">Add Behavior</h4>
           <select
             onChange={e => addBehavior(e.target.value)}
@@ -339,7 +339,7 @@ const Inspector = () => {
               </option>
             ))}
           </select>
-        </div>
+        </div> */}
       </div>
     </Panel>
   );
