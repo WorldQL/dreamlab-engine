@@ -7,6 +7,7 @@ import {
   ClickableRect,
   Entity,
   EntityByRefAdapter,
+  EntityDestroyed,
   GameRender,
   MouseDown,
   MouseUp,
@@ -224,6 +225,10 @@ export class CardBehavior extends Behavior {
 
     this.listen(this.#flip, ActionPressed, () => {
       if (this.#rect.hover) this.flipped = !this.flipped;
+    });
+
+    this.listen(this.entity, EntityDestroyed, () => {
+      this.#vis?.destroy();
     });
   }
 
