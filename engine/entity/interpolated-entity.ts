@@ -4,7 +4,9 @@ import { Entity, EntityContext } from "./entity.ts";
 
 export abstract class InterpolatedEntity extends Entity {
   #prevPos: IVector2 = this.pos.bare();
+  #prevRot: number = this.globalTransform.rotation;
   #currentPos: IVector2 = this.pos.bare();
+  #currentRot: number = this.globalTransform.rotation;
 
   protected readonly interpolated = {
     position: new Vector2(this.globalTransform.position),
@@ -24,21 +26,21 @@ export abstract class InterpolatedEntity extends Entity {
 
     this.on(EntityUpdate, () => {
       this.#prevPos = this.#currentPos;
+      this.#prevRot = this.#currentRot;
       this.#currentPos = this.pos.bare();
+      this.#currentRot = this.globalTransform.rotation;
       // this.#lastRenderPos = prevRenderPos;
       // this.#lastRenderRot = prevRenderRot;
     });
 
     this.listen(this.game, GamePreRender, () => {
+      const partial = this.game.time.partial;
       // this.interpolated.position = this.globalTransform.position;
       // console.log({ prev: this.#prevPos.x, current: this.#currentPos.x });
       // this.interpolated.position = this.pos;
       // console.log(this.time.partial);
-      this.interpolated.position = Vector2.lerp(
-        this.#prevPos,
-        this.#currentPos,
-        this.game.time.partial,
-      );
+      this.interpolated.position = Vector2.lerp(this.#prevPos, this.#currentPos, partial);
+      this.interpolated.rotation = lerpAngle(this.#prevRot, this.#currentRot, partial);
       // this.interpolated.position =
       //   this.#lastRenderPos !== undefined
       //     ? Vector2.lerp(
