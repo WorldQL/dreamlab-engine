@@ -72,8 +72,10 @@ export function element<K extends keyof HTMLElementTagNameMap>(
   } = {},
 ): HTMLElementTagNameMap[K] {
   const element = document.createElement(tag);
+  if (id) element.id = id;
+
   Object.assign(element.style, style);
-  Object.assign(element, { id, ...props });
+  Object.assign(element, props);
 
   const nodes = children.map(e => (typeof e === "string" ? document.createTextNode(e) : e));
   element.append(...nodes);
