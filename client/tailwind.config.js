@@ -2,7 +2,6 @@
 module.exports = {
   content: ["./src/**/*.{html,js,tsx,ts}"],
   darkMode: "class",
-  plugins: [],
   theme: {
     extend: {
       colors: {
@@ -34,6 +33,18 @@ module.exports = {
         "bg-dark": "rgba(var(--bg-dark))",
         "bg-light": "rgba(var(--bg-light))",
       },
+      scrollbar: {
+        width: "thin",
+        colors: {
+          thumb: "#888",
+          track: "#f1f1f1",
+        },
+        borderRadius: "10px",
+      },
     },
   },
+  variants: {
+    scrollbar: ["rounded"],
+  },
+  plugins: [require("tailwind-scrollbar")({ nocompatible: true })],
 };

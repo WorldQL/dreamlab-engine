@@ -1,5 +1,5 @@
 // @deno-types="npm:@types/react@18.3.1"
-import React, { FC, useEffect, useState } from "react";
+import React, { FC, useEffect, useState, useRef } from "react";
 import { Minus, Plus } from "lucide-react";
 
 export interface Tab {
@@ -17,12 +17,20 @@ interface PanelProps {
 
 export const Panel: FC<PanelProps> = ({ className, tabs, onDropTab, panelId }: PanelProps) => {
   const [activeTab, setActiveTab] = useState(tabs[0]?.id || "");
+  const tabsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (tabs.length > 0 && !tabs.some(tab => tab.id === activeTab)) {
       setActiveTab(tabs[0].id);
     }
   }, [tabs, activeTab]);
+
+  useEffect(() => {
+    const activeTabElement = document.getElementById(`tab-${activeTab}`);
+    if (activeTabElement && tabsRef.current) {
+      activeTabElement.scrollIntoView({ behavior: "smooth", inline: "center" });
+    }
+  }, [activeTab]);
 
   const handleDrop = (event: React.DragEvent) => {
     event.preventDefault();
@@ -43,22 +51,30 @@ export const Panel: FC<PanelProps> = ({ className, tabs, onDropTab, panelId }: P
       onDrop={handleDrop}
       onDragOver={handleDragOver}
     >
-      <div className="flex-none flex items-center justify-between p-2 bg-grey shadow-sm">
-        {tabs.map(tab => (
-          <div
-            key={tab.id}
-            draggable
-            onDragStart={e => e.dataTransfer.setData("text/tab-id", tab.id)}
-            className={`cursor-pointer p-2 ${
-              activeTab === tab.id ? "bg-primary text-white" : "bg-grey text-textPrimary"
-            }`}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            {tab.title}
-          </div>
-        ))}
+      <div
+        className="flex-none flex text-sm overflow-x-auto items-center justify-between bg-grey custom-scrollbar"
+        ref={tabsRef}
+      >
+        <div className="flex">
+          {tabs.map(tab => (
+            <div
+              key={tab.id}
+              id={`tab-${tab.id}`}
+              draggable
+              onDragStart={e => e.dataTransfer.setData("text/tab-id", tab.id)}
+              className={`cursor-pointer px-2 py-1 whitespace-nowrap ${
+                activeTab === tab.id
+                  ? "text-textPrimary bg-card rounded-t"
+                  : "text-textPrimary bg-grey"
+              }`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.title}
+            </div>
+          ))}
+        </div>
       </div>
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto custom-scrollbar">
         {tabs.map(tab => (
           <div key={tab.id} className={`${activeTab === tab.id ? "block" : "hidden"}`}>
             {tab.content}
