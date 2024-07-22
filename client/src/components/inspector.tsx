@@ -195,6 +195,17 @@ const Inspector = () => {
           const behavior = module.default;
           selectedEntity.addBehavior({ type: behavior });
           setSelectedEntity(selectedEntity);
+          setBehaviors(selectedEntity.behaviors.map(b => b.constructor.name));
+
+          const behaviorVals: Partial<
+            Record<string, Partial<Record<string, SyncedValue<unknown>>>>
+          > = {};
+          selectedEntity.behaviors.forEach(behavior => {
+            behaviorVals[behavior.constructor.name] = Object.fromEntries(
+              behavior.values.entries(),
+            );
+          });
+          setBehaviorValues(behaviorVals);
         } catch (importError) {
           console.error("Failed to import module from script content:", importError);
         }
@@ -217,6 +228,17 @@ const Inspector = () => {
         if (selectedEntity) {
           selectedEntity.addBehavior({ type: behavior });
           setSelectedEntity(selectedEntity);
+          setBehaviors(selectedEntity.behaviors.map(b => b.constructor.name));
+
+          const behaviorVals: Partial<
+            Record<string, Partial<Record<string, SyncedValue<unknown>>>>
+          > = {};
+          selectedEntity.behaviors.forEach(behavior => {
+            behaviorVals[behavior.constructor.name] = Object.fromEntries(
+              behavior.values.entries(),
+            );
+          });
+          setBehaviorValues(behaviorVals);
         }
       } catch (importError) {
         console.error("Failed to import module from script content:", importError);
