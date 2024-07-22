@@ -24,6 +24,7 @@ import { GameStatusChange } from "./signals/mod.ts";
 import { Time } from "./time.ts";
 import { UIManager } from "./ui.ts";
 import { SyncedValueRegistry } from "./value/mod.ts";
+import { BehaviorConstructor } from "./behavior/mod.ts";
 
 export interface GameOptions {
   instanceId: string;
@@ -74,6 +75,9 @@ export abstract class BaseGame implements ISignalHandler {
   readonly inputs = new Inputs(this as unknown as Game);
 
   [internal.behaviorScriptLoader] = new BehaviorLoader(this as unknown as Game);
+  loadBehavior(scriptUri: string): Promise<BehaviorConstructor> {
+    return this[internal.behaviorScriptLoader].loadScript(scriptUri);
+  }
 
   #initialized: boolean = false;
 
