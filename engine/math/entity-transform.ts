@@ -31,6 +31,15 @@ export class Transform {
     this[transformOnChanged]();
   }
 
+  #z: number = 0;
+  get z(): number {
+    return this.#z;
+  }
+  set z(value: number) {
+    this.#z = value;
+    this[transformOnChanged]();
+  }
+
   #assignSignalListeners() {
     this.#position[vectorOnChanged] = () => {
       this[transformOnChanged]();
@@ -41,10 +50,11 @@ export class Transform {
     };
   }
 
-  constructor(opts?: { position?: IVector2; scale?: IVector2; rotation?: number }) {
+  constructor(opts?: { position?: IVector2; scale?: IVector2; rotation?: number; z?: number }) {
     if (opts?.position) this.#position = new Vector2(opts.position);
     if (opts?.scale) this.#scale = new Vector2(opts.scale);
     if (opts?.rotation) this.#rotation = opts.rotation;
+    if (opts?.z) this.#z = opts.z;
 
     this.#assignSignalListeners();
   }
@@ -55,6 +65,7 @@ export class Transform {
     this.#position = new Vector2(transform.position);
     this.#scale = new Vector2(transform.scale);
     this.#rotation = transform.rotation;
+    this.#z = transform.z;
 
     this.#assignSignalListeners();
   }
@@ -64,6 +75,7 @@ export class Transform {
       position: this.#position.bare(),
       rotation: this.#rotation,
       scale: this.#scale.bare(),
+      z: this.#z,
     };
   }
 }

@@ -1,15 +1,17 @@
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import type { ConditionalExcept } from "@dreamlab/vendor/type-fest.ts";
 
+import { Behavior, BehaviorConstructor, BehaviorDefinition } from "../behavior/behavior.ts";
 import { type Game } from "../game.ts";
+import * as internal from "../internal.ts";
 import {
-  Transform,
   IVector2,
+  Transform,
   Vector2,
   transformLocalToWorld,
   transformWorldToLocal,
 } from "../math/mod.ts";
-import * as internal from "../internal.ts";
+import { ConnectionId } from "../network.ts";
 import {
   ISignalHandler,
   Signal,
@@ -19,29 +21,28 @@ import {
   SignalMatching,
 } from "../signal.ts";
 import {
+  EntityChildDestroyed,
   EntityChildRenamed,
   EntityChildReparented,
   EntityChildSpawned,
+  EntityDescendantDestroyed,
   EntityDescendantRenamed,
   EntityDescendantReparented,
   EntityDescendantSpawned,
-  EntityRenamed,
-  EntitySpawned,
-  EntityPreUpdate,
+  EntityDestroyed,
+  EntityExclusiveAuthorityChanged,
   EntityMove,
-  EntityUpdate,
+  EntityPreUpdate,
+  EntityRenamed,
+  EntityReparented,
   EntityResize,
   EntityRotate,
+  EntitySpawned,
   EntityTransformUpdate,
-  EntityDestroyed,
-  EntityChildDestroyed,
-  EntityDescendantDestroyed,
-  EntityReparented,
-  EntityExclusiveAuthorityChanged,
+  EntityUpdate,
+  EntityZChanged,
 } from "../signals/mod.ts";
 import { JsonValue, SyncedValue, ValueTypeTag, inferValueTypeTag } from "../value/mod.ts";
-import { Behavior, BehaviorConstructor, BehaviorDefinition } from "../behavior/behavior.ts";
-import { ConnectionId } from "../network.ts";
 
 export interface EntityContext {
   game: Game;
@@ -413,6 +414,12 @@ export abstract class Entity implements ISignalHandler {
   set pos(value) {
     this.globalTransform.position = value;
   }
+  get z() {
+    return this.globalTransform.z;
+  }
+  set z(value) {
+    this.globalTransform.z = value;
+  }
   // #endregion
 
   // #region Values
@@ -659,6 +666,7 @@ export abstract class Entity implements ISignalHandler {
   #origPosition: Vector2 = new Vector2(NaN, NaN);
   #origScale: Vector2 = new Vector2(NaN, NaN);
   #origRotation: number = NaN;
+  #origZ: number = NaN;
 
   [internal.preTickEntities]() {
     if (this.pausable && this.game.paused) return;
@@ -673,6 +681,7 @@ export abstract class Entity implements ISignalHandler {
     this.#origScale.x = tr.scale.x;
     this.#origScale.y = tr.scale.y;
     this.#origRotation = tr.rotation;
+    this.#origZ = tr.z;
 
     for (const child of this.#children.values()) {
       try {
@@ -695,6 +704,7 @@ export abstract class Entity implements ISignalHandler {
     if (!this.#origScale.eq(tr.scale)) this.fire(EntityResize, this.#origScale, tr.scale);
     if (this.#origRotation !== tr.rotation)
       this.fire(EntityRotate, this.#origRotation, tr.rotation);
+    if (this.#origZ !== tr.z) this.fire(EntityZChanged, this.#origZ, tr.z);
 
     for (const child of this.#children.values()) {
       try {

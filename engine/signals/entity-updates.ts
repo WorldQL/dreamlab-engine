@@ -38,6 +38,13 @@ export class EntityRotate {
   ) {}
   [exclusiveSignalType] = Entity;
 }
+export class EntityZChanged {
+  constructor(
+    public before: number,
+    public current: number,
+  ) {}
+  [exclusiveSignalType] = Entity;
+}
 
 export class EntityExclusiveAuthorityChanged {
   constructor(

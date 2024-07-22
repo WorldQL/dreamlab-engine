@@ -44,6 +44,7 @@ export function transformWorldToLocal(
     position: mult2x2Point(inverseM, b.position.sub(a.position)),
     scale: new Vector2(b.scale.x / a.scale.x, b.scale.y / a.scale.y),
     rotation: b.rotation - a.rotation,
+    z: b.z - a.z,
   });
 }
 
@@ -74,6 +75,7 @@ export function transformLocalToWorld(
     position: mult2x2Point(m, b.position).add(a.position),
     scale: new Vector2(a.scale.x * b.scale.x, a.scale.y * b.scale.y),
     rotation: a.rotation + b.rotation,
+    z: a.z + b.z,
   });
 }
 
