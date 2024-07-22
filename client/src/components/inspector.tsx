@@ -186,10 +186,16 @@ const Inspector = () => {
 
   const handleDrop = async (event: React.DragEvent) => {
     event.preventDefault();
-    const filePath = event.dataTransfer.getData("text/plain");
+    let filePath = event.dataTransfer.getData("text/plain");
     if (filePath && selectedEntity) {
+      if (filePath.endsWith(".ts")) {
+        filePath = filePath.replace(".ts", ".js");
+      } else if (filePath.endsWith(".tsx")) {
+        filePath = filePath.replace(".tsx", ".jsx");
+      }
+
       try {
-        const scriptUrl = `http://127.0.0.1:8000/api/v1/edit/${game.instanceId}/files/${filePath}?transpile=true`;
+        const scriptUrl = `http://127.0.0.1:8000/api/v1/edit/${game.instanceId}/files/${filePath}`;
         try {
           const module = await import(scriptUrl);
           const behavior = module.default;
@@ -221,7 +227,7 @@ const Inspector = () => {
 
   // const addBehavior = async (scriptPath: string) => {
   //   try {
-  //     const scriptUrl = `http://127.0.0.1:8000/api/v1/edit/${game.instanceId}/files/${scriptPath}?transpile=true`;
+  //     const scriptUrl = `http://127.0.0.1:8000/api/v1/edit/${game.instanceId}/files/${scriptPath}`;
   //     try {
   //       const module = await import(scriptUrl);
   //       const behavior = module.default;
