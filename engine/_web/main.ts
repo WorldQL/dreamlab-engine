@@ -1,6 +1,5 @@
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
-import { GameStatus } from "../game.ts";
-import { Camera, ClientGame } from "../mod.ts";
+import { Camera, ClientGame, GameStatus, Vector2 } from "../mod.ts";
 
 // #region Setup
 // @ts-expect-error global
@@ -43,7 +42,7 @@ declare global {
   const camera: Camera;
 }
 
-Object.assign(window, { game, camera });
+Object.assign(window, { game, camera, Vector2 });
 // #endregion
 
 const mod = await import("./test-cases/demo-game.ts");
