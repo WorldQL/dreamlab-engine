@@ -11,13 +11,14 @@ const ipc = new IPCMessageBus(workerData);
 await ipc.connected();
 console.log("Connected via IPC!!");
 
-const network = new ServerNetworkManager(ipc);
+const net = new ServerNetworkManager(ipc);
 const game = new ServerGame({
   instanceId: workerData.instanceId,
   worldId: workerData.worldId,
-  network: network.createNetworking(),
+  network: net.createNetworking(),
 });
-network.setup(game);
+Object.defineProperties(globalThis, { net: { value: net }, game: { value: game } });
+net.setup(game);
 await game.initialize();
 
 // TODO: load test world

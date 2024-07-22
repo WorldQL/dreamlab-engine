@@ -11,6 +11,16 @@ const setup = async (conn: ClientConnection, game: ClientGame) => {
 
   game.setStatus(GameStatus.Running);
 
+  /* game.world.spawn({
+    type: Sprite2D,
+    name: "Player." + conn.id,
+    behaviors: [
+      {
+        type: await game.loadBehavior("/worlds/dreamlab/test-world/player.js"),
+      },
+    ],
+  }); */
+
   let now = performance.now();
   const onTick = (time: number) => {
     const delta = time - now;

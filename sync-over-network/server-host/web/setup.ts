@@ -5,6 +5,7 @@ import { oakCors } from "https://deno.land/x/cors@v1.2.2/mod.ts";
 import { workerInternalRoute } from "./worker.ts";
 import { GameInstance } from "../game-instance.ts";
 import { handlePlayerConnectionRequest } from "./play.ts";
+import * as path from "jsr:@std/path@1";
 
 export const setupWeb = async (app: Application) => {
   const router = new Router();
@@ -27,10 +28,21 @@ export const setupWeb = async (app: Application) => {
     await handlePlayerConnectionRequest(ctx, instance);
   });
 
-  router.get("/worlds/:path*", ctx => {
-    // TODO: server from world dist
-    ctx.response.status = Status.NotImplemented;
+  router.get("/worlds/:user/:world/:resource*", async ctx => {
+    const { user, world, resource } = ctx.params;
+    try {
+      await ctx.send({
+        root: path.join("./worlds/", user, world, "dist"),
+        path: resource,
+      });
+    } catch (err) {
+      console.warn(err);
+      ctx.response.status = Status.NotFound;
+      ctx.response.body = "Not Found";
+      ctx.response.type = "text/plain";
+    }
   });
+
   router.get("/:path*", ctx =>
     ctx
       .send({

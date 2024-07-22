@@ -107,13 +107,16 @@ export async function bundleWorld(worldDir: string) {
 
   const worldDesc = JSON.parse(await Deno.readTextFile(path.join(worldDir, "./world.json")));
 
-  // TODO: add behaviors and preload scripts to build config
+  for await (const entry of Deno.readDir(path.join(worldDir, "behaviors"))) {
+    if (!entry.isFile) continue;
+    entryPoints.push(path.join(worldDir, "behaviors", entry.name));
+  }
 
   const opts: esbuild.BuildOptions = {
     ...BASE_OPTIONS,
     plugins: await dreamlabEsbuildPlugins({}),
     entryPoints,
-    outdir: path.join(worldDir, "dist"),
+    outdir: path.join(worldDir, "dist", "behaviors"),
   };
 
   try {
@@ -132,5 +135,5 @@ if (import.meta.main) {
   await bundleClient();
   await bundleEngine();
   await bundleEngineDeps();
-  await bundleWorld("./worlds/test-world");
+  await bundleWorld("./worlds/dreamlab/test-world");
 }
