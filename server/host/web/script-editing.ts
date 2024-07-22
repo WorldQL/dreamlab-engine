@@ -115,7 +115,7 @@ export const scriptEditRoutes = (router: Router, instances: Map<string, RunningI
         ctx.response.body = "Not Found";
       }
     } else {
-      if (computedPath.split(".").pop() !== "ts") {
+      if (computedPath.split(".").pop() !== "ts" || computedPath.split(".").pop() !== "tsx" ) {
         ctx.response.type = "text/plain";
         ctx.response.status = Status.BadRequest;
         ctx.response.body = "Transpilation only supported for TypeScript files.";
