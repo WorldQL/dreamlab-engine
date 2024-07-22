@@ -7,7 +7,6 @@ import { selectedEntityAtom } from "../context/editor-context.tsx";
 import { game } from "../global-game.ts";
 import { useForceUpdateOnEntityChange } from "../hooks/force-update-on-change.ts";
 import { cn } from "../utils/cn.ts";
-import { Panel } from "./ui/panel.tsx";
 import { SceneMenu } from "./menu/scene-menu.tsx";
 
 const isDescendant = (parent: Entity, child: Entity): boolean => {
@@ -237,7 +236,7 @@ const SceneGraph = () => {
       onDrop={handleDrop}
       onContextMenu={handleContextMenu}
     >
-      <Panel className="h-full" title="Scene">
+      <div className="h-full" title="Scene">
         <div>
           <ul>
             {[...game.world.children.entries()]
@@ -262,7 +261,7 @@ const SceneGraph = () => {
         {isOpen && (
           <SceneMenu entity={undefined} position={menuPosition} setIsOpen={setIsOpen} />
         )}
-      </Panel>
+      </div>
     </div>
   );
 };

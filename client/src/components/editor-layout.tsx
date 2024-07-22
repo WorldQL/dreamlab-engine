@@ -14,6 +14,7 @@ import { ThemeButton } from "./toolbar/theme-button.tsx";
 import { CameraControls } from "./camera-controls.tsx";
 import { cn } from "../utils/cn.ts";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts.ts";
+import { Panel, Tab } from "./ui/panel.tsx";
 
 export const EditorLayout = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }) => {
   const isRunning = useAtomValue(isRunningAtom);
@@ -38,6 +39,45 @@ export const EditorLayout = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }) 
     gameDiv.style.zIndex = "-1";
   }, [gameContainer, gameDiv]);
 
+  const [topLeftPanelTabs, setTopLeftPanelTabs] = useState([
+    { id: "sceneGraph", title: "Scene Graph", content: <SceneGraph /> },
+  ]);
+  const [bottomLeftPanelTabs, setBottomLeftPanelTabs] = useState([
+    { id: "prefabs", title: "Prefabs", content: <Prefabs /> },
+  ]);
+  const [rightPanelTabs, setRightPanelTabs] = useState([
+    { id: "inspector", title: "Inspector", content: <Inspector /> },
+  ]);
+  const [bottomPanelTabs, setBottomPanelTabs] = useState([
+    { id: "console", title: "Console", content: <Console /> },
+  ]);
+
+  const handleDropTab = (tabId: string, targetPanelId: string) => {
+    const allTabs = [
+      ...topLeftPanelTabs,
+      ...bottomLeftPanelTabs,
+      ...rightPanelTabs,
+      ...bottomPanelTabs,
+    ];
+    const draggedTab = allTabs.find(tab => tab.id === tabId);
+    if (!draggedTab) return;
+
+    setTopLeftPanelTabs(prevTabs => prevTabs.filter(tab => tab.id !== tabId));
+    setBottomLeftPanelTabs(prevTabs => prevTabs.filter(tab => tab.id !== tabId));
+    setRightPanelTabs(prevTabs => prevTabs.filter(tab => tab.id !== tabId));
+    setBottomPanelTabs(prevTabs => prevTabs.filter(tab => tab.id !== tabId));
+
+    if (targetPanelId === "topLeft") {
+      setTopLeftPanelTabs(prevTabs => [...prevTabs, draggedTab]);
+    } else if (targetPanelId === "bottomLeft") {
+      setBottomLeftPanelTabs(prevTabs => [...prevTabs, draggedTab]);
+    } else if (targetPanelId === "right") {
+      setRightPanelTabs(prevTabs => [...prevTabs, draggedTab]);
+    } else if (targetPanelId === "bottom") {
+      setBottomPanelTabs(prevTabs => [...prevTabs, draggedTab]);
+    }
+  };
+
   return (
     <div className="flex h-screen bg-background">
       <div
@@ -49,7 +89,7 @@ export const EditorLayout = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }) 
           className="overflow-y-auto pb-1"
           style={{ height: `${topSectionHeight}%` }}
         >
-          <SceneGraph />
+          <Panel panelId="topLeft" tabs={topLeftPanelTabs} onDropTab={handleDropTab} />
         </div>
         <div
           className="w-full cursor-row-resize bg-background rounded hover:bg-primary transition-colors duration-300 ease-in-out active:bg-primary"
@@ -57,7 +97,7 @@ export const EditorLayout = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }) 
           onMouseDown={e => handleVerticalResize(e, setTopSectionHeight, topSectionRef, 10, 90)}
         />
         <div className="overflow-y-auto pt-1" style={{ height: `${100 - topSectionHeight}%` }}>
-          <Prefabs />
+          <Panel panelId="bottomLeft" tabs={bottomLeftPanelTabs} onDropTab={handleDropTab} />
         </div>
         <div
           className="absolute top-0 right-0 bottom-0 w-1 cursor-col-resize rounded bg-background hover:bg-primary transition-colors duration-300 ease-in-out active:bg-primary"
@@ -101,14 +141,14 @@ export const EditorLayout = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }) 
           className="bg-background p-1"
           style={{ height: `${consoleHeight}px` }}
         >
-          <Console />
+          <Panel panelId="bottom" tabs={bottomPanelTabs} onDropTab={handleDropTab} />
         </div>
       </div>
       <div
         className="relative min-w-[250px] bg-background px-2 py-2 pl-3"
         style={{ width: `${rightColumnWidth}px` }}
       >
-        <Inspector />
+        <Panel panelId="right" tabs={rightPanelTabs} onDropTab={handleDropTab} />
         <div
           className="absolute top-0 left-0 bottom-0 w-1 rounded cursor-col-resize bg-background hover:bg-primary transition-colors duration-300 ease-in-out active:bg-primary"
           onMouseDown={e => handleResize(e, setRightColumnWidth, "right", 250, 500)}

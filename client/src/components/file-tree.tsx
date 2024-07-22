@@ -4,7 +4,6 @@ import { ChevronDownIcon } from "lucide-react";
 import { memo, useCallback, useState } from "react";
 import { game } from "../global-game.ts";
 import { cn } from "../utils/cn.ts";
-import { Panel } from "./ui/panel.tsx";
 
 type FileTree = {
   [key: string]: FileTree | null;
@@ -125,24 +124,24 @@ const FileTreeComponent = () => {
 
   if (isLoading) {
     return (
-      <Panel title="Files" className="h-full">
+      <div title="Files" className="h-full">
         &nbsp;
-      </Panel>
+      </div>
     );
   }
 
   if (isError || !data || !data.files) {
     return (
-      <Panel title="Files" className="h-full">
+      <div title="Files" className="h-full">
         Error loading files.
-      </Panel>
+      </div>
     );
   }
 
   const fileTree = buildFileTree(data.files);
 
   return (
-    <Panel title="Files" className="h-full">
+    <div title="Files" className="h-full">
       <div className="p-2 h-full">
         <ul className="file-tree space-y-1">
           {Object.entries(fileTree).map(([name, file], index) => (
@@ -150,7 +149,7 @@ const FileTreeComponent = () => {
           ))}
         </ul>
       </div>
-    </Panel>
+    </div>
   );
 };
 

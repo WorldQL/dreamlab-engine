@@ -11,12 +11,10 @@ import { memo, useCallback, useEffect, useState } from "react";
 import { selectedEntityAtom } from "../context/editor-context.tsx";
 import { AxisInputField } from "./ui/axis-input.tsx";
 import { InputField } from "./ui/input.tsx";
-import { Panel } from "./ui/panel.tsx";
 import { game } from "../global-game.ts";
-import { CirclePlus, Plus } from "lucide-react";
-import { cn } from "../utils/cn.ts";
-import { IconButton } from "./ui/icon-button.tsx";
+import { CirclePlus } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "./ui/tooltip.tsx";
+import { Category } from "./ui/panel.tsx";
 
 const Inspector = () => {
   const [selectedEntity, setSelectedEntity] = useAtom(selectedEntityAtom);
@@ -161,7 +159,6 @@ const Inspector = () => {
     });
   };
 
-  // Maybe there should be an easier way to do this in the engine?
   const updateBehaviorValues = (behavior: Behavior, key: string, newValue: unknown) => {
     const syncedValue = behavior.values.get(key) as SyncedValue<unknown>;
     if (!syncedValue) {
@@ -276,22 +273,21 @@ const Inspector = () => {
 
   if (!selectedEntity) {
     return (
-      <Panel className="h-full" title="Inspector">
+      <div className="h-full" title="Inspector">
         <div className="p-4">
           <p className="text-textSecondary">No entity selected</p>
         </div>
-      </Panel>
+      </div>
     );
   }
 
   return (
-    <Panel className="h-full" title="Inspector" onDrop={handleDrop} onDragOver={handleDragOver}>
+    <div className="h-full" title="Inspector" onDrop={handleDrop} onDragOver={handleDragOver}>
       <div className="p-4">
-        <div className="mb-4">
+        <Category title="Name">
           <InputField type="text" label="Name" value={name} onChange={handleNameChange} />
-        </div>
-        <div className="mb-4">
-          <h4 className="text-lg font-semibold mb-2 text-textPrimary">Transform</h4>
+        </Category>
+        <Category title="Transform">
           <div className="mb-2">
             <label className="block text-sm font-medium text-textPrimary">Position</label>
             <div className="flex space-x-2">
@@ -320,9 +316,8 @@ const Inspector = () => {
               <AxisInputField axis="y" value={scale.y} onChange={handleScaleChangeY} />
             </div>
           </div>
-        </div>
-        <div className="mb-4">
-          <h4 className="text-lg font-semibold mb-2 text-textPrimary">Values</h4>
+        </Category>
+        <Category title="Values">
           {Object.keys(values).map(key => (
             <InputField
               type="text"
@@ -332,10 +327,9 @@ const Inspector = () => {
               onChange={handleValueChange(key)}
             />
           ))}
-        </div>
-        <div className="mb-4">
-          <h4 className="text-lg font-semibold mb-2 text-textPrimary flex items-center">
-            Behaviors
+        </Category>
+        <Category title="Behaviors">
+          <div className="flex items-center">
             <Tooltip>
               <TooltipTrigger asChild>
                 <CirclePlus onClick={handleIconClick} className="ml-2 w-5 h-5 cursor-pointer" />
@@ -344,7 +338,7 @@ const Inspector = () => {
                 <p>Drag File or Click Here to Add a Behavior to the Entity</p>
               </TooltipContent>
             </Tooltip>
-          </h4>
+          </div>
           {showDropdown && (
             <div className="mb-4">
               <input
@@ -383,9 +377,9 @@ const Inspector = () => {
               </div>
             </div>
           ))}
-        </div>
+        </Category>
       </div>
-    </Panel>
+    </div>
   );
 };
 
