@@ -31,7 +31,7 @@ export class DraggableBehavior extends Behavior {
   }
 
   onInitialize(): void {
-    this.listen(this.#clickable, MouseDown, ({ button, world }) => {
+    this.listen(this.#clickable, MouseDown, ({ button, cursor: { world } }) => {
       if (button !== "left") return;
 
       this.#origin = world.sub(this.entity.pos);
@@ -273,7 +273,14 @@ export class CardBehavior extends Behavior {
 export const card = game.world.spawn({
   type: ClickableRect,
   name: "Card",
-  transform: { scale: Vector2.splat(1.142 * 2) },
+  transform: { scale: Vector2.splat(1.142 * 2), z: 10 },
+  behaviors: [{ type: CardBehavior }, { type: DraggableBehavior }],
+});
+
+export const card2 = game.world.spawn({
+  type: ClickableRect,
+  name: "Card",
+  transform: { position: Vector2.X, scale: Vector2.splat(1.142 * 2) },
   behaviors: [{ type: CardBehavior }, { type: DraggableBehavior }],
 });
 
