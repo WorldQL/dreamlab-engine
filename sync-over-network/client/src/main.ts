@@ -7,9 +7,20 @@ const setup = async (conn: ClientConnection, game: ClientGame) => {
   conn.setup(game);
   await game.initialize();
 
+  // TODO: load test world
+
   game.setStatus(GameStatus.Running);
 
-  // TODO: load test world
+  let now = performance.now();
+  const onTick = (time: number) => {
+    const delta = time - now;
+    now = time;
+    game.tickClient(delta);
+
+    requestAnimationFrame(onTick);
+  };
+
+  requestAnimationFrame(onTick);
 };
 
 const instanceId = "my-instance";
