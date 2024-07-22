@@ -1,6 +1,7 @@
+import * as PIXI from "@dreamlab/vendor/pixi.ts";
+import { EntityDestroyed, GameRender } from "../../signals/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
 import { InterpolatedEntity } from "../interpolated-entity.ts";
-import { EntityDestroyed, GameRender } from "../../signals/mod.ts";
 import { Camera } from "./camera.ts";
 
 export class UIPanel extends InterpolatedEntity {
@@ -50,8 +51,10 @@ export class UIPanel extends InterpolatedEntity {
     if (!this.#ui) return;
     const { element } = this.#ui;
 
+    // TODO: Culling
+
     const camera = Camera.getActive(this.game);
-    if (!camera) return;
+    if (!camera) return; // TODO: Cull when no camera exists
 
     const pos = this.interpolated.position;
     const screen = camera.worldToScreen(pos);
@@ -59,12 +62,15 @@ export class UIPanel extends InterpolatedEntity {
     element.style.left = screen.x.toString() + "px";
     element.style.top = screen.y.toString() + "px";
 
-    const rot = camera.smoothed.rotation - this.interpolated.rotation;
-    // TODO: uhh this doesnt work
-    const scaleX = this.globalTransform.scale.x / camera.smoothed.scale.x;
-    const scaleY = this.globalTransform.scale.y / camera.smoothed.scale.y;
+    const { a, b, c, d, tx, ty } = PIXI.Matrix.shared
+      .identity()
+      .rotate(camera.smoothed.rotation - this.interpolated.rotation)
+      .scale(
+        this.globalTransform.scale.x / camera.smoothed.scale.x,
+        this.globalTransform.scale.y / camera.smoothed.scale.y,
+      );
 
-    element.style.transform = `translateX(-50%) translateY(-50%) rotate(${rot}rad) scale(${scaleX}, ${scaleY})`;
+    element.style.transform = `translateX(-50%) translateY(-50%) matrix(${a}, ${b}, ${c}, ${d}, ${tx}, ${ty})`;
   }
 
   onInitialize() {
