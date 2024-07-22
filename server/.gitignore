@@ -8,3 +8,5 @@
 /runtime/worlds/*
 !/runtime/worlds/dreamlab/
 !/runtime/worlds/dreamlab/**
+
+*-esbuild.js

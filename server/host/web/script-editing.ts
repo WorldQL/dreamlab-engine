@@ -38,7 +38,8 @@ export const scriptEditRoutes = (router: Router, instances: Map<string, RunningI
 
     // add auth?
 
-    const transpileOption = ctx.request.url.searchParams.get("transpile") === "true";
+    // const transpileOption = ctx.request.url.searchParams.get("transpile") === "true";
+    let transpileOption = false;
 
     const worldFolder = path.join(
       Deno.cwd(),
@@ -57,6 +58,7 @@ export const scriptEditRoutes = (router: Router, instances: Map<string, RunningI
           ".git",
           `client.${instance.worldVariant}.bundled.js`,
           `client.${instance.worldVariant}.bundled.js.map`,
+          '*-esbuild.js'
         ],
       })) {
         if (entry.isFile) {
@@ -75,11 +77,30 @@ export const scriptEditRoutes = (router: Router, instances: Map<string, RunningI
       return;
     }
 
+    /*
+    When a .js file is requested, check if a .ts file exists on the same path.
+    If so, transpile it. If not, return the js.
+    In effect, replace ?transpile=true with .ts -> js
+
+    js files are ignored in the .gitignore for the repository and are also not returned in the filetree.
+    */
+
     if (!(await fs.exists(computedPath))) {
-      ctx.response.type = "text/plain";
-      ctx.response.status = Status.NotFound;
-      ctx.response.body = "Not Found";
-      return;
+      // special case, don't return 404 if we're requesting .js and a .ts exists on the same path
+      if (computedPath.endsWith(".js")) {
+        // replace the file extension in computedPath with .ts and check if it exists
+        const tsPath = computedPath.replace(/\.js$/, ".ts");
+        if (await fs.exists(tsPath)) {
+          // if there is a .ts file with the same path as the .js file then we are transpiling!
+          transpileOption = true;
+        }
+      }
+      if (!transpileOption) {
+        ctx.response.type = "text/plain";
+        ctx.response.status = Status.NotFound;
+        ctx.response.body = "Not Found";
+        return;
+      }
     }
 
     if (!transpileOption) {
@@ -115,13 +136,6 @@ export const scriptEditRoutes = (router: Router, instances: Map<string, RunningI
         ctx.response.body = "Not Found";
       }
     } else {
-      if (computedPath.split(".").pop() !== "ts" || computedPath.split(".").pop() !== "tsx" ) {
-        ctx.response.type = "text/plain";
-        ctx.response.status = Status.BadRequest;
-        ctx.response.body = "Transpilation only supported for TypeScript files.";
-        return;
-      }
-
       ctx.response.type = "application/javascript";
       ctx.response.status = Status.OK;
 
