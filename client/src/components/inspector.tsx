@@ -13,6 +13,10 @@ import { AxisInputField } from "./ui/axis-input.tsx";
 import { InputField } from "./ui/input.tsx";
 import { Panel } from "./ui/panel.tsx";
 import { game } from "../global-game.ts";
+import { CirclePlus, Plus } from "lucide-react";
+import { cn } from "../utils/cn.ts";
+import { IconButton } from "./ui/icon-button.tsx";
+import { Tooltip, TooltipTrigger, TooltipContent } from "./ui/tooltip.tsx";
 
 const Inspector = () => {
   const [selectedEntity, setSelectedEntity] = useAtom(selectedEntityAtom);
@@ -31,6 +35,8 @@ const Inspector = () => {
   const [behaviorValues, setBehaviorValues] = useState<
     Partial<Record<string, Partial<Record<string, SyncedValue<unknown>>>>>
   >({});
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     if (!selectedEntity) return;
@@ -225,36 +231,48 @@ const Inspector = () => {
     event.preventDefault();
   };
 
-  // const addBehavior = async (scriptPath: string) => {
-  //   try {
-  //     const scriptUrl = `http://127.0.0.1:8000/api/v1/edit/${game.instanceId}/files/${scriptPath}`;
-  //     try {
-  //       const module = await import(scriptUrl);
-  //       const behavior = module.default;
-  //       if (selectedEntity) {
-  //         selectedEntity.addBehavior({ type: behavior });
-  //         setSelectedEntity(selectedEntity);
-  //         setBehaviors(selectedEntity.behaviors.map(b => b.constructor.name));
+  const addBehavior = async (scriptPath: string) => {
+    try {
+      const scriptUrl = `http://127.0.0.1:8000/api/v1/edit/${game.instanceId}/files/${scriptPath}`;
+      try {
+        const module = await import(scriptUrl);
+        const behavior = module.default;
+        if (selectedEntity) {
+          selectedEntity.addBehavior({ type: behavior });
+          setSelectedEntity(selectedEntity);
+          setBehaviors(selectedEntity.behaviors.map(b => b.constructor.name));
 
-  //         const behaviorVals: Partial<
-  //           Record<string, Partial<Record<string, SyncedValue<unknown>>>>
-  //         > = {};
-  //         selectedEntity.behaviors.forEach(behavior => {
-  //           behaviorVals[behavior.constructor.name] = Object.fromEntries(
-  //             behavior.values.entries(),
-  //           );
-  //         });
-  //         setBehaviorValues(behaviorVals);
-  //       }
-  //     } catch (importError) {
-  //       console.error("Failed to import module from script content:", importError);
-  //     }
-  //   } catch (fetchError) {
-  //     console.error("Failed to fetch or import script content:", fetchError);
-  //   }
-  // };
+          const behaviorVals: Partial<
+            Record<string, Partial<Record<string, SyncedValue<unknown>>>>
+          > = {};
+          selectedEntity.behaviors.forEach(behavior => {
+            behaviorVals[behavior.constructor.name] = Object.fromEntries(
+              behavior.values.entries(),
+            );
+          });
+          setBehaviorValues(behaviorVals);
+        }
+      } catch (importError) {
+        console.error("Failed to import module from script content:", importError);
+      }
+    } catch (fetchError) {
+      console.error("Failed to fetch or import script content:", fetchError);
+    }
+  };
 
-  // const behaviorOptions = ["wip"];
+  const behaviorOptions = ["wip"];
+
+  const handleIconClick = () => {
+    setShowDropdown(!showDropdown);
+  };
+
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value);
+  };
+
+  const filteredOptions = behaviorOptions.filter(option =>
+    option.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
   if (!selectedEntity) {
     return (
@@ -316,7 +334,39 @@ const Inspector = () => {
           ))}
         </div>
         <div className="mb-4">
-          <h4 className="text-lg font-semibold mb-2 text-textPrimary">Behaviors</h4>
+          <h4 className="text-lg font-semibold mb-2 text-textPrimary flex items-center">
+            Behaviors
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <CirclePlus onClick={handleIconClick} className="ml-2 w-5 h-5 cursor-pointer" />
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                <p>Drag File or Click Here to Add a Behavior to the Entity</p>
+              </TooltipContent>
+            </Tooltip>
+          </h4>
+          {showDropdown && (
+            <div className="mb-4">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                placeholder="Search behaviors..."
+                className="w-full p-2 border rounded mb-2"
+              />
+              <select
+                onChange={e => addBehavior(e.target.value)}
+                className="w-full p-2 border rounded"
+              >
+                <option value="">Select a behavior...</option>
+                {filteredOptions.map((url, index) => (
+                  <option key={index} value={url}>
+                    {url}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           {behaviors.map((behavior, index: number) => (
             <div key={index} className="mb-2">
               <p className="text-sm font-medium text-textPrimary">{behavior}</p>
@@ -334,20 +384,6 @@ const Inspector = () => {
             </div>
           ))}
         </div>
-        {/* <div className="mb-4">
-          <h4 className="text-lg font-semibold mb-2 text-textPrimary">Add Behavior</h4>
-          <select
-            onChange={e => addBehavior(e.target.value)}
-            className="w-full p-2 border rounded"
-          >
-            <option value="">Select a behavior...</option>
-            {behaviorOptions.map((url, index) => (
-              <option key={index} value={url}>
-                {url}
-              </option>
-            ))}
-          </select>
-        </div> */}
       </div>
     </Panel>
   );
