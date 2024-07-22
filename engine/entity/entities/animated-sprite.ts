@@ -68,8 +68,6 @@ export class AnimatedSprite2D extends PixiEntity {
     const textures = await this.#getTextures();
     this.sprite = new PIXI.AnimatedSprite(textures);
 
-    console.log(textures.map(tex => [tex.width, tex.height]));
-
     this.sprite.width = this.width * this.globalTransform.scale.x;
     this.sprite.height = this.height * this.globalTransform.scale.y;
     this.sprite.anchor.set(0.5);
