@@ -14,8 +14,9 @@ import { createEditorGame } from "./global-game.ts";
 import { SceneView } from "./scene-graph/scene-view.ts";
 import { Scene, SceneSchema } from "./scene-graph/schema.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
-import { Entity } from "@dreamlab/engine"
+import { Entity } from "@dreamlab/engine";
 import { SAMPLE_SCENE, loadSceneFromDefinition } from "./utils/spawn-from-definition.ts";
+import * as internal from "../../engine/internal.ts";
 
 try {
   // @ts-expect-error injected global
@@ -86,7 +87,7 @@ const main = async () => {
     onFrame(): void {}
   }
 
-  Behavior.registerType(WASDMovementBehavior, "jackson.test")
+  game[internal.behaviorLoader].registerInternalBehavior(WASDMovementBehavior, "jackson.test");
 
   const giz = game.local.spawn({
     type: Gizmo,
@@ -121,14 +122,14 @@ const main = async () => {
     //     { type: WASDMovementBehavior },
     //   ],
     // });
-    
-    // THIS IS HOW YOU SAVE A SCENE.
-    // TODO tomorrow: Write function to save game to json.
+
+    // // THIS IS HOW YOU SAVE A SCENE.
+    // // TODO tomorrow: Write function to save game to json.
     // const definitions = []
     // for (const [_, value] of game.world.children) {
     //   definitions.push(value.getDefinition())
     // }
-    
+
     // console.log(definitions)
 
     // console.log(JSON.stringify(definitions))
@@ -139,7 +140,7 @@ const main = async () => {
     //   sprite.addBehavior({ type: WASDMovementBehavior });
     // }, 5000);
 
-    loadSceneFromDefinition(game, SAMPLE_SCENE)
+    loadSceneFromDefinition(game, SAMPLE_SCENE);
 
     // const exampleScene: Scene = SceneDescSceneSchema.parse({
     //   registration: [],

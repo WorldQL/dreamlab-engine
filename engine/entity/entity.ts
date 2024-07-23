@@ -371,7 +371,7 @@ export abstract class Entity implements ISignalHandler {
   #generateBehaviorDefinition(
     behavior: Behavior,
     withRefs: boolean,
-  ): BehaviorDefinition & { typeName: string } {
+  ): BehaviorDefinition & { uri: string } {
     const behaviorValues: Partial<Record<string, unknown>> = {};
     for (const [key, value] of behavior.values.entries()) {
       const newValue = value.adapter
@@ -380,11 +380,16 @@ export abstract class Entity implements ISignalHandler {
       behaviorValues[key] = newValue;
     }
 
+    const uri = this.game[internal.behaviorLoader].lookup(
+      behavior.constructor as BehaviorConstructor,
+    );
+    if (!uri) throw new Error("Attempted to serialize behavior with no associated uri");
+
     return {
       _ref: withRefs ? behavior.ref : undefined,
       type: behavior.constructor as BehaviorConstructor,
       values: behaviorValues,
-      typeName: Behavior.getTypeName(behavior.constructor as BehaviorConstructor),
+      uri
     };
   }
 

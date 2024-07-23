@@ -2,6 +2,7 @@ import { Camera, Sprite2D, TilingSprite2D } from "../../entity/mod.ts";
 import { Vector2 } from "../../math/mod.ts";
 import { Vector2Adapter } from "../../value/adapters/vector-adapter.ts";
 import { Behavior, BehaviorContext } from "../behavior.ts";
+import * as internal from "../../internal.ts";
 
 export class BackgroundBehavior extends Behavior {
   parallax: Vector2 = Vector2.ZERO;
@@ -61,4 +62,4 @@ export class BackgroundBehavior extends Behavior {
     else if (inverse.y < this.#origin.y - height) this.#origin.y -= height;
   }
 }
-Behavior.registerType(BackgroundBehavior, "@core");
+game[internal.behaviorLoader].registerInternalBehavior(BackgroundBehavior, "@core");

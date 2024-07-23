@@ -12,6 +12,7 @@ import {
 import { Vector2 } from "../../math/mod.ts";
 import { EntityCollision, GamePostRender } from "../../signals/mod.ts";
 import { element } from "../../ui.ts";
+import * as internal from "../../internal.ts";
 
 // #region Health
 class HealthBar extends Behavior {
@@ -76,7 +77,7 @@ class HealthBar extends Behavior {
     }
   }
 }
-Behavior.registerType(HealthBar, "spaceship");
+game[internal.behaviorLoader].registerInternalBehavior(HealthBar, "spaceship");
 // #endregion
 
 // #region Movement
@@ -122,7 +123,7 @@ class Movement extends Behavior {
     this.entity.transform.position = newPosition;
   }
 }
-Behavior.registerType(Movement, "spaceship");
+game[internal.behaviorLoader].registerInternalBehavior(Movement, "spaceship");
 
 class LookAtMouse extends Behavior {
   onTick(): void {
@@ -133,7 +134,7 @@ class LookAtMouse extends Behavior {
     this.entity.transform.rotation = rotation;
   }
 }
-Behavior.registerType(LookAtMouse, "spaceship");
+game[internal.behaviorLoader].registerInternalBehavior(LookAtMouse, "spaceship");
 
 class CameraFollow extends Behavior {
   onInitialize(): void {
@@ -145,7 +146,7 @@ class CameraFollow extends Behavior {
     });
   }
 }
-Behavior.registerType(CameraFollow, "spaceship");
+game[internal.behaviorLoader].registerInternalBehavior(CameraFollow, "spaceship");
 // #endregion
 
 // #region PowerUps
@@ -211,7 +212,7 @@ class GoldAsteroidBehavior extends Behavior {
     }
   }
 }
-Behavior.registerType(GoldAsteroidBehavior, "spaceship");
+game[internal.behaviorLoader].registerInternalBehavior(GoldAsteroidBehavior, "spaceship");
 
 function spawnPowerUp() {
   const x = Math.random() * (MAP_BOUNDARY * 2) - MAP_BOUNDARY;
@@ -325,7 +326,7 @@ class Shield extends Behavior {
     ui.updateShieldDuration(duration);
   }
 }
-Behavior.registerType(Shield, "spaceship");
+game[internal.behaviorLoader].registerInternalBehavior(Shield, "spaceship");
 
 class Supercharge extends Behavior {
   #superchargeKey = this.inputs.create("@ability/supercharge", "Supercharge", "MouseRight");
@@ -392,7 +393,7 @@ class Supercharge extends Behavior {
     this.#coolingDown = false;
   }
 }
-Behavior.registerType(Supercharge, "spaceship");
+game[internal.behaviorLoader].registerInternalBehavior(Supercharge, "spaceship");
 // #endregion
 
 // #region Abilities UI
@@ -545,7 +546,7 @@ class AbilityUI extends Behavior {
     }
   }
 }
-Behavior.registerType(AbilityUI, "spaceship");
+game[internal.behaviorLoader].registerInternalBehavior(AbilityUI, "spaceship");
 // #endregion
 
 // #region Levelup
@@ -666,7 +667,7 @@ button:active {
     this.entity.destroy();
   }
 }
-Behavior.registerType(LevelUpSelectionScreen, "spaceship");
+game[internal.behaviorLoader].registerInternalBehavior(LevelUpSelectionScreen, "spaceship");
 // #endregion
 
 // #region Bullet
@@ -697,7 +698,7 @@ class BulletBehavior extends Behavior {
     }
   }
 }
-Behavior.registerType(BulletBehavior, "spaceship");
+game[internal.behaviorLoader].registerInternalBehavior(BulletBehavior, "spaceship");
 
 class ClickFire extends Behavior {
   #fire = this.inputs.create("@clickFire/fire", "Fire", "MouseLeft");
@@ -721,7 +722,7 @@ class ClickFire extends Behavior {
     }
   }
 }
-Behavior.registerType(ClickFire, "spaceship");
+game[internal.behaviorLoader].registerInternalBehavior(ClickFire, "spaceship");
 // #endregion
 
 // #region Asteroid
@@ -741,7 +742,7 @@ class AsteroidMovement extends Behavior {
     );
   }
 }
-Behavior.registerType(AsteroidMovement, "spaceship");
+game[internal.behaviorLoader].registerInternalBehavior(AsteroidMovement, "spaceship");
 
 class AsteroidBehavior extends Behavior {
   private healthBar!: HealthBar;
@@ -771,7 +772,7 @@ class AsteroidBehavior extends Behavior {
     }
   }
 }
-Behavior.registerType(AsteroidBehavior, "spaceship");
+game[internal.behaviorLoader].registerInternalBehavior(AsteroidBehavior, "spaceship");
 
 const prefabAsteroid = game.prefabs.spawn({
   type: Rigidbody2D,
@@ -880,7 +881,7 @@ class EnemyMovement extends Behavior {
     });
   }
 }
-Behavior.registerType(EnemyMovement, "spaceship");
+game[internal.behaviorLoader].registerInternalBehavior(EnemyMovement, "spaceship");
 
 class ExplosionPieceBehavior extends Behavior {
   readonly #lifetime = 1;
@@ -903,7 +904,7 @@ class ExplosionPieceBehavior extends Behavior {
     }
   }
 }
-Behavior.registerType(ExplosionPieceBehavior, "spaceship");
+game[internal.behaviorLoader].registerInternalBehavior(ExplosionPieceBehavior, "spaceship");
 
 class EnemyBehavior extends Behavior {
   private healthBar!: HealthBar;
@@ -933,7 +934,7 @@ class EnemyBehavior extends Behavior {
     }
   }
 }
-Behavior.registerType(EnemyBehavior, "spaceship");
+game[internal.behaviorLoader].registerInternalBehavior(EnemyBehavior, "spaceship");
 
 const prefabEnemy = game.prefabs.spawn({
   type: Rigidbody2D,
@@ -1214,7 +1215,7 @@ class PlayerBehavior extends Behavior {
     });
   }
 }
-Behavior.registerType(PlayerBehavior, "spaceship");
+game[internal.behaviorLoader].registerInternalBehavior(PlayerBehavior, "spaceship");
 
 function spawnPlayer() {
   const x = Math.random() * (MAP_BOUNDARY * 2) - MAP_BOUNDARY;
@@ -1377,7 +1378,7 @@ class PlayerUI extends Behavior {
     this.updateShieldDuration(shieldBehavior.shieldDuration);
   }
 }
-Behavior.registerType(PlayerUI, "spaceship");
+game[internal.behaviorLoader].registerInternalBehavior(PlayerUI, "spaceship");
 // #endregion
 
 // #region Level UI
@@ -1419,7 +1420,7 @@ class LevelProgressUI extends Behavior {
     this.#progressBar.style.width = `${progress * 100}%`;
   }
 }
-Behavior.registerType(LevelProgressUI, "spaceship");
+game[internal.behaviorLoader].registerInternalBehavior(LevelProgressUI, "spaceship");
 // #endregion
 
 // #region Minimap
@@ -1523,7 +1524,7 @@ class Minimap extends Behavior {
     });
   }
 }
-Behavior.registerType(Minimap, "spaceship");
+game[internal.behaviorLoader].registerInternalBehavior(Minimap, "spaceship");
 // #endregion
 
 // #region Border
@@ -1615,7 +1616,7 @@ class CoordsDisplay extends Behavior {
     });
   }
 }
-Behavior.registerType(CoordsDisplay, "spaceship");
+game[internal.behaviorLoader].registerInternalBehavior(CoordsDisplay, "spaceship");
 // #endregion
 
 // #region Screens
@@ -1709,7 +1710,7 @@ button:hover {
     this.entity.destroy();
   }
 }
-Behavior.registerType(StartScreen, "spaceship");
+game[internal.behaviorLoader].registerInternalBehavior(StartScreen, "spaceship");
 
 class DeathScreen extends Behavior {
   #ui = this.entity.cast(UILayer);
@@ -1793,7 +1794,7 @@ class DeathScreen extends Behavior {
     this.entity.destroy();
   }
 }
-Behavior.registerType(DeathScreen, "spaceship");
+game[internal.behaviorLoader].registerInternalBehavior(DeathScreen, "spaceship");
 
 game.local.spawn({
   type: UILayer,
