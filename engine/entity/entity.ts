@@ -322,7 +322,7 @@ export abstract class Entity implements ISignalHandler {
     this.behaviors.push(b);
 
     const behaviorType = behavior.constructor as BehaviorConstructor<B>;
-    this.game[internal.behaviorScriptLoader].initialize(behaviorType);
+    this.game[internal.behaviorLoader].initialize(behaviorType);
     b.spawn();
 
     return b;
@@ -664,7 +664,7 @@ export abstract class Entity implements ISignalHandler {
 
     for (const behavior of this.behaviors) {
       const behaviorType = behavior.constructor as BehaviorConstructor;
-      this.game[internal.behaviorScriptLoader].initialize(behaviorType);
+      this.game[internal.behaviorLoader].initialize(behaviorType);
       behavior.spawn();
     }
   }

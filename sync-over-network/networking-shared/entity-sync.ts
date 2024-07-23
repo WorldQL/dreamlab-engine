@@ -7,7 +7,7 @@ export const convertBehaviorDefinition = async (
   game: Game,
   def: z.infer<typeof BehaviorDefinitionSchema>,
 ): Promise<BehaviorDefinition> => {
-  const type = await game[internal.behaviorScriptLoader].loadScript(def.script);
+  const type = await game[internal.behaviorLoader].loadScript(def.script);
   return {
     type,
     values: def.values,
@@ -45,7 +45,7 @@ export const serializeBehaviorDefinition = async (
   if (ref === undefined)
     throw new Error("attempted to serialize BehaviorDefinition with undefined ref");
 
-  const script = game[internal.behaviorScriptLoader].lookup(def.type);
+  const script = game[internal.behaviorLoader].lookup(def.type);
   if (script === undefined)
     throw new Error("attempted to serialize BehaviorDefinition with unknown script location");
 

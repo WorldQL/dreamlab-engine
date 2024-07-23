@@ -74,9 +74,9 @@ export abstract class BaseGame implements ISignalHandler {
   readonly time = new Time(this as unknown as Game);
   readonly inputs = new Inputs(this as unknown as Game);
 
-  [internal.behaviorScriptLoader] = new BehaviorLoader(this as unknown as Game);
+  [internal.behaviorLoader] = new BehaviorLoader(this as unknown as Game);
   loadBehavior(scriptUri: string): Promise<BehaviorConstructor> {
-    return this[internal.behaviorScriptLoader].loadScript(scriptUri);
+    return this[internal.behaviorLoader].loadScript(scriptUri);
   }
 
   #initialized: boolean = false;
