@@ -15,6 +15,7 @@ import { SceneView } from "./scene-graph/scene-view.ts";
 import { Scene, SceneSchema } from "./scene-graph/schema.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { Entity } from "@dreamlab/engine"
+import { SAMPLE_SCENE, loadSceneFromDefinition } from "./utils/spawn-from-definition.ts";
 
 try {
   // @ts-expect-error injected global
@@ -85,6 +86,8 @@ const main = async () => {
     onFrame(): void {}
   }
 
+  Behavior.registerType(WASDMovementBehavior, "jackson.test")
+
   const giz = game.local.spawn({
     type: Gizmo,
     name: "Gizmo",
@@ -92,40 +95,51 @@ const main = async () => {
 
   // set to false locally if you are charlotte
   if (true) {
-    const body = game.world.spawn({
-      type: Rigidbody2D,
-      name: "DefaultSquare",
-    });
+    // const body = game.world.spawn({
+    //   type: Rigidbody2D,
+    //   name: "DefaultSquare",
+    // });
 
-    const body2 = game.world.spawn({
-      type: Rigidbody2D,
-      name: "DefaultSquare",
-    });
+    // const body2 = game.world.spawn({
+    //   type: Rigidbody2D,
+    //   name: "DefaultSquare",
+    // });
 
-    const spriteParent = game.world.spawn({
-      type: Empty,
-      name: "SpriteContainer",
-    });
-    spriteParent.transform.scale.x = 2;
+    // const spriteParent = game.world.spawn({
+    //   type: Empty,
+    //   name: "SpriteContainer",
+    // });
+    // spriteParent.transform.scale.x = 2;
 
-    const sprite2d = Entity.getEntityType("@core/Sprite2D")
+    // const sprite2d = Entity.getEntityType("@core/Sprite2D")
 
-    const sprite = spriteParent.spawn({
-      type: sprite2d,
-      name: "Sprite",
-      behaviors: [
-        // spawn the sprite with SpinBehavior
-        { type: WASDMovementBehavior },
-      ],
-    });
+    // const sprite = spriteParent.spawn({
+    //   type: sprite2d,
+    //   name: "Sprite",
+    //   behaviors: [
+    //     // spawn the sprite with SpinBehavior
+    //     { type: WASDMovementBehavior },
+    //   ],
+    // });
+    
+    // THIS IS HOW YOU SAVE A SCENE.
+    // TODO tomorrow: Write function to save game to json.
+    // const definitions = []
+    // for (const [_, value] of game.world.children) {
+    //   definitions.push(value.getDefinition())
+    // }
+    
+    // console.log(definitions)
 
-    console.log(JSON.stringify([sprite.getDefinition()]))
-    console.log(Entity.getTypeName(Sprite2D))
+    // console.log(JSON.stringify(definitions))
+    // console.log(Entity.getTypeName(Sprite2D))
 
-    setTimeout(() => {
-      console.log("adding WASD movement");
-      sprite.addBehavior({ type: WASDMovementBehavior });
-    }, 5000);
+    // setTimeout(() => {
+    //   console.log("adding WASD movement");
+    //   sprite.addBehavior({ type: WASDMovementBehavior });
+    // }, 5000);
+
+    loadSceneFromDefinition(game, SAMPLE_SCENE)
 
     // const exampleScene: Scene = SceneDescSceneSchema.parse({
     //   registration: [],

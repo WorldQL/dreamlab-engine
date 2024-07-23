@@ -368,7 +368,7 @@ export abstract class Entity implements ISignalHandler {
     };
   }
 
-  #generateBehaviorDefinition(behavior: Behavior, withRefs: boolean): BehaviorDefinition {
+  #generateBehaviorDefinition(behavior: Behavior, withRefs: boolean): BehaviorDefinition & {typeName: string} {
     const behaviorValues: Partial<Record<string, unknown>> = {};
     for (const [key, value] of behavior.values.entries()) {
       const newValue = value.adapter
@@ -381,6 +381,7 @@ export abstract class Entity implements ISignalHandler {
       _ref: withRefs ? behavior.ref : undefined,
       type: behavior.constructor as BehaviorConstructor,
       values: behaviorValues,
+      typeName: Behavior.getTypeName(behavior.constructor as BehaviorConstructor)
     };
   }
 
@@ -778,7 +779,6 @@ export abstract class Entity implements ISignalHandler {
   // #region Registry
   static #entityTypeRegistry = new Map<EntityConstructor<unknown & Entity>, string>();
   static registerType<T extends Entity>(type: EntityConstructor<T>, namespace: string) {
-    console.log(type)
     this.#entityTypeRegistry.set(type, namespace);
   }
   static #ensureEntityTypeIsRegistered = (newTarget: unknown) => {

@@ -174,7 +174,38 @@ export class Behavior implements ISignalHandler {
   }
   // #endregion
 
+  // #region Registry
+  static #behaviorTypeRegistry = new Map<BehaviorConstructor<unknown & Behavior>, string>();
+  static registerType<T extends Behavior>(type: BehaviorConstructor<T>, namespace: string) {
+    this.#behaviorTypeRegistry.set(type, namespace);
+    console.log(this.#behaviorTypeRegistry.entries())
+
+  }
+  static #ensureBehaviorTypeIsRegistered = (newTarget: unknown) => {
+    const target = newTarget as BehaviorConstructor;
+
+    if (
+      !Behavior.#behaviorTypeRegistry.has(target)
+    ) {
+      throw new Error(`Behavior type registry is missing ${target.name}!`);
+    }
+  };
+  static getTypeName(type: BehaviorConstructor): string {
+    const namespace = this.#behaviorTypeRegistry.get(type);
+    if (!namespace) throw new Error(`Behavior type registry is missing ${type.name}!`);
+    return `${namespace}/${type.name}`;
+  }
+  static getBehaviorType(typeName: string): BehaviorConstructor {
+    for (const [type, namespace] of this.#behaviorTypeRegistry.entries())
+      if (typeName === `${namespace}/${type.name}`) return type;
+
+    throw new Error(`Behavior type ${typeName} is not registered!`);
+  }
+  // #endregion
+
   constructor(ctx: BehaviorContext) {
+    Behavior.#ensureBehaviorTypeIsRegistered(new.target);
+
     this.game = ctx.game;
     this.entity = ctx.entity;
 
