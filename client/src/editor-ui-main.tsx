@@ -5,6 +5,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { EditorLayout } from "./components/editor-layout.tsx";
 import { TooltipProvider } from "./components/ui/tooltip.tsx";
+import { ModalProvider } from "./context/modal-context.tsx";
 
 const queryClient = new QueryClient();
 
@@ -14,7 +15,9 @@ export const renderEditorUI = (gameDiv: HTMLDivElement) => {
     <StrictMode>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider delayDuration={200}>
-          <EditorLayout gameDiv={gameDiv} />
+          <ModalProvider>
+            <EditorLayout gameDiv={gameDiv} />
+          </ModalProvider>
         </TooltipProvider>
       </QueryClientProvider>
     </StrictMode>,

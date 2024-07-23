@@ -14,6 +14,9 @@ import { InputField } from "./ui/input.tsx";
 import { game } from "../global-game.ts";
 import { Category } from "./ui/panel.tsx";
 import { useQuery } from "@tanstack/react-query";
+import { useModal } from "../context/modal-context.tsx";
+import { Asterisk, CirclePlus, ShieldQuestion } from "lucide-react";
+import { Tooltip, TooltipTrigger, TooltipContent } from "./ui/tooltip.tsx";
 
 const Inspector = () => {
   const [selectedEntity, setSelectedEntity] = useAtom(selectedEntityAtom);
@@ -32,6 +35,7 @@ const Inspector = () => {
   const [behaviorValues, setBehaviorValues] = useState<
     Partial<Record<string, Partial<Record<string, Value<unknown>>>>>
   >({});
+  const { openModal, closeModal } = useModal();
 
   const { data, isLoading, isError } = useQuery<{ files: string[] }>({
     queryKey: ["files", game.instanceId],
@@ -235,6 +239,50 @@ const Inspector = () => {
     event.preventDefault();
   };
 
+  const handleBehaviorSubmit = async (scriptPath: string) => {
+    await addBehavior(scriptPath);
+    closeModal();
+  };
+
+  const showAddBehaviorModal = () => {
+    openModal(
+      <div>
+        <div className="flex items-center">
+          <h2 className="text-lg font-medium text-textPrimary">Add Behavior</h2>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="ml-2 cursor-help">
+                <Asterisk className="w-4 h-4 text-textPrimary" />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              <p>
+                Tip: Drag and drop a file into the inspector window to seamlessly add a behavior
+                to your entity.
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+        <p className="mt-2 text-xs text-textSecondary">Select a behavior from a file to add:</p>
+        <select
+          onChange={e => handleBehaviorSubmit(e.target.value)}
+          className="w-full border rounded mt-2"
+        >
+          <option value="">Select a file...</option>
+          {!isLoading && !isError ? (
+            data?.files.map((file, index) => (
+              <option key={index} value={file} title={file}>
+                {file.length > 60 ? `${file.substring(0, 57)}...` : file}
+              </option>
+            ))
+          ) : (
+            <option disabled>Loading behaviors...</option>
+          )}
+        </select>
+      </div>,
+    );
+  };
+
   const addBehavior = async (scriptPath: string) => {
     try {
       if (scriptPath.endsWith(".ts")) {
@@ -283,7 +331,17 @@ const Inspector = () => {
       <div className="p-2">
         <InputField type="text" label="Name" value={name} onChange={handleNameChange} />
       </div>
-      <Category title="Transform">
+      <Category
+        title="Transform"
+        icons={[
+          {
+            id: "help",
+            element: <ShieldQuestion className="w-4 h-4" />,
+            onClick: () => window.open("https://docs.dreamlab.gg/", "_blank"),
+            tooltip: "View Transform Docs",
+          },
+        ]}
+      >
         <div className="mb-2">
           <label className="block text-sm font-medium text-textPrimary">Position</label>
           <div className="flex space-x-2">
@@ -311,7 +369,17 @@ const Inspector = () => {
           </div>
         </div>
       </Category>
-      <Category title="Values">
+      <Category
+        title="Values"
+        icons={[
+          {
+            id: "help",
+            element: <ShieldQuestion className="w-4 h-4" />,
+            onClick: () => window.open("https://docs.dreamlab.gg/", "_blank"),
+            tooltip: "View Values Docs",
+          },
+        ]}
+      >
         {Object.keys(values).map(key => (
           <InputField
             type="text"
@@ -322,7 +390,23 @@ const Inspector = () => {
           />
         ))}
       </Category>
-      <Category title="Behaviors">
+      <Category
+        title="Behaviors"
+        icons={[
+          {
+            id: "add",
+            element: <CirclePlus className="w-4 h-4" />,
+            onClick: showAddBehaviorModal,
+            tooltip: "Add New Behavior",
+          },
+          {
+            id: "help",
+            element: <ShieldQuestion className="w-4 h-4" />,
+            onClick: () => window.open("https://docs.dreamlab.gg/", "_blank"),
+            tooltip: "View Behavior Docs",
+          },
+        ]}
+      >
         {behaviors.map((behavior, index: number) => (
           <div key={index} className="mb-2">
             <p className="text-sm font-medium text-textPrimary">{behavior}</p>
@@ -339,31 +423,6 @@ const Inspector = () => {
             </div>
           </div>
         ))}
-        <div className="mb-4">
-          <p className="text-md font-medium text-textPrimary">Add Behavior</p>
-          <p className="mt-2 text-xs text-textSecondary">
-            Drag and drop files here or use select file below to add a behavior.
-          </p>
-          {/* TODO: Make this a center screen modal */}
-          <div className="flex items-center justify-between">
-            <select
-              onChange={e => addBehavior(e.target.value)}
-              className="w-1/3 border rounded truncate"
-              style={{ maxWidth: "200px" }}
-            >
-              <option value="">Select a behavior...</option>
-              {!isLoading && !isError ? (
-                data?.files.map((file, index) => (
-                  <option key={index} value={file} title={file}>
-                    {file.length > 30 ? `${file.substring(0, 27)}...` : file}
-                  </option>
-                ))
-              ) : (
-                <option disabled>Loading behaviors...</option>
-              )}
-            </select>
-          </div>
-        </div>
       </Category>
     </div>
   );

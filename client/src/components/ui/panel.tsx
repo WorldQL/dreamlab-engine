@@ -1,6 +1,7 @@
 // @deno-types="npm:@types/react@18.3.1"
 import React, { FC, useEffect, useState, useRef } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
+import { Tooltip, TooltipTrigger, TooltipContent } from "./tooltip.tsx";
 
 export interface Tab {
   id: string;
@@ -85,12 +86,20 @@ export const Panel: FC<PanelProps> = ({ className, tabs, onDropTab, panelId }: P
   );
 };
 
+interface Icon {
+  id: string;
+  element: JSX.Element;
+  onClick: (event: React.MouseEvent) => void;
+  tooltip: string;
+}
+
 interface CategoryProps {
   title: string;
   children: React.ReactNode;
+  icons?: Icon[];
 }
 
-export const Category: FC<CategoryProps> = ({ title, children }: CategoryProps) => {
+export const Category: FC<CategoryProps> = ({ title, children, icons = [] }: CategoryProps) => {
   const [isOpen, setIsOpen] = useState(true);
 
   const toggleOpen = (event: React.MouseEvent) => {
@@ -101,16 +110,39 @@ export const Category: FC<CategoryProps> = ({ title, children }: CategoryProps) 
   return (
     <div className="mb-4 border-b border-grey select-none">
       <div
-        className="flex items-center cursor-pointer bg-grey hover:bg-grey-dark rounded"
+        className="flex items-center justify-between cursor-pointer bg-grey hover:bg-grey-dark px-3"
         onClick={toggleOpen}
         style={{ userSelect: "none" }}
       >
-        {isOpen ? (
-          <ChevronDown className="w-5 h-5 text-textSecondary" />
-        ) : (
-          <ChevronRight className="w-5 h-5 text-textSecondary" />
-        )}
-        <h4 className="text-md ml-2 font-semibold text-textPrimary flex-grow">{title}</h4>
+        <div className="flex items-center">
+          {isOpen ? (
+            <ChevronDown className="w-4 h-4 text-icon" />
+          ) : (
+            <ChevronRight className="w-4 h-4 text-icon" />
+          )}
+          <h4 className="text-md ml-2 text-primary">{title}</h4>
+        </div>
+        <div className="flex space-x-2">
+          {icons.map(icon => (
+            <div
+              key={icon.id}
+              onClick={event => {
+                event.stopPropagation();
+                icon.onClick(event);
+              }}
+              className="cursor-pointer"
+            >
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="text-icon">{icon.element}</div>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <p>{icon.tooltip}</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          ))}
+        </div>
       </div>
       {isOpen && (
         <div className="p-2 rounded bg-card" style={{ userSelect: "none" }}>
