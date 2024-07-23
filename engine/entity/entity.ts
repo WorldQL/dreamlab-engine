@@ -279,8 +279,8 @@ export abstract class Entity implements ISignalHandler {
       parent: this,
       transform: def.transform,
       ref: def._ref,
+      values: def.values ? Object.fromEntries(Object.entries(def.values)) : undefined,
     });
-    if (def.values) entity.set(def.values);
 
     if (def.behaviors) {
       def.behaviors.forEach(b => {
@@ -563,6 +563,8 @@ export abstract class Entity implements ISignalHandler {
     this.parent = ctx.parent;
     this.transform = new Transform(ctx.transform);
     this.globalTransform = new Transform();
+
+    if (ctx.values) this.#defaultValues = ctx.values;
 
     this.transform[internal.transformOnChanged] = () => {
       this.#updateTransform(false);
