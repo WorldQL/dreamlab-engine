@@ -34,6 +34,14 @@ export abstract class InterpolatedEntity extends Entity {
     });
 
     this.listen(this.game, GamePreRender, () => {
+      if (this.game.paused) {
+        // TODO: Interpolate while paused?
+        this.interpolated.position = this.pos;
+        this.interpolated.rotation = this.globalTransform.rotation;
+
+        return;
+      }
+
       const partial = this.game.time.partial;
       // this.interpolated.position = this.globalTransform.position;
       // console.log({ prev: this.#prevPos.x, current: this.#currentPos.x });
