@@ -3,6 +3,10 @@ import { InterpolatedEntity } from "../interpolated-entity.ts";
 import { EntityDestroyed } from "../../signals/mod.ts";
 
 export class UILayer extends InterpolatedEntity {
+  static {
+    Entity.registerType(this, "@core");
+  }
+
   public static readonly icon = "🖼️";
 
   #ui: { outer: HTMLDivElement; root: ShadowRoot; element: HTMLDivElement } | undefined;
@@ -72,4 +76,3 @@ export class UILayer extends InterpolatedEntity {
     root.appendChild(element);
   }
 }
-Entity.registerType(UILayer, "@core");

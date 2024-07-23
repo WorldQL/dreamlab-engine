@@ -3,6 +3,10 @@ import { Entity, EntityContext, GamePostRender } from "../mod.ts";
 
 // #region Physics Debug
 export class PhysicsDebug extends Entity {
+  static {
+    Entity.registerType(this, "@core");
+  }
+
   #gfx = new PIXI.Graphics();
 
   constructor(ctx: EntityContext) {
@@ -60,7 +64,6 @@ export class PhysicsDebug extends Entity {
     });
   }
 }
-Entity.registerType(PhysicsDebug, "@core");
 // #endregion
 
 // #region Controls

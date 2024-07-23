@@ -5,6 +5,10 @@ import { InterpolatedEntity } from "../interpolated-entity.ts";
 import { Camera } from "./camera.ts";
 
 export class UIPanel extends InterpolatedEntity {
+  static {
+    Entity.registerType(this, "@core");
+  }
+
   public static readonly icon = "🖼️";
 
   #ui: { outer: HTMLDivElement; root: ShadowRoot; element: HTMLDivElement } | undefined;
@@ -88,4 +92,3 @@ export class UIPanel extends InterpolatedEntity {
     root.appendChild(element);
   }
 }
-Entity.registerType(UIPanel, "@core");

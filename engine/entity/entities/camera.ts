@@ -6,6 +6,10 @@ import { GameRender } from "../../signals/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
 
 export class Camera extends Entity {
+  static {
+    Entity.registerType(this, "@core");
+  }
+
   public static readonly icon = "🎥";
   public static METERS_TO_PIXELS = 100;
 
@@ -147,4 +151,3 @@ export class Camera extends Entity {
     return new Vector2(x, -y);
   }
 }
-Entity.registerType(Camera, "@core");

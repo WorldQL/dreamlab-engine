@@ -128,6 +128,10 @@ export abstract class ClickableEntity extends Entity {
 }
 
 export class ClickableRect extends ClickableEntity {
+  static {
+    Entity.registerType(this, "@core");
+  }
+
   public static readonly icon = "👆";
 
   width: number = 1;
@@ -149,9 +153,12 @@ export class ClickableRect extends ClickableEntity {
     );
   }
 }
-Entity.registerType(ClickableRect, "@core");
 
 export class ClickableCircle extends ClickableEntity {
+  static {
+    Entity.registerType(this, "@core");
+  }
+
   public static readonly icon = "👆";
 
   radius: number = 1;
@@ -172,4 +179,3 @@ export class ClickableCircle extends ClickableEntity {
     return distanceSq >= innerSq && distanceSq <= radiusSq;
   }
 }
-Entity.registerType(ClickableCircle, "@core");

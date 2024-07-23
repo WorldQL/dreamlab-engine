@@ -8,6 +8,10 @@ import { Entity, EntityContext } from "../entity.ts";
 import { PixiEntity } from "../pixi-entity.ts";
 
 export class TilingSprite2D extends PixiEntity {
+  static {
+    Entity.registerType(this, "@core");
+  }
+
   public static readonly icon = "🖼️";
 
   width: number = 1;
@@ -94,5 +98,3 @@ export class TilingSprite2D extends PixiEntity {
     this.container.addChild(this.sprite);
   }
 }
-
-Entity.registerType(TilingSprite2D, "@core");

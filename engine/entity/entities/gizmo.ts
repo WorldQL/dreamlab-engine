@@ -58,6 +58,10 @@ export class GizmoScaleEnd {
 // #endregion
 
 export class Gizmo extends Entity {
+  static {
+    Entity.registerType(this, "@core");
+  }
+
   public static readonly icon = "➡️";
 
   // #region Graphics
@@ -498,4 +502,3 @@ export class Gizmo extends Entity {
     canvas.addEventListener("mouseup", this.#onMouseUp);
   }
 }
-Entity.registerType(Gizmo, "@core");

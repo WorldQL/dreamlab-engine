@@ -6,6 +6,10 @@ import { Entity, EntityContext } from "../entity.ts";
 import { PixiEntity } from "../pixi-entity.ts";
 
 export class AnimatedSprite2D extends PixiEntity {
+  static {
+    Entity.registerType(this, "@core");
+  }
+
   public static readonly icon = "🖼️";
 
   width: number = 1;
@@ -79,5 +83,3 @@ export class AnimatedSprite2D extends PixiEntity {
     this.container.addChild(this.sprite);
   }
 }
-
-Entity.registerType(AnimatedSprite2D, "@core");

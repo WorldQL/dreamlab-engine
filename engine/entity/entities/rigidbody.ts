@@ -17,6 +17,10 @@ const rigidbodyTypes = [
 const RigidbodyTypeAdapter = enumAdapter(rigidbodyTypes);
 
 export class Rigidbody2D extends Entity {
+  static {
+    Entity.registerType(this, "@core");
+  }
+
   public static readonly icon = "⚙️";
 
   type: RigidBodyType = "fixed";
@@ -112,4 +116,3 @@ export class Rigidbody2D extends Entity {
     this.game.physics.registerBody(this, this.body);
   }
 }
-Entity.registerType(Rigidbody2D, "@core");

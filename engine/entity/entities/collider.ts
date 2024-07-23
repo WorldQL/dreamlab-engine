@@ -4,6 +4,10 @@ import { EntityPreUpdate, EntityUpdate } from "../../signals/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
 
 export class RectCollider2D extends Entity {
+  static {
+    Entity.registerType(this, "@core");
+  }
+
   public static readonly icon = "⬜";
 
   collider: RAPIER.Collider;
@@ -52,4 +56,3 @@ export class RectCollider2D extends Entity {
     });
   }
 }
-Entity.registerType(RectCollider2D, "@core");

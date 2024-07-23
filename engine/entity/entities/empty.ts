@@ -1,11 +1,13 @@
-import { Entity, EntityContext } from "../entity.ts";
+import { Entity } from "../entity.ts";
 
-/** An entity with nothing but a transform. Used as a container. */
+/**
+ * An entity with nothing but a transform.
+ * Used as a container.
+ */
 export class Empty extends Entity {
-  public static readonly icon = "📦";
-
-  constructor(ctx: EntityContext) {
-    super(ctx);
+  static {
+    Entity.registerType(this, "@core");
   }
+
+  public static readonly icon = "📦";
 }
-Entity.registerType(Empty, "@core");

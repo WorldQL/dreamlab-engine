@@ -2,6 +2,10 @@ import { Entity, EntityContext } from "../entity.ts";
 import { EntityUpdate } from "../../signals/entity-updates.ts";
 
 export class BasicLivingEntity extends Entity {
+  static {
+    Entity.registerType(this, "@core");
+  }
+
   maxHealth = 100.0;
   health = this.maxHealth;
 
@@ -20,4 +24,3 @@ export class BasicLivingEntity extends Entity {
     }
   }
 }
-Entity.registerType(BasicLivingEntity, "@core");
