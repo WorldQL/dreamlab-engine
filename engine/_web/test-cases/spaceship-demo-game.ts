@@ -1,16 +1,17 @@
 import { BackgroundBehavior } from "../../behavior/behaviors/background-behavior.ts";
 import { Behavior, BehaviorContext } from "../../behavior/mod.ts";
 import {
+  Camera,
   Empty,
   Entity,
+  Rigidbody2D,
   Sprite2D,
   TilingSprite2D,
-  Rigidbody2D,
   UILayer,
-  Camera,
 } from "../../entity/mod.ts";
 import { Vector2 } from "../../math/mod.ts";
 import { EntityCollision, GamePostRender } from "../../signals/mod.ts";
+import { element } from "../../ui.ts";
 
 // #region Health
 class HealthBar extends Behavior {
@@ -450,12 +451,10 @@ class AbilityUI extends Behavior {
 }
 `;
 
-    const style = document.createElement("style");
-    style.appendChild(document.createTextNode(css));
+    const style = element("style", { children: [css] });
     this.#ui.root.appendChild(style);
 
-    this.#abilities = document.createElement("div");
-    this.#abilities.id = "abilities";
+    this.#abilities = element("div", { id: "abilities" });
     this.#ui.element.appendChild(this.#abilities);
 
     const shieldUI = this.#createAbilityUI(
@@ -480,26 +479,18 @@ class AbilityUI extends Behavior {
   }
 
   #createAbilityUI(key: string, name: string, imagePath: string) {
-    const ability = document.createElement("div");
-    ability.classList.add("ability");
+    const image = element("img", { props: { src: imagePath } });
+    const cooldown = element("span", { classList: ["cooldown"] });
 
-    const title = document.createElement("div");
-    title.classList.add("ability-title");
-    title.innerText = name;
-    ability.appendChild(title);
-
-    const image = document.createElement("img");
-    image.src = imagePath;
-    ability.appendChild(image);
-
-    const keycode = document.createElement("div");
-    keycode.classList.add("ability-keycode");
-    keycode.innerText = key;
-    ability.appendChild(keycode);
-
-    const cooldown = document.createElement("span");
-    cooldown.classList.add("cooldown");
-    ability.appendChild(cooldown);
+    const ability = element("div", {
+      classList: ["ability"],
+      children: [
+        element("div", { classList: ["ability-title"], children: [name] }),
+        image,
+        element("div", { classList: ["ability-keycode"], children: [key] }),
+        cooldown,
+      ],
+    });
 
     this.#abilities.appendChild(ability);
 
@@ -613,20 +604,11 @@ button:active {
 }
 `;
 
-    const style = document.createElement("style");
-    style.appendChild(document.createTextNode(css));
+    const style = element("style", { children: [css] });
     this.#ui.root.appendChild(style);
 
-    this.#element = document.createElement("div");
-    this.#element.id = "level-up-selection-screen";
-    this.#ui.element.appendChild(this.#element);
-
-    this.#levelTitle = document.createElement("h1");
-    this.#element.appendChild(this.#levelTitle);
-
-    const subtitle = document.createElement("h2");
-    subtitle.innerText = "Choose Your Level-Up";
-    this.#element.appendChild(subtitle);
+    this.#levelTitle = element("h1");
+    this.#levelTitle = element("h2", { children: ["Choose Your Level-Up"] });
 
     const levelUps = [
       { name: "Shield Boost", effect: () => this.#applyLevelUp("ShieldBoost") },
@@ -634,13 +616,23 @@ button:active {
       { name: "Speed Boost", effect: () => this.#applyLevelUp("SpeedBoost") },
     ];
 
-    levelUps.forEach(levelUp => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.innerText = levelUp.name;
-      button.addEventListener("click", levelUp.effect);
-      this.#element.appendChild(button);
+    this.#element = element("div", {
+      id: "level-up-selection-screen",
+      children: [
+        this.#levelTitle,
+        ...levelUps.map(levelUp => {
+          const button = element("button", {
+            props: { type: "button" },
+            children: [levelUp.name],
+          });
+          button.addEventListener("click", levelUp.effect);
+
+          return button;
+        }),
+      ],
     });
+
+    this.#ui.element.appendChild(this.#element);
   }
 
   setLevel(level: number): void {
@@ -1294,59 +1286,31 @@ class PlayerUI extends Behavior {
 }
 `;
 
-    const style = document.createElement("style");
-    style.appendChild(document.createTextNode(css));
+    const style = element("style", { children: [css] });
     this.#ui.root.appendChild(style);
 
-    this.#element = document.createElement("div");
-    this.#element.id = "player-ui";
+    this.#scoreSpan = element("span");
+    this.#healthSpan = element("span");
+    this.#fireRateSpan = element("span");
+    this.#speedSpan = element("span");
+    this.#shieldDurationSpan = element("span");
+    this.#powerUpSpan = element("span");
+
+    this.#element = element("div", {
+      id: "player-ui",
+      children: [
+        element("div", { children: ["Score: ", this.#scoreSpan] }),
+        element("div", { children: ["Health: ", this.#healthSpan] }),
+        element("div", { children: ["Fire Rate: ", this.#fireRateSpan] }),
+        element("div", { children: ["Speed: ", this.#speedSpan] }),
+        element("div", { children: ["Shield Duration: ", this.#shieldDurationSpan] }),
+        element("div", { children: ["Power-Up: ", this.#powerUpSpan] }),
+      ],
+    });
+
     this.#ui.element.appendChild(this.#element);
 
-    const scoreDiv = document.createElement("div");
-    this.#scoreSpan = document.createElement("span");
-    this.#scoreSpan.innerText = this.#totalScore.toLocaleString();
-    scoreDiv.appendChild(document.createTextNode("Score: "));
-    scoreDiv.appendChild(this.#scoreSpan);
-    this.#element.appendChild(scoreDiv);
-
-    const healthDiv = document.createElement("div");
-    this.#healthSpan = document.createElement("span");
-    this.#healthSpan.innerText = this.#health.toLocaleString();
-    healthDiv.appendChild(document.createTextNode("Health: "));
-    healthDiv.appendChild(this.#healthSpan);
-    this.#element.appendChild(healthDiv);
-
-    const fireRateDiv = document.createElement("div");
-    this.#fireRateSpan = document.createElement("span");
-    this.#fireRateSpan.innerText = this.#fireRate.toString();
-    fireRateDiv.appendChild(document.createTextNode("Fire Rate: "));
-    fireRateDiv.appendChild(this.#fireRateSpan);
-    this.#element.appendChild(fireRateDiv);
-
-    const speedDiv = document.createElement("div");
-    this.#speedSpan = document.createElement("span");
-    this.#speedSpan.innerText = this.#speed.toString();
-    speedDiv.appendChild(document.createTextNode("Speed: "));
-    speedDiv.appendChild(this.#speedSpan);
-    this.#element.appendChild(speedDiv);
-
-    const shieldDurationDiv = document.createElement("div");
-    this.#shieldDurationSpan = document.createElement("span");
-    this.#shieldDurationSpan.innerText = `${this.#shieldDuration / 1000} s`;
-    shieldDurationDiv.appendChild(document.createTextNode("Shield Duration: "));
-    shieldDurationDiv.appendChild(this.#shieldDurationSpan);
-    this.#element.appendChild(shieldDurationDiv);
-
-    const powerUpDiv = document.createElement("div");
-    this.#powerUpSpan = document.createElement("span");
-    powerUpDiv.appendChild(document.createTextNode("Power-Up: "));
-    powerUpDiv.appendChild(this.#powerUpSpan);
-    this.#element.appendChild(powerUpDiv);
-
-    this.#progressUI = this.entity.addBehavior({
-      type: LevelProgressUI,
-      values: {},
-    });
+    this.#progressUI = this.entity.addBehavior({ type: LevelProgressUI });
 
     this.listen(this.game, GamePostRender, this.updateStats.bind(this));
   }
@@ -1422,17 +1386,16 @@ class LevelProgressUI extends Behavior {
 }
 `;
 
-    const style = document.createElement("style");
-    style.appendChild(document.createTextNode(css));
+    const style = element("style", { children: [css] });
     this.#ui.root.appendChild(style);
 
-    const container = document.createElement("div");
-    container.id = "level-progress-container";
-    this.#ui.element.appendChild(container);
+    this.#progressBar = element("div", { id: "level-progress-bar" });
+    const container = element("div", {
+      id: "level-progress-container",
+      children: [this.#progressBar],
+    });
 
-    this.#progressBar = document.createElement("div");
-    this.#progressBar.id = "level-progress-bar";
-    container.appendChild(this.#progressBar);
+    this.#ui.element.appendChild(container);
   }
 
   updateProgress(progress: number) {
@@ -1481,17 +1444,12 @@ class Minimap extends Behavior {
 }
 `;
 
-    const style = document.createElement("style");
-    style.appendChild(document.createTextNode(css));
+    const style = element("style", { children: [css] });
     this.#ui.root.appendChild(style);
 
-    this.#element = document.createElement("div");
-    this.#element.id = "minimap";
+    this.#dot = element("div", { id: "dot" });
+    this.#element = element("div", { id: "minimap" });
     this.#ui.element.appendChild(this.#element);
-
-    this.#dot = document.createElement("div");
-    this.#dot.id = "dot";
-    this.#element.appendChild(this.#dot);
 
     this.listen(this.game, GamePostRender, () => {
       this.#updateMinimap();
@@ -1537,10 +1495,11 @@ class Minimap extends Behavior {
       const minimapX = ((pos.x + MAP_BOUNDARY) / mapWidth) * minimapWidth;
       const minimapY = ((-pos.y + MAP_BOUNDARY) / mapHeight) * minimapHeight;
 
-      const dot = document.createElement("div");
-      dot.classList.add("powerUpDot");
-      dot.style.left = `${minimapX - 2.5}px`;
-      dot.style.top = `${minimapY - 2.5}px`;
+      const dot = element("div", {
+        classList: ["powerUpDot"],
+        style: { top: `${minimapY - 2.5}px`, left: `${minimapX - 2.5}px` },
+      });
+
       this.#element.appendChild(dot);
       this.#powerUpDots.push(dot);
     });
@@ -1622,12 +1581,10 @@ class CoordsDisplay extends Behavior {
 }
 `;
 
-    const style = document.createElement("style");
-    style.appendChild(document.createTextNode(css));
+    const style = element("style", { children: [css] });
     this.#ui.root.appendChild(style);
 
-    this.#element = document.createElement("div");
-    this.#element.id = "coords";
+    this.#element = element("div", { id: "coords" });
     this.#ui.element.appendChild(this.#element);
 
     this.listen(this.game, GamePostRender, () => {
@@ -1646,7 +1603,6 @@ class StartScreen extends Behavior {
   #ui = this.entity.cast(UILayer);
 
   #element!: HTMLDivElement;
-  #button!: HTMLButtonElement;
 
   onInitialize(): void {
     const css = `
@@ -1692,27 +1648,25 @@ button:hover {
 }
 `;
 
-    const style = document.createElement("style");
-    style.appendChild(document.createTextNode(css));
+    const style = element("style", { children: [css] });
     this.#ui.root.appendChild(style);
 
-    this.#element = document.createElement("div");
-    this.#element.id = "start-screen";
+    const button = element("button", { props: { type: "button" }, children: ["Start Game"] });
+    button.addEventListener("click", () => this.#startGame());
+
+    this.#element = element("div", {
+      id: "start-screen",
+      children: [
+        element("h1", { children: ["Galactic Conquest"] }),
+        element("p", {
+          children: ["Embark on an epic space adventure, powered by Dreamlab v2!"],
+        }),
+
+        button,
+      ],
+    });
+
     this.#ui.element.appendChild(this.#element);
-
-    const title = document.createElement("h1");
-    title.innerText = "Galactic Conquest";
-    this.#element.appendChild(title);
-
-    const description = document.createElement("p");
-    description.innerText = "Embark on an epic space adventure, powered by Dreamlab v2!";
-    this.#element.appendChild(description);
-
-    this.#button = document.createElement("button");
-    this.#button.type = "button";
-    this.#button.innerText = "Start Game";
-    this.#element.appendChild(this.#button);
-    this.#button.addEventListener("click", () => this.#startGame());
   }
 
   #startGame() {
@@ -1740,7 +1694,6 @@ class DeathScreen extends Behavior {
   #ui = this.entity.cast(UILayer);
 
   #element!: HTMLDivElement;
-  #button!: HTMLButtonElement;
 
   score: number = 0;
 
@@ -1793,27 +1746,25 @@ class DeathScreen extends Behavior {
     }
     `;
 
-    const style = document.createElement("style");
-    style.appendChild(document.createTextNode(css));
+    const style = element("style", { children: [css] });
     this.#ui.root.appendChild(style);
 
-    this.#element = document.createElement("div");
-    this.#element.id = "death-screen";
+    const button = element("button", { props: { type: "button" }, children: ["Respawn"] });
+    button.addEventListener("click", () => this.#respawnPlayer());
+
+    this.#element = element("div", {
+      id: "death-screen",
+      children: [
+        element("h1", { children: ["Game Over"] }),
+        element("p", {
+          children: [`Final Score: ${this.score.toLocaleString()}`],
+        }),
+
+        button,
+      ],
+    });
+
     this.#ui.element.appendChild(this.#element);
-
-    const title = document.createElement("h1");
-    title.innerText = "Game Over";
-    this.#element.appendChild(title);
-
-    const description = document.createElement("p");
-    description.innerText = `Final Score: ${this.score.toLocaleString()}`;
-    this.#element.appendChild(description);
-
-    this.#button = document.createElement("button");
-    this.#button.type = "button";
-    this.#button.innerText = "Respawn";
-    this.#element.appendChild(this.#button);
-    this.#button.addEventListener("click", () => this.#respawnPlayer());
   }
 
   #respawnPlayer() {
