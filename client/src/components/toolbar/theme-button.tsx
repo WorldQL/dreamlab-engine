@@ -7,7 +7,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip.tsx";
 
 const ThemeButton: FC = () => {
   const [theme, setTheme] = useState(() => {
-    return localStorage.getItem("theme") ?? "light";
+    return localStorage.getItem("theme") ?? "dark";
   });
 
   useEffect(() => {

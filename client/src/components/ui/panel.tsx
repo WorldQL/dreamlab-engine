@@ -95,11 +95,17 @@ interface Icon {
 
 interface CategoryProps {
   title: string;
-  children: React.ReactNode;
+  titleIcon?: JSX.Element;
   icons?: Icon[];
+  children: React.ReactNode;
 }
 
-export const Category: FC<CategoryProps> = ({ title, children, icons = [] }: CategoryProps) => {
+export const Category: FC<CategoryProps> = ({
+  title,
+  titleIcon,
+  icons = [],
+  children,
+}: CategoryProps) => {
   const [isOpen, setIsOpen] = useState(true);
 
   const toggleOpen = (event: React.MouseEvent) => {
@@ -110,7 +116,7 @@ export const Category: FC<CategoryProps> = ({ title, children, icons = [] }: Cat
   return (
     <div className="mb-4 border-b border-grey select-none">
       <div
-        className="flex items-center justify-between cursor-pointer bg-grey hover:bg-grey-dark px-3"
+        className="flex items-center justify-between cursor-pointer bg-grey hover:bg-grey-dark"
         onClick={toggleOpen}
         style={{ userSelect: "none" }}
       >
@@ -120,9 +126,12 @@ export const Category: FC<CategoryProps> = ({ title, children, icons = [] }: Cat
           ) : (
             <ChevronRight className="w-4 h-4 text-icon" />
           )}
-          <h4 className="text-md ml-2 text-primary">{title}</h4>
+          <h4 className="text-md ml-4 text-textPrimary flex items-center">
+            {titleIcon && <span className="mr-2">{titleIcon}</span>}
+            {title}
+          </h4>
         </div>
-        <div className="flex space-x-2">
+        <div className="flex space-x-2 px-3">
           {icons.map(icon => (
             <div
               key={icon.id}

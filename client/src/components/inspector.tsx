@@ -15,7 +15,7 @@ import { game } from "../global-game.ts";
 import { Category } from "./ui/panel.tsx";
 import { useQuery } from "@tanstack/react-query";
 import { useModal } from "../context/modal-context.tsx";
-import { Asterisk, CirclePlus, ShieldQuestion } from "lucide-react";
+import { Asterisk, PieChart, CirclePlus, Rotate3D, Route, ShieldQuestion } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "./ui/tooltip.tsx";
 
 const Inspector = () => {
@@ -333,6 +333,7 @@ const Inspector = () => {
       </div>
       <Category
         title="Transform"
+        titleIcon={<Rotate3D className="text-green w-4 h-4" />}
         icons={[
           {
             id: "help",
@@ -371,6 +372,7 @@ const Inspector = () => {
       </Category>
       <Category
         title="Values"
+        titleIcon={<PieChart className="text-primaryLight w-4 h-4" />}
         icons={[
           {
             id: "help",
@@ -392,6 +394,7 @@ const Inspector = () => {
       </Category>
       <Category
         title="Behaviors"
+        titleIcon={<Route className="text-yellow w-4 h-4" />}
         icons={[
           {
             id: "add",
