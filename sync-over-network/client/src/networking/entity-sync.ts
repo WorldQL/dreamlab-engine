@@ -41,9 +41,6 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
   });
 
   conn.registerPacketHandler("SpawnEntity", async packet => {
-    console.log(packet);
-    console.log(conn);
-
     if (packet.from === conn.id) return;
     const def = packet.definition;
 
