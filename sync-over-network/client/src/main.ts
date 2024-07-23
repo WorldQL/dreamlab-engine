@@ -39,11 +39,10 @@ const socket = new WebSocket(
 );
 Object.defineProperty(window, "socket", { value: socket });
 const codec = JSON_CODEC;
-socket.addEventListener("message", async event => {
-  console.log(event);
 
-  let conn: ClientConnection | undefined;
-  let game: ClientGame | undefined;
+let conn: ClientConnection | undefined;
+let game: ClientGame | undefined;
+socket.addEventListener("message", async event => {
   const packet = codec.decodePacket(event.data) as ServerPacket;
   if (game === undefined && packet.t === "Handshake") {
     const connectionId = packet.connection_id;
@@ -57,9 +56,11 @@ socket.addEventListener("message", async event => {
       container: document.querySelector("#app")!,
       network: conn.createNetworking(),
     });
-    Object.defineProperty(window, "game", { value: game });
+    Object.defineProperties(window, { game: { value: game }, conn: { value: conn } });
     await setup(conn, game);
   } else if (conn !== undefined) {
     conn.handle(packet);
+  } else {
+    console.debug("dropped message!", event);
   }
 });
