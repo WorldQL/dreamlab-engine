@@ -3,7 +3,7 @@
     "build": "deno run -A ./_build.ts",
     "watch": "deno run -A ./_build.ts --watch",
     "serve": "deno run -A jsr:@std/http@0.224.0/file-server --port 5173 web",
-    "dev": "deno run -A npm:tailwindcss -i ./web/styles.css -o ./web/tw-generated.css --watch & deno task watch && fg"
+    "tw": "deno run -A npm:tailwindcss -i ./web/styles.css -o ./web/tw-generated.css --watch"
   },
   "imports": {
     "@dreamlab/engine": "../engine/mod.ts",
