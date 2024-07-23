@@ -33,7 +33,6 @@ const Inspector = () => {
     Partial<Record<string, Partial<Record<string, Value<unknown>>>>>
   >({});
 
-  // wip
   const { data, isLoading, isError } = useQuery<{ files: string[] }>({
     queryKey: ["files", game.instanceId],
     queryFn: async ({ signal }) => {
@@ -353,11 +352,15 @@ const Inspector = () => {
               style={{ maxWidth: "200px" }}
             >
               <option value="">Select a behavior...</option>
-              {data?.files.map((file, index) => (
-                <option key={index} value={file} title={file}>
-                  {file.length > 30 ? `${file.substring(0, 27)}...` : file}
-                </option>
-              ))}
+              {!isLoading && !isError ? (
+                data?.files.map((file, index) => (
+                  <option key={index} value={file} title={file}>
+                    {file.length > 30 ? `${file.substring(0, 27)}...` : file}
+                  </option>
+                ))
+              ) : (
+                <option disabled>Loading behaviors...</option>
+              )}
             </select>
           </div>
         </div>
