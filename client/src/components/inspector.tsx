@@ -3,7 +3,7 @@ import {
   EntityDescendantRenamed,
   EntityRenamed,
   EntityTransformUpdate,
-  SyncedValue,
+  Value,
 } from "@dreamlab/engine";
 import { useAtom } from "jotai";
 // @deno-types="npm:@types/react@18.3.1"
@@ -27,10 +27,10 @@ const Inspector = () => {
   const [rotation, setRotation] = useState<number>(0);
   const [globalRotation, setGlobalRotation] = useState<number>(0);
   const [scale, setScale] = useState<{ x: number; y: number }>({ x: 1, y: 1 });
-  const [values, setValues] = useState<Partial<Record<string, SyncedValue<unknown>>>>({});
+  const [values, setValues] = useState<Partial<Record<string, Value<unknown>>>>({});
   const [behaviors, setBehaviors] = useState<string[]>([]);
   const [behaviorValues, setBehaviorValues] = useState<
-    Partial<Record<string, Partial<Record<string, SyncedValue<unknown>>>>>
+    Partial<Record<string, Partial<Record<string, Value<unknown>>>>>
   >({});
 
   // wip
@@ -71,9 +71,7 @@ const Inspector = () => {
       });
       setValues(Object.fromEntries(entity.values.entries()));
       setBehaviors(entity.behaviors.map(behavior => behavior.constructor.name));
-      const behaviorVals: Partial<
-        Record<string, Partial<Record<string, SyncedValue<unknown>>>>
-      > = {};
+      const behaviorVals: Partial<Record<string, Partial<Record<string, Value<unknown>>>>> = {};
       entity.behaviors.forEach(behavior => {
         behaviorVals[behavior.constructor.name] = Object.fromEntries(behavior.values.entries());
       });
@@ -171,11 +169,11 @@ const Inspector = () => {
   };
 
   const updateBehaviorValues = (behavior: Behavior, key: string, newValue: unknown) => {
-    const syncedValue = behavior.values.get(key) as SyncedValue<unknown>;
-    if (!syncedValue) {
+    const Value = behavior.values.get(key) as Value<unknown>;
+    if (!Value) {
       throw new Error(`Property name '${key}' does not exist on Behavior!`);
     }
-    syncedValue.value = newValue;
+    Value.value = newValue;
   };
 
   const handleBehaviorValueChange =
@@ -217,9 +215,8 @@ const Inspector = () => {
           setSelectedEntity(selectedEntity);
           setBehaviors(selectedEntity.behaviors.map(b => b.constructor.name));
 
-          const behaviorVals: Partial<
-            Record<string, Partial<Record<string, SyncedValue<unknown>>>>
-          > = {};
+          const behaviorVals: Partial<Record<string, Partial<Record<string, Value<unknown>>>>> =
+            {};
           selectedEntity.behaviors.forEach(behavior => {
             behaviorVals[behavior.constructor.name] = Object.fromEntries(
               behavior.values.entries(),
@@ -255,9 +252,8 @@ const Inspector = () => {
           setSelectedEntity(selectedEntity);
           setBehaviors(selectedEntity.behaviors.map(b => b.constructor.name));
 
-          const behaviorVals: Partial<
-            Record<string, Partial<Record<string, SyncedValue<unknown>>>>
-          > = {};
+          const behaviorVals: Partial<Record<string, Partial<Record<string, Value<unknown>>>>> =
+            {};
           selectedEntity.behaviors.forEach(behavior => {
             behaviorVals[behavior.constructor.name] = Object.fromEntries(
               behavior.values.entries(),

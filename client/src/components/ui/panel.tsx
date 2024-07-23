@@ -1,6 +1,6 @@
 // @deno-types="npm:@types/react@18.3.1"
 import React, { FC, useEffect, useState, useRef } from "react";
-import { ChevronDown, ChevronRight, Minus, Plus } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 
 export interface Tab {
   id: string;
