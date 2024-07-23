@@ -1,8 +1,8 @@
-import { GameStatus, SyncedValueChanged } from "@dreamlab/engine";
+import { GameStatus, ValueChanged } from "@dreamlab/engine";
 import { ServerNetworkSetupRoutine } from "./net-manager.ts";
 
-export const handleSyncedValues: ServerNetworkSetupRoutine = (net, game) => {
-  game.syncedValues.on(SyncedValueChanged, event => {
+export const handleValueChanges: ServerNetworkSetupRoutine = (net, game) => {
+  game.values.on(ValueChanged, event => {
     if (game.status !== GameStatus.Running) return;
     if (!event.value.replicated) return;
 
@@ -11,7 +11,7 @@ export const handleSyncedValues: ServerNetworkSetupRoutine = (net, game) => {
       : event.newValue;
 
     net.broadcast({
-      t: "SetSyncedValue",
+      t: "SetValue",
       identifier: event.value.identifier,
       clock: event.clock,
       value,
@@ -19,9 +19,9 @@ export const handleSyncedValues: ServerNetworkSetupRoutine = (net, game) => {
     });
   });
 
-  net.registerPacketHandler("SetSyncedValue", (from, packet) => {
-    const value = game.syncedValues.lookup(packet.identifier);
+  net.registerPacketHandler("SetValue", (from, packet) => {
+    const value = game.values.lookup(packet.identifier);
     if (!value || !value.replicated) return;
-    game.syncedValues.fire(SyncedValueChanged, value, packet.value, packet.clock, from);
+    game.values.fire(ValueChanged, value, packet.value, packet.clock, from);
   });
 };

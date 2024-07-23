@@ -7,7 +7,7 @@ import {
   CustomMessageData,
   CustomMessageListener,
 } from "@dreamlab/engine";
-import { handleSyncedValues } from "./synced-values.ts";
+import { handleValueChanges } from "./value-changes.ts";
 import { handleCustomMessages } from "./custom-messages.ts";
 import { handleEntitySync } from "./entity-sync.ts";
 import { handleTransformSync } from "./transform-sync.ts";
@@ -69,7 +69,7 @@ export class ClientConnection {
       peer.nickname = packet.new_nickname;
     });
 
-    handleSyncedValues(this, game);
+    handleValueChanges(this, game);
     handleCustomMessages(this, game);
     handleEntitySync(this, game);
     handleTransformSync(this, game);

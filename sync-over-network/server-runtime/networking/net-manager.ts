@@ -12,7 +12,7 @@ import {
   ServerPacket,
 } from "@dreamlab/proto/play.ts";
 import { IPCMessageBus } from "../ipc.ts";
-import { handleSyncedValues } from "./synced-values.ts";
+import { handleValueChanges } from "./value-changes.ts";
 import { handleCustomMessages } from "./custom-messages.ts";
 import { handleEntitySync } from "./entity-sync.ts";
 import { handleTransformSync } from "./transform-sync.ts";
@@ -72,7 +72,7 @@ export class ServerNetworkManager {
   }
 
   setup(game: ServerGame) {
-    handleSyncedValues(this, game);
+    handleValueChanges(this, game);
     handleCustomMessages(this, game);
     handleEntitySync(this, game);
     handleTransformSync(this, game);

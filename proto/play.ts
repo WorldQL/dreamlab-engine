@@ -45,14 +45,14 @@ export const ServerChatMessagePacketSchema = ClientChatMessagePacketSchema.exten
   from_nickname: z.string(),
 });
 
-export const ClientSetSyncedValuePacketSchema = z.object({
-  t: z.literal("SetSyncedValue"),
+export const ClientSetValuePacketSchema = z.object({
+  t: z.literal("SetValue"),
   identifier: z.string(),
   value: z.any(),
   clock: z.number(),
 });
 
-export const ServerSetSyncedValuePacketSchema = ClientSetSyncedValuePacketSchema.extend({
+export const ServerSetSyncedValuePacketSchema = ClientSetValuePacketSchema.extend({
   from: ConnectionIdSchema,
 });
 
@@ -157,7 +157,7 @@ export const ServerInitialNetworkSnapshotPacket = z.object({
 
 export const ClientPacketSchema = z.discriminatedUnion("t", [
   ClientChatMessagePacketSchema,
-  ClientSetSyncedValuePacketSchema,
+  ClientSetValuePacketSchema,
   ClientSpawnEntityPacket,
   ClientDeleteEntityPacket,
   ClientRenameEntityPacket,
@@ -194,6 +194,6 @@ export type PlayPacket<
 > = (Side extends "any"
   ? ClientPacket | ServerPacket
   : Side extends "client"
-    ? ClientPacket
-    : ServerPacket) &
+  ? ClientPacket
+  : ServerPacket) &
   (T extends string ? { t: T } : object);
