@@ -3,7 +3,7 @@ import { Entity, EntityContext } from "../entity.ts";
 import { Vector2 } from "../../math/mod.ts";
 import { EntityPreUpdate, EntityUpdate, EntityDestroyed } from "../../signals/mod.ts";
 import { enumAdapter } from "../../value/adapters/enum-adapter.ts";
-import { SyncedValueChanged } from "../../value/mod.ts";
+import { ValueChanged } from "../../value/mod.ts";
 
 type RigidBodyType = (typeof rigidbodyTypes)[number];
 const rigidbodyTypes = [
@@ -33,7 +33,7 @@ export class Rigidbody2D extends Entity {
     this.initializeRigidBody();
 
     const typeValue = this.values.get("type");
-    this.listen(this.game.syncedValues, SyncedValueChanged, event => {
+    this.listen(this.game.values, ValueChanged, event => {
       if (event.value !== typeValue) return;
 
       this.initializeRigidBody();

@@ -3,7 +3,7 @@ import type { ConditionalExcept } from "@dreamlab/vendor/type-fest.ts";
 
 import { Entity } from "../entity/mod.ts";
 import { Game } from "../game.ts";
-import { Primitive, SyncedValue, ValueTypeTag, inferValueTypeTag } from "../value/mod.ts";
+import { Primitive, Value, ValueTypeTag, inferValueTypeTag } from "../value/mod.ts";
 import {
   ISignalHandler,
   Signal,
@@ -63,8 +63,8 @@ export class Behavior implements ISignalHandler {
 
   // #region Values
   #defaultValues: Record<string, unknown> = {};
-  #values = new Map<string, SyncedValue>();
-  get values(): ReadonlyMap<string, SyncedValue> {
+  #values = new Map<string, Value>();
+  get values(): ReadonlyMap<string, Value> {
     return this.#values;
   }
 
@@ -83,7 +83,7 @@ export class Behavior implements ISignalHandler {
     bType: BehaviorConstructor<B>, // can't just be `this` because TypeScript :(
     prop: BehaviorValueProp<B>,
     opts: BehaviorValueOpts<B, typeof prop> = {},
-  ): SyncedValue<B[typeof prop]> {
+  ): Value<B[typeof prop]> {
     if (!(this instanceof bType))
       throw new TypeError(`${this.constructor} is not an instance of ${bType}`);
 
@@ -91,31 +91,31 @@ export class Behavior implements ISignalHandler {
     if (this.#values.has(identifier))
       throw new Error(`A value with the identifier '${identifier}' already exists!`);
 
-    type T = SyncedValue<B[typeof prop]>["value"];
+    type T = Value<B[typeof prop]>["value"];
     let defaultValue: T = this[prop] as T;
     if (this.#defaultValues[prop]) defaultValue = this.#defaultValues[prop] as T;
 
-    const syncedValue = new SyncedValue(
-      this.game.syncedValues,
+    const value = new Value(
+      this.game.values,
       identifier,
       defaultValue,
       opts.type ?? (inferValueTypeTag(defaultValue) as ValueTypeTag<B[typeof prop]>),
       opts.description ?? prop,
     );
-    if (opts.replicated) syncedValue.replicated = opts.replicated;
+    if (opts.replicated) value.replicated = opts.replicated;
 
     Object.defineProperty(this, prop, {
       configurable: true,
       enumerable: true,
       set: v => {
-        syncedValue.value = v;
+        value.value = v;
       },
-      get: () => syncedValue.value,
+      get: () => value.value,
     });
 
-    this.#values.set(prop, syncedValue as SyncedValue<unknown>);
+    this.#values.set(prop, value as Value<unknown>);
 
-    return syncedValue;
+    return value;
   }
   // #endregion
 

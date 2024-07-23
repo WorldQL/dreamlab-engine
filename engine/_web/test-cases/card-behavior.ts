@@ -12,7 +12,7 @@ import {
   MouseDown,
   MouseUp,
   Scroll,
-  SyncedValueChanged,
+  ValueChanged,
   UIPanel,
   Vector2,
   element,
@@ -186,7 +186,7 @@ export class VisualCard extends Behavior {
 
     const rankValue = this.#cardBehavior.values.get("rank");
     const suitValue = this.#cardBehavior.values.get("suit");
-    this.listen(this.game.syncedValues, SyncedValueChanged, event => {
+    this.listen(this.game.values, ValueChanged, event => {
       if (event.value === rankValue || event.value === suitValue) {
         this.#setImage();
       }
@@ -323,7 +323,7 @@ if (savedRank) cardBehavior.suit = savedSuit as Suit;
 
 const rankValue = cardBehavior.values.get("rank");
 const suitValue = cardBehavior.values.get("suit");
-game.syncedValues.on(SyncedValueChanged, ({ value }) => {
+game.values.on(ValueChanged, ({ value }) => {
   if (value === rankValue) sessionStorage.setItem("rank", cardBehavior.rank);
   if (value === suitValue) sessionStorage.setItem("suit", cardBehavior.suit);
 });

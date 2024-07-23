@@ -1,6 +1,6 @@
 import { SignalListener } from "../signal.ts";
 import { AdapterTypeTag, ValueTypeAdapter } from "./data.ts";
-import { SyncedValueRegistry, SyncedValueChanged } from "./registry.ts";
+import { ValueRegistry, ValueChanged } from "./registry.ts";
 import { ConnectionId } from "../network.ts";
 import type { ReadonlyDeep } from "@dreamlab/vendor/type-fest.ts";
 
@@ -27,8 +27,8 @@ export function inferValueTypeTag<T>(value: T): ValueTypeTag<T> {
 
 type ReadonlyIfObject<T> = T extends object ? ReadonlyDeep<T> : T;
 
-export class SyncedValue<T = unknown> {
-  #registry: SyncedValueRegistry;
+export class Value<T = unknown> {
+  #registry: ValueRegistry;
 
   identifier: string;
   #value: ReadonlyIfObject<T>;
@@ -47,8 +47,8 @@ export class SyncedValue<T = unknown> {
   set value(newValue) {
     // this will fire `this.#changeListener` and update the internal value that way
     this.#registry.fire(
-      SyncedValueChanged,
-      this as SyncedValue<unknown>,
+      ValueChanged,
+      this as Value<unknown>,
       newValue,
       this.clock + 1,
       this.#registry.source,
@@ -59,9 +59,9 @@ export class SyncedValue<T = unknown> {
   replicated: boolean = true;
 
   constructor(
-    registry: SyncedValueRegistry,
+    registry: ValueRegistry,
     identifier: string,
-    defaultValue: SyncedValue<T>["value"],
+    defaultValue: Value<T>["value"],
     typeTag: ValueTypeTag<T>,
     description: string,
   ) {
@@ -81,26 +81,26 @@ export class SyncedValue<T = unknown> {
         throw new Error("AdapterTypeTag was not the correct type!");
     }
 
-    this.#registry.on(SyncedValueChanged, this.#changeListener);
-    this.#registry.register(this as SyncedValue<unknown>);
+    this.#registry.on(ValueChanged, this.#changeListener);
+    this.#registry.register(this as Value<unknown>);
   }
 
   destroy() {
-    this.#registry.unregister(SyncedValueChanged, this.#changeListener);
-    this.#registry.remove(this as SyncedValue<unknown>);
+    this.#registry.unregister(ValueChanged, this.#changeListener);
+    this.#registry.remove(this as Value<unknown>);
   }
 
   [Symbol.dispose]() {
     this.destroy();
   }
 
-  #changeListener: SignalListener<SyncedValueChanged> = signal => {
+  #changeListener: SignalListener<ValueChanged> = signal => {
     if (signal.value === this)
-      this.#applyUpdate(signal.newValue as SyncedValue<T>["value"], signal.clock, signal.from);
+      this.#applyUpdate(signal.newValue as Value<T>["value"], signal.clock, signal.from);
   };
 
   #applyUpdate(
-    incomingValue: SyncedValue<T>["value"],
+    incomingValue: Value<T>["value"],
     incomingClock: number,
     incomingSource: ConnectionId,
   ) {

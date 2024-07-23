@@ -2,7 +2,7 @@ import { Entity } from "../../entity/mod.ts";
 import { JsonValue, ValueTypeAdapter } from "../data.ts";
 
 /**
- * This supports a SyncedValue<Entity>
+ * This supports a `Value<Entity | undefined>`
  */
 export class EntityByRefAdapter extends ValueTypeAdapter<Entity | undefined> {
   convertToPrimitive(value: Entity | undefined): JsonValue {

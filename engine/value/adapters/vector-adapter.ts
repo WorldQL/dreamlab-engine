@@ -2,7 +2,7 @@ import { Vector2 } from "../../math/mod.ts";
 import { JsonValue, ValueTypeAdapter } from "../data.ts";
 
 /**
- * This supports a SyncedValue<Vector2>
+ * This supports a `Value<Vector2>`
  */
 export class Vector2Adapter extends ValueTypeAdapter<Vector2> {
   convertToPrimitive(value: Vector2): JsonValue {

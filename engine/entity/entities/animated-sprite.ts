@@ -1,7 +1,7 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { EntityDestroyed, GameRender } from "../../signals/mod.ts";
 import { SpritesheetAdapter } from "../../value/adapters/texture-adapter.ts";
-import { SyncedValueChanged } from "../../value/mod.ts";
+import { ValueChanged } from "../../value/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
 import { PixiEntity } from "../pixi-entity.ts";
 
@@ -36,7 +36,7 @@ export class AnimatedSprite2D extends PixiEntity {
     });
 
     const spritesheetValue = this.values.get("spritesheet");
-    this.listen(this.game.syncedValues, SyncedValueChanged, async event => {
+    this.listen(this.game.values, ValueChanged, async event => {
       if (!this.sprite) return;
       if (event.value !== spritesheetValue) return;
 

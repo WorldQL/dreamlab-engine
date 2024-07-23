@@ -23,7 +23,7 @@ import {
 import { GameStatusChange } from "./signals/mod.ts";
 import { Time } from "./time.ts";
 import { UIManager } from "./ui.ts";
-import { SyncedValueRegistry } from "./value/mod.ts";
+import { ValueRegistry } from "./value/mod.ts";
 import { BehaviorConstructor } from "./behavior/mod.ts";
 
 export interface GameOptions {
@@ -64,7 +64,7 @@ export abstract class BaseGame implements ISignalHandler {
     // now that we know we are ServerGame | ClientGame, we can safely cast to Game
   }
 
-  readonly syncedValues = new SyncedValueRegistry(this as unknown as Game);
+  readonly values = new ValueRegistry(this as unknown as Game);
 
   readonly entities = new EntityStore();
 
@@ -234,7 +234,7 @@ export class ClientGame extends BaseGame {
     this.renderer = new GameRenderer(this);
 
     this.network = opts.network;
-    this.syncedValues[internal.setSyncedValueRegistrySource](this.network.connectionId);
+    this.values[internal.setValueRegistrySource](this.network.connectionId);
   }
 
   async initialize() {

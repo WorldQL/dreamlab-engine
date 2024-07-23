@@ -1,7 +1,7 @@
 import { JsonValue, ValueTypeAdapter } from "../data.ts";
 
 /**
- * SyncedValue<TextureAdapter> is the same as SyncedValue<string>,
+ * `Value<TextureAdapter>` is the same as `Value<string>`,
  * except we know to preload the resource when it's in a scene definition.
  */
 export class TextureAdapter extends ValueTypeAdapter<string> {
@@ -15,7 +15,7 @@ export class TextureAdapter extends ValueTypeAdapter<string> {
 }
 
 /**
- * SyncedValue<SpritesheetAdapter> is the same as SyncedValue<string>,
+ * `Value<SpritesheetAdapter>` is the same as `Value<string>`,
  * except we know to preload the resource when it's in a scene definition.
  */
 export class SpritesheetAdapter extends ValueTypeAdapter<string> {

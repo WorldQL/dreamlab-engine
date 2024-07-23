@@ -1,7 +1,7 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { EntityDestroyed, GameRender } from "../../signals/mod.ts";
 import { TextureAdapter } from "../../value/adapters/texture-adapter.ts";
-import { SyncedValueChanged } from "../../value/mod.ts";
+import { ValueChanged } from "../../value/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
 import { PixiEntity } from "../pixi-entity.ts";
 
@@ -34,7 +34,7 @@ export class Sprite2D extends PixiEntity {
     });
 
     const textureValue = this.values.get("texture");
-    this.listen(this.game.syncedValues, SyncedValueChanged, async event => {
+    this.listen(this.game.values, ValueChanged, async event => {
       if (!this.sprite) return;
       if (event.value !== textureValue) return;
 

@@ -1,17 +1,15 @@
 import { Behavior } from "../behavior.ts";
 import { Entity } from "../../entity/mod.ts";
 import { EntityCollision } from "../../signals/entity-collision.ts";
-import { SyncedValue } from "../../value/mod.ts";
+import { Value } from "../../value/mod.ts";
 
 interface HasHealth {
-  health: SyncedValue<number>;
+  health: Value<number>;
 }
 
 function hasHealthValue(entity: Entity): entity is Entity & HasHealth {
   return (
-    "health" in entity &&
-    entity.health instanceof SyncedValue &&
-    entity.health.typeTag === Number
+    "health" in entity && entity.health instanceof Value && entity.health.typeTag === Number
   );
 }
 

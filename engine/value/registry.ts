@@ -2,28 +2,28 @@ import * as internal from "../internal.ts";
 import { Game } from "../game.ts";
 
 import { BasicSignalHandler, exclusiveSignalType } from "../signal.ts";
-import { SyncedValue } from "./value.ts";
+import { Value } from "./value.ts";
 import { ConnectionId } from "../network.ts";
 
-export class SyncedValueChanged {
+export class ValueChanged {
   constructor(
-    public value: SyncedValue,
+    public value: Value,
     public newValue: unknown,
     public clock: number,
     public from: ConnectionId,
   ) {}
 
-  [exclusiveSignalType] = SyncedValueRegistry;
+  [exclusiveSignalType] = ValueRegistry;
 }
 
-export class SyncedValueRegistry extends BasicSignalHandler<SyncedValueRegistry> {
-  #values = new Map<string, SyncedValue>();
+export class ValueRegistry extends BasicSignalHandler<ValueRegistry> {
+  #values = new Map<string, Value>();
 
   #source: ConnectionId;
   get source() {
     return this.#source;
   }
-  [internal.setSyncedValueRegistrySource](value: ConnectionId) {
+  [internal.setValueRegistrySource](value: ConnectionId) {
     this.#source = value;
   }
 
@@ -34,22 +34,22 @@ export class SyncedValueRegistry extends BasicSignalHandler<SyncedValueRegistry>
     this.game = game;
   }
 
-  get values(): SyncedValue[] {
+  get values(): readonly Value[] {
     return [...this.#values.values()];
   }
 
-  lookup(identifier: string): SyncedValue | undefined {
+  lookup(identifier: string): Value | undefined {
     return this.#values.get(identifier);
   }
 
-  register(value: SyncedValue) {
+  register(value: Value) {
     if (this.#values.has(value.identifier))
-      throw new Error(`SyncedValue with identifier '${value.identifier}' already exists!`);
+      throw new Error(`Value with identifier '${value.identifier}' already exists!`);
 
     this.#values.set(value.identifier, value);
   }
 
-  remove(value: SyncedValue) {
+  remove(value: Value) {
     this.#values.delete(value.identifier);
   }
 }

@@ -42,7 +42,7 @@ import {
   EntityUpdate,
   EntityZChanged,
 } from "../signals/mod.ts";
-import { JsonValue, SyncedValue, ValueTypeTag, inferValueTypeTag } from "../value/mod.ts";
+import { JsonValue, Value, ValueTypeTag, inferValueTypeTag } from "../value/mod.ts";
 
 export interface EntityContext {
   game: Game;
@@ -343,7 +343,7 @@ export abstract class Entity implements ISignalHandler {
   // #endregion
 
   // #region Cloning
-  #generatePlainDefinition(withRefs: boolean): EntityDefinition<this> & {typeName: string}{
+  #generatePlainDefinition(withRefs: boolean): EntityDefinition<this> & { typeName: string } {
     const entityValues: Partial<Omit<this, keyof Entity>> = {};
     for (const [key, value] of this.values.entries()) {
       const newValue = value.adapter
@@ -368,7 +368,10 @@ export abstract class Entity implements ISignalHandler {
     };
   }
 
-  #generateBehaviorDefinition(behavior: Behavior, withRefs: boolean): BehaviorDefinition & {typeName: string} {
+  #generateBehaviorDefinition(
+    behavior: Behavior,
+    withRefs: boolean,
+  ): BehaviorDefinition & { typeName: string } {
     const behaviorValues: Partial<Record<string, unknown>> = {};
     for (const [key, value] of behavior.values.entries()) {
       const newValue = value.adapter
@@ -381,7 +384,7 @@ export abstract class Entity implements ISignalHandler {
       _ref: withRefs ? behavior.ref : undefined,
       type: behavior.constructor as BehaviorConstructor,
       values: behaviorValues,
-      typeName: Behavior.getTypeName(behavior.constructor as BehaviorConstructor)
+      typeName: Behavior.getTypeName(behavior.constructor as BehaviorConstructor),
     };
   }
 
@@ -427,8 +430,8 @@ export abstract class Entity implements ISignalHandler {
 
   // #region Values
   #defaultValues: Record<string, unknown> = {};
-  #values = new Map<string, SyncedValue>();
-  get values(): ReadonlyMap<string, SyncedValue> {
+  #values = new Map<string, Value>();
+  get values(): ReadonlyMap<string, Value> {
     return this.#values;
   }
 
@@ -447,7 +450,7 @@ export abstract class Entity implements ISignalHandler {
     eType: EntityConstructor<E>,
     prop: EntityValueProp<E>,
     opts: EntityValueOpts<E, typeof prop> = {},
-  ): SyncedValue<E[typeof prop]> {
+  ): Value<E[typeof prop]> {
     if (!(this instanceof eType))
       throw new TypeError(`${this.constructor} is not an instance of ${eType}`);
 
@@ -455,31 +458,31 @@ export abstract class Entity implements ISignalHandler {
     if (this.#values.has(identifier))
       throw new Error(`A value with the identifier '${identifier}' already exists!`);
 
-    type T = SyncedValue<E[typeof prop]>["value"];
+    type T = Value<E[typeof prop]>["value"];
     let defaultValue: T = this[prop] as T;
     if (this.#defaultValues[prop]) defaultValue = this.#defaultValues[prop] as T;
 
-    const syncedValue = new SyncedValue(
-      this.game.syncedValues,
+    const value = new Value(
+      this.game.values,
       identifier,
       defaultValue,
       opts.type ?? (inferValueTypeTag(defaultValue) as ValueTypeTag<E[typeof prop]>),
       opts.description ?? prop, // TODO: autogenerate description (fix casing & spacing)
     );
-    if (opts.replicated) syncedValue.replicated = opts.replicated;
+    if (opts.replicated) value.replicated = opts.replicated;
 
     Object.defineProperty(this, prop, {
       configurable: true,
       enumerable: true,
       set: v => {
-        syncedValue.value = v;
+        value.value = v;
       },
-      get: () => syncedValue.value,
+      get: () => value.value,
     });
 
-    this.#values.set(prop, syncedValue as SyncedValue<unknown>);
+    this.#values.set(prop, value as Value<unknown>);
 
-    return syncedValue;
+    return value;
   }
   // #endregion
 
@@ -754,17 +757,17 @@ export abstract class Entity implements ISignalHandler {
   // #endregion
 
   set(values: Partial<Omit<this, keyof Entity>>) {
-    for (const [name, value] of Object.entries(values)) {
+    for (const [name, _val] of Object.entries(values)) {
       if (!(name in this)) {
         throw new Error("property name passed to Entity.set(..) does not exist!");
       }
 
-      const syncedValue = this.values.get(name);
-      if (!syncedValue) {
+      const value = this.values.get(name);
+      if (!value) {
         throw new Error("property name passed to Entity.set(..) is not a SyncedValue!");
       }
 
-      syncedValue.value = value;
+      value.value = _val;
     }
   }
 
