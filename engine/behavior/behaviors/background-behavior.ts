@@ -61,3 +61,4 @@ export class BackgroundBehavior extends Behavior {
     else if (inverse.y < this.#origin.y - height) this.#origin.y -= height;
   }
 }
+Behavior.registerType(BackgroundBehavior, "@core");

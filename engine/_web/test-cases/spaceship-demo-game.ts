@@ -76,11 +76,12 @@ class HealthBar extends Behavior {
     }
   }
 }
+Behavior.registerType(HealthBar, "spaceship");
 // #endregion
 
 // #region Movement
 class Movement extends Behavior {
-  speed = 15.0;
+  speed = 2.0;
 
   #up = this.inputs.create("@movement/up", "Move Up", "KeyW");
   #down = this.inputs.create("@movement/down", "Move Down", "KeyS");
@@ -121,6 +122,7 @@ class Movement extends Behavior {
     this.entity.transform.position = newPosition;
   }
 }
+Behavior.registerType(Movement, "spaceship");
 
 class LookAtMouse extends Behavior {
   onTick(): void {
@@ -131,6 +133,7 @@ class LookAtMouse extends Behavior {
     this.entity.transform.rotation = rotation;
   }
 }
+Behavior.registerType(LookAtMouse, "spaceship");
 
 class CameraFollow extends Behavior {
   onInitialize(): void {
@@ -142,6 +145,7 @@ class CameraFollow extends Behavior {
     });
   }
 }
+Behavior.registerType(CameraFollow, "spaceship");
 // #endregion
 
 // #region PowerUps
@@ -207,6 +211,7 @@ class GoldAsteroidBehavior extends Behavior {
     }
   }
 }
+Behavior.registerType(GoldAsteroidBehavior, "spaceship");
 
 function spawnPowerUp() {
   const x = Math.random() * (MAP_BOUNDARY * 2) - MAP_BOUNDARY;
@@ -320,6 +325,7 @@ class Shield extends Behavior {
     ui.updateShieldDuration(duration);
   }
 }
+Behavior.registerType(Shield, "spaceship");
 
 class Supercharge extends Behavior {
   #superchargeKey = this.inputs.create("@ability/supercharge", "Supercharge", "MouseRight");
@@ -386,6 +392,7 @@ class Supercharge extends Behavior {
     this.#coolingDown = false;
   }
 }
+Behavior.registerType(Supercharge, "spaceship");
 // #endregion
 
 // #region Abilities UI
@@ -538,6 +545,7 @@ class AbilityUI extends Behavior {
     }
   }
 }
+Behavior.registerType(AbilityUI, "spaceship");
 // #endregion
 
 // #region Levelup
@@ -658,6 +666,7 @@ button:active {
     this.entity.destroy();
   }
 }
+Behavior.registerType(LevelUpSelectionScreen, "spaceship");
 // #endregion
 
 // #region Bullet
@@ -688,6 +697,7 @@ class BulletBehavior extends Behavior {
     }
   }
 }
+Behavior.registerType(BulletBehavior, "spaceship");
 
 class ClickFire extends Behavior {
   #fire = this.inputs.create("@clickFire/fire", "Fire", "MouseLeft");
@@ -711,7 +721,7 @@ class ClickFire extends Behavior {
     }
   }
 }
-
+Behavior.registerType(ClickFire, "spaceship");
 // #endregion
 
 // #region Asteroid
@@ -731,6 +741,7 @@ class AsteroidMovement extends Behavior {
     );
   }
 }
+Behavior.registerType(AsteroidMovement, "spaceship");
 
 class AsteroidBehavior extends Behavior {
   private healthBar!: HealthBar;
@@ -760,6 +771,7 @@ class AsteroidBehavior extends Behavior {
     }
   }
 }
+Behavior.registerType(AsteroidBehavior, "spaceship");
 
 const prefabAsteroid = game.prefabs.spawn({
   type: Rigidbody2D,
@@ -868,6 +880,7 @@ class EnemyMovement extends Behavior {
     });
   }
 }
+Behavior.registerType(EnemyMovement, "spaceship");
 
 class ExplosionPieceBehavior extends Behavior {
   readonly #lifetime = 1;
@@ -890,6 +903,7 @@ class ExplosionPieceBehavior extends Behavior {
     }
   }
 }
+Behavior.registerType(ExplosionPieceBehavior, "spaceship");
 
 class EnemyBehavior extends Behavior {
   private healthBar!: HealthBar;
@@ -919,6 +933,7 @@ class EnemyBehavior extends Behavior {
     }
   }
 }
+Behavior.registerType(EnemyBehavior, "spaceship");
 
 const prefabEnemy = game.prefabs.spawn({
   type: Rigidbody2D,
@@ -1199,6 +1214,7 @@ class PlayerBehavior extends Behavior {
     });
   }
 }
+Behavior.registerType(PlayerBehavior, "spaceship");
 
 function spawnPlayer() {
   const x = Math.random() * (MAP_BOUNDARY * 2) - MAP_BOUNDARY;
@@ -1361,6 +1377,7 @@ class PlayerUI extends Behavior {
     this.updateShieldDuration(shieldBehavior.shieldDuration);
   }
 }
+Behavior.registerType(PlayerUI, "spaceship");
 // #endregion
 
 // #region Level UI
@@ -1402,6 +1419,7 @@ class LevelProgressUI extends Behavior {
     this.#progressBar.style.width = `${progress * 100}%`;
   }
 }
+Behavior.registerType(LevelProgressUI, "spaceship");
 // #endregion
 
 // #region Minimap
@@ -1505,6 +1523,7 @@ class Minimap extends Behavior {
     });
   }
 }
+Behavior.registerType(Minimap, "spaceship");
 // #endregion
 
 // #region Border
@@ -1596,6 +1615,7 @@ class CoordsDisplay extends Behavior {
     });
   }
 }
+Behavior.registerType(CoordsDisplay, "spaceship");
 // #endregion
 
 // #region Screens
@@ -1689,6 +1709,7 @@ button:hover {
     this.entity.destroy();
   }
 }
+Behavior.registerType(StartScreen, "spaceship");
 
 class DeathScreen extends Behavior {
   #ui = this.entity.cast(UILayer);
@@ -1772,6 +1793,7 @@ class DeathScreen extends Behavior {
     this.entity.destroy();
   }
 }
+Behavior.registerType(DeathScreen, "spaceship");
 
 game.local.spawn({
   type: UILayer,
