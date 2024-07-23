@@ -28,6 +28,16 @@ export class BehaviorLoader {
     this.#cache.set(uri, new WeakRef(type));
   }
 
+  renameBehavior(type: BehaviorConstructor, newUri: string) {
+    const oldUri = this.lookup(type);
+    if (oldUri === undefined)
+      throw new Error("Could not find old resource location for Behavior type: " + type.name);
+
+    this.#cache.delete(oldUri);
+    this.#resourceLocationLookup.set(type, newUri);
+    this.#cache.set(newUri, new WeakRef(type));
+  }
+
   async loadScript(script: string): Promise<BehaviorConstructor> {
     const location = this.#game.resolveResource(script);
 
