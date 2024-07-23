@@ -12,7 +12,9 @@ import { renderEditorUI } from "./editor-ui-main.tsx";
 import { createEditorGame } from "./global-game.ts";
 
 import { SceneView } from "./scene-graph/scene-view.ts";
-import { Scene, SceneDescSceneSchema } from "./scene-graph/schema.ts";
+import { Scene, SceneSchema } from "./scene-graph/schema.ts";
+import { z } from "@dreamlab/vendor/zod.ts";
+import { Entity } from "@dreamlab/engine"
 
 try {
   // @ts-expect-error injected global
@@ -106,19 +108,41 @@ const main = async () => {
     });
     spriteParent.transform.scale.x = 2;
 
+    const sprite2d = Entity.getEntityType("@core/Sprite2D")
+
     const sprite = spriteParent.spawn({
-      type: Sprite2D,
+      type: sprite2d,
       name: "Sprite",
       behaviors: [
         // spawn the sprite with SpinBehavior
-        // { type: spinner },
+        { type: WASDMovementBehavior },
       ],
     });
+
+    console.log(JSON.stringify([sprite.getDefinition()]))
+    console.log(Entity.getTypeName(Sprite2D))
 
     setTimeout(() => {
       console.log("adding WASD movement");
       sprite.addBehavior({ type: WASDMovementBehavior });
     }, 5000);
+
+    // const exampleScene: Scene = SceneDescSceneSchema.parse({
+    //   registration: [],
+    //   local: [],
+    //   world: [
+    //     {
+    //       type: "@core/Sprite2D",
+    //       name: "foo",
+    //       ref: "myrefasdghjasg",
+    //       transform: {
+    //         'position': {'x': 1, 'y': 2}
+    //       }
+    //     },
+    //   ],
+    //   prefabs: [],
+    //   remote: [],
+    // } satisfies z.input<typeof SceneDescSceneSchema>);
 
     // setTimeout(() => {
     //   for (let i = 0; i < 50000; i++) {
@@ -132,7 +156,7 @@ const main = async () => {
     //   }
     // }, 2000);
   } else {
-    const exampleScene: Scene = SceneDescSceneSchema.parse({
+    const exampleScene: Scene = SceneSchema.parse({
       registration: [],
       local: [],
       world: [

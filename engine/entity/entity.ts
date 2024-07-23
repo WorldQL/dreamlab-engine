@@ -343,7 +343,7 @@ export abstract class Entity implements ISignalHandler {
   // #endregion
 
   // #region Cloning
-  #generatePlainDefinition(withRefs: boolean): EntityDefinition<this> {
+  #generatePlainDefinition(withRefs: boolean): EntityDefinition<this> & {typeName: string}{
     const entityValues: Partial<Omit<this, keyof Entity>> = {};
     for (const [key, value] of this.values.entries()) {
       const newValue = value.adapter
@@ -357,6 +357,7 @@ export abstract class Entity implements ISignalHandler {
       _ref: withRefs ? this.ref : undefined,
       name: this.name,
       type: this.constructor as EntityConstructor<this>,
+      typeName: Entity.getTypeName(this.constructor as EntityConstructor),
       transform: {
         position: this.transform.position.bare(),
         rotation: this.transform.rotation,
@@ -777,6 +778,7 @@ export abstract class Entity implements ISignalHandler {
   // #region Registry
   static #entityTypeRegistry = new Map<EntityConstructor<unknown & Entity>, string>();
   static registerType<T extends Entity>(type: EntityConstructor<T>, namespace: string) {
+    console.log(type)
     this.#entityTypeRegistry.set(type, namespace);
   }
   static #ensureEntityTypeIsRegistered = (newTarget: unknown) => {

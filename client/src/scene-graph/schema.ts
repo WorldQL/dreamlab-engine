@@ -55,7 +55,7 @@ export const SceneDescEntitySchema: z.ZodType<
 });
 export type SceneDescEntity = z.infer<typeof SceneDescEntitySchema>;
 
-export const SceneDescSceneSchema = z.object({
+export const SceneSchema = z.object({
   world: SceneDescEntitySchema.array().default([]),
   remote: SceneDescEntitySchema.array().default([]),
   local: SceneDescEntitySchema.array().default([]),
@@ -69,8 +69,8 @@ export const SceneDescProjectSchema = z.object({
     schemaVersion: z.number(),
     engineRevision: z.string(),
   }),
-  scenes: z.object({ main: SceneDescSceneSchema }).and(z.record(SceneDescSceneSchema)),
+  scenes: z.object({ main: SceneSchema }).and(z.record(SceneSchema)),
 });
 
-export type Scene = z.infer<typeof SceneDescSceneSchema>;
+export type Scene = z.infer<typeof SceneSchema>;
 export type Project = z.infer<typeof SceneDescProjectSchema>;

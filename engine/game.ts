@@ -103,7 +103,7 @@ export abstract class BaseGame implements ISignalHandler {
     this.fire(GameStatusChange);
   }
 
-  /** Resolves res: / cloud: URIs to https:// URLs */
+  /** Resolves res:// and cloud:// URIs to https:// URLs */
   resolveResource(uri: string) {
     // TODO: not yet properly implemented
     return uri;
