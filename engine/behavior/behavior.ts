@@ -178,15 +178,11 @@ export class Behavior implements ISignalHandler {
   static #behaviorTypeRegistry = new Map<BehaviorConstructor<unknown & Behavior>, string>();
   static registerType<T extends Behavior>(type: BehaviorConstructor<T>, namespace: string) {
     this.#behaviorTypeRegistry.set(type, namespace);
-    console.log(this.#behaviorTypeRegistry.entries())
-
   }
   static #ensureBehaviorTypeIsRegistered = (newTarget: unknown) => {
     const target = newTarget as BehaviorConstructor;
 
-    if (
-      !Behavior.#behaviorTypeRegistry.has(target)
-    ) {
+    if (!Behavior.#behaviorTypeRegistry.has(target)) {
       throw new Error(`Behavior type registry is missing ${target.name}!`);
     }
   };
