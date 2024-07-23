@@ -79,7 +79,7 @@ class HealthBar extends Behavior {
 
 // #region Movement
 class Movement extends Behavior {
-  speed = 10.0;
+  speed = 15.0;
 
   #up = this.inputs.create("@movement/up", "Move Up", "KeyW");
   #down = this.inputs.create("@movement/down", "Move Down", "KeyS");
@@ -346,6 +346,7 @@ class Supercharge extends Behavior {
   #startSupercharge() {
     this.#supercharged = true;
     const playerBehavior = this.entity.getBehavior(PlayerBehavior);
+    const prevFireRate = playerBehavior.fireRateMultiplier;
     playerBehavior.fireRateMultiplier = 10;
 
     this.#superchargeEffect = this.entity.game.world.spawn({
@@ -362,7 +363,7 @@ class Supercharge extends Behavior {
     this.entity.game.on(GamePostRender, this.#updateSuperchargeEffectPosition);
 
     setTimeout(() => {
-      playerBehavior.fireRateMultiplier = 1;
+      playerBehavior.fireRateMultiplier = prevFireRate;
       this.#superchargeEffect.destroy();
       this.entity.game.unregister(GamePostRender, this.#updateSuperchargeEffectPosition);
       this.#supercharged = false;
