@@ -209,7 +209,7 @@ export class Gizmo extends Entity {
 
     const onMouseDown =
       (axis: "x" | "y" | "both") =>
-      ({ button, world }: MouseDown) => {
+      ({ button, cursor: { world } }: MouseDown) => {
         if (button !== "left") return;
 
         const offset = world.sub(this.globalTransform.position);
@@ -231,7 +231,7 @@ export class Gizmo extends Entity {
       values: { radius: 1 + width / 2, innerRadus: 1 - width / 2 },
     });
 
-    rotate.on(MouseDown, ({ button, world }) => {
+    rotate.on(MouseDown, ({ button, cursor: { world } }) => {
       if (button !== "left") return;
 
       const pos = world.sub(this.globalTransform.position);
@@ -269,7 +269,7 @@ export class Gizmo extends Entity {
 
     const onMouseDown =
       (axis: "x" | "y" | "both") =>
-      ({ button, world }: MouseDown) => {
+      ({ button, cursor: { world } }: MouseDown) => {
         if (button !== "left") return;
 
         const offset = world.sub(this.globalTransform.position);
@@ -333,7 +333,7 @@ export class Gizmo extends Entity {
 
     const translateOnMouseDown =
       (axis: "x" | "y" | "both") =>
-      ({ button, world }: MouseDown) => {
+      ({ button, cursor: { world } }: MouseDown) => {
         if (button !== "left") return;
 
         const offset = world.sub(this.globalTransform.position);
@@ -345,7 +345,7 @@ export class Gizmo extends Entity {
     translateY.on(MouseDown, translateOnMouseDown("y"));
     translateBoth.on(MouseDown, translateOnMouseDown("both"));
 
-    rotate.on(MouseDown, ({ button, world }) => {
+    rotate.on(MouseDown, ({ button, cursor: { world } }) => {
       if (button !== "left") return;
 
       const pos = world.sub(this.globalTransform.position);
@@ -357,7 +357,7 @@ export class Gizmo extends Entity {
 
     const scaleOnMouseDown =
       (axis: "x" | "y" | "both") =>
-      ({ button, world }: MouseDown) => {
+      ({ button, cursor: { world } }: MouseDown) => {
         if (button !== "left") return;
 
         const offset = world.sub(this.globalTransform.position);
