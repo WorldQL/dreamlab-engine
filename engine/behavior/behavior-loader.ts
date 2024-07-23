@@ -22,6 +22,12 @@ export class BehaviorLoader {
     return this.#resourceLocationLookup.get(type);
   }
 
+  registerInternalBehavior(type: BehaviorConstructor, namespace: string) {
+    const uri = `builtin:${namespace}/${type.name}`;
+    this.#resourceLocationLookup.set(type, uri);
+    this.#cache.set(uri, new WeakRef(type));
+  }
+
   async loadScript(script: string): Promise<BehaviorConstructor> {
     const location = this.#game.resolveResource(script);
 
