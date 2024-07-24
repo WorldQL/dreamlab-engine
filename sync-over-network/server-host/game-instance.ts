@@ -35,7 +35,7 @@ export class GameInstance {
       instanceId: info.instanceId,
       worldId: info.worldId,
       worldDirectory: info.worldDirectory,
-      worldResourcesBaseUrl: `http://${addr.hostname}:${addr.port}/worlds`, // TODO: replace addr with public url from config
+      worldResourcesBaseUrl: `${CONFIG.publicUrlBase}/worlds`, // TODO: replace addr with public url from config
     });
 
     this.#readyPromise = new Promise((resolve, _reject) => {
