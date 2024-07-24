@@ -1,3 +1,4 @@
+import { IVector2, pointWorldToLocal } from "../math/mod.ts";
 import { Entity, EntityConstructor } from "./entity.ts";
 
 export class EntityStore {
@@ -22,6 +23,24 @@ export class EntityStore {
       entities.push(...set.values());
     }
 
+    return entities;
+  }
+
+  lookupByPosition(position: IVector2): readonly Entity[] {
+    const entities: Entity[] = [];
+    for (const entity of this.#entitiesById.values()) {
+      const bounds = entity.bounds;
+      if (!bounds) continue;
+
+      const local = pointWorldToLocal(entity.globalTransform, position);
+      const inBounds =
+        local.x >= bounds.x / -2 &&
+        local.x <= bounds.x / 2 &&
+        local.y >= bounds.y / -2 &&
+        local.y <= bounds.y / 2;
+
+      if (inBounds) entities.push(entity);
+    }
     return entities;
   }
 
@@ -57,6 +76,7 @@ export class EntityStore {
   }
 
   #roots = new Map<string, EntityStore>();
+  /** for internal use */
   _registerRoot(root: string, store: EntityStore) {
     this.#roots.set(root, store);
   }
