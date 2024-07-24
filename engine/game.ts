@@ -110,7 +110,7 @@ export abstract class BaseGame implements ISignalHandler {
   resolveResource(uri: string) {
     let url = new URL(uri);
     if (
-      ((url.protocol === "res:" || url.protocol === "cloud:") && url.host) ||
+      (["res:", "cloud:", "s3:"].includes(url.protocol) && url.host) ||
       url.pathname.startsWith("//")
     ) {
       url = new URL(url.href.replace(`${url.protocol}//`, `${url.protocol}`));
