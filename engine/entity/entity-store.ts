@@ -11,6 +11,10 @@ export class EntityStore {
   #entitiesByRef = new Map<string, Entity>();
   #entitiesByType = new Map<EntityConstructor, Set<Entity>>();
 
+  get all(): IterableIterator<Entity> {
+    return this.#entitiesById.values();
+  }
+
   lookupById(id: string): Entity | undefined {
     return this.#entitiesById.get(id);
   }
