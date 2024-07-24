@@ -55,9 +55,15 @@ export const dreamlabEsbuildPlugins = async (props: {
   return plugins;
 };
 
-async function bundle(target: string, opts: esbuild.BuildOptions) {
-  console.log(`Building ${target}...`);
-  await esbuild.build(opts);
+async function bundle(target: string, opts: esbuild.BuildOptions, watch: boolean = false) {
+  if (watch) {
+    console.log(`Watching ${target}...`);
+    const ctx = await esbuild.context(opts);
+    await ctx.watch();
+  } else {
+    console.log(`Building ${target}...`);
+    await esbuild.build(opts);
+  }
 }
 
 export async function bundleClient() {
@@ -105,29 +111,33 @@ export async function bundleEngineDeps() {
 export async function bundleWorld(worldDir: string) {
   const entryPoints: string[] = [];
 
-  const worldDesc = JSON.parse(await Deno.readTextFile(path.join(worldDir, "./world.json")));
+  // const worldDesc = JSON.parse(await Deno.readTextFile(path.join(worldDir, "./world.json")));
+  // TODO: use worldDesc to populate entryPoints list
 
   for await (const entry of Deno.readDir(path.join(worldDir, "behaviors"))) {
     if (!entry.isFile) continue;
     entryPoints.push(path.join(worldDir, "behaviors", entry.name));
   }
 
+  entryPoints.push(path.join(worldDir, "temp-server-main.ts"));
+  entryPoints.push(path.join(worldDir, "temp-client-main.ts"));
+
   const opts: esbuild.BuildOptions = {
     ...BASE_OPTIONS,
     plugins: await dreamlabEsbuildPlugins({}),
     entryPoints,
-    outdir: path.join(worldDir, "dist"),
+    outdir: path.join(worldDir, "_dist"),
     outbase: worldDir,
   };
 
   try {
-    await Deno.mkdir(path.join(worldDir, "dist"));
+    await Deno.mkdir(path.join(worldDir, "_dist"));
   } catch (err) {
     // ignore
   }
   await Deno.copyFile(
     path.join(worldDir, "world.json"),
-    path.join(worldDir, "dist", "world.json"),
+    path.join(worldDir, "_dist", "world.json"),
   );
   await bundle("world: " + worldDir, opts);
 }

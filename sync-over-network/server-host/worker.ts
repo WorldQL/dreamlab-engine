@@ -18,7 +18,7 @@ export class IPCWorker {
   #activeIPCSocket: WebSocket | undefined;
   #ipcListeners: IPCMessageListener[] = [];
 
-  constructor(workerData: WorkerInitData, gameDirectory: string) {
+  constructor(workerData: WorkerInitData) {
     this.workerId = workerData.workerId;
 
     const command = new Deno.Command(Deno.execPath(), {
@@ -27,7 +27,7 @@ export class IPCWorker {
         "--inspect",
         "--allow-hrtime",
         `--allow-net=${new URL(workerData.workerConnectUrl).host}`,
-        `--allow-read=${gameDirectory}`,
+        `--allow-read=${workerData.worldDirectory}`,
         `--allow-env`,
         "./server-runtime/main.ts",
       ],

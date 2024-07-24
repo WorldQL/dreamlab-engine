@@ -14,6 +14,7 @@ export const HandshakePacketSchema = z.object({
   connection_id: ConnectionIdSchema,
   world_id: z.string(),
   player_id: z.string(),
+  world_script_base_url: z.string(),
 });
 
 export const ServerPeerConnectedPacketSchema = z.object({

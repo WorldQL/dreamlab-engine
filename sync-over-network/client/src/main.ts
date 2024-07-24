@@ -8,6 +8,10 @@ const setup = async (conn: ClientConnection, game: ClientGame) => {
   await game.initialize();
 
   // TODO: load test world
+  const { default: clientMain } = await import(
+    game.resolveResource("res://temp-client-main.js")
+  );
+  await clientMain(game);
 
   game.setStatus(GameStatus.Running);
 
@@ -56,6 +60,8 @@ socket.addEventListener("message", async event => {
       container: document.querySelector("#app")!,
       network: conn.createNetworking(),
     });
+    game.worldScriptBaseURL = packet.world_script_base_url;
+    console.log(packet);
     Object.defineProperties(window, { game: { value: game }, conn: { value: conn } });
     await setup(conn, game);
   } else if (conn !== undefined) {

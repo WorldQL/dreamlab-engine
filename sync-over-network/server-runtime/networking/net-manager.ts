@@ -39,8 +39,10 @@ export class ServerNetworkManager {
     return handler as ServerPacketHandler<ClientPacket["t"]>;
   }
 
-  constructor(private ipc: IPCMessageBus) {
-    ipc.addMessageListener("IncomingPacket", message => {
+  constructor(private ipc: IPCMessageBus) {}
+
+  setup(game: ServerGame) {
+    this.ipc.addMessageListener("IncomingPacket", message => {
       try {
         this.getPacketHandler(message.packet.t)(message.from, message.packet);
       } catch (err) {
@@ -50,13 +52,14 @@ export class ServerNetworkManager {
       }
     });
 
-    ipc.addMessageListener("ConnectionEstablished", message => {
+    this.ipc.addMessageListener("ConnectionEstablished", message => {
       this.send(message.connectionId, {
         t: "Handshake",
         connection_id: message.connectionId,
         version: PLAY_PROTO_VERSION,
-        world_id: ipc.workerData.worldId,
+        world_id: this.ipc.workerData.worldId,
         player_id: message.playerId,
+        world_script_base_url: `${this.ipc.workerData.worldResourcesBaseUrl}/${game.worldId}/`,
       });
 
       this.broadcast({
@@ -69,9 +72,7 @@ export class ServerNetworkManager {
       // TODO: create playerconnection entity and put it in game.remote
       this.clients.add(message.connectionId);
     });
-  }
 
-  setup(game: ServerGame) {
     handleValueChanges(this, game);
     handleCustomMessages(this, game);
     handleEntitySync(this, game);

@@ -29,13 +29,12 @@ await Promise.all([
   (async () => {
     instance = new GameInstance({
       instanceId: "my-instance",
-      worldId: "[world]",
-      worldDirectory: "./server-runtime/worlds/test-world",
+      worldId: "dreamlab/test-world",
+      worldDirectory: `${Deno.cwd()}/worlds/dreamlab/test-world/_dist`,
     });
 
     await instance.ready();
     GameInstance.INSTANCES.set(instance.info.instanceId, instance);
-    console.log("Instance booted!");
   })(),
   // listen web
   (async () => {

@@ -1,7 +1,7 @@
 #app {
-  max-height: 80vh;
-  height: 80vh;
   max-width: 80vw;
   width: 80vw;
+  max-height: 45vw;
+  height: 45vw;
   margin: 0 auto;
 }

@@ -29,15 +29,14 @@ export class GameInstance {
 
   constructor(public info: InstanceInfo) {
     const addr = CONFIG.bindAddress;
-    this.ipc = new IPCWorker(
-      {
-        workerId: crypto.randomUUID(),
-        workerConnectUrl: `ws://${addr.hostname}:${addr.port}/internal/worker`,
-        instanceId: info.instanceId,
-        worldId: info.worldId,
-      },
-      info.worldDirectory,
-    );
+    this.ipc = new IPCWorker({
+      workerId: crypto.randomUUID(),
+      workerConnectUrl: `ws://${addr.hostname}:${addr.port}/internal/worker`,
+      instanceId: info.instanceId,
+      worldId: info.worldId,
+      worldDirectory: info.worldDirectory,
+      worldResourcesBaseUrl: `http://${addr.hostname}:${addr.port}/worlds`, // TODO: replace addr with public url from config
+    });
 
     this.#readyPromise = new Promise((resolve, _reject) => {
       this.#readyPromiseResolve = resolve;

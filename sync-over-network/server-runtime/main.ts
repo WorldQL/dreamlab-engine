@@ -9,7 +9,6 @@ Deno.env.delete("DREAMLAB_MP_WORKER_DATA");
 // TODO: connect to IPC bus
 const ipc = new IPCMessageBus(workerData);
 await ipc.connected();
-console.log("Connected via IPC!!");
 
 const net = new ServerNetworkManager(ipc);
 const game = new ServerGame({
@@ -17,10 +16,12 @@ const game = new ServerGame({
   worldId: workerData.worldId,
   network: net.createNetworking(),
 });
+game.worldScriptBaseURL = `file://${workerData.worldDirectory}/`;
 Object.defineProperties(globalThis, { net: { value: net }, game: { value: game } });
 net.setup(game);
 await game.initialize();
 
-// TODO: load test world
+const { default: serverMain } = await import(game.resolveResource("res://temp-server-main.js"));
+await serverMain(game);
 
 game.setStatus(GameStatus.Running);

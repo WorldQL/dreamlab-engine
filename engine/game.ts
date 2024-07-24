@@ -103,10 +103,26 @@ export abstract class BaseGame implements ISignalHandler {
     this.fire(GameStatusChange);
   }
 
+  worldScriptBaseURL: string = "";
+
   /** Resolves res:// and cloud:// URIs to https:// URLs */
   resolveResource(uri: string) {
-    // TODO: not yet properly implemented
-    return uri;
+    let url = new URL(uri);
+    if (
+      ((url.protocol === "res:" || url.protocol === "cloud:") && url.host) ||
+      url.pathname.startsWith("//")
+    ) {
+      url = new URL(url.href.replace(`${url.protocol}//`, `${url.protocol}`));
+    }
+
+    switch (url.protocol) {
+      case "res:":
+        return new URL(url.pathname, this.worldScriptBaseURL).toString();
+      case "cloud:":
+        throw new Error("Not yet implemented");
+      default:
+        return uri;
+    }
   }
 
   // #region Lifecycle

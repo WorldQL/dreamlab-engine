@@ -32,7 +32,7 @@ export const setupWeb = async (app: Application) => {
     const { user, world, resource } = ctx.params;
     try {
       await ctx.send({
-        root: path.join("./worlds/", user, world, "dist"),
+        root: path.join("./worlds/", user, world, "_dist"),
         path: resource,
       });
     } catch (err) {
