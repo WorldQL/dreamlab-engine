@@ -19,7 +19,7 @@ export class AnimatedSprite2D extends PixiEntity {
 
   width: number = 1;
   height: number = 1;
-  spritesheet: string = "https://s3-assets.dreamlab.gg/characters/default/walk.json";
+  spritesheet: string = "";
   alpha: number = 1;
   speed: number = 0.1;
   loop: boolean = true;
