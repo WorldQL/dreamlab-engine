@@ -7,7 +7,7 @@ import {
   copiedEntityAtom,
   historyAtom,
 } from "../../context/editor-context.tsx";
-import { game } from "../../global-game.ts";
+import { currentGame } from "../../global-game.ts";
 import { cn } from "../../utils/cn.ts";
 
 interface SceneMenuProps {
@@ -24,7 +24,7 @@ export const SceneMenu = ({ entity, position, setIsOpen }: SceneMenuProps) => {
 
   const createEntity = useCallback(
     (entityType: typeof Empty | typeof Rigidbody2D | typeof Sprite2D) => {
-      const newEntity = game.world.spawn({
+      const newEntity = currentGame.world.spawn({
         type: entityType,
         name: entityType.name,
       });
@@ -59,7 +59,7 @@ export const SceneMenu = ({ entity, position, setIsOpen }: SceneMenuProps) => {
 
   const handlePaste = useCallback(() => {
     if (copiedEntity) {
-      const newEntity = copiedEntity.cloneInto(game.world);
+      const newEntity = copiedEntity.cloneInto(currentGame.world);
       setHistory([...history, { type: "add", entity: newEntity }]);
       setSelectedEntity(newEntity);
     }
@@ -76,7 +76,7 @@ export const SceneMenu = ({ entity, position, setIsOpen }: SceneMenuProps) => {
 
   const handleUnparent = useCallback(() => {
     if (entity) {
-      entity.parent = game.world;
+      entity.parent = currentGame.world;
       setSelectedEntity(entity);
     }
     setIsOpen(false);
@@ -128,7 +128,7 @@ export const SceneMenu = ({ entity, position, setIsOpen }: SceneMenuProps) => {
           >
             Delete
           </div>
-          {entity.parent !== game.world && (
+          {entity.parent !== currentGame.world && (
             <div
               className={cn(
                 "cursor-pointer hover:bg-primary text-textPrimary hover:text-white p-2 rounded-md transition-colors",

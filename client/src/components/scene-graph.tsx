@@ -4,7 +4,7 @@ import { ChevronDownIcon } from "lucide-react";
 // @deno-types="npm:@types/react@18.3.1"
 import { memo, useCallback, useState } from "react";
 import { selectedEntityAtom } from "../context/editor-context.tsx";
-import { game } from "../global-game.ts";
+import { currentGame } from "../global-game.ts";
 import { useForceUpdateOnEntityChange } from "../hooks/force-update-on-change.ts";
 import { cn } from "../utils/cn.ts";
 import { SceneMenu } from "./menu/scene-menu.tsx";
@@ -43,7 +43,7 @@ const EntityEntry = ({
 
   const handleEntityClick = useCallback(() => {
     setSelectedEntity(entity);
-    const gizmo = game.local.children.get("Gizmo")?.cast(Gizmo);
+    const gizmo = currentGame.local.children.get("Gizmo")?.cast(Gizmo);
     if (gizmo) gizmo.target = entity;
   }, [entity, setSelectedEntity]);
 
@@ -71,7 +71,7 @@ const EntityEntry = ({
       setIsHovered(false);
 
       const draggedEntityId = event.dataTransfer.getData("text/plain");
-      const draggedEntity = game.entities.lookupById(draggedEntityId);
+      const draggedEntity = currentGame.entities.lookupById(draggedEntityId);
 
       if (!draggedEntity || draggedEntity === entity || draggedEntity.parent === entity) {
         return;
@@ -195,7 +195,7 @@ const EntityEntry = ({
 };
 
 const SceneGraph = () => {
-  useForceUpdateOnEntityChange(game.world);
+  useForceUpdateOnEntityChange(currentGame.world);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
@@ -207,14 +207,14 @@ const SceneGraph = () => {
   const handleDrop = useCallback((event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     const draggedEntityId = event.dataTransfer.getData("text/plain");
-    const draggedEntity = game.entities.lookupById(draggedEntityId);
+    const draggedEntity = currentGame.entities.lookupById(draggedEntityId);
 
     if (
       draggedEntity &&
-      draggedEntity.parent !== game.world &&
+      draggedEntity.parent !== currentGame.world &&
       draggedEntity.parent !== draggedEntity
     ) {
-      draggedEntity.parent = game.world;
+      draggedEntity.parent = currentGame.world;
     }
   }, []);
 
@@ -239,7 +239,7 @@ const SceneGraph = () => {
       <div className="h-full" title="Scene">
         <div>
           <ul>
-            {[...game.world.children.entries()]
+            {[...currentGame.world.children.entries()]
               .toSorted(([aName, _a], [bName, _b]) => {
                 const ap = aName.split(".").pop();
                 const bp = bName.split(".").pop();

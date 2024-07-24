@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ChevronDownIcon } from "lucide-react";
 // @deno-types="npm:@types/react@18.3.1"
 import { memo, useCallback, useState } from "react";
-import { game } from "../global-game.ts";
+import { currentGame } from "../global-game.ts";
 import { cn } from "../utils/cn.ts";
 
 type FileTree = {
@@ -109,10 +109,10 @@ const FileEntry = ({ file, name, path, level }: FileEntryProps) => {
 
 const FileTreeComponent = () => {
   const { data, isLoading, isError } = useQuery<{ files: string[] }>({
-    queryKey: ["files", game.instanceId],
+    queryKey: ["files", currentGame.instanceId],
     queryFn: async ({ signal }) => {
       // TODO: add server param
-      const resp = await fetch(`http://127.0.0.1:8000/api/v1/edit/${game.instanceId}/files`, {
+      const resp = await fetch(`http://127.0.0.1:8000/api/v1/edit/${currentGame.instanceId}/files`, {
         signal,
       });
 

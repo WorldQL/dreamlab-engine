@@ -115,6 +115,16 @@ export const EditorLayout = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }) 
               <SettingsButton />
               <ThemeButton />
             </div>
+            <div className="flex justify-center">
+              <div className="flex">
+                <button className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-300 rounded-l-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                  Edit
+                </button>
+                <button className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-r-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                  Play
+                </button>
+              </div>
+            </div>
             <PlaybackControls />
           </div>
         </div>

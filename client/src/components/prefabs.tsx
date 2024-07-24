@@ -5,7 +5,7 @@ import { ChevronDownIcon } from "lucide-react";
 // @deno-types="npm:@types/react@18.3.1"
 import { memo, useCallback, useState } from "react";
 import { selectedEntityAtom } from "../context/editor-context.tsx";
-import { game } from "../global-game.ts";
+import { currentGame } from "../global-game.ts";
 import { useForceUpdateOnEntityChange } from "../hooks/force-update-on-change.ts";
 import { cn } from "../utils/cn.ts";
 import { SceneMenu } from "./menu/scene-menu.tsx";
@@ -70,7 +70,7 @@ const PrefabEntry = ({
       setIsHovered(false);
 
       const draggedEntityId = event.dataTransfer.getData("text/plain");
-      const draggedEntity = game.entities.lookupById(draggedEntityId);
+      const draggedEntity = currentGame.entities.lookupById(draggedEntityId);
 
       if (!draggedEntity || draggedEntity === entity || draggedEntity.parent === entity) {
         return;
@@ -194,7 +194,7 @@ const PrefabEntry = ({
 };
 
 const Prefabs = () => {
-  useForceUpdateOnEntityChange(game.prefabs);
+  useForceUpdateOnEntityChange(currentGame.prefabs);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
@@ -206,14 +206,14 @@ const Prefabs = () => {
   const handleDrop = useCallback((event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     const draggedEntityId = event.dataTransfer.getData("text/plain");
-    const draggedEntity = game.entities.lookupById(draggedEntityId);
+    const draggedEntity = currentGame.entities.lookupById(draggedEntityId);
 
     if (
       draggedEntity &&
-      draggedEntity.parent !== game.prefabs &&
+      draggedEntity.parent !== currentGame.prefabs &&
       draggedEntity.parent !== draggedEntity
     ) {
-      draggedEntity.parent = game.prefabs;
+      draggedEntity.parent = currentGame.prefabs;
     }
   }, []);
 
@@ -238,7 +238,7 @@ const Prefabs = () => {
       <div className="h-full" title="Prefabs">
         <div>
           <ul>
-            {[...game.prefabs.children.entries()]
+            {[...currentGame.prefabs.children.entries()]
               .toSorted(([aName, _a], [bName, _b]) => {
                 const ap = aName.split(".").pop();
                 const bp = bName.split(".").pop();

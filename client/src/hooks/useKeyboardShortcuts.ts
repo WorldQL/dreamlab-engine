@@ -5,7 +5,7 @@ import {
   copiedEntityAtom,
   historyAtom,
 } from "../context/editor-context.tsx";
-import { game } from "../global-game.ts";
+import { currentGame } from "../global-game.ts";
 
 export const useKeyboardShortcuts = () => {
   const [selectedEntity, setSelectedEntity] = useAtom(selectedEntityAtom);
@@ -18,7 +18,7 @@ export const useKeyboardShortcuts = () => {
       if (lastAction.type === "add") {
         lastAction.entity.destroy();
       } else if (lastAction.type === "remove") {
-        game.world.spawn(lastAction.entity);
+        currentGame.world.spawn(lastAction.entity);
       }
       setHistory([...history]);
     }
@@ -32,7 +32,7 @@ export const useKeyboardShortcuts = () => {
 
   const handlePaste = useCallback(() => {
     if (copiedEntity) {
-      const newEntity = copiedEntity.cloneInto(game.world);
+      const newEntity = copiedEntity.cloneInto(currentGame.world);
       setHistory([...history, { type: "add", entity: newEntity }]);
       setSelectedEntity(newEntity);
     }

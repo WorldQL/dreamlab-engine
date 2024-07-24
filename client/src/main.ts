@@ -9,7 +9,7 @@ import {
   Vector2,
 } from "@dreamlab/engine";
 import { renderEditorUI } from "./editor-ui-main.tsx";
-import { createEditorGame } from "./global-game.ts";
+import { createGame, setCurrentGame } from "./global-game.ts";
 
 import { SceneView } from "./scene-graph/scene-view.ts";
 import { Scene, SceneSchema } from "./scene-graph/schema.ts";
@@ -43,7 +43,8 @@ const main = async () => {
   container.style.width = "100%"; // TODO: can pixi just handle the resizing all on its own for us?
   container.style.height = "100%";
 
-  const game = createEditorGame(container, instanceId, gameParam);
+  const game = createGame(container, "connectionIdPlaceholder", instanceId, gameParam);
+  setCurrentGame(game)
   Object.defineProperty(window, "game", { value: game }); // for debugging
   renderEditorUI(container);
   await game.initialize();

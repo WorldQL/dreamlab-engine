@@ -11,7 +11,7 @@ import { memo, useCallback, useEffect, useState } from "react";
 import { selectedEntityAtom } from "../context/editor-context.tsx";
 import { AxisInputField } from "./ui/axis-input.tsx";
 import { InputField } from "./ui/input.tsx";
-import { game } from "../global-game.ts";
+import { currentGame } from "../global-game.ts";
 import { Category } from "./ui/panel.tsx";
 import { useQuery } from "@tanstack/react-query";
 import { useModal } from "../context/modal-context.tsx";
@@ -38,9 +38,9 @@ const Inspector = () => {
   const { openModal, closeModal } = useModal();
 
   const { data, isLoading, isError } = useQuery<{ files: string[] }>({
-    queryKey: ["files", game.instanceId],
+    queryKey: ["files", currentGame.instanceId],
     queryFn: async ({ signal }) => {
-      const resp = await fetch(`http://127.0.0.1:8000/api/v1/edit/${game.instanceId}/files`, {
+      const resp = await fetch(`http://127.0.0.1:8000/api/v1/edit/${currentGame.instanceId}/files`, {
         signal,
       });
 
@@ -210,7 +210,7 @@ const Inspector = () => {
       }
 
       try {
-        const scriptUrl = `http://127.0.0.1:8000/api/v1/edit/${game.instanceId}/files/${filePath}`;
+        const scriptUrl = `http://127.0.0.1:8000/api/v1/edit/${currentGame.instanceId}/files/${filePath}`;
         try {
           const module = await import(scriptUrl);
           const behavior = module.default;
@@ -290,7 +290,7 @@ const Inspector = () => {
       } else if (scriptPath.endsWith(".tsx")) {
         scriptPath = scriptPath.replace(".tsx", ".jsx");
       }
-      const scriptUrl = `http://127.0.0.1:8000/api/v1/edit/${game.instanceId}/files/${scriptPath}`;
+      const scriptUrl = `http://127.0.0.1:8000/api/v1/edit/${currentGame.instanceId}/files/${scriptPath}`;
       try {
         const module = await import(scriptUrl);
         const behavior = module.default;

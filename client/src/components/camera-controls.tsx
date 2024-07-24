@@ -1,7 +1,7 @@
 // @deno-types="npm:@types/react@18.3.1"
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Camera, GameRender, Vector2 } from "@dreamlab/engine";
-import { game } from "../global-game.ts";
+import { currentGame } from "../global-game.ts";
 import { MousePointer2, Move, ZoomIn } from "lucide-react";
 
 export const CameraControls = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }) => {
@@ -37,7 +37,7 @@ export const CameraControls = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }
   }, []);
 
   const handleRender = useCallback(() => {
-    cameraRef.current = Camera.getActive(game);
+    cameraRef.current = Camera.getActive(currentGame);
     if (cameraRef.current) {
       setCameraPosition(cameraRef.current.transform.position);
       setZoomScale(cameraRef.current.transform.scale.x);
@@ -156,7 +156,7 @@ export const CameraControls = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }
   );
 
   useEffect(() => {
-    game.on(GameRender, handleRender);
+    currentGame.on(GameRender, handleRender);
 
     const gameContainer = gameContainerRef.current;
     if (gameContainer) {
@@ -169,7 +169,7 @@ export const CameraControls = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }
     }
 
     return () => {
-      game.unregister(GameRender, handleRender);
+      currentGame.unregister(GameRender, handleRender);
 
       if (gameContainer) {
         gameContainer.removeEventListener("mousedown", handleMouseDown);

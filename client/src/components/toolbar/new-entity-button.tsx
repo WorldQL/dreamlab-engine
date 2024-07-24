@@ -2,7 +2,7 @@ import { Empty, Rigidbody2D, Sprite2D, AnimatedSprite2D } from "@dreamlab/engine
 import { Plus } from "lucide-react";
 // @deno-types="npm:@types/react@18.3.1"
 import { memo, useCallback, useEffect, useRef, useState } from "react";
-import { game } from "../../global-game.ts";
+import { currentGame } from "../../global-game.ts";
 import { useAtom } from "jotai";
 import { historyAtom } from "../../context/editor-context.tsx";
 import { cn } from "../../utils/cn.ts";
@@ -45,7 +45,7 @@ const NewEntityButton = () => {
     (
       entityType: typeof Empty | typeof Rigidbody2D | typeof Sprite2D | typeof AnimatedSprite2D,
     ) => {
-      const newEntity = game.world.spawn({
+      const newEntity = currentGame.world.spawn({
         type: entityType,
         name: entityType.name,
       });

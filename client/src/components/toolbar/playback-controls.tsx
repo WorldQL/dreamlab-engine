@@ -5,7 +5,7 @@ import { memo } from "react";
 import { isPausedAtom, isRunningAtom } from "../../context/editor-context.tsx";
 import { IconButton } from "../ui/icon-button.tsx";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip.tsx";
-import { game } from "../../global-game.ts";
+import { currentGame } from "../../global-game.ts";
 
 // TODO: Synchronize these with the actual game state.
 const playAtom = atom(null, (_, set) => set(isRunningAtom, true));
@@ -29,7 +29,7 @@ const PlaybackControls = () => {
         <TooltipTrigger asChild>
           <IconButton
             onClick={() => {
-              game.paused = false;
+              currentGame.paused = false;
               handlePlay();
             }}
             icon={Rocket}
@@ -46,7 +46,7 @@ const PlaybackControls = () => {
         <TooltipTrigger asChild>
           <IconButton
             onClick={() => {
-              game.paused = !game.paused;
+              currentGame.paused = !currentGame.paused;
               handlePause();
             }}
             icon={isPaused ? Play : Pause}
@@ -63,7 +63,7 @@ const PlaybackControls = () => {
         <TooltipTrigger asChild>
           <IconButton
             onClick={() => {
-              game.paused = true;
+              currentGame.paused = true;
               handleStop();
             }}
             icon={Square}
