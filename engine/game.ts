@@ -104,6 +104,7 @@ export abstract class BaseGame implements ISignalHandler {
   }
 
   worldScriptBaseURL: string = "";
+  cloudAssetBaseURL: string = "https://s3-assets.dreamlab.gg/";
 
   /** Resolves res:// and cloud:// URIs to https:// URLs */
   resolveResource(uri: string) {
@@ -119,7 +120,8 @@ export abstract class BaseGame implements ISignalHandler {
       case "res:":
         return new URL(url.pathname, this.worldScriptBaseURL).toString();
       case "cloud:":
-        throw new Error("Not yet implemented");
+      case "s3:": // s3:// URIs are discouraged; kept for backwards-compat reasons.
+        return new URL(url.pathname, this.cloudAssetBaseURL).toString();
       default:
         return uri;
     }
