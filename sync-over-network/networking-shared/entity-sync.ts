@@ -32,6 +32,7 @@ export const convertEntityDefinition = async (
     name: def.name,
     values: def.values,
     transform: def.transform,
+    authority: def.authority,
     behaviors,
     children,
   };
@@ -82,6 +83,7 @@ export const serializeEntityDefinition = async (
     name: def.name,
     values: def.values,
     transform: def.transform,
+    authority: def.authority,
     behaviors,
     children,
     ref,

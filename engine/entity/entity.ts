@@ -49,6 +49,7 @@ export interface EntityContext {
   name: string;
   parent?: Entity;
   transform?: { position?: IVector2; rotation?: number; scale?: IVector2 };
+  authority: ConnectionId;
   ref?: string;
   values?: Record<string, JsonValue>;
 }
@@ -72,6 +73,7 @@ export interface EntityDefinition<
   type: EntityConstructor<T>;
   name: string;
   transform?: { position?: IVector2; rotation?: number; scale?: IVector2; z?: number };
+  authority?: ConnectionId;
   values?: Partial<Omit<T, keyof Entity>>;
   children?: { [I in keyof Children]: EntityDefinition<Children[I]> };
   behaviors?: { [I in keyof Behaviors]: BehaviorDefinition<Behaviors[I]> };
@@ -278,6 +280,7 @@ export abstract class Entity implements ISignalHandler {
       name: def.name,
       parent: this,
       transform: def.transform,
+      authority: def.authority,
       ref: def._ref,
       values: def.values ? Object.fromEntries(Object.entries(def.values)) : undefined,
     });
@@ -389,7 +392,7 @@ export abstract class Entity implements ISignalHandler {
       _ref: withRefs ? behavior.ref : undefined,
       type: behavior.constructor as BehaviorConstructor,
       values: behaviorValues,
-      uri
+      uri,
     };
   }
 
@@ -568,6 +571,7 @@ export abstract class Entity implements ISignalHandler {
     this.parent = ctx.parent;
     this.transform = new Transform(ctx.transform);
     this.globalTransform = new Transform();
+    this.#exclusiveAuthority = ctx.authority;
 
     if (ctx.values) this.#defaultValues = ctx.values;
 

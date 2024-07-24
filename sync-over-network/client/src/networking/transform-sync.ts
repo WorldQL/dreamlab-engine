@@ -1,5 +1,6 @@
 import {
   Entity,
+  EntityDescendantSpawned,
   EntityExclusiveAuthorityChanged,
   EntityTransformUpdate,
 } from "@dreamlab/engine";
@@ -12,6 +13,36 @@ export const handleTransformSync: ClientNetworkSetupRoutine = (conn, game) => {
     (event: EntityTransformUpdate) => void
   >();
 
+  const addTransformListener = (entity: Entity) => {
+    const transformListener = (_event: EntityTransformUpdate) => {
+      if (entity.authority !== game.network.connectionId) return;
+      conn.send({
+        t: "ReportEntityTransform",
+        entity: entity.ref,
+        position: entity.transform.position.bare(),
+        rotation: entity.transform.rotation,
+        scale: entity.transform.scale.bare(),
+      });
+    };
+    authorityTransformListeners.set(entity, transformListener);
+    entity.on(EntityTransformUpdate, transformListener);
+  };
+
+  const removeTransformListener = (entity: Entity) => {
+    const transformListener = authorityTransformListeners.get(entity);
+    if (!transformListener) return;
+
+    entity.unregister(EntityTransformUpdate, transformListener);
+    authorityTransformListeners.delete(entity);
+  };
+
+  game.world.on(EntityDescendantSpawned, event => {
+    const entity = event.descendant;
+    if (entity.authority === game.network.connectionId) {
+      addTransformListener(entity);
+    }
+  });
+
   game.on(EntityExclusiveAuthorityChanged, event => {
     const entity = event.entity;
     if (event.authority === conn.id) {
@@ -20,28 +51,13 @@ export const handleTransformSync: ClientNetworkSetupRoutine = (conn, game) => {
         entity: entity.ref,
         clock: event.clock,
       });
-
-      const transformListener = (event: EntityTransformUpdate) => {
-        conn.send({
-          t: "ReportEntityTransform",
-          entity: entity.ref,
-          position: entity.transform.position.bare(),
-          rotation: entity.transform.rotation,
-          scale: entity.transform.scale.bare(),
-        });
-      };
-      authorityTransformListeners.set(event.entity, transformListener);
-      entity.on(EntityTransformUpdate, transformListener);
+      addTransformListener(event.entity);
     } else if (entity.authority === conn.id) {
       conn.send({
         t: "RelinquishExclusiveAuthority",
         entity: entity.ref,
       });
-      const transformListener = authorityTransformListeners.get(entity);
-      if (transformListener) {
-        entity.unregister(EntityTransformUpdate, transformListener);
-        authorityTransformListeners.delete(entity);
-      }
+      removeTransformListener(event.entity);
     }
   });
 

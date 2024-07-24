@@ -49,6 +49,13 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
       );
     }
 
+    // ensure authority can only be delegated to self or server
+    const rewriteAuthority = (def: typeof packet.definition) => {
+      if (def.authority !== from) def.authority = undefined;
+      if (def.children) for (const child of def.children) rewriteAuthority(child);
+    };
+    rewriteAuthority(def);
+
     const definition = await convertEntityDefinition(game, def);
 
     changeIgnoreSet.add(def.ref);

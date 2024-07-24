@@ -116,7 +116,8 @@ export async function bundleWorld(worldDir: string) {
     ...BASE_OPTIONS,
     plugins: await dreamlabEsbuildPlugins({}),
     entryPoints,
-    outdir: path.join(worldDir, "dist", "behaviors"),
+    outdir: path.join(worldDir, "dist"),
+    outbase: worldDir,
   };
 
   try {

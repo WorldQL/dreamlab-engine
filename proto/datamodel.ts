@@ -36,6 +36,7 @@ const BaseEntityDefinitionSchema = z.object({
     })
     .optional(),
   ref: EntityReferenceSchema,
+  authority: ConnectionIdSchema,
 });
 export type EntityDefinitionSchemaType = z.infer<typeof BaseEntityDefinitionSchema> & {
   children?: EntityDefinitionSchemaType[];
