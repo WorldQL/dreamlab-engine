@@ -3,25 +3,24 @@ import * as internal from "../internal.ts";
 import { EntityStore } from "./entity-store.ts";
 import { Entity } from "./entity.ts";
 
-export class WorldRoot extends Entity {
+export abstract class Root extends Entity {
   static [internal.internalEntity] = true;
 
   readonly entities: EntityStore;
   readonly bounds: undefined;
 
-  constructor(game: Game) {
-    super({ game, name: "world", ref: "WORLD" });
+  constructor(game: Game, name: string) {
+    super({ game, name, ref: name.toUpperCase() });
 
     this.entities = new EntityStore();
-    game.entities[internal.entityStoreRegisterRoot]("world", this.entities);
-
+    game.entities[internal.entityStoreRegisterRoot](name, this.entities);
     game.entities[internal.entityStoreUnregister](this);
 
-    this.name = "game.world";
+    this.name = `game.${name}`;
     // @ts-expect-error assign readonly id
-    this.id = "game.world";
+    this.id = `game.${name}`;
     // @ts-expect-error assign readonly id
-    this.root = "world";
+    this.root = name;
 
     this.pausable = false;
 
@@ -29,80 +28,26 @@ export class WorldRoot extends Entity {
   }
 }
 
-export class ServerRoot extends Entity {
-  static [internal.internalEntity] = true;
-
-  readonly entities: EntityStore;
-  readonly bounds: undefined;
-
+export class WorldRoot extends Root {
   constructor(game: Game) {
-    super({ game, name: "server", ref: "SERVER" });
-
-    this.entities = new EntityStore();
-    game.entities[internal.entityStoreRegisterRoot]("server", this.entities);
-
-    game.entities[internal.entityStoreUnregister](this);
-
-    this.name = "game.server";
-    // @ts-expect-error assign readonly id
-    this.id = "game.server";
-    // @ts-expect-error assign readonly id
-    this.root = "server";
-
-    this.pausable = false;
-
-    game.entities[internal.entityStoreRegister](this);
+    super(game, "world");
   }
 }
 
-export class LocalRoot extends Entity {
-  static [internal.internalEntity] = true;
-
-  readonly entities: EntityStore;
-  readonly bounds: undefined;
-
+export class ServerRoot extends Root {
   constructor(game: Game) {
-    super({ game, name: "local", ref: "LOCAL" });
-
-    this.entities = new EntityStore();
-    game.entities[internal.entityStoreRegisterRoot]("local", this.entities);
-
-    game.entities[internal.entityStoreUnregister](this);
-
-    this.name = "game.local";
-    // @ts-expect-error assign readonly id
-    this.id = "game.local";
-    // @ts-expect-error assign readonly id
-    this.root = "local";
-
-    this.pausable = false;
-
-    game.entities[internal.entityStoreRegister](this);
+    super(game, "server");
   }
 }
 
-export class PrefabsRoot extends Entity {
-  static [internal.internalEntity] = true;
-
-  readonly entities: EntityStore;
-  readonly bounds: undefined;
-
+export class LocalRoot extends Root {
   constructor(game: Game) {
-    super({ game, name: "prefabs", ref: "PREFABS" });
+    super(game, "local");
+  }
+}
 
-    this.entities = new EntityStore();
-    game.entities[internal.entityStoreRegisterRoot]("prefabs", this.entities);
-
-    game.entities[internal.entityStoreUnregister](this);
-
-    this.name = "game.prefabs";
-    // @ts-expect-error assign readonly id
-    this.id = "game.prefabs";
-    // @ts-expect-error assign readonly id
-    this.root = "prefabs";
-
-    this.pausable = false;
-
-    game.entities[internal.entityStoreRegister](this);
+export class PrefabsRoot extends Root {
+  constructor(game: Game) {
+    super(game, "prefabs");
   }
 }
