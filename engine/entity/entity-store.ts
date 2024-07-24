@@ -1,3 +1,8 @@
+import {
+  entityStoreRegister,
+  entityStoreRegisterRoot,
+  entityStoreUnregister,
+} from "../internal.ts";
 import { IVector2, pointWorldToLocal } from "../math/mod.ts";
 import { Entity, EntityConstructor } from "./entity.ts";
 
@@ -44,8 +49,8 @@ export class EntityStore {
     return entities;
   }
 
-  /** for internal use */
-  _register(entity: Entity, oldId?: string) {
+  // #region Internal methods
+  [entityStoreRegister](entity: Entity, oldId?: string) {
     if (oldId && this.#entitiesById.get(oldId) === entity) this.#entitiesById.delete(oldId);
 
     const existingEntity = this.#entitiesByRef.get(entity.ref);
@@ -61,10 +66,10 @@ export class EntityStore {
 
     this.#entitiesByType.set(type, set);
 
-    this.#roots.get(entity.root)?._register(entity, oldId);
+    this.#roots.get(entity.root)?.[entityStoreRegister](entity, oldId);
   }
-  /** for internal use */
-  _unregister(entity: Entity) {
+
+  [entityStoreUnregister](entity: Entity) {
     this.#entitiesById.delete(entity.id);
     this.#entitiesByRef.delete(entity.ref);
 
@@ -72,12 +77,12 @@ export class EntityStore {
     const set = this.#entitiesByType.get(type);
     if (set) set.delete(entity);
 
-    this.#roots.get(entity.root)?._unregister(entity);
+    this.#roots.get(entity.root)?.[entityStoreUnregister](entity);
   }
 
   #roots = new Map<string, EntityStore>();
-  /** for internal use */
-  _registerRoot(root: string, store: EntityStore) {
+  [entityStoreRegisterRoot](root: string, store: EntityStore) {
     this.#roots.set(root, store);
   }
+  // #endregion
 }

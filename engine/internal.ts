@@ -17,3 +17,6 @@ export const entityForceAuthorityValues = Symbol.for(
   "dreamlab.internal.entityForceAuthorityValues",
 );
 export const entityAuthorityClock = Symbol.for("dreamlab.internal.entityAuthorityClock");
+export const entityStoreRegister = Symbol.for("dreamlab.internal.entityStoreRegister");
+export const entityStoreUnregister = Symbol.for("dreamlab.internal.entityStoreUnregister");
+export const entityStoreRegisterRoot = Symbol.for("dreamlab.internal.entityStoreRegisterRoot");

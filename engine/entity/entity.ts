@@ -266,7 +266,7 @@ export abstract class Entity implements ISignalHandler {
     this.id = serializeIdentifier(this.#parent?.id, this.#name);
     for (const child of this.children.values()) child.#recomputeId();
 
-    this.game.entities._register(this, oldId);
+    this.game.entities[internal.entityStoreRegister](this, oldId);
 
     this.#hierarchyGeneration = this.parent ? this.parent.#hierarchyGeneration + 1 : 0;
 
@@ -594,7 +594,7 @@ export abstract class Entity implements ISignalHandler {
       this.globalTransform[internal.transformForceUpdate](worldSpaceTransform);
     }
 
-    this.game.entities._register(this);
+    this.game.entities[internal.entityStoreRegister](this);
   }
 
   // #region Signals
@@ -764,7 +764,7 @@ export abstract class Entity implements ISignalHandler {
 
     for (const value of this.#values.values()) value.destroy();
     this.#parent = undefined;
-    this.game.entities._unregister(this);
+    this.game.entities[internal.entityStoreUnregister](this);
 
     this.#signalListenerMap.clear();
   }

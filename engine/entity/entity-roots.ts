@@ -13,9 +13,9 @@ export class WorldRoot extends Entity {
     super({ game, name: "world", ref: "WORLD" });
 
     this.entities = new EntityStore();
-    game.entities._registerRoot("world", this.entities);
+    game.entities[internal.entityStoreRegisterRoot]("world", this.entities);
 
-    game.entities._unregister(this);
+    game.entities[internal.entityStoreUnregister](this);
 
     this.name = "game.world";
     // @ts-expect-error assign readonly id
@@ -25,7 +25,7 @@ export class WorldRoot extends Entity {
 
     this.pausable = false;
 
-    game.entities._register(this);
+    game.entities[internal.entityStoreRegister](this);
   }
 }
 
@@ -39,9 +39,9 @@ export class ServerRoot extends Entity {
     super({ game, name: "server", ref: "SERVER" });
 
     this.entities = new EntityStore();
-    game.entities._registerRoot("server", this.entities);
+    game.entities[internal.entityStoreRegisterRoot]("server", this.entities);
 
-    game.entities._unregister(this);
+    game.entities[internal.entityStoreUnregister](this);
 
     this.name = "game.server";
     // @ts-expect-error assign readonly id
@@ -51,7 +51,7 @@ export class ServerRoot extends Entity {
 
     this.pausable = false;
 
-    game.entities._register(this);
+    game.entities[internal.entityStoreRegister](this);
   }
 }
 
@@ -65,9 +65,9 @@ export class LocalRoot extends Entity {
     super({ game, name: "local", ref: "LOCAL" });
 
     this.entities = new EntityStore();
-    game.entities._registerRoot("local", this.entities);
+    game.entities[internal.entityStoreRegisterRoot]("local", this.entities);
 
-    game.entities._unregister(this);
+    game.entities[internal.entityStoreUnregister](this);
 
     this.name = "game.local";
     // @ts-expect-error assign readonly id
@@ -77,7 +77,7 @@ export class LocalRoot extends Entity {
 
     this.pausable = false;
 
-    game.entities._register(this);
+    game.entities[internal.entityStoreRegister](this);
   }
 }
 
@@ -91,9 +91,9 @@ export class PrefabsRoot extends Entity {
     super({ game, name: "prefabs", ref: "PREFABS" });
 
     this.entities = new EntityStore();
-    game.entities._registerRoot("prefabs", this.entities);
+    game.entities[internal.entityStoreRegisterRoot]("prefabs", this.entities);
 
-    game.entities._unregister(this);
+    game.entities[internal.entityStoreUnregister](this);
 
     this.name = "game.prefabs";
     // @ts-expect-error assign readonly id
@@ -103,6 +103,6 @@ export class PrefabsRoot extends Entity {
 
     this.pausable = false;
 
-    game.entities._register(this);
+    game.entities[internal.entityStoreRegister](this);
   }
 }
