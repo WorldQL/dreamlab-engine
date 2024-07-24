@@ -17,7 +17,13 @@ import { Panel } from "./ui/panel.tsx";
 import { FileTree } from "./file-tree.tsx";
 import { Prefabs } from "./prefabs.tsx";
 
-export const EditorLayout = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }) => {
+export const EditorLayout = ({
+  editModeGameDiv,
+  playModeGameDiv,
+}: {
+  readonly playModeGameDiv: HTMLDivElement;
+  readonly editModeGameDiv: HTMLDivElement;
+}) => {
   const isRunning = useAtomValue(isRunningAtom);
   const isPaused = useAtomValue(isPausedAtom);
 
@@ -36,9 +42,9 @@ export const EditorLayout = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }) 
     const game = gameContainer.current;
     if (!game) return;
 
-    game.appendChild(gameDiv);
-    gameDiv.style.zIndex = "-1";
-  }, [gameContainer, gameDiv]);
+    game.appendChild(editModeGameDiv);
+    editModeGameDiv.style.zIndex = "-1";
+  }, [gameContainer, editModeGameDiv]);
 
   const [topLeftPanelTabs, setTopLeftPanelTabs] = useState([
     { id: "sceneGraph", title: "Scene Graph", content: <SceneGraph /> },
@@ -138,7 +144,7 @@ export const EditorLayout = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }) 
             ref={gameContainer}
             id="editor-pointer-style-target"
           >
-            <CameraControls gameDiv={gameDiv} />
+            <CameraControls gameDiv={editModeGameDiv} />
           </div>
         </div>
         <div

@@ -9,14 +9,14 @@ import { ModalProvider } from "./context/modal-context.tsx";
 
 const queryClient = new QueryClient();
 
-export const renderEditorUI = (gameDiv: HTMLDivElement) => {
+export const renderEditorUI = (editModeGameDiv: HTMLDivElement, playModeGameDiv: HTMLDivElement) => {
   const root = createRoot(document.querySelector("#root")!);
   root.render(
     <StrictMode>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider delayDuration={200}>
           <ModalProvider>
-            <EditorLayout gameDiv={gameDiv} />
+            <EditorLayout editModeGameDiv={editModeGameDiv} playModeGameDiv={playModeGameDiv} />
           </ModalProvider>
         </TooltipProvider>
       </QueryClientProvider>

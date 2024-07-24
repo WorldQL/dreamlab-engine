@@ -39,19 +39,24 @@ const main = async () => {
     // editmode = params.get("editmode") === "true";
   }
 
-  const container = document.createElement("div");
-  container.style.width = "100%"; // TODO: can pixi just handle the resizing all on its own for us?
-  container.style.height = "100%";
+  const editModeGameContainer = document.createElement("div");
+  editModeGameContainer.style.width = "100%"; // TODO: can pixi just handle the resizing all on its own for us?
+  editModeGameContainer.style.height = "100%";
 
-  const game = createGame(container, "connectionIdPlaceholder", instanceId, gameParam);
+  const playModeGameContainer = document.createElement("div");
+  playModeGameContainer.style.width = "100%"; // TODO: can pixi just handle the resizing all on its own for us?
+  playModeGameContainer.style.height = "100%";
+
+  const game = createGame(editModeGameContainer, "connectionIdPlaceholder", instanceId, gameParam);
   setCurrentGame(game)
   Object.defineProperty(window, "game", { value: game }); // for debugging
-  renderEditorUI(container);
+
+  renderEditorUI(editModeGameContainer, playModeGameContainer);
   await game.initialize();
 
   // resize app to fit parent
   const ro = new ResizeObserver(() => game.renderer.app.resize());
-  ro.observe(container);
+  ro.observe(editModeGameContainer);
 
   game.local.spawn({
     type: Camera,
