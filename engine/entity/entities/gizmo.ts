@@ -63,6 +63,7 @@ export class Gizmo extends Entity {
   }
 
   public static readonly icon = "➡️";
+  readonly bounds: undefined;
 
   // #region Graphics
   static #X_COLOR = "red";

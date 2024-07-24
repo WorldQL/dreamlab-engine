@@ -820,6 +820,8 @@ export abstract class Entity implements ISignalHandler {
     throw new Error(`Entity type ${typeName} is not registered!`);
   }
   // #endregion
+
+  abstract get bounds(): Readonly<IVector2> | undefined;
 }
 
 const ID_REGEX = /^\p{ID_Start}\p{ID_Continue}*$/v;

@@ -1,5 +1,5 @@
 import RAPIER from "@dreamlab/vendor/rapier.ts";
-import { Vector2 } from "../../math/mod.ts";
+import { IVector2, Vector2 } from "../../math/mod.ts";
 import { EntityPreUpdate, EntityUpdate } from "../../signals/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
 
@@ -9,6 +9,9 @@ export class RectCollider2D extends Entity {
   }
 
   public static readonly icon = "⬜";
+  get bounds(): Readonly<IVector2> | undefined {
+    return new Vector2(this.#shape.halfExtents.x * 2, this.#shape.halfExtents.y * 2);
+  }
 
   collider: RAPIER.Collider;
   #shape: RAPIER.Cuboid;

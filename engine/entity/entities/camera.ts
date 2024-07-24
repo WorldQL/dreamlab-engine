@@ -12,6 +12,7 @@ export class Camera extends Entity {
 
   public static readonly icon = "🎥";
   public static METERS_TO_PIXELS = 100;
+  public bounds: undefined;
 
   public readonly container: PIXI.Container;
   public smooth: number = 0.01;

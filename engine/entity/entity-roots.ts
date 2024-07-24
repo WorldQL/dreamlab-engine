@@ -7,6 +7,7 @@ export class WorldRoot extends Entity {
   static [internal.internalEntity] = true;
 
   readonly entities: EntityStore;
+  readonly bounds: undefined;
 
   constructor(game: Game) {
     super({ game, name: "world", ref: "WORLD" });
@@ -32,6 +33,7 @@ export class ServerRoot extends Entity {
   static [internal.internalEntity] = true;
 
   readonly entities: EntityStore;
+  readonly bounds: undefined;
 
   constructor(game: Game) {
     super({ game, name: "server", ref: "SERVER" });
@@ -57,6 +59,7 @@ export class LocalRoot extends Entity {
   static [internal.internalEntity] = true;
 
   readonly entities: EntityStore;
+  readonly bounds: undefined;
 
   constructor(game: Game) {
     super({ game, name: "local", ref: "LOCAL" });
@@ -82,6 +85,7 @@ export class PrefabsRoot extends Entity {
   static [internal.internalEntity] = true;
 
   readonly entities: EntityStore;
+  readonly bounds: undefined;
 
   constructor(game: Game) {
     super({ game, name: "prefabs", ref: "PREFABS" });

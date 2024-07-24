@@ -1,4 +1,5 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
+import { IVector2, Vector2 } from "../../math/mod.ts";
 import { EntityDestroyed, GameRender } from "../../signals/mod.ts";
 import { TextureAdapter } from "../../value/adapters/texture-adapter.ts";
 import { ValueChanged } from "../../value/mod.ts";
@@ -11,6 +12,10 @@ export class Sprite2D extends PixiEntity {
   }
 
   public static readonly icon = "🖼️";
+  get bounds(): Readonly<IVector2> | undefined {
+    // TODO: Reuse the same vector
+    return new Vector2(this.width, this.height);
+  }
 
   width: number = 1;
   height: number = 1;

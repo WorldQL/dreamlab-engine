@@ -10,9 +10,10 @@ export class UIPanel extends InterpolatedEntity {
   }
 
   public static readonly icon = "🖼️";
+  readonly bounds: undefined;
 
   #ui: { outer: HTMLDivElement; root: ShadowRoot; element: HTMLDivElement } | undefined;
-  public get root(): ShadowRoot {
+  public get dom(): ShadowRoot {
     if (!this.game.isClient()) {
       throw new Error("cannot access property 'root' on the server");
     }

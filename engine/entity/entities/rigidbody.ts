@@ -1,9 +1,9 @@
 import RAPIER from "@dreamlab/vendor/rapier.ts";
-import { Entity, EntityContext } from "../entity.ts";
-import { Vector2 } from "../../math/mod.ts";
-import { EntityPreUpdate, EntityUpdate, EntityDestroyed } from "../../signals/mod.ts";
+import { IVector2, Vector2 } from "../../math/mod.ts";
+import { EntityDestroyed, EntityPreUpdate, EntityUpdate } from "../../signals/mod.ts";
 import { enumAdapter } from "../../value/adapters/enum-adapter.ts";
 import { ValueChanged } from "../../value/mod.ts";
+import { Entity, EntityContext } from "../entity.ts";
 
 type RigidBodyType = (typeof rigidbodyTypes)[number];
 const rigidbodyTypes = [
@@ -22,6 +22,9 @@ export class Rigidbody2D extends Entity {
   }
 
   public static readonly icon = "⚙️";
+  get bounds(): Readonly<IVector2> | undefined {
+    return new Vector2(this.#shape.halfExtents.x * 2, this.#shape.halfExtents.y * 2);
+  }
 
   type: RigidBodyType = "fixed";
 
