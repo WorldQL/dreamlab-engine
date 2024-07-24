@@ -66,7 +66,9 @@ export class EntityStore {
 
     this.#entitiesByType.set(type, set);
 
-    this.#roots.get(entity.root)?.[entityStoreRegister](entity, oldId);
+    if (entity.root) {
+      this.#roots.get(entity.root.name)?.[entityStoreRegister](entity, oldId);
+    }
   }
 
   [entityStoreUnregister](entity: Entity) {
@@ -77,7 +79,9 @@ export class EntityStore {
     const set = this.#entitiesByType.get(type);
     if (set) set.delete(entity);
 
-    this.#roots.get(entity.root)?.[entityStoreUnregister](entity);
+    if (entity.root) {
+      this.#roots.get(entity.root.name)?.[entityStoreUnregister](entity);
+    }
   }
 
   #roots = new Map<string, EntityStore>();

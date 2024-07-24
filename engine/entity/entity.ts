@@ -43,6 +43,7 @@ import {
   EntityZChanged,
 } from "../signals/mod.ts";
 import { JsonValue, Value, ValueTypeTag, inferValueTypeTag } from "../value/mod.ts";
+import type { Root } from "./entity-roots.ts";
 
 export interface EntityContext {
   game: Game;
@@ -132,7 +133,7 @@ export abstract class Entity implements ISignalHandler {
   }
 
   readonly id: string;
-  readonly root: string;
+  readonly root: Root;
 
   #parent: Entity | undefined;
   get parent(): Entity | undefined {
