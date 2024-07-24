@@ -33,7 +33,7 @@ export class AnimatedSprite2D extends PixiEntity {
     this.defineValue(AnimatedSprite2D, "spritesheet", { type: SpritesheetAdapter });
 
     if (this.spritesheet !== "") {
-      PIXI.Assets.backgroundLoad(this.spritesheet);
+      PIXI.Assets.backgroundLoad(this.game.resolveResource(this.spritesheet));
     }
 
     this.listen(this.game, GameRender, () => {
@@ -62,7 +62,7 @@ export class AnimatedSprite2D extends PixiEntity {
   async #getTextures(): Promise<PIXI.Texture[]> {
     if (this.spritesheet === "") return [PIXI.Texture.WHITE];
 
-    const spritesheet = await PIXI.Assets.load(this.spritesheet);
+    const spritesheet = await PIXI.Assets.load(this.game.resolveResource(this.spritesheet));
     if (!(spritesheet instanceof PIXI.Spritesheet)) {
       throw new TypeError("texture is not a pixi sritesheet");
     }

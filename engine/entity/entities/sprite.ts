@@ -31,7 +31,7 @@ export class Sprite2D extends PixiEntity {
     this.defineValue(Sprite2D, "texture", { type: TextureAdapter });
 
     if (this.texture !== "") {
-      PIXI.Assets.backgroundLoad(this.texture);
+      PIXI.Assets.backgroundLoad(this.game.resolveResource(this.texture));
     }
 
     this.listen(this.game, GameRender, () => {
@@ -59,7 +59,7 @@ export class Sprite2D extends PixiEntity {
   async #getTexture(): Promise<PIXI.Texture> {
     if (this.texture === "") return PIXI.Texture.WHITE;
 
-    const texture = await PIXI.Assets.load(this.texture);
+    const texture = await PIXI.Assets.load(this.game.resolveResource(this.texture));
     if (!(texture instanceof PIXI.Texture)) {
       throw new TypeError("texture is not a pixi texture");
     }
