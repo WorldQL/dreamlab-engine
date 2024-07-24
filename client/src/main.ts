@@ -17,6 +17,8 @@ import { z } from "@dreamlab/vendor/zod.ts";
 import { Entity } from "@dreamlab/engine";
 import { SAMPLE_SCENE, loadSceneFromDefinition, serializeSceneToJson } from "./utils/spawn-from-definition.ts";
 import * as internal from "../../engine/internal.ts";
+import { setPlayModeGame } from "./global-game.ts";
+import { setEditModeGame } from "./global-game.ts";
 
 try {
   // @ts-expect-error injected global
@@ -48,17 +50,30 @@ const main = async () => {
   playModeGameContainer.style.height = "100%";
 
   const game = createGame(editModeGameContainer, "connectionIdPlaceholder", instanceId, gameParam);
+  const playModeGame = createGame(playModeGameContainer, "connectionIdPlaceholder", instanceId, gameParam);
+  
+  setPlayModeGame(playModeGame)
+  setEditModeGame(game)
   setCurrentGame(game)
-  Object.defineProperty(window, "game", { value: game }); // for debugging
+  // Object.defineProperty(window, "game", { value: game }); // for debugging
 
   renderEditorUI(editModeGameContainer, playModeGameContainer);
   await game.initialize();
+  await playModeGame.initialize()
 
   // resize app to fit parent
   const ro = new ResizeObserver(() => game.renderer.app.resize());
   ro.observe(editModeGameContainer);
+  const ro2 = new ResizeObserver(() => playModeGame.renderer.app.resize());
+  ro2.observe(playModeGameContainer);
 
   game.local.spawn({
+    type: Camera,
+    name: "Camera",
+    values: { smooth: 1 },
+  });
+
+  playModeGame.local.spawn({
     type: Camera,
     name: "Camera",
     values: { smooth: 1 },
@@ -94,8 +109,9 @@ const main = async () => {
   }
 
   game[internal.behaviorLoader].registerInternalBehavior(WASDMovementBehavior, "jackson.test");
+  playModeGame[internal.behaviorLoader].registerInternalBehavior(WASDMovementBehavior, "jackson.test");
 
-  const giz = game.local.spawn({
+  game.local.spawn({
     type: Gizmo,
     name: "Gizmo",
   });
@@ -199,12 +215,17 @@ const main = async () => {
   }
 
   game.setStatus(GameStatus.Running);
+  playModeGame.setStatus(GameStatus.Running)
   game.paused = true;
+  playModeGame.paused = true
+
   let now = performance.now();
   const onFrame = (time: number) => {
     const delta = time - now;
     now = time;
+    // all this will be replaced by properly loading / destroying game when networking is in
     game.tickClient(delta);
+    playModeGame.tickClient(delta)
 
     requestAnimationFrame(onFrame);
   };

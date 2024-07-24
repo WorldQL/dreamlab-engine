@@ -104,6 +104,7 @@ function spawnEntitiesFromDefinitions(data: any, parent: Entity, game: ClientGam
       name: entity.name,
       behaviors,
       _ref: entity._ref,
+      transform: entity.transform
     });
 
     // If the entity definition has children, recurse

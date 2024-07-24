@@ -6,6 +6,11 @@ import { isPausedAtom, isRunningAtom } from "../../context/editor-context.tsx";
 import { IconButton } from "../ui/icon-button.tsx";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip.tsx";
 import { currentGame } from "../../global-game.ts";
+import { setCurrentGame } from "../../global-game.ts";
+import { playModeGame } from "../../global-game.ts";
+import { serializeSceneToJson } from "../../utils/spawn-from-definition.ts";
+import { editModeGame } from "../../global-game.ts";
+import { loadSceneFromDefinition } from "../../utils/spawn-from-definition.ts";
 
 // TODO: Synchronize these with the actual game state.
 const playAtom = atom(null, (_, set) => set(isRunningAtom, true));
@@ -29,7 +34,16 @@ const PlaybackControls = () => {
         <TooltipTrigger asChild>
           <IconButton
             onClick={() => {
-              currentGame.paused = false;
+              // currentGame.paused = false;
+              const world = serializeSceneToJson(editModeGame)
+              console.log(world)
+              setCurrentGame(playModeGame)
+              // obviously temporary, will replace with actual reinitialization when networking is in
+              playModeGame.world.children.forEach((e) => {
+                e.destroy()
+              })
+              loadSceneFromDefinition(playModeGame, JSON.parse(world))
+              playModeGame.paused = false
               handlePlay();
             }}
             icon={Rocket}
@@ -46,7 +60,7 @@ const PlaybackControls = () => {
         <TooltipTrigger asChild>
           <IconButton
             onClick={() => {
-              currentGame.paused = !currentGame.paused;
+              playModeGame.paused = true
               handlePause();
             }}
             icon={isPaused ? Play : Pause}
@@ -64,6 +78,7 @@ const PlaybackControls = () => {
           <IconButton
             onClick={() => {
               currentGame.paused = true;
+              setCurrentGame(editModeGame)
               handleStop();
             }}
             icon={Square}

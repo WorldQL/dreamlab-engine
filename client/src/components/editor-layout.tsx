@@ -46,6 +46,24 @@ export const EditorLayout = ({
     editModeGameDiv.style.zIndex = "-1";
   }, [gameContainer, editModeGameDiv]);
 
+  useEffect(() => {
+    const game = gameContainer.current;
+    if (!game) return;
+
+    game.appendChild(playModeGameDiv);
+    playModeGameDiv.style.zIndex = "-1";
+  }, [gameContainer, playModeGameDiv]);
+
+  useEffect(() => {
+    if (isRunning) {
+      playModeGameDiv.style.display = 'block'
+      editModeGameDiv.style.display = 'none'
+    } else {
+      editModeGameDiv.style.display = 'block'
+      playModeGameDiv.style.display = 'none'
+    }
+  }, [isRunning])
+
   const [topLeftPanelTabs, setTopLeftPanelTabs] = useState([
     { id: "sceneGraph", title: "Scene Graph", content: <SceneGraph /> },
   ]);

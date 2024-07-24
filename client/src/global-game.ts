@@ -36,6 +36,13 @@ export function setEditModeGame(g: ClientGame) {
   editModeGame = g;
 }
 
+// temporary variables until we have saving to disk on the server
+// blocked by multiplayer
+export let savedWorld: any = undefined;
+export function setSavedWorld(world: any) {
+  savedWorld = world;
+}
+
 /*
 Every edit instance has one to two game objects. One that's always paused, and one that can be played or paused.
 
