@@ -49,7 +49,7 @@ export interface EntityContext {
   name: string;
   parent?: Entity;
   transform?: { position?: IVector2; rotation?: number; scale?: IVector2 };
-  authority: ConnectionId;
+  authority?: ConnectionId;
   ref?: string;
   values?: Record<string, JsonValue>;
 }
