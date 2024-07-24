@@ -41,6 +41,8 @@ export class EntityStore {
     set.add(entity);
 
     this.#entitiesByType.set(type, set);
+
+    this.#roots.get(entity.root)?._register(entity, oldId);
   }
   /** for internal use */
   _unregister(entity: Entity) {
@@ -50,5 +52,12 @@ export class EntityStore {
     const type = entity.constructor as EntityConstructor;
     const set = this.#entitiesByType.get(type);
     if (set) set.delete(entity);
+
+    this.#roots.get(entity.root)?._unregister(entity);
+  }
+
+  #roots = new Map<string, EntityStore>();
+  _registerRoot(root: string, store: EntityStore) {
+    this.#roots.set(root, store);
   }
 }

@@ -1,12 +1,18 @@
+import type { Game } from "../game.ts";
 import * as internal from "../internal.ts";
+import { EntityStore } from "./entity-store.ts";
 import { Entity } from "./entity.ts";
-import { Game } from "../game.ts";
 
 export class WorldRoot extends Entity {
   static [internal.internalEntity] = true;
 
+  readonly entities: EntityStore;
+
   constructor(game: Game) {
     super({ game, name: "world", ref: "WORLD" });
+
+    this.entities = new EntityStore();
+    game.entities._registerRoot("world", this.entities);
 
     game.entities._unregister(this);
 
@@ -25,8 +31,13 @@ export class WorldRoot extends Entity {
 export class ServerRoot extends Entity {
   static [internal.internalEntity] = true;
 
+  readonly entities: EntityStore;
+
   constructor(game: Game) {
     super({ game, name: "server", ref: "SERVER" });
+
+    this.entities = new EntityStore();
+    game.entities._registerRoot("server", this.entities);
 
     game.entities._unregister(this);
 
@@ -45,8 +56,13 @@ export class ServerRoot extends Entity {
 export class LocalRoot extends Entity {
   static [internal.internalEntity] = true;
 
+  readonly entities: EntityStore;
+
   constructor(game: Game) {
     super({ game, name: "local", ref: "LOCAL" });
+
+    this.entities = new EntityStore();
+    game.entities._registerRoot("local", this.entities);
 
     game.entities._unregister(this);
 
@@ -65,8 +81,13 @@ export class LocalRoot extends Entity {
 export class PrefabsRoot extends Entity {
   static [internal.internalEntity] = true;
 
+  readonly entities: EntityStore;
+
   constructor(game: Game) {
     super({ game, name: "prefabs", ref: "PREFABS" });
+
+    this.entities = new EntityStore();
+    game.entities._registerRoot("prefabs", this.entities);
 
     game.entities._unregister(this);
 
