@@ -1,11 +1,19 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import { Entity, EntityContext, GamePostRender } from "../mod.ts";
+import {
+  Entity,
+  EntityContext,
+  EntityDestroyed,
+  GamePostRender,
+  pointLocalToWorld,
+} from "../mod.ts";
 
 // #region Physics Debug
 export class PhysicsDebug extends Entity {
   static {
     Entity.registerType(this, "@core");
   }
+
+  readonly bounds: undefined;
 
   #gfx = new PIXI.Graphics();
 
@@ -61,6 +69,57 @@ export class PhysicsDebug extends Entity {
         // this.#graphics.push(gfx);
         // game.app.stage.addChild(gfx);
       }
+    });
+
+    this.on(EntityDestroyed, () => {
+      this.#gfx.destroy({ children: true });
+    });
+  }
+}
+// #endregion
+
+// #region Bounds Debug
+export class BoundsDebug extends Entity {
+  static {
+    Entity.registerType(this, "@core");
+  }
+
+  readonly bounds: undefined;
+
+  #gfx = new PIXI.Graphics();
+
+  constructor(ctx: EntityContext) {
+    super(ctx);
+
+    // TODO: rendering system that abstracts better over pixi?
+    game.renderer.scene.addChild(this.#gfx);
+
+    this.game.on(GamePostRender, () => {
+      this.#gfx.clear();
+
+      for (const entity of this.root.entities.all) {
+        const bounds = entity.bounds;
+        if (!bounds) continue;
+
+        const halfx = bounds.x / 2;
+        const halfy = bounds.y / 2;
+
+        const a = pointLocalToWorld(entity.globalTransform, { x: -halfx, y: -halfy });
+        const b = pointLocalToWorld(entity.globalTransform, { x: -halfx, y: halfy });
+        const c = pointLocalToWorld(entity.globalTransform, { x: halfx, y: -halfy });
+        const d = pointLocalToWorld(entity.globalTransform, { x: halfx, y: halfy });
+
+        a.y = -a.y;
+        b.y = -b.y;
+        c.y = -c.y;
+        d.y = -d.y;
+
+        this.#gfx.poly([a, b, d, c]).stroke({ width: 0.05, color: "red", alpha: 1 });
+      }
+    });
+
+    this.on(EntityDestroyed, () => {
+      this.#gfx.destroy({ children: true });
     });
   }
 }
