@@ -132,6 +132,7 @@ export abstract class Entity implements ISignalHandler {
   }
 
   readonly id: string;
+  readonly root: string;
 
   #parent: Entity | undefined;
   get parent(): Entity | undefined {
@@ -565,6 +566,8 @@ export abstract class Entity implements ISignalHandler {
     if (ctx.ref) this.ref = ctx.ref;
 
     this.game = ctx.game;
+    // @ts-expect-error: must inherit
+    this.root = ctx.parent?.root;
 
     this.#name = ctx.name;
     this.id = serializeIdentifier(ctx.parent?.id, this.#name);
