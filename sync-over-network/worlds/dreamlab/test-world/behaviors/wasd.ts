@@ -13,6 +13,8 @@ export default class WASDMovementBehavior extends Behavior {
   }
 
   onTick(): void {
+    if (this.entity.authority !== this.game.network.connectionId) return;
+
     const movement = new Vector2(0, 0);
     if (this.#up.held) movement.y += 1;
     if (this.#down.held) movement.y -= 1;

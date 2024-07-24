@@ -92,6 +92,9 @@ export class ServerNetworkManager {
     const net = this;
 
     return {
+      get connectionId(): ConnectionId {
+        return undefined;
+      },
       get peers(): ConnectionId[] {
         return [...net.clients.values()];
       },

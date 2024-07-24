@@ -10,13 +10,12 @@ export type CustomMessageListener = (
 ) => void | Promise<void>;
 
 export interface BaseNetworking {
+  get connectionId(): ConnectionId;
   get peers(): ConnectionId[];
   sendCustomMessage(to: ConnectionId, channel: string, data: CustomMessageData): void;
   broadcastCustomMessage(channel: string, data: CustomMessageData): void;
   onReceiveCustomMessage(listener: CustomMessageListener): void;
 }
 
-export interface ClientNetworking extends BaseNetworking {
-  get connectionId(): ConnectionId;
-}
+export interface ClientNetworking extends BaseNetworking {}
 export interface ServerNetworking extends BaseNetworking {}
