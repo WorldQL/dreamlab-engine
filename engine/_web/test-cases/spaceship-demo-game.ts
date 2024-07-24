@@ -460,7 +460,7 @@ class AbilityUI extends Behavior {
 `;
 
     const style = element("style", { children: [css] });
-    this.#ui.root.appendChild(style);
+    this.#ui.dom.appendChild(style);
 
     this.#abilities = element("div", { id: "abilities" });
     this.#ui.element.appendChild(this.#abilities);
@@ -614,7 +614,7 @@ button:active {
 `;
 
     const style = element("style", { children: [css] });
-    this.#ui.root.appendChild(style);
+    this.#ui.dom.appendChild(style);
 
     this.#levelTitle = element("h1");
     this.#levelTitle = element("h2", { children: ["Choose Your Level-Up"] });
@@ -1304,7 +1304,7 @@ class PlayerUI extends Behavior {
 `;
 
     const style = element("style", { children: [css] });
-    this.#ui.root.appendChild(style);
+    this.#ui.dom.appendChild(style);
 
     this.#scoreSpan = element("span");
     this.#healthSpan = element("span");
@@ -1405,7 +1405,7 @@ class LevelProgressUI extends Behavior {
 `;
 
     const style = element("style", { children: [css] });
-    this.#ui.root.appendChild(style);
+    this.#ui.dom.appendChild(style);
 
     this.#progressBar = element("div", { id: "level-progress-bar" });
     const container = element("div", {
@@ -1464,7 +1464,7 @@ class Minimap extends Behavior {
 `;
 
     const style = element("style", { children: [css] });
-    this.#ui.root.appendChild(style);
+    this.#ui.dom.appendChild(style);
 
     this.#dot = element("div", { id: "dot" });
     this.#element = element("div", { id: "minimap" });
@@ -1602,7 +1602,7 @@ class CoordsDisplay extends Behavior {
 `;
 
     const style = element("style", { children: [css] });
-    this.#ui.root.appendChild(style);
+    this.#ui.dom.appendChild(style);
 
     this.#element = element("div", { id: "coords" });
     this.#ui.element.appendChild(this.#element);
@@ -1670,7 +1670,7 @@ button:hover {
 `;
 
     const style = element("style", { children: [css] });
-    this.#ui.root.appendChild(style);
+    this.#ui.dom.appendChild(style);
 
     const button = element("button", { props: { type: "button" }, children: ["Start Game"] });
     button.addEventListener("click", () => this.#startGame());
@@ -1769,7 +1769,7 @@ class DeathScreen extends Behavior {
     `;
 
     const style = element("style", { children: [css] });
-    this.#ui.root.appendChild(style);
+    this.#ui.dom.appendChild(style);
 
     const button = element("button", { props: { type: "button" }, children: ["Respawn"] });
     button.addEventListener("click", () => this.#respawnPlayer());
