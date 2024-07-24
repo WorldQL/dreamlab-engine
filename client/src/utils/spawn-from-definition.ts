@@ -55,6 +55,23 @@ export const SAMPLE_SCENE = {
   remote: [],
 };
 
+export const serializeSceneToJson = (game: ClientGame): string => {
+  const scene: any = {
+    local: [],
+    server: [],
+    world: [],
+  }
+
+  // TODO: Save server and local definitions
+  // need to decide how/if to strip local entities like the editor camera and gizmo
+
+  for (const [_, value] of game.world.children) {
+    scene.world.push(value.getDefinition())
+  }
+
+  return JSON.stringify(scene)
+}
+
 export const loadSceneFromDefinition = (game: ClientGame, sceneData: any) => {
   // TODO: Update the schema to match the format.
   //   const sceneParsed = SceneSchema.safeParse(sceneData);
@@ -64,17 +81,13 @@ export const loadSceneFromDefinition = (game: ClientGame, sceneData: any) => {
 
   // const scene: Scene = sceneParsed.data;
 
-  const scene = sceneData;
   spawnEntitiesFromDefinitions(sceneData.world, game.world, game);
-
-  console.log(scene);
 };
 
 // TODO: Add types after making schema match implementation.
 function spawnEntitiesFromDefinitions(data: any, parent: Entity, game: ClientGame) {
   data.forEach(async (entity: any) => {
     // Print the current item's name and its parent's name
-    console.log(`Name: ${entity.name}`);
     const entityConstructor = Entity.getEntityType(entity.typeName);
     const behaviors = [];
     if (entity.behaviors) {

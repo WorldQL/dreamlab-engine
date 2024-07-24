@@ -15,7 +15,7 @@ import { SceneView } from "./scene-graph/scene-view.ts";
 import { Scene, SceneSchema } from "./scene-graph/schema.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { Entity } from "@dreamlab/engine";
-import { SAMPLE_SCENE, loadSceneFromDefinition } from "./utils/spawn-from-definition.ts";
+import { SAMPLE_SCENE, loadSceneFromDefinition, serializeSceneToJson } from "./utils/spawn-from-definition.ts";
 import * as internal from "../../engine/internal.ts";
 
 try {
@@ -142,6 +142,8 @@ const main = async () => {
     // }, 5000);
 
     loadSceneFromDefinition(game, SAMPLE_SCENE);
+
+    console.log(serializeSceneToJson(game))
 
     // const exampleScene: Scene = SceneDescSceneSchema.parse({
     //   registration: [],
