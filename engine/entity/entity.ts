@@ -2,7 +2,7 @@ import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import type { ConditionalExcept } from "@dreamlab/vendor/type-fest.ts";
 
 import { Behavior, BehaviorConstructor, BehaviorDefinition } from "../behavior/behavior.ts";
-import { type Game } from "../game.ts";
+import { GameStatus, type Game } from "../game.ts";
 import * as internal from "../internal.ts";
 import {
   IVector2,
@@ -276,7 +276,10 @@ export abstract class Entity implements ISignalHandler {
   }
 
   // deno-lint-ignore no-explicit-any
-  spawn<T extends Entity, C extends any[], B extends any[]>(def: EntityDefinition<T, C, B>): T {
+  [internal.entitySpawn]<T extends Entity, C extends any[], B extends any[]>(
+    def: EntityDefinition<T, C, B>,
+    inert: boolean,
+  ) {
     const entity = new def.type({
       game: this.game,
       name: def.name,
@@ -301,15 +304,29 @@ export abstract class Entity implements ISignalHandler {
 
     def.children?.forEach(c => {
       try {
-        entity.spawn(c);
+        entity[internal.entitySpawn](c, inert);
       } catch (err) {
         console.error(err);
       }
     });
 
-    entity.#spawn();
+    if (!inert) entity.#spawn();
 
     return entity;
+  }
+
+  /**
+   * Spawns an Entity as a child of `this`. The entity definition can contain extra behaviors and
+   * children to attach to the spawned entity. Parents are initialized before children.
+   */
+  // deno-lint-ignore no-explicit-any
+  spawn<T extends Entity, C extends any[], B extends any[]>(def: EntityDefinition<T, C, B>): T {
+    return this[internal.entitySpawn](def, false);
+  }
+
+  [internal.entitySpawnFinalize]() {
+    for (const child of this.children.values()) child[internal.entitySpawnFinalize]();
+    this.#spawn();
   }
   // #endregion
 
