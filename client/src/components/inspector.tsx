@@ -40,9 +40,12 @@ const Inspector = () => {
   const { data, isLoading, isError } = useQuery<{ files: string[] }>({
     queryKey: ["files", currentGame.instanceId],
     queryFn: async ({ signal }) => {
-      const resp = await fetch(`http://127.0.0.1:8000/api/v1/edit/${currentGame.instanceId}/files`, {
-        signal,
-      });
+      const resp = await fetch(
+        `http://127.0.0.1:8000/api/v1/edit/${currentGame.instanceId}/files`,
+        {
+          signal,
+        },
+      );
 
       if (!resp.ok) throw new Error(`http error: ${resp.status}`);
       const data = await resp.json();

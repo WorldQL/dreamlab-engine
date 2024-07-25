@@ -15,7 +15,11 @@ import { SceneView } from "./scene-graph/scene-view.ts";
 import { Scene, SceneSchema } from "./scene-graph/schema.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { Entity } from "@dreamlab/engine";
-import { SAMPLE_SCENE, loadSceneFromDefinition, serializeSceneToJson } from "./utils/spawn-from-definition.ts";
+import {
+  SAMPLE_SCENE,
+  loadSceneFromDefinition,
+  serializeSceneToJson,
+} from "./utils/spawn-from-definition.ts";
 import * as internal from "../../engine/internal.ts";
 import { setPlayModeGame } from "./global-game.ts";
 import { setEditModeGame } from "./global-game.ts";
@@ -49,17 +53,27 @@ const main = async () => {
   playModeGameContainer.style.width = "100%"; // TODO: can pixi just handle the resizing all on its own for us?
   playModeGameContainer.style.height = "100%";
 
-  const game = createGame(editModeGameContainer, "connectionIdPlaceholder", instanceId, gameParam);
-  const playModeGame = createGame(playModeGameContainer, "connectionIdPlaceholder", instanceId, gameParam);
-  
-  setPlayModeGame(playModeGame)
-  setEditModeGame(game)
-  setCurrentGame(game)
+  const game = createGame(
+    editModeGameContainer,
+    "connectionIdPlaceholder",
+    instanceId,
+    gameParam,
+  );
+  const playModeGame = createGame(
+    playModeGameContainer,
+    "connectionIdPlaceholder",
+    instanceId,
+    gameParam,
+  );
+
+  setPlayModeGame(playModeGame);
+  setEditModeGame(game);
+  setCurrentGame(game);
   // Object.defineProperty(window, "game", { value: game }); // for debugging
 
   renderEditorUI(editModeGameContainer, playModeGameContainer);
   await game.initialize();
-  await playModeGame.initialize()
+  await playModeGame.initialize();
 
   // resize app to fit parent
   const ro = new ResizeObserver(() => game.renderer.app.resize());
@@ -109,7 +123,10 @@ const main = async () => {
   }
 
   game[internal.behaviorLoader].registerInternalBehavior(WASDMovementBehavior, "jackson.test");
-  playModeGame[internal.behaviorLoader].registerInternalBehavior(WASDMovementBehavior, "jackson.test");
+  playModeGame[internal.behaviorLoader].registerInternalBehavior(
+    WASDMovementBehavior,
+    "jackson.test",
+  );
 
   game.local.spawn({
     type: Gizmo,
@@ -164,7 +181,7 @@ const main = async () => {
 
     loadSceneFromDefinition(game, SAMPLE_SCENE);
 
-    console.log(serializeSceneToJson(game))
+    console.log(serializeSceneToJson(game));
 
     // const exampleScene: Scene = SceneDescSceneSchema.parse({
     //   registration: [],
@@ -215,9 +232,9 @@ const main = async () => {
   }
 
   game.setStatus(GameStatus.Running);
-  playModeGame.setStatus(GameStatus.Running)
+  playModeGame.setStatus(GameStatus.Running);
   game.paused = true;
-  playModeGame.paused = true
+  playModeGame.paused = true;
 
   let now = performance.now();
   const onFrame = (time: number) => {
@@ -225,7 +242,7 @@ const main = async () => {
     now = time;
     // all this will be replaced by properly loading / destroying game when networking is in
     game.tickClient(delta);
-    playModeGame.tickClient(delta)
+    playModeGame.tickClient(delta);
 
     requestAnimationFrame(onFrame);
   };

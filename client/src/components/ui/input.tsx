@@ -1,9 +1,5 @@
 // @deno-types="npm:@types/react@18.3.1"
-import {
-  ChangeEvent,
-  ComponentPropsWithoutRef as ComponentProps,
-  FocusEvent,
-} from "react";
+import { ChangeEvent, ComponentPropsWithoutRef as ComponentProps, FocusEvent } from "react";
 import { memo, useCallback } from "react";
 import { cn } from "../../utils/cn.ts";
 

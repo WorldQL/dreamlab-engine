@@ -35,15 +35,15 @@ const PlaybackControls = () => {
           <IconButton
             onClick={() => {
               // currentGame.paused = false;
-              const world = serializeSceneToJson(editModeGame)
-              console.log(world)
-              setCurrentGame(playModeGame)
+              const world = serializeSceneToJson(editModeGame);
+              console.log(world);
+              setCurrentGame(playModeGame);
               // obviously temporary, will replace with actual reinitialization when networking is in
-              playModeGame.world.children.forEach((e) => {
-                e.destroy()
-              })
-              loadSceneFromDefinition(playModeGame, JSON.parse(world))
-              playModeGame.paused = false
+              playModeGame.world.children.forEach(e => {
+                e.destroy();
+              });
+              loadSceneFromDefinition(playModeGame, JSON.parse(world));
+              playModeGame.paused = false;
               handlePlay();
             }}
             icon={Rocket}
@@ -60,7 +60,7 @@ const PlaybackControls = () => {
         <TooltipTrigger asChild>
           <IconButton
             onClick={() => {
-              playModeGame.paused = true
+              playModeGame.paused = true;
               handlePause();
             }}
             icon={isPaused ? Play : Pause}
@@ -78,7 +78,7 @@ const PlaybackControls = () => {
           <IconButton
             onClick={() => {
               currentGame.paused = true;
-              setCurrentGame(editModeGame)
+              setCurrentGame(editModeGame);
               handleStop();
             }}
             icon={Square}

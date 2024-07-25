@@ -24,10 +24,10 @@ export const CameraControls = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }
     const cursorStyle = isDraggingRef.current
       ? "grabbing"
       : isSpaceDownRef.current
-      ? "grab"
-      : isCtrlDownRef.current
-      ? "zoom-in"
-      : "default";
+        ? "grab"
+        : isCtrlDownRef.current
+          ? "zoom-in"
+          : "default";
 
     if (cursorStyle !== "default") {
       container.style.cursor = cursorStyle;

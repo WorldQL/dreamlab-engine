@@ -56,13 +56,13 @@ export const EditorLayout = ({
 
   useEffect(() => {
     if (isRunning) {
-      playModeGameDiv.style.display = 'block'
-      editModeGameDiv.style.display = 'none'
+      playModeGameDiv.style.display = "block";
+      editModeGameDiv.style.display = "none";
     } else {
-      editModeGameDiv.style.display = 'block'
-      playModeGameDiv.style.display = 'none'
+      editModeGameDiv.style.display = "block";
+      playModeGameDiv.style.display = "none";
     }
-  }, [isRunning])
+  }, [isRunning]);
 
   const [topLeftPanelTabs, setTopLeftPanelTabs] = useState([
     { id: "sceneGraph", title: "Scene Graph", content: <SceneGraph /> },
