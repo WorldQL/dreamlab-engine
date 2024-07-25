@@ -147,7 +147,7 @@ export class Gizmo extends Entity {
     .circle(0, 0, 10)
     .stroke({ color: Gizmo.#NEUTRAL_COLOR, width: 0.02 });
 
-  #graphics: PIXI.Graphics | undefined;
+  #gfx: PIXI.Graphics | undefined;
 
   get #ctx() {
     if (!this.#target) return Gizmo.#blankCtx;
@@ -167,7 +167,7 @@ export class Gizmo extends Entity {
   }
   set mode(value) {
     this.#mode = value;
-    if (this.#graphics) this.#graphics.context = this.#ctx;
+    if (this.#gfx) this.#gfx.context = this.#ctx;
     this.#updateHandles();
   }
   // #endregion
@@ -443,7 +443,7 @@ export class Gizmo extends Entity {
   }
   set target(value: Entity | undefined) {
     this.#target = value;
-    if (this.#graphics) this.#graphics.context = this.#ctx;
+    if (this.#gfx) this.#gfx.context = this.#ctx;
     this.#updateHandles();
   }
 
@@ -452,11 +452,11 @@ export class Gizmo extends Entity {
 
     // Must be a local entity
     if (ctx.parent !== this.game.local || !this.game.isClient()) {
-      throw new Error("camera must be spawned as a client local");
+      throw new Error(`${this.constructor.name} must be spawned as a local client entity`);
     }
 
     this.listen(this.game, GameRender, () => {
-      if (!this.#graphics) return;
+      if (!this.#gfx) return;
 
       if (this.#target) {
         this.globalTransform.position = this.#target.globalTransform.position;
@@ -466,20 +466,20 @@ export class Gizmo extends Entity {
       const pos = this.globalTransform.position;
       const rotation = this.globalTransform.rotation;
 
-      this.#graphics.position = { x: pos.x, y: -pos.y };
-      this.#graphics.rotation = -rotation;
+      this.#gfx.position = { x: pos.x, y: -pos.y };
+      this.#gfx.rotation = -rotation;
 
       const camera = Camera.getActive(this.game);
       if (camera) {
-        this.#graphics.scale = camera.smoothed.scale;
+        this.#gfx.scale = camera.smoothed.scale;
         this.globalTransform.scale = camera.smoothed.scale;
       } else {
-        this.#graphics.scale = 1;
+        this.#gfx.scale = 1;
       }
     });
 
     this.on(EntityDestroyed, () => {
-      this.#graphics?.destroy();
+      this.#gfx?.destroy();
 
       if (this.game.isClient()) {
         const canvas = this.game.renderer.app.canvas;
@@ -492,9 +492,9 @@ export class Gizmo extends Entity {
   onInitialize() {
     if (!this.game.isClient()) return;
 
-    this.#graphics = new PIXI.Graphics(this.#ctx);
-    this.#graphics.zIndex = 9999999999;
-    this.game.renderer.scene.addChild(this.#graphics);
+    this.#gfx = new PIXI.Graphics(this.#ctx);
+    this.#gfx.zIndex = 9999999999;
+    this.game.renderer.scene.addChild(this.#gfx);
 
     this.#updateHandles();
 
