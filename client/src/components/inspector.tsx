@@ -6,17 +6,17 @@ import {
   Value,
 } from "@dreamlab/engine";
 import { useAtom } from "jotai";
+import { Asterisk, CirclePlus, PieChart, Rotate3D, Route, ShieldQuestion } from "lucide-react";
 // @deno-types="npm:@types/react@18.3.1"
 import { memo, useCallback, useEffect, useState } from "react";
 import { selectedEntityAtom } from "../context/editor-context.tsx";
+import { useModal } from "../context/modal-context.tsx";
+import { currentGame } from "../global-game.ts";
+import { useFiles } from "../hooks/useFiles.ts";
 import { AxisInputField } from "./ui/axis-input.tsx";
 import { InputField } from "./ui/input.tsx";
-import { currentGame } from "../global-game.ts";
 import { Category } from "./ui/panel.tsx";
-import { useQuery } from "@tanstack/react-query";
-import { useModal } from "../context/modal-context.tsx";
-import { Asterisk, PieChart, CirclePlus, Rotate3D, Route, ShieldQuestion } from "lucide-react";
-import { Tooltip, TooltipTrigger, TooltipContent } from "./ui/tooltip.tsx";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip.tsx";
 
 const Inspector = () => {
   const [selectedEntity, setSelectedEntity] = useAtom(selectedEntityAtom);
@@ -37,21 +37,7 @@ const Inspector = () => {
   >({});
   const { openModal, closeModal } = useModal();
 
-  const { data, isLoading, isError } = useQuery<{ files: string[] }>({
-    queryKey: ["files", currentGame.instanceId],
-    queryFn: async ({ signal }) => {
-      const resp = await fetch(
-        `http://127.0.0.1:8000/api/v1/edit/${currentGame.instanceId}/files`,
-        {
-          signal,
-        },
-      );
-
-      if (!resp.ok) throw new Error(`http error: ${resp.status}`);
-      const data = await resp.json();
-      return data;
-    },
-  });
+  const { data, isLoading, isError } = useFiles(currentGame.instanceId);
 
   useEffect(() => {
     if (!selectedEntity) return;
