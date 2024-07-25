@@ -2,6 +2,7 @@ import {
   ConnectionId,
   CustomMessageData,
   CustomMessageListener,
+  PeerInfo,
   ServerGame,
   ServerNetworking,
 } from "@dreamlab/engine";
@@ -24,7 +25,7 @@ export type ServerPacketHandler<T extends ClientPacket["t"]> = (
 export type ServerNetworkSetupRoutine = (net: ServerNetworkManager, game: ServerGame) => void;
 
 export class ServerNetworkManager {
-  clients = new Set<ConnectionId>();
+  clients = new Map<ConnectionId, PeerInfo>();
 
   customMessageListeners: CustomMessageListener[] = [];
 
@@ -70,7 +71,19 @@ export class ServerNetworkManager {
       });
 
       // TODO: create playerconnection entity and put it in game.remote
-      this.clients.add(message.connectionId);
+      this.clients.set(message.connectionId, {
+        connectionId: message.connectionId,
+        nickname: message.nickname,
+        playerId: message.playerId,
+      });
+    });
+
+    this.ipc.addMessageListener("ConnectionDropped", message => {
+      this.clients.delete(message.connectionId);
+      this.broadcast({
+        t: "PeerDisconnected",
+        connection_id: message.connectionId,
+      });
     });
 
     handleValueChanges(this, game);
@@ -96,7 +109,7 @@ export class ServerNetworkManager {
       get connectionId(): ConnectionId {
         return undefined;
       },
-      get peers(): ConnectionId[] {
+      get peers(): PeerInfo[] {
         return [...net.clients.values()];
       },
       sendCustomMessage(to: ConnectionId, channel: string, data: CustomMessageData) {

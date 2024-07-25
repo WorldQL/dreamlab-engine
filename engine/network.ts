@@ -9,9 +9,15 @@ export type CustomMessageListener = (
   data: CustomMessageData,
 ) => void | Promise<void>;
 
+export interface PeerInfo {
+  connectionId: ConnectionId;
+  playerId: string;
+  nickname: string;
+}
+
 export interface BaseNetworking {
   get connectionId(): ConnectionId;
-  get peers(): ConnectionId[];
+  get peers(): PeerInfo[];
   sendCustomMessage(to: ConnectionId, channel: string, data: CustomMessageData): void;
   broadcastCustomMessage(channel: string, data: CustomMessageData): void;
   onReceiveCustomMessage(listener: CustomMessageListener): void;

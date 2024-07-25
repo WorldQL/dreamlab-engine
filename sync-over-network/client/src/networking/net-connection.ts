@@ -6,6 +6,7 @@ import {
   ConnectionId,
   CustomMessageData,
   CustomMessageListener,
+  PeerInfo,
 } from "@dreamlab/engine";
 import { handleValueChanges } from "./value-changes.ts";
 import { handleCustomMessages } from "./custom-messages.ts";
@@ -31,10 +32,7 @@ export class ClientConnection {
     return handler as ClientPacketHandler<ServerPacket["t"]>;
   }
 
-  peers = new Map<
-    ConnectionId,
-    { connectionId: ConnectionId; playerId: string; nickname: string }
-  >();
+  peers = new Map<ConnectionId, PeerInfo>();
 
   constructor(
     public id: ConnectionId,
@@ -89,8 +87,8 @@ export class ClientConnection {
       get connectionId() {
         return conn.id;
       },
-      get peers(): ConnectionId[] {
-        return [...conn.peers.values()].map(p => p.connectionId);
+      get peers(): PeerInfo[] {
+        return [...conn.peers.values()];
       },
       sendCustomMessage(to: ConnectionId, channel: string, data: CustomMessageData) {
         conn.send({ t: "CustomMessage", channel, data, to });
