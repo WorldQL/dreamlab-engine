@@ -64,7 +64,7 @@ export const handleTransformSync: ClientNetworkSetupRoutine = (conn, game) => {
   conn.registerPacketHandler("ReportEntityTransform", packet => {
     const entity = game.entities.lookupByRef(packet.entity);
     if (entity === undefined) return;
-    if (packet.from === entity.authority) {
+    if (packet.from === entity.authority && packet.from !== conn.id) {
       entity.transform.position.assign(packet.position);
       entity.transform.rotation = packet.rotation;
       entity.transform.scale.assign(packet.scale);

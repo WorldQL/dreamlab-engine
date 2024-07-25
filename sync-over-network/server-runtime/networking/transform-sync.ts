@@ -36,5 +36,15 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
     announceAuthority(entity, clock + 1, undefined);
   });
 
+  net.registerPacketHandler("ReportEntityTransform", (from, packet) => {
+    const entity = game.entities.lookupByRef(packet.entity);
+    if (entity === undefined) return;
+    if (from === entity.authority) {
+      entity.transform.position.assign(packet.position);
+      entity.transform.rotation = packet.rotation;
+      entity.transform.scale.assign(packet.scale);
+    }
+  });
+
   // TODO: entity authority snapshot when a player joins
 };
