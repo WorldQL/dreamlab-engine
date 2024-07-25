@@ -1,8 +1,10 @@
 import {
   Behavior,
+  Click,
   EntityDescendantRenamed,
   EntityRenamed,
   EntityTransformUpdate,
+  Gizmo,
   Value,
 } from "@dreamlab/engine";
 import { useAtom } from "jotai";
@@ -38,6 +40,40 @@ const Inspector = () => {
   const { openModal, closeModal } = useModal();
 
   const { data, isLoading, isError } = useFiles(currentGame.instanceId);
+
+  const onClick = useCallback(
+    ({ cursor }: Click) => {
+      if (!currentGame.paused) return;
+
+      // Ignore click event if mouse is over a local entity (clickable for gizmo)
+      const local = currentGame.local.entities.lookupByPosition(cursor.world);
+      if (local.length > 0) return;
+
+      const q = currentGame.world.entities
+        .lookupByPosition(cursor.world)
+        .toSorted((a, b) => b.z - a.z);
+
+      const gizmo = currentGame.local.children.get("Gizmo")?.cast(Gizmo);
+
+      const first = q.at(0);
+      if (!first) {
+        setSelectedEntity(null);
+        if (gizmo) gizmo.target = undefined;
+        return;
+      }
+
+      setSelectedEntity(first);
+      if (gizmo) gizmo.target = first;
+    },
+    [currentGame],
+  );
+
+  useEffect(() => {
+    currentGame.inputs.on(Click, onClick);
+    return () => {
+      currentGame.inputs.unregister(Click, onClick);
+    };
+  }, [currentGame, currentGame.paused, onClick]);
 
   useEffect(() => {
     if (!selectedEntity) return;
