@@ -142,7 +142,7 @@ export class VisualCard extends Behavior {
 
     const style = document.createElement("style");
     style.appendChild(document.createTextNode(css));
-    this.#ui.root.appendChild(style);
+    this.#ui.dom.appendChild(style);
 
     // Front (face)
     this.#face = element("div", { id: "face" });
