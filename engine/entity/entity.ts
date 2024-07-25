@@ -278,7 +278,7 @@ export abstract class Entity implements ISignalHandler {
   // deno-lint-ignore no-explicit-any
   [internal.entitySpawn]<T extends Entity, C extends any[], B extends any[]>(
     def: EntityDefinition<T, C, B>,
-    inert: boolean,
+    opts: { inert?: boolean } = {},
   ) {
     const entity = new def.type({
       game: this.game,
@@ -304,13 +304,13 @@ export abstract class Entity implements ISignalHandler {
 
     def.children?.forEach(c => {
       try {
-        entity[internal.entitySpawn](c, inert);
+        entity[internal.entitySpawn](c, opts);
       } catch (err) {
         console.error(err);
       }
     });
 
-    if (!inert) entity.#spawn();
+    if (!opts.inert) entity.#spawn();
 
     return entity;
   }
@@ -321,7 +321,7 @@ export abstract class Entity implements ISignalHandler {
    */
   // deno-lint-ignore no-explicit-any
   spawn<T extends Entity, C extends any[], B extends any[]>(def: EntityDefinition<T, C, B>): T {
-    return this[internal.entitySpawn](def, false);
+    return this[internal.entitySpawn](def);
   }
 
   [internal.entitySpawnFinalize]() {

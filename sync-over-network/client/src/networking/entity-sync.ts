@@ -1,18 +1,22 @@
 import {
+  Entity,
   EntityDescendantDestroyed,
   EntityDescendantReparented,
   EntityDescendantSpawned,
   GameStatus,
 } from "@dreamlab/engine";
+import * as internal from "../../../../engine/internal.ts";
 import { ClientNetworkSetupRoutine } from "./net-connection.ts";
 
 import {
   convertEntityDefinition,
+  getAllEntityRefs,
   serializeEntityDefinition,
 } from "../../../networking-shared/entity-sync.ts";
+import { PeerConnected } from "../../../networking-shared/signals.ts";
 
 export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
-  const changeIgnoreSet = new Set<string>();
+  let changeIgnoreSet = new Set<string>();
 
   game.world.on(EntityDescendantSpawned, async event => {
     if (game.status !== GameStatus.Running) return;
@@ -40,6 +44,37 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
     conn.send({ t: "DeleteEntity", entity: entity.ref });
   });
 
+  conn.registerPacketHandler("InitialNetworkSnapshot", async packet => {
+    const entityPromises: Promise<Entity>[] = [];
+    let allRefs = new Set<string>();
+
+    for (const { root, defs } of [
+      { root: game.world, defs: packet.worldEntities },
+      { root: game.prefabs, defs: packet.prefabEntities },
+    ]) {
+      for (const def of defs) {
+        entityPromises.push(
+          (async () => {
+            const definition = await convertEntityDefinition(game, def);
+            const refs = getAllEntityRefs(definition);
+            allRefs = allRefs.union(refs);
+
+            changeIgnoreSet = changeIgnoreSet.union(refs);
+            const entity = root[internal.entitySpawn](definition, { inert: true });
+            changeIgnoreSet = changeIgnoreSet.difference(refs);
+            return entity;
+          })(),
+        );
+      }
+    }
+
+    const entities = await Promise.all(entityPromises);
+
+    changeIgnoreSet = changeIgnoreSet.union(allRefs);
+    for (const entity of entities) entity[internal.entitySpawnFinalize]();
+    changeIgnoreSet = changeIgnoreSet.difference(allRefs);
+  });
+
   conn.registerPacketHandler("SpawnEntity", async packet => {
     if (packet.from === conn.id) return;
     const def = packet.definition;
@@ -52,10 +87,10 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
     }
 
     const definition = await convertEntityDefinition(game, def);
-
-    changeIgnoreSet.add(def.ref);
+    const refs = getAllEntityRefs(definition);
+    changeIgnoreSet = changeIgnoreSet.union(refs);
     parent.spawn(definition);
-    changeIgnoreSet.delete(def.ref);
+    changeIgnoreSet = changeIgnoreSet.difference(refs);
   });
 
   conn.registerPacketHandler("DeleteEntity", packet => {

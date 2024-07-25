@@ -16,7 +16,7 @@ export const uiDestroy = Symbol.for("dreamlab.internal.uiDestroy");
 export const entityForceAuthorityValues = Symbol.for(
   "dreamlab.internal.entityForceAuthorityValues",
 );
-export const entitySpawn = Symbol.for("dreamlab.internal.entitySpawnInert");
+export const entitySpawn = Symbol.for("dreamlab.internal.entitySpawn");
 export const entitySpawnFinalize = Symbol.for("dreamlab.internal.entitySpawnFinalize");
 export const entityAuthorityClock = Symbol.for("dreamlab.internal.entityAuthorityClock");
 export const entityStoreRegister = Symbol.for("dreamlab.internal.entityStoreRegister");

@@ -35,6 +35,13 @@ export const ServerPeerChangedNicknamePacketSchema = z.object({
   new_nickname: z.string(),
 });
 
+export const ServerPeerListSnapshotPacketSchema = z.object({
+  t: z.literal("PeerListSnapshot"),
+  peers: z
+    .object({ connection_id: ConnectionIdSchema, player_id: z.string(), nickname: z.string() })
+    .array(),
+});
+
 export const ClientChatMessagePacketSchema = z.object({
   t: z.literal("ChatMessage"),
   message: z.string(),
@@ -152,8 +159,8 @@ export const ServerCustomMessagePacket = BaseCustomMessagePacket.extend({
 
 export const ServerInitialNetworkSnapshotPacket = z.object({
   t: z.literal("InitialNetworkSnapshot"),
-  entities: z.record(EntityReferenceSchema, EntityDefinitionSchema),
-  syncedValues: z.record(z.string(), z.any()),
+  worldEntities: EntityDefinitionSchema.array(),
+  prefabEntities: EntityDefinitionSchema.array(),
 });
 
 export const ClientPacketSchema = z.discriminatedUnion("t", [
@@ -175,6 +182,7 @@ export const ServerPacketSchema = z.discriminatedUnion("t", [
   ServerPeerConnectedPacketSchema,
   ServerPeerDisconnectedPacketSchema,
   ServerPeerChangedNicknamePacketSchema,
+  ServerPeerListSnapshotPacketSchema,
   ServerChatMessagePacketSchema,
   ServerSetSyncedValuePacketSchema,
   ServerSpawnEntityPacket,

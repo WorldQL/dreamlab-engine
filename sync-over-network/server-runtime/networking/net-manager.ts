@@ -17,6 +17,7 @@ import { handleValueChanges } from "./value-changes.ts";
 import { handleCustomMessages } from "./custom-messages.ts";
 import { handleEntitySync } from "./entity-sync.ts";
 import { handleTransformSync } from "./transform-sync.ts";
+import { PeerConnected, PeerDisconnected } from "../../networking-shared/signals.ts";
 
 export type ServerPacketHandler<T extends ClientPacket["t"]> = (
   from: ConnectionId,
@@ -54,6 +55,13 @@ export class ServerNetworkManager {
     });
 
     this.ipc.addMessageListener("ConnectionEstablished", message => {
+      this.broadcast({
+        t: "PeerConnected",
+        nickname: message.nickname,
+        player_id: message.playerId,
+        connection_id: message.connectionId,
+      });
+
       this.send(message.connectionId, {
         t: "Handshake",
         connection_id: message.connectionId,
@@ -63,27 +71,34 @@ export class ServerNetworkManager {
         world_script_base_url: `${this.ipc.workerData.worldResourcesBaseUrl}/${game.worldId}/`,
       });
 
-      this.broadcast({
-        t: "PeerConnected",
-        nickname: message.nickname,
-        player_id: message.playerId,
-        connection_id: message.connectionId,
-      });
-
       // TODO: create playerconnection entity and put it in game.remote
-      this.clients.set(message.connectionId, {
+      const peerInfo = {
         connectionId: message.connectionId,
         nickname: message.nickname,
         playerId: message.playerId,
+      };
+      this.clients.set(message.connectionId, peerInfo);
+
+      this.send(message.connectionId, {
+        t: "PeerListSnapshot",
+        peers: [...this.clients.values()].map(p => ({
+          nickname: p.nickname,
+          connection_id: p.connectionId,
+          player_id: p.playerId,
+        })),
       });
+
+      game.fire(PeerConnected, peerInfo);
     });
 
     this.ipc.addMessageListener("ConnectionDropped", message => {
-      this.clients.delete(message.connectionId);
       this.broadcast({
         t: "PeerDisconnected",
         connection_id: message.connectionId,
       });
+      const peerInfo = this.clients.get(message.connectionId);
+      this.clients.delete(message.connectionId);
+      if (peerInfo) game.fire(PeerDisconnected, peerInfo);
     });
 
     handleValueChanges(this, game);

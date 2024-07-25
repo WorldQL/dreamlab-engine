@@ -90,3 +90,10 @@ export const serializeEntityDefinition = async (
     parent: parentRef,
   };
 };
+
+export const getAllEntityRefs = (def: EntityDefinition, refs?: Set<string>): Set<string> => {
+  const refSet = refs ?? new Set<string>();
+  if (def._ref) refSet.add(def._ref);
+  def.children?.forEach(c => getAllEntityRefs(c, refSet));
+  return refSet;
+};
