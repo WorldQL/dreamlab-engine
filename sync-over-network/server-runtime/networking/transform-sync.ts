@@ -43,6 +43,15 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
       entity.transform.position.assign(packet.position);
       entity.transform.rotation = packet.rotation;
       entity.transform.scale.assign(packet.scale);
+
+      net.broadcast({
+        t: "ReportEntityTransform",
+        entity: entity.ref,
+        from,
+        position: packet.position,
+        rotation: packet.rotation,
+        scale: packet.scale,
+      });
     }
   });
 

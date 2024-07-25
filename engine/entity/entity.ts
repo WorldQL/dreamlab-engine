@@ -380,6 +380,7 @@ export abstract class Entity implements ISignalHandler {
       name: this.name,
       type: this.constructor as EntityConstructor<this>,
       typeName: Entity.getTypeName(this.constructor as EntityConstructor),
+      authority: this.authority,
       transform: {
         position: this.transform.position.bare(),
         rotation: this.transform.rotation,

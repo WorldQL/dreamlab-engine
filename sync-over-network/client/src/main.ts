@@ -15,12 +15,13 @@ const setup = async (conn: ClientConnection, game: ClientGame) => {
   await game.initialize();
 
   await networkSetupPromise;
+
+  game.setStatus(GameStatus.Running);
+
   const { default: clientMain } = await import(
     game.resolveResource("res://temp-client-main.js")
   );
   await clientMain(game);
-
-  game.setStatus(GameStatus.Running);
 
   let now = performance.now();
   const onTick = (time: number) => {
