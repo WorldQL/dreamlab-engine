@@ -80,7 +80,7 @@ export class Camera extends Entity {
 
     // Must be a local entity
     if (ctx.parent !== this.game.local || !this.game.isClient()) {
-      throw new Error("camera must be spawned as a client local");
+      throw new Error(`${this.constructor.name} must be spawned as a local client entity`);
     }
 
     this.defineValues(Camera, "smooth");
