@@ -9,8 +9,6 @@ export const readConfig = () => {
   const bindAddress = env("BIND_ADDRESS", env.socketAddress("127.0.0.1:8000"));
   const gameAuthSecret = env("GAME_AUTH_SECRET");
   const coordAuthSecret = env("COORDINATOR_AUTH_TOKEN");
-  const kvServerUrl = env("KV_SERVER_URL");
-  const kvSigningKey = env("KV_SIGNING_KEY");
   const dreamlabNextUrl = env("DREAMLAB_NEXT_URL");
   const isDev = z.boolean({ coerce: true }).parse(env("IS_DEV", env.optional));
   const publicUrl =
@@ -40,8 +38,6 @@ export const readConfig = () => {
     publicUrl,
     coordAuthSecret,
     gameAuthSecret,
-    kvServerUrl,
-    kvSigningKey,
     isDev,
     adminPushBaseUrl,
     dreamlabNextUrl,

@@ -3,7 +3,7 @@ import { jsonError } from "../../web/util.ts";
 import { unsafeDecodeAuthToken, validateAuthToken } from "./auth.ts";
 import type { AuthToken } from "./auth.ts";
 import type { GameRuntimeInstance, PlayerConnection } from "./runtime.ts";
-import { ClientToServerPacketSchema } from "../../../common/play-proto/mod.ts";
+import { ClientPacketSchema } from "@dreamlab/proto/play.ts";
 
 import * as log from "../../util/log.ts";
 
@@ -37,10 +37,10 @@ export const handlePlayerConnection = (
     const data = event.data;
     if (typeof data === "string") {
       try {
-        const packet = ClientToServerPacketSchema.parse(JSON.parse(data));
+        const packet = ClientPacketSchema.parse(JSON.parse(data));
         instance.ipc.send({
           op: "IncomingPacket",
-          connectionId: connection.id,
+          from: connection.id,
           packet,
         });
       } catch {
@@ -56,7 +56,6 @@ export const handlePlayerConnection = (
       op: "ConnectionEstablished",
       nickname: auth.nickname,
       playerId: auth.player_id,
-      characterId: null,
       connectionId: connection.id,
     });
   };

@@ -3,7 +3,6 @@ import { getWorldPath } from "../../config.ts";
 import * as log from "../../util/log.ts";
 import * as path from "@std/path";
 import { RunningInstance } from "../mod.ts";
-import { createKv } from "../../kv.ts";
 import { APP_CONFIG } from "../../config.ts";
 
 export interface PlayerConnection {
@@ -25,12 +24,12 @@ export class GameRuntimeInstance {
   #ready: boolean;
   #readyPromise: Promise<void>;
 
-  constructor(parent: RunningInstance, tempDir: string) {
+  constructor(parent: RunningInstance) {
     this.parent = parent;
     this.connections = new Map();
     this.richStatus = {};
 
-    const worldPath = getWorldPath(parent.worldId, parent.worldVariant);
+    // const worldPath = getWorldPath(parent.worldId, parent.worldVariant);
 
     const config = APP_CONFIG;
     const addr = config.bindAddress;
@@ -42,19 +41,15 @@ export class GameRuntimeInstance {
         workerConnectUrl: `ws://${addr.hostname}:${addr.port}/internal/worker`,
         instanceId: parent.instanceId,
         worldId: parent.worldId,
-        worldVariant: parent.worldVariant,
-        worldScriptURLBase: `${parent.urlBase ?? config.publicUrl}/worlds/${worldPath}`,
-        editMode: parent.editMode,
-        tempDir,
+        worldResourcesBaseUrl: `${parent.urlBase ?? config.publicUrl}/worlds`,
+        worldDirectory: path.join(Deno.cwd(), "worlds", parent.worldId, "_dist"),
         debugMode: parent.debugMode,
+        // TODO: edit mode
       },
-      path.join(Deno.cwd(), "runtime", "worlds", worldPath),
       parent.logs,
     );
 
     this.startedAt = new Date();
-
-    createKv(this.ipc);
 
     this.#ready = false;
     this.#readyPromise = new Promise(resolve => {
@@ -65,21 +60,8 @@ export class GameRuntimeInstance {
       });
     });
 
-    this.#handleStatus();
+    // TODO: handle status
     this.#handlePackets();
-    this.#handleLogging();
-
-    this.ipc.addMessageListener("TracerBatchExport", async message => {
-      if (path.relative(tempDir, message.path).startsWith("..")) return;
-
-      const buffer = await Deno.readFile(message.path);
-      await Deno.remove(message.path);
-
-      // const compactTraces = cbor.decodeMultiple(buffer)![0]
-      // const _traces = expandTraceSpans(compactTraces as CompactTraceSpan[])
-
-      // TODO: process traces
-    });
   }
 
   async ready() {
@@ -112,21 +94,6 @@ export class GameRuntimeInstance {
     }
   }
 
-  #handleStatus() {
-    let hadPlayers = false;
-
-    this.ipc.addMessageListener("SetStatus", message => {
-      this.richStatus = message.status;
-
-      hadPlayers ||= message.status?.player_count > 0;
-      if (this.parent.closeOnEmpty) {
-        if (hadPlayers && message.status.player_count === 0) {
-          this.parent.shutdown();
-        }
-      }
-    });
-  }
-
   #handlePackets() {
     const sendPacket = (connectionId: string | null, packet: unknown) => {
       const packetJSON = JSON.stringify(packet);
@@ -144,24 +111,7 @@ export class GameRuntimeInstance {
     };
 
     this.ipc.addMessageListener("OutgoingPacket", message => {
-      sendPacket(message.connectionId, message.packet);
-    });
-
-    this.ipc.addMessageListener("MultiOutgoingPackets", message => {
-      for (const [connectionId, packet] of message.packets) {
-        sendPacket(connectionId, packet);
-      }
-    });
-  }
-
-  #handleLogging() {
-    this.ipc.addMessageListener("LogMessage", message => {
-      this.parent.logs.publish({
-        timestamp: Date.now(),
-        detail: message.detail,
-        level: message.level,
-        message: message.message,
-      });
+      sendPacket(message.to, message.packet);
     });
   }
 }

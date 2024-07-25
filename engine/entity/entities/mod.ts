@@ -1,4 +1,3 @@
-export * from "./basic-living.ts";
 export * from "./camera.ts";
 export * from "./clickable.ts";
 export * from "./collider.ts";

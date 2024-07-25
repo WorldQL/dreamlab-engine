@@ -1,6 +1,6 @@
 {
   "tasks": {
-    "start": "deno run --unstable-worker-options -A ./server-host/main.ts",
+    "start": "deno run -A ./server-host/main.ts",
     "build": "deno run -A ./_build.ts"
   },
   "imports": {
@@ -10,6 +10,5 @@
   },
   "compilerOptions": {
     "lib": ["deno.window", "dom"]
-  },
-  "unstable": ["worker-options"]
+  }
 }

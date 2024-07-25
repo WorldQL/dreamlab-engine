@@ -1,5 +1,5 @@
 import { Context, Status } from "oak";
-import { WORKER_POOL } from "../worker.ts";
+import { IPCWorker } from "../worker.ts";
 import { jsonError } from "./util.ts";
 
 export const workerInternalRoute = (ctx: Context) => {
@@ -14,7 +14,7 @@ export const workerInternalRoute = (ctx: Context) => {
     return;
   }
 
-  const worker = WORKER_POOL.get(token);
+  const worker = IPCWorker.POOL.get(token);
   if (worker === undefined) {
     jsonError(ctx, Status.Forbidden, "No matching worker is running.");
     return;

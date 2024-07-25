@@ -222,8 +222,6 @@ export const bootInstance = async (instance: RunningInstance, restart: boolean =
     "worlds",
     getWorldPath(instance.worldId, instance.worldVariant),
   );
-  console.log(instance.worldId)
-  console.log(worldDirectory)
 
   if (instance.worldId.startsWith("dreamlab/")) {
     instance.logs.debug("Skipping world fetch ('dreamlab/' world ID)");
@@ -263,14 +261,8 @@ export const bootInstance = async (instance: RunningInstance, restart: boolean =
       discord: instance.worldVariant === "discord",
     });
 
-    const tempDir = await Deno.makeTempDir({ prefix: "dreamlab-mp-" });
-    log.debug("Created temp dir for instance", {
-      instance: instance.instanceId,
-      tempDir,
-    });
-
     instance.setStatus(restart ? "Rebooting" : "Booting");
-    const game = new GameRuntimeInstance(instance, tempDir);
+    const game = new GameRuntimeInstance(instance);
     instance.game = game;
     await game.ready();
     instance.setStatus("Started");
@@ -279,20 +271,6 @@ export const bootInstance = async (instance: RunningInstance, restart: boolean =
     instance.logs.error(`Failed to build world bundle`, { err: err.stack });
     instance.setStatus("Build failed", err.toString());
     instance.notifyBootFail(err);
-
-    if (
-      instance.editMode &&
-      (await fs.exists(`${worldDirectory}/client.${instance.worldVariant}.bundled.js`))
-    ) {
-      const tempDir = await Deno.makeTempDir({ prefix: "dreamlab-mp-" });
-      log.debug("Created temp dir for instance", {
-        instance: instance.instanceId,
-        tempDir,
-      });
-      const game = new GameRuntimeInstance(instance, tempDir);
-      instance.game = game;
-      await game.ready();
-    }
 
     return;
   }

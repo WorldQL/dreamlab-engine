@@ -28,7 +28,7 @@ const main = async () => {
       string: ["instance-id", "variant"],
       alias: { "instance-id": "i" },
     });
-    const worldId = String(args._[0] ?? "dreamlab/survival");
+    const worldId = String(args._[0] ?? "dreamlab/test-world");
     const instanceId = args["instance-id"] ?? "00000000-0000-0000-0000-000000000000";
 
     const instance = createInstance(instanceId, worldId, args["variant"] ?? "main", {
