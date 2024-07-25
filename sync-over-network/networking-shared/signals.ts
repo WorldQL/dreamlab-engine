@@ -6,3 +6,5 @@ export class PeerConnected {
 export class PeerDisconnected {
   constructor(public peer: PeerInfo) {}
 }
+
+export class ReceivedInitialNetworkSnapshot {}

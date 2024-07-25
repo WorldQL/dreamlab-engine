@@ -13,7 +13,7 @@ import {
   getAllEntityRefs,
   serializeEntityDefinition,
 } from "../../../networking-shared/entity-sync.ts";
-import { PeerConnected } from "../../../networking-shared/signals.ts";
+import { ReceivedInitialNetworkSnapshot } from "../../../networking-shared/signals.ts";
 
 export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
   let changeIgnoreSet = new Set<string>();
@@ -73,6 +73,8 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
     changeIgnoreSet = changeIgnoreSet.union(allRefs);
     for (const entity of entities) entity[internal.entitySpawnFinalize]();
     changeIgnoreSet = changeIgnoreSet.difference(allRefs);
+
+    game.fire(ReceivedInitialNetworkSnapshot);
   });
 
   conn.registerPacketHandler("SpawnEntity", async packet => {

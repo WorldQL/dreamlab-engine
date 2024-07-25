@@ -2,28 +2,25 @@ import { ClientGame, GameStatus } from "@dreamlab/engine";
 import { JSON_CODEC } from "@dreamlab/proto/codecs/simple-json.ts";
 import { ServerPacket } from "@dreamlab/proto/play.ts";
 import { ClientConnection } from "./networking/net-connection.ts";
+import { ReceivedInitialNetworkSnapshot } from "../../networking-shared/signals.ts";
 
 const setup = async (conn: ClientConnection, game: ClientGame) => {
+  const networkSetupPromise = new Promise<void>((resolve, _reject) => {
+    game.on(ReceivedInitialNetworkSnapshot, () => {
+      resolve();
+    });
+  });
+
   conn.setup(game);
   await game.initialize();
 
-  // TODO: load test world
+  await networkSetupPromise;
   const { default: clientMain } = await import(
     game.resolveResource("res://temp-client-main.js")
   );
   await clientMain(game);
 
   game.setStatus(GameStatus.Running);
-
-  /* game.world.spawn({
-    type: Sprite2D,
-    name: "Player." + conn.id,
-    behaviors: [
-      {
-        type: await game.loadBehavior("/worlds/dreamlab/test-world/player.js"),
-      },
-    ],
-  }); */
 
   let now = performance.now();
   const onTick = (time: number) => {
