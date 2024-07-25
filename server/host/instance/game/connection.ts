@@ -76,6 +76,23 @@ export const handlePlayerConnectionRequest = async (
   authSecret: CryptoKey,
   game: GameRuntimeInstance,
 ) => {
+  // === TEMP ===
+  const nickname = ctx.request.url.searchParams.get("nickname");
+  const playerId = ctx.request.url.searchParams.get("player_id");
+  if (nickname && playerId) {
+    const auth: AuthToken = {
+      instance_id: game.parent.instanceId,
+      nickname,
+      player_id: playerId,
+      world: game.parent.worldId,
+      guest: true
+    }
+    const socket = ctx.upgrade();
+    return handlePlayerConnection(auth, socket, game);
+  }
+  // === TEMP ===
+
+
   const token = ctx.request.url.searchParams.get("token");
   if (token === null) {
     jsonError(ctx, Status.Unauthorized, "No auth token was provided.");
@@ -103,4 +120,5 @@ export const handlePlayerConnectionRequest = async (
 
     return;
   }
+  */
 };
