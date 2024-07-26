@@ -1,5 +1,6 @@
 import {
   Behavior,
+  BoxResizeGizmo,
   Click,
   EntityDescendantRenamed,
   EntityRenamed,
@@ -54,16 +55,19 @@ const Inspector = () => {
         .toSorted((a, b) => b.z - a.z);
 
       const gizmo = currentGame.local.children.get("Gizmo")?.cast(Gizmo);
+      const boxresize = currentGame.local.children.get("BoxResizeGizmo")?.cast(BoxResizeGizmo);
 
       const first = q.at(0);
       if (!first) {
         setSelectedEntity(null);
         if (gizmo) gizmo.target = undefined;
+        if (boxresize) boxresize.target = undefined;
         return;
       }
 
       setSelectedEntity(first);
       if (gizmo) gizmo.target = first;
+      if (boxresize) boxresize.target = first;
     },
     [currentGame],
   );

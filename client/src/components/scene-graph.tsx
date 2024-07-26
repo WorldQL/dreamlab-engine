@@ -1,4 +1,4 @@
-import { Entity, Gizmo } from "@dreamlab/engine";
+import { BoxResizeGizmo, Entity, Gizmo } from "@dreamlab/engine";
 import { useAtom } from "jotai";
 import { ChevronDownIcon } from "lucide-react";
 // @deno-types="npm:@types/react@18.3.1"
@@ -44,7 +44,9 @@ const EntityEntry = ({
   const handleEntityClick = useCallback(() => {
     setSelectedEntity(entity);
     const gizmo = currentGame.local.children.get("Gizmo")?.cast(Gizmo);
+    const boxresize = currentGame.local.children.get("BoxResizeGizmo")?.cast(BoxResizeGizmo);
     if (gizmo) gizmo.target = entity;
+    if (boxresize) boxresize.target = entity;
   }, [entity, setSelectedEntity]);
 
   const handleDragStart = useCallback(

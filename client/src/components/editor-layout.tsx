@@ -2,20 +2,21 @@ import { useAtomValue } from "jotai";
 // @deno-types="npm:@types/react@18.3.1"
 import { useEffect, useRef, useState } from "react";
 import { isPausedAtom, isRunningAtom } from "../context/editor-context.tsx";
+import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts.ts";
+import { cn } from "../utils/cn.ts";
 import { handleResize, handleVerticalResize } from "../utils/resize.ts";
+import { CameraControls } from "./camera-controls.tsx";
 import { Console } from "./console.tsx";
+import { FileTree } from "./file-tree.tsx";
 import { Inspector } from "./inspector.tsx";
+import { Prefabs } from "./prefabs.tsx";
 import { SceneGraph } from "./scene-graph.tsx";
 import { NewEntityMenu } from "./toolbar/new-entity-button.tsx";
 import { PlaybackControls } from "./toolbar/playback-controls.tsx";
 import { SettingsButton } from "./toolbar/settings-button.tsx";
 import { ThemeButton } from "./toolbar/theme-button.tsx";
-import { CameraControls } from "./camera-controls.tsx";
-import { cn } from "../utils/cn.ts";
-import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts.ts";
 import { Panel } from "./ui/panel.tsx";
-import { FileTree } from "./file-tree.tsx";
-import { Prefabs } from "./prefabs.tsx";
+import { ToolSelector } from "./ui/tool-selector.tsx";
 
 export const EditorLayout = ({
   editModeGameDiv,
@@ -163,6 +164,7 @@ export const EditorLayout = ({
             id="editor-pointer-style-target"
           >
             <CameraControls gameDiv={editModeGameDiv} />
+            <ToolSelector />
           </div>
         </div>
         <div
