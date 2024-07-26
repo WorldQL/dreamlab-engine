@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { Move3D, Rotate3D, Scale3D, Scaling, Pointer } from "lucide-react";
+import { Move3D, Rotate3D, Scale3D, BoxSelect, Component } from "lucide-react";
 // @deno-types="npm:@types/react@18.3.1"
 import { useCallback, useMemo } from "react";
 import { Tool, TransformMode, useTool } from "../../hooks/useTool.ts";
@@ -14,7 +14,7 @@ export const ToolSelector = () => {
         tool="transform"
         transformMode="combined"
         tooltip="Combined"
-        icon={Pointer} // TODO: Better icon?
+        icon={Component}
         top
       />
       <ToolButton
@@ -30,7 +30,7 @@ export const ToolSelector = () => {
         tool="box-resize"
         transformMode={undefined}
         tooltip="Box Resize"
-        icon={Scaling}
+        icon={BoxSelect}
         bottom
       />
     </div>
