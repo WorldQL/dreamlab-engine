@@ -8,6 +8,9 @@ import { ClickableRect } from "./clickable.ts";
 
 type Handle = Exclude<`${"t" | "b" | ""}${"l" | "" | "r"}`, "">;
 
+// TODO: Make work when rotated lol
+// TODO: Add handle to center for dragging
+
 export class BoxResizeGizmo extends Entity {
   static {
     Entity.registerType(this, "@core");
