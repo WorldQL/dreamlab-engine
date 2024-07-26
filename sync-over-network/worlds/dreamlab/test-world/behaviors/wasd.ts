@@ -21,6 +21,8 @@ export default class WASDMovementBehavior extends Behavior {
     if (this.#right.held) movement.x += 1;
     if (this.#left.held) movement.x -= 1;
 
+    if (movement.x === 0 && movement.y === 0) return;
+
     this.entity.transform.position = this.entity.transform.position.add(
       movement.normalize().mul((this.time.delta / 100) * this.speed),
     );
