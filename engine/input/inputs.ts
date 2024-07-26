@@ -124,6 +124,11 @@ export class Inputs implements ISignalHandler {
   #onMouseUp = (ev: MouseEvent) => this.#onMouse(ev, false);
 
   #onMouse = (ev: MouseEvent, pressed: boolean) => {
+    // @ts-expect-error: we know its a client game
+    if (ev.target !== this.#game.renderer.app.canvas) {
+      return;
+    }
+
     const input: Input | undefined =
       ev.button === 0
         ? "MouseLeft"
