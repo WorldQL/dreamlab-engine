@@ -112,16 +112,24 @@ const FileTreeComponent = () => {
 
   if (isLoading) {
     return (
-      <div title="Files" className="h-full">
-        &nbsp;
+      <div title="Files" className="h-full text-textPrimary p-4">
+        Loading files...
       </div>
     );
   }
 
-  if (isError || !data || !data.files) {
+  if (isError) {
     return (
-      <div title="Files" className="h-full">
-        Error loading files.
+      <div title="Files" className="h-full text-textPrimary p-4">
+        Error loading files. Please try again later.
+      </div>
+    );
+  }
+
+  if (!data || !data.files || data.files.length === 0) {
+    return (
+      <div title="Files" className="h-full text-textPrimary p-4">
+        No files found.
       </div>
     );
   }
