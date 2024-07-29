@@ -144,6 +144,7 @@ export class BoxResizeGizmo extends Entity {
 
         const offset = world.sub(this.globalTransform.position);
         this.#action = {
+          type: "scale",
           handle,
           offset,
           transform: new Transform(entity.transform),
@@ -159,6 +160,23 @@ export class BoxResizeGizmo extends Entity {
     topRight.on(MouseDown, onMouseDown("tr"));
     bottomLeft.on(MouseDown, onMouseDown("bl"));
     bottomRight.on(MouseDown, onMouseDown("br"));
+
+    const translateOnMouseDown =
+      (axis: "x" | "y" | "both") =>
+      ({ button, cursor: { world } }: MouseDown) => {
+        if (button !== "left") return;
+
+        const offset = world.sub(this.globalTransform.position);
+        this.#action = { type: "translate", axis, offset };
+      };
+
+    const translateBoth = this.spawn({
+      type: ClickableRect,
+      name: "TranslateBoth",
+      transform: { position: { x: 0, y: 0 } },
+      values: { width: 0.3, height: 0.3 },
+    });
+    translateBoth.on(MouseDown, translateOnMouseDown("both"));
   }
 
   #updateHandlePositions() {
@@ -222,7 +240,14 @@ export class BoxResizeGizmo extends Entity {
 
   // #region Action / Signals
   #action:
-    | { handle: Handle; offset: Vector2; transform: Transform; globalTransform: Transform }
+    | { type: "translate"; axis: "x" | "y" | "both"; offset: Vector2 }
+    | {
+        type: "scale";
+        handle: Handle;
+        offset: Vector2;
+        transform: Transform;
+        globalTransform: Transform;
+      }
     | undefined;
 
   #onMouseMove = (_: MouseEvent) => {
@@ -233,6 +258,17 @@ export class BoxResizeGizmo extends Entity {
     if (!cursor) return;
 
     const pos = cursor.world.sub(this.#action.offset);
+    if (this.#action.type === "translate") {
+      const local = pointWorldToLocal(this.globalTransform, pos);
+      if (this.#action.axis === "x") local.y = 0;
+      if (this.#action.axis === "y") local.x = 0;
+      const world = pointLocalToWorld(this.globalTransform, local);
+
+      this.#target.globalTransform.position = world;
+
+      return;
+    }
+
     const local = pointWorldToLocal(this.#action.globalTransform, pos);
     const scaled = this.#action.transform.scale.mul(local);
 
@@ -320,6 +356,8 @@ export class BoxResizeGizmo extends Entity {
 
       const entity = this.#target;
       if (!entity) return;
+
+      const pos = entity.pos;
       this.pos.assign(entity.pos);
 
       const bounds = entity.bounds;
@@ -340,12 +378,17 @@ export class BoxResizeGizmo extends Entity {
       c.y = -c.y;
       d.y = -d.y;
 
-      this.#gfx.poly([a, b, d, c]).stroke({
-        width: BoxResizeGizmo.#STROKE_WIDTH,
-        color: "22a2ff",
-        alpha: 1,
-        alignment: -0,
-      });
+      this.#gfx
+        .poly([a, b, d, c])
+        .stroke({
+          width: BoxResizeGizmo.#STROKE_WIDTH,
+          color: "22a2ff",
+          alpha: 1,
+          alignment: -0,
+        })
+        .rect(pos.x - 0.15, -(pos.y + 0.15), 0.3, 0.3)
+        .fill({ alpha: 0.2, color: "blue" })
+        .stroke({ alpha: 0.5, color: "blue", width: 0.01 });
 
       // TODO: Draw corner boxes
     });
