@@ -1,24 +1,11 @@
-import { esbuild, denoPlugins } from "./_esbuild.ts";
+import {
+  esbuild,
+  denoPlugins,
+  dreamlabVendorExternalPlugin,
+  dreamlabEngineExternalPlugin,
+} from "./_esbuild.ts";
 import * as path from "jsr:@std/path@1";
 import * as fs from "jsr:@std/fs@1";
-
-export const dreamlabEngineExternalPlugin = (): esbuild.Plugin => ({
-  name: "dreamlab-engine-external",
-  setup: (build: esbuild.PluginBuild) => {
-    build.onResolve({ filter: /^@dreamlab\/engine/ }, args => {
-      return { path: args.path, external: true };
-    });
-  },
-});
-
-export const dreamlabVendorExternalPlugin = (): esbuild.Plugin => ({
-  name: "dreamlab-vendor-external",
-  setup: (build: esbuild.PluginBuild) => {
-    build.onResolve({ filter: /^@dreamlab\/vendor/ }, args => {
-      return { path: args.path.replace(/\.ts$/, ".js"), external: true };
-    });
-  },
-});
 
 export interface BundleOptions {
   watch: boolean;
@@ -129,10 +116,10 @@ export const bundleEngine = async (
 export const bundleClient = async (
   clientDir: string,
   outdir: string,
-  inputs: esbuild.BuildOptions["entryPoints"] = [
-    { in: path.join(clientDir, "src", "main.ts"), out: "client.mjs" },
-  ],
   denoJsonPath: string = path.join(clientDir, "deno.json"),
+  inputs: esbuild.BuildOptions["entryPoints"] = [
+    { in: path.join(clientDir, "src", "main.ts"), out: "client-main.mjs" },
+  ],
   opts?: BundleOptions,
 ) => {
   const buildOpts: esbuild.BuildOptions = {
@@ -150,50 +137,4 @@ export const bundleClient = async (
   };
 
   await bundle("client", buildOpts, opts);
-};
-
-// TODO: let people supply their own import map (craft a deno.json at runtime?)
-
-import esbuildCopy from "npm:esbuild-copy-static-files@0.1.0";
-
-/**
- * Bundles a world into its 'dist' folder
- */
-export const bundleWorld = async (
-  worldName: string,
-  worldDir: string,
-  denoJsonPath: string,
-  opts?: BundleOptions,
-) => {
-  await fs.ensureDir(path.join(worldDir, "src"));
-  await fs.ensureDir(path.join(worldDir, "assets"));
-
-  const src = path.join(worldDir, "src");
-  const entryPoints = [
-    `${src}/**/*.ts`,
-    `${src}/**/*.js`,
-    `${src}/**/*.tsx`,
-    `${src}/**/*.jsx`,
-  ];
-
-  const buildOpts: esbuild.BuildOptions = {
-    ...BASE_BUILD_OPTIONS,
-    plugins: [
-      dreamlabEngineExternalPlugin(),
-      dreamlabVendorExternalPlugin(),
-      ...denoPlugins({
-        loader: "native",
-        configPath: await Deno.realPath(denoJsonPath),
-      }),
-      esbuildCopy({
-        src: path.join(worldDir, "assets"),
-        dest: path.join(worldDir, "_dist", "assets"),
-      }),
-    ],
-    entryPoints,
-    outdir: path.join(worldDir, "_dist"),
-    logOverride: { "empty-glob": "silent" },
-  };
-
-  await bundle(`world ${worldName}`, buildOpts, opts);
 };
