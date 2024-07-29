@@ -24,13 +24,16 @@
       "jsr:@std/ulid@^0.224.0": "jsr:@std/ulid@0.224.1",
       "npm:@dimforge/rapier2d-compat@0.12.0": "npm:@dimforge/rapier2d-compat@0.12.0",
       "npm:@dimforge/rapier2d-compat@0.13.1": "npm:@dimforge/rapier2d-compat@0.13.1",
+      "npm:@dimforge/rapier2d-compat@0.14.0": "npm:@dimforge/rapier2d-compat@0.14.0",
       "npm:@paralleldrive/cuid2@2.2.2": "npm:@paralleldrive/cuid2@2.2.2",
       "npm:@pixi/ticker": "npm:@pixi/ticker@7.4.2",
       "npm:esbuild-plugin-d.ts@1.2.3": "npm:esbuild-plugin-d.ts@1.2.3_typescript@5.4.5",
       "npm:esbuild@0.20.2": "npm:esbuild@0.20.2",
       "npm:pixi.js@8.1.5": "npm:pixi.js@8.1.5",
       "npm:pixi.js@8.1.6": "npm:pixi.js@8.1.6",
-      "npm:type-fest@4.20.1": "npm:type-fest@4.20.1"
+      "npm:pixi.js@8.2.6": "npm:pixi.js@8.2.6",
+      "npm:type-fest@4.20.1": "npm:type-fest@4.20.1",
+      "npm:type-fest@4.23.0": "npm:type-fest@4.23.0"
     },
     "jsr": {
       "@deno/cache-dir@0.8.0": {
@@ -128,6 +131,10 @@
       },
       "@dimforge/rapier2d-compat@0.13.1": {
         "integrity": "sha512-n8g70IkhhpHHqg+KrRbfCc3rHnRvl2pcWHHwk6tJB/BrwywQhM6zWsBCa2sFVIqCjxv/Ese5qmaxSBICPUo0Sw==",
+        "dependencies": {}
+      },
+      "@dimforge/rapier2d-compat@0.14.0": {
+        "integrity": "sha512-sljQVPstRS63hVLnVNphsZUjH51TZoptVM0XlglKAdZ8CT+kWnmA6olwjkF7omPWYrlKMd/nHORxOUdJDOSoAQ==",
         "dependencies": {}
       },
       "@esbuild/aix-ppc64@0.20.2": {
@@ -481,6 +488,20 @@
           "parse-svg-path": "parse-svg-path@0.1.2"
         }
       },
+      "pixi.js@8.2.6": {
+        "integrity": "sha512-CNfr7CmjIEWJ06e3TBrXBKFpcTPMGUaFdtP4RlMOgNOTkDD6+Bhm728I/EkGAo2vsOVO1YwNFsuORQyD3MngZg==",
+        "dependencies": {
+          "@pixi/colord": "@pixi/colord@2.9.6",
+          "@types/css-font-loading-module": "@types/css-font-loading-module@0.0.12",
+          "@types/earcut": "@types/earcut@2.1.4",
+          "@webgpu/types": "@webgpu/types@0.1.40",
+          "@xmldom/xmldom": "@xmldom/xmldom@0.8.10",
+          "earcut": "earcut@2.2.4",
+          "eventemitter3": "eventemitter3@5.0.1",
+          "ismobilejs": "ismobilejs@1.1.1",
+          "parse-svg-path": "parse-svg-path@0.1.2"
+        }
+      },
       "punycode@1.4.1": {
         "integrity": "sha512-jmYNElW7yvO7TV33CjSmvSiE2yco3bV2czu/OzDKdMNVZQWfxCblURLhf+47syQRBntjfLdd/H0egrzIG+oaFQ==",
         "dependencies": {}
@@ -519,6 +540,10 @@
       },
       "type-fest@4.20.1": {
         "integrity": "sha512-R6wDsVsoS9xYOpy8vgeBlqpdOyzJ12HNfQhC/aAKWM3YoCV9TtunJzh/QpkMgeDhkoynDcw5f1y+qF9yc/HHyg==",
+        "dependencies": {}
+      },
+      "type-fest@4.23.0": {
+        "integrity": "sha512-ZiBujro2ohr5+Z/hZWHESLz3g08BBdrdLMieYFULJO+tWc437sn8kQsWLJoZErY8alNhxre9K4p3GURAG11n+w==",
         "dependencies": {}
       },
       "typescript@5.4.5": {

@@ -1,2 +1,2 @@
 // TODO: Code split this?
-export * from "npm:pixi.js@8.1.6";
+export * from "npm:pixi.js@8.2.6";
