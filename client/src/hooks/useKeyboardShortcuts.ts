@@ -1,3 +1,4 @@
+// @deno-types="npm:@types/react@18.3.1"
 import { useEffect, useCallback } from "react";
 import { useAtom } from "jotai";
 import {
