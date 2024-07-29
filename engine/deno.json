@@ -7,8 +7,5 @@
   },
   "imports": {
     "@dreamlab/vendor/": "./_deps/"
-  },
-  "compilerOptions": {
-    "lib": ["deno.window", "dom"]
   }
 }
