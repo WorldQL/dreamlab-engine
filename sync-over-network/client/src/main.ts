@@ -2,7 +2,7 @@ import { ClientGame, GameStatus } from "@dreamlab/engine";
 import { JSON_CODEC } from "@dreamlab/proto/codecs/simple-json.ts";
 import { ServerPacket } from "@dreamlab/proto/play.ts";
 import { ClientConnection } from "./networking/net-connection.ts";
-import { ReceivedInitialNetworkSnapshot } from "../../networking-shared/signals.ts";
+import { ReceivedInitialNetworkSnapshot } from "@dreamlab/proto/common/signals.ts";
 
 const setup = async (conn: ClientConnection, game: ClientGame) => {
   const networkSetupPromise = new Promise<void>((resolve, _reject) => {

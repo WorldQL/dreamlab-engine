@@ -12,8 +12,8 @@ import {
   convertEntityDefinition,
   getAllEntityRefs,
   serializeEntityDefinition,
-} from "../../../networking-shared/entity-sync.ts";
-import { ReceivedInitialNetworkSnapshot } from "../../../networking-shared/signals.ts";
+} from "@dreamlab/proto/common/entity-sync.ts";
+import { ReceivedInitialNetworkSnapshot } from "@dreamlab/proto/common/signals.ts";
 
 export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
   let changeIgnoreSet = new Set<string>();

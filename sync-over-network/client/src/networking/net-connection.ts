@@ -12,7 +12,7 @@ import { handleValueChanges } from "./value-changes.ts";
 import { handleCustomMessages } from "./custom-messages.ts";
 import { handleEntitySync } from "./entity-sync.ts";
 import { handleTransformSync } from "./transform-sync.ts";
-import { PeerConnected, PeerDisconnected } from "../../../networking-shared/signals.ts";
+import { PeerConnected, PeerDisconnected } from "@dreamlab/proto/common/signals.ts";
 
 export type ClientPacketHandler<T extends ServerPacket["t"]> = (
   packet: PlayPacket<T, "server">,

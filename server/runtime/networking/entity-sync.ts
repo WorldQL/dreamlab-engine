@@ -8,8 +8,8 @@ import { ServerNetworkSetupRoutine } from "./net-manager.ts";
 import {
   convertEntityDefinition,
   serializeEntityDefinition,
-} from "../../networking-shared/entity-sync.ts";
-import { PeerConnected } from "../../networking-shared/signals.ts";
+} from "@dreamlab/proto/common/entity-sync.ts";
+import { PeerConnected } from "@dreamlab/proto/common/signals.ts";
 
 export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
   const changeIgnoreSet = new Set<string>();
