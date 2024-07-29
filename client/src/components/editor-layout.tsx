@@ -17,6 +17,7 @@ import { SettingsButton } from "./toolbar/settings-button.tsx";
 import { ThemeButton } from "./toolbar/theme-button.tsx";
 import { Panel } from "./ui/panel.tsx";
 import { ToolSelector } from "./ui/tool-selector.tsx";
+import * as portals from "react-reverse-portal";
 
 export const EditorLayout = ({
   editModeGameDiv,
@@ -66,17 +67,42 @@ export const EditorLayout = ({
   }, [isRunning]);
 
   const [topLeftPanelTabs, setTopLeftPanelTabs] = useState([
-    { id: "sceneGraph", title: "Scene Graph", content: <SceneGraph /> },
+    {
+      id: "sceneGraph",
+      title: "Scene Graph",
+      content: <SceneGraph />,
+      node: portals.createHtmlPortalNode(),
+    },
   ]);
   const [bottomLeftPanelTabs, setBottomLeftPanelTabs] = useState([
-    { id: "fileTree", title: "Project", content: <FileTree /> },
-    { id: "prefabs", title: "Prefabs", content: <Prefabs /> },
+    {
+      id: "fileTree",
+      title: "Project",
+      content: <FileTree />,
+      node: portals.createHtmlPortalNode(),
+    },
+    {
+      id: "prefabs",
+      title: "Prefabs",
+      content: <Prefabs />,
+      node: portals.createHtmlPortalNode(),
+    },
   ]);
   const [rightPanelTabs, setRightPanelTabs] = useState([
-    { id: "inspector", title: "Inspector", content: <Inspector /> },
+    {
+      id: "inspector",
+      title: "Inspector",
+      content: <Inspector />,
+      node: portals.createHtmlPortalNode(),
+    },
   ]);
   const [bottomPanelTabs, setBottomPanelTabs] = useState([
-    { id: "console", title: "Console", content: <Console /> },
+    {
+      id: "console",
+      title: "Console",
+      content: <Console />,
+      node: portals.createHtmlPortalNode(),
+    },
   ]);
 
   const handleDropTab = (tabId: string, targetPanelId: string) => {

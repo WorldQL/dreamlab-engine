@@ -1,7 +1,8 @@
 // @deno-types="npm:@types/react@18.3.1"
-import React, { FC, useEffect, useState, useRef } from "react";
+import React, { FC, useEffect, useState, useRef, useMemo } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "./tooltip.tsx";
+import * as portals from "react-reverse-portal";
 
 export interface Tab {
   id: string;
@@ -16,9 +17,15 @@ interface PanelProps {
   panelId: string;
 }
 
-export const Panel: FC<PanelProps> = ({ className, tabs, onDropTab, panelId }: PanelProps) => {
+export const Panel: FC<PanelProps> = ({ className, tabs, onDropTab, panelId }) => {
   const [activeTab, setActiveTab] = useState(tabs[0]?.id || "");
   const tabsRef = useRef<HTMLDivElement>(null);
+  const portalNodes = useMemo(() => {
+    return tabs.reduce((nodes, tab) => {
+      nodes[tab.id] = portals.createHtmlPortalNode();
+      return nodes;
+    }, {} as Record<string, ReturnType<typeof portals.createHtmlPortalNode>>);
+  }, [tabs]);
 
   useEffect(() => {
     if (tabs.length > 0 && !tabs.some(tab => tab.id === activeTab)) {
@@ -76,11 +83,15 @@ export const Panel: FC<PanelProps> = ({ className, tabs, onDropTab, panelId }: P
         </div>
       </div>
       <div className="flex-1 overflow-y-auto custom-scrollbar">
-        {tabs.map(tab => (
-          <div key={tab.id} className={`${activeTab === tab.id ? "block" : "hidden"}`}>
-            {tab.content}
-          </div>
-        ))}
+        {tabs.map(
+          tab =>
+            tab.id === activeTab && (
+              <React.Fragment key={tab.id}>
+                <portals.InPortal node={portalNodes[tab.id]}>{tab.content}</portals.InPortal>
+                <portals.OutPortal node={portalNodes[tab.id]} />
+              </React.Fragment>
+            ),
+        )}
       </div>
     </div>
   );
