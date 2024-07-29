@@ -82,7 +82,7 @@ game[internal.behaviorLoader].registerInternalBehavior(HealthBar, "spaceship");
 
 // #region Movement
 class Movement extends Behavior {
-  speed = 2.0;
+  speed = 5.0;
 
   #up = this.inputs.create("@movement/up", "Move Up", "KeyW");
   #down = this.inputs.create("@movement/down", "Move Down", "KeyS");
@@ -138,7 +138,7 @@ game[internal.behaviorLoader].registerInternalBehavior(LookAtMouse, "spaceship")
 
 class CameraFollow extends Behavior {
   onInitialize(): void {
-    const target = this.entity._.CameraTarget;
+    const target = this.entity;
     const camera = Camera.getActive(this.game);
 
     this.listen(this.game, GamePostRender, () => {
@@ -1237,7 +1237,6 @@ function spawnPlayer() {
     transform: { position, scale: { x: 1.25, y: 1.25 } },
     values: { type: "fixed" },
     children: [
-      { type: Empty, name: "CameraTarget", transform: { position: { x: 0, y: 1 } } },
       {
         type: Sprite2D,
         name: "PlayerSprite",
@@ -1805,7 +1804,9 @@ game.local.spawn({
 
 // #region Camera & Game
 camera.transform.scale = Vector2.splat(3);
-camera.smooth = 0.05;
+// very jittery like this
+camera.smooth = 1
+// set smooth to 0.01 for smooth movement but note that the health bar doesn't keep up!
 
 game.physics.world.gravity = { x: 0, y: 0 };
 // #endregion
