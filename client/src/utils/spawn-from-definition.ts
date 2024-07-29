@@ -85,6 +85,7 @@ export const loadSceneFromDefinition = (game: ClientGame, sceneData: any) => {
 };
 
 // TODO: Add types after making schema match implementation.
+// TODO: Also implement ability to spawn local and prefab trees + include metadata for dynamically loading behaviors.
 function spawnEntitiesFromDefinitions(data: any, parent: Entity, game: ClientGame) {
   data.forEach(async (entity: any) => {
     // Print the current item's name and its parent's name
