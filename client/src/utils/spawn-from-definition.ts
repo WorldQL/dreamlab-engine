@@ -52,7 +52,7 @@ export const SAMPLE_SCENE = {
     },
   ],
   prefabs: [],
-  remote: [],
+  server: [],
 };
 
 export const serializeSceneToJson = (game: ClientGame): string => {
