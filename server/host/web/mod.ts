@@ -1,6 +1,7 @@
 import { Application, Router, Status } from "oak";
 import { oakCors } from "https://deno.land/x/cors@v1.2.2/mod.ts";
 import { generate as generateUUIDv5 } from "@std/uuid/v5";
+import * as path from "@std/path";
 import { z } from "zod";
 
 import { APP_CONFIG } from "../config.ts";
@@ -173,21 +174,18 @@ export const listenWeb = async (
   // (e.g. stdio pipe / unix socket) is that we can eventually move game workers onto another machine
   router.get("/internal/worker", workerInternalRoute);
 
-  router.get("/worlds/:path*", async ctx => {
-    const path = ctx.params.path;
-    if (path === undefined) {
+  router.get("/worlds/:user/:world/:resource*", async ctx => {
+    const { user, world, resource } = ctx.params;
+    try {
+      await ctx.send({
+        root: path.join("./worlds/", user, world, "_dist"),
+        path: resource,
+      });
+    } catch (err) {
+      console.warn(err);
+      ctx.response.status = Status.NotFound;
       ctx.response.body = "Not Found";
       ctx.response.type = "text/plain";
-      ctx.response.status = Status.NotFound;
-      return;
-    }
-
-    try {
-      await ctx.send({ root: "./runtime/worlds", path, hidden: true });
-    } catch {
-      ctx.response.body = "Not Found: " + path;
-      ctx.response.type = "text/plain";
-      ctx.response.status = Status.NotFound;
     }
   });
 

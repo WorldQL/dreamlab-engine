@@ -6,7 +6,7 @@ import {
 } from "../build-system/mod.ts";
 
 if (import.meta.main) {
-  await bundleEngineDependencies("../engine/", "./client/dist/vendor");
+  await bundleEngineDependencies("../engine/", "./client/dist");
   await bundleEngine("../engine/", "./client/dist");
   await bundleClient("./client", "./client/dist", "./deno.json");
   await bundleWorld(

@@ -1,1 +1,3 @@
-_dist
+*
+!.gitignore
+!README.md

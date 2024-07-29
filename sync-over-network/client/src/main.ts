@@ -35,9 +35,9 @@ const setup = async (conn: ClientConnection, game: ClientGame) => {
   requestAnimationFrame(onTick);
 };
 
-const instanceId = "my-instance";
+const instanceId = "00000000-0000-0000-0000-000000000000";
 const socket = new WebSocket(
-  `/api/v1/connect/${instanceId}?nickname=${encodeURIComponent("Player" + Math.floor(Math.random() * 999) + 1)}&player_id=${encodeURIComponent(crypto.randomUUID())}`,
+  `ws://127.0.0.1:8000/api/v1/connect/${instanceId}?nickname=${encodeURIComponent("Player" + Math.floor(Math.random() * 999) + 1)}&player_id=${encodeURIComponent(crypto.randomUUID())}`,
 );
 Object.defineProperty(window, "socket", { value: socket });
 const codec = JSON_CODEC;

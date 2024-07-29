@@ -50,6 +50,7 @@ Symbol.asyncDispose ??= Symbol.for("Symbol.asyncDispose");`,
   },
   sourcemap: "linked",
   keepNames: true,
+  splitting: true,
 };
 
 /**
@@ -85,7 +86,7 @@ export const bundleEngineDependencies = async (
 };
 
 /**
- * Bundles the engine into an 'engine.mjs' ES Module in the outdir.
+ * Bundles the engine into an 'engine.js' ES Module in the outdir.
  * This will include external references to "@dreamlab/vendor", so map imports accordingly.
  */
 export const bundleEngine = async (
@@ -103,7 +104,7 @@ export const bundleEngine = async (
         configPath: await Deno.realPath(denoJsonPath),
       }),
     ],
-    entryPoints: [{ in: path.join(engineDir, "mod.ts"), out: "engine.mjs" }],
+    entryPoints: [{ in: path.join(engineDir, "mod.ts"), out: "engine" }],
     outdir,
   };
 
@@ -118,7 +119,7 @@ export const bundleClient = async (
   outdir: string,
   denoJsonPath: string = path.join(clientDir, "deno.json"),
   inputs: esbuild.BuildOptions["entryPoints"] = [
-    { in: path.join(clientDir, "src", "main.ts"), out: "client-main.mjs" },
+    { in: path.join(clientDir, "src", "main.ts"), out: "client-main" },
   ],
   opts?: BundleOptions,
 ) => {

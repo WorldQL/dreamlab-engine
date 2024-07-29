@@ -5,7 +5,7 @@ class PlayerSpawnBehavior extends Behavior {
     if (!this.game.isClient()) return;
 
     void (async () => {
-      const WASDMovementBehavior = await this.game.loadBehavior("res://behaviors/wasd.js");
+      const WASDMovementBehavior = await this.game.loadBehavior("res://src/wasd.js");
       this.game.world.spawn({
         type: Sprite2D,
         name: "Player." + this.game.network.connectionId,

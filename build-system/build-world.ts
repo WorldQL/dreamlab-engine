@@ -28,12 +28,24 @@ export const prepareBundleWorld = async (
   // TODO: use worldDesc to figure out metadata
 
   const src = path.join(worldOpts.dir, "src");
-  const entryPoints = [
+  const entryPoints: esbuild.BuildOptions["entryPoints"] = [
     `${src}/**/*.ts`,
     `${src}/**/*.js`,
     `${src}/**/*.tsx`,
     `${src}/**/*.jsx`,
   ];
+
+  // TEMP
+  // @ts-expect-error esbuild moment
+  entryPoints.push({
+    in: path.join(worldOpts.dir, "temp-client-main.ts"),
+    out: "temp-client-main",
+  });
+  // @ts-expect-error esbuild moment
+  entryPoints.push({
+    in: path.join(worldOpts.dir, "temp-server-main.ts"),
+    out: "temp-server-main",
+  });
 
   const buildOpts: esbuild.BuildOptions = {
     ...BASE_BUILD_OPTIONS,
@@ -54,6 +66,7 @@ export const prepareBundleWorld = async (
       }),
     ],
     entryPoints,
+    outbase: worldOpts.dir,
     outdir: path.join(worldOpts.dir, "_dist"),
     logOverride: { "empty-glob": "silent" },
   };
