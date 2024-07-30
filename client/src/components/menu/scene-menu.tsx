@@ -1,4 +1,4 @@
-import { Empty, Entity, Rigidbody2D, Sprite2D } from "@dreamlab/engine";
+import { Empty, Entity, EntityConstructor, Rigidbody2D, Sprite2D } from "@dreamlab/engine";
 import { useAtom } from "jotai";
 // @deno-types="npm:@types/react@18.3.1"
 import { useCallback, useEffect, useRef } from "react";
@@ -23,7 +23,7 @@ export const SceneMenu = ({ entity, position, setIsOpen }: SceneMenuProps) => {
   const menuRef = useRef<HTMLDivElement>(null);
 
   const createEntity = useCallback(
-    (entityType: typeof Empty | typeof Rigidbody2D | typeof Sprite2D) => {
+    (entityType: (typeof Empty | typeof Rigidbody2D | typeof Sprite2D) & EntityConstructor) => {
       const newEntity = currentGame.world.spawn({
         type: entityType,
         name: entityType.name,

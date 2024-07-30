@@ -1,28 +1,58 @@
-import {
-  Behavior,
-  Camera,
-  Empty,
-  GameStatus,
-  Gizmo,
-  Rigidbody2D,
-  Sprite2D,
-  Vector2,
-} from "@dreamlab/engine";
+import { Behavior, Camera, GameStatus, Gizmo, Vector2 } from "@dreamlab/engine";
 import { renderEditorUI } from "./editor-ui-main.tsx";
 import { createGame, setCurrentGame } from "./global-game.ts";
 
-import { SceneView } from "./scene-graph/scene-view.ts";
-import { Scene, SceneSchema } from "./scene-graph/schema.ts";
-import { z } from "@dreamlab/vendor/zod.ts";
-import { Entity } from "@dreamlab/engine";
-import {
-  SAMPLE_SCENE,
-  loadSceneFromDefinition,
-  serializeSceneToJson,
-} from "./utils/spawn-from-definition.ts";
 import * as internal from "../../engine/internal.ts";
 import { setPlayModeGame } from "./global-game.ts";
 import { setEditModeGame } from "./global-game.ts";
+
+import {
+  Scene,
+  loadSceneDefinition,
+  serializeSceneDefinition,
+} from "../../engine/scene/mod.ts";
+
+export const SAMPLE_SCENE: Scene = {
+  world: [
+    {
+      ref: "ent_l1wx3qcq9xxy5bg6u8n036wy",
+      name: "DefaultSquare",
+      type: "@core/Rigidbody2D",
+      transform: { position: { x: 0, y: 0 }, rotation: 0, scale: { x: 1, y: 1 }, z: 0 },
+      values: { type: "fixed" },
+    },
+    {
+      ref: "ent_kkm6r17dsj197dla0iu9fbjp",
+      name: "DefaultSquare.1",
+      type: "@core/Rigidbody2D",
+      transform: { position: { x: 0, y: 0 }, rotation: 0, scale: { x: 1, y: 1 }, z: 0 },
+      values: { type: "fixed" },
+    },
+    {
+      ref: "ent_qitlau9pgtq5y8wmxuym0paf",
+      name: "SpriteContainer",
+      type: "@core/Empty",
+      transform: { position: { x: 0, y: 0 }, rotation: 0, scale: { x: 2, y: 1 }, z: 0 },
+      values: {},
+      children: [
+        {
+          ref: "ent_ame972vw6ejknflhvv35n2xp",
+          name: "Sprite",
+          type: "@core/Sprite2D",
+          transform: { position: { x: 0, y: 0 }, rotation: 0, scale: { x: 1, y: 1 }, z: 0 },
+          values: { width: 1, height: 1, alpha: 1, texture: "" },
+          behaviors: [
+            {
+              ref: "bhv_dgneu7qncn6wxed6rgvoww5u",
+              values: { speed: 1 },
+              script: "builtin:jackson.test/WASDMovementBehavior",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
 
 try {
   // @ts-expect-error injected global
@@ -133,103 +163,8 @@ const main = async () => {
     name: "Gizmo",
   });
 
-  // set to false locally if you are charlotte
-  if (true) {
-    // const body = game.world.spawn({
-    //   type: Rigidbody2D,
-    //   name: "DefaultSquare",
-    // });
-
-    // const body2 = game.world.spawn({
-    //   type: Rigidbody2D,
-    //   name: "DefaultSquare",
-    // });
-
-    // const spriteParent = game.world.spawn({
-    //   type: Empty,
-    //   name: "SpriteContainer",
-    // });
-    // spriteParent.transform.scale.x = 2;
-
-    // const sprite2d = Entity.getEntityType("@core/Sprite2D")
-
-    // const sprite = spriteParent.spawn({
-    //   type: sprite2d,
-    //   name: "Sprite",
-    //   behaviors: [
-    //     // spawn the sprite with SpinBehavior
-    //     { type: WASDMovementBehavior },
-    //   ],
-    // });
-
-    // // THIS IS HOW YOU SAVE A SCENE.
-    // // TODO tomorrow: Write function to save game to json.
-    // const definitions = []
-    // for (const [_, value] of game.world.children) {
-    //   definitions.push(value.getDefinition())
-    // }
-
-    // console.log(definitions)
-
-    // console.log(JSON.stringify(definitions))
-    // console.log(Entity.getTypeName(Sprite2D))
-
-    // setTimeout(() => {
-    //   console.log("adding WASD movement");
-    //   sprite.addBehavior({ type: WASDMovementBehavior });
-    // }, 5000);
-
-    loadSceneFromDefinition(game, SAMPLE_SCENE);
-
-    console.log(serializeSceneToJson(game));
-
-    // const exampleScene: Scene = SceneDescSceneSchema.parse({
-    //   registration: [],
-    //   local: [],
-    //   world: [
-    //     {
-    //       type: "@core/Sprite2D",
-    //       name: "foo",
-    //       ref: "myrefasdghjasg",
-    //       transform: {
-    //         'position': {'x': 1, 'y': 2}
-    //       }
-    //     },
-    //   ],
-    //   prefabs: [],
-    //   remote: [],
-    // } satisfies z.input<typeof SceneDescSceneSchema>);
-
-    // setTimeout(() => {
-    //   for (let i = 0; i < 50000; i++) {
-    //     const start = performance.now()
-    //     const spriteParent = game.world.spawn({
-    //       type: Empty,
-    //       name: "goopy",
-    //     });
-    //     const end = performance.now();
-    //     console.log(`${i} took ${end-start}`);
-    //   }
-    // }, 2000);
-  } else {
-    const exampleScene: Scene = SceneSchema.parse({
-      registration: [],
-      local: [],
-      world: [
-        {
-          type: "@core/Sprite2D",
-          ref: "myrefasdghjasg",
-          name: "MySprite",
-        },
-      ],
-      prefabs: [],
-      remote: [],
-    });
-
-    const sceneView = new SceneView(game, exampleScene);
-    Object.defineProperty(window, "sceneView", { value: sceneView });
-    await sceneView.initialize();
-  }
+  await loadSceneDefinition(game, SAMPLE_SCENE);
+  console.log(JSON.stringify(serializeSceneDefinition(game)));
 
   game.setStatus(GameStatus.Running);
   playModeGame.setStatus(GameStatus.Running);

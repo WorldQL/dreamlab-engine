@@ -8,9 +8,8 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip.tsx";
 import { currentGame } from "../../global-game.ts";
 import { setCurrentGame } from "../../global-game.ts";
 import { playModeGame } from "../../global-game.ts";
-import { serializeSceneToJson } from "../../utils/spawn-from-definition.ts";
 import { editModeGame } from "../../global-game.ts";
-import { loadSceneFromDefinition } from "../../utils/spawn-from-definition.ts";
+import { loadSceneDefinition, serializeSceneDefinition } from "../../../../engine/scene/mod.ts";
 
 // TODO: Synchronize these with the actual game state.
 const playAtom = atom(null, (_, set) => set(isRunningAtom, true));
@@ -35,14 +34,14 @@ const PlaybackControls = () => {
           <IconButton
             onClick={() => {
               // currentGame.paused = false;
-              const world = serializeSceneToJson(editModeGame);
-              console.log(world);
+              const world = serializeSceneDefinition(editModeGame);
+              console.log(JSON.stringify(world));
               setCurrentGame(playModeGame);
               // obviously temporary, will replace with actual reinitialization when networking is in
               playModeGame.world.children.forEach(e => {
                 e.destroy();
               });
-              loadSceneFromDefinition(playModeGame, JSON.parse(world));
+              loadSceneDefinition(playModeGame, world);
               playModeGame.paused = false;
               handlePlay();
             }}
