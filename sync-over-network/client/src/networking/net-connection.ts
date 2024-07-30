@@ -42,8 +42,6 @@ export class ClientConnection {
   ) {}
 
   handle(packet: ServerPacket) {
-    console.log(`[<-] ${packet.t}`);
-
     try {
       this.getPacketHandler(packet.t)(packet);
     } catch (err) {
@@ -79,8 +77,6 @@ export class ClientConnection {
   }
 
   send(packet: ClientPacket) {
-    console.log(`[->] ${packet.t}`);
-
     this.socket.send(this.codec.encodePacket(packet));
   }
 

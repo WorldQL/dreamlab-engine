@@ -6,9 +6,10 @@ import { IPCMessageBus } from "./ipc.ts";
 const workerData = JSON.parse(Deno.env.get("DREAMLAB_MP_WORKER_DATA")!) as WorkerInitData;
 Deno.env.delete("DREAMLAB_MP_WORKER_DATA");
 
-// TODO: connect to IPC bus
 const ipc = new IPCMessageBus(workerData);
 await ipc.connected();
+
+// TODO: handle schema serialization request from IPC
 
 const net = new ServerNetworkManager(ipc);
 const game = new ServerGame({

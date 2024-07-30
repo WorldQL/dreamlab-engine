@@ -84,7 +84,6 @@ export class IPCWorker {
         }
       }
     });
-    // TODO: do ipc stuff lol
   }
 
   #onReceive(message: WorkerIPCMessage) {

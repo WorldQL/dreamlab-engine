@@ -7,6 +7,10 @@ const ensurePresent = (name: string, value: string | undefined): string => {
 };
 
 const optional = (_name: string, value: string | undefined) => value;
+const defaultsTo =
+  (defaultValue: string) =>
+  (_name: string, value: string | undefined): string =>
+    value ?? defaultValue;
 
 const number = (name: string, value: string | undefined): number => {
   return Number(ensurePresent(name, value));
@@ -56,4 +60,5 @@ export default Object.assign(env, {
   number,
   numberOr,
   socketAddress,
+  defaultsTo,
 });

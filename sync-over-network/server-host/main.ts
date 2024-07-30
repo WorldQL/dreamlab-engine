@@ -1,6 +1,6 @@
 import { CONFIG } from "./config.ts";
 import { Application } from "./deps/oak.ts";
-import { GameInstance } from "./game-instance.ts";
+import { createInstance, GameInstance } from "./instance.ts";
 import { setupWeb } from "./web/setup.ts";
 
 let instance: GameInstance | undefined;
@@ -12,7 +12,7 @@ const webAbortController = new AbortController();
 
 const shutdown = () => {
   console.log("Shutting down...");
-  instance?.shutdown();
+  // instance?.shutdown();
   webAbortController.abort();
 };
 Deno.addSignalListener("SIGINT", () => {
@@ -27,14 +27,14 @@ Deno.addSignalListener("SIGTERM", () => {
 await Promise.all([
   // boot instance
   (async () => {
-    instance = new GameInstance({
+    // TODO: bootInstance(..) function
+    instance = createInstance({
       instanceId: "my-instance",
       worldId: "dreamlab/test-world",
-      worldDirectory: `${Deno.cwd()}/worlds/dreamlab/test-world/_dist`,
+      worldDirectory: `${Deno.cwd()}/worlds/dreamlab/test-world`,
     });
 
-    await instance.ready();
-    GameInstance.INSTANCES.set(instance.info.instanceId, instance);
+    await instance.waitForSessionBoot();
   })(),
   // listen web
   (async () => {

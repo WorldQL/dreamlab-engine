@@ -1,6 +1,6 @@
 import { Context, Status } from "../deps/oak.ts";
 import { IPCWorker } from "../worker.ts";
-import { JsonAPIError } from "./util.ts";
+import { JsonAPIError } from "./util/api.ts";
 
 export const workerInternalRoute = (ctx: Context) => {
   const token = ctx.request.url.searchParams.get("token");

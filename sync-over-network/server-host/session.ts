@@ -1,12 +1,9 @@
 import { CONFIG } from "./config.ts";
+import { GameInstance } from "./instance.ts";
 import { IPCWorker } from "./worker.ts";
 import { PlayCodec } from "@dreamlab/proto/codecs/mod.ts";
 
-export interface InstanceInfo {
-  instanceId: string;
-  worldId: string;
-  worldDirectory: string;
-}
+import * as path from "jsr:@std/path@1";
 
 interface ConnectedClient {
   connectionId: string;
@@ -14,10 +11,8 @@ interface ConnectedClient {
   codec: PlayCodec;
 }
 
-export class GameInstance {
+export class GameSession {
   ipc: IPCWorker;
-
-  static INSTANCES = new Map<string, GameInstance>();
 
   connections = new Map<string, ConnectedClient>();
 
@@ -27,14 +22,16 @@ export class GameInstance {
   #readyPromise: Promise<void>;
   #readyPromiseResolve: (() => void) | undefined;
 
-  constructor(public info: InstanceInfo) {
+  startedAt = new Date();
+
+  constructor(public parent: GameInstance) {
     const addr = CONFIG.bindAddress;
     this.ipc = new IPCWorker({
       workerId: crypto.randomUUID(),
       workerConnectUrl: `ws://${addr.hostname}:${addr.port}/internal/worker`,
-      instanceId: info.instanceId,
-      worldId: info.worldId,
-      worldDirectory: info.worldDirectory,
+      instanceId: parent.info.instanceId,
+      worldId: parent.info.worldId,
+      worldDirectory: path.join(parent.info.worldDirectory, "_dist"),
       worldResourcesBaseUrl: `${CONFIG.publicUrlBase}/worlds`, // TODO: replace addr with public url from config
     });
 
@@ -48,8 +45,6 @@ export class GameInstance {
     });
 
     this.ipc.addMessageListener("OutgoingPacket", message => {
-      console.log(`[->] ${message.packet.t} ${message.to}`);
-
       if (message.to === null) {
         for (const connection of this.connections.values()) {
           const packetData = connection.codec.encodePacket(message.packet);

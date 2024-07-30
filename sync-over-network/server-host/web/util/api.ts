@@ -1,4 +1,4 @@
-import { CONFIG } from "../config.ts";
+import { CONFIG } from "../../config.ts";
 import {
   Application,
   RouterContext,
@@ -6,7 +6,7 @@ import {
   Status,
   State as OakState,
   RouteParams,
-} from "../deps/oak.ts";
+} from "../../deps/oak.ts";
 import { z, ZodError, ZodSchema } from "@dreamlab/vendor/zod.ts";
 
 export class JsonAPIError extends Error {
