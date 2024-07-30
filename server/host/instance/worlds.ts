@@ -3,7 +3,7 @@ import * as fs from "@std/fs";
 
 import env from "../util/env.ts";
 
-import { denoPlugins, type DenoPluginsOptions } from "jsr:@luca/esbuild-deno-loader@^0.10.3";
+import { bundleWorld } from "../../../build-system/mod.ts";
 
 import { RunningInstance } from "./mod.ts";
 
@@ -64,90 +64,15 @@ export interface WorldBuildOptions {
 export const buildWorld = async (
   instance: RunningInstance,
   worldDirectory: string,
-  opts: WorldBuildOptions,
+  _opts: WorldBuildOptions,
 ) => {
-  // instance.logs.info("Building client bundle...")
-  // let entryPoint: string | undefined
-  // for (const candidate of ["client.ts", "client.js"]) {
-  //   if (await fs.exists(path.join(worldDirectory, candidate))) {
-  //     entryPoint = candidate
-  //     break
-  //   }
-  // }
-  // const esbuildService = await esbuild.startService()
-  // const plugins: esbuild.Plugin[] = []
-  // if (opts.discord) {
-  //   plugins.push({
-  //     name: "discord-rewrite",
-  //     setup: (build: esbuild.PluginBuild) => {
-  //       build.onResolve({ filter: /^https:\/\/esm\.sh/ }, args => {
-  //         return { path: args.path.replace("https://esm.sh/", "/esm/"), external: true }
-  //       })
-  //     }
-  //   })
-  // }
-  // plugins.push({
-  //   name: "dreamlab-data-loader",
-  //   setup(build) {
-  //     build.onResolve({ filter: /.(css|html)$/i }, args => {
-  //       const pathRel = path.relative(worldDirectory, path.join(args.resolveDir, args.path))
-  //       if (pathRel.startsWith("../"))
-  //         throw new Error("Attempted to import resource from outside world directory")
-  //       return {
-  //         path: pathRel,
-  //         namespace: "dreamlab-data-loader",
-  //         pluginData: "text"
-  //       }
-  //     })
-  //     build.onResolve({ filter: /.(png|jpg|jpeg|webp)$/i }, args => {
-  //       const pathRel = path.relative(worldDirectory, path.join(args.resolveDir, args.path))
-  //       if (pathRel.startsWith("../"))
-  //         throw new Error("Attempted to import resource from outside world directory")
-  //       return {
-  //         path: pathRel,
-  //         namespace: "dreamlab-data-loader",
-  //         pluginData: "dataurl"
-  //       }
-  //     })
-  //     build.onLoad(
-  //       {
-  //         filter: /.*/,
-  //         namespace: "dreamlab-data-loader"
-  //       },
-  //       async args => ({
-  //         contents: await Deno.readTextFile(path.join(worldDirectory, args.path)),
-  //         loader: args.pluginData as esbuild.Loader
-  //       })
-  //     )
-  //   }
-  // })
-  // plugins.push(
-  //   ...denoPlugins({
-  //     loader: "native",
-  //     configPath: path.join(Deno.cwd(), "esbuild-deno.json"),
-  //     nodeModulesDir: true
-  //   })
-  // )
-  // await esbuildService.build({
-  //   plugins,
-  //   format: "esm",
-  //   platform: "browser",
-  //   target: "esnext",
-  //   jsx: "automatic",
-  //   jsxImportSource: "react",
-  //   entryPoints: [path.join(worldDirectory, entryPoint ?? "client.ts")],
-  //   bundle: true,
-  //   external: [
-  //     "@dreamlab.gg/core",
-  //     "matter-js",
-  //     "pixi.js",
-  //     "zod",
-  //     "@dreamlab.gg/ui",
-  //     "https://esm.sh/*",
-  //     "react"
-  //   ],
-  //   outfile: `${worldDirectory}/client.${instance.worldVariant}.bundled.js`,
-  //   sourcemap: "linked"
-  // })
-  // await esbuildService.stop()
+  // TODO: do we need to do the funny custom esbuild service thing again? are we good?
+
+  // maybe we should run these in a separate worker so that if the process crashes
+  // we don't take down literally everybody's game at the same time
+
+  instance.logs.info("Building world...");
+
+  // TODO: do we need to do anything special about opts.discord ? we were before
+  await bundleWorld(instance.worldId, { dir: worldDirectory, denoJsonPath: "./deno.json" });
 };

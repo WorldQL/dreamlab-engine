@@ -19,8 +19,5 @@
     "@std/uuid": "jsr:@std/uuid@^1.0.0",
     "oak": "https://deno.land/x/oak@v12.6.1/mod.ts",
     "zod": "npm:zod@^3.23.8"
-  },
-  "compilerOptions": {
-    "lib": ["deno.window", "dom"]
   }
 }
