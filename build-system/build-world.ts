@@ -14,15 +14,19 @@ export interface WorldBuildOptions {
   dir: string;
   // TODO: let people supply their own import map (craft a deno.json at runtime?)
   denoJsonPath: string;
+  /** defaults to '_dist' */
+  outDirName?: string;
 }
 
 export const prepareBundleWorld = async (
   worldOpts: WorldBuildOptions,
   opts?: BundleOptions,
 ): Promise<esbuild.BuildOptions> => {
+  const out = worldOpts.outDirName ?? "_dist";
+
   await fs.ensureDir(path.join(worldOpts.dir, "src"));
   await fs.ensureDir(path.join(worldOpts.dir, "assets"));
-  await fs.emptyDir(path.join(worldOpts.dir, "_dist"));
+  await fs.emptyDir(path.join(worldOpts.dir, out));
 
   // const worldDesc = JSON.parse(await Deno.readTextFile(path.join(worldDir, "./world.json")));
   // TODO: use worldDesc to figure out metadata
@@ -60,14 +64,14 @@ export const prepareBundleWorld = async (
         resolveFrom: "cwd",
         assets: {
           from: [path.join(worldOpts.dir, "assets") + "/*"],
-          to: path.join(worldOpts.dir, "_dist", "assets"),
+          to: path.join(worldOpts.dir, out, "assets"),
         },
         watch: opts?.watch ?? false,
       }),
     ],
     entryPoints,
     outbase: worldOpts.dir,
-    outdir: path.join(worldOpts.dir, "_dist"),
+    outdir: path.join(worldOpts.dir, out),
     logOverride: { "empty-glob": "silent" },
   };
 
