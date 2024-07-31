@@ -6,6 +6,7 @@ import { workerInternalRoute } from "./worker.ts";
 import { serveInstanceManagementAPI } from "./routes/instance-management.ts";
 import { serveWorlds } from "./routes/worlds.ts";
 import { servePlayRoutes } from "./routes/play.ts";
+import { serveLogStreamingAPI } from "./routes/log-streaming.ts";
 
 export const setupWeb = async (app: Application) => {
   const router = new Router();
@@ -14,7 +15,7 @@ export const setupWeb = async (app: Application) => {
   servePlayRoutes(router);
   serveWorlds(router);
   serveInstanceManagementAPI(router);
-
+  serveLogStreamingAPI(router);
   router.get("/:path*", ctx =>
     ctx
       .send({
