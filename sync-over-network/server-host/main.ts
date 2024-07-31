@@ -18,7 +18,7 @@ const webAbortController = new AbortController();
 
 const shutdown = () => {
   console.log("Shutting down...");
-  // instance?.shutdown();
+  instance?.shutdown();
   webAbortController.abort();
 };
 Deno.addSignalListener("SIGINT", () => {
@@ -45,7 +45,6 @@ await Promise.all([
   },
   // boot instance
   (async () => {
-    // TODO: bootInstance(..) function
     instance = createInstance({
       instanceId: "my-instance",
       worldId: TESTING_WORLD,
