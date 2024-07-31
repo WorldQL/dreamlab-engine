@@ -1,3 +1,9 @@
+import {
+  bundleClient,
+  bundleEngine,
+  bundleEngineDependencies,
+  bundleWorld,
+} from "../../build-system/mod.ts";
 import { CONFIG } from "./config.ts";
 import { Application } from "./deps/oak.ts";
 import { createInstance, GameInstance } from "./instance.ts";
@@ -24,14 +30,26 @@ Deno.addSignalListener("SIGTERM", () => {
   Deno.exit();
 });
 
+const TESTING_WORLD = "dreamlab/test-world";
+
 await Promise.all([
+  // build the client. why not
+  async () => {
+    await bundleEngineDependencies("../engine/", "./client/dist");
+    await bundleEngine("../engine/", "./client/dist");
+    await bundleClient("./client", "./client/dist", "./deno.json");
+    await bundleWorld("test-world", {
+      dir: `./worlds/${TESTING_WORLD}`,
+      denoJsonPath: "./deno.json",
+    });
+  },
   // boot instance
   (async () => {
     // TODO: bootInstance(..) function
     instance = createInstance({
       instanceId: "my-instance",
-      worldId: "dreamlab/test-world",
-      worldDirectory: `${Deno.cwd()}/worlds/dreamlab/test-world`,
+      worldId: TESTING_WORLD,
+      worldDirectory: `${Deno.cwd()}/worlds/${TESTING_WORLD}`,
     });
 
     await instance.waitForSessionBoot();
