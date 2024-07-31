@@ -21,7 +21,7 @@ export const instanceInfo = (instance: GameInstance): z.infer<typeof InstanceInf
   world: instance.info.worldId,
   edit_mode: false,
   started_at: instance.session?.startedAt?.getTime(),
-  started_by: null,
+  started_by: instance.info.startedBy ?? null,
   status_detail: instance.statusDetail ?? null,
   status: instance.status,
   uptime_secs: (Date.now() - instance.createdAt.getTime()) / 1000,

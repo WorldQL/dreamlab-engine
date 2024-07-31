@@ -77,6 +77,8 @@ export const serveInstanceManagementAPI = (router: Router) => {
           instanceId: instanceId,
           worldId,
           worldDirectory: `${Deno.cwd()}/worlds/${worldId}/_dist`,
+          startedBy: body.started_by,
+          // TODO: edit mode
         });
 
         return instanceInfo(instance);
