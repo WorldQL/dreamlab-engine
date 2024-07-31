@@ -273,6 +273,7 @@ export class ClientGame extends BaseGame {
   #tickAccumulator = 0;
   tickClient(delta: number): void {
     this.#tickAccumulator += delta;
+    let ticksThisFrame = 0;
 
     while (this.#tickAccumulator >= this.physics.tickDelta) {
       if (this.#tickAccumulator > 5_000) {
@@ -283,15 +284,19 @@ export class ClientGame extends BaseGame {
 
       this.#tickAccumulator -= this.physics.tickDelta;
       this.tick();
+      ticksThisFrame++;
     }
 
-    this.time[internal.timeSetMode]("render");
+    // if you don't comment this out, jitter happens.
+    // this.time[internal.timeSetMode]("render");
     this.time[internal.timeIncrement](delta, this.#tickAccumulator / this.physics.tickDelta);
 
-    this.fire(GamePreRender);
-    this.fire(GameRender);
-    this.renderer.renderFrame();
-    this.fire(GamePostRender);
+    if (ticksThisFrame > 0) {
+      this.fire(GamePreRender);
+      this.fire(GameRender);
+      this.renderer.renderFrame();
+      this.fire(GamePostRender);
+    }
   }
 
   [internal.preTickEntities]() {

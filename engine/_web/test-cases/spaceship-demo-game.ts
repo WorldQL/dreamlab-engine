@@ -1804,9 +1804,7 @@ game.local.spawn({
 
 // #region Camera & Game
 camera.transform.scale = Vector2.splat(3);
-// very jittery like this
 camera.smooth = 1
-// set smooth to 0.01 for smooth movement but note that the health bar doesn't keep up!
 
 game.physics.world.gravity = { x: 0, y: 0 };
 // #endregion
