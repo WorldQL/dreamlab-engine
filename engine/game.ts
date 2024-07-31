@@ -291,12 +291,14 @@ export class ClientGame extends BaseGame {
     // this.time[internal.timeSetMode]("render");
     this.time[internal.timeIncrement](delta, this.#tickAccumulator / this.physics.tickDelta);
 
+    // this fix tells us that the jitter is caused by something that listens to these.
     if (ticksThisFrame > 0) {
       this.fire(GamePreRender);
       this.fire(GameRender);
-      this.renderer.renderFrame();
       this.fire(GamePostRender);
     }
+
+    this.renderer.renderFrame();
   }
 
   [internal.preTickEntities]() {

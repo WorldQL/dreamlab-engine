@@ -13,7 +13,6 @@ import { Vector2 } from "../../math/mod.ts";
 import { EntityCollision, GamePostRender } from "../../signals/mod.ts";
 import { element } from "../../ui.ts";
 import * as internal from "../../internal.ts";
-import { GamePreRender } from "../../mod.ts";
 
 // #region Health
 class HealthBar extends Behavior {
