@@ -13,6 +13,7 @@ import { Vector2 } from "../../math/mod.ts";
 import { EntityCollision, GamePostRender } from "../../signals/mod.ts";
 import { element } from "../../ui.ts";
 import * as internal from "../../internal.ts";
+import { GamePreRender } from "../../mod.ts";
 
 // #region Health
 class HealthBar extends Behavior {
@@ -31,10 +32,13 @@ class HealthBar extends Behavior {
       values: { texture: "https://files.codedred.dev/healthbar.png" },
     });
 
-    this.entity.game.on(GamePostRender, () => {
-      this.healthBar.transform.position = this.entity.transform.position.add(new Vector2(0, 1));
-      this.updateHealthBar();
-    });
+  }
+
+  // not exactly sure why moving this to onTick fixed camera follow problems.
+  onTick(): void {
+    if (!this.healthBar) return
+    this.healthBar.transform.position = this.entity.transform.position.add(new Vector2(0, 1));
+    this.updateHealthBar();
   }
 
   updateHealthBar(): void {
@@ -279,7 +283,9 @@ class Shield extends Behavior {
     if (this.#shieldKey.pressed && !this.#shieldActive && !this.#coolingDown) {
       this.#activateShield();
     }
+    this.#updateShieldEffectPosition()
   }
+
 
   #activateShield() {
     this.#shieldActive = true;
@@ -294,14 +300,12 @@ class Shield extends Behavior {
       values: { texture: "https://files.codedred.dev/shield.png" },
     });
 
-    this.entity.game.on(GamePostRender, this.#updateShieldEffectPosition);
 
     this.#updateShieldUI(this.shieldDuration);
 
     setTimeout(() => {
       this.entity.getBehavior(PlayerBehavior).invincible = false;
       this.#shieldEffect.destroy();
-      this.entity.game.unregister(GamePostRender, this.#updateShieldEffectPosition);
       this.#shieldActive = false;
       this.#coolDown();
     }, this.shieldDuration);
@@ -349,6 +353,7 @@ class Supercharge extends Behavior {
     if (this.#superchargeKey.pressed && !this.#supercharged && !this.#coolingDown) {
       this.#startSupercharge();
     }
+    this.#updateSuperchargeEffectPosition()
   }
 
   #startSupercharge() {
@@ -368,12 +373,10 @@ class Supercharge extends Behavior {
       values: { texture: "https://files.codedred.dev/supercharge.png" },
     });
 
-    this.entity.game.on(GamePostRender, this.#updateSuperchargeEffectPosition);
 
     setTimeout(() => {
       playerBehavior.fireRateMultiplier = prevFireRate;
       this.#superchargeEffect.destroy();
-      this.entity.game.unregister(GamePostRender, this.#updateSuperchargeEffectPosition);
       this.#supercharged = false;
       this.#coolDown();
     }, this.#superchargeDuration);
