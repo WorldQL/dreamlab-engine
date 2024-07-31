@@ -38,6 +38,7 @@
       "jsr:@std/path@1.0.0": "jsr:@std/path@1.0.0",
       "jsr:@std/path@^1.0.2": "jsr:@std/path@1.0.2",
       "jsr:@std/streams@0.224.5": "jsr:@std/streams@0.224.5",
+      "jsr:@std/uuid@1": "jsr:@std/uuid@1.0.0",
       "npm:@dimforge/rapier2d-compat@0.13.1": "npm:@dimforge/rapier2d-compat@0.13.1",
       "npm:@paralleldrive/cuid2@2.2.2": "npm:@paralleldrive/cuid2@2.2.2",
       "npm:@types/node": "npm:@types/node@18.16.19",
@@ -203,6 +204,12 @@
         "dependencies": [
           "jsr:@std/bytes@^1.0.0-rc.3",
           "jsr:@std/io@^0.224.1"
+        ]
+      },
+      "@std/uuid@1.0.0": {
+        "integrity": "32595ccd31756728c9110cb98e25000e72b8d63151b7211034ea081761ed2104",
+        "dependencies": [
+          "jsr:@std/bytes@^1.0.1-rc.3"
         ]
       }
     },

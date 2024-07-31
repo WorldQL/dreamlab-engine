@@ -34,7 +34,7 @@ const TESTING_WORLD = "dreamlab/test-world";
 
 await Promise.all([
   // build the client. why not
-  async () => {
+  (async () => {
     await bundleEngineDependencies("../engine/", "./client/dist");
     await bundleEngine("../engine/", "./client/dist");
     await bundleClient("./client", "./client/dist", "./deno.json");
@@ -42,7 +42,8 @@ await Promise.all([
       dir: `./worlds/${TESTING_WORLD}`,
       denoJsonPath: "./deno.json",
     });
-  },
+    console.log("Ready!");
+  })(),
   // boot instance
   (async () => {
     instance = createInstance({
