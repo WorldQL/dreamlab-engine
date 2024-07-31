@@ -18,6 +18,8 @@ export interface GameInstanceInfo {
   worldDirectory: string;
   // defaults to "origin/main"
   worldRevision?: string;
+  // player id
+  startedBy?: string;
 }
 
 export class GameInstance {
