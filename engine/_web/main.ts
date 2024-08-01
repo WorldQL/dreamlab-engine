@@ -50,15 +50,35 @@ Object.assign(window, { ...mod });
 
 game.setStatus(GameStatus.Running);
 
+let MAX_FPS = 300;// Minimum time between frames in milliseconds
+
 // #region Tick loop
 let now = performance.now();
+let then = now;
+let delta = 0;
+
 const onTick = (time: number) => {
-  const delta = time - now;
   now = time;
-  game.tickClient(delta);
+  delta = now - then;
+  const FRAME_TIME = 1000 / MAX_FPS; 
+
+  if (delta >= FRAME_TIME) {
+    then = now - (delta % FRAME_TIME);
+    game.tickClient(delta);
+  } else {
+    console.log('skipped')
+  }
 
   requestAnimationFrame(onTick);
 };
 
 requestAnimationFrame(onTick);
+
+const FPS_TEST_MODE = false;
+
+if (FPS_TEST_MODE) {
+  setInterval(() => {
+    MAX_FPS = Math.floor(Math.random() * (144 - 20 + 1)) + 20;
+  }, 2000)
+}
 // #endregion
