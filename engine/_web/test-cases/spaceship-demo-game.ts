@@ -13,6 +13,7 @@ import { Vector2 } from "../../math/mod.ts";
 import { EntityCollision, GamePostRender } from "../../signals/mod.ts";
 import { element } from "../../ui.ts";
 import * as internal from "../../internal.ts";
+import { GamePreRender } from "../../mod.ts";
 
 // #region Health
 class HealthBar extends Behavior {
@@ -98,7 +99,7 @@ class Movement extends Behavior {
     this.defineValues(Movement, "speed");
   }
 
-  onTick(): void {
+  onFrame(): void {
     const movement = new Vector2(0, 0);
     const currentSpeed = this.speed;
 
@@ -108,6 +109,8 @@ class Movement extends Behavior {
     if (this.#down.held) movement.y -= 1;
     if (this.#right.held) movement.x += 1;
     if (this.#left.held) movement.x -= 1;
+
+    console.log(this.time.delta)
 
     const newPosition = this.entity.transform.position.add(
       movement.normalize().mul((this.time.delta / 100) * currentSpeed),
@@ -129,7 +132,7 @@ class Movement extends Behavior {
 game[internal.behaviorLoader].registerInternalBehavior(Movement, "spaceship");
 
 class LookAtMouse extends Behavior {
-  onTick(): void {
+  onFrame(): void {
     const cursor = this.inputs.cursor;
     if (!cursor) return;
 
@@ -144,7 +147,7 @@ class CameraFollow extends Behavior {
     const target = this.entity;
     const camera = Camera.getActive(this.game);
 
-    this.listen(this.game, GamePostRender, () => {
+    this.listen(this.game, GamePreRender, () => {
       if (camera) camera.pos.assign(target.pos);
     });
   }

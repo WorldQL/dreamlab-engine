@@ -270,35 +270,16 @@ export class ClientGame extends BaseGame {
   readonly local: LocalRoot = new LocalRoot(this);
   readonly remote: undefined;
 
-  #tickAccumulator = 0;
   tickClient(delta: number): void {
-    this.#tickAccumulator += delta;
-    let ticksThisFrame = 0;
+    this.tick();
+    
+    this.time[internal.timeSetMode]("render");
+    this.time[internal.timeIncrement](delta, 0);
 
-    while (this.#tickAccumulator >= this.physics.tickDelta) {
-      if (this.#tickAccumulator > 5_000) {
-        this.#tickAccumulator = 0;
-        console.warn("Skipped a bunch of ticks (tick accumulator ran over 5 seconds!)");
-        break;
-      }
-
-      this.#tickAccumulator -= this.physics.tickDelta;
-      this.tick();
-      ticksThisFrame++;
-    }
-
-    // if you don't comment this out, jitter happens.
-    // this.time[internal.timeSetMode]("render");
-    this.time[internal.timeIncrement](delta, this.#tickAccumulator / this.physics.tickDelta);
-
-    // this fix tells us that the jitter is caused by something that listens to these.
-    if (ticksThisFrame > 0) {
-      this.fire(GamePreRender);
-      this.fire(GameRender);
-      this.fire(GamePostRender);
-    }
-
+    this.fire(GamePreRender);
+    this.fire(GameRender);
     this.renderer.renderFrame();
+    this.fire(GamePostRender);
   }
 
   [internal.preTickEntities]() {
