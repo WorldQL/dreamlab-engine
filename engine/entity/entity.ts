@@ -196,7 +196,7 @@ export abstract class Entity implements ISignalHandler {
 
   #findNonConflictingName(child: Entity): string {
     const matches = child.name.match(/(?<base>.*)\.(?<n>\d+)/)?.groups;
-    const baseName = matches?.base ?? child.#name;
+    const baseName = matches?.base ?? child.name;
 
     // linear search for first 1000
     for (let n = matches?.n ? +matches.n : 1; n <= 999; n++) {
