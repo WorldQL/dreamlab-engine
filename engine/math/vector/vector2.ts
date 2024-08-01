@@ -281,8 +281,8 @@ export class Vector2 implements IVector2, Vector<IVector2, Vector2> {
   }
 
   public static smoothLerp(
-    current: Vector2,
-    target: Vector2,
+    current: IVector2,
+    target: IVector2,
     decay: number,
     deltaTime: number,
     epsilon = EPSILON,

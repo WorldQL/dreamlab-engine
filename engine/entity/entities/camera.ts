@@ -2,7 +2,7 @@ import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { ClientGame, Game } from "../../game.ts";
 import { smoothLerp } from "../../math/lerp.ts";
 import { IVector2, Vector2 } from "../../math/mod.ts";
-import { GameRender } from "../../signals/mod.ts";
+import { GamePreRender } from "../../signals/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
 
 export class Camera extends Entity {
@@ -17,9 +17,9 @@ export class Camera extends Entity {
   public readonly container: PIXI.Container;
   public smooth: number = 0.01;
 
-  #position: Vector2 = new Vector2(this.globalTransform.position);
-  #rotation: number = this.globalTransform.rotation;
-  #scale: Vector2 = new Vector2(this.globalTransform.scale);
+  #position: Vector2 = new Vector2(this.interpolated.position);
+  #rotation: number = this.interpolated.rotation;
+  #scale: Vector2 = new Vector2(this.interpolated.scale);
 
   #matrix: PIXI.Matrix = new PIXI.Matrix();
   #updateMatrix() {
@@ -61,9 +61,9 @@ export class Camera extends Entity {
     this.#active = true;
 
     // Instantly set smoothed values
-    this.#position = new Vector2(this.globalTransform.position);
-    this.#rotation = this.globalTransform.rotation;
-    this.#scale = new Vector2(this.globalTransform.scale);
+    this.#position = new Vector2(this.interpolated.position);
+    this.#rotation = this.interpolated.rotation;
+    this.#scale = new Vector2(this.interpolated.scale);
 
     // Reparent scene container
     const game = this.game as ClientGame;
@@ -88,17 +88,17 @@ export class Camera extends Entity {
     this.container = new PIXI.Container();
     this.game.renderer.app.stage.addChild(this.container);
 
-    this.listen(this.game, GameRender, () => {
+    this.listen(this.game, GamePreRender, () => {
       if (!this.#active) return;
       const delta = this.game.time.delta;
 
       // No smoothing
       if (this.smooth === 1) {
-        this.#position.x = this.globalTransform.position.x;
-        this.#position.y = this.globalTransform.position.y;
-        this.#rotation = this.globalTransform.rotation;
-        this.#scale.x = this.globalTransform.scale.x;
-        this.#scale.y = this.globalTransform.scale.y;
+        this.#position.x = this.interpolated.position.x;
+        this.#position.y = this.interpolated.position.y;
+        this.#rotation = this.interpolated.rotation;
+        this.#scale.x = this.interpolated.scale.x;
+        this.#scale.y = this.interpolated.scale.y;
 
         this.container.setFromMatrix(this.#updateMatrix());
         return;
@@ -106,21 +106,21 @@ export class Camera extends Entity {
 
       this.#position = Vector2.smoothLerp(
         this.#position,
-        this.globalTransform.position,
+        this.interpolated.position,
         this.smooth,
         delta,
       );
 
       this.#rotation = smoothLerp(
         this.#rotation,
-        this.globalTransform.rotation,
+        this.interpolated.rotation,
         this.smooth,
         delta,
       );
 
       this.#scale = Vector2.smoothLerp(
         this.#scale,
-        this.globalTransform.scale,
+        this.interpolated.scale,
         this.smooth,
         delta,
       );

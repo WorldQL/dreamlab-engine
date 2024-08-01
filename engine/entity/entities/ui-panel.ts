@@ -1,10 +1,9 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { EntityDestroyed, GameRender } from "../../signals/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
-import { InterpolatedEntity } from "../interpolated-entity.ts";
 import { Camera } from "./camera.ts";
 
-export class UIPanel extends InterpolatedEntity {
+export class UIPanel extends Entity {
   static {
     Entity.registerType(this, "@core");
   }

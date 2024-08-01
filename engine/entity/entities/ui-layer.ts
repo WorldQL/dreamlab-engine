@@ -1,8 +1,7 @@
 import { Entity, EntityContext } from "../entity.ts";
-import { InterpolatedEntity } from "../interpolated-entity.ts";
 import { EntityDestroyed } from "../../signals/mod.ts";
 
-export class UILayer extends InterpolatedEntity {
+export class UILayer extends Entity {
   static {
     Entity.registerType(this, "@core");
   }

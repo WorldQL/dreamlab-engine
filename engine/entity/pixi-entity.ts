@@ -1,9 +1,8 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { EntityDestroyed, GameRender } from "../signals/mod.ts";
-import { EntityContext } from "./entity.ts";
-import { InterpolatedEntity } from "./interpolated-entity.ts";
+import { Entity, EntityContext } from "./entity.ts";
 
-export abstract class PixiEntity extends InterpolatedEntity {
+export abstract class PixiEntity extends Entity {
   protected container: PIXI.Container | undefined;
 
   constructor(ctx: EntityContext) {
@@ -13,8 +12,9 @@ export abstract class PixiEntity extends InterpolatedEntity {
       if (!this.container) return;
 
       const pos = this.interpolated.position;
+      const rot = this.interpolated.rotation;
       this.container.position = { x: pos.x, y: -pos.y };
-      this.container.rotation = -this.interpolated.rotation;
+      this.container.rotation = -rot;
     });
 
     this.on(EntityDestroyed, () => {

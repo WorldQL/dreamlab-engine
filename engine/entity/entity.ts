@@ -2,12 +2,13 @@ import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import type { ConditionalExcept } from "@dreamlab/vendor/type-fest.ts";
 
 import { Behavior, BehaviorConstructor, BehaviorDefinition } from "../behavior/behavior.ts";
-import { GameStatus, type Game } from "../game.ts";
+import type { Game } from "../game.ts";
 import * as internal from "../internal.ts";
 import {
   IVector2,
   Transform,
   Vector2,
+  lerpAngle,
   transformLocalToWorld,
   transformWorldToLocal,
 } from "../math/mod.ts";
@@ -454,6 +455,19 @@ export abstract class Entity implements ISignalHandler {
   set z(value) {
     this.globalTransform.z = value;
   }
+
+  #prevPosition: IVector2;
+  #prevRotation: number;
+  #prevScale: IVector2;
+  #interpolated: Transform;
+
+  get interpolated(): {
+    readonly position: Readonly<Vector2>;
+    readonly rotation: number;
+    readonly scale: Readonly<Vector2>;
+  } {
+    return this.#interpolated;
+  }
   // #endregion
 
   // #region Values
@@ -613,6 +627,11 @@ export abstract class Entity implements ISignalHandler {
       this.globalTransform[internal.transformForceUpdate](worldSpaceTransform);
     }
 
+    this.#prevPosition = this.globalTransform.position.bare();
+    this.#prevRotation = this.globalTransform.rotation;
+    this.#prevScale = this.globalTransform.scale.bare();
+    this.#interpolated = new Transform(this.globalTransform);
+
     this.game.entities[internal.entityStoreRegister](this);
   }
 
@@ -712,6 +731,10 @@ export abstract class Entity implements ISignalHandler {
 
     if (!this.#spawned) this.#spawn();
 
+    this.#prevPosition = this.globalTransform.position.bare();
+    this.#prevRotation = this.globalTransform.rotation;
+    this.#prevScale = this.globalTransform.scale.bare();
+
     this.fire(EntityPreUpdate);
 
     const tr = this.globalTransform;
@@ -748,6 +771,32 @@ export abstract class Entity implements ISignalHandler {
     for (const child of this.#children.values()) {
       try {
         child[internal.tickEntities]();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  }
+
+  [internal.updateInterpolation]() {
+    const partial = this.time.partial;
+
+    this.#interpolated.position.assign(
+      Vector2.lerp(this.#prevPosition, this.globalTransform.position, partial),
+    );
+
+    this.#interpolated.rotation = lerpAngle(
+      this.#prevRotation,
+      this.globalTransform.rotation,
+      partial,
+    );
+
+    this.#interpolated.scale.assign(
+      Vector2.lerp(this.#prevScale, this.globalTransform.scale, partial),
+    );
+
+    for (const child of this.#children.values()) {
+      try {
+        child[internal.updateInterpolation]();
       } catch (err) {
         console.error(err);
       }

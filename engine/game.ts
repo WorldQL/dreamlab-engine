@@ -164,6 +164,10 @@ export abstract class BaseGame implements ISignalHandler {
     this.world[internal.tickEntities]();
   }
 
+  [internal.updateInterpolation]() {
+    this.world[internal.updateInterpolation]();
+  }
+
   shutdown() {
     this.setStatus(GameStatus.Shutdown);
     this.fire(GameShutdown);
@@ -233,6 +237,10 @@ export class ServerGame extends BaseGame {
     super[internal.tickEntities]();
     this.remote[internal.tickEntities]();
   }
+
+  [internal.updateInterpolation]() {
+    // No-op
+  }
 }
 
 export class ClientGame extends BaseGame {
@@ -288,6 +296,7 @@ export class ClientGame extends BaseGame {
 
     this.time[internal.timeSetMode]("render");
     this.time[internal.timeIncrement](delta, this.#tickAccumulator / this.physics.tickDelta);
+    this[internal.updateInterpolation]();
 
     this.fire(GamePreRender);
     this.fire(GameRender);
@@ -303,6 +312,11 @@ export class ClientGame extends BaseGame {
   [internal.tickEntities]() {
     super[internal.tickEntities]();
     this.local[internal.tickEntities]();
+  }
+
+  [internal.updateInterpolation]() {
+    super[internal.updateInterpolation]();
+    this.local[internal.updateInterpolation]();
   }
 }
 

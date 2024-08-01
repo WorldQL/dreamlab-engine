@@ -2,17 +2,16 @@ import { BackgroundBehavior } from "../../behavior/behaviors/background-behavior
 import { Behavior, BehaviorContext } from "../../behavior/mod.ts";
 import {
   Camera,
-  Empty,
   Entity,
   Rigidbody2D,
   Sprite2D,
   TilingSprite2D,
   UILayer,
 } from "../../entity/mod.ts";
-import { Vector2 } from "../../math/mod.ts";
-import { EntityCollision, GamePostRender } from "../../signals/mod.ts";
-import { element } from "../../ui.ts";
 import * as internal from "../../internal.ts";
+import { Vector2 } from "../../math/mod.ts";
+import { EntityCollision, GamePostRender, GameTick } from "../../signals/mod.ts";
+import { element } from "../../ui.ts";
 
 // #region Health
 class HealthBar extends Behavior {
@@ -31,8 +30,8 @@ class HealthBar extends Behavior {
       values: { texture: "https://files.codedred.dev/healthbar.png" },
     });
 
-    this.entity.game.on(GamePostRender, () => {
-      this.healthBar.transform.position = this.entity.transform.position.add(new Vector2(0, 1));
+    this.entity.game.on(GameTick, () => {
+      this.healthBar.pos = this.entity.transform.position.add(new Vector2(0, 1));
       this.updateHealthBar();
     });
   }
@@ -107,7 +106,7 @@ class Movement extends Behavior {
     if (this.#left.held) movement.x -= 1;
 
     const newPosition = this.entity.transform.position.add(
-      movement.normalize().mul((this.time.delta / 100) * currentSpeed),
+      movement.normalize().mul((this.game.physics.tickDelta / 100) * currentSpeed),
     );
 
     const halfWidth = this.entity.transform.scale.x / 2;
@@ -127,10 +126,10 @@ game[internal.behaviorLoader].registerInternalBehavior(Movement, "spaceship");
 
 class LookAtMouse extends Behavior {
   onTick(): void {
-    const cursor = this.inputs.cursor;
-    if (!cursor) return;
+    const world = this.inputs.cursor.world;
+    if (!world) return;
 
-    const rotation = this.entity.globalTransform.position.lookAt(cursor.world);
+    const rotation = this.entity.globalTransform.position.lookAt(world);
     this.entity.transform.rotation = rotation;
   }
 }
@@ -138,11 +137,11 @@ game[internal.behaviorLoader].registerInternalBehavior(LookAtMouse, "spaceship")
 
 class CameraFollow extends Behavior {
   onInitialize(): void {
-    const target = this.entity;
+    const target = this.entity._.PlayerSprite;
     const camera = Camera.getActive(this.game);
 
-    this.listen(this.game, GamePostRender, () => {
-      if (camera) camera.pos.assign(target.pos);
+    this.listen(this.game, GameTick, () => {
+      if (camera) camera.pos.assign(target.globalTransform.position);
     });
   }
 }
@@ -294,14 +293,14 @@ class Shield extends Behavior {
       values: { texture: "https://files.codedred.dev/shield.png" },
     });
 
-    this.entity.game.on(GamePostRender, this.#updateShieldEffectPosition);
+    this.entity.game.on(GameTick, this.#updateShieldEffectPosition);
 
     this.#updateShieldUI(this.shieldDuration);
 
     setTimeout(() => {
       this.entity.getBehavior(PlayerBehavior).invincible = false;
       this.#shieldEffect.destroy();
-      this.entity.game.unregister(GamePostRender, this.#updateShieldEffectPosition);
+      this.entity.game.unregister(GameTick, this.#updateShieldEffectPosition);
       this.#shieldActive = false;
       this.#coolDown();
     }, this.shieldDuration);
@@ -309,7 +308,7 @@ class Shield extends Behavior {
 
   #updateShieldEffectPosition = () => {
     if (this.#shieldEffect) {
-      this.#shieldEffect.transform.position = this.entity.transform.position;
+      this.#shieldEffect.pos = this.entity.pos;
     }
   };
 
@@ -368,12 +367,12 @@ class Supercharge extends Behavior {
       values: { texture: "https://files.codedred.dev/supercharge.png" },
     });
 
-    this.entity.game.on(GamePostRender, this.#updateSuperchargeEffectPosition);
+    this.entity.game.on(GameTick, this.#updateSuperchargeEffectPosition);
 
     setTimeout(() => {
       playerBehavior.fireRateMultiplier = prevFireRate;
       this.#superchargeEffect.destroy();
-      this.entity.game.unregister(GamePostRender, this.#updateSuperchargeEffectPosition);
+      this.entity.game.unregister(GameTick, this.#updateSuperchargeEffectPosition);
       this.#supercharged = false;
       this.#coolDown();
     }, this.#superchargeDuration);
@@ -1187,11 +1186,11 @@ class PlayerBehavior extends Behavior {
   }
 
   private fireBullet(offsetAngle: number) {
-    const cursor = this.inputs.cursor;
-    if (!cursor) return;
+    const world = this.inputs.cursor.world;
+    if (!world) return;
 
     const position = this.entity.globalTransform.position.bare();
-    const baseDirection = cursor.world.sub(position);
+    const baseDirection = world.sub(position);
     const baseRotation = Math.atan2(baseDirection.y, baseDirection.x);
 
     const bulletRotation = baseRotation + offsetAngle * (Math.PI / 180);
@@ -1469,7 +1468,7 @@ class Minimap extends Behavior {
     this.#element = element("div", { id: "minimap" });
     this.#ui.element.appendChild(this.#element);
 
-    this.listen(this.game, GamePostRender, () => {
+    this.listen(this.game, GameTick, () => {
       this.#updateMinimap();
     });
   }
@@ -1805,7 +1804,7 @@ game.local.spawn({
 // #region Camera & Game
 camera.transform.scale = Vector2.splat(3);
 // very jittery like this
-camera.smooth = 1
+camera.smooth = 1;
 // set smooth to 0.01 for smooth movement but note that the health bar doesn't keep up!
 
 game.physics.world.gravity = { x: 0, y: 0 };
