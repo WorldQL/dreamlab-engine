@@ -16,7 +16,7 @@ export class AsteroidMovement extends Behavior {
     this.defineValues(AsteroidMovement, "speed");
   }
 
-  update(): void {
+  onUpdate(): void {
     this.entity.transform.position = this.entity.transform.position.add(
       this.#direction.mul((this.time.delta / 100) * this.speed),
     );

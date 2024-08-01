@@ -203,7 +203,7 @@ class PlayerMovement extends Behavior {
     this.defineValues(PlayerMovement, "speed", "jumpForce");
   }
 
-  update(): void {
+  onUpdate(): void {
     const movement = new Vector2(0, 0);
 
     if (this.#left.held) {
@@ -280,7 +280,7 @@ class Platform extends Behavior {
     if (this.entity.name === "Spawn") this.rotationSpeed = 0;
   }
 
-  update(): void {
+  onUpdate(): void {
     this.entity.transform.rotation +=
       this.rotationSpeed * this.rotationDirection * (this.time.delta / 1000);
   }
@@ -298,7 +298,7 @@ class PlatformMovement extends Behavior {
     this.defineValues(PlatformMovement, "rotationSpeed", "speed");
   }
 
-  update(): void {
+  onUpdate(): void {
     const newPosition = this.entity.transform.position.add(
       new Vector2(this.direction, 0).mul((this.time.delta / 1000) * this.speed),
     );
@@ -314,7 +314,7 @@ class PlatformMovement extends Behavior {
 }
 
 class LargePlatform extends Behavior {
-  update(): void {
+  onUpdate(): void {
     // Nothing here yet
   }
 }

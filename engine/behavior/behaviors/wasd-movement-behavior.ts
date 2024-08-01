@@ -13,7 +13,7 @@ export default class WASDMovementBehavior extends Behavior {
     this.value(WASDMovementBehavior, "speed");
   }
 
-  update(): void {
+  onUpdate(): void {
     const movement = new Vector2(0, 0);
     if (this.#up.held) movement.y += 1;
     if (this.#down.held) movement.y -= 1;

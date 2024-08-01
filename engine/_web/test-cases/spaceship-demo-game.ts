@@ -34,7 +34,7 @@ class HealthBar extends Behavior {
     });
   }
 
-  update(): void {
+  onUpdate(): void {
     if (!this.healthBar) return;
     this.healthBar.transform.position = this.entity.transform.position.add(new Vector2(0, 1));
     this.updateHealthBar();
@@ -102,7 +102,7 @@ class Movement extends Behavior {
     this.defineValues(Movement, "speed");
   }
 
-  update(): void {
+  onUpdate(): void {
     const movement = new Vector2(0, 0);
     const currentSpeed = this.speed;
 
@@ -144,7 +144,7 @@ class LookAtMouse extends Behavior {
 game[internal.behaviorLoader].registerInternalBehavior(LookAtMouse, "spaceship");
 
 class CameraFollow extends Behavior {
-  update(): void {
+  onUpdate(): void {
     const target = this.entity;
     const camera = Camera.getActive(this.game);
 
@@ -280,7 +280,7 @@ class Shield extends Behavior {
     return this.#coolingDown;
   }
 
-  update(): void {
+  onUpdate(): void {
     if (this.#shieldKey.pressed && !this.#shieldActive && !this.#coolingDown) {
       this.#activateShield();
     }
@@ -348,7 +348,7 @@ class Supercharge extends Behavior {
     return this.#coolingDown;
   }
 
-  update(): void {
+  onUpdate(): void {
     if (this.#superchargeKey.pressed && !this.#supercharged && !this.#coolingDown) {
       this.#startSupercharge();
     }
@@ -483,7 +483,7 @@ class AbilityUI extends Behavior {
     this.#boostCooldown = boostUI.cooldown;
   }
 
-  update() {
+  onUpdate() {
     this.#updateCooldowns();
   }
 
@@ -687,7 +687,7 @@ class BulletBehavior extends Behavior {
     this.#direction = new Vector2(Math.cos(rotation), Math.sin(rotation));
   }
 
-  update(): void {
+  onUpdate(): void {
     const speed = (this.time.delta / 1000) * this.speed;
     this.entity.transform.position.assign(
       this.entity.transform.position.add(this.#direction.mul(speed)),
@@ -708,7 +708,7 @@ class ClickFire extends Behavior {
   readonly #cooldown = 0.5;
   #lastFired = 0;
 
-  update(): void {
+  onUpdate(): void {
     if (this.#lastFired > 0) {
       this.#lastFired -= this.time.delta / 1000;
       return;
@@ -738,7 +738,7 @@ class AsteroidMovement extends Behavior {
     this.defineValues(AsteroidMovement, "speed");
   }
 
-  update(): void {
+  onUpdate(): void {
     this.entity.transform.position = this.entity.transform.position.add(
       this.#direction.mul((this.time.delta / 100) * this.speed),
     );
@@ -828,7 +828,7 @@ class EnemyMovement extends Behavior {
   lastShootTime = 0;
   shootCooldown = Math.random() * 2000 + 1000;
 
-  update(): void {
+  onUpdate(): void {
     const player = this.entity.game.world.children.get("Player");
     const playerPos = player?.globalTransform.position;
     if (!playerPos) return;
@@ -894,7 +894,7 @@ class ExplosionPieceBehavior extends Behavior {
     Math.random() * 2 - 1,
   ).normalize();
 
-  update(): void {
+  onUpdate(): void {
     const speed = 2;
     this.entity.transform.position = this.entity.transform.position.add(
       this.#direction.mul((this.time.delta / 1000) * speed),
@@ -1475,7 +1475,7 @@ class Minimap extends Behavior {
     this.#ui.element.appendChild(this.#element);
   }
 
-  update() {
+  onUpdate() {
     this.#updateMinimap();
   }
 
@@ -1612,7 +1612,7 @@ class CoordsDisplay extends Behavior {
     this.#ui.element.appendChild(this.#element);
   }
 
-  update() {
+  onUpdate() {
     const player = this.game.world.children.get("Player");
     if (!player) return;
 

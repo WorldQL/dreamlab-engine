@@ -201,9 +201,9 @@ export class Behavior implements ISignalHandler {
   }
 
   spawn(): void {
-    if (this.update) {
+    if (this.onUpdate) {
       // idk why i have to cast to Entity. i think it's a typescript bug
-      const onTick = this.update.bind(this);
+      const onTick = this.onUpdate.bind(this);
       this.listen(this.entity as Entity, EntityUpdate, () => {
         if (!this.game.paused) onTick();
       });
@@ -223,7 +223,7 @@ export class Behavior implements ISignalHandler {
   }
 
   onInitialize(): void {}
-  update?(): void;
+  onUpdate?(): void;
   onFrame?(): void;
   onPhysicsUpdate?(): void;
 }

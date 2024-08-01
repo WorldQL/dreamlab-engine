@@ -18,7 +18,7 @@ export class BulletBehavior extends Behavior {
     this.#direction = new Vector2(Math.cos(rotation), Math.sin(rotation));
   }
 
-  update(): void {
+  onUpdate(): void {
     const speed = (this.time.delta / 1000) * this.speed;
     this.entity.transform.position.assign(
       this.entity.transform.position.add(this.#direction.mul(speed)),
@@ -37,7 +37,7 @@ export class ClickFire extends Behavior {
   readonly #cooldown = 10; // ticks
   #lastFired = 0;
 
-  update(): void {
+  onUpdate(): void {
     if (this.#lastFired > 0) {
       this.#lastFired -= 1;
       return;

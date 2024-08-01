@@ -21,7 +21,7 @@ export class Shield extends Behavior {
     return this.#coolingDown;
   }
 
-  update(): void {
+  onUpdate(): void {
     if (this.#shieldKey.pressed && !this.#shieldActive && !this.#coolingDown) {
       this.#activateShield();
     }

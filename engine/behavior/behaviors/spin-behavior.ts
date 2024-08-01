@@ -7,7 +7,7 @@ export default class SpinBehavior extends Behavior {
     this.value(SpinBehavior, "speed");
   }
 
-  update(): void {
+  onUpdate(): void {
     this.entity.transform.rotation += this.speed * (Math.PI / this.game.time.TPS);
   }
 }
