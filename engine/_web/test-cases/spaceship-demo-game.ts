@@ -3,15 +3,18 @@ import { Behavior, BehaviorContext } from "../../behavior/mod.ts";
 import {
   Camera,
   Entity,
+  EntityContext,
   Rigidbody2D,
   Sprite2D,
   TilingSprite2D,
   UILayer,
 } from "../../entity/mod.ts";
-import { Vector2 } from "../../math/mod.ts";
+import { IVector2, Vector2 } from "../../math/mod.ts";
 import { EntityCollision } from "../../signals/mod.ts";
 import { element } from "../../ui.ts";
 import * as internal from "../../internal.ts";
+import { GameRender } from "../../mod.ts";
+import { Vector } from "@dreamlab/vendor/rapier.ts";
 
 // #region Health
 class HealthBar extends Behavior {
@@ -1217,9 +1220,10 @@ class PlayerBehavior extends Behavior {
 game[internal.behaviorLoader].registerInternalBehavior(PlayerBehavior, "spaceship");
 
 function spawnPlayer() {
-  const x = Math.random() * (MAP_BOUNDARY * 2) - MAP_BOUNDARY;
-  const y = Math.random() * (MAP_BOUNDARY * 2) - MAP_BOUNDARY;
-  const position = { x, y };
+  // const x = Math.random() * (MAP_BOUNDARY * 2) - MAP_BOUNDARY;
+  // const y = Math.random() * (MAP_BOUNDARY * 2) - MAP_BOUNDARY;
+  // const position = { x, y };
+  const position = { x: 200, y: 200 };
 
   return game.world.spawn({
     type: Rigidbody2D,
@@ -1808,4 +1812,81 @@ camera.transform.scale = Vector2.splat(3);
 camera.smooth = 1;
 
 game.physics.world.gravity = { x: 0, y: 0 };
+// #endregion
+
+// #region Test externally managed interpolation
+const e = game.world.spawn({
+  type: Sprite2D,
+  name: "test",
+  values: { texture: "https://files.codedred.dev/spaceship.png" },
+  transform: { position: { x: 200, y: 200 }, scale: Vector2.splat(5) },
+});
+
+// store a queue of position updates
+const positionUpdates: IVector2[] = [];
+// this would be managed in a NetworkInterpolationManager class and have a hashmap tracking
+// target transforms of every object. For this example, we just have targets for the x pos of this one object.
+
+// this represents the target x position of the object on the server
+let targetXPos = 200;
+// simulate very poor networking conditions. 10 updates per second with half of messages missing
+const MESSAGE_INTERVAL = 100;
+setInterval(() => {
+  // the object is always moving on the server
+  targetXPos += 0.5;
+  // and the client only gets to know about it sometimes.
+  if (Math.random() > 0.1) {
+    positionUpdates.push({ x: targetXPos, y: 200 });
+  }
+}, MESSAGE_INTERVAL);
+
+// can be adjusted based on how much interpolation you want
+const SECONDS_SMOOTHING = MESSAGE_INTERVAL / 1000;
+// toggle to see the difference!
+const DO_INTERPOLATE = true;
+// quick and dirty prototype that just tracks the single object.
+// just creating this so I can get a listener to GameRender
+export class PrototypeNetworkInterpolationManager extends Entity {
+  static {
+    Entity.registerType(this, "@core");
+  }
+
+  readonly bounds = Object.freeze({ x: 0.5, y: 0.5 });
+
+  #lerpT = 0;
+  #currentTarget: IVector2 | undefined = undefined;
+  #startingTarget: IVector2 | undefined = undefined;
+
+  constructor(ctx: EntityContext) {
+    super(ctx);
+    this.listen(this.game, GameRender, () => {
+      const t = positionUpdates.shift();
+      if (DO_INTERPOLATE) {
+        if (t) {
+          this.#lerpT = 0;
+          this.#currentTarget = t;
+          this.#startingTarget = e.transform.position;
+        } else if (this.#currentTarget && this.#startingTarget) {
+          console.log(this.#lerpT);
+          this.#lerpT += this.game.time.delta / 1000 / SECONDS_SMOOTHING;
+          const interpolated = Vector2.lerp(
+            this.#startingTarget,
+            new Vector2(this.#currentTarget),
+            this.#lerpT,
+          );
+          e.transform.position = interpolated;
+          console.log("interpolating!");
+          if (this.#lerpT > 1) {
+            this.#currentTarget = undefined;
+          }
+        }
+      } else if (t) {
+        e.transform.position = t;
+      }
+    });
+  }
+}
+
+game.world.spawn({ type: PrototypeNetworkInterpolationManager, name: "InterpolationManager" });
+
 // #endregion
