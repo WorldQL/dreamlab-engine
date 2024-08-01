@@ -164,7 +164,7 @@ export const EditorLayout = ({
             <div className="flex space-x-2">
               <NewEntityMenu />
               <SettingsButton />
-              <ThemeButton />
+              {/* <ThemeButton /> */}
             </div>
             <div className="flex justify-center">
               <div className="flex">
