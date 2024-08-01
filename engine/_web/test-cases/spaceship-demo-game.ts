@@ -31,12 +31,11 @@ class HealthBar extends Behavior {
       transform: { position: { x: 0, y: 1 }, scale: { x: 1, y: 0.1 } },
       values: { texture: "https://files.codedred.dev/healthbar.png" },
     });
-
   }
 
   // not exactly sure why moving this to onTick fixed camera follow problems.
   onTick(): void {
-    if (!this.healthBar) return
+    if (!this.healthBar) return;
     this.healthBar.transform.position = this.entity.transform.position.add(new Vector2(0, 1));
     this.updateHealthBar();
   }
@@ -99,7 +98,7 @@ class Movement extends Behavior {
     this.defineValues(Movement, "speed");
   }
 
-  onFrame(): void {
+  onTick(): void {
     const movement = new Vector2(0, 0);
     const currentSpeed = this.speed;
 
@@ -110,7 +109,7 @@ class Movement extends Behavior {
     if (this.#right.held) movement.x += 1;
     if (this.#left.held) movement.x -= 1;
 
-    console.log(this.time.delta)
+    console.log(this.time.delta);
 
     const newPosition = this.entity.transform.position.add(
       movement.normalize().mul((this.time.delta / 100) * currentSpeed),
@@ -143,13 +142,11 @@ class LookAtMouse extends Behavior {
 game[internal.behaviorLoader].registerInternalBehavior(LookAtMouse, "spaceship");
 
 class CameraFollow extends Behavior {
-  onInitialize(): void {
+  onTick(): void {
     const target = this.entity;
     const camera = Camera.getActive(this.game);
 
-    this.listen(this.game, GamePreRender, () => {
-      if (camera) camera.pos.assign(target.pos);
-    });
+    if (camera) camera.pos.assign(target.pos);
   }
 }
 game[internal.behaviorLoader].registerInternalBehavior(CameraFollow, "spaceship");
@@ -285,9 +282,8 @@ class Shield extends Behavior {
     if (this.#shieldKey.pressed && !this.#shieldActive && !this.#coolingDown) {
       this.#activateShield();
     }
-    this.#updateShieldEffectPosition()
+    this.#updateShieldEffectPosition();
   }
-
 
   #activateShield() {
     this.#shieldActive = true;
@@ -301,7 +297,6 @@ class Shield extends Behavior {
       },
       values: { texture: "https://files.codedred.dev/shield.png" },
     });
-
 
     this.#updateShieldUI(this.shieldDuration);
 
@@ -355,7 +350,7 @@ class Supercharge extends Behavior {
     if (this.#superchargeKey.pressed && !this.#supercharged && !this.#coolingDown) {
       this.#startSupercharge();
     }
-    this.#updateSuperchargeEffectPosition()
+    this.#updateSuperchargeEffectPosition();
   }
 
   #startSupercharge() {
@@ -374,7 +369,6 @@ class Supercharge extends Behavior {
       },
       values: { texture: "https://files.codedred.dev/supercharge.png" },
     });
-
 
     setTimeout(() => {
       playerBehavior.fireRateMultiplier = prevFireRate;
@@ -1809,7 +1803,7 @@ game.local.spawn({
 
 // #region Camera & Game
 camera.transform.scale = Vector2.splat(3);
-camera.smooth = 1
+camera.smooth = 1;
 
 game.physics.world.gravity = { x: 0, y: 0 };
 // #endregion
