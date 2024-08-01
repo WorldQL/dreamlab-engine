@@ -1829,11 +1829,11 @@ const positionUpdates: IVector2[] = [];
 
 // this represents the target x position of the object on the server
 let targetXPos = 200;
-// simulate very poor networking conditions. 10 updates per second with half of messages missing
-const MESSAGE_INTERVAL = 100;
+// simulate very poor networking conditions.
+const MESSAGE_INTERVAL = 250;
 setInterval(() => {
   // the object is always moving on the server
-  targetXPos += 0.5;
+  targetXPos += 1;
   // and the client only gets to know about it sometimes.
   if (Math.random() > 0.1) {
     positionUpdates.push({ x: targetXPos, y: 200 });
@@ -1844,6 +1844,17 @@ setInterval(() => {
 const SECONDS_SMOOTHING = MESSAGE_INTERVAL / 1000;
 // toggle to see the difference!
 const DO_INTERPOLATE = true;
+if (DO_INTERPOLATE) {
+  console.log(
+    "%c With simulated network interpolation on",
+    "color: green; font-size: 30px; font-weight: bold;",
+  );
+} else {
+  console.log(
+    "%c With simulated network interpolation off",
+    "color: red; font-size: 30px; font-weight: bold;",
+  );
+}
 // quick and dirty prototype that just tracks the single object.
 // just creating this so I can get a listener to GameRender
 export class PrototypeNetworkInterpolationManager extends Entity {
@@ -1867,7 +1878,6 @@ export class PrototypeNetworkInterpolationManager extends Entity {
           this.#currentTarget = t;
           this.#startingTarget = e.transform.position;
         } else if (this.#currentTarget && this.#startingTarget) {
-          console.log(this.#lerpT);
           this.#lerpT += this.game.time.delta / 1000 / SECONDS_SMOOTHING;
           const interpolated = Vector2.lerp(
             this.#startingTarget,
@@ -1875,7 +1885,6 @@ export class PrototypeNetworkInterpolationManager extends Entity {
             this.#lerpT,
           );
           e.transform.position = interpolated;
-          console.log("interpolating!");
           if (this.#lerpT > 1) {
             this.#currentTarget = undefined;
           }
