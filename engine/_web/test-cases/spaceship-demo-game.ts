@@ -31,7 +31,6 @@ class HealthBar extends Behavior {
     });
   }
 
-  // not exactly sure why moving this to onTick fixed camera follow problems.
   update(): void {
     if (!this.healthBar) return;
     this.healthBar.transform.position = this.entity.transform.position.add(new Vector2(0, 1));
@@ -481,7 +480,7 @@ class AbilityUI extends Behavior {
     this.#boostCooldown = boostUI.cooldown;
   }
 
-  onTick() {
+  update() {
     this.#updateCooldowns();
   }
 
@@ -1472,7 +1471,7 @@ class Minimap extends Behavior {
     this.#ui.element.appendChild(this.#element);
   }
 
-  onTick() {
+  update() {
     this.#updateMinimap();
   }
 
@@ -1609,7 +1608,7 @@ class CoordsDisplay extends Behavior {
     this.#ui.element.appendChild(this.#element);
   }
 
-  onTick() {
+  update() {
     const player = this.game.world.children.get("Player");
     if (!player) return;
 
