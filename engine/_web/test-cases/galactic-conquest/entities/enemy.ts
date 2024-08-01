@@ -14,7 +14,7 @@ export class EnemyMovement extends Behavior {
   lastShootTime = 0;
   shootCooldown = Math.random() * 4000 + 3000;
 
-  onTick(): void {
+  update(): void {
     const player = this.entity.game.world.children.get("Player");
     const playerPos = player?.globalTransform.position;
     if (!playerPos) return;
@@ -79,7 +79,7 @@ export class ExplosionPieceBehavior extends Behavior {
     Math.random() * 2 - 1,
   ).normalize();
 
-  onTick(): void {
+  update(): void {
     const speed = 2;
     this.entity.transform.position = this.entity.transform.position.add(
       this.#direction.mul((this.time.delta / 1000) * speed),

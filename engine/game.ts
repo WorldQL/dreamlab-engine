@@ -137,11 +137,12 @@ export abstract class BaseGame implements ISignalHandler {
     this.#physics = new PhysicsEngine(this as unknown as Game);
   }
 
-  tick() {
+  update() {
     if (!this.#initialized)
       throw new Error("Illegal state: Game was not initialized before tick loop began!");
 
-    this.time[internal.timeSetMode]("tick");
+    // this.time[internal.timeSetMode]("tick");
+    this.time[internal.timeSetMode]("render");
     this.time[internal.timeTick]();
 
     // run the pre tick phase, then a physics update, then the tick phase
@@ -149,10 +150,14 @@ export abstract class BaseGame implements ISignalHandler {
     // have the physics world update, and then move the transform to the new position of the body.
 
     this[internal.preTickEntities]();
-    if (!this.paused) this.physics.tick();
     this[internal.tickEntities]();
 
     this.fire(GameTick);
+  }
+
+  physicsUpdate() {
+    this.time[internal.timeSetMode]("tick");
+    if (!this.paused) this.physics.tick();
   }
 
   [internal.preTickEntities]() {
@@ -270,9 +275,23 @@ export class ClientGame extends BaseGame {
   readonly local: LocalRoot = new LocalRoot(this);
   readonly remote: undefined;
 
+  #physicsTickAcc = 0;
   tickClient(delta: number): void {
-    this.tick();
-    
+    this.#physicsTickAcc += delta;
+
+    while (this.#physicsTickAcc >= this.physics.tickDelta) {
+      if (this.#physicsTickAcc > 5_000) {
+        this.#physicsTickAcc = 0;
+        console.warn("Skipped a bunch of ticks (tick accumulator ran over 5 seconds!)");
+        break;
+      }
+
+      this.#physicsTickAcc -= this.physics.tickDelta;
+      this.physicsUpdate();
+    }
+
+    this.update();
+
     this.time[internal.timeSetMode]("render");
     this.time[internal.timeIncrement](delta, 0);
 

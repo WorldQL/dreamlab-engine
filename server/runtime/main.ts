@@ -72,5 +72,5 @@ console.log("eyyyy i'm runnin a game ova here");
 
 // TODO: run the tick loop properly (run at 2x rate + do delta accumulation)
 setInterval(() => {
-  game.tick();
+  game.update();
 }, 1_000 / game.time.TPS);

@@ -18,7 +18,7 @@ export class Movement extends Behavior {
     this.defineValues(Movement, "speed");
   }
 
-  onTick(): void {
+  update(): void {
     const movement = new Vector2(0, 0);
     let currentSpeed = this.speed;
 
@@ -48,7 +48,7 @@ export class Movement extends Behavior {
 }
 
 export class LookAtMouse extends Behavior {
-  onTick(): void {
+  update(): void {
     const cursor = this.inputs.cursor;
     if (!cursor) return;
 

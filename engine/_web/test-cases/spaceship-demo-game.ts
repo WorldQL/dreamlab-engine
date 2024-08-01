@@ -34,7 +34,7 @@ class HealthBar extends Behavior {
   }
 
   // not exactly sure why moving this to onTick fixed camera follow problems.
-  onTick(): void {
+  update(): void {
     if (!this.healthBar) return;
     this.healthBar.transform.position = this.entity.transform.position.add(new Vector2(0, 1));
     this.updateHealthBar();
@@ -98,7 +98,7 @@ class Movement extends Behavior {
     this.defineValues(Movement, "speed");
   }
 
-  onTick(): void {
+  update(): void {
     const movement = new Vector2(0, 0);
     const currentSpeed = this.speed;
 
@@ -108,9 +108,7 @@ class Movement extends Behavior {
     if (this.#down.held) movement.y -= 1;
     if (this.#right.held) movement.x += 1;
     if (this.#left.held) movement.x -= 1;
-
-    console.log(this.time.delta);
-
+    
     const newPosition = this.entity.transform.position.add(
       movement.normalize().mul((this.time.delta / 100) * currentSpeed),
     );
@@ -142,7 +140,7 @@ class LookAtMouse extends Behavior {
 game[internal.behaviorLoader].registerInternalBehavior(LookAtMouse, "spaceship");
 
 class CameraFollow extends Behavior {
-  onTick(): void {
+  update(): void {
     const target = this.entity;
     const camera = Camera.getActive(this.game);
 
@@ -278,7 +276,7 @@ class Shield extends Behavior {
     return this.#coolingDown;
   }
 
-  onTick(): void {
+  update(): void {
     if (this.#shieldKey.pressed && !this.#shieldActive && !this.#coolingDown) {
       this.#activateShield();
     }
@@ -346,7 +344,7 @@ class Supercharge extends Behavior {
     return this.#coolingDown;
   }
 
-  onTick(): void {
+  update(): void {
     if (this.#superchargeKey.pressed && !this.#supercharged && !this.#coolingDown) {
       this.#startSupercharge();
     }
@@ -675,7 +673,7 @@ class BulletBehavior extends Behavior {
   #timer = 0;
   #direction: Vector2;
 
-  speed: number = 35;
+  speed: number = 20;
 
   constructor(ctx: BehaviorContext) {
     super(ctx);
@@ -685,7 +683,7 @@ class BulletBehavior extends Behavior {
     this.#direction = new Vector2(Math.cos(rotation), Math.sin(rotation));
   }
 
-  onTick(): void {
+  update(): void {
     const speed = (this.time.delta / 1000) * this.speed;
     this.entity.transform.position.assign(
       this.entity.transform.position.add(this.#direction.mul(speed)),
@@ -702,12 +700,13 @@ game[internal.behaviorLoader].registerInternalBehavior(BulletBehavior, "spaceshi
 class ClickFire extends Behavior {
   #fire = this.inputs.create("@clickFire/fire", "Fire", "MouseLeft");
 
-  readonly #cooldown = 10;
+  // in seconds
+  readonly #cooldown = 0.5;
   #lastFired = 0;
 
-  onTick(): void {
+  update(): void {
     if (this.#lastFired > 0) {
-      this.#lastFired -= 1;
+      this.#lastFired -= (this.time.delta / 1000)
       return;
     }
 
@@ -735,7 +734,7 @@ class AsteroidMovement extends Behavior {
     this.defineValues(AsteroidMovement, "speed");
   }
 
-  onTick(): void {
+  update(): void {
     this.entity.transform.position = this.entity.transform.position.add(
       this.#direction.mul((this.time.delta / 100) * this.speed),
     );
@@ -825,7 +824,7 @@ class EnemyMovement extends Behavior {
   lastShootTime = 0;
   shootCooldown = Math.random() * 2000 + 1000;
 
-  onTick(): void {
+  update(): void {
     const player = this.entity.game.world.children.get("Player");
     const playerPos = player?.globalTransform.position;
     if (!playerPos) return;
@@ -891,7 +890,7 @@ class ExplosionPieceBehavior extends Behavior {
     Math.random() * 2 - 1,
   ).normalize();
 
-  onTick(): void {
+  update(): void {
     const speed = 2;
     this.entity.transform.position = this.entity.transform.position.add(
       this.#direction.mul((this.time.delta / 1000) * speed),
@@ -1327,7 +1326,10 @@ class PlayerUI extends Behavior {
 
     this.#progressUI = this.entity.addBehavior({ type: LevelProgressUI });
 
-    this.listen(this.game, GamePostRender, this.updateStats.bind(this));
+  }
+
+  onFrame() {
+    this.updateStats();
   }
 
   updateLevelProgress(progress: number) {

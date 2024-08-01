@@ -5,7 +5,7 @@ game.local.spawn({ type: PhysicsDebug, name: "PhysicsDebug" });
 
 class Lifetime extends Behavior {
   #time = 0;
-  onTick(): void {
+  update(): void {
     this.#time += this.time.delta;
     if (this.#time >= 2000) {
       this.entity.destroy();

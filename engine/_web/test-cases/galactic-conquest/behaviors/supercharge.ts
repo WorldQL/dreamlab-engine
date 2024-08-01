@@ -20,7 +20,7 @@ export class Supercharge extends Behavior {
     return this.#coolingDown;
   }
 
-  onTick(): void {
+  update(): void {
     if (this.#superchargeKey.pressed && !this.#supercharged && !this.#coolingDown) {
       this.#startSupercharge();
     }
