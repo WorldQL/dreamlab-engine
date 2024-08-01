@@ -108,7 +108,7 @@ class Movement extends Behavior {
     if (this.#down.held) movement.y -= 1;
     if (this.#right.held) movement.x += 1;
     if (this.#left.held) movement.x -= 1;
-    
+
     const newPosition = this.entity.transform.position.add(
       movement.normalize().mul((this.time.delta / 100) * currentSpeed),
     );
@@ -706,7 +706,7 @@ class ClickFire extends Behavior {
 
   update(): void {
     if (this.#lastFired > 0) {
-      this.#lastFired -= (this.time.delta / 1000)
+      this.#lastFired -= this.time.delta / 1000;
       return;
     }
 
@@ -1325,7 +1325,6 @@ class PlayerUI extends Behavior {
     this.#ui.element.appendChild(this.#element);
 
     this.#progressUI = this.entity.addBehavior({ type: LevelProgressUI });
-
   }
 
   onFrame() {
@@ -1467,7 +1466,7 @@ class Minimap extends Behavior {
     this.#ui.dom.appendChild(style);
 
     this.#dot = element("div", { id: "dot" });
-    this.#element = element("div", { id: "minimap" });
+    this.#element = element("div", { id: "minimap", children: [this.#dot] });
     this.#ui.element.appendChild(this.#element);
 
     this.listen(this.game, GamePostRender, () => {
