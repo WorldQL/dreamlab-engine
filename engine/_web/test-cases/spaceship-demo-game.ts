@@ -14,7 +14,6 @@ import { EntityCollision } from "../../signals/mod.ts";
 import { element } from "../../ui.ts";
 import * as internal from "../../internal.ts";
 import { GameRender } from "../../mod.ts";
-import { Vector } from "@dreamlab/vendor/rapier.ts";
 
 // #region Health
 class HealthBar extends Behavior {
@@ -45,8 +44,8 @@ class HealthBar extends Behavior {
     this.healthBar.transform.scale.x = healthRatio;
   }
 
-  // onPhysicsUpdate(): void {
-  //   console.log('hi im a physics update and my delta is ', this.game.time.delta);
+  // onFixedUpdate(dt: number): void {
+  //   console.log('hi im a physics update and my delta is ', dt);
   // }
 
   takeDamage(damage: number): void {
@@ -102,7 +101,7 @@ class Movement extends Behavior {
     this.defineValues(Movement, "speed");
   }
 
-  onUpdate(): void {
+  onUpdate(dt: number): void {
     const movement = new Vector2(0, 0);
     const currentSpeed = this.speed;
 
@@ -114,7 +113,7 @@ class Movement extends Behavior {
     if (this.#left.held) movement.x -= 1;
 
     const newPosition = this.entity.transform.position.add(
-      movement.normalize().mul((this.time.delta / 100) * currentSpeed),
+      movement.normalize().mul((dt / 100) * currentSpeed),
     );
 
     const halfWidth = this.entity.transform.scale.x / 2;

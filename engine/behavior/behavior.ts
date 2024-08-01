@@ -203,27 +203,27 @@ export class Behavior implements ISignalHandler {
   spawn(): void {
     if (this.onUpdate) {
       // idk why i have to cast to Entity. i think it's a typescript bug
-      const onTick = this.onUpdate.bind(this);
+      const onUpdate = this.onUpdate.bind(this);
       this.listen(this.entity as Entity, EntityUpdate, () => {
-        if (!this.game.paused) onTick();
+        if (!this.game.paused) onUpdate(this.game.time.delta);
       });
     }
 
     if (this.onFrame) {
       const onFrame = this.onFrame.bind(this);
-      this.listen(this.entity.game, GameRender, () => onFrame());
+      this.listen(this.entity.game, GameRender, () => onFrame(this.game.time.delta));
     }
 
-    if (this.onPhysicsUpdate) {
-      const onPhysicsUpdate = this.onPhysicsUpdate.bind(this);
-      this.listen(this.entity.game, GamePhysicsUpdate, () => onPhysicsUpdate())
+    if (this.onFixedUpdate) {
+      const onPhysicsUpdate = this.onFixedUpdate.bind(this);
+      this.listen(this.entity.game, GamePhysicsUpdate, () => onPhysicsUpdate(this.game.time.delta))
     }
 
     this.onInitialize();
   }
 
   onInitialize(): void {}
-  onUpdate?(): void;
-  onFrame?(): void;
-  onPhysicsUpdate?(): void;
+  onUpdate?(delta: number): void;
+  onFrame?(delta: number): void;
+  onFixedUpdate?(delta: number): void;
 }
