@@ -28,7 +28,7 @@ export const TransformSchema = z.object({
 export const BehaviorSchema = z.object({
   ref: BehaviorReferenceSchema,
   script: ResourceLocationSchema,
-  values: z.record(ValueSchema),
+  values: z.record(ValueSchema).default({}),
 });
 export type SceneDescBehavior = z.input<typeof BehaviorSchema>;
 

@@ -1,9 +1,13 @@
-import { BehaviorDefinition } from "../behavior/mod.ts";
-import { Entity, EntityDefinition } from "../entity/mod.ts";
-import { Game, ServerGame } from "../game.ts";
+import {
+  BehaviorDefinition,
+  Entity,
+  EntityDefinition,
+  Game,
+  ServerGame,
+  ClientGame,
+} from "@dreamlab/engine";
 import { Scene, SceneDescBehavior, SceneDescEntity, EntitySchema } from "./schema.ts";
 import * as internal from "../internal.ts";
-import { ClientGame } from "../mod.ts";
 
 export const serializeBehaviorDefinition = (
   game: Game,
