@@ -2,7 +2,6 @@ import { BackgroundBehavior } from "../../behavior/behaviors/background-behavior
 import { Behavior, BehaviorContext } from "../../behavior/mod.ts";
 import {
   Camera,
-  Empty,
   Entity,
   Rigidbody2D,
   Sprite2D,
@@ -10,10 +9,9 @@ import {
   UILayer,
 } from "../../entity/mod.ts";
 import { Vector2 } from "../../math/mod.ts";
-import { EntityCollision, GamePostRender } from "../../signals/mod.ts";
+import { EntityCollision } from "../../signals/mod.ts";
 import { element } from "../../ui.ts";
 import * as internal from "../../internal.ts";
-import { GamePreRender } from "../../mod.ts";
 
 // #region Health
 class HealthBar extends Behavior {
@@ -44,6 +42,10 @@ class HealthBar extends Behavior {
     const healthRatio = this.currentHealth / this.maxHealth;
     this.healthBar.transform.scale.x = healthRatio;
   }
+
+  // onPhysicsUpdate(): void {
+  //   console.log('hi im a physics update and my delta is ', this.game.time.delta);
+  // }
 
   takeDamage(damage: number): void {
     this.currentHealth -= damage;
@@ -85,7 +87,7 @@ game[internal.behaviorLoader].registerInternalBehavior(HealthBar, "spaceship");
 
 // #region Movement
 class Movement extends Behavior {
-  speed = 5.0;
+  speed = 2.5;
 
   #up = this.inputs.create("@movement/up", "Move Up", "KeyW");
   #down = this.inputs.create("@movement/down", "Move Down", "KeyS");
@@ -477,10 +479,10 @@ class AbilityUI extends Behavior {
     );
     this.#boostImage = boostUI.image;
     this.#boostCooldown = boostUI.cooldown;
+  }
 
-    this.listen(this.game, GamePostRender, () => {
-      this.#updateCooldowns();
-    });
+  onTick() {
+    this.#updateCooldowns();
   }
 
   #createAbilityUI(key: string, name: string, imagePath: string) {
@@ -673,7 +675,7 @@ class BulletBehavior extends Behavior {
   #timer = 0;
   #direction: Vector2;
 
-  speed: number = 20;
+  speed: number = 60;
 
   constructor(ctx: BehaviorContext) {
     super(ctx);
@@ -1468,10 +1470,10 @@ class Minimap extends Behavior {
     this.#dot = element("div", { id: "dot" });
     this.#element = element("div", { id: "minimap", children: [this.#dot] });
     this.#ui.element.appendChild(this.#element);
+  }
 
-    this.listen(this.game, GamePostRender, () => {
-      this.#updateMinimap();
-    });
+  onTick() {
+    this.#updateMinimap();
   }
 
   #updateMinimap() {
@@ -1605,14 +1607,14 @@ class CoordsDisplay extends Behavior {
 
     this.#element = element("div", { id: "coords" });
     this.#ui.element.appendChild(this.#element);
+  }
 
-    this.listen(this.game, GamePostRender, () => {
-      const player = this.game.world.children.get("Player");
-      if (!player) return;
+  onTick() {
+    const player = this.game.world.children.get("Player");
+    if (!player) return;
 
-      const pos = player.transform.position;
-      this.#element.innerText = `Coords: (${pos.x.toFixed(2)}, ${pos.y.toFixed(2)})`;
-    });
+    const pos = player.transform.position;
+    this.#element.innerText = `Coords: (${pos.x.toFixed(2)}, ${pos.y.toFixed(2)})`;
   }
 }
 game[internal.behaviorLoader].registerInternalBehavior(CoordsDisplay, "spaceship");

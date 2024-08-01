@@ -13,7 +13,7 @@ import {
   SignalConstructorMatching,
 } from "../signal.ts";
 import { EntityUpdate } from "../signals/entity-updates.ts";
-import { GameRender } from "../signals/game-events.ts";
+import { GamePhysicsUpdate, GameRender } from "../signals/game-events.ts";
 import { BehaviorDestroyed } from "../signals/behavior-lifecycle.ts";
 
 export interface BehaviorContext {
@@ -214,10 +214,16 @@ export class Behavior implements ISignalHandler {
       this.listen(this.entity.game, GameRender, () => onFrame());
     }
 
+    if (this.onPhysicsUpdate) {
+      const onPhysicsUpdate = this.onPhysicsUpdate.bind(this);
+      this.listen(this.entity.game, GamePhysicsUpdate, () => onPhysicsUpdate())
+    }
+
     this.onInitialize();
   }
 
   onInitialize(): void {}
   update?(): void;
   onFrame?(): void;
+  onPhysicsUpdate?(): void;
 }

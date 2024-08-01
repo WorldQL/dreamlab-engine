@@ -2,6 +2,7 @@ import RAPIER, { RigidBody } from "@dreamlab/vendor/rapier.ts";
 import { Entity } from "./entity/mod.ts";
 import { Game } from "./game.ts";
 import { EntityCollision } from "./signals/entity-collision.ts";
+import { GamePhysicsUpdate } from "./signals/game-events.ts";
 
 export class PhysicsEngine {
   game: Game;
@@ -28,6 +29,7 @@ export class PhysicsEngine {
   }
 
   tick() {
+    this.game.fire(GamePhysicsUpdate)
     if (this.enabled) this.world.step(this.#events);
     this.#events.drainCollisionEvents((handle1, handle2, started) => {
       const body1 = this.world.bodies.get(handle1);
