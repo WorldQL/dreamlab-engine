@@ -38,11 +38,16 @@
   --grey: 55, 65, 81; /* #374151 */
   --greyDark: 31, 41, 55; /* #1F2937 */
 
-  --background: 247, 250, 252; /* #F7FAFC */
-  --card: 255, 255, 255; /* #FFFFFF */
-  --textPrimary: 45, 55, 72; /* #2D3748 */
-  --textSecondary: 113, 128, 150; /* #718096 */
-  --icon: 26, 32, 44; /* #1A202C */
+  /* --background: 247, 250, 252; /* #F7FAFC */
+  /* --card: 255, 255, 255; /* #FFFFFF */
+  /* --textPrimary: 45, 55, 72; /* #2D3748 */
+  /* --textSecondary: 113, 128, 150; /* #718096 */
+  /* --icon: 26, 32, 44; /* #1A202C */
+  --background: 27, 34, 49; /* #1b2231 */
+  --card: 37, 42, 54; /* #252A36 */
+  --textPrimary: 236, 239, 241; /* #ECEFF1 */
+  --textSecondary: 144, 164, 174; /* #90A4AE */
+  --icon: 236, 239, 241; /* #ECEFF1 */
 
   --gradient-textPrimary: 255, 255, 255; /* #FFFFFF */
   --gradient-textSecondary: 204, 204, 204; /* #CCCCCC */
