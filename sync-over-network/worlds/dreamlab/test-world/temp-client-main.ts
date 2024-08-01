@@ -1,6 +1,6 @@
-import { Behavior, Sprite2D } from "@dreamlab/engine";
+import { Behavior, Camera, ClientGame, Empty, Sprite2D } from "@dreamlab/engine";
 
-export default class PlayerSpawner extends Behavior {
+class PlayerSpawnBehavior extends Behavior {
   onInitialize(): void {
     if (!this.game.isClient()) return;
 
@@ -15,3 +15,16 @@ export default class PlayerSpawner extends Behavior {
     })();
   }
 }
+
+export default async (game: ClientGame) => {
+  game.local.spawn({
+    type: Empty,
+    name: "PlayerSpawnManager",
+    behaviors: [{ type: PlayerSpawnBehavior }],
+  });
+
+  game.local.spawn({
+    type: Camera,
+    name: "Camera",
+  });
+};

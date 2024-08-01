@@ -1,35 +1,3 @@
 {
-  "meta": {
-    "schema_version": 1,
-    "engine_revision": "2024-08.001"
-  },
-  "scenes": {
-    "main": {
-      "local": [
-        {
-          "ref": "ent_rthb692t18htouso0q6fwqb3",
-          "name": "Camera",
-          "type": "@core/Camera",
-          "transform": {
-            "position": { "x": 0, "y": 0 },
-            "rotation": 0,
-            "scale": { "x": 1, "y": 1 },
-            "z": 0
-          }
-        },
-        {
-          "ref": "ent_i09xjhef9j6tt630jn2ngdta",
-          "name": "PlayerSpawnManager",
-          "type": "@core/Empty",
-          "behaviors": [
-            {
-              "script": "res://src/player-spawner.js",
-              "ref": "bhv_dqg9eccve24e6rxphsx4y4px"
-            }
-          ]
-        }
-      ],
-      "world": []
-    }
-  }
+  "todo": "meowmeowmeow"
 }

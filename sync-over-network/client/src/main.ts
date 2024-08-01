@@ -1,10 +1,8 @@
-import { ClientGame, Entity, GameStatus } from "@dreamlab/engine";
+import { ClientGame, GameStatus } from "@dreamlab/engine";
 import { JSON_CODEC } from "@dreamlab/proto/codecs/simple-json.ts";
 import { ServerPacket } from "@dreamlab/proto/play.ts";
 import { ClientConnection } from "./networking/net-connection.ts";
 import { ReceivedInitialNetworkSnapshot } from "@dreamlab/proto/common/signals.ts";
-import { convertEntityDefinition, ProjectSchema } from "../../../engine/scene/mod.ts";
-import * as internal from "../../../engine/internal.ts";
 
 const setup = async (conn: ClientConnection, game: ClientGame) => {
   const networkSetupPromise = new Promise<void>((resolve, _reject) => {
@@ -16,24 +14,14 @@ const setup = async (conn: ClientConnection, game: ClientGame) => {
   conn.setup(game);
   await game.initialize();
 
-  const projectDesc = await fetch(game.resolveResource("res://world.json"))
-    .then(r => r.text())
-    .then(JSON.parse)
-    .then(ProjectSchema.parse);
-  const scene = projectDesc.scenes.main;
-  await Promise.all(scene.registration.map(script => import(game.resolveResource(script))));
-
-  const spawnedEntities: Entity[] = [];
-  const defs = await Promise.all(scene.local.map(def => convertEntityDefinition(game, def)));
-  for (const def of defs)
-    spawnedEntities.push(game.local[internal.entitySpawn](def, { inert: true }));
-
   await networkSetupPromise;
+
   game.setStatus(GameStatus.Running);
 
-  for (const entity of spawnedEntities) {
-    entity[internal.entitySpawnFinalize]();
-  }
+  const { default: clientMain } = await import(
+    game.resolveResource("res://temp-client-main.js")
+  );
+  await clientMain(game);
 
   let now = performance.now();
   const onTick = (time: number) => {
