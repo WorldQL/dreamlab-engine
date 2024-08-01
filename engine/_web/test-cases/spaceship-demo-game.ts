@@ -129,7 +129,7 @@ class LookAtMouse extends Behavior {
     const world = this.inputs.cursor.world;
     if (!world) return;
 
-    const rotation = this.entity.globalTransform.position.lookAt(world);
+    const rotation = this.entity.interpolated.position.lookAt(world);
     this.entity.transform.rotation = rotation;
   }
 }
@@ -1189,7 +1189,7 @@ class PlayerBehavior extends Behavior {
     const world = this.inputs.cursor.world;
     if (!world) return;
 
-    const position = this.entity.globalTransform.position.bare();
+    const position = this.entity.interpolated.position.bare();
     const baseDirection = world.sub(position);
     const baseRotation = Math.atan2(baseDirection.y, baseDirection.x);
 
