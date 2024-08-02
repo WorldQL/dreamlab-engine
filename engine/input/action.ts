@@ -46,7 +46,6 @@ export class Action implements ISignalHandler {
   }
 
   [actionSetHeld](value: boolean, tick: number) {
-    if (tick === this.#heldAt) return;
     this.#heldAt = value ? tick : undefined;
 
     if (this.#heldAt !== undefined) this.fire(ActionPressed);
