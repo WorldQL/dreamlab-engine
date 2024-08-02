@@ -462,9 +462,10 @@ export abstract class Entity implements ISignalHandler {
   #interpolated: Transform;
 
   get interpolated(): {
-    readonly position: Readonly<Vector2>;
+    // TODO: Readonly Vectors
+    readonly position: Vector2;
     readonly rotation: number;
-    readonly scale: Readonly<Vector2>;
+    readonly scale: Vector2;
   } {
     return this.#interpolated;
   }

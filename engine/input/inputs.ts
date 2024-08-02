@@ -27,8 +27,9 @@ import { isInput } from "./input.ts";
 // TODO: Scroll and cursor position support
 
 export type Cursor = {
-  readonly world: Readonly<Vector2> | undefined;
-  readonly screen: Readonly<Vector2> | undefined;
+  // TODO: Readonly Vectors
+  readonly world: Vector2 | undefined;
+  readonly screen: Vector2 | undefined;
 };
 
 export class Inputs implements ISignalHandler {
