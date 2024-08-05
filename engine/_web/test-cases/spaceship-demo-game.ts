@@ -1470,7 +1470,7 @@ class Minimap extends Behavior {
     this.#ui.dom.appendChild(style);
 
     this.#dot = element("div", { id: "dot" });
-    this.#element = element("div", { id: "minimap" });
+    this.#element = element("div", { id: "minimap", children: [this.#dot] });
     this.#ui.element.appendChild(this.#element);
 
     this.listen(this.game, GameTick, () => {
