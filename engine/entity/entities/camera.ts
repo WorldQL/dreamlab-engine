@@ -2,7 +2,7 @@ import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { ClientGame, Game } from "../../game.ts";
 import { smoothLerp } from "../../math/lerp.ts";
 import { IVector2, Vector2 } from "../../math/mod.ts";
-import { GamePreRender } from "../../signals/mod.ts";
+import { ActiveCameraChanged, GamePreRender } from "../../signals/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
 
 export class Camera extends Entity {
@@ -68,6 +68,9 @@ export class Camera extends Entity {
     // Reparent scene container
     const game = this.game as ClientGame;
     this.container.addChild(game.renderer.scene);
+
+    // Emit event
+    this.game.fire(ActiveCameraChanged, this);
   }
 
   // TODO: Look into improving this API maybe?
