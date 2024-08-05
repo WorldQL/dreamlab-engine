@@ -2,7 +2,7 @@ import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { ClientGame, Game } from "../../game.ts";
 import { smoothLerp } from "../../math/lerp.ts";
 import { IVector2, Vector2 } from "../../math/mod.ts";
-import { ActiveCameraChanged, GamePreRender } from "../../signals/mod.ts";
+import { ActiveCameraChanged, EntityDestroyed, GamePreRender } from "../../signals/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
 
 export class Camera extends Entity {
@@ -51,7 +51,15 @@ export class Camera extends Entity {
     return this.#active;
   }
   set active(value: boolean) {
+    // Early return if we are already active
+    if (value && this.#active) return;
+
+    const previous = Camera.getActive(this.game);
     if (!value) {
+      if (this.#active === true) {
+        this.game.fire(ActiveCameraChanged, undefined, this);
+      }
+
       this.#active = false;
       return;
     }
@@ -70,7 +78,7 @@ export class Camera extends Entity {
     this.container.addChild(game.renderer.scene);
 
     // Emit event
-    this.game.fire(ActiveCameraChanged, this);
+    this.game.fire(ActiveCameraChanged, this, previous);
   }
 
   // TODO: Look into improving this API maybe?
@@ -131,18 +139,19 @@ export class Camera extends Entity {
       this.container.setFromMatrix(this.#updateMatrix());
     });
 
+    this.on(EntityDestroyed, () => {
+      const game = this.game as ClientGame;
+
+      // Deactivate camera
+      this.active = false;
+
+      // Reparent to pixi root
+      game.renderer.app.stage.addChild(game.renderer.scene);
+      // Destroy container after
+      this.container.destroy();
+    });
+
     this.active = true;
-  }
-
-  destroy(): void {
-    super.destroy();
-
-    const game = this.game as ClientGame;
-
-    // Reparent to pixi root
-    game.renderer.app.stage.addChild(game.renderer.scene);
-    // Destroy container after
-    this.container.destroy();
   }
 
   public worldToScreen(position: IVector2): Vector2 {
