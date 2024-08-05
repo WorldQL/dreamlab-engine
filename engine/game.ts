@@ -15,8 +15,11 @@ import {
   SignalListener,
 } from "./signal.ts";
 import {
+  GamePostTick,
   GamePostRender,
+  GameShouldUpdateCursorPosition,
   GamePreRender,
+  GamePreTick,
   GameRender,
   GameShutdown,
   GameTick,
@@ -149,11 +152,16 @@ export abstract class BaseGame implements ISignalHandler {
     // so e.g. in Rigidbody2D we can move the body to the entity's transform,
     // have the physics world update, and then move the transform to the new position of the body.
 
+    game.fire(GamePreTick);
+
     this[internal.preTickEntities]();
     if (!this.paused) this.physics.tick();
     this[internal.tickEntities]();
 
     this.fire(GameTick);
+
+    game.fire(GameShouldUpdateCursorPosition);
+    game.fire(GamePostTick);
   }
 
   [internal.preTickEntities]() {
@@ -298,7 +306,6 @@ export class ClientGame extends BaseGame {
     this.time[internal.timeIncrement](delta, this.#tickAccumulator / this.physics.tickDelta);
     this[internal.updateInterpolation]();
 
-    this.fire(GamePreRender);
     this.fire(GameRender);
     this.renderer.renderFrame();
     this.fire(GamePostRender);

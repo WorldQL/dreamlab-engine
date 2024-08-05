@@ -125,11 +125,11 @@ class Movement extends Behavior {
 game[internal.behaviorLoader].registerInternalBehavior(Movement, "spaceship");
 
 class LookAtMouse extends Behavior {
-  onTick(): void {
+  onPostTick() {
     const world = this.inputs.cursor.world;
     if (!world) return;
 
-    const rotation = this.entity.interpolated.position.lookAt(world);
+    const rotation = this.entity.transform.position.lookAt(world);
     this.entity.transform.rotation = rotation;
   }
 }
@@ -293,17 +293,17 @@ class Shield extends Behavior {
       values: { texture: "https://files.codedred.dev/shield.png" },
     });
 
-    this.entity.game.on(GameTick, this.#updateShieldEffectPosition);
-
-    this.#updateShieldUI(this.shieldDuration);
-
     setTimeout(() => {
       this.entity.getBehavior(PlayerBehavior).invincible = false;
       this.#shieldEffect.destroy();
-      this.entity.game.unregister(GameTick, this.#updateShieldEffectPosition);
       this.#shieldActive = false;
       this.#coolDown();
     }, this.shieldDuration);
+  }
+
+  onPostTick() {
+    this.#updateShieldUI(this.shieldDuration);
+    this.#updateShieldEffectPosition();
   }
 
   #updateShieldEffectPosition = () => {
@@ -367,15 +367,16 @@ class Supercharge extends Behavior {
       values: { texture: "https://files.codedred.dev/supercharge.png" },
     });
 
-    this.entity.game.on(GameTick, this.#updateSuperchargeEffectPosition);
-
     setTimeout(() => {
       playerBehavior.fireRateMultiplier = prevFireRate;
       this.#superchargeEffect.destroy();
-      this.entity.game.unregister(GameTick, this.#updateSuperchargeEffectPosition);
       this.#supercharged = false;
       this.#coolDown();
     }, this.#superchargeDuration);
+  }
+
+  onPostTick() {
+    this.#updateSuperchargeEffectPosition();
   }
 
   #updateSuperchargeEffectPosition = () => {
@@ -702,10 +703,10 @@ game[internal.behaviorLoader].registerInternalBehavior(BulletBehavior, "spaceshi
 class ClickFire extends Behavior {
   #fire = this.inputs.create("@clickFire/fire", "Fire", "MouseLeft");
 
-  readonly #cooldown = 10;
+  readonly #cooldown = 1;
   #lastFired = 0;
 
-  onTick(): void {
+  onPostTick(): void {
     if (this.#lastFired > 0) {
       this.#lastFired -= 1;
       return;
@@ -1189,7 +1190,7 @@ class PlayerBehavior extends Behavior {
     const world = this.inputs.cursor.world;
     if (!world) return;
 
-    const position = this.entity.interpolated.position.bare();
+    const position = this.entity.globalTransform.position.bare();
     const baseDirection = world.sub(position);
     const baseRotation = Math.atan2(baseDirection.y, baseDirection.x);
 

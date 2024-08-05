@@ -2,7 +2,7 @@ import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { ClientGame, Game } from "../../game.ts";
 import { smoothLerp } from "../../math/lerp.ts";
 import { IVector2, Vector2 } from "../../math/mod.ts";
-import { ActiveCameraChanged, EntityDestroyed, GamePreRender } from "../../signals/mod.ts";
+import { ActiveCameraChanged, EntityDestroyed, GameRender } from "../../signals/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
 
 export class Camera extends Entity {
@@ -99,7 +99,7 @@ export class Camera extends Entity {
     this.container = new PIXI.Container();
     this.game.renderer.app.stage.addChild(this.container);
 
-    this.listen(this.game, GamePreRender, () => {
+    this.listen(this.game, GameRender, () => {
       if (!this.#active) return;
       const delta = this.game.time.delta;
 
@@ -155,12 +155,26 @@ export class Camera extends Entity {
   }
 
   public worldToScreen(position: IVector2): Vector2 {
-    const { x, y } = this.#matrix.apply({ x: position.x, y: -position.y });
+    const matrix = PIXI.Matrix.shared
+      .translate(-this.globalTransform.position.x, this.globalTransform.position.y)
+      .rotate(this.#rotation)
+      .scale(Camera.METERS_TO_PIXELS, Camera.METERS_TO_PIXELS)
+      .scale(1 / this.#scale.x, 1 / this.#scale.y)
+      .translate(game.renderer.app.canvas.width / 2, game.renderer.app.canvas.height / 2);
+
+    const { x, y } = matrix.apply({ x: position.x, y: -position.y });
     return new Vector2(x, y);
   }
 
   public screenToWorld(position: IVector2): Vector2 {
-    const { x, y } = this.#matrix.applyInverse(position);
+    const matrix = PIXI.Matrix.shared
+      .translate(-this.globalTransform.position.x, this.globalTransform.position.y)
+      .rotate(this.#rotation)
+      .scale(Camera.METERS_TO_PIXELS, Camera.METERS_TO_PIXELS)
+      .scale(1 / this.#scale.x, 1 / this.#scale.y)
+      .translate(game.renderer.app.canvas.width / 2, game.renderer.app.canvas.height / 2);
+
+    const { x, y } = matrix.applyInverse(position);
     return new Vector2(x, -y);
   }
 }

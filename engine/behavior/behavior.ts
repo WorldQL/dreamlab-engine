@@ -3,18 +3,18 @@ import type { ConditionalExcept } from "@dreamlab/vendor/type-fest.ts";
 
 import { Entity } from "../entity/mod.ts";
 import { Game } from "../game.ts";
-import { Primitive, Value, ValueTypeTag, inferValueTypeTag } from "../value/mod.ts";
 import {
   ISignalHandler,
   Signal,
-  SignalMatching,
   SignalConstructor,
-  SignalListener,
   SignalConstructorMatching,
+  SignalListener,
+  SignalMatching,
 } from "../signal.ts";
-import { EntityUpdate } from "../signals/entity-updates.ts";
-import { GameRender } from "../signals/game-events.ts";
 import { BehaviorDestroyed } from "../signals/behavior-lifecycle.ts";
+import { EntityUpdate } from "../signals/entity-updates.ts";
+import { GamePostTick, GameRender } from "../signals/game-events.ts";
+import { Primitive, Value, ValueTypeTag, inferValueTypeTag } from "../value/mod.ts";
 
 export interface BehaviorContext {
   game: Game;
@@ -213,10 +213,16 @@ export class Behavior implements ISignalHandler {
       this.listen(this.entity.game, GameRender, () => onFrame());
     }
 
+    if (this.onPostTick) {
+      const onPostTick = this.onPostTick.bind(this);
+      this.listen(this.entity.game, GamePostTick, () => onPostTick());
+    }
+
     this.onInitialize();
   }
 
   onInitialize(): void {}
   onTick?(): void;
+  onPostTick?(): void;
   onFrame?(): void;
 }
