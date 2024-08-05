@@ -89,12 +89,30 @@ class Movement extends Behavior {
   #right = this.inputs.create("@movement/right", "Move Right", "KeyD");
   // #shift = this.inputs.create("@movement/shift", "Speed Boost", "ShiftLeft");
 
+  #fire = this.inputs.create("@clickFire/fire", "Fire", "MouseLeft");
+
+  readonly #cooldown = 1;
+  #lastFired = 0;
+
   constructor(ctx: BehaviorContext) {
     super(ctx);
     this.defineValues(Movement, "speed");
   }
 
   onTick(): void {
+    if (this.#lastFired > 0) {
+      this.#lastFired -= 1;
+    } else {
+      if (this.#fire.held) {
+        const playerBehavior = this.entity.getBehavior(PlayerBehavior);
+        const fireRateMultiplier = playerBehavior.fireRateMultiplier;
+
+        this.#lastFired = this.#cooldown / fireRateMultiplier;
+
+        playerBehavior.shootingPattern();
+      }
+    }
+
     const movement = new Vector2(0, 0);
     const currentSpeed = this.speed;
 
@@ -672,11 +690,11 @@ game[internal.behaviorLoader].registerInternalBehavior(LevelUpSelectionScreen, "
 
 // #region Bullet
 class BulletBehavior extends Behavior {
-  readonly #lifetime = 3;
+  readonly #lifetime = 300;
   #timer = 0;
   #direction: Vector2;
 
-  speed: number = 35;
+  speed: number = 3;
 
   constructor(ctx: BehaviorContext) {
     super(ctx);
@@ -706,21 +724,7 @@ class ClickFire extends Behavior {
   readonly #cooldown = 1;
   #lastFired = 0;
 
-  onPostTick(): void {
-    if (this.#lastFired > 0) {
-      this.#lastFired -= 1;
-      return;
-    }
-
-    if (this.#fire.held) {
-      const playerBehavior = this.entity.getBehavior(PlayerBehavior);
-      const fireRateMultiplier = playerBehavior.fireRateMultiplier;
-
-      this.#lastFired = this.#cooldown / fireRateMultiplier;
-
-      playerBehavior.shootingPattern();
-    }
-  }
+  onPostTick(): void {}
 }
 game[internal.behaviorLoader].registerInternalBehavior(ClickFire, "spaceship");
 // #endregion
