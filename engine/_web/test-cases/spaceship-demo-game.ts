@@ -982,9 +982,9 @@ export const background = game.local.spawn({
     texture: "https://files.lulu.dev/ydQdgTIPWW73.png",
     width: 300,
     height: 300,
-    tileScale: Vector2.splat(1 / 6),
+    tileScale: Vector2.splat(1 / 2),
   },
-  behaviors: [{ type: BackgroundBehavior, values: { parallax: Vector2.splat(0.5) } }],
+  behaviors: [{ type: BackgroundBehavior, values: { parallax: Vector2.splat(0) } }],
 });
 // #endregion
 
