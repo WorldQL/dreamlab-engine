@@ -7,6 +7,7 @@ import * as internal from "../internal.ts";
 import {
   IVector2,
   Transform,
+  TransformOptions,
   Vector2,
   lerpAngle,
   transformLocalToWorld,
@@ -50,7 +51,7 @@ export interface EntityContext {
   game: Game;
   name: string;
   parent?: Entity;
-  transform?: { position?: IVector2; rotation?: number; scale?: IVector2 };
+  transform?: TransformOptions;
   authority?: ConnectionId;
   ref?: string;
   values?: Record<string, JsonValue>;
@@ -74,7 +75,7 @@ export interface EntityDefinition<
 > {
   type: EntityConstructor<T>;
   name: string;
-  transform?: { position?: IVector2; rotation?: number; scale?: IVector2; z?: number };
+  transform?: TransformOptions;
   authority?: ConnectionId;
   values?: Partial<Omit<T, keyof Entity>>;
   children?: { [I in keyof Children]: EntityDefinition<Children[I]> };

@@ -1,6 +1,13 @@
 import { IVector2, Vector2 } from "./vector/vector2.ts";
 import { transformOnChanged, transformForceUpdate, vectorOnChanged } from "../internal.ts";
 
+export type TransformOptions = {
+  position?: Partial<IVector2>;
+  scale?: Partial<IVector2>;
+  rotation?: number;
+  z?: number;
+};
+
 export class Transform {
   #position = new Vector2(0, 0);
   get position(): Vector2 {
@@ -50,9 +57,21 @@ export class Transform {
     };
   }
 
-  constructor(opts?: { position?: IVector2; scale?: IVector2; rotation?: number; z?: number }) {
-    if (opts?.position) this.#position = new Vector2(opts.position);
-    if (opts?.scale) this.#scale = new Vector2(opts.scale);
+  constructor(opts?: TransformOptions) {
+    if (opts?.position) {
+      const x = opts.position.x ?? 0;
+      const y = opts.position.y ?? 0;
+
+      this.#position = new Vector2(x, y);
+    }
+
+    if (opts?.scale) {
+      const x = opts.scale.x ?? 1;
+      const y = opts.scale.y ?? 1;
+
+      this.#scale = new Vector2(x, y);
+    }
+
     if (opts?.rotation) this.#rotation = opts.rotation;
     if (opts?.z) this.#z = opts.z;
 
