@@ -49,8 +49,7 @@ export class BackgroundBehavior extends Behavior {
     const distance = cam.mul(this.parallax);
     const inverse = cam.mul(Vector2.ONE.sub(this.parallax));
 
-    // TODO: Snap position without interpolating
-    sprite.pos = this.#origin.add(distance);
+    sprite.setGlobalTransform({ position: this.#origin.add(distance) });
 
     const width = sprite.width * tileScale.x;
     const height = sprite.height * tileScale.y;
