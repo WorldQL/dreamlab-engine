@@ -470,6 +470,60 @@ export abstract class Entity implements ISignalHandler {
   } {
     return this.#interpolated;
   }
+
+  setTransform(opts: TransformOptions): void {
+    if (opts.position?.x) {
+      this.transform.position.x = opts.position.x;
+      this.#prevPosition.x = opts.position.x;
+    }
+    if (opts.position?.y) {
+      this.transform.position.y = opts.position.y;
+      this.#prevPosition.y = opts.position.y;
+    }
+
+    if (opts.rotation) {
+      this.transform.rotation = opts.rotation;
+      this.#prevRotation = opts.rotation;
+    }
+
+    if (opts.scale?.x) {
+      this.transform.scale.x = opts.scale.x;
+      this.#prevScale.x = opts.scale.x;
+    }
+    if (opts.scale?.y) {
+      this.transform.scale.y = opts.scale.y;
+      this.#prevScale.y = opts.scale.y;
+    }
+
+    if (opts.z) this.transform.z = opts.z;
+  }
+
+  setGlobalTransform(opts: TransformOptions): void {
+    if (opts.position?.x) {
+      this.globalTransform.position.x = opts.position.x;
+      this.#prevPosition.x = opts.position.x;
+    }
+    if (opts.position?.y) {
+      this.globalTransform.position.y = opts.position.y;
+      this.#prevPosition.y = opts.position.y;
+    }
+
+    if (opts.rotation) {
+      this.globalTransform.rotation = opts.rotation;
+      this.#prevRotation = opts.rotation;
+    }
+
+    if (opts.scale?.x) {
+      this.globalTransform.scale.x = opts.scale.x;
+      this.#prevScale.x = opts.scale.x;
+    }
+    if (opts.scale?.y) {
+      this.globalTransform.scale.y = opts.scale.y;
+      this.#prevScale.y = opts.scale.y;
+    }
+
+    if (opts.z) this.globalTransform.z = opts.z;
+  }
   // #endregion
 
   // #region Values
