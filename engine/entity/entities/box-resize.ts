@@ -255,7 +255,7 @@ export class BoxResizeGizmo extends Entity {
     if (!this.#action) return;
 
     const cursor = this.inputs.cursor;
-    if (!cursor) return;
+    if (!cursor.world) return;
 
     const pos = cursor.world.sub(this.#action.offset);
     if (this.#action.type === "translate") {

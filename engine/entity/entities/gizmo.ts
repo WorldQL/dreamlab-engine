@@ -388,7 +388,7 @@ export class Gizmo extends Entity {
     if (!this.#action) return;
 
     const cursor = this.inputs.cursor;
-    if (!cursor) return;
+    if (!cursor.world) return;
 
     if (this.#action.type === "translate") {
       const pos = cursor.world.sub(this.#action.offset);

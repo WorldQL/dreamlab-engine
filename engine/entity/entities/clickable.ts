@@ -20,13 +20,14 @@ export abstract class ClickableEntity extends Entity {
   get clicked(): boolean {
     return this.#clicked;
   }
-  [clickedSetter](value: boolean, button: "left" | "right" | "middle", cursor?: Cursor) {
+  [clickedSetter](value: boolean, button: "left" | "right" | "middle", cursor: Cursor) {
     const prev = this.#clicked;
     this.#clicked = value;
 
     if (!prev && value) {
-      this.fire(MouseDown, button, cursor!);
-      if (button === "left") this.fire(Click, cursor!);
+      const x = { screen: cursor.screen!, world: cursor.world! };
+      this.fire(MouseDown, button, x);
+      if (button === "left") this.fire(Click, x);
     } else if (prev && !value) {
       this.fire(MouseUp, button, cursor);
     }
@@ -36,12 +37,12 @@ export abstract class ClickableEntity extends Entity {
   get hover(): boolean {
     return this.#hover;
   }
-  [hoverSetter](value: boolean, cursor?: Cursor) {
+  [hoverSetter](value: boolean, cursor: Cursor) {
     const prev = this.#hover;
     this.#hover = value;
 
     if (!prev && value) {
-      this.fire(MouseOver, cursor!);
+      this.fire(MouseOver, { screen: cursor.screen!, world: cursor.world! });
     } else if (prev && !value) {
       this.fire(MouseOut, cursor);
     }
@@ -70,7 +71,9 @@ export abstract class ClickableEntity extends Entity {
           let hoverCount = 0;
           for (const entity of entities) {
             const isInBounds =
-              hoverCount > 0 ? false : (cursor && entity.isInBounds(cursor.world)) ?? false;
+              hoverCount > 0
+                ? false
+                : (cursor.world && entity.isInBounds(cursor.world)) ?? false;
 
             entity[hoverSetter](isInBounds, cursor);
             if (isInBounds) hoverCount++;
