@@ -10,7 +10,13 @@ import {
 } from "../../entity/mod.ts";
 import * as internal from "../../internal.ts";
 import { Vector2 } from "../../math/mod.ts";
-import { EntityCollision, GamePostRender, GamePostTick, GameTick } from "../../signals/mod.ts";
+import {
+  EntityCollision,
+  EntityDestroyed,
+  GamePostRender,
+  GamePostTick,
+  GameTick,
+} from "../../signals/mod.ts";
 import { element } from "../../ui.ts";
 import { Vector2Adapter } from "../../value/adapters/vector-adapter.ts";
 
@@ -36,6 +42,10 @@ class HealthBar extends Behavior {
     this.game.on(GamePostTick, () => {
       this.healthBar.pos = this.entity.transform.position.add(new Vector2(0, 1));
       this.updateHealthBar();
+    });
+
+    this.listen(this.entity, EntityDestroyed, () => {
+      this.healthBar.destroy();
     });
   }
 
