@@ -18,7 +18,6 @@ import {
   GamePostTick,
   GamePostRender,
   GameShouldUpdateCursorPosition,
-  GamePreRender,
   GamePreTick,
   GameRender,
   GameShutdown,

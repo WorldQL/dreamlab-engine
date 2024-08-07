@@ -12,6 +12,7 @@ import * as internal from "../../internal.ts";
 import { Vector2 } from "../../math/mod.ts";
 import { EntityCollision, GamePostRender, GameTick } from "../../signals/mod.ts";
 import { element } from "../../ui.ts";
+import { Vector2Adapter } from "../../value/adapters/vector-adapter.ts";
 
 // #region Health
 class HealthBar extends Behavior {
@@ -91,8 +92,10 @@ class Movement extends Behavior {
 
   #fire = this.inputs.create("@clickFire/fire", "Fire", "MouseLeft");
 
-  readonly #cooldown = 1;
+  readonly #cooldown = 2;
   #lastFired = 0;
+
+  velocity = Vector2.ZERO;
 
   constructor(ctx: BehaviorContext) {
     super(ctx);
@@ -100,6 +103,32 @@ class Movement extends Behavior {
   }
 
   onTick(): void {
+    const movement = new Vector2(0, 0);
+    const currentSpeed = this.speed;
+
+    // if (this.#shift.held) currentSpeed *= 2;
+
+    if (this.#up.held) movement.y += 1;
+    if (this.#down.held) movement.y -= 1;
+    if (this.#right.held) movement.x += 1;
+    if (this.#left.held) movement.x -= 1;
+
+    this.velocity = movement
+      .normalize()
+      .mul((this.game.physics.tickDelta / 100) * currentSpeed);
+
+    const newPosition = this.entity.transform.position.add(this.velocity);
+
+    const halfWidth = this.entity.transform.scale.x / 2;
+    const halfHeight = this.entity.transform.scale.y / 2;
+    const safety = 0.5;
+
+    if (newPosition.x - halfWidth <= -MAP_BOUNDARY) newPosition.x = -MAP_BOUNDARY + safety;
+    if (newPosition.x + halfWidth >= MAP_BOUNDARY) newPosition.x = MAP_BOUNDARY - safety;
+
+    if (newPosition.y - halfHeight <= -MAP_BOUNDARY) newPosition.y = -MAP_BOUNDARY + safety;
+    if (newPosition.y + halfHeight >= MAP_BOUNDARY) newPosition.y = MAP_BOUNDARY - safety;
+
     if (this.#lastFired > 0) {
       this.#lastFired -= 1;
     } else {
@@ -113,37 +142,13 @@ class Movement extends Behavior {
       }
     }
 
-    const movement = new Vector2(0, 0);
-    const currentSpeed = this.speed;
-
-    // if (this.#shift.held) currentSpeed *= 2;
-
-    if (this.#up.held) movement.y += 1;
-    if (this.#down.held) movement.y -= 1;
-    if (this.#right.held) movement.x += 1;
-    if (this.#left.held) movement.x -= 1;
-
-    const newPosition = this.entity.transform.position.add(
-      movement.normalize().mul((this.game.physics.tickDelta / 100) * currentSpeed),
-    );
-
-    const halfWidth = this.entity.transform.scale.x / 2;
-    const halfHeight = this.entity.transform.scale.y / 2;
-    const safety = 0.5;
-
-    if (newPosition.x - halfWidth <= -MAP_BOUNDARY) newPosition.x = -MAP_BOUNDARY + safety;
-    if (newPosition.x + halfWidth >= MAP_BOUNDARY) newPosition.x = MAP_BOUNDARY - safety;
-
-    if (newPosition.y - halfHeight <= -MAP_BOUNDARY) newPosition.y = -MAP_BOUNDARY + safety;
-    if (newPosition.y + halfHeight >= MAP_BOUNDARY) newPosition.y = MAP_BOUNDARY - safety;
-
     this.entity.transform.position = newPosition;
   }
 }
 game[internal.behaviorLoader].registerInternalBehavior(Movement, "spaceship");
 
 class LookAtMouse extends Behavior {
-  onPostTick() {
+  onPreTick() {
     const world = this.inputs.cursor.world;
     if (!world) return;
 
@@ -690,25 +695,27 @@ game[internal.behaviorLoader].registerInternalBehavior(LevelUpSelectionScreen, "
 
 // #region Bullet
 class BulletBehavior extends Behavior {
-  readonly #lifetime = 300;
+  readonly #lifetime = 5;
   #timer = 0;
   #direction: Vector2;
 
-  speed: number = 3;
+  speed: number = 0.07;
+  velocity = Vector2.ZERO;
 
   constructor(ctx: BehaviorContext) {
     super(ctx);
     this.defineValues(BulletBehavior, "speed");
+    this.value(BulletBehavior, "velocity", { type: Vector2Adapter });
 
     const rotation = this.entity.transform.rotation;
     this.#direction = new Vector2(Math.cos(rotation), Math.sin(rotation));
+    this.velocity = this.entity.parent!._.Player.getBehavior(Movement).velocity;
   }
 
   onTick(): void {
-    const speed = (this.time.delta / 1000) * this.speed;
-    this.entity.transform.position.assign(
-      this.entity.transform.position.add(this.#direction.mul(speed)),
-    );
+    // const speed = (this.time.delta / 1000) * this.speed;
+    const v = this.velocity.add(this.#direction.mul(this.speed));
+    this.entity.transform.position.assign(this.entity.transform.position.add(v));
 
     this.#timer += this.time.delta / 1000;
     if (this.#timer >= this.#lifetime) {
@@ -1220,24 +1227,38 @@ class PlayerBehavior extends Behavior {
   }
 }
 game[internal.behaviorLoader].registerInternalBehavior(PlayerBehavior, "spaceship");
+function shuffle(array: any[]) {
+  let currentIndex = array.length;
 
+  // While there remain elements to shuffle...
+  while (currentIndex != 0) {
+    // Pick a remaining element...
+    let randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    // And swap it with the current element.
+    [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+  }
+}
 function spawnPlayer() {
   const x = Math.random() * (MAP_BOUNDARY * 2) - MAP_BOUNDARY;
   const y = Math.random() * (MAP_BOUNDARY * 2) - MAP_BOUNDARY;
   const position = { x, y };
+  const behaviors = [
+    { type: Movement },
+    { type: LookAtMouse },
+    { type: CameraFollow },
+    { type: ClickFire },
+    { type: PlayerBehavior },
+    { type: Shield },
+    { type: Supercharge },
+  ];
+  console.log(behaviors);
 
   return game.world.spawn({
     type: Rigidbody2D,
     name: "Player",
-    behaviors: [
-      { type: Movement },
-      { type: LookAtMouse },
-      { type: CameraFollow },
-      { type: ClickFire },
-      { type: PlayerBehavior },
-      { type: Shield },
-      { type: Supercharge },
-    ],
+    behaviors,
     transform: { position, scale: { x: 1.25, y: 1.25 } },
     values: { type: "fixed" },
     children: [

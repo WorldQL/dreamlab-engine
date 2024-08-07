@@ -14,7 +14,7 @@ import {
   ActionCreated,
   ActionDeleted,
   Click,
-  GameShouldUpdateCursorPosition,
+  GamePostUpdate,
   MouseDown,
   MouseUp,
   Scroll,
@@ -220,7 +220,7 @@ export class Inputs implements ISignalHandler {
     canvas.addEventListener("mouseout", this.#onMouseOut);
     canvas.addEventListener("mousemove", this.#onMouseMove);
 
-    const updateCursor = (_: GameShouldUpdateCursorPosition) => {
+    const updateCursor = (_: GamePostUpdate) => {
       if (!this.#cursor.screen) {
         this.#cursor.world = undefined;
         return;
@@ -237,7 +237,7 @@ export class Inputs implements ISignalHandler {
       else this.#cursor.world.assign(world);
     };
 
-    this.#game.on(GameShouldUpdateCursorPosition, updateCursor);
+    this.#game.on(GamePostUpdate, updateCursor);
 
     return () => {
       globalThis.removeEventListener("keydown", this.#onKeyDown);
@@ -253,7 +253,7 @@ export class Inputs implements ISignalHandler {
       canvas.removeEventListener("mouseout", this.#onMouseOut);
       canvas.removeEventListener("mousemove", this.#onMouseMove);
 
-      this.#game.unregister(GameShouldUpdateCursorPosition, updateCursor);
+      this.#game.unregister(GamePostUpdate, updateCursor);
     };
   }
   // #endregion

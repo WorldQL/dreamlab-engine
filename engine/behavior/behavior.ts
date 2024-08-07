@@ -13,7 +13,7 @@ import {
 } from "../signal.ts";
 import { BehaviorDestroyed } from "../signals/behavior-lifecycle.ts";
 import { EntityUpdate } from "../signals/entity-updates.ts";
-import { GamePostTick, GameRender } from "../signals/game-events.ts";
+import { GamePostTick, GamePreTick, GameRender } from "../signals/game-events.ts";
 import { Primitive, Value, ValueTypeTag, inferValueTypeTag } from "../value/mod.ts";
 
 export interface BehaviorContext {
@@ -208,6 +208,13 @@ export class Behavior implements ISignalHandler {
       });
     }
 
+    if (this.onPreTick) {
+      const onPreTick = this.onPreTick.bind(this);
+      this.listen(this.entity.game, GamePreTick, () => {
+        if (!this.game.paused) onPreTick();
+      });
+    }
+
     if (this.onFrame) {
       const onFrame = this.onFrame.bind(this);
       this.listen(this.entity.game, GameRender, () => onFrame());
@@ -215,13 +222,16 @@ export class Behavior implements ISignalHandler {
 
     if (this.onPostTick) {
       const onPostTick = this.onPostTick.bind(this);
-      this.listen(this.entity.game, GamePostTick, () => onPostTick());
+      this.listen(this.entity.game, GamePostTick, () => {
+        if (!this.game.paused) onPostTick();
+      });
     }
 
     this.onInitialize();
   }
 
   onInitialize(): void {}
+  onPreTick?(): void;
   onTick?(): void;
   onPostTick?(): void;
   onFrame?(): void;
