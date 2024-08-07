@@ -994,11 +994,11 @@ export const background = game.local.spawn({
   name: "Background",
   values: {
     texture: "https://files.lulu.dev/ydQdgTIPWW73.png",
-    width: 300,
-    height: 300,
-    tileScale: Vector2.splat(1 / 2),
+    width: 3000,
+    height: 3000,
+    tileScale: Vector2.splat(1 / 60),
   },
-  behaviors: [{ type: BackgroundBehavior, values: { parallax: Vector2.splat(0) } }],
+  behaviors: [{ type: BackgroundBehavior, values: { parallax: Vector2.splat(0.5) } }],
 });
 // #endregion
 
