@@ -1,4 +1,4 @@
-import RAPIER from "@dreamlab/vendor/rapier.ts";
+import { initRapier } from "@dreamlab/vendor/rapier.ts";
 
 import { BehaviorLoader } from "./behavior/behavior-loader.ts";
 import { EntityStore, LocalRoot, PrefabsRoot, ServerRoot, WorldRoot } from "./entity/mod.ts";
@@ -132,7 +132,9 @@ export abstract class BaseGame implements ISignalHandler {
   async initialize() {
     if (this.#initialized) return;
     this.#initialized = true;
-    await RAPIER.init();
+
+    await initRapier();
+
     this.#physics = new PhysicsEngine(this as unknown as Game);
   }
 
