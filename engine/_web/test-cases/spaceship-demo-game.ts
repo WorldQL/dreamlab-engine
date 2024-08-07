@@ -1,5 +1,5 @@
 import { BackgroundBehavior } from "../../behavior/behaviors/background-behavior.ts";
-import { Behavior, BehaviorContext } from "../../behavior/mod.ts";
+import { Behavior, BehaviorContext, BehaviorDefinition } from "../../behavior/mod.ts";
 import {
   Camera,
   Entity,
@@ -10,7 +10,7 @@ import {
 } from "../../entity/mod.ts";
 import * as internal from "../../internal.ts";
 import { Vector2 } from "../../math/mod.ts";
-import { EntityCollision, GamePostRender, GameTick, GamePostTick } from "../../signals/mod.ts";
+import { EntityCollision, GamePostRender, GamePostTick, GameTick } from "../../signals/mod.ts";
 import { element } from "../../ui.ts";
 import { Vector2Adapter } from "../../value/adapters/vector-adapter.ts";
 
@@ -1223,23 +1223,26 @@ class PlayerBehavior extends Behavior {
   }
 }
 game[internal.behaviorLoader].registerInternalBehavior(PlayerBehavior, "spaceship");
-function shuffle(array: any[]) {
+
+function shuffle<T>(array: T[]) {
   let currentIndex = array.length;
 
   // While there remain elements to shuffle...
   while (currentIndex != 0) {
     // Pick a remaining element...
-    let randomIndex = Math.floor(Math.random() * currentIndex);
+    const randomIndex = Math.floor(Math.random() * currentIndex);
     currentIndex--;
 
     // And swap it with the current element.
     [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
   }
 }
+
 function spawnPlayer() {
   const x = Math.random() * (MAP_BOUNDARY * 2) - MAP_BOUNDARY;
   const y = Math.random() * (MAP_BOUNDARY * 2) - MAP_BOUNDARY;
   const position = { x, y };
+
   const behaviors = [
     { type: Shield },
     { type: Movement },
@@ -1248,7 +1251,7 @@ function spawnPlayer() {
     { type: ClickFire },
     { type: PlayerBehavior },
     { type: Supercharge },
-  ];
+  ] satisfies BehaviorDefinition[];
   shuffle(behaviors);
 
   return game.world.spawn({
