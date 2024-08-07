@@ -10,28 +10,31 @@ import {
 } from "../../entity/mod.ts";
 import * as internal from "../../internal.ts";
 import { Vector2 } from "../../math/mod.ts";
-import { EntityCollision, GamePostRender, GameTick } from "../../signals/mod.ts";
+import { EntityCollision, GamePostRender, GameTick, GamePostTick } from "../../signals/mod.ts";
 import { element } from "../../ui.ts";
 import { Vector2Adapter } from "../../value/adapters/vector-adapter.ts";
 
 // #region Health
 class HealthBar extends Behavior {
-  maxHealth!: number;
-  currentHealth!: number;
+  maxHealth: number = 100;
+  currentHealth: number = 100;
   healthBar!: Entity;
 
-  initialize(maxHealth: number): void {
-    this.maxHealth = maxHealth;
-    this.currentHealth = maxHealth;
+  constructor(ctx: BehaviorContext) {
+    super(ctx);
+    this.defineValues(HealthBar, "maxHealth", "currentHealth");
+  }
 
+  onInitialize(): void {
     this.healthBar = this.entity.game.world.spawn({
       type: Sprite2D,
       name: "HealthBar",
       transform: { position: { x: 0, y: 1 }, scale: { x: 1, y: 0.1 } },
       values: { texture: "https://files.codedred.dev/healthbar.png" },
     });
+    console.log("ran initialize", this.healthBar);
 
-    this.entity.game.on(GameTick, () => {
+    this.game.on(GamePostTick, () => {
       this.healthBar.pos = this.entity.transform.position.add(new Vector2(0, 1));
       this.updateHealthBar();
     });
@@ -92,7 +95,7 @@ class Movement extends Behavior {
 
   #fire = this.inputs.create("@clickFire/fire", "Fire", "MouseLeft");
 
-  readonly #cooldown = 2;
+  readonly #cooldown = 0;
   #lastFired = 0;
 
   velocity = Vector2.ZERO;
@@ -142,30 +145,30 @@ class Movement extends Behavior {
       }
     }
 
+    // face the cursor
+    const world = this.inputs.cursor.world;
+    if (!world) return;
+
+    const rotation = this.entity.transform.position.lookAt(world);
+    this.entity.transform.rotation = rotation;
+
     this.entity.transform.position = newPosition;
   }
 }
 game[internal.behaviorLoader].registerInternalBehavior(Movement, "spaceship");
 
 class LookAtMouse extends Behavior {
-  onPreTick() {
-    const world = this.inputs.cursor.world;
-    if (!world) return;
-
-    const rotation = this.entity.transform.position.lookAt(world);
-    this.entity.transform.rotation = rotation;
+  onPostTick() {
+    // TODO: If we move the face the cursor code in here it works but it shouldn't!
   }
 }
 game[internal.behaviorLoader].registerInternalBehavior(LookAtMouse, "spaceship");
 
 class CameraFollow extends Behavior {
-  onInitialize(): void {
+  onPostTick(): void {
     const target = this.entity._.PlayerSprite;
     const camera = Camera.getActive(this.game);
-
-    this.listen(this.game, GameTick, () => {
-      if (camera) camera.pos.assign(target.globalTransform.position);
-    });
+    if (camera) camera.pos.assign(target.globalTransform.position);
   }
 }
 game[internal.behaviorLoader].registerInternalBehavior(CameraFollow, "spaceship");
@@ -190,9 +193,8 @@ class GoldAsteroidBehavior extends Behavior {
     const health = 100;
     this.healthBar = this.entity.addBehavior({
       type: HealthBar,
-      values: {},
+      values: { currentHealth: health, maxHealth: health },
     });
-    this.healthBar.initialize(health);
 
     this.listen(this.entity, EntityCollision, e => {
       if (e.started) this.onCollide(e.other);
@@ -714,7 +716,7 @@ class BulletBehavior extends Behavior {
 
   onTick(): void {
     // const speed = (this.time.delta / 1000) * this.speed;
-    const v = this.velocity.add(this.#direction.mul(this.speed));
+    const v = this.velocity.add(this.#direction.mul(this.speed).mul(this.game.time.delta));
     this.entity.transform.position.assign(this.entity.transform.position.add(v));
 
     this.#timer += this.time.delta / 1000;
@@ -762,10 +764,8 @@ class AsteroidBehavior extends Behavior {
     const health = Math.floor(Math.random() * 3) + 3;
     this.healthBar = this.entity.addBehavior({
       type: HealthBar,
-      values: {},
+      values: { maxHealth: health, currentHealth: health },
     });
-
-    this.healthBar.initialize(health);
 
     this.listen(this.entity, EntityCollision, e => {
       if (e.started) this.onCollide(e.other);
@@ -924,10 +924,8 @@ class EnemyBehavior extends Behavior {
     const health = Math.floor(Math.random() * 3) + 3;
     this.healthBar = this.entity.addBehavior({
       type: HealthBar,
-      values: {},
+      values: { maxHealth: health, currentHealth: health },
     });
-
-    this.healthBar.initialize(health);
 
     this.listen(this.entity, EntityCollision, e => {
       if (e.started) this.onCollide(e.other);
@@ -1057,9 +1055,8 @@ class PlayerBehavior extends Behavior {
 
     this.healthBar = this.entity.addBehavior({
       type: HealthBar,
-      values: {},
+      values: { maxHealth: this.#health, currentHealth: this.#health },
     });
-    this.healthBar.initialize(this.#health);
 
     this.listen(this.entity, EntityCollision, e => {
       if (e.started) this.#onCollide(e.other);
@@ -1245,15 +1242,15 @@ function spawnPlayer() {
   const y = Math.random() * (MAP_BOUNDARY * 2) - MAP_BOUNDARY;
   const position = { x, y };
   const behaviors = [
+    { type: Shield },
     { type: Movement },
     { type: LookAtMouse },
     { type: CameraFollow },
     { type: ClickFire },
     { type: PlayerBehavior },
-    { type: Shield },
     { type: Supercharge },
   ];
-  console.log(behaviors);
+  shuffle(behaviors);
 
   return game.world.spawn({
     type: Rigidbody2D,

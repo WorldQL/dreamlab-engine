@@ -1,7 +1,7 @@
 import { Camera } from "../entity/mod.ts";
 import type { Game } from "../game.ts";
 import { actionSetHeld, inputsRegisterHandlers } from "../internal.ts";
-import { IVector2, Vector2 } from "../math/mod.ts";
+import { Vector2 } from "../math/mod.ts";
 import {
   ISignalHandler,
   Signal,
@@ -14,7 +14,6 @@ import {
   ActionCreated,
   ActionDeleted,
   Click,
-  GamePostUpdate,
   MouseDown,
   MouseUp,
   Scroll,
@@ -91,13 +90,24 @@ export class Inputs implements ISignalHandler {
   // #endregion
 
   // #region Cursor
-  #cursor: { world: Vector2 | undefined; screen: Vector2 | undefined } = {
-    world: undefined,
-    screen: undefined,
-  };
-
+  #screenCursor: Vector2 | undefined = undefined;
   get cursor(): Cursor {
-    return this.#cursor;
+    const game = this.#game;
+
+    return {
+      screen: this.#screenCursor,
+      get world() {
+        if (!this.screen) {
+          return undefined;
+        }
+
+        const camera = Camera.getActive(game);
+        if (!camera) {
+          return undefined;
+        }
+        return camera.screenToWorld(this.screen);
+      },
+    };
   }
   // #endregion
 
@@ -162,24 +172,24 @@ export class Inputs implements ISignalHandler {
   };
 
   #onMouseOver = (ev: MouseEvent) => {
-    if (this.#cursor.screen === undefined) {
-      this.#cursor.screen = new Vector2(ev.offsetX, ev.offsetX);
+    if (this.#screenCursor === undefined) {
+      this.#screenCursor = new Vector2(ev.offsetX, ev.offsetX);
     } else {
-      this.#cursor.screen.x = ev.offsetX;
-      this.#cursor.screen.y = ev.offsetY;
+      this.#screenCursor.x = ev.offsetX;
+      this.#screenCursor.y = ev.offsetY;
     }
   };
 
   #onMouseOut = (_: MouseEvent) => {
-    this.#cursor.screen = undefined;
+    this.#screenCursor = undefined;
   };
 
   #onMouseMove = (ev: MouseEvent) => {
-    if (this.#cursor.screen === undefined) {
-      this.#cursor.screen = new Vector2(ev.offsetX, ev.offsetX);
+    if (this.#screenCursor === undefined) {
+      this.#screenCursor = new Vector2(ev.offsetX, ev.offsetX);
     } else {
-      this.#cursor.screen.x = ev.offsetX;
-      this.#cursor.screen.y = ev.offsetY;
+      this.#screenCursor.x = ev.offsetX;
+      this.#screenCursor.y = ev.offsetY;
     }
   };
 
@@ -220,25 +230,6 @@ export class Inputs implements ISignalHandler {
     canvas.addEventListener("mouseout", this.#onMouseOut);
     canvas.addEventListener("mousemove", this.#onMouseMove);
 
-    const updateCursor = (_: GamePostUpdate) => {
-      if (!this.#cursor.screen) {
-        this.#cursor.world = undefined;
-        return;
-      }
-
-      const camera = Camera.getActive(this.#game);
-      if (!camera) {
-        this.#cursor.world = undefined;
-        return;
-      }
-
-      const world = camera.screenToWorld(this.#cursor.screen);
-      if (!this.#cursor.world) this.#cursor.world = world;
-      else this.#cursor.world.assign(world);
-    };
-
-    this.#game.on(GamePostUpdate, updateCursor);
-
     return () => {
       globalThis.removeEventListener("keydown", this.#onKeyDown);
       globalThis.removeEventListener("keyup", this.#onKeyUp);
@@ -252,8 +243,6 @@ export class Inputs implements ISignalHandler {
       canvas.removeEventListener("mouseover", this.#onMouseOver);
       canvas.removeEventListener("mouseout", this.#onMouseOut);
       canvas.removeEventListener("mousemove", this.#onMouseMove);
-
-      this.#game.unregister(GamePostUpdate, updateCursor);
     };
   }
   // #endregion

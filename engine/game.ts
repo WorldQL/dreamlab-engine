@@ -17,7 +17,6 @@ import {
 import {
   GamePostTick,
   GamePostRender,
-  GameShouldUpdateCursorPosition,
   GamePreTick,
   GameRender,
   GameShutdown,
@@ -151,16 +150,14 @@ export abstract class BaseGame implements ISignalHandler {
     // so e.g. in Rigidbody2D we can move the body to the entity's transform,
     // have the physics world update, and then move the transform to the new position of the body.
 
-    game.fire(GamePreTick);
+    this.fire(GamePreTick);
 
     this[internal.preTickEntities]();
     if (!this.paused) this.physics.tick();
     this[internal.tickEntities]();
 
     this.fire(GameTick);
-
-    game.fire(GameShouldUpdateCursorPosition);
-    game.fire(GamePostTick);
+    this.fire(GamePostTick);
   }
 
   [internal.preTickEntities]() {

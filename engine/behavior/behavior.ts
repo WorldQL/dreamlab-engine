@@ -201,6 +201,8 @@ export class Behavior implements ISignalHandler {
   }
 
   spawn(): void {
+    this.onInitialize();
+
     if (this.onTick) {
       const onTick = this.onTick.bind(this);
       this.listen(this.entity, EntityUpdate, () => {
@@ -226,8 +228,6 @@ export class Behavior implements ISignalHandler {
         if (!this.game.paused) onPostTick();
       });
     }
-
-    this.onInitialize();
   }
 
   onInitialize(): void {}

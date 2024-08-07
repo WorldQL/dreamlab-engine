@@ -7,9 +7,6 @@ export class GamePreTick {
 export class GameTick {
   [exclusiveSignalType] = BaseGame;
 }
-export class GameShouldUpdateCursorPosition {
-  [exclusiveSignalType] = BaseGame;
-}
 export class GamePostTick {
   [exclusiveSignalType] = BaseGame;
 }
