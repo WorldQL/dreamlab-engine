@@ -32,7 +32,6 @@ class HealthBar extends Behavior {
       transform: { position: { x: 0, y: 1 }, scale: { x: 1, y: 0.1 } },
       values: { texture: "https://files.codedred.dev/healthbar.png" },
     });
-    console.log("ran initialize", this.healthBar);
 
     this.game.on(GamePostTick, () => {
       this.healthBar.pos = this.entity.transform.position.add(new Vector2(0, 1));
