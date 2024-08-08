@@ -10,7 +10,6 @@ import {
   MouseUp,
 } from "../../signals/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
-import { Camera } from "./camera.ts";
 
 const clickedSetter = Symbol.for("dreamlab.internal.clickable.clicked-setter");
 const hoverSetter = Symbol.for("dreamlab.internal.clickable.hover-setter");
@@ -117,14 +116,6 @@ export abstract class ClickableEntity extends Entity {
         this.inputs.on(MouseUp, fn);
       }
     }
-
-    this.listen(this.game, GameRender, () => {
-      const camera = Camera.getActive(this.game);
-      if (!camera) return;
-
-      const cursor = this.inputs.cursor;
-      if (!cursor) return;
-    });
   }
 
   protected abstract isInBounds(worldPosition: Vector2): boolean;
