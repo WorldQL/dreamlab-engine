@@ -7,5 +7,3 @@ export default class CameraFollow extends Behavior {
     if (camera) camera.pos.assign(target.globalTransform.position);
   }
 }
-
-export const powerUpTextures = "https://files.codedred.dev/gold-asteroid.png";

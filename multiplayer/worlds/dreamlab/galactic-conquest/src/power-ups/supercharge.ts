@@ -38,7 +38,7 @@ export default class Supercharge extends Behavior {
         rotation: this.entity.transform.rotation,
         scale: { x: 2.5, y: 2.5 },
       },
-      values: { texture: "https://files.codedred.dev/supercharge.png" },
+      values: { texture: "res://assets/supercharge.png" },
     });
 
     setTimeout(() => {

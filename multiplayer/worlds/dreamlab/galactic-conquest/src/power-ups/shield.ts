@@ -35,7 +35,7 @@ export default class Shield extends Behavior {
         position: this.entity.transform.position.clone(),
         scale: { x: 2.0, y: 2.0 },
       },
-      values: { texture: "https://files.codedred.dev/shield.png" },
+      values: { texture: "res://assets/shield.png" },
     });
 
     setTimeout(() => {

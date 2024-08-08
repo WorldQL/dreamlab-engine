@@ -1,6 +1,6 @@
 import { Behavior, BehaviorContext, Vector2 } from "@dreamlab/engine";
-import PlayerBehavior from "./player.ts";
 import { MAP_BOUNDARY } from "./_constants.ts";
+import PlayerBehavior from "./player.ts";
 
 export default class Movement extends Behavior {
   speed = 5.0;

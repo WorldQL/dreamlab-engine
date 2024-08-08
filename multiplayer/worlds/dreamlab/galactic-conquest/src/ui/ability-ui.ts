@@ -1,6 +1,6 @@
 import { Behavior, element, GamePostRender, UILayer } from "@dreamlab/engine";
-import Supercharge from "../power-ups/supercharge.ts";
 import Shield from "../power-ups/shield.ts";
+import Supercharge from "../power-ups/supercharge.ts";
 
 export default class AbilityUI extends Behavior {
   #ui = this.entity.cast(UILayer);
@@ -73,7 +73,7 @@ export default class AbilityUI extends Behavior {
     const shieldUI = this.#createAbilityUI(
       "(Space)",
       "SHIELD",
-      "https://files.codedred.dev/shield_ability.png",
+      "res://assets/shield_ability.png",
     );
     this.#shieldImage = shieldUI.image;
     this.#shieldCooldown = shieldUI.cooldown;
@@ -81,7 +81,7 @@ export default class AbilityUI extends Behavior {
     const boostUI = this.#createAbilityUI(
       "(Right Click)",
       "SUPER",
-      "https://files.codedred.dev/supercharge_ability.png",
+      "res://assets/supercharge_ability.png",
     );
     this.#boostImage = boostUI.image;
     this.#boostCooldown = boostUI.cooldown;
@@ -92,7 +92,7 @@ export default class AbilityUI extends Behavior {
   }
 
   #createAbilityUI(key: string, name: string, imagePath: string) {
-    const image = element("img", { props: { src: imagePath } });
+    const image = element("img", { props: { src: this.game.resolveResource(imagePath) } });
     const cooldown = element("span", { classList: ["cooldown"] });
 
     const ability = element("div", {

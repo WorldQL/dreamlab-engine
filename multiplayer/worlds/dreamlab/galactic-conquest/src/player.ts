@@ -6,13 +6,13 @@ import {
   Sprite2D,
   UILayer,
 } from "@dreamlab/engine";
+import BulletBehavior from "./bullet.ts";
 import HealthBar from "./health-bar.ts";
-import PlayerUI from "./ui/player-ui.ts";
-import Shield from "./power-ups/shield.ts";
 import Movement from "./movement.ts";
+import Shield from "./power-ups/shield.ts";
 import DeathScreen from "./ui/death-screen.ts";
 import LevelUpSelectionScreen from "./ui/level-up-screen.ts";
-import BulletBehavior from "./bullet.ts";
+import PlayerUI from "./ui/player-ui.ts";
 
 export default class PlayerBehavior extends Behavior {
   #totalScore = 0;

@@ -8,16 +8,17 @@ import {
   UILayer,
 } from "@dreamlab/engine";
 import { MAP_BOUNDARY } from "../_constants.ts";
-import CoordsDisplay from "../coords-display.ts";
-import Shield from "../power-ups/shield.ts";
-import Movement from "../movement.ts";
 import CameraFollow from "../camera-follow.ts";
-import PlayerBehavior from "../player.ts";
-import Supercharge from "../power-ups/supercharge.ts";
-import PlayerUI from "./player-ui.ts";
-import LookAtMouse from "../look-at-mouse.ts";
 import ClickFire from "../click-fire.ts";
+import CoordsDisplay from "../coords-display.ts";
+import LookAtMouse from "../look-at-mouse.ts";
+import Movement from "../movement.ts";
+import PlayerBehavior from "../player.ts";
+import Shield from "../power-ups/shield.ts";
+import Supercharge from "../power-ups/supercharge.ts";
 import AbilityUI from "./ability-ui.ts";
+import Minimap from "./minimap.ts";
+import PlayerUI from "./player-ui.ts";
 
 export class StartScreen extends Behavior {
   #ui = this.entity.cast(UILayer);
@@ -150,7 +151,7 @@ export function spawnPlayer(game: Game) {
       {
         type: Sprite2D,
         name: "PlayerSprite",
-        values: { texture: "https://files.codedred.dev/spaceship.png" },
+        values: { texture: "res://assets/spaceship.png" },
       },
       {
         type: UILayer,

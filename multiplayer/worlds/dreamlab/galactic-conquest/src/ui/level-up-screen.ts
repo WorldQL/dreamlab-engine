@@ -1,7 +1,7 @@
 import { Behavior, element, UILayer } from "@dreamlab/engine";
-import Shield from "../power-ups/shield.ts";
-import PlayerBehavior from "../player.ts";
 import Movement from "../movement.ts";
+import PlayerBehavior from "../player.ts";
+import Shield from "../power-ups/shield.ts";
 
 export default class LevelUpSelectionScreen extends Behavior {
   #ui = this.entity.cast(UILayer);

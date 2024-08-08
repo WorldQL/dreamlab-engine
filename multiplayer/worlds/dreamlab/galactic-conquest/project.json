@@ -1,9 +1,150 @@
 {
+  "$schema": "http://localhost:8000/schemas/project.schema.json",
   "meta": {
     "schema_version": 1,
     "engine_revision": "2024-08.001"
   },
   "scenes": {
-    "main": {}
+    "main": {
+      "local": [
+        {
+          "ref": "ent_j6gfsdy0dup5nig15tztj71r",
+          "name": "Camera",
+          "type": "@core/Camera",
+          "transform": {
+            "position": { "x": 0, "y": 0 },
+            "rotation": 0,
+            "scale": { "x": 3, "y": 3 },
+            "z": 0
+          },
+          "values": {
+            "smooth": 1
+          }
+        },
+        {
+          "ref": "ent_dfzjkuy2ditlashb72u9qtos",
+          "name": "StartScreen",
+          "type": "@core/UILayer",
+          "behaviors": [
+            {
+              "script": "res://src/ui/start-screen.js",
+              "ref": "bhv_dfzjkuy2ditlashb72u9qtos"
+            }
+          ]
+        }
+      ],
+      "world": [
+        {
+          "ref": "ent_kcisq0pxstn8dak4dtwmvzk2",
+          "name": "Background",
+          "type": "@core/TilingSprite2D",
+          "transform": { "z": -999999999 },
+          "values": {
+            "width": 2000,
+            "height": 2000,
+            "texture": "res://assets/background.png",
+            "tileScale": { "x": 0.025, "y": 0.025 }
+          }
+        }
+      ],
+      "server": [
+        {
+          "ref": "ent_h2rybyuqwvha1sordxyrrqkr",
+          "name": "AsteroidManager",
+          "type": "@core/Empty",
+          "behaviors": [
+            {
+              "script": "res://src/asteroid-manager.js",
+              "ref": "bhv_qkz8f4dt3wa9bukpeg9n6lrq"
+            }
+          ]
+        },
+        {
+          "ref": "ent_dfzjkuy2ditlashb72u9qtos",
+          "name": "BorderManager",
+          "type": "@core/Empty",
+          "behaviors": [
+            {
+              "script": "res://src/border-manager.js",
+              "ref": "bhv_lrh2ivumabqvewxki5vqre8b"
+            }
+          ]
+        },
+        {
+          "ref": "ent_qjsqii8ctfvifh9yz5zfmefg",
+          "name": "EnemyManager",
+          "type": "@core/Empty",
+          "behaviors": [
+            {
+              "script": "res://src/enemy-manager.js",
+              "ref": "bhv_o3tro1za1uy279fyfuq55tpk"
+            }
+          ]
+        },
+        {
+          "ref": "ent_ul2hghrjny604o253pgzrtuw",
+          "name": "PowerUpManager",
+          "type": "@core/Empty",
+          "behaviors": [
+            {
+              "script": "res://src/powerup-manager.js",
+              "ref": "bhv_wgcf1w6lfj38sxilxxdve4lz"
+            }
+          ]
+        }
+      ],
+      "prefabs": [
+        {
+          "ref": "ent_yk308dxau04n3cmkv87iaoh9",
+          "name": "Enemy",
+          "type": "@core/Rigidbody2D",
+          "behaviors": [
+            {
+              "ref": "bhv_qb4rutcsjt6n94nwtkaamc4j",
+              "script": "res://src/enemy-movement.js"
+            },
+            {
+              "ref": "bhv_pxu8lu9qeo8ksnfqsunl3bn8",
+              "script": "res://src/enemy-behavior.js"
+            }
+          ],
+          "children": [
+            {
+              "ref": "ent_cg02ptt1hyfcy7o0snsvvbkj",
+              "name": "EnemySprite",
+              "type": "@core/Sprite2D",
+              "values": {
+                "texture": "res://assets/enemy.png"
+              }
+            }
+          ]
+        },
+        {
+          "ref": "ent_mu1yco3675a5ufpw96ny39ab",
+          "name": "Asteroid",
+          "type": "@core/Rigidbody2D",
+          "behaviors": [
+            {
+              "ref": "bhv_h9bxgrbi1fpovq30owwyw1uy",
+              "script": "res://src/asteroid-movement.js"
+            },
+            {
+              "ref": "bhv_xz9ygnw9wa1pboeckm5vtorc",
+              "script": "res://src/asteroid-behavior.js"
+            }
+          ],
+          "children": [
+            {
+              "ref": "ent_yv8uag5hmm6mxc92x79v4fm3",
+              "name": "AsteroidSprite",
+              "type": "@core/Sprite2D",
+              "values": {
+                "texture": "res://assets/asteroid.png"
+              }
+            }
+          ]
+        }
+      ]
+    }
   }
 }

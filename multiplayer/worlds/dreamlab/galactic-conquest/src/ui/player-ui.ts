@@ -1,7 +1,8 @@
 import { Behavior, element, GamePostRender, UILayer } from "@dreamlab/engine";
+import Movement from "../movement.ts";
 import PlayerBehavior from "../player.ts";
 import Shield from "../power-ups/shield.ts";
-import Movement from "../movement.ts";
+import LevelProgressUI from "./level-progress-ui.ts";
 
 export default class PlayerUI extends Behavior {
   #ui = this.entity.cast(UILayer);

@@ -3,10 +3,10 @@ import { MAP_BOUNDARY } from "./_constants.ts";
 
 export default class BorderManager extends Behavior {
   onInitialize(): void {
-    this.createMapBorder(MAP_BOUNDARY * 2, MAP_BOUNDARY * 2);
+    this.#createMapBorder(MAP_BOUNDARY * 2, MAP_BOUNDARY * 2);
   }
 
-  createMapBorder(width: number, height: number) {
+  #createMapBorder(width: number, height: number) {
     const borders = [
       {
         x: 0,
@@ -48,7 +48,7 @@ export default class BorderManager extends Behavior {
             type: TilingSprite2D,
             name: "BorderSprite",
             values: {
-              texture: "https://files.codedred.dev/asteroid-belt.png", // TODO: improve border design
+              texture: "res://assets/asteroid-belt.png", // TODO: improve border design
               tileScale: Vector2.ONE,
             },
           },
