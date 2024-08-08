@@ -5,6 +5,7 @@ import { EntityDestroyed, GameRender, MouseDown } from "../../signals/mod.ts";
 import type { EntityContext } from "../entity.ts";
 import { Entity } from "../entity.ts";
 import { ClickableRect } from "./clickable.ts";
+import { Empty } from "./empty.ts";
 
 type Handle = Exclude<`${"t" | "b" | ""}${"l" | "" | "r"}`, "">;
 
@@ -45,7 +46,9 @@ export class BoxResizeGizmo extends Entity {
     if (!bounds) return;
     const scaled = Vector2.mul(bounds, entity.globalTransform.scale);
 
-    const leftEdge = this.spawn({
+    const container = this.spawn({ type: Empty, name: "Container" });
+
+    const leftEdge = container.spawn({
       type: ClickableRect,
       name: "LeftEdge",
       transform: {
@@ -55,7 +58,7 @@ export class BoxResizeGizmo extends Entity {
       values: { width: BoxResizeGizmo.#CLICK_WIDTH, height: scaled.y },
     });
 
-    const rightEdge = this.spawn({
+    const rightEdge = container.spawn({
       type: ClickableRect,
       name: "RightEdge",
       transform: {
@@ -65,7 +68,7 @@ export class BoxResizeGizmo extends Entity {
       values: { width: BoxResizeGizmo.#CLICK_WIDTH, height: scaled.y },
     });
 
-    const topEdge = this.spawn({
+    const topEdge = container.spawn({
       type: ClickableRect,
       name: "TopEdge",
       transform: {
@@ -75,7 +78,7 @@ export class BoxResizeGizmo extends Entity {
       values: { width: scaled.x, height: BoxResizeGizmo.#CLICK_WIDTH },
     });
 
-    const bottomEdge = this.spawn({
+    const bottomEdge = container.spawn({
       type: ClickableRect,
       name: "BottomEdge",
       transform: {
@@ -85,7 +88,7 @@ export class BoxResizeGizmo extends Entity {
       values: { width: scaled.x, height: BoxResizeGizmo.#CLICK_WIDTH },
     });
 
-    const topLeft = this.spawn({
+    const topLeft = container.spawn({
       type: ClickableRect,
       name: "TopLeft",
       transform: {
@@ -98,7 +101,7 @@ export class BoxResizeGizmo extends Entity {
       values: { width: BoxResizeGizmo.#CORNER_WIDTH, height: BoxResizeGizmo.#CORNER_WIDTH },
     });
 
-    const topRight = this.spawn({
+    const topRight = container.spawn({
       type: ClickableRect,
       name: "TopRight",
       transform: {
@@ -111,7 +114,7 @@ export class BoxResizeGizmo extends Entity {
       values: { width: BoxResizeGizmo.#CORNER_WIDTH, height: BoxResizeGizmo.#CORNER_WIDTH },
     });
 
-    const bottomLeft = this.spawn({
+    const bottomLeft = container.spawn({
       type: ClickableRect,
       name: "BottomLeft",
       transform: {
@@ -124,7 +127,7 @@ export class BoxResizeGizmo extends Entity {
       values: { width: BoxResizeGizmo.#CORNER_WIDTH, height: BoxResizeGizmo.#CORNER_WIDTH },
     });
 
-    const bottomRight = this.spawn({
+    const bottomRight = container.spawn({
       type: ClickableRect,
       name: "BottomRight",
       transform: {
@@ -188,49 +191,52 @@ export class BoxResizeGizmo extends Entity {
     if (!bounds) return;
     const scaled = Vector2.mul(bounds, entity.globalTransform.scale);
 
-    const leftEdge = this.children.get("LeftEdge")?.cast(ClickableRect);
+    const container = this.children.get("Container")?.cast(Empty);
+    if (container) container.globalTransform.rotation = entity.globalTransform.rotation;
+
+    const leftEdge = container?.children.get("LeftEdge")?.cast(ClickableRect);
     if (leftEdge) {
       leftEdge.height = scaled.y;
       leftEdge.transform.position.x = -(scaled.x / 2 + BoxResizeGizmo.#CLICK_WIDTH / 2);
     }
 
-    const rightEdge = this.children.get("RightEdge")?.cast(ClickableRect);
+    const rightEdge = container?.children.get("RightEdge")?.cast(ClickableRect);
     if (rightEdge) {
       rightEdge.height = scaled.y;
       rightEdge.transform.position.x = scaled.x / 2 + BoxResizeGizmo.#CLICK_WIDTH / 2;
     }
 
-    const topEdge = this.children.get("TopEdge")?.cast(ClickableRect);
+    const topEdge = container?.children.get("TopEdge")?.cast(ClickableRect);
     if (topEdge) {
       topEdge.width = scaled.x;
       topEdge.transform.position.y = scaled.y / 2 + BoxResizeGizmo.#CLICK_WIDTH / 2;
     }
 
-    const bottomEdge = this.children.get("BottomEdge")?.cast(ClickableRect);
+    const bottomEdge = container?.children.get("BottomEdge")?.cast(ClickableRect);
     if (bottomEdge) {
       bottomEdge.width = scaled.x;
       bottomEdge.transform.position.y = -(scaled.y / 2 + BoxResizeGizmo.#CLICK_WIDTH / 2);
     }
 
-    const topLeft = this.children.get("TopLeft")?.cast(ClickableRect);
+    const topLeft = container?.children.get("TopLeft")?.cast(ClickableRect);
     if (topLeft) {
       topLeft.transform.position.x = -(scaled.x / 2 + BoxResizeGizmo.#CORNER_WIDTH / 2);
       topLeft.transform.position.y = scaled.y / 2 + BoxResizeGizmo.#CORNER_WIDTH / 2;
     }
 
-    const topRight = this.children.get("TopRight")?.cast(ClickableRect);
+    const topRight = container?.children.get("TopRight")?.cast(ClickableRect);
     if (topRight) {
       topRight.transform.position.x = scaled.x / 2 + BoxResizeGizmo.#CORNER_WIDTH / 2;
       topRight.transform.position.y = scaled.y / 2 + BoxResizeGizmo.#CORNER_WIDTH / 2;
     }
 
-    const bottomLeft = this.children.get("BottomLeft")?.cast(ClickableRect);
+    const bottomLeft = container?.children.get("BottomLeft")?.cast(ClickableRect);
     if (bottomLeft) {
       bottomLeft.transform.position.x = -(scaled.x / 2 + BoxResizeGizmo.#CORNER_WIDTH / 2);
       bottomLeft.transform.position.y = -(scaled.y / 2 + BoxResizeGizmo.#CORNER_WIDTH / 2);
     }
 
-    const bottomRight = this.children.get("BottomRight")?.cast(ClickableRect);
+    const bottomRight = container?.children.get("BottomRight")?.cast(ClickableRect);
     if (bottomRight) {
       bottomRight.transform.position.x = scaled.x / 2 + BoxResizeGizmo.#CORNER_WIDTH / 2;
       bottomRight.transform.position.y = -(scaled.y / 2 + BoxResizeGizmo.#CORNER_WIDTH / 2);
