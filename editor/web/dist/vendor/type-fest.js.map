@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../../../engine/_deps/type-fest.ts"],
-  "sourcesContent": ["export * from \"npm:type-fest@4.23.0\";\n"],
-  "mappings": ";;;;;AAAA,cAAc;",
-  "names": []
-}
