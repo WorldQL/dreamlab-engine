@@ -7,6 +7,7 @@ import { contentType } from "https://deno.land/std@0.224.0/media_types/mod.ts";
 
 import { GameInstance } from "../../instance.ts";
 import { JsonAPIError, typedJsonHandler } from "../util/api.ts";
+import { sortPaths } from "../../util/sort-paths.ts";
 
 export const serveScriptEditingAPI = (router: Router) => {
   const instances = GameInstance.INSTANCES;
@@ -36,15 +37,18 @@ export const serveScriptEditingAPI = (router: Router) => {
     const filePath = ctx.params.path;
     if (filePath === undefined || filePath.length === 0) {
       const files: string[] = [];
-      for await (const entry of fs.expandGlob("**/*", {
+      const entries = fs.expandGlob("**/*", {
         root: worldFolder,
         exclude: ["node_modules", ".git", "_dist", "*-esbuild.js"],
-      })) {
+      });
+
+      for await (const entry of entries) {
         if (entry.isFile) {
           files.push(path.relative(worldFolder, entry.path));
         }
       }
-      ctx.response.body = { files };
+
+      ctx.response.body = { files: sortPaths(files) };
 
       return;
     }
