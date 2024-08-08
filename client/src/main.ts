@@ -48,8 +48,7 @@ const setup = async (conn: ClientConnection, game: ClientGame) => {
   const localSpawnedEntities: Entity[] = [];
 
   if (EDIT_MODE) {
-    // FIXME(Charlotte): why dont sprite2ds move when the game is paused
-    // game.paused = true;
+    game.paused = true;
     game.physics.enabled = false;
 
     game.local.spawn({
@@ -93,7 +92,7 @@ const setup = async (conn: ClientConnection, game: ClientGame) => {
 
 const instanceId = NIL_UUID;
 const socket = new WebSocket(
-  `/api/v1/connect/${instanceId}?nickname=${encodeURIComponent("Player" + Math.floor(Math.random() * 999) + 1)}&player_id=${encodeURIComponent(generateCUID("ply"))}`,
+  `ws://127.0.0.1:8000/api/v1/connect/${instanceId}?nickname=${encodeURIComponent("Player" + Math.floor(Math.random() * 999) + 1)}&player_id=${encodeURIComponent(generateCUID("ply"))}`,
 );
 Object.defineProperty(window, "socket", { value: socket });
 const codec = JSON_CODEC;

@@ -622,7 +622,7 @@ export abstract class Entity implements ISignalHandler {
   // internal id for stable internal reference. we only really need this for networking
   readonly ref: string = generateCUID("ent");
 
-  pausable: boolean = true;
+  pausable: boolean = false;
 
   #updateTransform(fromGlobal: boolean) {
     if (!this.transform || !this.globalTransform) return;

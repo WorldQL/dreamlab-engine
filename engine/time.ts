@@ -29,8 +29,7 @@ export class Time {
   [internal.timeIncrement](delta: number, partial: number) {
     this.#now += delta;
     this.#delta = delta;
-
-    if (!this.#game.paused) this.#partial = partial;
+    this.#partial = partial;
   }
 
   public get now(): number {
