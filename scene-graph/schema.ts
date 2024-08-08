@@ -16,7 +16,26 @@ export const VectorSchema = z.object({
   y: z.number(),
 });
 
-export const ValueSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
+type Primitive = string | number | boolean | null | undefined;
+type JsonArray = readonly JsonValue[];
+type JsonObject = { [Key in string]?: JsonValue };
+type JsonValue = Primitive | JsonArray | JsonObject;
+
+const PrimitiveSchema: z.ZodType<Primitive> = z.union([
+  z.string(),
+  z.number(),
+  z.boolean(),
+  z.null(),
+  z.undefined(),
+]);
+
+const JsonArraySchema: z.ZodType<JsonArray> = z.lazy(() => JsonValueSchema.array());
+const JsonObjectSchema: z.ZodType<JsonObject> = z.lazy(() =>
+  z.record(z.string(), JsonValueSchema),
+);
+const JsonValueSchema = z.union([PrimitiveSchema, JsonArraySchema, JsonObjectSchema]);
+
+export const ValueSchema = JsonValueSchema;
 
 export const TransformSchema = z.object({
   position: VectorSchema.default({ x: 0, y: 0 }),
