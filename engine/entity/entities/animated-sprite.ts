@@ -32,7 +32,7 @@ export class AnimatedSprite2D extends PixiEntity {
     this.defineValues(AnimatedSprite2D, "width", "height", "alpha", "speed", "loop");
     this.defineValue(AnimatedSprite2D, "spritesheet", { type: SpritesheetAdapter });
 
-    if (this.spritesheet !== "") {
+    if (this.game.isClient() && this.spritesheet !== "") {
       PIXI.Assets.backgroundLoad(this.game.resolveResource(this.spritesheet));
     }
 

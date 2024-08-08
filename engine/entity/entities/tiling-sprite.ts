@@ -36,7 +36,7 @@ export class TilingSprite2D extends PixiEntity {
     this.defineValue(TilingSprite2D, "tileScale", { type: Vector2Adapter });
     this.defineValue(TilingSprite2D, "texture", { type: TextureAdapter });
 
-    if (this.texture !== "") {
+    if (this.game.isClient() && this.texture !== "") {
       PIXI.Assets.backgroundLoad(this.game.resolveResource(this.texture));
     }
 
