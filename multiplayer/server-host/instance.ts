@@ -20,6 +20,8 @@ export interface GameInstanceInfo {
   worldRevision?: string;
   // player id
   startedBy?: string;
+
+  editMode?: boolean;
 }
 
 export class GameInstance {

@@ -1,3 +1,4 @@
+import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import { CONFIG } from "./config.ts";
 import { GameInstance } from "./instance.ts";
 import { IPCWorker } from "./worker.ts";
@@ -27,7 +28,7 @@ export class GameSession {
   constructor(public parent: GameInstance) {
     const addr = CONFIG.bindAddress;
     this.ipc = new IPCWorker({
-      workerId: crypto.randomUUID(),
+      workerId: generateCUID("wrk"),
       workerConnectUrl: `ws://${addr.hostname}:${addr.port}/internal/worker`,
       instanceId: parent.info.instanceId,
       worldId: parent.info.worldId,

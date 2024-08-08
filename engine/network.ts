@@ -1,6 +1,6 @@
 import { JsonValue } from "./value/mod.ts";
 
-export type ConnectionId = string | undefined;
+export type ConnectionId = "server" | (string & Record<never, never>); // LiteralUnion<'server', string>
 export type CustomMessageData = object & JsonValue;
 
 export type CustomMessageListener = (
@@ -9,15 +9,15 @@ export type CustomMessageListener = (
   data: CustomMessageData,
 ) => void | Promise<void>;
 
-export interface PeerInfo {
-  connectionId: ConnectionId;
+export interface ConnectionInfo {
+  id: ConnectionId;
   playerId: string;
   nickname: string;
 }
 
 export interface BaseNetworking {
-  get connectionId(): ConnectionId;
-  get peers(): PeerInfo[];
+  get self(): ConnectionId;
+  get connections(): ConnectionInfo[];
   sendCustomMessage(to: ConnectionId, channel: string, data: CustomMessageData): void;
   broadcastCustomMessage(channel: string, data: CustomMessageData): void;
   onReceiveCustomMessage(listener: CustomMessageListener): void;

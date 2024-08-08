@@ -3,10 +3,7 @@ import { z } from "@dreamlab/vendor/zod.ts";
 export const EntityReferenceSchema = z.string().describe("Entity Reference");
 export const EntityTypeSchema = z.string().describe("Entity Type");
 
-export const ConnectionIdSchema = z
-  .string()
-  .optional()
-  .describe("Connection ID (or undefined for server)");
+export const ConnectionIdSchema = z.literal("server").or(z.string()).describe("Connection ID");
 
 export const BehaviorDefinitionSchema = z.object({
   script: z.string(),
@@ -21,6 +18,13 @@ export const Vector2Schema = z
   })
   .describe("Vector2");
 
+export const TransformSchema = z.object({
+  position: Vector2Schema.default({ x: 0, y: 0 }),
+  rotation: z.number().default(0),
+  scale: Vector2Schema.default({ x: 1, y: 1 }),
+  z: z.number().default(0),
+});
+
 // we need to do a little ceremony since EntityDefinitionSchema is recursively defined
 const BaseEntityDefinitionSchema = z.object({
   type: EntityTypeSchema,
@@ -28,20 +32,21 @@ const BaseEntityDefinitionSchema = z.object({
   name: z.string(),
   values: z.record(z.string(), z.any()).optional(),
   behaviors: BehaviorDefinitionSchema.array().optional(),
-  transform: z
-    .object({
-      position: Vector2Schema.optional(),
-      rotation: z.number().optional(),
-      scale: Vector2Schema.optional(),
-    })
-    .optional(),
+  transform: TransformSchema.optional(),
   ref: EntityReferenceSchema,
-  authority: ConnectionIdSchema,
+  authority: ConnectionIdSchema.optional(),
 });
-export type EntityDefinitionSchemaType = z.infer<typeof BaseEntityDefinitionSchema> & {
-  children?: EntityDefinitionSchemaType[];
+type EntityDefinitionSchemaTypeIn = z.input<typeof BaseEntityDefinitionSchema> & {
+  children?: EntityDefinitionSchemaTypeIn[];
 };
-export const EntityDefinitionSchema: z.ZodType<EntityDefinitionSchemaType> =
-  BaseEntityDefinitionSchema.extend({
-    children: z.lazy(() => EntityDefinitionSchema.array().optional()),
-  });
+type EntityDefinitionSchemaTypeOut = z.output<typeof BaseEntityDefinitionSchema> & {
+  children?: EntityDefinitionSchemaTypeOut[];
+};
+export const EntityDefinitionSchema: z.ZodType<
+  EntityDefinitionSchemaTypeOut,
+  z.ZodTypeDef,
+  EntityDefinitionSchemaTypeIn
+> = BaseEntityDefinitionSchema.extend({
+  children: z.lazy(() => EntityDefinitionSchema.array().default([])),
+});
+export type EntityDefinitionSchemaType = z.infer<typeof EntityDefinitionSchema>;

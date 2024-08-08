@@ -7,19 +7,21 @@ import { serveInstanceManagementAPI } from "./routes/instance-management.ts";
 import { serveWorlds } from "./routes/worlds.ts";
 import { servePlayRoutes } from "./routes/play.ts";
 import { serveLogStreamingAPI } from "./routes/log-streaming.ts";
+import { serveScriptEditingAPI } from "./routes/script-editing.ts";
 
 export const setupWeb = async (app: Application) => {
   const router = new Router();
 
   router.get("/internal/worker", workerInternalRoute);
-  servePlayRoutes(router);
+  await servePlayRoutes(router);
   serveWorlds(router);
   serveInstanceManagementAPI(router);
   serveLogStreamingAPI(router);
+  serveScriptEditingAPI(router);
   router.get("/:path*", ctx =>
     ctx
       .send({
-        root: "./client",
+        root: "../client/web",
         index: "index.html",
         path: ctx.request.url.pathname,
       })

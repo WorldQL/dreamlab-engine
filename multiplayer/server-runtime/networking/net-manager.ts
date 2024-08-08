@@ -2,7 +2,7 @@ import {
   ConnectionId,
   CustomMessageData,
   CustomMessageListener,
-  PeerInfo,
+  ConnectionInfo,
   ServerGame,
   ServerNetworking,
 } from "@dreamlab/engine";
@@ -17,7 +17,11 @@ import { handleValueChanges } from "./value-changes.ts";
 import { handleCustomMessages } from "./custom-messages.ts";
 import { handleEntitySync } from "./entity-sync.ts";
 import { handleTransformSync } from "./transform-sync.ts";
-import { PeerConnected, PeerDisconnected } from "@dreamlab/proto/common/signals.ts";
+import {
+  PlayerConnectionEstablished,
+  PlayerConnectionDropped,
+} from "@dreamlab/proto/common/signals.ts";
+import { handlePlayerJoinExchange } from "./player-join-states.ts";
 
 export type ServerPacketHandler<T extends ClientPacket["t"]> = (
   from: ConnectionId,
@@ -26,7 +30,7 @@ export type ServerPacketHandler<T extends ClientPacket["t"]> = (
 export type ServerNetworkSetupRoutine = (net: ServerNetworkManager, game: ServerGame) => void;
 
 export class ServerNetworkManager {
-  clients = new Map<ConnectionId, PeerInfo>();
+  clients = new Map<ConnectionId, ConnectionInfo>();
 
   customMessageListeners: CustomMessageListener[] = [];
 
@@ -45,6 +49,7 @@ export class ServerNetworkManager {
 
   setup(game: ServerGame) {
     this.ipc.addMessageListener("IncomingPacket", message => {
+      console.log("[<-] " + message.packet.t);
       try {
         this.getPacketHandler(message.packet.t)(message.from, message.packet);
       } catch (err) {
@@ -73,7 +78,7 @@ export class ServerNetworkManager {
 
       // TODO: create playerconnection entity and put it in game.remote
       const peerInfo = {
-        connectionId: message.connectionId,
+        id: message.connectionId,
         nickname: message.nickname,
         playerId: message.playerId,
       };
@@ -83,12 +88,12 @@ export class ServerNetworkManager {
         t: "PeerListSnapshot",
         peers: [...this.clients.values()].map(p => ({
           nickname: p.nickname,
-          connection_id: p.connectionId,
+          connection_id: p.id,
           player_id: p.playerId,
         })),
       });
 
-      game.fire(PeerConnected, peerInfo);
+      game.fire(PlayerConnectionEstablished, peerInfo);
     });
 
     this.ipc.addMessageListener("ConnectionDropped", message => {
@@ -98,9 +103,10 @@ export class ServerNetworkManager {
       });
       const peerInfo = this.clients.get(message.connectionId);
       this.clients.delete(message.connectionId);
-      if (peerInfo) game.fire(PeerDisconnected, peerInfo);
+      if (peerInfo) game.fire(PlayerConnectionDropped, peerInfo);
     });
 
+    handlePlayerJoinExchange(this, game);
     handleValueChanges(this, game);
     handleCustomMessages(this, game);
     handleEntitySync(this, game);
@@ -109,10 +115,12 @@ export class ServerNetworkManager {
 
   send(to: ConnectionId, packet: ServerPacket) {
     if (to === undefined) return;
+    console.log("[->] " + packet.t);
     this.ipc.send({ op: "OutgoingPacket", to, packet });
   }
 
   broadcast(packet: ServerPacket) {
+    console.log("[->] " + packet.t);
     this.ipc.send({ op: "OutgoingPacket", to: null, packet });
   }
 
@@ -121,10 +129,10 @@ export class ServerNetworkManager {
     const net = this;
 
     return {
-      get connectionId(): ConnectionId {
-        return undefined;
+      get self(): ConnectionId {
+        return "server";
       },
-      get peers(): PeerInfo[] {
+      get connections(): ConnectionInfo[] {
         return [...net.clients.values()];
       },
       sendCustomMessage(to: ConnectionId, channel: string, data: CustomMessageData) {

@@ -49,7 +49,7 @@ export class EntityZChanged {
 export class EntityExclusiveAuthorityChanged {
   constructor(
     public entity: Entity,
-    public authority: ConnectionId,
+    public authority: ConnectionId | undefined,
     public clock: number,
   ) {}
   [exclusiveSignalType] = BaseGame;

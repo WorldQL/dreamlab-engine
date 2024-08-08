@@ -585,9 +585,9 @@ export abstract class Entity implements ISignalHandler {
   // #endregion
 
   // #region Authority
-  #exclusiveAuthority: ConnectionId;
+  #exclusiveAuthority: ConnectionId | undefined;
   #exclusiveAuthorityClock: number = 0;
-  [internal.entityForceAuthorityValues](authority: ConnectionId, clock: number) {
+  [internal.entityForceAuthorityValues](authority: ConnectionId | undefined, clock: number) {
     if (clock < this.#exclusiveAuthorityClock) return;
     if (
       clock === this.#exclusiveAuthorityClock &&
@@ -605,7 +605,7 @@ export abstract class Entity implements ISignalHandler {
   get authority() {
     return this.#exclusiveAuthority;
   }
-  set authority(newAuthority: ConnectionId) {
+  set authority(newAuthority: ConnectionId | undefined) {
     // picked up by host application event handlers -> forceAuthorityValues
     this.game.fire(
       EntityExclusiveAuthorityChanged,
@@ -615,8 +615,7 @@ export abstract class Entity implements ISignalHandler {
     );
   }
   takeAuthority() {
-    const selfConnectionId = this.game.isClient() ? this.game.network.connectionId : undefined;
-    this.authority = selfConnectionId;
+    this.authority = this.game.network.self ?? "server";
   }
   // #endregion
 

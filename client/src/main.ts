@@ -1,191 +1,126 @@
-import { Behavior, Camera, GameStatus, Gizmo, Vector2 } from "@dreamlab/engine";
-import { renderEditorUI } from "./editor-ui-main.tsx";
-import { createGame, setCurrentGame } from "./global-game.ts";
-
+import { Camera, ClientGame, Entity, GameStatus, Gizmo } from "@dreamlab/engine";
+import { JSON_CODEC } from "@dreamlab/proto/codecs/simple-json.ts";
+import { ServerPacket } from "@dreamlab/proto/play.ts";
+import { ClientConnection } from "./networking/net-connection.ts";
+import { ReceivedInitialNetworkSnapshot } from "@dreamlab/proto/common/signals.ts";
+import { convertEntityDefinition, ProjectSchema } from "@dreamlab/scene";
 import * as internal from "../../engine/internal.ts";
-import { setPlayModeGame } from "./global-game.ts";
-import { setEditModeGame } from "./global-game.ts";
+import { NIL_UUID } from "jsr:@std/uuid@1/constants";
+import { generateCUID } from "@dreamlab/vendor/cuid.ts";
+import { renderEditorUI } from "./editor/editor-ui-main.tsx";
 
-import {
-  Scene,
-  loadSceneDefinition,
-  serializeSceneDefinition,
-} from "../../engine/scene/mod.ts";
+const container = document.createElement("div");
+container.style.width = "100%";
+container.style.height = "100%";
 
-export const SAMPLE_SCENE: Scene = {
-  world: [
-    {
-      ref: "ent_l1wx3qcq9xxy5bg6u8n036wy",
-      name: "DefaultSquare",
-      type: "@core/Rigidbody2D",
-      transform: { position: { x: 0, y: 0 }, rotation: 0, scale: { x: 1, y: 1 }, z: 0 },
-      values: { type: "fixed" },
-    },
-    {
-      ref: "ent_kkm6r17dsj197dla0iu9fbjp",
-      name: "DefaultSquare.1",
-      type: "@core/Rigidbody2D",
-      transform: { position: { x: 0, y: 0 }, rotation: 0, scale: { x: 1, y: 1 }, z: 0 },
-      values: { type: "fixed" },
-    },
-    {
-      ref: "ent_qitlau9pgtq5y8wmxuym0paf",
-      name: "SpriteContainer",
-      type: "@core/Empty",
-      transform: { position: { x: 0, y: 0 }, rotation: 0, scale: { x: 2, y: 1 }, z: 0 },
-      values: {},
-      children: [
-        {
-          ref: "ent_ame972vw6ejknflhvv35n2xp",
-          name: "Sprite",
-          type: "@core/Sprite2D",
-          transform: { position: { x: 0, y: 0 }, rotation: 0, scale: { x: 1, y: 1 }, z: 0 },
-          values: { width: 1, height: 1, alpha: 1, texture: "" },
-          behaviors: [
-            {
-              ref: "bhv_dgneu7qncn6wxed6rgvoww5u",
-              values: { speed: 1 },
-              script: "builtin:jackson.test/WASDMovementBehavior",
-            },
-          ],
-        },
-      ],
-    },
-  ],
-};
+const EDIT_MODE = true;
 
-try {
-  // @ts-expect-error injected global
-  if (LIVE_RELOAD) {
-    new EventSource("/esbuild").addEventListener("change", () => location.reload());
-  }
-} catch {
-  // Ignore
-}
-
-const main = async () => {
-  let instanceId = "";
-  let gameParam = "";
-
-  if (typeof window !== "undefined") {
-    const params = new URLSearchParams(window.location.search);
-    instanceId = params.get("instance") || "";
-    gameParam = params.get("game") || "";
-    // server = params.get("server") || "";
-    // editmode = params.get("editmode") === "true";
+const setup = async (conn: ClientConnection, game: ClientGame) => {
+  if (EDIT_MODE) {
+    renderEditorUI(game, container, document.createElement("div"));
+  } else {
+    document.querySelector("#root")!.append(container);
   }
 
-  const editModeGameContainer = document.createElement("div");
-  editModeGameContainer.style.width = "100%"; // TODO: can pixi just handle the resizing all on its own for us?
-  editModeGameContainer.style.height = "100%";
+  const networkSnapshotPromise = new Promise<void>((resolve, _reject) => {
+    game.on(ReceivedInitialNetworkSnapshot, () => {
+      resolve();
+    });
+  });
 
-  const playModeGameContainer = document.createElement("div");
-  playModeGameContainer.style.width = "100%"; // TODO: can pixi just handle the resizing all on its own for us?
-  playModeGameContainer.style.height = "100%";
-
-  const game = createGame(
-    editModeGameContainer,
-    "connectionIdPlaceholder",
-    instanceId,
-    gameParam,
-  );
-  const playModeGame = createGame(
-    playModeGameContainer,
-    "connectionIdPlaceholder",
-    instanceId,
-    gameParam,
-  );
-
-  setPlayModeGame(playModeGame);
-  setEditModeGame(game);
-  setCurrentGame(game);
-  // Object.defineProperty(window, "game", { value: game }); // for debugging
-
-  renderEditorUI(editModeGameContainer, playModeGameContainer);
+  conn.setup(game);
   await game.initialize();
-  await playModeGame.initialize();
 
-  // resize app to fit parent
-  const ro = new ResizeObserver(() => game.renderer.app.resize());
-  ro.observe(editModeGameContainer);
-  const ro2 = new ResizeObserver(() => playModeGame.renderer.app.resize());
-  ro2.observe(playModeGameContainer);
+  const projectDesc = await game
+    .fetch("res://project.json")
+    .then(r => r.text())
+    .then(JSON.parse)
+    .then(ProjectSchema.parse);
+  const scene = projectDesc.scenes.main;
+  await Promise.all(scene.registration.map(script => import(game.resolveResource(script))));
+  const { default: preLoadBehaviors } = await import(
+    game.resolveResource("res://_dreamlab_behavior_preload.js")
+  );
+  await preLoadBehaviors(game);
 
-  game.local.spawn({
-    type: Camera,
-    name: "Camera",
-    values: { smooth: 1 },
-  });
+  conn.send({ t: "LoadPhaseChanged", phase: "initialized" });
 
-  playModeGame.local.spawn({
-    type: Camera,
-    name: "Camera",
-    values: { smooth: 1 },
-  });
+  const localSpawnedEntities: Entity[] = [];
 
-  // editor
-  game.physics.enabled = false;
-  class WASDMovementBehavior extends Behavior {
-    speed = 1.0;
+  if (EDIT_MODE) {
+    // FIXME(Charlotte): why dont sprite2ds move when the game is paused
+    // game.paused = true;
+    game.physics.enabled = false;
 
-    #up = this.inputs.create("@wasd/up", "Move Up", "KeyW");
-    #down = this.inputs.create("@wasd/down", "Move Down", "KeyS");
-    #left = this.inputs.create("@wasd/left", "Move Left", "KeyA");
-    #right = this.inputs.create("@wasd/right", "Move Right", "KeyD");
+    game.local.spawn({
+      type: Gizmo,
+      name: "Gizmo",
+    });
 
-    onInitialize(): void {
-      this.value(WASDMovementBehavior, "speed");
+    game.local.spawn({
+      type: Camera,
+      name: "Camera",
+    });
+
+    // we don't need to load the scene here because the server should have put everything
+    // in game.world._.EditorEntities and they should sync good automatically
+  } else {
+    const defs = await Promise.all(scene.local.map(def => convertEntityDefinition(game, def)));
+    for (const def of defs) {
+      localSpawnedEntities.push(game.local[internal.entitySpawn](def, { inert: true }));
     }
-
-    onTick(): void {
-      const movement = new Vector2(0, 0);
-      if (this.#up.held) movement.y += 1;
-      if (this.#down.held) movement.y -= 1;
-      if (this.#right.held) movement.x += 1;
-      if (this.#left.held) movement.x -= 1;
-
-      this.entity.transform.position = this.entity.transform.position.add(
-        movement.normalize().mul((this.time.delta / 100) * this.speed),
-      );
-    }
-
-    onFrame(): void {}
   }
 
-  game[internal.behaviorLoader].registerInternalBehavior(WASDMovementBehavior, "jackson.test");
-  playModeGame[internal.behaviorLoader].registerInternalBehavior(
-    WASDMovementBehavior,
-    "jackson.test",
-  );
-
-  game.local.spawn({
-    type: Gizmo,
-    name: "Gizmo",
-  });
-
-  await loadSceneDefinition(game, SAMPLE_SCENE);
-  console.log(JSON.stringify(serializeSceneDefinition(game)));
-
+  await networkSnapshotPromise;
+  conn.send({ t: "LoadPhaseChanged", phase: "loaded" });
   game.setStatus(GameStatus.Running);
-  playModeGame.setStatus(GameStatus.Running);
-  game.paused = true;
-  playModeGame.paused = true;
+
+  for (const entity of localSpawnedEntities) {
+    entity[internal.entitySpawnFinalize]();
+  }
 
   let now = performance.now();
   const onFrame = (time: number) => {
     const delta = time - now;
     now = time;
-    // all this will be replaced by properly loading / destroying game when networking is in
     game.tickClient(delta);
-    playModeGame.tickClient(delta);
 
     requestAnimationFrame(onFrame);
   };
+
   requestAnimationFrame(onFrame);
 };
 
-if (document.readyState === "complete") {
-  void main();
-} else {
-  document.addEventListener("DOMContentLoaded", () => void main());
-}
+const instanceId = NIL_UUID;
+const socket = new WebSocket(
+  `/api/v1/connect/${instanceId}?nickname=${encodeURIComponent("Player" + Math.floor(Math.random() * 999) + 1)}&player_id=${encodeURIComponent(generateCUID("ply"))}`,
+);
+Object.defineProperty(window, "socket", { value: socket });
+const codec = JSON_CODEC;
+
+let conn: ClientConnection | undefined;
+let game: ClientGame | undefined;
+socket.addEventListener("message", async event => {
+  const packet = codec.decodePacket(event.data) as ServerPacket;
+  if (game === undefined && packet.t === "Handshake") {
+    const connectionId = packet.connection_id;
+    const worldId = packet.world_id;
+
+    // TODO: grab nickname / playerId from packet (we should have a PeerInfo concept)
+    conn = new ClientConnection(connectionId, socket, codec);
+    game = new ClientGame({
+      instanceId,
+      worldId,
+      container,
+      network: conn.createNetworking(),
+    });
+    game.worldScriptBaseURL = packet.world_script_base_url;
+    console.log(packet);
+    Object.defineProperties(window, { game: { value: game }, conn: { value: conn } });
+    await setup(conn, game);
+  } else if (conn !== undefined) {
+    conn.handle(packet);
+  } else {
+    console.debug("dropped message!", event);
+  }
+});

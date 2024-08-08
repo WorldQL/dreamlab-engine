@@ -1,6 +1,16 @@
-import { BehaviorDefinition, Entity, EntityDefinition, Game } from "@dreamlab/engine";
+import {
+  BehaviorDefinition,
+  Entity,
+  EntityDefinition,
+  Game,
+  TransformOptions,
+} from "@dreamlab/engine";
 import * as internal from "../../engine/internal.ts";
-import { BehaviorDefinitionSchema, EntityDefinitionSchema } from "../datamodel.ts";
+import {
+  BehaviorDefinitionSchema,
+  EntityDefinitionSchema,
+  TransformSchema,
+} from "../datamodel.ts";
 import type { z } from "@dreamlab/vendor/zod.ts";
 
 export const convertBehaviorDefinition = async (
@@ -38,10 +48,25 @@ export const convertEntityDefinition = async (
   };
 };
 
-export const serializeBehaviorDefinition = async (
+export const serializeTransform = (
+  transform: TransformOptions,
+): z.infer<typeof TransformSchema> => {
+  return {
+    position: transform.position
+      ? { x: transform.position.x ?? 0, y: transform.position.y ?? 0 }
+      : { x: 0, y: 0 },
+    rotation: transform.rotation ?? 0,
+    scale: transform.scale
+      ? { x: transform.scale.x ?? 1, y: transform.scale.y ?? 1 }
+      : { x: 1, y: 1 },
+    z: transform.z ?? 0,
+  };
+};
+
+export const serializeBehaviorDefinition = (
   game: Game,
   def: BehaviorDefinition,
-): Promise<z.infer<typeof BehaviorDefinitionSchema>> => {
+): z.infer<typeof BehaviorDefinitionSchema> => {
   const ref = def._ref;
   if (ref === undefined)
     throw new Error("attempted to serialize BehaviorDefinition with undefined ref");
@@ -57,32 +82,28 @@ export const serializeBehaviorDefinition = async (
   };
 };
 
-export const serializeEntityDefinition = async (
+export const serializeEntityDefinition = (
   game: Game,
   def: EntityDefinition,
   parentRef: string,
-): Promise<z.infer<typeof EntityDefinitionSchema>> => {
+): z.infer<typeof EntityDefinitionSchema> => {
   const ref = def._ref;
   if (ref === undefined)
     throw new Error("Attempted to serialize EntityDefinition with undefined ref");
 
   const children = def.children
-    ? await Promise.all(
-        [...def.children.values()].map(child => serializeEntityDefinition(game, child, ref)),
-      )
+    ? [...def.children.values()].map(child => serializeEntityDefinition(game, child, ref))
     : undefined;
 
   const behaviors = def.behaviors
-    ? await Promise.all(
-        def.behaviors.map(behavior => serializeBehaviorDefinition(game, behavior)),
-      )
+    ? def.behaviors.map(behavior => serializeBehaviorDefinition(game, behavior))
     : undefined;
 
   return {
     type: Entity.getTypeName(def.type),
     name: def.name,
     values: def.values,
-    transform: def.transform,
+    transform: def.transform ? serializeTransform(def.transform) : undefined,
     authority: def.authority,
     behaviors,
     children,

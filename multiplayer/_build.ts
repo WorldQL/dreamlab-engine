@@ -6,9 +6,11 @@ import {
 } from "../build-system/mod.ts";
 
 if (import.meta.main) {
-  await bundleEngineDependencies("../engine/", "./client/dist");
-  await bundleEngine("../engine/", "./client/dist");
-  await bundleClient("./client", "./client/dist", "./deno.json");
+  await bundleEngineDependencies("../engine/", "../client/web/dist");
+  await bundleEngine("../engine/", "../client/web/dist");
+  await bundleClient("../client", "../client/web/dist", "../client/deno.json", [
+    { in: "../client/src/main.ts", out: "client-main" },
+  ]);
   await bundleWorld(
     "test-world",
     { dir: "./worlds/dreamlab/test-world", denoJsonPath: "./deno.json" },

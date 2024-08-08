@@ -129,6 +129,11 @@ export abstract class BaseGame implements ISignalHandler {
     }
   }
 
+  /** Fetches a resource (supports res:// amd cloud:// URIs) */
+  fetch(uri: string, init?: RequestInit): Promise<Response> {
+    return fetch(this.resolveResource(uri), init);
+  }
+
   // #region Lifecycle
   async initialize() {
     if (this.#initialized) return;
@@ -265,7 +270,7 @@ export class ClientGame extends BaseGame {
     this.renderer = new GameRenderer(this);
 
     this.network = opts.network;
-    this.values[internal.setValueRegistrySource](this.network.connectionId);
+    this.values[internal.setValueRegistrySource](this.network.self); // FIXME(Charlotte): remove (ValueRegistry has Game so we can just do game.network.self)
   }
 
   async initialize() {

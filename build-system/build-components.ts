@@ -5,7 +5,6 @@ import {
   dreamlabEngineExternalPlugin,
 } from "./_esbuild.ts";
 import * as path from "jsr:@std/path@1";
-import * as fs from "jsr:@std/fs@1";
 
 export interface BundleOptions {
   watch: boolean;
@@ -133,6 +132,7 @@ export const bundleClient = async (
         configPath: await Deno.realPath(denoJsonPath),
       }),
     ],
+    jsx: "automatic",
     entryPoints: inputs,
     outdir,
   };

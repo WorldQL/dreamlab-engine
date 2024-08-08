@@ -19,7 +19,7 @@ export class ValueChanged {
 export class ValueRegistry extends BasicSignalHandler<ValueRegistry> {
   #values = new Map<string, Value>();
 
-  #source: ConnectionId;
+  #source: ConnectionId = "server";
   get source() {
     return this.#source;
   }

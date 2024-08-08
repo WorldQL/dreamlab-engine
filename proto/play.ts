@@ -61,7 +61,7 @@ export const ClientSetValuePacketSchema = z.object({
 });
 
 export const ServerSetSyncedValuePacketSchema = ClientSetValuePacketSchema.extend({
-  from: ConnectionIdSchema,
+  from: ConnectionIdSchema.optional(),
 });
 
 export const ClientSpawnEntityPacket = z.object({
@@ -70,7 +70,7 @@ export const ClientSpawnEntityPacket = z.object({
 });
 
 export const ServerSpawnEntityPacket = ClientSpawnEntityPacket.extend({
-  from: ConnectionIdSchema,
+  from: ConnectionIdSchema.optional(),
 });
 
 export const ClientDeleteEntityPacket = z.object({
@@ -79,7 +79,7 @@ export const ClientDeleteEntityPacket = z.object({
 });
 
 export const ServerDeleteEntityPacket = ClientDeleteEntityPacket.extend({
-  from: ConnectionIdSchema,
+  from: ConnectionIdSchema.optional(),
 });
 
 const BaseRenameEntityPacket = z.object({
@@ -92,7 +92,7 @@ export const ClientRenameEntityPacket = BaseRenameEntityPacket.extend({
   old_name: z.string(),
 });
 export const ServerRenameEntityPacket = BaseRenameEntityPacket.extend({
-  from: ConnectionIdSchema,
+  from: ConnectionIdSchema.optional(),
 });
 
 const BaseReparentEntityPacket = z.object({
@@ -104,7 +104,7 @@ export const ClientReparentEntityPacket = BaseReparentEntityPacket.extend({
   old_parent: EntityReferenceSchema.optional(),
 });
 export const ServerReparentEntityPacket = BaseReparentEntityPacket.extend({
-  from: ConnectionIdSchema,
+  from: ConnectionIdSchema.optional(),
 });
 
 export const ClientRequestExclusiveAuthorityPacket = z.object({
@@ -121,7 +121,7 @@ export const ClientRelinquishExclusiveAuthorityPacket = z.object({
 export const ServerAnnounceExclusiveAuthorityPacket = z.object({
   t: z.literal("AnnounceExclusiveAuthority"),
   entity: EntityReferenceSchema,
-  to: ConnectionIdSchema,
+  to: ConnectionIdSchema.optional(),
   clock: z.number(),
 });
 
@@ -130,19 +130,25 @@ export const ServerDenyExclusiveAuthorityPacket = z.object({
   t: z.literal("DenyExclusiveAuthority"),
   entity: EntityReferenceSchema,
   clock: z.number(),
+  current_authority: ConnectionIdSchema.optional(),
 });
 
 // clients can only report transform for entities over which they have exclusive authority
-export const ClientReportEntityTransformPacket = z.object({
-  t: z.literal("ReportEntityTransform"),
+export type EntityTransformReport = z.infer<typeof EntityTransformReportSchema>;
+export const EntityTransformReportSchema = z.object({
   entity: EntityReferenceSchema,
   position: Vector2Schema,
   rotation: z.number(),
   scale: Vector2Schema,
 });
 
-export const ServerReportEntityTransformPacket = ClientReportEntityTransformPacket.extend({
-  from: ConnectionIdSchema,
+export const ClientReportEntityTransformsPacket = z.object({
+  t: z.literal("ReportEntityTransforms"),
+  reports: EntityTransformReportSchema.array(),
+});
+
+export const ServerReportEntityTransformsPacket = ClientReportEntityTransformsPacket.extend({
+  from: ConnectionIdSchema.optional(),
 });
 
 const BaseCustomMessagePacket = z.object({
@@ -154,7 +160,12 @@ export const ClientCustomMessagePacket = BaseCustomMessagePacket.extend({
   to: ConnectionIdSchema.or(z.literal("*")).optional(),
 });
 export const ServerCustomMessagePacket = BaseCustomMessagePacket.extend({
-  from: ConnectionIdSchema,
+  from: ConnectionIdSchema.optional(),
+});
+
+export const ClientLoadPhaseChangedPacket = z.object({
+  t: z.literal("LoadPhaseChanged"),
+  phase: z.enum(["initialized", "loaded"]),
 });
 
 export const ServerInitialNetworkSnapshotPacket = z.object({
@@ -164,6 +175,7 @@ export const ServerInitialNetworkSnapshotPacket = z.object({
 });
 
 export const ClientPacketSchema = z.discriminatedUnion("t", [
+  ClientLoadPhaseChangedPacket,
   ClientChatMessagePacketSchema,
   ClientSetValuePacketSchema,
   ClientSpawnEntityPacket,
@@ -173,12 +185,13 @@ export const ClientPacketSchema = z.discriminatedUnion("t", [
   ClientCustomMessagePacket,
   ClientRequestExclusiveAuthorityPacket,
   ClientRelinquishExclusiveAuthorityPacket,
-  ClientReportEntityTransformPacket,
+  ClientReportEntityTransformsPacket,
 ]);
 export type ClientPacket = z.infer<typeof ClientPacketSchema>;
 
 export const ServerPacketSchema = z.discriminatedUnion("t", [
   HandshakePacketSchema,
+  ServerInitialNetworkSnapshotPacket,
   ServerPeerConnectedPacketSchema,
   ServerPeerDisconnectedPacketSchema,
   ServerPeerChangedNicknamePacketSchema,
@@ -192,8 +205,7 @@ export const ServerPacketSchema = z.discriminatedUnion("t", [
   ServerCustomMessagePacket,
   ServerAnnounceExclusiveAuthorityPacket,
   ServerDenyExclusiveAuthorityPacket,
-  ServerReportEntityTransformPacket,
-  ServerInitialNetworkSnapshotPacket,
+  ServerReportEntityTransformsPacket,
 ]);
 export type ServerPacket = z.infer<typeof ServerPacketSchema>;
 
@@ -203,6 +215,6 @@ export type PlayPacket<
 > = (Side extends "any"
   ? ClientPacket | ServerPacket
   : Side extends "client"
-  ? ClientPacket
-  : ServerPacket) &
+    ? ClientPacket
+    : ServerPacket) &
   (T extends string ? { t: T } : object);

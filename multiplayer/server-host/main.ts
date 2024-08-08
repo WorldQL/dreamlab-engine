@@ -1,3 +1,4 @@
+import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 import {
   bundleClient,
   bundleEngine,
@@ -32,22 +33,28 @@ Deno.addSignalListener("SIGTERM", () => {
 
 const TESTING_WORLD = "dreamlab/test-world";
 
+/*
+// build the client. why not
+await bundleEngineDependencies("../engine/", "../client/web/dist");
+await bundleEngine("../engine/", "../client/web/dist");
+await bundleClient("../client", "../client/web/dist", "../client/deno.json", [
+  { in: "../client/src/main.ts", out: "client-main" },
+]);
+await bundleWorld(
+  "test-world",
+  { dir: "./worlds/dreamlab/test-world", denoJsonPath: "./deno.json" },
+  { watch: Deno.args.includes("--watch") },
+);
+console.log("Client built!");
+*/
+
 await Promise.all([
-  // build the client. why not
-  (async () => {
-    await bundleEngineDependencies("../engine/", "./client/dist");
-    await bundleEngine("../engine/", "./client/dist");
-    await bundleClient("./client", "./client/dist", "./deno.json");
-    await bundleWorld("test-world", {
-      dir: `./worlds/${TESTING_WORLD}`,
-      denoJsonPath: "./deno.json",
-    });
-    console.log("Ready!");
-  })(),
   // boot instance
   (async () => {
+    console.log("Spawning an instance...");
+
     instance = createInstance({
-      instanceId: "my-instance",
+      instanceId: NIL_UUID,
       worldId: TESTING_WORLD,
       worldDirectory: `${Deno.cwd()}/worlds/${TESTING_WORLD}`,
     });

@@ -9,7 +9,6 @@ import {
   convertEntityDefinition,
   serializeEntityDefinition,
 } from "@dreamlab/proto/common/entity-sync.ts";
-import { PeerConnected } from "@dreamlab/proto/common/signals.ts";
 
 export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
   const changeIgnoreSet = new Set<string>();
@@ -38,28 +37,6 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
     const entity = event.descendant;
     if (changeIgnoreSet.has(entity.ref)) return;
     net.broadcast({ t: "DeleteEntity", entity: entity.ref });
-  });
-
-  game.on(PeerConnected, async ({ peer }) => {
-    const worldEntities = [];
-    for (const child of game.world.children.values()) {
-      worldEntities.push(
-        serializeEntityDefinition(game, child.getDefinition(), game.world.ref),
-      );
-    }
-
-    const prefabEntities = [];
-    for (const child of game.prefabs.children.values()) {
-      prefabEntities.push(
-        serializeEntityDefinition(game, child.getDefinition(), game.prefabs.ref),
-      );
-    }
-
-    net.send(peer.connectionId, {
-      t: "InitialNetworkSnapshot",
-      worldEntities: await Promise.all(worldEntities),
-      prefabEntities: await Promise.all(prefabEntities),
-    });
   });
 
   net.registerPacketHandler("SpawnEntity", async (from, packet) => {
@@ -139,6 +116,25 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
       from: from,
       entity: packet.entity,
       parent: packet.parent,
+    });
+  });
+
+  net.registerPacketHandler("RenameEntity", (from, packet) => {
+    const entity = game.entities.lookupByRef(packet.entity);
+    if (!entity)
+      throw new Error(`entity sync: Tried to rename a non-existent entity! (${packet.entity})`);
+
+    if (packet.old_name !== entity.name) return;
+
+    changeIgnoreSet.add(entity.ref);
+    entity.name = packet.name;
+    changeIgnoreSet.delete(entity.ref);
+
+    net.broadcast({
+      t: "RenameEntity",
+      from,
+      entity: packet.entity,
+      name: entity.name,
     });
   });
 };

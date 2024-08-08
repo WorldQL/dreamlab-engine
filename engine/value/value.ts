@@ -38,8 +38,8 @@ export class Value<T = unknown> {
 
   /** for conflict resolution: incrementing number (greater number wins) */
   clock: number;
-  /** for conflict resolution: the last setting client's connection ID, or undefined if set by the server. */
-  #lastSource: ConnectionId = undefined;
+  /** for conflict resolution: the last setting client's connection ID, or "server" if set by the server. */
+  #lastSource: ConnectionId = "server";
 
   get value() {
     return this.#value;
@@ -106,8 +106,8 @@ export class Value<T = unknown> {
   ) {
     if (incomingClock < this.clock) return;
     if (incomingClock === this.clock) {
-      if (incomingSource !== undefined) {
-        if (this.#lastSource === undefined) return;
+      if (incomingSource !== "server") {
+        if (this.#lastSource === "server") return;
         if (incomingSource < this.#lastSource) return;
       }
     }

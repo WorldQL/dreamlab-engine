@@ -1,10 +1,10 @@
-import { PeerInfo } from "@dreamlab/engine";
+import { ConnectionInfo } from "@dreamlab/engine";
 
-export class PeerConnected {
-  constructor(public peer: PeerInfo) {}
+export class PlayerConnectionEstablished {
+  constructor(public connection: ConnectionInfo) {}
 }
-export class PeerDisconnected {
-  constructor(public peer: PeerInfo) {}
+export class PlayerConnectionDropped {
+  constructor(public connection: ConnectionInfo) {}
 }
 
 export class ReceivedInitialNetworkSnapshot {}

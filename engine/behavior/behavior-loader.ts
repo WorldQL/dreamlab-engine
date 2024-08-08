@@ -4,9 +4,9 @@ import { Game } from "../game.ts";
 export class BehaviorLoader {
   #game: Game;
 
-  #cache = new Map<string, WeakRef<BehaviorConstructor>>();
-  #initializedBehaviors = new WeakSet<BehaviorConstructor>();
-  #resourceLocationLookup = new WeakMap<BehaviorConstructor, string>();
+  #cache = new Map<string, BehaviorConstructor>();
+  #initializedBehaviors = new Set<BehaviorConstructor>();
+  #resourceLocationLookup = new Map<BehaviorConstructor, string>();
 
   constructor(game: Game) {
     this.#game = game;
@@ -25,7 +25,13 @@ export class BehaviorLoader {
   registerInternalBehavior(type: BehaviorConstructor, namespace: string) {
     const uri = `builtin:${namespace}/${type.name}`;
     this.#resourceLocationLookup.set(type, uri);
-    this.#cache.set(uri, new WeakRef(type));
+    this.#cache.set(uri, type);
+  }
+
+  registerBehavior(type: BehaviorConstructor, resourceUri: string) {
+    // resourceUri should be a res:// URI
+    this.#resourceLocationLookup.set(type, resourceUri);
+    this.#cache.set(resourceUri, type);
   }
 
   renameBehavior(type: BehaviorConstructor, newUri: string) {
@@ -35,13 +41,13 @@ export class BehaviorLoader {
 
     this.#cache.delete(oldUri);
     this.#resourceLocationLookup.set(type, newUri);
-    this.#cache.set(newUri, new WeakRef(type));
+    this.#cache.set(newUri, type);
   }
 
   async loadScript(script: string): Promise<BehaviorConstructor> {
     const location = this.#game.resolveResource(script);
 
-    const cachedConstructor = this.#cache.get(location)?.deref();
+    const cachedConstructor = this.#cache.get(location);
     if (cachedConstructor !== undefined) return cachedConstructor;
 
     const module = await import(location);
@@ -57,7 +63,7 @@ export class BehaviorLoader {
     )
       throw new Error(`Module '${location}' must have a Behavior as its default export!`);
 
-    this.#cache.set(location, new WeakRef(behaviorType));
+    this.#cache.set(location, behaviorType);
     this.#resourceLocationLookup.set(behaviorType, script);
 
     return behaviorType as BehaviorConstructor;

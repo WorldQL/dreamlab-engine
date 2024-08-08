@@ -155,6 +155,8 @@ export class Camera extends Entity {
   }
 
   public worldToScreen(position: IVector2): Vector2 {
+    const game = this.game as ClientGame;
+
     const matrix = PIXI.Matrix.shared
       .translate(-this.globalTransform.position.x, this.globalTransform.position.y)
       .rotate(this.#rotation)
@@ -167,6 +169,8 @@ export class Camera extends Entity {
   }
 
   public screenToWorld(position: IVector2): Vector2 {
+    const game = this.game as ClientGame;
+
     const matrix = PIXI.Matrix.shared
       .translate(-this.globalTransform.position.x, this.globalTransform.position.y)
       .rotate(this.#rotation)
