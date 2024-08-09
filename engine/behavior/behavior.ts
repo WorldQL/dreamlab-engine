@@ -200,32 +200,47 @@ export class Behavior implements ISignalHandler {
     this.destroy();
   }
 
+  #initialized = false;
   spawn(): void {
-    this.onInitialize();
+    const init = () => {
+      if (this.game.paused) return;
+      if (this.#initialized) {
+        this.entity.unregister(EntityUpdate, init);
+        return;
+      }
+
+      this.onInitialize();
+      this.#initialized = true;
+      this.entity.unregister(EntityUpdate, init);
+    };
+
+    this.entity.on(EntityUpdate, init);
 
     if (this.onTick) {
       const onTick = this.onTick.bind(this);
       this.listen(this.entity, EntityUpdate, () => {
-        if (!this.game.paused) onTick();
+        if (this.#initialized && !this.game.paused) onTick();
       });
     }
 
     if (this.onPreTick) {
       const onPreTick = this.onPreTick.bind(this);
       this.listen(this.entity.game, GamePreTick, () => {
-        if (!this.game.paused) onPreTick();
+        if (this.#initialized && !this.game.paused) onPreTick();
       });
     }
 
     if (this.onFrame) {
       const onFrame = this.onFrame.bind(this);
-      this.listen(this.entity.game, GameRender, () => onFrame());
+      this.listen(this.entity.game, GameRender, () => {
+        if (this.#initialized) onFrame();
+      });
     }
 
     if (this.onPostTick) {
       const onPostTick = this.onPostTick.bind(this);
       this.listen(this.entity.game, GamePostTick, () => {
-        if (!this.game.paused) onPostTick();
+        if (this.#initialized && !this.game.paused) onPostTick();
       });
     }
   }
