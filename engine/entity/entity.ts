@@ -44,7 +44,13 @@ import {
   EntityUpdate,
   EntityZChanged,
 } from "../signals/mod.ts";
-import { JsonValue, Value, ValueTypeTag, inferValueTypeTag } from "../value/mod.ts";
+import {
+  JsonValue,
+  Value,
+  ValueTypeAdapter,
+  ValueTypeTag,
+  inferValueTypeTag,
+} from "../value/mod.ts";
 import type { Root } from "./entity-roots.ts";
 
 export interface EntityContext {
@@ -558,7 +564,16 @@ export abstract class Entity implements ISignalHandler {
 
     type T = Value<E[typeof prop]>["value"];
     let defaultValue: T = this[prop] as T;
-    if (this.#defaultValues[prop]) defaultValue = this.#defaultValues[prop] as T;
+    if (this.#defaultValues[prop]) {
+      if (opts.type && opts.type.prototype instanceof ValueTypeAdapter) {
+        const adapter = new opts.type(this.game) as ValueTypeAdapter<T>;
+        defaultValue = adapter.isValue(this.#defaultValues[prop])
+          ? this.#defaultValues[prop]
+          : adapter.convertFromPrimitive(this.#defaultValues[prop]);
+      } else {
+        defaultValue = this.#defaultValues[prop] as T;
+      }
+    }
 
     const value = new Value(
       this.game.values,

@@ -14,7 +14,13 @@ import {
 import { BehaviorDestroyed } from "../signals/behavior-lifecycle.ts";
 import { EntityUpdate } from "../signals/entity-updates.ts";
 import { GamePostTick, GamePreTick, GameRender } from "../signals/game-events.ts";
-import { Primitive, Value, ValueTypeTag, inferValueTypeTag } from "../value/mod.ts";
+import {
+  Primitive,
+  Value,
+  ValueTypeAdapter,
+  ValueTypeTag,
+  inferValueTypeTag,
+} from "../value/mod.ts";
 
 export interface BehaviorContext {
   game: Game;
@@ -93,7 +99,16 @@ export class Behavior implements ISignalHandler {
 
     type T = Value<B[typeof prop]>["value"];
     let defaultValue: T = this[prop] as T;
-    if (this.#defaultValues[prop]) defaultValue = this.#defaultValues[prop] as T;
+    if (this.#defaultValues[prop]) {
+      if (opts.type && opts.type.prototype instanceof ValueTypeAdapter) {
+        const adapter = new opts.type(this.game) as ValueTypeAdapter<T>;
+        defaultValue = adapter.isValue(this.#defaultValues[prop])
+          ? this.#defaultValues[prop]
+          : adapter.convertFromPrimitive(this.#defaultValues[prop]);
+      } else {
+        defaultValue = this.#defaultValues[prop] as T;
+      }
+    }
 
     const value = new Value(
       this.game.values,
