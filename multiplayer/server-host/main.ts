@@ -57,6 +57,7 @@ await Promise.all([
       instanceId: NIL_UUID,
       worldId: TESTING_WORLD,
       worldDirectory: `${Deno.cwd()}/worlds/${TESTING_WORLD}`,
+      editMode: true,
     });
 
     await instance.waitForSessionBoot();

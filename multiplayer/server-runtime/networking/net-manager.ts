@@ -74,6 +74,7 @@ export class ServerNetworkManager {
         world_id: this.ipc.workerData.worldId,
         player_id: message.playerId,
         world_script_base_url: `${this.ipc.workerData.worldResourcesBaseUrl}/${game.worldId}/`,
+        edit_mode: this.ipc.workerData.editMode,
       });
 
       // TODO: create playerconnection entity and put it in game.remote

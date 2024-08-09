@@ -13,10 +13,8 @@ const container = document.createElement("div");
 container.style.width = "100%";
 container.style.height = "100%";
 
-const EDIT_MODE = true;
-
-const setup = async (conn: ClientConnection, game: ClientGame) => {
-  if (EDIT_MODE) {
+const setup = async (conn: ClientConnection, game: ClientGame, editMode: boolean) => {
+  if (editMode) {
     renderEditorUI(game, container, document.createElement("div"));
   } else {
     document.querySelector("#root")!.append(container);
@@ -47,7 +45,7 @@ const setup = async (conn: ClientConnection, game: ClientGame) => {
 
   const localSpawnedEntities: Entity[] = [];
 
-  if (EDIT_MODE) {
+  if (editMode) {
     game.paused = true;
     game.physics.enabled = false;
 
@@ -116,7 +114,7 @@ socket.addEventListener("message", async event => {
     game.worldScriptBaseURL = packet.world_script_base_url;
     console.log(packet);
     Object.defineProperties(window, { game: { value: game }, conn: { value: conn } });
-    await setup(conn, game);
+    await setup(conn, game, packet.edit_mode);
   } else if (conn !== undefined) {
     conn.handle(packet);
   } else {

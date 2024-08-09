@@ -6,4 +6,6 @@ export interface WorkerInitData {
   worldDirectory: string;
   instanceId: string;
   worldId: string;
+
+  editMode: boolean;
 }

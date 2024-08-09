@@ -34,6 +34,7 @@ export class GameSession {
       worldId: parent.info.worldId,
       worldDirectory: path.join(parent.info.worldDirectory, "_dist"),
       worldResourcesBaseUrl: `${CONFIG.publicUrlBase}/worlds`, // TODO: replace addr with public url from config
+      editMode: this.parent.info.editMode ?? false,
     });
 
     this.#readyPromise = new Promise((resolve, _reject) => {
