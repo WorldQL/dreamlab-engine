@@ -30,7 +30,7 @@ export class BackgroundBehavior extends Behavior {
       throw new Error("Background can only be used on Sprite type entities");
     }
 
-    this.value(BackgroundBehavior, "parallax", { type: Vector2Adapter });
+    this.defineValue(BackgroundBehavior, "parallax", { type: Vector2Adapter });
   }
 
   onInitialize(): void {

@@ -75,11 +75,11 @@ export class Behavior implements ISignalHandler {
     }
   ) {
     for (const prop of props) {
-      this.value(eType, prop);
+      this.defineValue(eType, prop);
     }
   }
 
-  protected value<B extends Behavior>(
+  protected defineValue<B extends Behavior>(
     bType: BehaviorConstructor<B>, // can't just be `this` because TypeScript :(
     prop: BehaviorValueProp<B>,
     opts: BehaviorValueOpts<B, typeof prop> = {},

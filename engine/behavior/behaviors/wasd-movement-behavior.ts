@@ -10,7 +10,7 @@ export default class WASDMovementBehavior extends Behavior {
   #right = this.inputs.create("@wasd/right", "Move Right", "KeyD");
 
   onInitialize(): void {
-    this.value(WASDMovementBehavior, "speed");
+    this.defineValue(WASDMovementBehavior, "speed");
   }
 
   onTick(): void {

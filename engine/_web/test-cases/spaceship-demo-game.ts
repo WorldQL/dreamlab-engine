@@ -716,7 +716,7 @@ class BulletBehavior extends Behavior {
   constructor(ctx: BehaviorContext) {
     super(ctx);
     this.defineValues(BulletBehavior, "speed");
-    this.value(BulletBehavior, "velocity", { type: Vector2Adapter });
+    this.defineValue(BulletBehavior, "velocity", { type: Vector2Adapter });
 
     const rotation = this.entity.transform.rotation;
     this.#direction = new Vector2(Math.cos(rotation), Math.sin(rotation));

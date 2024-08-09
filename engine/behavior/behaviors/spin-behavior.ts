@@ -4,7 +4,7 @@ export default class SpinBehavior extends Behavior {
   speed: number = 1.0;
 
   onInitialize(): void {
-    this.value(SpinBehavior, "speed");
+    this.defineValue(SpinBehavior, "speed");
   }
 
   onTick(): void {

@@ -95,7 +95,7 @@ export class VisualCard extends Behavior {
   constructor(ctx: BehaviorContext) {
     super(ctx);
 
-    this.value(VisualCard, "cardEntity", { type: EntityByRefAdapter });
+    this.defineValue(VisualCard, "cardEntity", { type: EntityByRefAdapter });
     if (!this.cardEntity) throw new Error("card not set");
 
     this.#cardBehavior = this.cardEntity.getBehavior(CardBehavior);
@@ -220,8 +220,8 @@ export class CardBehavior extends Behavior {
     super(ctx);
 
     this.defineValues(CardBehavior, "size", "flipped");
-    this.value(CardBehavior, "rank", { type: enumAdapter(ranks) });
-    this.value(CardBehavior, "suit", { type: enumAdapter(suits) });
+    this.defineValue(CardBehavior, "rank", { type: enumAdapter(ranks) });
+    this.defineValue(CardBehavior, "suit", { type: enumAdapter(suits) });
 
     this.listen(this.#flip, ActionPressed, () => {
       if (this.#rect.hover) this.flipped = !this.flipped;
