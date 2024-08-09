@@ -5,6 +5,10 @@ import { JsonValue, ValueTypeAdapter } from "../data.ts";
  * This supports a `Value<Entity | undefined>`
  */
 export class EntityByRefAdapter extends ValueTypeAdapter<Entity | undefined> {
+  isValue(value: unknown): value is Entity | undefined {
+    if (value === undefined) return true;
+    return value instanceof Entity;
+  }
   convertToPrimitive(value: Entity | undefined): JsonValue {
     return value?.ref;
   }

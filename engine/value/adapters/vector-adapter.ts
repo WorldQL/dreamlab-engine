@@ -5,6 +5,9 @@ import { JsonValue, ValueTypeAdapter } from "../data.ts";
  * This supports a `Value<Vector2>`
  */
 export class Vector2Adapter extends ValueTypeAdapter<Vector2> {
+  isValue(value: unknown): value is Vector2 {
+    return value instanceof Vector2;
+  }
   convertToPrimitive(value: Vector2): JsonValue {
     return { x: value.x, y: value.y };
   }

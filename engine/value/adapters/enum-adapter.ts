@@ -7,6 +7,9 @@ export function enumAdapter<const T extends readonly string[]>(values: T) {
   }
 
   return class EnumAdapter extends ValueTypeAdapter<T[number]> {
+    isValue(value: unknown): value is T[number] {
+      return isValid(value);
+    }
     convertToPrimitive(value: T[number]): JsonValue {
       if (!isValid(value)) {
         throw new TypeError("invalid enum member");
@@ -14,7 +17,6 @@ export function enumAdapter<const T extends readonly string[]>(values: T) {
 
       return value;
     }
-
     convertFromPrimitive(value: JsonValue): T[number] {
       if (!isValid(value)) {
         throw new TypeError("invalid enum member");

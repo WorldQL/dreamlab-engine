@@ -5,6 +5,9 @@ import { JsonValue, ValueTypeAdapter } from "../data.ts";
  * except we know to preload the resource when it's in a scene definition.
  */
 export class TextureAdapter extends ValueTypeAdapter<string> {
+  isValue(value: unknown): value is string {
+    return typeof value === "string";
+  }
   convertToPrimitive(value: string): JsonValue {
     return value;
   }
@@ -19,6 +22,9 @@ export class TextureAdapter extends ValueTypeAdapter<string> {
  * except we know to preload the resource when it's in a scene definition.
  */
 export class SpritesheetAdapter extends ValueTypeAdapter<string> {
+  isValue(value: unknown): value is string {
+    return typeof value === "string";
+  }
   convertToPrimitive(value: string): JsonValue {
     return value;
   }
