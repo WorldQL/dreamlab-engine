@@ -67,7 +67,6 @@ export class Value<T = unknown> {
   ) {
     this.#registry = registry;
     this.identifier = identifier;
-    this.#value = defaultValue;
     this.typeTag = typeTag;
     this.clock = 0;
     this.#lastSource = registry.source;
@@ -80,6 +79,9 @@ export class Value<T = unknown> {
       if (!(this.adapter instanceof ValueTypeAdapter))
         throw new Error("AdapterTypeTag was not the correct type!");
     }
+
+    // @ts-expect-error: i dont want to make these types happy tbh
+    this.#value = this.adapter ? this.adapter.convertFromPrimitive(defaultValue) : defaultValue;
 
     this.#registry.on(ValueChanged, this.#changeListener);
     this.#registry.register(this as Value<unknown>);

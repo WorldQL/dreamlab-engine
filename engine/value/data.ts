@@ -1,6 +1,6 @@
 import { Game } from "../game.ts";
 
-export type Primitive = string | number | boolean | null | undefined;
+export type Primitive = string | number | boolean | undefined;
 
 export type JsonArray = readonly JsonValue[];
 export type JsonObject = { [Key in string]?: JsonValue };
