@@ -1,4 +1,4 @@
-import { Empty, GameStatus, ServerGame } from "@dreamlab/engine";
+import { Camera, Empty, EntityDefinition, GameStatus, ServerGame } from "@dreamlab/engine";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 import { ServerNetworkManager } from "./networking/net-manager.ts";
 import { IPCMessageBus } from "./ipc.ts";
@@ -69,6 +69,17 @@ if (workerData.editMode) {
     _ref: "EDIT_SERVER",
   });
 
+  // we have to do this since Camera doesn't like being spawned anywhere except game.local
+  const preprocessDef = (def: EntityDefinition) => {
+    // TODO: this should be an EditorFakeCamera instead of Empty
+    if (def.type === Camera) {
+      def.type = Empty;
+    }
+
+    def.children?.forEach(c => preprocessDef(c));
+    return def;
+  };
+
   for (const [sceneRoot, editRoot] of [
     [scene.world, editWorld],
     [scene.local, editLocal],
@@ -76,7 +87,9 @@ if (workerData.editMode) {
     [scene.prefabs, editPrefabs],
   ] as const) {
     const defs = await Promise.all(sceneRoot.map(def => convertEntityDefinition(game, def)));
-    for (const def of defs) editRoot.spawn(def); // TODO: inert?
+    for (const def of defs) {
+      editRoot.spawn(preprocessDef(def));
+    }
   }
 } else {
   await loadSceneDefinition(game, scene);
