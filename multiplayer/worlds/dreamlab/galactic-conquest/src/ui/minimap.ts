@@ -47,10 +47,10 @@ export default class Minimap extends Behavior {
     this.#dot = element("div", { id: "dot" });
     this.#element = element("div", { id: "minimap", children: [this.#dot] });
     this.#ui.element.appendChild(this.#element);
+  }
 
-    this.listen(this.game, GameTick, () => {
-      this.#updateMinimap();
-    });
+  onTick(): void {
+    this.#updateMinimap();
   }
 
   #updateMinimap() {
