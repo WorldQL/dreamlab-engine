@@ -1,4 +1,5 @@
-import { Behavior, element, UILayer } from "@dreamlab/engine";
+import { Behavior, UILayer } from "@dreamlab/engine";
+import { element } from "@dreamlab/ui";
 import Movement from "../movement.ts";
 import PlayerBehavior from "../player.ts";
 import Shield from "../power-ups/shield.ts";

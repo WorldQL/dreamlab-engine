@@ -1,4 +1,5 @@
-import { Behavior, element, GamePostRender, UILayer } from "@dreamlab/engine";
+import { Behavior, GamePostRender, UILayer } from "@dreamlab/engine";
+import { element } from "@dreamlab/ui";
 import Shield from "../power-ups/shield.ts";
 import Supercharge from "../power-ups/supercharge.ts";
 

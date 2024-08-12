@@ -1,5 +1,6 @@
-import { Behavior, element, GameTick, UILayer } from "@dreamlab/engine";
+import { Behavior, GameTick, UILayer } from "@dreamlab/engine";
 import { MAP_BOUNDARY } from "../_constants.ts";
+import { element } from "@dreamlab/ui";
 
 export default class Minimap extends Behavior {
   #ui = this.entity.cast(UILayer);

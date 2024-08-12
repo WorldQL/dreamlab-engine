@@ -1,4 +1,5 @@
-import { Behavior, element, UILayer } from "@dreamlab/engine";
+import { Behavior, UILayer } from "@dreamlab/engine";
+import { element } from "@dreamlab/ui";
 
 export default class LevelProgressUI extends Behavior {
   #ui = this.entity.cast(UILayer);

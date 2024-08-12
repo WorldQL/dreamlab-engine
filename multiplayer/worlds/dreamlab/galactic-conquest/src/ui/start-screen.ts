@@ -1,12 +1,12 @@
 import {
   Behavior,
   BehaviorDefinition,
-  element,
   Game,
   Rigidbody2D,
   Sprite2D,
   UILayer,
 } from "@dreamlab/engine";
+import { element } from "@dreamlab/ui";
 import { MAP_BOUNDARY } from "../_constants.ts";
 import CameraFollow from "../camera-follow.ts";
 import ClickFire from "../click-fire.ts";
