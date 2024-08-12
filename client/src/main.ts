@@ -89,9 +89,11 @@ const setup = async (conn: ClientConnection, game: ClientGame, editMode: boolean
 };
 
 const instanceId = NIL_UUID;
-const socket = new WebSocket(
-  `ws://127.0.0.1:8000/api/v1/connect/${instanceId}?nickname=${encodeURIComponent("Player" + Math.floor(Math.random() * 999) + 1)}&player_id=${encodeURIComponent(generateCUID("ply"))}`,
-);
+const url = new URL(`ws://127.0.0.1:8000/api/v1/connect/${instanceId}`);
+url.searchParams.set("player_id", generateCUID("ply"));
+url.searchParams.set("nickname", "Player" + Math.floor(Math.random() * 999) + 1);
+
+const socket = new WebSocket(url.toString());
 Object.defineProperty(window, "socket", { value: socket });
 const codec = JSON_CODEC;
 
