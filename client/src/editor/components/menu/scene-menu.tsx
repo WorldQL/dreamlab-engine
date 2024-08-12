@@ -100,7 +100,7 @@ export const SceneMenu = ({ entity, position, setIsOpen }: SceneMenuProps) => {
     <div
       ref={menuRef}
       style={{ top: position.y, left: position.x }}
-      className="absolute max-w-[200px] bg-background border border-primary rounded-lg shadow-lg p-3 z-50"
+      className="absolute max-w-[200px] w-full bg-background border border-primary rounded-lg shadow-lg p-3 z-50"
     >
       {entity ? (
         <>
