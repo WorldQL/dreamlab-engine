@@ -66,11 +66,13 @@ const handlePlayerConnectionRequest = async (
   gameAuthSecret: CryptoKey,
   session: GameSession,
 ) => {
-  const playerId = ctx.request.url.searchParams.get("player_id");
-  const nickname = ctx.request.url.searchParams.get("nickname");
-  if (nickname && playerId) {
-    handleConnection(ctx.upgrade(), session, playerId, nickname);
-    return;
+  if (CONFIG.isDev) {
+    const playerId = ctx.request.url.searchParams.get("player_id");
+    const nickname = ctx.request.url.searchParams.get("nickname");
+    if (nickname && playerId) {
+      handleConnection(ctx.upgrade(), session, playerId, nickname);
+      return;
+    }
   }
 
   const token = ctx.request.url.searchParams.get("token");
