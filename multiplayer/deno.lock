@@ -36,6 +36,7 @@
       "jsr:@std/path@0.223": "jsr:@std/path@0.223.0",
       "jsr:@std/path@1": "jsr:@std/path@1.0.2",
       "jsr:@std/path@1.0.0": "jsr:@std/path@1.0.0",
+      "jsr:@std/path@^1": "jsr:@std/path@1.0.2",
       "jsr:@std/path@^1.0.2": "jsr:@std/path@1.0.2",
       "jsr:@std/streams@0.224.5": "jsr:@std/streams@0.224.5",
       "jsr:@std/uuid@1": "jsr:@std/uuid@1.0.0",
