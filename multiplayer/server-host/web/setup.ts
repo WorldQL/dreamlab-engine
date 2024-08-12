@@ -8,6 +8,7 @@ import { serveWorlds } from "./routes/worlds.ts";
 import { servePlayRoutes } from "./routes/play.ts";
 import { serveLogStreamingAPI } from "./routes/log-streaming.ts";
 import { serveScriptEditingAPI } from "./routes/script-editing.ts";
+import { serveSourceControlAPI } from "./routes/source-control.ts";
 
 export const setupWeb = async (app: Application) => {
   const router = new Router();
@@ -18,6 +19,7 @@ export const setupWeb = async (app: Application) => {
   serveInstanceManagementAPI(router);
   serveLogStreamingAPI(router);
   serveScriptEditingAPI(router);
+  serveSourceControlAPI(router);
   router.get("/:path*", ctx =>
     ctx
       .send({
