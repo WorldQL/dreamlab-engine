@@ -563,7 +563,9 @@ export abstract class Entity implements ISignalHandler {
       throw new Error(`A value with the identifier '${identifier}' already exists!`);
 
     type T = Value<E[typeof prop]>["value"];
-    let defaultValue: T = this[prop] as T;
+    const originalValue: T = this[prop] as T;
+    let defaultValue: T = originalValue;
+
     if (this.#defaultValues[prop]) {
       if (opts.type && opts.type.prototype instanceof ValueTypeAdapter) {
         const adapter = new opts.type(this.game) as ValueTypeAdapter<T>;
@@ -577,6 +579,13 @@ export abstract class Entity implements ISignalHandler {
       }
     }
 
+    const original = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(this), prop);
+    const _get = original?.get?.bind(this);
+    const _set = original?.set?.bind(this);
+
+    // TODO: deep equality check?
+    if (defaultValue !== originalValue) _set?.(defaultValue);
+
     const value = new Value(
       this.game.values,
       identifier,
@@ -585,10 +594,6 @@ export abstract class Entity implements ISignalHandler {
       opts.description ?? prop, // TODO: autogenerate description (fix casing & spacing)
     );
     if (opts.replicated) value.replicated = opts.replicated;
-
-    const original = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(this), prop);
-    const _get = original?.get?.bind(this);
-    const _set = original?.set?.bind(this);
 
     Object.defineProperty(this, prop, {
       configurable: true,

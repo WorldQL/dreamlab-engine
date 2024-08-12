@@ -46,8 +46,8 @@ export class Value<T = unknown> {
   }
   set value(newValue) {
     // ignore if equal
-    if (this.#value === newValue) return;
     // TODO: deep equality check?
+    if (this.#value === newValue) return;
 
     // this will fire `this.#changeListener` and update the internal value that way
     this.#registry.fire(
