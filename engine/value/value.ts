@@ -2,7 +2,9 @@ import { SignalListener } from "../signal.ts";
 import { AdapterTypeTag, ValueTypeAdapter } from "./data.ts";
 import { ValueRegistry, ValueChanged } from "./registry.ts";
 import { ConnectionId } from "../network.ts";
+import { Entity } from "../entity/mod.ts";
 import type { ReadonlyDeep } from "@dreamlab/vendor/type-fest.ts";
+import * as internal from "../internal.ts";
 
 // prettier-ignore
 type BasicTypeTag<T> =
@@ -40,6 +42,8 @@ export class Value<T = unknown> {
   clock: number;
   /** for conflict resolution: the last setting client's connection ID, or "server" if set by the server. */
   #lastSource: ConnectionId = "server";
+
+  [internal.valueRelatedEntity]: Entity | undefined;
 
   get value() {
     return this.#value;

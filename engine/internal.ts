@@ -23,3 +23,4 @@ export const entityAuthorityClock = Symbol.for("dreamlab.internal.entityAuthorit
 export const entityStoreRegister = Symbol.for("dreamlab.internal.entityStoreRegister");
 export const entityStoreUnregister = Symbol.for("dreamlab.internal.entityStoreUnregister");
 export const entityStoreRegisterRoot = Symbol.for("dreamlab.internal.entityStoreRegisterRoot");
+export const valueRelatedEntity = Symbol.for("dreamlab.internal.valueRelatedEntity");

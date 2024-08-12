@@ -1,4 +1,5 @@
 import { ClientGame, GameStatus, GameTick, Value, ValueChanged } from "@dreamlab/engine";
+import * as internal from "../../../engine/internal.ts";
 import { ClientConnection, ClientNetworkSetupRoutine } from "./net-connection.ts";
 
 export const handleValueChanges: ClientNetworkSetupRoutine = (
@@ -12,6 +13,13 @@ export const handleValueChanges: ClientNetworkSetupRoutine = (
 
     if (!event.value.replicated) return;
     if (event.from !== conn.id) return;
+
+    const relatedEntity = event.value[internal.valueRelatedEntity];
+    if (
+      relatedEntity &&
+      !(relatedEntity.root === game.world || relatedEntity.root === game.prefabs)
+    )
+      return;
 
     dirtyValues.set(event.value, event.clock);
   });

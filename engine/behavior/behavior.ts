@@ -22,6 +22,7 @@ import {
   ValueTypeTag,
   inferValueTypeTag,
 } from "../value/mod.ts";
+import * as internal from "../internal.ts";
 
 export interface BehaviorContext {
   game: Game;
@@ -130,6 +131,7 @@ export class Behavior implements ISignalHandler {
       opts.description ?? prop, // TODO: autogenerate description (fix casing & spacing)
     );
     if (opts.replicated) value.replicated = opts.replicated;
+    value[internal.valueRelatedEntity] = this.entity;
 
     Object.defineProperty(this, prop, {
       configurable: true,

@@ -594,6 +594,7 @@ export abstract class Entity implements ISignalHandler {
       opts.description ?? prop, // TODO: autogenerate description (fix casing & spacing)
     );
     if (opts.replicated) value.replicated = opts.replicated;
+    value[internal.valueRelatedEntity] = this;
 
     Object.defineProperty(this, prop, {
       configurable: true,
