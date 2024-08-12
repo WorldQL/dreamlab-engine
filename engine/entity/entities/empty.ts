@@ -10,5 +10,5 @@ export class Empty extends Entity {
   }
 
   public static readonly icon = "📦";
-  readonly bounds = Object.freeze({ x: 0.5, y: 0.5 });
+  readonly bounds = undefined;
 }
