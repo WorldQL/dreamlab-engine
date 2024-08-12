@@ -54,14 +54,17 @@ export const ServerChatMessagePacketSchema = ClientChatMessagePacketSchema.exten
   from_nickname: z.string(),
 });
 
-export const ClientSetValuePacketSchema = z.object({
-  t: z.literal("SetValue"),
+const ValueReportSchema = z.object({
   identifier: z.string(),
   value: z.any(),
   clock: z.number(),
 });
+export const ClientReportValuesPacketSchema = z.object({
+  t: z.literal("ReportValues"),
+  reports: ValueReportSchema.array(),
+});
 
-export const ServerSetSyncedValuePacketSchema = ClientSetValuePacketSchema.extend({
+export const ServerReportValuesPacketSchema = ClientReportValuesPacketSchema.extend({
   from: ConnectionIdSchema.optional(),
 });
 
@@ -178,7 +181,6 @@ export const ServerInitialNetworkSnapshotPacket = z.object({
 export const ClientPacketSchema = z.discriminatedUnion("t", [
   ClientLoadPhaseChangedPacket,
   ClientChatMessagePacketSchema,
-  ClientSetValuePacketSchema,
   ClientSpawnEntityPacket,
   ClientDeleteEntityPacket,
   ClientRenameEntityPacket,
@@ -187,6 +189,7 @@ export const ClientPacketSchema = z.discriminatedUnion("t", [
   ClientRequestExclusiveAuthorityPacket,
   ClientRelinquishExclusiveAuthorityPacket,
   ClientReportEntityTransformsPacket,
+  ClientReportValuesPacketSchema,
 ]);
 export type ClientPacket = z.infer<typeof ClientPacketSchema>;
 
@@ -198,7 +201,6 @@ export const ServerPacketSchema = z.discriminatedUnion("t", [
   ServerPeerChangedNicknamePacketSchema,
   ServerPeerListSnapshotPacketSchema,
   ServerChatMessagePacketSchema,
-  ServerSetSyncedValuePacketSchema,
   ServerSpawnEntityPacket,
   ServerDeleteEntityPacket,
   ServerRenameEntityPacket,
@@ -207,6 +209,7 @@ export const ServerPacketSchema = z.discriminatedUnion("t", [
   ServerAnnounceExclusiveAuthorityPacket,
   ServerDenyExclusiveAuthorityPacket,
   ServerReportEntityTransformsPacket,
+  ServerReportValuesPacketSchema,
 ]);
 export type ServerPacket = z.infer<typeof ServerPacketSchema>;
 
