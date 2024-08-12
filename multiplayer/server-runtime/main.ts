@@ -1,4 +1,11 @@
-import { Camera, Empty, EntityDefinition, GameStatus, ServerGame } from "@dreamlab/engine";
+import {
+  Camera,
+  Empty,
+  EntityDefinition,
+  GameStatus,
+  ServerGame,
+  EditorFakeCamera,
+} from "@dreamlab/engine";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 import { ServerNetworkManager } from "./networking/net-manager.ts";
 import { IPCMessageBus } from "./ipc.ts";
@@ -73,7 +80,7 @@ if (workerData.editMode) {
   const preprocessDef = (def: EntityDefinition) => {
     // TODO: this should be an EditorFakeCamera instead of Empty
     if (def.type === Camera) {
-      def.type = Empty;
+      def.type = EditorFakeCamera;
     }
 
     def.children?.forEach(c => preprocessDef(c));
