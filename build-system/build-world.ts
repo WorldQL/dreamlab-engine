@@ -6,7 +6,7 @@ import {
   esbuild,
 } from "./_esbuild.ts";
 import * as fs from "jsr:@std/fs@1";
-import * as path from "jsr:@std/path@1";
+import * as path from "jsr:@std/path@^1";
 
 import { copy as esbuildCopy } from "npm:esbuild-plugin-copy@2.1.1";
 

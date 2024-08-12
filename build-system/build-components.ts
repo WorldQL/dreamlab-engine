@@ -4,7 +4,7 @@ import {
   dreamlabVendorExternalPlugin,
   dreamlabEngineExternalPlugin,
 } from "./_esbuild.ts";
-import * as path from "jsr:@std/path@1";
+import * as path from "jsr:@std/path@^1";
 
 export interface BundleOptions {
   watch: boolean;
