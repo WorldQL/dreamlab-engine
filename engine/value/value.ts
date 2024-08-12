@@ -45,6 +45,10 @@ export class Value<T = unknown> {
     return this.#value;
   }
   set value(newValue) {
+    // ignore if equal
+    if (this.#value === newValue) return;
+    // TODO: deep equality check?
+
     // this will fire `this.#changeListener` and update the internal value that way
     this.#registry.fire(
       ValueChanged,
@@ -95,8 +99,9 @@ export class Value<T = unknown> {
   }
 
   #changeListener: SignalListener<ValueChanged> = signal => {
-    if (signal.value === this)
+    if (signal.value === this) {
       this.#applyUpdate(signal.newValue as Value<T>["value"], signal.clock, signal.from);
+    }
   };
 
   #applyUpdate(
