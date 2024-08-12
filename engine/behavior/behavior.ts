@@ -122,11 +122,18 @@ export class Behavior implements ISignalHandler {
     );
     if (opts.replicated) value.replicated = opts.replicated;
 
+    const original = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(this), prop);
+    const _get = original?.get?.bind(this);
+    const _set = original?.set?.bind(this);
+
     Object.defineProperty(this, prop, {
       configurable: true,
       enumerable: true,
       set: v => {
-        value.value = v;
+        if (_set) _set(v);
+
+        if (_get) value.value = _get();
+        else value.value = v;
       },
       get: () => value.value,
     });
