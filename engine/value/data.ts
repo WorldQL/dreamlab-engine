@@ -7,7 +7,7 @@ export type JsonObject = { [Key in string]?: JsonValue };
 export type JsonValue = Primitive | JsonArray | JsonObject;
 
 export abstract class ValueTypeAdapter<T> {
-  constructor(protected game: Game) {}
+  constructor(public game: Game) {}
 
   abstract isValue(value: unknown): value is T;
   abstract convertToPrimitive(value: T): JsonValue;

@@ -15,6 +15,7 @@ import { BehaviorDestroyed } from "../signals/behavior-lifecycle.ts";
 import { EntityUpdate } from "../signals/entity-updates.ts";
 import { GamePostTick, GamePreTick, GameRender } from "../signals/game-events.ts";
 import {
+  JsonValue,
   Primitive,
   Value,
   ValueTypeAdapter,
@@ -74,7 +75,7 @@ export class Behavior implements ISignalHandler {
     return this.#values;
   }
 
-  protected defineValues<B extends Behavior, Props extends BehaviorValueProp<B>[]>(
+  defineValues<B extends Behavior, Props extends (BehaviorValueProp<B> & string)[]>(
     eType: BehaviorConstructor<B>,
     ...props: {
       [I in keyof Props]: Props[I] extends BehaviorValueProp<B> ? Props[I] : never;
@@ -85,9 +86,9 @@ export class Behavior implements ISignalHandler {
     }
   }
 
-  protected defineValue<B extends Behavior>(
+  defineValue<B extends Behavior>(
     bType: BehaviorConstructor<B>, // can't just be `this` because TypeScript :(
-    prop: BehaviorValueProp<B>,
+    prop: BehaviorValueProp<B> & string,
     opts: BehaviorValueOpts<B, typeof prop> = {},
   ): Value<B[typeof prop]> {
     if (!(this instanceof bType))
@@ -102,9 +103,11 @@ export class Behavior implements ISignalHandler {
     if (this.#defaultValues[prop]) {
       if (opts.type && opts.type.prototype instanceof ValueTypeAdapter) {
         const adapter = new opts.type(this.game) as ValueTypeAdapter<T>;
-        defaultValue = adapter.isValue(this.#defaultValues[prop])
-          ? this.#defaultValues[prop]
-          : adapter.convertFromPrimitive(this.#defaultValues[prop]);
+        defaultValue = (
+          adapter.isValue(this.#defaultValues[prop])
+            ? this.#defaultValues[prop]
+            : adapter.convertFromPrimitive(this.#defaultValues[prop] as JsonValue)
+        ) as T;
       } else {
         defaultValue = this.#defaultValues[prop] as T;
       }

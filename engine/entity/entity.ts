@@ -539,7 +539,7 @@ export abstract class Entity implements ISignalHandler {
     return this.#values;
   }
 
-  protected defineValues<E extends Entity, Props extends EntityValueProp<E>[]>(
+  defineValues<E extends Entity, Props extends (EntityValueProp<E> & string)[]>(
     eType: EntityConstructor<E>,
     ...props: {
       [I in keyof Props]: Props[I] extends EntityValueProp<E> ? Props[I] : never;
@@ -550,9 +550,9 @@ export abstract class Entity implements ISignalHandler {
     }
   }
 
-  protected defineValue<E extends Entity>(
+  defineValue<E extends Entity>(
     eType: EntityConstructor<E>,
-    prop: EntityValueProp<E>,
+    prop: EntityValueProp<E> & string,
     opts: EntityValueOpts<E, typeof prop> = {},
   ): Value<E[typeof prop]> {
     if (!(this instanceof eType))
@@ -567,9 +567,11 @@ export abstract class Entity implements ISignalHandler {
     if (this.#defaultValues[prop]) {
       if (opts.type && opts.type.prototype instanceof ValueTypeAdapter) {
         const adapter = new opts.type(this.game) as ValueTypeAdapter<T>;
-        defaultValue = adapter.isValue(this.#defaultValues[prop])
-          ? this.#defaultValues[prop]
-          : adapter.convertFromPrimitive(this.#defaultValues[prop]);
+        defaultValue = (
+          adapter.isValue(this.#defaultValues[prop])
+            ? this.#defaultValues[prop]
+            : adapter.convertFromPrimitive(this.#defaultValues[prop] as JsonValue)
+        ) as T;
       } else {
         defaultValue = this.#defaultValues[prop] as T;
       }
