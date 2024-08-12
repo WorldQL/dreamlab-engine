@@ -57,6 +57,7 @@ const setup = async (conn: ClientConnection, game: ClientGame, editMode: boolean
     game.local.spawn({
       type: Camera,
       name: "Camera",
+      values: { active: true },
     });
 
     // we don't need to load the scene here because the server should have put everything

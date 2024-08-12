@@ -21,12 +21,9 @@ export class Camera extends Entity {
   #rotation: number = this.interpolated.rotation;
   #scale: Vector2 = new Vector2(this.interpolated.scale);
 
-  #matrix: PIXI.Matrix = new PIXI.Matrix();
-  #updateMatrix() {
+  #matrix() {
     const game = this.game as ClientGame;
-
-    return this.#matrix
-      .identity()
+    return PIXI.Matrix.shared
       .translate(-this.#position.x, this.#position.y)
       .rotate(this.#rotation)
       .scale(Camera.METERS_TO_PIXELS, Camera.METERS_TO_PIXELS)
@@ -94,10 +91,11 @@ export class Camera extends Entity {
       throw new Error(`${this.constructor.name} must be spawned as a local client entity`);
     }
 
-    this.defineValues(Camera, "smooth");
-
     this.container = new PIXI.Container();
     this.game.renderer.app.stage.addChild(this.container);
+
+    this.defineValue(Camera, "active", { replicated: false });
+    this.defineValue(Camera, "smooth", { replicated: false });
 
     this.listen(this.game, GameRender, () => {
       if (!this.#active) return;
@@ -111,7 +109,7 @@ export class Camera extends Entity {
         this.#scale.x = this.interpolated.scale.x;
         this.#scale.y = this.interpolated.scale.y;
 
-        this.container.setFromMatrix(this.#updateMatrix());
+        this.container.setFromMatrix(this.#matrix());
         return;
       }
 
@@ -136,7 +134,7 @@ export class Camera extends Entity {
         delta,
       );
 
-      this.container.setFromMatrix(this.#updateMatrix());
+      this.container.setFromMatrix(this.#matrix());
     });
 
     this.on(EntityDestroyed, () => {
@@ -150,8 +148,6 @@ export class Camera extends Entity {
       // Destroy container after
       this.container.destroy();
     });
-
-    this.active = true;
   }
 
   public worldToScreen(position: IVector2): Vector2 {
