@@ -1,3 +1,4 @@
+import { element } from "@dreamlab/ui";
 import { BackgroundBehavior } from "../../behavior/behaviors/background-behavior.ts";
 import { Behavior, BehaviorContext, BehaviorDefinition } from "../../behavior/mod.ts";
 import {
@@ -17,7 +18,6 @@ import {
   GamePostTick,
   GameTick,
 } from "../../signals/mod.ts";
-import { element } from "../../ui.ts";
 import { Vector2Adapter } from "../../value/adapters/vector-adapter.ts";
 
 // #region Health

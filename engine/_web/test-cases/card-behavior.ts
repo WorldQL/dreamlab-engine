@@ -1,3 +1,4 @@
+import { element } from "@dreamlab/ui";
 import {
   ActionPressed,
   Behavior,
@@ -12,10 +13,9 @@ import {
   MouseDown,
   MouseUp,
   Scroll,
-  ValueChanged,
   UIPanel,
+  ValueChanged,
   Vector2,
-  element,
   enumAdapter,
   lerpAngle,
   pointWorldToLocal,
@@ -140,8 +140,7 @@ export class VisualCard extends Behavior {
 }
 `;
 
-    const style = document.createElement("style");
-    style.appendChild(document.createTextNode(css));
+    const style = element("style", { children: [css] });
     this.#ui.dom.appendChild(style);
 
     // Front (face)
