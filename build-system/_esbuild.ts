@@ -22,6 +22,15 @@ export const dreamlabVendorExternalPlugin = (): esbuild.Plugin => ({
   },
 });
 
+export const dreamlabUiExternalPlugin = (): esbuild.Plugin => ({
+  name: "dreamlab-ui-external",
+  setup: (build: esbuild.PluginBuild) => {
+    build.onResolve({ filter: /^@dreamlab\/ui/ }, args => {
+      return { path: args.path, external: true };
+    });
+  },
+});
+
 // TODO: what do we actually want here?
 export const dreamlabDataLoaderPlugin = (worldDir: string): esbuild.Plugin => ({
   name: "dreamlab-data-loader",

@@ -9,5 +9,3 @@ export * from "./renderer/mod.ts";
 export * from "./signal.ts";
 export * from "./signals/mod.ts";
 export * from "./value/mod.ts";
-
-export { element } from "./ui.ts";
