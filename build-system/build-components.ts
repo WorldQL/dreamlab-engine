@@ -97,7 +97,7 @@ export const bundleEngine = async (
   const buildOpts: esbuild.BuildOptions = {
     ...BASE_BUILD_OPTIONS,
     plugins: [
-      dreamlabVendorExternalPlugin(),
+      dreamlabEngineExternalPlugin(),
       ...denoPlugins({
         loader: "native",
         configPath: await Deno.realPath(denoJsonPath),
