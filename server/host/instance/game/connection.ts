@@ -6,6 +6,7 @@ import type { GameRuntimeInstance, PlayerConnection } from "./runtime.ts";
 import { ClientPacketSchema } from "@dreamlab/proto/play.ts";
 
 import * as log from "../../util/log.ts";
+import { APP_CONFIG } from "../../config.ts";
 
 export const handlePlayerConnection = (
   auth: AuthToken,
@@ -76,21 +77,21 @@ export const handlePlayerConnectionRequest = async (
   authSecret: CryptoKey,
   game: GameRuntimeInstance,
 ) => {
-  // === TEMP ===
-  const nickname = ctx.request.url.searchParams.get("nickname");
-  const playerId = ctx.request.url.searchParams.get("player_id");
-  if (nickname && playerId) {
-    const auth: AuthToken = {
-      instance_id: game.parent.instanceId,
-      nickname,
-      player_id: playerId,
-      world: game.parent.worldId,
-      guest: true,
-    };
-    const socket = ctx.upgrade();
-    return handlePlayerConnection(auth, socket, game);
+  if (APP_CONFIG.isDev) {
+    const nickname = ctx.request.url.searchParams.get("nickname");
+    const playerId = ctx.request.url.searchParams.get("player_id");
+    if (nickname && playerId) {
+      const auth: AuthToken = {
+        instance_id: game.parent.instanceId,
+        nickname,
+        player_id: playerId,
+        world: game.parent.worldId,
+        guest: true,
+      };
+      const socket = ctx.upgrade();
+      return handlePlayerConnection(auth, socket, game);
+    }
   }
-  // === TEMP ===
 
   const token = ctx.request.url.searchParams.get("token");
   if (token === null) {

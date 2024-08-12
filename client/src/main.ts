@@ -9,6 +9,14 @@ import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import { renderEditorUI } from "./editor/editor-ui-main.tsx";
 
+// TODO: use args from the window.location.searchParams
+// we can still support this as a fallback for developer mode though. it's useful
+
+const instanceId = NIL_UUID;
+const connectUrl = new URL(`ws://127.0.0.1:8000/api/v1/connect/${instanceId}`);
+connectUrl.searchParams.set("player_id", generateCUID("ply"));
+connectUrl.searchParams.set("nickname", "Player" + Math.floor(Math.random() * 999) + 1);
+
 const container = document.createElement("div");
 container.style.width = "100%";
 container.style.height = "100%";
@@ -89,12 +97,7 @@ const setup = async (conn: ClientConnection, game: ClientGame, editMode: boolean
   requestAnimationFrame(onFrame);
 };
 
-const instanceId = NIL_UUID;
-const url = new URL(`ws://127.0.0.1:8000/api/v1/connect/${instanceId}`);
-url.searchParams.set("player_id", generateCUID("ply"));
-url.searchParams.set("nickname", "Player" + Math.floor(Math.random() * 999) + 1);
-
-const socket = new WebSocket(url.toString());
+const socket = new WebSocket(connectUrl.toString());
 Object.defineProperty(window, "socket", { value: socket });
 const codec = JSON_CODEC;
 
