@@ -12,10 +12,10 @@ if (import.meta.main) {
   await bundleUi("../ui/", "./web/dist");
   await bundleEngine("../engine/", "./web/dist", undefined, { watch });
   await bundleClient(
-    "../editor",
+    "../client",
     "./web/dist",
     "./deno.json",
     [{ in: "./src/main.ts", out: "client-main" }],
-    { watch },
+    { watch, serve: { host: "127.0.0.1", port: 5173, servedir: "./web" } },
   );
 }

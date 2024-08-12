@@ -20,7 +20,7 @@ import AbilityUI from "./ability-ui.ts";
 import Minimap from "./minimap.ts";
 import PlayerUI from "./player-ui.ts";
 
-export class StartScreen extends Behavior {
+export default class StartScreen extends Behavior {
   #ui = this.entity.cast(UILayer);
 
   #element!: HTMLDivElement;

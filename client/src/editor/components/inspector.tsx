@@ -362,6 +362,10 @@ const Inspector = () => {
       <div className="p-2">
         <InputField type="text" label="Name" value={name} onChange={handleNameChange} />
       </div>
+      <div className="p-2 text-white select-all">
+        {/* TODO: make this better */}
+        {"game." + selectedEntity?.id?.substring("game.world._.EditEntities._.".length)}
+      </div>
       <Category
         title="Transform"
         titleIcon={<Rotate3D className="text-green w-4 h-4" />}

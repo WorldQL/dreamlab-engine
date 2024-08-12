@@ -245,7 +245,7 @@ const SceneGraph = () => {
       <div className="h-full" title="Scene">
         <div>
           <ul>
-            {[...game.world.children.entries()]
+            {[...(game.world.children.get("EditEntities")?.children?.entries() ?? [])]
               .toSorted(([aName, _a], [bName, _b]) => {
                 const ap = aName.split(".").pop();
                 const bp = bName.split(".").pop();
