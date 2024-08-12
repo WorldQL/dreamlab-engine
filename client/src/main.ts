@@ -28,12 +28,6 @@ const setup = async (conn: ClientConnection, game: ClientGame, editMode: boolean
     document.querySelector("#root")!.append(container);
   }
 
-  const networkSnapshotPromise = new Promise<void>((resolve, _reject) => {
-    game.on(ReceivedInitialNetworkSnapshot, () => {
-      resolve();
-    });
-  });
-
   conn.setup(game);
   await game.initialize();
 
@@ -48,6 +42,12 @@ const setup = async (conn: ClientConnection, game: ClientGame, editMode: boolean
     game.resolveResource("res://_dreamlab_behavior_preload.js")
   );
   await preLoadBehaviors(game);
+
+  const networkSnapshotPromise = new Promise<void>((resolve, _reject) => {
+    game.on(ReceivedInitialNetworkSnapshot, () => {
+      resolve();
+    });
+  });
 
   conn.send({ t: "LoadPhaseChanged", phase: "initialized" });
 
