@@ -200,6 +200,7 @@ const EntityEntry = ({
 
 const SceneGraph = () => {
   const game = useGame();
+  const [_selectedEntity, setSelectedEntity] = useAtom(selectedEntityAtom);
 
   useForceUpdateOnEntityChange(game.world);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
@@ -235,12 +236,20 @@ const SceneGraph = () => {
     }
   }, []);
 
+  const handlePanelClick = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    const target = event.target as HTMLElement;
+    const isEntityClicked = target.closest(".entity-entry");
+
+    if (!isEntityClicked) setSelectedEntity(null);
+  }, []);
+
   return (
     <div
       className="z-40 h-full"
       onDragOver={handleDragOver}
       onDrop={handleDrop}
       onContextMenu={handleContextMenu}
+      onClick={handlePanelClick}
     >
       <div className="h-full">
         <div>
