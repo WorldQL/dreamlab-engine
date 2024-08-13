@@ -1,7 +1,6 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { ClientGame, Game } from "../../game.ts";
-import { smoothLerp } from "../../math/lerp.ts";
-import { IVector2, Vector2 } from "../../math/mod.ts";
+import { IVector2, Vector2, smoothLerp } from "../../math/mod.ts";
 import { ActiveCameraChanged, EntityDestroyed, GameRender } from "../../signals/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
 
@@ -11,8 +10,9 @@ export class Camera extends Entity {
   }
 
   public static readonly icon = "🎥";
-  public static METERS_TO_PIXELS = 100;
-  public bounds: undefined;
+  public static readonly METERS_TO_PIXELS = 100;
+  public static readonly TARGET_VIEWPORT_SIZE = 10;
+  public readonly bounds: undefined;
 
   public readonly container: PIXI.Container;
   public smooth: number = 0.01;
@@ -23,11 +23,18 @@ export class Camera extends Entity {
 
   #matrix() {
     const game = this.game as ClientGame;
+
+    const canvas = game.renderer.app.canvas;
+    const w = canvas.width / Camera.METERS_TO_PIXELS;
+    const h = canvas.height / Camera.METERS_TO_PIXELS;
+    const axis = Math.min(w, h);
+    const scale = axis / Camera.TARGET_VIEWPORT_SIZE;
+
     return PIXI.Matrix.shared
       .translate(-this.#position.x, this.#position.y)
       .rotate(this.#rotation)
       .scale(Camera.METERS_TO_PIXELS, Camera.METERS_TO_PIXELS)
-      .scale(1 / this.#scale.x, 1 / this.#scale.y)
+      .scale(1 / (this.#scale.x / scale), 1 / (this.#scale.y / scale))
       .translate(game.renderer.app.canvas.width / 2, game.renderer.app.canvas.height / 2);
   }
 
@@ -153,11 +160,17 @@ export class Camera extends Entity {
   public worldToScreen(position: IVector2): Vector2 {
     const game = this.game as ClientGame;
 
+    const canvas = game.renderer.app.canvas;
+    const w = canvas.width / Camera.METERS_TO_PIXELS;
+    const h = canvas.height / Camera.METERS_TO_PIXELS;
+    const axis = Math.min(w, h);
+    const scale = axis / Camera.TARGET_VIEWPORT_SIZE;
+
     const matrix = PIXI.Matrix.shared
       .translate(-this.globalTransform.position.x, this.globalTransform.position.y)
       .rotate(this.#rotation)
       .scale(Camera.METERS_TO_PIXELS, Camera.METERS_TO_PIXELS)
-      .scale(1 / this.#scale.x, 1 / this.#scale.y)
+      .scale(1 / (this.#scale.x / scale), 1 / (this.#scale.y / scale))
       .translate(game.renderer.app.canvas.width / 2, game.renderer.app.canvas.height / 2);
 
     const { x, y } = matrix.apply({ x: position.x, y: -position.y });
@@ -167,11 +180,17 @@ export class Camera extends Entity {
   public screenToWorld(position: IVector2): Vector2 {
     const game = this.game as ClientGame;
 
+    const canvas = game.renderer.app.canvas;
+    const w = canvas.width / Camera.METERS_TO_PIXELS;
+    const h = canvas.height / Camera.METERS_TO_PIXELS;
+    const axis = Math.min(w, h);
+    const scale = axis / Camera.TARGET_VIEWPORT_SIZE;
+
     const matrix = PIXI.Matrix.shared
       .translate(-this.globalTransform.position.x, this.globalTransform.position.y)
       .rotate(this.#rotation)
       .scale(Camera.METERS_TO_PIXELS, Camera.METERS_TO_PIXELS)
-      .scale(1 / this.#scale.x, 1 / this.#scale.y)
+      .scale(1 / (this.#scale.x / scale), 1 / (this.#scale.y / scale))
       .translate(game.renderer.app.canvas.width / 2, game.renderer.app.canvas.height / 2);
 
     const { x, y } = matrix.applyInverse(position);
