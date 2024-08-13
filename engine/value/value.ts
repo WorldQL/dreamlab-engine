@@ -53,6 +53,15 @@ export class Value<T = unknown> {
     // TODO: deep equality check?
     if (this.#value === newValue) return;
 
+    const isInvalid =
+      (this.typeTag === Number && typeof newValue !== "number") ||
+      (this.typeTag === String && typeof newValue !== "string") ||
+      (this.typeTag === Boolean && typeof newValue !== "boolean") ||
+      (this.adapter !== undefined && !this.adapter.isValue(newValue));
+    if (isInvalid) {
+      throw new Error("Got invalid type for value! Expected: " + this.typeTag.name);
+    }
+
     // this will fire `this.#changeListener` and update the internal value that way
     this.#registry.fire(
       ValueChanged,
