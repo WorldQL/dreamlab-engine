@@ -35,6 +35,7 @@ await game.initialize();
 const camera = game.local.spawn({
   type: Camera,
   name: "Camera",
+  values: { active: true },
 });
 
 declare global {
