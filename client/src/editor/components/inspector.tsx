@@ -20,6 +20,7 @@ import { InputField } from "./ui/input.tsx";
 import { Category } from "./ui/panel.tsx";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip.tsx";
 import { useGame } from "../context/game-context.ts";
+import { z } from "@dreamlab/vendor/zod.ts";
 
 const Inspector = () => {
   const game = useGame();
@@ -34,7 +35,7 @@ const Inspector = () => {
   const [rotation, setRotation] = useState<number>(0);
   const [globalRotation, setGlobalRotation] = useState<number>(0);
   const [scale, setScale] = useState<{ x: number; y: number }>({ x: 1, y: 1 });
-  const [values, setValues] = useState<Partial<Record<string, Value<unknown>>>>({});
+  const [values, setValues] = useState<Record<string, Value<unknown>>>({});
   const [behaviors, setBehaviors] = useState<string[]>([]);
   const [behaviorValues, setBehaviorValues] = useState<
     Partial<Record<string, Partial<Record<string, Value<unknown>>>>>
@@ -188,19 +189,21 @@ const Inspector = () => {
     [handleScaleChange],
   );
 
-  const handleValueChange = (key: string) => (newValue: string) => {
-    setValues(prevValues => {
-      const newValues = { ...prevValues };
-      if (newValues[key]) {
-        newValues[key]!.value = newValue;
-      }
-      if (selectedEntity) {
-        selectedEntity.set({ [key]: newValue });
-        setSelectedEntity(selectedEntity);
-      }
-      return newValues;
-    });
-  };
+  const handleValueChange =
+    (key: string, parser: (v: unknown) => unknown = String) =>
+    (newValue: unknown) => {
+      setValues(prevValues => {
+        const newValues = { ...prevValues };
+        if (newValues[key]) {
+          newValues[key]!.value = parser(newValue);
+        }
+        if (selectedEntity) {
+          selectedEntity.set({ [key]: parser(newValue) });
+          setSelectedEntity(selectedEntity);
+        }
+        return newValues;
+      });
+    };
 
   const updateBehaviorValues = (behavior: Behavior, key: string, newValue: unknown) => {
     const Value = behavior.values.get(key) as Value<unknown>;
@@ -417,15 +420,40 @@ const Inspector = () => {
           },
         ]}
       >
-        {Object.keys(values).map(key => (
-          <InputField
-            type="text"
-            key={key}
-            label={key}
-            value={String(values[key]?.value)}
-            onChange={handleValueChange(key)}
-          />
-        ))}
+        {Object.entries(values).map(([key, value]) =>
+          value.typeTag === String ? (
+            <InputField
+              type="text"
+              key={key}
+              label={key}
+              value={String(value.value)}
+              onChange={handleValueChange(key, String)}
+            />
+          ) : value.typeTag === Number ? (
+            <InputField
+              type="number"
+              key={key}
+              label={key}
+              value={Number(value.value)}
+              onChange={handleValueChange(key, Number)}
+            />
+          ) : value.typeTag === Boolean ? (
+            <InputField
+              type="text"
+              key={key}
+              label={key}
+              value={String(value.value)}
+              onChange={handleValueChange(key, v =>
+                z
+                  .union([z.enum(["false", "0"]).transform(() => false), z.string()])
+                  .pipe(z.coerce.boolean())
+                  .parse(v),
+              )}
+            />
+          ) : (
+            <></>
+          ),
+        )}
       </Category>
       <Category
         title="Behaviors"

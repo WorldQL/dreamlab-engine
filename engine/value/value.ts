@@ -13,7 +13,7 @@ type BasicTypeTag<T> =
   : T extends boolean ? typeof Boolean
   : never;
 
-export type ValueTypeTag<T> = AdapterTypeTag<T> | BasicTypeTag<T>;
+export type ValueTypeTag<T> = T extends unknown ? unknown : AdapterTypeTag<T> | BasicTypeTag<T>;
 export function inferValueTypeTag<T>(value: T): ValueTypeTag<T> {
   switch (typeof value) {
     case "number":

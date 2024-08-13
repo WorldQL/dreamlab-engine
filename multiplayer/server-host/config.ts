@@ -1,9 +1,13 @@
 import { load as dotenv } from "jsr:@std/dotenv@0.224.2";
 import env from "./util/env.ts";
+import { z } from "@dreamlab/vendor/zod.ts";
 
 const readConfig = () => {
   const bindAddress = env("BIND_ADDRESS", env.socketAddress("127.0.0.1:8000"));
-  const isDev = Boolean(env("IS_DEV", env.optional));
+  const isDev = z
+    .union([z.enum(["false", "0"]).transform(() => false), z.string()])
+    .pipe(z.coerce.boolean())
+    .parse(env("IS_DEV", env.optional));
   const publicUrlBase = env(
     "PUBLIC_URL_BASE",
     env.defaultsTo(`http://${bindAddress.hostname}:${bindAddress.port}`),
