@@ -23,6 +23,7 @@ const instanceId = NIL_UUID;
 const connectUrl = new URL(`ws://127.0.0.1:8000/api/v1/connect/${instanceId}`);
 connectUrl.searchParams.set("player_id", generateCUID("ply"));
 connectUrl.searchParams.set("nickname", "Player" + Math.floor(Math.random() * 999) + 1);
+// connectUrl.searchParams.set("play_session", "1");
 
 const container = document.createElement("div");
 container.style.width = "100%";

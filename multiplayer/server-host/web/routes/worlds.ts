@@ -7,7 +7,7 @@ export const serveWorlds = (router: Router) => {
     const { user, world, resource } = ctx.params;
     try {
       await ctx.send({
-        root: path.join("./worlds/", user, world, "_dist"),
+        root: path.join("./worlds/", user, world),
         path: resource,
       });
     } catch (err) {

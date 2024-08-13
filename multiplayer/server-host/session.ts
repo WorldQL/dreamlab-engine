@@ -33,7 +33,7 @@ export class GameSession {
   constructor(
     public parent: GameInstance,
     opts: GameSessionOpts = {
-      editMode: this.parent.info.editMode ?? false,
+      editMode: parent.info.editMode ?? false,
       worldSubDirectory: "_dist",
     },
   ) {
@@ -44,7 +44,8 @@ export class GameSession {
       instanceId: parent.info.instanceId,
       worldId: parent.info.worldId,
       worldDirectory: path.join(parent.info.worldDirectory, opts.worldSubDirectory),
-      worldResourcesBaseUrl: `${CONFIG.publicUrlBase}/worlds`, // TODO: replace addr with public url from config
+      worldResourcesBaseUrl: `${CONFIG.publicUrlBase}/worlds`,
+      worldSubdirectory: opts.worldSubDirectory,
       editMode: opts.editMode,
     });
 

@@ -24,7 +24,7 @@ export class IPCWorker {
     const command = new Deno.Command(Deno.execPath(), {
       args: [
         "run",
-        "--inspect",
+        // "--inspect",
         "--allow-hrtime",
         `--allow-net=${new URL(workerData.workerConnectUrl).host}`,
         `--allow-read=${workerData.worldDirectory}`,

@@ -3,7 +3,7 @@ import { ClientPacketSchema } from "@dreamlab/proto/play.ts";
 import { JSON_CODEC } from "@dreamlab/proto/codecs/simple-json.ts";
 
 import { GameSession } from "../../session.ts";
-import { GameInstance } from "../../instance.ts";
+import { bootPlaySession, GameInstance } from "../../instance.ts";
 import { JsonAPIError } from "../util/api.ts";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import { importSecretKey, validateAuthToken } from "../../util/game-auth.ts";
@@ -115,6 +115,8 @@ export const servePlayRoutes = async (router: Router) => {
       );
 
     if (ctx.request.url.searchParams.get("play_session") && instance.info.editMode) {
+      if (!instance.playSession) await bootPlaySession(instance);
+
       session = instance.playSession;
       if (session === undefined)
         throw new JsonAPIError(
