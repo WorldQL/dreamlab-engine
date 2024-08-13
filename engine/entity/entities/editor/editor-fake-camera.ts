@@ -5,6 +5,7 @@ import { ValueChanged } from "../../../value/mod.ts";
 import { Entity, EntityContext } from "../../entity.ts";
 import { PixiEntity } from "../../pixi-entity.ts";
 import { Camera } from "../camera.ts";
+import { createLabel, Label } from "./_label.ts";
 
 export class EditorFakeCamera extends PixiEntity {
   static {
@@ -23,21 +24,21 @@ export class EditorFakeCamera extends PixiEntity {
   unlocked: boolean = false;
 
   #gfx: PIXI.Graphics | undefined;
-  #text: PIXI.Text | undefined;
+  #label: Label | undefined;
 
   #draw() {
     if (!this.#gfx) throw new Error("no graphics context");
-    if (!this.#text) throw new Error("no text object");
+    if (!this.#label) throw new Error("no label object");
 
     const bounds = Vector2.mul(this.bounds, this.globalTransform.scale);
-    this.#text.x = bounds.x / -2 - 0.05;
-    this.#text.y = bounds.y / -2 - 0.36;
+    this.#label.container.x = bounds.x / -2 - 0.05;
+    this.#label.container.y = bounds.y / -2 - 0.36;
 
     const color: PIXI.ColorSource = 0xffffff;
     const alpha = 0.8;
     const width: number = 0.02;
 
-    this.#text.alpha = alpha;
+    this.#label.container.alpha = alpha;
     this.#gfx.alpha = alpha;
 
     this.#gfx
@@ -52,11 +53,11 @@ export class EditorFakeCamera extends PixiEntity {
   }
 
   #updateText() {
-    if (!this.#text) throw new Error("no text object");
+    if (!this.#label) throw new Error("no label object");
 
     let text = this.name;
     if (this.active) text += " (active)";
-    this.#text.text = text;
+    this.#label.text.text = text;
   }
 
   constructor(ctx: EntityContext) {
@@ -72,20 +73,12 @@ export class EditorFakeCamera extends PixiEntity {
     if (!this.container) return;
 
     this.#gfx = new PIXI.Graphics();
-    this.#text = new PIXI.Text({
-      style: {
-        fontFamily: "Iosevka",
-        fontSize: 120,
-        fill: "white",
-        align: "left",
-      },
-    });
+    this.#label = createLabel(EditorFakeCamera.icon);
 
-    this.#text.scale.set(0.002);
     this.#draw();
     this.#updateText();
 
-    this.container.addChild(this.#text);
+    this.container.addChild(this.#label.container);
     this.container.addChild(this.#gfx);
 
     this.on(EntityResize, () => this.#draw());
