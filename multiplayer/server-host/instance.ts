@@ -155,7 +155,10 @@ export const createInstance = (info: GameInstanceInfo): GameInstance => {
 };
 
 export const bootInstance = async (instance: GameInstance, restart: boolean = false) => {
-  instance.setStatus(GameInstanceState.Starting, restart ? "Restarting game" : "Starting game");
+  instance.setStatus(
+    GameInstanceState.Starting,
+    restart ? "Restarting instance" : "Starting instance",
+  );
   instance.resetBooting();
 
   instance.setStatus(GameInstanceState.Starting, "Fetching world");
