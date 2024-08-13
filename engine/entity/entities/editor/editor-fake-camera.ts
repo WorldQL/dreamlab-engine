@@ -15,6 +15,7 @@ export class EditorFakeCamera extends PixiEntity {
 
   active: boolean = false;
   smooth: number = 0.01;
+  unlocked: boolean = false;
 
   #gfx: PIXI.Graphics | undefined;
   #text: PIXI.Text | undefined;
@@ -57,6 +58,7 @@ export class EditorFakeCamera extends PixiEntity {
 
     this.defineValue(EditorFakeCamera, "active", { replicated: false });
     this.defineValue(EditorFakeCamera, "smooth", { replicated: false });
+    this.defineValue(EditorFakeCamera, "unlocked", { replicated: false });
   }
 
   onInitialize(): void {

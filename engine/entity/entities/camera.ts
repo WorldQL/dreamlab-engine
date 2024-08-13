@@ -16,6 +16,7 @@ export class Camera extends Entity {
 
   public readonly container: PIXI.Container;
   public smooth: number = 0.01;
+  public unlocked: boolean = false;
 
   #position: Vector2 = new Vector2(this.interpolated.position);
   #rotation: number = this.interpolated.rotation;
@@ -24,11 +25,14 @@ export class Camera extends Entity {
   #matrix() {
     const game = this.game as ClientGame;
 
-    const canvas = game.renderer.app.canvas;
-    const w = canvas.width / Camera.METERS_TO_PIXELS;
-    const h = canvas.height / Camera.METERS_TO_PIXELS;
-    const axis = Math.min(w, h);
-    const scale = axis / Camera.TARGET_VIEWPORT_SIZE;
+    let scale = 1;
+    if (!this.unlocked) {
+      const canvas = game.renderer.app.canvas;
+      const w = canvas.width / Camera.METERS_TO_PIXELS;
+      const h = canvas.height / Camera.METERS_TO_PIXELS;
+      const axis = Math.min(w, h);
+      scale = axis / Camera.TARGET_VIEWPORT_SIZE;
+    }
 
     return PIXI.Matrix.shared
       .translate(-this.#position.x, this.#position.y)
@@ -103,6 +107,7 @@ export class Camera extends Entity {
 
     this.defineValue(Camera, "active", { replicated: false });
     this.defineValue(Camera, "smooth", { replicated: false });
+    this.defineValue(Camera, "unlocked", { replicated: false });
 
     this.listen(this.game, GameRender, () => {
       if (!this.#active) return;
@@ -160,11 +165,14 @@ export class Camera extends Entity {
   public worldToScreen(position: IVector2): Vector2 {
     const game = this.game as ClientGame;
 
-    const canvas = game.renderer.app.canvas;
-    const w = canvas.width / Camera.METERS_TO_PIXELS;
-    const h = canvas.height / Camera.METERS_TO_PIXELS;
-    const axis = Math.min(w, h);
-    const scale = axis / Camera.TARGET_VIEWPORT_SIZE;
+    let scale = 1;
+    if (!this.unlocked) {
+      const canvas = game.renderer.app.canvas;
+      const w = canvas.width / Camera.METERS_TO_PIXELS;
+      const h = canvas.height / Camera.METERS_TO_PIXELS;
+      const axis = Math.min(w, h);
+      scale = axis / Camera.TARGET_VIEWPORT_SIZE;
+    }
 
     const matrix = PIXI.Matrix.shared
       .translate(-this.globalTransform.position.x, this.globalTransform.position.y)
@@ -180,11 +188,14 @@ export class Camera extends Entity {
   public screenToWorld(position: IVector2): Vector2 {
     const game = this.game as ClientGame;
 
-    const canvas = game.renderer.app.canvas;
-    const w = canvas.width / Camera.METERS_TO_PIXELS;
-    const h = canvas.height / Camera.METERS_TO_PIXELS;
-    const axis = Math.min(w, h);
-    const scale = axis / Camera.TARGET_VIEWPORT_SIZE;
+    let scale = 1;
+    if (!this.unlocked) {
+      const canvas = game.renderer.app.canvas;
+      const w = canvas.width / Camera.METERS_TO_PIXELS;
+      const h = canvas.height / Camera.METERS_TO_PIXELS;
+      const axis = Math.min(w, h);
+      scale = axis / Camera.TARGET_VIEWPORT_SIZE;
+    }
 
     const matrix = PIXI.Matrix.shared
       .translate(-this.globalTransform.position.x, this.globalTransform.position.y)
