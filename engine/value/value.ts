@@ -13,7 +13,8 @@ type BasicTypeTag<T> =
   : T extends boolean ? typeof Boolean
   : never;
 
-export type ValueTypeTag<T> = T extends unknown ? unknown : AdapterTypeTag<T> | BasicTypeTag<T>;
+type ConcreteValueTypeTag<T> = AdapterTypeTag<T> | BasicTypeTag<T>;
+export type ValueTypeTag<T> = T extends unknown ? unknown : ConcreteValueTypeTag<T>;
 export function inferValueTypeTag<T>(value: T): ValueTypeTag<T> {
   switch (typeof value) {
     case "number":
@@ -59,7 +60,10 @@ export class Value<T = unknown> {
       (this.typeTag === Boolean && typeof newValue !== "boolean") ||
       (this.adapter !== undefined && !this.adapter.isValue(newValue));
     if (isInvalid) {
-      throw new Error("Got invalid type for value! Expected: " + this.typeTag.name);
+      throw new Error(
+        "Got invalid type for value! Expected: " +
+          (this.typeTag as ConcreteValueTypeTag<T>).name,
+      );
     }
 
     // this will fire `this.#changeListener` and update the internal value that way

@@ -15,6 +15,7 @@ import { BehaviorDestroyed } from "../signals/behavior-lifecycle.ts";
 import { EntityUpdate } from "../signals/entity-updates.ts";
 import { GamePostTick, GamePreTick, GameRender } from "../signals/game-events.ts";
 import {
+  AdapterTypeTag,
   JsonValue,
   Primitive,
   Value,
@@ -104,8 +105,8 @@ export class Behavior implements ISignalHandler {
     let defaultValue: T = originalValue;
 
     if (this.#defaultValues[prop]) {
-      if (opts.type && opts.type.prototype instanceof ValueTypeAdapter) {
-        const adapter = new opts.type(this.game) as ValueTypeAdapter<T>;
+      if (opts.type && (opts.type as AdapterTypeTag<T>).prototype instanceof ValueTypeAdapter) {
+        const adapter = new (opts.type as AdapterTypeTag<T>)(this.game);
         defaultValue = (
           adapter.isValue(this.#defaultValues[prop])
             ? this.#defaultValues[prop]

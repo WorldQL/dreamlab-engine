@@ -45,6 +45,7 @@ import {
   EntityZChanged,
 } from "../signals/mod.ts";
 import {
+  AdapterTypeTag,
   JsonValue,
   Value,
   ValueTypeAdapter,
@@ -567,8 +568,8 @@ export abstract class Entity implements ISignalHandler {
     let defaultValue: T = originalValue;
 
     if (this.#defaultValues[prop]) {
-      if (opts.type && opts.type.prototype instanceof ValueTypeAdapter) {
-        const adapter = new opts.type(this.game) as ValueTypeAdapter<T>;
+      if (opts.type && (opts.type as AdapterTypeTag<T>).prototype instanceof ValueTypeAdapter) {
+        const adapter = new (opts.type as AdapterTypeTag<T>)(this.game);
         defaultValue = (
           adapter.isValue(this.#defaultValues[prop])
             ? this.#defaultValues[prop]
