@@ -4,6 +4,10 @@ import { LogStore } from "./util/log-store.ts";
 import * as colors from "jsr:@std/fmt@1.0.0-rc.1/colors";
 import { fetchWorld } from "./world-fetch.ts";
 import { bundleWorld } from "../../build-system/mod.ts";
+import { WorkerIPCMessage } from "../server-common/ipc.ts";
+import { IPCMessageListener } from "./worker.ts";
+import { Scene } from "@dreamlab/scene";
+import { path } from "@dreamlab/vendor/pixi.ts";
 
 export enum GameInstanceState {
   Idle,
@@ -219,9 +223,29 @@ export const bootInstance = async (instance: GameInstance, restart: boolean = fa
 };
 
 export const bootPlaySession = async (instance: GameInstance) => {
+  if (!instance.info.editMode)
+    throw new Error("Can't start a play session for an instance that isn't in edit mode!");
+  if (instance.session === undefined)
+    throw new Error("Can't start a play session without a running edit session!");
+
   instance.resetPlayBooting();
 
+  instance.logs.debug("play: Fetching scene definition from edit session...");
+
+  const ipc = instance.session.ipc;
+  const sceneJson: Scene = await new Promise(resolve => {
+    const sceneDefListener = (
+      message: WorkerIPCMessage & { op: "SceneDefinitionResponse" },
+    ) => {
+      resolve(message.sceneJson);
+      ipc.removeMessageListener(sceneDefListener as IPCMessageListener["handler"]);
+    };
+    ipc.send({ op: "SceneDefinitionRequest" });
+    ipc.addMessageListener("SceneDefinitionResponse", sceneDefListener);
+  });
+
   try {
+    instance.logs.debug("play: Bundling world...");
     await bundleWorld(instance.info.worldId, {
       dir: instance.info.worldDirectory,
       denoJsonPath: "./deno.json",
@@ -233,6 +257,26 @@ export const bootPlaySession = async (instance: GameInstance) => {
     return;
   }
 
+  try {
+    instance.logs.debug("play: Writing scene definition to _dist_play directory");
+
+    const projectJsonFile = path.join(
+      instance.info.worldDirectory,
+      "_dist_play",
+      "project.json",
+    );
+    const projectDesc = JSON.parse(await Deno.readTextFile(projectJsonFile));
+    projectDesc.scenes = { ...(projectDesc.scenes ?? {}), main: sceneJson };
+    await Deno.writeTextFile(projectJsonFile, JSON.stringify(projectDesc, undefined, 2));
+  } catch (err) {
+    instance.logs.error("Failed to write scene definition for play session", {
+      err: err.stack,
+    });
+    instance.notifyPlaySessionBootFail();
+    return;
+  }
+
+  instance.logs.debug("play: Booting session...");
   const session = new GameSession(instance, {
     editMode: false,
     worldSubDirectory: "_dist_play",
