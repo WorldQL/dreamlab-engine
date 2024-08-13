@@ -18,37 +18,37 @@ export const HandshakePacketSchema = z.object({
   edit_mode: z.boolean(),
 });
 
-export const ServerPeerConnectedPacketSchema = z.object({
+export const ServerPeerConnectedPacket = z.object({
   t: z.literal("PeerConnected"),
   connection_id: ConnectionIdSchema,
   player_id: z.string(),
   nickname: z.string(),
 });
 
-export const ServerPeerDisconnectedPacketSchema = z.object({
+export const ServerPeerDisconnectedPacket = z.object({
   t: z.literal("PeerDisconnected"),
   connection_id: ConnectionIdSchema,
 });
 
-export const ServerPeerChangedNicknamePacketSchema = z.object({
+export const ServerPeerChangedNicknamePacket = z.object({
   t: z.literal("PeerChangedNickname"),
   connection_id: ConnectionIdSchema,
   new_nickname: z.string(),
 });
 
-export const ServerPeerListSnapshotPacketSchema = z.object({
+export const ServerPeerListSnapshotPacket = z.object({
   t: z.literal("PeerListSnapshot"),
   peers: z
     .object({ connection_id: ConnectionIdSchema, player_id: z.string(), nickname: z.string() })
     .array(),
 });
 
-export const ClientChatMessagePacketSchema = z.object({
+export const ClientChatMessagePacket = z.object({
   t: z.literal("ChatMessage"),
   message: z.string(),
 });
 
-export const ServerChatMessagePacketSchema = ClientChatMessagePacketSchema.extend({
+export const ServerChatMessagePacket = ClientChatMessagePacket.extend({
   from_player_id: z.string(),
   from_connection_id: z.string(),
   from_nickname: z.string(),
@@ -59,12 +59,12 @@ const ValueReportSchema = z.object({
   value: z.any(),
   clock: z.number(),
 });
-export const ClientReportValuesPacketSchema = z.object({
+export const ClientReportValuesPacket = z.object({
   t: z.literal("ReportValues"),
   reports: ValueReportSchema.array(),
 });
 
-export const ServerReportValuesPacketSchema = ClientReportValuesPacketSchema.extend({
+export const ServerReportValuesPacketSchema = ClientReportValuesPacket.extend({
   from: ConnectionIdSchema.optional(),
 });
 
@@ -180,7 +180,7 @@ export const ServerInitialNetworkSnapshotPacket = z.object({
 
 export const ClientPacketSchema = z.discriminatedUnion("t", [
   ClientLoadPhaseChangedPacket,
-  ClientChatMessagePacketSchema,
+  ClientChatMessagePacket,
   ClientSpawnEntityPacket,
   ClientDeleteEntityPacket,
   ClientRenameEntityPacket,
@@ -189,18 +189,18 @@ export const ClientPacketSchema = z.discriminatedUnion("t", [
   ClientRequestExclusiveAuthorityPacket,
   ClientRelinquishExclusiveAuthorityPacket,
   ClientReportEntityTransformsPacket,
-  ClientReportValuesPacketSchema,
+  ClientReportValuesPacket,
 ]);
 export type ClientPacket = z.infer<typeof ClientPacketSchema>;
 
 export const ServerPacketSchema = z.discriminatedUnion("t", [
   HandshakePacketSchema,
   ServerInitialNetworkSnapshotPacket,
-  ServerPeerConnectedPacketSchema,
-  ServerPeerDisconnectedPacketSchema,
-  ServerPeerChangedNicknamePacketSchema,
-  ServerPeerListSnapshotPacketSchema,
-  ServerChatMessagePacketSchema,
+  ServerPeerConnectedPacket,
+  ServerPeerDisconnectedPacket,
+  ServerPeerChangedNicknamePacket,
+  ServerPeerListSnapshotPacket,
+  ServerChatMessagePacket,
   ServerSpawnEntityPacket,
   ServerDeleteEntityPacket,
   ServerRenameEntityPacket,
@@ -219,6 +219,6 @@ export type PlayPacket<
 > = (Side extends "any"
   ? ClientPacket | ServerPacket
   : Side extends "client"
-    ? ClientPacket
-    : ServerPacket) &
+  ? ClientPacket
+  : ServerPacket) &
   (T extends string ? { t: T } : object);
