@@ -420,11 +420,11 @@ const Inspector = () => {
           },
         ]}
       >
-        {Object.entries(values).map(([key, value]) =>
+        {Object.entries(values).map(([key, value], index) =>
           value.typeTag === String ? (
             <InputField
               type="text"
-              key={key}
+              key={`${key}-${index}`}
               label={key}
               value={String(value.value)}
               onChange={handleValueChange(key, String)}
@@ -432,7 +432,7 @@ const Inspector = () => {
           ) : value.typeTag === Number ? (
             <InputField
               type="number"
-              key={key}
+              key={`${key}-${index}`}
               label={key}
               value={Number(value.value)}
               onChange={handleValueChange(key, Number)}
@@ -440,7 +440,7 @@ const Inspector = () => {
           ) : value.typeTag === Boolean ? (
             <InputField
               type="text"
-              key={key}
+              key={`${key}-${index}`}
               label={key}
               value={String(value.value)}
               onChange={handleValueChange(key, v =>
