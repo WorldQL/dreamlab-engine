@@ -237,12 +237,12 @@ const SceneGraph = () => {
 
   return (
     <div
-      className="h-full z-40"
+      className="z-40 h-full"
       onDragOver={handleDragOver}
       onDrop={handleDrop}
       onContextMenu={handleContextMenu}
     >
-      <div className="h-full" title="Scene">
+      <div className="h-full">
         <div>
           <ul>
             {[...(game.world.children.get("EditEntities")?.children?.entries() ?? [])]

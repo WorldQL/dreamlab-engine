@@ -3,7 +3,7 @@ import { memo } from "react";
 
 const Console = () => {
   return (
-    <div title="Console" className="w-full h-full">
+    <div className="w-full h-full">
       <div className="p-4">
         <p className="text-textSecondary">Console output will appear here</p>
       </div>

@@ -352,7 +352,7 @@ const Inspector = () => {
 
   if (!selectedEntity) {
     return (
-      <div className="h-full" title="Inspector">
+      <div className="h-full">
         <div className="p-4">
           <p className="text-textSecondary">No entity selected</p>
         </div>
@@ -361,7 +361,7 @@ const Inspector = () => {
   }
 
   return (
-    <div className="h-full" title="Inspector" onDrop={handleDrop} onDragOver={handleDragOver}>
+    <div className="h-full" onDrop={handleDrop} onDragOver={handleDragOver}>
       <div className="p-2">
         <InputField type="text" label="Name" value={name} onChange={handleNameChange} />
       </div>

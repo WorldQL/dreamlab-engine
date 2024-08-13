@@ -1,14 +1,13 @@
 import { Empty, Entity, EntityConstructor, Rigidbody2D, Sprite2D } from "@dreamlab/engine";
 import { useAtom } from "jotai";
-// @deno-types="npm:@types/react@18.3.1"
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   selectedEntityAtom,
   copiedEntityAtom,
   historyAtom,
 } from "../../context/editor-context.tsx";
-import { cn } from "../../utils/cn.ts";
 import { useGame } from "../../context/game-context.ts";
+import { ChevronRight } from "lucide-react";
 
 interface SceneMenuProps {
   entity: Entity | undefined;
@@ -31,15 +30,11 @@ export const SceneMenu = ({ entity, position, setIsOpen }: SceneMenuProps) => {
       });
 
       setHistory([...history, { type: "add", entity: newEntity }]);
-
-      if (entity) {
-        newEntity.parent = entity;
-      }
-
+      newEntity.parent = entity ? entity : game.world._.EditEntities._.world;
       setSelectedEntity(newEntity);
       setIsOpen(false);
     },
-    [entity, setSelectedEntity, setIsOpen, history, setHistory],
+    [entity, setSelectedEntity, setIsOpen, history, setHistory, game.world],
   );
 
   const handleCopy = useCallback(() => {
@@ -65,7 +60,7 @@ export const SceneMenu = ({ entity, position, setIsOpen }: SceneMenuProps) => {
       setSelectedEntity(newEntity);
     }
     setIsOpen(false);
-  }, [copiedEntity, setSelectedEntity, setIsOpen, history, setHistory]);
+  }, [copiedEntity, setSelectedEntity, setIsOpen, history, setHistory, game.world]);
 
   const handleDelete = useCallback(() => {
     if (entity) {
@@ -81,7 +76,7 @@ export const SceneMenu = ({ entity, position, setIsOpen }: SceneMenuProps) => {
       setSelectedEntity(entity);
     }
     setIsOpen(false);
-  }, [entity, setSelectedEntity, setIsOpen]);
+  }, [entity, setSelectedEntity, setIsOpen, game.world]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -100,82 +95,104 @@ export const SceneMenu = ({ entity, position, setIsOpen }: SceneMenuProps) => {
     <div
       ref={menuRef}
       style={{ top: position.y, left: position.x }}
-      className="absolute max-w-[200px] w-full bg-background border border-primary rounded-lg shadow-lg p-3 z-50"
+      className="absolute max-w-[200px] w-full bg-grey text-white border border-white rounded-md shadow-lg z-50 p-1"
     >
       {entity ? (
         <>
-          <div
-            className={cn(
-              "cursor-pointer hover:bg-primary text-textPrimary hover:text-white p-2 rounded-md transition-colors",
-            )}
-            onClick={handleCopy}
-          >
-            Copy
-          </div>
-          <div
-            className={cn(
-              "cursor-pointer hover:bg-primary text-textPrimary hover:text-white p-2 rounded-md transition-colors",
-              !copiedEntity && "opacity-50",
-            )}
+          <MenuItem onClick={handleCopy} label="Copy" />
+          <MenuItem
             onClick={handlePasteAsChild}
-          >
-            Paste as Child
-          </div>
-          <div
-            className={cn(
-              "cursor-pointer hover:bg-primary text-textPrimary hover:text-white p-2 rounded-md transition-colors",
-            )}
-            onClick={handleDelete}
-          >
-            Delete
-          </div>
+            label="Paste as Child"
+            disabled={!copiedEntity}
+          />
+          <MenuItem onClick={handleDelete} label="Delete" />
           {entity.parent !== game.world && (
-            <div
-              className={cn(
-                "cursor-pointer hover:bg-primary text-textPrimary hover:text-white p-2 rounded-md transition-colors",
-              )}
-              onClick={handleUnparent}
-            >
-              Unparent
-            </div>
+            <MenuItem onClick={handleUnparent} label="Unparent" />
           )}
+          <SubMenu
+            label="New Entity"
+            options={[
+              { label: "New Empty", onClick: () => createEntity(Empty) },
+              { label: "New Rigidbody2D", onClick: () => createEntity(Rigidbody2D) },
+              { label: "New Sprite2D", onClick: () => createEntity(Sprite2D) },
+            ]}
+          />
         </>
       ) : (
         <>
-          <div
-            className={cn(
-              "cursor-pointer hover:bg-primary text-textPrimary hover:text-white p-2 rounded-md transition-colors",
-            )}
-            onClick={() => createEntity(Empty)}
-          >
-            New Empty
-          </div>
-          <div
-            className={cn(
-              "cursor-pointer hover:bg-primary text-textPrimary hover:text-white p-2 rounded-md transition-colors",
-            )}
-            onClick={() => createEntity(Rigidbody2D)}
-          >
-            New Rigidbody2D
-          </div>
-          <div
-            className={cn(
-              "cursor-pointer hover:bg-primary text-textPrimary hover:text-white p-2 rounded-md transition-colors",
-            )}
-            onClick={() => createEntity(Sprite2D)}
-          >
-            New Sprite2D
-          </div>
-          <div
-            className={cn(
-              "cursor-pointer hover:bg-primary text-textPrimary hover:text-white p-2 rounded-md transition-colors",
-              !copiedEntity && "opacity-50",
-            )}
-            onClick={handlePaste}
-          >
-            Paste
-          </div>
+          <SubMenu
+            label="New Entity"
+            options={[
+              { label: "New Empty", onClick: () => createEntity(Empty) },
+              { label: "New Rigidbody2D", onClick: () => createEntity(Rigidbody2D) },
+              { label: "New Sprite2D", onClick: () => createEntity(Sprite2D) },
+            ]}
+          />
+          <MenuItem onClick={handlePaste} label="Paste" disabled={!copiedEntity} />
         </>
+      )}
+    </div>
+  );
+};
+
+const MenuItem = ({
+  onClick,
+  label,
+  disabled,
+}: {
+  onClick: () => void;
+  label: string;
+  disabled?: boolean;
+}) => (
+  <div
+    className={`px-3 py-1 cursor-pointer text-sm hover:bg-primary rounded md whitespace-nowrap ${
+      disabled ? "opacity-50 cursor-not-allowed" : ""
+    }`}
+    onClick={!disabled ? onClick : undefined}
+  >
+    {label}
+  </div>
+);
+
+const SubMenu = ({
+  label,
+  options,
+}: {
+  label: string;
+  options: { label: string; onClick: () => void }[];
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const subMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isOpen && subMenuRef.current) {
+      const rect = subMenuRef.current.getBoundingClientRect();
+      if (rect.right > window.innerWidth) {
+        subMenuRef.current.style.left = `-${rect.width}px`;
+      } else {
+        subMenuRef.current.style.left = "100%";
+      }
+    }
+  }, [isOpen]);
+
+  return (
+    <div
+      className="relative w-full max-w-[200px] rounded-md px-3 py-1 text-sm cursor-pointer bg-grey hover:bg-primary flex items-center justify-between"
+      onMouseEnter={() => setIsOpen(true)}
+      onMouseLeave={() => setIsOpen(false)}
+    >
+      <span>{label}</span>
+      <ChevronRight className="w-4 h-4" />
+      {isOpen && (
+        <div
+          ref={subMenuRef}
+          className="absolute top-0 bg-grey text-white border border-white rounded-md shadow-lg min-w-max z-50 p-1"
+          style={{ left: "100%" }}
+        >
+          {options.map((option, index) => (
+            <MenuItem key={index} onClick={option.onClick} label={option.label} />
+          ))}
+        </div>
       )}
     </div>
   );

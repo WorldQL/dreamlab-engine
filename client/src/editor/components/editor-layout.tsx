@@ -14,7 +14,6 @@ import { SceneGraph } from "./scene-graph.tsx";
 import { NewEntityMenu } from "./toolbar/new-entity-button.tsx";
 import { PlaybackControls } from "./toolbar/playback-controls.tsx";
 import { SettingsButton } from "./toolbar/settings-button.tsx";
-import { ThemeButton } from "./toolbar/theme-button.tsx";
 import { Panel } from "./ui/panel.tsx";
 import { ToolSelector } from "./ui/tool-selector.tsx";
 import * as portals from "react-reverse-portal";

@@ -237,7 +237,7 @@ const Prefabs = () => {
       onDrop={handleDrop}
       onContextMenu={handleContextMenu}
     >
-      <div className="h-full" title="Prefabs">
+      <div className="h-full">
         <div>
           <ul>
             {[...game.prefabs.children.entries()]
