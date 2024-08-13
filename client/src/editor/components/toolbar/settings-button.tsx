@@ -58,7 +58,7 @@ export const SettingsButton = () => {
       {isMenuOpen && (
         <div
           ref={menuRef}
-          className="absolute mt-2 py-2 w-48 bg-card rounded-md shadow-xl z-20"
+          className="absolute mt-2 py-2 w-48 bg-grey border border-white rounded-md shadow-xl z-20"
         >
           <button className="block w-full px-4 py-2 text-sm text-textPrimary hover:bg-secondary hover:text-white">
             Setting 1
