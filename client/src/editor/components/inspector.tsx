@@ -9,7 +9,15 @@ import {
   Value,
 } from "@dreamlab/engine";
 import { useAtom } from "jotai";
-import { Asterisk, CirclePlus, PieChart, Rotate3D, Route, ShieldQuestion } from "lucide-react";
+import {
+  Asterisk,
+  CirclePlus,
+  ClipboardCopy,
+  PieChart,
+  Rotate3D,
+  Route,
+  ShieldQuestion,
+} from "lucide-react";
 // @deno-types="npm:@types/react@18.3.1"
 import { memo, useCallback, useEffect, useState } from "react";
 import { selectedEntityAtom } from "../context/editor-context.tsx";
@@ -43,6 +51,16 @@ const Inspector = () => {
   const { openModal, closeModal } = useModal();
 
   const { data, isLoading, isError } = useFiles(game.instanceId);
+
+  const [copied, setCopied] = useState(false);
+  const entityId =
+    "game." + selectedEntity?.id?.substring("game.world._.EditEntities._.".length);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(entityId);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const onClick = useCallback(
     ({ cursor }: Click) => {
@@ -362,12 +380,27 @@ const Inspector = () => {
 
   return (
     <div className="h-full" onDrop={handleDrop} onDragOver={handleDragOver}>
-      <div className="p-2">
+      <div className="p-1">
         <InputField type="text" label="Name" value={name} onChange={handleNameChange} />
       </div>
-      <div className="p-2 text-white select-all">
-        {/* TODO: make this better */}
-        {"game." + selectedEntity?.id?.substring("game.world._.EditEntities._.".length)}
+      <div className="mt-4 p-1 mb-2">
+        <label className="block text-sm font-medium text-textPrimary">Entity ID</label>
+        <div className="relative mt-1 flex items-center">
+          <div
+            onClick={handleCopy}
+            className="text-textPrimary cursor-pointer bg-background px-2 py-1 rounded-md w-full"
+          >
+            {entityId}
+          </div>
+          <button
+            onClick={handleCopy}
+            className="ml-2 p-1 text-icon hover:text-primary focus:outline-none"
+            title="Copy Entity ID"
+          >
+            <ClipboardCopy className="w-5 h-5 hover:text-primary" />
+          </button>
+        </div>
+        {copied && <p className="text-green text-xs mt-1">Copied to clipboard!</p>}
       </div>
       <Category
         title="Transform"
