@@ -5,12 +5,19 @@ import {
   GameStatus,
   ServerGame,
   EditorFakeCamera,
+  Entity,
 } from "@dreamlab/engine";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 import { ServerNetworkManager } from "./networking/net-manager.ts";
 import { IPCMessageBus } from "./ipc.ts";
 
-import { ProjectSchema, convertEntityDefinition, loadSceneDefinition } from "@dreamlab/scene";
+import {
+  ProjectSchema,
+  Scene,
+  convertEntityDefinition,
+  loadSceneDefinition,
+  serializeEntityDefinition,
+} from "@dreamlab/scene";
 
 const workerData = JSON.parse(Deno.env.get("DREAMLAB_MP_WORKER_DATA")!) as WorkerInitData;
 Deno.env.delete("DREAMLAB_MP_WORKER_DATA");
@@ -18,7 +25,7 @@ Deno.env.delete("DREAMLAB_MP_WORKER_DATA");
 const ipc = new IPCMessageBus(workerData);
 await ipc.connected();
 
-// TODO: handle schema serialization request from IPC
+// TODO: hook the console to do proper logging
 
 const net = new ServerNetworkManager(ipc);
 const game = new ServerGame({
@@ -50,6 +57,19 @@ if (workerData.editMode) {
     await Promise.all(scene.registration.map(script => import(game.resolveResource(script))));
   }
 
+  // we have to do this since Camera doesn't like being spawned anywhere except game.local
+  const useEditorFacades = (def: EntityDefinition) => {
+    if (def.type === Camera) def.type = EditorFakeCamera;
+    def.children?.forEach(c => useEditorFacades(c));
+    return def;
+  };
+
+  const dropEditorFacades = (def: EntityDefinition) => {
+    if (def.type === EditorFakeCamera) def.type = Camera;
+    def.children?.forEach(c => dropEditorFacades(c));
+    return def;
+  };
+
   const editEntities = game.world.spawn({
     type: Empty,
     name: "EditEntities",
@@ -76,16 +96,19 @@ if (workerData.editMode) {
     _ref: "EDIT_SERVER",
   });
 
-  // we have to do this since Camera doesn't like being spawned anywhere except game.local
-  const preprocessDef = (def: EntityDefinition) => {
-    // TODO: this should be an EditorFakeCamera instead of Empty
-    if (def.type === Camera) {
-      def.type = EditorFakeCamera;
-    }
+  ipc.addMessageListener("SceneDefinitionRequest", () => {
+    const serializeForScene = (entity: Entity) =>
+      serializeEntityDefinition(game, dropEditorFacades(entity.getDefinition()));
 
-    def.children?.forEach(c => preprocessDef(c));
-    return def;
-  };
+    const scene: Scene = {
+      world: [...editWorld.children.values()].map(serializeForScene),
+      local: [...editLocal.children.values()].map(serializeForScene),
+      server: [...editServer.children.values()].map(serializeForScene),
+      prefabs: [...editPrefabs.children.values()].map(serializeForScene),
+    };
+
+    ipc.send({ op: "SceneDefinitionResponse", sceneJson: scene });
+  });
 
   for (const [sceneRoot, editRoot] of [
     [scene.world, editWorld],
@@ -95,7 +118,7 @@ if (workerData.editMode) {
   ] as const) {
     const defs = await Promise.all(sceneRoot.map(def => convertEntityDefinition(game, def)));
     for (const def of defs) {
-      editRoot.spawn(preprocessDef(def));
+      editRoot.spawn(useEditorFacades(def));
     }
   }
 } else {
