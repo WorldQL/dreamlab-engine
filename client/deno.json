@@ -4,7 +4,7 @@
     "build:tailwind": "deno run -A npm:tailwindcss -i ./web/styles.css -o ./web/tw-generated.css",
     "build": "deno task build:tailwind & deno task build:web",
     "watch:web": "deno run -A ./_build.ts --watch",
-    "watch:tailwind": "deno run -A npm:tailwindcss -i ./web/styles.css -o ./web/tw-generated.css --watch",
+    "watch:tailwind": "deno run -A npm:tailwindcss -i ./web/tailwind.css -o ./web/tw-generated.css --watch",
     "serve": "deno run -A jsr:@std/http@0.224.0/file-server --port 5173 web",
     "dev": "deno task watch:tailwind & deno task watch:web && fg"
   },
