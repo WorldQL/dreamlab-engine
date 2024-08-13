@@ -1,10 +1,4 @@
-import {
-  Empty,
-  Rigidbody2D,
-  Sprite2D,
-  AnimatedSprite2D,
-  EntityConstructor,
-} from "@dreamlab/engine";
+import { EntityConstructor } from "@dreamlab/engine";
 import { Plus } from "lucide-react";
 // @deno-types="npm:@types/react@18.3.1"
 import { memo, useCallback, useEffect, useRef, useState } from "react";
@@ -14,6 +8,7 @@ import { IconButton } from "../ui/icon-button.tsx";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip.tsx";
 import { useGame } from "../../context/game-context.ts";
 import { cn } from "../../utils/cn.ts";
+import { getEntitiesForPath } from "../../utils/create-entity.ts";
 
 interface NewEntityModalProps {
   closeMenu: () => void;
@@ -77,16 +72,14 @@ const NewEntityModal: React.FC<NewEntityModalProps> = ({ closeMenu }) => {
   const [selectedEntity] = useAtom(selectedEntityAtom);
   const [history, setHistory] = useAtom(historyAtom);
 
+  const currentPath = selectedEntity
+    ? selectedEntity.id.split("EditEntities._.")[1] || "world"
+    : "world";
+
+  const allowedEntities = getEntitiesForPath(currentPath);
+
   const createEntity = useCallback(
-    (
-      entityType: (
-        | typeof Empty
-        | typeof Rigidbody2D
-        | typeof Sprite2D
-        | typeof AnimatedSprite2D
-      ) &
-        EntityConstructor,
-    ) => {
+    (entityType: EntityConstructor) => {
       const newEntity = game.world.spawn({
         type: entityType,
         name: entityType.name,
@@ -101,30 +94,15 @@ const NewEntityModal: React.FC<NewEntityModalProps> = ({ closeMenu }) => {
 
   return (
     <div className="absolute mt-2 py-2 w-48 bg-grey rounded-md border border-white shadow-xl z-20">
-      <button
-        className="block w-full px-4 py-2 text-sm text-textPrimary hover:bg-secondary hover:text-white"
-        onClick={() => createEntity(Empty)}
-      >
-        Empty
-      </button>
-      <button
-        className="block w-full px-4 py-2 text-sm text-textPrimary hover:bg-secondary hover:text-white"
-        onClick={() => createEntity(Rigidbody2D)}
-      >
-        Rigidbody2D
-      </button>
-      <button
-        className="block w-full px-4 py-2 text-sm text-textPrimary hover:bg-secondary hover:text-white"
-        onClick={() => createEntity(Sprite2D)}
-      >
-        Sprite2D
-      </button>
-      <button
-        className="block w-full px-4 py-2 text-sm text-textPrimary hover:bg-secondary hover:text-white"
-        onClick={() => createEntity(AnimatedSprite2D)}
-      >
-        AnimatedSprite2D
-      </button>
+      {allowedEntities.map(entityType => (
+        <button
+          key={entityType.name}
+          className="block w-full px-4 py-2 text-sm text-textPrimary hover:bg-secondary hover:text-white"
+          onClick={() => createEntity(entityType)}
+        >
+          {entityType.name}
+        </button>
+      ))}
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { Empty, Entity, EntityConstructor, Rigidbody2D, Sprite2D } from "@dreamlab/engine";
+import { Entity, EntityConstructor } from "@dreamlab/engine";
 import { useAtom } from "jotai";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -8,6 +8,7 @@ import {
 } from "../../context/editor-context.tsx";
 import { useGame } from "../../context/game-context.ts";
 import { ChevronRight } from "lucide-react";
+import { getEntitiesForPath } from "../../utils/create-entity.ts";
 
 interface SceneMenuProps {
   entity: Entity | undefined;
@@ -22,8 +23,11 @@ export const SceneMenu = ({ entity, position, setIsOpen }: SceneMenuProps) => {
   const [history, setHistory] = useAtom(historyAtom);
   const menuRef = useRef<HTMLDivElement>(null);
 
+  const currentPath = entity ? entity.id.split("EditEntities._.")[1] || "world" : "world";
+  const allowedEntities = getEntitiesForPath(currentPath);
+
   const createEntity = useCallback(
-    (entityType: (typeof Empty | typeof Rigidbody2D | typeof Sprite2D) & EntityConstructor) => {
+    (entityType: EntityConstructor) => {
       const newEntity = game.world.spawn({
         type: entityType,
         name: entityType.name,
@@ -111,22 +115,20 @@ export const SceneMenu = ({ entity, position, setIsOpen }: SceneMenuProps) => {
           )}
           <SubMenu
             label="New Entity"
-            options={[
-              { label: "New Empty", onClick: () => createEntity(Empty) },
-              { label: "New Rigidbody2D", onClick: () => createEntity(Rigidbody2D) },
-              { label: "New Sprite2D", onClick: () => createEntity(Sprite2D) },
-            ]}
+            options={allowedEntities.map(entityType => ({
+              label: `${entityType.name}`,
+              onClick: () => createEntity(entityType),
+            }))}
           />
         </>
       ) : (
         <>
           <SubMenu
             label="New Entity"
-            options={[
-              { label: "New Empty", onClick: () => createEntity(Empty) },
-              { label: "New Rigidbody2D", onClick: () => createEntity(Rigidbody2D) },
-              { label: "New Sprite2D", onClick: () => createEntity(Sprite2D) },
-            ]}
+            options={allowedEntities.map(entityType => ({
+              label: `${entityType.name}`,
+              onClick: () => createEntity(entityType),
+            }))}
           />
           <MenuItem onClick={handlePaste} label="Paste" disabled={!copiedEntity} />
         </>
