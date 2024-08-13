@@ -22,7 +22,10 @@ export const Panel: FC<PanelProps> = ({ className, tabs, onDropTab, panelId }) =
   const tabsRef = useRef<HTMLDivElement>(null);
   const portalNodes = useMemo(() => {
     return tabs.reduce((nodes, tab) => {
-      nodes[tab.id] = portals.createHtmlPortalNode();
+      const node = portals.createHtmlPortalNode({
+        attributes: { class: "h-full" },
+      });
+      nodes[tab.id] = node;
       return nodes;
     }, {} as Record<string, ReturnType<typeof portals.createHtmlPortalNode>>);
   }, [tabs]);
@@ -82,7 +85,7 @@ export const Panel: FC<PanelProps> = ({ className, tabs, onDropTab, panelId }) =
           ))}
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto custom-scrollbar">
+      <div className="flex-1 overflow-y-auto custom-scrollbar h-full">
         {tabs.map(
           tab =>
             tab.id === activeTab && (
