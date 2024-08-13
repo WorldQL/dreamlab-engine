@@ -1,6 +1,6 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import { IVector2 } from "../../../math/vector/vector2.ts";
-import { EntityRenamed } from "../../../signals/mod.ts";
+import { IVector2, Vector2 } from "../../../math/mod.ts";
+import { EntityRenamed, EntityResize, EntityTransformUpdate } from "../../../signals/mod.ts";
 import { ValueChanged } from "../../../value/mod.ts";
 import { Entity, EntityContext } from "../../entity.ts";
 import { PixiEntity } from "../../pixi-entity.ts";
@@ -23,7 +23,7 @@ export class EditorFakeCamera extends PixiEntity {
     if (!this.#gfx) throw new Error("no graphics context");
     if (!this.#text) throw new Error("no text object");
 
-    const bounds = this.#bounds;
+    const bounds = Vector2.mul(this.#bounds, this.globalTransform.scale);
     this.#text.x = bounds.x / -2;
     this.#text.y = bounds.y / -2 - 0.33;
     this.#gfx
@@ -80,6 +80,8 @@ export class EditorFakeCamera extends PixiEntity {
     this.container.addChild(this.#text);
     this.container.addChild(this.#gfx);
 
+    // TODO: figure out why EntityResize doesnt fire
+    this.on(EntityTransformUpdate, () => this.#draw());
     this.on(EntityRenamed, () => this.#updateText());
 
     const activeValue = this.values.get("active");
