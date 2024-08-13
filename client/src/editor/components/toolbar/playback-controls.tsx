@@ -5,9 +5,11 @@ import { memo } from "react";
 import { isPausedAtom, isRunningAtom } from "../../context/editor-context.tsx";
 import { IconButton } from "../ui/icon-button.tsx";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip.tsx";
-import { playModeGame } from "../../global-game.ts";
-import { loadSceneDefinition, serializeSceneDefinition } from "@dreamlab/scene";
-import { useGame } from "../../context/game-context.ts";
+import { setPlayModeGame, useGame, usePlayModeGame } from "../../context/game-context.ts";
+import { generateCUID } from "@dreamlab/vendor/cuid.ts";
+import { connectToGame } from "../../../game-connection.ts";
+import { JSON_CODEC } from "@dreamlab/proto/codecs/simple-json.ts";
+import { setupGame } from "../../../game-setup.ts";
 
 // TODO: Synchronize these with the actual game state.
 const playAtom = atom(null, (_, set) => set(isRunningAtom, true));
@@ -17,8 +19,9 @@ const stopAtom = atom(null, (_, set) => {
 });
 const pauseAtom = atom(null, (_, set) => set(isPausedAtom, isPaused => !isPaused));
 
-const PlaybackControls = () => {
+const PlaybackControls = ({ playModeGameDiv }: { playModeGameDiv: HTMLDivElement }) => {
   const game = useGame();
+
   const isRunning = useAtomValue(isRunningAtom);
   const isPaused = useAtomValue(isPausedAtom);
 
@@ -31,16 +34,27 @@ const PlaybackControls = () => {
       <Tooltip>
         <TooltipTrigger asChild>
           <IconButton
-            onClick={() => {
-              const world = serializeSceneDefinition(game);
-              console.log(JSON.stringify(world));
-              // TODO(Charlotte): serialize game, create play mode game, switch viewport to play mode game.
-              // we should be serializing from game.world._.EditorEntities so that we can populate game.local and stuff
+            onClick={async () => {
+              const connectUrl = new URL(
+                `ws://127.0.0.1:8000/api/v1/connect/${game.instanceId}`,
+              );
+              connectUrl.searchParams.set("player_id", generateCUID("ply"));
+              connectUrl.searchParams.set(
+                "nickname",
+                "Player" + Math.floor(Math.random() * 999) + 1,
+              );
+              connectUrl.searchParams.set("play_session", "1");
 
-              // this is complicated by multiplayer editing (we need to send a play request to the server
-              // so that *it* can handle world serialization and boot its play-mode instance et cetera)
+              const playSocket = new WebSocket(connectUrl);
+              const [playGame, conn, _handshake] = await connectToGame(
+                game.instanceId,
+                playModeGameDiv,
+                playSocket,
+                JSON_CODEC,
+              );
+              await setupGame(playGame, conn, false);
+              setPlayModeGame(playGame);
 
-              // currentGame.paused = false;
               handlePlay();
             }}
             icon={Rocket}
@@ -57,7 +71,8 @@ const PlaybackControls = () => {
         <TooltipTrigger asChild>
           <IconButton
             onClick={() => {
-              playModeGame.paused = true;
+              const playModeGame = usePlayModeGame();
+              playModeGame!.paused = true;
               handlePause();
             }}
             icon={isPaused ? Play : Pause}
@@ -75,8 +90,9 @@ const PlaybackControls = () => {
           <IconButton
             onClick={() => {
               // TODO(Charlotte): switch viewport back to editor view
-
-              game.paused = true;
+              const playModeGame = usePlayModeGame();
+              playModeGame?.shutdown();
+              setPlayModeGame(undefined);
               handleStop();
             }}
             icon={Square}

@@ -39,7 +39,7 @@ export const serveScriptEditingAPI = (router: Router) => {
       const files: string[] = [];
       const entries = fs.expandGlob("**/*", {
         root: worldFolder,
-        exclude: ["node_modules", ".git", "_dist", "*-esbuild.js"],
+        exclude: ["node_modules", ".git", "_dist", "_dist_play", "*-esbuild.js"],
       });
 
       for await (const entry of entries) {

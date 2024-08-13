@@ -176,7 +176,7 @@ export const EditorLayout = ({
                 </button>
               </div>
             </div>
-            <PlaybackControls />
+            <PlaybackControls playModeGameDiv={playModeGameDiv} />
           </div>
         </div>
         <div className="relative flex-1 overflow-hidden">
