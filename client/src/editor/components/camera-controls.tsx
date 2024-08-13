@@ -25,10 +25,10 @@ export const CameraControls = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }
     const cursorStyle = isDraggingRef.current
       ? "grabbing"
       : isSpaceDownRef.current
-        ? "grab"
-        : isCtrlDownRef.current
-          ? "zoom-in"
-          : "default";
+      ? "grab"
+      : isCtrlDownRef.current
+      ? "zoom-in"
+      : "default";
 
     if (cursorStyle !== "default") {
       container.style.cursor = cursorStyle;
@@ -192,23 +192,27 @@ export const CameraControls = ({ gameDiv }: { readonly gameDiv: HTMLDivElement }
   ]);
 
   return (
-    <div ref={gameContainerRef} className="absolute inset-0" id="dreamlab-pointer-style-target">
-      <div className="absolute bottom-4 left-4 bg-white p-2 rounded shadow">
-        <div className="flex items-center space-x-2">
-          <Move className="w-4 h-4" />
+    <div
+      ref={gameContainerRef}
+      className="absolute inset-0 select-none"
+      id="dreamlab-pointer-style-target"
+    >
+      <div className="absolute bottom-4 left-4 bg-white leading-tight bg-opacity-70 hover:bg-opacity-100 p-1 rounded shadow text-xs transition-opacity duration-200">
+        <div className="flex items-center space-x-1">
+          <Move className="w-3 h-3" />
           <span>
-            Camera Position: ({cameraPosition.x.toFixed(2)}, {cameraPosition.y.toFixed(2)})
+            Camera: ({cameraPosition.x.toFixed(2)}, {cameraPosition.y.toFixed(2)})
           </span>
         </div>
-        <div className="flex items-center space-x-2">
-          <MousePointer2 className="w-4 h-4" />
+        <div className="flex items-center space-x-1">
+          <MousePointer2 className="w-3 h-3" />
           <span>
-            Cursor Position: ({cursorPosition.x.toFixed(0)}, {cursorPosition.y.toFixed(0)})
+            Cursor: ({cursorPosition.x.toFixed(0)}, {cursorPosition.y.toFixed(0)})
           </span>
         </div>
-        <div className="flex items-center space-x-2">
-          <ZoomIn className="w-4 h-4" />
-          <span>Zoom Scale: {zoomScale.toFixed(2)}x</span>
+        <div className="flex items-center space-x-1">
+          <ZoomIn className="w-3 h-3" />
+          <span>Zoom: {zoomScale.toFixed(2)}x</span>
         </div>
       </div>
     </div>
