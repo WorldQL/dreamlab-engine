@@ -10,14 +10,14 @@ import { renderEditorUI } from "./editor/editor-ui-main.tsx";
 import { preloadFonts } from "./fonts.ts";
 import { ClientConnection } from "./networking/net-connection.ts";
 
-// TODO: use args from the window.location.searchParams
-// we can still support this as a fallback for developer mode though. it's useful
-
 const fonts = preloadFonts({
   families: ["Inter", "Iosevka"],
   styles: ["normal"],
   weights: ["400", "500"],
 });
+
+// TODO: use args from the window.location.searchParams
+// we can still support this as a fallback for developer mode though. it's useful
 
 const instanceId = NIL_UUID;
 const connectUrl = new URL(`ws://127.0.0.1:8000/api/v1/connect/${instanceId}`);
