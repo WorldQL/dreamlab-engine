@@ -3,8 +3,8 @@ import { ClientGame } from "@dreamlab/engine";
 import { createContext, useContext } from "react";
 
 export interface GlobalGames {
-  editGame: ClientGame;
-  playGame?: ClientGame;
+  edit: ClientGame;
+  play?: ClientGame;
 }
 
 // dont actually use this unless you are main.ts lol
@@ -17,16 +17,16 @@ export const GameContext = createContext<GlobalGames | undefined>(undefined);
 export const useGame = (): ClientGame => {
   const games = useContext(GameContext);
   if (games === undefined) throw new Error("No game context was present!");
-  return games.editGame;
+  return games.edit;
 };
 
 export const usePlayModeGame = (): ClientGame | undefined => {
   const games = _theGlobalGames;
   if (games === undefined) throw new Error("No game context was present!");
-  return games.playGame;
+  return games.play;
 };
 
 export const setPlayModeGame = (game: ClientGame | undefined) => {
   const games = _theGlobalGames;
-  games.playGame = game;
+  games.play = game;
 };

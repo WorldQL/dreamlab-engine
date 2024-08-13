@@ -32,7 +32,7 @@ playContainer.style.width = "100%";
 playContainer.style.height = "100%";
 
 const setup = async (conn: ClientConnection, games: GlobalGames, editMode: boolean) => {
-  const game = games.editGame;
+  const game = games.edit;
 
   if (editMode) {
     renderEditorUI(games, container, playContainer);
@@ -49,7 +49,7 @@ const setup = async (conn: ClientConnection, games: GlobalGames, editMode: boole
     const delta = time - now;
     now = time;
     game.tickClient(delta);
-    games.playGame?.tickClient(delta);
+    games.play?.tickClient(delta);
 
     requestAnimationFrame(onFrame);
   };
@@ -60,7 +60,7 @@ const setup = async (conn: ClientConnection, games: GlobalGames, editMode: boole
 const socket = new WebSocket(connectUrl.toString());
 Object.defineProperty(window, "socket", { value: socket });
 const [game, conn, handshake] = await connectToGame(instanceId, container, socket, JSON_CODEC);
-const games: GlobalGames = { editGame: game };
+const games: GlobalGames = { edit: game };
 _setGlobalGames(games);
 Object.defineProperties(window, {
   game: { value: game },
