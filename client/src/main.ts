@@ -1,16 +1,23 @@
 import { Camera, ClientGame, Entity, GameStatus, Gizmo } from "@dreamlab/engine";
 import { JSON_CODEC } from "@dreamlab/proto/codecs/simple-json.ts";
-import { ServerPacket } from "@dreamlab/proto/play.ts";
-import { ClientConnection } from "./networking/net-connection.ts";
 import { ReceivedInitialNetworkSnapshot } from "@dreamlab/proto/common/signals.ts";
+import { ServerPacket } from "@dreamlab/proto/play.ts";
 import { convertEntityDefinition, ProjectSchema } from "@dreamlab/scene";
-import * as internal from "../../engine/internal.ts";
-import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
+import { NIL_UUID } from "jsr:@std/uuid@1/constants";
+import * as internal from "../../engine/internal.ts";
 import { renderEditorUI } from "./editor/editor-ui-main.tsx";
+import { preloadFonts } from "./fonts.ts";
+import { ClientConnection } from "./networking/net-connection.ts";
 
 // TODO: use args from the window.location.searchParams
 // we can still support this as a fallback for developer mode though. it's useful
+
+const fonts = preloadFonts({
+  families: ["Inter", "Iosevka"],
+  styles: ["normal"],
+  weights: ["400", "500"],
+});
 
 const instanceId = NIL_UUID;
 const connectUrl = new URL(`ws://127.0.0.1:8000/api/v1/connect/${instanceId}`);
@@ -29,6 +36,7 @@ const setup = async (conn: ClientConnection, game: ClientGame, editMode: boolean
   }
 
   conn.setup(game);
+  await fonts;
   await game.initialize();
 
   const projectDesc = await game
