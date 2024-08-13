@@ -5,7 +5,7 @@ import { ValueChanged } from "../../../value/mod.ts";
 import { Entity, EntityContext } from "../../entity.ts";
 import { PixiEntity } from "../../pixi-entity.ts";
 import { Camera } from "../camera.ts";
-import { createLabel, Label } from "./_label.ts";
+import { createLabel, Label } from "./_debug.ts";
 
 export class EditorFakeCamera extends PixiEntity {
   static {
