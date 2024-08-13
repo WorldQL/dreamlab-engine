@@ -1,9 +1,10 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { IVector2, Vector2 } from "../../../math/mod.ts";
-import { EntityRenamed, EntityResize, EntityTransformUpdate } from "../../../signals/mod.ts";
+import { EntityRenamed, EntityResize } from "../../../signals/mod.ts";
 import { ValueChanged } from "../../../value/mod.ts";
 import { Entity, EntityContext } from "../../entity.ts";
 import { PixiEntity } from "../../pixi-entity.ts";
+import { Camera } from "../camera.ts";
 
 export class EditorFakeCamera extends PixiEntity {
   static {
@@ -12,6 +13,10 @@ export class EditorFakeCamera extends PixiEntity {
 
   // intentionally different to distinguish from real camera
   public static readonly icon = "📷";
+  readonly bounds: Readonly<IVector2> = Object.freeze({
+    x: Camera.TARGET_VIEWPORT_SIZE,
+    y: Camera.TARGET_VIEWPORT_SIZE,
+  });
 
   active: boolean = false;
   smooth: number = 0.01;
@@ -24,13 +29,26 @@ export class EditorFakeCamera extends PixiEntity {
     if (!this.#gfx) throw new Error("no graphics context");
     if (!this.#text) throw new Error("no text object");
 
-    const bounds = Vector2.mul(this.#bounds, this.globalTransform.scale);
-    this.#text.x = bounds.x / -2;
-    this.#text.y = bounds.y / -2 - 0.33;
+    const bounds = Vector2.mul(this.bounds, this.globalTransform.scale);
+    this.#text.x = bounds.x / -2 - 0.05;
+    this.#text.y = bounds.y / -2 - 0.36;
+
+    const color: PIXI.ColorSource = 0xffffff;
+    const alpha = 0.8;
+    const width: number = 0.02;
+
+    this.#text.alpha = alpha;
+    this.#gfx.alpha = alpha;
+
     this.#gfx
       .clear()
       .rect(bounds.x / -2, bounds.y / -2, bounds.x, bounds.y)
-      .stroke({ color: "white", width: 0.02 });
+      .stroke({ color, width, alignment: -1 })
+      .moveTo(bounds.x / -2 - width, bounds.y / -2 - width)
+      .lineTo(bounds.x / 2 + width, bounds.y / 2 + width)
+      .moveTo(bounds.x / -2 - width, bounds.y / 2 + width)
+      .lineTo(bounds.x / 2 + width, bounds.y / -2 - width)
+      .stroke({ color, width });
   }
 
   #updateText() {
@@ -39,18 +57,6 @@ export class EditorFakeCamera extends PixiEntity {
     let text = this.name;
     if (this.active) text += " (active)";
     this.#text.text = text;
-  }
-
-  #bounds: IVector2 = { x: 1, y: 1 };
-  #updateBounds(bounds: IVector2) {
-    // TODO: Return aspect ratio of current viewport
-    this.#bounds.x = bounds.x;
-    this.#bounds.y = bounds.y;
-
-    if (this.#gfx && this.#text) this.#draw();
-  }
-  get bounds(): Readonly<IVector2> {
-    return this.#bounds;
   }
 
   constructor(ctx: EntityContext) {
