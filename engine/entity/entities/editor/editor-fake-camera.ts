@@ -80,8 +80,7 @@ export class EditorFakeCamera extends PixiEntity {
     this.container.addChild(this.#text);
     this.container.addChild(this.#gfx);
 
-    // TODO: figure out why EntityResize doesnt fire
-    this.on(EntityTransformUpdate, () => this.#draw());
+    this.on(EntityResize, () => this.#draw());
     this.on(EntityRenamed, () => this.#updateText());
 
     const activeValue = this.values.get("active");

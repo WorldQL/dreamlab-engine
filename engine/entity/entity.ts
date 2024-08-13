@@ -816,19 +816,12 @@ export abstract class Entity implements ISignalHandler {
 
     if (!this.#spawned) this.#spawn();
 
-    this.#prevPosition = this.globalTransform.position.bare();
-    this.#prevRotation = this.globalTransform.rotation;
-    this.#prevScale = this.globalTransform.scale.bare();
+    const tr = this.globalTransform;
+    this.#prevPosition = tr.position.bare();
+    this.#prevRotation = tr.rotation;
+    this.#prevScale = tr.scale.bare();
 
     this.fire(EntityPreUpdate);
-
-    const tr = this.globalTransform;
-    this.#origPosition.x = tr.position.x;
-    this.#origPosition.y = tr.position.y;
-    this.#origScale.x = tr.scale.x;
-    this.#origScale.y = tr.scale.y;
-    this.#origRotation = tr.rotation;
-    this.#origZ = tr.z;
 
     for (const child of this.#children.values()) {
       try {
@@ -852,6 +845,11 @@ export abstract class Entity implements ISignalHandler {
     if (this.#origRotation !== tr.rotation)
       this.fire(EntityRotate, this.#origRotation, tr.rotation);
     if (this.#origZ !== tr.z) this.fire(EntityZChanged, this.#origZ, tr.z);
+
+    this.#origPosition.assign(tr.position);
+    this.#origScale.assign(tr.scale);
+    this.#origRotation = tr.rotation;
+    this.#origZ = tr.z;
 
     for (const child of this.#children.values()) {
       try {
