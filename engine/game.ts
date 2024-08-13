@@ -42,9 +42,9 @@ export interface ServerGameOptions extends GameOptions {
 }
 
 export enum GameStatus {
-  Loading,
-  Running,
-  Shutdown,
+  Loading = "loading",
+  Running = "running",
+  Shutdown = "shutdown",
 }
 
 export abstract class BaseGame implements ISignalHandler {
