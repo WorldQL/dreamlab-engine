@@ -1,6 +1,7 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { IVector2 } from "../../../math/vector/vector2.ts";
 import { EntityRenamed } from "../../../signals/mod.ts";
+import { ValueChanged } from "../../../value/mod.ts";
 import { Entity, EntityContext } from "../../entity.ts";
 import { PixiEntity } from "../../pixi-entity.ts";
 
@@ -21,18 +22,22 @@ export class EditorFakeCamera extends PixiEntity {
   #draw() {
     if (!this.#gfx) throw new Error("no graphics context");
     if (!this.#text) throw new Error("no text object");
-    const bounds = this.#bounds;
 
-    let text = this.name;
-    if (this.active) text += "(active)";
-    this.#text.text = text;
+    const bounds = this.#bounds;
     this.#text.x = bounds.x / -2;
     this.#text.y = bounds.y / -2 - 0.33;
-
     this.#gfx
       .clear()
       .rect(bounds.x / -2, bounds.y / -2, bounds.x, bounds.y)
       .stroke({ color: "white", width: 0.02 });
+  }
+
+  #updateText() {
+    if (!this.#text) throw new Error("no text object");
+
+    let text = this.name;
+    if (this.active) text += " (active)";
+    this.#text.text = text;
   }
 
   #bounds: IVector2 = { x: 1, y: 1 };
@@ -70,10 +75,16 @@ export class EditorFakeCamera extends PixiEntity {
 
     this.#text.scale.set(0.002);
     this.#draw();
+    this.#updateText();
 
     this.container.addChild(this.#text);
     this.container.addChild(this.#gfx);
 
-    this.on(EntityRenamed, () => this.#draw());
+    this.on(EntityRenamed, () => this.#updateText());
+
+    const activeValue = this.values.get("active");
+    this.listen(this.game.values, ValueChanged, ({ value }) => {
+      if (value === activeValue) this.#updateText();
+    });
   }
 }
