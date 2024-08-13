@@ -12,6 +12,11 @@ interface ConnectedClient {
   codec: PlayCodec;
 }
 
+export interface GameSessionOpts {
+  editMode: boolean;
+  worldSubDirectory: string;
+}
+
 export class GameSession {
   ipc: IPCWorker;
 
@@ -25,16 +30,22 @@ export class GameSession {
 
   startedAt = new Date();
 
-  constructor(public parent: GameInstance) {
+  constructor(
+    public parent: GameInstance,
+    opts: GameSessionOpts = {
+      editMode: this.parent.info.editMode ?? false,
+      worldSubDirectory: "_dist",
+    },
+  ) {
     const addr = CONFIG.bindAddress;
     this.ipc = new IPCWorker({
       workerId: generateCUID("wrk"),
       workerConnectUrl: `ws://${addr.hostname}:${addr.port}/internal/worker`,
       instanceId: parent.info.instanceId,
       worldId: parent.info.worldId,
-      worldDirectory: path.join(parent.info.worldDirectory, "_dist"),
+      worldDirectory: path.join(parent.info.worldDirectory, opts.worldSubDirectory),
       worldResourcesBaseUrl: `${CONFIG.publicUrlBase}/worlds`, // TODO: replace addr with public url from config
-      editMode: this.parent.info.editMode ?? false,
+      editMode: opts.editMode,
     });
 
     this.#readyPromise = new Promise((resolve, _reject) => {

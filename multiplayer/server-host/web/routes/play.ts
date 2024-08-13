@@ -107,12 +107,22 @@ export const servePlayRoutes = async (router: Router) => {
 
     // TODO: potentially race a sleep 10_000ms and a instance.waitForSessionBoot
 
-    if (instance.session === undefined)
+    let session = instance.session;
+    if (session === undefined)
       throw new JsonAPIError(
         Status.ServiceUnavailable,
         "The instance with the given ID is not running a session.",
       );
 
-    await handlePlayerConnectionRequest(ctx, gameAuthSecret, instance.session);
+    if (ctx.request.url.searchParams.get("play_session") && instance.info.editMode) {
+      session = instance.playSession;
+      if (session === undefined)
+        throw new JsonAPIError(
+          Status.ServiceUnavailable,
+          "The instance with the given ID is not running a play session.",
+        );
+    }
+
+    await handlePlayerConnectionRequest(ctx, gameAuthSecret, session);
   });
 };

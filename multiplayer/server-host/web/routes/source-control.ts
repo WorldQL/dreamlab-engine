@@ -33,7 +33,7 @@ export const serveSourceControlAPI = (router: Router) => {
       throw new JsonAPIError(Status.Forbidden, "The instance is not in edit mode");
     }
 
-    const sourceRoot = path.dirname(instance.info.worldDirectory);
+    const sourceRoot = instance.info.worldDirectory;
 
     const commitProcess = new Deno.Command("git", {
       args: [
@@ -71,7 +71,7 @@ export const serveSourceControlAPI = (router: Router) => {
       throw new JsonAPIError(Status.Forbidden, "The instance is not in edit mode");
     }
 
-    const sourceRoot = path.dirname(instance.info.worldDirectory);
+    const sourceRoot = instance.info.worldDirectory;
 
     const filePath = ctx.params.path;
     if (filePath === undefined || filePath.length === 0) {
@@ -124,7 +124,7 @@ export const serveSourceControlAPI = (router: Router) => {
       throw new JsonAPIError(Status.Forbidden, "The instance is not in edit mode");
     }
 
-    const sourceRoot = path.dirname(instance.info.worldDirectory);
+    const sourceRoot = instance.info.worldDirectory;
 
     const statusProcess = new Deno.Command("git", {
       args: ["status", "--porcelain"],
@@ -194,7 +194,7 @@ export const serveSourceControlAPI = (router: Router) => {
       throw new JsonAPIError(Status.Forbidden, "The instance is not in edit mode");
     }
 
-    const sourceRoot = path.dirname(instance.info.worldDirectory);
+    const sourceRoot = instance.info.worldDirectory;
 
     const statusProcess = new Deno.Command("git", {
       args: ["diff", "--cached", "--name-status"],
@@ -260,7 +260,7 @@ export const serveSourceControlAPI = (router: Router) => {
       throw new JsonAPIError(Status.BadRequest, "File path is required");
     }
 
-    const sourceRoot = path.dirname(instance.info.worldDirectory);
+    const sourceRoot = instance.info.worldDirectory;
 
     const fullPath = path.join(sourceRoot, filePath);
 
@@ -325,7 +325,7 @@ export const serveSourceControlAPI = (router: Router) => {
       throw new JsonAPIError(Status.BadRequest, "File path is required");
     }
 
-    const sourceRoot = path.dirname(instance.info.worldDirectory);
+    const sourceRoot = instance.info.worldDirectory;
 
     try {
       const lsFilesProcess = new Deno.Command("git", {
@@ -382,7 +382,7 @@ export const serveSourceControlAPI = (router: Router) => {
       throw new JsonAPIError(Status.Forbidden, "The instance is not in edit mode");
     }
 
-    const sourceRoot = path.dirname(instance.info.worldDirectory);
+    const sourceRoot = instance.info.worldDirectory;
 
     const filePath = ctx.params.path;
     if (filePath === undefined) {
@@ -425,7 +425,7 @@ export const serveSourceControlAPI = (router: Router) => {
       throw new JsonAPIError(Status.Forbidden, "The instance is not in edit mode");
     }
 
-    const sourceRoot = path.dirname(instance.info.worldDirectory);
+    const sourceRoot = instance.info.worldDirectory;
 
     const requestBody = await ctx.request.body.json();
     const filePath = requestBody.path;
@@ -475,7 +475,7 @@ export const serveSourceControlAPI = (router: Router) => {
       throw new JsonAPIError(Status.Forbidden, "The instance is not in edit mode");
     }
 
-    const sourceRoot = path.dirname(instance.info.worldDirectory);
+    const sourceRoot = instance.info.worldDirectory;
 
     try {
       const logProcess = new Deno.Command("git", {

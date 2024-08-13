@@ -128,18 +128,51 @@ export class GameInstance {
     const err = await this.#bootedPromise;
     if (err) throw err;
   }
+
+  #notifyPlayBooted: (() => void) | undefined;
+  // deno-lint-ignore no-explicit-any
+  #notifyPlayBootFail: ((reason?: any) => void) | undefined;
+  #playBootedPromise: Promise<unknown> | undefined;
+  #playBooting = false;
+  resetPlayBooting() {
+    this.#playBooting = true;
+    this.#playBootedPromise = new Promise<void>((resolve, reject) => {
+      this.#notifyPlayBooted = resolve;
+      this.#notifyPlayBootFail = reject;
+    }).catch(e => e);
+  }
+  notifyPlaySessionBoot() {
+    if (!this.#playBooting) return;
+    this.#notifyPlayBooted?.();
+    this.#playBooting = false;
+  }
+  // deno-lint-ignore no-explicit-any
+  notifyPlaySessionBootFail(reason?: any) {
+    if (!this.#playBooting) return;
+    this.#notifyPlayBootFail?.(reason);
+    this.#playBooting = false;
+  }
+  async waitForPlaySessionBoot() {
+    if (!this.#playBooting) return;
+    const err = await this.#playBootedPromise;
+    if (err) throw err;
+  }
   // #endregion
 
   session?: GameSession;
+  // only used in edit mode - running play session for the instance
+  playSession?: GameSession;
 
   shutdown() {
     this.session?.shutdown();
+    this.playSession?.shutdown();
     this.setStatus(GameInstanceState.Idle, "Shut down");
   }
 
   restart() {
     this.setStatus(GameInstanceState.Starting, "Restarting");
     this.session?.shutdown();
+    this.playSession?.shutdown();
     bootInstance(this, true);
   }
 }
@@ -183,4 +216,28 @@ export const bootInstance = async (instance: GameInstance, restart: boolean = fa
   await session.ready();
   instance.setStatus(GameInstanceState.Running, "Started");
   instance.notifySessionBoot();
+};
+
+export const bootPlaySession = async (instance: GameInstance) => {
+  instance.resetPlayBooting();
+
+  try {
+    await bundleWorld(instance.info.worldId, {
+      dir: instance.info.worldDirectory,
+      denoJsonPath: "./deno.json",
+      outDirName: "_dist_play",
+    });
+  } catch (err) {
+    instance.logs.error("Failed to build world bundle for play session", { err: err.stack });
+    instance.notifyPlaySessionBootFail();
+    return;
+  }
+
+  const session = new GameSession(instance, {
+    editMode: false,
+    worldSubDirectory: "_dist_play",
+  });
+  instance.playSession = session;
+  await session.ready();
+  instance.notifyPlaySessionBoot();
 };
