@@ -21,6 +21,7 @@ export interface BaseNetworking {
   sendCustomMessage(to: ConnectionId, channel: string, data: CustomMessageData): void;
   broadcastCustomMessage(channel: string, data: CustomMessageData): void;
   onReceiveCustomMessage(listener: CustomMessageListener): void;
+  disconnect(): void;
 }
 
 export interface ClientNetworking extends BaseNetworking {}

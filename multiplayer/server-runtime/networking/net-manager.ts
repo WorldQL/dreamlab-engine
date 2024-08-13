@@ -145,6 +145,9 @@ export class ServerNetworkManager {
       onReceiveCustomMessage(listener: CustomMessageListener) {
         net.customMessageListeners.push(listener);
       },
+      disconnect() {
+        // TODO: uhhhh
+      },
     };
   }
 }

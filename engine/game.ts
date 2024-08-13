@@ -145,6 +145,7 @@ export abstract class BaseGame implements ISignalHandler {
   }
 
   tick() {
+    if (this.status === GameStatus.Shutdown) return;
     if (!this.#initialized)
       throw new Error("Illegal state: Game was not initialized before tick loop began!");
 
@@ -228,13 +229,16 @@ export class ServerGame extends BaseGame {
   readonly remote: ServerRoot = new ServerRoot(this);
   readonly local: undefined;
 
-  drawFrame: undefined;
-
   readonly network: ServerNetworking;
 
   constructor(opts: ServerGameOptions) {
     super(opts);
     this.network = opts.network;
+  }
+
+  override shutdown(): void {
+    super.shutdown();
+    this.network.disconnect();
   }
 
   [internal.preTickEntities]() {
@@ -273,16 +277,21 @@ export class ClientGame extends BaseGame {
     this.values[internal.setValueRegistrySource](this.network.self); // FIXME(Charlotte): remove (ValueRegistry has Game so we can just do game.network.self)
   }
 
+  [internal.inputsShutdownFn]: (() => void) | undefined;
+
   async initialize() {
     await super.initialize();
     await this.renderer.initialize();
-    this.inputs[internal.inputsRegisterHandlers]();
+    this[internal.inputsShutdownFn] = this.inputs[internal.inputsRegisterHandlers]();
     this.ui[internal.uiInit]();
   }
 
   override shutdown() {
+    this[internal.inputsShutdownFn]?.();
     this.ui[internal.uiDestroy]();
     super.shutdown();
+    this.renderer.app.destroy({ removeView: true });
+    this.network.disconnect();
   }
 
   readonly local: LocalRoot = new LocalRoot(this);
@@ -290,6 +299,8 @@ export class ClientGame extends BaseGame {
 
   #tickAccumulator = 0;
   tickClient(delta: number): void {
+    if (this.status === GameStatus.Shutdown) return;
+
     this.#tickAccumulator += delta;
 
     while (this.#tickAccumulator >= this.physics.tickDelta) {

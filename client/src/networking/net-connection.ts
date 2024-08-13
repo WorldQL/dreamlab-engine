@@ -113,6 +113,10 @@ export class ClientConnection {
       onReceiveCustomMessage(listener: CustomMessageListener) {
         conn.customMessageListeners.push(listener);
       },
+      disconnect() {
+        conn.socket.close();
+        // do we want to clear listeners here?
+      },
     };
   }
 }

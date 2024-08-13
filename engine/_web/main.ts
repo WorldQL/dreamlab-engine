@@ -27,6 +27,7 @@ const game = new ClientGame({
     sendCustomMessage() {},
     broadcastCustomMessage() {},
     onReceiveCustomMessage() {},
+    disconnect() {},
   },
   container,
 });
