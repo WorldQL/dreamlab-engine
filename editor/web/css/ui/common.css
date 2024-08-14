@@ -24,3 +24,7 @@ h3 {
   display: block;
   margin-bottom: 0.5em;
 }
+
+section > h1 {
+  font-weight: bold;
+}
