@@ -3,14 +3,14 @@ import {
   bundleEngine,
   bundleEngineDependencies,
   bundleStyles,
-  bundleUi,
+  bundleUI,
 } from "../build-system/mod.ts";
 
 if (import.meta.main) {
   const watch = Deno.args.includes("--watch");
 
   await bundleEngineDependencies("../engine/", "./web/dist");
-  await bundleUi("../ui/", "./web/dist");
+  await bundleUI("../ui/", "./web/dist");
   await bundleEngine("../engine/", "./web/dist", undefined, { watch });
   await bundleStyles("./web/dist", [{ in: "./web/styles.css", out: "main" }]);
   await bundleClient(

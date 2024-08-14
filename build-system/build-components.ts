@@ -114,7 +114,7 @@ export const bundleEngine = async (
 /**
  *
  */
-export const bundleUi = async (
+export const bundleUI = async (
   engineDir: string,
   outdir: string,
   denoJsonPath: string = "./deno.json",
