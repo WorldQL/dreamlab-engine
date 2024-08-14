@@ -1,0 +1,5 @@
+#behavior-panel {
+  min-height: calc(50% - 3em);
+  display: flex;
+  flex-direction: column;
+}
