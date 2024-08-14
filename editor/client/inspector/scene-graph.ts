@@ -229,7 +229,7 @@ export class SceneGraph implements InspectorUIComponent {
       // TODO: handle range-select
       const selectMultiple = event.getModifierState("Control");
 
-      const entryElement = event.target.closest("details[data-entity]");
+      const entryElement = event.target.closest("details[data-entity] > summary")?.parentNode;
       if (!entryElement) {
         if (!selectMultiple) ui.selectedEntity.entities = [];
         return;
