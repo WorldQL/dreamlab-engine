@@ -28,13 +28,13 @@ export const SceneMenu = ({ entity, position, setIsOpen }: SceneMenuProps) => {
 
   const createEntity = useCallback(
     (entityType: EntityConstructor) => {
-      const newEntity = game.world.spawn({
+      const parent = entity ? entity : game.world._.EditEntities._.world;
+      const newEntity = parent.spawn({
         type: entityType,
         name: entityType.name,
       });
 
       setHistory([...history, { type: "add", entity: newEntity }]);
-      newEntity.parent = entity ? entity : game.world._.EditEntities._.world;
       setSelectedEntity(newEntity);
       setIsOpen(false);
     },

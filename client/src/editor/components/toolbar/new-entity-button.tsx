@@ -80,11 +80,11 @@ const NewEntityModal: React.FC<NewEntityModalProps> = ({ closeMenu }) => {
 
   const createEntity = useCallback(
     (entityType: EntityConstructor) => {
-      const newEntity = game.world.spawn({
+      const parent = selectedEntity ? selectedEntity : game.world._.EditEntities._.world;
+      const newEntity = parent.spawn({
         type: entityType,
         name: entityType.name,
       });
-      newEntity.parent = selectedEntity ? selectedEntity : game.world._.EditEntities._.world;
 
       setHistory(prev => [...prev, { type: "add", entity: newEntity }]);
       closeMenu();

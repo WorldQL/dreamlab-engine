@@ -6,6 +6,8 @@ import {
   EntityRenamed,
   EntityTransformUpdate,
   Gizmo,
+  SpritesheetAdapter,
+  TextureAdapter,
   Value,
 } from "@dreamlab/engine";
 import { useAtom } from "jotai";
@@ -454,7 +456,9 @@ const Inspector = () => {
         ]}
       >
         {Object.entries(values).map(([key, value], index) =>
-          value.typeTag === String ? (
+          value.typeTag === String ||
+          value.typeTag === SpritesheetAdapter ||
+          value.typeTag === TextureAdapter ? (
             <InputField
               type="text"
               key={`${key}-${index}`}
@@ -484,7 +488,9 @@ const Inspector = () => {
               )}
             />
           ) : (
-            <></>
+            <p className="text-yellow font-bold">
+              FIXME: Could not render input field for '{key}'
+            </p>
           ),
         )}
       </Category>

@@ -22,13 +22,13 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
   let initialNetSpawnedEntityRefs = new Set<string>();
   let initialNetSpawnedEntities: Entity[] = [];
 
-  game.world.on(EntityDescendantSpawned, async event => {
+  game.world.on(EntityDescendantSpawned, event => {
     if (game.status !== GameStatus.Running) return;
 
     const entity = event.descendant;
     if (changeIgnoreSet.has(entity.ref)) return;
 
-    const definition = await serializeEntityDefinition(
+    const definition = serializeEntityDefinition(
       game,
       entity.getDefinition(),
       entity.parent!.ref,
