@@ -1,0 +1,30 @@
+html,
+body {
+  background: var(--col-bg-0);
+}
+
+main > div {
+  background: var(--col-bg-1);
+  border-radius: 4px;
+}
+
+section {
+  padding: 0.5em;
+  border-radius: 4px;
+  background-color: var(--col-bg-2);
+
+  overflow: auto;
+  text-wrap: nowrap;
+}
+
+section + section {
+  margin-top: 1em;
+}
+
+h1,
+h2,
+h3 {
+  all: unset;
+  display: block;
+  margin-bottom: 0.5em;
+}

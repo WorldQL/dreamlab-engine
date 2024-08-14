@@ -35,7 +35,6 @@ export const setupGame = async (
   const localSpawnedEntities: Entity[] = [];
 
   if (editMode) {
-    game.paused = true;
     game.physics.enabled = false;
 
     game.local.spawn({

@@ -1,0 +1,13 @@
+:root {
+  color-scheme: dark;
+  font-family: sans-serif;
+
+  --col-bg-0: #111111;
+  --col-bg-1: #181818;
+  --col-bg-2: #232323;
+  --col-bg-3: #282828;
+
+  --col-accent: #ce5bff;
+
+  --col-bg-accent-translucent: #ce5bff2a;
+}

@@ -1,0 +1,61 @@
+#scene-graph {
+  height: calc(100% - 1em);
+  display: flex;
+  flex-direction: column;
+}
+
+#scene-graph-tree {
+  flex: 1;
+}
+
+#scene-graph-tree details {
+  margin-left: 1em;
+}
+#scene-graph-tree details > summary {
+  margin-left: -1em;
+}
+
+#scene-graph-tree summary::marker {
+  content: "";
+}
+
+#scene-graph-tree details {
+  margin-top: 0.25em;
+}
+
+#scene-graph-tree details > summary {
+  border-radius: 4px;
+  padding: 0.25em;
+
+  cursor: pointer;
+}
+
+#scene-graph-tree details.drag-target > summary {
+  box-shadow: 0 0 4px 1px var(--col-accent);
+}
+
+#scene-graph-tree details.selected > summary {
+  background-color: var(--col-bg-accent-translucent);
+}
+
+#scene-graph-tree .icon {
+  display: inline-block;
+}
+
+#scene-graph-tree details > summary::before {
+  display: inline-block;
+  width: 1ch;
+  max-width: 1ch;
+  margin-right: 1ch;
+  transform: translateY(-0.25ch);
+
+  content: "⏵";
+}
+#scene-graph-tree details[open] > summary::before {
+  content: "⏷";
+}
+
+#scene-graph-tree details:not(:has(> details)) > summary::before {
+  content: "⏹" !important;
+  opacity: 0;
+}

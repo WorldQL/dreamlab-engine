@@ -1,0 +1,21 @@
+{
+  "tasks": {
+    "build": "deno run -A ./_build.ts",
+    "watch": "deno run -A ./_build.ts --watch"
+  },
+  "imports": {
+    "@dreamlab/engine": "../engine/mod.ts",
+    "@dreamlab/vendor/": "../engine/_deps/",
+    "@dreamlab/proto/": "../proto/",
+    "@dreamlab/scene": "../scene-graph/mod.ts",
+    "@dreamlab/ui": "../ui/mod.ts"
+  },
+  "compilerOptions": {
+    "lib": ["deno.window", "dom"]
+  },
+  "lint": {
+    "rules": {
+      "exclude": ["no-window"]
+    }
+  }
+}

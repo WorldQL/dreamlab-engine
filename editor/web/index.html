@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dreamlab</title>
+
+    <link rel="stylesheet" href="./dist/styles/app.css" />
+  </head>
+  <body>
+    <main class="edit-mode">
+      <div id="top-bar"></div>
+      <div id="left-sidebar"></div>
+      <div id="viewport"></div>
+      <div id="right-sidebar"></div>
+      <div id="bottom-bar"></div>
+    </main>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "@dreamlab/vendor/": "./dist/vendor/",
+          "@dreamlab/engine": "./dist/engine.js",
+          "@dreamlab/ui": "./dist/ui.js"
+        }
+      }
+    </script>
+    <script type="module" src="./dist/client-main.js"></script>
+  </body>
+</html>
