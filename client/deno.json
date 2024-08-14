@@ -1,7 +1,7 @@
 {
   "tasks": {
     "build:web": "deno run -A ./_build.ts",
-    "build:tailwind": "deno run -A npm:tailwindcss -i ./web/styles.css -o ./web/tw-generated.css",
+    "build:tailwind": "deno run -A npm:tailwindcss -i ./web/tailwind.css -o ./web/tw-generated.css",
     "build": "deno task build:tailwind & deno task build:web",
     "watch:web": "deno run -A ./_build.ts --watch",
     "watch:tailwind": "deno run -A npm:tailwindcss -i ./web/tailwind.css -o ./web/tw-generated.css --watch",
