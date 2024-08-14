@@ -17,10 +17,6 @@ section {
   text-wrap: nowrap;
 }
 
-:is(#left-sidebar, #right-sidebar) section + section {
-  margin-top: 1em;
-}
-
 h1,
 h2,
 h3 {

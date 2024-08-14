@@ -24,7 +24,6 @@ export class SceneGraph implements InspectorUIComponent {
   render(ui: InspectorUI, editUIRoot: HTMLElement) {
     const left = editUIRoot.querySelector("#left-sidebar")!;
     const container = elem("section", { id: "scene-graph" }, [elem("h1", {}, ["Scene Graph"])]);
-    container.style.height = "calc(100% - 1em)";
 
     left.append(container);
 

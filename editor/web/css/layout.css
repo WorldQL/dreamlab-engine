@@ -47,3 +47,10 @@ main > div {
 #bottom-bar {
   grid-area: bottom;
 }
+
+#left-sidebar,
+#right-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
