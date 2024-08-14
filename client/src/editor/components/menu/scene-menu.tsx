@@ -26,7 +26,7 @@ export const SceneMenu = ({ entity, position, setIsOpen }: SceneMenuProps) => {
 
   const createEntity = useCallback(
     (entityType: EntityConstructor) => {
-      const parent = entity ? entity : game.world._.EditEntities._.world;
+      const parent = entity ? entity : game.world._.EditEntities;
       const newEntity = parent.spawn({
         type: entityType,
         name: entityType.name,
@@ -57,7 +57,7 @@ export const SceneMenu = ({ entity, position, setIsOpen }: SceneMenuProps) => {
 
   const handlePaste = useCallback(() => {
     if (copiedEntity) {
-      const newEntity = copiedEntity.cloneInto(game.world);
+      const newEntity = copiedEntity.cloneInto(game.world._.EditEntities);
       setHistory([...history, { type: "add", entity: newEntity }]);
       setSelectedEntity(newEntity);
     }

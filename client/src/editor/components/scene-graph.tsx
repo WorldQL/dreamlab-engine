@@ -221,10 +221,10 @@ const SceneGraph = () => {
 
     if (
       draggedEntity &&
-      draggedEntity.parent !== game.world &&
+      draggedEntity.parent !== game.world._.EditEntities &&
       draggedEntity.parent !== draggedEntity
     ) {
-      draggedEntity.parent = game.world;
+      draggedEntity.parent = game.world._.EditEntities;
     }
   }, []);
 
