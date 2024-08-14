@@ -32,6 +32,7 @@ import { Category } from "./ui/panel.tsx";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip.tsx";
 import { useGame } from "../context/game-context.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
+import { restrictedIds } from "../utils/create-entity.ts";
 
 const Inspector = () => {
   const game = useGame();
@@ -146,6 +147,12 @@ const Inspector = () => {
 
   const handleNameChange = useCallback(
     (newName: string) => {
+      const entityId = selectedEntity?.id;
+
+      if (entityId && restrictedIds.includes(entityId)) {
+        return;
+      }
+
       setName(newName);
       if (selectedEntity) {
         selectedEntity.name = newName;
@@ -384,18 +391,20 @@ const Inspector = () => {
   return (
     <div className="h-full" onDrop={handleDrop} onDragOver={handleDragOver}>
       <div className="p-2">
-        <InputField type="text" label="Name" value={name} onChange={handleNameChange} />
+        {!restrictedIds.includes(selectedEntity.id) && (
+          <InputField type="text" label="Name" value={name} onChange={handleNameChange} />
+        )}
         <label className="text-sm font-medium text-textPrimary">Entity ID</label>
         <div className="relative mt-1 flex items-center">
           <div
             onClick={handleCopy}
-            className="flex items-center justify-between text-textPrimary cursor-pointer bg-background px-2 py-1 rounded-md w-full hover:bg-grey transition-all duration-300"
+            className="flex items-center text-textPrimary cursor-pointer bg-background px-2 py-1 rounded-md w-full hover:bg-grey transition-all duration-300"
             title={entityId}
           >
             <ClipboardCopy className="w-4 h-4 text-icon transition-transform transform hover:scale-110 flex-shrink-0" />
-            <span className="truncate ml-2">{entityId}</span>
+            <span className="truncate ml-2 flex-grow text-left">{entityId}</span>
             {copied && (
-              <span className="flex items-center text-green">
+              <span className="flex items-center text-green ml-2">
                 <Check className="w-4 h-4 mr-2 animate-pulse" />
                 <span>Copied!</span>
               </span>

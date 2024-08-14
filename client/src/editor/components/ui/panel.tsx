@@ -76,7 +76,7 @@ export const Panel: FC<PanelProps> = ({ className, tabs, onDropTab, panelId }) =
               className={`cursor-pointer px-2 py-1 whitespace-nowrap ${
                 activeTab === tab.id
                   ? "text-textPrimary bg-card rounded-t"
-                  : "text-textPrimary bg-grey"
+                  : "text-textPrimary/50 bg-grey"
               }`}
               onClick={() => setActiveTab(tab.id)}
             >
