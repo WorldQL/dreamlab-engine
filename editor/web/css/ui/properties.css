@@ -38,11 +38,6 @@
   background-color: var(--col-bg-2);
 }
 
-#properties td table {
-  margin-left: 2em;
-  width: calc(100% - 2em);
-}
-
 #properties th {
   text-align: end;
 }
