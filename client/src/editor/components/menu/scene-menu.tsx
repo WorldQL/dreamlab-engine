@@ -74,7 +74,7 @@ export const SceneMenu = ({ entity, position, setIsOpen }: SceneMenuProps) => {
 
   const handleUnparent = useCallback(() => {
     if (entity) {
-      entity.parent = game.world;
+      entity.parent = entity.parent?.parent;
       setSelectedEntity(entity);
     }
     setIsOpen(false);
