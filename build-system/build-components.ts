@@ -3,7 +3,7 @@ import {
   denoPlugins,
   dreamlabVendorExternalPlugin,
   dreamlabEngineExternalPlugin,
-  dreamlabUiExternalPlugin,
+  dreamlabUIExternalPlugin,
 } from "./_esbuild.ts";
 import * as path from "jsr:@std/path@^1";
 
@@ -98,6 +98,7 @@ export const bundleEngine = async (
   const buildOpts: esbuild.BuildOptions = {
     ...BASE_BUILD_OPTIONS,
     plugins: [
+      dreamlabVendorExternalPlugin(),
       dreamlabEngineExternalPlugin(),
       ...denoPlugins({
         loader: "native",
@@ -123,7 +124,8 @@ export const bundleUI = async (
   const buildOpts: esbuild.BuildOptions = {
     ...BASE_BUILD_OPTIONS,
     plugins: [
-      dreamlabUiExternalPlugin(),
+      dreamlabVendorExternalPlugin(),
+      dreamlabUIExternalPlugin(),
       ...denoPlugins({
         loader: "native",
         configPath: await Deno.realPath(denoJsonPath),
@@ -171,8 +173,9 @@ export const bundleClient = async (
   const buildOpts: esbuild.BuildOptions = {
     ...BASE_BUILD_OPTIONS,
     plugins: [
-      dreamlabEngineExternalPlugin(),
       dreamlabVendorExternalPlugin(),
+      dreamlabEngineExternalPlugin(),
+      dreamlabUIExternalPlugin(),
       ...denoPlugins({
         loader: "native",
         configPath: await Deno.realPath(denoJsonPath),

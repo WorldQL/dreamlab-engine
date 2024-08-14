@@ -1,15 +1,15 @@
-import {
-  Camera,
-  Empty,
-  EntityDefinition,
-  GameStatus,
-  ServerGame,
-  EditorFakeCamera,
-  Entity,
-} from "@dreamlab/engine";
+import { Empty, GameStatus, ServerGame, Entity } from "@dreamlab/engine";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 import { ServerNetworkManager } from "./networking/net-manager.ts";
 import { IPCMessageBus } from "./ipc.ts";
+
+import { useEditorFacades, dropEditorFacades } from "../../editor/common/facades/mod.ts";
+import {
+  WorldRootFacade,
+  PrefabRootFacade,
+  LocalRootFacade,
+  ServerRootFacade,
+} from "../../editor/common/facades/edit-roots.ts";
 
 import {
   ProjectSchema,
@@ -57,41 +57,28 @@ if (workerData.editMode) {
     await Promise.all(scene.registration.map(script => import(game.resolveResource(script))));
   }
 
-  // we have to do this since Camera doesn't like being spawned anywhere except game.local
-  const useEditorFacades = (def: EntityDefinition) => {
-    if (def.type === Camera) def.type = EditorFakeCamera;
-    def.children?.forEach(c => useEditorFacades(c));
-    return def;
-  };
-
-  const dropEditorFacades = (def: EntityDefinition) => {
-    if (def.type === EditorFakeCamera) def.type = Camera;
-    def.children?.forEach(c => dropEditorFacades(c));
-    return def;
-  };
-
   const editEntities = game.world.spawn({
     type: Empty,
     name: "EditEntities",
     _ref: "EDIT_ROOT",
   });
   const editWorld = editEntities.spawn({
-    type: Empty,
+    type: WorldRootFacade,
     name: "world",
     _ref: "EDIT_WORLD",
   });
   const editPrefabs = editEntities.spawn({
-    type: Empty,
+    type: PrefabRootFacade,
     name: "prefabs",
     _ref: "EDIT_PREFABS",
   });
   const editLocal = editEntities.spawn({
-    type: Empty,
+    type: LocalRootFacade,
     name: "local",
     _ref: "EDIT_LOCAL",
   });
   const editServer = editEntities.spawn({
-    type: Empty,
+    type: ServerRootFacade,
     name: "server",
     _ref: "EDIT_SERVER",
   });

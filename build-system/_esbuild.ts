@@ -22,7 +22,7 @@ export const dreamlabVendorExternalPlugin = (): esbuild.Plugin => ({
   },
 });
 
-export const dreamlabUiExternalPlugin = (): esbuild.Plugin => ({
+export const dreamlabUIExternalPlugin = (): esbuild.Plugin => ({
   name: "dreamlab-ui-external",
   setup: (build: esbuild.PluginBuild) => {
     build.onResolve({ filter: /^@dreamlab\/ui/ }, args => {

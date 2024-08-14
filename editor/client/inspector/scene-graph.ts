@@ -132,6 +132,8 @@ export class SceneGraph implements InspectorUIComponent {
   }
 
   handleEntryRename(entity: Entity, entryElement: HTMLElement) {
+    if (entity.parent?.id === "game.world._.EditEntities") return;
+
     const name = entryElement.querySelector(":scope > summary .name")! as HTMLElement;
     entryElement.addEventListener("dblclick", event => {
       if (!eventTargetsEntry(event, entryElement)) return;

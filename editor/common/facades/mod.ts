@@ -1,5 +1,6 @@
 import { Camera, EntityConstructor, EntityDefinition } from "@dreamlab/engine";
 import { EditorFacadeCamera } from "./camera.ts";
+import "./edit-roots.ts";
 
 export function lookupFacadeEntityType(entityType: EntityConstructor): EntityConstructor {
   if (entityType === Camera) return EditorFacadeCamera;

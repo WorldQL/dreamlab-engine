@@ -10,5 +10,3 @@ export * from "./sprite.ts";
 export * from "./tiling-sprite.ts";
 export * from "./ui-layer.ts";
 export * from "./ui-panel.ts";
-
-export * from "./editor/editor-fake-camera.ts";

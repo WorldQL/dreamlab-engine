@@ -9,7 +9,7 @@
 }
 
 #scene-graph-tree details {
-  margin-left: 1em;
+  padding-left: 1em;
 }
 #scene-graph-tree details > summary {
   margin-left: -1em;
@@ -21,6 +21,10 @@
 
 #scene-graph-tree details {
   margin-top: 0.25em;
+}
+
+#scene-graph-tree details > summary input {
+  width: calc(100% - 4em);
 }
 
 #scene-graph-tree details > summary {

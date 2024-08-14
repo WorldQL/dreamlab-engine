@@ -1,8 +1,5 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import { IVector2 } from "../../../math/mod.ts";
-import { EntityRenamed, EntityResize } from "../../../signals/mod.ts";
-import { Entity } from "../../entity.ts";
-import { PixiEntity } from "../../pixi-entity.ts";
+import { Entity, EntityRenamed, EntityResize, IVector2, PixiEntity } from "@dreamlab/engine";
 
 export type Label = { readonly container: PIXI.Container; readonly text: PIXI.Text };
 export const createLabel = (icon: string, text?: string): Label => {
