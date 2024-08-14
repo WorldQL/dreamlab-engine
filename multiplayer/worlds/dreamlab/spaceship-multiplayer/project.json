@@ -1,0 +1,79 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "engine_revision": "2024-08.001"
+  },
+  "scenes": {
+    "main": {
+      "world": [],
+      "local": [
+        {
+          "type": "@core/Camera",
+          "name": "Camera",
+          "values": {
+            "active": true,
+            "smooth": 0.01,
+            "unlocked": false
+          },
+          "transform": {
+            "position": {
+              "x": 0,
+              "y": 0
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            },
+            "z": 0
+          },
+          "ref": "ent_p8zh7z9qgq7qj5oopfpnaqxf"
+        },
+        {
+          "type": "@core/Empty",
+          "name": "PlayerSpawnManager",
+          "values": {},
+          "transform": {
+            "position": {
+              "x": 0,
+              "y": 0
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            },
+            "z": 0
+          },
+          "ref": "ent_tr6epldobbi539jyjg0fgxcw"
+        }
+      ],
+      "server": [],
+      "prefabs": [
+        {
+          "type": "@core/Sprite2D",
+          "name": "Player",
+          "values": {
+            "width": 1,
+            "height": 1,
+            "alpha": 1,
+            "texture": "res://assets/spaceship.png"
+          },
+          "transform": {
+            "position": {
+              "x": 9999,
+              "y": 9999
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            },
+            "z": 0
+          },
+          "ref": "ent_hpbwa486rcfk9u6n86jlu4gm"
+        }
+      ]
+    }
+  }
+}

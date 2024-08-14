@@ -1,10 +1,4 @@
 import { NIL_UUID } from "jsr:@std/uuid@1/constants";
-import {
-  bundleClient,
-  bundleEngine,
-  bundleEngineDependencies,
-  bundleWorld,
-} from "../../build-system/mod.ts";
 import { CONFIG } from "./config.ts";
 import { Application } from "./deps/oak.ts";
 import { createInstance, GameInstance } from "./instance.ts";
@@ -31,7 +25,7 @@ Deno.addSignalListener("SIGTERM", () => {
   Deno.exit();
 });
 
-const TESTING_WORLD = "dreamlab/test-world";
+const TESTING_WORLD = "dreamlab/spaceship-multiplayer";
 
 await Promise.all([
   // boot instance
