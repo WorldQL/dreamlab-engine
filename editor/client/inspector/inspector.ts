@@ -1,10 +1,12 @@
 import { ClientGame } from "@dreamlab/engine";
 import { SceneGraph } from "./scene-graph.ts";
 import { SelectedEntityService } from "./selected-entity.ts";
+import { Properties } from "./properties.ts";
 
 export interface InspectorUI {
-  sceneGraph: SceneGraph;
   selectedEntity: SelectedEntityService;
+  sceneGraph: SceneGraph;
+  properties: Properties;
 }
 
 export interface InspectorUIComponent {
@@ -13,9 +15,11 @@ export interface InspectorUIComponent {
 
 export function renderInspector(game: ClientGame, editUIRoot: HTMLElement) {
   const ui: InspectorUI = {
-    sceneGraph: new SceneGraph(game),
     selectedEntity: new SelectedEntityService(game),
+    sceneGraph: new SceneGraph(game),
+    properties: new Properties(game),
   };
 
   ui.sceneGraph.render(ui, editUIRoot);
+  ui.properties.render(ui, editUIRoot);
 }

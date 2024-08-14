@@ -23,12 +23,11 @@ export class SceneGraph implements InspectorUIComponent {
 
   render(ui: InspectorUI, editUIRoot: HTMLElement) {
     const left = editUIRoot.querySelector("#left-sidebar")!;
-    const container = elem("section", { id: "scene-graph" });
+    const container = elem("section", { id: "scene-graph" }, [elem("h1", {}, ["Scene Graph"])]);
     container.style.height = "calc(100% - 1em)";
 
     left.append(container);
 
-    container.append(elem("h1", {}, ["Scene Graph"]));
     const treeRoot = elem("div", { id: "scene-graph-tree" });
     container.append(treeRoot);
 
@@ -225,7 +224,9 @@ export class SceneGraph implements InspectorUIComponent {
     treeRoot.addEventListener("click", event => {
       if (!(event.target instanceof Element)) return;
 
+      // TODO: handle range-select
       const selectMultiple = event.getModifierState("Control");
+
       const entryElement = event.target.closest("details[data-entity]");
       if (!entryElement) {
         if (!selectMultiple) ui.selectedEntity.entities = [];
@@ -235,8 +236,6 @@ export class SceneGraph implements InspectorUIComponent {
         (entryElement as HTMLDetailsElement).dataset.entity!,
       );
       if (!entity) return;
-
-      // TODO: handle range-select
 
       if (selectMultiple) {
         if (ui.selectedEntity.entities.includes(entity)) {

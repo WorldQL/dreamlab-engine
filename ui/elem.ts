@@ -6,7 +6,7 @@ export type ElementProps<E extends Element> = {
 
 export function elem<K extends keyof HTMLElementTagNameMap>(
   tag: K,
-  attrs: ElementProps<HTMLElementTagNameMap[K]> | ElementProps<HTMLElementTagNameMap[K]>[],
+  attrs: ElementProps<HTMLElementTagNameMap[K]> | ElementProps<HTMLElementTagNameMap[K]>[] = {},
   children: (Element | string | Text)[] = [],
   extras: { classList?: string[] } = {},
 ): HTMLElementTagNameMap[K] {

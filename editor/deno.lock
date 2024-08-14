@@ -16,7 +16,8 @@
       "npm:esbuild-plugin-copy@2.1.1": "npm:esbuild-plugin-copy@2.1.1_esbuild@0.20.2",
       "npm:esbuild@0.20.2": "npm:esbuild@0.20.2",
       "npm:pixi.js@8.2.6": "npm:pixi.js@8.2.6",
-      "npm:type-fest@4.23.0": "npm:type-fest@4.23.0"
+      "npm:type-fest@4.23.0": "npm:type-fest@4.23.0",
+      "npm:zod-validation-error@3.3.1": "npm:zod-validation-error@3.3.1_zod@3.23.8"
     },
     "jsr": {
       "@luca/esbuild-deno-loader@0.10.3": {
@@ -489,6 +490,16 @@
       },
       "universalify@2.0.1": {
         "integrity": "sha512-gptHNQghINnc/vTGIk0SOFGFNXw7JVrlRUtConJRlvaw6DuX0wO5Jeko9sWrMBhh+PsYAZ7oXAiOnf/UKogyiw==",
+        "dependencies": {}
+      },
+      "zod-validation-error@3.3.1_zod@3.23.8": {
+        "integrity": "sha512-uFzCZz7FQis256dqw4AhPQgD6f3pzNca/Zh62RNELavlumQB3nDIUFbF5JQfFLcMbO1s02Q7Xg/gpcOBlEnYZA==",
+        "dependencies": {
+          "zod": "zod@3.23.8"
+        }
+      },
+      "zod@3.23.8": {
+        "integrity": "sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==",
         "dependencies": {}
       }
     }

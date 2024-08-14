@@ -1,0 +1,55 @@
+#properties {
+  min-height: 60%;
+  display: flex;
+  flex-direction: column;
+}
+
+#properties #select-something-notification {
+  flex: 1;
+  align-content: center;
+  text-align: center;
+  font-size: 0.95em;
+}
+
+#properties table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+#properties > table {
+  font-size: smaller;
+}
+
+#properties table :is(h1, h2, h3) {
+  display: inline-block;
+}
+
+#properties th,
+#properties td {
+  background-color: var(--col-bg-3);
+  border-radius: 4px;
+  padding: 0.5em;
+
+  overflow: clip;
+  text-overflow: ellipsis;
+}
+
+#properties td:has(> details) {
+  background-color: var(--col-bg-2);
+}
+
+#properties td table {
+  margin-left: 2em;
+}
+
+#properties th {
+  text-align: end;
+}
+
+#properties td {
+  text-align: start;
+}
+
+#properties td span {
+  user-select: all;
+}

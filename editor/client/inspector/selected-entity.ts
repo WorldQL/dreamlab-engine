@@ -12,7 +12,7 @@ export class SelectedEntityService {
   }
   set entities(newEntities) {
     this.#entities = newEntities;
-    if (this.#gizmo) this.#gizmo.target = newEntities[0];
+    if (this.#gizmo) this.#gizmo.target = newEntities.at(0);
     for (const listener of this.#changeListeners) listener();
   }
 

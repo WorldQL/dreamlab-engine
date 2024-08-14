@@ -17,7 +17,7 @@ section {
   text-wrap: nowrap;
 }
 
-section + section {
+:is(#left-sidebar, #right-sidebar) section + section {
   margin-top: 1em;
 }
 
