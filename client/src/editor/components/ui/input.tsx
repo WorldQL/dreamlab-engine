@@ -40,7 +40,7 @@ const InputField = ({
       <label className="block text-sm font-medium text-textPrimary">{label}</label>
       <input
         type={type}
-        className="mt-1 px-2 py-1 block bg-background text-textPrimary w-full rounded-md border-greyLight shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50"
+        className="truncate mt-1 px-2 py-1 block bg-background text-textPrimary w-full rounded-md border-greyLight shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50"
         value={value}
         onChange={handleChange}
         onBlur={handleBlur}

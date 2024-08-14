@@ -88,7 +88,7 @@ const FileEntry = ({ file, name, path, level }: FileEntryProps) => {
             className={`w-4 h-4 transition-transform ${isCollapsed ? "-rotate-90" : ""}`}
           />
         )}
-        <span className="ml-2">{name}</span>
+        <span className="ml-2 truncate">{name}</span>
       </div>
       {file && !isCollapsed && (
         <ul>
@@ -112,33 +112,25 @@ const FileTreeComponent = () => {
   const { data, isLoading, isError } = useFiles(game.instanceId);
 
   if (isLoading) {
-    return (
-      <div title="Files" className="h-full text-textPrimary p-4">
-        Loading files...
-      </div>
-    );
+    return <div className="h-full text-textPrimary p-4">Loading files...</div>;
   }
 
   if (isError) {
     return (
-      <div title="Files" className="h-full text-textPrimary p-4">
+      <div className="h-full text-textPrimary p-4">
         Error loading files. Please try again later.
       </div>
     );
   }
 
   if (!data || !data.files || data.files.length === 0) {
-    return (
-      <div title="Files" className="h-full text-textPrimary p-4">
-        No files found.
-      </div>
-    );
+    return <div className="h-full text-textPrimary p-4">No files found.</div>;
   }
 
   const fileTree = buildFileTree(data.files);
 
   return (
-    <div title="Files" className="h-full">
+    <div className="h-full">
       <div className="p-2 h-full">
         <ul className="file-tree space-y-1">
           {Object.entries(fileTree).map(([name, file], index) => (

@@ -177,7 +177,7 @@ const EntityEntry = ({
               ) : (
                 <span className="inline-block w-4"></span>
               )}
-              <p>
+              <p className="truncate">
                 {icon} {entity.name}
               </p>
             </>

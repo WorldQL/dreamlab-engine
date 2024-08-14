@@ -13,6 +13,7 @@ import {
 import { useAtom } from "jotai";
 import {
   Asterisk,
+  Check,
   CirclePlus,
   ClipboardCopy,
   PieChart,
@@ -382,28 +383,27 @@ const Inspector = () => {
 
   return (
     <div className="h-full" onDrop={handleDrop} onDragOver={handleDragOver}>
-      <div className="p-1">
+      <div className="p-2">
         <InputField type="text" label="Name" value={name} onChange={handleNameChange} />
-      </div>
-      <div className="mt-4 p-1 mb-2">
-        <label className="block text-sm font-medium text-textPrimary">Entity ID</label>
+        <label className="text-sm font-medium text-textPrimary">Entity ID</label>
         <div className="relative mt-1 flex items-center">
           <div
             onClick={handleCopy}
-            className="text-textPrimary cursor-pointer bg-background px-2 py-1 rounded-md w-full"
+            className="flex items-center justify-between text-textPrimary cursor-pointer bg-background px-2 py-1 rounded-md w-full hover:bg-grey transition-all duration-300"
+            title={entityId}
           >
-            {entityId}
+            <ClipboardCopy className="w-4 h-4 text-icon transition-transform transform hover:scale-110 flex-shrink-0" />
+            <span className="truncate ml-2">{entityId}</span>
+            {copied && (
+              <span className="flex items-center text-green">
+                <Check className="w-4 h-4 mr-2 animate-pulse" />
+                <span>Copied!</span>
+              </span>
+            )}
           </div>
-          <button
-            onClick={handleCopy}
-            className="ml-2 p-1 text-icon hover:text-primary focus:outline-none"
-            title="Copy Entity ID"
-          >
-            <ClipboardCopy className="w-5 h-5 hover:text-primary" />
-          </button>
         </div>
-        {copied && <p className="text-green text-xs mt-1">Copied to clipboard!</p>}
       </div>
+      <div className="mb-4 border-b border-grey" />
       <Category
         title="Transform"
         titleIcon={<Rotate3D className="text-green w-4 h-4" />}
