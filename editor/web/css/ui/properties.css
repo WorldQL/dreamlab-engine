@@ -9,6 +9,9 @@
   align-content: center;
   text-align: center;
   font-size: 0.95em;
+  padding: 0 0.5em;
+  text-wrap: balance;
+  line-height: 1.4;
 }
 
 #properties table {
