@@ -6,11 +6,12 @@ export default class PlayerSpawner extends Behavior {
   onInitialize(): void {
     if (!this.game.isClient()) return;
 
-    this.game.world.spawn({
+    const player = this.game.world.spawn({
       type: Sprite2D,
       name: "Player." + this.game.network.self,
       authority: this.game.network.self,
       behaviors: [{ type: WASDMovementBehavior }, { type: CleanupOnLeaveBehavior }],
     });
+    player.takeAuthority();
   }
 }

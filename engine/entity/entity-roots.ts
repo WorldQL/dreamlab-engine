@@ -22,8 +22,6 @@ export abstract class Root extends Entity {
     // @ts-expect-error assign readonly id
     this.root = this;
 
-    this.pausable = false;
-
     game.entities[internal.entityStoreRegister](this);
   }
 }

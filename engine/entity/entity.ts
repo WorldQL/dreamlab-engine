@@ -653,8 +653,6 @@ export abstract class Entity implements ISignalHandler {
   // internal id for stable internal reference. we only really need this for networking
   readonly ref: string = generateCUID("ent");
 
-  pausable: boolean = false;
-
   #updateTransform(fromGlobal: boolean) {
     if (!this.transform || !this.globalTransform) return;
 
@@ -813,8 +811,6 @@ export abstract class Entity implements ISignalHandler {
   #origZ: number = NaN;
 
   [internal.preTickEntities]() {
-    if (this.pausable && this.game.paused) return;
-
     if (!this.#spawned) this.#spawn();
 
     const tr = this.globalTransform;
@@ -834,8 +830,6 @@ export abstract class Entity implements ISignalHandler {
   }
 
   [internal.tickEntities]() {
-    if (this.pausable && this.game.paused) return;
-
     this.fire(EntityUpdate);
 
     const tr = this.globalTransform;
