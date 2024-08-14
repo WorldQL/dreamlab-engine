@@ -66,9 +66,10 @@ export class Properties implements InspectorUIComponent {
 
     addEntry("Name", nameField);
 
-    const idField = elem("span", {}, [entity.id]);
-    entity.on(EntityRenamed, () => (idField.textContent = entity.id));
-    entity.on(EntityReparented, () => (idField.textContent = entity.id));
+    const entityId = () => entity.id.replace("game.world._.EditEntities._.", "game.");
+    const idField = elem("span", {}, [entityId()]);
+    entity.on(EntityRenamed, () => (idField.textContent = entityId()));
+    entity.on(EntityReparented, () => (idField.textContent = entityId()));
     addEntry("ID", idField);
 
     // TODO: transform editing
