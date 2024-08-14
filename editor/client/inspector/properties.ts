@@ -51,6 +51,7 @@ export class Properties implements InspectorUIComponent {
 
     table.querySelector("tbody")?.remove();
     const tbody = elem("tbody");
+    table.append(tbody);
 
     function addEntry(key: string, value: Element | string | Text, body: HTMLElement = tbody) {
       body.append(elem("tr", {}, [elem("th", {}, [key]), elem("td", { colSpan: 2 }, [value])]));
@@ -150,6 +151,8 @@ export class Properties implements InspectorUIComponent {
       refreshZIndex();
     });
 
+    if (entity.values.size === 0) return;
+
     const valuesTbody = elem("tbody");
     tbody.append(
       elem("tr", {}, [
@@ -202,7 +205,5 @@ export class Properties implements InspectorUIComponent {
         });
       }
     }
-
-    table.append(tbody);
   }
 }
