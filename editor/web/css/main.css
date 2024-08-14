@@ -1,5 +1,4 @@
-/* TODO: get esbuild to vendor this */
-@import url(https://cdn.jsdelivr.net/npm/modern-normalize/modern-normalize.css);
+@import url(https://cdn.jsdelivr.net/npm/modern-normalize@3.0.0/modern-normalize.css);
 
 @import url(./palette.css);
 @import url(./layout.css);

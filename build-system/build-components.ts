@@ -4,6 +4,7 @@ import {
   dreamlabVendorExternalPlugin,
   dreamlabEngineExternalPlugin,
   dreamlabUIExternalPlugin,
+  dreamlabExternalCssPlugin,
 } from "./_esbuild.ts";
 import * as path from "jsr:@std/path@^1";
 
@@ -145,6 +146,7 @@ export const bundleStyles = async (
 ) => {
   const buildOpts: esbuild.BuildOptions = {
     ...BASE_BUILD_OPTIONS,
+    plugins: [dreamlabExternalCssPlugin()],
     entryPoints: inputs,
     outdir: path.join(outdir, "styles"),
     minify: true,

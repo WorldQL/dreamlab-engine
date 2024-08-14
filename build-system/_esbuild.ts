@@ -67,3 +67,26 @@ export const dreamlabDataLoaderPlugin = (worldDir: string): esbuild.Plugin => ({
     );
   },
 });
+
+export const dreamlabExternalCssPlugin = (): esbuild.Plugin => ({
+  name: "dreamlab-external-css",
+  setup: build => {
+    build.onResolve({ filter: /https?:\/\// }, args => {
+      return {
+        external: false,
+        path: path.join(args.resolveDir, "_http", args.path.replace(/https?:\/\//, "")),
+        pluginData: { url: args.path },
+      };
+    });
+
+    build.onLoad({ filter: /\/_http\// }, async args => {
+      const url = args.pluginData.url;
+      if (typeof url !== "string") throw new Error("no url");
+
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error(`failed to fetch: ${url}`);
+
+      return { contents: await resp.text(), loader: "css" };
+    });
+  },
+});
