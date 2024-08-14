@@ -1,3 +1,5 @@
+import "../../build-system/live-reload.js";
+
 import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import { setupGame } from "./game-setup.ts";
