@@ -1,6 +1,6 @@
 import { Context, Router, Status } from "../../deps/oak.ts";
 import { ClientPacketSchema } from "@dreamlab/proto/play.ts";
-import { JSON_CODEC } from "@dreamlab/proto/codecs/simple-json.ts";
+import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
 
 import { GameSession } from "../../session.ts";
 import { bootPlaySession, GameInstance } from "../../instance.ts";
@@ -18,7 +18,7 @@ const handleConnection = (
   const connection = {
     connectionId: generateCUID("conn"),
     socket,
-    codec: JSON_CODEC,
+    codec: DEFAULT_CODEC,
   };
   session.connections.set(connection.connectionId, connection);
   socket.addEventListener("close", () => {

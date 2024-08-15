@@ -4,12 +4,14 @@
     "specifiers": {
       "jsr:@luca/esbuild-deno-loader@0.10.3": "jsr:@luca/esbuild-deno-loader@0.10.3",
       "jsr:@std/assert@^0.213.1": "jsr:@std/assert@0.213.1",
+      "jsr:@std/collections@^1.0.4": "jsr:@std/collections@1.0.5",
       "jsr:@std/encoding@0.213": "jsr:@std/encoding@0.213.1",
       "jsr:@std/fs@1": "jsr:@std/fs@1.0.0",
       "jsr:@std/jsonc@0.213": "jsr:@std/jsonc@0.213.1",
       "jsr:@std/path@0.213": "jsr:@std/path@0.213.1",
       "jsr:@std/path@^1": "jsr:@std/path@1.0.2",
       "jsr:@std/path@^1.0.2": "jsr:@std/path@1.0.2",
+      "jsr:@std/toml": "jsr:@std/toml@1.0.0",
       "jsr:@std/uuid@1": "jsr:@std/uuid@1.0.0",
       "npm:@dimforge/rapier2d-compat@0.14.0": "npm:@dimforge/rapier2d-compat@0.14.0",
       "npm:@paralleldrive/cuid2@2.2.2": "npm:@paralleldrive/cuid2@2.2.2",
@@ -31,6 +33,9 @@
       },
       "@std/assert@0.213.1": {
         "integrity": "24c28178b30c8e0782c18e8e94ea72b16282207569cdd10ffb9d1d26f2edebfe"
+      },
+      "@std/collections@1.0.5": {
+        "integrity": "ab9eac23b57a0c0b89ba45134e61561f69f3d001f37235a248ed40be260c0c10"
       },
       "@std/encoding@0.213.1": {
         "integrity": "fcbb6928713dde941a18ca5db88ca1544d0755ec8fb20fe61e2dc8144b390c62"
@@ -55,6 +60,12 @@
       },
       "@std/path@1.0.2": {
         "integrity": "a452174603f8c620bd278a380c596437a9eef50c891c64b85812f735245d9ec7"
+      },
+      "@std/toml@1.0.0": {
+        "integrity": "c9e37564eedd84084871c66238e00196ec67aa958e09a7f761b3f36273a7a8a5",
+        "dependencies": [
+          "jsr:@std/collections@^1.0.4"
+        ]
       },
       "@std/uuid@1.0.0": {
         "integrity": "32595ccd31756728c9110cb98e25000e72b8d63151b7211034ea081761ed2104"
@@ -510,6 +521,10 @@
     }
   },
   "remote": {
+    "https://deno.land/x/cbor@v1.6.0/decode.js": "c002b5c7abd716e6d57fe1127c674cc72a7cffc781ca20970db699e9a2bf7f38",
+    "https://deno.land/x/cbor@v1.6.0/encode.js": "98be7aefb63f34da50dbb30a5a6d4648d05baa8effd85611fc73796ded7bc613",
+    "https://deno.land/x/cbor@v1.6.0/index.js": "0f2b4bad3617f78ac582a0d62cb86a476dfb4ae36d772d89a36c237e5a18b17b",
+    "https://deno.land/x/cbor@v1.6.0/iterators.js": "744e0469fe37c33bab3787608ced2f2cda014cb9352b3adbd949a2701f043aea",
     "https://deno.land/x/zod@v3.23.8/ZodError.ts": "528da200fbe995157b9ae91498b103c4ef482217a5c086249507ac850bd78f52",
     "https://deno.land/x/zod@v3.23.8/errors.ts": "5285922d2be9700cc0c70c95e4858952b07ae193aa0224be3cbd5cd5567eabef",
     "https://deno.land/x/zod@v3.23.8/external.ts": "a6cfbd61e9e097d5f42f8a7ed6f92f93f51ff927d29c9fbaec04f03cbce130fe",

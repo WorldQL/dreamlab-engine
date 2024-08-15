@@ -1,4 +1,6 @@
 import { PlayPacket } from "../play.ts";
+import { CBOR_CODEC } from "./cbor.ts";
+import { JSON_CODEC } from "./simple-json.ts";
 
 export interface PlayCodec {
   encodePacket(
@@ -9,5 +11,9 @@ export interface PlayCodec {
   ): PlayPacket<undefined, "any">;
 }
 
+export * from "./cbor.ts";
 export * from "./simple-json.ts";
 export * from "./simple-toml.ts";
+
+const binary = true;
+export const DEFAULT_CODEC = binary ? CBOR_CODEC : JSON_CODEC;

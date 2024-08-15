@@ -12,7 +12,7 @@ import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import { setupGame } from "./game-setup.ts";
 import { connectToGame } from "./game-connection.ts";
-import { JSON_CODEC } from "@dreamlab/proto/codecs/simple-json.ts";
+import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
 import { renderInspector } from "./inspector/inspector.ts";
 
 import "../common/mod.ts";
@@ -36,8 +36,14 @@ container.style.width = "100%";
 gameViewport.append(container);
 
 const socket = new WebSocket(connectUrl);
+socket.binaryType = "arraybuffer";
 
-const [game, conn, handshake] = await connectToGame(instanceId, container, socket, JSON_CODEC);
+const [game, conn, handshake] = await connectToGame(
+  instanceId,
+  container,
+  socket,
+  DEFAULT_CODEC,
+);
 // setupMultiplayerCursors(game);
 await fonts;
 await setupGame(game, conn, handshake.edit_mode);

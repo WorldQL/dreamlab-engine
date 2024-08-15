@@ -15,6 +15,7 @@
       "jsr:@std/bytes@^0.223.0": "jsr:@std/bytes@0.223.0",
       "jsr:@std/bytes@^1.0.0-rc.3": "jsr:@std/bytes@1.0.2",
       "jsr:@std/bytes@^1.0.1-rc.3": "jsr:@std/bytes@1.0.2",
+      "jsr:@std/collections@^1.0.4": "jsr:@std/collections@1.0.5",
       "jsr:@std/crypto@0.223": "jsr:@std/crypto@0.223.0",
       "jsr:@std/crypto@0.224": "jsr:@std/crypto@0.224.0",
       "jsr:@std/dotenv@0.224.2": "jsr:@std/dotenv@0.224.2",
@@ -39,6 +40,7 @@
       "jsr:@std/path@^1": "jsr:@std/path@1.0.2",
       "jsr:@std/path@^1.0.2": "jsr:@std/path@1.0.2",
       "jsr:@std/streams@0.224.5": "jsr:@std/streams@0.224.5",
+      "jsr:@std/toml": "jsr:@std/toml@1.0.0",
       "jsr:@std/uuid@1": "jsr:@std/uuid@1.0.0",
       "npm:@dimforge/rapier2d-compat@0.13.1": "npm:@dimforge/rapier2d-compat@0.13.1",
       "npm:@dimforge/rapier2d-compat@0.14.0": "npm:@dimforge/rapier2d-compat@0.14.0",
@@ -107,6 +109,9 @@
       },
       "@std/bytes@1.0.2": {
         "integrity": "fbdee322bbd8c599a6af186a1603b3355e59a5fb1baa139f8f4c3c9a1b3e3d57"
+      },
+      "@std/collections@1.0.5": {
+        "integrity": "ab9eac23b57a0c0b89ba45134e61561f69f3d001f37235a248ed40be260c0c10"
       },
       "@std/crypto@0.223.0": {
         "integrity": "1aa9555ff56b09e197ad988ea200f84bc6781fd4fd83f3a156ee44449af93000",
@@ -209,6 +214,12 @@
         "dependencies": [
           "jsr:@std/bytes@^1.0.0-rc.3",
           "jsr:@std/io@^0.224.1"
+        ]
+      },
+      "@std/toml@1.0.0": {
+        "integrity": "c9e37564eedd84084871c66238e00196ec67aa958e09a7f761b3f36273a7a8a5",
+        "dependencies": [
+          "jsr:@std/collections@^1.0.4"
         ]
       },
       "@std/uuid@1.0.0": {
@@ -712,6 +723,10 @@
     "https://deno.land/std@0.224.0/media_types/parse_media_type.ts": "487f000a38c230ccbac25420a50f600862e06796d0eee19d19631b9e84ee9654",
     "https://deno.land/std@0.224.0/media_types/type_by_extension.ts": "bf4e3f5d6b58b624d5daa01cbb8b1e86d9939940a77e7c26e796a075b60ec73b",
     "https://deno.land/std@0.224.0/media_types/vendor/mime-db.v1.52.0.ts": "0218d2c7d900e8cd6fa4a866e0c387712af4af9a1bae55d6b2546c73d273a1e6",
+    "https://deno.land/x/cbor@v1.6.0/decode.js": "c002b5c7abd716e6d57fe1127c674cc72a7cffc781ca20970db699e9a2bf7f38",
+    "https://deno.land/x/cbor@v1.6.0/encode.js": "98be7aefb63f34da50dbb30a5a6d4648d05baa8effd85611fc73796ded7bc613",
+    "https://deno.land/x/cbor@v1.6.0/index.js": "0f2b4bad3617f78ac582a0d62cb86a476dfb4ae36d772d89a36c237e5a18b17b",
+    "https://deno.land/x/cbor@v1.6.0/iterators.js": "744e0469fe37c33bab3787608ced2f2cda014cb9352b3adbd949a2701f043aea",
     "https://deno.land/x/cors@v1.2.2/abcCors.ts": "cdf83a7eaa69a1bf3ab910d18b9422217902fac47601adcaf0afac5a61845d48",
     "https://deno.land/x/cors@v1.2.2/attainCors.ts": "7d6aba0f942495cc31119604e0895c9bb8edd8f8baa7fe78e6c655bd0b4cbf59",
     "https://deno.land/x/cors@v1.2.2/cors.ts": "0e2d9167e3685f9bcf48f565e312b6e1883fa458f7337e5ce7bc2e3b29767980",
