@@ -6,6 +6,8 @@ import {
   EntityTransformUpdate,
   Value,
   ValueChanged,
+  TextureAdapter,
+  SpritesheetAdapter,
 } from "@dreamlab/engine";
 import { InspectorUI, InspectorUIComponent } from "./inspector.ts";
 import { elem } from "@dreamlab/ui";
@@ -194,6 +196,22 @@ export class Properties implements InspectorUIComponent {
             .transform(() => false)
             .or(z.string())
             .pipe(z.coerce.boolean()).parse,
+        });
+      } else if (value.typeTag === TextureAdapter) {
+        // TODO: texture picker
+        const valueObj = value as Value<string>;
+        [valueField, refreshValue] = createInputField({
+          get: () => valueObj.value,
+          set: v => (valueObj.value = v),
+          convert: z.literal("").or(z.string().url()).parse,
+        });
+      } else if (value.typeTag === SpritesheetAdapter) {
+        // TODO: spritesheet picker
+        const valueObj = value as Value<string>;
+        [valueField, refreshValue] = createInputField({
+          get: () => valueObj.value,
+          set: v => (valueObj.value = v),
+          convert: z.literal("").or(z.string().url()).parse,
         });
       }
       // TODO: other adapters
