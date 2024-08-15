@@ -197,6 +197,8 @@ export class Behavior implements ISignalHandler {
     const listeners = this.#signalListenerMap.get(type) ?? [];
     listeners.push(listener as SignalListener);
     this.#signalListenerMap.set(type, listeners);
+
+    return { unregister: () => this.unregister(type as SignalConstructor<S>, listener) };
   }
 
   unregister<T extends Signal>(type: SignalConstructor<T>, listener: SignalListener<T>) {

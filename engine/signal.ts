@@ -33,7 +33,7 @@ export interface ISignalHandler {
   on<S extends Signal>(
     type: SignalConstructor<SignalMatching<S, this>>,
     listener: SignalListener<SignalMatching<S, this>>,
-  ): void;
+  ): { readonly unregister: () => void };
   unregister<T extends Signal>(type: SignalConstructor<T>, listener: SignalListener<T>): void;
 }
 
@@ -55,6 +55,8 @@ export class BasicSignalHandler<Self> implements ISignalHandler {
     const listeners = this.#signalListenerMap.get(type) ?? [];
     listeners.push(listener as SignalListener);
     this.#signalListenerMap.set(type, listeners);
+
+    return { unregister: () => this.unregister(type as SignalConstructor<S>, listener) };
   }
 
   unregister<T extends Signal>(type: SignalConstructor<T>, listener: SignalListener<T>) {
