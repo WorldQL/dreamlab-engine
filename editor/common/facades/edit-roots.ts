@@ -25,7 +25,7 @@ export class LocalRootFacade extends EditorRootFacadeEntity {
 }
 
 export class ServerRootFacade extends EditorRootFacadeEntity {
-  public static readonly icon: string = "🖧";
+  public static readonly icon: string = "📡";
   static {
     Entity.registerType(this, "@editor");
   }
@@ -36,7 +36,7 @@ export class ServerRootFacade extends EditorRootFacadeEntity {
 }
 
 export class PrefabRootFacade extends EditorRootFacadeEntity {
-  public static readonly icon: string = "🌐";
+  public static readonly icon: string = "📝";
   static {
     Entity.registerType(this, "@editor");
   }
