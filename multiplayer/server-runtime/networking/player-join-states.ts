@@ -36,7 +36,10 @@ export const handlePlayerJoinExchange: ServerNetworkSetupRoutine = (net, game) =
     if (connectionState === "initialized" && packet.phase === "loaded") {
       connectionStates.set(from, packet.phase);
       const connection = net.clients.get(from);
-      if (connection) game.fire(PlayerJoined, connection);
+      if (connection) {
+        game.fire(PlayerJoined, connection);
+        net.broadcast({ t: "PlayerJoined", connection_id: connection.id });
+      }
     }
   });
 

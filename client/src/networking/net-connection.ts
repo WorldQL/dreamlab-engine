@@ -7,6 +7,8 @@ import {
   CustomMessageData,
   CustomMessageListener,
   ConnectionInfo,
+  PlayerLeft,
+  PlayerJoined,
 } from "@dreamlab/engine";
 import { handleValueChanges } from "./value-changes.ts";
 import { handleCustomMessages } from "./custom-messages.ts";
@@ -38,11 +40,7 @@ export class ClientConnection {
 
   peers = new Map<ConnectionId, ConnectionInfo>();
 
-  constructor(
-    public id: ConnectionId,
-    public socket: WebSocket,
-    public codec: PlayCodec,
-  ) {}
+  constructor(public id: ConnectionId, public socket: WebSocket, public codec: PlayCodec) {}
 
   handle(packet: ServerPacket) {
     try {
@@ -74,8 +72,15 @@ export class ClientConnection {
     });
     this.registerPacketHandler("PeerDisconnected", packet => {
       const peerInfo = this.peers.get(packet.connection_id);
-      if (peerInfo) game.fire(PlayerConnectionDropped, peerInfo);
+      if (peerInfo) {
+        game.fire(PlayerConnectionDropped, peerInfo);
+        game.fire(PlayerLeft, peerInfo);
+      }
       this.peers.delete(packet.connection_id);
+    });
+    this.registerPacketHandler("PlayerJoined", packet => {
+      const peerInfo = this.peers.get(packet.connection_id);
+      if (peerInfo) game.fire(PlayerJoined, peerInfo);
     });
     this.registerPacketHandler("PeerChangedNickname", packet => {
       const peer = this.peers.get(packet.connection_id);

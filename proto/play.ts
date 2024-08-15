@@ -43,6 +43,11 @@ export const ServerPeerListSnapshotPacket = z.object({
     .array(),
 });
 
+export const ServerPlayerJoinedPacket = z.object({
+  t: z.literal("PlayerJoined"),
+  connection_id: ConnectionIdSchema,
+});
+
 export const ClientChatMessagePacket = z.object({
   t: z.literal("ChatMessage"),
   message: z.string(),
@@ -200,6 +205,7 @@ export const ServerPacketSchema = z.discriminatedUnion("t", [
   ServerPeerDisconnectedPacket,
   ServerPeerChangedNicknamePacket,
   ServerPeerListSnapshotPacket,
+  ServerPlayerJoinedPacket,
   ServerChatMessagePacket,
   ServerSpawnEntityPacket,
   ServerDeleteEntityPacket,
