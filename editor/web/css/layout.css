@@ -11,7 +11,7 @@ main {
   grid-template-areas:
     "top    top       top"
     "left   viewport  right"
-    "bottom bottom    bottom";
+    "left   bottom    right";
 }
 
 /* TODO: hide the sidebars in play mode (we just want to see the game) */

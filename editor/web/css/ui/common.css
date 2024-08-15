@@ -15,6 +15,12 @@ section {
 
   overflow: auto;
   text-wrap: nowrap;
+
+  & > header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+  }
 }
 
 h1,

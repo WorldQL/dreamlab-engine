@@ -10,8 +10,7 @@ export const serveWorlds = (router: Router) => {
         root: path.join("./worlds/", user, world),
         path: resource,
       });
-    } catch (err) {
-      console.warn(err);
+    } catch (_err) {
       ctx.response.status = Status.NotFound;
       ctx.response.body = "Not Found";
       ctx.response.type = "text/plain";

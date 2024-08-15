@@ -1,6 +1,7 @@
 import { GameStatus, GameTick, Value, ValueChanged } from "@dreamlab/engine";
 import * as internal from "../../../engine/internal.ts";
 import { ServerNetworkSetupRoutine } from "./net-manager.ts";
+import { PlayPacket } from "@dreamlab/proto/play.ts";
 
 export const handleValueChanges: ServerNetworkSetupRoutine = (net, game) => {
   const dirtyValues = new Map<Value, number>();
@@ -41,16 +42,36 @@ export const handleValueChanges: ServerNetworkSetupRoutine = (net, game) => {
   });
 
   net.registerPacketHandler("ReportValues", (from, packet) => {
+    const affectedValues = new Map<string, Value>();
+
     for (const report of packet.reports) {
       const value = game.values.lookup(report.identifier);
       if (!value || !value.replicated) continue;
+      affectedValues.set(report.identifier, value);
       game.values.fire(ValueChanged, value, report.value, report.clock, from);
     }
+
+    const validReports = packet.reports.filter(
+      report => affectedValues.get(report.identifier)?.lastSource === from,
+    );
 
     net.broadcast({
       t: "ReportValues",
       from,
-      reports: packet.reports,
+      reports: validReports,
     });
+
+    const richReports: PlayPacket<"RichReportValues", "server">["reports"] = [];
+    for (const value of affectedValues.values()) {
+      if (value.lastSource === from) continue;
+      richReports.push({
+        identifier: value.identifier,
+        clock: value.clock,
+        source: value.lastSource === "server" ? undefined : value.lastSource,
+        value: value.value,
+      });
+    }
+
+    if (richReports.length > 0) net.send(from, { t: "RichReportValues", reports: richReports });
   });
 };

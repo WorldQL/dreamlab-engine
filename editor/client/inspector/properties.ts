@@ -70,7 +70,7 @@ export class Properties implements InspectorUIComponent {
     addEntry("Name", nameField);
 
     const entityId = () => entity.id.replace("game.world._.EditEntities._.", "game.");
-    const idField = elem("span", {}, [entityId()]);
+    const idField = elem("code", {}, [entityId()]);
     entity.on(EntityRenamed, () => (idField.textContent = entityId()));
     entity.on(EntityReparented, () => (idField.textContent = entityId()));
     addEntry("ID", idField);
@@ -79,7 +79,7 @@ export class Properties implements InspectorUIComponent {
 
     const txfmTbody = elem("tbody");
 
-    const position = elem("span");
+    const position = elem("code");
     const updatePosition = () => {
       position.textContent = `(Global: ${entity.pos.x.toFixed(2)}, ${entity.pos.y.toFixed(2)})`;
     };

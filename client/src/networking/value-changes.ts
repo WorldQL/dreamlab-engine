@@ -59,4 +59,18 @@ export const handleValueChanges: ClientNetworkSetupRoutine = (
       );
     }
   });
+
+  conn.registerPacketHandler("RichReportValues", packet => {
+    for (const report of packet.reports) {
+      const value = game.values.lookup(report.identifier);
+      if (!value || !value.replicated) continue;
+      game.values.fire(
+        ValueChanged,
+        value,
+        report.value,
+        report.clock,
+        report.source ?? "server",
+      );
+    }
+  });
 };

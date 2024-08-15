@@ -1,6 +1,6 @@
 import { ClientGame } from "@dreamlab/engine";
 import { CameraPanBehavior } from "../camera-pan.ts";
-import { BehaviorPanel } from "./behavior-panel.ts";
+import { BehaviorPanel } from "./behavior-panel/mod.ts";
 import { ContextMenu } from "./context-menu.ts";
 import { GameOverlays } from "./game-overlays.ts";
 import { Properties } from "./properties.ts";

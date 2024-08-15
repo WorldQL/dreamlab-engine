@@ -1,7 +1,9 @@
-import { ConnectionId, PlayerJoined, PlayerLeft } from "@dreamlab/engine";
+import { ConnectionId, PlayerJoined, PlayerLeft, ServerRoot } from "@dreamlab/engine";
 import { ServerNetworkSetupRoutine } from "./net-manager.ts";
 import { serializeEntityDefinition } from "@dreamlab/proto/common/entity-sync.ts";
 import { PlayerConnectionDropped } from "@dreamlab/proto/common/signals.ts";
+import * as internal from "../../../engine/internal.ts";
+import { PlayPacket } from "@dreamlab/proto/play.ts";
 
 export const handlePlayerJoinExchange: ServerNetworkSetupRoutine = (net, game) => {
   const connectionStates = new Map<ConnectionId, "initialized" | "loaded">();
@@ -28,12 +30,27 @@ export const handlePlayerJoinExchange: ServerNetworkSetupRoutine = (net, game) =
 
       net.send(from, {
         t: "InitialNetworkSnapshot",
-        worldEntities: await Promise.all(worldEntities),
-        prefabEntities: await Promise.all(prefabEntities),
+        worldEntities,
+        prefabEntities,
       });
+
+      // TODO: send RichReportValues here after we have packet queue handling in the client
     }
 
     if (connectionState === "initialized" && packet.phase === "loaded") {
+      const valueReports: PlayPacket<"RichReportValues", "server">["reports"] = [];
+      for (const value of game.values.values) {
+        if (value[internal.valueRelatedEntity]?.root instanceof ServerRoot) continue;
+        valueReports.push({
+          identifier: value.identifier,
+          clock: value.clock,
+          source: value.lastSource,
+          value: value.value,
+        });
+      }
+
+      net.send(from, { t: "RichReportValues", reports: valueReports });
+
       connectionStates.set(from, packet.phase);
       const connection = net.clients.get(from);
       if (connection) {

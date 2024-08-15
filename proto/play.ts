@@ -79,6 +79,11 @@ export const ServerReportValuesPacketSchema = ClientReportValuesPacket.extend({
   from: ConnectionIdSchema.optional(),
 });
 
+export const ServerRichReportValuesPacketSchema = z.object({
+  t: z.literal("RichReportValues"),
+  reports: ValueReportSchema.extend({ source: ConnectionIdSchema.optional() }).array(),
+});
+
 export const ClientSpawnEntityPacket = z.object({
   t: z.literal("SpawnEntity"),
   definition: EntityDefinitionSchema,
@@ -224,6 +229,7 @@ export const ServerPacketSchema = z.discriminatedUnion("t", [
   ServerDenyExclusiveAuthorityPacket,
   ServerReportEntityTransformsPacket,
   ServerReportValuesPacketSchema,
+  ServerRichReportValuesPacketSchema,
 ]);
 export type ServerPacket = z.infer<typeof ServerPacketSchema>;
 

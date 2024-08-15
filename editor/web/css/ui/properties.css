@@ -51,7 +51,7 @@
   text-align: start;
 }
 
-#properties td span {
+#properties td code {
   user-select: all;
   cursor: initial;
 }
@@ -62,7 +62,7 @@
   height: 100%;
 }
 
-#properties td span,
+#properties td code,
 #properties td input[type="text"] {
   font-family: var(--font-mono);
   font-weight: 600;

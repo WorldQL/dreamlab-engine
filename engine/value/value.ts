@@ -42,7 +42,7 @@ export class Value<T = unknown> {
   /** for conflict resolution: incrementing number (greater number wins) */
   clock: number;
   /** for conflict resolution: the last setting client's connection ID, or "server" if set by the server. */
-  #lastSource: ConnectionId = "server";
+  lastSource: ConnectionId = "server";
 
   [internal.valueRelatedEntity]: Entity | undefined;
 
@@ -91,7 +91,7 @@ export class Value<T = unknown> {
     this.#value = defaultValue;
     this.typeTag = typeTag;
     this.clock = 0;
-    this.#lastSource = registry.source;
+    this.lastSource = registry.source;
 
     this.description = description;
 
@@ -129,13 +129,13 @@ export class Value<T = unknown> {
     if (incomingClock < this.clock) return;
     if (incomingClock === this.clock) {
       if (incomingSource !== "server") {
-        if (this.#lastSource === "server") return;
-        if (incomingSource < this.#lastSource) return;
+        if (this.lastSource === "server") return;
+        if (incomingSource < this.lastSource) return;
       }
     }
 
     this.#value = incomingValue;
-    this.#lastSource = incomingSource;
+    this.lastSource = incomingSource;
     this.clock = incomingClock;
   }
 }
