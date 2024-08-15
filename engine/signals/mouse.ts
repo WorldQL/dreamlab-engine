@@ -33,5 +33,8 @@ export class MouseOut {
 }
 
 export class Scroll {
-  public constructor(public readonly delta: Vector2) {}
+  public constructor(
+    public readonly delta: Vector2,
+    public readonly ev: WheelEvent,
+  ) {}
 }

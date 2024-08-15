@@ -225,7 +225,7 @@ export class Inputs implements ISignalHandler {
 
   #onWheel = (ev: WheelEvent) => {
     const scale = Camera.METERS_TO_PIXELS;
-    this.fire(Scroll, new Vector2({ x: ev.deltaX / scale, y: ev.deltaY / scale }));
+    this.fire(Scroll, new Vector2({ x: ev.deltaX / scale, y: ev.deltaY / scale }), ev);
   };
   // #endregion
 
