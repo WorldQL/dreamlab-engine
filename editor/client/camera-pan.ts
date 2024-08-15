@@ -15,6 +15,7 @@ export class CameraPanBehavior extends Behavior {
 
   #camera = this.entity.cast(Camera);
   #drag: Vector2 | undefined = undefined;
+  #wasGizmo: boolean = false;
 
   onInitialize(): void {
     if (!this.game.isClient()) return;
@@ -26,8 +27,13 @@ export class CameraPanBehavior extends Behavior {
 
   onMouseDown(event: MouseDown) {
     if (!this.game.isClient()) return;
-    if (event.button !== "middle") return;
-    this.#drag = event.cursor.screen.clone();
+    if (event.button === "left") {
+      // Ignore click event if mouse is over a local entity (clickable for gizmo)
+      const local = this.game.local.entities.lookupByPosition(event.cursor.world);
+      this.#wasGizmo = local.length > 0;
+    } else if (event.button === "middle") {
+      this.#drag = event.cursor.screen.clone();
+    }
   }
 
   onMouseUp(event: MouseUp) {
@@ -35,8 +41,8 @@ export class CameraPanBehavior extends Behavior {
 
     if (this.#drag) this.#drag = undefined;
 
-    if (!this.#drag && event.button === "left" && event.cursor.world) {
-      const gizmo = this.game.local?.children.get("Gizmo")?.cast(Gizmo);
+    if (!this.#drag && event.button === "left" && event.cursor.world && !this.#wasGizmo) {
+      const gizmo = this.game.local.children.get("Gizmo")?.cast(Gizmo);
       if (!gizmo) return;
 
       const entities = this.game.entities
@@ -48,6 +54,8 @@ export class CameraPanBehavior extends Behavior {
       gizmo.target = entity;
       if (this.ui) this.ui.selectedEntity.entities = entity ? [entity] : [];
     }
+
+    this.#wasGizmo = false;
   }
 
   onMouseMove(event: MouseMove) {
