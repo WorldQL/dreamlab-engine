@@ -4,14 +4,28 @@
   display: flex;
   flex-direction: row;
 
-  justify-content: space-between;
+  padding-right: 1em;
+  padding-left: 1em;
   align-content: center;
 
   & > * {
+    flex: calc(1 / 3);
     display: flex;
     flex-direction: row;
     gap: 1em;
     align-items: center;
+
+    &:nth-child(1) {
+      justify-content: left;
+    }
+
+    &:nth-child(2) {
+      justify-content: center;
+    }
+
+    &:nth-child(3) {
+      justify-content: right;
+    }
   }
 
   & h1 {
