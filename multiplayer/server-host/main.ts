@@ -25,7 +25,7 @@ Deno.addSignalListener("SIGTERM", () => {
   Deno.exit();
 });
 
-const TESTING_WORLD = "dreamlab/test-world";
+const TESTING_WORLD = "dreamlab/spaceship-multiplayer";
 
 await Promise.all([
   // boot instance

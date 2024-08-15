@@ -8,12 +8,13 @@ import { JSON_CODEC } from "@dreamlab/proto/codecs/simple-json.ts";
 import { renderInspector } from "./inspector/inspector.ts";
 
 import "../common/mod.ts";
-// import { setupMultiplayerCursors } from "./multiplayer-cursors.ts";
+import { setupMultiplayerCursors } from "./multiplayer-cursors.ts";
 
 const instanceId = NIL_UUID;
 const connectUrl = new URL(`ws://127.0.0.1:8000/api/v1/connect/${instanceId}`);
 connectUrl.searchParams.set("player_id", generateCUID("ply"));
 connectUrl.searchParams.set("nickname", "Player" + Math.floor(Math.random() * 999) + 1);
+connectUrl.searchParams.set("play_session", "1");
 
 const editUIRoot = document.querySelector("main")!;
 const gameViewport = document.querySelector("#viewport")!;
@@ -26,12 +27,12 @@ gameViewport.append(container);
 const socket = new WebSocket(connectUrl);
 
 const [game, conn, handshake] = await connectToGame(instanceId, container, socket, JSON_CODEC);
-// setupMultiplayerCursors(game);
+setupMultiplayerCursors(game);
 await setupGame(game, conn, handshake.edit_mode);
 
 Object.defineProperties(globalThis, { game: { value: game }, conn: { value: conn } });
 
-renderInspector(game, editUIRoot);
+renderInspector(game, editUIRoot, handshake.edit_mode);
 
 let now = performance.now();
 const onFrame = (time: number) => {

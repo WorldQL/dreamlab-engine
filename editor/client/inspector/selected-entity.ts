@@ -19,6 +19,6 @@ export class SelectedEntityService {
   #gizmo: Gizmo | undefined;
 
   constructor(private game: ClientGame) {
-    this.#gizmo = game.local._.Gizmo.cast(Gizmo);
+    this.#gizmo = game.local.children.get("Gizmo")?.cast(Gizmo);
   }
 }

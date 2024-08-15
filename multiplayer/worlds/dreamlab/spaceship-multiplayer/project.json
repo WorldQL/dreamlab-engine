@@ -45,6 +45,13 @@
             },
             "z": 0
           },
+          "behaviors": [
+            {
+              "ref": "bhv_dqg9eccve24e6rxphsx4y4px",
+              "script": "res://src/player-spawner.js",
+              "values": {}
+            }
+          ],
           "ref": "ent_tr6epldobbi539jyjg0fgxcw"
         }
       ],
@@ -71,6 +78,23 @@
             },
             "z": 0
           },
+          "behaviors": [
+            {
+              "ref": "bhv_g518j5l7gf8yk7k4vn9k9tq0",
+              "script": "res://src/player-movement.js",
+              "values": {}
+            },
+            {
+              "ref": "bhv_ztlz620mln3z267lt9qdctn4",
+              "script": "res://src/cleanup-on-leave.js",
+              "values": {}
+            },
+            {
+              "ref": "bhv_p19nsmjpkgphady7gi7qbb5q",
+              "script": "res://src/camera-follow.js",
+              "values": {}
+            }
+          ],
           "ref": "ent_hpbwa486rcfk9u6n86jlu4gm"
         }
       ]

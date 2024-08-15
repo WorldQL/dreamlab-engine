@@ -5,6 +5,7 @@ import { Properties } from "./properties.ts";
 import { BehaviorPanel } from "./behavior-panel.ts";
 
 export interface InspectorUI {
+  editMode: boolean;
   selectedEntity: SelectedEntityService;
   sceneGraph: SceneGraph;
   properties: Properties;
@@ -15,8 +16,9 @@ export interface InspectorUIComponent {
   render(ui: InspectorUI, editUIRoot: HTMLElement): void;
 }
 
-export function renderInspector(game: ClientGame, editUIRoot: HTMLElement) {
+export function renderInspector(game: ClientGame, editUIRoot: HTMLElement, editMode: boolean) {
   const ui: InspectorUI = {
+    editMode,
     selectedEntity: new SelectedEntityService(game),
     sceneGraph: new SceneGraph(game),
     properties: new Properties(game),

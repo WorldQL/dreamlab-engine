@@ -33,10 +33,14 @@ export class SceneGraph implements InspectorUIComponent {
 
     this.handleEntitySelection(ui, treeRoot);
 
-    this.renderEntry(treeRoot, this.game.world._.EditEntities._.world);
-    this.renderEntry(treeRoot, this.game.world._.EditEntities._.local);
-    this.renderEntry(treeRoot, this.game.world._.EditEntities._.server);
-    this.renderEntry(treeRoot, this.game.world._.EditEntities._.prefabs);
+    if (ui.editMode) {
+      this.renderEntry(treeRoot, this.game.world._.EditEntities._.world);
+      this.renderEntry(treeRoot, this.game.world._.EditEntities._.local);
+      this.renderEntry(treeRoot, this.game.world._.EditEntities._.server);
+      this.renderEntry(treeRoot, this.game.world._.EditEntities._.prefabs);
+    } else {
+      this.renderEntry(treeRoot, this.game.world);
+    }
   }
 
   sortEntries(parent: HTMLElement) {
