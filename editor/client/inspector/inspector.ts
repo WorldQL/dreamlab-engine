@@ -1,10 +1,11 @@
-import { Camera, ClientGame } from "@dreamlab/engine";
-import { SceneGraph } from "./scene-graph.ts";
-import { SelectedEntityService } from "./selected-entity.ts";
-import { Properties } from "./properties.ts";
+import { ClientGame } from "@dreamlab/engine";
+import { CameraPanBehavior } from "../camera-pan.ts";
 import { BehaviorPanel } from "./behavior-panel.ts";
 import { ContextMenu } from "./context-menu.ts";
-import { CameraPanBehavior } from "../camera-pan.ts";
+import { GameOverlays } from "./game-overlays.ts";
+import { Properties } from "./properties.ts";
+import { SceneGraph } from "./scene-graph.ts";
+import { SelectedEntityService } from "./selected-entity.ts";
 
 export interface InspectorUI {
   editMode: boolean;
@@ -13,13 +14,19 @@ export interface InspectorUI {
   properties: Properties;
   behaviorPanel: BehaviorPanel;
   contextMenu: ContextMenu;
+  gameOverlays: GameOverlays;
 }
 
 export interface InspectorUIComponent {
   render(ui: InspectorUI, editUIRoot: HTMLElement): void;
 }
 
-export function renderInspector(game: ClientGame, editUIRoot: HTMLElement, editMode: boolean) {
+export function renderInspector(
+  game: ClientGame,
+  editUIRoot: HTMLElement,
+  gameContainer: HTMLDivElement,
+  editMode: boolean,
+) {
   const ui: InspectorUI = {
     editMode,
     selectedEntity: new SelectedEntityService(game),
@@ -27,9 +34,11 @@ export function renderInspector(game: ClientGame, editUIRoot: HTMLElement, editM
     properties: new Properties(game),
     behaviorPanel: new BehaviorPanel(game),
     contextMenu: new ContextMenu(game),
+    gameOverlays: new GameOverlays(game, gameContainer),
   };
 
   if (editMode) {
+    ui.gameOverlays.render(ui, editUIRoot);
     game.local._.Camera.getBehavior(CameraPanBehavior).ui = ui;
   }
 

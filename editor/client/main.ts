@@ -49,7 +49,7 @@ if (handshake.edit_mode) {
 
 Object.defineProperties(globalThis, { game: { value: game }, conn: { value: conn } });
 
-renderInspector(game, editUIRoot, handshake.edit_mode);
+renderInspector(game, editUIRoot, container, handshake.edit_mode);
 
 let now = performance.now();
 const onFrame = (time: number) => {

@@ -1,0 +1,37 @@
+#game-overlays {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+#game-overlays #cursor-overlay {
+  position: absolute;
+  bottom: 0.5em;
+  left: 0.5em;
+  border-radius: var(--border-radius);
+
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 0.5em;
+  padding: 0.5em;
+  background-color: var(--col-bg-3);
+  width: 20em;
+  font-size: 0.8em;
+
+  pointer-events: auto;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  & * {
+    font-family: var(--font-mono);
+    font-weight: 600;
+  }
+
+  & :nth-child(even) {
+    text-align: right;
+  }
+}
