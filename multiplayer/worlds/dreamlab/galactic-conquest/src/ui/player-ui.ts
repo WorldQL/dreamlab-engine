@@ -1,5 +1,5 @@
 import { Behavior, GamePostRender, UILayer } from "@dreamlab/engine";
-import { element } from "@dreamlab/ui";
+import { __deprecated__element as element } from "@dreamlab/ui";
 import Movement from "../movement.ts";
 import PlayerBehavior from "../player.ts";
 import Shield from "../power-ups/shield.ts";

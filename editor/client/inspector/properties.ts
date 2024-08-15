@@ -10,7 +10,7 @@ import {
   SpritesheetAdapter,
 } from "@dreamlab/engine";
 import { InspectorUI, InspectorUIComponent } from "./inspector.ts";
-import { elem } from "@dreamlab/ui";
+import { element as elem } from "@dreamlab/ui";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { createInputField } from "./easy-input.ts";
 

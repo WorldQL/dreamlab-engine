@@ -1,5 +1,5 @@
 import { Behavior, BehaviorContext, UILayer } from "@dreamlab/engine";
-import { element } from "@dreamlab/ui";
+import { __deprecated__element as element } from "@dreamlab/ui";
 import { spawnPlayer } from "./start-screen.ts";
 
 export default class DeathScreen extends Behavior {

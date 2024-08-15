@@ -1,5 +1,5 @@
 import { ClientGame } from "@dreamlab/engine";
-import { elem } from "@dreamlab/ui";
+import { element as elem } from "@dreamlab/ui";
 import { PlayerConnectionDropped } from "@dreamlab/proto/common/signals.ts";
 
 export function setupMultiplayerCursors(game: ClientGame) {

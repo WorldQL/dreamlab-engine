@@ -1,4 +1,4 @@
-import { element } from "@dreamlab/ui";
+import { __deprecated__element as element } from "@dreamlab/ui";
 import {
   ActionPressed,
   Behavior,

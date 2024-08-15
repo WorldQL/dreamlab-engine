@@ -1,4 +1,4 @@
-import { elem } from "@dreamlab/ui";
+import { element as elem } from "@dreamlab/ui";
 import { validationError, ZodError } from "@dreamlab/vendor/zod.ts";
 
 export function createInputField<T>({

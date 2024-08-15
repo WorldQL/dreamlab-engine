@@ -1,4 +1,4 @@
-import { element } from "@dreamlab/ui";
+import { __deprecated__element as element } from "@dreamlab/ui";
 import { BackgroundBehavior } from "../../behavior/behaviors/background-behavior.ts";
 import { Behavior, BehaviorContext, BehaviorDefinition } from "../../behavior/mod.ts";
 import {

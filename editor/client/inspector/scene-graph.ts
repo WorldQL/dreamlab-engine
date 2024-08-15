@@ -1,4 +1,4 @@
-import { elem } from "@dreamlab/ui";
+import { element as elem } from "@dreamlab/ui";
 import {
   ClientGame,
   Entity,

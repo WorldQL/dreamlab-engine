@@ -1,6 +1,6 @@
 import { ClientGame } from "@dreamlab/engine";
 import { InspectorUI, InspectorUIComponent } from "./inspector.ts";
-import { elem } from "@dreamlab/ui";
+import { element as elem } from "@dreamlab/ui";
 
 export class BehaviorPanel implements InspectorUIComponent {
   constructor(private game: ClientGame) {}
