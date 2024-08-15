@@ -1,3 +1,4 @@
+import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import {
   ClientGame,
   Entity,
@@ -203,7 +204,17 @@ export class Properties implements InspectorUIComponent {
         [valueField, refreshValue] = createInputField({
           get: () => valueObj.value,
           set: v => (valueObj.value = v),
-          convert: z.literal("").or(z.string().url()).parse,
+          convert: async value => {
+            const url = z.literal("").or(z.string().url()).parse(value);
+            try {
+              const texture = await PIXI.Assets.load(this.game.resolveResource(url));
+              if (!(texture instanceof PIXI.Texture)) throw new TypeError("not a texture");
+
+              return url;
+            } catch {
+              throw new Error("Texture URL could not be resolved");
+            }
+          },
         });
       } else if (value.typeTag === SpritesheetAdapter) {
         // TODO: spritesheet picker
@@ -211,7 +222,19 @@ export class Properties implements InspectorUIComponent {
         [valueField, refreshValue] = createInputField({
           get: () => valueObj.value,
           set: v => (valueObj.value = v),
-          convert: z.literal("").or(z.string().url()).parse,
+          convert: async value => {
+            const url = z.literal("").or(z.string().url()).parse(value);
+            try {
+              const spritesheet = await PIXI.Assets.load(this.game.resolveResource(url));
+              if (!(spritesheet instanceof PIXI.Spritesheet)) {
+                throw new TypeError("not a spritesheet");
+              }
+
+              return url;
+            } catch {
+              throw new TypeError("Spritesheet URL could not be resolved");
+            }
+          },
         });
       }
       // TODO: other adapters

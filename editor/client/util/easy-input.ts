@@ -9,7 +9,7 @@ export function createInputField<T>({
 }: {
   get: () => T;
   set: (v: T) => void;
-  convert: (s: string) => T;
+  convert: (s: string) => T | Promise<T>;
   convertBack?: (v: T) => string;
 }): [input: HTMLInputElement, refresh: () => void] {
   const input = elem("input", {
@@ -17,10 +17,10 @@ export function createInputField<T>({
     value: convertBack(get()),
   });
 
-  input.addEventListener("input", () => {
+  input.addEventListener("input", async () => {
     let val: T;
     try {
-      val = convert(input.value);
+      val = await convert(input.value);
       input.setCustomValidity("");
       set(val);
     } catch (err) {
