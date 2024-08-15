@@ -1,6 +1,5 @@
 :root {
   color-scheme: dark;
-  font-family: sans-serif;
 
   --col-bg-0: #111111;
   --col-bg-1: #181818;
@@ -10,4 +9,6 @@
   --col-accent: #ce5bff;
 
   --col-bg-accent-translucent: #ce5bff2a;
+
+  --border-radius: 4px;
 }

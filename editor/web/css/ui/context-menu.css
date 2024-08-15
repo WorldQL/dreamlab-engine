@@ -45,7 +45,7 @@
   background-color: white;
   color: black;
 
-  border-radius: 4px;
+  border-radius: var(--border-radius);
 }
 
 #context-menu[data-open] {

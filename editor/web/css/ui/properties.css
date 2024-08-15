@@ -30,7 +30,7 @@
 #properties th,
 #properties td {
   background-color: var(--col-bg-3);
-  border-radius: 4px;
+  border-radius: var(--border-radius);
   padding: 0.5em;
 
   overflow: clip;

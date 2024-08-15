@@ -28,7 +28,7 @@
 }
 
 #scene-graph-tree details > summary {
-  border-radius: 4px;
+  border-radius: var(--border-radius);
   padding: 0.25em;
 
   cursor: pointer;
