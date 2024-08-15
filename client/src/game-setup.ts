@@ -3,6 +3,7 @@ import * as internal from "../../engine/internal.ts";
 import { ClientConnection } from "./networking/net-connection.ts";
 import { convertEntityDefinition, ProjectSchema } from "@dreamlab/scene";
 import { ReceivedInitialNetworkSnapshot } from "@dreamlab/proto/common/signals.ts";
+import { z } from "@dreamlab/vendor/zod.ts";
 
 export const setupGame = async (
   game: ClientGame,
@@ -19,10 +20,12 @@ export const setupGame = async (
     .then(ProjectSchema.parse);
   const scene = projectDesc.scenes.main;
   await Promise.all(scene.registration.map(script => import(game.resolveResource(script))));
-  const { default: preLoadBehaviors } = await import(
-    game.resolveResource("res://_dreamlab_behavior_preload.js")
-  );
-  await preLoadBehaviors(game);
+
+  const behaviors = await game
+    .fetch("res://_dreamlab_behaviors.json")
+    .then(r => r.json())
+    .then(z.record(z.string()).parse);
+  await Promise.all(Object.values(behaviors).map(s => game.loadBehavior(s)));
 
   const networkSnapshotPromise = new Promise<void>((resolve, _reject) => {
     game.on(ReceivedInitialNetworkSnapshot, () => {

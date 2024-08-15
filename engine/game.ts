@@ -127,7 +127,7 @@ export abstract class BaseGame implements ISignalHandler {
     }
   }
 
-  /** Fetches a resource (supports res:// amd cloud:// URIs) */
+  /** Fetches a resource (supports res:// and cloud:// URIs) */
   fetch(uri: string, init?: RequestInit): Promise<Response> {
     return fetch(this.resolveResource(uri), init);
   }

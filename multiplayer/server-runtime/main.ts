@@ -23,6 +23,7 @@ import {
   loadSceneDefinition,
   serializeEntityDefinition,
 } from "@dreamlab/scene";
+import { z } from "@dreamlab/vendor/zod.ts";
 
 const workerData = JSON.parse(Deno.env.get("DREAMLAB_MP_WORKER_DATA")!) as WorkerInitData;
 Deno.env.delete("DREAMLAB_MP_WORKER_DATA");
@@ -43,15 +44,15 @@ Object.defineProperties(globalThis, { net: { value: net }, game: { value: game }
 net.setup(game);
 await game.initialize();
 
-const { default: preLoadBehaviors } = await import(
-  game.resolveResource("res://_dreamlab_behavior_preload.js")
-);
-await preLoadBehaviors(game);
+const behaviors = await game
+  .fetch("res://_dreamlab_behaviors.json")
+  .then(r => r.json())
+  .then(z.record(z.string()).parse);
+await Promise.all(Object.values(behaviors).map(s => game.loadBehavior(s)));
 
 const projectDesc = await game
   .fetch("res://project.json")
-  .then(r => r.text())
-  .then(JSON.parse)
+  .then(r => r.json())
   .then(ProjectSchema.parse);
 
 // TODO: for multi-scene should we take some param from WorkerInitData here?
