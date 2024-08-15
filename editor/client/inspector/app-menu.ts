@@ -32,8 +32,8 @@ export class AppMenu implements InspectorUIComponent {
 
     // TODO: make this look nice lol
     return elem("div", {}, [
-      elem("span", {}, ["Connected Users: ", countText]),
-      elem("span", {}, ["Ping: ", pingText, "ms"]),
+      elem("div", {}, ["Connected Users: ", countText]),
+      elem("div", {}, ["Ping: ", pingText, "ms"]),
     ]);
   }
 }
