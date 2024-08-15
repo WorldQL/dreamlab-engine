@@ -26,7 +26,7 @@ gameViewport.append(container);
 const socket = new WebSocket(connectUrl);
 
 const [game, conn, handshake] = await connectToGame(instanceId, container, socket, JSON_CODEC);
-setupMultiplayerCursors(game);
+// setupMultiplayerCursors(game);
 await setupGame(game, conn, handshake.edit_mode);
 
 Object.defineProperties(globalThis, { game: { value: game }, conn: { value: conn } });
