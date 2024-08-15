@@ -42,8 +42,9 @@
   padding: 0;
 
   width: 16ch;
-  background-color: white;
-  color: black;
+  background-color: rgb(var(--color-bg-2));
+  color: rgb(var(--color-text));
+  outline: 1px solid rgb(var(--color-text));
 
   border-radius: var(--border-radius);
 }
@@ -55,8 +56,8 @@
 #context-menu a {
   display: inline-flex;
   padding: 0.5em;
-  background-color: white;
-  color: black;
+  background-color: rgb(var(--color-bg-2));
+  color: rgb(var(--color-text));
 
   height: 2.25em;
   max-height: 2.25em;
@@ -65,13 +66,17 @@
   justify-content: space-between;
 
   text-decoration: none;
-}
 
-#context-menu a[data-group]::after {
-  content: "⏵";
-}
+  &[data-group]::after {
+    content: "⏵";
+  }
 
-#context-menu a:hover,
-#context-menu a[data-selected] {
-  background-color: rgb(208, 248, 255);
+  &:hover,
+  &[data-selected] {
+    --alpha: 1;
+    background-color: rgb(var(--color-accent) / var(--alpha));
+    .theme-darker & {
+      --alpha: 16.5%;
+    }
+  }
 }
