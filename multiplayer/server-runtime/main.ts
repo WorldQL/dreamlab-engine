@@ -14,8 +14,10 @@ import {
 } from "../../editor/common/mod.ts";
 
 import {
+  BehaviorSchema as SceneDescBehaviorSchema,
   ProjectSchema,
   Scene,
+  SceneDescBehavior,
   SceneDescEntity,
   convertEntityDefinition,
   loadSceneDefinition,
@@ -62,11 +64,21 @@ if (workerData.editMode) {
   ): EntityDefinition => {
     if (!entityDef.children) entityDef.children = [];
 
-    // TODO: behaviors
+    const behaviors = entityDef.behaviors;
+    let behaviorsJson: string | undefined;
+    if (behaviors) {
+      entityDef.behaviors = [];
+      behaviorsJson = sceneDef.behaviors && JSON.stringify(sceneDef.behaviors);
+    }
+
     entityDef.children!.push({
       type: EditorMetadataEntity,
       name: "__EditorMetadata",
+      values: {
+        behaviorsJson,
+      },
     });
+
     sceneDef.children?.forEach(sceneChild => {
       const entityChild = entityDef.children?.find(e => sceneChild.ref === e._ref);
       if (!entityChild) return;
@@ -77,7 +89,30 @@ if (workerData.editMode) {
   };
 
   const dropEditorMetadata = (def: EntityDefinition): EntityDefinition => {
-    // TODO: drop editormetadata from children lol
+    if (def.children) def.children = def.children.filter(d => d.type !== EditorMetadataEntity);
+    def.children?.forEach(c => dropEditorMetadata(c));
+    return def;
+  };
+
+  const reinjectBehaviors = (entity: Entity, def: SceneDescEntity): SceneDescEntity => {
+    try {
+      const metadata = entity.children.get("__EditorMetadata")?.cast(EditorMetadataEntity);
+      if (metadata) {
+        const behaviors = SceneDescBehaviorSchema.array().parse(
+          JSON.parse(metadata.behaviorsJson),
+        ) as SceneDescBehavior[];
+        def.behaviors = behaviors;
+      }
+    } catch (err) {
+      console.warn(err);
+    }
+
+    def.children?.forEach(c => {
+      const childEntity = entity.children.get(c.name);
+      if (!childEntity) return;
+      reinjectBehaviors(childEntity, c);
+    });
+
     return def;
   };
 
@@ -113,7 +148,13 @@ if (workerData.editMode) {
 
   ipc.addMessageListener("SceneDefinitionRequest", () => {
     const serializeForScene = (entity: Entity) =>
-      serializeEntityDefinition(game, dropEditorFacades(entity.getDefinition()));
+      reinjectBehaviors(
+        entity,
+        serializeEntityDefinition(
+          game,
+          dropEditorMetadata(dropEditorFacades(entity.getDefinition())),
+        ),
+      );
 
     const scene: Scene = {
       world: [...editWorld.children.values()].map(serializeForScene),
@@ -124,13 +165,6 @@ if (workerData.editMode) {
 
     ipc.send({ op: "SceneDefinitionResponse", sceneJson: scene });
   });
-
-  const stripBehaviors = (def: EntityDefinition) => {
-    const behaviors = def.behaviors;
-    def.behaviors = [];
-    def.children?.forEach(c => stripBehaviors(c));
-    return def;
-  };
 
   for (const [sceneRoot, editRoot] of [
     [scene.world, editWorld],
@@ -146,7 +180,7 @@ if (workerData.editMode) {
       ),
     );
     for (const [sceneDef, entityDef] of defs) {
-      editRoot.spawn(addEditorMetadata(sceneDef, stripBehaviors(useEditorFacades(entityDef))));
+      editRoot.spawn(addEditorMetadata(sceneDef, useEditorFacades(entityDef)));
     }
   }
 } else {
