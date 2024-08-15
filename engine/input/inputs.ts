@@ -250,7 +250,7 @@ export class Inputs implements ISignalHandler {
     globalThis.addEventListener("keyup", this.#onKeyUp);
     globalThis.addEventListener("mousedown", this.#onMouseDown);
     globalThis.addEventListener("mouseup", this.#onMouseUp);
-    globalThis.addEventListener("wheel", this.#onWheel);
+    globalThis.addEventListener("wheel", this.#onWheel, { passive: false });
     globalThis.addEventListener("blur", this.#clearActions);
     document.addEventListener("visibilitychange", this.#onVisibilityChange);
 
