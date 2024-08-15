@@ -27,6 +27,7 @@ export const connectToGame = (
           network: conn.createNetworking(),
         });
         game.worldScriptBaseURL = packet.world_script_base_url;
+        conn.setup(game);
         resolve([game, conn, packet]);
       } else if (conn !== undefined) {
         conn.handle(packet);

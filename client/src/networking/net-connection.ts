@@ -72,11 +72,11 @@ export class ClientConnection {
     });
     this.registerPacketHandler("PeerDisconnected", packet => {
       const peerInfo = this.peers.get(packet.connection_id);
+      this.peers.delete(packet.connection_id);
       if (peerInfo) {
         game.fire(PlayerConnectionDropped, peerInfo);
         game.fire(PlayerLeft, peerInfo);
       }
-      this.peers.delete(packet.connection_id);
     });
     this.registerPacketHandler("PlayerJoined", packet => {
       const peerInfo = this.peers.get(packet.connection_id);

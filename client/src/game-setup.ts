@@ -10,7 +10,6 @@ export const setupGame = async (
   conn: ClientConnection,
   editMode: boolean,
 ) => {
-  conn.setup(game);
   await game.initialize();
 
   const projectDesc = await game
