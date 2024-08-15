@@ -6,7 +6,6 @@ import {
   AnimatedSprite2D,
   ClickableEntity,
   TilingSprite2D,
-  EditorFakeCamera,
   UILayer,
   UIPanel,
 } from "@dreamlab/engine";
@@ -30,7 +29,7 @@ export const entityCreationRules: EntityCreationRule[] = [
   },
   {
     path: "local",
-    allowedEntities: [Empty, EditorFakeCamera, UILayer, UIPanel],
+    allowedEntities: [Empty, UILayer, UIPanel],
   },
   {
     path: "prefabs",

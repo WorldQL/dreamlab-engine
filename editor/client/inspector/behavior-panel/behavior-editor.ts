@@ -1,17 +1,22 @@
 import { element as elem } from "@dreamlab/ui";
 import { SceneDescBehavior } from "@dreamlab/scene";
 
-import * as internal from "../../../../engine/internal.ts";
 import { createInputField } from "../../util/easy-input.ts";
 import { BehaviorList } from "./behavior-list.ts";
 import { ClientGame, Empty, inferValueTypeTag, Value } from "@dreamlab/engine";
 import { z } from "@dreamlab/vendor/zod.ts";
 
+type ThinValue<T> = {
+  value: Value<T>["value"];
+  typeTag?: Value<T>["typeTag"];
+  adapter?: Value<T>["adapter"];
+};
 export class BehaviorEditor {
   details: HTMLElement;
 
   scriptField: ReturnType<typeof createInputField>;
   valueFields = new Map<string, ReturnType<typeof createInputField>>();
+  values: Record<string, ThinValue<unknown>> = {};
 
   constructor(
     public game: ClientGame,
@@ -54,13 +59,6 @@ export class BehaviorEditor {
       );
     };
 
-    type ThinValue<T> = {
-      value: Value<T>["value"];
-      typeTag?: Value<T>["typeTag"];
-      adapter?: Value<T>["adapter"];
-    };
-    const values: Record<string, ThinValue<unknown>> = {};
-
     try {
       // TODO: sandboxing -- we should create a dummy ClientGame instance to spawn this behavior in,
       // so that it can't change anything about the edit-mode game.
@@ -75,7 +73,11 @@ export class BehaviorEditor {
       });
 
       for (const [key, value] of behaviorObj.values.entries()) {
-        values[key] = { value: value.value, typeTag: value.typeTag, adapter: value.adapter };
+        this.values[key] = {
+          value: value.value,
+          typeTag: value.typeTag,
+          adapter: value.adapter,
+        };
       }
       dummyEntity.destroy();
     } catch (_err) {
@@ -89,24 +91,13 @@ export class BehaviorEditor {
             // ignore
           }
 
-          values[key] = { value, typeTag };
+          this.values[key] = { value, typeTag };
         }
       }
     }
 
-    for (const [key, value] of Object.entries(values)) {
+    for (const [key, value] of Object.entries(this.values)) {
       let valueField: ReturnType<typeof createInputField>;
-
-      const [field, refresh] = createInputField({
-        get: () => String(value.value),
-        set: v => {
-          value.value = v;
-          if (!this.behavior.values) this.behavior.values = {};
-          this.behavior.values[key] = v;
-          parent.sync();
-        },
-        convert: s => s,
-      });
 
       switch (value.typeTag) {
         case String: {
@@ -163,6 +154,7 @@ export class BehaviorEditor {
         continue;
       }
 
+      this.values[key].value = value;
       if (!this.behavior.values) this.behavior.values = {};
       this.behavior.values[key] = value;
       valueField[1]();

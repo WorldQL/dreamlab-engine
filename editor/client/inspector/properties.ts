@@ -206,6 +206,8 @@ export class Properties implements InspectorUIComponent {
           set: v => (valueObj.value = v),
           convert: async value => {
             const url = z.literal("").or(z.string().url()).parse(value);
+            if (url === "") return url;
+
             try {
               const texture = await PIXI.Assets.load(this.game.resolveResource(url));
               if (!(texture instanceof PIXI.Texture)) throw new TypeError("not a texture");

@@ -1,4 +1,6 @@
-import { JSON_CODEC } from "@dreamlab/proto/codecs/simple-json.ts";
+import "../../editor/common/mod.ts";
+
+import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 import { renderEditorUI } from "./editor/editor-ui-main.tsx";
@@ -58,8 +60,14 @@ const setup = async (conn: ClientConnection, games: GlobalGames, editMode: boole
 };
 
 const socket = new WebSocket(connectUrl.toString());
+socket.binaryType = "arraybuffer";
 Object.defineProperty(window, "socket", { value: socket });
-const [game, conn, handshake] = await connectToGame(instanceId, container, socket, JSON_CODEC);
+const [game, conn, handshake] = await connectToGame(
+  instanceId,
+  container,
+  socket,
+  DEFAULT_CODEC,
+);
 const games: GlobalGames = { edit: game };
 _setGlobalGames(games);
 Object.defineProperties(window, {

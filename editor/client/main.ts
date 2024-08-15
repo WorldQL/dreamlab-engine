@@ -8,14 +8,14 @@ const fonts = preloadFonts({
   weights: ["400", "500"],
 });
 
+import "../common/mod.ts";
+
 import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import { setupGame } from "./game-setup.ts";
 import { connectToGame } from "./game-connection.ts";
 import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
 import { renderInspector } from "./inspector/inspector.ts";
-
-import "../common/mod.ts";
 import { setupMultiplayerCursors } from "./multiplayer-cursors.ts";
 import { Camera } from "@dreamlab/engine";
 import { CameraPanBehavior } from "./camera-pan.ts";
