@@ -1,4 +1,5 @@
-import { ClientGame, Entity, Gizmo } from "@dreamlab/engine";
+import { ClientGame, Entity, Gizmo, Root } from "@dreamlab/engine";
+import { EditorRootFacadeEntity } from "../../common/mod.ts";
 
 export class SelectedEntityService {
   #changeListeners: (() => void)[] = [];
@@ -12,7 +13,10 @@ export class SelectedEntityService {
   }
   set entities(newEntities) {
     this.#entities = newEntities;
-    if (this.#gizmo) this.#gizmo.target = newEntities.at(0);
+    if (this.#gizmo)
+      this.#gizmo.target = newEntities
+        .filter(e => !(e instanceof Root || e instanceof EditorRootFacadeEntity))
+        .at(0);
     for (const listener of this.#changeListeners) listener();
   }
 

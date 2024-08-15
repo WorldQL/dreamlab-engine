@@ -36,8 +36,8 @@
   flex-direction: column;
 
   --section-offset: 0em;
-  transform: translateX(min(var(--cursor-x), calc(100vw - 100%)))
-    translateY(min(var(--cursor-y) + var(--section-offset), calc(100vh - 100%)));
+  transform: translateX(min(var(--cursor-x), calc((100vw - 0.25em) - 100%)))
+    translateY(min(var(--cursor-y) + var(--section-offset), calc((100vh - 0.25em) - 100%)));
 
   padding: 0;
 
@@ -62,13 +62,13 @@
   max-height: 2.25em;
 
   align-content: center;
+  justify-content: space-between;
 
   text-decoration: none;
 }
 
 #context-menu a[data-group]::after {
   content: "⏵";
-  float: inline-end;
 }
 
 #context-menu a:hover,

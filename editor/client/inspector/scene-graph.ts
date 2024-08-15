@@ -10,7 +10,6 @@ import {
 import { InspectorUI, InspectorUIComponent } from "./inspector.ts";
 import { EditorMetadataEntity } from "../../common/mod.ts";
 import * as internal from "../../../engine/internal.ts";
-import { ContextMenuItem } from "./context-menu.ts";
 
 function eventTargetsEntry(event: Event, entryElement: HTMLElement) {
   if (!(event.target instanceof HTMLElement)) return false;

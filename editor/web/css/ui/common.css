@@ -4,14 +4,13 @@ body {
 }
 
 main > div {
-  background: var(--col-bg-1);
   border-radius: var(--border-radius);
 }
 
 section {
   padding: 0.5em;
   border-radius: var(--border-radius);
-  background-color: var(--col-bg-2);
+  background-color: var(--col-bg-1);
 
   overflow: auto;
   text-wrap: nowrap;
@@ -25,6 +24,6 @@ h3 {
   margin-bottom: 0.5em;
 }
 
-section > h1 {
+h1 {
   font-weight: bold;
 }

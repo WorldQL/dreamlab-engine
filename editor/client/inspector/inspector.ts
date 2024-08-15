@@ -6,6 +6,7 @@ import { GameOverlays } from "./game-overlays.ts";
 import { Properties } from "./properties.ts";
 import { SceneGraph } from "./scene-graph.ts";
 import { SelectedEntityService } from "./selected-entity.ts";
+import { AppMenu } from "./app-menu.ts";
 
 export interface InspectorUI {
   editMode: boolean;
@@ -15,6 +16,7 @@ export interface InspectorUI {
   behaviorPanel: BehaviorPanel;
   contextMenu: ContextMenu;
   gameOverlays: GameOverlays;
+  appMenu: AppMenu;
 }
 
 export interface InspectorUIComponent {
@@ -35,6 +37,7 @@ export function renderInspector(
     behaviorPanel: new BehaviorPanel(game),
     contextMenu: new ContextMenu(game),
     gameOverlays: new GameOverlays(game, gameContainer),
+    appMenu: new AppMenu(game),
   };
 
   if (editMode) {
@@ -46,4 +49,5 @@ export function renderInspector(
   ui.properties.render(ui, editUIRoot);
   ui.behaviorPanel.render(ui, editUIRoot);
   ui.contextMenu.render(ui, editUIRoot);
+  ui.appMenu.render(ui, editUIRoot);
 }
