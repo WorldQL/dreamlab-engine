@@ -5,20 +5,23 @@ import {
   MouseDown,
   MouseMove,
   MouseUp,
+  Scroll,
   Vector2,
 } from "@dreamlab/engine";
 import { InspectorUI } from "./inspector/inspector.ts";
 
 export class CameraPanBehavior extends Behavior {
+  ui: InspectorUI | undefined;
+
   #camera = this.entity.cast(Camera);
   #drag: Vector2 | undefined = undefined;
-  ui: InspectorUI | undefined;
 
   onInitialize(): void {
     if (!this.game.isClient()) return;
     this.listen(this.game.inputs, MouseDown, this.onMouseDown.bind(this));
     this.listen(this.game.inputs, MouseMove, this.onMouseMove.bind(this));
     this.listen(this.game.inputs, MouseUp, this.onMouseUp.bind(this));
+    this.listen(this.game.inputs, Scroll, this.onScroll.bind(this));
   }
 
   onMouseDown(event: MouseDown) {
@@ -59,5 +62,30 @@ export class CameraPanBehavior extends Behavior {
       .sub(this.#camera.screenToWorld(Vector2.ZERO));
 
     this.#camera.pos.assign(this.#camera.pos.add(worldDelta));
+  }
+
+  onScroll({ delta, ev }: Scroll) {
+    ev.preventDefault();
+
+    if (!ev.ctrlKey) {
+      const zoomFactor = 1.1;
+      const zoomDirection = delta.y > 0 ? 1 : -1;
+      const newScale = this.#camera.globalTransform.scale.mul(
+        Math.pow(zoomFactor, zoomDirection),
+      );
+      const clampedScale = new Vector2(Math.max(newScale.x, 0.1), Math.max(newScale.y, 0.1));
+      this.#camera.globalTransform.scale = clampedScale;
+    } else {
+      const scale = 100;
+      const deltaX = ev.shiftKey ? delta.y : delta.x;
+      const deltaY = ev.shiftKey ? 0 : delta.y;
+      const scrollDelta = new Vector2(deltaX, deltaY).mul(scale);
+
+      const worldDelta = this.#camera
+        .screenToWorld(scrollDelta)
+        .sub(this.#camera.screenToWorld(Vector2.ZERO));
+
+      this.#camera.pos.assign(this.#camera.pos.add(worldDelta));
+    }
   }
 }
