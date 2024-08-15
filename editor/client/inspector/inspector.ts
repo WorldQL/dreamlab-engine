@@ -3,6 +3,7 @@ import { SceneGraph } from "./scene-graph.ts";
 import { SelectedEntityService } from "./selected-entity.ts";
 import { Properties } from "./properties.ts";
 import { BehaviorPanel } from "./behavior-panel.ts";
+import { ContextMenu } from "./context-menu.ts";
 
 export interface InspectorUI {
   editMode: boolean;
@@ -10,6 +11,7 @@ export interface InspectorUI {
   sceneGraph: SceneGraph;
   properties: Properties;
   behaviorPanel: BehaviorPanel;
+  contextMenu: ContextMenu;
 }
 
 export interface InspectorUIComponent {
@@ -23,9 +25,11 @@ export function renderInspector(game: ClientGame, editUIRoot: HTMLElement, editM
     sceneGraph: new SceneGraph(game),
     properties: new Properties(game),
     behaviorPanel: new BehaviorPanel(game),
+    contextMenu: new ContextMenu(game),
   };
 
   ui.sceneGraph.render(ui, editUIRoot);
   ui.properties.render(ui, editUIRoot);
   ui.behaviorPanel.render(ui, editUIRoot);
+  ui.contextMenu.render(ui, editUIRoot);
 }

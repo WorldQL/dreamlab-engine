@@ -1,5 +1,13 @@
 import "../../build-system/live-reload.js";
 
+import { preloadFonts } from "./fonts.ts";
+
+const fonts = preloadFonts({
+  families: ["Inter", "Iosevka"],
+  styles: ["normal"],
+  weights: ["400", "500"],
+});
+
 import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import { setupGame } from "./game-setup.ts";
@@ -28,6 +36,7 @@ const socket = new WebSocket(connectUrl);
 
 const [game, conn, handshake] = await connectToGame(instanceId, container, socket, JSON_CODEC);
 setupMultiplayerCursors(game);
+await fonts;
 await setupGame(game, conn, handshake.edit_mode);
 
 Object.defineProperties(globalThis, { game: { value: game }, conn: { value: conn } });

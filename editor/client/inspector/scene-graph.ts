@@ -33,6 +33,23 @@ export class SceneGraph implements InspectorUIComponent {
 
     this.handleEntitySelection(ui, treeRoot);
 
+    container.addEventListener("contextmenu", event => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      ui.contextMenu.drawContextMenu(event.clientX, event.clientY, [
+        ["hai", () => console.log("haiii >.<")],
+        [
+          "my group",
+          [
+            ["extra item", () => console.log("!!!")],
+            ["something else", () => console.log(":)")],
+          ],
+        ],
+        ["hello", () => {}],
+      ]);
+    });
+
     if (ui.editMode) {
       this.renderEntry(treeRoot, this.game.world._.EditEntities._.world);
       this.renderEntry(treeRoot, this.game.world._.EditEntities._.local);

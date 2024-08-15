@@ -1,7 +1,7 @@
 export type ElementProps<E extends Element> = {
   // afaik you cant detect "extends readonly" in TS so whatever
   // deno-lint-ignore ban-types
-  [K in keyof E]?: E[K] extends Function ? never : E[K];
+  [K in keyof E as E[K] extends Function ? never : K]?: E[K];
 };
 
 /** @deprecated */
