@@ -1,6 +1,6 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { ClientGame, Game } from "../../game.ts";
-import { IVector2, Vector2, smoothLerp } from "../../math/mod.ts";
+import { IVector2, Vector2, smoothLerpHalfLife } from "../../math/mod.ts";
 import { ActiveCameraChanged, EntityDestroyed, GameRender } from "../../signals/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
 
@@ -15,7 +15,7 @@ export class Camera extends Entity {
   public readonly bounds: undefined;
 
   public readonly container: PIXI.Container;
-  public smooth: number = 0.01;
+  public smooth: number = 0.1;
   public unlocked: boolean = false;
 
   #position: Vector2 = new Vector2(this.interpolated.position);
@@ -114,7 +114,7 @@ export class Camera extends Entity {
       const delta = this.game.time.delta;
 
       // No smoothing
-      if (this.smooth === 1) {
+      if (this.smooth === 0) {
         this.#position.x = this.interpolated.position.x;
         this.#position.y = this.interpolated.position.y;
         this.#rotation = this.interpolated.rotation;
@@ -125,21 +125,21 @@ export class Camera extends Entity {
         return;
       }
 
-      this.#position = Vector2.smoothLerp(
+      this.#position = Vector2.smoothLerpHalfLife(
         this.#position,
         this.interpolated.position,
         this.smooth,
         delta,
       );
 
-      this.#rotation = smoothLerp(
+      this.#rotation = smoothLerpHalfLife(
         this.#rotation,
         this.interpolated.rotation,
         this.smooth,
         delta,
       );
 
-      this.#scale = Vector2.smoothLerp(
+      this.#scale = Vector2.smoothLerpHalfLife(
         this.#scale,
         this.interpolated.scale,
         this.smooth,
