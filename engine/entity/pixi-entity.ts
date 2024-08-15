@@ -11,6 +11,9 @@ export abstract class PixiEntity extends Entity {
     this.listen(this.game, GameRender, () => {
       if (!this.container) return;
 
+      this.container.visible = this.root !== this.game.prefabs;
+      if (!this.container.visible) return;
+
       const pos = this.interpolated.position;
       const rot = this.interpolated.rotation;
       this.container.position = { x: pos.x, y: -pos.y };

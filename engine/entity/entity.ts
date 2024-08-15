@@ -784,7 +784,6 @@ export abstract class Entity implements ISignalHandler {
   #spawned = false;
   #spawn() {
     this.#spawned = true;
-    if (this.root === this.game.prefabs) return;
 
     this.onInitialize();
 
