@@ -14,7 +14,9 @@ main {
     "left   bottom    right";
 }
 
-/* TODO: hide the sidebars in play mode (we just want to see the game) */
+main.play-mode {
+  display: none;
+}
 
 main > div {
   all: unset;
@@ -47,4 +49,9 @@ main > div {
   display: flex;
   flex-direction: column;
   gap: 0.5em;
+}
+
+#viewport > div {
+  width: 100%;
+  height: 100%;
 }

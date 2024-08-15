@@ -48,10 +48,14 @@ export class BehaviorList {
           }
         }
 
-        // O(n*m) but n and m are small :)
         for (const oldBehavior of this.behaviors) {
+          // O(n*m) but n and m are small :)
           if (newBehaviors.find(it => it.ref === oldBehavior.ref) !== undefined) continue;
-          // TODO: delete behavior editor
+
+          const editor = this.editors.get(oldBehavior.ref);
+          if (!editor) continue;
+          this.editors.delete(oldBehavior.ref);
+          editor.details.remove();
         }
       });
     }

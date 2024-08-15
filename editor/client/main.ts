@@ -17,7 +17,7 @@ import { connectToGame } from "./game-connection.ts";
 import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
 import { renderInspector } from "./inspector/inspector.ts";
 import { setupMultiplayerCursors } from "./multiplayer-cursors.ts";
-import { Camera } from "@dreamlab/engine";
+import { Camera, ClientGame } from "@dreamlab/engine";
 import { CameraPanBehavior } from "./camera-pan.ts";
 import * as internal from "../../engine/internal.ts";
 
@@ -25,15 +25,9 @@ const instanceId = NIL_UUID;
 const connectUrl = new URL(`ws://127.0.0.1:8000/api/v1/connect/${instanceId}`);
 connectUrl.searchParams.set("player_id", generateCUID("ply"));
 connectUrl.searchParams.set("nickname", "Player" + Math.floor(Math.random() * 999) + 1);
-// connectUrl.searchParams.set("play_session", "1");
 
-const editUIRoot = document.querySelector("main")!;
-const gameViewport = document.querySelector("#viewport")!;
-
-const container = document.createElement("div");
-container.style.height = "100%";
-container.style.width = "100%";
-gameViewport.append(container);
+const editUIRoot = document.querySelector("main.edit-mode")! as HTMLElement;
+const container = editUIRoot.querySelector("#game-container")! as HTMLDivElement;
 
 const socket = new WebSocket(connectUrl);
 socket.binaryType = "arraybuffer";
@@ -44,6 +38,12 @@ const [game, conn, handshake] = await connectToGame(
   socket,
   DEFAULT_CODEC,
 );
+
+export const games: { edit: ClientGame; play: ClientGame | undefined } = {
+  edit: game,
+  play: undefined,
+};
+
 // setupMultiplayerCursors(game);
 await fonts;
 await setupGame(game, conn, handshake.edit_mode);
@@ -61,7 +61,8 @@ let now = performance.now();
 const onFrame = (time: number) => {
   const delta = time - now;
   now = time;
-  game.tickClient(delta);
+  games.edit.tickClient(delta);
+  games.play?.tickClient(delta);
 
   requestAnimationFrame(onFrame);
 };

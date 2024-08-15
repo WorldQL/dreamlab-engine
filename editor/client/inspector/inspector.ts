@@ -20,12 +20,12 @@ export interface InspectorUI {
 }
 
 export interface InspectorUIComponent {
-  render(ui: InspectorUI, editUIRoot: HTMLElement): void;
+  render(ui: InspectorUI, uiRoot: HTMLElement): void;
 }
 
 export function renderInspector(
   game: ClientGame,
-  editUIRoot: HTMLElement,
+  uiRoot: HTMLElement,
   gameContainer: HTMLDivElement,
   editMode: boolean,
 ) {
@@ -41,13 +41,13 @@ export function renderInspector(
   };
 
   if (editMode) {
-    ui.gameOverlays.render(ui, editUIRoot);
+    ui.gameOverlays.render(ui, uiRoot);
     game.local._.Camera.getBehavior(CameraPanBehavior).ui = ui;
   }
 
-  ui.sceneGraph.render(ui, editUIRoot);
-  ui.properties.render(ui, editUIRoot);
-  ui.behaviorPanel.render(ui, editUIRoot);
-  ui.contextMenu.render(ui, editUIRoot);
-  ui.appMenu.render(ui, editUIRoot);
+  ui.sceneGraph.render(ui, uiRoot);
+  ui.properties.render(ui, uiRoot);
+  ui.behaviorPanel.render(ui, uiRoot);
+  ui.contextMenu.render(ui, uiRoot);
+  ui.appMenu.render(ui, uiRoot);
 }

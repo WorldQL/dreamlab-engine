@@ -9,6 +9,8 @@ export const connectToGame = (
   socket: WebSocket,
   codec: PlayCodec,
 ): Promise<[game: ClientGame, conn: ClientConnection, handshake: PlayPacket<"Handshake">]> => {
+  socket.binaryType = "arraybuffer";
+
   return new Promise(resolve => {
     let conn: ClientConnection | undefined;
     let game: ClientGame | undefined;
