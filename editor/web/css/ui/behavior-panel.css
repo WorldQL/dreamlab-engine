@@ -12,8 +12,8 @@
 
     text-decoration: none;
 
-    color: var(--col-accent);
-    border: 2px solid var(--col-accent);
+    color: rgb(var(--color-accent) / 1);
+    border: 2px solid rgb(var(--color-accent) / 1);
     font-weight: bold;
   }
 
@@ -76,7 +76,7 @@
   }
   & th,
   & td {
-    background-color: var(--col-bg-2);
+    background-color: rgb(var(--color-bg-2) / 1);
     border-radius: var(--border-radius);
     padding: 0.5em;
 
@@ -86,7 +86,7 @@
 
   & td:empty,
   & td:has(> details) {
-    background-color: var(--col-bg-1);
+    background-color: rgb(var(--color-bg-1) / 1);
     padding-left: 0;
     padding-right: 0;
   }
