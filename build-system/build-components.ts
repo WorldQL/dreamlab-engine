@@ -73,6 +73,7 @@ export const bundleEngineDependencies = async (
 
   const buildOpts: esbuild.BuildOptions = {
     ...BASE_BUILD_OPTIONS,
+    minify: true,
     plugins: [
       ...denoPlugins({
         loader: "native",
