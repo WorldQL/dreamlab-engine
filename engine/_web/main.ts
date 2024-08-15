@@ -22,6 +22,7 @@ const game = new ClientGame({
   worldId: "dummy-world",
   // prettier-ignore
   network: {
+    ping: 0,
     connections: [],
     self: generateCUID("conn"),
     sendCustomMessage() {},
