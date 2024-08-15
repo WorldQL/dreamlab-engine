@@ -15,6 +15,7 @@
       "npm:@paralleldrive/cuid2@2.2.2": "npm:@paralleldrive/cuid2@2.2.2",
       "npm:esbuild-plugin-copy@2.1.1": "npm:esbuild-plugin-copy@2.1.1_esbuild@0.20.2",
       "npm:esbuild@0.20.2": "npm:esbuild@0.20.2",
+      "npm:lucide-static": "npm:lucide-static@0.427.0",
       "npm:pixi.js@8.2.6": "npm:pixi.js@8.2.6",
       "npm:type-fest@4.23.0": "npm:type-fest@4.23.0",
       "npm:zod-validation-error@3.3.1": "npm:zod-validation-error@3.3.1_zod@3.23.8"
@@ -406,6 +407,10 @@
           "graceful-fs": "graceful-fs@4.2.11",
           "universalify": "universalify@2.0.1"
         }
+      },
+      "lucide-static@0.427.0": {
+        "integrity": "sha512-lsUNKUv6rZrRyQa5KMHZwxKMP1Am2L9BqQGxSvFhcPvZW86sF0YcLZFQ+V5SrBPr3VhNnebMS4SqloMDucd/YQ==",
+        "dependencies": {}
       },
       "merge2@1.4.1": {
         "integrity": "sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==",
