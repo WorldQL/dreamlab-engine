@@ -1,19 +1,22 @@
-import { Empty, GameStatus, ServerGame, Entity } from "@dreamlab/engine";
+import { Empty, GameStatus, ServerGame, Entity, EntityDefinition } from "@dreamlab/engine";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 import { ServerNetworkManager } from "./networking/net-manager.ts";
 import { IPCMessageBus } from "./ipc.ts";
 
-import { useEditorFacades, dropEditorFacades } from "../../editor/common/facades/mod.ts";
 import {
+  useEditorFacades,
+  dropEditorFacades,
   WorldRootFacade,
   PrefabRootFacade,
   LocalRootFacade,
   ServerRootFacade,
-} from "../../editor/common/facades/edit-roots.ts";
+  EditorMetadataEntity,
+} from "../../editor/common/mod.ts";
 
 import {
   ProjectSchema,
   Scene,
+  SceneDescEntity,
   convertEntityDefinition,
   loadSceneDefinition,
   serializeEntityDefinition,
@@ -53,6 +56,31 @@ const projectDesc = await game
 const scene = projectDesc.scenes.main;
 
 if (workerData.editMode) {
+  const addEditorMetadata = (
+    sceneDef: SceneDescEntity,
+    entityDef: EntityDefinition,
+  ): EntityDefinition => {
+    if (!entityDef.children) entityDef.children = [];
+
+    // TODO: behaviors
+    entityDef.children!.push({
+      type: EditorMetadataEntity,
+      name: "__EditorMetadata",
+    });
+    sceneDef.children?.forEach(sceneChild => {
+      const entityChild = entityDef.children?.find(e => sceneChild.ref === e._ref);
+      if (!entityChild) return;
+      addEditorMetadata(sceneChild, entityChild);
+    });
+
+    return entityDef;
+  };
+
+  const dropEditorMetadata = (def: EntityDefinition): EntityDefinition => {
+    // TODO: drop editormetadata from children lol
+    return def;
+  };
+
   if (scene.registration) {
     await Promise.all(scene.registration.map(script => import(game.resolveResource(script))));
   }
@@ -97,15 +125,28 @@ if (workerData.editMode) {
     ipc.send({ op: "SceneDefinitionResponse", sceneJson: scene });
   });
 
+  const stripBehaviors = (def: EntityDefinition) => {
+    const behaviors = def.behaviors;
+    def.behaviors = [];
+    def.children?.forEach(c => stripBehaviors(c));
+    return def;
+  };
+
   for (const [sceneRoot, editRoot] of [
     [scene.world, editWorld],
     [scene.local, editLocal],
     [scene.server, editServer],
     [scene.prefabs, editPrefabs],
   ] as const) {
-    const defs = await Promise.all(sceneRoot.map(def => convertEntityDefinition(game, def)));
-    for (const def of defs) {
-      editRoot.spawn(useEditorFacades(def));
+    const defs = await Promise.all(
+      sceneRoot.map(sceneDef =>
+        convertEntityDefinition(game, sceneDef).then(
+          entityDef => [sceneDef, entityDef] as const,
+        ),
+      ),
+    );
+    for (const [sceneDef, entityDef] of defs) {
+      editRoot.spawn(addEditorMetadata(sceneDef, stripBehaviors(useEditorFacades(entityDef))));
     }
   }
 } else {

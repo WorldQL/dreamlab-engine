@@ -68,6 +68,7 @@ export const dreamlabDataLoaderPlugin = (worldDir: string): esbuild.Plugin => ({
   },
 });
 
+// TODO: cache this so we can work offline
 export const dreamlabExternalCssPlugin = (): esbuild.Plugin => ({
   name: "dreamlab-external-css",
   setup: build => {

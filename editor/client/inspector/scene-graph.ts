@@ -8,6 +8,7 @@ import {
   EntityReparented,
 } from "@dreamlab/engine";
 import { InspectorUI, InspectorUIComponent } from "./inspector.ts";
+import { EditorMetadataEntity } from "../../common/mod.ts";
 
 function eventTargetsEntry(event: Event, entryElement: HTMLElement) {
   if (!(event.target instanceof HTMLElement)) return false;
@@ -82,6 +83,8 @@ export class SceneGraph implements InspectorUIComponent {
   }
 
   renderEntry(parent: HTMLElement, entity: Entity) {
+    if (entity instanceof EditorMetadataEntity) return;
+
     const entryElement = elem("details", { open: true }, [
       elem("summary", {}, [
         elem("a", {}, [
