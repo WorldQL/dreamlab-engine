@@ -1,7 +1,6 @@
-import { ClientGame, EntityUpdate, IVector2, MouseMove } from "@dreamlab/engine";
-import { InspectorUI, InspectorUIComponent } from "./inspector.ts";
+import { ClientGame, EntityUpdate, IVector2, MouseMove, Vector2 } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
-import { Vector2 } from "../../web/dist/engine.js";
+import { InspectorUI, InspectorUIComponent } from "./inspector.ts";
 
 export class GameOverlays implements InspectorUIComponent {
   constructor(
