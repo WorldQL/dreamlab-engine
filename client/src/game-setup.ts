@@ -47,7 +47,7 @@ export const setupGame = async (
     game.local.spawn({
       type: Camera,
       name: "Camera",
-      values: { smooth: 1, active: true, unlocked: true },
+      values: { smooth: 0.05, active: true, unlocked: true },
     });
 
     // we don't need to load the scene here because the server should have put everything

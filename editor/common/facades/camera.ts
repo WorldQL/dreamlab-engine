@@ -12,7 +12,7 @@ import { DebugSquare } from "./_debug.ts";
 export class EditorFacadeCamera extends PixiEntity {
   static readonly icon = "📷";
 
-  public smooth: number = 0.01;
+  public smooth: number = 0.1;
   public unlocked: boolean = false;
   public active: boolean = false;
 
