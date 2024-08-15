@@ -50,7 +50,7 @@ export class ServerNetworkManager {
 
   setup(game: ServerGame) {
     this.ipc.addMessageListener("IncomingPacket", message => {
-      console.log("[<-] " + message.packet.t);
+      if (message.packet.t !== "Ping") console.log("[<-] " + message.packet.t);
       try {
         this.getPacketHandler(message.packet.t)(message.from, message.packet);
       } catch (err) {
@@ -118,12 +118,12 @@ export class ServerNetworkManager {
 
   send(to: ConnectionId, packet: ServerPacket) {
     if (to === undefined) return;
-    console.log("[->] " + packet.t);
+    if (packet.t !== "Ping") console.log("[->] " + packet.t);
     this.ipc.send({ op: "OutgoingPacket", to, packet });
   }
 
   broadcast(packet: ServerPacket) {
-    console.log("[->] " + packet.t);
+    if (packet.t !== "Ping") console.log("[->] " + packet.t);
     this.ipc.send({ op: "OutgoingPacket", to: null, packet });
   }
 
