@@ -24,5 +24,7 @@ export interface BaseNetworking {
   disconnect(): void;
 }
 
-export interface ClientNetworking extends BaseNetworking {}
+export interface ClientNetworking extends BaseNetworking {
+  readonly ping: number;
+}
 export interface ServerNetworking extends BaseNetworking {}

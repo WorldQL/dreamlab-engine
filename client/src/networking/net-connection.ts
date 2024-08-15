@@ -14,6 +14,7 @@ import { handleValueChanges } from "./value-changes.ts";
 import { handleCustomMessages } from "./custom-messages.ts";
 import { handleEntitySync } from "./entity-sync.ts";
 import { handleTransformSync } from "./transform-sync.ts";
+import { handlePing } from "./ping.ts";
 import {
   PlayerConnectionEstablished,
   PlayerConnectionDropped,
@@ -40,7 +41,14 @@ export class ClientConnection {
 
   peers = new Map<ConnectionId, ConnectionInfo>();
 
-  constructor(public id: ConnectionId, public socket: WebSocket, public codec: PlayCodec) {}
+  ping: number = 0;
+  pingInterval: number | undefined;
+
+  constructor(
+    public id: ConnectionId,
+    public socket: WebSocket,
+    public codec: PlayCodec,
+  ) {}
 
   handle(packet: ServerPacket) {
     try {
@@ -88,10 +96,20 @@ export class ClientConnection {
       peer.nickname = packet.new_nickname;
     });
 
+    handlePing(this, game);
     handleValueChanges(this, game);
     handleCustomMessages(this, game);
     handleEntitySync(this, game);
     handleTransformSync(this, game);
+
+    // get an initial ping
+    setTimeout(() => {
+      this.send({ t: "Ping", type: "ping", timestamp: Date.now() });
+    }, 1000);
+    // send pings every 10 seconds
+    this.pingInterval = setInterval(() => {
+      this.send({ t: "Ping", type: "ping", timestamp: Date.now() });
+    }, 1000 * 10);
   }
 
   send(packet: ClientPacket) {
@@ -103,6 +121,9 @@ export class ClientConnection {
     const conn = this;
 
     return {
+      get ping() {
+        return conn.ping;
+      },
       get self() {
         return conn.id;
       },
@@ -119,6 +140,7 @@ export class ClientConnection {
         conn.customMessageListeners.push(listener);
       },
       disconnect() {
+        if (conn.pingInterval) clearInterval(conn.pingInterval);
         conn.socket.close();
         // do we want to clear listeners here?
       },

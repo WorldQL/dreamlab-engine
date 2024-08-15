@@ -22,6 +22,7 @@ import {
   PlayerConnectionDropped,
 } from "@dreamlab/proto/common/signals.ts";
 import { handlePlayerJoinExchange } from "./player-join-states.ts";
+import { handlePing } from "./ping.ts";
 
 export type ServerPacketHandler<T extends ClientPacket["t"]> = (
   from: ConnectionId,
@@ -107,6 +108,7 @@ export class ServerNetworkManager {
       if (peerInfo) game.fire(PlayerConnectionDropped, peerInfo);
     });
 
+    handlePing(this, game);
     handlePlayerJoinExchange(this, game);
     handleValueChanges(this, game);
     handleCustomMessages(this, game);

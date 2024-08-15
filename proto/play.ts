@@ -18,6 +18,12 @@ export const HandshakePacketSchema = z.object({
   edit_mode: z.boolean(),
 });
 
+export const PingPacketSchema = z.object({
+  t: z.literal("Ping"),
+  type: z.enum(["ping", "pong"]),
+  timestamp: z.number().int(),
+});
+
 export const ServerPeerConnectedPacket = z.object({
   t: z.literal("PeerConnected"),
   connection_id: ConnectionIdSchema,
@@ -184,6 +190,7 @@ export const ServerInitialNetworkSnapshotPacket = z.object({
 });
 
 export const ClientPacketSchema = z.discriminatedUnion("t", [
+  PingPacketSchema,
   ClientLoadPhaseChangedPacket,
   ClientChatMessagePacket,
   ClientSpawnEntityPacket,
@@ -200,6 +207,7 @@ export type ClientPacket = z.infer<typeof ClientPacketSchema>;
 
 export const ServerPacketSchema = z.discriminatedUnion("t", [
   HandshakePacketSchema,
+  PingPacketSchema,
   ServerInitialNetworkSnapshotPacket,
   ServerPeerConnectedPacket,
   ServerPeerDisconnectedPacket,

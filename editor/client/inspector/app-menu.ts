@@ -1,6 +1,7 @@
 import { ClientGame, PlayerJoined, PlayerLeft } from "@dreamlab/engine";
 import { InspectorUI, InspectorUIComponent } from "./inspector.ts";
 import { element as elem } from "@dreamlab/ui";
+import { Ping } from "../networking/ping.ts";
 
 export class AppMenu implements InspectorUIComponent {
   constructor(private game: ClientGame) {}
@@ -26,6 +27,13 @@ export class AppMenu implements InspectorUIComponent {
     this.game.on(PlayerLeft, () => updateCount());
     updateCount();
 
-    return elem("div", {}, ["Connected Users: ", countText]);
+    const pingText = document.createTextNode("0");
+    this.game.on(Ping, ({ ping }) => (pingText.textContent = ping.toLocaleString()));
+
+    // TODO: make this look nice lol
+    return elem("div", {}, [
+      elem("span", {}, ["Connected Users: ", countText]),
+      elem("span", {}, ["Ping: ", pingText, "ms"]),
+    ]);
   }
 }
