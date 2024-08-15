@@ -65,6 +65,8 @@ export class CameraPanBehavior extends Behavior {
   }
 
   onScroll({ delta, ev }: Scroll) {
+    if (this.game.isClient() && ev.target !== this.game.renderer.app.canvas) return;
+
     ev.preventDefault();
 
     if (!ev.ctrlKey) {
