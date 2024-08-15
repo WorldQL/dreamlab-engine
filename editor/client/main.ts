@@ -1,4 +1,4 @@
-// import "../../build-system/live-reload.js";
+import "../../build-system/live-reload.js";
 
 import { preloadFonts } from "./fonts.ts";
 
