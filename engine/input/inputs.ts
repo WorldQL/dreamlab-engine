@@ -144,6 +144,8 @@ export class Inputs implements ISignalHandler {
       return;
     }
 
+    ev.preventDefault();
+
     const input: Input | undefined =
       ev.button === 0
         ? "MouseLeft"
