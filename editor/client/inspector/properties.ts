@@ -12,7 +12,7 @@ import {
 import { InspectorUI, InspectorUIComponent } from "./inspector.ts";
 import { element as elem } from "@dreamlab/ui";
 import { z } from "@dreamlab/vendor/zod.ts";
-import { createInputField } from "./easy-input.ts";
+import { createInputField } from "../util/easy-input.ts";
 
 export class Properties implements InspectorUIComponent {
   constructor(private game: ClientGame) {}
