@@ -117,7 +117,7 @@ export class Properties implements InspectorUIComponent {
       get: () => entity.transform.rotation,
       set: r => (entity.transform.rotation = r),
       convert: numeric.transform(v => (v * Math.PI) / 180).parse,
-      convertBack: v => ((v * 180) / Math.PI).toFixed(3),
+      convertBack: v => ((v * 180) / Math.PI).toFixed(1),
     });
     addEntry("Rotation", transformRotation, txfmTbody);
 
