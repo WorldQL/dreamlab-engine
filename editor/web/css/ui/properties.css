@@ -29,7 +29,7 @@
 
 #properties th,
 #properties td {
-  background-color: var(--col-bg-2);
+  background-color: rgb(var(--color-bg-2) / 1);
   border-radius: var(--border-radius);
   padding: 0.5em;
 
@@ -38,7 +38,7 @@
 }
 
 #properties td:has(> details) {
-  background-color: var(--col-bg-1);
+  background-color: rgb(var(--color-bg-2) / 1);
   padding-left: 0;
   padding-right: 0;
 }

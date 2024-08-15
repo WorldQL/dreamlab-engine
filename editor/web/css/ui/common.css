@@ -1,6 +1,7 @@
 html,
 body {
-  background: var(--col-bg-0);
+  color: rgb(var(--color-text));
+  background: rgb(var(--color-bg-0) / 1);
 }
 
 main > div {
@@ -10,7 +11,7 @@ main > div {
 section {
   padding: 0.5em;
   border-radius: var(--border-radius);
-  background-color: var(--col-bg-1);
+  background-color: rgb(var(--color-bg-1) / 1);
 
   overflow: auto;
   text-wrap: nowrap;

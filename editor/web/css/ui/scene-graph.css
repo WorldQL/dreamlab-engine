@@ -35,11 +35,16 @@
 }
 
 #scene-graph-tree details.drag-target > summary {
-  box-shadow: 0 0 4px 1px var(--col-accent);
+  box-shadow: 0 0 4px 1px rgb(var(--color-accent) / 1);
 }
 
 #scene-graph-tree details.selected > summary {
-  background-color: var(--col-bg-accent-translucent);
+  --alpha: 1;
+  background-color: rgb(var(--color-accent) / var(--alpha));
+
+  .theme-darker & {
+    --alpha: 16.5%;
+  }
 }
 
 #scene-graph-tree .icon {

@@ -1,14 +1,18 @@
 :root {
   color-scheme: dark;
 
-  --col-bg-0: #111111;
-  --col-bg-1: #181818;
-  --col-bg-2: #232323;
-  --col-bg-3: #282828;
-
-  --col-accent: #ce5bff;
-
-  --col-bg-accent-translucent: #ce5bff2a;
+  --color-text: 255 255 255;
+  --color-bg-0: 27 34 49;
+  --color-bg-1: 37 42 54;
+  --color-bg-2: 55 65 81;
+  --color-accent: 73 102 207;
 
   --border-radius: 4px;
+}
+
+.theme-darker {
+  --color-bg-0: 17 17 17;
+  --color-bg-1: 24 24 24;
+  --color-bg-2: 35 35 35;
+  --color-accent: 206 91 255;
 }
