@@ -64,6 +64,6 @@
 
 #properties td span,
 #properties td input[type="text"] {
-  font-family: Iosevka;
+  font-family: var(--font-mono);
   font-weight: 600;
 }

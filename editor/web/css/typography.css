@@ -2,7 +2,11 @@
 @import url(./fonts/iosevka/iosevka.css);
 
 :root {
-  font-family: Inter, sans-serif;
+  /* TODO: more detailed font stack maybe? */
+  --font-sans: Inter, sans-serif;
+  --font-mono: Iosevka, monospace;
+
+  font-family: var(--font-sans);
   font-feature-settings:
     "liga" 1,
     "calt" 1; /* fix for Chrome */
@@ -10,7 +14,7 @@
 
 @supports (font-variation-settings: normal) {
   :root {
-    font-family: InterVariable, sans-serif;
+    --font-sans: InterVariable, sans-serif;
   }
 }
 
@@ -18,5 +22,5 @@ code,
 kbd,
 samp,
 pre {
-  font-family: Iosevka;
+  font-family: var(--font-mono);
 }
