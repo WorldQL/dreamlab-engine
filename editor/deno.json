@@ -13,6 +13,7 @@
   "compilerOptions": {
     "lib": ["deno.window", "dom"]
   },
+  "exclude": ["./web/dist/*"],
   "lint": {
     "rules": {
       "exclude": ["no-window"]
