@@ -1,9 +1,10 @@
-import { ClientGame } from "@dreamlab/engine";
+import { Camera, ClientGame } from "@dreamlab/engine";
 import { SceneGraph } from "./scene-graph.ts";
 import { SelectedEntityService } from "./selected-entity.ts";
 import { Properties } from "./properties.ts";
 import { BehaviorPanel } from "./behavior-panel.ts";
 import { ContextMenu } from "./context-menu.ts";
+import { CameraPanBehavior } from "../camera-pan.ts";
 
 export interface InspectorUI {
   editMode: boolean;
@@ -27,6 +28,10 @@ export function renderInspector(game: ClientGame, editUIRoot: HTMLElement, editM
     behaviorPanel: new BehaviorPanel(game),
     contextMenu: new ContextMenu(game),
   };
+
+  if (editMode) {
+    game.local._.Camera.getBehavior(CameraPanBehavior).ui = ui;
+  }
 
   ui.sceneGraph.render(ui, editUIRoot);
   ui.properties.render(ui, editUIRoot);

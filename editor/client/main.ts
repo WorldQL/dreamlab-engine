@@ -17,6 +17,9 @@ import { renderInspector } from "./inspector/inspector.ts";
 
 import "../common/mod.ts";
 import { setupMultiplayerCursors } from "./multiplayer-cursors.ts";
+import { Camera } from "@dreamlab/engine";
+import { CameraPanBehavior } from "./camera-pan.ts";
+import * as internal from "../../engine/internal.ts";
 
 const instanceId = NIL_UUID;
 const connectUrl = new URL(`ws://127.0.0.1:8000/api/v1/connect/${instanceId}`);
@@ -38,6 +41,11 @@ const [game, conn, handshake] = await connectToGame(instanceId, container, socke
 // setupMultiplayerCursors(game);
 await fonts;
 await setupGame(game, conn, handshake.edit_mode);
+
+if (handshake.edit_mode) {
+  game[internal.behaviorLoader].registerInternalBehavior(CameraPanBehavior, "@editor");
+  game.local._.Camera.cast(Camera).addBehavior({ type: CameraPanBehavior });
+}
 
 Object.defineProperties(globalThis, { game: { value: game }, conn: { value: conn } });
 
