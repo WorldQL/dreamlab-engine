@@ -311,6 +311,8 @@ export abstract class Entity implements ISignalHandler {
       });
     }
 
+    if (!opts.inert) entity.#spawn();
+
     def.children?.forEach(c => {
       try {
         entity[internal.entitySpawn](c, opts);
@@ -318,8 +320,6 @@ export abstract class Entity implements ISignalHandler {
         console.error(err);
       }
     });
-
-    if (!opts.inert) entity.#spawn();
 
     return entity;
   }
@@ -941,8 +941,11 @@ export abstract class Entity implements ISignalHandler {
 
   // #region Registry
   static #entityTypeRegistry = new Map<EntityConstructor<unknown & Entity>, string>();
+  static get [internal.entityTypeRegistry]() {
+    return Entity.#entityTypeRegistry;
+  }
   static registerType<T extends Entity>(type: EntityConstructor<T>, namespace: string) {
-    this.#entityTypeRegistry.set(type, namespace);
+    Entity.#entityTypeRegistry.set(type, namespace);
   }
   static #ensureEntityTypeIsRegistered = (newTarget: unknown) => {
     const target = newTarget as new (...args: unknown[]) => Entity;
@@ -956,12 +959,12 @@ export abstract class Entity implements ISignalHandler {
     }
   };
   static getTypeName(type: EntityConstructor): string {
-    const namespace = this.#entityTypeRegistry.get(type);
+    const namespace = Entity.#entityTypeRegistry.get(type);
     if (!namespace) throw new Error(`Entity type registry is missing ${type.name}!`);
     return `${namespace}/${type.name}`;
   }
   static getEntityType(typeName: string): EntityConstructor {
-    for (const [type, namespace] of this.#entityTypeRegistry.entries())
+    for (const [type, namespace] of Entity.#entityTypeRegistry.entries())
       if (typeName === `${namespace}/${type.name}`) return type;
 
     throw new Error(`Entity type ${typeName} is not registered!`);

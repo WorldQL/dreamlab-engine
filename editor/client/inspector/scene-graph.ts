@@ -9,6 +9,8 @@ import {
 } from "@dreamlab/engine";
 import { InspectorUI, InspectorUIComponent } from "./inspector.ts";
 import { EditorMetadataEntity } from "../../common/mod.ts";
+import * as internal from "../../../engine/internal.ts";
+import { ContextMenuItem } from "./context-menu.ts";
 
 function eventTargetsEntry(event: Event, entryElement: HTMLElement) {
   if (!(event.target instanceof HTMLElement)) return false;
@@ -33,31 +35,31 @@ export class SceneGraph implements InspectorUIComponent {
 
     this.handleEntitySelection(ui, treeRoot);
 
+    if (ui.editMode) {
+      this.renderEntry(ui, treeRoot, this.game.world._.EditEntities._.world);
+      this.renderEntry(ui, treeRoot, this.game.world._.EditEntities._.local);
+      this.renderEntry(ui, treeRoot, this.game.world._.EditEntities._.server);
+      this.renderEntry(ui, treeRoot, this.game.world._.EditEntities._.prefabs);
+    } else {
+      this.renderEntry(ui, treeRoot, this.game.world);
+      this.renderEntry(ui, treeRoot, this.game.prefabs);
+    }
+
+    const world = ui.editMode ? this.game.world._.EditEntities._.world : this.game.world;
+
     container.addEventListener("contextmenu", event => {
       event.preventDefault();
       event.stopPropagation();
 
       ui.contextMenu.drawContextMenu(event.clientX, event.clientY, [
-        ["hai", () => console.log("haiii >.<")],
         [
-          "my group",
-          [
-            ["extra item", () => console.log("!!!")],
-            ["something else", () => console.log(":)")],
-          ],
+          "New Entity",
+          [...Entity[internal.entityTypeRegistry].entries()]
+            .filter(([_, namespace]) => namespace !== "@editor")
+            .map(([type, _]) => [type.name, () => world.spawn({ type, name: type.name })]),
         ],
-        ["hello", () => {}],
       ]);
     });
-
-    if (ui.editMode) {
-      this.renderEntry(treeRoot, this.game.world._.EditEntities._.world);
-      this.renderEntry(treeRoot, this.game.world._.EditEntities._.local);
-      this.renderEntry(treeRoot, this.game.world._.EditEntities._.server);
-      this.renderEntry(treeRoot, this.game.world._.EditEntities._.prefabs);
-    } else {
-      this.renderEntry(treeRoot, this.game.world);
-    }
   }
 
   sortEntries(parent: HTMLElement) {
@@ -103,7 +105,7 @@ export class SceneGraph implements InspectorUIComponent {
     }
   }
 
-  renderEntry(parent: HTMLElement, entity: Entity) {
+  renderEntry(ui: InspectorUI, parent: HTMLElement, entity: Entity) {
     if (entity instanceof EditorMetadataEntity) return;
 
     const entryElement = elem("details", { open: true }, [
@@ -122,7 +124,7 @@ export class SceneGraph implements InspectorUIComponent {
 
     entity.on(EntityChildSpawned, event => {
       const newEntity = event.child;
-      this.renderEntry(entryElement, newEntity);
+      this.renderEntry(ui, entryElement, newEntity);
     });
 
     entity.on(EntityReparented, () => {
@@ -146,10 +148,11 @@ export class SceneGraph implements InspectorUIComponent {
 
     this.handleEntryDragAndDrop(entity, entryElement);
     this.handleEntryRename(entity, entryElement);
+    this.handleEntryContextMenu(ui, entity, entryElement);
 
     parent.append(entryElement);
     for (const child of entity.children.values()) {
-      this.renderEntry(entryElement, child);
+      this.renderEntry(ui, entryElement, child);
     }
     this.sortEntries(entryElement);
   }
@@ -216,7 +219,11 @@ export class SceneGraph implements InspectorUIComponent {
       const [otherEntity, _] = this.currentDragSource;
       if (otherEntity === entity) return;
 
-      otherEntity.parent = entity;
+      if (event.getModifierState("Control")) {
+        otherEntity.cloneInto(entity);
+      } else {
+        otherEntity.parent = entity;
+      }
     });
 
     if (entity.parent?.id === "game.world._.EditEntities") return;
@@ -231,6 +238,27 @@ export class SceneGraph implements InspectorUIComponent {
 
     entryElement.addEventListener("dragend", () => {
       this.currentDragSource = undefined;
+    });
+  }
+
+  handleEntryContextMenu(ui: InspectorUI, entity: Entity, entryElement: HTMLElement) {
+    const summary = entryElement.querySelector(":scope > summary")! as HTMLElement;
+    summary.addEventListener("contextmenu", event => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      ui.selectedEntity.entities = [entity];
+
+      ui.contextMenu.drawContextMenu(event.clientX, event.clientY, [
+        ["Focus", () => this.game.local._.Camera.pos.assign(entity.pos)],
+        [
+          "New Entity",
+          [...Entity[internal.entityTypeRegistry].entries()]
+            .filter(([_, namespace]) => namespace !== "@editor")
+            .map(([type, _]) => [type.name, () => entity.spawn({ type, name: type.name })]),
+        ],
+        ["Delete", () => entity.destroy()],
+      ]);
     });
   }
 

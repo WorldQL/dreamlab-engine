@@ -24,8 +24,6 @@
 
   --cursor-x: 0;
   --cursor-y: 0;
-  transform: translateX(min(var(--cursor-x), calc(100vw - 100%)))
-    translateY(min(var(--cursor-y), calc(100vh - 100%)));
 
   display: flex;
   flex-direction: row;
@@ -36,6 +34,10 @@
 #context-menu section {
   display: flex;
   flex-direction: column;
+
+  --section-offset: 0em;
+  transform: translateX(min(var(--cursor-x), calc(100vw - 100%)))
+    translateY(min(var(--cursor-y) + var(--section-offset), calc(100vh - 100%)));
 
   padding: 0;
 

@@ -68,8 +68,8 @@
           },
           "transform": {
             "position": {
-              "x": 9999,
-              "y": 9999
+              "x": 0,
+              "y": 0
             },
             "rotation": 0,
             "scale": {

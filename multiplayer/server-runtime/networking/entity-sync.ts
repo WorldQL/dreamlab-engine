@@ -1,4 +1,5 @@
 import {
+  ConnectionId,
   EntityDescendantDestroyed,
   EntityDescendantReparented,
   EntityDescendantSpawned,
@@ -9,17 +10,18 @@ import {
   convertEntityDefinition,
   serializeEntityDefinition,
 } from "@dreamlab/proto/common/entity-sync.ts";
+import { PlayPacket } from "@dreamlab/proto/play.ts";
 
 export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
   const changeIgnoreSet = new Set<string>();
 
-  game.world.on(EntityDescendantSpawned, async event => {
+  const syncSpawnEvent = (event: EntityDescendantSpawned) => {
     if (game.status !== GameStatus.Running) return;
 
     const entity = event.descendant;
     if (changeIgnoreSet.has(entity.ref)) return;
 
-    const definition = await serializeEntityDefinition(
+    const definition = serializeEntityDefinition(
       game,
       entity.getDefinition(),
       entity.parent!.ref,
@@ -29,17 +31,26 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
       t: "SpawnEntity",
       definition,
     });
-  });
+  };
 
-  game.world.on(EntityDescendantDestroyed, event => {
+  const syncDestroyEvent = (event: EntityDescendantDestroyed) => {
     if (game.status !== GameStatus.Running) return;
 
     const entity = event.descendant;
     if (changeIgnoreSet.has(entity.ref)) return;
     net.broadcast({ t: "DeleteEntity", entity: entity.ref });
-  });
+  };
 
-  net.registerPacketHandler("SpawnEntity", async (from, packet) => {
+  game.world.on(EntityDescendantSpawned, syncSpawnEvent);
+  game.prefabs.on(EntityDescendantSpawned, syncSpawnEvent);
+
+  game.world.on(EntityDescendantDestroyed, syncDestroyEvent);
+  game.prefabs.on(EntityDescendantDestroyed, syncDestroyEvent);
+
+  const handleSpawnPacket = async (
+    from: ConnectionId,
+    packet: PlayPacket<"SpawnEntity", "client">,
+  ) => {
     const def = packet.definition;
 
     const parent = game.entities.lookupByRef(def.parent);
@@ -63,6 +74,31 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
     changeIgnoreSet.delete(def.ref);
 
     net.broadcast({ t: "SpawnEntity", definition: packet.definition, from });
+  };
+
+  type SpawnPacketQueue = {
+    processing: boolean;
+    packets: PlayPacket<"SpawnEntity", "client">[];
+  };
+  const incomingSpawnPacketQueues = new Map<ConnectionId, SpawnPacketQueue>();
+  const flushSpawnPacketQueue = async (conn: ConnectionId, queue: SpawnPacketQueue) => {
+    if (queue.processing) return;
+
+    queue.processing = true;
+    const packets = queue.packets.splice(0, queue.packets.length);
+    for (const packet of packets) {
+      await handleSpawnPacket(conn, packet);
+    }
+    queue.processing = false;
+  };
+
+  net.registerPacketHandler("SpawnEntity", (from, packet) => {
+    if (!incomingSpawnPacketQueues.has(from)) {
+      incomingSpawnPacketQueues.set(from, { processing: false, packets: [] });
+    }
+    const queue = incomingSpawnPacketQueues.get(from)!;
+    queue.packets.push(packet);
+    void flushSpawnPacketQueue(from, queue);
   });
 
   net.registerPacketHandler("DeleteEntity", (from, packet) => {

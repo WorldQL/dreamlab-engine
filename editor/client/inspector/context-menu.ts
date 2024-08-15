@@ -56,7 +56,7 @@ export class ContextMenu implements InspectorUIComponent {
         const subsection = elem("section");
         for (let i = 0; i < action.length; i++) renderItem(subsection, action[i], i);
 
-        subsection.style.transform = `translateY(${2.25 * index}em)`;
+        subsection.style.setProperty("--section-offset", `${2.25 * index}em`);
 
         button.addEventListener("mouseenter", () => {
           button.dataset.selected = "";

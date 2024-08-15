@@ -9,5 +9,7 @@ export default class PlayerSpawner extends Behavior {
       transform: { position: { x: 0, y: 0 } },
       authority: this.game.network.self,
     });
+
+    this.game.local._.Camera.transform.scale.assign({ x: 2, y: 2 });
   }
 }
