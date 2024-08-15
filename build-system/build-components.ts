@@ -49,6 +49,7 @@ export const BASE_BUILD_OPTIONS: Partial<esbuild.BuildOptions> = {
 Symbol.dispose ??= Symbol.for("Symbol.dispose");
 Symbol.asyncDispose ??= Symbol.for("Symbol.asyncDispose");`,
   },
+  footer: { js: "// built with <3 using dreamlab ^-^" },
   sourcemap: "linked",
   keepNames: true,
   splitting: true,
