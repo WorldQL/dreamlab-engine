@@ -1,5 +1,5 @@
 import { vectorOnChanged } from "../../internal.ts";
-import { EPSILON, lerp, smoothLerp, smoothLerpHalfLife } from "../lerp.ts";
+import { EPSILON, lerp, smoothLerp } from "../lerp.ts";
 import type { Vector } from "./_vector.ts";
 
 export interface IVector2 {
@@ -290,19 +290,6 @@ export class Vector2 implements IVector2, Vector<IVector2, Vector2> {
     return new Vector2(
       smoothLerp(current.x, target.x, decay, deltaTime, epsilon),
       smoothLerp(current.y, target.y, decay, deltaTime, epsilon),
-    );
-  }
-
-  public static smoothLerpHalfLife(
-    current: IVector2,
-    target: IVector2,
-    halfLife: number,
-    deltaTime: number,
-    epsilon = EPSILON,
-  ): Vector2 {
-    return new Vector2(
-      smoothLerpHalfLife(current.x, target.x, halfLife, deltaTime, epsilon),
-      smoothLerpHalfLife(current.y, target.y, halfLife, deltaTime, epsilon),
     );
   }
   // #endregion

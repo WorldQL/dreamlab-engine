@@ -1,6 +1,6 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { ClientGame, Game } from "../../game.ts";
-import { IVector2, Vector2, smoothLerpHalfLife } from "../../math/mod.ts";
+import { IVector2, Vector2, smoothLerp } from "../../math/mod.ts";
 import { ActiveCameraChanged, EntityDestroyed, GameRender } from "../../signals/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
 
@@ -15,8 +15,17 @@ export class Camera extends Entity {
   public readonly bounds: undefined;
 
   public readonly container: PIXI.Container;
-  public smooth: number = 0.1;
   public unlocked: boolean = false;
+
+  #smooth: number = 0.1;
+  #lnsmooth: number = Math.log(2) / (this.#smooth * 1000);
+  public get smooth(): number {
+    return this.#smooth;
+  }
+  public set smooth(value: number) {
+    this.#smooth = Math.max(value, 0);
+    this.#lnsmooth = value === 0 ? 0 : Math.log(2) / (this.#smooth * 1000);
+  }
 
   #position: Vector2 = new Vector2(this.interpolated.position);
   #rotation: number = this.interpolated.rotation;
@@ -114,7 +123,7 @@ export class Camera extends Entity {
       const delta = this.game.time.delta;
 
       // No smoothing
-      if (this.smooth === 0) {
+      if (this.#lnsmooth === 0) {
         this.#position.x = this.interpolated.position.x;
         this.#position.y = this.interpolated.position.y;
         this.#rotation = this.interpolated.rotation;
@@ -125,24 +134,24 @@ export class Camera extends Entity {
         return;
       }
 
-      this.#position = Vector2.smoothLerpHalfLife(
+      this.#position = Vector2.smoothLerp(
         this.#position,
         this.interpolated.position,
-        this.smooth,
+        this.#lnsmooth,
         delta,
       );
 
-      this.#rotation = smoothLerpHalfLife(
+      this.#rotation = smoothLerp(
         this.#rotation,
         this.interpolated.rotation,
-        this.smooth,
+        this.#lnsmooth,
         delta,
       );
 
-      this.#scale = Vector2.smoothLerpHalfLife(
+      this.#scale = Vector2.smoothLerp(
         this.#scale,
         this.interpolated.scale,
-        this.smooth,
+        this.#lnsmooth,
         delta,
       );
 

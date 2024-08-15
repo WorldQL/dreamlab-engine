@@ -46,18 +46,3 @@ export function smoothLerp(
 
   return target + (current - target) * Math.exp(-decay * deltaTime);
 }
-
-export function smoothLerpHalfLife(
-  current: number,
-  target: number,
-  halfLife: number,
-  deltaTime: number,
-  epsilon = EPSILON,
-): number {
-  if (halfLife === 0) return target;
-  if (Math.abs(target - current) < epsilon) {
-    return target;
-  }
-
-  return target + (current - target) * Math.pow(2, -deltaTime / (halfLife * 1000));
-}
