@@ -39,6 +39,13 @@ export class Inputs implements ISignalHandler {
     this.#game = game;
   }
 
+  // #region Keys
+  #keys = new Set<Input>();
+  getKey(key: Input): boolean {
+    return this.#keys.has(key);
+  }
+  // #endregion
+
   // #region Actions
   #actions = new Map<string, Action>();
 
@@ -125,6 +132,9 @@ export class Inputs implements ISignalHandler {
 
     const input = ev.code;
     if (!isInput(input)) return;
+
+    if (pressed) this.#keys.add(input);
+    else this.#keys.delete(input);
 
     const tick = this.#game.time.ticks;
     for (const action of this.actions.values()) {
