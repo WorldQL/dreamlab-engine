@@ -24,6 +24,10 @@ export class MouseOver {
   public constructor(public readonly cursor: Simplify<SetNonNullable<Cursor>>) {}
 }
 
+export class MouseMove {
+  public constructor(public readonly cursor: Simplify<SetNonNullable<Cursor>>) {}
+}
+
 export class MouseOut {
   public constructor(public readonly cursor: Cursor) {}
 }

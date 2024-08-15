@@ -15,6 +15,9 @@ import {
   ActionDeleted,
   Click,
   MouseDown,
+  MouseMove,
+  MouseOut,
+  MouseOver,
   MouseUp,
   Scroll,
 } from "../signals/mod.ts";
@@ -178,10 +181,18 @@ export class Inputs implements ISignalHandler {
       this.#screenCursor.x = ev.offsetX;
       this.#screenCursor.y = ev.offsetY;
     }
+
+    const { world } = this.cursor;
+    if (!world) {
+      throw new Error("uhh something is not right with the cursor");
+    }
+
+    this.fire(MouseOver, { screen: this.#screenCursor, world });
   };
 
   #onMouseOut = (_: MouseEvent) => {
     this.#screenCursor = undefined;
+    this.fire(MouseOut, { screen: undefined, world: undefined });
   };
 
   #onMouseMove = (ev: MouseEvent) => {
@@ -191,6 +202,13 @@ export class Inputs implements ISignalHandler {
       this.#screenCursor.x = ev.offsetX;
       this.#screenCursor.y = ev.offsetY;
     }
+
+    const { world } = this.cursor;
+    if (!world) {
+      throw new Error("uhh something is not right with the cursor");
+    }
+
+    this.fire(MouseMove, { screen: this.#screenCursor, world });
   };
 
   #onWheel = (ev: WheelEvent) => {
