@@ -1,5 +1,6 @@
 import { ClientGame, EntityUpdate, IVector2, MouseMove, Vector2 } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
+import { icon, MousePointer2, Move, ZoomIn } from "../_icons.ts";
 import { InspectorUI, InspectorUIComponent } from "./inspector.ts";
 
 export class GameOverlays implements InspectorUIComponent {
@@ -8,7 +9,7 @@ export class GameOverlays implements InspectorUIComponent {
     private gameContainer: HTMLDivElement,
   ) {}
 
-  render(ui: InspectorUI, editUIRoot: HTMLElement): void {
+  render(_ui: InspectorUI, _editUIRoot: HTMLElement): void {
     const overlay = elem("div", { id: "game-overlays" }, [this.drawCursorOverlay()]);
 
     this.gameContainer.appendChild(overlay);
@@ -20,26 +21,30 @@ export class GameOverlays implements InspectorUIComponent {
 
   drawCursorOverlay(): HTMLElement {
     const cameraPos = elem("span", {}, [this.formatVector(Vector2.ZERO)]);
-    const screenPos = elem("span", {}, [this.formatVector(Vector2.ZERO)]);
-    const worldPos = elem("span", {}, [this.formatVector(Vector2.ZERO)]);
+    const cursorPos = elem("span", {}, [this.formatVector(Vector2.ZERO)]);
+    const zoomLevel = elem("span", {}, ["1.00 \u00d7"]);
 
     this.game.local._.Camera.on(EntityUpdate, () => {
-      const pos = this.game.local._.Camera.pos;
-      cameraPos.textContent = this.formatVector(pos);
+      const camera = this.game.local._.Camera;
+      cameraPos.textContent = this.formatVector(camera.pos);
+      const zoom = camera.globalTransform.scale.x;
+      zoomLevel.textContent = `${zoom.toFixed(2)} \u00d7`;
     });
 
     this.game.inputs.on(MouseMove, ({ cursor }) => {
-      screenPos.textContent = this.formatVector(cursor.screen);
-      worldPos.textContent = this.formatVector(cursor.world);
+      cursorPos.textContent = this.formatVector(cursor.world);
     });
 
     return elem("div", { id: "cursor-overlay" }, [
+      icon(Move),
       elem("span", {}, ["Camera"]),
       cameraPos,
-      elem("span", {}, ["Cursor (world)"]),
-      worldPos,
-      elem("span", {}, ["Cursor (screen)"]),
-      screenPos,
+      icon(MousePointer2),
+      elem("span", {}, ["Cursor"]),
+      cursorPos,
+      icon(ZoomIn),
+      elem("span", {}, ["Zoom"]),
+      zoomLevel,
     ]);
   }
 }

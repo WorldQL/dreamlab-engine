@@ -6,17 +6,18 @@
 
 #game-overlays #cursor-overlay {
   position: absolute;
-  bottom: 0.5em;
-  left: 0.5em;
+  bottom: 1em;
+  left: 1em;
   border-radius: var(--border-radius);
 
   display: grid;
-  grid-template-columns: auto auto;
+  grid-template-columns: 1em auto auto;
+  align-items: center;
   gap: 0.5em;
   padding: 0.5em;
   background-color: rgb(var(--color-bg-2) / 1);
-  width: 20em;
-  font-size: 0.8em;
+  width: 16em;
+  font-size: 0.9em;
 
   pointer-events: auto;
   opacity: 0.5;
@@ -31,7 +32,12 @@
     font-weight: 600;
   }
 
-  & :nth-child(even) {
+  & svg {
+    width: 1em;
+    height: 1em;
+  }
+
+  & :nth-child(3n) {
     text-align: right;
   }
 }
