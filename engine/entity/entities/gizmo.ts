@@ -59,7 +59,7 @@ export class GizmoScaleEnd {
 
 export class Gizmo extends Entity {
   static {
-    Entity.registerType(this, "@core");
+    Entity.registerType(this, "@editor");
   }
 
   public static readonly icon = "➡️";

@@ -14,7 +14,7 @@ type Handle = Exclude<`${"t" | "b" | ""}${"l" | "" | "r"}`, "">;
 
 export class BoxResizeGizmo extends Entity {
   static {
-    Entity.registerType(this, "@core");
+    Entity.registerType(this, "@editor");
   }
 
   readonly bounds: undefined;
