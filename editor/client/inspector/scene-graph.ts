@@ -108,20 +108,29 @@ export class SceneGraph implements InspectorUIComponent {
   renderEntry(ui: InspectorUI, parent: HTMLElement, entity: Entity) {
     if (entity instanceof EditorMetadataEntity) return;
 
-    const entryElement = elem("details", { open: true }, [
-      elem("summary", {}, [
-        elem("div", { className: "arrow" }, [icon(ChevronDown)]),
-        elem("a", {}, [
-          elem("span", { className: "icon" }, [
-            (entity.constructor as typeof Entity).icon ?? "🌟",
-          ]),
-          " ",
-          elem("span", { className: "name" }, [entity.name]),
+    const toggle = elem("div", { className: "arrow" }, [icon(ChevronDown)]);
+    const summary = elem("summary", {}, [
+      toggle,
+      elem("a", {}, [
+        elem("span", { className: "icon" }, [
+          (entity.constructor as typeof Entity).icon ?? "🌟",
         ]),
+        " ",
+        elem("span", { className: "name" }, [entity.name]),
       ]),
     ]);
+
+    const entryElement = elem("details", { open: true }, [summary]);
     entryElement.dataset.entity = entity.ref;
     this.entryElementMap.set(entity.ref, entryElement);
+
+    toggle.addEventListener("click", () => {
+      entryElement.open = !entryElement.open;
+    });
+
+    summary.addEventListener("click", ev => {
+      ev.preventDefault();
+    });
 
     entity.on(EntityChildSpawned, event => {
       const newEntity = event.child;
