@@ -47,10 +47,7 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
   game.world.on(EntityDescendantDestroyed, syncDestroyEvent);
   game.prefabs.on(EntityDescendantDestroyed, syncDestroyEvent);
 
-  const handleSpawnPacket = async (
-    from: ConnectionId,
-    packet: PlayPacket<"SpawnEntity", "client">,
-  ) => {
+  net.registerPacketHandler("SpawnEntity", async (from, packet) => {
     const def = packet.definition;
 
     const parent = game.entities.lookupByRef(def.parent);
@@ -74,31 +71,6 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
     changeIgnoreSet.delete(def.ref);
 
     net.broadcast({ t: "SpawnEntity", definition: packet.definition, from });
-  };
-
-  type SpawnPacketQueue = {
-    processing: boolean;
-    packets: PlayPacket<"SpawnEntity", "client">[];
-  };
-  const incomingSpawnPacketQueues = new Map<ConnectionId, SpawnPacketQueue>();
-  const flushSpawnPacketQueue = async (conn: ConnectionId, queue: SpawnPacketQueue) => {
-    if (queue.processing) return;
-
-    queue.processing = true;
-    const packets = queue.packets.splice(0, queue.packets.length);
-    for (const packet of packets) {
-      await handleSpawnPacket(conn, packet);
-    }
-    queue.processing = false;
-  };
-
-  net.registerPacketHandler("SpawnEntity", (from, packet) => {
-    if (!incomingSpawnPacketQueues.has(from)) {
-      incomingSpawnPacketQueues.set(from, { processing: false, packets: [] });
-    }
-    const queue = incomingSpawnPacketQueues.get(from)!;
-    queue.packets.push(packet);
-    void flushSpawnPacketQueue(from, queue);
   });
 
   net.registerPacketHandler("DeleteEntity", (from, packet) => {

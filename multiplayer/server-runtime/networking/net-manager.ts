@@ -24,26 +24,59 @@ import {
 import { handlePlayerJoinExchange } from "./player-join-states.ts";
 import { handlePing } from "./ping.ts";
 
-export type ServerPacketHandler<T extends ClientPacket["t"]> = (
+export type ServerPacketHandler<T extends ClientPacket["t"] = ClientPacket["t"]> = (
   from: ConnectionId,
   packet: PlayPacket<T, "client">,
-) => void;
+) => Promise<void> | void;
 export type ServerNetworkSetupRoutine = (net: ServerNetworkManager, game: ServerGame) => void;
+
+type ClientPacketQueue = { packets: ClientPacket[]; processing: boolean };
 
 export class ServerNetworkManager {
   clients = new Map<ConnectionId, ConnectionInfo>();
 
   customMessageListeners: CustomMessageListener[] = [];
 
-  #packetHandlers: Partial<Record<ClientPacket["t"], ServerPacketHandler<ClientPacket["t"]>>> =
-    {};
+  #packetHandlers = new Map<ClientPacket["t"], ServerPacketHandler[]>();
   registerPacketHandler<T extends ClientPacket["t"]>(t: T, handler: ServerPacketHandler<T>) {
-    this.#packetHandlers[t] = handler as ServerPacketHandler<ClientPacket["t"]>;
+    if (!this.#packetHandlers.has(t)) this.#packetHandlers.set(t, []);
+    const handlers = this.#packetHandlers.get(t)!;
+    handlers.push(handler as ServerPacketHandler);
   }
-  getPacketHandler<T extends ClientPacket["t"]>(t: T): ServerPacketHandler<T> {
-    const handler = this.#packetHandlers[t];
-    if (handler === undefined) throw new Error("Handler for " + t + " has not been set up!");
-    return handler as ServerPacketHandler<ClientPacket["t"]>;
+  getPacketHandlers<T extends ClientPacket["t"]>(t: T): ServerPacketHandler<T>[] {
+    const handlers = this.#packetHandlers.get(t);
+    if (!handlers) return [];
+    return handlers as ServerPacketHandler<T>[];
+  }
+
+  #packetQueues = new Map<ConnectionId, ClientPacketQueue>();
+  #getPacketQueue(connection: ConnectionId) {
+    let packetQueue = this.#packetQueues.get(connection);
+    if (!packetQueue) {
+      packetQueue = { packets: [], processing: false };
+      this.#packetQueues.set(connection, packetQueue);
+    }
+    return packetQueue;
+  }
+  async #flushPacketQueue(connection: ConnectionId, queue: ClientPacketQueue) {
+    if (queue.processing) return;
+    queue.processing = true;
+    while (true) {
+      const packets = queue.packets;
+      queue.packets = [];
+      if (packets.length === 0) break;
+      for (const packet of packets) {
+        const handlers = this.getPacketHandlers(packet.t);
+        for (const handler of handlers) {
+          try {
+            await handler(connection, packet);
+          } catch (err) {
+            console.warn(`Uncaught error while handling packet of type '${packet.t}': ${err}`);
+          }
+        }
+      }
+    }
+    queue.processing = false;
   }
 
   constructor(private ipc: IPCMessageBus) {}
@@ -51,13 +84,11 @@ export class ServerNetworkManager {
   setup(game: ServerGame) {
     this.ipc.addMessageListener("IncomingPacket", message => {
       if (message.packet.t !== "Ping") console.log("[<-] " + message.packet.t);
-      try {
-        this.getPacketHandler(message.packet.t)(message.from, message.packet);
-      } catch (err) {
-        console.warn(
-          `Uncaught error while handling packet of type '${message.packet.t}': ${err}`,
-        );
-      }
+
+      const sender = message.from;
+      const packetQueue = this.#getPacketQueue(message.packet.t);
+      packetQueue.packets.push(message.packet);
+      void this.#flushPacketQueue(sender, packetQueue);
     });
 
     this.ipc.addMessageListener("ConnectionEstablished", message => {
