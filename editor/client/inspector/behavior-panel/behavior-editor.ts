@@ -6,6 +6,7 @@ import { BehaviorList } from "./behavior-list.ts";
 import { ClientGame, Empty, inferValueTypeTag, Value } from "@dreamlab/engine";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { ChevronDown, icon } from "../../_icons.ts";
+import { DataTable } from "../../components/mod.ts";
 
 type ThinValue<T> = {
   value: Value<T>["value"];
@@ -24,7 +25,8 @@ export class BehaviorEditor {
     public behavior: SceneDescBehavior,
     private parent: BehaviorList,
   ) {
-    const table = elem("table");
+    const table = new DataTable();
+
     const deleteButton = elem("a", { role: "button", href: "javascript:void(0)" }, ["-"]);
 
     this.details = elem("details", { open: true, className: "behavior" }, [
@@ -46,13 +48,7 @@ export class BehaviorEditor {
       parent.sync();
     });
 
-    const addEntry = (key: string, ...controls: HTMLElement[]) => {
-      table.append(
-        elem("tr", {}, [elem("th", {}, [key]), elem("td", { colSpan: 2 }, controls)]),
-      );
-    };
-
-    addEntry("ID", elem("code", {}, [behavior.ref]));
+    table.addEntry("id", "ID", elem("code", {}, [behavior.ref]));
 
     this.scriptField = createInputField({
       get: () => behavior.script,
@@ -63,18 +59,12 @@ export class BehaviorEditor {
       convert: v => v,
     });
 
-    addEntry("Script", this.scriptField[0]);
+    table.addEntry("script", "Script", this.scriptField[0]);
 
     void this.#populateValueFields(table);
   }
 
-  async #populateValueFields(table: HTMLElement) {
-    const addEntry = (key: string, ...controls: HTMLElement[]) => {
-      table.append(
-        elem("tr", {}, [elem("th", {}, [key]), elem("td", { colSpan: 2 }, controls)]),
-      );
-    };
-
+  async #populateValueFields(table: DataTable) {
     try {
       // TODO: sandboxing -- we should create a dummy ClientGame instance to spawn this behavior in,
       // so that it can't change anything about the edit-mode game.
@@ -146,13 +136,17 @@ export class BehaviorEditor {
 
         case undefined:
         default: {
-          addEntry(key, elem("code", {}, ["Unknown: ", String(value.value)]));
+          table.addEntry(
+            `value:${key}`,
+            key,
+            elem("code", {}, ["Unknown: ", String(value.value)]),
+          );
           continue;
         }
       }
 
       this.valueFields.set(key, valueField);
-      addEntry(key, valueField[0]);
+      table.addEntry(`value:${key}`, key, valueField[0]);
     }
   }
 

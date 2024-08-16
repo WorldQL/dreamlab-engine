@@ -109,38 +109,6 @@
     height: 100%;
   }
 
-  & td {
-    & code,
-    & input[type="text"] {
-      font-family: var(--font-mono);
-      font-weight: 600;
-    }
-  }
-  & th,
-  & td {
-    background-color: rgb(var(--color-bg-2) / 1);
-    border-radius: var(--border-radius);
-    padding: 0.5em;
-
-    overflow: clip;
-    text-overflow: ellipsis;
-  }
-
-  & td:empty,
-  & td:has(> details) {
-    background-color: rgb(var(--color-bg-1) / 1);
-    padding-left: 0;
-    padding-right: 0;
-  }
-
-  & th {
-    text-align: end;
-  }
-
-  & td {
-    text-align: start;
-  }
-
   & details + details {
     margin-top: 1em;
   }

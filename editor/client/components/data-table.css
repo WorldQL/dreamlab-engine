@@ -1,0 +1,37 @@
+dreamlab-data-table {
+  & table {
+    table-layout: fixed;
+    width: 100%;
+  }
+
+  & th,
+  & td {
+    background-color: rgb(var(--color-bg-2) / 1);
+    border-radius: var(--border-radius);
+    padding: 0.5em;
+    overflow: clip;
+    text-overflow: ellipsis;
+
+    & code,
+    & input[type="text"] {
+      font-family: var(--font-mono);
+      font-weight: 600;
+    }
+
+    & code {
+      user-select: all;
+    }
+  }
+
+  & :is(th, td):has(> input:invalid) {
+    background-color: rgb(var(--color-bg-danger) / 1);
+  }
+
+  & th {
+    text-align: end;
+  }
+
+  & td {
+    text-align: start;
+  }
+}

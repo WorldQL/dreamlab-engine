@@ -5,6 +5,7 @@ import { BehaviorEditor } from "./behavior-editor.ts";
 import { SceneDescBehavior, BehaviorSchema as SceneDescBehaviorSchema } from "@dreamlab/scene";
 import { createInputField } from "../../util/easy-input.ts";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
+import { DataTable } from "../../components/mod.ts";
 
 export class BehaviorList {
   container = elem("div");
@@ -68,10 +69,7 @@ export class BehaviorList {
   }
 
   #drawAddBehavior() {
-    const table = elem("table", {}, []);
-    const addEntry = (key: string, ...value: HTMLElement[]) => {
-      table.append(elem("tr", {}, [elem("th", {}, [key]), elem("td", { colSpan: 2 }, value)]));
-    };
+    const table = new DataTable();
 
     // deno-lint-ignore prefer-const
     let scriptField: HTMLInputElement;
@@ -101,11 +99,9 @@ export class BehaviorList {
     });
     scriptField.name = "script";
 
-    addEntry("Script", scriptField);
+    table.addEntry("script", "Script", scriptField);
+    table.addFullWidthEntry("add-behavior", elem("button", {}, ["Add Behavior"]));
 
-    table.append(
-      elem("tr", {}, [elem("td", { colSpan: 3 }, [elem("button", {}, ["Add Behavior"])])]),
-    );
     const form = elem("form", { id: "add-behavior" }, [table]);
     form.addEventListener("submit", event => {
       event.preventDefault();
