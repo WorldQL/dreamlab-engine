@@ -1,8 +1,10 @@
-import { ClientGame, Entity, ValueChanged } from "@dreamlab/engine";
+import { BehaviorConstructor, ClientGame, Entity, ValueChanged } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 import { EditorMetadataEntity } from "../../../common/mod.ts";
 import { BehaviorEditor } from "./behavior-editor.ts";
 import { SceneDescBehavior, BehaviorSchema as SceneDescBehaviorSchema } from "@dreamlab/scene";
+import { createInputField } from "../../util/easy-input.ts";
+import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 
 export class BehaviorList {
   container = elem("div");
@@ -26,11 +28,6 @@ export class BehaviorList {
         JSON.parse(editorMetadata.behaviorsJson),
       );
 
-      for (const behavior of this.behaviors) {
-        const editor = new BehaviorEditor(game, behavior, this);
-        this.editors.set(behavior.ref, editor);
-      }
-
       game.values.on(ValueChanged, event => {
         if (event.value !== editorMetadata.values.get("behaviorsJson")) return;
         const newBehaviors = SceneDescBehaviorSchema.array().parse(
@@ -48,19 +45,80 @@ export class BehaviorList {
           }
         }
 
-        for (const oldBehavior of this.behaviors) {
+        this.behaviors = this.behaviors.filter(oldBehavior => {
           // O(n*m) but n and m are small :)
-          if (newBehaviors.find(it => it.ref === oldBehavior.ref) !== undefined) continue;
-
+          if (newBehaviors.find(it => it.ref === oldBehavior.ref) !== undefined) return true;
           const editor = this.editors.get(oldBehavior.ref);
-          if (!editor) continue;
+          if (!editor) return true;
           this.editors.delete(oldBehavior.ref);
           editor.details.remove();
-        }
+          return false;
+        });
       });
+    } else {
+      // TODO: populate behaviors from entity data proper
     }
 
-    // TODO: play mode
+    this.#drawAddBehavior();
+
+    for (const behavior of this.behaviors) {
+      const editor = new BehaviorEditor(game, behavior, this);
+      this.editors.set(behavior.ref, editor);
+    }
+  }
+
+  #drawAddBehavior() {
+    const table = elem("table", {}, []);
+    const addEntry = (key: string, ...value: HTMLElement[]) => {
+      table.append(elem("tr", {}, [elem("th", {}, [key]), elem("td", { colSpan: 2 }, value)]));
+    };
+
+    // deno-lint-ignore prefer-const
+    let scriptField: HTMLInputElement;
+    let script: string = "";
+
+    let resolvedBehaviorType: BehaviorConstructor | undefined;
+    const setScript = async (newScriptValue: string) => {
+      script = newScriptValue;
+
+      try {
+        const behaviorType = await this.game.loadBehavior(script);
+        if (resolvedBehaviorType === behaviorType) return;
+        resolvedBehaviorType = behaviorType;
+        scriptField.setCustomValidity("");
+        scriptField.reportValidity();
+      } catch (_err) {
+        scriptField.setCustomValidity("Script URI could not be loaded");
+        scriptField.reportValidity();
+        return;
+      }
+    };
+
+    [scriptField] = createInputField({
+      get: () => script,
+      set: setScript,
+      convert: v => v,
+    });
+    scriptField.name = "script";
+
+    addEntry("Script", scriptField);
+
+    table.append(
+      elem("tr", {}, [elem("td", { colSpan: 3 }, [elem("button", {}, ["Add Behavior"])])]),
+    );
+    const form = elem("form", { id: "add-behavior" }, [table]);
+    form.addEventListener("submit", event => {
+      event.preventDefault();
+
+      this.behaviors.push({
+        ref: generateCUID("bhv"),
+        script,
+      });
+
+      this.sync();
+    });
+
+    this.container.append(form);
   }
 
   sync() {

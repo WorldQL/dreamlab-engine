@@ -3,7 +3,7 @@
   display: flex;
   flex-direction: column;
 
-  & #add-behavior {
+  & #add-behavior-button {
     display: inline-block;
     padding: 0.125em;
     border-radius: 50%;
@@ -36,6 +36,9 @@
   }
 
   & details > summary {
+    display: flex;
+    gap: 0.25em;
+
     position: relative;
     margin-bottom: 0.5em;
 
@@ -43,6 +46,28 @@
       font-weight: 600;
       display: inline-block;
       margin-bottom: 0;
+      font-weight: bold;
+      margin-bottom: 0;
+    }
+
+    & a[role="button"] {
+      display: block;
+      margin-left: auto;
+
+      user-select: none;
+
+      width: 1.5em;
+      height: 1.5em;
+
+      padding: 0.125em;
+      border-radius: 50%;
+      text-align: center;
+
+      text-decoration: none;
+
+      color: rgb(var(--color-danger) / 1);
+      border: 2px solid rgb(var(--color-danger) / 1);
+      font-weight: bold;
     }
 
     &::before {
@@ -122,5 +147,23 @@
 
   & details + details {
     margin-top: 1em;
+  }
+
+  & #add-behavior {
+    margin: 0.5em 0;
+
+    transition: 0.125s ease-out;
+    transition-property: padding-top max-height;
+
+    max-height: 0;
+    overflow-y: clip;
+
+    & td button {
+      width: 100%;
+    }
+  }
+
+  & #add-behavior[data-open] {
+    max-height: 5.5em;
   }
 }

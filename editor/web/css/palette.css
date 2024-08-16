@@ -6,6 +6,7 @@
   --color-bg-1: 37 42 54;
   --color-bg-2: 55 65 81;
   --color-accent: 73 102 207;
+  --color-danger: 255 0 0;
 
   --border-radius: 4px;
 }

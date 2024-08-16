@@ -25,6 +25,8 @@ export class BehaviorEditor {
     private parent: BehaviorList,
   ) {
     const table = elem("table");
+    const deleteButton = elem("a", { role: "button", href: "javascript:void(0)" }, ["-"]);
+
     this.details = elem("details", { open: true, className: "behavior" }, [
       elem("summary", {}, [
         elem("div", { className: "arrow" }, [icon(ChevronDown)]),
@@ -33,6 +35,16 @@ export class BehaviorEditor {
       table,
     ]);
     parent.container.append(this.details);
+
+    deleteButton.addEventListener("click", event => {
+      event.preventDefault();
+      this.details.remove();
+
+      const idx = parent.behaviors.indexOf(behavior);
+      if (idx !== -1) parent.behaviors.splice(idx, 1);
+
+      parent.sync();
+    });
 
     const addEntry = (key: string, ...controls: HTMLElement[]) => {
       table.append(

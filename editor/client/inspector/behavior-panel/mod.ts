@@ -22,9 +22,24 @@ export class BehaviorPanel implements InspectorUIComponent {
 
     const addBehaviorButton = elem(
       "a",
-      { id: "add-behavior", role: "button", href: "javascript:void(0)" },
+      { id: "add-behavior-button", role: "button", href: "javascript:void(0)" },
       ["+"],
     );
+    addBehaviorButton.addEventListener("click", event => {
+      event.preventDefault();
+
+      const addBehaviorForm = behaviorList.querySelector(
+        "form#add-behavior",
+      ) as HTMLFormElement;
+      if (addBehaviorForm) {
+        if (addBehaviorForm.dataset.open !== undefined) {
+          delete addBehaviorForm.dataset.open;
+        } else {
+          addBehaviorForm.dataset.open = "";
+        }
+      }
+    });
+
     titleBar.append(addBehaviorButton);
 
     const behaviorList = elem("div", { id: "behavior-list" });
