@@ -35,81 +35,11 @@
     content: "";
   }
 
-  & details > summary {
-    display: flex;
-
-    position: relative;
-    margin-bottom: 0.5em;
-
-    & h2 {
-      font-weight: 600;
-      display: inline-block;
-      margin-bottom: 0;
-      font-weight: bold;
-      margin-bottom: 0;
-    }
-
-    & a[role="button"] {
-      display: block;
-      margin-left: auto;
-
-      user-select: none;
-
-      width: 1.5em;
-      height: 1.5em;
-
-      padding: 0.125em;
-      border-radius: 50%;
-      text-align: center;
-
-      text-decoration: none;
-
-      color: rgb(var(--color-danger) / 1);
-      border: 2px solid rgb(var(--color-danger) / 1);
-      font-weight: bold;
-    }
-
-    &::before {
-      display: inline-block;
-      width: 2.25ch;
-      content: "";
-    }
-
-    & > div.arrow {
-      position: absolute;
-      top: 0;
-      left: 0;
-      height: 2ch;
-      width: 2ch;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      & > svg {
-        height: 100%;
-        width: auto;
-        transform: rotate(-90deg);
-        transition: transform 0.1s ease;
-      }
-    }
+  & .behavior h2 {
+    font-weight: 600;
   }
 
-  & details[open] > summary > div.arrow > svg {
-    transform: rotate(0deg);
-  }
-
-  & table {
-    table-layout: fixed;
-    width: 100%;
-  }
-
-  & input[type="text"] {
-    all: unset;
-    width: 100%;
-    height: 100%;
-  }
-
-  & details + details {
+  & .behavior + .behavior {
     margin-top: 1em;
   }
 

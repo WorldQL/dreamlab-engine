@@ -1,4 +1,6 @@
 dreamlab-data-details {
+  display: block;
+
   & > details > summary {
     display: flex;
     position: relative;

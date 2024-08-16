@@ -25,7 +25,7 @@ export class DataDetails extends HTMLElement {
   }
 
   addContent(...content: (Node | string)[]) {
-    this.#header.append(...content);
+    this.#details.append(...content);
   }
 
   get open() {

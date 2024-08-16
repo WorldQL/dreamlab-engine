@@ -6,7 +6,7 @@ import { BehaviorList } from "./behavior-list.ts";
 import { ClientGame, Empty, inferValueTypeTag, Value } from "@dreamlab/engine";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { ChevronDown, icon } from "../../_icons.ts";
-import { DataTable } from "../../components/mod.ts";
+import { DataDetails, DataTable } from "../../components/mod.ts";
 
 type ThinValue<T> = {
   value: Value<T>["value"];
@@ -14,9 +14,8 @@ type ThinValue<T> = {
   adapter?: Value<T>["adapter"];
 };
 export class BehaviorEditor {
-  details: HTMLElement;
+  details: DataDetails;
 
-  scriptField: ReturnType<typeof createInputField>;
   valueFields = new Map<string, ReturnType<typeof createInputField>>();
   values: Record<string, ThinValue<unknown>> = {};
 
@@ -29,13 +28,11 @@ export class BehaviorEditor {
 
     const deleteButton = elem("a", { role: "button", href: "javascript:void(0)" }, ["-"]);
 
-    this.details = elem("details", { open: true, className: "behavior" }, [
-      elem("summary", {}, [
-        elem("div", { className: "arrow" }, [icon(ChevronDown)]),
-        elem("h2", {}, [behavior.script]),
-      ]),
-      table,
-    ]);
+    this.details = new DataDetails();
+    this.details.className = "behavior";
+    this.details.setHeader(elem("h2", {}, [behavior.script]));
+    this.details.addContent(table);
+
     parent.container.append(this.details);
 
     deleteButton.addEventListener("click", event => {
@@ -49,17 +46,7 @@ export class BehaviorEditor {
     });
 
     table.addEntry("id", "ID", elem("code", {}, [behavior.ref]));
-
-    this.scriptField = createInputField({
-      get: () => behavior.script,
-      set: s => {
-        behavior.script = s;
-        parent.sync();
-      },
-      convert: v => v,
-    });
-
-    table.addEntry("script", "Script", this.scriptField[0]);
+    table.addEntry("script", "Script", elem("code", {}, [behavior.script]));
 
     void this.#populateValueFields(table);
   }
@@ -152,7 +139,6 @@ export class BehaviorEditor {
 
   resolveUpdate(newBehavior: SceneDescBehavior) {
     this.behavior.script = newBehavior.script;
-    this.scriptField[1]();
 
     for (const [key, value] of Object.entries(newBehavior.values ?? {})) {
       const valueField = this.valueFields.get(key);
