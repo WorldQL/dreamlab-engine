@@ -6,12 +6,14 @@ dreamlab-data-details {
     position: relative;
     margin-bottom: 0.5em;
 
+    --arrow-pad: 1.25em;
+
     &::marker {
       content: "";
     }
     &::before {
       display: inline-block;
-      width: 2.25ch;
+      width: calc(var(--arrow-pad) + 0.25em);
       content: "";
     }
 
@@ -22,9 +24,19 @@ dreamlab-data-details {
       position: absolute;
       top: 0;
       left: 0;
-      height: 2ch;
-      width: 2ch;
+      height: var(--arrow-pad);
+      width: var(--arrow-pad);
       cursor: pointer;
+    }
+
+    & > header {
+      height: var(--arrow-pad);
+      display: flex;
+      align-items: center;
+    }
+
+    & :is(h1, h2, h3) {
+      margin: 0;
     }
   }
 
