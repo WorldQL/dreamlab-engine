@@ -15,7 +15,7 @@ import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import { setupGame } from "./game-setup.ts";
 import { connectToGame } from "./game-connection.ts";
 import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
-import { renderInspector } from "./inspector/inspector.ts";
+import { renderInspector } from "./ui/inspector.ts";
 import { setupMultiplayerCursors } from "./multiplayer-cursors.ts";
 import { Camera, ClientGame } from "@dreamlab/engine";
 import { CameraPanBehavior } from "./camera-pan.ts";

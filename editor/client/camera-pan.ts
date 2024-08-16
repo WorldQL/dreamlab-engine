@@ -8,7 +8,7 @@ import {
   Scroll,
   Vector2,
 } from "@dreamlab/engine";
-import { InspectorUI } from "./inspector/inspector.ts";
+import { InspectorUI } from "./ui/inspector.ts";
 
 export class CameraPanBehavior extends Behavior {
   ui: InspectorUI | undefined;

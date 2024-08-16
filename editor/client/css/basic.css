@@ -1,0 +1,39 @@
+html,
+body {
+  color: rgb(var(--color-text));
+  background: rgb(var(--color-bg-0) / 1);
+}
+
+body > main > div {
+  border-radius: var(--border-radius);
+}
+
+/* apply styles to everything except the game container, so we don't clobber game UI styles */
+:where(body > main :not(#game-container)) {
+  & h1,
+  & h2,
+  & h3 {
+    all: unset;
+    display: block;
+    margin-bottom: 0.5em;
+  }
+
+  & h1 {
+    font-weight: 600;
+  }
+
+  & section {
+    padding: 0.5em;
+    border-radius: var(--border-radius);
+    background-color: rgb(var(--color-bg-1) / 1);
+
+    overflow: auto;
+    text-wrap: nowrap;
+
+    & > header {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+    }
+  }
+}
