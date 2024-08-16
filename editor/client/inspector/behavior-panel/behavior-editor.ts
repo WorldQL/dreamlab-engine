@@ -21,7 +21,7 @@ export class BehaviorEditor {
   constructor(
     public game: ClientGame,
     public behavior: SceneDescBehavior,
-    parent: BehaviorList,
+    private parent: BehaviorList,
   ) {
     const table = elem("table");
     this.details = elem("details", { open: true, className: "behavior" }, [
@@ -49,10 +49,10 @@ export class BehaviorEditor {
 
     addEntry("Script", this.scriptField[0]);
 
-    void this.#populateValueFields(table, parent);
+    void this.#populateValueFields(table);
   }
 
-  async #populateValueFields(table: HTMLElement, parent: BehaviorList) {
+  async #populateValueFields(table: HTMLElement) {
     const addEntry = (key: string, ...controls: HTMLElement[]) => {
       table.append(
         elem("tr", {}, [elem("th", {}, [key]), elem("td", { colSpan: 2 }, controls)]),
@@ -65,10 +65,8 @@ export class BehaviorEditor {
 
       const behaviorType = await this.game.loadBehavior(this.behavior.script);
       const dummyEntity = this.game.local.spawn({ type: Empty, name: "DummyBehaviorTarget" });
-      const behaviorObj = new behaviorType({
-        game: this.game,
-        entity: dummyEntity,
-        // @ts-expect-error: generic constraints
+      const behaviorObj = dummyEntity.addBehavior({
+        type: behaviorType,
         values: this.behavior.values,
       });
 
@@ -108,7 +106,7 @@ export class BehaviorEditor {
               val.value = v;
               if (!this.behavior.values) this.behavior.values = {};
               this.behavior.values[key] = v;
-              parent.sync();
+              this.parent.sync();
             },
             convert: s => s,
           });
@@ -123,7 +121,7 @@ export class BehaviorEditor {
               val.value = v;
               if (!this.behavior.values) this.behavior.values = {};
               this.behavior.values[key] = v;
-              parent.sync();
+              this.parent.sync();
             },
             convert: z.number({ coerce: true }).parse,
           });
