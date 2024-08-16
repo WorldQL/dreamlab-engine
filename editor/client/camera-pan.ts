@@ -85,6 +85,12 @@ export class CameraPanBehavior extends Behavior {
       );
       const clampedScale = new Vector2(Math.max(newScale.x, 0.1), Math.max(newScale.y, 0.1));
       this.#camera.globalTransform.scale = clampedScale;
+
+      const cursorPos = this.game.inputs.cursor.world;
+      if (delta.y < 0 && cursorPos) {
+        const cursorDelta = cursorPos.sub(this.#camera.pos);
+        this.#camera.pos = this.#camera.pos.add(cursorDelta.mul(1 / 10));
+      }
     } else {
       const scale = 100;
       const deltaX = ev.shiftKey ? delta.y : delta.x;
