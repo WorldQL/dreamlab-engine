@@ -55,6 +55,8 @@ export class AppMenu implements InspectorUIComponent {
 
       editUIRoot.style.display = "none";
       playUIRoot.style.display = "grid";
+
+      if (games.play) games.play.renderer.app.resize();
     });
 
     const editButton = elem("a", { role: "button", href: "javascript:void(0)" }, ["Edit"]);
