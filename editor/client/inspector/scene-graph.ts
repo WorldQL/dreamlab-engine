@@ -10,6 +10,7 @@ import {
 import { InspectorUI, InspectorUIComponent } from "./inspector.ts";
 import { EditorMetadataEntity } from "../../common/mod.ts";
 import * as internal from "../../../engine/internal.ts";
+import { ChevronDown, icon } from "../_icons.ts";
 
 function eventTargetsEntry(event: Event, entryElement: HTMLElement) {
   if (!(event.target instanceof HTMLElement)) return false;
@@ -109,6 +110,7 @@ export class SceneGraph implements InspectorUIComponent {
 
     const entryElement = elem("details", { open: true }, [
       elem("summary", {}, [
+        elem("div", { className: "arrow" }, [icon(ChevronDown)]),
         elem("a", {}, [
           elem("span", { className: "icon" }, [
             (entity.constructor as typeof Entity).icon ?? "🌟",
