@@ -1,0 +1,39 @@
+dreamlab-data-details {
+  & > details > summary {
+    display: flex;
+    position: relative;
+    margin-bottom: 0.5em;
+
+    &::marker {
+      content: "";
+    }
+    &::before {
+      display: inline-block;
+      width: 2.25ch;
+      content: "";
+    }
+
+    & > .arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 2ch;
+      width: 2ch;
+      cursor: pointer;
+    }
+  }
+
+  & > details > summary > .arrow > svg {
+    height: 100%;
+    width: auto;
+    transform: rotate(-90deg);
+    transition: transform 0.1s ease;
+  }
+
+  & > details[open] > summary > .arrow > svg {
+    transform: rotate(0);
+  }
+}
