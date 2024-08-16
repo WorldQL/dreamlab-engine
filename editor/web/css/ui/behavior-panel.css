@@ -30,6 +30,17 @@
     font-weight: 600;
   }
 
+  & .delete-button {
+    display: block;
+    color: red;
+    margin-left: auto;
+
+    & svg {
+      height: 1.5em;
+      width: 1.5em;
+    }
+  }
+
   & .behavior + .behavior {
     margin-top: 1em;
   }

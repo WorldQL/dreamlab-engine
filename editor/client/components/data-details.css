@@ -29,9 +29,11 @@ dreamlab-data-details {
     }
 
     & > header {
-      height: var(--arrow-pad);
       display: flex;
+      height: var(--arrow-pad);
       align-items: center;
+      width: 100%;
+      margin-bottom: 0.5em;
     }
 
     & :is(h1, h2, h3) {

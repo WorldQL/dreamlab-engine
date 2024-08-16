@@ -19,9 +19,13 @@ export class DataDetails extends HTMLElement {
     this.append(this.#details);
   }
 
-  setHeader(...title: (Element | string | Text)[]): void {
+  setHeaderContent(...title: (Element | string | Text)[]): void {
+    console.log("setting header");
+
     const newHeader = elem("header", {}, title);
-    this.#header.outerHTML = newHeader.outerHTML;
+    this.#header.parentElement?.append(newHeader);
+    this.#header.remove();
+    this.#header = newHeader;
   }
 
   addContent(...content: (Node | string)[]) {

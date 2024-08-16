@@ -12,6 +12,7 @@ import {
 } from "@dreamlab/engine";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { DataDetails, DataTable } from "../../components/mod.ts";
+import { icon, Trash } from "../../_icons.ts";
 
 type ThinValue<T> = {
   value: Value<T>["value"];
@@ -31,16 +32,15 @@ export class BehaviorEditor {
   ) {
     const table = new DataTable();
 
-    const deleteButton = elem("a", { role: "button", href: "javascript:void(0)" }, ["-"]);
-
-    this.details = new DataDetails();
-    this.details.className = "behavior";
-    this.details.addContent(table);
-
-    parent.container.append(this.details);
-
+    const deleteButton = elem(
+      "a",
+      { className: "delete-button", role: "button", href: "javascript:void(0)" },
+      [icon(Trash)],
+    );
     deleteButton.addEventListener("click", event => {
       event.preventDefault();
+      // TODO: we should "are you sure?" on this lol
+
       this.details.remove();
 
       const idx = parent.behaviors.indexOf(behavior);
@@ -49,11 +49,18 @@ export class BehaviorEditor {
       parent.sync();
     });
 
+    this.details = new DataDetails();
+    this.details.className = "behavior";
+    this.details.setHeaderContent(elem("h2", {}, ["[loading]"]), deleteButton);
+    this.details.addContent(table);
+
+    parent.container.append(this.details);
+
     table.addEntry("id", "ID", elem("code", {}, [behavior.ref]));
     table.addEntry("script", "Script", elem("code", {}, [behavior.script]));
 
     this.game.loadBehavior(this.behavior.script).then(type => {
-      this.details.setHeader(elem("h2", {}, [type.name]));
+      this.details.setHeaderContent(elem("h2", {}, [type.name]), deleteButton);
       this.#populateValueFields(table, type);
     });
   }

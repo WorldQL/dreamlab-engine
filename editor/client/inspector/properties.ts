@@ -84,7 +84,7 @@ export class Properties implements InspectorUIComponent {
     };
     updatePosition();
     entity.on(EntityTransformUpdate, updatePosition);
-    transformSection.setHeader(elem("h2", {}, ["Transform", " ", position]));
+    transformSection.setHeaderContent(elem("h2", {}, ["Transform", " ", position]));
 
     const txfmTable = new DataTable();
     transformSection.addContent(txfmTable);
@@ -151,7 +151,7 @@ export class Properties implements InspectorUIComponent {
 
     const valuesSection = new DataDetails();
     container.append(valuesSection);
-    valuesSection.setHeader(elem("h2", {}, ["Values"]));
+    valuesSection.setHeaderContent(elem("h2", {}, ["Values"]));
 
     const valuesTable = new DataTable();
     valuesSection.addContent(valuesTable);
