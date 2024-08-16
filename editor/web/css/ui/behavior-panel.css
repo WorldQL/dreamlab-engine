@@ -37,7 +37,6 @@
 
   & details > summary {
     display: flex;
-    gap: 0.25em;
 
     position: relative;
     margin-bottom: 0.5em;
@@ -72,9 +71,7 @@
 
     &::before {
       display: inline-block;
-      width: 1ch;
-      max-width: 1ch;
-      margin-right: 1ch;
+      width: 2.25ch;
       content: "";
     }
 
@@ -82,9 +79,8 @@
       position: absolute;
       top: 0;
       left: 0;
-      height: 100%;
-      width: auto;
-      aspect-ratio: 1/1;
+      height: 2ch;
+      width: 2ch;
       display: flex;
       align-items: center;
       justify-content: center;
