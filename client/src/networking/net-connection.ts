@@ -20,23 +20,46 @@ import {
   PlayerConnectionDropped,
 } from "@dreamlab/proto/common/signals.ts";
 
-export type ClientPacketHandler<T extends ServerPacket["t"]> = (
+export type ClientPacketHandler<T extends ServerPacket["t"] = ServerPacket["t"]> = (
   packet: PlayPacket<T, "server">,
-) => void;
+) => Promise<void> | void;
 export type ClientNetworkSetupRoutine = (conn: ClientConnection, game: ClientGame) => void;
 
 export class ClientConnection {
   customMessageListeners: CustomMessageListener[] = [];
 
-  #packetHandlers: Partial<Record<ServerPacket["t"], ClientPacketHandler<ServerPacket["t"]>>> =
-    {};
-  registerPacketHandler<T extends ServerPacket["t"]>(t: T, f: ClientPacketHandler<T>) {
-    this.#packetHandlers[t] = f as ClientPacketHandler<ServerPacket["t"]>;
+  #packetHandlers = new Map<ServerPacket["t"], ClientPacketHandler[]>();
+  registerPacketHandler<T extends ServerPacket["t"]>(t: T, handler: ClientPacketHandler<T>) {
+    if (!this.#packetHandlers.has(t)) this.#packetHandlers.set(t, []);
+    const handlers = this.#packetHandlers.get(t)!;
+    handlers.push(handler as ClientPacketHandler);
   }
-  getPacketHandler<T extends ServerPacket["t"]>(t: T): ClientPacketHandler<T> {
-    const handler = this.#packetHandlers[t];
-    if (handler === undefined) throw new Error("Handler for " + t + " has not been set up!");
-    return handler as ClientPacketHandler<ServerPacket["t"]>;
+  getPacketHandlers<T extends ServerPacket["t"]>(t: T): ClientPacketHandler<T>[] {
+    const handlers = this.#packetHandlers.get(t);
+    if (!handlers) return [];
+    return handlers as ClientPacketHandler<T>[];
+  }
+
+  #queue: { packets: ServerPacket[]; processing: boolean } = { packets: [], processing: false };
+  async #flushPacketQueue() {
+    if (this.#queue.processing) return;
+    this.#queue.processing = true;
+    while (true) {
+      const packets = this.#queue.packets;
+      this.#queue.packets = [];
+      if (packets.length === 0) break;
+      for (const packet of packets) {
+        const handlers = this.getPacketHandlers(packet.t);
+        for (const handler of handlers) {
+          try {
+            await handler(packet);
+          } catch (err) {
+            console.warn(`Uncaught error while handling packet of type '${packet.t}': ${err}`);
+          }
+        }
+      }
+    }
+    this.#queue.processing = false;
   }
 
   peers = new Map<ConnectionId, ConnectionInfo>();
@@ -51,11 +74,8 @@ export class ClientConnection {
   ) {}
 
   handle(packet: ServerPacket) {
-    try {
-      this.getPacketHandler(packet.t)(packet);
-    } catch (err) {
-      console.warn(`Uncaught error while handling packet of type '${packet.t}': ${err}`);
-    }
+    this.#queue.packets.push(packet);
+    void this.#flushPacketQueue();
   }
 
   setup(game: ClientGame) {
