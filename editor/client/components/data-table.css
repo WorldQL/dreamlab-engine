@@ -4,6 +4,7 @@ dreamlab-data-table {
   & > table {
     table-layout: fixed;
     width: 100%;
+    border-spacing: 2px;
 
     & th,
     & td {

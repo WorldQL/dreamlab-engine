@@ -4,7 +4,6 @@ dreamlab-data-details {
   & > details > summary {
     display: flex;
     position: relative;
-    margin-bottom: 0.5em;
 
     --arrow-pad: 1.25em;
 
@@ -22,7 +21,7 @@ dreamlab-data-details {
       align-items: center;
       justify-content: center;
       position: absolute;
-      top: 0;
+      top: -0.1em;
       left: 0;
       height: var(--arrow-pad);
       width: var(--arrow-pad);

@@ -14,51 +14,49 @@ import { InspectorUI, InspectorUIComponent } from "./inspector.ts";
 import { element as elem } from "@dreamlab/ui";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { createInputField } from "../util/easy-input.ts";
+import { DataDetails, DataTable } from "../components/mod.ts";
 
 export class Properties implements InspectorUIComponent {
   constructor(private game: ClientGame) {}
 
   render(ui: InspectorUI, editUIRoot: HTMLElement): void {
     const right = editUIRoot.querySelector("#right-sidebar")!;
-    const container = elem("section", { id: "properties" }, [elem("h1", {}, ["Properties"])]);
-    right.append(container);
+    const section = elem("section", { id: "properties" }, [elem("h1", {}, ["Properties"])]);
+    right.append(section);
 
-    const propertiesTable = elem("table");
-    propertiesTable.style.display = "none";
+    const container = elem("div", { id: "properties-display" });
+    container.style.display = "none";
 
-    container.append(propertiesTable);
+    section.append(container);
 
     const selectSomethingNotification = elem("p", { id: "select-something-notification" }, [
       "Select an entity to view its properties.",
     ]);
 
-    container.append(selectSomethingNotification);
+    section.append(selectSomethingNotification);
 
     ui.selectedEntity.listen(() => {
       const entity = ui.selectedEntity.entities.at(0);
 
       if (entity) {
         selectSomethingNotification.style.display = "none";
-        propertiesTable.style.display = "table";
-        this.drawEntityProperties(propertiesTable, entity);
+        container.style.display = "flex";
+        this.drawEntityProperties(container, entity);
       } else {
-        propertiesTable.style.display = "none";
+        container.style.display = "none";
         selectSomethingNotification.style.display = "block";
       }
     });
   }
 
-  drawEntityProperties(table: HTMLTableElement, entity: Entity) {
+  drawEntityProperties(container: HTMLElement, entity: Entity) {
+    container.innerHTML = "";
+
     // TODO: clean up old listeners instead of leaking them
     // i think it would be easier if .on() gave u an object that u can .unsubscribe() on
 
-    table.querySelector("tbody")?.remove();
-    const tbody = elem("tbody");
-    table.append(tbody);
-
-    function addEntry(key: string, value: Element | string | Text, body: HTMLElement = tbody) {
-      body.append(elem("tr", {}, [elem("th", {}, [key]), elem("td", { colSpan: 2 }, [value])]));
-    }
+    const table = new DataTable();
+    container.append(table);
 
     const [nameField, refreshName] = createInputField({
       get: () => entity.name,
@@ -67,17 +65,18 @@ export class Properties implements InspectorUIComponent {
     });
     entity.on(EntityRenamed, refreshName);
 
-    addEntry("Name", nameField);
+    table.addEntry("name", "Name", nameField);
 
     const entityId = () => entity.id.replace("game.world._.EditEntities._.", "game.");
     const idField = elem("code", {}, [entityId()]);
     entity.on(EntityRenamed, () => (idField.textContent = entityId()));
     entity.on(EntityReparented, () => (idField.textContent = entityId()));
-    addEntry("ID", idField);
+    table.addEntry("id", "ID", idField);
 
     // TODO: transform editing
 
-    const txfmTbody = elem("tbody");
+    const transformSection = new DataDetails();
+    container.append(transformSection);
 
     const position = elem("code");
     const updatePosition = () => {
@@ -85,17 +84,10 @@ export class Properties implements InspectorUIComponent {
     };
     updatePosition();
     entity.on(EntityTransformUpdate, updatePosition);
+    transformSection.setHeader(elem("h2", {}, ["Transform", " ", position]));
 
-    tbody.append(
-      elem("tr", {}, [
-        elem("td", { colSpan: 3 }, [
-          elem("details", { open: true }, [
-            elem("summary", {}, [elem("h2", {}, ["Transform", " ", position])]),
-            elem("table", {}, [txfmTbody]),
-          ]),
-        ]),
-      ]),
-    );
+    const txfmTable = new DataTable();
+    transformSection.addContent(txfmTable);
 
     const numeric = z.number({ coerce: true }).refine(Number.isFinite, "Value must be finite!");
     const [transformXField, refreshX] = createInputField({
@@ -104,7 +96,7 @@ export class Properties implements InspectorUIComponent {
       convert: numeric.parse,
       convertBack: n => n.toFixed(4),
     });
-    addEntry("Position X", transformXField, txfmTbody);
+    txfmTable.addEntry("posX", "Position X", transformXField);
 
     const [transformYField, refreshY] = createInputField({
       get: () => entity.transform.position.y,
@@ -112,7 +104,7 @@ export class Properties implements InspectorUIComponent {
       convert: numeric.parse,
       convertBack: n => n.toFixed(4),
     });
-    addEntry("Position Y", transformYField, txfmTbody);
+    txfmTable.addEntry("posY", "Position Y", transformYField);
 
     const [transformRotation, refreshRotation] = createInputField({
       get: () => entity.transform.rotation,
@@ -120,7 +112,7 @@ export class Properties implements InspectorUIComponent {
       convert: numeric.transform(v => (v * Math.PI) / 180).parse,
       convertBack: v => ((v * 180) / Math.PI).toFixed(1),
     });
-    addEntry("Rotation", transformRotation, txfmTbody);
+    txfmTable.addEntry("rot", "Rotation", transformRotation);
 
     const [scaleXField, refreshScaleX] = createInputField({
       get: () => entity.transform.scale.x,
@@ -128,7 +120,7 @@ export class Properties implements InspectorUIComponent {
       convert: numeric.parse,
       convertBack: n => n.toFixed(4),
     });
-    addEntry("Scale X", scaleXField, txfmTbody);
+    txfmTable.addEntry("scaleX", "Scale X", scaleXField);
 
     const [scaleYField, refreshScaleY] = createInputField({
       get: () => entity.transform.scale.y,
@@ -136,7 +128,7 @@ export class Properties implements InspectorUIComponent {
       convert: numeric.parse,
       convertBack: n => n.toFixed(4),
     });
-    addEntry("Scale Y", scaleYField, txfmTbody);
+    txfmTable.addEntry("scaleY", "Scale Y", scaleYField);
 
     const [zIndexField, refreshZIndex] = createInputField({
       get: () => entity.transform.z,
@@ -144,7 +136,7 @@ export class Properties implements InspectorUIComponent {
       convert: numeric.refine(Number.isSafeInteger, "Number must be an integer!").parse,
       convertBack: n => n.toFixed(0),
     });
-    addEntry("Z Index", zIndexField, txfmTbody);
+    txfmTable.addEntry("z", "Z Index", zIndexField);
 
     entity.on(EntityTransformUpdate, () => {
       refreshX();
@@ -157,17 +149,12 @@ export class Properties implements InspectorUIComponent {
 
     if (entity.values.size === 0) return;
 
-    const valuesTbody = elem("tbody");
-    tbody.append(
-      elem("tr", {}, [
-        elem("td", { colSpan: 3 }, [
-          elem("details", { open: true }, [
-            elem("summary", {}, [elem("h2", {}, ["Values"])]),
-            elem("table", {}, [valuesTbody]),
-          ]),
-        ]),
-      ]),
-    );
+    const valuesSection = new DataDetails();
+    container.append(valuesSection);
+    valuesSection.setHeader(elem("h2", {}, ["Values"]));
+
+    const valuesTable = new DataTable();
+    valuesSection.addContent(valuesTable);
 
     for (const [key, value] of entity.values.entries()) {
       let valueField: HTMLInputElement | undefined;
@@ -242,8 +229,7 @@ export class Properties implements InspectorUIComponent {
       // TODO: other adapters
 
       if (valueField && refreshValue) {
-        addEntry(key, valueField, valuesTbody);
-
+        valuesTable.addEntry(`value:${key}`, key, valueField);
         this.game.values.on(ValueChanged, event => {
           if (event.value === value) refreshValue();
         });

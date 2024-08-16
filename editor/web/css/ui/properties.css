@@ -2,68 +2,22 @@
   flex: 50%;
   display: flex;
   flex-direction: column;
-}
 
-#properties #select-something-notification {
-  flex: 1;
-  align-content: center;
-  text-align: center;
-  font-size: 0.95em;
-  padding: 0 0.5em;
-  text-wrap: balance;
-  line-height: 1.4;
-}
+  & > #select-something-notification {
+    flex: 1;
+    align-content: center;
+    text-align: center;
+    font-size: 0.95em;
+    padding: 0 0.5em;
+    text-wrap: balance;
+    line-height: 1.4;
+  }
 
-#properties table {
-  table-layout: fixed;
-  width: 100%;
-}
+  & > #properties-display {
+    font-size: smaller;
 
-#properties > table {
-  font-size: smaller;
-}
-
-#properties table :is(h1, h2, h3) {
-  display: inline-block;
-}
-
-#properties th,
-#properties td {
-  background-color: rgb(var(--color-bg-2) / 1);
-  border-radius: var(--border-radius);
-  padding: 0.5em;
-
-  overflow: clip;
-  text-overflow: ellipsis;
-}
-
-#properties td:has(> details) {
-  background-color: rgb(var(--color-bg-1) / 1);
-  padding-left: 0;
-  padding-right: 0;
-}
-
-#properties th {
-  text-align: end;
-}
-
-#properties td {
-  text-align: start;
-}
-
-#properties td code {
-  user-select: all;
-  cursor: initial;
-}
-
-#properties input[type="text"] {
-  all: unset;
-  width: 100%;
-  height: 100%;
-}
-
-#properties td code,
-#properties td input[type="text"] {
-  font-family: var(--font-mono);
-  font-weight: 600;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+  }
 }
