@@ -4,17 +4,8 @@
   flex-direction: column;
 
   & #add-behavior-button {
-    display: inline-block;
-    padding: 0.125em;
-    border-radius: 50%;
-    aspect-ratio: 1;
-    text-align: center;
-
-    text-decoration: none;
-
+    display: none;
     color: rgb(var(--color-accent) / 1);
-    border: 2px solid rgb(var(--color-accent) / 1);
-    font-weight: bold;
   }
 
   & #behavior-list {

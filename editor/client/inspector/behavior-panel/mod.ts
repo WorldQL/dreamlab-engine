@@ -1,5 +1,6 @@
 import { ClientGame, Entity, EntityDestroyed } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
+import { icon, PlusCircle } from "../../_icons.ts";
 import { InspectorUI, InspectorUIComponent } from "../inspector.ts";
 import { BehaviorList } from "./behavior-list.ts";
 
@@ -23,8 +24,9 @@ export class BehaviorPanel implements InspectorUIComponent {
     const addBehaviorButton = elem(
       "a",
       { id: "add-behavior-button", role: "button", href: "javascript:void(0)" },
-      ["+"],
+      [icon(PlusCircle)],
     );
+
     addBehaviorButton.addEventListener("click", event => {
       event.preventDefault();
 
