@@ -3,9 +3,14 @@ import { SceneDescBehavior } from "@dreamlab/scene";
 
 import { createInputField } from "../../util/easy-input.ts";
 import { BehaviorList } from "./behavior-list.ts";
-import { ClientGame, Empty, inferValueTypeTag, Value } from "@dreamlab/engine";
+import {
+  BehaviorConstructor,
+  ClientGame,
+  Empty,
+  inferValueTypeTag,
+  Value,
+} from "@dreamlab/engine";
 import { z } from "@dreamlab/vendor/zod.ts";
-import { ChevronDown, icon } from "../../_icons.ts";
 import { DataDetails, DataTable } from "../../components/mod.ts";
 
 type ThinValue<T> = {
@@ -30,7 +35,6 @@ export class BehaviorEditor {
 
     this.details = new DataDetails();
     this.details.className = "behavior";
-    this.details.setHeader(elem("h2", {}, [behavior.script]));
     this.details.addContent(table);
 
     parent.container.append(this.details);
@@ -48,15 +52,17 @@ export class BehaviorEditor {
     table.addEntry("id", "ID", elem("code", {}, [behavior.ref]));
     table.addEntry("script", "Script", elem("code", {}, [behavior.script]));
 
-    void this.#populateValueFields(table);
+    this.game.loadBehavior(this.behavior.script).then(type => {
+      this.details.setHeader(elem("h2", {}, [type.name]));
+      this.#populateValueFields(table, type);
+    });
   }
 
-  async #populateValueFields(table: DataTable) {
+  #populateValueFields(table: DataTable, behaviorType: BehaviorConstructor) {
     try {
       // TODO: sandboxing -- we should create a dummy ClientGame instance to spawn this behavior in,
       // so that it can't change anything about the edit-mode game.
 
-      const behaviorType = await this.game.loadBehavior(this.behavior.script);
       const dummyEntity = this.game.local.spawn({ type: Empty, name: "DummyBehaviorTarget" });
       const behaviorObj = dummyEntity.addBehavior({
         type: behaviorType,
