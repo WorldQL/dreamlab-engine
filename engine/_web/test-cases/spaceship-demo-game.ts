@@ -1055,13 +1055,6 @@ class PlayerBehavior extends Behavior {
   }
 
   onInitialize(): void {
-    const ui = this.entity._.UI.getBehavior(PlayerUI);
-    ui.totalScore = this.#totalScore;
-    ui.health = this.#health;
-    ui.updateFireRate(this.fireRateMultiplier);
-    ui.updateSpeed(this.entity.getBehavior(Movement).speed);
-    ui.updateShieldDuration(this.entity.getBehavior(Shield).shieldDuration);
-
     this.healthBar = this.entity.addBehavior({
       type: HealthBar,
       values: { maxHealth: this.#health, currentHealth: this.#health },
@@ -1287,6 +1280,7 @@ function spawnPlayer() {
 
 // #region Player UI
 class PlayerUI extends Behavior {
+  #player = this.entity.parent?.getBehavior(PlayerBehavior)!;
   #ui = this.entity.cast(UILayer);
 
   #totalScore = 0;
@@ -1363,6 +1357,12 @@ class PlayerUI extends Behavior {
     this.#progressUI = this.entity.addBehavior({ type: LevelProgressUI });
 
     this.listen(this.game, GamePostRender, this.updateStats.bind(this));
+
+    this.totalScore = this.#player.totalScore;
+    this.health = this.#player.health;
+    this.updateFireRate(this.#player.fireRateMultiplier);
+    this.updateSpeed(this.#player.entity.getBehavior(Movement).speed);
+    this.updateShieldDuration(this.#player.entity.getBehavior(Shield).shieldDuration);
   }
 
   updateLevelProgress(progress: number) {
