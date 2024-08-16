@@ -36,9 +36,13 @@
   }
 
   & details > summary {
+    position: relative;
+    margin-bottom: 0.5em;
+
     & h2 {
-      font-weight: bold;
+      font-weight: 600;
       display: inline-block;
+      margin-bottom: 0;
     }
 
     &::before {
@@ -46,14 +50,31 @@
       width: 1ch;
       max-width: 1ch;
       margin-right: 1ch;
-      transform: translateY(-0.25ch);
+      content: "";
+    }
 
-      content: "⏵";
+    & > div.arrow {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: auto;
+      aspect-ratio: 1/1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      & > svg {
+        height: 100%;
+        width: auto;
+        transform: rotate(-90deg);
+        transition: transform 0.1s ease;
+      }
     }
   }
 
-  & details[open] > summary::before {
-    content: "⏷";
+  & details[open] > summary > div.arrow > svg {
+    transform: rotate(0deg);
   }
 
   & table {

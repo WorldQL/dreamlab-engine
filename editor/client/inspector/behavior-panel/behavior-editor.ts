@@ -5,6 +5,7 @@ import { createInputField } from "../../util/easy-input.ts";
 import { BehaviorList } from "./behavior-list.ts";
 import { ClientGame, Empty, inferValueTypeTag, Value } from "@dreamlab/engine";
 import { z } from "@dreamlab/vendor/zod.ts";
+import { ChevronDown, icon } from "../../_icons.ts";
 
 type ThinValue<T> = {
   value: Value<T>["value"];
@@ -25,7 +26,10 @@ export class BehaviorEditor {
   ) {
     const table = elem("table");
     this.details = elem("details", { open: true, className: "behavior" }, [
-      elem("summary", {}, [elem("h2", {}, [behavior.script])]),
+      elem("summary", {}, [
+        elem("div", { className: "arrow" }, [icon(ChevronDown)]),
+        elem("h2", {}, [behavior.script]),
+      ]),
       table,
     ]);
     parent.container.append(this.details);
