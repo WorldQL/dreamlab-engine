@@ -3,6 +3,7 @@ import type { ConditionalExcept } from "@dreamlab/vendor/type-fest.ts";
 
 import { Entity } from "../entity/mod.ts";
 import { Game } from "../game.ts";
+import * as internal from "../internal.ts";
 import {
   ISignalHandler,
   Signal,
@@ -11,7 +12,12 @@ import {
   SignalListener,
   SignalMatching,
 } from "../signal.ts";
-import { BehaviorDestroyed } from "../signals/behavior-lifecycle.ts";
+import {
+  BehaviorDescendantDestroyed,
+  BehaviorDescendantSpawned,
+  BehaviorDestroyed,
+  BehaviorSpawned,
+} from "../signals/behavior-lifecycle.ts";
 import { EntityUpdate } from "../signals/entity-updates.ts";
 import { GamePostTick, GamePreTick, GameRender } from "../signals/game-events.ts";
 import {
@@ -23,7 +29,6 @@ import {
   ValueTypeTag,
   inferValueTypeTag,
 } from "../value/mod.ts";
-import * as internal from "../internal.ts";
 
 export interface BehaviorContext {
   game: Game;
@@ -218,7 +223,13 @@ export class Behavior implements ISignalHandler {
   }
 
   destroy() {
-    this.fire(BehaviorDestroyed);
+    this.fire(BehaviorDestroyed, this);
+    this.entity.fire(BehaviorDestroyed, this);
+    let ancestor = this.entity.parent;
+    while (ancestor) {
+      ancestor.fire(BehaviorDescendantDestroyed, this);
+      ancestor = ancestor.parent;
+    }
 
     const idx = this.entity.behaviors.indexOf(this);
     if (idx !== -1) this.entity.behaviors.splice(idx);
@@ -237,6 +248,14 @@ export class Behavior implements ISignalHandler {
 
   spawn(): void {
     this.onInitialize();
+
+    this.fire(BehaviorSpawned, this);
+    this.entity.fire(BehaviorSpawned, this);
+    let ancestor = this.entity.parent;
+    while (ancestor) {
+      ancestor.fire(BehaviorDescendantSpawned, this);
+      ancestor = ancestor.parent;
+    }
 
     if (this.onTick) {
       const onTick = this.onTick.bind(this);

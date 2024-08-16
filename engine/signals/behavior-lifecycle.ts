@@ -1,6 +1,17 @@
 import { Behavior } from "../mod.ts";
-import { exclusiveSignalType } from "../signal.ts";
+
+export class BehaviorSpawned {
+  constructor(public readonly behavior: Behavior) {}
+}
+
+export class BehaviorDescendantSpawned {
+  constructor(public readonly behavior: Behavior) {}
+}
 
 export class BehaviorDestroyed {
-  [exclusiveSignalType] = Behavior;
+  constructor(public readonly behavior: Behavior) {}
+}
+
+export class BehaviorDescendantDestroyed {
+  constructor(public readonly behavior: Behavior) {}
 }
