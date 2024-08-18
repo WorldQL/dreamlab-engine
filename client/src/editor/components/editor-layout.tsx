@@ -156,8 +156,22 @@ export const EditorLayout = ({
         />
       </div>
       <div className="relative flex-1 flex flex-col">
+        <div className="relative flex-1 overflow-hidden">
+          <div
+            className={cn(
+              "z-10 absolute inset-0",
+              isRunning && !isPaused && "border-4 border-green",
+              isPaused && "border-4 border-yellow",
+            )}
+            ref={gameContainer}
+            id="editor-pointer-style-target"
+          >
+            <CameraControls gameDiv={editModeGameDiv} />
+            <ToolSelector />
+          </div>
+        </div>
         {/* toolbar section */}
-        <div className="p-1 bg-background my-1 z-40">
+        <div className="p-1 bg-background z-40">
           <div className="bg-background w-full flex items-center justify-between">
             <div className="flex space-x-2">
               <NewEntityMenu />
@@ -175,20 +189,6 @@ export const EditorLayout = ({
               </div>
             </div>
             <PlaybackControls playModeGameDiv={playModeGameDiv} />
-          </div>
-        </div>
-        <div className="relative flex-1 overflow-hidden">
-          <div
-            className={cn(
-              "z-10 absolute inset-0",
-              isRunning && !isPaused && "border-4 border-green",
-              isPaused && "border-4 border-yellow",
-            )}
-            ref={gameContainer}
-            id="editor-pointer-style-target"
-          >
-            <CameraControls gameDiv={editModeGameDiv} />
-            <ToolSelector />
           </div>
         </div>
         <div

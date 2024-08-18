@@ -8,7 +8,7 @@ import {
 } from "../../context/editor-context.tsx";
 import { useGame } from "../../context/game-context.ts";
 import { ChevronRight } from "lucide-react";
-import { getEntitiesForPath } from "../../utils/create-entity.ts";
+import { getEntitiesForPath, restrictedIds } from "../../utils/create-entity.ts";
 
 interface SceneMenuProps {
   entity: Entity | undefined;
@@ -22,13 +22,11 @@ export const SceneMenu = ({ entity, position, setIsOpen }: SceneMenuProps) => {
   const [copiedEntity, setCopiedEntity] = useAtom(copiedEntityAtom);
   const [history, setHistory] = useAtom(historyAtom);
   const menuRef = useRef<HTMLDivElement>(null);
-
-  const currentPath = entity ? entity.id.split("EditEntities._.")[1] || "world" : "world";
-  const allowedEntities = getEntitiesForPath(currentPath);
+  const allowedEntities = getEntitiesForPath(entity?.id);
 
   const createEntity = useCallback(
     (entityType: EntityConstructor) => {
-      const parent = entity ? entity : game.world._.EditEntities._.world;
+      const parent = entity ? entity : game.world._.EditEntities;
       const newEntity = parent.spawn({
         type: entityType,
         name: entityType.name,
@@ -59,7 +57,7 @@ export const SceneMenu = ({ entity, position, setIsOpen }: SceneMenuProps) => {
 
   const handlePaste = useCallback(() => {
     if (copiedEntity) {
-      const newEntity = copiedEntity.cloneInto(game.world);
+      const newEntity = copiedEntity.cloneInto(game.world._.EditEntities);
       setHistory([...history, { type: "add", entity: newEntity }]);
       setSelectedEntity(newEntity);
     }
@@ -76,7 +74,7 @@ export const SceneMenu = ({ entity, position, setIsOpen }: SceneMenuProps) => {
 
   const handleUnparent = useCallback(() => {
     if (entity) {
-      entity.parent = game.world;
+      entity.parent = entity.parent?.parent;
       setSelectedEntity(entity);
     }
     setIsOpen(false);
@@ -103,15 +101,19 @@ export const SceneMenu = ({ entity, position, setIsOpen }: SceneMenuProps) => {
     >
       {entity ? (
         <>
-          <MenuItem onClick={handleCopy} label="Copy" />
-          <MenuItem
-            onClick={handlePasteAsChild}
-            label="Paste as Child"
-            disabled={!copiedEntity}
-          />
-          <MenuItem onClick={handleDelete} label="Delete" />
-          {entity.parent !== game.world && (
-            <MenuItem onClick={handleUnparent} label="Unparent" />
+          {!restrictedIds.includes(entity.id) && (
+            <>
+              <MenuItem onClick={handleCopy} label="Copy" />
+              <MenuItem
+                onClick={handlePasteAsChild}
+                label="Paste as Child"
+                disabled={!copiedEntity}
+              />
+              <MenuItem onClick={handleDelete} label="Delete" />
+              {entity.parent !== game.world && (
+                <MenuItem onClick={handleUnparent} label="Unparent" />
+              )}
+            </>
           )}
           <SubMenu
             label="New Entity"

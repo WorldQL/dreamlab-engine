@@ -8,6 +8,7 @@ import { useForceUpdateOnEntityChange } from "../hooks/force-update-on-change.ts
 import { cn } from "../utils/cn.ts";
 import { SceneMenu } from "./menu/scene-menu.tsx";
 import { useGame } from "../context/game-context.ts";
+import { restrictedIds } from "../utils/create-entity.ts";
 
 const isDescendant = (parent: Entity, child: Entity): boolean => {
   if (parent === child) {
@@ -142,8 +143,10 @@ const EntityEntry = ({
           )}
           onClick={handleEntityClick}
           onDoubleClick={() => {
-            setPreviousName(entity.name);
-            setIsEditing(true);
+            if (!restrictedIds.includes(entity.id)) {
+              setPreviousName(entity.name);
+              setIsEditing(true);
+            }
           }}
           draggable={!isEditing}
           onDragStart={handleDragStart}
@@ -218,10 +221,10 @@ const SceneGraph = () => {
 
     if (
       draggedEntity &&
-      draggedEntity.parent !== game.world &&
+      draggedEntity.parent !== game.world._.EditEntities &&
       draggedEntity.parent !== draggedEntity
     ) {
-      draggedEntity.parent = game.world;
+      draggedEntity.parent = game.world._.EditEntities;
     }
   }, []);
 

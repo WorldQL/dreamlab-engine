@@ -72,11 +72,7 @@ const NewEntityModal: React.FC<NewEntityModalProps> = ({ closeMenu }) => {
   const [selectedEntity] = useAtom(selectedEntityAtom);
   const [history, setHistory] = useAtom(historyAtom);
 
-  const currentPath = selectedEntity
-    ? selectedEntity.id.split("EditEntities._.")[1] || "world"
-    : "world";
-
-  const allowedEntities = getEntitiesForPath(currentPath);
+  const allowedEntities = getEntitiesForPath(selectedEntity?.id);
 
   const createEntity = useCallback(
     (entityType: EntityConstructor) => {

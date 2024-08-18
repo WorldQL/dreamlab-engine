@@ -15,9 +15,16 @@ interface EntityCreationRule {
   allowedEntities: any[];
 }
 
+export const restrictedIds = [
+  "game.world._.EditEntities._.local",
+  "game.world._.EditEntities._.world",
+  "game.world._.EditEntities._.server",
+  "game.world._.EditEntities._.prefabs",
+];
+
 export const entityCreationRules: EntityCreationRule[] = [
   {
-    path: "world",
+    path: "game.world._.EditEntities._.world",
     allowedEntities: [
       Empty,
       Sprite2D,
@@ -28,11 +35,11 @@ export const entityCreationRules: EntityCreationRule[] = [
     ],
   },
   {
-    path: "local",
+    path: "game.world._.EditEntities._.local",
     allowedEntities: [Empty, UILayer, UIPanel],
   },
   {
-    path: "prefabs",
+    path: "game.world._.EditEntities._.prefabs",
     allowedEntities: [
       //TODO: what should be allowed here?
       Empty,
@@ -44,7 +51,7 @@ export const entityCreationRules: EntityCreationRule[] = [
     ],
   },
   {
-    path: "server",
+    path: "game.world._.EditEntities._.server",
     allowedEntities: [
       //TODO: what should be allowed here?
       Empty,
@@ -57,7 +64,13 @@ export const entityCreationRules: EntityCreationRule[] = [
   },
 ];
 
-export function getEntitiesForPath(currentPath: string): any[] {
-  const rule = entityCreationRules.find(rule => currentPath.startsWith(rule.path));
-  return rule ? rule.allowedEntities : [];
+export function getEntitiesForPath(
+  currentPath: string = "game.world._.EditEntities._.world",
+): any[] {
+  const relevantPath =
+    currentPath.match(/^(game\.world\._\.EditEntities\._\.[^\.]+)/)?.[0] || currentPath;
+
+  return (
+    entityCreationRules.find(rule => relevantPath.startsWith(rule.path))?.allowedEntities || []
+  );
 }
