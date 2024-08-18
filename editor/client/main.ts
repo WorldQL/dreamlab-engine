@@ -44,6 +44,12 @@ export const games: { edit: ClientGame; play: ClientGame | undefined } = {
   play: undefined,
 };
 
+Object.defineProperties(globalThis, {
+  game: { value: game },
+  conn: { value: conn },
+  games: { value: games },
+});
+
 // setupMultiplayerCursors(game);
 await fonts;
 await setupGame(game, conn, handshake.edit_mode);
@@ -52,8 +58,6 @@ if (handshake.edit_mode) {
   game[internal.behaviorLoader].registerInternalBehavior(CameraPanBehavior, "@editor");
   game.local._.Camera.cast(Camera).addBehavior({ type: CameraPanBehavior });
 }
-
-Object.defineProperties(globalThis, { game: { value: game }, conn: { value: conn } });
 
 renderInspector(game, editUIRoot, container, handshake.edit_mode);
 
