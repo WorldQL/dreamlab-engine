@@ -55,7 +55,7 @@ export class BehaviorPanel implements InspectorUIComponent {
         behaviorList.style.display = "block";
 
         if (!this.behaviorLists.has(entity)) {
-          this.behaviorLists.set(entity, new BehaviorList(this.game, entity, ui.editMode));
+          this.behaviorLists.set(entity, new BehaviorList(ui, entity, ui.editMode));
           entity.on(EntityDestroyed, () => this.behaviorLists.delete(entity));
         }
 

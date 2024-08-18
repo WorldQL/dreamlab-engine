@@ -1,23 +1,19 @@
 import { element as elem } from "@dreamlab/ui";
 import { SceneDescBehavior } from "@dreamlab/scene";
 
-import { createInputField } from "../../util/easy-input.ts";
+import { createInputField, createInputFieldWithDefault } from "../../util/easy-input.ts";
 import { BehaviorList } from "./behavior-list.ts";
-import {
-  BehaviorConstructor,
-  ClientGame,
-  Empty,
-  inferValueTypeTag,
-  Value,
-} from "@dreamlab/engine";
+import { ClientGame, Value } from "@dreamlab/engine";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { DataDetails, DataTable } from "../../components/mod.ts";
 import { icon, Trash } from "../../_icons.ts";
+import { InspectorUI } from "../inspector.ts";
+import { BehaviorTypeInfo } from "../../util/behavior-type-info.ts";
 
 type ThinValue<T> = {
-  value: Value<T>["value"];
+  value: Value<T>["value"] | undefined;
+  default?: Value<T>["value"];
   typeTag?: Value<T>["typeTag"];
-  adapter?: Value<T>["adapter"];
 };
 export class BehaviorEditor {
   details: DataDetails;
@@ -25,11 +21,15 @@ export class BehaviorEditor {
   valueFields = new Map<string, ReturnType<typeof createInputField>>();
   values: Record<string, ThinValue<unknown>> = {};
 
+  game: ClientGame;
+
   constructor(
-    public game: ClientGame,
+    ui: InspectorUI,
     public behavior: SceneDescBehavior,
     private parent: BehaviorList,
   ) {
+    this.game = ui.game;
+
     const table = new DataTable();
 
     const deleteButton = elem(
@@ -59,43 +59,39 @@ export class BehaviorEditor {
     table.addEntry("id", "ID", elem("code", {}, [behavior.ref]));
     table.addEntry("script", "Script", elem("code", {}, [behavior.script]));
 
-    this.game.loadBehavior(this.behavior.script).then(type => {
-      this.details.setHeaderContent(elem("h2", {}, [type.name]), deleteButton);
-      this.#populateValueFields(table, type);
-    });
+    ui.behaviorTypeInfo
+      .get(this.behavior.script)
+      .then(info => {
+        this.details.setHeaderContent(elem("h2", {}, [info.typeName]), deleteButton);
+        this.#populateValueFields(table, info);
+      })
+      .catch(() => {
+        this.details.setHeaderContent(
+          elem("h2", {}, [elem("code", {}, [this.behavior.script])]),
+          deleteButton,
+        );
+        this.#populateValueFields(table);
+      });
   }
 
-  #populateValueFields(table: DataTable, behaviorType: BehaviorConstructor) {
-    try {
-      // TODO: sandboxing -- we should create a dummy ClientGame instance to spawn this behavior in,
-      // so that it can't change anything about the edit-mode game.
+  #populateValueFields(table: DataTable, behaviorInfo?: BehaviorTypeInfo) {
+    if (behaviorInfo) {
+      for (const value of behaviorInfo.values) {
+        let currentValue: unknown | undefined = value.default;
+        if (this.behavior.values) currentValue = this.behavior.values[value.key];
 
-      const dummyEntity = this.game.local.spawn({ type: Empty, name: "DummyBehaviorTarget" });
-      const behaviorObj = dummyEntity.addBehavior({
-        type: behaviorType,
-        values: this.behavior.values,
-      });
-
-      for (const [key, value] of behaviorObj.values.entries()) {
-        this.values[key] = {
-          value: value.value,
+        this.values[value.key] = {
+          value: currentValue,
+          default: value.default,
           typeTag: value.typeTag,
-          adapter: value.adapter,
         };
       }
-      dummyEntity.destroy();
-    } catch (_err) {
-      // behavior values are unknown, just use what we have
-      if (this.behavior.values) {
-        for (const [key, value] of Object.entries(this.behavior.values)) {
-          let typeTag: unknown | undefined = undefined;
-          try {
-            typeTag = inferValueTypeTag(value);
-          } catch (_) {
-            // ignore
-          }
+    }
 
-          this.values[key] = { value, typeTag };
+    if (this.behavior.values) {
+      for (const [key, value] of Object.entries(this.behavior.values)) {
+        if (!this.values[key]) {
+          this.values[key] = { value };
         }
       }
     }
@@ -106,31 +102,59 @@ export class BehaviorEditor {
       switch (value.typeTag) {
         case String: {
           const val = value as ThinValue<string>;
-          valueField = createInputField({
-            get: () => val.value,
-            set: v => {
-              val.value = v;
-              if (!this.behavior.values) this.behavior.values = {};
-              this.behavior.values[key] = v;
-              this.parent.sync();
-            },
-            convert: s => s,
-          });
+          if ("default" in val) {
+            valueField = createInputFieldWithDefault({
+              default: val.default,
+              get: () => val.value,
+              set: v => {
+                val.value = v;
+                if (!this.behavior.values) this.behavior.values = {};
+                this.behavior.values[key] = v;
+                this.parent.sync();
+              },
+              convert: s => s,
+            });
+          } else {
+            valueField = createInputField({
+              get: () => val.value,
+              set: v => {
+                val.value = v;
+                if (!this.behavior.values) this.behavior.values = {};
+                this.behavior.values[key] = v;
+                this.parent.sync();
+              },
+              convert: s => s,
+            });
+          }
           break;
         }
 
         case Number: {
           const val = value as ThinValue<number>;
-          valueField = createInputField({
-            get: () => val.value,
-            set: v => {
-              val.value = v;
-              if (!this.behavior.values) this.behavior.values = {};
-              this.behavior.values[key] = v;
-              this.parent.sync();
-            },
-            convert: z.number({ coerce: true }).parse,
-          });
+          if ("default" in val) {
+            valueField = createInputFieldWithDefault({
+              default: val.default,
+              get: () => val.value,
+              set: v => {
+                val.value = v;
+                if (!this.behavior.values) this.behavior.values = {};
+                this.behavior.values[key] = v;
+                this.parent.sync();
+              },
+              convert: z.number({ coerce: true }).parse,
+            });
+          } else {
+            valueField = createInputField({
+              get: () => val.value,
+              set: v => {
+                val.value = v;
+                if (!this.behavior.values) this.behavior.values = {};
+                this.behavior.values[key] = v;
+                this.parent.sync();
+              },
+              convert: z.number({ coerce: true }).parse,
+            });
+          }
           break;
         }
 

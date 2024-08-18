@@ -7,8 +7,10 @@ import { Properties } from "./properties.ts";
 import { SceneGraph } from "./scene-graph.ts";
 import { SelectedEntityService } from "./selected-entity.ts";
 import { AppMenu } from "./app-menu.ts";
+import { BehaviorTypeInfoService } from "../util/behavior-type-info.ts";
 
 export interface InspectorUI {
+  game: ClientGame;
   editMode: boolean;
   selectedEntity: SelectedEntityService;
   sceneGraph: SceneGraph;
@@ -17,6 +19,7 @@ export interface InspectorUI {
   contextMenu: ContextMenu;
   gameOverlays: GameOverlays;
   appMenu: AppMenu;
+  behaviorTypeInfo: BehaviorTypeInfoService;
 }
 
 export interface InspectorUIComponent {
@@ -30,6 +33,7 @@ export function renderInspector(
   editMode: boolean,
 ) {
   const ui: InspectorUI = {
+    game,
     editMode,
     selectedEntity: new SelectedEntityService(game),
     sceneGraph: new SceneGraph(game),
@@ -38,6 +42,7 @@ export function renderInspector(
     contextMenu: new ContextMenu(game),
     gameOverlays: new GameOverlays(game, gameContainer),
     appMenu: new AppMenu(game),
+    behaviorTypeInfo: new BehaviorTypeInfoService(game),
   };
 
   if (editMode) {

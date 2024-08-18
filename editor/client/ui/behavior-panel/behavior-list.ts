@@ -6,6 +6,7 @@ import { SceneDescBehavior, BehaviorSchema as SceneDescBehaviorSchema } from "@d
 import { createInputField } from "../../util/easy-input.ts";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import { DataTable } from "../../components/mod.ts";
+import { InspectorUI } from "../inspector.ts";
 
 export class BehaviorList {
   container = elem("div");
@@ -14,11 +15,15 @@ export class BehaviorList {
 
   behaviors: SceneDescBehavior[] = [];
 
+  game: ClientGame;
+
   constructor(
-    public game: ClientGame,
+    ui: InspectorUI,
     public entity: Entity,
     public useEditorMetadata: boolean,
   ) {
+    this.game = ui.game;
+
     if (useEditorMetadata) {
       const editorMetadata = entity.children
         .get("__EditorMetadata")
@@ -29,7 +34,7 @@ export class BehaviorList {
         JSON.parse(editorMetadata.behaviorsJson),
       );
 
-      game.values.on(ValueChanged, event => {
+      this.game.values.on(ValueChanged, event => {
         if (event.value !== editorMetadata.values.get("behaviorsJson")) return;
         const newBehaviors = SceneDescBehaviorSchema.array().parse(
           JSON.parse(event.newValue as string),
@@ -40,7 +45,7 @@ export class BehaviorList {
           if (existingEditor) {
             existingEditor.resolveUpdate(newBehavior);
           } else {
-            const editor = new BehaviorEditor(game, newBehavior, this);
+            const editor = new BehaviorEditor(ui, newBehavior, this);
             this.editors.set(newBehavior.ref, editor);
             this.behaviors.push(newBehavior);
           }
@@ -63,7 +68,7 @@ export class BehaviorList {
     this.#drawAddBehavior();
 
     for (const behavior of this.behaviors) {
-      const editor = new BehaviorEditor(game, behavior, this);
+      const editor = new BehaviorEditor(ui, behavior, this);
       this.editors.set(behavior.ref, editor);
     }
   }
