@@ -4,7 +4,7 @@ try {
     new EventSource("/esbuild").addEventListener("change", e => {
       const { added, removed, updated } = JSON.parse(e.data);
 
-      if (!added.length && !removed.length && updated.length === 1) {
+      if (!added.length && !removed.length && updated.length >= 1) {
         for (const link of document.getElementsByTagName("link")) {
           const url = new URL(link.href);
 

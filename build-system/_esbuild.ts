@@ -69,19 +69,27 @@ export const dreamlabDataLoaderPlugin = (worldDir: string): esbuild.Plugin => ({
   },
 });
 
-// TODO: cache this so we can work offline
-export const dreamlabExternalCssPlugin = (): esbuild.Plugin => ({
-  name: "dreamlab-external-css",
+export const dreamlabCssPlugin = (): esbuild.Plugin => ({
+  name: "dreamlab-css",
   setup: build => {
-    build.onResolve({ filter: /https?:\/\// }, args => {
-      return {
-        external: false,
-        path: path.join(args.resolveDir, "_http", args.path.replace(/https?:\/\//, "")),
-        pluginData: { url: args.path },
-      };
+    const options = build.initialOptions;
+    options.loader = { ...options.loader, ".woff": "file", ".woff2": "file" };
+
+    build.onResolve({ filter: /\.(css|woff2)/ }, args => {
+      if (args.path.startsWith("https://")) {
+        return {
+          namespace: "external-css",
+          external: false,
+          path: path.join(args.resolveDir, "_http", args.path.replace(/https?:\/\//, "")),
+          pluginData: { url: args.path },
+        };
+      }
+
+      return { path: path.join(args.resolveDir, args.path) };
     });
 
-    build.onLoad({ filter: /\/_http\// }, async args => {
+    // TODO: cache this so we can work offline
+    build.onLoad({ filter: /.*/, namespace: "external-css" }, async args => {
       const url = args.pluginData.url;
       if (typeof url !== "string") throw new Error("no url");
 
@@ -89,6 +97,11 @@ export const dreamlabExternalCssPlugin = (): esbuild.Plugin => ({
       if (!resp.ok) throw new Error(`failed to fetch: ${url}`);
 
       return { contents: await resp.text(), loader: "css" };
+    });
+
+    build.onLoad({ filter: /\.(css|woff2)/ }, args => {
+      const loader = args.path.endsWith(".css") ? "css" : "file";
+      return { loader };
     });
   },
 });

@@ -1,3 +1,5 @@
+import "./css/main.css";
+
 import "../../build-system/live-reload.js";
 import "./_env.ts";
 

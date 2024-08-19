@@ -1,9 +1,9 @@
 import * as path from "jsr:@std/path@^1";
 import {
   denoPlugins,
+  dreamlabCssPlugin,
   dreamlabEngineExternalPlugin,
   dreamlabEnvironmentPlugin,
-  dreamlabExternalCssPlugin,
   dreamlabUIExternalPlugin,
   dreamlabVendorExternalPlugin,
   esbuild,
@@ -145,27 +145,6 @@ export const bundleUI = async (
   await bundle("ui", buildOpts, opts);
 };
 
-export const bundleStyles = async (
-  outdir: string,
-  inputs: esbuild.BuildOptions["entryPoints"] = [],
-  opts?: BundleOptions,
-) => {
-  const buildOpts: esbuild.BuildOptions = {
-    ...BASE_BUILD_OPTIONS,
-    plugins: [dreamlabExternalCssPlugin()],
-    entryPoints: inputs,
-    outdir: path.join(outdir, "styles"),
-    minify: true,
-    loader: {
-      ".woff": "file",
-      ".woff2": "file",
-      ".ttf": "file",
-    },
-  };
-
-  await bundle("styles", buildOpts, opts);
-};
-
 /**
  * Bundles the "client" into one ES Module
  */
@@ -181,6 +160,7 @@ export const bundleClient = async (
   const buildOpts: esbuild.BuildOptions = {
     ...BASE_BUILD_OPTIONS,
     plugins: [
+      dreamlabCssPlugin(),
       dreamlabEnvironmentPlugin(),
       dreamlabVendorExternalPlugin(),
       dreamlabEngineExternalPlugin(),
