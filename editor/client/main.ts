@@ -18,8 +18,8 @@ import * as internal from "../../engine/internal.ts";
 import { CameraPanBehavior } from "./camera-pan.ts";
 import * as env from "./env.ts";
 import { connectToGame } from "./game-connection.ts";
-import { setupGame } from "./game-setup.ts";
 import { setupMultiplayerCursors } from "./multiplayer-cursors.ts";
+import { setupGame } from "./game-setup.ts";
 import { renderInspector } from "./ui/inspector.ts";
 
 const instanceId = NIL_UUID;

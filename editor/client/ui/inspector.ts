@@ -1,13 +1,14 @@
 import { ClientGame } from "@dreamlab/engine";
 import { CameraPanBehavior } from "../camera-pan.ts";
+import { BehaviorTypeInfoService } from "../util/behavior-type-info.ts";
+import { AppMenu } from "./app-menu.ts";
 import { BehaviorPanel } from "./behavior-panel/mod.ts";
 import { ContextMenu } from "./context-menu.ts";
+import { FileTree } from "./file-tree.ts";
 import { GameOverlays } from "./game-overlays.ts";
 import { Properties } from "./properties.ts";
 import { SceneGraph } from "./scene-graph.ts";
 import { SelectedEntityService } from "./selected-entity.ts";
-import { AppMenu } from "./app-menu.ts";
-import { BehaviorTypeInfoService } from "../util/behavior-type-info.ts";
 
 export interface InspectorUI {
   game: ClientGame;
@@ -20,6 +21,7 @@ export interface InspectorUI {
   gameOverlays: GameOverlays;
   appMenu: AppMenu;
   behaviorTypeInfo: BehaviorTypeInfoService;
+  fileTree: FileTree;
 }
 
 export interface InspectorUIComponent {
@@ -43,6 +45,7 @@ export function renderInspector(
     gameOverlays: new GameOverlays(game, gameContainer),
     appMenu: new AppMenu(game),
     behaviorTypeInfo: new BehaviorTypeInfoService(game),
+    fileTree: new FileTree(game),
   };
 
   if (editMode) {
@@ -55,4 +58,5 @@ export function renderInspector(
   ui.behaviorPanel.render(ui, uiRoot);
   ui.contextMenu.render(ui, uiRoot);
   ui.appMenu.render(ui, uiRoot);
+  ui.fileTree.render(ui, uiRoot);
 }

@@ -1,5 +1,5 @@
 #scene-graph {
-  flex: 100%;
+  flex: 50%;
   display: flex;
   flex-direction: column;
 }
