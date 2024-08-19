@@ -1,0 +1,57 @@
+dreamlab-data-tree {
+  --tree-indent-amount: 1em;
+
+  & details + details {
+    margin-top: 0.25em;
+  }
+
+  & details {
+    padding-left: var(--tree-indent-amount);
+  }
+
+  & details > summary {
+    margin-left: calc(var(--tree-indent-amount) * -1);
+    position: relative;
+
+    &::marker {
+      content: "";
+    }
+    &::before {
+      display: inline-block;
+      width: 1ch;
+      max-width: 1ch;
+      margin-right: 1ch;
+      content: "";
+    }
+
+    & > .arrow {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: auto;
+      aspect-ratio: 1 / 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      & > svg {
+        width: 1.25em;
+        height: 1.25em;
+        transform: rotate(-90deg);
+        transition: transform 0.1s ease;
+      }
+    }
+  }
+
+  & details[open] {
+    & > summary > div.arrow > svg {
+      transform: rotate(0deg);
+    }
+  }
+  & details:not(:has(> details)) {
+    & > summary > div.arrow > svg {
+      display: none;
+    }
+  }
+}

@@ -1,9 +1,9 @@
 import { Camera, ClientGame, Entity, GameStatus, Gizmo } from "@dreamlab/engine";
+import { ReceivedInitialNetworkSnapshot } from "@dreamlab/proto/common/signals.ts";
+import { convertEntityDefinition, ProjectSchema } from "@dreamlab/scene";
+import { z } from "@dreamlab/vendor/zod.ts";
 import * as internal from "../../engine/internal.ts";
 import { ClientConnection } from "./networking/net-connection.ts";
-import { convertEntityDefinition, ProjectSchema } from "@dreamlab/scene";
-import { ReceivedInitialNetworkSnapshot } from "@dreamlab/proto/common/signals.ts";
-import { z } from "@dreamlab/vendor/zod.ts";
 
 export const setupGame = async (
   game: ClientGame,

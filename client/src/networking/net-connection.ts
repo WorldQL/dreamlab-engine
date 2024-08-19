@@ -1,24 +1,24 @@
-import { ClientPacket, PlayPacket, ServerPacket } from "@dreamlab/proto/play.ts";
-import { PlayCodec } from "@dreamlab/proto/codecs/mod.ts";
 import {
   ClientGame,
   ClientNetworking,
   ConnectionId,
+  ConnectionInfo,
   CustomMessageData,
   CustomMessageListener,
-  ConnectionInfo,
-  PlayerLeft,
   PlayerJoined,
+  PlayerLeft,
 } from "@dreamlab/engine";
-import { handleValueChanges } from "./value-changes.ts";
+import { PlayCodec } from "@dreamlab/proto/codecs/mod.ts";
+import {
+  PlayerConnectionDropped,
+  PlayerConnectionEstablished,
+} from "@dreamlab/proto/common/signals.ts";
+import { ClientPacket, PlayPacket, ServerPacket } from "@dreamlab/proto/play.ts";
 import { handleCustomMessages } from "./custom-messages.ts";
 import { handleEntitySync } from "./entity-sync.ts";
-import { handleTransformSync } from "./transform-sync.ts";
 import { handlePing } from "./ping.ts";
-import {
-  PlayerConnectionEstablished,
-  PlayerConnectionDropped,
-} from "@dreamlab/proto/common/signals.ts";
+import { handleTransformSync } from "./transform-sync.ts";
+import { handleValueChanges } from "./value-changes.ts";
 
 export type ClientPacketHandler<T extends ServerPacket["t"] = ServerPacket["t"]> = (
   packet: PlayPacket<T, "server">,
@@ -128,10 +128,10 @@ export class ClientConnection {
     setTimeout(() => {
       this.send({ t: "Ping", type: "ping", timestamp: Date.now() });
     }, 1000);
-    // send pings every 10 seconds
+    // send pings every second
     this.pingInterval = setInterval(() => {
       this.send({ t: "Ping", type: "ping", timestamp: Date.now() });
-    }, 1000 * 10);
+    }, 1000);
   }
 
   send(packet: ClientPacket) {
