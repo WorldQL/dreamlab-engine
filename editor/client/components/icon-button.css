@@ -1,6 +1,9 @@
 dreamlab-icon-button {
   --size: 2em;
   --color: rgb(var(--color-accent) / 1);
+  --color-hover: rgb(var(--color-accent) / 1);
+  --color-active: rgb(var(--color-accent) / 1);
+  --rounded: var(--border-radius);
 
   & > button[type="button"] {
     all: unset;
@@ -12,16 +15,17 @@ dreamlab-icon-button {
     width: var(--size);
     height: var(--size);
     background-color: var(--color);
-    border-radius: var(--border-radius);
+    border-radius: var(--rounded);
 
     cursor: pointer;
+    transition: background-color 0.1s ease;
 
     &:hover {
-      /* TODO */
+      background-color: var(--color-hover);
     }
 
     &:active {
-      /* TODO */
+      background-color: var(--color-active);
     }
 
     & > svg {

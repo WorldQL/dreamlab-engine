@@ -1,0 +1,64 @@
+dreamlab-button-group {
+  display: flex;
+  align-items: center;
+
+  & > dreamlab-icon-button {
+    --rounded: 0;
+  }
+
+  &[data-direction="row"] {
+    flex-direction: row;
+
+    & > dreamlab-icon-button {
+      &:first-child {
+        --rounded: var(--border-radius) 0 0 var(--border-radius);
+      }
+
+      &:last-child {
+        --rounded: 0 var(--border-radius) var(--border-radius) 0;
+      }
+    }
+  }
+
+  &[data-direction="column"] {
+    flex-direction: column;
+
+    & > dreamlab-icon-button {
+      &:first-child {
+        --rounded: var(--border-radius) var(--border-radius) 0 0;
+      }
+
+      &:last-child {
+        --rounded: 0 0 var(--border-radius) var(--border-radius);
+      }
+    }
+  }
+
+  &[data-direction="row-reverse"] {
+    flex-direction: row-reverse;
+
+    & > dreamlab-icon-button {
+      &:first-child {
+        --rounded: 0 var(--border-radius) var(--border-radius) 0;
+      }
+
+      &:last-child {
+        --rounded: var(--border-radius) 0 0 var(--border-radius);
+      }
+    }
+  }
+
+  &[data-direction="column-reverse"] {
+    flex-direction: column-reverse;
+
+    & > dreamlab-icon-button {
+      &:first-child {
+        --rounded: 0 0 var(--border-radius) var(--border-radius);
+      }
+
+      &:last-child {
+        --rounded: var(--border-radius) var(--border-radius) 0 0;
+      }
+    }
+  }
+}
