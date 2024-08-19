@@ -15,5 +15,5 @@ export * from "./cbor.ts";
 export * from "./simple-json.ts";
 export * from "./simple-toml.ts";
 
-const binary = true;
+const binary = false;
 export const DEFAULT_CODEC = binary ? CBOR_CODEC : JSON_CODEC;
