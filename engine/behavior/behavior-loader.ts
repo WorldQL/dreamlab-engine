@@ -45,14 +45,16 @@ export class BehaviorLoader {
   }
 
   async loadScript(script: string): Promise<BehaviorConstructor> {
-    const location = this.#game.resolveResource(script);
-
-    const cachedConstructor = this.#cache.get(location);
+    const cachedConstructor = this.#cache.get(script);
     if (cachedConstructor !== undefined) return cachedConstructor;
+    const location = this.#game.resolveResource(script);
+    return await this.loadScriptFromSource(script, location);
+  }
 
-    const module = await import(location);
+  async loadScriptFromSource(script: string, sourceURI: string): Promise<BehaviorConstructor> {
+    const module = await import(sourceURI);
     if (!("default" in module))
-      throw new Error(`Module '${location}' must have a Behavior as its default export!`);
+      throw new Error(`Module '${script}' must have a Behavior as its default export!`);
 
     const behaviorType = module.default;
     if (
@@ -61,10 +63,10 @@ export class BehaviorLoader {
         Object.prototype.isPrototypeOf.call(Behavior, behaviorType)
       )
     )
-      throw new Error(`Module '${location}' must have a Behavior as its default export!`);
+      throw new Error(`Module '${script}' must have a Behavior as its default export!`);
 
-    this.#cache.set(location, behaviorType);
-    this.#resourceLocationLookup.set(behaviorType, script);
+    this.#cache.set(script, behaviorType);
+    this.#resourceLocationLookup.set(behaviorType, sourceURI);
 
     return behaviorType as BehaviorConstructor;
   }
