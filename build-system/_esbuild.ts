@@ -1,6 +1,6 @@
-import * as esbuild from "npm:esbuild@0.20.2";
 import { denoPlugins } from "jsr:@luca/esbuild-deno-loader@0.10.3";
-export { esbuild, denoPlugins };
+import * as esbuild from "npm:esbuild@0.20.2";
+export { denoPlugins, esbuild };
 
 import * as path from "jsr:@std/path@^1";
 
@@ -88,6 +88,36 @@ export const dreamlabExternalCssPlugin = (): esbuild.Plugin => ({
       if (!resp.ok) throw new Error(`failed to fetch: ${url}`);
 
       return { contents: await resp.text(), loader: "css" };
+    });
+  },
+});
+
+export const unwasmRapierPlugin = (): esbuild.Plugin => ({
+  name: "unwasm-rapier",
+  setup: build => {
+    // this is the worst code i have ever written but it works lol
+
+    build.onLoad({ filter: /rapier.es.js/ }, async args => {
+      const bytes = await Deno.readFile(args.path);
+      const contents = new TextDecoder().decode(bytes);
+
+      const re = /(?<ident>[A-Za-z]+)\.toByteArray\("(?<bytes>[-A-Za-z0-9+/]+)"\)\.buffer/;
+      const match = re.exec(contents);
+      if (!match || !match.groups?.bytes || !match.groups.ident) {
+        return { warnings: [{ text: "could not extract wasm file" }] };
+      }
+
+      const ident = match.groups.ident;
+      const b64 = match.groups.bytes;
+
+      const replaced = contents.replace(`${ident}.toByteArray("${b64}")`, "wasm");
+      const inject = `
+      import wasmURL from "./rapier_wasm2d_bg.wasm";
+      const resp = await fetch(new URL(wasmURL, import.meta.url));
+      const buf = await resp.arrayBuffer();
+      const wasm = new Uint8Array(buf);
+      `.trim();
+      return { contents: inject + "\n" + replaced };
     });
   },
 });

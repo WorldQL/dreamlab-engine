@@ -1,12 +1,13 @@
-import {
-  esbuild,
-  denoPlugins,
-  dreamlabVendorExternalPlugin,
-  dreamlabEngineExternalPlugin,
-  dreamlabUIExternalPlugin,
-  dreamlabExternalCssPlugin,
-} from "./_esbuild.ts";
 import * as path from "jsr:@std/path@^1";
+import {
+  denoPlugins,
+  dreamlabEngineExternalPlugin,
+  dreamlabExternalCssPlugin,
+  dreamlabUIExternalPlugin,
+  dreamlabVendorExternalPlugin,
+  esbuild,
+  unwasmRapierPlugin,
+} from "./_esbuild.ts";
 
 export interface BundleOptions {
   watch: boolean;
@@ -79,10 +80,12 @@ export const bundleEngineDependencies = async (
         loader: "native",
         configPath: await Deno.realPath(denoJsonPath),
       }),
+      unwasmRapierPlugin(),
     ],
     entryPoints,
     outdir: path.join(outdir, "vendor"),
     external: ["type-fest"],
+    loader: { ".wasm": "file" },
   };
 
   await bundle("engine dependencies", buildOpts, opts);
