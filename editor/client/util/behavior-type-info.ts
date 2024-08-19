@@ -1,5 +1,6 @@
-import { ClientGame, Empty, ValueTypeTag } from "@dreamlab/engine";
+import { BehaviorConstructor, ClientGame, Empty, ValueTypeTag } from "@dreamlab/engine";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
+import * as internal from "../../../engine/internal.ts";
 
 export interface ValueInfo<T = unknown> {
   key: string;
@@ -35,11 +36,7 @@ export class BehaviorTypeInfoService {
     this.#dummyGame.worldScriptBaseURL = game.worldScriptBaseURL;
   }
 
-  async get(scriptURI: string): Promise<BehaviorTypeInfo> {
-    const cached = this.#cache.get(scriptURI);
-    if (cached) return cached;
-
-    const behaviorType = await this.#dummyGame.loadBehavior(scriptURI);
+  #createInfo(behaviorType: BehaviorConstructor): BehaviorTypeInfo {
     const dummyEntity = this.#dummyGame.world.spawn({ type: Empty, name: "DummyEntity" });
     const behavior = dummyEntity.addBehavior({ type: behaviorType });
 
@@ -52,7 +49,31 @@ export class BehaviorTypeInfoService {
       })),
     };
 
-    this.#cache.set(scriptURI, info);
+    dummyEntity.destroy();
+
+    return info;
+  }
+
+  async get(script: string): Promise<BehaviorTypeInfo> {
+    const cached = this.#cache.get(script);
+    if (cached) return cached;
+
+    const behaviorType = await this.#dummyGame.loadBehavior(script);
+    const info = this.#createInfo(behaviorType);
+    this.#cache.set(script, info);
+    return info;
+  }
+
+  async reload(script: string): Promise<BehaviorTypeInfo> {
+    const cacheBustingURL = new URL(this.#dummyGame.resolveResource(script));
+    cacheBustingURL.searchParams.set("cache", generateCUID("cache"));
+
+    const behaviorType = await this.#dummyGame[internal.behaviorLoader].loadScriptFromSource(
+      script,
+      cacheBustingURL.toString(),
+    );
+    const info = this.#createInfo(behaviorType);
+    this.#cache.set(script, info);
     return info;
   }
 }
