@@ -32,7 +32,7 @@
 
   & .delete-button {
     display: block;
-    color: red;
+    color: rgb(var(--color-danger) / 1);
     margin-left: auto;
 
     & svg {
