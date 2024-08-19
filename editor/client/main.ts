@@ -18,7 +18,6 @@ import * as internal from "../../engine/internal.ts";
 import { CameraPanBehavior } from "./camera-pan.ts";
 import * as env from "./env.ts";
 import { connectToGame } from "./game-connection.ts";
-import { setupMultiplayerCursors } from "./multiplayer-cursors.ts";
 import { setupGame } from "./game-setup.ts";
 import { renderInspector } from "./ui/inspector.ts";
 
@@ -61,7 +60,7 @@ if (handshake.edit_mode) {
   game.local._.Camera.cast(Camera).addBehavior({ type: CameraPanBehavior });
 }
 
-renderInspector(game, editUIRoot, container, handshake.edit_mode);
+renderInspector(game, conn, editUIRoot, container, handshake.edit_mode);
 
 let now = performance.now();
 const onFrame = (time: number) => {

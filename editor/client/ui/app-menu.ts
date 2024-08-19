@@ -1,11 +1,11 @@
 import { ClientGame, PlayerJoined, PlayerLeft } from "@dreamlab/engine";
-import { InspectorUI, InspectorUIComponent, renderInspector } from "./inspector.ts";
-import { element as elem } from "@dreamlab/ui";
-import { Ping } from "../networking/ping.ts";
-import { connectToGame } from "../game-connection.ts";
 import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
+import { element as elem } from "@dreamlab/ui";
+import { connectToGame } from "../game-connection.ts";
 import { setupGame } from "../game-setup.ts";
 import { games } from "../main.ts";
+import { Ping } from "../networking/ping.ts";
+import { InspectorUI, InspectorUIComponent, renderInspector } from "./inspector.ts";
 
 async function startPlayGame(playUIRoot: HTMLElement, game: ClientGame): Promise<ClientGame> {
   const playContainer = playUIRoot.querySelector("#game-container")! as HTMLDivElement;
@@ -29,7 +29,7 @@ async function startPlayGame(playUIRoot: HTMLElement, game: ClientGame): Promise
   games.play = playGame;
 
   await setupGame(playGame, conn, false);
-  renderInspector(playGame, playUIRoot, playContainer, false);
+  renderInspector(playGame, conn, playUIRoot, playContainer, false);
 
   return playGame;
 }

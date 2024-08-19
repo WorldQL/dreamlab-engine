@@ -1,13 +1,14 @@
-import { Router, Status } from "../../deps/oak.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
+import { Router, Status } from "../../deps/oak.ts";
 
-import * as path from "jsr:@std/path@1";
-import * as fs from "jsr:@std/fs@1";
 import { contentType } from "https://deno.land/std@0.224.0/media_types/mod.ts";
+import * as fs from "jsr:@std/fs@1";
+import * as path from "jsr:@std/path@1";
 
+import { fileIsProbablyBehaviorScript } from "../../../../build-system/build-world.ts";
 import { GameInstance } from "../../instance.ts";
-import { JsonAPIError, typedJsonHandler } from "../util/api.ts";
 import { sortPaths } from "../../util/sort-paths.ts";
+import { JsonAPIError, typedJsonHandler } from "../util/api.ts";
 
 export const serveScriptEditingAPI = (router: Router) => {
   const instances = GameInstance.INSTANCES;
@@ -121,10 +122,15 @@ export const serveScriptEditingAPI = (router: Router) => {
 
           await fs.ensureDir(path.dirname(computedPath));
           await Deno.writeTextFile(computedPath, file.content);
-        }
 
-        if (ctx.request.url.searchParams.get("no_restart") !== "true") {
-          instance.restart();
+          const isBehavior = await fileIsProbablyBehaviorScript(computedPath);
+          instance.session?.broadcastPacket({
+            t: "ScriptEdited",
+            script_location: relativePath,
+            behavior_script_id: isBehavior
+              ? `res://${relativePath.replace(/\.tsx?$/, ".js")}`
+              : undefined,
+          });
         }
 
         return { success: true };
@@ -171,9 +177,14 @@ export const serveScriptEditingAPI = (router: Router) => {
         });
         await ctx.request.body.stream?.pipeTo(file.writable);
 
-        if (!query.no_restart) {
-          instance.restart();
-        }
+        const isBehavior = await fileIsProbablyBehaviorScript(computedPath);
+        instance.session?.broadcastPacket({
+          t: "ScriptEdited",
+          script_location: relativePath,
+          behavior_script_id: isBehavior
+            ? `res://${relativePath.replace(/\.tsx?$/, ".js")}`
+            : undefined,
+        });
 
         return { success: true };
       },
@@ -208,10 +219,6 @@ export const serveScriptEditingAPI = (router: Router) => {
         }
 
         await Deno.remove(computedPath, { recursive: true });
-
-        if (!query.no_restart) {
-          instance.restart();
-        }
 
         return { success: true };
       },
@@ -264,10 +271,6 @@ export const serveScriptEditingAPI = (router: Router) => {
     await Deno.rename(oldComputedPath, newComputedPath);
 
     ctx.response.body = { success: true };
-
-    if (ctx.request.url.searchParams.get("no_restart") !== "true") {
-      instance.restart();
-    }
   });
 
   // clear logs

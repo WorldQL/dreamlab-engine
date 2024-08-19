@@ -1,5 +1,6 @@
 import { ClientGame } from "@dreamlab/engine";
 import { CameraPanBehavior } from "../camera-pan.ts";
+import { ClientConnection } from "../networking/net-connection.ts";
 import { BehaviorTypeInfoService } from "../util/behavior-type-info.ts";
 import { AppMenu } from "./app-menu.ts";
 import { BehaviorPanel } from "./behavior-panel/mod.ts";
@@ -30,6 +31,7 @@ export interface InspectorUIComponent {
 
 export function renderInspector(
   game: ClientGame,
+  conn: ClientConnection,
   uiRoot: HTMLElement,
   gameContainer: HTMLDivElement,
   editMode: boolean,
@@ -59,4 +61,11 @@ export function renderInspector(
   ui.contextMenu.render(ui, uiRoot);
   ui.appMenu.render(ui, uiRoot);
   ui.fileTree.render(ui, uiRoot);
+
+  conn.registerPacketHandler("ScriptEdited", packet => {
+    if (packet.behavior_script_id) {
+      void ui.behaviorTypeInfo.reload(packet.behavior_script_id);
+      // TODO: we need to make sure this propagates to every guy whose rendering depends on one of those
+    }
+  });
 }

@@ -194,6 +194,12 @@ export const ServerInitialNetworkSnapshotPacket = z.object({
   prefabEntities: EntityDefinitionSchema.array(),
 });
 
+export const ServerScriptEditedPacket = z.object({
+  t: z.literal("ScriptEdited"),
+  script_location: z.string(),
+  behavior_script_id: z.string().optional(),
+});
+
 export const ClientPacketSchema = z.discriminatedUnion("t", [
   PingPacketSchema,
   ClientLoadPhaseChangedPacket,
@@ -230,6 +236,7 @@ export const ServerPacketSchema = z.discriminatedUnion("t", [
   ServerReportEntityTransformsPacket,
   ServerReportValuesPacketSchema,
   ServerRichReportValuesPacketSchema,
+  ServerScriptEditedPacket,
 ]);
 export type ServerPacket = z.infer<typeof ServerPacketSchema>;
 
@@ -239,6 +246,6 @@ export type PlayPacket<
 > = (Side extends "any"
   ? ClientPacket | ServerPacket
   : Side extends "client"
-  ? ClientPacket
-  : ServerPacket) &
+    ? ClientPacket
+    : ServerPacket) &
   (T extends string ? { t: T } : object);

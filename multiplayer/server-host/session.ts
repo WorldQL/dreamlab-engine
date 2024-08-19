@@ -1,8 +1,10 @@
+import { ConnectionId } from "@dreamlab/engine";
+import { PlayCodec } from "@dreamlab/proto/codecs/mod.ts";
+import { ServerPacket } from "@dreamlab/proto/play.ts";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import { CONFIG } from "./config.ts";
 import { GameInstance } from "./instance.ts";
 import { IPCWorker } from "./worker.ts";
-import { PlayCodec } from "@dreamlab/proto/codecs/mod.ts";
 
 import * as path from "jsr:@std/path@1";
 
@@ -60,22 +62,30 @@ export class GameSession {
 
     this.ipc.addMessageListener("OutgoingPacket", message => {
       if (message.to === null) {
-        for (const connection of this.connections.values()) {
-          const packetData = connection.codec.encodePacket(message.packet);
-          connection.socket.send(packetData);
-        }
+        this.broadcastPacket(message.packet);
         return;
       }
 
-      const connection = this.connections.get(message.to);
-      if (connection === undefined) return;
-      const packetData = connection.codec.encodePacket(message.packet);
-      connection.socket.send(packetData);
+      this.sendPacket(message.to, message.packet);
     });
 
     this.ipc.addMessageListener("SetStatus", message => {
       this.status = message.status;
     });
+  }
+
+  broadcastPacket(packet: ServerPacket) {
+    for (const connection of this.connections.values()) {
+      const packetData = connection.codec.encodePacket(packet);
+      connection.socket.send(packetData);
+    }
+  }
+
+  sendPacket(to: ConnectionId, packet: ServerPacket) {
+    const connection = this.connections.get(to);
+    if (connection === undefined) return;
+    const packetData = connection.codec.encodePacket(packet);
+    connection.socket.send(packetData);
   }
 
   async ready() {

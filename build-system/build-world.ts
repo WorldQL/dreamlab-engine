@@ -18,6 +18,11 @@ export interface WorldBuildOptions {
   outDirName?: string;
 }
 
+export const fileIsProbablyBehaviorScript = async (filePath: string): Promise<boolean> => {
+  const text = await Deno.readTextFile(filePath);
+  return !!text.match(/export default class ([_\p{XID_Continue}]*) extends Behavior/u);
+};
+
 export const prepareBundleWorld = async (
   worldOpts: WorldBuildOptions,
   opts?: BundleOptions,
@@ -70,11 +75,7 @@ export const prepareBundleWorld = async (
               const expansion = fs.expandGlob(entryPoint);
               for await (const entry of expansion) {
                 if (!entry.isFile) continue;
-                const text = await Deno.readTextFile(entry.path);
-                // me when i'm parsing
-                if (
-                  text.match(/export default class ([_\p{XID_Continue}]*) extends Behavior/u)
-                ) {
+                if (await fileIsProbablyBehaviorScript(entry.path)) {
                   behaviors.push(entry.path);
                 }
               }
