@@ -1,6 +1,17 @@
 import { ClientGame, EntityUpdate, IVector2, MouseMove, Vector2 } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
-import { icon, MousePointer2, Move, ZoomIn } from "../_icons.ts";
+import {
+  BoxSelect,
+  Component,
+  icon,
+  MousePointer2,
+  Move,
+  Move3D,
+  Rotate3D,
+  Scale3D,
+  ZoomIn,
+} from "../_icons.ts";
+import { ButtonGroup, IconButton } from "../components/mod.ts";
 import { InspectorUI, InspectorUIComponent } from "./inspector.ts";
 
 export class GameOverlays implements InspectorUIComponent {
@@ -10,9 +21,43 @@ export class GameOverlays implements InspectorUIComponent {
   ) {}
 
   render(_ui: InspectorUI, _editUIRoot: HTMLElement): void {
-    const overlay = elem("div", { id: "game-overlays" }, [this.drawCursorOverlay()]);
+    const overlay = elem("div", { id: "game-overlays" }, [
+      this.drawGizmoButtons(),
+      this.drawCursorOverlay(),
+    ]);
 
     this.gameContainer.appendChild(overlay);
+  }
+
+  drawGizmoButtons(): HTMLElement {
+    const buttons = new ButtonGroup("column");
+    const combined = new IconButton(Component, { title: "Combined" });
+    const translate = new IconButton(Move3D, { title: "Translate" });
+    const rotate = new IconButton(Rotate3D, { title: "Rotate" });
+    const scale = new IconButton(Scale3D, { title: "Scale" });
+    const boxSelect = new IconButton(BoxSelect, { title: "Box Select" });
+
+    type Tool = keyof typeof tools;
+    const tools = { combined, translate, rotate, scale, boxSelect } as const;
+
+    const setActiveTool = (tool: Tool) => {
+      for (const [name, button] of Object.entries(tools)) {
+        delete button.dataset.active;
+        if (tool === name) button.dataset.active = "";
+      }
+
+      // TODO: actually switch active tool
+    };
+
+    setActiveTool("combined");
+    combined.addEventListener("click", () => setActiveTool("combined"));
+    translate.addEventListener("click", () => setActiveTool("translate"));
+    rotate.addEventListener("click", () => setActiveTool("rotate"));
+    scale.addEventListener("click", () => setActiveTool("scale"));
+    boxSelect.addEventListener("click", () => setActiveTool("boxSelect"));
+
+    buttons.append(combined, translate, rotate, scale, boxSelect);
+    return elem("div", { id: "gizmo-buttons" }, [buttons]);
   }
 
   formatVector(vector: IVector2, fixed = 2): string {

@@ -41,3 +41,19 @@
     text-align: right;
   }
 }
+
+#game-overlays #gizmo-buttons {
+  position: absolute;
+  top: 1em;
+  left: 1em;
+
+  & > * {
+    pointer-events: all;
+
+    & dreamlab-icon-button[data-active] {
+      --color: rgb(var(--color-accent) / 1);
+      --color-hover: rgb(var(--color-accent) / 1);
+      --color-active: rgb(var(--color-accent) / 1);
+    }
+  }
+}
