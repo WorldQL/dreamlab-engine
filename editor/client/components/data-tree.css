@@ -34,6 +34,7 @@ dreamlab-data-tree {
       display: flex;
       align-items: center;
       justify-content: center;
+      cursor: pointer;
 
       & > svg {
         width: 1.25em;
@@ -50,7 +51,7 @@ dreamlab-data-tree {
     }
   }
   & details:not(:has(> details)) {
-    & > summary > div.arrow > svg {
+    & > summary > div.arrow {
       display: none;
     }
   }

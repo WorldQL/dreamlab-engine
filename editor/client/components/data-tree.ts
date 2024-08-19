@@ -6,12 +6,18 @@ export class DataTree extends HTMLElement {
     headerContent: (Element | string | Text)[],
     parent?: HTMLElement,
   ): HTMLDetailsElement {
-    const summary = elem("summary", {}, [
-      elem("div", { className: "arrow" }, [icon(ChevronDown)]),
-      ...headerContent,
-    ]);
-
+    const toggle = elem("div", { className: "arrow" }, [icon(ChevronDown)]);
+    const summary = elem("summary", {}, [toggle, ...headerContent]);
     const details = elem("details", { open: true }, [summary]);
+
+    // only toggle when the arrow is clicked
+    summary.addEventListener("click", ev => {
+      ev.preventDefault();
+    });
+    toggle.addEventListener("click", () => {
+      details.open = !details.open;
+    });
+
     (parent ?? this).append(details);
     return details;
   }
