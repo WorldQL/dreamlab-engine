@@ -53,6 +53,11 @@ export const setupGame = async (
     // we don't need to load the scene here because the server should have put everything
     // in game.world._.EditorEntities and they should sync good automatically
   } else {
+    game.local.spawn({
+      type: Gizmo,
+      name: "Gizmo",
+    });
+
     const defs = await Promise.all(scene.local.map(def => convertEntityDefinition(game, def)));
     for (const def of defs) {
       localSpawnedEntities.push(game.local[internal.entitySpawn](def, { inert: true }));
