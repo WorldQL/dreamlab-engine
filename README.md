@@ -1,8 +1,12 @@
 # Dreamlab v2
 
-Design notes and prototypes for the next iteration of the Dreamlab game engine & platform.
+Monorepo. Next iteration of the Dreamlab game engine & platform.
 
-All subdirectories in this monorepo should contain their own `README.md` file.
+## Setup
 
-- `docs/` contains writeups
-- Every other folder should be a self-contained prototype or a reusable common component.
+Start the multiplayer server & development webserver for the editor frontend:
+
+```shell
+multiplayer/ $ deno task start
+editor/ $ deno task watch
+```
