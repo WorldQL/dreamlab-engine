@@ -23,7 +23,7 @@ export class FileTree implements InspectorUIComponent {
 
     files.then(({ files }) => {
       type FileTreeNode =
-        | { type: "file"; name: string }
+        | { type: "file"; name: string; path: string }
         | { type: "directory"; name: string; children: Map<string, FileTreeNode> };
       const fileTreeRoot: FileTreeNode = { type: "directory", name: "", children: new Map() };
 
@@ -43,11 +43,18 @@ export class FileTree implements InspectorUIComponent {
             current = child;
           }
         }
-        current.children.set(finalPart, { type: "file", name: finalPart });
+        current.children.set(finalPart, { type: "file", name: finalPart, path: file });
       }
 
       const addNode = (node: FileTreeNode, parent?: HTMLElement) => {
         const element = tree.addNode([node.name], parent);
+
+        if (node.type === "file") {
+          element.draggable = true;
+          element.dataset["file"] = node.path;
+          // TODO: handle drag events for dropping onto an entity
+        }
+
         if (node.type === "directory") {
           for (const child of node.children.values()) {
             addNode(child, element);

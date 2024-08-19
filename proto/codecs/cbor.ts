@@ -1,4 +1,4 @@
-import { Decoder, Encoder } from "https://deno.land/x/cbor@v1.6.0/index.js";
+import { Decoder, Encoder } from "@dreamlab/vendor/cbor-x.ts";
 import { PlayPacket } from "../play.ts";
 import { PlayCodec } from "./mod.ts";
 

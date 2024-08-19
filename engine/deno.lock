@@ -576,6 +576,10 @@
     "https://esm.sh/v135/url": "https://esm.sh/v135/url@0.11.3"
   },
   "remote": {
+    "https://deno.land/x/cbor@v1.6.0/decode.js": "c002b5c7abd716e6d57fe1127c674cc72a7cffc781ca20970db699e9a2bf7f38",
+    "https://deno.land/x/cbor@v1.6.0/encode.js": "98be7aefb63f34da50dbb30a5a6d4648d05baa8effd85611fc73796ded7bc613",
+    "https://deno.land/x/cbor@v1.6.0/index.js": "0f2b4bad3617f78ac582a0d62cb86a476dfb4ae36d772d89a36c237e5a18b17b",
+    "https://deno.land/x/cbor@v1.6.0/iterators.js": "744e0469fe37c33bab3787608ced2f2cda014cb9352b3adbd949a2701f043aea",
     "https://deno.land/x/zod@v3.23.8/ZodError.ts": "528da200fbe995157b9ae91498b103c4ef482217a5c086249507ac850bd78f52",
     "https://deno.land/x/zod@v3.23.8/errors.ts": "5285922d2be9700cc0c70c95e4858952b07ae193aa0224be3cbd5cd5567eabef",
     "https://deno.land/x/zod@v3.23.8/external.ts": "a6cfbd61e9e097d5f42f8a7ed6f92f93f51ff927d29c9fbaec04f03cbce130fe",
