@@ -1,11 +1,15 @@
 import {
   ConnectionId,
+  ConnectionInfo,
   CustomMessageData,
   CustomMessageListener,
-  ConnectionInfo,
   ServerGame,
   ServerNetworking,
 } from "@dreamlab/engine";
+import {
+  PlayerConnectionDropped,
+  PlayerConnectionEstablished,
+} from "@dreamlab/proto/common/signals.ts";
 import {
   ClientPacket,
   PLAY_PROTO_VERSION,
@@ -13,16 +17,12 @@ import {
   ServerPacket,
 } from "@dreamlab/proto/play.ts";
 import { IPCMessageBus } from "../ipc.ts";
-import { handleValueChanges } from "./value-changes.ts";
 import { handleCustomMessages } from "./custom-messages.ts";
 import { handleEntitySync } from "./entity-sync.ts";
-import { handleTransformSync } from "./transform-sync.ts";
-import {
-  PlayerConnectionEstablished,
-  PlayerConnectionDropped,
-} from "@dreamlab/proto/common/signals.ts";
-import { handlePlayerJoinExchange } from "./player-join-states.ts";
 import { handlePing } from "./ping.ts";
+import { handlePlayerJoinExchange } from "./player-join-states.ts";
+import { handleTransformSync } from "./transform-sync.ts";
+import { handleValueChanges } from "./value-changes.ts";
 
 export type ServerPacketHandler<T extends ClientPacket["t"] = ClientPacket["t"]> = (
   from: ConnectionId,
@@ -83,7 +83,7 @@ export class ServerNetworkManager {
 
   setup(game: ServerGame) {
     this.ipc.addMessageListener("IncomingPacket", message => {
-      if (message.packet.t !== "Ping") console.log("[<-] " + message.packet.t);
+      // if (message.packet.t !== "Ping") console.log("[<-] " + message.packet.t);
 
       const sender = message.from;
       const packetQueue = this.#getPacketQueue(message.packet.t);
@@ -149,12 +149,12 @@ export class ServerNetworkManager {
 
   send(to: ConnectionId, packet: ServerPacket) {
     if (to === undefined) return;
-    if (packet.t !== "Ping") console.log("[->] " + packet.t);
+    // if (packet.t !== "Ping") console.log("[->] " + packet.t);
     this.ipc.send({ op: "OutgoingPacket", to, packet });
   }
 
   broadcast(packet: ServerPacket) {
-    if (packet.t !== "Ping") console.log("[->] " + packet.t);
+    // if (packet.t !== "Ping") console.log("[->] " + packet.t);
     this.ipc.send({ op: "OutgoingPacket", to: null, packet });
   }
 

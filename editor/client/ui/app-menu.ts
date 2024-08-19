@@ -30,7 +30,6 @@ async function startPlayGame(playUIRoot: HTMLElement, game: ClientGame): Promise
     playSocket,
     DEFAULT_CODEC,
   );
-  games.play = playGame;
 
   playSocket.addEventListener("close", () => {
     if (games.play === playGame) games.play = undefined;
@@ -42,6 +41,7 @@ async function startPlayGame(playUIRoot: HTMLElement, game: ClientGame): Promise
   });
 
   await setupGame(playGame, conn, false);
+  games.play = playGame;
   renderInspector(playGame, conn, playUIRoot, playContainer, false);
 
   return playGame;

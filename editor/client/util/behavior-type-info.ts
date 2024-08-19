@@ -66,7 +66,7 @@ export class BehaviorTypeInfoService {
 
   async reload(script: string): Promise<BehaviorTypeInfo> {
     const cacheBustingURL = new URL(this.#dummyGame.resolveResource(script));
-    cacheBustingURL.searchParams.set("cache", generateCUID("cache"));
+    cacheBustingURL.searchParams.set("_editor_cache", generateCUID("cch"));
 
     const behaviorType = await this.#dummyGame[internal.behaviorLoader].loadScriptFromSource(
       script,

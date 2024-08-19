@@ -1,3 +1,4 @@
+import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import { Game } from "../game.ts";
 import { Behavior, BehaviorConstructor } from "./behavior.ts";
 
@@ -52,7 +53,10 @@ export class BehaviorLoader {
   }
 
   async loadScriptFromSource(script: string, sourceURI: string): Promise<BehaviorConstructor> {
-    const module = await import(sourceURI);
+    const url = new URL(sourceURI);
+    url.searchParams.set("_engine_cache", generateCUID("cch"));
+
+    const module = await import(url.toString());
     if (!("default" in module))
       throw new Error(`Module '${script}' must have a Behavior as its default export!`);
 
