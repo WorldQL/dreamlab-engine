@@ -1,4 +1,4 @@
-import { element as elem } from "@dreamlab/ui";
+import { element as elem, ElementProps } from "@dreamlab/ui";
 import { icon } from "../_icons.ts";
 
 export class IconButton extends HTMLElement {
@@ -6,10 +6,10 @@ export class IconButton extends HTMLElement {
     customElements.define("dreamlab-icon-button", this);
   }
 
-  constructor(svg: string) {
+  constructor(svg: string, attrs?: ElementProps<HTMLElementTagNameMap["button"]>) {
     super();
 
-    const element = elem("button", { type: "button" }, [icon(svg)]);
+    const element = elem("button", { ...attrs, type: "button" }, [icon(svg)]);
     this.append(element);
   }
 }
