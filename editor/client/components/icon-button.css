@@ -1,8 +1,8 @@
 dreamlab-icon-button {
   --size: 2em;
-  --color: rgb(var(--color-accent) / 1);
-  --color-hover: rgb(var(--color-accent) / 1);
-  --color-active: rgb(var(--color-accent) / 1);
+  --color: rgb(var(--color-primary) / 1);
+  --color-hover: rgb(var(--color-primary-lighter) / 1);
+  --color-active: rgb(var(--color-primary-lighter) / 1);
   --rounded: var(--border-radius);
 
   & > button[type="button"] {

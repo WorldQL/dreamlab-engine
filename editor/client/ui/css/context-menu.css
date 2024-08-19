@@ -74,7 +74,7 @@
   &:hover,
   &[data-selected] {
     --alpha: 1;
-    background-color: rgb(var(--color-accent) / var(--alpha));
+    background-color: rgb(var(--color-primary) / var(--alpha));
     .theme-darker & {
       --alpha: 16.5%;
     }

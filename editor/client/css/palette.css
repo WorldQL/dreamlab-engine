@@ -7,9 +7,13 @@
   --color-bg-2: 55 65 81;
   --color-bg-danger: 92 42 54;
 
-  --color-accent: 73 102 207;
-  --color-accent-lighter: 89 115 211;
-  --color-accent-darker: 57 89 203;
+  --color-primary: 56 103 214;
+  --color-primary-lighter: 117 147 228;
+  --color-primary-darker: 40 77 160;
+
+  --color-accent: 211 62 106;
+  --color-accent-lighter: 232 135 162;
+  --color-accent-darker: 151 42 76;
 
   --color-green: 76 175 80;
   --color-green-lighter: 129 199 132;
@@ -34,5 +38,5 @@
   --color-bg-0: 17 17 17;
   --color-bg-1: 24 24 24;
   --color-bg-2: 35 35 35;
-  --color-accent: 206 91 255;
+  --color-primary: 206 91 255;
 }

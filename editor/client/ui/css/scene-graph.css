@@ -36,12 +36,12 @@
 }
 
 #scene-graph-tree details.drag-target > summary {
-  box-shadow: 0 0 4px 1px rgb(var(--color-accent) / 1);
+  box-shadow: 0 0 4px 1px rgb(var(--color-primary) / 1);
 }
 
 #scene-graph-tree details.selected > summary {
   --alpha: 1;
-  background-color: rgb(var(--color-accent) / var(--alpha));
+  background-color: rgb(var(--color-primary) / var(--alpha));
 
   .theme-darker & {
     --alpha: 16.5%;

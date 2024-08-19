@@ -5,7 +5,7 @@
 
   & #add-behavior-button {
     display: none;
-    color: rgb(var(--color-accent) / 1);
+    color: rgb(var(--color-primary) / 1);
   }
 
   & #behavior-list {
