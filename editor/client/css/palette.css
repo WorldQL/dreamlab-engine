@@ -8,8 +8,24 @@
   --color-bg-danger: 92 42 54;
 
   --color-accent: 73 102 207;
-  --color-secondary: 211 62 106;
-  --color-danger: 255 0 0;
+  --color-accent-lighter: 89 115 211;
+  --color-accent-darker: 57 89 203;
+
+  --color-green: 76 175 80;
+  --color-green-lighter: 129 199 132;
+  --color-green-darker: 56 142 60;
+
+  --color-yellow: 237 137 54;
+  --color-yellow-lighter: 245 189 142;
+  --color-yellow-darker: 217 116 38;
+
+  --color-danger: 244 67 54;
+  --color-danger-lighter: 229 115 115;
+  --color-danger-darker: 198 40 40;
+
+  --color-grey: 55 65 81;
+  --color-grey-lighter: 75 85 99;
+  --color-grey-darker: 31 41 55;
 
   --border-radius: 4px;
 }
