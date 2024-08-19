@@ -1,0 +1,33 @@
+dreamlab-icon-button {
+  --size: 2em;
+  --color: rgb(var(--color-accent) / 1);
+
+  & > button[type="button"] {
+    all: unset;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: var(--size);
+    height: var(--size);
+    background-color: var(--color);
+    border-radius: var(--border-radius);
+
+    cursor: pointer;
+
+    &:hover {
+      /* TODO */
+    }
+
+    &:active {
+      /* TODO */
+    }
+
+    & > svg {
+      width: 100%;
+      height: 100%;
+      padding: 0.25em;
+    }
+  }
+}
