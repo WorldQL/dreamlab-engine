@@ -1,6 +1,6 @@
 import { ClientGame } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
-import { DataTree } from "../components/data-tree.ts";
+import { DataTree } from "../components/mod.ts";
 import * as env from "../env.ts";
 import { InspectorUI, InspectorUIComponent } from "./inspector.ts";
 
