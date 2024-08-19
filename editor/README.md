@@ -7,9 +7,6 @@ experimental next generation editor for dreamlab
 
 ## left to do
 
-- `BehaviorTypeInfoService` to centralize lookups for behavior name, value defaults, etcetc
-  - should use dummy game
-  - allows us to have unset behavior value fields (`<input placeholder=...>`)
 - play / pause / stop properly working
   - need to add server support for stopping the current play session
 - save the scene description to JSON on the server
