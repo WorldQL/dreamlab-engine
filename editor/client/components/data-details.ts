@@ -20,8 +20,6 @@ export class DataDetails extends HTMLElement {
   }
 
   setHeaderContent(...title: (Element | string | Text)[]): void {
-    console.log("setting header");
-
     const newHeader = elem("header", {}, title);
     this.#header.parentElement?.append(newHeader);
     this.#header.remove();
