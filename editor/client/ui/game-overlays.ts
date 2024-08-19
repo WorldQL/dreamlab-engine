@@ -1,4 +1,12 @@
-import { ClientGame, EntityUpdate, IVector2, MouseMove, Vector2 } from "@dreamlab/engine";
+import {
+  BoxResizeGizmo,
+  ClientGame,
+  EntityUpdate,
+  Gizmo,
+  IVector2,
+  MouseMove,
+  Vector2,
+} from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 import {
   BoxSelect,
@@ -40,16 +48,45 @@ export class GameOverlays implements InspectorUIComponent {
     type Tool = keyof typeof tools;
     const tools = { combined, translate, rotate, scale, boxSelect } as const;
 
-    const setActiveTool = (tool: Tool) => {
+    let activeTool: Tool = "combined";
+    const setActiveTool = (tool: Tool, force = false) => {
+      const prevTool = activeTool;
+      if (prevTool === tool && !force) return;
+      activeTool = tool;
+
       for (const [name, button] of Object.entries(tools)) {
         delete button.dataset.active;
         if (tool === name) button.dataset.active = "";
       }
 
+      const gizmo = this.game.local.children.get("Gizmo")?.cast(Gizmo);
+      const boxresize = this.game.local.children.get("BoxResizeGizmo")?.cast(BoxResizeGizmo);
+      const target = gizmo?.target ?? boxresize?.target;
+
+      gizmo?.destroy();
+      boxresize?.destroy();
+
+      if (tool === "boxSelect") {
+        const gizmo = this.game.local.spawn({
+          type: BoxResizeGizmo,
+          name: BoxResizeGizmo.name,
+        });
+
+        gizmo.target = target;
+      } else {
+        const gizmo = this.game.local.spawn({
+          type: Gizmo,
+          name: Gizmo.name,
+        });
+
+        gizmo.mode = tool ?? "combined";
+        gizmo.target = target;
+      }
+
       // TODO: actually switch active tool
     };
 
-    setActiveTool("combined");
+    setActiveTool(activeTool, true);
     combined.addEventListener("click", () => setActiveTool("combined"));
     translate.addEventListener("click", () => setActiveTool("translate"));
     rotate.addEventListener("click", () => setActiveTool("rotate"));
