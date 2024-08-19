@@ -1,7 +1,6 @@
 import { ClientGame } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 import { DataTree } from "../components/mod.ts";
-import * as env from "../env.ts";
 import { InspectorUI, InspectorUIComponent } from "./inspector.ts";
 
 export class FileTree implements InspectorUIComponent {
@@ -15,7 +14,7 @@ export class FileTree implements InspectorUIComponent {
     const tree = new DataTree();
     tree.style.setProperty("--tree-indent-amount", "0.5em");
 
-    const filesURL = new URL(env.SERVER_URL);
+    const filesURL = new URL(import.meta.env.SERVER_URL);
     filesURL.pathname = `/api/v1/edit/${this.game.instanceId}/files`;
     const files = fetch(filesURL)
       .then(r => r.json())

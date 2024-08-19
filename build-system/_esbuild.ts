@@ -2,6 +2,7 @@ import { denoPlugins } from "jsr:@luca/esbuild-deno-loader@0.10.3";
 import * as esbuild from "npm:esbuild@0.20.2";
 export { denoPlugins, esbuild };
 
+import * as dotenv from "jsr:@std/dotenv@0.225.0";
 import * as path from "jsr:@std/path@^1";
 
 export const dreamlabEngineExternalPlugin = (): esbuild.Plugin => ({
@@ -119,5 +120,41 @@ export const unwasmRapierPlugin = (): esbuild.Plugin => ({
       `.trim();
       return { contents: inject + "\n" + replaced };
     });
+  },
+});
+
+export const dreamlabEnvironmentPlugin = (
+  files: string[] = [".env.local", ".env"],
+): esbuild.Plugin => ({
+  name: "dreamlab-environment",
+  setup: build => {
+    build.onResolve({ filter: /^env$/ }, args => {
+      return {
+        path: args.path,
+        namespace: "env-ns",
+        watchFiles: files,
+      };
+    });
+
+    build.onLoad({ filter: /.*/, namespace: "env-ns" }, async () => {
+      const env = {};
+      for (const file of files) {
+        try {
+          const loaded = await dotenv.load({ envPath: file, export: false });
+          Object.assign(env, loaded);
+        } catch {
+          // pass
+        }
+      }
+
+      return {
+        contents: JSON.stringify(env),
+        loader: "json",
+      };
+    });
+
+    // TODO
+    const options = build.initialOptions;
+    options.define = { ...options.define, ABC: "true" };
   },
 });

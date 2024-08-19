@@ -2,6 +2,7 @@ import * as path from "jsr:@std/path@^1";
 import {
   denoPlugins,
   dreamlabEngineExternalPlugin,
+  dreamlabEnvironmentPlugin,
   dreamlabExternalCssPlugin,
   dreamlabUIExternalPlugin,
   dreamlabVendorExternalPlugin,
@@ -180,6 +181,7 @@ export const bundleClient = async (
   const buildOpts: esbuild.BuildOptions = {
     ...BASE_BUILD_OPTIONS,
     plugins: [
+      dreamlabEnvironmentPlugin(),
       dreamlabVendorExternalPlugin(),
       dreamlabEngineExternalPlugin(),
       dreamlabUIExternalPlugin(),

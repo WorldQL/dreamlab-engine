@@ -1,4 +1,5 @@
 import "../../build-system/live-reload.js";
+import "./_env.ts";
 
 import { preloadFonts } from "./fonts.ts";
 
@@ -16,13 +17,12 @@ import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 import * as internal from "../../engine/internal.ts";
 import { CameraPanBehavior } from "./camera-pan.ts";
-import * as env from "./env.ts";
 import { connectToGame } from "./game-connection.ts";
 import { setupGame } from "./game-setup.ts";
 import { renderInspector } from "./ui/inspector.ts";
 
 const instanceId = NIL_UUID;
-const connectUrl = new URL(env.SERVER_URL);
+const connectUrl = new URL(import.meta.env.SERVER_URL);
 connectUrl.protocol = connectUrl.protocol === "https:" ? "wss:" : "ws:";
 connectUrl.pathname = `/api/v1/connect/${instanceId}`;
 connectUrl.searchParams.set("player_id", generateCUID("ply"));

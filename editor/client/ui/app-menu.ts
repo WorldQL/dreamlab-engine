@@ -1,7 +1,6 @@
 import { ClientGame, PlayerJoined, PlayerLeft } from "@dreamlab/engine";
 import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
 import { element as elem } from "@dreamlab/ui";
-import * as env from "../env.ts";
 import { connectToGame } from "../game-connection.ts";
 import { setupGame } from "../game-setup.ts";
 import { games } from "../main.ts";
@@ -13,7 +12,7 @@ import { InspectorUI, InspectorUIComponent, renderInspector } from "./inspector.
 async function startPlayGame(playUIRoot: HTMLElement, game: ClientGame): Promise<ClientGame> {
   const playContainer = playUIRoot.querySelector("#game-container")! as HTMLDivElement;
 
-  const connectURL = new URL(env.SERVER_URL);
+  const connectURL = new URL(import.meta.env.SERVER_URL);
   connectURL.pathname = `/api/v1/connect/${game.instanceId}`;
   const player = game.network.connections.find(c => c.id === game.network.self)!;
   // TODO: replace with token
@@ -48,7 +47,7 @@ async function startPlayGame(playUIRoot: HTMLElement, game: ClientGame): Promise
 }
 
 async function stopPlayGame(game: ClientGame) {
-  const url = new URL(env.SERVER_URL);
+  const url = new URL(import.meta.env.SERVER_URL);
   url.pathname = `/api/v1/stop-play-session/${game.instanceId}`;
   await fetch(url, { method: "POST" });
 }
