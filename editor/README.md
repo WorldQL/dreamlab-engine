@@ -10,10 +10,7 @@ experimental next generation editor for dreamlab
 - play / pause / stop properly working
   - need to add server support for stopping the current play session
 - save the scene description to JSON on the server
-- gizmo tool selector strip
-- project file explorer
-  - maybe the scene graph renderer styles can be abstracted to a `TreeView` webcomponent
-  - drag-and-drop behavior sourcefiles / texture assets onto value fields
+- drag-and-drop behavior sourcefiles / texture assets onto value fields
 - align design more with original editor (put colors in more places)
 - undo/redo (this is hard to get right in multiplayer)
 - entity def copy paste
