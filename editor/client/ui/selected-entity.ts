@@ -1,4 +1,4 @@
-import { ClientGame, Entity, Gizmo, Root } from "@dreamlab/engine";
+import { BoxResizeGizmo, ClientGame, Entity, Gizmo, Root } from "@dreamlab/engine";
 import { EditorRootFacadeEntity } from "../../common/mod.ts";
 
 export class SelectedEntityService {
@@ -13,16 +13,23 @@ export class SelectedEntityService {
   }
   set entities(newEntities) {
     this.#entities = newEntities;
-    if (this.#gizmo)
-      this.#gizmo.target = newEntities
+
+    const gizmo = this.#gizmo;
+    if (gizmo) {
+      gizmo.target = newEntities
         .filter(e => !(e instanceof Root || e instanceof EditorRootFacadeEntity))
         .at(0);
+    }
+
     for (const listener of this.#changeListeners) listener();
   }
 
-  #gizmo: Gizmo | undefined;
+  get #gizmo() {
+    const gizmo = this.game.local.children.get("Gizmo")?.cast(Gizmo);
+    const boxresize = this.game.local.children.get("BoxResizeGizmo")?.cast(BoxResizeGizmo);
 
-  constructor(private game: ClientGame) {
-    this.#gizmo = game.local.children.get("Gizmo")?.cast(Gizmo);
+    return gizmo ?? boxresize;
   }
+
+  constructor(private game: ClientGame) {}
 }
