@@ -10,19 +10,21 @@ const fonts = preloadFonts({
 
 import "../common/mod.ts";
 
-import { NIL_UUID } from "jsr:@std/uuid@1/constants";
-import { generateCUID } from "@dreamlab/vendor/cuid.ts";
-import { setupGame } from "./game-setup.ts";
-import { connectToGame } from "./game-connection.ts";
-import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
-import { renderInspector } from "./ui/inspector.ts";
-import { setupMultiplayerCursors } from "./multiplayer-cursors.ts";
 import { Camera, ClientGame } from "@dreamlab/engine";
-import { CameraPanBehavior } from "./camera-pan.ts";
+import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
+import { generateCUID } from "@dreamlab/vendor/cuid.ts";
+import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 import * as internal from "../../engine/internal.ts";
+import { CameraPanBehavior } from "./camera-pan.ts";
+import * as env from "./env.ts";
+import { connectToGame } from "./game-connection.ts";
+import { setupGame } from "./game-setup.ts";
+import { setupMultiplayerCursors } from "./multiplayer-cursors.ts";
+import { renderInspector } from "./ui/inspector.ts";
 
 const instanceId = NIL_UUID;
-const connectUrl = new URL(`ws://127.0.0.1:8000/api/v1/connect/${instanceId}`);
+const connectUrl = new URL(env.SERVER_URL);
+connectUrl.pathname = `/api/v1/connect/${instanceId}`;
 connectUrl.searchParams.set("player_id", generateCUID("ply"));
 connectUrl.searchParams.set("nickname", "Player" + Math.floor(Math.random() * 999) + 1);
 
