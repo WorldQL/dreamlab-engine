@@ -1,16 +1,20 @@
 import { ClientGame, PlayerJoined, PlayerLeft } from "@dreamlab/engine";
 import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
 import { element as elem } from "@dreamlab/ui";
+import * as env from "../env.ts";
 import { connectToGame } from "../game-connection.ts";
 import { setupGame } from "../game-setup.ts";
 import { games } from "../main.ts";
 import { Ping } from "../networking/ping.ts";
 import { InspectorUI, InspectorUIComponent, renderInspector } from "./inspector.ts";
 
+// TODO: we should not create a whole new editor ui for the play game
+
 async function startPlayGame(playUIRoot: HTMLElement, game: ClientGame): Promise<ClientGame> {
   const playContainer = playUIRoot.querySelector("#game-container")! as HTMLDivElement;
 
-  const connectURL = new URL(`ws://127.0.0.1:8000/api/v1/connect/${game.instanceId}`);
+  const connectURL = new URL(env.SERVER_URL);
+  connectURL.pathname = `/api/v1/connect/${game.instanceId}`;
   const player = game.network.connections.find(c => c.id === game.network.self)!;
   // TODO: replace with token
   connectURL.searchParams.set("player_id", player.playerId);
@@ -28,10 +32,25 @@ async function startPlayGame(playUIRoot: HTMLElement, game: ClientGame): Promise
   );
   games.play = playGame;
 
+  playSocket.addEventListener("close", () => {
+    if (games.play === playGame) games.play = undefined;
+    playGame.container.innerHTML = "";
+    playGame.shutdown();
+
+    editUIRoot.style.display = "grid";
+    playUIRoot.style.display = "none";
+  });
+
   await setupGame(playGame, conn, false);
   renderInspector(playGame, conn, playUIRoot, playContainer, false);
 
   return playGame;
+}
+
+async function stopPlayGame(game: ClientGame) {
+  const url = new URL(env.SERVER_URL);
+  url.pathname = `/api/v1/stop-play-session/${game.instanceId}`;
+  await fetch(url, { method: "POST" });
 }
 
 const editUIRoot = document.querySelector("main.edit-mode")! as HTMLElement;
@@ -66,10 +85,16 @@ export class AppMenu implements InspectorUIComponent {
       playUIRoot.style.display = "none";
     });
 
+    const stopButton = elem("a", { role: "button", href: "javascript:void(0)" }, ["Stop"]);
+    stopButton.addEventListener("click", event => {
+      event.preventDefault();
+      stopPlayGame(this.game);
+    });
+
     topBar.append(
       elem("section", { id: "app-menu" }, [
         elem("div", {}, [elem("h1", {}, ["Dreamlab"]), saveButton]),
-        elem("div", {}, [playButton, editButton]),
+        elem("div", {}, [playButton, editButton, stopButton]),
         elem("div", {}, [this.renderStats(ui, uiRoot)]),
       ]),
     );

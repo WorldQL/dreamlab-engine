@@ -95,5 +95,9 @@ export class GameSession {
 
   shutdown() {
     this.ipc.destroy();
+    for (const connection of this.connections.values()) {
+      connection.socket.close(1001);
+    }
+    this.connections.clear();
   }
 }

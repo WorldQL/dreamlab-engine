@@ -1,11 +1,11 @@
-import { Router, Status } from "../../deps/oak.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { generate as generateUUIDv5 } from "jsr:@std/uuid@1/v5";
+import { Router, Status } from "../../deps/oak.ts";
 
 import { CONFIG } from "../../config.ts";
+import { createInstance, GameInstance } from "../../instance.ts";
 import { JsonAPIError, typedJsonHandler } from "../util/api.ts";
 import { bearerTokenAuth } from "../util/auth.ts";
-import { createInstance, GameInstance } from "../../instance.ts";
 import { instanceInfo, InstanceInfoSchema } from "../util/instance-info.ts";
 
 export const serveInstanceManagementAPI = (router: Router) => {
@@ -132,6 +132,22 @@ export const serveInstanceManagementAPI = (router: Router) => {
       async (_ctx, { params }) => {
         params.instance.restart();
         return instanceInfo(params.instance);
+      },
+    ),
+  );
+
+  router.post(
+    "/api/v1/stop-play-session/:instance",
+    typedJsonHandler(
+      {
+        params: z.object({ instance: RunningInstanceByIdSchema }),
+        response: z.object({ success: z.boolean() }),
+      },
+      async (_ctx, { params }) => {
+        params.instance.playSession?.shutdown();
+        params.instance.playSession = undefined;
+
+        return { success: true };
       },
     ),
   );
