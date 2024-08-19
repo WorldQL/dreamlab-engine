@@ -1,5 +1,5 @@
-import { Behavior, BehaviorConstructor } from "./behavior.ts";
 import { Game } from "../game.ts";
+import { Behavior, BehaviorConstructor } from "./behavior.ts";
 
 export class BehaviorLoader {
   #game: Game;
@@ -66,7 +66,7 @@ export class BehaviorLoader {
       throw new Error(`Module '${script}' must have a Behavior as its default export!`);
 
     this.#cache.set(script, behaviorType);
-    this.#resourceLocationLookup.set(behaviorType, sourceURI);
+    this.#resourceLocationLookup.set(behaviorType, script);
 
     return behaviorType as BehaviorConstructor;
   }
