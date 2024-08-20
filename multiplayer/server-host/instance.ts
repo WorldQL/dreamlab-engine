@@ -1,13 +1,14 @@
-import { GameSession } from "./session.ts";
-import { LogStore } from "./util/log-store.ts";
+import { Scene } from "@dreamlab/scene";
 
-import * as colors from "jsr:@std/fmt@1.0.0-rc.1/colors";
-import { fetchWorld } from "./world-fetch.ts";
 import { bundleWorld } from "../../build-system/mod.ts";
 import { WorkerIPCMessage } from "../server-common/ipc.ts";
+import { GameSession } from "./session.ts";
+import { LogStore } from "./util/log-store.ts";
 import { IPCMessageListener } from "./worker.ts";
-import { Scene } from "@dreamlab/scene";
-import { path } from "@dreamlab/vendor/pixi.ts";
+import { fetchWorld } from "./world-fetch.ts";
+
+import * as colors from "jsr:@std/fmt@1/colors";
+import * as path from "jsr:@std/path@1";
 
 export enum GameInstanceState {
   Idle,
@@ -111,10 +112,11 @@ export class GameInstance {
   #booting = false;
   resetBooting() {
     this.#booting = true;
-    this.#bootedPromise = new Promise<void>((resolve, reject) => {
-      this.#notifyBooted = resolve;
-      this.#notifyBootFail = reject;
-    }).catch(e => e);
+
+    const { promise, resolve, reject } = Promise.withResolvers<void>();
+    this.#bootedPromise = promise;
+    this.#notifyBooted = resolve;
+    this.#notifyBootFail = reject;
   }
   notifySessionBoot() {
     if (!this.#booting) return;
@@ -140,10 +142,10 @@ export class GameInstance {
   #playBooting = false;
   resetPlayBooting() {
     this.#playBooting = true;
-    this.#playBootedPromise = new Promise<void>((resolve, reject) => {
-      this.#notifyPlayBooted = resolve;
-      this.#notifyPlayBootFail = reject;
-    }).catch(e => e);
+    const { promise, resolve, reject } = Promise.withResolvers<void>();
+    this.#playBootedPromise = promise;
+    this.#notifyPlayBooted = resolve;
+    this.#notifyPlayBootFail = reject;
   }
   notifyPlaySessionBoot() {
     if (!this.#playBooting) return;

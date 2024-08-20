@@ -2,7 +2,7 @@ import { Router, Status } from "../../deps/oak.ts";
 import { GameInstance } from "../../instance.ts";
 import { JsonAPIError } from "../util/api.ts";
 
-import * as colors from "jsr:@std/fmt@1.0.0-rc.1/colors";
+import * as colors from "jsr:@std/fmt@1/colors";
 
 export const serveLogStreamingAPI = (router: Router) => {
   router.get("/api/v1/logs/:instance_id", ctx => {
