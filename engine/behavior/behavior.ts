@@ -159,11 +159,7 @@ export class Behavior implements ISignalHandler {
   // #endregion
 
   // #region External Listeners
-  readonly listeners: [
-    receiver: WeakRef<ISignalHandler>,
-    type: SignalConstructor,
-    listener: SignalListener,
-  ][] = [];
+  readonly externalListeners: SignalSubscription[] = [];
 
   protected listen<S extends Signal, T extends ISignalHandler>(
     receiver: T,
@@ -171,13 +167,8 @@ export class Behavior implements ISignalHandler {
     signalListener: SignalListener<SignalMatching<S, T>>,
   ) {
     const boundSignalListener = signalListener.bind(this);
-
-    receiver.on(signalType, boundSignalListener);
-    this.listeners.push([
-      new WeakRef(receiver as ISignalHandler),
-      signalType as SignalConstructor,
-      boundSignalListener as SignalListener,
-    ]);
+    const subscription = receiver.on(signalType, boundSignalListener);
+    this.externalListeners.push(subscription as SignalSubscription);
   }
   // #endregion
 
@@ -226,11 +217,7 @@ export class Behavior implements ISignalHandler {
     if (idx !== -1) this.entity.behaviors.splice(idx);
 
     for (const value of this.#values.values()) value.destroy();
-    for (const [receiverRef, type, listener] of this.listeners) {
-      const receiver = receiverRef.deref();
-      if (!receiver) continue;
-      receiver.unregister(type, listener);
-    }
+    this.externalListeners.forEach(s => s.unsubscribe());
   }
 
   [Symbol.dispose]() {
@@ -248,25 +235,10 @@ export class Behavior implements ISignalHandler {
       ancestor = ancestor.parent;
     }
 
-    if (this.onTick) {
-      const onTick = this.onTick.bind(this);
-      this.listen(this.entity, EntityUpdate, onTick);
-    }
-
-    if (this.onPreTick) {
-      const onPreTick = this.onPreTick.bind(this);
-      this.listen(this.entity.game, GamePreTick, onPreTick);
-    }
-
-    if (this.onFrame) {
-      const onFrame = this.onFrame.bind(this);
-      this.listen(this.entity.game, GameRender, onFrame);
-    }
-
-    if (this.onPostTick) {
-      const onPostTick = this.onPostTick.bind(this);
-      this.listen(this.entity.game, GamePostTick, onPostTick);
-    }
+    if (this.onTick) this.listen(this.entity, EntityUpdate, this.onTick);
+    if (this.onPreTick) this.listen(this.entity.game, GamePreTick, this.onPreTick);
+    if (this.onFrame) this.listen(this.entity.game, GameRender, this.onFrame);
+    if (this.onPostTick) this.listen(this.entity.game, GamePostTick, this.onPostTick);
   }
 
   onInitialize(): void {}
