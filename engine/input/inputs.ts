@@ -2,13 +2,7 @@ import { Camera } from "../entity/mod.ts";
 import type { Game } from "../game.ts";
 import { actionSetHeld, inputsRegisterHandlers } from "../internal.ts";
 import { Vector2 } from "../math/mod.ts";
-import {
-  ISignalHandler,
-  Signal,
-  SignalConstructor,
-  SignalConstructorMatching,
-  SignalListener,
-} from "../signal.ts";
+import { BasicSignalHandler } from "../signal.ts";
 import {
   ActionBound,
   ActionCreated,
@@ -33,9 +27,10 @@ export type Cursor = {
   readonly screen: Vector2 | undefined;
 };
 
-export class Inputs implements ISignalHandler {
+export class Inputs extends BasicSignalHandler<Inputs> {
   readonly #game: Game;
   constructor(game: Game) {
+    super();
     this.#game = game;
   }
 
@@ -274,40 +269,6 @@ export class Inputs implements ISignalHandler {
       canvas.removeEventListener("mouseout", this.#onMouseOut);
       canvas.removeEventListener("mousemove", this.#onMouseMove);
     };
-  }
-  // #endregion
-
-  // #region Signals
-  #signalListenerMap = new Map<SignalConstructor, SignalListener[]>();
-
-  fire<
-    S extends Signal,
-    C extends SignalConstructorMatching<S, Inputs>,
-    A extends ConstructorParameters<C>,
-  >(ctor: C, ...args: A) {
-    const listeners = this.#signalListenerMap.get(ctor);
-    if (!listeners) return;
-
-    const signal = new ctor(...args);
-    listeners.forEach(l => l(signal));
-  }
-
-  on<S extends Signal>(
-    type: SignalConstructorMatching<S, Inputs>,
-    listener: SignalListener<S>,
-  ) {
-    const listeners = this.#signalListenerMap.get(type) ?? [];
-    listeners.push(listener as SignalListener);
-    this.#signalListenerMap.set(type, listeners);
-
-    return { unregister: () => this.unregister(type as SignalConstructor<S>, listener) };
-  }
-
-  unregister<T extends Signal>(type: SignalConstructor<T>, listener: SignalListener<T>) {
-    const listeners = this.#signalListenerMap.get(type);
-    if (!listeners) return;
-    const idx = listeners.indexOf(listener as SignalListener);
-    if (idx !== -1) listeners.splice(idx, 1);
   }
   // #endregion
 }

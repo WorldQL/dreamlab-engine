@@ -1,68 +1,138 @@
+// deno-lint-ignore-file no-explicit-any
+
 export type Signal = object;
 
 export const exclusiveSignalType = Symbol.for("dreamlab.exclusiveSignalType");
 export interface ExclusiveSignal<T> {
-  [exclusiveSignalType]:
-    | // deno-lint-ignore no-explicit-any
-    (new (...args: any[]) => T)
-    // deno-lint-ignore no-explicit-any
-    | (abstract new (...args: any[]) => T);
+  [exclusiveSignalType]: (new (...args: any[]) => T) | (abstract new (...args: any[]) => T);
+}
+
+export interface StoppableSignal {
+  stopPropagation(): void;
+  propagationStopped: boolean;
+}
+
+export function isSignalStoppable(signal: unknown): signal is StoppableSignal {
+  return (
+    typeof signal === "object" &&
+    signal !== null &&
+    "stopPropagation" in signal &&
+    typeof signal.stopPropagation === "function" &&
+    "propagationStopped" in signal &&
+    typeof signal.propagationStopped === "boolean"
+  );
 }
 
 export type SignalMatching<Sig extends Signal, Recv> =
   Sig extends ExclusiveSignal<infer ExclType> ? (Recv extends ExclType ? Sig : never) : Sig;
 
-export type SignalConstructor<T extends Signal = Signal> = new (
-  // deno-lint-ignore no-explicit-any
-  ...args: any[]
-) => T;
-export type SignalListener<T extends Signal = Signal> = (signal: T) => void;
+export type SignalConstructor<S extends Signal = Signal> = new (...args: any[]) => S;
+export type SignalListener<S extends Signal = Signal> = (signal: S) => void;
 
-export type SignalConstructorMatching<Sig extends Signal, Recv> =
-  Sig extends ExclusiveSignal<infer ExclType>
-    ? Recv extends ExclType
-      ? SignalConstructor<Sig>
-      : never
-    : SignalConstructor<Sig>;
+export interface SignalSubscription<S extends Signal = Signal> {
+  listener: SignalListener<S>;
+  readonly priority: number;
+  readonly unsubscribe: () => void;
+}
 
 export interface ISignalHandler {
-  fire<S extends Signal, C extends SignalConstructor<S>, A extends ConstructorParameters<C>>(
-    ctor: C,
-    ...args: A
-  ): void;
+  readonly signalSubscriptionMap: Map<SignalConstructor, SignalSubscription[]>;
+
+  fire<S extends Signal, C extends SignalConstructor<S>>(
+    type: C,
+    ...params: ConstructorParameters<C>
+  ): S;
   on<S extends Signal>(
     type: SignalConstructor<SignalMatching<S, this>>,
     listener: SignalListener<SignalMatching<S, this>>,
-  ): { readonly unregister: () => void };
+    priority?: number,
+  ): SignalSubscription<S>;
   unregister<T extends Signal>(type: SignalConstructor<T>, listener: SignalListener<T>): void;
 }
 
-export class BasicSignalHandler<Self> implements ISignalHandler {
-  #signalListenerMap = new Map<SignalConstructor, SignalListener[]>();
+export class DefaultSignalHandlerImpls {
+  static map() {
+    return new Map<SignalConstructor, SignalSubscription[]>();
+  }
 
-  fire<S extends Signal, C extends SignalConstructor<S>, A extends ConstructorParameters<C>>(
-    ctor: C,
-    ...args: A
+  static fire<S extends Signal, C extends SignalConstructor<S>>(
+    handler: ISignalHandler,
+    type: C,
+    ...params: ConstructorParameters<C>
+  ): S {
+    const signal = new type(...params);
+    const subscriptions = handler.signalSubscriptionMap.get(type);
+    if (!subscriptions) return signal;
+
+    if (isSignalStoppable(signal)) {
+      for (const subscription of subscriptions) {
+        subscription.listener(signal);
+        if (signal.propagationStopped) break;
+      }
+    } else {
+      for (const subscription of subscriptions) {
+        subscription.listener(signal);
+      }
+    }
+
+    return signal;
+  }
+
+  static on<S extends Signal>(
+    handler: ISignalHandler,
+    type: SignalConstructor<S>,
+    listener: SignalListener<S>,
+    priority: number = 0,
+  ): SignalSubscription<S> {
+    const subscriptions = handler.signalSubscriptionMap.get(type) ?? [];
+    const subscription: SignalSubscription<S> = {
+      listener,
+      priority,
+      unsubscribe: () => {
+        const idx = subscriptions.indexOf(subscription as SignalSubscription);
+        if (idx !== -1) subscriptions.splice(idx, 1);
+      },
+    };
+    subscriptions.push(subscription as SignalSubscription);
+    subscriptions.sort((a, b) => b.priority - a.priority);
+    handler.signalSubscriptionMap.set(type, subscriptions);
+    return subscription;
+  }
+
+  static unregister<S extends Signal>(
+    handler: ISignalHandler,
+    type: SignalConstructor<S>,
+    listener: SignalListener<S>,
   ) {
-    const listeners = this.#signalListenerMap.get(ctor);
-    if (!listeners) return;
+    const subscriptions = handler.signalSubscriptionMap.get(type);
+    if (!subscriptions) return;
+    handler.signalSubscriptionMap.set(
+      type,
+      subscriptions.filter(it => it.listener !== listener),
+    );
+  }
+}
 
-    const signal = new ctor(...args);
-    listeners.forEach(l => l(signal));
+export class BasicSignalHandler<Self> implements ISignalHandler {
+  readonly signalSubscriptionMap = DefaultSignalHandlerImpls.map();
+
+  fire<S extends Signal, C extends SignalConstructor<S>>(
+    type: C,
+    ...params: ConstructorParameters<C>
+  ): S {
+    return DefaultSignalHandlerImpls.fire(this, type, ...params);
   }
 
-  on<S extends Signal>(type: SignalConstructorMatching<S, Self>, listener: SignalListener<S>) {
-    const listeners = this.#signalListenerMap.get(type) ?? [];
-    listeners.push(listener as SignalListener);
-    this.#signalListenerMap.set(type, listeners);
-
-    return { unregister: () => this.unregister(type as SignalConstructor<S>, listener) };
+  on<S extends Signal>(
+    type: SignalConstructor<SignalMatching<S, this & Self>>,
+    listener: SignalListener<SignalMatching<S, this & Self>>,
+    priority: number = 0,
+  ): SignalSubscription<S> {
+    const subscription = DefaultSignalHandlerImpls.on(this, type, listener, priority);
+    return subscription as SignalSubscription<S>;
   }
 
-  unregister<T extends Signal>(type: SignalConstructor<T>, listener: SignalListener<T>) {
-    const listeners = this.#signalListenerMap.get(type);
-    if (!listeners) return;
-    const idx = listeners.indexOf(listener as SignalListener);
-    if (idx !== -1) listeners.splice(idx, 1);
+  unregister<T extends Signal>(type: SignalConstructor<T>, listener: SignalListener<T>): void {
+    DefaultSignalHandlerImpls.unregister(this, type, listener);
   }
 }

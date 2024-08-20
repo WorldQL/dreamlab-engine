@@ -5,12 +5,13 @@ import { Entity } from "../entity/mod.ts";
 import { Game } from "../game.ts";
 import * as internal from "../internal.ts";
 import {
+  DefaultSignalHandlerImpls,
   ISignalHandler,
   Signal,
   SignalConstructor,
-  SignalConstructorMatching,
   SignalListener,
   SignalMatching,
+  SignalSubscription,
 } from "../signal.ts";
 import {
   BehaviorDescendantDestroyed,
@@ -181,36 +182,26 @@ export class Behavior implements ISignalHandler {
   // #endregion
 
   // #region Signals
-  #signalListenerMap = new Map<SignalConstructor, SignalListener[]>();
+  readonly signalSubscriptionMap = DefaultSignalHandlerImpls.map();
 
-  fire<
-    S extends Signal,
-    C extends SignalConstructorMatching<S, this & Behavior>,
-    A extends ConstructorParameters<C>,
-  >(ctor: C, ...args: A) {
-    const listeners = this.#signalListenerMap.get(ctor);
-    if (!listeners) return;
-
-    const signal = new ctor(...args);
-    listeners.forEach(l => l(signal));
+  fire<S extends Signal, C extends SignalConstructor<S>>(
+    type: C,
+    ...params: ConstructorParameters<C>
+  ): S {
+    return DefaultSignalHandlerImpls.fire(this, type, ...params);
   }
 
   on<S extends Signal>(
-    type: SignalConstructorMatching<S, this & Behavior>,
-    listener: SignalListener<S>,
-  ) {
-    const listeners = this.#signalListenerMap.get(type) ?? [];
-    listeners.push(listener as SignalListener);
-    this.#signalListenerMap.set(type, listeners);
-
-    return { unregister: () => this.unregister(type as SignalConstructor<S>, listener) };
+    type: SignalConstructor<SignalMatching<S, this & Behavior>>,
+    listener: SignalListener<SignalMatching<S, this & Behavior>>,
+    priority: number = 0,
+  ): SignalSubscription<S> {
+    const subscription = DefaultSignalHandlerImpls.on(this, type, listener, priority);
+    return subscription as SignalSubscription<S>;
   }
 
-  unregister<T extends Signal>(type: SignalConstructor<T>, listener: SignalListener<T>) {
-    const listeners = this.#signalListenerMap.get(type);
-    if (!listeners) return;
-    const idx = listeners.indexOf(listener as SignalListener);
-    if (idx !== -1) listeners.splice(idx, 1);
+  unregister<T extends Signal>(type: SignalConstructor<T>, listener: SignalListener<T>): void {
+    DefaultSignalHandlerImpls.unregister(this, type, listener);
   }
   // #endregion
 
