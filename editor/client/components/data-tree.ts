@@ -1,7 +1,69 @@
 import { element as elem } from "@dreamlab/ui";
 import { ChevronDown, icon } from "../_icons.ts";
 
+declare global {
+  interface HTMLElementEventMap {
+    selectionchange: DataTreeSelectionChange;
+  }
+}
+
+export class DataTreeSelectionChange extends Event {
+  constructor(public readonly nodes: HTMLDetailsElement[]) {
+    super("selectionchange");
+  }
+}
+
 export class DataTree extends HTMLElement {
+  static {
+    customElements.define("dreamlab-data-tree", this);
+  }
+
+  #allowSelect: boolean;
+  #allowMultiSelect: boolean;
+
+  #selected = new Set<HTMLDetailsElement>();
+
+  constructor({
+    select = true,
+    multiselect = true,
+  }: { select?: boolean; multiselect?: boolean } = {}) {
+    super();
+
+    this.#allowSelect = select;
+    this.#allowMultiSelect = multiselect;
+
+    this.addEventListener("click", event => {
+      if (!this.#allowSelect) return;
+      if (!(event.target instanceof Element)) return;
+
+      // TODO: handle range-select
+      const selectMultiple = event.getModifierState("Control");
+      const entryElement = event.target.closest("details > summary")?.parentNode as
+        | HTMLDetailsElement
+        | null
+        | undefined;
+
+      if (!entryElement) {
+        this.#selected.clear();
+      } else {
+        if (selectMultiple && this.#allowMultiSelect) {
+          if (this.#selected.has(entryElement)) this.#selected.delete(entryElement);
+          else this.#selected.add(entryElement);
+        } else {
+          this.#selected.clear();
+          this.#selected.add(entryElement);
+        }
+      }
+
+      this.dispatchEvent(new DataTreeSelectionChange([...this.#selected]));
+
+      for (const details of Array.from(this.querySelectorAll("details"))) {
+        if (this.#selected.has(details)) details.dataset.selected = "";
+        else delete details.dataset.selected;
+      }
+    });
+  }
+
   addNode(
     headerContent: (Element | string | Text)[],
     parent?: HTMLElement,
@@ -22,4 +84,3 @@ export class DataTree extends HTMLElement {
     return details;
   }
 }
-customElements.define("dreamlab-data-tree", DataTree);

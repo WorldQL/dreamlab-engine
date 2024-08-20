@@ -1,26 +1,29 @@
 dreamlab-data-tree {
   --tree-indent-amount: 1em;
 
-  & details + details {
-    margin-top: 0.25em;
-  }
-
   & details {
     padding-left: var(--tree-indent-amount);
+    margin-top: 0.125em;
+  }
+
+  & details[data-selected] > summary {
+    background-color: rgb(var(--color-primary) / 1);
   }
 
   & details > summary {
     margin-left: calc(var(--tree-indent-amount) * -1);
     position: relative;
+    border-radius: var(--border-radius);
+    padding: 0.25em;
+    font-size: 0.95em;
+    cursor: pointer;
 
     &::marker {
       content: "";
     }
     &::before {
       display: inline-block;
-      width: 1ch;
-      max-width: 1ch;
-      margin-right: 1ch;
+      width: 2.25ch;
       content: "";
     }
 
