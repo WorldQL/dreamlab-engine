@@ -159,7 +159,8 @@ export class Behavior implements ISignalHandler {
   // #endregion
 
   // #region External Listeners
-  readonly externalListeners: SignalSubscription[] = [];
+  // deno-lint-ignore no-explicit-any
+  readonly externalListeners: SignalSubscription<any>[] = [];
 
   protected listen<S extends Signal, T extends ISignalHandler>(
     receiver: T,
@@ -168,7 +169,7 @@ export class Behavior implements ISignalHandler {
   ) {
     const boundSignalListener = signalListener.bind(this);
     const subscription = receiver.on(signalType, boundSignalListener);
-    this.externalListeners.push(subscription as SignalSubscription);
+    this.externalListeners.push(subscription);
   }
   // #endregion
 

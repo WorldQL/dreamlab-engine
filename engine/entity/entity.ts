@@ -745,11 +745,8 @@ export abstract class Entity implements ISignalHandler {
   // #endregion
 
   // #region Listeners
-  readonly #listeners: [
-    receiver: WeakRef<ISignalHandler>,
-    type: SignalConstructor,
-    listener: SignalListener,
-  ][] = [];
+  // deno-lint-ignore no-explicit-any
+  readonly externalListeners: SignalSubscription<any>[] = [];
 
   protected listen<S extends Signal, T extends ISignalHandler>(
     receiver: T,
@@ -757,19 +754,8 @@ export abstract class Entity implements ISignalHandler {
     signalListener: SignalListener<SignalMatching<S, T>>,
   ) {
     const boundSignalListener = signalListener.bind(this);
-
-    // redirect to this.on(..) if listening to self
-    if ((receiver as unknown) === this) {
-      // @ts-expect-error can't expect TypeScript to know that T is Entity
-      return this.on(signalType, signalListener);
-    }
-
-    receiver.on(signalType, boundSignalListener);
-    this.#listeners.push([
-      new WeakRef(receiver as ISignalHandler),
-      signalType as SignalConstructor,
-      boundSignalListener as SignalListener,
-    ]);
+    const subscription = receiver.on(signalType, boundSignalListener);
+    this.externalListeners.push(subscription);
   }
   // #endregion
 
@@ -895,16 +881,11 @@ export abstract class Entity implements ISignalHandler {
       behavior.destroy();
     }
 
-    for (const [receiverRef, type, listener] of this.#listeners) {
-      const receiver = receiverRef.deref();
-      if (!receiver) continue;
-      receiver.unregister(type, listener);
-    }
-
     for (const value of this.#values.values()) value.destroy();
     this.#parent = undefined;
     this.game.entities[internal.entityStoreUnregister](this);
 
+    this.externalListeners.forEach(s => s.unsubscribe());
     this.signalSubscriptionMap.clear();
   }
   // #endregion
