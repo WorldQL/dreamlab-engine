@@ -55,12 +55,8 @@ export class DataTree extends HTMLElement {
         }
       }
 
+      this.#updateSelectedDataset();
       this.dispatchEvent(new DataTreeSelectionChange([...this.#selected]));
-
-      for (const details of Array.from(this.querySelectorAll("details"))) {
-        if (this.#selected.has(details)) details.dataset.selected = "";
-        else delete details.dataset.selected;
-      }
     });
   }
 
@@ -82,5 +78,19 @@ export class DataTree extends HTMLElement {
 
     (parent ?? this).append(details);
     return details;
+  }
+
+  setNodeSelected(element: HTMLDetailsElement, selected: boolean) {
+    if (selected) this.#selected.add(element);
+    else this.#selected.delete(element);
+
+    this.#updateSelectedDataset();
+  }
+
+  #updateSelectedDataset() {
+    for (const details of Array.from(this.querySelectorAll("details"))) {
+      if (this.#selected.has(details)) details.dataset.selected = "";
+      else delete details.dataset.selected;
+    }
   }
 }
