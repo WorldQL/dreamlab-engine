@@ -1,25 +1,22 @@
 import { ClientGame, Entity, EntityDestroyed } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 import { icon, PlusCircle } from "../../_icons.ts";
-import { InspectorUI, InspectorUIComponent } from "../inspector.ts";
+import { InspectorUI, InspectorUIWidget } from "../inspector.ts";
 import { BehaviorList } from "./behavior-list.ts";
 
-export class BehaviorPanel implements InspectorUIComponent {
+export class BehaviorPanel implements InspectorUIWidget {
+  #titleBar = elem("header", {}, [elem("h1", {}, ["Behaviors"])]);
+  #section = elem("section", { id: "behavior-panel" }, [this.#titleBar]);
+
   behaviorLists = new Map<Entity, BehaviorList>();
 
   constructor(private game: ClientGame) {}
 
-  render(ui: InspectorUI, editUIRoot: HTMLElement): void {
-    const right = editUIRoot.querySelector("#right-sidebar")!;
-
-    const titleBar = elem("header", {}, [elem("h1", {}, ["Behaviors"])]);
-    const container = elem("section", { id: "behavior-panel" }, [titleBar]);
-    right.append(container);
-
+  setup(ui: InspectorUI): void {
     const selectSomethingNotification = elem("p", { id: "select-something-notification" }, [
       "Select an entity to view its behaviors.",
     ]);
-    container.append(selectSomethingNotification);
+    this.#section.append(selectSomethingNotification);
 
     const addBehaviorButton = elem(
       "a",
@@ -42,11 +39,11 @@ export class BehaviorPanel implements InspectorUIComponent {
       }
     });
 
-    titleBar.append(addBehaviorButton);
+    this.#titleBar.append(addBehaviorButton);
 
     const behaviorList = elem("div", { id: "behavior-list" });
     behaviorList.style.display = "none";
-    container.append(behaviorList);
+    this.#section.append(behaviorList);
 
     ui.selectedEntity.listen(() => {
       const entity = ui.selectedEntity.entities.at(0);
@@ -68,5 +65,14 @@ export class BehaviorPanel implements InspectorUIComponent {
         selectSomethingNotification.style.display = "block";
       }
     });
+  }
+
+  show(uiRoot: HTMLElement): void {
+    const right = uiRoot.querySelector("#right-sidebar")!;
+    right.append(this.#section);
+  }
+
+  hide(): void {
+    this.#section.remove();
   }
 }

@@ -21,7 +21,7 @@ import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 import { CameraPanBehavior } from "./camera-pan.ts";
 import { connectToGame } from "./game-connection.ts";
 import { setupGame } from "./game-setup.ts";
-import { renderInspector } from "./ui/inspector.ts";
+import { InspectorUI } from "./ui/inspector.ts";
 
 const instanceId = NIL_UUID;
 const connectUrl = new URL(import.meta.env.SERVER_URL);
@@ -30,7 +30,7 @@ connectUrl.pathname = `/api/v1/connect/${instanceId}`;
 connectUrl.searchParams.set("player_id", generateCUID("ply"));
 connectUrl.searchParams.set("nickname", "Player" + Math.floor(Math.random() * 999) + 1);
 
-const editUIRoot = document.querySelector("main.edit-mode")! as HTMLElement;
+const editUIRoot = document.querySelector("main")! as HTMLElement;
 const container = editUIRoot.querySelector("#game-container")! as HTMLDivElement;
 
 const socket = new WebSocket(connectUrl);
@@ -63,7 +63,9 @@ if (handshake.edit_mode) {
   game.local._.Camera.cast(Camera).addBehavior({ type: CameraPanBehavior });
 }
 
-renderInspector(game, conn, editUIRoot, container, handshake.edit_mode);
+const inspector = new InspectorUI(game, conn, handshake.edit_mode, container);
+inspector.show(editUIRoot);
+Object.defineProperty(globalThis, "inspector", { value: inspector });
 
 let now = performance.now();
 const onFrame = (time: number) => {

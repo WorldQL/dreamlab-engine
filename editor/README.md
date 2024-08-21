@@ -7,17 +7,15 @@ experimental next generation editor for dreamlab
 
 ## left to do
 
-- play / pause / stop properly working
-  - need to add server support for stopping the current play session
+- rebuild + reload behavior scripts when they're edited
 - save the scene description to JSON on the server
-- drag-and-drop behavior sourcefiles / texture assets onto value fields
-- align design more with original editor (put colors in more places)
 - undo/redo (this is hard to get right in multiplayer)
 - entity def copy paste
 - hotkeys
 
 ## maybe
 
+- drag-and-drop texture assets onto value fields ?
 - keep the scene description separate to the game (?)
   - this lets us persist `scene.registration` (useful for custom entities)
   - we can exclude entities from rendering altogether

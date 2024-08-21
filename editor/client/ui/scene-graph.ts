@@ -10,28 +10,26 @@ import * as internal from "@dreamlab/engine/internal";
 import { element as elem } from "@dreamlab/ui";
 import { EditorMetadataEntity } from "../../common/mod.ts";
 import { ChevronDown, icon } from "../_icons.ts";
-import { InspectorUI, InspectorUIComponent } from "./inspector.ts";
+import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 
 function eventTargetsEntry(event: Event, entryElement: HTMLElement) {
   if (!(event.target instanceof HTMLElement)) return false;
   return event.target.closest("details[data-entity]") === entryElement;
 }
 
-export class SceneGraph implements InspectorUIComponent {
-  entryElementMap = new Map<string, HTMLElement>();
+export class SceneGraph implements InspectorUIWidget {
+  #section: HTMLElement = elem("section", { id: "scene-graph" }, [
+    elem("h1", {}, ["Scene Graph"]),
+  ]);
 
+  entryElementMap = new Map<string, HTMLElement>();
   currentDragSource: [entity: Entity, entry: HTMLElement] | undefined;
 
   constructor(private game: ClientGame) {}
 
-  render(ui: InspectorUI, editUIRoot: HTMLElement) {
-    const left = editUIRoot.querySelector("#left-sidebar")!;
-    const container = elem("section", { id: "scene-graph" }, [elem("h1", {}, ["Scene Graph"])]);
-
-    left.append(container);
-
+  setup(ui: InspectorUI): void {
     const treeRoot = elem("div", { id: "scene-graph-tree" });
-    container.append(treeRoot);
+    this.#section.append(treeRoot);
 
     this.handleEntitySelection(ui, treeRoot);
 
@@ -47,7 +45,7 @@ export class SceneGraph implements InspectorUIComponent {
 
     const world = ui.editMode ? this.game.world._.EditEntities._.world : this.game.world;
 
-    container.addEventListener("contextmenu", event => {
+    this.#section.addEventListener("contextmenu", event => {
       event.preventDefault();
       event.stopPropagation();
 
@@ -60,6 +58,15 @@ export class SceneGraph implements InspectorUIComponent {
         ],
       ]);
     });
+  }
+
+  show(uiRoot: HTMLElement): void {
+    const left = uiRoot.querySelector("#left-sidebar")!;
+    left.append(this.#section);
+  }
+
+  hide(): void {
+    this.#section.remove();
   }
 
   sortEntries(parent: HTMLElement) {

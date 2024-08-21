@@ -1,16 +1,14 @@
 import { ClientGame } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 import { DataTree } from "../components/mod.ts";
-import { InspectorUI, InspectorUIComponent } from "./inspector.ts";
+import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 
-export class FileTree implements InspectorUIComponent {
+export class FileTree implements InspectorUIWidget {
+  #section = elem("section", { id: "file-tree" }, [elem("h1", {}, ["Files"])]);
+
   constructor(private game: ClientGame) {}
 
-  render(_ui: InspectorUI, editUIRoot: HTMLElement): void {
-    const left = editUIRoot.querySelector("#left-sidebar")!;
-    const section = elem("section", { id: "file-tree" }, [elem("h1", {}, ["Files"])]);
-    left.append(section);
-
+  setup(_ui: InspectorUI): void {
     const tree = new DataTree();
     tree.style.setProperty("--tree-indent-amount", "0.5em");
 
@@ -73,6 +71,15 @@ export class FileTree implements InspectorUIComponent {
       }
     });
 
-    section.append(tree);
+    this.#section.append(tree);
+  }
+
+  show(uiRoot: HTMLElement): void {
+    const left = uiRoot.querySelector("#left-sidebar")!;
+    left.append(this.#section);
+  }
+
+  hide(): void {
+    this.#section.remove();
   }
 }

@@ -5,12 +5,12 @@ import { connectToGame } from "../game-connection.ts";
 import { setupGame } from "../game-setup.ts";
 import { games } from "../main.ts";
 import { Ping } from "../networking/ping.ts";
-import { InspectorUI, InspectorUIComponent, renderInspector } from "./inspector.ts";
+import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 
 // TODO: we should not create a whole new editor ui for the play game
 
-async function startPlayGame(playUIRoot: HTMLElement, game: ClientGame): Promise<ClientGame> {
-  const playContainer = playUIRoot.querySelector("#game-container")! as HTMLDivElement;
+async function startPlayGame(uiRoot: HTMLElement, game: ClientGame): Promise<ClientGame> {
+  const container = uiRoot.querySelector("#game-container")! as HTMLDivElement;
 
   const connectURL = new URL(import.meta.env.SERVER_URL);
   connectURL.pathname = `/api/v1/connect/${game.instanceId}`;
@@ -25,7 +25,7 @@ async function startPlayGame(playUIRoot: HTMLElement, game: ClientGame): Promise
 
   const [playGame, conn, _handshake] = await connectToGame(
     game.instanceId,
-    playContainer,
+    container,
     playSocket,
     DEFAULT_CODEC,
   );
@@ -35,13 +35,12 @@ async function startPlayGame(playUIRoot: HTMLElement, game: ClientGame): Promise
     playGame.container.innerHTML = "";
     playGame.shutdown();
 
-    editUIRoot.style.display = "grid";
-    playUIRoot.style.display = "none";
+    // TODO: hide play ui
   });
 
   await setupGame(playGame, conn, false);
   games.play = playGame;
-  renderInspector(playGame, conn, playUIRoot, playContainer, false);
+  // TODO: setup & show an inspector for the playGame
 
   return playGame;
 }
@@ -52,27 +51,25 @@ async function stopPlayGame(game: ClientGame) {
   await fetch(url, { method: "POST" });
 }
 
-const editUIRoot = document.querySelector("main.edit-mode")! as HTMLElement;
-const playUIRoot = document.querySelector("main.play-mode")! as HTMLElement;
+const editUIRoot = document.querySelector("main")! as HTMLElement;
 
-export class AppMenu implements InspectorUIComponent {
+// TODO: this should not belong to the inspector, it should be its own thing
+export class AppMenu implements InspectorUIWidget {
+  #section = elem("section", { id: "app-menu" });
+
   constructor(private game: ClientGame) {}
 
-  render(ui: InspectorUI, uiRoot: HTMLElement): void {
-    const topBar = uiRoot.querySelector("#top-bar")!;
-
-    const saveButton = elem("a", { role: "button" }, ["Save"]);
-
+  setup(editUI: InspectorUI): void {
     const playButton = elem("a", { role: "button", href: "javascript:void(0)" }, ["Play"]);
     playButton.addEventListener("click", async event => {
       event.preventDefault();
 
       if (games.play === undefined) {
-        await startPlayGame(playUIRoot, this.game);
+        // TODO: startPlayGame(..)
       }
 
-      editUIRoot.style.display = "none";
-      playUIRoot.style.display = "grid";
+      editUI.hide();
+      editUI.gameContainer.style.display = "none";
 
       if (games.play) games.play.renderer.app.resize();
     });
@@ -80,8 +77,8 @@ export class AppMenu implements InspectorUIComponent {
     const editButton = elem("a", { role: "button", href: "javascript:void(0)" }, ["Edit"]);
     editButton.addEventListener("click", event => {
       event.preventDefault();
-      editUIRoot.style.display = "grid";
-      playUIRoot.style.display = "none";
+
+      // TODO: hide current playUI
     });
 
     const stopButton = elem("a", { role: "button", href: "javascript:void(0)" }, ["Stop"]);
@@ -90,16 +87,16 @@ export class AppMenu implements InspectorUIComponent {
       stopPlayGame(this.game);
     });
 
-    topBar.append(
-      elem("section", { id: "app-menu" }, [
-        elem("div", {}, [elem("h1", {}, ["Dreamlab"]), saveButton]),
-        elem("div", {}, [playButton, editButton, stopButton]),
-        elem("div", {}, [this.renderStats(ui, uiRoot)]),
-      ]),
+    const saveButton = elem("a", { role: "button" }, ["Save"]);
+
+    this.#section.append(
+      elem("div", {}, [elem("h1", {}, ["Dreamlab"]), saveButton]),
+      elem("div", {}, [playButton, editButton, stopButton]),
+      elem("div", {}, [this.setupStats(editUI)]),
     );
   }
 
-  renderStats(_ui: InspectorUI, _editUIRoot: HTMLElement): HTMLElement {
+  setupStats(_ui: InspectorUI): HTMLElement {
     const countText = document.createTextNode("1");
     const updateCount = () => {
       const count = this.game.network.connections.length;
@@ -118,5 +115,14 @@ export class AppMenu implements InspectorUIComponent {
       elem("div", {}, ["Connected Users: ", countText]),
       elem("div", {}, ["Ping: ", pingText, "ms"]),
     ]);
+  }
+
+  show(uiRoot: HTMLElement): void {
+    const topBar = uiRoot.querySelector("#top-bar")!;
+    topBar.append(this.#section);
+  }
+
+  hide(): void {
+    this.#section.remove();
   }
 }

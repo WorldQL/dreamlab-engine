@@ -11,61 +11,81 @@ import { Properties } from "./properties.ts";
 import { SceneGraph } from "./scene-graph.ts";
 import { SelectedEntityService } from "./selected-entity.ts";
 
-export interface InspectorUI {
-  game: ClientGame;
-  editMode: boolean;
+export interface InspectorUIWidget {
+  setup(ui: InspectorUI): void;
+  show(uiRoot: HTMLElement): void;
+  hide(): void;
+}
+
+export class InspectorUI {
   selectedEntity: SelectedEntityService;
+  behaviorTypeInfo: BehaviorTypeInfoService;
+
   sceneGraph: SceneGraph;
   properties: Properties;
   behaviorPanel: BehaviorPanel;
   contextMenu: ContextMenu;
   gameOverlays: GameOverlays;
   appMenu: AppMenu;
-  behaviorTypeInfo: BehaviorTypeInfoService;
   fileTree: FileTree;
-}
 
-export interface InspectorUIComponent {
-  render(ui: InspectorUI, uiRoot: HTMLElement): void;
-}
+  constructor(
+    public game: ClientGame,
+    conn: ClientConnection,
+    public editMode: boolean,
+    public gameContainer: HTMLDivElement,
+  ) {
+    this.selectedEntity = new SelectedEntityService(game);
+    this.behaviorTypeInfo = new BehaviorTypeInfoService(game);
 
-export function renderInspector(
-  game: ClientGame,
-  conn: ClientConnection,
-  uiRoot: HTMLElement,
-  gameContainer: HTMLDivElement,
-  editMode: boolean,
-) {
-  const ui: InspectorUI = {
-    game,
-    editMode,
-    selectedEntity: new SelectedEntityService(game),
-    sceneGraph: new SceneGraph(game),
-    properties: new Properties(game),
-    behaviorPanel: new BehaviorPanel(game),
-    contextMenu: new ContextMenu(game),
-    gameOverlays: new GameOverlays(game, gameContainer),
-    appMenu: new AppMenu(game),
-    behaviorTypeInfo: new BehaviorTypeInfoService(game),
-    fileTree: new FileTree(game),
-  };
+    this.sceneGraph = new SceneGraph(game);
+    this.properties = new Properties(game);
+    this.behaviorPanel = new BehaviorPanel(game);
+    this.contextMenu = new ContextMenu(game);
+    this.gameOverlays = new GameOverlays(game, gameContainer);
+    this.appMenu = new AppMenu(game);
+    this.fileTree = new FileTree(game);
 
-  if (editMode) {
-    ui.gameOverlays.render(ui, uiRoot);
-    game.local._.Camera.getBehavior(CameraPanBehavior).ui = ui;
+    if (editMode) {
+      game.local._.Camera.getBehavior(CameraPanBehavior).ui = this;
+    }
+
+    this.gameOverlays.setup(this);
+    this.sceneGraph.setup(this);
+    this.properties.setup(this);
+    this.behaviorPanel.setup(this);
+    this.contextMenu.setup(this);
+    this.appMenu.setup(this);
+    this.fileTree.setup(this);
+
+    conn.registerPacketHandler("ScriptEdited", packet => {
+      if (packet.behavior_script_id) {
+        void this.behaviorTypeInfo.reload(packet.behavior_script_id);
+        // TODO: we need to make sure this propagates to every guy whose rendering depends on one of those
+      }
+    });
   }
 
-  ui.sceneGraph.render(ui, uiRoot);
-  ui.properties.render(ui, uiRoot);
-  ui.behaviorPanel.render(ui, uiRoot);
-  ui.contextMenu.render(ui, uiRoot);
-  ui.appMenu.render(ui, uiRoot);
-  ui.fileTree.render(ui, uiRoot);
-
-  conn.registerPacketHandler("ScriptEdited", packet => {
-    if (packet.behavior_script_id) {
-      void ui.behaviorTypeInfo.reload(packet.behavior_script_id);
-      // TODO: we need to make sure this propagates to every guy whose rendering depends on one of those
+  show(uiRoot: HTMLElement) {
+    if (this.editMode) {
+      this.gameOverlays.show(uiRoot);
     }
-  });
+
+    this.sceneGraph.show(uiRoot);
+    this.properties.show(uiRoot);
+    this.behaviorPanel.show(uiRoot);
+    this.contextMenu.show(uiRoot);
+    this.appMenu.show(uiRoot);
+    this.fileTree.show(uiRoot);
+  }
+
+  hide() {
+    this.sceneGraph.hide();
+    this.properties.hide();
+    this.behaviorPanel.hide();
+    this.contextMenu.hide();
+    this.gameOverlays.hide();
+    this.appMenu.hide();
+    this.fileTree.hide();
+  }
 }

@@ -1,24 +1,20 @@
 import { ClientGame } from "@dreamlab/engine";
-import { InspectorUI, InspectorUIComponent } from "./inspector.ts";
+import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 import { element as elem } from "@dreamlab/ui";
 
 export type ContextMenuItem =
   | [label: string, action: () => void]
   | [label: string, children: ContextMenuItem[]];
 
-export class ContextMenu implements InspectorUIComponent {
-  contextMenuRoot: HTMLElement;
+export class ContextMenu implements InspectorUIWidget {
+  #menu: HTMLElement = elem("div", { id: "context-menu" }, []);
+  #container = elem("div", { id: "context-menu-container" }, [this.#menu]);
 
-  constructor(private game: ClientGame) {
-    this.contextMenuRoot = elem("div", { id: "context-menu" }, []);
-  }
+  constructor(private game: ClientGame) {}
 
-  render(_ui: InspectorUI, editUIRoot: HTMLElement): void {
-    const menuContainer = elem("div", { id: "context-menu-container" }, [this.contextMenuRoot]);
-    editUIRoot.append(menuContainer);
-
-    menuContainer.addEventListener("click", event => {
-      if (this.contextMenuRoot.dataset.open === undefined) return;
+  setup(_ui: InspectorUI): void {
+    this.#container.addEventListener("click", event => {
+      if (this.#menu.dataset.open === undefined) return;
       if (event.target instanceof HTMLElement && event.target.closest("#context-menu")) return;
 
       event.preventDefault();
@@ -27,12 +23,20 @@ export class ContextMenu implements InspectorUIComponent {
     });
   }
 
-  drawContextMenu(cursorX: number, cursorY: number, items: ContextMenuItem[]) {
-    this.contextMenuRoot.style.setProperty("--cursor-x", `${cursorX}px`);
-    this.contextMenuRoot.style.setProperty("--cursor-y", `${cursorY}px`);
-    this.contextMenuRoot.dataset.open = "";
+  show(uiRoot: HTMLElement): void {
+    uiRoot.append(this.#container);
+  }
 
-    this.contextMenuRoot.innerHTML = "";
+  hide(): void {
+    this.#container.remove();
+  }
+
+  drawContextMenu(cursorX: number, cursorY: number, items: ContextMenuItem[]) {
+    this.#menu.style.setProperty("--cursor-x", `${cursorX}px`);
+    this.#menu.style.setProperty("--cursor-y", `${cursorY}px`);
+    this.#menu.dataset.open = "";
+
+    this.#menu.innerHTML = "";
 
     const renderItem = (
       section: HTMLElement,
@@ -85,10 +89,10 @@ export class ContextMenu implements InspectorUIComponent {
 
     const section = elem("section");
     for (let i = 0; i < items.length; i++) renderItem(section, items[i], i);
-    this.contextMenuRoot.append(section);
+    this.#menu.append(section);
   }
 
   hideContextMenu() {
-    delete this.contextMenuRoot.dataset.open;
+    delete this.#menu.dataset.open;
   }
 }

@@ -10,30 +10,28 @@ import {
   TextureAdapter,
   SpritesheetAdapter,
 } from "@dreamlab/engine";
-import { InspectorUI, InspectorUIComponent } from "./inspector.ts";
+import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 import { element as elem } from "@dreamlab/ui";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { createInputField } from "../util/easy-input.ts";
 import { DataDetails, DataTable } from "../components/mod.ts";
 
-export class Properties implements InspectorUIComponent {
+export class Properties implements InspectorUIWidget {
+  #section = elem("section", { id: "properties" }, [elem("h1", {}, ["Properties"])]);
+
   constructor(private game: ClientGame) {}
 
-  render(ui: InspectorUI, editUIRoot: HTMLElement): void {
-    const right = editUIRoot.querySelector("#right-sidebar")!;
-    const section = elem("section", { id: "properties" }, [elem("h1", {}, ["Properties"])]);
-    right.append(section);
-
+  setup(ui: InspectorUI): void {
     const container = elem("div", { id: "properties-display" });
     container.style.display = "none";
 
-    section.append(container);
+    this.#section.append(container);
 
     const selectSomethingNotification = elem("p", { id: "select-something-notification" }, [
       "Select an entity to view its properties.",
     ]);
 
-    section.append(selectSomethingNotification);
+    this.#section.append(selectSomethingNotification);
 
     ui.selectedEntity.listen(() => {
       const entity = ui.selectedEntity.entities.at(0);
@@ -47,6 +45,15 @@ export class Properties implements InspectorUIComponent {
         selectSomethingNotification.style.display = "block";
       }
     });
+  }
+
+  show(uiRoot: HTMLElement): void {
+    const right = uiRoot.querySelector("#right-sidebar")!;
+    right.append(this.#section);
+  }
+
+  hide(): void {
+    this.#section.remove();
   }
 
   drawEntityProperties(container: HTMLElement, entity: Entity) {

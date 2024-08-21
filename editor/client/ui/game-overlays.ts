@@ -20,21 +20,29 @@ import {
   ZoomIn,
 } from "../_icons.ts";
 import { ButtonGroup, IconButton } from "../components/mod.ts";
-import { InspectorUI, InspectorUIComponent } from "./inspector.ts";
+import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 
-export class GameOverlays implements InspectorUIComponent {
+export class GameOverlays implements InspectorUIWidget {
+  #overlay: HTMLElement;
+
   constructor(
     private game: ClientGame,
     private gameContainer: HTMLDivElement,
-  ) {}
-
-  render(_ui: InspectorUI, _editUIRoot: HTMLElement): void {
-    const overlay = elem("div", { id: "game-overlays" }, [
+  ) {
+    this.#overlay = elem("div", { id: "game-overlays" }, [
       this.drawGizmoButtons(),
       this.drawCursorOverlay(),
     ]);
+  }
 
-    this.gameContainer.appendChild(overlay);
+  setup(_ui: InspectorUI): void {}
+
+  show(_uiRoot: HTMLElement): void {
+    this.gameContainer.append(this.#overlay);
+  }
+
+  hide(): void {
+    this.#overlay.remove();
   }
 
   drawGizmoButtons(): HTMLElement {

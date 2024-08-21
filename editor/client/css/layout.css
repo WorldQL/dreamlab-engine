@@ -14,10 +14,6 @@ main {
     "left   bottom    right";
 }
 
-main.play-mode {
-  display: none;
-}
-
 main > div {
   all: unset;
   display: block;
