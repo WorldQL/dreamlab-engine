@@ -51,7 +51,14 @@ export class FileTree implements InspectorUIComponent {
         if (node.type === "file") {
           element.draggable = true;
           element.dataset["file"] = node.path;
-          // TODO: handle drag events for dropping onto an entity
+
+          element.addEventListener("dragstart", () => {
+            element.dataset.dragging = "";
+          });
+
+          element.addEventListener("dragend", () => {
+            delete element.dataset.dragging;
+          });
         }
 
         if (node.type === "directory") {

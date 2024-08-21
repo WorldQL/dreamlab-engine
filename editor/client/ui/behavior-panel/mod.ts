@@ -45,6 +45,7 @@ export class BehaviorPanel implements InspectorUIComponent {
     titleBar.append(addBehaviorButton);
 
     const behaviorList = elem("div", { id: "behavior-list" });
+    behaviorList.style.display = "none";
     container.append(behaviorList);
 
     ui.selectedEntity.listen(() => {

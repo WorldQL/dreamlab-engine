@@ -24,6 +24,36 @@ export class BehaviorList {
   ) {
     this.game = ui.game;
 
+    this.container.addEventListener("dragover", event => {
+      event.preventDefault();
+    });
+
+    this.container.addEventListener("drop", async event => {
+      event.preventDefault();
+
+      const dragTarget = document.querySelector(
+        "[data-file][data-dragging]",
+      ) as HTMLElement | null;
+      if (!dragTarget) return;
+
+      const file = dragTarget.dataset.file as string;
+      const scriptPath = `res://${file}`;
+
+      try {
+        const info = await ui.behaviorTypeInfo.get(scriptPath);
+        const values = Object.fromEntries(
+          info.values.map(({ key }) => [key, undefined] as const),
+        );
+
+        const behavior = { ref: generateCUID("bhv"), script: scriptPath, values };
+        this.behaviors.push(behavior);
+        this.sync();
+      } catch (error) {
+        // FIXME: uhh catch onInitialize() throwing and deal with it better
+        console.log(error);
+      }
+    });
+
     if (useEditorMetadata) {
       const editorMetadata = entity.children
         .get("__EditorMetadata")
