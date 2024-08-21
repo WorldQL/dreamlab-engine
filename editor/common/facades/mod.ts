@@ -10,22 +10,22 @@ export class Facades {
     this.#reverse.set(facade, entity);
   }
 
-  static #lookupFacadeEntityType(entityType: EntityConstructor): EntityConstructor {
+  static lookupFacadeEntityType(entityType: EntityConstructor): EntityConstructor {
     return this.#facades.get(entityType) ?? entityType;
   }
 
-  static #reverseFacadeEntityType(entityType: EntityConstructor): EntityConstructor {
+  static reverseFacadeEntityType(entityType: EntityConstructor): EntityConstructor {
     return this.#reverse.get(entityType) ?? entityType;
   }
 
   static useEditorFacades(def: EntityDefinition) {
-    def.type = this.#lookupFacadeEntityType(def.type);
+    def.type = this.lookupFacadeEntityType(def.type);
     def.children?.forEach(c => this.useEditorFacades(c));
     return def;
   }
 
   static dropEditorFacades(def: EntityDefinition) {
-    def.type = this.#reverseFacadeEntityType(def.type);
+    def.type = this.reverseFacadeEntityType(def.type);
     def.children?.forEach(c => this.dropEditorFacades(c));
     return def;
   }

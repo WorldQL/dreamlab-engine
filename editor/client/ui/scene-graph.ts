@@ -8,7 +8,7 @@ import {
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { element as elem } from "@dreamlab/ui";
-import { EditorMetadataEntity } from "../../common/mod.ts";
+import { EditorMetadataEntity, Facades } from "../../common/mod.ts";
 import { ChevronDown, icon } from "../_icons.ts";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 
@@ -54,7 +54,11 @@ export class SceneGraph implements InspectorUIWidget {
           "New Entity",
           [...Entity[internal.entityTypeRegistry].entries()]
             .filter(([_, namespace]) => namespace !== "@editor")
-            .map(([type, _]) => [type.name, () => world.spawn({ type, name: type.name })]),
+            .map(([type, _]) => [
+              type.name,
+              () =>
+                world.spawn({ type: Facades.lookupFacadeEntityType(type), name: type.name }),
+            ]),
         ],
       ]);
     });
@@ -272,7 +276,11 @@ export class SceneGraph implements InspectorUIWidget {
           "New Entity",
           [...Entity[internal.entityTypeRegistry].entries()]
             .filter(([_, namespace]) => namespace !== "@editor")
-            .map(([type, _]) => [type.name, () => entity.spawn({ type, name: type.name })]),
+            .map(([type, _]) => [
+              type.name,
+              () =>
+                entity.spawn({ type: Facades.lookupFacadeEntityType(type), name: type.name }),
+            ]),
         ],
         ["Delete", () => entity.destroy()],
       ]);
