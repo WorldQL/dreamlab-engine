@@ -8,14 +8,15 @@ import {
 } from "@dreamlab/engine";
 import { EnsureCompatible, EntityValueProps } from "./_compatibility.ts";
 import { DebugSquare } from "./_debug.ts";
-import { Facades } from "./mod.ts";
+import { Facades } from "./manager.ts";
 
 export class EditorFacadeCamera extends PixiEntity {
   static {
+    Entity.registerType(this, "@editor");
     Facades.register(Camera, this);
   }
 
-  static readonly icon = "📷";
+  static readonly icon = Camera.icon;
 
   public smooth: number = 0.1;
   public unlocked: boolean = false;
@@ -47,9 +48,8 @@ export class EditorFacadeCamera extends PixiEntity {
     });
   }
 }
-Entity.registerType(EditorFacadeCamera, "@editor");
 
-type _HasAllCameraValues = EnsureCompatible<
+type _HasAllValues = EnsureCompatible<
   Omit<EntityValueProps<Camera>, "container" | "smoothed">,
   EntityValueProps<EditorFacadeCamera>
 >;
