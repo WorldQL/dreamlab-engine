@@ -1,27 +1,32 @@
-import { Camera, EntityConstructor, EntityDefinition } from "@dreamlab/engine";
-import { EditorFacadeCamera } from "./camera.ts";
+import { EntityConstructor, EntityDefinition } from "@dreamlab/engine";
 import "./edit-roots.ts";
 
-export function lookupFacadeEntityType(entityType: EntityConstructor): EntityConstructor {
-  if (entityType === Camera) return EditorFacadeCamera;
+export class Facades {
+  static #facades = new Map<EntityConstructor, EntityConstructor>();
+  static #reverse = new Map<EntityConstructor, EntityConstructor>();
 
-  return entityType;
-}
+  static register(entity: EntityConstructor, facade: EntityConstructor): void {
+    this.#facades.set(entity, facade);
+    this.#reverse.set(facade, entity);
+  }
 
-export function reverseFacadeEntityType(entityType: EntityConstructor): EntityConstructor {
-  if (entityType === EditorFacadeCamera) return Camera;
+  static #lookupFacadeEntityType(entityType: EntityConstructor): EntityConstructor {
+    return this.#facades.get(entityType) ?? entityType;
+  }
 
-  return entityType;
-}
+  static #reverseFacadeEntityType(entityType: EntityConstructor): EntityConstructor {
+    return this.#reverse.get(entityType) ?? entityType;
+  }
 
-export function useEditorFacades(def: EntityDefinition) {
-  def.type = lookupFacadeEntityType(def.type);
-  def.children?.forEach(c => useEditorFacades(c));
-  return def;
-}
+  static useEditorFacades(def: EntityDefinition) {
+    def.type = this.#lookupFacadeEntityType(def.type);
+    def.children?.forEach(c => this.useEditorFacades(c));
+    return def;
+  }
 
-export function dropEditorFacades(def: EntityDefinition) {
-  def.type = reverseFacadeEntityType(def.type);
-  def.children?.forEach(c => useEditorFacades(c));
-  return def;
+  static dropEditorFacades(def: EntityDefinition) {
+    def.type = this.#reverseFacadeEntityType(def.type);
+    def.children?.forEach(c => this.dropEditorFacades(c));
+    return def;
+  }
 }

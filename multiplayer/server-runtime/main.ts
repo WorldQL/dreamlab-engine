@@ -4,8 +4,7 @@ import { ServerNetworkManager } from "./networking/net-manager.ts";
 import { IPCMessageBus } from "./ipc.ts";
 
 import {
-  useEditorFacades,
-  dropEditorFacades,
+  Facades,
   WorldRootFacade,
   PrefabRootFacade,
   LocalRootFacade,
@@ -153,7 +152,7 @@ if (workerData.editMode) {
         entity,
         serializeEntityDefinition(
           game,
-          dropEditorMetadata(dropEditorFacades(entity.getDefinition())),
+          dropEditorMetadata(Facades.dropEditorFacades(entity.getDefinition())),
         ),
       );
 
@@ -181,7 +180,7 @@ if (workerData.editMode) {
       ),
     );
     for (const [sceneDef, entityDef] of defs) {
-      editRoot.spawn(addEditorMetadata(sceneDef, useEditorFacades(entityDef)));
+      editRoot.spawn(addEditorMetadata(sceneDef, Facades.useEditorFacades(entityDef)));
     }
   }
 } else {

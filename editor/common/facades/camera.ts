@@ -2,14 +2,19 @@ import {
   Camera,
   Entity,
   EntityContext,
+  IVector2,
   PixiEntity,
   ValueChanged,
-  IVector2,
 } from "@dreamlab/engine";
 import { EnsureCompatible, EntityValueProps } from "./_compatibility.ts";
 import { DebugSquare } from "./_debug.ts";
+import { Facades } from "./mod.ts";
 
 export class EditorFacadeCamera extends PixiEntity {
+  static {
+    Facades.register(Camera, this);
+  }
+
   static readonly icon = "📷";
 
   public smooth: number = 0.1;
