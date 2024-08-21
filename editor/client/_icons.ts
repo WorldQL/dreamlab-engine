@@ -1,7 +1,7 @@
 import type { SimpleIcon } from "npm:simple-icons";
 
-export * from "npm:lucide-static";
-export * from "npm:simple-icons";
+export * from "npm:lucide-static@0.429.0";
+export * from "npm:simple-icons@13.6.0";
 
 const parser = new DOMParser();
 export function icon(icon: SimpleIcon | string): Element {

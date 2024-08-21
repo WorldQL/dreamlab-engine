@@ -19,8 +19,10 @@
       "npm:esbuild-plugin-copy@2.1.1": "npm:esbuild-plugin-copy@2.1.1_esbuild@0.20.2",
       "npm:esbuild@0.20.2": "npm:esbuild@0.20.2",
       "npm:lucide-static": "npm:lucide-static@0.427.0",
+      "npm:lucide-static@0.429.0": "npm:lucide-static@0.429.0",
       "npm:pixi.js@8.2.6": "npm:pixi.js@8.2.6",
       "npm:simple-icons": "npm:simple-icons@13.6.0",
+      "npm:simple-icons@13.6.0": "npm:simple-icons@13.6.0",
       "npm:type-fest@4.23.0": "npm:type-fest@4.23.0",
       "npm:zod-validation-error@3.3.1": "npm:zod-validation-error@3.3.1_zod@3.23.8"
     },
@@ -426,6 +428,10 @@
       },
       "lucide-static@0.427.0": {
         "integrity": "sha512-lsUNKUv6rZrRyQa5KMHZwxKMP1Am2L9BqQGxSvFhcPvZW86sF0YcLZFQ+V5SrBPr3VhNnebMS4SqloMDucd/YQ==",
+        "dependencies": {}
+      },
+      "lucide-static@0.429.0": {
+        "integrity": "sha512-S/FzhfA/EzI0gyxz2Ta/yIdIDmWXq96dLWUpIKNreg7/WqFsgZ86/h/7XJ9phhIQWd2TeICiFV3rrhsK4CQMaQ==",
         "dependencies": {}
       },
       "merge2@1.4.1": {
