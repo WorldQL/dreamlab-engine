@@ -1,12 +1,48 @@
 import { ClientGame } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
+import * as path from "jsr:@std/path@1";
+import { Braces, CodeXml, File, Folder, icon, Image, Settings, SimpleIcon } from "../_icons.ts";
 import { DataTree } from "../components/mod.ts";
+import TypeScript from "../svg/typescript.svg";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 
+type FileTreeNode =
+  | { type: "file"; name: string; path: string }
+  | { type: "directory"; name: string; children: Map<string, FileTreeNode> };
+
+type Icon = string | SimpleIcon;
+
 export class FileTree implements InspectorUIWidget {
-  #section = elem("section", { id: "file-tree" }, [elem("h1", {}, ["Files"])]);
+  static #fileIcons = new Map<string, Icon>();
+  static #registerIcon(icon: Icon, ...exts: string[]) {
+    for (const ext of exts) {
+      this.#fileIcons.set(ext, icon);
+    }
+  }
+
+  static {
+    this.#registerIcon(Image, ".png", ".jpg", ".jpeg", ".gif", ".webp");
+    this.#registerIcon(Braces, ".json", ".jsonc", ".json5", ".css");
+    this.#registerIcon(CodeXml, ".html", ".xml", ".svg");
+    this.#registerIcon(Settings, ".env", ".env.local");
+    this.#registerIcon(TypeScript, ".ts");
+  }
+
+  #section = elem("section", { id: "file-tree" }, [elem("h1", {}, ["Project"])]);
 
   constructor(private game: ClientGame) {}
+
+  #getIconForNode(node: FileTreeNode): Icon {
+    if (node.type === "directory") {
+      return Folder;
+    }
+
+    const ext = path.extname(node.path);
+    const icon = FileTree.#fileIcons.get(ext);
+    if (icon) return icon;
+
+    return File;
+  }
 
   setup(_ui: InspectorUI): void {
     const tree = new DataTree();
@@ -19,9 +55,6 @@ export class FileTree implements InspectorUIWidget {
       .then(obj => obj as { files: string[] });
 
     files.then(({ files }) => {
-      type FileTreeNode =
-        | { type: "file"; name: string; path: string }
-        | { type: "directory"; name: string; children: Map<string, FileTreeNode> };
       const fileTreeRoot: FileTreeNode = { type: "directory", name: "", children: new Map() };
 
       for (const file of files) {
@@ -44,7 +77,12 @@ export class FileTree implements InspectorUIWidget {
       }
 
       const addNode = (node: FileTreeNode, parent?: HTMLElement) => {
-        const element = tree.addNode([node.name], parent);
+        const header = elem("span", {}, [
+          elem("span", { className: "icon" }, [icon(this.#getIconForNode(node))]),
+          elem("span", { className: "name" }, [node.name]),
+        ]);
+
+        const element = tree.addNode([header], parent);
 
         if (node.type === "file") {
           element.draggable = true;

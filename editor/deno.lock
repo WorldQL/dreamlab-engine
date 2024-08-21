@@ -10,6 +10,7 @@
       "jsr:@std/fs@1": "jsr:@std/fs@1.0.0",
       "jsr:@std/jsonc@0.213": "jsr:@std/jsonc@0.213.1",
       "jsr:@std/path@0.213": "jsr:@std/path@0.213.1",
+      "jsr:@std/path@1": "jsr:@std/path@1.0.2",
       "jsr:@std/path@^1": "jsr:@std/path@1.0.2",
       "jsr:@std/path@^1.0.2": "jsr:@std/path@1.0.2",
       "jsr:@std/toml": "jsr:@std/toml@1.0.0",
