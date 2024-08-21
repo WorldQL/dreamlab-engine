@@ -8,11 +8,13 @@ export function createInputField<T>({
   set,
   convert,
   convertBack = String,
+  hook,
 }: {
   get: () => T;
   set: (v: T) => void;
   convert: (s: string) => T | Promise<T>;
   convertBack?: (v: T) => string;
+  hook?: (input: HTMLInputElement) => void;
 }): [input: HTMLInputElement, refresh: () => void] {
   const input = elem("input", {
     type: "text",
@@ -40,6 +42,8 @@ export function createInputField<T>({
     }
     input.reportValidity();
   });
+
+  hook?.(input);
 
   return [
     input,

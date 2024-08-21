@@ -1,20 +1,20 @@
-import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import {
   ClientGame,
   Entity,
   EntityRenamed,
   EntityReparented,
   EntityTransformUpdate,
+  SpritesheetAdapter,
+  TextureAdapter,
   Value,
   ValueChanged,
-  TextureAdapter,
-  SpritesheetAdapter,
 } from "@dreamlab/engine";
-import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 import { element as elem } from "@dreamlab/ui";
+import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
-import { createInputField } from "../util/easy-input.ts";
 import { DataDetails, DataTable } from "../components/mod.ts";
+import { createInputField } from "../util/easy-input.ts";
+import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 
 export class Properties implements InspectorUIWidget {
   #section = elem("section", { id: "properties" }, [elem("h1", {}, ["Properties"])]);
@@ -194,22 +194,50 @@ export class Properties implements InspectorUIWidget {
         });
       } else if (value.typeTag === TextureAdapter) {
         // TODO: texture picker
+
+        const convert = async (value: string) => {
+          const url = z.literal("").or(z.string().url()).parse(value);
+          if (url === "") return url;
+
+          try {
+            const texture = await PIXI.Assets.load(this.game.resolveResource(url));
+            if (!(texture instanceof PIXI.Texture)) throw new TypeError("not a texture");
+
+            return url;
+          } catch {
+            throw new Error("Texture URL could not be resolved");
+          }
+        };
+
         const valueObj = value as Value<string>;
         [valueField, refreshValue] = createInputField({
           get: () => valueObj.value,
           set: v => (valueObj.value = v),
-          convert: async value => {
-            const url = z.literal("").or(z.string().url()).parse(value);
-            if (url === "") return url;
+          convert,
 
-            try {
-              const texture = await PIXI.Assets.load(this.game.resolveResource(url));
-              if (!(texture instanceof PIXI.Texture)) throw new TypeError("not a texture");
+          hook: input => {
+            // TODO: add event listeners on parent so we get more leeway with the drop zone
+            // we cant do input.parentElement now because the input hasnt been appended yet
 
-              return url;
-            } catch {
-              throw new Error("Texture URL could not be resolved");
-            }
+            input.addEventListener("dragover", ev => {
+              ev.preventDefault();
+            });
+
+            input.addEventListener("drop", async () => {
+              const dragTarget = document.querySelector(
+                "[data-file][data-dragging]",
+              ) as HTMLElement | null;
+              if (!dragTarget) return;
+
+              const file = `res://${dragTarget.dataset.file}`;
+
+              try {
+                const url = await convert(file);
+                valueObj.value = url;
+              } catch {
+                // Ignore
+              }
+            });
           },
         });
       } else if (value.typeTag === SpritesheetAdapter) {
