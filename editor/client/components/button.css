@@ -1,0 +1,38 @@
+dreamlab-button {
+  --padding: 0.45em 0.85em;
+  --color: rgb(var(--color-primary) / 1);
+  --color-hover: rgb(var(--color-primary-lighter) / 1);
+  --color-active: rgb(var(--color-primary-lighter) / 1);
+  --rounded: var(--border-radius);
+
+  & > button[type="button"] {
+    all: unset;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: var(--size);
+    height: var(--size);
+    background-color: var(--color);
+    border-radius: var(--rounded);
+    padding: var(--padding);
+
+    cursor: pointer;
+    transition: background-color 0.1s ease;
+
+    &:hover {
+      background-color: var(--color-hover);
+    }
+
+    &:active {
+      background-color: var(--color-active);
+    }
+
+    & > svg {
+      width: 100%;
+      height: 100%;
+      padding: 0.25em;
+    }
+  }
+}
