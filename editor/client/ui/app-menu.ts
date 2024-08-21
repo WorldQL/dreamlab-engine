@@ -135,7 +135,7 @@ export class AppMenu {
 
     playSocket.addEventListener("close", () => {
       if (this.games.play === playGame) this.games.play = undefined;
-      playGame.container.innerHTML = "";
+      playGame.container.remove();
       playGame.shutdown();
       this.playInspector?.hide();
 
