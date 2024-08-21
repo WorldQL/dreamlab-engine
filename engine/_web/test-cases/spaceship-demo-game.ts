@@ -153,22 +153,28 @@ class Movement extends Behavior {
         playerBehavior.shootingPattern();
       }
     }
+    this.entity.transform.position = newPosition;
+    console.log('ontick')
+    console.log(newPosition.x)
+
 
     // face the cursor
-    const world = this.inputs.cursor.world;
-    if (!world) return;
 
-    const rotation = this.entity.transform.position.lookAt(world);
-    this.entity.transform.rotation = rotation;
-
-    this.entity.transform.position = newPosition;
   }
 }
 game[internal.behaviorLoader].registerInternalBehavior(Movement, "spaceship");
 
 class LookAtMouse extends Behavior {
   onPostTick() {
-    // TODO: If we move the face the cursor code in here it works but it shouldn't!
+    console.log('onposttick')
+    const world = this.inputs.cursor.world;
+    if (!world) return;
+
+    console.log(this.entity.transform.position.x)
+
+    const rotation = this.entity.transform.position.lookAt(world);
+    this.entity.transform.rotation = rotation;
+
   }
 }
 game[internal.behaviorLoader].registerInternalBehavior(LookAtMouse, "spaceship");

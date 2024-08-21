@@ -157,7 +157,7 @@ export abstract class BaseGame implements ISignalHandler {
     // have the physics world update, and then move the transform to the new position of the body.
 
     this.fire(GamePreTick);
-
+    console.log('--tick--')
     this[internal.preTickEntities]();
     this.physics.tick();
     this[internal.tickEntities]();

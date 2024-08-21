@@ -4,7 +4,7 @@ import * as internal from "./internal.ts";
 export class Time {
   #game: Game;
 
-  readonly TPS: number = 60;
+  readonly TPS: number = 2;
 
   constructor(game: Game) {
     this.#game = game;
