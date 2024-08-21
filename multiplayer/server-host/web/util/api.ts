@@ -1,13 +1,13 @@
+import { z, ZodError, ZodSchema } from "@dreamlab/vendor/zod.ts";
 import { CONFIG } from "../../config.ts";
 import {
   Application,
+  State as OakState,
+  RouteParams,
   RouterContext,
   RouterMiddleware,
   Status,
-  State as OakState,
-  RouteParams,
 } from "../../deps/oak.ts";
-import { z, ZodError, ZodSchema } from "@dreamlab/vendor/zod.ts";
 
 export class JsonAPIError extends Error {
   constructor(
@@ -109,7 +109,7 @@ export function typedJsonHandler<
     ctx: RouterContext<RouteName, Params, State>,
     input: TypedJsonHandlerInput<QuerySchema, ParamSchema, BodySchema>,
   ) => Promise<
-    | (ResponseSchema extends undefined ? never : z.infer<NonNullable<ResponseSchema>>)
+    | (ResponseSchema extends undefined ? never : z.input<NonNullable<ResponseSchema>>)
     | undefined
   >,
 ): RouterMiddleware<RouteName, Params, State> {

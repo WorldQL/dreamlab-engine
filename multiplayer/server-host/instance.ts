@@ -183,6 +183,26 @@ export class GameInstance {
   }
 }
 
+export const dumpSceneDefinition = async (instance: GameInstance): Promise<Scene> => {
+  if (!instance.info.editMode) throw new Error("The given instance is not in edit mode!");
+  if (!instance.session)
+    throw new Error("The given instance is not currently running a session.");
+
+  const ipc = instance.session.ipc;
+  const scene: Scene = await new Promise(resolve => {
+    const sceneDefListener = (
+      message: WorkerIPCMessage & { op: "SceneDefinitionResponse" },
+    ) => {
+      resolve(message.sceneJson);
+      ipc.removeMessageListener(sceneDefListener as IPCMessageListener["handler"]);
+    };
+    ipc.send({ op: "SceneDefinitionRequest" });
+    ipc.addMessageListener("SceneDefinitionResponse", sceneDefListener);
+  });
+
+  return scene;
+};
+
 export const createInstance = (info: GameInstanceInfo): GameInstance => {
   const instance = new GameInstance(info);
   void bootInstance(instance).catch(err => {
@@ -234,18 +254,6 @@ export const bootPlaySession = async (instance: GameInstance) => {
 
   instance.logs.debug("play: Fetching scene definition from edit session...");
 
-  const ipc = instance.session.ipc;
-  const sceneJson: Scene = await new Promise(resolve => {
-    const sceneDefListener = (
-      message: WorkerIPCMessage & { op: "SceneDefinitionResponse" },
-    ) => {
-      resolve(message.sceneJson);
-      ipc.removeMessageListener(sceneDefListener as IPCMessageListener["handler"]);
-    };
-    ipc.send({ op: "SceneDefinitionRequest" });
-    ipc.addMessageListener("SceneDefinitionResponse", sceneDefListener);
-  });
-
   try {
     instance.logs.debug("play: Bundling world...");
     await bundleWorld(instance.info.worldId, {
@@ -262,13 +270,15 @@ export const bootPlaySession = async (instance: GameInstance) => {
   try {
     instance.logs.debug("play: Writing scene definition to _dist_play directory");
 
+    const scene = await dumpSceneDefinition(instance);
+
     const projectJsonFile = path.join(
       instance.info.worldDirectory,
       "_dist_play",
       "project.json",
     );
     const projectDesc = JSON.parse(await Deno.readTextFile(projectJsonFile));
-    projectDesc.scenes = { ...(projectDesc.scenes ?? {}), main: sceneJson };
+    projectDesc.scenes = { ...(projectDesc.scenes ?? {}), main: scene };
     await Deno.writeTextFile(projectJsonFile, JSON.stringify(projectDesc, undefined, 2));
   } catch (err) {
     instance.logs.error("Failed to write scene definition for play session", {
