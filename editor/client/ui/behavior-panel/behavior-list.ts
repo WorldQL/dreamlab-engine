@@ -55,10 +55,13 @@ export class BehaviorList {
     });
 
     if (useEditorMetadata) {
-      const editorMetadata = entity.children
-        .get("__EditorMetadata")
-        ?.cast(EditorMetadataEntity);
-      if (!editorMetadata) return;
+      let editorMetadata = entity.children.get("__EditorMetadata")?.cast(EditorMetadataEntity);
+      if (!editorMetadata) {
+        editorMetadata = entity.spawn({
+          type: EditorMetadataEntity,
+          name: "__EditorMetadata",
+        });
+      }
 
       this.behaviors = SceneDescBehaviorSchema.array().parse(
         JSON.parse(editorMetadata.behaviorsJson),
@@ -159,10 +162,17 @@ export class BehaviorList {
 
   sync() {
     if (this.useEditorMetadata) {
-      const editorMetadata = this.entity.children
+      let editorMetadata = this.entity.children
         .get("__EditorMetadata")
         ?.cast(EditorMetadataEntity);
-      if (!editorMetadata) return;
+
+      if (!editorMetadata) {
+        editorMetadata = this.entity.spawn({
+          type: EditorMetadataEntity,
+          name: "__EditorMetadata",
+        });
+      }
+
       editorMetadata.behaviorsJson = JSON.stringify(this.behaviors);
     }
 
