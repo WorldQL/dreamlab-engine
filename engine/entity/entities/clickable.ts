@@ -128,8 +128,7 @@ export class ClickableRect extends ClickableEntity {
 
   public static readonly icon = "👆";
   get bounds(): Readonly<IVector2> | undefined {
-    // TODO: Reuse the same vector
-    return new Vector2(this.width, this.height);
+    return { x: this.width, y: this.height };
   }
 
   width: number = 1;
