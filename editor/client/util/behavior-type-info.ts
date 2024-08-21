@@ -14,31 +14,21 @@ export interface BehaviorTypeInfo {
 }
 
 export class BehaviorTypeInfoService {
-  #dummyGame: ClientGame;
   #cache = new Map<string, BehaviorTypeInfo>();
 
-  constructor(game: ClientGame) {
-    this.#dummyGame = new ClientGame({
-      container: document.createElement("div"),
-      instanceId: "dummy-instance",
-      worldId: "dummy-world",
-      network: {
-        ping: 0,
-        connections: [],
-        self: generateCUID("conn"),
-        sendCustomMessage() {},
-        broadcastCustomMessage() {},
-        onReceiveCustomMessage() {},
-        disconnect() {},
-      },
-    });
-    this.#dummyGame.cloudAssetBaseURL = game.cloudAssetBaseURL;
-    this.#dummyGame.worldScriptBaseURL = game.worldScriptBaseURL;
-  }
+  constructor(private game: ClientGame) {}
 
-  #createInfo(behaviorType: BehaviorConstructor): BehaviorTypeInfo {
-    const dummyEntity = this.#dummyGame.world.spawn({ type: Empty, name: "DummyEntity" });
-    const behavior = dummyEntity.addBehavior({ type: behaviorType });
+  #createInfo(dummyGame: ClientGame, behaviorType: BehaviorConstructor): BehaviorTypeInfo {
+    const dummyEntity = dummyGame.world.spawn({ type: Empty, name: "DummyEntity" });
+    const behavior = new behaviorType({ game: dummyGame, entity: dummyEntity });
+    dummyEntity.behaviors.push(behavior);
+    dummyGame[internal.behaviorLoader].initialize(behaviorType);
+
+    try {
+      behavior.spawn();
+    } catch (_err) {
+      // ignore
+    }
 
     const info: BehaviorTypeInfo = {
       typeName: behaviorType.name,
@@ -58,22 +48,41 @@ export class BehaviorTypeInfoService {
     const cached = this.#cache.get(script);
     if (cached) return cached;
 
-    const behaviorType = await this.#dummyGame.loadBehavior(script);
-    const info = this.#createInfo(behaviorType);
+    using dummyGame = await this.#createDummyGame();
+    const behaviorType = await dummyGame.loadBehavior(script);
+    const info = this.#createInfo(dummyGame, behaviorType);
     this.#cache.set(script, info);
     return info;
   }
 
   async reload(script: string): Promise<BehaviorTypeInfo> {
-    const cacheBustingURL = new URL(this.#dummyGame.resolveResource(script));
-    cacheBustingURL.searchParams.set("_editor_cache", generateCUID("cch"));
+    this.#cache.delete(script);
+    return await this.get(script);
+  }
 
-    const behaviorType = await this.#dummyGame[internal.behaviorLoader].loadScriptFromSource(
-      script,
-      cacheBustingURL.toString(),
-    );
-    const info = this.#createInfo(behaviorType);
-    this.#cache.set(script, info);
-    return info;
+  async #createDummyGame(): Promise<ClientGame> {
+    const dummyGame = new ClientGame({
+      container: document.createElement("div"),
+      instanceId: "dummy-instance",
+      worldId: "dummy-world",
+      network: {
+        ping: 0,
+        connections: [],
+        self: generateCUID("conn"),
+        sendCustomMessage() {},
+        broadcastCustomMessage() {},
+        onReceiveCustomMessage() {},
+        disconnect() {},
+      },
+    });
+    dummyGame.cloudAssetBaseURL = this.game.cloudAssetBaseURL;
+    dummyGame.worldScriptBaseURL = this.game.worldScriptBaseURL;
+
+    await dummyGame.initialize();
+
+    // TODO: materialize EditorEntities objects into dummyGame world (à la play mode).
+    // this first requires a better pipeline for edit world => scene def => play world
+
+    return dummyGame;
   }
 }
