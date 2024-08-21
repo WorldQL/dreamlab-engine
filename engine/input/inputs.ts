@@ -190,11 +190,7 @@ export class Inputs extends BasicSignalHandler<Inputs> {
     }
 
     const { world } = this.cursor;
-    if (!world) {
-      throw new Error("uhh something is not right with the cursor");
-    }
-
-    this.fire(MouseOver, { screen: this.#screenCursor, world });
+    if (world) this.fire(MouseOver, { screen: this.#screenCursor, world });
   };
 
   #onMouseOut = (_: MouseEvent) => {
@@ -211,11 +207,7 @@ export class Inputs extends BasicSignalHandler<Inputs> {
     }
 
     const { world } = this.cursor;
-    if (!world) {
-      throw new Error("uhh something is not right with the cursor");
-    }
-
-    this.fire(MouseMove, { screen: this.#screenCursor, world });
+    if (world) this.fire(MouseMove, { screen: this.#screenCursor, world });
   };
 
   #onWheel = (ev: WheelEvent) => {
