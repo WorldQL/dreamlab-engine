@@ -46,10 +46,12 @@ export class BehaviorLoader {
   }
 
   async loadScript(script: string): Promise<BehaviorConstructor> {
-    const cachedConstructor = this.#cache.get(script);
+    const replaced = script.replace(/\.tsx?$/, ".js");
+
+    const cachedConstructor = this.#cache.get(replaced);
     if (cachedConstructor !== undefined) return cachedConstructor;
-    const location = this.#game.resolveResource(script);
-    return await this.loadScriptFromSource(script, location);
+    const location = this.#game.resolveResource(replaced);
+    return await this.loadScriptFromSource(replaced, location);
   }
 
   async loadScriptFromSource(script: string, sourceURI: string): Promise<BehaviorConstructor> {
