@@ -4,6 +4,7 @@ import {
   dreamlabCssPlugin,
   dreamlabEngineExternalPlugin,
   dreamlabEnvironmentPlugin,
+  dreamlabTextImportPlugin,
   dreamlabUIExternalPlugin,
   dreamlabVendorExternalPlugin,
   esbuild,
@@ -161,6 +162,7 @@ export const bundleClient = async (
     ...BASE_BUILD_OPTIONS,
     plugins: [
       dreamlabCssPlugin(),
+      dreamlabTextImportPlugin(".svg"),
       dreamlabEnvironmentPlugin(),
       dreamlabVendorExternalPlugin(),
       dreamlabEngineExternalPlugin(),

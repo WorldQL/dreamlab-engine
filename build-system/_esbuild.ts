@@ -106,6 +106,28 @@ export const dreamlabCssPlugin = (): esbuild.Plugin => ({
   },
 });
 
+export const dreamlabTextImportPlugin = (...exts: `.${string}`[]): esbuild.Plugin => ({
+  name: "dreamlab-text-import",
+  setup: build => {
+    const options = build.initialOptions;
+    options.loader = { ...options.loader };
+    for (const ext of exts) {
+      options.loader[ext] = "text";
+    }
+
+    const idk = exts.map(ext => ext.replace(".", ""));
+    const filter = new RegExp(`\\.(${idk.join("|")})`);
+
+    build.onResolve({ filter }, args => {
+      return { path: path.join(args.resolveDir, args.path) };
+    });
+
+    build.onLoad({ filter }, () => {
+      return { loader: "text" };
+    });
+  },
+});
+
 export const unwasmRapierPlugin = (): esbuild.Plugin => ({
   name: "unwasm-rapier",
   setup: build => {
