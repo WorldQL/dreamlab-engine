@@ -1,12 +1,12 @@
 import { BehaviorConstructor, ClientGame, Entity, ValueChanged } from "@dreamlab/engine";
-import { element as elem } from "@dreamlab/ui";
-import { EditorMetadataEntity } from "../../../common/mod.ts";
-import { BehaviorEditor } from "./behavior-editor.ts";
 import { SceneDescBehavior, BehaviorSchema as SceneDescBehaviorSchema } from "@dreamlab/scene";
-import { createInputField } from "../../util/easy-input.ts";
+import { element as elem } from "@dreamlab/ui";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
+import { EditorMetadataEntity } from "../../../common/mod.ts";
 import { DataTable } from "../../components/mod.ts";
+import { createInputField } from "../../util/easy-input.ts";
 import { InspectorUI } from "../inspector.ts";
+import { BehaviorEditor } from "./behavior-editor.ts";
 
 export class BehaviorList {
   container = elem("div");
@@ -75,6 +75,7 @@ export class BehaviorList {
 
   #drawAddBehavior() {
     const table = new DataTable();
+    const submitButton = elem("button", { type: "submit", disabled: true }, ["Add Behavior"]);
 
     // deno-lint-ignore prefer-const
     let scriptField: HTMLInputElement;
@@ -83,6 +84,10 @@ export class BehaviorList {
     let resolvedBehaviorType: BehaviorConstructor | undefined;
     const setScript = async (newScriptValue: string) => {
       script = newScriptValue;
+      if (newScriptValue === "") {
+        submitButton.disabled = true;
+        return;
+      }
 
       try {
         const behaviorType = await this.game.loadBehavior(script);
@@ -90,9 +95,11 @@ export class BehaviorList {
         resolvedBehaviorType = behaviorType;
         scriptField.setCustomValidity("");
         scriptField.reportValidity();
+        submitButton.disabled = false;
       } catch (_err) {
         scriptField.setCustomValidity("Script URI could not be loaded");
         scriptField.reportValidity();
+        submitButton.disabled = true;
         return;
       }
     };
@@ -105,11 +112,12 @@ export class BehaviorList {
     scriptField.name = "script";
 
     table.addEntry("script", "Script", scriptField);
-    table.addFullWidthEntry("add-behavior", elem("button", {}, ["Add Behavior"]));
+    table.addFullWidthEntry("add-behavior", submitButton);
 
     const form = elem("form", { id: "add-behavior" }, [table]);
     form.addEventListener("submit", event => {
       event.preventDefault();
+      if (script === "") return;
 
       this.behaviors.push({
         ref: generateCUID("bhv"),
