@@ -20,6 +20,7 @@
       "npm:esbuild@0.20.2": "npm:esbuild@0.20.2",
       "npm:lucide-static": "npm:lucide-static@0.427.0",
       "npm:pixi.js@8.2.6": "npm:pixi.js@8.2.6",
+      "npm:simple-icons": "npm:simple-icons@13.6.0",
       "npm:type-fest@4.23.0": "npm:type-fest@4.23.0",
       "npm:zod-validation-error@3.3.1": "npm:zod-validation-error@3.3.1_zod@3.23.8"
     },
@@ -487,6 +488,10 @@
         "dependencies": {
           "queue-microtask": "queue-microtask@1.2.3"
         }
+      },
+      "simple-icons@13.6.0": {
+        "integrity": "sha512-hKhxwp9SDjMjEE+aFL3gzh2XZBQSN5xlIygpsKgiMcn+65BtWoUIS0nmIkmDQ15Ge+2AXGfHCrjn5vE55UdjDg==",
+        "dependencies": {}
       },
       "slash@3.0.0": {
         "integrity": "sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==",
