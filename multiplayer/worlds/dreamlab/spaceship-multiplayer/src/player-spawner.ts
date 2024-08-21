@@ -6,7 +6,6 @@ export default class PlayerSpawner extends Behavior {
 
     this.game.prefabs._.Player.cloneInto(this.game.world, {
       name: "Player." + this.game.network.self,
-      transform: { position: { x: 0, y: 0 } },
       authority: this.game.network.self,
     });
 
