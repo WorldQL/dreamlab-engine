@@ -31,4 +31,10 @@
   & h1 {
     margin-bottom: 0;
   }
+
+  & #stop-button {
+    --color: rgb(var(--color-danger) / 1);
+    --color-hover: rgb(var(--color-danger-lighter) / 1);
+    --color-active: rgb(var(--color-danger-lighter) / 1);
+  }
 }

@@ -21,7 +21,10 @@ import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 import { CameraPanBehavior } from "./camera-pan.ts";
 import { connectToGame } from "./game-connection.ts";
 import { setupGame } from "./game-setup.ts";
+import { AppMenu } from "./ui/app-menu.ts";
 import { InspectorUI } from "./ui/inspector.ts";
+
+// TODO: loading screen ?
 
 const instanceId = NIL_UUID;
 const connectUrl = new URL(import.meta.env.SERVER_URL);
@@ -30,8 +33,9 @@ connectUrl.pathname = `/api/v1/connect/${instanceId}`;
 connectUrl.searchParams.set("player_id", generateCUID("ply"));
 connectUrl.searchParams.set("nickname", "Player" + Math.floor(Math.random() * 999) + 1);
 
-const editUIRoot = document.querySelector("main")! as HTMLElement;
-const container = editUIRoot.querySelector("#game-container")! as HTMLDivElement;
+const uiRoot = document.querySelector("main")! as HTMLElement;
+const container = document.createElement("div");
+uiRoot.querySelector("#viewport")!.append(container);
 
 const socket = new WebSocket(connectUrl);
 socket.binaryType = "arraybuffer";
@@ -43,7 +47,7 @@ const [game, conn, handshake] = await connectToGame(
   DEFAULT_CODEC,
 );
 
-export const games: { edit: ClientGame; play: ClientGame | undefined } = {
+const games: { edit: ClientGame; play: ClientGame | undefined } = {
   edit: game,
   play: undefined,
 };
@@ -64,8 +68,10 @@ if (handshake.edit_mode) {
 }
 
 const inspector = new InspectorUI(game, conn, handshake.edit_mode, container);
-inspector.show(editUIRoot);
-Object.defineProperty(globalThis, "inspector", { value: inspector });
+inspector.show(uiRoot);
+
+const appMenu = new AppMenu(uiRoot, games);
+appMenu.setup(inspector);
 
 let now = performance.now();
 const onFrame = (time: number) => {

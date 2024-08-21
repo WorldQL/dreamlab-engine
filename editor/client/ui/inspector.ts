@@ -2,7 +2,6 @@ import { ClientGame } from "@dreamlab/engine";
 import { CameraPanBehavior } from "../camera-pan.ts";
 import { ClientConnection } from "../networking/net-connection.ts";
 import { BehaviorTypeInfoService } from "../util/behavior-type-info.ts";
-import { AppMenu } from "./app-menu.ts";
 import { BehaviorPanel } from "./behavior-panel/mod.ts";
 import { ContextMenu } from "./context-menu.ts";
 import { FileTree } from "./file-tree.ts";
@@ -26,7 +25,6 @@ export class InspectorUI {
   behaviorPanel: BehaviorPanel;
   contextMenu: ContextMenu;
   gameOverlays: GameOverlays;
-  appMenu: AppMenu;
   fileTree: FileTree;
 
   constructor(
@@ -43,7 +41,6 @@ export class InspectorUI {
     this.behaviorPanel = new BehaviorPanel(game);
     this.contextMenu = new ContextMenu(game);
     this.gameOverlays = new GameOverlays(game, gameContainer);
-    this.appMenu = new AppMenu(game);
     this.fileTree = new FileTree(game);
 
     if (editMode) {
@@ -55,7 +52,6 @@ export class InspectorUI {
     this.properties.setup(this);
     this.behaviorPanel.setup(this);
     this.contextMenu.setup(this);
-    this.appMenu.setup(this);
     this.fileTree.setup(this);
 
     conn.registerPacketHandler("ScriptEdited", packet => {
@@ -75,7 +71,6 @@ export class InspectorUI {
     this.properties.show(uiRoot);
     this.behaviorPanel.show(uiRoot);
     this.contextMenu.show(uiRoot);
-    this.appMenu.show(uiRoot);
     this.fileTree.show(uiRoot);
   }
 
@@ -85,7 +80,6 @@ export class InspectorUI {
     this.behaviorPanel.hide();
     this.contextMenu.hide();
     this.gameOverlays.hide();
-    this.appMenu.hide();
     this.fileTree.hide();
   }
 }
