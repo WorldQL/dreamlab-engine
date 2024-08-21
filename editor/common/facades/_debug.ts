@@ -1,5 +1,5 @@
+import { Entity, EntityRenamed, EntityResize, PixiEntity, Vector2 } from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import { Entity, EntityRenamed, EntityResize, IVector2, PixiEntity } from "@dreamlab/engine";
 
 export type Label = { readonly container: PIXI.Container; readonly text: PIXI.Text };
 export const createLabel = (icon: string, text?: string): Label => {
@@ -27,7 +27,7 @@ export const createLabel = (icon: string, text?: string): Label => {
 };
 
 abstract class DebugShape {
-  #entity: PixiEntity;
+  protected entity: PixiEntity;
 
   protected label: Label;
   protected readonly gfx = new PIXI.Graphics();
@@ -49,9 +49,9 @@ abstract class DebugShape {
     readonly alpha?: number;
     readonly width?: number;
   }) {
-    this.#entity = entity;
+    this.entity = entity;
     // @ts-expect-error: private access
-    const container = this.#entity.container!;
+    const container = this.entity.container!;
 
     this.#suffix = suffix;
     const icon = (entity.constructor as typeof Entity).icon ?? "📦";
@@ -63,14 +63,14 @@ abstract class DebugShape {
     this.alpha = alpha;
     this.width = width;
 
-    if (entity.bounds) this.redraw(entity.bounds);
+    this.redraw();
 
-    this.#entity.on(EntityRenamed, () => {
-      this.label.text.text = this.#entity.name + this.#suffix;
+    this.entity.on(EntityRenamed, () => {
+      this.label.text.text = this.entity.name + this.#suffix;
     });
 
-    this.#entity.on(EntityResize, () => {
-      if (this.#entity.bounds) this.redraw(this.#entity.bounds);
+    this.entity.on(EntityResize, () => {
+      this.redraw();
     });
   }
 
@@ -80,14 +80,18 @@ abstract class DebugShape {
   }
   set suffix(value) {
     this.#suffix = value;
-    this.label.text.text = this.#entity.name + this.#suffix;
+    this.label.text.text = this.entity.name + this.#suffix;
   }
 
-  abstract redraw(bounds: IVector2): void;
+  abstract redraw(): void;
 }
 
 export class DebugSquare extends DebugShape {
-  redraw(bounds: IVector2): void {
+  redraw(): void {
+    const _bounds = this.entity.bounds;
+    if (!_bounds) return;
+    const bounds = Vector2.mul(_bounds, this.entity.globalTransform.scale);
+
     const color = this.color;
     const width = this.width;
 
