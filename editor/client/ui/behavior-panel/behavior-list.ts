@@ -1,4 +1,4 @@
-import { BehaviorConstructor, ClientGame, Entity, ValueChanged } from "@dreamlab/engine";
+import { ClientGame, Entity, ValueChanged } from "@dreamlab/engine";
 import { SceneDescBehavior, BehaviorSchema as SceneDescBehaviorSchema } from "@dreamlab/scene";
 import { element as elem } from "@dreamlab/ui";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
@@ -65,7 +65,7 @@ export class BehaviorList {
       // TODO: populate behaviors from entity data proper
     }
 
-    this.#drawAddBehavior();
+    this.#drawAddBehavior(ui);
 
     for (const behavior of this.behaviors) {
       const editor = new BehaviorEditor(ui, behavior, this);
@@ -73,7 +73,7 @@ export class BehaviorList {
     }
   }
 
-  #drawAddBehavior() {
+  #drawAddBehavior(ui: InspectorUI) {
     const table = new DataTable();
     const submitButton = elem("button", { type: "submit", disabled: true }, ["Add Behavior"]);
 
@@ -81,18 +81,15 @@ export class BehaviorList {
     let scriptField: HTMLInputElement;
     let script: string = "";
 
-    let resolvedBehaviorType: BehaviorConstructor | undefined;
     const setScript = async (newScriptValue: string) => {
+      submitButton.disabled = true;
       script = newScriptValue;
       if (newScriptValue === "") {
-        submitButton.disabled = true;
         return;
       }
 
       try {
-        const behaviorType = await this.game.loadBehavior(script);
-        if (resolvedBehaviorType === behaviorType) return;
-        resolvedBehaviorType = behaviorType;
+        await ui.behaviorTypeInfo.get(script);
         scriptField.setCustomValidity("");
         scriptField.reportValidity();
         submitButton.disabled = false;
