@@ -1,6 +1,7 @@
 {
   "imports": {
     "@dreamlab/engine": "../engine/mod.ts",
+    "@dreamlab/engine/internal": "../engine/internal.ts",
     "@dreamlab/vendor/": "../engine/_deps/"
   }
 }

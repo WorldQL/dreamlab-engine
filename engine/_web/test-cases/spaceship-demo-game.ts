@@ -1,3 +1,4 @@
+import * as internal from "@dreamlab/engine/internal";
 import { __deprecated__element as element } from "@dreamlab/ui";
 import { BackgroundBehavior } from "../../behavior/behaviors/background-behavior.ts";
 import { Behavior, BehaviorContext, BehaviorDefinition } from "../../behavior/mod.ts";
@@ -9,7 +10,6 @@ import {
   TilingSprite2D,
   UILayer,
 } from "../../entity/mod.ts";
-import * as internal from "../../internal.ts";
 import { Vector2 } from "../../math/mod.ts";
 import {
   EntityCollision,

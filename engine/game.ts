@@ -1,6 +1,7 @@
 import { initRapier } from "@dreamlab/vendor/rapier.ts";
 
 import { BehaviorLoader } from "./behavior/behavior-loader.ts";
+import { BehaviorConstructor } from "./behavior/mod.ts";
 import { EntityStore, LocalRoot, PrefabsRoot, ServerRoot, WorldRoot } from "./entity/mod.ts";
 import { Inputs } from "./input/mod.ts";
 import * as internal from "./internal.ts";
@@ -17,8 +18,8 @@ import {
   SignalSubscription,
 } from "./signal.ts";
 import {
-  GamePostTick,
   GamePostRender,
+  GamePostTick,
   GamePreTick,
   GameRender,
   GameShutdown,
@@ -28,7 +29,6 @@ import { GameStatusChange } from "./signals/mod.ts";
 import { Time } from "./time.ts";
 import { UIManager } from "./ui.ts";
 import { ValueRegistry } from "./value/mod.ts";
-import { BehaviorConstructor } from "./behavior/mod.ts";
 
 export interface GameOptions {
   instanceId: string;

@@ -1,9 +1,9 @@
 import { ConnectionId, PlayerJoined, PlayerLeft, ServerRoot } from "@dreamlab/engine";
-import { ServerNetworkSetupRoutine } from "./net-manager.ts";
+import * as internal from "@dreamlab/engine/internal";
 import { serializeEntityDefinition } from "@dreamlab/proto/common/entity-sync.ts";
 import { PlayerConnectionDropped } from "@dreamlab/proto/common/signals.ts";
-import * as internal from "../../../engine/internal.ts";
 import { PlayPacket } from "@dreamlab/proto/play.ts";
+import { ServerNetworkSetupRoutine } from "./net-manager.ts";
 
 export const handlePlayerJoinExchange: ServerNetworkSetupRoutine = (net, game) => {
   const connectionStates = new Map<ConnectionId, "initialized" | "loaded">();

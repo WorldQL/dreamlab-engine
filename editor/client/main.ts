@@ -14,10 +14,10 @@ const fonts = preloadFonts({
 import "../common/mod.ts";
 
 import { Camera, ClientGame } from "@dreamlab/engine";
+import * as internal from "@dreamlab/engine/internal";
 import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import { NIL_UUID } from "jsr:@std/uuid@1/constants";
-import * as internal from "../../engine/internal.ts";
 import { CameraPanBehavior } from "./camera-pan.ts";
 import { connectToGame } from "./game-connection.ts";
 import { setupGame } from "./game-setup.ts";

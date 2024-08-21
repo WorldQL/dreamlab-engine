@@ -5,13 +5,13 @@ import {
   Game,
   TransformOptions,
 } from "@dreamlab/engine";
-import * as internal from "../../engine/internal.ts";
+import * as internal from "@dreamlab/engine/internal";
+import type { z } from "@dreamlab/vendor/zod.ts";
 import {
   BehaviorDefinitionSchema,
   EntityDefinitionSchema,
   TransformSchema,
 } from "../datamodel.ts";
-import type { z } from "@dreamlab/vendor/zod.ts";
 
 export const convertBehaviorDefinition = async (
   game: Game,

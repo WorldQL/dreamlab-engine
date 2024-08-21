@@ -8,7 +8,7 @@ import * as path from "jsr:@std/path@^1";
 export const dreamlabEngineExternalPlugin = (): esbuild.Plugin => ({
   name: "dreamlab-engine-external",
   setup: (build: esbuild.PluginBuild) => {
-    build.onResolve({ filter: /^@dreamlab\/engine/ }, args => {
+    build.onResolve({ filter: /^@dreamlab\/engine$/ }, args => {
       return { path: args.path, external: true };
     });
   },
@@ -26,7 +26,7 @@ export const dreamlabVendorExternalPlugin = (): esbuild.Plugin => ({
 export const dreamlabUIExternalPlugin = (): esbuild.Plugin => ({
   name: "dreamlab-ui-external",
   setup: (build: esbuild.PluginBuild) => {
-    build.onResolve({ filter: /^@dreamlab\/ui/ }, args => {
+    build.onResolve({ filter: /^@dreamlab\/ui$/ }, args => {
       return { path: args.path, external: true };
     });
   },

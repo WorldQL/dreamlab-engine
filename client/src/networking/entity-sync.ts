@@ -7,7 +7,7 @@ import {
   GameStatus,
   GameStatusChange,
 } from "@dreamlab/engine";
-import * as internal from "../../../engine/internal.ts";
+import * as internal from "@dreamlab/engine/internal";
 import { ClientNetworkSetupRoutine } from "./net-connection.ts";
 
 import {

@@ -1,5 +1,5 @@
 import { ClientGame, GameStatus, GameTick, Value, ValueChanged } from "@dreamlab/engine";
-import * as internal from "../../../engine/internal.ts";
+import * as internal from "@dreamlab/engine/internal";
 import { ClientConnection, ClientNetworkSetupRoutine } from "./net-connection.ts";
 
 export const handleValueChanges: ClientNetworkSetupRoutine = (

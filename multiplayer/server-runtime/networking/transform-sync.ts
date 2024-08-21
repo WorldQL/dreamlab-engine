@@ -5,9 +5,9 @@ import {
   EntityTransformUpdate,
   GameTick,
 } from "@dreamlab/engine";
-import { ServerNetworkSetupRoutine } from "./net-manager.ts";
-import * as internal from "../../../engine/internal.ts";
+import * as internal from "@dreamlab/engine/internal";
 import { EntityTransformReport } from "@dreamlab/proto/play.ts";
+import { ServerNetworkSetupRoutine } from "./net-manager.ts";
 
 export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
   const ignoredEntityRefs = new Set<string>();

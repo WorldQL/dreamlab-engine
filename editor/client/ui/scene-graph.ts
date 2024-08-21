@@ -1,4 +1,3 @@
-import { element as elem } from "@dreamlab/ui";
 import {
   ClientGame,
   Entity,
@@ -7,10 +6,11 @@ import {
   EntityRenamed,
   EntityReparented,
 } from "@dreamlab/engine";
-import { InspectorUI, InspectorUIComponent } from "./inspector.ts";
+import * as internal from "@dreamlab/engine/internal";
+import { element as elem } from "@dreamlab/ui";
 import { EditorMetadataEntity } from "../../common/mod.ts";
-import * as internal from "../../../engine/internal.ts";
 import { ChevronDown, icon } from "../_icons.ts";
+import { InspectorUI, InspectorUIComponent } from "./inspector.ts";
 
 function eventTargetsEntry(event: Event, entryElement: HTMLElement) {
   if (!(event.target instanceof HTMLElement)) return false;

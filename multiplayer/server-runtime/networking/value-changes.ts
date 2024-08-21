@@ -1,7 +1,7 @@
 import { GameStatus, GameTick, Value, ValueChanged } from "@dreamlab/engine";
-import * as internal from "../../../engine/internal.ts";
-import { ServerNetworkSetupRoutine } from "./net-manager.ts";
+import * as internal from "@dreamlab/engine/internal";
 import { PlayPacket } from "@dreamlab/proto/play.ts";
+import { ServerNetworkSetupRoutine } from "./net-manager.ts";
 
 export const handleValueChanges: ServerNetworkSetupRoutine = (net, game) => {
   const dirtyValues = new Map<Value, number>();

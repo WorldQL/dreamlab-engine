@@ -1,12 +1,12 @@
 import { Behavior, BehaviorContext } from "../../behavior/mod.ts";
 import {
-  Entity,
-  Sprite2D,
-  Rigidbody2D,
   Camera,
+  Empty,
+  Entity,
+  Rigidbody2D,
+  Sprite2D,
   TilingSprite2D,
   UILayer,
-  Empty,
 } from "../../entity/mod.ts";
 import { Vector2 } from "../../math/mod.ts";
 import { EntityCollision, GamePostRender } from "../../signals/mod.ts";
@@ -113,7 +113,7 @@ class PlayerUI extends Behavior {
 
     const style = document.createElement("style");
     style.appendChild(document.createTextNode(css));
-    this.#ui.root.appendChild(style);
+    this.#ui.element.appendChild(style);
 
     const uiContainer = document.createElement("div");
     uiContainer.id = "player-ui";
