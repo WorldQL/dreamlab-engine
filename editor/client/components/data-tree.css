@@ -10,6 +10,10 @@ dreamlab-data-tree {
     background-color: rgb(var(--color-primary) / 1);
   }
 
+  & details[data-selected] > summary:hover {
+    background-color: rgb(var(--color-primary) / 1);
+  }
+
   & details > summary {
     margin-left: calc(var(--tree-indent-amount) * -1);
     position: relative;
@@ -45,6 +49,10 @@ dreamlab-data-tree {
         transform: rotate(-90deg);
         transition: transform 0.1s ease;
       }
+    }
+
+    &:hover {
+      background-color: rgb(var(--color-bg-2) / 0.5);
     }
   }
 

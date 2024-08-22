@@ -4,6 +4,8 @@ dreamlab-data-details {
   & > details > summary {
     display: flex;
     position: relative;
+    cursor: pointer;
+    user-select: none;
 
     --arrow-pad: 1.25em;
 

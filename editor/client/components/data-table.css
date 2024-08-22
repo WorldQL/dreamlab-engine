@@ -27,6 +27,7 @@ dreamlab-data-table {
       }
 
       & code {
+        cursor: pointer;
         user-select: all;
       }
 
@@ -34,6 +35,10 @@ dreamlab-data-table {
       & input[type="text"] {
         font-family: var(--font-mono);
         font-weight: 600;
+      }
+
+      &:has(> input[type="text"]):hover {
+        background-color: rgb(var(--color-bg-2) / 0.5);
       }
     }
 

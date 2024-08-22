@@ -65,17 +65,23 @@ export class Properties implements InspectorUIWidget {
     const table = new DataTable();
     container.append(table);
 
-    const [nameField, refreshName] = createInputField({
-      get: () => entity.name,
-      set: name => (entity.name = name),
-      convert: z.string().min(1).parse,
-    });
-    if (entity.protected) nameField.disabled = true;
+    let nameField: HTMLElement;
+    let refreshName: (() => void) | undefined;
 
-    entity.on(EntityRenamed, refreshName);
-    nameField.id = "rename-entity-input";
+    if (entity.protected) {
+      nameField = elem("code", {}, [entity.name]);
+    } else {
+      [nameField, refreshName] = createInputField({
+        get: () => entity.name,
+        set: name => (entity.name = name),
+        convert: z.string().min(1).parse,
+      });
+      entity.on(EntityRenamed, refreshName);
+      nameField.id = "rename-entity-input";
+    }
 
     table.addEntry("name", "Name", nameField);
+
     const entityId = () => entity.id.replace("game.world._.EditEntities._.", "game.");
     const idField = elem("code", {}, [entityId()]);
     entity.on(EntityRenamed, () => (idField.textContent = entityId()));

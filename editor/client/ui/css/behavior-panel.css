@@ -6,6 +6,11 @@
   & #add-behavior-button {
     display: none;
     color: rgb(var(--color-primary) / 1);
+    transition: color 0.2s ease;
+  }
+
+  & #add-behavior-button:hover {
+    color: rgb(var(--color-primary) / 0.8);
   }
 
   & #behavior-list {
@@ -22,6 +27,7 @@
     align-content: center;
     text-align: center;
     font-size: 0.95em;
+    color: rgb(var(--color-text) / 0.5);
     padding: 0 0.5em;
     text-wrap: balance;
     line-height: 1.4;
@@ -39,11 +45,16 @@
     display: block;
     color: rgb(var(--color-danger) / 1);
     margin-left: auto;
+    transition: color 0.2s ease;
 
     & svg {
       height: 1.5em;
       width: 1.5em;
     }
+  }
+
+  & .delete-button:hover {
+    color: rgb(var(--color-danger) / 0.8);
   }
 
   & .behavior + .behavior {

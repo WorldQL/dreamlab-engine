@@ -1,6 +1,6 @@
 import { ClientGame, Entity, EntityDestroyed } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
-import { icon, PlusCircle } from "../../_icons.ts";
+import { icon, MinusCircle, PlusCircle } from "../../_icons.ts";
 import { InspectorUI, InspectorUIWidget } from "../inspector.ts";
 import { BehaviorList } from "./behavior-list.ts";
 
@@ -30,11 +30,16 @@ export class BehaviorPanel implements InspectorUIWidget {
       const addBehaviorForm = behaviorList.querySelector(
         "form#add-behavior",
       ) as HTMLFormElement;
+
       if (addBehaviorForm) {
         if (addBehaviorForm.dataset.open !== undefined) {
           delete addBehaviorForm.dataset.open;
+          addBehaviorButton.innerHTML = "";
+          addBehaviorButton.append(icon(PlusCircle));
         } else {
           addBehaviorForm.dataset.open = "";
+          addBehaviorButton.innerHTML = "";
+          addBehaviorButton.append(icon(MinusCircle));
         }
       }
     });

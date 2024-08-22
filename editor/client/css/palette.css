@@ -2,6 +2,7 @@
   color-scheme: dark;
 
   --color-text: 255 255 255;
+  --color-text-darker: 144, 164, 174;
   --color-bg-0: 27 34 49;
   --color-bg-1: 37 42 54;
   --color-bg-2: 55 65 81;

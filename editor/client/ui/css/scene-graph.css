@@ -33,6 +33,10 @@
   padding: 0.25em;
 
   cursor: pointer;
+
+  &:hover {
+    background-color: rgb(var(--color-bg-2) / 0.5);
+  }
 }
 
 #scene-graph-tree details.drag-target > summary {
@@ -45,6 +49,10 @@
 
   .theme-darker & {
     --alpha: 16.5%;
+  }
+
+  &:hover {
+    background-color: rgb(var(--color-primary) / var(--alpha));
   }
 }
 
