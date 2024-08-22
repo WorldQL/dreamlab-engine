@@ -25,7 +25,12 @@ export class AppMenu {
       ariaLabel: "Save",
     });
 
-    // TODO: save logic
+    saveButton.addEventListener("click", () => {
+          // TODO: save logic
+          // I was going to implement this but could not find the code responsible for generating a project.json
+          // I searched the whole codebase for "schema_version" in hopes of finding it but no dice.
+          // Are the example ones handwritten? 
+    });
 
     const playButton = new IconButton(Play, {
       id: "play-button",
