@@ -13,7 +13,7 @@ export class ContextMenu implements InspectorUIWidget {
   constructor(private game: ClientGame) {}
 
   setup(_ui: InspectorUI): void {
-    this.#container.addEventListener("click", event => {
+    document.addEventListener("click", event => {
       if (this.#menu.dataset.open === undefined) return;
       if (event.target instanceof HTMLElement && event.target.closest("#context-menu")) return;
 
