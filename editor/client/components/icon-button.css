@@ -33,5 +33,11 @@ dreamlab-icon-button {
       height: 100%;
       padding: 0.25em;
     }
+
+    &.disabled {
+      opacity: 0.5;
+      pointer-events: none;
+      cursor: default;
+    }
   }
 }

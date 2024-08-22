@@ -14,12 +14,10 @@ export class IconButton extends HTMLElement {
   }
 
   disable() {
-    this.style.opacity = "0.5";
-    this.style.pointerEvents = "none";
+    this.querySelector("button")?.classList.add("disabled");
   }
 
   enable() {
-    this.style.opacity = "1";
-    this.style.pointerEvents = "auto";
+    this.querySelector("button")?.classList.remove("disabled");
   }
 }
