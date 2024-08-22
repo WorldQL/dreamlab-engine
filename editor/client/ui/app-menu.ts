@@ -85,6 +85,7 @@ export class AppMenu {
 
       editUI.show(this.uiRoot);
       this.games.edit.container.style.display = "block";
+      this.games.edit.renderer.app.resize();
 
       this.buttons.edit.disable();
       this.buttons.play.enable();
@@ -170,6 +171,7 @@ export class AppMenu {
 
       editUI.show(this.uiRoot);
       this.games.edit.container.style.display = "block";
+      this.games.edit.renderer.app.resize();
     });
 
     await setupGame(playGame, conn, false);
