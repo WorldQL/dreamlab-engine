@@ -37,4 +37,26 @@
     --color-hover: rgb(var(--color-danger-lighter) / 1);
     --color-active: rgb(var(--color-danger-lighter) / 1);
   }
+
+  & #stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125em;
+
+    & * {
+      display: flex;
+      align-items: center;
+      justify-content: end;
+      gap: 0.25em;
+
+      font-family: var(--font-mono);
+      font-size: 0.95em;
+      font-weight: 600;
+
+      & > svg {
+        width: 1.333em;
+        height: 1.333em;
+      }
+    }
+  }
 }

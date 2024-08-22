@@ -1,7 +1,7 @@
 import { ClientGame, PlayerJoined, PlayerLeft } from "@dreamlab/engine";
 import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
 import { element as elem } from "@dreamlab/ui";
-import { Hammer, OctagonX, Play, Save } from "../_icons.ts";
+import { ArrowUpDown, Hammer, icon, OctagonX, Play, Save, User } from "../_icons.ts";
 import { IconButton } from "../components/mod.ts";
 import { connectToGame } from "../game-connection.ts";
 import { setupGame } from "../game-setup.ts";
@@ -103,9 +103,15 @@ export class AppMenu {
     game.on(Ping, ({ ping }) => (pingText.textContent = ping.toLocaleString()));
 
     // TODO: make this look nice lol
-    return elem("div", {}, [
-      elem("div", {}, ["Connected Users: ", countText]),
-      elem("div", {}, ["Ping: ", pingText, "ms"]),
+    return elem("div", { id: "stats" }, [
+      elem("div", { id: "users", title: "Connected Users" }, [
+        elem("span", {}, [countText]),
+        icon(User),
+      ]),
+      elem("div", { id: "ping", title: "Ping" }, [
+        elem("span", {}, [pingText, "ms"]),
+        icon(ArrowUpDown),
+      ]),
     ]);
   }
 
