@@ -9,6 +9,7 @@ import { GameOverlays } from "./game-overlays.ts";
 import { Properties } from "./properties.ts";
 import { SceneGraph } from "./scene-graph.ts";
 import { SelectedEntityService } from "./selected-entity.ts";
+import { setupKeyboardShortcuts } from "./keyboard-shortcuts.ts";
 
 export interface InspectorUIWidget {
   setup(ui: InspectorUI): void;
@@ -42,6 +43,7 @@ export class InspectorUI {
     this.contextMenu = new ContextMenu(game);
     this.gameOverlays = new GameOverlays(game, gameContainer);
     this.fileTree = new FileTree(game);
+    
 
     if (editMode) {
       game.local._.Camera.getBehavior(CameraPanBehavior).ui = this;
@@ -53,6 +55,8 @@ export class InspectorUI {
     this.behaviorPanel.setup(this);
     this.contextMenu.setup(this);
     this.fileTree.setup(this);
+
+    setupKeyboardShortcuts(this.game, this.selectedEntity)
 
     conn.registerPacketHandler("ScriptEdited", async packet => {
       if (packet.behavior_script_id) {

@@ -71,6 +71,7 @@ export class Properties implements InspectorUIWidget {
       convert: z.string().min(1).parse,
     });
     entity.on(EntityRenamed, refreshName);
+    nameField.id = 'rename-entity-input'
 
     table.addEntry("name", "Name", nameField);
 
