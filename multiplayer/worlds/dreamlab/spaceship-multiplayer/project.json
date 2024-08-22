@@ -36,6 +36,190 @@
           ],
           "children": [],
           "ref": "ent_x3sf88ucqj0s0dacqrqilom0"
+        },
+        {
+          "type": "@core/RectCollider2D",
+          "name": "WallRight",
+          "values": {},
+          "transform": {
+            "position": {
+              "x": 7.5,
+              "y": 0
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 0.2,
+              "y": 15
+            },
+            "z": 0
+          },
+          "behaviors": [],
+          "children": [
+            {
+              "type": "@core/Sprite2D",
+              "name": "Sprite2D",
+              "values": {
+                "width": 1,
+                "height": 1,
+                "alpha": 1,
+                "texture": ""
+              },
+              "transform": {
+                "position": {
+                  "x": 0,
+                  "y": 0
+                },
+                "rotation": 0,
+                "scale": {
+                  "x": 1,
+                  "y": 1
+                },
+                "z": 0
+              },
+              "behaviors": [],
+              "children": [],
+              "ref": "ent_mv44f9ch07ulm70t1z03omma"
+            }
+          ],
+          "ref": "ent_g22jlia34ybmxm1c7eij22pv"
+        },
+        {
+          "type": "@core/RectCollider2D",
+          "name": "WallLeft",
+          "values": {},
+          "transform": {
+            "position": {
+              "x": -7.5,
+              "y": 0
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 0.2,
+              "y": 15
+            },
+            "z": 0
+          },
+          "behaviors": [],
+          "children": [
+            {
+              "type": "@core/Sprite2D",
+              "name": "Sprite2D",
+              "values": {
+                "width": 1,
+                "height": 1,
+                "alpha": 1,
+                "texture": ""
+              },
+              "transform": {
+                "position": {
+                  "x": 0,
+                  "y": 0
+                },
+                "rotation": 0,
+                "scale": {
+                  "x": 1,
+                  "y": 1
+                },
+                "z": 0
+              },
+              "behaviors": [],
+              "children": [],
+              "ref": "ent_dgosiu82go8nkjmqrrduz4ig"
+            }
+          ],
+          "ref": "ent_qs8315p7h23vgqriycvs5bl9"
+        },
+        {
+          "type": "@core/RectCollider2D",
+          "name": "WallTop",
+          "values": {},
+          "transform": {
+            "position": {
+              "x": 0,
+              "y": 7.5
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 15,
+              "y": 0.2
+            },
+            "z": 0
+          },
+          "behaviors": [],
+          "children": [
+            {
+              "type": "@core/Sprite2D",
+              "name": "Sprite2D",
+              "values": {
+                "width": 1,
+                "height": 1,
+                "alpha": 1,
+                "texture": ""
+              },
+              "transform": {
+                "position": {
+                  "x": 0,
+                  "y": 0
+                },
+                "rotation": 0,
+                "scale": {
+                  "x": 1,
+                  "y": 1
+                },
+                "z": 0
+              },
+              "behaviors": [],
+              "children": [],
+              "ref": "ent_fjf8fp7eg1ivkbiyp3yh4n4b"
+            }
+          ],
+          "ref": "ent_sseg99k7ke5tmo2mpkzg0jxe"
+        },
+        {
+          "type": "@core/RectCollider2D",
+          "name": "WallBottom",
+          "values": {},
+          "transform": {
+            "position": {
+              "x": 0,
+              "y": -7.5
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 15,
+              "y": 0.2
+            },
+            "z": 0
+          },
+          "behaviors": [],
+          "children": [
+            {
+              "type": "@core/Sprite2D",
+              "name": "Sprite2D",
+              "values": {
+                "width": 1,
+                "height": 1,
+                "alpha": 1,
+                "texture": ""
+              },
+              "transform": {
+                "position": {
+                  "x": 0,
+                  "y": 0
+                },
+                "rotation": 0,
+                "scale": {
+                  "x": 1,
+                  "y": 1
+                },
+                "z": 0
+              },
+              "behaviors": [],
+              "children": [],
+              "ref": "ent_g2o4pljhgnsilfa0ll90hbr1"
+            }
+          ],
+          "ref": "ent_vi6ngejdgmqrwahks2hwmzbk"
         }
       ],
       "local": [
@@ -93,13 +277,10 @@
       "server": [],
       "prefabs": [
         {
-          "type": "@core/Sprite2D",
+          "type": "@core/Rigidbody2D",
           "name": "Player",
           "values": {
-            "width": 1,
-            "height": 1,
-            "alpha": 1,
-            "texture": "res://assets/spaceship.png"
+            "type": "fixed"
           },
           "transform": {
             "position": {
@@ -115,25 +296,49 @@
           },
           "behaviors": [
             {
-              "ref": "bhv_g518j5l7gf8yk7k4vn9k9tq0",
-              "script": "res://src/player-movement.js",
-              "values": {
-                "speed": 5
-              }
-            },
-            {
-              "ref": "bhv_ztlz620mln3z267lt9qdctn4",
-              "script": "res://src/cleanup-on-leave.js",
+              "ref": "bhv_y9fkps4lcn3aytvy4337pved",
+              "script": "res://src/player-movement.ts",
               "values": {}
             },
             {
-              "ref": "bhv_p19nsmjpkgphady7gi7qbb5q",
-              "script": "res://src/camera-follow.js",
+              "ref": "bhv_xt979chayfjpj717s76f3300",
+              "script": "res://src/cleanup-on-leave.ts",
+              "values": {}
+            },
+            {
+              "ref": "bhv_jrq5inhddi48j9kyi3a65wo7",
+              "script": "res://src/camera-follow.ts",
               "values": {}
             }
           ],
-          "children": [],
-          "ref": "ent_hpbwa486rcfk9u6n86jlu4gm"
+          "children": [
+            {
+              "type": "@core/Sprite2D",
+              "name": "Sprite2D",
+              "values": {
+                "width": 1,
+                "height": 1,
+                "alpha": 1,
+                "texture": "res://assets/spaceship.png"
+              },
+              "transform": {
+                "position": {
+                  "x": 0,
+                  "y": 0
+                },
+                "rotation": 0,
+                "scale": {
+                  "x": 1,
+                  "y": 1
+                },
+                "z": 0
+              },
+              "behaviors": [],
+              "children": [],
+              "ref": "ent_uge85fickn7g99sc37g6oyfd"
+            }
+          ],
+          "ref": "ent_hbz2vl3ixsm773gaz9np7gzj"
         }
       ]
     }

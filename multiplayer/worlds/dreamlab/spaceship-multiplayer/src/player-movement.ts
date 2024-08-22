@@ -1,4 +1,11 @@
-import { Behavior, BehaviorContext, Vector2 } from "@dreamlab/engine";
+import {
+  Behavior,
+  BehaviorContext,
+  EntityDestroyed,
+  Rigidbody2D,
+  Vector2,
+} from "@dreamlab/engine";
+import { Collider, KinematicCharacterController, RigidBody } from "@dreamlab/vendor/rapier.ts";
 
 export default class PlayerMovement extends Behavior {
   speed = 5.0;
@@ -9,9 +16,30 @@ export default class PlayerMovement extends Behavior {
   #right = this.inputs.create("@movement/right", "Move Right", "KeyD");
   #boost = this.inputs.create("@movement/boost", "Speed Boost", "ShiftLeft");
 
+  #controller:
+    | { collider: Collider; body: RigidBody; controller: KinematicCharacterController }
+    | undefined;
+
   constructor(ctx: BehaviorContext) {
     super(ctx);
     this.defineValues(PlayerMovement, "speed");
+  }
+
+  onInitialize(): void {
+    if (this.entity.authority !== this.game.network.self) return;
+
+    if (this.entity instanceof Rigidbody2D) {
+      this.#controller = {
+        collider: this.entity.collider,
+        body: this.entity.body,
+        controller: this.game.physics.world.createCharacterController(0.01),
+      };
+    }
+
+    this.listen(this.entity, EntityDestroyed, () => {
+      if (!this.#controller) return;
+      this.game.physics.world.removeCharacterController(this.#controller.controller);
+    });
   }
 
   onTick(): void {
@@ -33,8 +61,14 @@ export default class PlayerMovement extends Behavior {
 
     const cursorPos = this.inputs.cursor.world;
     if (!cursorPos) return;
-    this.entity.transform.rotation = this.entity.pos.lookAt(cursorPos);
+    this.entity._.Sprite2D.globalTransform.rotation = this.entity.pos.lookAt(cursorPos);
 
-    this.entity.transform.position = this.entity.transform.position.add(velocity);
+    if (this.#controller) {
+      this.#controller.controller.computeColliderMovement(this.#controller.collider, velocity);
+      const corrected = this.#controller.controller.computedMovement();
+      this.entity.pos = this.entity.pos.add(corrected);
+    } else {
+      this.entity.pos = this.entity.pos.add(velocity);
+    }
   }
 }
