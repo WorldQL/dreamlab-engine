@@ -187,9 +187,5 @@ export const dreamlabEnvironmentPlugin = (
         loader: "json",
       };
     });
-
-    // TODO
-    const options = build.initialOptions;
-    options.define = { ...options.define, ABC: "true" };
   },
 });
