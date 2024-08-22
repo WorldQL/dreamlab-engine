@@ -33,6 +33,15 @@ export class DataTable extends HTMLElement {
     this.entries.set(id, row);
   }
 
+  reorderEntries(ids: string[]) {
+    for (const entry of this.entries.values()) entry.remove();
+    const keys = [...this.entries.keys()].toSorted((a, b) => ids.indexOf(a) - ids.indexOf(b));
+    for (const key of keys) {
+      const entry = this.entries.get(key)!;
+      this.#table.append(entry);
+    }
+  }
+
   // TODO: reorderEntries
 }
 customElements.define("dreamlab-data-table", DataTable);

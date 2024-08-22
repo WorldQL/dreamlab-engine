@@ -54,9 +54,20 @@ export class InspectorUI {
     this.contextMenu.setup(this);
     this.fileTree.setup(this);
 
-    conn.registerPacketHandler("ScriptEdited", packet => {
+    conn.registerPacketHandler("ScriptEdited", async packet => {
       if (packet.behavior_script_id) {
-        void this.behaviorTypeInfo.reload(packet.behavior_script_id);
+        console.log("ScriptEdited", packet.behavior_script_id, packet.script_location);
+
+        const resources = [`res://${packet.script_location}`, packet.behavior_script_id];
+
+        for (const res of resources) await this.behaviorTypeInfo.reload(res).catch(() => {});
+        for (const behaviorList of this.behaviorPanel.behaviorLists.values()) {
+          for (const behaviorEditor of behaviorList.editors.values()) {
+            if (!resources.includes(behaviorEditor.behavior.script)) continue;
+
+            behaviorEditor.updateTypeInfo(this);
+          }
+        }
         // TODO: we need to make sure this propagates to every guy whose rendering depends on one of those
       }
     });
