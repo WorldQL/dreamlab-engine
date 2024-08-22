@@ -12,7 +12,7 @@
           "name": "Camera",
           "values": {
             "active": true,
-            "smooth": 0.01,
+            "smooth": 0,
             "unlocked": false
           },
           "transform": {

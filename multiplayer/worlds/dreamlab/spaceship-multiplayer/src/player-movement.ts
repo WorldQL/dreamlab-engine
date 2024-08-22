@@ -31,10 +31,10 @@ export default class PlayerMovement extends Behavior {
       .normalize()
       .mul((this.game.physics.tickDelta / 100) * currentSpeed);
 
-    this.entity.transform.position = this.entity.transform.position.add(velocity);
-
     const cursorPos = this.inputs.cursor.world;
     if (!cursorPos) return;
     this.entity.transform.rotation = this.entity.pos.lookAt(cursorPos);
+
+    this.entity.transform.position = this.entity.transform.position.add(velocity);
   }
 }
