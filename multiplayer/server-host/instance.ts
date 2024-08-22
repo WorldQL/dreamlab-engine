@@ -1,10 +1,10 @@
 import { Scene } from "@dreamlab/scene";
 
-import { bundleWorld } from "../../build-system/mod.ts";
 import { WorkerIPCMessage } from "../server-common/ipc.ts";
 import { GameSession } from "./session.ts";
 import { LogStore } from "./util/log-store.ts";
 import { IPCMessageListener } from "./worker.ts";
+import { buildWorld } from "./world-build.ts";
 import { fetchWorld } from "./world-fetch.ts";
 
 import * as colors from "jsr:@std/fmt@1/colors";
@@ -225,10 +225,7 @@ export const bootInstance = async (instance: GameInstance, restart: boolean = fa
 
   try {
     instance.setStatus(GameInstanceState.Starting, "Building world scripts");
-    await bundleWorld(instance.info.worldId, {
-      dir: instance.info.worldDirectory,
-      denoJsonPath: "./deno.json",
-    });
+    await buildWorld(instance.info.worldId, instance.info.worldDirectory, "_dist");
   } catch (err) {
     instance.logs.error("Failed to build world bundle", { err: err.stack });
     instance.setStatus(GameInstanceState.Errored, "World script build failed", err.toString());
@@ -256,11 +253,7 @@ export const bootPlaySession = async (instance: GameInstance) => {
 
   try {
     instance.logs.debug("play: Bundling world...");
-    await bundleWorld(instance.info.worldId, {
-      dir: instance.info.worldDirectory,
-      denoJsonPath: "./deno.json",
-      outDirName: "_dist_play",
-    });
+    await buildWorld(instance.info.worldId, instance.info.worldDirectory, "_dist_play");
   } catch (err) {
     instance.logs.error("Failed to build world bundle for play session", { err: err.stack });
     instance.notifyPlaySessionBootFail();

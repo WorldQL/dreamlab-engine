@@ -17,6 +17,7 @@
       "jsr:@std/bytes@^1.0.0-rc.3": "jsr:@std/bytes@1.0.2",
       "jsr:@std/bytes@^1.0.1-rc.3": "jsr:@std/bytes@1.0.2",
       "jsr:@std/bytes@^1.0.2-rc.3": "jsr:@std/bytes@1.0.2",
+      "jsr:@std/cli@1": "jsr:@std/cli@1.0.1",
       "jsr:@std/collections@^1.0.4": "jsr:@std/collections@1.0.5",
       "jsr:@std/crypto@0.223": "jsr:@std/crypto@0.223.0",
       "jsr:@std/crypto@0.224": "jsr:@std/crypto@0.224.0",
@@ -116,6 +117,9 @@
       },
       "@std/bytes@1.0.2": {
         "integrity": "fbdee322bbd8c599a6af186a1603b3355e59a5fb1baa139f8f4c3c9a1b3e3d57"
+      },
+      "@std/cli@1.0.1": {
+        "integrity": "d0661fba13b30e3c0121646589fa9beeeabe92482c6b04679ea0e7ec683d97f2"
       },
       "@std/collections@1.0.5": {
         "integrity": "ab9eac23b57a0c0b89ba45134e61561f69f3d001f37235a248ed40be260c0c10"

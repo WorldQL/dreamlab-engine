@@ -5,9 +5,11 @@ import { contentType } from "https://deno.land/std@0.224.0/media_types/mod.ts";
 import * as fs from "jsr:@std/fs@1";
 import * as path from "jsr:@std/path@1";
 
+import { PlayPacket } from "@dreamlab/proto/play.ts";
 import { fileIsProbablyBehaviorScript } from "../../../../build-system/build-world.ts";
 import { GameInstance } from "../../instance.ts";
 import { sortPaths } from "../../util/sort-paths.ts";
+import { buildWorld } from "../../world-build.ts";
 import { JsonAPIError, typedJsonHandler } from "../util/api.ts";
 
 export const serveScriptEditingAPI = (router: Router) => {
@@ -113,6 +115,8 @@ export const serveScriptEditingAPI = (router: Router) => {
         const instance = params.instance;
         const worldFolder = instance.info.worldDirectory;
 
+        const packets: PlayPacket<"ScriptEdited", "server">[] = [];
+
         for (const file of body) {
           const computedPath = path.join(worldFolder, file.path);
           const relativePath = path.relative(worldFolder, computedPath);
@@ -124,7 +128,7 @@ export const serveScriptEditingAPI = (router: Router) => {
           await Deno.writeTextFile(computedPath, file.content);
 
           const isBehavior = await fileIsProbablyBehaviorScript(computedPath);
-          instance.session?.broadcastPacket({
+          packets.push({
             t: "ScriptEdited",
             script_location: relativePath,
             behavior_script_id: isBehavior
@@ -132,6 +136,9 @@ export const serveScriptEditingAPI = (router: Router) => {
               : undefined,
           });
         }
+
+        await buildWorld(instance.info.worldId, instance.info.worldDirectory, "_dist");
+        for (const packet of packets) instance.session?.broadcastPacket(packet);
 
         return { success: true };
       },
@@ -177,6 +184,7 @@ export const serveScriptEditingAPI = (router: Router) => {
         });
         await ctx.request.body.stream?.pipeTo(file.writable);
 
+        await buildWorld(instance.info.worldId, instance.info.worldDirectory, "_dist");
         const isBehavior = await fileIsProbablyBehaviorScript(computedPath);
         instance.session?.broadcastPacket({
           t: "ScriptEdited",
@@ -269,6 +277,8 @@ export const serveScriptEditingAPI = (router: Router) => {
 
     await fs.ensureDir(path.dirname(newComputedPath));
     await Deno.rename(oldComputedPath, newComputedPath);
+
+    // TODO: rebuild world and send scriptedited packet
 
     ctx.response.body = { success: true };
   });
