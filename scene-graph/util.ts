@@ -31,12 +31,12 @@ export const serializeBehaviorDefinition = (
   return {
     ref,
     script,
-    values: def.values ?? {},
+    values: def.values,
   };
 };
 
 export const serializeTransform = (transform: TransformOptions): SceneDescTransform => {
-  return {
+  const txfm = {
     position: transform.position
       ? { x: transform.position.x ?? 0, y: transform.position.y ?? 0 }
       : undefined,
@@ -46,6 +46,13 @@ export const serializeTransform = (transform: TransformOptions): SceneDescTransf
       : undefined,
     z: transform.z,
   };
+
+  if (txfm.position?.x === 0 && txfm.position?.y === 0) txfm.position = undefined;
+  if (txfm?.rotation === 0) txfm.rotation = undefined;
+  if (txfm.scale?.x === 0 && txfm.scale?.y === 0) txfm.scale = undefined;
+  if (txfm?.z === 0) txfm.z = undefined;
+
+  return txfm;
 };
 
 export const serializeEntityDefinition = (
@@ -56,18 +63,22 @@ export const serializeEntityDefinition = (
   if (ref === undefined)
     throw new Error("Attempted to serialize EntityDefinition with undefined ref");
 
-  const children = def.children
-    ? [...def.children.values()].map(child => serializeEntityDefinition(game, child))
-    : undefined;
+  const values = def.values && Object.keys(def.values).length > 0 ? def.values : undefined;
 
-  const behaviors = def.behaviors
-    ? def.behaviors.map(behavior => serializeBehaviorDefinition(game, behavior))
-    : undefined;
+  const children =
+    def.children && def.children.length > 0
+      ? [...def.children.values()].map(child => serializeEntityDefinition(game, child))
+      : undefined;
+
+  const behaviors =
+    def.behaviors && def.behaviors.length > 0
+      ? def.behaviors.map(behavior => serializeBehaviorDefinition(game, behavior))
+      : undefined;
 
   return {
     type: Entity.getTypeName(def.type),
     name: def.name,
-    values: def.values,
+    values,
     transform: def.transform ? serializeTransform(def.transform) : undefined,
     behaviors,
     children,

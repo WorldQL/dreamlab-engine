@@ -16,16 +16,10 @@
             "texture": ""
           },
           "transform": {
-            "position": {
-              "x": 0,
-              "y": 0
-            },
-            "rotation": 0,
             "scale": {
               "x": 1,
               "y": 1
-            },
-            "z": 0
+            }
           },
           "behaviors": [
             {
@@ -34,26 +28,21 @@
               "values": {}
             }
           ],
-          "children": [],
           "ref": "ent_x3sf88ucqj0s0dacqrqilom0"
         },
         {
           "type": "@core/RectCollider2D",
           "name": "WallRight",
-          "values": {},
           "transform": {
             "position": {
               "x": 7.5,
               "y": 0
             },
-            "rotation": 0,
             "scale": {
               "x": 0.2,
               "y": 15
-            },
-            "z": 0
+            }
           },
-          "behaviors": [],
           "children": [
             {
               "type": "@core/Sprite2D",
@@ -65,19 +54,11 @@
                 "texture": ""
               },
               "transform": {
-                "position": {
-                  "x": 0,
-                  "y": 0
-                },
-                "rotation": 0,
                 "scale": {
                   "x": 1,
                   "y": 1
-                },
-                "z": 0
+                }
               },
-              "behaviors": [],
-              "children": [],
               "ref": "ent_mv44f9ch07ulm70t1z03omma"
             }
           ],
@@ -86,20 +67,16 @@
         {
           "type": "@core/RectCollider2D",
           "name": "WallLeft",
-          "values": {},
           "transform": {
             "position": {
               "x": -7.5,
               "y": 0
             },
-            "rotation": 0,
             "scale": {
               "x": 0.2,
               "y": 15
-            },
-            "z": 0
+            }
           },
-          "behaviors": [],
           "children": [
             {
               "type": "@core/Sprite2D",
@@ -111,19 +88,11 @@
                 "texture": ""
               },
               "transform": {
-                "position": {
-                  "x": 0,
-                  "y": 0
-                },
-                "rotation": 0,
                 "scale": {
                   "x": 1,
                   "y": 1
-                },
-                "z": 0
+                }
               },
-              "behaviors": [],
-              "children": [],
               "ref": "ent_dgosiu82go8nkjmqrrduz4ig"
             }
           ],
@@ -132,20 +101,16 @@
         {
           "type": "@core/RectCollider2D",
           "name": "WallTop",
-          "values": {},
           "transform": {
             "position": {
               "x": 0,
               "y": 7.5
             },
-            "rotation": 0,
             "scale": {
               "x": 15,
               "y": 0.2
-            },
-            "z": 0
+            }
           },
-          "behaviors": [],
           "children": [
             {
               "type": "@core/Sprite2D",
@@ -157,19 +122,11 @@
                 "texture": ""
               },
               "transform": {
-                "position": {
-                  "x": 0,
-                  "y": 0
-                },
-                "rotation": 0,
                 "scale": {
                   "x": 1,
                   "y": 1
-                },
-                "z": 0
+                }
               },
-              "behaviors": [],
-              "children": [],
               "ref": "ent_fjf8fp7eg1ivkbiyp3yh4n4b"
             }
           ],
@@ -178,20 +135,16 @@
         {
           "type": "@core/RectCollider2D",
           "name": "WallBottom",
-          "values": {},
           "transform": {
             "position": {
               "x": 0,
               "y": -7.5
             },
-            "rotation": 0,
             "scale": {
               "x": 15,
               "y": 0.2
-            },
-            "z": 0
+            }
           },
-          "behaviors": [],
           "children": [
             {
               "type": "@core/Sprite2D",
@@ -203,19 +156,11 @@
                 "texture": ""
               },
               "transform": {
-                "position": {
-                  "x": 0,
-                  "y": 0
-                },
-                "rotation": 0,
                 "scale": {
                   "x": 1,
                   "y": 1
-                },
-                "z": 0
+                }
               },
-              "behaviors": [],
-              "children": [],
               "ref": "ent_g2o4pljhgnsilfa0ll90hbr1"
             }
           ],
@@ -232,36 +177,21 @@
             "unlocked": false
           },
           "transform": {
-            "position": {
-              "x": 0,
-              "y": 0
-            },
-            "rotation": 0,
             "scale": {
               "x": 1,
               "y": 1
-            },
-            "z": 0
+            }
           },
-          "behaviors": [],
-          "children": [],
           "ref": "ent_p8zh7z9qgq7qj5oopfpnaqxf"
         },
         {
           "type": "@core/Empty",
           "name": "PlayerSpawnManager",
-          "values": {},
           "transform": {
-            "position": {
-              "x": 0,
-              "y": 0
-            },
-            "rotation": 0,
             "scale": {
               "x": 1,
               "y": 1
-            },
-            "z": 0
+            }
           },
           "behaviors": [
             {
@@ -270,7 +200,6 @@
               "values": {}
             }
           ],
-          "children": [],
           "ref": "ent_tr6epldobbi539jyjg0fgxcw"
         }
       ],
@@ -283,16 +212,10 @@
             "type": "fixed"
           },
           "transform": {
-            "position": {
-              "x": 0,
-              "y": 0
-            },
-            "rotation": 0,
             "scale": {
               "x": 1,
               "y": 1
-            },
-            "z": 0
+            }
           },
           "behaviors": [
             {
@@ -322,19 +245,11 @@
                 "texture": "res://assets/spaceship.png"
               },
               "transform": {
-                "position": {
-                  "x": 0,
-                  "y": 0
-                },
-                "rotation": 0,
                 "scale": {
                   "x": 1,
                   "y": 1
-                },
-                "z": 0
+                }
               },
-              "behaviors": [],
-              "children": [],
               "ref": "ent_uge85fickn7g99sc37g6oyfd"
             }
           ],

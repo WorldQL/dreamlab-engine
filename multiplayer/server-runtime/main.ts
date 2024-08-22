@@ -101,7 +101,10 @@ if (workerData.editMode) {
         const behaviors = SceneDescBehaviorSchema.array().parse(
           JSON.parse(metadata.behaviorsJson),
         ) as SceneDescBehavior[];
-        def.behaviors = behaviors;
+
+        // TODO: elide any default values
+
+        def.behaviors = behaviors.length === 0 ? undefined : behaviors;
       }
     } catch (err) {
       console.warn(err);
