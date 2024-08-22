@@ -1,4 +1,5 @@
 import "../../editor/common/mod.ts";
+import "../web/styles.css";
 
 import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";

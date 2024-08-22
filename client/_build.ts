@@ -2,7 +2,6 @@ import {
   bundleClient,
   bundleEngine,
   bundleEngineDependencies,
-  bundleStyles,
   bundleUI,
 } from "../build-system/mod.ts";
 
@@ -12,7 +11,6 @@ if (import.meta.main) {
   await bundleEngineDependencies("../engine/", "./web/dist");
   await bundleUI("../ui/", "./web/dist");
   await bundleEngine("../engine/", "./web/dist", undefined, { watch });
-  await bundleStyles("./web/dist", [{ in: "./web/styles.css", out: "main" }]);
   await bundleClient(
     "../client",
     "./web/dist",
