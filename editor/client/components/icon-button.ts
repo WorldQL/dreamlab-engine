@@ -12,4 +12,14 @@ export class IconButton extends HTMLElement {
     const element = elem("button", { ...attrs, type: "button" }, [icon(svg)]);
     this.append(element);
   }
+
+  disable() {
+    this.style.opacity = "0.5";
+    this.style.pointerEvents = "none";
+  }
+
+  enable() {
+    this.style.opacity = "1";
+    this.style.pointerEvents = "auto";
+  }
 }

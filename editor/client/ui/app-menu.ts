@@ -12,6 +12,7 @@ export class AppMenu {
   #section = elem("section", { id: "app-menu" });
 
   playInspector: InspectorUI | undefined;
+  private buttons: Record<string, IconButton> = {};
 
   constructor(
     private uiRoot: HTMLElement,
@@ -32,12 +33,29 @@ export class AppMenu {
       // TODO: toast or something when the save goes through
     });
 
-    const playButton = new IconButton(Play, {
-      id: "play-button",
-      title: "Play",
-      ariaLabel: "Play",
-    });
-    playButton.addEventListener("click", async event => {
+    this.buttons = {
+      play: new IconButton(Play, {
+        id: "play-button",
+        title: "Play",
+        ariaLabel: "Play",
+      }),
+      edit: new IconButton(Hammer, {
+        id: "edit-button",
+        title: "Edit",
+        ariaLabel: "Edit",
+      }),
+      stop: new IconButton(OctagonX, {
+        id: "stop-button",
+        title: "Stop",
+        ariaLabel: "Stop",
+      }),
+    };
+
+    this.buttons.play.enable();
+    this.buttons.edit.disable();
+    this.buttons.stop.disable();
+
+    this.buttons.play.addEventListener("click", async event => {
       event.preventDefault();
 
       // TODO: if someone spams this button we should still only connect once
@@ -53,14 +71,13 @@ export class AppMenu {
         this.games.play.container.style.display = "block";
         this.games.play.renderer.app.resize();
       }
+
+      this.buttons.play.disable();
+      this.buttons.edit.enable();
+      this.buttons.stop.enable();
     });
 
-    const editButton = new IconButton(Hammer, {
-      id: "edit-button",
-      title: "Edit",
-      ariaLabel: "Edit",
-    });
-    editButton.addEventListener("click", event => {
+    this.buttons.edit.addEventListener("click", event => {
       event.preventDefault();
 
       this.playInspector?.hide();
@@ -69,23 +86,24 @@ export class AppMenu {
       editUI.show(this.uiRoot);
       this.games.edit.container.style.display = "block";
 
-      // TODO: hide current playUI
+      this.buttons.edit.disable();
+      this.buttons.play.enable();
+      this.buttons.stop.enable();
     });
 
-    const stopButton = new IconButton(OctagonX, {
-      id: "stop-button",
-      title: "Stop",
-      ariaLabel: "Stop",
-    });
-
-    stopButton.addEventListener("click", event => {
+    this.buttons.stop.addEventListener("click", async event => {
       event.preventDefault();
-      void this.#stopPlayGame();
+
+      await this.#stopPlayGame();
+
+      this.buttons.stop.disable();
+      this.buttons.edit.disable();
+      this.buttons.play.enable();
     });
 
     this.#section.append(
       elem("div", {}, [elem("h1", {}, ["Dreamlab"]), saveButton]),
-      elem("div", {}, [playButton, editButton, stopButton]),
+      elem("div", {}, Object.values(this.buttons)),
       elem("div", {}, [this.setupStats(this.games.edit)]),
     );
 
