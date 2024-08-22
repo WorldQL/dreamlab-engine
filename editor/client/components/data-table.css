@@ -8,16 +8,22 @@ dreamlab-data-table {
 
     & th,
     & td {
+      --padding: 0.5em;
       background-color: rgb(var(--color-bg-2) / 1);
       border-radius: var(--border-radius);
-      padding: 0.5em;
+      padding: var(--padding);
       overflow: clip;
       text-overflow: ellipsis;
+
+      &:has(> input[type="text"]) {
+        padding: 0;
+      }
 
       & input[type="text"] {
         all: unset;
         appearance: none;
         width: 100%;
+        padding: var(--padding);
       }
 
       & code {
