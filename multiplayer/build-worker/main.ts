@@ -7,9 +7,13 @@ if (import.meta.main) {
   });
   if (!args.world || !args.dir || !args.out) throw new Error("bad options");
 
-  await bundleWorld(args.world, {
-    dir: args.dir,
-    denoJsonPath: "./deno.json",
-    outDirName: args.out,
-  });
+  await bundleWorld(
+    args.world,
+    {
+      dir: args.dir,
+      denoJsonPath: "./deno.json",
+      outDirName: args.out,
+    },
+    { silent: true },
+  );
 }

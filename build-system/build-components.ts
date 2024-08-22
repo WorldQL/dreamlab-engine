@@ -12,14 +12,15 @@ import {
 } from "./_esbuild.ts";
 
 export interface BundleOptions {
-  watch: boolean;
+  watch?: boolean;
   serve?: esbuild.ServeOptions;
+  silent?: boolean;
 }
 
 export const bundle = async (
   target: string,
   esbuildOpts: esbuild.BuildOptions,
-  opts: BundleOptions = { watch: false },
+  opts: BundleOptions = {},
 ) => {
   if (opts.watch) {
     const ctx = await esbuild.context(
@@ -28,7 +29,7 @@ export const bundle = async (
         : esbuildOpts,
     );
 
-    console.log(`Watching ${target}...`);
+    if (!opts.silent) console.log(`Watching ${target}...`);
     await ctx.watch();
 
     if (opts.serve) {
@@ -36,7 +37,7 @@ export const bundle = async (
       console.log(`Dev server started at http://${host}:${port}`);
     }
   } else {
-    console.log(`Building ${target}…`);
+    if (!opts.silent) console.log(`Building ${target}…`);
     await esbuild.build(esbuildOpts);
   }
 };
