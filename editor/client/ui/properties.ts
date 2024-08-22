@@ -219,24 +219,29 @@ export class Properties implements InspectorUIWidget {
             // TODO: add event listeners on parent so we get more leeway with the drop zone
             // we cant do input.parentElement now because the input hasnt been appended yet
 
-            input.addEventListener("dragover", ev => {
-              ev.preventDefault();
-            });
-
-            input.addEventListener("drop", async () => {
+            const getUrl = async (): Promise<string | undefined> => {
               const dragTarget = document.querySelector(
                 "[data-file][data-dragging]",
               ) as HTMLElement | null;
               if (!dragTarget) return;
 
               const file = `res://${dragTarget.dataset.file}`;
-
               try {
                 const url = await convert(file);
-                valueObj.value = url;
+                return url;
               } catch {
-                // Ignore
+                return undefined;
               }
+            };
+
+            input.addEventListener("dragover", async ev => {
+              const url = await getUrl();
+              if (url !== undefined) ev.preventDefault();
+            });
+
+            input.addEventListener("drop", async () => {
+              const url = await getUrl();
+              if (url) valueObj.value = url;
             });
           },
         });
