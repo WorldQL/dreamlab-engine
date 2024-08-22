@@ -11,6 +11,7 @@ import { element as elem } from "@dreamlab/ui";
 import { EditorMetadataEntity, Facades } from "../../common/mod.ts";
 import { ChevronDown, icon } from "../_icons.ts";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
+import { ContextMenuItem } from "./context-menu.ts";
 
 function eventTargetsEntry(event: Event, entryElement: HTMLElement) {
   if (!(event.target instanceof HTMLElement)) return false;
@@ -270,7 +271,7 @@ export class SceneGraph implements InspectorUIWidget {
 
       ui.selectedEntity.entities = [entity];
 
-      ui.contextMenu.drawContextMenu(event.clientX, event.clientY, [
+      const contextMenuItems: ContextMenuItem[] = [
         ["Focus", () => this.game.local._.Camera.pos.assign(entity.pos)],
         [
           "New Entity",
@@ -280,10 +281,13 @@ export class SceneGraph implements InspectorUIWidget {
               type.name,
               () =>
                 entity.spawn({ type: Facades.lookupFacadeEntityType(type), name: type.name }),
-            ]),
+            ]) as [string, () => void][],
         ],
-        ["Delete", () => entity.destroy()],
-      ]);
+      ];
+
+      if (!entity.protected) contextMenuItems.push(["Delete", () => entity.destroy()]);
+
+      ui.contextMenu.drawContextMenu(event.clientX, event.clientY, contextMenuItems);
     });
   }
 

@@ -107,6 +107,10 @@ export abstract class Entity implements ISignalHandler {
 
   disabled: boolean = false;
 
+  get protected(): boolean {
+    return this.parent?.id === "game.world._.EditEntities";
+  }
+
   readonly game: Game;
   protected get time() {
     return this.game.time;

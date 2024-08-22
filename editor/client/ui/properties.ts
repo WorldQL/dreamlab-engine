@@ -70,11 +70,12 @@ export class Properties implements InspectorUIWidget {
       set: name => (entity.name = name),
       convert: z.string().min(1).parse,
     });
+    if (entity.protected) nameField.disabled = true;
+
     entity.on(EntityRenamed, refreshName);
-    nameField.id = 'rename-entity-input'
+    nameField.id = "rename-entity-input";
 
     table.addEntry("name", "Name", nameField);
-
     const entityId = () => entity.id.replace("game.world._.EditEntities._.", "game.");
     const idField = elem("code", {}, [entityId()]);
     entity.on(EntityRenamed, () => (idField.textContent = entityId()));
