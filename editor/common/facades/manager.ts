@@ -10,8 +10,6 @@ export class Facades {
   }
 
   static lookupFacadeEntityType(entityType: EntityConstructor): EntityConstructor {
-    console.log(this.#facades);
-    console.log("looking up", entityType, this.#facades.get(entityType));
     return this.#facades.get(entityType) ?? entityType;
   }
 
