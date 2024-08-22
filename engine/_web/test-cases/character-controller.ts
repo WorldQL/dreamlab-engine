@@ -7,7 +7,6 @@ import {
   Vector2,
 } from "@dreamlab/engine";
 import { KinematicCharacterController } from "@dreamlab/vendor/rapier.ts";
-import SpinBehavior from "../../behavior/behaviors/spin-behavior.ts";
 
 game.world.spawn({
   type: RectCollider2D,
@@ -87,12 +86,9 @@ class Movement extends Behavior {
     this.#verticalVelocity -= this.gravity * (this.game.physics.tickDelta / 1000);
 
     // Jump
-    if (this.#jump.pressed) {
+    if (this.#jump.pressed && this.#isGrounded) {
       this.#verticalVelocity = this.jumpForce;
-      this.#isGrounded = false;
     }
-
-    console.log(this.#verticalVelocity)
 
     // Apply vertical movement
     movement.y = this.#verticalVelocity;
@@ -101,9 +97,7 @@ class Movement extends Behavior {
     this.#controller.computeColliderMovement(this.#body.collider, velocity);
     const corrected = this.#controller.computedMovement();
 
-    // this is wrong.
-    this.#isGrounded = corrected.y > velocity.y;
-
+    this.#isGrounded = this.#controller.computedGrounded();
 
     this.entity.pos = this.entity.pos.add(corrected);
   }
