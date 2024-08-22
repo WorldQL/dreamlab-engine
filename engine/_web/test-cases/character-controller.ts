@@ -7,6 +7,7 @@ import {
   Vector2,
 } from "@dreamlab/engine";
 import { KinematicCharacterController } from "@dreamlab/vendor/rapier.ts";
+import SpinBehavior from "../../behavior/behaviors/spin-behavior.ts";
 
 game.world.spawn({
   type: RectCollider2D,
@@ -51,11 +52,17 @@ class Movement extends Behavior {
   #controller: KinematicCharacterController | undefined;
 
   speed = 1.0;
+  jumpForce = 3.0;
+  gravity = 9.8;
+
+  #verticalVelocity = 0;
+  #isGrounded = false;
 
   #up = this.inputs.create("@movement/up", "Move Up", "KeyW");
   #down = this.inputs.create("@movement/down", "Move Down", "KeyS");
   #left = this.inputs.create("@movement/left", "Move Left", "KeyA");
   #right = this.inputs.create("@movement/right", "Move Right", "KeyD");
+  #jump = this.inputs.create("@movement/jump", "Jump", "Space");
 
   onInitialize(): void {
     if (this.game.isClient()) {
@@ -72,14 +79,31 @@ class Movement extends Behavior {
 
     const movement = new Vector2(0, 0);
 
-    if (this.#up.held) movement.y += 1;
-    if (this.#down.held) movement.y -= 1;
+    // Horizontal movement
     if (this.#right.held) movement.x += 1;
     if (this.#left.held) movement.x -= 1;
 
-    const velocity = movement.normalize().mul((this.game.physics.tickDelta / 100) * this.speed);
+    // Apply gravity
+    this.#verticalVelocity -= this.gravity * (this.game.physics.tickDelta / 1000);
+
+    // Jump
+    if (this.#jump.pressed) {
+      this.#verticalVelocity = this.jumpForce;
+      this.#isGrounded = false;
+    }
+
+    console.log(this.#verticalVelocity)
+
+    // Apply vertical movement
+    movement.y = this.#verticalVelocity;
+
+    const velocity = movement.mul((this.game.physics.tickDelta / 100) * this.speed);
     this.#controller.computeColliderMovement(this.#body.collider, velocity);
     const corrected = this.#controller.computedMovement();
+
+    // this is wrong.
+    this.#isGrounded = corrected.y > velocity.y;
+
 
     this.entity.pos = this.entity.pos.add(corrected);
   }
@@ -92,4 +116,5 @@ export const player = game.local.spawn({
   children: [
     { type: Sprite2D, name: Sprite2D.name, values: { texture: "https://lulu.dev/avatar.png" } },
   ],
+  transform: { scale: { x: 2 } },
 });
