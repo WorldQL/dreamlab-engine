@@ -5,7 +5,39 @@
   },
   "scenes": {
     "main": {
-      "world": [],
+      "world": [
+        {
+          "type": "@core/Sprite2D",
+          "name": "Sprite2D",
+          "values": {
+            "width": 1,
+            "height": 1,
+            "alpha": 1,
+            "texture": ""
+          },
+          "transform": {
+            "position": {
+              "x": 0,
+              "y": 0
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            },
+            "z": 0
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_ujcvspqunq8yq8ztlh0vr15f",
+              "script": "res://src/spin.ts",
+              "values": {}
+            }
+          ],
+          "children": [],
+          "ref": "ent_x3sf88ucqj0s0dacqrqilom0"
+        }
+      ],
       "local": [
         {
           "type": "@core/Camera",
@@ -27,6 +59,8 @@
             },
             "z": 0
           },
+          "behaviors": [],
+          "children": [],
           "ref": "ent_p8zh7z9qgq7qj5oopfpnaqxf"
         },
         {
@@ -52,6 +86,7 @@
               "values": {}
             }
           ],
+          "children": [],
           "ref": "ent_tr6epldobbi539jyjg0fgxcw"
         }
       ],
@@ -82,7 +117,9 @@
             {
               "ref": "bhv_g518j5l7gf8yk7k4vn9k9tq0",
               "script": "res://src/player-movement.js",
-              "values": {}
+              "values": {
+                "speed": 5
+              }
             },
             {
               "ref": "bhv_ztlz620mln3z267lt9qdctn4",
@@ -95,6 +132,7 @@
               "values": {}
             }
           ],
+          "children": [],
           "ref": "ent_hpbwa486rcfk9u6n86jlu4gm"
         }
       ]

@@ -157,10 +157,18 @@ if (workerData.editMode) {
       );
 
     const scene: Scene = {
-      world: [...editWorld.children.values()].map(serializeForScene),
-      local: [...editLocal.children.values()].map(serializeForScene),
-      server: [...editServer.children.values()].map(serializeForScene),
-      prefabs: [...editPrefabs.children.values()].map(serializeForScene),
+      world: [...editWorld.children.values()]
+        .filter(e => !(e instanceof EditorMetadataEntity))
+        .map(serializeForScene),
+      local: [...editLocal.children.values()]
+        .filter(e => !(e instanceof EditorMetadataEntity))
+        .map(serializeForScene),
+      server: [...editServer.children.values()]
+        .filter(e => !(e instanceof EditorMetadataEntity))
+        .map(serializeForScene),
+      prefabs: [...editPrefabs.children.values()]
+        .filter(e => !(e instanceof EditorMetadataEntity))
+        .map(serializeForScene),
     };
 
     ipc.send({ op: "SceneDefinitionResponse", sceneJson: scene });
@@ -188,3 +196,24 @@ if (workerData.editMode) {
 }
 
 game.setStatus(GameStatus.Running);
+
+const tickDelta = 1_000 / game.time.TPS;
+
+let tickAcc = 0.0;
+let time = performance.now();
+setInterval(() => {
+  const now = performance.now();
+  const delta = now - time;
+  time = now;
+
+  tickAcc += delta;
+  if (tickAcc > 5000) {
+    console.warn("Skipping ticks (accumulator ran over 5 seconds)");
+    tickAcc = 0.0;
+  }
+
+  while (tickAcc > tickDelta) {
+    tickAcc -= tickDelta;
+    game.tick();
+  }
+}, tickDelta / 2);

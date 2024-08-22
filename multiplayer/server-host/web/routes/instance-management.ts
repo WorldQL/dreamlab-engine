@@ -184,7 +184,7 @@ export const serveInstanceManagementAPI = (router: Router) => {
       },
       async (_ctx, { params }) => {
         const instance = params.instance;
-        const scene = SceneSchema.parse(await dumpSceneDefinition(instance));
+        const scene = await dumpSceneDefinition(instance);
 
         const projectJsonFile = path.join(instance.info.worldDirectory, "project.json");
         const projectDesc = JSON.parse(await Deno.readTextFile(projectJsonFile));
