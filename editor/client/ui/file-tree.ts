@@ -95,6 +95,13 @@ export class FileTree implements InspectorUIWidget {
           element.addEventListener("dragend", () => {
             delete element.dataset.dragging;
           });
+
+          element.addEventListener("dblclick", () => {
+            window.parent.postMessage(
+              { action: "goToTab", tab: "scripts", fileName: node.path },
+              "*",
+            );
+          });
         }
 
         if (node.type === "directory") {
