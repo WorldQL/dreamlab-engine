@@ -7,7 +7,7 @@ import {
   ValueChanged,
 } from "@dreamlab/engine";
 import { EnsureCompatible, EntityValueProps } from "./_compatibility.ts";
-import { DebugSquare } from "./_debug.ts";
+import { DebugSquare, TemporaryCameraDebugDisplay } from "./_debug.ts";
 import { Facades } from "./manager.ts";
 
 export class EditorFacadeCamera extends PixiEntity {
@@ -22,9 +22,14 @@ export class EditorFacadeCamera extends PixiEntity {
   public unlocked: boolean = false;
   public active: boolean = false;
 
+  // readonly bounds: Readonly<IVector2> = Object.freeze({
+  //   x: Camera.TARGET_VIEWPORT_SIZE,
+  //   y: Camera.TARGET_VIEWPORT_SIZE,
+  // });
+
   readonly bounds: Readonly<IVector2> = Object.freeze({
-    x: Camera.TARGET_VIEWPORT_SIZE,
-    y: Camera.TARGET_VIEWPORT_SIZE,
+    x: 0,
+    y: 0,
   });
 
   #debug: DebugSquare | undefined;
@@ -38,7 +43,7 @@ export class EditorFacadeCamera extends PixiEntity {
     super.onInitialize();
     if (!this.container) return;
 
-    this.#debug = new DebugSquare({ entity: this, suffix: this.active ? " (active)" : "" });
+    this.#debug = new TemporaryCameraDebugDisplay({ entity: this, suffix: this.active ? " (active)" : "" });
 
     const activeValue = this.values.get("active");
     this.listen(this.game.values, ValueChanged, ({ value }) => {

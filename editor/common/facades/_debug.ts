@@ -110,3 +110,12 @@ export class DebugSquare extends DebugShape {
       .stroke({ color, width });
   }
 }
+
+export class TemporaryCameraDebugDisplay extends DebugShape {
+  redraw(): void {
+    this.label.container.pivot.set(
+      this.label.container.width / 2,
+      this.label.container.height / 2
+    );
+  }
+}
