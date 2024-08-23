@@ -1,7 +1,18 @@
 import { ClientGame, PlayerJoined, PlayerLeft } from "@dreamlab/engine";
 import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
 import { element as elem } from "@dreamlab/ui";
-import { ArrowUpDown, Hammer, icon, OctagonX, Play, Save, User } from "../_icons.ts";
+import {
+  ArrowUpDown,
+  Hammer,
+  icon,
+  OctagonX,
+  Play,
+  Save,
+  User,
+  ScrollText,
+  GitCompareArrows,
+  Box,
+} from "../_icons.ts";
 import { IconButton } from "../components/mod.ts";
 import { connectToGame } from "../game-connection.ts";
 import { setupGame } from "../game-setup.ts";
@@ -12,7 +23,8 @@ export class AppMenu {
   #section = elem("section", { id: "app-menu" });
 
   playInspector: InspectorUI | undefined;
-  private buttons: Record<string, IconButton> = {};
+  private controls: Record<string, IconButton> = {};
+  private navigation: Record<string, IconButton> = {};
 
   constructor(
     private uiRoot: HTMLElement,
@@ -33,7 +45,7 @@ export class AppMenu {
       // TODO: toast or something when the save goes through
     });
 
-    this.buttons = {
+    this.controls = {
       play: new IconButton(Play, {
         id: "play-button",
         title: "Play",
@@ -51,11 +63,40 @@ export class AppMenu {
       }),
     };
 
-    this.buttons.play.enable();
-    this.buttons.edit.disable();
-    this.buttons.stop.disable();
+    this.navigation = {
+      editor: new IconButton(Box, {
+        id: "game-button",
+        title: "Editor",
+        ariaLabel: "Editor",
+      }),
+      script: new IconButton(ScrollText, {
+        id: "script-button",
+        title: "Go to Scripts",
+        ariaLabel: "Go to Scripts",
+      }),
+      source: new IconButton(GitCompareArrows, {
+        id: "source-button",
+        title: "Go to Source Control",
+        ariaLabel: "Go to Source Control",
+      }),
+    };
 
-    this.buttons.play.addEventListener("click", async event => {
+    this.navigation.editor.disable();
+    this.controls.play.enable();
+    this.controls.edit.disable();
+    this.controls.stop.disable();
+
+    this.navigation.script.addEventListener("click", event => {
+      event.preventDefault();
+      window.parent.postMessage({ action: "goToTab", tab: "scripts" }, "*");
+    });
+
+    this.navigation.source.addEventListener("click", event => {
+      event.preventDefault();
+      window.parent.postMessage({ action: "goToTab", tab: "sourceControl" }, "*");
+    });
+
+    this.controls.play.addEventListener("click", async event => {
       event.preventDefault();
 
       // TODO: if someone spams this button we should still only connect once
@@ -72,12 +113,12 @@ export class AppMenu {
         this.games.play.renderer.app.resize();
       }
 
-      this.buttons.play.disable();
-      this.buttons.edit.enable();
-      this.buttons.stop.enable();
+      this.controls.play.disable();
+      this.controls.edit.enable();
+      this.controls.stop.enable();
     });
 
-    this.buttons.edit.addEventListener("click", event => {
+    this.controls.edit.addEventListener("click", event => {
       event.preventDefault();
 
       this.playInspector?.hide();
@@ -87,25 +128,25 @@ export class AppMenu {
       this.games.edit.container.style.display = "block";
       this.games.edit.renderer.app.resize();
 
-      this.buttons.edit.disable();
-      this.buttons.play.enable();
-      this.buttons.stop.enable();
+      this.controls.edit.disable();
+      this.controls.play.enable();
+      this.controls.stop.enable();
     });
 
-    this.buttons.stop.addEventListener("click", async event => {
+    this.controls.stop.addEventListener("click", async event => {
       event.preventDefault();
 
       await this.#stopPlayGame();
 
-      this.buttons.stop.disable();
-      this.buttons.edit.disable();
-      this.buttons.play.enable();
+      this.controls.stop.disable();
+      this.controls.edit.disable();
+      this.controls.play.enable();
     });
 
     this.#section.append(
-      elem("div", {}, [elem("h1", {}, ["Dreamlab"]), saveButton]),
-      elem("div", {}, Object.values(this.buttons)),
-      elem("div", {}, [this.setupStats(this.games.edit)]),
+      elem("div", {}, [this.setupStats(this.games.edit), saveButton]),
+      elem("div", {}, Object.values(this.navigation)),
+      elem("div", {}, Object.values(this.controls)),
     );
 
     const topBar = this.uiRoot.querySelector("#top-bar")!;
