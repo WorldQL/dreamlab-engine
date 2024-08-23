@@ -8,7 +8,7 @@ export const fetchWorld = async (instance: GameInstance) => {
   // TODO: dont fetch the world if it's an edit session with uncommitted changes..
 
   const world = instance.info.worldId;
-  const revision = instance.info.worldRevision ?? "origin/main";
+  const revision = instance.info.worldRevision ?? "main";
   const dir = instance.info.worldDirectory;
 
   if (!(await fs.exists(dir))) {
