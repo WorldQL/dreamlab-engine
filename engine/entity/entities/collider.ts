@@ -8,7 +8,7 @@ export class RectCollider2D extends Entity {
     Entity.registerType(this, "@core");
   }
 
-  public static readonly icon = "⬜";
+  public static readonly icon = "🧱";
   get bounds(): Readonly<IVector2> | undefined {
     // controlled by globalTransform
     return { x: 1, y: 1 };
