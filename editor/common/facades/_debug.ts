@@ -35,6 +35,7 @@ abstract class DebugShape {
   protected readonly color: PIXI.ColorSource;
   protected readonly alpha: number;
   protected readonly width: number;
+  protected readonly alignment: number;
 
   constructor({
     entity,
@@ -42,12 +43,14 @@ abstract class DebugShape {
     color = "white",
     alpha = 0.8,
     width = 0.02,
+    alignment = 1,
   }: {
     readonly entity: PixiEntity;
     readonly suffix?: string;
     readonly color?: PIXI.ColorSource;
     readonly alpha?: number;
     readonly width?: number;
+    readonly alignment?: number;
   }) {
     this.entity = entity;
     // @ts-expect-error: private access
@@ -62,6 +65,7 @@ abstract class DebugShape {
     this.color = color;
     this.alpha = alpha;
     this.width = width;
+    this.alignment = alignment;
 
     this.redraw();
 
@@ -94,19 +98,20 @@ export class DebugSquare extends DebugShape {
 
     const color = this.color;
     const width = this.width;
+    const offset = this.alignment * width;
 
-    this.label.container.x = bounds.x / -2 - 0.05;
+    this.label.container.x = bounds.x / -2 - offset;
     this.label.container.y = bounds.y / -2 - 0.36;
 
     this.gfx.alpha = this.alpha;
     this.gfx
       .clear()
       .rect(bounds.x / -2, bounds.y / -2, bounds.x, bounds.y)
-      .stroke({ color, width, alignment: -1 })
-      .moveTo(bounds.x / -2 - width, bounds.y / -2 - width)
-      .lineTo(bounds.x / 2 + width, bounds.y / 2 + width)
-      .moveTo(bounds.x / -2 - width, bounds.y / 2 + width)
-      .lineTo(bounds.x / 2 + width, bounds.y / -2 - width)
+      .stroke({ color, width, alignment: this.alignment })
+      .moveTo(bounds.x / -2 + offset, bounds.y / -2 + offset)
+      .lineTo(bounds.x / 2 - offset, bounds.y / 2 - offset)
+      .moveTo(bounds.x / -2 + offset, bounds.y / 2 - offset)
+      .lineTo(bounds.x / 2 - offset, bounds.y / -2 + offset)
       .stroke({ color, width });
   }
 }
@@ -115,7 +120,7 @@ export class TemporaryCameraDebugDisplay extends DebugShape {
   redraw(): void {
     this.label.container.pivot.set(
       this.label.container.width / 2,
-      this.label.container.height / 2
+      this.label.container.height / 2,
     );
   }
 }
