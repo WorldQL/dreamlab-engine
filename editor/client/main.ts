@@ -26,7 +26,8 @@ import { InspectorUI } from "./ui/inspector.ts";
 
 // TODO: loading screen ?
 
-const instanceId = NIL_UUID;
+const searchParams = new URLSearchParams(window.location.search);
+const instanceId = searchParams.get("instance") || NIL_UUID;
 const connectUrl = new URL(import.meta.env.SERVER_URL);
 connectUrl.protocol = connectUrl.protocol === "https:" ? "wss:" : "ws:";
 connectUrl.pathname = `/api/v1/connect/${instanceId}`;
