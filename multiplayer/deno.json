@@ -1,6 +1,6 @@
 {
   "tasks": {
-    "start": "deno run -A ./server-host/main.ts"
+    "start": "deno run -A ./server-host/main.ts --start"
   },
   "imports": {
     "@dreamlab/engine": "../engine/mod.ts",

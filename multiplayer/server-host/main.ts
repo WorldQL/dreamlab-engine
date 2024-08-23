@@ -1,3 +1,4 @@
+import * as cli from "jsr:@std/cli@1";
 import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 import { CONFIG } from "./config.ts";
 import { Application } from "./deps/oak.ts";
@@ -25,17 +26,20 @@ Deno.addSignalListener("SIGTERM", () => {
   Deno.exit();
 });
 
-const TESTING_WORLD = "dreamlab/spaceship-multiplayer";
+const args = cli.parseArgs(Deno.args, { boolean: ["start"], string: ["world"] });
 
 await Promise.all([
   // boot instance
   (async () => {
+    if (!args.start) return;
     console.log("Spawning an instance...");
+
+    const world = args.world ?? "dreamlab/spaceship-multiplayer";
 
     instance = createInstance({
       instanceId: NIL_UUID,
-      worldId: TESTING_WORLD,
-      worldDirectory: `${Deno.cwd()}/worlds/${TESTING_WORLD}`,
+      worldId: world,
+      worldDirectory: `${Deno.cwd()}/worlds/${world}`,
       editMode: true,
     });
 
