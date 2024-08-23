@@ -144,9 +144,9 @@ export class AppMenu {
     });
 
     this.#section.append(
-      elem("div", {}, [this.setupStats(this.games.edit), saveButton]),
-      elem("div", {}, Object.values(this.controls)),
       elem("div", {}, Object.values(this.navigation)),
+      elem("div", {}, Object.values(this.controls)),
+      elem("div", {}, [this.setupStats(this.games.edit), saveButton]),
     );
 
     const topBar = this.uiRoot.querySelector("#top-bar")!;
