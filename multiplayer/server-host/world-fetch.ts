@@ -16,7 +16,7 @@ export const fetchWorld = async (instance: GameInstance) => {
     await fs.ensureDir(path.dirname(dir));
 
     const cloneProcess = new Deno.Command("git", {
-      args: ["clone", `${CONFIG.gitBase}/${world}.git`, world],
+      args: ["clone", `${CONFIG.gitBase}/${world}.git`, dir],
     }).spawn();
     await cloneProcess.status;
 
