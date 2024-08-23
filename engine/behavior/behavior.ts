@@ -226,7 +226,8 @@ export class Behavior implements ISignalHandler {
   }
 
   spawn(): void {
-    this.onInitialize();
+    const isPrefab = this.entity.root === this.game.prefabs;
+    if (!isPrefab) this.onInitialize();
 
     this.fire(BehaviorSpawned, this);
     this.entity.fire(BehaviorSpawned, this);
@@ -236,10 +237,12 @@ export class Behavior implements ISignalHandler {
       ancestor = ancestor.parent;
     }
 
-    if (this.onTick) this.listen(this.entity, EntityUpdate, this.onTick);
-    if (this.onPreTick) this.listen(this.entity.game, GamePreTick, this.onPreTick);
-    if (this.onFrame) this.listen(this.entity.game, GameRender, this.onFrame);
-    if (this.onPostTick) this.listen(this.entity.game, GamePostTick, this.onPostTick);
+    if (!isPrefab) {
+      if (this.onTick) this.listen(this.entity, EntityUpdate, this.onTick);
+      if (this.onPreTick) this.listen(this.entity.game, GamePreTick, this.onPreTick);
+      if (this.onFrame) this.listen(this.entity.game, GameRender, this.onFrame);
+      if (this.onPostTick) this.listen(this.entity.game, GamePostTick, this.onPostTick);
+    }
   }
 
   onInitialize(): void {}
