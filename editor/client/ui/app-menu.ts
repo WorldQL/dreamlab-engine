@@ -53,8 +53,8 @@ export class AppMenu {
       }),
       edit: new IconButton(Hammer, {
         id: "edit-button",
-        title: "Edit",
-        ariaLabel: "Edit",
+        title: "Return to Edit (without stopping server)",
+        ariaLabel: "Return to Editor",
       }),
       stop: new IconButton(OctagonX, {
         id: "stop-button",
@@ -145,8 +145,8 @@ export class AppMenu {
 
     this.#section.append(
       elem("div", {}, [this.setupStats(this.games.edit), saveButton]),
-      elem("div", {}, Object.values(this.navigation)),
       elem("div", {}, Object.values(this.controls)),
+      elem("div", {}, Object.values(this.navigation)),
     );
 
     const topBar = this.uiRoot.querySelector("#top-bar")!;
