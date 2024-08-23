@@ -1,6 +1,7 @@
 import {
   ClientGame,
   Entity,
+  EntityConstructor,
   EntityRenamed,
   EntityReparented,
   EntityTransformUpdate,
@@ -12,6 +13,7 @@ import {
 import { element as elem } from "@dreamlab/ui";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
+import { Facades } from "../../common/mod.ts";
 import { DataDetails, DataTable } from "../components/mod.ts";
 import { createInputField } from "../util/easy-input.ts";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
@@ -88,7 +90,10 @@ export class Properties implements InspectorUIWidget {
     entity.on(EntityReparented, () => (idField.textContent = entityId()));
     table.addEntry("id", "ID", idField);
 
-    // TODO: transform editing
+    const typeField = elem("code", {}, [
+      Facades.reverseFacadeEntityType(entity.constructor as EntityConstructor).name,
+    ]);
+    table.addEntry("type", "Type", typeField);
 
     const transformSection = new DataDetails();
     container.append(transformSection);
