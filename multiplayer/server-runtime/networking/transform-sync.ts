@@ -4,6 +4,7 @@ import {
   EntityDescendantSpawned,
   EntityTransformUpdate,
   GameTick,
+  IVector2,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { EntityTransformReport } from "@dreamlab/proto/play.ts";
@@ -13,11 +14,39 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
   const ignoredEntityRefs = new Set<string>();
   const transformDirtyEntities = new Set<Entity>();
 
+  interface ITransform {
+    position: IVector2;
+    rotation: number;
+    scale: IVector2;
+    z: number;
+  }
+  const lastTransforms = new WeakMap<Entity, ITransform>();
+
+  const transformFor = (entity: Entity): ITransform => ({
+    position: entity.globalTransform.position.bare(),
+    rotation: entity.globalTransform.rotation,
+    scale: entity.globalTransform.scale.bare(),
+    z: entity.globalTransform.z,
+  });
+
+  const transformsEq = (a: ITransform, b: ITransform) =>
+    a.position.x === b.position.x &&
+    a.position.y === b.position.y &&
+    a.rotation === b.rotation &&
+    a.scale.x === b.scale.x &&
+    a.scale.y === b.scale.y &&
+    a.z === b.z;
+
   game.world.on(EntityDescendantSpawned, event => {
     const entity = event.descendant;
     entity.on(EntityTransformUpdate, () => {
       if (!ignoredEntityRefs.has(entity.ref)) {
-        transformDirtyEntities.add(entity);
+        const currTransform = transformFor(entity);
+        const lastTransform = lastTransforms.get(entity);
+        if (!lastTransform || !transformsEq(lastTransform, currTransform)) {
+          lastTransforms.set(entity, currTransform);
+          transformDirtyEntities.add(entity);
+        }
       }
     });
   });
@@ -25,7 +54,7 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
   game.on(GameTick, () => {
     const entityTransformReports: EntityTransformReport[] = [];
     for (const entity of transformDirtyEntities.values()) {
-      if (entity.authority !== undefined && entity.authority !== game.network.self) return;
+      if (entity.authority !== undefined && entity.authority !== game.network.self) continue;
 
       entityTransformReports.push({
         entity: entity.ref,
