@@ -32,6 +32,12 @@ export type ServerNetworkSetupRoutine = (net: ServerNetworkManager, game: Server
 
 type ClientPacketQueue = { packets: ClientPacket[]; processing: boolean };
 
+const LOG_EXCLUDE_PACKETS: PlayPacket["t"][] = [
+  "ReportEntityTransforms",
+  "Ping",
+  "CustomMessage",
+];
+
 export class ServerNetworkManager {
   clients = new Map<ConnectionId, ConnectionInfo>();
 
@@ -59,8 +65,6 @@ export class ServerNetworkManager {
     return packetQueue;
   }
   async #flushPacketQueue(connection: ConnectionId, queue: ClientPacketQueue) {
-    if (queue.processing) return;
-    queue.processing = true;
     while (true) {
       const packets = queue.packets;
       queue.packets = [];
@@ -74,6 +78,8 @@ export class ServerNetworkManager {
             console.warn(`Uncaught error while handling packet of type '${packet.t}': ${err}`);
           }
         }
+
+        if (!LOG_EXCLUDE_PACKETS.includes(packet.t)) console.log("[<-] " + packet.t);
       }
     }
     queue.processing = false;
@@ -83,12 +89,13 @@ export class ServerNetworkManager {
 
   setup(game: ServerGame) {
     this.ipc.addMessageListener("IncomingPacket", message => {
-      // if (message.packet.t !== "Ping") console.log("[<-] " + message.packet.t);
-
       const sender = message.from;
-      const packetQueue = this.#getPacketQueue(message.packet.t);
+      const packetQueue = this.#getPacketQueue(sender);
       packetQueue.packets.push(message.packet);
-      void this.#flushPacketQueue(sender, packetQueue);
+      if (!packetQueue.processing) {
+        packetQueue.processing = true;
+        void this.#flushPacketQueue(sender, packetQueue);
+      }
     });
 
     this.ipc.addMessageListener("ConnectionEstablished", message => {
@@ -149,12 +156,13 @@ export class ServerNetworkManager {
 
   send(to: ConnectionId, packet: ServerPacket) {
     if (to === undefined) return;
-    // if (packet.t !== "Ping") console.log("[->] " + packet.t);
+
+    if (!LOG_EXCLUDE_PACKETS.includes(packet.t)) console.log("[->] " + packet.t);
     this.ipc.send({ op: "OutgoingPacket", to, packet });
   }
 
   broadcast(packet: ServerPacket) {
-    // if (packet.t !== "Ping") console.log("[->] " + packet.t);
+    if (!LOG_EXCLUDE_PACKETS.includes(packet.t)) console.log("[->] " + packet.t);
     this.ipc.send({ op: "OutgoingPacket", to: null, packet });
   }
 

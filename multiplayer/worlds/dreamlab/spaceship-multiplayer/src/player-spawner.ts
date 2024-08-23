@@ -8,6 +8,7 @@ export default class PlayerSpawner extends Behavior {
       name: "Player." + this.game.network.self,
       authority: this.game.network.self,
     });
+    newPlayer._.Sprite2D.takeAuthority();
 
     newPlayer.transform.position = { x: 0, y: 0 };
   }

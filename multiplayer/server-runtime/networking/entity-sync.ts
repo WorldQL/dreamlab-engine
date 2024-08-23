@@ -1,16 +1,14 @@
 import {
-  ConnectionId,
   EntityDescendantDestroyed,
   EntityDescendantReparented,
   EntityDescendantSpawned,
   GameStatus,
 } from "@dreamlab/engine";
-import { ServerNetworkSetupRoutine } from "./net-manager.ts";
 import {
   convertEntityDefinition,
   serializeEntityDefinition,
 } from "@dreamlab/proto/common/entity-sync.ts";
-import { PlayPacket } from "@dreamlab/proto/play.ts";
+import { ServerNetworkSetupRoutine } from "./net-manager.ts";
 
 export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
   const changeIgnoreSet = new Set<string>();

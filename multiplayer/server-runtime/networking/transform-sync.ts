@@ -91,7 +91,9 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
 
   net.registerPacketHandler("RequestExclusiveAuthority", (from, packet) => {
     const entity = game.entities.lookupByRef(packet.entity);
-    if (entity === undefined) return;
+    if (entity === undefined) {
+      throw new Error("no such entity " + packet.entity);
+    }
 
     const clock = entity[internal.entityAuthorityClock];
 
@@ -100,6 +102,13 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
       (packet.clock === clock && entity.authority !== undefined && from! < entity.authority)
     ) {
       announceAuthority(entity, packet.clock, from);
+    } else {
+      net.send(from, {
+        t: "DenyExclusiveAuthority",
+        entity: entity.ref,
+        clock: clock,
+        current_authority: entity.authority,
+      });
     }
   });
 
