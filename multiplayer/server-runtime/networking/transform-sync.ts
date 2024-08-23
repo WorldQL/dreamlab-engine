@@ -41,12 +41,7 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
     const entity = event.descendant;
     entity.on(EntityTransformUpdate, () => {
       if (!ignoredEntityRefs.has(entity.ref)) {
-        const currTransform = transformFor(entity);
-        const lastTransform = lastTransforms.get(entity);
-        if (!lastTransform || !transformsEq(lastTransform, currTransform)) {
-          lastTransforms.set(entity, currTransform);
-          transformDirtyEntities.add(entity);
-        }
+        transformDirtyEntities.add(entity);
       }
     });
   });
@@ -56,12 +51,18 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
     for (const entity of transformDirtyEntities.values()) {
       if (entity.authority !== undefined && entity.authority !== game.network.self) continue;
 
-      entityTransformReports.push({
-        entity: entity.ref,
-        position: entity.transform.position.bare(),
-        rotation: entity.transform.rotation,
-        scale: entity.transform.scale.bare(),
-      });
+      const currTransform = transformFor(entity);
+      const lastTransform = lastTransforms.get(entity);
+      if (!lastTransform || !transformsEq(lastTransform, currTransform)) {
+        lastTransforms.set(entity, currTransform);
+
+        entityTransformReports.push({
+          entity: entity.ref,
+          position: entity.transform.position.bare(),
+          rotation: entity.transform.rotation,
+          scale: entity.transform.scale.bare(),
+        });
+      }
     }
 
     if (entityTransformReports.length > 0) {
