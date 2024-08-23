@@ -41,6 +41,7 @@ await Promise.all([
       worldId: world,
       worldDirectory: `${Deno.cwd()}/worlds/${world}`,
       editMode: true,
+      inspect: "127.0.0.1:9229",
     });
 
     await instance.waitForSessionBoot();

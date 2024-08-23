@@ -49,6 +49,7 @@ export class GameSession {
       worldResourcesBaseUrl: `${CONFIG.publicUrlBase}/worlds`,
       worldSubdirectory: opts.worldSubDirectory,
       editMode: opts.editMode,
+      inspect: parent.info.inspect,
     });
 
     this.#readyPromise = new Promise((resolve, _reject) => {

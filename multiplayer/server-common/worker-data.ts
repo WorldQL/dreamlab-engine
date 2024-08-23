@@ -9,4 +9,6 @@ export interface WorkerInitData {
   worldSubdirectory: string;
 
   editMode: boolean;
+
+  inspect?: string;
 }

@@ -1,8 +1,8 @@
 import { HostIPCMessage, WorkerIPCMessage } from "../server-common/ipc.ts";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 
-import { TextLineStream } from "jsr:@std/streams@0.224.5";
 import * as colors from "jsr:@std/fmt/colors";
+import { TextLineStream } from "jsr:@std/streams@0.224.5";
 
 export type IPCMessageListener = {
   op: WorkerIPCMessage["op"] | undefined;
@@ -24,7 +24,7 @@ export class IPCWorker {
     const command = new Deno.Command(Deno.execPath(), {
       args: [
         "run",
-        // "--inspect",
+        ...(workerData.inspect ? [`--inspect=${workerData.inspect}`] : []),
         "--unstable-sloppy-imports",
         "--allow-hrtime",
         `--allow-net=${new URL(workerData.workerConnectUrl).host}`,

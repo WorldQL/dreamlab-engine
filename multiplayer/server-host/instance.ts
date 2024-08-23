@@ -27,6 +27,8 @@ export interface GameInstanceInfo {
   startedBy?: string;
 
   editMode?: boolean;
+
+  inspect?: string;
 }
 
 export class GameInstance {
