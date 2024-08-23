@@ -1,6 +1,6 @@
 import { build, emptyDir } from "https://deno.land/x/dnt@0.40.0/mod.ts";
-import { walk } from "https://deno.land/std@0.140.0/fs/mod.ts";
-import { relative } from "https://deno.land/std@0.140.0/path/mod.ts";
+import * as fs from "jsr:@std/fs@1";
+import * as path from "jsr:@std/path@1";
 
 await emptyDir("./out");
 
@@ -29,8 +29,8 @@ await build({
 async function listFiles(directory: string): Promise<string[]> {
   const files: string[] = [];
 
-  for await (const entry of walk(directory, { includeDirs: false })) {
-    const relativePath = relative(directory, entry.path);
+  for await (const entry of fs.walk(directory, { includeDirs: false })) {
+    const relativePath = path.relative(directory, entry.path);
 
     // Skip node_modules directory
     if (relativePath.startsWith("node_modules")) {
