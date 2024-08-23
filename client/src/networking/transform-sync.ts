@@ -25,7 +25,7 @@ export const handleTransformSync: ClientNetworkSetupRoutine = (conn, game) => {
   game.on(GameTick, () => {
     const entityTransformReports: EntityTransformReport[] = [];
     for (const entity of transformDirtyEntities.values()) {
-      if (entity.authority !== undefined && entity.authority !== game.network.self) return;
+      if (entity.authority !== undefined && entity.authority !== game.network.self) continue;
 
       entityTransformReports.push({
         entity: entity.ref,
