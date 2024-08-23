@@ -57,7 +57,15 @@ export class BehaviorEditor {
     parent.container.append(this.details);
 
     this.#table.addEntry("id", "ID", elem("code", {}, [behavior.ref]));
-    this.#table.addEntry("script", "Script", elem("code", {}, [behavior.script]));
+    const scriptElement = elem("code", {}, [behavior.script]);
+    this.#table.addEntry("script", "Script", scriptElement);
+
+    scriptElement.addEventListener("dblclick", () => {
+      window.parent.postMessage(
+        { action: "goToTab", tab: "scripts", fileName: behavior.script.replace("res://", "") },
+        "*",
+      );
+    });
 
     ui.behaviorTypeInfo
       .get(this.behavior.script)
@@ -143,7 +151,6 @@ export class BehaviorEditor {
             convert: s => s,
           });
         }
-        break;
       }
 
       case Number: {
@@ -172,7 +179,6 @@ export class BehaviorEditor {
             convert: z.number({ coerce: true }).parse,
           });
         }
-        break;
       }
 
       case undefined:
