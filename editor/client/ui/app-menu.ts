@@ -93,7 +93,7 @@ export class AppMenu {
 
     this.navigation.source.addEventListener("click", event => {
       event.preventDefault();
-      window.parent.postMessage({ action: "goToTab", tab: "sourceControl" }, "*");
+      window.parent.postMessage({ action: "goToTab", tab: "source-control" }, "*");
     });
 
     this.controls.play.addEventListener("click", async event => {
