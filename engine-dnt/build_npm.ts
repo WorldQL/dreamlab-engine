@@ -26,6 +26,28 @@ await build({
   test: false,
 });
 
+await build({
+  entryPoints: ["../engine/_deps/rapier.ts"],
+  outDir: "./rapierout",
+  shims: {
+    deno: true,
+  },
+  declaration: "inline",
+  skipSourceOutput: true,
+  package: {
+    name: "dreamlab-engine",
+    version: "0",
+    description: "",
+    license: "UNLICENSED",
+  },
+  postBuild() {},
+  compilerOptions: {
+    lib: ["ESNext", "DOM"],
+  },
+  importMap: "../deno.json",
+  test: false,
+});
+
 async function listFiles(directory: string): Promise<string[]> {
   const files: string[] = [];
 
