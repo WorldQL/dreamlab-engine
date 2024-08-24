@@ -98,6 +98,7 @@ export class AppMenu {
 
     this.controls.play.addEventListener("click", async event => {
       event.preventDefault();
+      this.controls.stop.enable();
 
       // TODO: if someone spams this button we should still only connect once
       if (this.games.play === undefined) {
@@ -115,7 +116,6 @@ export class AppMenu {
 
       this.controls.play.disable();
       this.controls.edit.enable();
-      this.controls.stop.enable();
     });
 
     this.controls.edit.addEventListener("click", event => {
