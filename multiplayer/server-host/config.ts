@@ -3,7 +3,7 @@ import env from "./util/env.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
 
 const readConfig = () => {
-  const bindAddress = env("BIND_ADDRESS", env.socketAddress("127.0.0.1:8000"));
+  const bindAddress = env("BIND_ADDRESS", env.socketAddress("127.0.0.1:8001"));
   const isDev = z
     .union([z.enum(["false", "0"]).transform(() => false), z.string()])
     .pipe(z.coerce.boolean())
