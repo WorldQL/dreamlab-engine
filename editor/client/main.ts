@@ -34,7 +34,7 @@ if (!serverUrl) {
   throw new Error("server url undefined")
 }
 const connectUrl = new URL(serverUrl);
-connectUrl.protocol = connectUrl.protocol === "https:" ? "wss:" : "ws:";
+// connectUrl.protocol = connectUrl.protocol === "https:" ? "wss:" : "ws:";
 connectUrl.pathname = `/api/v1/connect/${instanceId}`;
 connectUrl.searchParams.set("player_id", generateCUID("ply"));
 connectUrl.searchParams.set("nickname", "Player" + Math.floor(Math.random() * 999) + 1);
