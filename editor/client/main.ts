@@ -30,18 +30,23 @@ const searchParams = new URLSearchParams(window.location.search);
 const instanceId = searchParams.get("instance") || NIL_UUID;
 const serverUrl = searchParams.get("server");
 if (!serverUrl) {
-  alert('error: server url not set in url params!')
-  throw new Error("server url undefined")
+  alert("error: server url not set in url params!");
+  throw new Error("server url undefined");
 }
 declare global {
   interface Window {
     // add you custom properties and methods
-    dreamlabMultiplayerServerUrl: string
+    dreamlabMultiplayerServerUrl: string;
   }
 }
 
-window.dreamlabMultiplayerServerUrl = serverUrl
-const connectUrl = new URL(window.dreamlabMultiplayerServerUrl);
+const globalHttpURL = new URL(serverUrl);
+// query param URL is websocket but the other ones expect HTTP
+globalHttpURL.protocol = globalHttpURL.protocol === "wss:" ? "https:" : "http:";
+
+window.dreamlabMultiplayerServerUrl = globalHttpURL.toString();
+
+const connectUrl = new URL(serverUrl);
 // connectUrl.protocol = connectUrl.protocol === "https:" ? "wss:" : "ws:";
 connectUrl.pathname = `/api/v1/connect/${instanceId}`;
 connectUrl.searchParams.set("player_id", generateCUID("ply"));
