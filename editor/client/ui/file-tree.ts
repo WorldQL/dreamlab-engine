@@ -48,7 +48,7 @@ export class FileTree implements InspectorUIWidget {
     const tree = new DataTree();
     tree.style.setProperty("--tree-indent-amount", "0.5em");
 
-    const filesURL = new URL(import.meta.env.SERVER_URL);
+    const filesURL = new URL(window.dreamlabMultiplayerServerUrl);
     filesURL.pathname = `/api/v1/edit/${this.game.instanceId}/files`;
     const files = fetch(filesURL)
       .then(r => r.json())

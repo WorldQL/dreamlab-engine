@@ -39,7 +39,7 @@ export class AppMenu {
     });
 
     saveButton.addEventListener("click", async () => {
-      const url = new URL(import.meta.env.SERVER_URL);
+      const url = new URL(window.dreamlabMultiplayerServerUrl);
       url.pathname = `/api/v1/save-edit-session/${this.games.edit.instanceId}`;
       await fetch(url, { method: "POST" });
       // TODO: toast or something when the save goes through
@@ -184,7 +184,7 @@ export class AppMenu {
     const container = document.createElement("div");
     this.uiRoot.querySelector("#viewport")!.append(container);
 
-    const connectURL = new URL(import.meta.env.SERVER_URL);
+    const connectURL = new URL(window.dreamlabMultiplayerServerUrl);
     connectURL.pathname = `/api/v1/connect/${this.games.edit.instanceId}`;
     const player = this.games.edit.network.connections.find(
       c => c.id === this.games.edit.network.self,
@@ -229,7 +229,7 @@ export class AppMenu {
 
   async #stopPlayGame() {
     if (!this.games.play) return;
-    const url = new URL(import.meta.env.SERVER_URL);
+    const url = new URL(window.dreamlabMultiplayerServerUrl);
     url.pathname = `/api/v1/stop-play-session/${this.games.play.instanceId}`;
     await fetch(url, { method: "POST" });
   }

@@ -33,7 +33,15 @@ if (!serverUrl) {
   alert('error: server url not set in url params!')
   throw new Error("server url undefined")
 }
-const connectUrl = new URL(serverUrl);
+declare global {
+  interface Window {
+    // add you custom properties and methods
+    dreamlabMultiplayerServerUrl: string
+  }
+}
+
+window.dreamlabMultiplayerServerUrl = serverUrl
+const connectUrl = new URL(window.dreamlabMultiplayerServerUrl);
 // connectUrl.protocol = connectUrl.protocol === "https:" ? "wss:" : "ws:";
 connectUrl.pathname = `/api/v1/connect/${instanceId}`;
 connectUrl.searchParams.set("player_id", generateCUID("ply"));
