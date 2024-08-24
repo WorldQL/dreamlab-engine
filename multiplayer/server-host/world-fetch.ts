@@ -41,11 +41,11 @@ export const fetchWorld = async (instance: GameInstance) => {
         exitCode: pullStatus.code,
       });
 
-      const resetProcess = new Deno.Command("git", {
-        args: ["reset", "--hard", "origin/main"],
-        cwd: dir,
-      }).spawn();
-      await resetProcess.status;
+      // const resetProcess = new Deno.Command("git", {
+      //   args: ["reset", "--hard", "origin/main"],
+      //   cwd: dir,
+      // }).spawn();
+      // await resetProcess.status;
     }
 
     const checkoutProcess = new Deno.Command("git", {
