@@ -32,7 +32,7 @@ export class EditorFacadeCamera extends PixiEntity {
     y: 0,
   });
 
-  #debug: DebugSquare | undefined;
+  // #debug: DebugSquare | undefined;
 
   constructor(ctx: EntityContext) {
     super(ctx);
@@ -43,14 +43,14 @@ export class EditorFacadeCamera extends PixiEntity {
     super.onInitialize();
     if (!this.container) return;
 
-    this.#debug = new TemporaryCameraDebugDisplay({ entity: this, suffix: this.active ? " (active)" : "" });
+    // this.#debug = new TemporaryCameraDebugDisplay({ entity: this, suffix: this.active ? " (active)" : "" });
 
-    const activeValue = this.values.get("active");
-    this.listen(this.game.values, ValueChanged, ({ value }) => {
-      if (this.#debug && value === activeValue) {
-        this.#debug.suffix = this.active ? " (active)" : "";
-      }
-    });
+    // const activeValue = this.values.get("active");
+    // this.listen(this.game.values, ValueChanged, ({ value }) => {
+    //   if (this.#debug && value === activeValue) {
+    //     this.#debug.suffix = this.active ? " (active)" : "";
+    //   }
+    // });
   }
 }
 

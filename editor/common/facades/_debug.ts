@@ -29,7 +29,7 @@ export const createLabel = (icon: string, text?: string): Label => {
 abstract class DebugShape {
   protected entity: PixiEntity;
 
-  protected label: Label;
+  // protected label: Label;
   protected readonly gfx = new PIXI.Graphics();
 
   protected readonly color: PIXI.ColorSource;
@@ -57,9 +57,9 @@ abstract class DebugShape {
     const container = this.entity.container!;
 
     this.#suffix = suffix;
-    const icon = (entity.constructor as typeof Entity).icon ?? "📦";
-    this.label = createLabel(icon, entity.name + this.#suffix);
-    container.addChild(this.label.container);
+    // const icon = (entity.constructor as typeof Entity).icon ?? "📦";
+    // this.label = createLabel(icon, entity.name + this.#suffix);
+    // container.addChild(this.label.container);
     container.addChild(this.gfx);
 
     this.color = color;
@@ -69,9 +69,9 @@ abstract class DebugShape {
 
     this.redraw();
 
-    this.entity.on(EntityRenamed, () => {
-      this.label.text.text = this.entity.name + this.#suffix;
-    });
+    // this.entity.on(EntityRenamed, () => {
+    //   this.label.text.text = this.entity.name + this.#suffix;
+    // });
 
     this.entity.on(EntityResize, () => {
       this.redraw();
@@ -84,7 +84,7 @@ abstract class DebugShape {
   }
   set suffix(value) {
     this.#suffix = value;
-    this.label.text.text = this.entity.name + this.#suffix;
+    // this.label.text.text = this.entity.name + this.#suffix;
   }
 
   abstract redraw(): void;
@@ -100,8 +100,8 @@ export class DebugSquare extends DebugShape {
     const width = this.width;
     const offset = this.alignment * width;
 
-    this.label.container.x = bounds.x / -2 - offset;
-    this.label.container.y = bounds.y / -2 - 0.36;
+    // this.label.container.x = bounds.x / -2 - offset;
+    // this.label.container.y = bounds.y / -2 - 0.36;
 
     this.gfx.alpha = this.alpha;
     this.gfx
@@ -118,9 +118,9 @@ export class DebugSquare extends DebugShape {
 
 export class TemporaryCameraDebugDisplay extends DebugShape {
   redraw(): void {
-    this.label.container.pivot.set(
-      this.label.container.width / 2,
-      this.label.container.height / 2,
-    );
+    // this.label.container.pivot.set(
+    //   this.label.container.width / 2,
+    //   this.label.container.height / 2,
+    // );
   }
 }
