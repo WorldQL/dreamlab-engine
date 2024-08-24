@@ -28,7 +28,12 @@ import { InspectorUI } from "./ui/inspector.ts";
 
 const searchParams = new URLSearchParams(window.location.search);
 const instanceId = searchParams.get("instance") || NIL_UUID;
-const connectUrl = new URL(import.meta.env.SERVER_URL);
+const serverUrl = searchParams.get("server");
+if (!serverUrl) {
+  alert('error: server url not set in url params!')
+  throw new Error("server url undefined")
+}
+const connectUrl = new URL(serverUrl);
 connectUrl.protocol = connectUrl.protocol === "https:" ? "wss:" : "ws:";
 connectUrl.pathname = `/api/v1/connect/${instanceId}`;
 connectUrl.searchParams.set("player_id", generateCUID("ply"));
