@@ -228,9 +228,11 @@ export class AppMenu {
   }
 
   async #stopPlayGame() {
-    if (!this.games.play) return;
+    // we need to be able to stop the server even if this.games.play is not created successfully.
+    // if (!this.games.play) return;
     const url = new URL(window.dreamlabMultiplayerServerUrl);
-    url.pathname = `/api/v1/stop-play-session/${this.games.play.instanceId}`;
+    // edit and play instanceIds match
+    url.pathname = `/api/v1/stop-play-session/${this.games.edit.instanceId}`;
     await fetch(url, { method: "POST" });
   }
 }
