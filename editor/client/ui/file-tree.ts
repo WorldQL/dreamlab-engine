@@ -116,7 +116,7 @@ export class FileTree implements InspectorUIWidget {
       }
     });
 
-    this.#section.append(tree);
+    this.#section.replaceChildren(tree);
   }
 
   show(uiRoot: HTMLElement): void {

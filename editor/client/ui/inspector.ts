@@ -74,6 +74,8 @@ export class InspectorUI {
         }
         // TODO: we need to make sure this propagates to every guy whose rendering depends on one of those
       }
+
+      this.fileTree.setup(this)
     });
   }
 
