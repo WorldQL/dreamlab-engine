@@ -36,19 +36,9 @@ export const handleTransformSync: ClientNetworkSetupRoutine = (conn, game) => {
     }
 
     if (entityTransformReports.length > 0) {
-      // TODO: Remove this once DRE-890 is fixed
-      const _entityTransformReports = entityTransformReports.filter((entity => {
-        const e = game.entities.lookupByRef(entity.entity)
-        // insane hack to fix the space tutorial.
-        if (e?.name.startsWith("Bullet")) {
-          return false
-        }
-        return true
-      }))
-
       conn.send({
         t: "ReportEntityTransforms",
-        reports: _entityTransformReports,
+        reports: entityTransformReports,
       });
     }
 
