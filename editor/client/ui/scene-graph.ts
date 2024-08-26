@@ -117,7 +117,7 @@ export class SceneGraph implements InspectorUIWidget {
     }
   }
 
-  renderEntry(ui: InspectorUI, parent: HTMLElement, entity: Entity) {
+  renderEntry(ui: InspectorUI, parent: HTMLElement, entity: Entity, isNew: boolean = false) {
     if (entity instanceof EditorMetadataEntity) return;
 
     const toggle = elem("div", { className: "arrow" }, [icon(ChevronDown)]);
@@ -146,7 +146,7 @@ export class SceneGraph implements InspectorUIWidget {
 
     entity.on(EntityChildSpawned, event => {
       const newEntity = event.child;
-      this.renderEntry(ui, entryElement, newEntity);
+      this.renderEntry(ui, entryElement, newEntity, true);
     });
 
     entity.on(EntityReparented, () => {
@@ -169,7 +169,7 @@ export class SceneGraph implements InspectorUIWidget {
     });
 
     this.handleEntryDragAndDrop(entity, entryElement);
-    this.handleEntryRename(entity, entryElement);
+    this.handleEntryRename(entity, entryElement, isNew);
     this.handleEntryContextMenu(ui, entity, entryElement);
 
     parent.append(entryElement);
@@ -179,14 +179,11 @@ export class SceneGraph implements InspectorUIWidget {
     this.sortEntries(entryElement);
   }
 
-  handleEntryRename(entity: Entity, entryElement: HTMLElement) {
+  handleEntryRename(entity: Entity, entryElement: HTMLElement, isNew: boolean = false) {
     if (entity.parent?.id === "game.world._.EditEntities") return;
 
     const name = entryElement.querySelector(":scope > summary .name")! as HTMLElement;
-    entryElement.addEventListener("dblclick", event => {
-      if (!eventTargetsEntry(event, entryElement)) return;
-      if (entryElement.querySelector(":scope > summary input")) return;
-
+    const triggerRename = () => {
       name.style.display = "none";
       const input = elem("input", { type: "text", value: entity.name });
       const reset = () => {
@@ -211,6 +208,17 @@ export class SceneGraph implements InspectorUIWidget {
         entity.name = input.value;
         reset();
       });
+    };
+
+    if (isNew) {
+      setTimeout(triggerRename, 0);
+    }
+
+    entryElement.addEventListener("dblclick", event => {
+      if (!eventTargetsEntry(event, entryElement)) return;
+      if (entryElement.querySelector(":scope > summary input")) return;
+
+      triggerRename();
     });
   }
 
