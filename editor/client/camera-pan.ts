@@ -1,5 +1,6 @@
 import {
   Behavior,
+  BoxResizeGizmo,
   Camera,
   ClickableCircle,
   Gizmo,
@@ -53,7 +54,8 @@ export class CameraPanBehavior extends Behavior {
 
     if (!this.#drag && event.button === "left" && event.cursor.world && !this.#wasGizmo) {
       const gizmo = this.game.local.children.get("Gizmo")?.cast(Gizmo);
-      if (!gizmo) return;
+      const boxresize = this.game.local.children.get("BoxResizeGizmo")?.cast(BoxResizeGizmo);
+      if (!gizmo && !boxresize) return;
 
       const entities = this.game.entities
         .lookupByPosition(event.cursor.world)
@@ -61,7 +63,8 @@ export class CameraPanBehavior extends Behavior {
         .toSorted((a, b) => a.z - b.z);
 
       const entity = entities.at(0);
-      gizmo.target = entity;
+      if (gizmo) gizmo.target = entity;
+      if (boxresize) boxresize.target = entity;
       if (this.ui) this.ui.selectedEntity.entities = entity ? [entity] : [];
     }
 
