@@ -5,13 +5,14 @@ import {
   EntityDestroyed,
   EntityRenamed,
   EntityReparented,
+  Root,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { element as elem } from "@dreamlab/ui";
-import { EditorMetadataEntity, Facades } from "../../common/mod.ts";
+import { EditorMetadataEntity, EditorRootFacadeEntity, Facades } from "../../common/mod.ts";
 import { ChevronDown, icon } from "../_icons.ts";
-import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 import { ContextMenuItem } from "./context-menu.ts";
+import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 
 function eventTargetsEntry(event: Event, entryElement: HTMLElement) {
   if (!(event.target instanceof HTMLElement)) return false;
@@ -57,8 +58,14 @@ export class SceneGraph implements InspectorUIWidget {
             .filter(([_, namespace]) => namespace !== "@editor")
             .map(([type, _]) => [
               type.name,
-              () =>
-                world.spawn({ type: Facades.lookupFacadeEntityType(type), name: type.name }),
+              () => {
+                const newEntity = world.spawn({
+                  type: Facades.lookupFacadeEntityType(type),
+                  name: type.name,
+                });
+                const newEntryElement = this.entryElementMap.get(newEntity.ref);
+                if (newEntryElement) this.triggerRename(newEntity, newEntryElement);
+              },
             ]),
         ],
       ]);
@@ -117,7 +124,7 @@ export class SceneGraph implements InspectorUIWidget {
     }
   }
 
-  renderEntry(ui: InspectorUI, parent: HTMLElement, entity: Entity, isNew: boolean = false) {
+  renderEntry(ui: InspectorUI, parent: HTMLElement, entity: Entity) {
     if (entity instanceof EditorMetadataEntity) return;
 
     const toggle = elem("div", { className: "arrow" }, [icon(ChevronDown)]);
@@ -146,7 +153,7 @@ export class SceneGraph implements InspectorUIWidget {
 
     entity.on(EntityChildSpawned, event => {
       const newEntity = event.child;
-      this.renderEntry(ui, entryElement, newEntity, true);
+      this.renderEntry(ui, entryElement, newEntity);
     });
 
     entity.on(EntityReparented, () => {
@@ -169,7 +176,7 @@ export class SceneGraph implements InspectorUIWidget {
     });
 
     this.handleEntryDragAndDrop(entity, entryElement);
-    this.handleEntryRename(entity, entryElement, isNew);
+    this.handleEntryRename(entity, entryElement);
     this.handleEntryContextMenu(ui, entity, entryElement);
 
     parent.append(entryElement);
@@ -179,46 +186,42 @@ export class SceneGraph implements InspectorUIWidget {
     this.sortEntries(entryElement);
   }
 
-  handleEntryRename(entity: Entity, entryElement: HTMLElement, isNew: boolean = false) {
-    if (entity.parent?.id === "game.world._.EditEntities") return;
-
-    const name = entryElement.querySelector(":scope > summary .name")! as HTMLElement;
-    const triggerRename = () => {
-      name.style.display = "none";
-      const input = elem("input", { type: "text", value: entity.name });
-      const reset = () => {
-        name.style.display = "inherit";
-        input.remove();
-      };
-      name.parentElement!.append(input);
-      input.focus();
-      input.setSelectionRange(0, input.value.length);
-
-      input.addEventListener("keypress", event => {
-        if (event.key === "Enter") {
-          input.blur();
-        }
-      });
-      input.addEventListener("blur", () => {
-        if (input.value === "" || input.value === entity.name) {
-          reset();
-          return;
-        }
-
-        entity.name = input.value;
-        reset();
-      });
-    };
-
-    if (isNew) {
-      setTimeout(triggerRename, 0);
-    }
+  handleEntryRename(entity: Entity, entryElement: HTMLElement) {
+    if (entity instanceof EditorRootFacadeEntity || entity instanceof Root) return;
 
     entryElement.addEventListener("dblclick", event => {
       if (!eventTargetsEntry(event, entryElement)) return;
       if (entryElement.querySelector(":scope > summary input")) return;
+      this.triggerRename(entity, entryElement);
+    });
+  }
 
-      triggerRename();
+  triggerRename(entity: Entity, entryElement: HTMLElement) {
+    const name = entryElement.querySelector(":scope > summary .name")! as HTMLElement;
+
+    name.style.display = "none";
+    const input = elem("input", { type: "text", value: entity.name });
+    const reset = () => {
+      name.style.display = "inherit";
+      input.remove();
+    };
+    name.parentElement!.append(input);
+    input.focus();
+    input.setSelectionRange(0, input.value.length);
+
+    input.addEventListener("keypress", event => {
+      if (event.key === "Enter") {
+        input.blur();
+      }
+    });
+    input.addEventListener("blur", () => {
+      if (input.value === "" || input.value === entity.name) {
+        reset();
+        return;
+      }
+
+      entity.name = input.value;
+      reset();
     });
   }
 
@@ -287,8 +290,14 @@ export class SceneGraph implements InspectorUIWidget {
             .filter(([_, namespace]) => namespace !== "@editor")
             .map(([type, _]) => [
               type.name,
-              () =>
-                entity.spawn({ type: Facades.lookupFacadeEntityType(type), name: type.name }),
+              () => {
+                const newEntity = entity.spawn({
+                  type: Facades.lookupFacadeEntityType(type),
+                  name: type.name,
+                });
+                const newEntryElement = this.entryElementMap.get(newEntity.ref);
+                if (newEntryElement) this.triggerRename(newEntity, newEntryElement);
+              },
             ]) as [string, () => void][],
         ],
       ];
