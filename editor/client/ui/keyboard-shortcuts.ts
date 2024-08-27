@@ -79,8 +79,8 @@ export function setupKeyboardShortcuts(
   let currentlyCopiedEntities: Entity[] = [];
   const cooldownManager = new CooldownManager();
 
-  window.undoStack = []
-  window.redoStack = []
+  window.undoStack = [];
+  window.redoStack = [];
 
   document.addEventListener("keydown", (event: KeyboardEvent) => {
     if (document.activeElement instanceof HTMLInputElement) {
@@ -90,6 +90,9 @@ export function setupKeyboardShortcuts(
       if (isRoot(e)) {
         return;
       }
+    }
+    if ((window.getSelection()?.toString().length ?? 0) > 0) {
+      return;
     }
 
     // Copy
