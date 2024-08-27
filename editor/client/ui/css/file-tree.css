@@ -10,7 +10,7 @@
     & summary {
       display: flex;
       align-items: center;
-      font-size: 14px;
+      font-size: 0.875rem;
 
       & > span {
         display: inline-flex;
