@@ -47,6 +47,8 @@ export class CameraPanBehavior extends Behavior {
     }
   }
 
+  #lastClickTime = 0;
+
   onMouseUp(event: MouseUp) {
     if (!this.game.isClient()) return;
 
@@ -62,10 +64,26 @@ export class CameraPanBehavior extends Behavior {
         .filter(entity => this.ui?.sceneGraph?.entryElementMap?.has(entity.ref) ?? true)
         .toSorted((a, b) => a.z - b.z);
 
-      const entity = entities.at(0);
-      if (gizmo) gizmo.target = entity;
-      if (boxresize) boxresize.target = entity;
-      if (this.ui) this.ui.selectedEntity.entities = entity ? [entity] : [];
+      const currentTime = Date.now();
+      const target = gizmo?.target ?? boxresize?.target;
+
+      let currentIdx = target ? entities.indexOf(target) : 0;
+      let queryEntity = entities[currentIdx];
+
+      const timeDiff = currentTime - this.#lastClickTime;
+      const shouldUpdateIndex = timeDiff < 300 && entities.length > 1;
+
+      if (shouldUpdateIndex) {
+        currentIdx = (currentIdx + 1) % entities.length;
+        queryEntity = entities[currentIdx];
+      }
+
+      const newTarget = entities.length > 0 ? queryEntity : undefined;
+      if (gizmo) gizmo.target = newTarget;
+      if (boxresize) boxresize.target = newTarget;
+      if (this.ui) this.ui.selectedEntity.entities = newTarget ? [newTarget] : [];
+
+      this.#lastClickTime = currentTime;
     }
 
     this.#wasGizmo = false;
