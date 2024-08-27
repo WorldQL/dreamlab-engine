@@ -3,6 +3,7 @@ import { WorkerInitData } from "../server-common/worker-data.ts";
 
 import * as colors from "jsr:@std/fmt/colors";
 import { TextLineStream } from "jsr:@std/streams@0.224.5";
+import { GameInstance } from "./instance.ts";
 
 export type IPCMessageListener = {
   op: WorkerIPCMessage["op"] | undefined;
@@ -55,7 +56,8 @@ export class IPCWorker {
       .pipeThrough(new TextLineStream());
     void (async () => {
       for await (const line of outLines.values()) {
-        console.log(colors.dim(`[worker …${shortId}] stdout |`) + ` ${line}`);
+        // console.log(colors.dim(`[worker …${shortId}] stdout |`) + ` ${line}`);
+        GameInstance.INSTANCES.get(workerData.instanceId)?.logs.info(line)
       }
     })();
     void (async () => {
