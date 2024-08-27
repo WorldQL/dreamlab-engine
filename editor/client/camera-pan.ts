@@ -1,6 +1,7 @@
 import {
   Behavior,
   Camera,
+  ClickableCircle,
   Gizmo,
   MouseDown,
   MouseMove,
@@ -29,7 +30,16 @@ export class CameraPanBehavior extends Behavior {
     if (!this.game.isClient()) return;
     if (event.button === "left") {
       // Ignore click event if mouse is over a local entity (clickable for gizmo)
-      const local = this.game.local.entities.lookupByPosition(event.cursor.world);
+      const local = this.game.local.entities
+        .lookupByPosition(event.cursor.world)
+        .filter(entity => {
+          // fix big rotate gizmo hitbox
+          const isRotate = entity instanceof ClickableCircle && entity.parent instanceof Gizmo;
+          if (!isRotate) return true;
+
+          return entity.isInBounds(event.cursor.world);
+        });
+
       this.#wasGizmo = local.length > 0;
     } else if (event.button === "middle") {
       this.#drag = event.cursor.screen.clone();
