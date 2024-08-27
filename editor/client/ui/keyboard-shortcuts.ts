@@ -6,25 +6,7 @@ import {
   ServerRootFacade,
   WorldRootFacade,
 } from "../../common/mod.ts";
-
-// TODO: Implement all of these.
-type UndoRedoOperations =
-  | "createEntities"
-  | "destroyEntities"
-  | "transformChange"
-  | "addBehavior"
-  | "removeBehavior"
-  | "modifyBehaviorValue";
-
-interface EntityDefWithParent {
-  def: EntityDefinition<Entity>;
-  parent: Entity;
-}
-interface ChangeOperation {
-  operation: UndoRedoOperations;
-  entities?: Entity[];
-  entityDefinitions?: EntityDefWithParent[];
-}
+import { EntityDefWithParent } from "../undo-redo.ts";
 
 function isRoot(e: Entity): boolean {
   if (
@@ -90,15 +72,15 @@ class CooldownManager {
   }
 }
 
-export const undoStack: ChangeOperation[] = [];
-export const redoStack: ChangeOperation[] = [];
-
 export function setupKeyboardShortcuts(
   game: ClientGame,
   selectedService: SelectedEntityService,
 ) {
   let currentlyCopiedEntities: Entity[] = [];
   const cooldownManager = new CooldownManager();
+
+  window.undoStack = []
+  window.redoStack = []
 
   document.addEventListener("keydown", (event: KeyboardEvent) => {
     if (document.activeElement instanceof HTMLInputElement) {
@@ -135,7 +117,7 @@ export function setupKeyboardShortcuts(
           pastedEntities.push(copied.cloneInto(copied.parent!));
         }
       }
-      undoStack.push({ operation: "destroyEntities", entities: pastedEntities });
+      window.undoStack.push({ operation: "destroyEntities", entities: pastedEntities });
       return;
     }
 
@@ -161,7 +143,7 @@ export function setupKeyboardShortcuts(
         entity.destroy();
       }
 
-      undoStack.push({ operation: "createEntities", entityDefinitions: deletedDefs });
+      window.undoStack.push({ operation: "createEntities", entityDefinitions: deletedDefs });
       selectedService.entities = [];
       return;
     }
@@ -170,7 +152,7 @@ export function setupKeyboardShortcuts(
     if (event.key === "z" && (event.ctrlKey || event.metaKey)) {
       if (cooldownManager.isOnCooldown("undo")) return;
 
-      const op = undoStack.pop();
+      const op = window.undoStack.pop();
       if (!op) return;
 
       if (op.operation === "createEntities") {
@@ -178,14 +160,14 @@ export function setupKeyboardShortcuts(
         for (const e of op.entityDefinitions!) {
           entities.push(e.parent.spawn(e.def));
         }
-        redoStack.push({ operation: "destroyEntities", entities });
+        window.redoStack.push({ operation: "destroyEntities", entities });
       } else if (op.operation === "destroyEntities") {
         const deletedDefs: EntityDefWithParent[] = [];
         for (const entity of op.entities!) {
           deletedDefs.push({ def: entity.getDefinition(), parent: entity.parent! });
           entity.destroy();
         }
-        redoStack.push({ operation: "createEntities", entityDefinitions: deletedDefs });
+        window.redoStack.push({ operation: "createEntities", entityDefinitions: deletedDefs });
       }
       selectedService.entities = [];
       return;
@@ -195,7 +177,7 @@ export function setupKeyboardShortcuts(
     if (event.key === "y" && (event.ctrlKey || event.metaKey)) {
       if (cooldownManager.isOnCooldown("redo")) return;
 
-      const op = redoStack.pop();
+      const op = window.redoStack.pop();
       if (!op) return;
 
       if (op.operation === "destroyEntities") {
@@ -204,13 +186,13 @@ export function setupKeyboardShortcuts(
           deletedDefs.push({ def: entity.getDefinition(), parent: entity.parent! });
           entity.destroy();
         }
-        undoStack.push({ operation: "createEntities", entityDefinitions: deletedDefs });
+        window.undoStack.push({ operation: "createEntities", entityDefinitions: deletedDefs });
       } else if (op.operation === "createEntities") {
         const entities = [];
         for (const e of op.entityDefinitions!) {
           entities.push(e.parent.spawn(e.def));
         }
-        undoStack.push({ operation: "destroyEntities", entities });
+        window.undoStack.push({ operation: "destroyEntities", entities });
       }
       selectedService.entities = [];
       return;
