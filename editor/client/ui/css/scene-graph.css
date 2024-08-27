@@ -21,7 +21,7 @@
 }
 
 #scene-graph-tree details {
-  margin-top: 0.25em;
+  font-size: 14px;
 }
 
 #scene-graph-tree details > summary input {
