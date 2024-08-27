@@ -90,14 +90,14 @@ class CooldownManager {
   }
 }
 
+export const undoStack: ChangeOperation[] = [];
+export const redoStack: ChangeOperation[] = [];
+
 export function setupKeyboardShortcuts(
   game: ClientGame,
   selectedService: SelectedEntityService,
 ) {
   let currentlyCopiedEntities: Entity[] = [];
-  const undoStack: ChangeOperation[] = [];
-  const redoStack: ChangeOperation[] = [];
-
   const cooldownManager = new CooldownManager();
 
   document.addEventListener("keydown", (event: KeyboardEvent) => {
@@ -114,28 +114,33 @@ export function setupKeyboardShortcuts(
     if (event.key === "c" && (event.ctrlKey || event.metaKey)) {
       event.preventDefault();
       console.log("copy");
-      currentlyCopiedEntities = [];
-      currentlyCopiedEntities.push(...selectedService.entities);
+      currentlyCopiedEntities = [...selectedService.entities];
       return;
     }
 
     // Paste
-    if (event.key == "v" && (event.ctrlKey || event.metaKey)) {
+    if (event.key === "v" && (event.ctrlKey || event.metaKey)) {
       event.preventDefault();
+      const pastedEntities: Entity[] = [];
       if (selectedService.entities.length === 1 && currentlyCopiedEntities.length === 1) {
         const selected = selectedService.entities[0];
         const copied = currentlyCopiedEntities[0];
         if (copied === selected) {
-          copied.cloneInto(selected.parent!);
-          return;
+          pastedEntities.push(copied.cloneInto(selected.parent!));
+        } else {
+          pastedEntities.push(copied.cloneInto(selected));
         }
-        currentlyCopiedEntities[0].cloneInto(selected);
+      } else {
+        for (const copied of currentlyCopiedEntities) {
+          pastedEntities.push(copied.cloneInto(copied.parent!));
+        }
       }
+      undoStack.push({ operation: "destroyEntities", entities: pastedEntities });
       return;
     }
 
     // Enter to rename
-    if (event.key == "Enter" && selectedService.entities.length === 1) {
+    if (event.key === "Enter" && selectedService.entities.length === 1) {
       const inputElement = document.getElementById("rename-entity-input");
       if (inputElement instanceof HTMLInputElement) {
         inputElement.focus();
@@ -145,7 +150,7 @@ export function setupKeyboardShortcuts(
     }
 
     // Delete
-    if (event.key == "Backspace") {
+    if (event.key === "Backspace") {
       event.preventDefault();
       const toDelete: Entity[] = [...selectedService.entities];
       filterChildNodes(toDelete);
@@ -161,39 +166,54 @@ export function setupKeyboardShortcuts(
       return;
     }
 
-    if (event.key == "z" && (event.ctrlKey || event.metaKey)) {
+    // Undo
+    if (event.key === "z" && (event.ctrlKey || event.metaKey)) {
       if (cooldownManager.isOnCooldown("undo")) return;
+
       const op = undoStack.pop();
       if (!op) return;
 
-      if (op.operation == "createEntities") {
+      if (op.operation === "createEntities") {
         const entities = [];
         for (const e of op.entityDefinitions!) {
           entities.push(e.parent.spawn(e.def));
         }
         redoStack.push({ operation: "destroyEntities", entities });
+      } else if (op.operation === "destroyEntities") {
+        const deletedDefs: EntityDefWithParent[] = [];
+        for (const entity of op.entities!) {
+          deletedDefs.push({ def: entity.getDefinition(), parent: entity.parent! });
+          entity.destroy();
+        }
+        redoStack.push({ operation: "createEntities", entityDefinitions: deletedDefs });
       }
       selectedService.entities = [];
       return;
     }
 
-    if (event.key == "y" && (event.ctrlKey || event.metaKey)) {
+    // Redo
+    if (event.key === "y" && (event.ctrlKey || event.metaKey)) {
       if (cooldownManager.isOnCooldown("redo")) return;
+
       const op = redoStack.pop();
       if (!op) return;
 
-      if (op.operation == "destroyEntities") {
+      if (op.operation === "destroyEntities") {
         const deletedDefs: EntityDefWithParent[] = [];
         for (const entity of op.entities!) {
           deletedDefs.push({ def: entity.getDefinition(), parent: entity.parent! });
           entity.destroy();
         }
         undoStack.push({ operation: "createEntities", entityDefinitions: deletedDefs });
+      } else if (op.operation === "createEntities") {
+        const entities = [];
+        for (const e of op.entityDefinitions!) {
+          entities.push(e.parent.spawn(e.def));
+        }
+        undoStack.push({ operation: "destroyEntities", entities });
       }
       selectedService.entities = [];
       return;
     }
   });
-
-  // PASTE
 }
