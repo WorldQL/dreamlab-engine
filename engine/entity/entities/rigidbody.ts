@@ -88,6 +88,10 @@ export class Rigidbody2D extends Entity {
         if (!this.game.physics.enabled) return;
         if (!this.#internal) return;
 
+        // FIXME: free-for-all entities should not have transform reported from the client for benign physics transform updates
+        // for now, we just don't update the transform on the client.
+        if (this.authority === undefined && this.game.isClient()) return;
+
         this.globalTransform.position = new Vector2(this.#internal.body.translation());
         this.globalTransform.rotation = this.#internal.body.rotation();
         this.globalTransform.scale = new Vector2(
