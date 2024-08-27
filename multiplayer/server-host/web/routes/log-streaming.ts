@@ -18,7 +18,7 @@ export const serveLogStreamingAPI = (router: Router) => {
           .toISOString()
           .replace("T", " ")
           .replace("Z", "");
-        let logLine = `${e.message}`;
+        let logLine = `[${timestamp}] ${e.message}`;
         if (e.detail !== undefined) {
           for (const [key, value] of Object.entries(e.detail)) {
             logLine += " | ";
