@@ -37,6 +37,8 @@ export class Sprite2D extends PixiEntity {
     this.listen(this.game, GameRender, () => {
       if (!this.sprite) return;
 
+      // i think pixi has a bug in the `.width` and `.height` setter lol
+      this.sprite.scale.set(0);
       this.sprite.width = this.width * this.globalTransform.scale.x;
       this.sprite.height = this.height * this.globalTransform.scale.y;
       this.sprite.alpha = this.alpha;
