@@ -7,7 +7,7 @@ export default class HealthBar extends Behavior {
 
 
   onInitialize(): void {
-    console.log('I AM BEING CALLED TWICE')
+    console.trace('I AM BEING CALLED TWICE')
     // this.defineValues(HealthBar, "maxHealth", "currentHealth");
 
     this.healthBar = this.entity.game.world.spawn({

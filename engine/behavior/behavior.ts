@@ -225,7 +225,12 @@ export class Behavior implements ISignalHandler {
     this.destroy();
   }
 
+  #spawned = false;
+
   spawn(): void {
+    if (this.#spawned) return;
+    this.#spawned = true;
+
     const isPrefab = this.entity.root === this.game.prefabs;
     if (!isPrefab) this.onInitialize();
 

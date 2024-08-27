@@ -1,9 +1,9 @@
-import { Behavior, BehaviorContext, Entity, EntityByRefAdapter, Vector2, Vector2Adapter } from "@dreamlab/engine";
+import { Behavior, Vector2, Vector2Adapter } from "@dreamlab/engine";
 
 export default class BulletBehavior extends Behavior {
   readonly #lifetime = 5;
   #timer = 0;
-  #direction: Vector2;
+  #direction = Vector2.ZERO;
 
   speed: number = 0.01;
   additionalVelocity = Vector2.ZERO;
