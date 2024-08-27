@@ -107,9 +107,8 @@ export class CameraPanBehavior extends Behavior {
     if (this.game.isClient() && ev.target !== this.game.renderer.app.canvas) return;
 
     ev.preventDefault();
-    const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.userAgent);
 
-    if (ev.ctrlKey === isMac) {
+    if (ev.ctrlKey || ev.metaKey) {
       const zoomFactor = 1.1;
       const zoomDirection = delta.y > 0 ? 1 : -1;
       const newScale = this.#camera.globalTransform.scale.mul(
@@ -117,18 +116,10 @@ export class CameraPanBehavior extends Behavior {
       );
       const clampedScale = new Vector2(Math.max(newScale.x, 0.1), Math.max(newScale.y, 0.1));
       this.#camera.globalTransform.scale = clampedScale;
-
-      if (!isMac) {
-        const cursorPos = this.game.inputs.cursor.world;
-        if (delta.y < 0 && cursorPos) {
-          const cursorDelta = cursorPos.sub(this.#camera.pos);
-          this.#camera.pos = this.#camera.pos.add(cursorDelta.mul(1 / 10));
-        }
-      }
     } else {
       const scale = 100;
-      const deltaX = isMac ? delta.x : ev.shiftKey ? delta.y : delta.x;
-      const deltaY = isMac ? delta.y : ev.shiftKey ? 0 : delta.y;
+      const deltaX = ev.shiftKey ? delta.y : delta.x;
+      const deltaY = ev.shiftKey ? 0 : delta.y;
       const scrollDelta = new Vector2(deltaX, deltaY).mul(scale);
 
       const worldDelta = this.#camera
