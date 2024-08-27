@@ -23,6 +23,7 @@ import { connectToGame } from "./game-connection.ts";
 import { setupGame } from "./game-setup.ts";
 import { AppMenu } from "./ui/app-menu.ts";
 import { InspectorUI } from "./ui/inspector.ts";
+import { setupLogviewer } from "./log-viewer.ts";
 
 // TODO: loading screen ?
 
@@ -90,6 +91,8 @@ if (handshake.edit_mode) {
 
 const inspector = new InspectorUI(game, conn, handshake.edit_mode, container);
 inspector.show(uiRoot);
+
+setupLogviewer(games)
 
 const appMenu = new AppMenu(uiRoot, games);
 appMenu.setup(inspector);

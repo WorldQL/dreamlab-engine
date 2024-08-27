@@ -7,7 +7,7 @@ main {
   display: grid;
   gap: 0.5em;
   grid-template-columns: minmax(16em, 4fr) minmax(0, 16fr) minmax(16em, 4fr);
-  grid-template-rows: 3em 12fr minmax(0, 4em);
+  grid-template-rows: 3em 12fr minmax(0, 1fr);
   grid-template-areas:
     "top    top       top"
     "left   viewport  right"
@@ -38,6 +38,7 @@ main > div {
 
 #bottom-bar {
   grid-area: bottom;
+  overflow: auto;
 }
 
 #left-sidebar,

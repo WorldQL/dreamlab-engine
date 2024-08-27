@@ -14,10 +14,7 @@ export const serveLogStreamingAPI = (router: Router) => {
     ctx.response.type = "text/plain";
     ctx.response.body = instance.logs.entries
       .map(e => {
-        const timestamp = new Date(e.timestamp)
-          .toISOString()
-          .replace("T", " ")
-          .replace("Z", "");
+        const timestamp = new Date(e.timestamp).toISOString().split("T")[1].slice(0, -1);
         let logLine = `[${timestamp}] ${e.message}`;
         if (e.detail !== undefined) {
           for (const [key, value] of Object.entries(e.detail)) {
