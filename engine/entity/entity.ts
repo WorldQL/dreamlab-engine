@@ -658,7 +658,7 @@ export abstract class Entity implements ISignalHandler {
   // internal id for stable internal reference. we only really need this for networking
   readonly ref: string = generateCUID("ent");
 
-  #updateTransform(fromGlobal: boolean) {
+  #updateTransform(fromGlobal: boolean, source: Entity = this) {
     if (!this.transform || !this.globalTransform) return;
 
     if (fromGlobal) {
@@ -675,10 +675,10 @@ export abstract class Entity implements ISignalHandler {
       this.globalTransform[internal.transformForceUpdate](worldSpaceTransform);
     }
 
-    this.fire(EntityTransformUpdate);
+    this.fire(EntityTransformUpdate, source);
 
     for (const child of this.children.values()) {
-      child.#updateTransform(false);
+      child.#updateTransform(false, source);
     }
   }
 

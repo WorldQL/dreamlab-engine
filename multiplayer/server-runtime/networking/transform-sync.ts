@@ -5,6 +5,7 @@ import {
   EntityTransformUpdate,
   GameTick,
   IVector2,
+  Transform,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { EntityTransformReport } from "@dreamlab/proto/play.ts";
@@ -39,8 +40,8 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
 
   game.world.on(EntityDescendantSpawned, event => {
     const entity = event.descendant;
-    entity.on(EntityTransformUpdate, () => {
-      if (!ignoredEntityRefs.has(entity.ref)) {
+    entity.on(EntityTransformUpdate, ({ source }) => {
+      if (!ignoredEntityRefs.has(source.ref)) {
         transformDirtyEntities.add(entity);
       }
     });
@@ -127,9 +128,15 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
       if (entity === undefined) return;
       if (entity.authority === undefined || from === entity.authority) {
         ignoredEntityRefs.add(entity.ref);
-        entity.transform.position.assign(report.position);
-        entity.transform.rotation = report.rotation;
-        entity.transform.scale.assign(report.scale);
+        entity.transform[internal.transformForceUpdate](
+          new Transform({
+            position: report.position,
+            rotation: report.rotation,
+            scale: report.scale,
+            z: entity.transform.z,
+          }),
+        );
+        entity.transform[internal.transformOnChanged]();
         ignoredEntityRefs.delete(entity.ref);
       }
     }

@@ -13,7 +13,10 @@ export class EntityUpdate {
 }
 
 export class EntityTransformUpdate {
-  constructor() {}
+  /**
+   * @param source the entity that originated this transform update (the entity itself or an ancestor)
+   */
+  constructor(public source: Entity) {}
   [exclusiveSignalType] = Entity;
 }
 
