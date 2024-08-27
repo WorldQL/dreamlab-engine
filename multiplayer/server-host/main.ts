@@ -26,15 +26,15 @@ Deno.addSignalListener("SIGTERM", () => {
   Deno.exit();
 });
 
-const args = cli.parseArgs(Deno.args, { boolean: ["start"], string: ["world"] });
+const args = cli.parseArgs(Deno.args, { string: ["spawn"] });
 
 await Promise.all([
   // boot instance
   (async () => {
-    if (!args.start) return;
-    console.log("Spawning an instance...");
+    const world = args.spawn;
+    if (!world) return;
 
-    const world = args.world ?? "dreamlab/spaceship-multiplayer";
+    console.log("Spawning an instance...");
 
     instance = createInstance({
       instanceId: NIL_UUID,
