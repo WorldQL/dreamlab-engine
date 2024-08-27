@@ -1,0 +1,242 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "engine_revision": "2024-08.001"
+  },
+  "scenes": {
+    "main": {
+      "world": [
+        {
+          "type": "@core/Sprite2D",
+          "name": "Sprite2D",
+          "values": {
+            "width": 1,
+            "height": 1,
+            "alpha": 1,
+            "texture": ""
+          },
+          "transform": {
+            "position": {
+              "x": -3.34,
+              "y": -1.1100000000000003
+            },
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_gbahux1bon1ijv5i97gcnq8t",
+              "script": "res://src/enemy.ts",
+              "values": {}
+            }
+          ],
+          "ref": "ent_x3sf88ucqj0s0dacqrqilom0"
+        },
+        {
+          "type": "@core/RectCollider2D",
+          "name": "WallLeft",
+          "transform": {
+            "position": {
+              "x": -7.5,
+              "y": 0
+            },
+            "scale": {
+              "x": 0.2,
+              "y": 15
+            }
+          },
+          "children": [
+            {
+              "type": "@core/Sprite2D",
+              "name": "Sprite2D",
+              "values": {
+                "width": 1,
+                "height": 1,
+                "alpha": 1,
+                "texture": ""
+              },
+              "transform": {
+                "scale": {
+                  "x": 1,
+                  "y": 1
+                }
+              },
+              "ref": "ent_dgosiu82go8nkjmqrrduz4ig"
+            }
+          ],
+          "ref": "ent_qs8315p7h23vgqriycvs5bl9"
+        },
+        {
+          "type": "@core/RectCollider2D",
+          "name": "WallTop",
+          "transform": {
+            "position": {
+              "x": 0,
+              "y": 7.5
+            },
+            "scale": {
+              "x": 15,
+              "y": 0.2
+            }
+          },
+          "children": [
+            {
+              "type": "@core/Sprite2D",
+              "name": "Sprite2D",
+              "values": {
+                "width": 1,
+                "height": 1,
+                "alpha": 1,
+                "texture": ""
+              },
+              "transform": {
+                "scale": {
+                  "x": 1,
+                  "y": 1
+                }
+              },
+              "ref": "ent_fjf8fp7eg1ivkbiyp3yh4n4b"
+            }
+          ],
+          "ref": "ent_sseg99k7ke5tmo2mpkzg0jxe"
+        },
+        {
+          "type": "@core/RectCollider2D",
+          "name": "WallBottom",
+          "transform": {
+            "position": {
+              "x": 0,
+              "y": -7.5
+            },
+            "scale": {
+              "x": 15,
+              "y": 0.2
+            }
+          },
+          "children": [
+            {
+              "type": "@core/Sprite2D",
+              "name": "Sprite2D",
+              "values": {
+                "width": 1,
+                "height": 1,
+                "alpha": 1,
+                "texture": ""
+              },
+              "transform": {
+                "scale": {
+                  "x": 1,
+                  "y": 1
+                }
+              },
+              "ref": "ent_g2o4pljhgnsilfa0ll90hbr1"
+            }
+          ],
+          "ref": "ent_vi6ngejdgmqrwahks2hwmzbk"
+        },
+        {
+          "type": "@core/Empty",
+          "name": "PlayersContainer",
+          "transform": {
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "ref": "ent_h1ynrwzv20xq4euy3s1kzvl3"
+        }
+      ],
+      "local": [
+        {
+          "type": "@core/Camera",
+          "name": "Camera",
+          "values": {
+            "active": true,
+            "smooth": 0,
+            "unlocked": false
+          },
+          "transform": {
+            "scale": {
+              "x": 2,
+              "y": 2
+            }
+          },
+          "ref": "ent_p8zh7z9qgq7qj5oopfpnaqxf"
+        },
+        {
+          "type": "@core/Empty",
+          "name": "PlayerSpawnManager",
+          "transform": {
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_dqg9eccve24e6rxphsx4y4px",
+              "script": "res://src/player-spawner.js",
+              "values": {}
+            }
+          ],
+          "ref": "ent_tr6epldobbi539jyjg0fgxcw"
+        }
+      ],
+      "server": [],
+      "prefabs": [
+        {
+          "type": "@core/Rigidbody2D",
+          "name": "Player",
+          "values": {
+            "type": "fixed"
+          },
+          "transform": {
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_y9fkps4lcn3aytvy4337pved",
+              "script": "res://src/player-movement.ts",
+              "values": {}
+            },
+            {
+              "ref": "bhv_xt979chayfjpj717s76f3300",
+              "script": "res://src/cleanup-on-leave.ts",
+              "values": {}
+            },
+            {
+              "ref": "bhv_jrq5inhddi48j9kyi3a65wo7",
+              "script": "res://src/camera-follow.ts",
+              "values": {}
+            }
+          ],
+          "children": [
+            {
+              "type": "@core/Sprite2D",
+              "name": "Sprite2D",
+              "values": {
+                "width": 1,
+                "height": 1,
+                "alpha": 1,
+                "texture": "res://assets/spaceship.png"
+              },
+              "transform": {
+                "scale": {
+                  "x": 1,
+                  "y": 1
+                }
+              },
+              "ref": "ent_uge85fickn7g99sc37g6oyfd"
+            }
+          ],
+          "ref": "ent_hbz2vl3ixsm773gaz9np7gzj"
+        }
+      ]
+    }
+  }
+}
