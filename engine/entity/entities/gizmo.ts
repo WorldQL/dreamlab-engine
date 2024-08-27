@@ -7,7 +7,6 @@ import type { EntityContext } from "../entity.ts";
 import { Entity } from "../entity.ts";
 import { Camera } from "./camera.ts";
 import { ClickableCircle, ClickableRect } from "./clickable.ts";
-import { ChangeOperation } from "../../../editor/client/undo-redo.ts";
 
 // #region Signals
 // #region Translate
@@ -438,6 +437,7 @@ export class Gizmo extends Entity {
     // console.log(undoStack)
     // We have it!
     // TODO: Implement undo/redo for gizmo transformations.
+    // Might be better to use messages than share undoStack on window.
 
     this.#action = undefined;
   };
