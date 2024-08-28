@@ -6,10 +6,11 @@ import { BehaviorPanel } from "./behavior-panel/mod.ts";
 import { ContextMenu } from "./context-menu.ts";
 import { FileTree } from "./file-tree.ts";
 import { GameOverlays } from "./game-overlays.ts";
+import { setupKeyboardShortcuts } from "./keyboard-shortcuts.ts";
+import { LogViewer } from "./log-viewer.ts";
 import { Properties } from "./properties.ts";
 import { SceneGraph } from "./scene-graph.ts";
 import { SelectedEntityService } from "./selected-entity.ts";
-import { setupKeyboardShortcuts } from "./keyboard-shortcuts.ts";
 
 export interface InspectorUIWidget {
   setup(ui: InspectorUI): void;
@@ -27,6 +28,7 @@ export class InspectorUI {
   contextMenu: ContextMenu;
   gameOverlays: GameOverlays;
   fileTree: FileTree;
+  logViewer: LogViewer;
 
   constructor(
     public game: ClientGame,
@@ -43,7 +45,7 @@ export class InspectorUI {
     this.contextMenu = new ContextMenu(game);
     this.gameOverlays = new GameOverlays(game, gameContainer);
     this.fileTree = new FileTree(game);
-    
+    this.logViewer = new LogViewer(game);
 
     if (editMode) {
       game.local._.Camera.getBehavior(CameraPanBehavior).ui = this;
@@ -55,8 +57,9 @@ export class InspectorUI {
     this.behaviorPanel.setup(this);
     this.contextMenu.setup(this);
     this.fileTree.setup(this);
+    this.logViewer.setup(this);
 
-    setupKeyboardShortcuts(this.game, this.selectedEntity)
+    setupKeyboardShortcuts(this.game, this.selectedEntity);
 
     conn.registerPacketHandler("ScriptEdited", async packet => {
       if (packet.behavior_script_id) {
@@ -75,7 +78,7 @@ export class InspectorUI {
         // TODO: we need to make sure this propagates to every guy whose rendering depends on one of those
       }
 
-      this.fileTree.setup(this)
+      this.fileTree.setup(this);
     });
   }
 
@@ -89,6 +92,7 @@ export class InspectorUI {
     this.behaviorPanel.show(uiRoot);
     this.contextMenu.show(uiRoot);
     this.fileTree.show(uiRoot);
+    this.logViewer.show(uiRoot);
   }
 
   hide() {
@@ -98,5 +102,6 @@ export class InspectorUI {
     this.contextMenu.hide();
     this.gameOverlays.hide();
     this.fileTree.hide();
+    this.logViewer.hide();
   }
 }

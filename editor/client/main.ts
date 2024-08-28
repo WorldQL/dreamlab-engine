@@ -20,7 +20,6 @@ import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import { CameraPanBehavior } from "./camera-pan.ts";
 import { connectToGame } from "./game-connection.ts";
 import { setupGame } from "./game-setup.ts";
-import { setupLogviewer } from "./log-viewer.ts";
 import { AppMenu } from "./ui/app-menu.ts";
 import { InspectorUI } from "./ui/inspector.ts";
 import { INSTANCE_ID, SERVER_URL } from "./util/server-url.ts";
@@ -69,8 +68,6 @@ if (handshake.edit_mode) {
 
 const inspector = new InspectorUI(game, conn, handshake.edit_mode, container);
 inspector.show(uiRoot);
-
-setupLogviewer(games);
 
 const appMenu = new AppMenu(uiRoot, games);
 appMenu.setup(inspector);
