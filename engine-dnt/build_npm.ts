@@ -1,12 +1,15 @@
 import { build, emptyDir } from "https://deno.land/x/dnt@0.40.0/mod.ts";
 import * as fs from "jsr:@std/fs@1";
 import * as path from "jsr:@std/path@1";
+import { copySync } from "https://deno.land/std@0.224.0/fs/copy.ts";
 
-await emptyDir("./out");
+await emptyDir("./engineout");
+await emptyDir("./rapierout");
+await emptyDir("./uiout");
 
 await build({
   entryPoints: ["../engine/mod.ts"],
-  outDir: "./out",
+  outDir: "./engineout",
   shims: {
     deno: true,
   },
@@ -14,6 +17,28 @@ await build({
   skipSourceOutput: true,
   package: {
     name: "dreamlab-engine",
+    version: "0",
+    description: "",
+    license: "UNLICENSED",
+  },
+  postBuild() {},
+  compilerOptions: {
+    lib: ["ESNext", "DOM"],
+  },
+  importMap: "../deno.json",
+  test: false,
+});
+
+await build({
+  entryPoints: ["../ui/mod.ts"],
+  outDir: "./uiout",
+  shims: {
+    deno: true,
+  },
+  declaration: "inline",
+  skipSourceOutput: true,
+  package: {
+    name: "dreamlab-ui",
     version: "0",
     description: "",
     license: "UNLICENSED",
@@ -35,7 +60,7 @@ await build({
   declaration: "inline",
   skipSourceOutput: true,
   package: {
-    name: "dreamlab-engine",
+    name: "dreamlab-rapier",
     version: "0",
     description: "",
     license: "UNLICENSED",
@@ -65,9 +90,8 @@ async function listFiles(directory: string): Promise<string[]> {
   return files;
 }
 
-async function createFilelist() {
-  const outDir = "./out/";
-  const outputFile = "./out/file_list.json";
+async function createFilelist(outDir: string) {
+  const outputFile = `${outDir}file_list.json`;
 
   try {
     const files = await listFiles(outDir);
@@ -80,7 +104,18 @@ async function createFilelist() {
   }
 }
 
-await Deno.remove("./out/node_modules", { recursive: true });
-await Deno.remove("./out/.npmignore", { recursive: true });
+await Deno.remove("./engineout/node_modules", { recursive: true });
+await Deno.remove("./engineout/.npmignore", { recursive: true });
+await Deno.remove("./uiout/node_modules", { recursive: true });
+await Deno.remove("./uiout/.npmignore", { recursive: true });
 
-createFilelist();
+await createFilelist("./engineout/");
+await createFilelist("./uiout/");
+
+await emptyDir("../../dreamlab-code-editor/public/dreamlab-engine-intellisense/");
+
+copySync(
+  "./engineout",
+  "../../dreamlab-code-editor/public/dreamlab-engine-intellisense/engine",
+);
+copySync("./uiout", "../../dreamlab-code-editor/public/dreamlab-engine-intellisense/ui");
