@@ -2,7 +2,7 @@ import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 
 const searchParams = new URLSearchParams(window.location.search);
 const instanceId = searchParams.get("instance") || NIL_UUID;
-const serverUrl = import.meta.env.IS_DEV
+const serverUrl: string | null = import.meta.env.IS_DEV
   ? import.meta.env.SERVER_URL
   : searchParams.get("server");
 
