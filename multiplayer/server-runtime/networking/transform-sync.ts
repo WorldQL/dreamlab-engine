@@ -81,7 +81,12 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
     clock: number,
     authority: ConnectionId | undefined,
   ) {
-    entity[internal.entityForceAuthorityValues](authority, clock);
+    const applyAuthority = (e: Entity) => {
+      e[internal.entityForceAuthorityValues](authority, clock);
+      for (const child of e.children.values()) applyAuthority(child);
+    };
+    applyAuthority(entity);
+
     net.broadcast({
       t: "AnnounceExclusiveAuthority",
       entity: entity.ref,

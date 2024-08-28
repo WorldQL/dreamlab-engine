@@ -87,7 +87,12 @@ export const handleTransformSync: ClientNetworkSetupRoutine = (conn, game) => {
   conn.registerPacketHandler("AnnounceExclusiveAuthority", packet => {
     const entity = game.entities.lookupByRef(packet.entity);
     if (entity === undefined) return;
-    entity[internal.entityForceAuthorityValues](packet.to, packet.clock);
+
+    const applyAuthority = (e: Entity) => {
+      e[internal.entityForceAuthorityValues](packet.to, packet.clock);
+      for (const child of e.children.values()) applyAuthority(child);
+    };
+    applyAuthority(entity);
   });
 
   conn.registerPacketHandler("DenyExclusiveAuthority", packet => {
