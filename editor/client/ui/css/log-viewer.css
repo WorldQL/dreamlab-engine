@@ -79,11 +79,6 @@
     & > #connected,
     &[data-connected] > #disconnected {
       display: none;
-
-      & > svg {
-        width: 1.25rem;
-        height: 1.25rem;
-      }
     }
 
     &[data-connected] > #connected,
@@ -91,6 +86,11 @@
       display: flex;
       align-items: center;
       gap: 0.25rem;
+    }
+
+    & svg {
+      width: 1.25rem;
+      height: 1.25rem;
     }
 
     & > #connected {
