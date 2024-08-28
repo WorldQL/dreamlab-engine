@@ -299,7 +299,7 @@ export abstract class Entity implements ISignalHandler {
       name: def.name,
       parent: this,
       transform: def.transform,
-      authority: def.authority,
+      authority: def.authority ?? this.authority,
       ref: def._ref,
       values: def.values ? Object.fromEntries(Object.entries(def.values)) : undefined,
     });
