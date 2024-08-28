@@ -17,41 +17,19 @@ import { Camera, ClientGame } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
-import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 import { CameraPanBehavior } from "./camera-pan.ts";
 import { connectToGame } from "./game-connection.ts";
 import { setupGame } from "./game-setup.ts";
+import { setupLogviewer } from "./log-viewer.ts";
 import { AppMenu } from "./ui/app-menu.ts";
 import { InspectorUI } from "./ui/inspector.ts";
-import { setupLogviewer } from "./log-viewer.ts";
+import { INSTANCE_ID, SERVER_URL } from "./util/server-url.ts";
 
 // TODO: loading screen ?
 
-const searchParams = new URLSearchParams(window.location.search);
-const instanceId = searchParams.get("instance") || NIL_UUID;
-const serverUrl = import.meta.env.IS_DEV
-  ? import.meta.env.SERVER_URL
-  : searchParams.get("server");
-if (!serverUrl) {
-  alert("error: server url not set in url params!");
-  throw new Error("server url undefined");
-}
-declare global {
-  interface Window {
-    // add you custom properties and methods
-    dreamlabMultiplayerServerUrl: string;
-  }
-}
-
-const globalHttpURL = new URL(serverUrl);
-// query param URL is websocket but the other ones expect HTTP
-globalHttpURL.protocol = globalHttpURL.protocol === "wss:" ? "https:" : "http:";
-
-window.dreamlabMultiplayerServerUrl = globalHttpURL.toString();
-
-const connectUrl = new URL(serverUrl);
-// connectUrl.protocol = connectUrl.protocol === "https:" ? "wss:" : "ws:";
-connectUrl.pathname = `/api/v1/connect/${instanceId}`;
+const connectUrl = new URL(SERVER_URL);
+connectUrl.protocol = connectUrl.protocol === "https:" ? "wss:" : "ws:";
+connectUrl.pathname = `/api/v1/connect/${INSTANCE_ID}`;
 connectUrl.searchParams.set("player_id", generateCUID("ply"));
 connectUrl.searchParams.set("nickname", "Player" + Math.floor(Math.random() * 999) + 1);
 
@@ -63,7 +41,7 @@ const socket = new WebSocket(connectUrl);
 socket.binaryType = "arraybuffer";
 
 const [game, conn, handshake] = await connectToGame(
-  instanceId,
+  INSTANCE_ID,
   container,
   socket,
   DEFAULT_CODEC,
@@ -92,7 +70,7 @@ if (handshake.edit_mode) {
 const inspector = new InspectorUI(game, conn, handshake.edit_mode, container);
 inspector.show(uiRoot);
 
-setupLogviewer(games)
+setupLogviewer(games);
 
 const appMenu = new AppMenu(uiRoot, games);
 appMenu.setup(inspector);
