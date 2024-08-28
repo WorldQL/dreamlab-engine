@@ -57,17 +57,16 @@ export class IPCWorker {
     void (async () => {
       for await (const line of outLines.values()) {
         // console.log(colors.dim(`[worker …${shortId}] stdout |`) + ` ${line}`);
-        GameInstance.INSTANCES.get(workerData.instanceId)?.logs.info(line);
+        GameInstance.INSTANCES.get(workerData.instanceId)?.logs.info(line)
       }
     })();
     void (async () => {
       for await (const line of errLines.values()) {
-        // console.log(
-        //   colors.dim(`[worker …${shortId}] ` + colors.yellow("stderr")) +
-        //     colors.dim(" | ") +
-        //     line,
-        // );
-        GameInstance.INSTANCES.get(workerData.instanceId)?.logs.error(line);
+        console.log(
+          colors.dim(`[worker …${shortId}] ` + colors.yellow("stderr")) +
+            colors.dim(" | ") +
+            line,
+        );
       }
     })();
   }
