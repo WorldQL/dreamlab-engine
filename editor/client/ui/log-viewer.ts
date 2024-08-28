@@ -1,7 +1,7 @@
 import { ClientGame } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 import type { LogEntry } from "../../../multiplayer/server-host/util/log-store.ts";
-import { CaseSensitive, Grid2X2, icon, Trash2 as Trash } from "../_icons.ts";
+import { Activity, CaseSensitive, Grid2X2, icon, Trash2 as Trash, Unplug } from "../_icons.ts";
 import { SERVER_URL } from "../util/server-url.ts";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 
@@ -78,13 +78,26 @@ export class LogViewer implements InspectorUIWidget {
       updateFilters();
     });
 
+    const connected = elem("div", { id: "connected" }, ["Connected", icon(Activity)]);
+    const disconnected = elem("div", { id: "disconnected" }, ["Disconnected", icon(Unplug)]);
+    const status = elem("div", { id: "log-status" }, [connected, disconnected]);
+
     const toolbar = elem("div", { id: "log-toolbar" }, [
       elem("div", {}, [elem("h1", {}, ["Logs"]), sizeToggle]),
       elem("div", {}, [toggleGrid, toggleCaseSens, filter, clearLogs]),
-      elem("div"),
+      status,
     ]);
 
     this.#section.append(toolbar, this.#logcontent);
+
+    this.#ws.addEventListener("open", () => {
+      status.dataset.connected = "";
+    });
+
+    this.#ws.addEventListener("close", () => {
+      delete status.dataset.connected;
+      // TODO: attempt to reconnect
+    });
 
     this.#ws.addEventListener("message", ev => {
       if (typeof ev.data !== "string") {

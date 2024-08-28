@@ -73,6 +73,34 @@
     }
   }
 
+  & #log-status {
+    justify-content: end;
+
+    & > #connected,
+    &[data-connected] > #disconnected {
+      display: none;
+
+      & > svg {
+        width: 1.25rem;
+        height: 1.25rem;
+      }
+    }
+
+    &[data-connected] > #connected,
+    & > #disconnected {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    & > #connected {
+      color: rgb(var(--color-green) / 1);
+    }
+    & > #disconnected {
+      color: rgb(var(--color-danger) / 1);
+    }
+  }
+
   & #log-content {
     --gap: 0.25rem;
     flex: 1;
