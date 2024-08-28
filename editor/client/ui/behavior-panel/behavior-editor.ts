@@ -3,7 +3,7 @@ import { element as elem } from "@dreamlab/ui";
 
 import { ClientGame, Value } from "@dreamlab/engine";
 import { z } from "@dreamlab/vendor/zod.ts";
-import { icon, Trash } from "../../_icons.ts";
+import { icon, Trash2 as Trash } from "../../_icons.ts";
 import { DataDetails, DataTable } from "../../components/mod.ts";
 import { BehaviorTypeInfo } from "../../util/behavior-type-info.ts";
 import { createInputField, createInputFieldWithDefault } from "../../util/easy-input.ts";
