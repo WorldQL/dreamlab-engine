@@ -37,7 +37,7 @@ export const bundle = async (
       console.log(`Dev server started at http://${host}:${port}`);
     }
   } else {
-    if (!opts.silent) console.log(`Building ${target}…`);
+    if (!opts.silent) console.log(`Building ${target}...`);
     await esbuild.build(esbuildOpts);
   }
 };
