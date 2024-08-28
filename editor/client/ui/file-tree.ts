@@ -4,6 +4,7 @@ import * as path from "jsr:@std/path@1";
 import { Braces, CodeXml, File, Folder, icon, Image, Settings, SimpleIcon } from "../_icons.ts";
 import { DataTree } from "../components/mod.ts";
 import TypeScript from "../svg/typescript.svg";
+import { SERVER_URL } from "../util/server-url.ts";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 
 type FileTreeNode =
@@ -48,7 +49,7 @@ export class FileTree implements InspectorUIWidget {
     const tree = new DataTree();
     tree.style.setProperty("--tree-indent-amount", "0.5em");
 
-    const filesURL = new URL(window.dreamlabMultiplayerServerUrl);
+    const filesURL = new URL(SERVER_URL);
     filesURL.pathname = `/api/v1/edit/${this.game.instanceId}/files`;
     const files = fetch(filesURL)
       .then(r => r.json())

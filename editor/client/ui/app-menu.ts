@@ -3,20 +3,21 @@ import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
 import { element as elem } from "@dreamlab/ui";
 import {
   ArrowUpDown,
+  Box,
+  GitCompareArrows,
   Hammer,
   icon,
   OctagonX,
   Play,
   Save,
-  User,
   ScrollText,
-  GitCompareArrows,
-  Box,
+  User,
 } from "../_icons.ts";
 import { IconButton } from "../components/mod.ts";
 import { connectToGame } from "../game-connection.ts";
 import { setupGame } from "../game-setup.ts";
 import { Ping } from "../networking/ping.ts";
+import { SERVER_URL } from "../util/server-url.ts";
 import { InspectorUI } from "./inspector.ts";
 
 export class AppMenu {
@@ -39,7 +40,7 @@ export class AppMenu {
     });
 
     saveButton.addEventListener("click", async () => {
-      const url = new URL(window.dreamlabMultiplayerServerUrl);
+      const url = new URL(SERVER_URL);
       url.pathname = `/api/v1/save-edit-session/${this.games.edit.instanceId}`;
       await fetch(url, { method: "POST" });
       // TODO: toast or something when the save goes through
@@ -184,7 +185,7 @@ export class AppMenu {
     const container = document.createElement("div");
     this.uiRoot.querySelector("#viewport")!.append(container);
 
-    const connectURL = new URL(window.dreamlabMultiplayerServerUrl);
+    const connectURL = new URL(SERVER_URL);
     connectURL.pathname = `/api/v1/connect/${this.games.edit.instanceId}`;
     const player = this.games.edit.network.connections.find(
       c => c.id === this.games.edit.network.self,
@@ -230,7 +231,7 @@ export class AppMenu {
   async #stopPlayGame() {
     // we need to be able to stop the server even if this.games.play is not created successfully.
     // if (!this.games.play) return;
-    const url = new URL(window.dreamlabMultiplayerServerUrl);
+    const url = new URL(SERVER_URL);
     // edit and play instanceIds match
     url.pathname = `/api/v1/stop-play-session/${this.games.edit.instanceId}`;
     await fetch(url, { method: "POST" });
