@@ -6,20 +6,23 @@ import { WebSocket } from "npm:partysocket@1.0.2";
 import type { LogEntry } from "../../../multiplayer/server-host/util/log-store.ts";
 import { Activity, CaseSensitive, Grid2X2, icon, Trash2 as Trash, Unplug } from "../_icons.ts";
 import { SERVER_URL } from "../util/server-url.ts";
-import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
+import { InspectorUI } from "./inspector.ts";
 
 type LogMessage = { t: "New"; entry: LogEntry };
 
-export class LogViewer implements InspectorUIWidget {
+export class LogViewer {
   #section = elem("section", { id: "log-viewer" });
   #logcontent = elem("div", { id: "log-content" });
   #logs: HTMLElement[] = [];
 
   #ws: WebSocket;
 
-  constructor(private game: ClientGame) {
+  constructor(
+    private uiRoot: HTMLElement,
+    private games: { edit: ClientGame; play?: ClientGame },
+  ) {
     const url = new URL(SERVER_URL);
-    url.pathname = `/api/v1/log-stream/${this.game.instanceId}`;
+    url.pathname = `/api/v1/log-stream/${this.games.edit.instanceId}`;
     url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
     this.#ws = new WebSocket(url.toString());
   }
@@ -110,6 +113,9 @@ export class LogViewer implements InspectorUIWidget {
       const message = JSON.parse(ev.data) as LogMessage;
       if (message.t === "New") this.appendLogEntry(message.entry);
     });
+
+    const bottom = this.uiRoot.querySelector("#bottom-bar")!;
+    bottom.append(this.#section);
   }
 
   private appendLogEntry(log: LogEntry): void {
@@ -179,14 +185,5 @@ export class LogViewer implements InspectorUIWidget {
 
     this.#logs = [];
     window.parent.postMessage("log-viewer:clear");
-  }
-
-  show(uiRoot: HTMLElement): void {
-    const bottom = uiRoot.querySelector("#bottom-bar")!;
-    bottom.append(this.#section);
-  }
-
-  hide(): void {
-    this.#section.remove();
   }
 }

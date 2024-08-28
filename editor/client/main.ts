@@ -22,6 +22,7 @@ import { connectToGame } from "./game-connection.ts";
 import { setupGame } from "./game-setup.ts";
 import { AppMenu } from "./ui/app-menu.ts";
 import { InspectorUI } from "./ui/inspector.ts";
+import { LogViewer } from "./ui/log-viewer.ts";
 import { INSTANCE_ID, SERVER_URL } from "./util/server-url.ts";
 
 // TODO: loading screen ?
@@ -71,6 +72,9 @@ inspector.show(uiRoot);
 
 const appMenu = new AppMenu(uiRoot, games);
 appMenu.setup(inspector);
+
+const logViewer = new LogViewer(uiRoot, games);
+logViewer.setup(inspector);
 
 let now = performance.now();
 const onFrame = (time: number) => {
