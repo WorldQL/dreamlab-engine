@@ -1,5 +1,6 @@
 import { ClientGame } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
+import { WebSocket } from "npm:partysocket@1.0.2";
 import type { LogEntry } from "../../../multiplayer/server-host/util/log-store.ts";
 import { Activity, CaseSensitive, Grid2X2, icon, Trash2 as Trash, Unplug } from "../_icons.ts";
 import { SERVER_URL } from "../util/server-url.ts";
@@ -19,7 +20,7 @@ export class LogViewer implements InspectorUIWidget {
     const url = new URL(SERVER_URL);
     url.pathname = `/api/v1/log-stream/${this.game.instanceId}`;
     url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
-    this.#ws = new WebSocket(url);
+    this.#ws = new WebSocket(url.toString());
   }
 
   setup(_ui: InspectorUI): void {
@@ -91,12 +92,12 @@ export class LogViewer implements InspectorUIWidget {
     this.#section.append(toolbar, this.#logcontent);
 
     this.#ws.addEventListener("open", () => {
+      this.clearLogs();
       status.dataset.connected = "";
     });
 
     this.#ws.addEventListener("close", () => {
       delete status.dataset.connected;
-      // TODO: attempt to reconnect
     });
 
     this.#ws.addEventListener("message", ev => {
