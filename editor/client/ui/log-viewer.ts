@@ -15,20 +15,11 @@ export class LogViewer implements InspectorUIWidget {
   #ws: WebSocket;
 
   constructor(private game: ClientGame) {
+    // TODO: reconnecting websocket
     const url = new URL(SERVER_URL);
     url.pathname = `/api/v1/log-stream/${this.game.instanceId}`;
     url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
     this.#ws = new WebSocket(url);
-
-    this.#ws.addEventListener("message", ev => {
-      if (typeof ev.data !== "string") {
-        console.warn("log streaming only supports text messages");
-        return;
-      }
-
-      const message = JSON.parse(ev.data) as LogMessage;
-      if (message.t === "New") this.appendLogEntry(message.entry);
-    });
   }
 
   setup(_ui: InspectorUI): void {
@@ -94,6 +85,16 @@ export class LogViewer implements InspectorUIWidget {
     ]);
 
     this.#section.append(toolbar, this.#logcontent);
+
+    this.#ws.addEventListener("message", ev => {
+      if (typeof ev.data !== "string") {
+        console.warn("log streaming only supports text messages");
+        return;
+      }
+
+      const message = JSON.parse(ev.data) as LogMessage;
+      if (message.t === "New") this.appendLogEntry(message.entry);
+    });
   }
 
   private appendLogEntry(log: LogEntry): void {
