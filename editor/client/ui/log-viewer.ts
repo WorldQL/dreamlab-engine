@@ -16,7 +16,6 @@ export class LogViewer implements InspectorUIWidget {
   #ws: WebSocket;
 
   constructor(private game: ClientGame) {
-    // TODO: reconnecting websocket
     const url = new URL(SERVER_URL);
     url.pathname = `/api/v1/log-stream/${this.game.instanceId}`;
     url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
