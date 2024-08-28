@@ -178,6 +178,7 @@ export class LogViewer implements InspectorUIWidget {
     }
 
     this.#logs = [];
+    window.parent.postMessage("log-viewer:clear");
   }
 
   show(uiRoot: HTMLElement): void {
