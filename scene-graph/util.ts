@@ -106,9 +106,13 @@ export const convertEntityDefinition = async (
   const children = await Promise.all(
     definition.children.map(child => convertEntityDefinition(game, child)),
   );
-  const behaviors = await Promise.all(
-    definition.behaviors.map(behavior => convertBehaviorDefinition(game, behavior)),
-  );
+  const behaviors = (
+    await Promise.allSettled(
+      definition.behaviors.map(behavior => convertBehaviorDefinition(game, behavior)),
+    )
+  )
+    .filter(it => it.status === "fulfilled")
+    .map(it => it.value);
 
   return {
     _ref: definition.ref,

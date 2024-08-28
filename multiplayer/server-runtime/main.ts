@@ -1,22 +1,22 @@
-import { Empty, GameStatus, ServerGame, Entity, EntityDefinition } from "@dreamlab/engine";
+import { Empty, Entity, EntityDefinition, GameStatus, ServerGame } from "@dreamlab/engine";
 import { WorkerInitData } from "../server-common/worker-data.ts";
-import { ServerNetworkManager } from "./networking/net-manager.ts";
 import { IPCMessageBus } from "./ipc.ts";
+import { ServerNetworkManager } from "./networking/net-manager.ts";
 
 import {
-  Facades,
-  WorldRootFacade,
-  PrefabRootFacade,
-  LocalRootFacade,
-  ServerRootFacade,
   EditorMetadataEntity,
+  Facades,
+  LocalRootFacade,
+  PrefabRootFacade,
+  ServerRootFacade,
+  WorldRootFacade,
 } from "../../editor/common/mod.ts";
 
 import {
-  BehaviorSchema as SceneDescBehaviorSchema,
   ProjectSchema,
   Scene,
   SceneDescBehavior,
+  BehaviorSchema as SceneDescBehaviorSchema,
   SceneDescEntity,
   convertEntityDefinition,
   loadSceneDefinition,
@@ -47,7 +47,7 @@ const behaviors = await game
   .fetch("res://_dreamlab_behaviors.json")
   .then(r => r.json())
   .then(z.record(z.string()).parse);
-await Promise.all(Object.values(behaviors).map(s => game.loadBehavior(s)));
+await Promise.allSettled(Object.values(behaviors).map(s => game.loadBehavior(s)));
 
 const projectDesc = await game
   .fetch("res://project.json")

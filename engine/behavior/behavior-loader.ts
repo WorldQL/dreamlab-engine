@@ -54,30 +54,25 @@ export class BehaviorLoader {
     return await this.loadScriptFromSource(replaced, location);
   }
 
-  // @ts-expect-error Temp fix to prevent syntax errors from preventing editor from loading
   async loadScriptFromSource(script: string, sourceURI: string): Promise<BehaviorConstructor> {
     const url = new URL(sourceURI);
     url.searchParams.set("_engine_cache", generateCUID("cch"));
-    try {
-      const module = await import(url.toString());
-      if (!("default" in module))
-        throw new Error(`Module '${script}' must have a Behavior as its default export!`);
+    const module = await import(url.toString());
+    if (!("default" in module))
+      throw new Error(`Module '${script}' must have a Behavior as its default export!`);
 
-      const behaviorType = module.default;
-      if (
-        !(
-          behaviorType instanceof Function &&
-          Object.prototype.isPrototypeOf.call(Behavior, behaviorType)
-        )
+    const behaviorType = module.default;
+    if (
+      !(
+        behaviorType instanceof Function &&
+        Object.prototype.isPrototypeOf.call(Behavior, behaviorType)
       )
-        throw new Error(`Module '${script}' must have a Behavior as its default export!`);
+    )
+      throw new Error(`Module '${script}' must have a Behavior as its default export!`);
 
-      this.#cache.set(script, behaviorType);
-      this.#resourceLocationLookup.set(behaviorType, script);
+    this.#cache.set(script, behaviorType);
+    this.#resourceLocationLookup.set(behaviorType, script);
 
-      return behaviorType as BehaviorConstructor;
-    } catch (e) {
-      console.error(e);
-    }
+    return behaviorType as BehaviorConstructor;
   }
 }

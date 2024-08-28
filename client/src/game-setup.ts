@@ -24,7 +24,7 @@ export const setupGame = async (
     .fetch("res://_dreamlab_behaviors.json")
     .then(r => r.json())
     .then(z.record(z.string()).parse);
-  await Promise.all(Object.values(behaviors).map(s => game.loadBehavior(s)));
+  await Promise.allSettled(Object.values(behaviors).map(s => game.loadBehavior(s)));
 
   const networkSnapshotPromise = new Promise<void>((resolve, _reject) => {
     game.on(ReceivedInitialNetworkSnapshot, () => {
