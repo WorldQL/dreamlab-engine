@@ -1,4 +1,5 @@
 import { ClientGame } from "../../engine/game.ts";
+import { INSTANCE_ID, SERVER_URL } from "./util/server-url.ts";
 
 export function setupLogviewer(games: { edit: ClientGame; play?: ClientGame }) {
   const logControls = document.querySelector("#log-controls")!;
@@ -116,11 +117,12 @@ export function setupLogviewer(games: { edit: ClientGame; play?: ClientGame }) {
     }
   });
 
-  const searchParams = new URLSearchParams(window.location.search);
-  const server = searchParams.get("server");
-  const connectURL = server + "api/v1/log-stream/" + searchParams.get("instance");
+  const connectURL = new URL(SERVER_URL);
+  connectURL.pathname = `/api/v1/log-stream/${INSTANCE_ID}`;
+  connectURL.protocol = connectURL.protocol === "https:" ? "wss:" : "ws:";
+  const connect = connectURL.toString();
 
-  const connect = connectURL;
+  // const connect = connectURL;
   if (connect === null) {
     logControls.querySelector("#status")!.textContent = "Failed: no connect URL specified";
   } else {
