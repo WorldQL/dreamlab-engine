@@ -47,7 +47,14 @@ const behaviors = await game
   .fetch("res://_dreamlab_behaviors.json")
   .then(r => r.json())
   .then(z.record(z.string()).parse);
-await Promise.allSettled(Object.values(behaviors).map(s => game.loadBehavior(s)));
+const preloadResults = await Promise.allSettled(
+  Object.values(behaviors).map(s => game.loadBehavior(s)),
+);
+for (const result of preloadResults) {
+  if (result.status === "rejected") {
+    console.warn(result.reason);
+  }
+}
 
 const projectDesc = await game
   .fetch("res://project.json")
