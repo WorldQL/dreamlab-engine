@@ -128,13 +128,6 @@ export class LogViewer {
 
     console.log = (...args) => {
       const message = args
-        .map(arg => {
-          if (typeof arg === "string") return arg;
-          if (typeof arg === "number") return arg.toString();
-          if (typeof arg === "boolean") return arg.toString();
-
-          return inspect(arg, { quoteStyle: "double" });
-        })
         .join(" ");
 
       this.appendLogEntry({
