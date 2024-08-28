@@ -1,4 +1,4 @@
-import { Behavior, Empty, Entity, EntityCollision, RectCollider2D, Rigidbody2D, Sprite2D } from "@dreamlab/engine";
+import { Behavior, Entity, EntityCollision, RectCollider2D, Sprite2D } from "@dreamlab/engine";
 import BulletBehavior from "./bullet-behavior.ts";
 import HealthBar from "./health.ts";
 
@@ -12,7 +12,7 @@ export default class EnemyMovement extends Behavior {
   private healthBar!: HealthBar;
 
   onInitialize(): void {
-    if (!this.game.isServer()) return
+    if (!this.game.isServer()) return;
 
     const health = Math.floor(Math.random() * 3) + 3;
     this.healthBar = this.entity.addBehavior({
@@ -23,7 +23,6 @@ export default class EnemyMovement extends Behavior {
     this.listen(this.entity, EntityCollision, e => {
       if (e.started) this.onCollide(e.other);
     });
-
   }
   onCollide(other: Entity) {
     if (!other.name.startsWith("Bullet")) return;
@@ -33,7 +32,7 @@ export default class EnemyMovement extends Behavior {
   }
 
   onTick(): void {
-    if (!this.game.isServer()) return
+    if (!this.game.isServer()) return;
 
     const playersContainer = this.game.world._.PlayersContainer;
     if (!playersContainer) return;
@@ -65,7 +64,7 @@ export default class EnemyMovement extends Behavior {
         speedFactor = (distance - this.minDistance) / 10;
       }
       this.entity.transform.position = this.entity.transform.position.add(
-        direction.mul((this.time.delta / 100) * this.speed * speedFactor)
+        direction.mul((this.time.delta / 100) * this.speed * speedFactor),
       );
     }
 
@@ -78,17 +77,16 @@ export default class EnemyMovement extends Behavior {
       const now = Date.now();
       if (now - this.lastShootTime > this.shootCooldown) {
         this.lastShootTime = now;
-        this.shootAtPlayer()
+        this.shootAtPlayer();
       }
     }
   }
-
 
   shootAtPlayer(): void {
     const rotation = this.entity.transform.rotation + Math.PI / 2;
 
     this.entity.game.world.spawn({
-      type: Rigidbody2D,
+      type: RectCollider2D,
       name: "EnemyBullet",
       transform: {
         position: this.entity.transform.position.clone(),
