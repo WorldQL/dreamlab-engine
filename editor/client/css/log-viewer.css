@@ -131,6 +131,8 @@
   border-bottom: none;
   transition: background-color 0.2s ease;
   padding: 0.1rem;
+  font-size: 14px;
+  font-weight: 400;
 }
 
 #log-output.show-grid article {
