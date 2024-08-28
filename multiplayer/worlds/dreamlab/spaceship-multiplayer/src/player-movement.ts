@@ -2,10 +2,10 @@ import {
   Behavior,
   BehaviorContext,
   EntityDestroyed,
-  Rigidbody2D,
+  RectCollider2D,
   Vector2,
 } from "@dreamlab/engine";
-import { Collider, KinematicCharacterController, RigidBody } from "@dreamlab/vendor/rapier.ts";
+import { Collider, KinematicCharacterController } from "@dreamlab/vendor/rapier.ts";
 
 export default class PlayerMovement extends Behavior {
   speed = 5.0;
@@ -16,9 +16,7 @@ export default class PlayerMovement extends Behavior {
   #right = this.inputs.create("@movement/right", "Move Right", "KeyD");
   #boost = this.inputs.create("@movement/boost", "Speed Boost", "ShiftLeft");
 
-  #controller:
-    | { collider: Collider; body: RigidBody; controller: KinematicCharacterController }
-    | undefined;
+  #controller: { collider: Collider; controller: KinematicCharacterController } | undefined;
 
   constructor(ctx: BehaviorContext) {
     super(ctx);
@@ -28,10 +26,9 @@ export default class PlayerMovement extends Behavior {
   onInitialize(): void {
     if (this.entity.authority !== this.game.network.self) return;
 
-    if (this.entity instanceof Rigidbody2D) {
+    if (this.entity instanceof RectCollider2D) {
       this.#controller = {
         collider: this.entity.collider,
-        body: this.entity.body,
         controller: this.game.physics.world.createCharacterController(0.01),
       };
     }

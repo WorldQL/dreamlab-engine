@@ -1,4 +1,4 @@
-import { SceneDescBehavior } from "@dreamlab/scene";
+import { SceneDescBehavior, ValueSchema } from "@dreamlab/scene";
 import { element as elem } from "@dreamlab/ui";
 
 import { ClientGame, Value } from "@dreamlab/engine";
@@ -7,6 +7,7 @@ import { icon, Trash2 as Trash } from "../../_icons.ts";
 import { DataDetails, DataTable } from "../../components/mod.ts";
 import { BehaviorTypeInfo } from "../../util/behavior-type-info.ts";
 import { createInputField, createInputFieldWithDefault } from "../../util/easy-input.ts";
+import { createValueControl } from "../../util/value-controls.ts";
 import { InspectorUI } from "../inspector.ts";
 import { BehaviorList } from "./behavior-list.ts";
 
@@ -189,17 +190,20 @@ export class BehaviorEditor {
   }
 
   #addValueField(key: string, value: ThinValue<unknown>) {
-    const valueField = this.#createValueField(key, value);
-    if (!valueField) {
-      this.#table.addEntry(
-        `value:${key}`,
-        key,
-        elem("code", {}, ["Unknown: ", String(value.value)]),
-      );
-    } else {
-      this.valueFields.set(key, valueField);
-      this.#table.addEntry(`value:${key}`, key, valueField[0]);
-    }
+    const [control, refresh] = createValueControl(this.game, {
+      typeTag: value.typeTag,
+      default: value.default,
+      get: () => value.value,
+      set: v => {
+        value.value = v;
+        if (!this.behavior.values) this.behavior.values = {};
+        this.behavior.values[key] = v as z.infer<typeof ValueSchema>;
+        this.parent.sync();
+      },
+    });
+
+    if (control instanceof HTMLInputElement) this.valueFields.set(key, [control, refresh]);
+    this.#table.addEntry(`value:${key}`, key, control);
   }
 
   #populateValueFields(behaviorInfo?: BehaviorTypeInfo) {

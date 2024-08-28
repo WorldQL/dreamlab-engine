@@ -5,17 +5,14 @@ import {
   EntityRenamed,
   EntityReparented,
   EntityTransformUpdate,
-  SpritesheetAdapter,
-  TextureAdapter,
-  Value,
   ValueChanged,
 } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
-import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { Facades } from "../../common/mod.ts";
 import { DataDetails, DataTable } from "../components/mod.ts";
 import { createInputField } from "../util/easy-input.ts";
+import { createValueControl } from "../util/value-controls.ts";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 
 export class Properties implements InspectorUIWidget {
@@ -177,116 +174,17 @@ export class Properties implements InspectorUIWidget {
     valuesSection.addContent(valuesTable);
 
     for (const [key, value] of entity.values.entries()) {
-      let valueField: HTMLInputElement | undefined;
-      let refreshValue: (() => void) | undefined;
+      const [valueField, refreshValue] = createValueControl(this.game, {
+        typeTag: value.typeTag,
+        get: () => value.value,
+        set: v => (value.value = v),
+        default: undefined,
+      });
 
-      if (value.typeTag === String) {
-        const valueObj = value as Value<string>;
-        [valueField, refreshValue] = createInputField({
-          get: () => valueObj.value,
-          set: v => (valueObj.value = v),
-          convert: x => x,
-        });
-      } else if (value.typeTag === Number) {
-        const valueObj = value as Value<number>;
-        [valueField, refreshValue] = createInputField({
-          get: () => valueObj.value,
-          set: v => (valueObj.value = v),
-          convert: numeric.parse,
-        });
-      } else if (value.typeTag === Boolean) {
-        const valueObj = value as Value<boolean>;
-        [valueField, refreshValue] = createInputField({
-          get: () => valueObj.value,
-          set: v => (valueObj.value = v),
-          convert: z
-            .enum(["false", "0"])
-            .transform(() => false)
-            .or(z.string())
-            .pipe(z.coerce.boolean()).parse,
-        });
-      } else if (value.typeTag === TextureAdapter) {
-        // TODO: texture picker
-
-        const convert = async (value: string) => {
-          const url = z.literal("").or(z.string().url()).parse(value);
-          if (url === "") return url;
-
-          try {
-            const texture = await PIXI.Assets.load(this.game.resolveResource(url));
-            if (!(texture instanceof PIXI.Texture)) throw new TypeError("not a texture");
-
-            return url;
-          } catch {
-            throw new Error("Texture URL could not be resolved");
-          }
-        };
-
-        const valueObj = value as Value<string>;
-        [valueField, refreshValue] = createInputField({
-          get: () => valueObj.value,
-          set: v => (valueObj.value = v),
-          convert,
-
-          hook: input => {
-            // TODO: add event listeners on parent so we get more leeway with the drop zone
-            // we cant do input.parentElement now because the input hasnt been appended yet
-
-            const getUrl = async (): Promise<string | undefined> => {
-              const dragTarget = document.querySelector(
-                "[data-file][data-dragging]",
-              ) as HTMLElement | null;
-              if (!dragTarget) return;
-
-              const file = `res://${dragTarget.dataset.file}`;
-              try {
-                const url = await convert(file);
-                return url;
-              } catch {
-                return undefined;
-              }
-            };
-
-            input.addEventListener("dragover", async ev => {
-              const url = await getUrl();
-              if (url !== undefined) ev.preventDefault();
-            });
-
-            input.addEventListener("drop", async () => {
-              const url = await getUrl();
-              if (url) valueObj.value = url;
-            });
-          },
-        });
-      } else if (value.typeTag === SpritesheetAdapter) {
-        // TODO: spritesheet picker
-        const valueObj = value as Value<string>;
-        [valueField, refreshValue] = createInputField({
-          get: () => valueObj.value,
-          set: v => (valueObj.value = v),
-          convert: async value => {
-            const url = z.literal("").or(z.string().url()).parse(value);
-            try {
-              const spritesheet = await PIXI.Assets.load(this.game.resolveResource(url));
-              if (!(spritesheet instanceof PIXI.Spritesheet)) {
-                throw new TypeError("not a spritesheet");
-              }
-
-              return url;
-            } catch {
-              throw new TypeError("Spritesheet URL could not be resolved");
-            }
-          },
-        });
-      }
-      // TODO: other adapters
-
-      if (valueField && refreshValue) {
-        valuesTable.addEntry(`value:${key}`, key, valueField);
-        this.game.values.on(ValueChanged, event => {
-          if (event.value === value) refreshValue();
-        });
-      }
+      valuesTable.addEntry(`value:${key}`, key, valueField);
+      this.game.values.on(ValueChanged, event => {
+        if (event.value === value) refreshValue();
+      });
     }
   }
 }

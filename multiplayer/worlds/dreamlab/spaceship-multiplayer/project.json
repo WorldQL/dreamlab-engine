@@ -206,7 +206,7 @@
       "server": [],
       "prefabs": [
         {
-          "type": "@core/Rigidbody2D",
+          "type": "@core/RectCollider2D",
           "name": "Player",
           "values": {
             "type": "fixed"
