@@ -68,7 +68,8 @@ export class LogViewer implements InspectorUIWidget {
       if (toggleGrid.dataset.active !== undefined) delete toggleGrid.dataset.active;
       else toggleGrid.dataset.active = "";
 
-      // TODO: implement grid toggle
+      if (this.#logcontent.dataset.grid !== undefined) delete this.#logcontent.dataset.grid;
+      else this.#logcontent.dataset.grid = "";
     });
 
     toggleCaseSens.addEventListener("click", () => {

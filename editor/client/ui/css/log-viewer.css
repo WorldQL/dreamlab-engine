@@ -74,11 +74,12 @@
   }
 
   & #log-content {
+    --gap: 0.25rem;
     flex: 1;
     overflow-y: overlay;
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: var(--gap);
 
     & > .log-entry {
       font-size: 0.875rem;
@@ -97,6 +98,22 @@
 
       &[data-filtered] {
         display: none;
+      }
+    }
+
+    &[data-grid] {
+      gap: 0;
+
+      & > .log-entry {
+        padding: calc(var(--gap) / 2) 0;
+
+        &:first-child {
+          padding-top: 0;
+        }
+
+        &:nth-child(even) {
+          background-color: rgb(var(--color-bg-2) / 1);
+        }
       }
     }
   }
