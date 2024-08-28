@@ -117,6 +117,35 @@ export class LogViewer {
 
     const bottom = this.uiRoot.querySelector("#bottom-bar")!;
     bottom.append(this.#section);
+
+    this.injectConsoleWrapper();
+  }
+
+  private injectConsoleWrapper() {
+    const log = console.log;
+    // TODO: wrap console.warn
+    // TODO: wrap console.error
+
+    console.log = (...args) => {
+      const message = args
+        .map(arg => {
+          if (typeof arg === "string") return arg;
+          if (typeof arg === "number") return arg.toString();
+          if (typeof arg === "boolean") return arg.toString();
+
+          return inspect(arg, { quoteStyle: "double" });
+        })
+        .join(" ");
+
+      this.appendLogEntry({
+        level: "info",
+        timestamp: Date.now(),
+        message,
+        detail: {},
+      });
+
+      return log(...args);
+    };
   }
 
   private appendLogEntry(log: LogEntry): void {

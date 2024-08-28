@@ -2,46 +2,6 @@ import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import { Game } from "../game.ts";
 import { Behavior, BehaviorConstructor } from "./behavior.ts";
 
-// deno-lint-ignore no-explicit-any
-const customConsoleLog = (...args: any[]) => {
-  console.info(...args);
-
-  if ((window as any).addLogEntry) {
-    (window as any).addLogEntry(new Date(), "client", args.join(' '))
-  }
-};
-
-async function importWithCustomConsoleLog(
-  url: string,
-  customLogFunction: typeof customConsoleLog,
-) {
-  // Store the original console.log
-  const originalConsoleLog = console.log;
-
-  // Create a wrapper function for import
-  const wrappedImport = async (importUrl: string) => {
-    // Replace console.log with the custom function
-    console.log = customLogFunction;
-
-    try {
-      // Import the module
-      const module = await import(importUrl);
-
-      // Restore the original console.log
-      console.log = originalConsoleLog;
-
-      return module;
-    } catch (error) {
-      // Restore the original console.log in case of an error
-      console.log = originalConsoleLog;
-      throw error;
-    }
-  };
-
-  // Use the wrapper to import the module
-  return wrappedImport(url.toString());
-}
-
 export class BehaviorLoader {
   #game: Game;
 
@@ -99,7 +59,7 @@ export class BehaviorLoader {
     const url = new URL(sourceURI);
     url.searchParams.set("_engine_cache", generateCUID("cch"));
     try {
-      const module = await importWithCustomConsoleLog(url.toString(), customConsoleLog);
+      const module = await import(url.toString());
       if (!("default" in module))
         throw new Error(`Module '${script}' must have a Behavior as its default export!`);
 
