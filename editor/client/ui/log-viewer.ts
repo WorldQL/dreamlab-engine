@@ -1,5 +1,7 @@
 import { ClientGame } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
+// @deno-types="npm:@types/object-inspect@1.13.0"
+import inspect from "npm:object-inspect@1.13.2";
 import { WebSocket } from "npm:partysocket@1.0.2";
 import type { LogEntry } from "../../../multiplayer/server-host/util/log-store.ts";
 import { Activity, CaseSensitive, Grid2X2, icon, Trash2 as Trash, Unplug } from "../_icons.ts";
@@ -117,24 +119,57 @@ export class LogViewer implements InspectorUIWidget {
     const entry = elem("div", { className: "log-entry" }, [
       elem("code", {}, [ts]),
       elem("code", {}, [level]),
-      this.logMessage(log),
+      ...this.logMessage(log),
     ]);
 
     this.#logs.push(entry);
     this.#logcontent.prepend(entry);
   }
 
-  private logMessage(log: LogEntry): HTMLElement {
-    let message = log.message;
+  private logMessage(log: LogEntry): HTMLElement[] {
+    const elements: HTMLElement[] = [elem("code", {}, [log.message])];
+
     if (log.detail !== undefined) {
       for (const [key, value] of Object.entries(log.detail)) {
-        message += ` ${key}=${JSON.stringify(value)}`;
+        elements.push(
+          elem("code", {}, [
+            elem("i", {}, [key]),
+            "=",
+            inspect(value, { quoteStyle: "double" }),
+          ]),
+        );
       }
     }
 
-    // TODO: convert ANSI escape codes
+    // function ansiToHtml(str: string): string {
+    //   const colors: { [key: string]: string } = {
+    //     "30": "var(--text-secondary-color)",
+    //     "31": "var(--accent-red-color)",
+    //     "32": "var(--accent-green-color)",
+    //     "33": "var(--accent-yellow-color)",
+    //     "34": "var(--accent-primary-color)",
+    //     "35": "var(--accent-secondary-color)",
+    //     "36": "var(--accent-green-color)",
+    //     "37": "var(--text-primary-color)",
+    //     "90": "var(--text-secondary-color)",
+    //   };
 
-    return elem("code", {}, [message]);
+    //   return str.replace(/\x1b\[(\d+)m/g, (_, code) => {
+    //     const color = colors[code];
+    //     if (color) {
+    //       return `<span style="color: ${color};">`;
+    //     } else if (code === "0") {
+    //       return "</span>";
+    //     }
+    //     return "";
+    //   });
+    // }
+
+    // TODO: convert ANSI escape codes
+    // i dont think its possible for the logs to contain ansi so i am not bothering for now
+    // if i am wrong please give me a test case and i'll fix it :3
+
+    return elements;
   }
 
   private clearLogs() {

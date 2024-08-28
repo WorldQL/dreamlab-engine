@@ -17,10 +17,12 @@
       "jsr:@std/uuid@1": "jsr:@std/uuid@1.0.0",
       "npm:@dimforge/rapier2d-compat@0.14.0": "npm:@dimforge/rapier2d-compat@0.14.0",
       "npm:@paralleldrive/cuid2@2.2.2": "npm:@paralleldrive/cuid2@2.2.2",
+      "npm:@types/object-inspect@1.13.0": "npm:@types/object-inspect@1.13.0",
       "npm:esbuild-plugin-copy@2.1.1": "npm:esbuild-plugin-copy@2.1.1_esbuild@0.20.2",
       "npm:esbuild@0.20.2": "npm:esbuild@0.20.2",
       "npm:lucide-static": "npm:lucide-static@0.427.0",
       "npm:lucide-static@0.429.0": "npm:lucide-static@0.429.0",
+      "npm:object-inspect@1.13.2": "npm:object-inspect@1.13.2",
       "npm:partysocket@1.0.2": "npm:partysocket@1.0.2",
       "npm:pixi.js@8.2.6": "npm:pixi.js@8.2.6",
       "npm:simple-icons": "npm:simple-icons@13.6.0",
@@ -215,6 +217,10 @@
       },
       "@types/earcut@2.1.4": {
         "integrity": "sha512-qp3m9PPz4gULB9MhjGID7wpo3gJ4bTGXm7ltNDsmOvsPduTeHp8wSW9YckBj3mljeOh4F0m2z/0JKAALRKbmLQ==",
+        "dependencies": {}
+      },
+      "@types/object-inspect@1.13.0": {
+        "integrity": "sha512-lwGTVESDDV+XsQ1pH4UifpJ1f7OtXzQ6QBOX2Afq2bM/T3oOt8hF6exJMjjIjtEWeAN2YAo25J7HxWh97CCz9w==",
         "dependencies": {}
       },
       "@webgpu/types@0.1.44": {
@@ -453,6 +459,10 @@
       },
       "normalize-path@3.0.0": {
         "integrity": "sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==",
+        "dependencies": {}
+      },
+      "object-inspect@1.13.2": {
+        "integrity": "sha512-IRZSRuzJiynemAXPYtPe5BoI/RESNYR7TYm50MC5Mqbd3Jmw5y790sErYw3V6SryFJD64b74qQQs9wn5Bg/k3g==",
         "dependencies": {}
       },
       "parse-svg-path@0.1.2": {
