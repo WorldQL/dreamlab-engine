@@ -107,7 +107,7 @@ export class LogViewer implements InspectorUIWidget {
     ]);
 
     this.#logs.push(entry);
-    this.#logcontent.append(entry);
+    this.#logcontent.prepend(entry);
   }
 
   private logMessage(log: LogEntry): HTMLElement {
