@@ -67,7 +67,7 @@ export function setupLogviewer(games: { edit: ClientGame; play?: ClientGame }) {
     article.appendChild(messageElement);
     const filterQuery = filterField.value;
     article.setAttribute("data-matches", String(message.includes(filterQuery)));
-    logOutput.prepend(article);
+    logOutput.append(article);
   }
 
   (window as any).addLogEntry = addLogEntry;
