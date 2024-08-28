@@ -49,10 +49,15 @@ export class BehaviorTypeInfoService {
     if (cached) return cached;
 
     using dummyGame = await this.#createDummyGame();
-    const behaviorType = await dummyGame.loadBehavior(script);
-    const info = this.#createInfo(dummyGame, behaviorType);
-    this.#cache.set(script, info);
-    return info;
+    try {
+      const behaviorType = await dummyGame.loadBehavior(script);
+      const info = this.#createInfo(dummyGame, behaviorType);
+      this.#cache.set(script, info);
+      return info;
+    } catch (err) {
+      console.error(err);
+      return { typeName: script, values: [] };
+    }
   }
 
   async reload(script: string): Promise<BehaviorTypeInfo> {
