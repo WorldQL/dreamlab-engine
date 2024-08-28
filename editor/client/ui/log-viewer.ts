@@ -3,6 +3,7 @@ import { element as elem } from "@dreamlab/ui";
 // @deno-types="npm:@types/object-inspect@1.13.0"
 import inspect from "npm:object-inspect@1.13.2";
 import { WebSocket } from "npm:partysocket@1.0.2";
+import stripAnsi from "npm:strip-ansi@7.1.0";
 import type { LogEntry } from "../../../multiplayer/server-host/util/log-store.ts";
 import { Activity, CaseSensitive, Grid2X2, icon, Trash2 as Trash, Unplug } from "../_icons.ts";
 import { SERVER_URL } from "../util/server-url.ts";
@@ -133,7 +134,7 @@ export class LogViewer {
   }
 
   private logMessage(log: LogEntry): HTMLElement[] {
-    const elements: HTMLElement[] = [elem("code", {}, [log.message])];
+    const elements: HTMLElement[] = [elem("code", {}, [stripAnsi(log.message)])];
 
     if (log.detail !== undefined) {
       for (const [key, value] of Object.entries(log.detail)) {
