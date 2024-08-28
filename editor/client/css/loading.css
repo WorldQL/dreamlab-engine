@@ -1,0 +1,8 @@
+#loading {
+  position: fixed;
+  top: 50%;
+  text-align: center;
+  width: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
