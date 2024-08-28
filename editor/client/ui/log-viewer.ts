@@ -34,6 +34,8 @@ export class LogViewer {
       const layout = document.querySelector("#layout")!;
       const expanded = layout.classList.toggle("expand-logs");
       sizeToggle.innerText = expanded ? "Collapse" : "Expand";
+      this.games.edit.renderer.app.resize();
+      this.games.play?.renderer.app.resize();
     });
 
     const toggleGrid = elem("div", { role: "button" }, [icon(Grid2X2)]);
@@ -127,8 +129,7 @@ export class LogViewer {
     // TODO: wrap console.error
 
     console.log = (...args) => {
-      const message = args
-        .join(" ");
+      const message = args.join(" ");
 
       this.appendLogEntry({
         level: "info",

@@ -14,7 +14,7 @@ main {
     "left   bottom    right";
 
   &.expand-logs {
-    grid-template-rows: 3em 12fr minmax(0, 6fr);
+    grid-template-rows: 3em 12fr minmax(0, 8fr);
   }
 }
 

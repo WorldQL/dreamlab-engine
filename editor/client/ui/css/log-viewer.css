@@ -70,6 +70,12 @@
 
     & #size-toggle {
       cursor: pointer;
+      border: 1px solid gray;
+      border-radius: var(--border-radius);
+      padding: 0.2rem 0.5rem;
+    }
+    & #size-toggle:hover {
+      border: 1px solid white;
     }
   }
 
