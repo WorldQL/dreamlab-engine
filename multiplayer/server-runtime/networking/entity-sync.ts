@@ -36,6 +36,8 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
 
     const entity = event.descendant;
     if (changeIgnoreSet.has(entity.ref)) return;
+    if (event.parentDestroyed) return;
+
     net.broadcast({ t: "DeleteEntity", entity: entity.ref });
   };
 

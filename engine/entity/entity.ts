@@ -864,21 +864,24 @@ export abstract class Entity implements ISignalHandler {
     }
   }
 
+  #destroyed: boolean = false;
+
   destroy() {
-    this.fire(EntityDestroyed);
+    if (this.#destroyed) return;
+    this.#destroyed = true;
+
+    const parentDestroyed = this.parent ? this.parent.#destroyed : false;
+
+    this.fire(EntityDestroyed, parentDestroyed);
     if (this.parent) {
-      this.parent.fire(EntityChildDestroyed, this);
+      this.parent.fire(EntityChildDestroyed, this, parentDestroyed);
       this.parent.#children.delete(this.name);
 
       let ancestor: Entity | undefined = this.parent;
       while (ancestor) {
-        ancestor.fire(EntityDescendantDestroyed, this);
+        ancestor.fire(EntityDescendantDestroyed, this, parentDestroyed);
         ancestor = ancestor.parent;
       }
-    }
-
-    for (const child of this.#children.values()) {
-      child.destroy();
     }
 
     for (const behavior of [...this.behaviors]) {
@@ -886,6 +889,11 @@ export abstract class Entity implements ISignalHandler {
     }
 
     for (const value of this.#values.values()) value.destroy();
+
+    for (const child of this.#children.values()) {
+      child.destroy();
+    }
+
     this.#parent = undefined;
     this.game.entities[internal.entityStoreUnregister](this);
 

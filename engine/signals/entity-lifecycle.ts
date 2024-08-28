@@ -31,20 +31,28 @@ export class EntityDescendantSpawned {
  * Fired when this entity is destroyed.
  */
 export class EntityDestroyed {
+  constructor(public parentDestroyed: boolean) {}
+
   [exclusiveSignalType] = Entity;
 }
 /**
  * Fired when a child of this entity is destroyed.
  */
 export class EntityChildDestroyed {
-  constructor(public child: Entity) {}
+  constructor(
+    public child: Entity,
+    public parentDestroyed: boolean,
+  ) {}
   [exclusiveSignalType] = Entity;
 }
 /**
  * Fired when a descendant of this entity is destroyed.
  */
 export class EntityDescendantDestroyed {
-  constructor(public descendant: Entity) {}
+  constructor(
+    public descendant: Entity,
+    public parentDestroyed: boolean,
+  ) {}
   [exclusiveSignalType] = Entity;
 }
 
@@ -57,12 +65,18 @@ export class EntityRenamed {
 }
 
 export class EntityChildRenamed {
-  constructor(public child: Entity, public oldName: string) {}
+  constructor(
+    public child: Entity,
+    public oldName: string,
+  ) {}
   [exclusiveSignalType] = Entity;
 }
 
 export class EntityDescendantRenamed {
-  constructor(public descendant: Entity, public oldName: string) {}
+  constructor(
+    public descendant: Entity,
+    public oldName: string,
+  ) {}
   [exclusiveSignalType] = Entity;
 }
 
@@ -75,11 +89,17 @@ export class EntityReparented {
 }
 
 export class EntityChildReparented {
-  constructor(public child: Entity, public oldParent: Entity) {}
+  constructor(
+    public child: Entity,
+    public oldParent: Entity,
+  ) {}
   [exclusiveSignalType] = Entity;
 }
 
 export class EntityDescendantReparented {
-  constructor(public descendant: Entity, public oldParent: Entity) {}
+  constructor(
+    public descendant: Entity,
+    public oldParent: Entity,
+  ) {}
   [exclusiveSignalType] = Entity;
 }
