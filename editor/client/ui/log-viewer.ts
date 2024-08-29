@@ -131,6 +131,12 @@ export class LogViewer {
     console.log = (...args) => {
       const message = args.join(" ");
 
+      const stack = new Error().stack;
+      if (!stack?.includes("_dist_play")) {
+        console.debug(...args);
+        return;
+      }
+
       this.appendLogEntry({
         level: "info",
         timestamp: Date.now(),
