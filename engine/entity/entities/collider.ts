@@ -33,6 +33,12 @@ export class RectCollider2D extends Entity {
         .setRotation(this.globalTransform.rotation);
 
       const collider = this.game.physics.world.createCollider(desc);
+      collider.setActiveCollisionTypes(
+        RAPIER.ActiveCollisionTypes.DEFAULT |
+          RAPIER.ActiveCollisionTypes.KINEMATIC_FIXED |
+          RAPIER.ActiveCollisionTypes.FIXED_FIXED,
+      );
+      this.game.physics.registerCollider(this, collider);
       collider.setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS);
       const shape = collider.shape as RAPIER.Cuboid;
 
