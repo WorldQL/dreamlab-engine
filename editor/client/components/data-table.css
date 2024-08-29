@@ -23,7 +23,9 @@ dreamlab-data-table {
         all: unset;
         appearance: none;
         width: 100%;
-        padding: var(--padding);
+        height: 100%;
+        /* idk why this is needed either */
+        padding: calc(var(--padding) - 2px);
       }
 
       & .vector2-inputs {
