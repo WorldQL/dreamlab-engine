@@ -152,7 +152,7 @@ export function createValueControl(
         get: () => opts.get()?.x,
         set: x => {
           const vec = new Vector2(opts.get() || opts.default || Vector2.ZERO);
-          if (x) vec.x = x;
+          if (x !== undefined) vec.x = x;
           opts.set(vec);
         },
         convert: NumericSchema.parse,
@@ -162,7 +162,7 @@ export function createValueControl(
         get: () => opts.get()?.y,
         set: y => {
           const vec = new Vector2(opts.get() || opts.default || Vector2.ZERO);
-          if (y) vec.y = y;
+          if (y !== undefined) vec.y = y;
           opts.set(vec);
         },
         convert: NumericSchema.parse,
