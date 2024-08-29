@@ -40,6 +40,13 @@ export const serveLogStreamingAPI = (router: Router) => {
     const socket = ctx.upgrade();
     const logs = instance.logs.subscribe();
     logs.on(entry => {
+      // don't send warnings about sloppy imports to the client.
+      if (entry.message.includes("Sloppy") /* lol */) return;
+      if (entry.message.includes("engine_cache")) return;
+      // TODO: filter these more elegantly
+      if (entry.message.includes("_dist_play") || entry.message.startsWith("play: Bundling"))
+        return;
+
       try {
         socket.send(JSON.stringify({ t: "New", entry }));
       } catch {
@@ -48,9 +55,9 @@ export const serveLogStreamingAPI = (router: Router) => {
     });
     socket.addEventListener("open", () => {
       // TODO: proper history request protocol
-      for (const entry of instance.logs.entries) {
-        socket.send(JSON.stringify({ t: "New", entry }));
-      }
+      // for (const entry of instance.logs.entries) {
+      //   socket.send(JSON.stringify({ t: "New", entry }));
+      // }
     });
     socket.addEventListener("close", () => logs.unsubscribe());
     socket.addEventListener("message", _e => {
