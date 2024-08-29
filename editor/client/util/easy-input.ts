@@ -29,14 +29,12 @@ export function createInputField<T>({
       set(val);
     } catch (err) {
       if (err instanceof Error) {
-        console.log(err);
         let message = err.message;
         if (err instanceof ZodError) {
           message = validationError.fromError(err).message;
         }
         input.setCustomValidity(message);
       } else {
-        console.log(err);
         input.setCustomValidity("Unknown error");
       }
     }

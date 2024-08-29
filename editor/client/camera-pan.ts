@@ -18,6 +18,7 @@ export class CameraPanBehavior extends Behavior {
   #camera = this.entity.cast(Camera);
   #drag: Vector2 | undefined = undefined;
   #wasGizmo: boolean = false;
+  #space = this.game.inputs.create("@editor/cameragrip", "Camera Grip", "Space");
 
   onInitialize(): void {
     if (!this.game.isClient()) return;
@@ -30,6 +31,10 @@ export class CameraPanBehavior extends Behavior {
   onMouseDown(event: MouseDown) {
     if (!this.game.isClient()) return;
     if (event.button === "left") {
+      if (this.#space.held) {
+        this.#drag = event.cursor.screen.clone();
+        return;
+      }
       // Ignore click event if mouse is over a local entity (clickable for gizmo)
       const local = this.game.local.entities
         .lookupByPosition(event.cursor.world)
