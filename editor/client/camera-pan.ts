@@ -108,6 +108,8 @@ export class CameraPanBehavior extends Behavior {
     this.#camera.pos.assign(this.#camera.pos.add(worldDelta));
   }
 
+  static readonly #IS_MAC = /Mac|iPod|iPhone|iPad/.test(navigator.userAgent);
+
   onScroll({ delta, ev }: Scroll) {
     if (this.game.isClient() && ev.target !== this.game.renderer.app.canvas) return;
 
@@ -133,6 +135,14 @@ export class CameraPanBehavior extends Behavior {
 
       const clampedScale = new Vector2(Math.max(newScale.x, 0.1), Math.max(newScale.y, 0.1));
       this.#camera.globalTransform.scale = clampedScale;
+
+      if (!CameraPanBehavior.#IS_MAC) {
+        const cursorPos = this.game.inputs.cursor.world;
+        if (delta.y < 0 && cursorPos) {
+          const cursorDelta = cursorPos.sub(this.#camera.pos);
+          this.#camera.pos = this.#camera.pos.add(cursorDelta.mul(1 / 10));
+        }
+      }
     }
   }
 }
