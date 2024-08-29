@@ -115,7 +115,9 @@ export class AppMenu {
         this.games.play.renderer.app.resize();
       }
 
-      this.controls.play.disable();
+      // TODO: Fix enabling / disabling these buttons based on actual server game state
+      // this is so that we can always join the other session
+      // this.controls.play.disable();
       this.controls.edit.enable();
     });
 
