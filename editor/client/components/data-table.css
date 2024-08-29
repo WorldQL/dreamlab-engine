@@ -28,6 +28,12 @@ dreamlab-data-table {
         padding: calc(var(--padding) - 2px);
       }
 
+      & .checkbox-input {
+        display: flex;
+        gap: 0.25rem;
+        align-items: center;
+      }
+
       & .vector2-inputs {
         display: flex;
         align-items: baseline;

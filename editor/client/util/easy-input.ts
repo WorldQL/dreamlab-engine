@@ -110,3 +110,36 @@ export function createInputFieldWithDefault<T>({
     },
   ];
 }
+
+export function createBooleanField({
+  default: defaultValue,
+  get,
+  set,
+}: {
+  default: boolean;
+  get: () => boolean | undefined;
+  set: (v: boolean) => void;
+}): [input: HTMLDivElement, refresh: () => void] {
+  const getLabel = () => (get() ?? defaultValue ? "true" : "false");
+
+  const label = elem("code", {}, [getLabel()]);
+  const checkbox = elem("input", {
+    type: "checkbox",
+    checked: get() ?? defaultValue,
+  });
+
+  const container = elem("div", { className: "checkbox-input" }, [checkbox, label]);
+
+  checkbox.addEventListener("input", () => {
+    set(checkbox.checked);
+    label.textContent = getLabel();
+  });
+
+  return [
+    container,
+    () => {
+      checkbox.checked = get() ?? defaultValue;
+      label.textContent = getLabel();
+    },
+  ];
+}

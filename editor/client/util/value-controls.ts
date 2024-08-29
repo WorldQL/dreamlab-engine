@@ -9,7 +9,7 @@ import {
 import { element as elem } from "@dreamlab/ui";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
-import { createInputFieldWithDefault } from "./easy-input.ts";
+import { createBooleanField, createInputFieldWithDefault } from "./easy-input.ts";
 
 interface ValueControlOptions<T> {
   typeTag?: ValueTypeTag<T>;
@@ -21,11 +21,6 @@ interface ValueControlOptions<T> {
 const NumericSchema = z
   .number({ coerce: true })
   .refine(Number.isFinite, "Value must be finite!");
-const BooleanSchema = z
-  .enum(["false", "0"])
-  .transform(() => false)
-  .or(z.string())
-  .pipe(z.coerce.boolean());
 
 export function createValueControl(
   game: ClientGame,
@@ -56,13 +51,10 @@ export function createValueControl(
     }
     case Boolean: {
       const opts = _opts as ValueControlOptions<boolean | undefined>;
-      // TODO: checkbox instead
-      const [control, refresh] = createInputFieldWithDefault({
-        default: opts.default,
+      const [control, refresh] = createBooleanField({
+        default: opts.default ?? false,
         get: opts.get,
         set: opts.set,
-        convert: BooleanSchema.parse,
-        convertBack: String,
       });
       return [control, refresh];
     }
