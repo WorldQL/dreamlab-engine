@@ -114,14 +114,6 @@ export class CameraPanBehavior extends Behavior {
     ev.preventDefault();
 
     if (ev.ctrlKey || ev.metaKey) {
-      const zoomFactor = 1.1;
-      const zoomDirection = delta.y > 0 ? 1 : -1;
-      const newScale = this.#camera.globalTransform.scale.mul(
-        Math.pow(zoomFactor, zoomDirection),
-      );
-      const clampedScale = new Vector2(Math.max(newScale.x, 0.1), Math.max(newScale.y, 0.1));
-      this.#camera.globalTransform.scale = clampedScale;
-    } else {
       const scale = 100;
       const deltaX = ev.shiftKey ? delta.y : delta.x;
       const deltaY = ev.shiftKey ? 0 : delta.y;
@@ -132,6 +124,15 @@ export class CameraPanBehavior extends Behavior {
         .sub(this.#camera.screenToWorld(Vector2.ZERO));
 
       this.#camera.pos.assign(this.#camera.pos.add(worldDelta));
+    } else {
+      const zoomFactor = ev.altKey ? 1.5 : 1.1;
+      const zoomDirection = delta.y > 0 ? 1 : -1;
+      const newScale = this.#camera.globalTransform.scale.mul(
+        Math.pow(zoomFactor, zoomDirection),
+      );
+
+      const clampedScale = new Vector2(Math.max(newScale.x, 0.1), Math.max(newScale.y, 0.1));
+      this.#camera.globalTransform.scale = clampedScale;
     }
   }
 }
