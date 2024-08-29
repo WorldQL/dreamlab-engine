@@ -26,6 +26,20 @@ dreamlab-data-table {
         padding: var(--padding);
       }
 
+      & .vector2-inputs {
+        display: flex;
+        align-items: baseline;
+      }
+
+      & .vector2-inputs > label {
+        margin-inline-end: 1ch;
+      }
+
+      & .vector2-inputs > input[type="text"] {
+        padding: 0;
+        flex: 1;
+      }
+
       & code {
         cursor: pointer;
         user-select: all;

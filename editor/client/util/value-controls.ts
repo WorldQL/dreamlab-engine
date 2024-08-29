@@ -33,7 +33,7 @@ export function createValueControl(
 ): [control: HTMLElement, refresh: () => void] {
   switch (_opts.typeTag) {
     case String: {
-      const opts = _opts as ValueControlOptions<string>;
+      const opts = _opts as ValueControlOptions<string | undefined>;
       const [control, refresh] = createInputFieldWithDefault({
         default: opts.default,
         get: opts.get,
@@ -44,7 +44,7 @@ export function createValueControl(
       return [control, refresh];
     }
     case Number: {
-      const opts = _opts as ValueControlOptions<number>;
+      const opts = _opts as ValueControlOptions<number | undefined>;
       const [control, refresh] = createInputFieldWithDefault({
         default: opts.default,
         get: opts.get,
@@ -55,7 +55,7 @@ export function createValueControl(
       return [control, refresh];
     }
     case Boolean: {
-      const opts = _opts as ValueControlOptions<boolean>;
+      const opts = _opts as ValueControlOptions<boolean | undefined>;
       // TODO: checkbox instead
       const [control, refresh] = createInputFieldWithDefault({
         default: opts.default,
@@ -68,7 +68,7 @@ export function createValueControl(
     }
 
     case TextureAdapter: {
-      const opts = _opts as ValueControlOptions<string>;
+      const opts = _opts as ValueControlOptions<string | undefined>;
 
       const convert = async (value: string) => {
         const url = z.literal("").or(z.string().url()).parse(value);
@@ -121,7 +121,7 @@ export function createValueControl(
 
     case SpritesheetAdapter: {
       // TODO: spritesheet picker
-      const opts = _opts as ValueControlOptions<string>;
+      const opts = _opts as ValueControlOptions<string | undefined>;
       const [control, refresh] = createInputFieldWithDefault({
         default: opts.default,
         get: opts.get,
@@ -145,13 +145,13 @@ export function createValueControl(
     }
 
     case Vector2Adapter: {
-      const opts = _opts as ValueControlOptions<Vector2>;
+      const opts = _opts as ValueControlOptions<Vector2 | undefined>;
 
       const [xControl, refreshX] = createInputFieldWithDefault({
         default: opts.default?.x,
-        get: () => opts.get().x,
+        get: () => opts.get()?.x,
         set: x => {
-          const vec = new Vector2(opts.get());
+          const vec = new Vector2(opts.get() || opts.default || Vector2.ZERO);
           if (x) vec.x = x;
           opts.set(vec);
         },
@@ -159,9 +159,9 @@ export function createValueControl(
       });
       const [yControl, refreshY] = createInputFieldWithDefault({
         default: opts.default?.y,
-        get: () => opts.get().y,
+        get: () => opts.get()?.y,
         set: y => {
-          const vec = new Vector2(opts.get());
+          const vec = new Vector2(opts.get() || opts.default || Vector2.ZERO);
           if (y) vec.y = y;
           opts.set(vec);
         },
@@ -169,7 +169,12 @@ export function createValueControl(
       });
 
       // TODO: better layout (label x and y?)
-      const control = elem("div", { className: "vector2-inputs" }, [xControl, yControl]);
+      const control = elem("div", { className: "vector2-inputs" }, [
+        elem("label", {}, ["X:"]),
+        xControl,
+        elem("label", {}, ["Y:"]),
+        yControl,
+      ]);
       const refresh = () => {
         refreshX();
         refreshY();
