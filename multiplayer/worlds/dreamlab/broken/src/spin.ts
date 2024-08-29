@@ -12,6 +12,8 @@ export default class BulletBehavior extends Behavior {
     this.defineValue(BulletBehavior, "speed");
     this.defineValue(BulletBehavior, "additionalVelocity", { type: Vector2Adapter });
 
+    console.log({ speed: this.speed });
+
     const rotation = this.entity.transform.rotation;
     this.#direction = new Vector2(Math.cos(rotation), Math.sin(rotation));
   }

@@ -6,7 +6,6 @@ import { z } from "@dreamlab/vendor/zod.ts";
 import { icon, Trash2 as Trash } from "../../_icons.ts";
 import { DataDetails, DataTable } from "../../components/mod.ts";
 import { BehaviorTypeInfo } from "../../util/behavior-type-info.ts";
-import { createInputField, createInputFieldWithDefault } from "../../util/easy-input.ts";
 import { createValueControl } from "../../util/value-controls.ts";
 import { InspectorUI } from "../inspector.ts";
 import { BehaviorList } from "./behavior-list.ts";
@@ -19,7 +18,7 @@ type ThinValue<T> = {
 export class BehaviorEditor {
   details: DataDetails;
 
-  valueFields = new Map<string, ReturnType<typeof createInputField>>();
+  valueFields = new Map<string, ReturnType<typeof createValueControl>>();
   values: Record<string, ThinValue<unknown>> = {};
 
   game: ClientGame;
@@ -120,75 +119,6 @@ export class BehaviorEditor {
     }
   }
 
-  // TODO: replace with an abstraction we can use for both Properties and BehaviorEditor
-  #createValueField(
-    key: string,
-    value: ThinValue<unknown>,
-  ): ReturnType<typeof createInputField> | undefined {
-    switch (value.typeTag) {
-      case String: {
-        const val = value as ThinValue<string>;
-        if ("default" in val) {
-          return createInputFieldWithDefault({
-            default: val.default,
-            get: () => val.value,
-            set: v => {
-              val.value = v;
-              if (!this.behavior.values) this.behavior.values = {};
-              this.behavior.values[key] = v;
-              this.parent.sync();
-            },
-            convert: s => s,
-          });
-        } else {
-          return createInputField({
-            get: () => val.value,
-            set: v => {
-              val.value = v;
-              if (!this.behavior.values) this.behavior.values = {};
-              this.behavior.values[key] = v;
-              this.parent.sync();
-            },
-            convert: s => s,
-          });
-        }
-      }
-
-      case Number: {
-        const val = value as ThinValue<number>;
-        if ("default" in val) {
-          return createInputFieldWithDefault({
-            default: val.default,
-            get: () => val.value,
-            set: v => {
-              val.value = v;
-              if (!this.behavior.values) this.behavior.values = {};
-              this.behavior.values[key] = v;
-              this.parent.sync();
-            },
-            convert: z.number({ coerce: true }).parse,
-          });
-        } else {
-          return createInputField({
-            get: () => val.value,
-            set: v => {
-              val.value = v;
-              if (!this.behavior.values) this.behavior.values = {};
-              this.behavior.values[key] = v;
-              this.parent.sync();
-            },
-            convert: z.number({ coerce: true }).parse,
-          });
-        }
-      }
-
-      case undefined:
-      default: {
-        return undefined;
-      }
-    }
-  }
-
   #addValueField(key: string, value: ThinValue<unknown>) {
     const [control, refresh] = createValueControl(this.game, {
       typeTag: value.typeTag,
@@ -202,7 +132,7 @@ export class BehaviorEditor {
       },
     });
 
-    if (control instanceof HTMLInputElement) this.valueFields.set(key, [control, refresh]);
+    this.valueFields.set(key, [control, refresh]);
     this.#table.addEntry(`value:${key}`, key, control);
   }
 
@@ -222,7 +152,7 @@ export class BehaviorEditor {
 
     if (this.behavior.values) {
       for (const [key, value] of Object.entries(this.behavior.values)) {
-        if (!this.values[key]) {
+        if (this.values[key] === undefined) {
           this.values[key] = { value };
         }
       }
