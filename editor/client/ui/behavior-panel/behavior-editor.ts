@@ -152,7 +152,7 @@ export class BehaviorEditor {
 
     if (this.behavior.values) {
       for (const [key, value] of Object.entries(this.behavior.values)) {
-        if (this.values[key] === undefined) {
+        if (!this.values[key]) {
           this.values[key] = { value };
         }
       }
