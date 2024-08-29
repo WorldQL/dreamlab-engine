@@ -16,6 +16,8 @@ export class RectCollider2D extends Entity {
 
   #internal: { collider: RAPIER.Collider; shape: RAPIER.Cuboid } | undefined;
 
+  isSensor: boolean = false;
+
   get collider(): RAPIER.Collider {
     if (!this.#internal) throw new Error("attempted to access .collider on a prefab object");
     return this.#internal.collider;
@@ -23,6 +25,7 @@ export class RectCollider2D extends Entity {
 
   constructor(ctx: EntityContext) {
     super(ctx);
+    this.defineValue(RectCollider2D, "isSensor");
 
     if (this.root !== this.game.prefabs) {
       const desc = RAPIER.ColliderDesc.cuboid(
@@ -41,6 +44,7 @@ export class RectCollider2D extends Entity {
       this.game.physics.registerCollider(this, collider);
       collider.setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS);
       const shape = collider.shape as RAPIER.Cuboid;
+      collider.setSensor(this.isSensor);
 
       this.#internal = { collider, shape };
     }

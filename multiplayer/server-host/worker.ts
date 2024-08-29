@@ -28,6 +28,7 @@ export class IPCWorker {
         ...(!workerData.editMode && workerData.inspect
           ? [`--inspect=${workerData.inspect}`]
           : []),
+        "--unstable-sloppy-imports",
         "--allow-hrtime",
         `--allow-net=${new URL(workerData.workerConnectUrl).host}`,
         `--allow-read=${workerData.worldDirectory}`,
