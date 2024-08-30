@@ -2,19 +2,18 @@ import { element as elem } from "@dreamlab/ui";
 import { ChevronDown, icon } from "../_icons.ts";
 
 export class DataDetails extends HTMLElement {
-  #details: HTMLDetailsElement;
-  #header: HTMLElement;
+  #header: HTMLElement = elem("header", {}, ["dreamlab-data-details"]);
+  #details: HTMLDetailsElement = elem("details", { open: true }, [
+    elem("summary", {}, [
+      elem("div", { className: "arrow" }, [icon(ChevronDown)]),
+      this.#header,
+    ]),
+  ]);
 
-  constructor() {
-    super();
-    this.#header = elem("header", {}, ["dreamlab-data-details"]);
-
-    this.#details = elem("details", { open: true }, [
-      elem("summary", {}, [
-        elem("div", { className: "arrow" }, [icon(ChevronDown)]),
-        this.#header,
-      ]),
-    ]);
+  #initialized = false;
+  connectedCallback() {
+    if (this.#initialized) return;
+    this.#initialized = true;
 
     this.append(this.#details);
   }

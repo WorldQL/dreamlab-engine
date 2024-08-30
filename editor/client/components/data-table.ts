@@ -5,8 +5,11 @@ export class DataTable extends HTMLElement {
 
   #table = element("table");
 
-  constructor() {
-    super();
+  #initialized = false;
+  connectedCallback() {
+    if (this.#initialized) return;
+    this.#initialized = true;
+
     this.append(this.#table);
   }
 
