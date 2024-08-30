@@ -4,6 +4,8 @@ import {
   Entity,
   EntityDefinition,
   Game,
+  GameStatus,
+  GameStatusChange,
   ServerGame,
   TransformOptions,
 } from "@dreamlab/engine";
@@ -155,25 +157,45 @@ export const loadSceneDefinition = async (game: Game, scene: Scene) => {
     await Promise.all(scene.registration.map(script => import(game.resolveResource(script))));
   }
 
+  const spawnedEntities: Entity[] = [];
+
   if (scene.prefabs) {
     const defs = await Promise.all(
       scene.prefabs.map(def => convertEntityDefinition(game, def)),
     );
-    for (const def of defs) game.prefabs.spawn(def);
+    spawnedEntities.push(
+      ...defs.map(d => game.prefabs[internal.entitySpawn](d, { inert: true })),
+    );
   }
 
   if (scene.world) {
     const defs = await Promise.all(scene.world.map(def => convertEntityDefinition(game, def)));
-    for (const def of defs) game.world.spawn(def);
+    spawnedEntities.push(
+      ...defs.map(d => game.world[internal.entitySpawn](d, { inert: true })),
+    );
   }
 
   if (scene.local && game instanceof ClientGame) {
     const defs = await Promise.all(scene.local.map(def => convertEntityDefinition(game, def)));
-    for (const def of defs) game.local.spawn(def);
+
+    spawnedEntities.push(
+      ...defs.map(d => game.local[internal.entitySpawn](d, { inert: true })),
+    );
   }
 
   if (scene.server && game instanceof ServerGame) {
     const defs = await Promise.all(scene.server.map(def => convertEntityDefinition(game, def)));
     for (const def of defs) game.remote.spawn(def);
+
+    spawnedEntities.push(
+      ...defs.map(d => game.remote[internal.entitySpawn](d, { inert: true })),
+    );
   }
+
+  const listener = game.on(GameStatusChange, () => {
+    if (game.status === GameStatus.Running) {
+      listener.unsubscribe();
+      spawnedEntities.forEach(e => e[internal.entitySpawnFinalize]());
+    }
+  });
 };

@@ -339,8 +339,8 @@ export abstract class Entity implements ISignalHandler {
   }
 
   [internal.entitySpawnFinalize]() {
-    for (const child of this.children.values()) child[internal.entitySpawnFinalize]();
     this.#spawn();
+    for (const child of this.children.values()) child[internal.entitySpawnFinalize]();
   }
   // #endregion
 
@@ -766,6 +766,8 @@ export abstract class Entity implements ISignalHandler {
   // #region Lifecycle
   #spawned = false;
   #spawn() {
+    if (this.#spawned) return;
+
     this.#spawned = true;
 
     this.onInitialize();
@@ -794,7 +796,10 @@ export abstract class Entity implements ISignalHandler {
   #origZ: number = NaN;
 
   [internal.preTickEntities]() {
-    if (!this.#spawned) this.#spawn();
+    if (!this.#spawned) {
+      console.log("skipping tick", this.constructor);
+      return;
+    }
 
     const tr = this.globalTransform;
     this.#prevPosition = tr.position.bare();
@@ -813,6 +818,8 @@ export abstract class Entity implements ISignalHandler {
   }
 
   [internal.tickEntities]() {
+    if (!this.#spawned) return;
+
     this.fire(EntityUpdate);
 
     const tr = this.globalTransform;

@@ -78,15 +78,18 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
     game.fire(ReceivedInitialNetworkSnapshot);
   });
 
-  game.on(GameStatusChange, () => {
-    if (game.status !== GameStatus.Running) return;
+  const statusListener = game.on(GameStatusChange, () => {
+    if (game.status === GameStatus.Running) {
+      statusListener.unsubscribe();
 
-    changeIgnoreSet = changeIgnoreSet.union(initialNetSpawnedEntityRefs);
-    for (const entity of initialNetSpawnedEntities) entity[internal.entitySpawnFinalize]();
-    changeIgnoreSet = changeIgnoreSet.difference(initialNetSpawnedEntityRefs);
+      changeIgnoreSet = changeIgnoreSet.union(initialNetSpawnedEntityRefs);
+      console.log(initialNetSpawnedEntities);
+      for (const entity of initialNetSpawnedEntities) entity[internal.entitySpawnFinalize]();
+      changeIgnoreSet = changeIgnoreSet.difference(initialNetSpawnedEntityRefs);
 
-    initialNetSpawnedEntities = [];
-    initialNetSpawnedEntityRefs.clear();
+      initialNetSpawnedEntities = [];
+      initialNetSpawnedEntityRefs.clear();
+    }
   });
 
   conn.registerPacketHandler("SpawnEntity", async packet => {

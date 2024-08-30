@@ -23,6 +23,8 @@ export abstract class Root extends Entity {
     this.root = this;
 
     game.entities[internal.entityStoreRegister](this);
+
+    this[internal.entitySpawnFinalize]();
   }
 }
 
