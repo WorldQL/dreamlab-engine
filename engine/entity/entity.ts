@@ -796,10 +796,7 @@ export abstract class Entity implements ISignalHandler {
   #origZ: number = NaN;
 
   [internal.preTickEntities]() {
-    if (!this.#spawned) {
-      console.log("skipping tick", this.constructor);
-      return;
-    }
+    if (!this.#spawned) return;
 
     const tr = this.globalTransform;
     this.#prevPosition = tr.position.bare();
