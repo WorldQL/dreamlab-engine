@@ -193,7 +193,7 @@ export const loadSceneDefinition = async (game: Game, scene: Scene) => {
   }
 
   const listener = game.on(GameStatusChange, () => {
-    if (game.status === GameStatus.Running) {
+    if (game.status === GameStatus.LoadingFinished) {
       listener.unsubscribe();
       spawnedEntities.forEach(e => e[internal.entitySpawnFinalize]());
     }

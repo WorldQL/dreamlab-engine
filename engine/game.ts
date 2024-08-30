@@ -45,6 +45,7 @@ export interface ServerGameOptions extends GameOptions {
 
 export enum GameStatus {
   Loading = "loading",
+  LoadingFinished = "loading_finished",
   Running = "running",
   Shutdown = "shutdown",
 }

@@ -28,6 +28,7 @@ export const setupGame = async (
 
   const networkSnapshotPromise = new Promise<void>((resolve, _reject) => {
     game.on(ReceivedInitialNetworkSnapshot, () => {
+      console.log("initial network snapshot");
       resolve();
     });
   });
@@ -66,6 +67,7 @@ export const setupGame = async (
 
   await networkSnapshotPromise;
   conn.send({ t: "LoadPhaseChanged", phase: "loaded" });
+  game.setStatus(GameStatus.LoadingFinished);
   game.setStatus(GameStatus.Running);
 
   for (const entity of localSpawnedEntities) {

@@ -205,6 +205,7 @@ if (workerData.editMode) {
   await loadSceneDefinition(game, scene);
 }
 
+game.setStatus(GameStatus.LoadingFinished);
 game.setStatus(GameStatus.Running);
 
 const tickDelta = 1_000 / game.time.TPS;

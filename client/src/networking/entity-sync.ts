@@ -79,7 +79,7 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
   });
 
   const statusListener = game.on(GameStatusChange, () => {
-    if (game.status === GameStatus.Running) {
+    if (game.status === GameStatus.LoadingFinished) {
       statusListener.unsubscribe();
 
       changeIgnoreSet = changeIgnoreSet.union(initialNetSpawnedEntityRefs);
