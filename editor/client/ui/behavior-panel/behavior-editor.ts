@@ -121,6 +121,7 @@ export class BehaviorEditor {
 
   #addValueField(key: string, value: ThinValue<unknown>) {
     const [control, refresh] = createValueControl(this.game, {
+      id: `${this.behavior.ref}/${key}`,
       typeTag: value.typeTag,
       default: value.default,
       get: () => value.value,

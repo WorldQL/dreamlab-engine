@@ -175,6 +175,7 @@ export class Properties implements InspectorUIWidget {
 
     for (const [key, value] of entity.values.entries()) {
       const [valueField, refreshValue] = createValueControl(this.game, {
+        id: `${entity.ref}/${key}`,
         typeTag: value.typeTag,
         get: () => value.value,
         set: v => (value.value = v),

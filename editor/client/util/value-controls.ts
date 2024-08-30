@@ -12,6 +12,7 @@ import { z } from "@dreamlab/vendor/zod.ts";
 import { createBooleanField, createInputFieldWithDefault } from "./easy-input.ts";
 
 interface ValueControlOptions<T> {
+  id?: string;
   typeTag?: ValueTypeTag<T>;
   default?: T;
   get: () => T;
@@ -52,6 +53,7 @@ export function createValueControl(
     case Boolean: {
       const opts = _opts as ValueControlOptions<boolean | undefined>;
       const [control, refresh] = createBooleanField({
+        id: opts.id,
         default: opts.default ?? false,
         get: opts.get,
         set: opts.set,
