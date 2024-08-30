@@ -12,6 +12,9 @@ dreamlab-data-details {
     &::marker {
       content: "";
     }
+    &::-webkit-details-marker {
+      display: none;
+    }
     &::before {
       display: inline-block;
       width: calc(var(--arrow-pad) + 0.25em);

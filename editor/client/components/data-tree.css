@@ -25,6 +25,9 @@ dreamlab-data-tree {
     &::marker {
       content: "";
     }
+    &::-webkit-details-marker {
+      display: none;
+    }
     &::before {
       display: inline-block;
       width: 2.25ch;

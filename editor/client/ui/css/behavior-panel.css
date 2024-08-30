@@ -33,10 +33,6 @@
     line-height: 1.4;
   }
 
-  & summary::marker {
-    content: "";
-  }
-
   & .behavior h2 {
     font-weight: 600;
   }

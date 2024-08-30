@@ -20,6 +20,10 @@
   content: "";
 }
 
+#scene-graph-tree summary::-webkit-details-marker {
+  display: none;
+}
+
 #scene-graph-tree details {
   font-size: 0.875rem;
 }
