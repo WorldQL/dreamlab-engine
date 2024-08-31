@@ -73,6 +73,28 @@ await build({
   test: false,
 });
 
+await build({
+  entryPoints: ["../engine/_deps/pixi.ts"],
+  outDir: "./pixiout",
+  shims: {
+    deno: true,
+  },
+  declaration: "inline",
+  skipSourceOutput: true,
+  package: {
+    name: "dreamlab-rapier",
+    version: "0",
+    description: "",
+    license: "UNLICENSED",
+  },
+  postBuild() {},
+  compilerOptions: {
+    lib: ["ESNext", "DOM"],
+  },
+  importMap: "../deno.json",
+  test: false,
+});
+
 async function listFiles(directory: string): Promise<string[]> {
   const files: string[] = [];
 
