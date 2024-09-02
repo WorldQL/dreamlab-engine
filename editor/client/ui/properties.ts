@@ -5,7 +5,6 @@ import {
   EntityRenamed,
   EntityReparented,
   EntityTransformUpdate,
-  ValueChanged,
 } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 import { z } from "@dreamlab/vendor/zod.ts";
@@ -183,9 +182,7 @@ export class Properties implements InspectorUIWidget {
       });
 
       valuesTable.addEntry(`value:${key}`, key, valueField);
-      this.game.values.on(ValueChanged, event => {
-        if (event.value === value) refreshValue();
-      });
+      value.onChanged(refreshValue);
     }
   }
 }

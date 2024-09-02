@@ -3,7 +3,7 @@ import { Entity } from "../entity/mod.ts";
 import * as internal from "../internal.ts";
 import { ConnectionId } from "../network.ts";
 import { AdapterTypeTag, ValueTypeAdapter } from "./data.ts";
-import { ValueChanged, ValueRegistry } from "./registry.ts";
+import { ValueRegistry } from "./registry.ts";
 
 // prettier-ignore
 type BasicTypeTag<T> =
@@ -45,6 +45,12 @@ export class Value<T = unknown> {
 
   [internal.valueRelatedEntity]: Entity | undefined;
 
+  #changeListeners: ((newValue: this["value"]) => void)[] | undefined;
+  onChanged(listener: (newValue: this["value"]) => void) {
+    if (!this.#changeListeners) this.#changeListeners = [];
+    this.#changeListeners.push(listener);
+  }
+
   get value() {
     return this.#value;
   }
@@ -65,9 +71,7 @@ export class Value<T = unknown> {
       );
     }
 
-    // this will fire `this.#changeListener` and update the internal value that way
-    this.#registry.fire(
-      ValueChanged,
+    this.#registry.applyValueUpdate(
       this as Value<unknown>,
       newValue,
       this.clock + 1,
@@ -128,5 +132,12 @@ export class Value<T = unknown> {
     this.#value = incomingValue;
     this.lastSource = incomingSource;
     this.clock = incomingClock;
+
+    if (this.#changeListeners) {
+      const listenerCount = this.#changeListeners.length;
+      for (let i = 0; i < listenerCount; i++) {
+        this.#changeListeners[i](incomingValue);
+      }
+    }
   }
 }

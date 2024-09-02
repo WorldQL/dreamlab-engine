@@ -2,7 +2,6 @@ import RAPIER from "@dreamlab/vendor/rapier.ts";
 import { IVector2, Vector2 } from "../../math/mod.ts";
 import { EntityDestroyed, EntityPreUpdate, EntityUpdate } from "../../signals/mod.ts";
 import { enumAdapter } from "../../value/adapters/enum-adapter.ts";
-import { ValueChanged } from "../../value/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
 
 type RigidBodyType = (typeof rigidbodyTypes)[number];
@@ -51,11 +50,7 @@ export class Rigidbody2D extends Entity {
     this.#initializeBody();
 
     const typeValue = this.values.get("type");
-    this.listen(this.game.values, ValueChanged, event => {
-      if (event.value !== typeValue) return;
-
-      this.#initializeBody();
-    });
+    typeValue?.onChanged(() => this.#initializeBody());
 
     // EntityPreUpdate happens before physics runs, so we can set the physics body to match our transform
     this.on(

@@ -1,4 +1,4 @@
-import { ClientGame, Entity, ValueChanged } from "@dreamlab/engine";
+import { ClientGame, Entity } from "@dreamlab/engine";
 import { SceneDescBehavior, BehaviorSchema as SceneDescBehaviorSchema } from "@dreamlab/scene";
 import { element as elem } from "@dreamlab/ui";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
@@ -67,10 +67,9 @@ export class BehaviorList {
         JSON.parse(editorMetadata.behaviorsJson),
       );
 
-      this.game.values.on(ValueChanged, event => {
-        if (event.value !== editorMetadata.values.get("behaviorsJson")) return;
+      editorMetadata.values.get("behaviorsJson")?.onChanged(newValue => {
         const newBehaviors = SceneDescBehaviorSchema.array().parse(
-          JSON.parse(event.newValue as string),
+          JSON.parse(newValue as string),
         );
 
         for (const newBehavior of newBehaviors) {

@@ -1,13 +1,5 @@
-import {
-  Camera,
-  Entity,
-  EntityContext,
-  IVector2,
-  PixiEntity,
-  ValueChanged,
-} from "@dreamlab/engine";
+import { Camera, Entity, EntityContext, IVector2, PixiEntity } from "@dreamlab/engine";
 import { EnsureCompatible, EntityValueProps } from "./_compatibility.ts";
-import { DebugSquare, TemporaryCameraDebugDisplay } from "./_debug.ts";
 import { Facades } from "./manager.ts";
 
 export class EditorFacadeCamera extends PixiEntity {
@@ -46,10 +38,10 @@ export class EditorFacadeCamera extends PixiEntity {
     // this.#debug = new TemporaryCameraDebugDisplay({ entity: this, suffix: this.active ? " (active)" : "" });
 
     // const activeValue = this.values.get("active");
-    // this.listen(this.game.values, ValueChanged, ({ value }) => {
-    //   if (this.#debug && value === activeValue) {
-    //     this.#debug.suffix = this.active ? " (active)" : "";
-    //   }
+    // activeValue?.onChanged(() => {
+    //  if (this.#debug) {
+    //    this.#debug.suffix = this.active ? " (active)" : "";
+    //  }
     // });
   }
 }

@@ -2,7 +2,6 @@ import { EntityTransformUpdate } from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { IVector2, Vector2 } from "../../math/mod.ts";
 import { TextureAdapter } from "../../value/adapters/texture-adapter.ts";
-import { ValueChanged } from "../../value/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
 import { PixiEntity } from "../pixi-entity.ts";
 
@@ -37,17 +36,22 @@ export class Sprite2D extends PixiEntity {
       PIXI.Assets.backgroundLoad(this.game.resolveResource(this.texture));
     }
 
-    this.on(EntityTransformUpdate, () => {
+    const updateSize = () => {
       if (!this.#sprite) return;
       this.#sprite.scale.set(0);
       this.#sprite.width = this.width * this.globalTransform.scale.x;
       this.#sprite.height = this.height * this.globalTransform.scale.y;
-    });
+    };
+
+    this.on(EntityTransformUpdate, updateSize);
+    const widthValue = this.values.get("width");
+    const heightValue = this.values.get("height");
+    widthValue?.onChanged(updateSize);
+    heightValue?.onChanged(updateSize);
 
     const textureValue = this.values.get("texture");
     let lastTexture: string = "";
-    this.listen(this.game.values, ValueChanged, event => {
-      if (event.value !== textureValue) return;
+    textureValue?.onChanged(() => {
       if (this.texture === lastTexture) return;
       lastTexture = this.texture;
 
@@ -60,9 +64,7 @@ export class Sprite2D extends PixiEntity {
     });
 
     const alphaValue = this.values.get("alpha");
-    this.listen(this.game.values, ValueChanged, event => {
-      if (event.value !== alphaValue) return;
-
+    alphaValue?.onChanged(() => {
       if (!this.#sprite) return;
       this.#sprite.alpha = this.alpha;
     });

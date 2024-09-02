@@ -1,23 +1,37 @@
-import * as internal from "../internal.ts";
 import { Game } from "../game.ts";
+import * as internal from "../internal.ts";
 
-import { BasicSignalHandler, exclusiveSignalType } from "../signal.ts";
-import { Value } from "./value.ts";
 import { ConnectionId } from "../network.ts";
+import { Value } from "./value.ts";
 
-export class ValueChanged {
-  constructor(
-    public value: Value,
-    public newValue: unknown,
-    public clock: number,
-    public from: ConnectionId,
-  ) {}
+type ValueChangedListener = (
+  value: Value,
+  newValue: unknown,
+  clock: number,
+  source: ConnectionId,
+) => void;
+type ValueChangedSubscription = { unsubscribe: () => void };
 
-  [exclusiveSignalType] = ValueRegistry;
-}
-
-export class ValueRegistry extends BasicSignalHandler<ValueRegistry> {
+export class ValueRegistry {
   #values = new Map<string, Value>();
+
+  #changeListeners: ValueChangedListener[] = [];
+  onValueChanged(listener: ValueChangedListener): ValueChangedSubscription {
+    this.#changeListeners.push(listener);
+    return {
+      unsubscribe: () => {
+        const idx = this.#changeListeners.indexOf(listener);
+        if (idx !== -1) this.#changeListeners.splice(idx, 1);
+      },
+    };
+  }
+
+  /** todo: use internal symbol for this */
+  applyValueUpdate(value: Value, newValue: unknown, clock: number, source: ConnectionId) {
+    for (const changeListener of this.#changeListeners)
+      changeListener(value, newValue, clock, source);
+    value[internal.valueApplyUpdate](newValue, clock, source);
+  }
 
   #source: ConnectionId = "server";
   get source() {
@@ -27,16 +41,7 @@ export class ValueRegistry extends BasicSignalHandler<ValueRegistry> {
     this.#source = value;
   }
 
-  readonly game: Game;
-
-  constructor(game: Game) {
-    super();
-    this.game = game;
-
-    this.on(ValueChanged, event => {
-      event.value[internal.valueApplyUpdate](event.newValue, event.clock, event.from);
-    });
-  }
+  constructor(public readonly game: Game) {}
 
   get values(): readonly Value[] {
     return [...this.#values.values()];

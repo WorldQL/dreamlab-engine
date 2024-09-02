@@ -14,7 +14,6 @@ import {
   MouseUp,
   Scroll,
   UIPanel,
-  ValueChanged,
   Vector2,
   enumAdapter,
   lerpAngle,
@@ -185,11 +184,8 @@ export class VisualCard extends Behavior {
 
     const rankValue = this.#cardBehavior.values.get("rank");
     const suitValue = this.#cardBehavior.values.get("suit");
-    this.listen(this.game.values, ValueChanged, event => {
-      if (event.value === rankValue || event.value === suitValue) {
-        this.#setImage();
-      }
-    });
+    rankValue?.onChanged(() => this.#setImage());
+    suitValue?.onChanged(() => this.#setImage());
   }
 }
 
@@ -322,7 +318,5 @@ if (savedRank) cardBehavior.suit = savedSuit as Suit;
 
 const rankValue = cardBehavior.values.get("rank");
 const suitValue = cardBehavior.values.get("suit");
-game.values.on(ValueChanged, ({ value }) => {
-  if (value === rankValue) sessionStorage.setItem("rank", cardBehavior.rank);
-  if (value === suitValue) sessionStorage.setItem("suit", cardBehavior.suit);
-});
+rankValue?.onChanged(() => sessionStorage.setItem("rank", cardBehavior.rank));
+suitValue?.onChanged(() => sessionStorage.setItem("suit", cardBehavior.suit));

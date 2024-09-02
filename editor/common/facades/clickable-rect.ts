@@ -1,11 +1,4 @@
-import {
-  ClickableRect,
-  Entity,
-  EntityContext,
-  IVector2,
-  PixiEntity,
-  ValueChanged,
-} from "@dreamlab/engine";
+import { ClickableRect, Entity, EntityContext, IVector2, PixiEntity } from "@dreamlab/engine";
 import { EnsureCompatible, EntityValueProps } from "./_compatibility.ts";
 import { DebugSquare } from "./_debug.ts";
 import { Facades } from "./manager.ts";
@@ -39,11 +32,8 @@ export class EditorFacadeClickableRect extends PixiEntity {
 
     const widthValue = this.values.get("width");
     const heightValue = this.values.get("height");
-    this.listen(this.game.values, ValueChanged, ({ value }) => {
-      if (this.#debug && (value === widthValue || value === heightValue)) {
-        this.#debug.redraw();
-      }
-    });
+    widthValue?.onChanged(() => this.#debug?.redraw());
+    heightValue?.onChanged(() => this.#debug?.redraw());
   }
 }
 

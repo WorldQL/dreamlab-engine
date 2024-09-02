@@ -1,7 +1,6 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { SignalSubscription } from "../signal.ts";
 import { EntityDestroyed, EntityReparented, GameRender } from "../signals/mod.ts";
-import { ValueChanged } from "../value/mod.ts";
 import { Entity, EntityConstructor, EntityContext } from "./entity.ts";
 
 export abstract class PixiEntity extends Entity {
@@ -64,14 +63,10 @@ export abstract class PixiEntity extends Entity {
         "hidden",
       );
 
-      // we cant use getter/setter pairs because this is an abstract class
-      this.listen(this.game.values, ValueChanged, ({ value }) => {
-        if (value === staticValue) {
-          this.#updateTransformListeners();
-        } else if (value === hiddenValue) {
-          this.#updateVisibility();
-          this.#updateTransformListeners();
-        }
+      staticValue.onChanged(() => this.#updateTransformListeners());
+      hiddenValue.onChanged(() => {
+        this.#updateVisibility();
+        this.#updateTransformListeners();
       });
     }
 

@@ -1,4 +1,4 @@
-import { GameStatus, GameTick, Value, ValueChanged } from "@dreamlab/engine";
+import { GameStatus, GameTick, Value } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { PlayPacket } from "@dreamlab/proto/play.ts";
 import { ServerNetworkSetupRoutine } from "./net-manager.ts";
@@ -6,20 +6,20 @@ import { ServerNetworkSetupRoutine } from "./net-manager.ts";
 export const handleValueChanges: ServerNetworkSetupRoutine = (net, game) => {
   const dirtyValues = new Map<Value, number>();
 
-  game.values.on(ValueChanged, event => {
+  game.values.onValueChanged((value, _newValue, clock, source) => {
     if (game.status !== GameStatus.Running) return;
 
-    if (!event.value.replicated) return;
-    if (event.from !== "server") return;
+    if (!value.replicated) return;
+    if (source !== "server") return;
 
-    const relatedEntity = event.value[internal.valueRelatedEntity];
+    const relatedEntity = value[internal.valueRelatedEntity];
     if (
       relatedEntity &&
       !(relatedEntity.root === game.world || relatedEntity.root === game.prefabs)
     )
       return;
 
-    dirtyValues.set(event.value, event.clock);
+    dirtyValues.set(value, clock);
   });
 
   game.on(GameTick, () => {
@@ -48,7 +48,7 @@ export const handleValueChanges: ServerNetworkSetupRoutine = (net, game) => {
       const value = game.values.lookup(report.identifier);
       if (!value || !value.replicated) continue;
       affectedValues.set(report.identifier, value);
-      game.values.fire(ValueChanged, value, report.value, report.clock, from);
+      game.values.applyValueUpdate(value, report.value, report.clock, from);
     }
 
     const validReports = packet.reports.filter(
