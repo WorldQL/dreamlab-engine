@@ -19,7 +19,7 @@
 //   type: Rigidbody2D["type"] = "fixed";
 
 //   constructor(ctx: EntityContext) {
-//     super(ctx);
+//     super(ctx, false);
 //     this.defineValues(EditorFacadeRigidbody2D, "type");
 //   }
 

@@ -48,28 +48,32 @@ export abstract class PixiEntity extends Entity {
     this.container.visible = visible;
   }
 
-  constructor(ctx: EntityContext) {
+  constructor(ctx: EntityContext, defineValues = true) {
     super(ctx);
 
-    const staticValue = this.defineValue(
-      this.constructor as EntityConstructor<PixiEntity>,
-      "static",
-    );
+    // this is a hack to stop editor facades getting tainted
+    // FIXME: come up with a better way of doing this ^
+    if (defineValues) {
+      const staticValue = this.defineValue(
+        this.constructor as EntityConstructor<PixiEntity>,
+        "static",
+      );
 
-    const hiddenValue = this.defineValue(
-      this.constructor as EntityConstructor<PixiEntity>,
-      "hidden",
-    );
+      const hiddenValue = this.defineValue(
+        this.constructor as EntityConstructor<PixiEntity>,
+        "hidden",
+      );
 
-    // we cant use getter/setter pairs because this is an abstract class
-    this.listen(this.game.values, ValueChanged, ({ value }) => {
-      if (value === staticValue) {
-        this.#updateTransformListeners();
-      } else if (value === hiddenValue) {
-        this.#updateVisibility();
-        this.#updateTransformListeners();
-      }
-    });
+      // we cant use getter/setter pairs because this is an abstract class
+      this.listen(this.game.values, ValueChanged, ({ value }) => {
+        if (value === staticValue) {
+          this.#updateTransformListeners();
+        } else if (value === hiddenValue) {
+          this.#updateVisibility();
+          this.#updateTransformListeners();
+        }
+      });
+    }
 
     // force add the render listener if not static
     this.#updateTransformListeners();

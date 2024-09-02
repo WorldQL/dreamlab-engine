@@ -17,7 +17,7 @@ export class EditorFacadeRectCollider2D extends PixiEntity {
   }
 
   constructor(ctx: EntityContext) {
-    super(ctx);
+    super(ctx, false);
     this.defineValues(EditorFacadeRectCollider2D, "isSensor");
   }
 

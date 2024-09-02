@@ -27,7 +27,7 @@ export class EditorFacadeClickableRect extends PixiEntity {
   #debug: DebugSquare | undefined;
 
   constructor(ctx: EntityContext) {
-    super(ctx);
+    super(ctx, false);
     this.defineValues(EditorFacadeClickableRect, "width", "height");
   }
 
