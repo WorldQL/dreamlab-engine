@@ -20,7 +20,7 @@ import { ReceivedInitialNetworkSnapshot } from "@dreamlab/proto/common/signals.t
 export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
   let changeIgnoreSet = new Set<string>();
   let initialNetSpawnedEntityRefs = new Set<string>();
-  let initialNetSpawnedEntities: Entity[] = [];
+  let initialNetSpawnedEntities: (Entity | undefined)[] = [];
 
   game.world.on(EntityDescendantSpawned, event => {
     if (game.status !== GameStatus.Running) return;
@@ -51,7 +51,7 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
   });
 
   conn.registerPacketHandler("InitialNetworkSnapshot", async packet => {
-    const entityPromises: Promise<Entity>[] = [];
+    const entityPromises: Promise<Entity | undefined>[] = [];
     initialNetSpawnedEntityRefs = new Set<string>();
 
     for (const { root, defs } of [
@@ -66,7 +66,12 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
             initialNetSpawnedEntityRefs = initialNetSpawnedEntityRefs.union(refs);
 
             changeIgnoreSet = changeIgnoreSet.union(refs);
-            const entity = root[internal.entitySpawn](definition, { inert: true });
+            let entity: Entity | undefined;
+            try {
+              entity = root[internal.entitySpawn](definition, { inert: true });
+            } catch (err) {
+              console.warn(`spawning ${definition.name}:`, err);
+            }
             changeIgnoreSet = changeIgnoreSet.difference(refs);
             return entity;
           })(),
@@ -83,7 +88,15 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
       statusListener.unsubscribe();
 
       changeIgnoreSet = changeIgnoreSet.union(initialNetSpawnedEntityRefs);
-      for (const entity of initialNetSpawnedEntities) entity[internal.entitySpawnFinalize]();
+      for (const entity of initialNetSpawnedEntities) {
+        if (!entity) continue;
+
+        try {
+          entity[internal.entitySpawnFinalize]();
+        } catch (err) {
+          console.warn(`spawning ${entity.id}:`, err);
+        }
+      }
       changeIgnoreSet = changeIgnoreSet.difference(initialNetSpawnedEntityRefs);
 
       initialNetSpawnedEntities = [];
