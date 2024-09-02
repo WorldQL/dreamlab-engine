@@ -32,6 +32,10 @@ export class ValueRegistry extends BasicSignalHandler<ValueRegistry> {
   constructor(game: Game) {
     super();
     this.game = game;
+
+    this.on(ValueChanged, event => {
+      event.value[internal.valueApplyUpdate](event.newValue, event.clock, event.from);
+    });
   }
 
   get values(): readonly Value[] {

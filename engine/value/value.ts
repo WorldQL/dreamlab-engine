@@ -1,10 +1,9 @@
-import { SignalListener } from "../signal.ts";
-import { AdapterTypeTag, ValueTypeAdapter } from "./data.ts";
-import { ValueRegistry, ValueChanged } from "./registry.ts";
-import { ConnectionId } from "../network.ts";
-import { Entity } from "../entity/mod.ts";
 import type { ReadonlyDeep } from "@dreamlab/vendor/type-fest.ts";
+import { Entity } from "../entity/mod.ts";
 import * as internal from "../internal.ts";
+import { ConnectionId } from "../network.ts";
+import { AdapterTypeTag, ValueTypeAdapter } from "./data.ts";
+import { ValueChanged, ValueRegistry } from "./registry.ts";
 
 // prettier-ignore
 type BasicTypeTag<T> =
@@ -102,12 +101,10 @@ export class Value<T = unknown> {
         throw new Error("AdapterTypeTag was not the correct type!");
     }
 
-    this.#registry.on(ValueChanged, this.#changeListener);
     this.#registry.register(this as Value<unknown>);
   }
 
   destroy() {
-    this.#registry.unregister(ValueChanged, this.#changeListener);
     this.#registry.remove(this as Value<unknown>);
   }
 
@@ -115,13 +112,7 @@ export class Value<T = unknown> {
     this.destroy();
   }
 
-  #changeListener: SignalListener<ValueChanged> = signal => {
-    if (signal.value === this) {
-      this.#applyUpdate(signal.newValue as Value<T>["value"], signal.clock, signal.from);
-    }
-  };
-
-  #applyUpdate(
+  [internal.valueApplyUpdate](
     incomingValue: Value<T>["value"],
     incomingClock: number,
     incomingSource: ConnectionId,

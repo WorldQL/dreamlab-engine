@@ -1,4 +1,4 @@
-import { Entity, EntityRenamed, EntityResize, PixiEntity, Vector2 } from "@dreamlab/engine";
+import { EntityTransformUpdate, PixiEntity, Vector2 } from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 
 export type Label = { readonly container: PIXI.Container; readonly text: PIXI.Text };
@@ -73,7 +73,7 @@ abstract class DebugShape {
     //   this.label.text.text = this.entity.name + this.#suffix;
     // });
 
-    this.entity.on(EntityResize, () => {
+    this.entity.on(EntityTransformUpdate, () => {
       this.redraw();
     });
   }

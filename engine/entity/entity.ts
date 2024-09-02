@@ -34,16 +34,12 @@ import {
   EntityDescendantSpawned,
   EntityDestroyed,
   EntityExclusiveAuthorityChanged,
-  EntityMove,
   EntityPreUpdate,
   EntityRenamed,
   EntityReparented,
-  EntityResize,
-  EntityRotate,
   EntitySpawned,
   EntityTransformUpdate,
   EntityUpdate,
-  EntityZChanged,
 } from "../signals/mod.ts";
 import {
   AdapterTypeTag,
@@ -790,55 +786,38 @@ export abstract class Entity implements ISignalHandler {
 
   onInitialize(): void {}
 
-  #origPosition: Vector2 = new Vector2(NaN, NaN);
-  #origScale: Vector2 = new Vector2(NaN, NaN);
-  #origRotation: number = NaN;
-  #origZ: number = NaN;
-
   [internal.preTickEntities]() {
     if (!this.#spawned) return;
 
     const tr = this.globalTransform;
-    this.#prevPosition = tr.position.bare();
+    this.#prevPosition.x = tr.position.x;
+    this.#prevPosition.y = tr.position.y;
     this.#prevRotation = tr.rotation;
-    this.#prevScale = tr.scale.bare();
+    this.#prevScale.x = tr.scale.x;
+    this.#prevScale.y = tr.scale.y;
 
-    this.fire(EntityPreUpdate);
+    try {
+      this.fire(EntityPreUpdate);
+    } catch (err) {
+      console.error(err);
+    }
 
     for (const child of this.#children.values()) {
-      try {
-        child[internal.preTickEntities]();
-      } catch (err) {
-        console.error(err);
-      }
+      child[internal.preTickEntities]();
     }
   }
 
   [internal.tickEntities]() {
     if (!this.#spawned) return;
 
-    this.fire(EntityUpdate);
-
-    const tr = this.globalTransform;
-
-    if (!this.#origPosition.eq(tr.position))
-      this.fire(EntityMove, this.#origPosition, tr.position);
-    if (!this.#origScale.eq(tr.scale)) this.fire(EntityResize, this.#origScale, tr.scale);
-    if (this.#origRotation !== tr.rotation)
-      this.fire(EntityRotate, this.#origRotation, tr.rotation);
-    if (this.#origZ !== tr.z) this.fire(EntityZChanged, this.#origZ, tr.z);
-
-    this.#origPosition.assign(tr.position);
-    this.#origScale.assign(tr.scale);
-    this.#origRotation = tr.rotation;
-    this.#origZ = tr.z;
+    try {
+      this.fire(EntityUpdate);
+    } catch (err) {
+      console.error(err);
+    }
 
     for (const child of this.#children.values()) {
-      try {
-        child[internal.tickEntities]();
-      } catch (err) {
-        console.error(err);
-      }
+      child[internal.tickEntities]();
     }
   }
 
