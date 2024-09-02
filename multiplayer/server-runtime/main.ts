@@ -166,7 +166,8 @@ if (workerData.editMode) {
         ),
       );
 
-    const scene: Scene = {
+    const newScene: Scene = {
+      registration: scene.registration,
       world: [...editWorld.children.values()]
         .filter(e => !(e instanceof EditorMetadataEntity))
         .map(serializeForScene),
@@ -181,7 +182,7 @@ if (workerData.editMode) {
         .map(serializeForScene),
     };
 
-    ipc.send({ op: "SceneDefinitionResponse", sceneJson: scene });
+    ipc.send({ op: "SceneDefinitionResponse", sceneJson: newScene });
   });
 
   for (const [sceneRoot, editRoot] of [
