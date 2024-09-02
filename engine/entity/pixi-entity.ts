@@ -50,6 +50,7 @@ export abstract class PixiEntity extends Entity {
     const rot = this.interpolated.rotation;
     this.container.position.set(pos.x, -pos.y);
     this.container.rotation = -rot;
+    this.container.zIndex = this.z;
   }
 
   onInitialize() {
