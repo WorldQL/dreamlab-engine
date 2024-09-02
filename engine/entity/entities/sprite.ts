@@ -1,6 +1,7 @@
+import { EntityTransformUpdate } from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { IVector2, Vector2 } from "../../math/mod.ts";
-import { EntityDestroyed, GameRender } from "../../signals/mod.ts";
+import { EntityDestroyed } from "../../signals/mod.ts";
 import { TextureAdapter } from "../../value/adapters/texture-adapter.ts";
 import { ValueChanged } from "../../value/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
@@ -34,14 +35,11 @@ export class Sprite2D extends PixiEntity {
       PIXI.Assets.backgroundLoad(this.game.resolveResource(this.texture));
     }
 
-    this.listen(this.game, GameRender, () => {
+    this.on(EntityTransformUpdate, () => {
       if (!this.sprite) return;
-
-      // i think pixi has a bug in the `.width` and `.height` setter lol
       this.sprite.scale.set(0);
       this.sprite.width = this.width * this.globalTransform.scale.x;
       this.sprite.height = this.height * this.globalTransform.scale.y;
-      this.sprite.alpha = this.alpha;
     });
 
     const textureValue = this.values.get("texture");
@@ -55,6 +53,14 @@ export class Sprite2D extends PixiEntity {
 
       const texture = await this.#getTexture();
       this.sprite.texture = texture;
+    });
+
+    const alphaValue = this.values.get("alpha");
+    this.listen(this.game.values, ValueChanged, event => {
+      if (event.value !== alphaValue) return;
+
+      if (!this.sprite) return;
+      this.sprite.alpha = this.alpha;
     });
 
     this.on(EntityDestroyed, () => {
