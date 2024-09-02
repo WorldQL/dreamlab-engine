@@ -44,8 +44,7 @@ export const serveLogStreamingAPI = (router: Router) => {
       if (entry.message.includes("Sloppy") /* lol */) return;
       if (entry.message.includes("engine_cache")) return;
       // TODO: filter these more elegantly
-      if (entry.message.includes("_dist_play") || entry.message.startsWith("play: Bundling"))
-        return;
+      if (entry.message.startsWith("play: ")) return;
 
       try {
         socket.send(JSON.stringify({ t: "New", entry }));
