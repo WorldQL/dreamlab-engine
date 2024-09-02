@@ -45,9 +45,13 @@ export class Sprite2D extends PixiEntity {
     });
 
     const textureValue = this.values.get("texture");
+    let lastTexture: string = "";
     this.listen(this.game.values, ValueChanged, async event => {
-      if (!this.sprite) return;
       if (event.value !== textureValue) return;
+      if (this.texture === lastTexture) return;
+      lastTexture = this.texture;
+
+      if (!this.sprite) return;
 
       const texture = await this.#getTexture();
       this.sprite.texture = texture;
