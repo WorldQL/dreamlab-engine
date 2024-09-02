@@ -119,6 +119,7 @@
       font-size: 0.875rem;
       display: flex;
       gap: 1ch;
+      white-space: pre-wrap;
 
       & > *::after {
         margin-left: 1ch;
