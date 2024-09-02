@@ -83,7 +83,6 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
       statusListener.unsubscribe();
 
       changeIgnoreSet = changeIgnoreSet.union(initialNetSpawnedEntityRefs);
-      console.log(initialNetSpawnedEntities);
       for (const entity of initialNetSpawnedEntities) entity[internal.entitySpawnFinalize]();
       changeIgnoreSet = changeIgnoreSet.difference(initialNetSpawnedEntityRefs);
 
