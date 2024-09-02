@@ -1,7 +1,6 @@
 import { EntityTransformUpdate } from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { IVector2, Vector2 } from "../../math/mod.ts";
-import { EntityDestroyed } from "../../signals/mod.ts";
 import { TextureAdapter } from "../../value/adapters/texture-adapter.ts";
 import { ValueChanged } from "../../value/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
@@ -23,7 +22,10 @@ export class Sprite2D extends PixiEntity {
   texture: string = "";
   alpha: number = 1;
 
-  sprite: PIXI.Sprite | undefined;
+  #sprite: PIXI.Sprite | undefined;
+  get sprite(): PIXI.Sprite | undefined {
+    return this.#sprite;
+  }
 
   constructor(ctx: EntityContext) {
     super(ctx);
@@ -36,10 +38,10 @@ export class Sprite2D extends PixiEntity {
     }
 
     this.on(EntityTransformUpdate, () => {
-      if (!this.sprite) return;
-      this.sprite.scale.set(0);
-      this.sprite.width = this.width * this.globalTransform.scale.x;
-      this.sprite.height = this.height * this.globalTransform.scale.y;
+      if (!this.#sprite) return;
+      this.#sprite.scale.set(0);
+      this.#sprite.width = this.width * this.globalTransform.scale.x;
+      this.#sprite.height = this.height * this.globalTransform.scale.y;
     });
 
     const textureValue = this.values.get("texture");
@@ -49,22 +51,18 @@ export class Sprite2D extends PixiEntity {
       if (this.texture === lastTexture) return;
       lastTexture = this.texture;
 
-      if (!this.sprite) return;
+      if (!this.#sprite) return;
 
       const texture = await this.#getTexture();
-      this.sprite.texture = texture;
+      this.#sprite.texture = texture;
     });
 
     const alphaValue = this.values.get("alpha");
     this.listen(this.game.values, ValueChanged, event => {
       if (event.value !== alphaValue) return;
 
-      if (!this.sprite) return;
-      this.sprite.alpha = this.alpha;
-    });
-
-    this.on(EntityDestroyed, () => {
-      this.sprite?.destroy();
+      if (!this.#sprite) return;
+      this.#sprite.alpha = this.alpha;
     });
   }
 
@@ -84,13 +82,13 @@ export class Sprite2D extends PixiEntity {
     if (!this.container) return;
 
     const texture = await this.#getTexture();
-    this.sprite = new PIXI.Sprite({
+    this.#sprite = new PIXI.Sprite({
       texture,
       width: this.width * this.globalTransform.scale.x,
       height: this.height * this.globalTransform.scale.y,
       anchor: 0.5,
     });
 
-    this.container.addChild(this.sprite);
+    this.container.addChild(this.#sprite);
   }
 }

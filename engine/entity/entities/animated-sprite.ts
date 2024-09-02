@@ -1,6 +1,6 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { IVector2, Vector2 } from "../../math/mod.ts";
-import { EntityDestroyed, GameRender } from "../../signals/mod.ts";
+import { GameRender } from "../../signals/mod.ts";
 import { SpritesheetAdapter } from "../../value/adapters/texture-adapter.ts";
 import { ValueChanged } from "../../value/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
@@ -24,7 +24,10 @@ export class AnimatedSprite2D extends PixiEntity {
   speed: number = 0.1;
   loop: boolean = true;
 
-  sprite: PIXI.AnimatedSprite | undefined;
+  #sprite: PIXI.AnimatedSprite | undefined;
+  get sprite(): PIXI.AnimatedSprite | undefined {
+    return this.#sprite;
+  }
 
   constructor(ctx: EntityContext) {
     super(ctx);
@@ -37,25 +40,21 @@ export class AnimatedSprite2D extends PixiEntity {
     }
 
     this.listen(this.game, GameRender, () => {
-      if (!this.sprite) return;
+      if (!this.#sprite) return;
 
-      this.sprite.width = this.width * this.globalTransform.scale.x;
-      this.sprite.height = this.height * this.globalTransform.scale.y;
-      this.sprite.alpha = this.alpha;
+      this.#sprite.width = this.width * this.globalTransform.scale.x;
+      this.#sprite.height = this.height * this.globalTransform.scale.y;
+      this.#sprite.alpha = this.alpha;
     });
 
     const spritesheetValue = this.values.get("spritesheet");
     this.listen(this.game.values, ValueChanged, async event => {
-      if (!this.sprite) return;
+      if (!this.#sprite) return;
       if (event.value !== spritesheetValue) return;
 
       const textures = await this.#getTextures();
-      this.sprite.textures = textures;
-      this.sprite.play();
-    });
-
-    this.on(EntityDestroyed, () => {
-      this.sprite?.destroy();
+      this.#sprite.textures = textures;
+      this.#sprite.play();
     });
   }
 
@@ -75,16 +74,16 @@ export class AnimatedSprite2D extends PixiEntity {
     if (!this.container) return;
 
     const textures = await this.#getTextures();
-    this.sprite = new PIXI.AnimatedSprite(textures);
+    this.#sprite = new PIXI.AnimatedSprite(textures);
 
-    this.sprite.width = this.width * this.globalTransform.scale.x;
-    this.sprite.height = this.height * this.globalTransform.scale.y;
-    this.sprite.anchor.set(0.5);
-    this.sprite.alpha = this.alpha;
-    this.sprite.animationSpeed = this.speed;
-    this.sprite.loop = this.loop;
-    this.sprite.play();
+    this.#sprite.width = this.width * this.globalTransform.scale.x;
+    this.#sprite.height = this.height * this.globalTransform.scale.y;
+    this.#sprite.anchor.set(0.5);
+    this.#sprite.alpha = this.alpha;
+    this.#sprite.animationSpeed = this.speed;
+    this.#sprite.loop = this.loop;
+    this.#sprite.play();
 
-    this.container.addChild(this.sprite);
+    this.container.addChild(this.#sprite);
   }
 }

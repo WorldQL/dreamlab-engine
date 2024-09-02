@@ -26,7 +26,10 @@ export class TilingSprite2D extends PixiEntity {
   tileRotation: number = 0;
   tileScale: Vector2 = Vector2.ONE;
 
-  sprite: PIXI.TilingSprite | undefined;
+  #sprite: PIXI.TilingSprite | undefined;
+  get sprite(): PIXI.TilingSprite | undefined {
+    return this.#sprite;
+  }
 
   constructor(ctx: EntityContext) {
     super(ctx);
@@ -41,16 +44,16 @@ export class TilingSprite2D extends PixiEntity {
     }
 
     this.listen(this.game, GameRender, () => {
-      if (!this.sprite) return;
+      if (!this.#sprite) return;
 
-      this.sprite.width = this.width * this.globalTransform.scale.x;
-      this.sprite.height = this.height * this.globalTransform.scale.y;
-      this.sprite.alpha = this.alpha;
-      this.sprite.tilePosition = this.tilePosition;
-      this.sprite.tileRotation = this.tileRotation;
+      this.#sprite.width = this.width * this.globalTransform.scale.x;
+      this.#sprite.height = this.height * this.globalTransform.scale.y;
+      this.#sprite.alpha = this.alpha;
+      this.#sprite.tilePosition = this.tilePosition;
+      this.#sprite.tileRotation = this.tileRotation;
 
-      const texture = this.sprite.texture;
-      this.sprite.tileScale = this.tileScale.div({
+      const texture = this.#sprite.texture;
+      this.#sprite.tileScale = this.tileScale.div({
         x: texture.width / this.width,
         y: texture.height / this.height,
       });
@@ -58,15 +61,15 @@ export class TilingSprite2D extends PixiEntity {
 
     const textureValue = this.values.get("texture");
     this.listen(this.game.values, ValueChanged, async event => {
-      if (!this.sprite) return;
+      if (!this.#sprite) return;
       if (event.value !== textureValue) return;
 
       const texture = await this.#getTexture();
-      this.sprite.texture = texture;
+      this.#sprite.texture = texture;
     });
 
     this.on(EntityDestroyed, () => {
-      this.sprite?.destroy();
+      this.#sprite?.destroy();
     });
   }
 
@@ -86,19 +89,19 @@ export class TilingSprite2D extends PixiEntity {
     if (!this.container) return;
 
     const texture = await this.#getTexture();
-    this.sprite = new PIXI.TilingSprite(texture);
+    this.#sprite = new PIXI.TilingSprite(texture);
 
-    this.sprite.width = this.width * this.globalTransform.scale.x;
-    this.sprite.height = this.height * this.globalTransform.scale.y;
-    this.sprite.anchor.set(0.5);
-    this.sprite.alpha = this.alpha;
-    this.sprite.tilePosition = this.tilePosition;
-    this.sprite.tileRotation = this.tileRotation;
-    this.sprite.tileScale = this.tileScale.div({
+    this.#sprite.width = this.width * this.globalTransform.scale.x;
+    this.#sprite.height = this.height * this.globalTransform.scale.y;
+    this.#sprite.anchor.set(0.5);
+    this.#sprite.alpha = this.alpha;
+    this.#sprite.tilePosition = this.tilePosition;
+    this.#sprite.tileRotation = this.tileRotation;
+    this.#sprite.tileScale = this.tileScale.div({
       x: texture.width / this.width,
       y: texture.height / this.height,
     });
 
-    this.container.addChild(this.sprite);
+    this.container.addChild(this.#sprite);
   }
 }
