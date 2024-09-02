@@ -4,7 +4,7 @@ import { EntityDestroyed, EntityReparented, GameRender } from "../signals/mod.ts
 import { Entity, EntityContext } from "./entity.ts";
 
 export abstract class PixiEntity extends Entity {
-  public container: PIXI.Container | undefined;
+  protected container: PIXI.Container | undefined;
 
   constructor(ctx: EntityContext) {
     super(ctx);
