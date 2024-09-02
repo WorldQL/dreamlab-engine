@@ -57,22 +57,34 @@ export class BehaviorLoader {
   async loadScriptFromSource(script: string, sourceURI: string): Promise<BehaviorConstructor> {
     const url = new URL(sourceURI);
     url.searchParams.set("_engine_cache", generateCUID("cch"));
-    const module = await import(url.toString());
-    if (!("default" in module))
-      throw new Error(`Module '${script}' must have a Behavior as its default export!`);
 
-    const behaviorType = module.default;
-    if (
-      !(
-        behaviorType instanceof Function &&
-        Object.prototype.isPrototypeOf.call(Behavior, behaviorType)
-      )
-    )
-      throw new Error(`Module '${script}' must have a Behavior as its default export!`);
+    try {
+      const module = await import(url.toString());
+      if (!("default" in module)) {
+        throw new Error(`Module '${script}' must have a Behavior as its default export!`);
+      }
 
-    this.#cache.set(script, behaviorType);
-    this.#resourceLocationLookup.set(behaviorType, script);
+      const behaviorType = module.default;
+      if (
+        !(
+          behaviorType instanceof Function &&
+          Object.prototype.isPrototypeOf.call(Behavior, behaviorType)
+        )
+      ) {
+        throw new Error(`Module '${script}' must have a Behavior as its default export!`);
+      }
 
-    return behaviorType as BehaviorConstructor;
+      this.#cache.set(script, behaviorType);
+      this.#resourceLocationLookup.set(behaviorType, script);
+
+      return behaviorType as BehaviorConstructor;
+    } catch (error) {
+      if (error instanceof Error && "code" in error && error.code === "ERR_MODULE_NOT_FOUND") {
+        throw new Error(`Failed to import '${script}, module not found.'`, { cause: error });
+      }
+
+      // re-throw
+      throw error;
+    }
   }
 }
