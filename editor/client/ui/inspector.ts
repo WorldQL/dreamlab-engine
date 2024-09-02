@@ -49,7 +49,9 @@ export class InspectorUI {
     }
 
     this.gameOverlays.setup(this);
-    this.sceneGraph.setup(this);
+    if (editMode)
+      /* TODO: we need to make the scene graph not be slow when there are lots of entities (too many DOM nodes!! need virtual scrolling!) */
+      this.sceneGraph.setup(this);
     this.properties.setup(this);
     this.behaviorPanel.setup(this);
     this.contextMenu.setup(this);

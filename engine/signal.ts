@@ -60,18 +60,27 @@ export class DefaultSignalHandlerImpls {
     type: C,
     ...params: ConstructorParameters<C>
   ): S {
-    const signal = new type(...params);
+    let signal: S;
+    if (params.length === 0) {
+      // @ts-expect-error perf code
+      signal = type.__singleton;
+      if (!signal) signal = new type();
+    } else {
+      signal = new type(...params);
+    }
+
     const subscriptions = handler.signalSubscriptionMap.get(type);
     if (!subscriptions) return signal;
 
+    const len = subscriptions.length;
     if (isSignalStoppable(signal)) {
-      for (const subscription of subscriptions) {
-        subscription.listener(signal);
+      for (let i = 0; i < len; i++) {
+        subscriptions[i].listener(signal);
         if (signal.propagationStopped) break;
       }
     } else {
-      for (const subscription of subscriptions) {
-        subscription.listener(signal);
+      for (let i = 0; i < len; i++) {
+        subscriptions[i].listener(signal);
       }
     }
 
@@ -93,8 +102,15 @@ export class DefaultSignalHandlerImpls {
         if (idx !== -1) subscriptions.splice(idx, 1);
       },
     };
-    subscriptions.push(subscription as SignalSubscription);
-    subscriptions.sort((a, b) => b.priority - a.priority);
+
+    // funny splicing for performance (instead of push() and sort())
+    let idx = 0;
+    while (idx < subscriptions.length) {
+      if (subscriptions[idx].priority > priority) break;
+      idx++;
+    }
+    subscriptions.splice(idx, 0, subscription as SignalSubscription);
+
     handler.signalSubscriptionMap.set(type, subscriptions);
     return subscription;
   }

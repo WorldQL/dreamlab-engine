@@ -5,10 +5,12 @@ import { ConnectionId } from "../network.ts";
 import { exclusiveSignalType } from "../signal.ts";
 
 export class EntityPreUpdate {
+  static __singleton = new this();
   [exclusiveSignalType] = Entity;
 }
 
 export class EntityUpdate {
+  static __singleton = new this();
   [exclusiveSignalType] = Entity;
 }
 
