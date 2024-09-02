@@ -12,11 +12,12 @@ export abstract class PixiEntity extends Entity {
     this.on(EntityReparented, () => {
       if (!this.container) return;
 
+      // cull pixi container if in prefabs tree
       const visible = this.root !== this.game.prefabs;
       this.container.visible = visible;
     });
 
-    this.renderStatic = false;
+    this.static = false;
 
     this.on(EntityDestroyed, () => {
       this.container?.destroy({ children: true });
@@ -28,22 +29,22 @@ export abstract class PixiEntity extends Entity {
   // so we can save on a whole frame event listener when static is set to true.
   // with 10,000 static sprites on firefox 130b9 this takes me from 50fps to 140fps
   #gameRenderListener: SignalSubscription<GameRender> | undefined;
-  get renderStatic() {
+  get static(): boolean {
     return this.#gameRenderListener !== undefined;
   }
-  set renderStatic(value) {
+  set static(value: boolean) {
     this.#gameRenderListener?.unsubscribe();
     this.#gameRenderListener = undefined;
 
     if (!value) {
       this.#gameRenderListener = this.game.on(GameRender, () => {
-        this.updateContainerPosition();
+        this.#updateContainerPosition();
       });
       this.externalListeners.push(this.#gameRenderListener);
     }
   }
 
-  updateContainerPosition() {
+  #updateContainerPosition() {
     if (!this.container) return;
 
     const pos = this.interpolated.position;
@@ -59,6 +60,6 @@ export abstract class PixiEntity extends Entity {
     this.container = new PIXI.Container();
     this.game.renderer.scene.addChild(this.container);
 
-    this.updateContainerPosition();
+    this.#updateContainerPosition();
   }
 }

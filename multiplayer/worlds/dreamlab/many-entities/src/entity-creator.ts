@@ -70,7 +70,7 @@ export default class EntityCreator extends Behavior {
       this.listen(this.entity._.EntityContainer, EntityChildSpawned, ({ child }) => {
         if (child instanceof Sprite2D) {
           // comment this out for an fps dip:
-          child.renderStatic = true;
+          child.static = true;
         }
       });
     }
