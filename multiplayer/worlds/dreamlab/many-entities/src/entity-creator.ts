@@ -7,6 +7,18 @@ const zFill = (n: number, width: number) => {
   return str;
 };
 
+const textures = [
+  "https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u2764.png",
+  "https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f9e1.png",
+  "https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f49b.png",
+  "https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f49a.png",
+  "https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1fa75.png",
+  "https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f499.png",
+  "https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f49c.png",
+  "https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1fa77.png",
+  "https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f90d.png",
+];
+
 export default class EntityCreator extends Behavior {
   width = 50;
   height = 50;
@@ -25,9 +37,10 @@ export default class EntityCreator extends Behavior {
               name: `${zFill(x, 3)}_${zFill(y, 3)}`,
               transform: {
                 position: { x: x * 2.5, y: y * 2.5 },
+                scale: { x: 2, y: 2 },
               },
               values: {
-                texture: "",
+                texture: textures[Math.floor(Math.random() * textures.length)],
               },
               behaviors: [
                 {
