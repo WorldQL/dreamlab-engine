@@ -55,6 +55,14 @@ export default class EntityCreator extends Behavior {
         }
 
         console.log("done!");
+
+        // value update stress test
+        setInterval(() => {
+          for (const sprite of this.entity._.EntityContainer.children.values()) {
+            sprite.cast(Sprite2D).texture =
+              textures[Math.floor(Math.random() * textures.length)];
+          }
+        }, 5000);
       }, 2000);
     }
 
