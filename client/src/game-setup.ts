@@ -69,7 +69,11 @@ export const setupGame = async (
   conn.send({ t: "LoadPhaseChanged", phase: "loaded" });
   game.setStatus(GameStatus.LoadingFinished);
   for (const entity of localSpawnedEntities) {
-    entity[internal.entitySpawnFinalize]();
+    try {
+      entity[internal.entitySpawnFinalize]();
+    } catch (err) {
+      console.warn(`spawning ${entity.id}:`, err);
+    }
   }
 
   game.setStatus(GameStatus.Running);
