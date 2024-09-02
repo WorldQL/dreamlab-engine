@@ -1,7 +1,7 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { SignalSubscription } from "../signal.ts";
 import { EntityDestroyed, EntityReparented, GameRender } from "../signals/mod.ts";
-import { Entity, EntityContext } from "./entity.ts";
+import { Entity, EntityConstructor, EntityContext } from "./entity.ts";
 
 export abstract class PixiEntity extends Entity {
   protected container: PIXI.Container | undefined;
@@ -17,7 +17,16 @@ export abstract class PixiEntity extends Entity {
       this.container.visible = visible;
     });
 
-    this.static = false;
+    this.defineValues(this.constructor as EntityConstructor<PixiEntity>, "static");
+
+    // force add the render listener if not static lmao
+    if (!this.static) {
+      this.#gameRenderListener = this.game.on(GameRender, () => {
+        this.#updateContainerPosition();
+      });
+
+      this.externalListeners.push(this.#gameRenderListener);
+    }
 
     this.on(EntityDestroyed, () => {
       this.container?.destroy({ children: true });
@@ -40,6 +49,7 @@ export abstract class PixiEntity extends Entity {
       this.#gameRenderListener = this.game.on(GameRender, () => {
         this.#updateContainerPosition();
       });
+
       this.externalListeners.push(this.#gameRenderListener);
     }
   }
