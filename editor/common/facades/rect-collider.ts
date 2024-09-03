@@ -1,24 +1,24 @@
-import { Entity, EntityContext, IVector2, PixiEntity, RectCollider2D } from "@dreamlab/engine";
+import { Entity, EntityContext, IVector2, PixiEntity, RectCollider } from "@dreamlab/engine";
 import { EnsureCompatible, EntityValueProps } from "./_compatibility.ts";
 import { DebugSquare } from "./_debug.ts";
 import { Facades } from "./manager.ts";
 
-export class EditorFacadeRectCollider2D extends PixiEntity {
+export class EditorFacadeRectCollider extends PixiEntity {
   static {
     Entity.registerType(this, "@editor");
-    Facades.register(RectCollider2D, this);
+    Facades.register(RectCollider, this);
   }
 
   isSensor: boolean = false;
 
-  static readonly icon = RectCollider2D.icon;
+  static readonly icon = RectCollider.icon;
   get bounds(): Readonly<IVector2> | undefined {
     return { x: 1, y: 1 };
   }
 
   constructor(ctx: EntityContext) {
     super(ctx, false);
-    this.defineValues(EditorFacadeRectCollider2D, "isSensor");
+    this.defineValues(EditorFacadeRectCollider, "isSensor");
   }
 
   #debug: DebugSquare | undefined;
@@ -32,6 +32,6 @@ export class EditorFacadeRectCollider2D extends PixiEntity {
 }
 
 type _HasAllValues = EnsureCompatible<
-  Omit<EntityValueProps<RectCollider2D>, "collider">,
-  EntityValueProps<EditorFacadeRectCollider2D>
+  Omit<EntityValueProps<RectCollider>, "collider">,
+  EntityValueProps<EditorFacadeRectCollider>
 >;

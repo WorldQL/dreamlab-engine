@@ -15,7 +15,7 @@ const rigidbodyTypes = [
 
 const RigidbodyTypeAdapter = enumAdapter(rigidbodyTypes);
 
-export class Rigidbody2D extends Entity {
+export class Rigidbody extends Entity {
   static {
     Entity.registerType(this, "@core");
   }
@@ -45,7 +45,7 @@ export class Rigidbody2D extends Entity {
   constructor(ctx: EntityContext) {
     super(ctx);
 
-    this.defineValue(Rigidbody2D, "type", { type: RigidbodyTypeAdapter });
+    this.defineValue(Rigidbody, "type", { type: RigidbodyTypeAdapter });
 
     this.#initializeBody();
 

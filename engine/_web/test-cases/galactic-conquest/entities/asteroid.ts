@@ -1,5 +1,5 @@
 import { Behavior, BehaviorContext } from "../../../../behavior/mod.ts";
-import { Entity, Sprite2D, Rigidbody2D } from "../../../../entity/mod.ts";
+import { Entity, Rigidbody2D, Sprite } from "../../../../entity/mod.ts";
 import { Vector2 } from "../../../../math/mod.ts";
 import { EntityCollision } from "../../../../signals/mod.ts";
 import { HealthBar } from "../behaviors/health-bar.ts";
@@ -59,7 +59,7 @@ const prefabAsteroid = game.prefabs.spawn({
   values: { type: "fixed" },
   children: [
     {
-      type: Sprite2D,
+      type: Sprite,
       name: "AsteroidSprite",
       values: { texture: "https://files.codedred.dev/asteroid.png" },
     },

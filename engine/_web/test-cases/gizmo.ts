@@ -1,7 +1,7 @@
-import { Gizmo, Sprite2D } from "../../entity/mod.ts";
+import { Gizmo, Sprite } from "../../entity/mod.ts";
 
 export const sprite = game.world.spawn({
-  type: Sprite2D,
+  type: Sprite,
   name: "WASD",
 });
 

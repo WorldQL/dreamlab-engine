@@ -3,7 +3,7 @@ import {
   Entity,
   EntityCollision,
   Rigidbody2D,
-  Sprite2D,
+  Sprite,
   UILayer,
 } from "@dreamlab/engine";
 import BulletBehavior from "./bullet.ts";
@@ -236,7 +236,7 @@ export default class PlayerBehavior extends Behavior {
       values: { type: "fixed" },
       children: [
         {
-          type: Sprite2D,
+          type: Sprite,
           name: "BulletSprite",
         },
       ],

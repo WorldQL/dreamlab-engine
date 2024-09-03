@@ -5,7 +5,7 @@ import { SpritesheetAdapter } from "../../value/adapters/texture-adapter.ts";
 import { Entity, EntityContext } from "../entity.ts";
 import { PixiEntity } from "../pixi-entity.ts";
 
-export class AnimatedSprite2D extends PixiEntity {
+export class AnimatedSprite extends PixiEntity {
   static {
     Entity.registerType(this, "@core");
   }
@@ -31,8 +31,8 @@ export class AnimatedSprite2D extends PixiEntity {
   constructor(ctx: EntityContext) {
     super(ctx);
 
-    this.defineValues(AnimatedSprite2D, "width", "height", "alpha", "speed", "loop");
-    this.defineValue(AnimatedSprite2D, "spritesheet", { type: SpritesheetAdapter });
+    this.defineValues(AnimatedSprite, "width", "height", "alpha", "speed", "loop");
+    this.defineValue(AnimatedSprite, "spritesheet", { type: SpritesheetAdapter });
 
     if (this.game.isClient() && this.spritesheet !== "") {
       PIXI.Assets.backgroundLoad(this.game.resolveResource(this.spritesheet));

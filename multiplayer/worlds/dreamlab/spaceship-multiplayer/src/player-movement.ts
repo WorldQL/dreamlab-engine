@@ -58,7 +58,7 @@ export default class PlayerMovement extends Behavior {
 
     const cursorPos = this.inputs.cursor.world;
     if (!cursorPos) return;
-    this.entity._.Sprite2D.globalTransform.rotation = this.entity.pos.lookAt(cursorPos);
+    this.entity._.Sprite.globalTransform.rotation = this.entity.pos.lookAt(cursorPos);
 
     if (this.#controller) {
       this.#controller.controller.computeColliderMovement(this.#controller.collider, velocity);

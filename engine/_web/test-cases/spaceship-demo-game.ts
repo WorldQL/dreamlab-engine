@@ -6,8 +6,8 @@ import {
   Camera,
   Entity,
   Rigidbody2D,
-  Sprite2D,
-  TilingSprite2D,
+  Sprite,
+  TilingSprite,
   UILayer,
 } from "../../entity/mod.ts";
 import { Vector2 } from "../../math/mod.ts";
@@ -33,7 +33,7 @@ class HealthBar extends Behavior {
 
   onInitialize(): void {
     this.healthBar = this.entity.game.world.spawn({
-      type: Sprite2D,
+      type: Sprite,
       name: "HealthBar",
       transform: { position: { x: 0, y: 1 }, scale: { x: 1, y: 0.1 } },
       values: { texture: "https://files.codedred.dev/healthbar.png" },
@@ -80,7 +80,7 @@ class HealthBar extends Behavior {
         behaviors: [{ type: ExplosionPieceBehavior }],
         children: [
           {
-            type: Sprite2D,
+            type: Sprite,
             name: "PieceSprite",
             values: { texture: "https://files.codedred.dev/asteroid.png" },
           },
@@ -264,7 +264,7 @@ function spawnPowerUp() {
     values: { type: "fixed" },
     children: [
       {
-        type: Sprite2D,
+        type: Sprite,
         name: "PowerUpSprite",
         values: { texture: powerUpTextures },
       },
@@ -318,7 +318,7 @@ class Shield extends Behavior {
     this.#shieldActive = true;
     this.entity.getBehavior(PlayerBehavior).invincible = true;
     this.#shieldEffect = this.entity.game.world.spawn({
-      type: Sprite2D,
+      type: Sprite,
       name: "ShieldEffect",
       transform: {
         position: this.entity.transform.position.clone(),
@@ -391,7 +391,7 @@ class Supercharge extends Behavior {
     playerBehavior.fireRateMultiplier = 10;
 
     this.#superchargeEffect = this.entity.game.world.spawn({
-      type: Sprite2D,
+      type: Sprite,
       name: "SuperchargeEffect",
       transform: {
         position: this.entity.transform.position.clone(),
@@ -801,7 +801,7 @@ const prefabAsteroid = game.prefabs.spawn({
   values: { type: "fixed" },
   children: [
     {
-      type: Sprite2D,
+      type: Sprite,
       name: "AsteroidSprite",
       values: { texture: "https://files.codedred.dev/asteroid.png" },
     },
@@ -891,7 +891,7 @@ class EnemyMovement extends Behavior {
       values: { type: "fixed" },
       children: [
         {
-          type: Sprite2D,
+          type: Sprite,
           name: "BulletSprite",
           transform: {
             scale: { x: 0.75, y: 0.75 },
@@ -961,7 +961,7 @@ const prefabEnemy = game.prefabs.spawn({
   values: { type: "fixed" },
   children: [
     {
-      type: Sprite2D,
+      type: Sprite,
       name: "EnemySprite",
       values: { texture: "https://files.codedred.dev/enemy.png" },
     },
@@ -990,7 +990,7 @@ setInterval(spawnEnemy, Math.random() * 3000 + 3000);
 
 // #region Background
 export const background = game.local.spawn({
-  type: TilingSprite2D,
+  type: TilingSprite,
   name: "Background",
   values: {
     texture: "https://files.lulu.dev/ydQdgTIPWW73.png",
@@ -1218,7 +1218,7 @@ class PlayerBehavior extends Behavior {
       values: { type: "fixed" },
       children: [
         {
-          type: Sprite2D,
+          type: Sprite,
           name: "BulletSprite",
         },
       ],
@@ -1265,7 +1265,7 @@ function spawnPlayer() {
     values: { type: "fixed" },
     children: [
       {
-        type: Sprite2D,
+        type: Sprite,
         name: "PlayerSprite",
         values: { texture: "https://files.codedred.dev/spaceship.png" },
       },
@@ -1600,7 +1600,7 @@ function createMapBorder(width: number, height: number) {
       values: { type: "fixed" },
       children: [
         {
-          type: TilingSprite2D,
+          type: TilingSprite,
           name: "BorderSprite",
           values: {
             texture: "https://files.codedred.dev/asteroid-belt.png", // TODO: improve border design

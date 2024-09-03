@@ -3,7 +3,7 @@ import { IVector2, Vector2 } from "../../math/mod.ts";
 import { EntityDestroyed } from "../../signals/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
 
-export class RectCollider2D extends Entity {
+export class RectCollider extends Entity {
   static {
     Entity.registerType(this, "@core");
   }
@@ -25,7 +25,7 @@ export class RectCollider2D extends Entity {
 
   constructor(ctx: EntityContext) {
     super(ctx);
-    this.defineValue(RectCollider2D, "isSensor");
+    this.defineValue(RectCollider, "isSensor");
 
     if (this.root !== this.game.prefabs) {
       const desc = RAPIER.ColliderDesc.cuboid(

@@ -1,17 +1,24 @@
-import { Behavior, BehaviorContext, Empty, Entity, EntityDestroyed, Sprite2D, Vector2 } from "@dreamlab/engine";
+import {
+  Behavior,
+  BehaviorContext,
+  Empty,
+  Entity,
+  EntityDestroyed,
+  Sprite,
+  Vector2,
+} from "@dreamlab/engine";
 
 export default class HealthBar extends Behavior {
   maxHealth: number = 100;
   currentHealth: number = 100;
   healthBar!: Entity;
 
-
   onInitialize(): void {
-    console.trace('I AM BEING CALLED TWICE')
+    console.trace("I AM BEING CALLED TWICE");
     // this.defineValues(HealthBar, "maxHealth", "currentHealth");
 
     this.healthBar = this.entity.game.world.spawn({
-      type: Sprite2D,
+      type: Sprite,
       name: "HealthBar",
       transform: { position: { x: 0, y: 1 }, scale: { x: 1, y: 0.1 } },
       values: { texture: "https://files.codedred.dev/healthbar.png" },
@@ -46,10 +53,9 @@ export default class HealthBar extends Behavior {
   spawnExplosionPieces(): void {
     // const pieceCount = Math.random() * 5 + 3;
     // const pieceSize = { x: 0.15, y: 0.15 };
-
     // for (let i = 0; i < pieceCount; i++) {
     //   this.entity.game.local?.spawn({
-    //     type: Sprite2D,
+    //     type: Sprite,
     //     name: "ExplosionPiece",
     //     transform: {
     //       position: this.entity.transform.position.clone(),

@@ -1,4 +1,4 @@
-import { Behavior, Entity, EntityCollision, RectCollider2D, Sprite2D } from "@dreamlab/engine";
+import { Behavior, Entity, EntityCollision, RectCollider2D, Sprite } from "@dreamlab/engine";
 import BulletBehavior from "./bullet-behavior.ts";
 import HealthBar from "./health.ts";
 
@@ -96,7 +96,7 @@ export default class EnemyMovement extends Behavior {
       behaviors: [{ type: BulletBehavior, values: { speed: 0.01 } }],
       children: [
         {
-          type: Sprite2D,
+          type: Sprite,
           name: "BulletSprite",
           transform: {
             scale: { x: 0.75, y: 0.75 },

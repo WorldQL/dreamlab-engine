@@ -1,49 +1,49 @@
 import {
   Behavior,
   EntityDestroyed,
-  RectCollider2D,
+  RectCollider,
   Rigidbody2D,
-  Sprite2D,
+  Sprite,
   Vector2,
 } from "@dreamlab/engine";
 import { KinematicCharacterController } from "@dreamlab/vendor/rapier.ts";
 
 game.world.spawn({
-  type: RectCollider2D,
+  type: RectCollider,
   name: "WallTop",
   transform: { position: { y: 5 }, scale: { x: 10, y: 0.2 } },
-  children: [{ type: Sprite2D, name: Sprite2D.name }],
+  children: [{ type: Sprite, name: Sprite.name }],
 });
 
 game.world.spawn({
-  type: RectCollider2D,
+  type: RectCollider,
   name: "WallBottom",
   transform: { position: { y: -5 }, scale: { x: 10, y: 0.2 } },
-  children: [{ type: Sprite2D, name: Sprite2D.name }],
+  children: [{ type: Sprite, name: Sprite.name }],
 });
 
 game.world.spawn({
-  type: RectCollider2D,
+  type: RectCollider,
   name: "WallLeft",
   transform: { position: { x: -5 }, scale: { x: 0.2, y: 10 } },
-  children: [{ type: Sprite2D, name: Sprite2D.name }],
+  children: [{ type: Sprite, name: Sprite.name }],
 });
 
 game.world.spawn({
-  type: RectCollider2D,
+  type: RectCollider,
   name: "WallRight",
   transform: { position: { x: 5 }, scale: { x: 0.2, y: 10 } },
-  children: [{ type: Sprite2D, name: Sprite2D.name }],
+  children: [{ type: Sprite, name: Sprite.name }],
 });
 
 game.world.spawn({
-  type: RectCollider2D,
+  type: RectCollider,
   name: "RandomBlock",
   transform: {
     position: { x: Math.random() * 10 - 5, y: Math.random() * 10 - 5 },
     scale: { x: 0.2, y: 0.2 },
   },
-  children: [{ type: Sprite2D, name: Sprite2D.name }],
+  children: [{ type: Sprite, name: Sprite.name }],
 });
 
 class Movement extends Behavior {
@@ -108,7 +108,7 @@ export const player = game.local.spawn({
   name: "Player",
   behaviors: [{ type: Movement }],
   children: [
-    { type: Sprite2D, name: Sprite2D.name, values: { texture: "https://lulu.dev/avatar.png" } },
+    { type: Sprite, name: Sprite.name, values: { texture: "https://lulu.dev/avatar.png" } },
   ],
   transform: { scale: { x: 2 } },
 });

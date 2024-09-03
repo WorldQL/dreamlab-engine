@@ -1,8 +1,8 @@
-import { Click, ClickableRect, MouseOut, MouseOver, Sprite2D } from "../../mod.ts";
+import { Click, ClickableRect, MouseOut, MouseOver, Sprite } from "../../mod.ts";
 import { slider } from "../debug.ts";
 
 export const sprite = game.world.spawn({
-  type: Sprite2D,
+  type: Sprite,
   name: "WASD",
   children: [{ type: ClickableRect, name: "ClickRegion" }],
 });

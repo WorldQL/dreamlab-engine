@@ -1,4 +1,4 @@
-import { Behavior, Rigidbody2D, Sprite2D } from "@dreamlab/engine";
+import { Behavior, Rigidbody2D, Sprite } from "@dreamlab/engine";
 import BulletBehavior from "./bullet.ts";
 
 export default class EnemyMovement extends Behavior {
@@ -53,7 +53,7 @@ export default class EnemyMovement extends Behavior {
       values: { type: "fixed" },
       children: [
         {
-          type: Sprite2D,
+          type: Sprite,
           name: "BulletSprite",
           transform: {
             scale: { x: 0.75, y: 0.75 },

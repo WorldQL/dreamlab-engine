@@ -1,5 +1,5 @@
 import { Behavior, BehaviorContext } from "../../../../behavior/mod.ts";
-import { Entity, Sprite2D } from "../../../../entity/mod.ts";
+import { Entity, Sprite } from "../../../../entity/mod.ts";
 import { GamePostRender } from "../../../../signals/mod.ts";
 import { PlayerBehavior } from "../entities/player.ts";
 import { PlayerUI } from "../ui/player-ui.ts";
@@ -31,7 +31,7 @@ export class Shield extends Behavior {
     this.#shieldActive = true;
     this.entity.getBehavior(PlayerBehavior).invincible = true;
     this.#shieldEffect = this.entity.game.world.spawn({
-      type: Sprite2D,
+      type: Sprite,
       name: "ShieldEffect",
       transform: {
         position: this.entity.transform.position.clone(),

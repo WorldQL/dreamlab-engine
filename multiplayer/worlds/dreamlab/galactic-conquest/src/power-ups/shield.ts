@@ -1,4 +1,4 @@
-import { Behavior, BehaviorContext, Entity, Sprite2D } from "@dreamlab/engine";
+import { Behavior, BehaviorContext, Entity, Sprite } from "@dreamlab/engine";
 import PlayerBehavior from "../player.ts";
 import PlayerUI from "../ui/player-ui.ts";
 
@@ -29,7 +29,7 @@ export default class Shield extends Behavior {
     this.#shieldActive = true;
     this.entity.getBehavior(PlayerBehavior).invincible = true;
     this.#shieldEffect = this.entity.game.world.spawn({
-      type: Sprite2D,
+      type: Sprite,
       name: "ShieldEffect",
       transform: {
         position: this.entity.transform.position.clone(),

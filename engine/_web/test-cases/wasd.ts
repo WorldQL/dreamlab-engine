@@ -1,9 +1,9 @@
 import WASDMovementBehavior from "../../behavior/behaviors/wasd-movement-behavior.ts";
-import { Sprite2D } from "../../mod.ts";
+import { Sprite } from "../../mod.ts";
 import { slider } from "../debug.ts";
 
 export const sprite = game.world.spawn({
-  type: Sprite2D,
+  type: Sprite,
   name: "WASD",
   behaviors: [{ type: WASDMovementBehavior }],
 });

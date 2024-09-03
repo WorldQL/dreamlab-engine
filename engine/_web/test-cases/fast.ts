@@ -1,14 +1,7 @@
-import {
-  GamePostRender,
-  GamePreRender,
-  GameRender,
-  GameTick,
-  Sprite2D,
-  Vector2,
-} from "../../mod.ts";
+import { GamePostRender, GameTick, Sprite, Vector2 } from "../../mod.ts";
 
 export const sprite = game.local.spawn({
-  type: Sprite2D,
+  type: Sprite,
   name: "sprite",
   values: { texture: "https://lulu.dev/avatar.png" },
 });

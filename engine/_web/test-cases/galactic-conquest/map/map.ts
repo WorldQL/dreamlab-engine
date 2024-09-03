@@ -1,4 +1,4 @@
-import { TilingSprite2D, Rigidbody2D } from "../../../../entity/mod.ts";
+import { Rigidbody2D, TilingSprite } from "../../../../entity/mod.ts";
 import { Vector2 } from "../../../../math/mod.ts";
 
 export const MAP_BOUNDARY = 500;
@@ -42,7 +42,7 @@ export function createMapBorder(width: number, height: number) {
       values: { type: "fixed" },
       children: [
         {
-          type: TilingSprite2D,
+          type: TilingSprite,
           name: "BorderSprite",
           values: {
             texture: "https://files.codedred.dev/asteroid-belt.png", // TODO: improve border design

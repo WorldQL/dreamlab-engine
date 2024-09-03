@@ -1,5 +1,5 @@
 import { Behavior } from "../../../../behavior/mod.ts";
-import { Empty, Entity, Sprite2D, Rigidbody2D, UILayer } from "../../../../entity/mod.ts";
+import { Empty, Entity, Rigidbody2D, Sprite, UILayer } from "../../../../entity/mod.ts";
 import { EntityCollision } from "../../../../signals/mod.ts";
 import { HealthBar } from "../behaviors/health-bar.ts";
 import { CameraFollow, LookAtMouse, Movement } from "../behaviors/movement.ts";
@@ -152,7 +152,7 @@ export function spawnPlayer() {
     children: [
       { type: Empty, name: "CameraTarget", transform: { position: { x: 0, y: 1 } } },
       {
-        type: Sprite2D,
+        type: Sprite,
         name: "PlayerSprite",
         values: { texture: "https://files.codedred.dev/spaceship.png" },
       },

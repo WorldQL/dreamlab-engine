@@ -5,13 +5,11 @@
   },
   "scenes": {
     "main": {
-      "registration": [
-        "res://src/entities/inert-entity.js"
-      ],
+      "registration": ["res://src/entities/inert-entity.js"],
       "world": [
         {
-          "type": "@core/Sprite2D",
-          "name": "Sprite2D",
+          "type": "@core/Sprite",
+          "name": "Sprite",
           "values": {
             "static": false,
             "hidden": false,

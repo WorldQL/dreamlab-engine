@@ -4,7 +4,7 @@ import {
   Entity,
   GamePostTick,
   Rigidbody2D,
-  Sprite2D,
+  Sprite,
   Vector2,
 } from "@dreamlab/engine";
 import ExplosionPieceBehavior from "./explosion-piece.ts";
@@ -21,7 +21,7 @@ export default class HealthBar extends Behavior {
 
   onInitialize(): void {
     this.healthBarEntity = this.game.world.spawn({
-      type: Sprite2D,
+      type: Sprite,
       name: "HealthBar",
       transform: { position: { x: 0, y: 1 }, scale: { x: 1, y: 0.1 } },
       values: { texture: "res://assets/healthbar.png" },
@@ -65,7 +65,7 @@ export default class HealthBar extends Behavior {
         behaviors: [{ type: ExplosionPieceBehavior }],
         children: [
           {
-            type: Sprite2D,
+            type: Sprite,
             name: "PieceSprite",
             values: { texture: "res://assets/asteroid.png" },
           },

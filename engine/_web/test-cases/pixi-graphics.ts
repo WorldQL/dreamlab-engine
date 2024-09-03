@@ -1,7 +1,7 @@
-import { Behavior, RawGraphics2D, Sprite2D } from "@dreamlab/engine";
+import { Behavior, RawGraphics, Sprite } from "@dreamlab/engine";
 
 class DrawSmileyBehavior extends Behavior {
-  #canvas = this.entity.cast(RawGraphics2D);
+  #canvas = this.entity.cast(RawGraphics);
 
   onInitialize(): void {
     this.#draw();
@@ -16,14 +16,14 @@ class DrawSmileyBehavior extends Behavior {
 }
 
 export const canvas = game.world.spawn({
-  type: RawGraphics2D,
-  name: RawGraphics2D.name,
+  type: RawGraphics,
+  name: RawGraphics.name,
   behaviors: [{ type: DrawSmileyBehavior }],
 });
 
 // size reference
 export const sprite = game.world.spawn({
-  type: Sprite2D,
-  name: Sprite2D.name,
+  type: Sprite,
+  name: Sprite.name,
   values: { texture: "https://lulu.dev/avatar.png", width: 2, height: 2 },
 });

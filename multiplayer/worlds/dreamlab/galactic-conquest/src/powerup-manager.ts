@@ -1,4 +1,4 @@
-import { Behavior, Rigidbody2D, Sprite2D } from "@dreamlab/engine";
+import { Behavior, Rigidbody2D, Sprite } from "@dreamlab/engine";
 import { MAP_BOUNDARY } from "./_constants.ts";
 import GoldAsteroidBehavior from "./power-ups/gold-asteroid.ts";
 import { PowerUpType } from "./power-ups/mod.ts";
@@ -27,7 +27,7 @@ export default class PowerUpManager extends Behavior {
       values: { type: "fixed" },
       children: [
         {
-          type: Sprite2D,
+          type: Sprite,
           name: "PowerUpSprite",
           values: { texture: powerUpTextures },
         },

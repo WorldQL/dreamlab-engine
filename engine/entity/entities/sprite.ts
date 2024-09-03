@@ -5,7 +5,7 @@ import { TextureAdapter } from "../../value/adapters/texture-adapter.ts";
 import { Entity, EntityContext } from "../entity.ts";
 import { PixiEntity } from "../pixi-entity.ts";
 
-export class Sprite2D extends PixiEntity {
+export class Sprite extends PixiEntity {
   static {
     Entity.registerType(this, "@core");
   }
@@ -29,8 +29,8 @@ export class Sprite2D extends PixiEntity {
   constructor(ctx: EntityContext) {
     super(ctx);
 
-    this.defineValues(Sprite2D, "width", "height", "alpha");
-    this.defineValue(Sprite2D, "texture", { type: TextureAdapter });
+    this.defineValues(Sprite, "width", "height", "alpha");
+    this.defineValue(Sprite, "texture", { type: TextureAdapter });
 
     if (this.game.isClient() && this.texture !== "") {
       // PIXI.Assets.backgroundLoad(this.game.resolveResource(this.texture));

@@ -1,5 +1,5 @@
 import { Behavior } from "../../../../behavior/mod.ts";
-import { Entity, Sprite2D, Rigidbody2D } from "../../../../entity/mod.ts";
+import { Entity, Rigidbody2D, Sprite } from "../../../../entity/mod.ts";
 import { Vector2 } from "../../../../math/mod.ts";
 import { GamePostRender } from "../../../../signals/mod.ts";
 import { ExplosionPieceBehavior } from "../entities/enemy.ts";
@@ -14,7 +14,7 @@ export class HealthBar extends Behavior {
     this.currentHealth = maxHealth;
 
     this.healthBar = this.entity.game.world.spawn({
-      type: Sprite2D,
+      type: Sprite,
       name: "HealthBar",
       transform: { position: { x: 0, y: 1 }, scale: { x: 1, y: 0.1 } },
       values: { texture: "https://files.codedred.dev/healthbar.png" },
@@ -57,7 +57,7 @@ export class HealthBar extends Behavior {
         behaviors: [{ type: ExplosionPieceBehavior }],
         children: [
           {
-            type: Sprite2D,
+            type: Sprite,
             name: "PieceSprite",
             values: { texture: "https://files.codedred.dev/asteroid.png" },
           },

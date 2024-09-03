@@ -1,4 +1,4 @@
-import { Behavior, EntityChildSpawned, Sprite2D } from "@dreamlab/engine";
+import { Behavior, EntityChildSpawned, Sprite } from "@dreamlab/engine";
 import DummyBehavior from "./dummy-behavior.ts";
 
 const zFill = (n: number, width: number) => {
@@ -33,7 +33,7 @@ export default class EntityCreator extends Behavior {
         for (let x = 0; x < this.width; x++) {
           for (let y = 0; y < this.height; y++) {
             this.entity._.Empty.spawn({
-              type: Sprite2D,
+              type: Sprite,
               name: `${zFill(x, 3)}_${zFill(y, 3)}`,
               transform: {
                 position: { x: x * 2.5, y: y * 2.5 },
@@ -59,8 +59,7 @@ export default class EntityCreator extends Behavior {
         // value update stress test
         setInterval(() => {
           for (const sprite of this.entity._.EntityContainer.children.values()) {
-            sprite.cast(Sprite2D).texture =
-              textures[Math.floor(Math.random() * textures.length)];
+            sprite.cast(Sprite).texture = textures[Math.floor(Math.random() * textures.length)];
           }
         }, 5000);
       }, 2000);
@@ -68,7 +67,7 @@ export default class EntityCreator extends Behavior {
 
     if (this.game.isClient()) {
       this.listen(this.entity._.EntityContainer, EntityChildSpawned, ({ child }) => {
-        if (child instanceof Sprite2D) {
+        if (child instanceof Sprite) {
           // comment this out for an fps dip:
           child.static = true;
         }

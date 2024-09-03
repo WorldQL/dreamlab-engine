@@ -1,5 +1,5 @@
 import { Behavior } from "../../../../behavior/mod.ts";
-import { Entity, Sprite2D, Rigidbody2D } from "../../../../entity/mod.ts";
+import { Entity, Rigidbody2D, Sprite } from "../../../../entity/mod.ts";
 import { Vector2 } from "../../../../math/mod.ts";
 import { EntityCollision } from "../../../../signals/mod.ts";
 import { HealthBar } from "../behaviors/health-bar.ts";
@@ -59,7 +59,7 @@ export class EnemyMovement extends Behavior {
       values: { type: "fixed" },
       children: [
         {
-          type: Sprite2D,
+          type: Sprite,
           name: "BulletSprite",
           transform: {
             scale: { x: 0.5, y: 0.5 },
@@ -128,7 +128,7 @@ const prefabEnemy = game.prefabs.spawn({
   values: { type: "fixed" },
   children: [
     {
-      type: Sprite2D,
+      type: Sprite,
       name: "EnemySprite",
       values: { texture: "https://files.codedred.dev/enemy.png" },
     },

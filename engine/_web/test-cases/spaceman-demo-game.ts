@@ -4,8 +4,8 @@ import {
   Empty,
   Entity,
   Rigidbody2D,
-  Sprite2D,
-  TilingSprite2D,
+  Sprite,
+  TilingSprite,
   UILayer,
 } from "../../entity/mod.ts";
 import { Vector2 } from "../../math/mod.ts";
@@ -322,7 +322,7 @@ class LargePlatform extends Behavior {
 
 // #region Background
 export const background = game.local.spawn({
-  type: TilingSprite2D,
+  type: TilingSprite,
   name: "Background",
   values: {
     texture: "https://files.lulu.dev/ydQdgTIPWW73.png",
@@ -348,7 +348,7 @@ function spawnPlayer() {
     children: [
       { type: Empty, name: "CameraTarget", transform: { position: { x: 0, y: 5 } } },
       {
-        type: Sprite2D,
+        type: Sprite,
         name: "PlayerSprite",
         values: { texture: "https://files.codedred.dev/spaceman.png" },
       },
@@ -379,7 +379,7 @@ function spawnPlatform(
     values: { type: "fixed" },
     children: [
       {
-        type: Sprite2D,
+        type: Sprite,
         name: "PlatformSprite",
         values: {
           texture:
@@ -409,7 +409,7 @@ function spawnBreakablePlatform(
     values: { type: "fixed" },
     children: [
       {
-        type: Sprite2D,
+        type: Sprite,
         name: "BreakablePlatformSprite",
         values: { texture: BREAKABLE_PLATFORM_TEXTURE },
       },
@@ -435,7 +435,7 @@ function spawnLargePlatform(x: number, y: number) {
     values: { type: "fixed" },
     children: [
       {
-        type: Sprite2D,
+        type: Sprite,
         name: "LargePlatformSprite",
         values: { texture: randomTexture },
       },

@@ -3,7 +3,7 @@ import {
   BehaviorDefinition,
   Game,
   Rigidbody2D,
-  Sprite2D,
+  Sprite,
   UILayer,
 } from "@dreamlab/engine";
 import { __deprecated__element as element } from "@dreamlab/ui";
@@ -149,7 +149,7 @@ export function spawnPlayer(game: Game) {
     values: { type: "fixed" },
     children: [
       {
-        type: Sprite2D,
+        type: Sprite,
         name: "PlayerSprite",
         values: { texture: "res://assets/spaceship.png" },
       },

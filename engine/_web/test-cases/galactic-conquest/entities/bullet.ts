@@ -1,5 +1,5 @@
 import { Behavior, BehaviorContext } from "../../../../behavior/mod.ts";
-import { Sprite2D, Rigidbody2D } from "../../../../entity/mod.ts";
+import { Rigidbody2D, Sprite } from "../../../../entity/mod.ts";
 import { Vector2 } from "../../../../math/mod.ts";
 import { PlayerBehavior } from "./player.ts";
 
@@ -63,7 +63,7 @@ export class ClickFire extends Behavior {
         values: { type: "fixed" },
         children: [
           {
-            type: Sprite2D,
+            type: Sprite,
             name: "BulletSprite",
           },
         ],

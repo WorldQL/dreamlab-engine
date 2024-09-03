@@ -1,26 +1,26 @@
-// import { Entity, EntityContext, IVector2, PixiEntity, Rigidbody2D } from "@dreamlab/engine";
+// import { Entity, EntityContext, IVector2, PixiEntity, Rigidbody } from "@dreamlab/engine";
 // import { EnsureCompatible, EntityValueProps } from "./_compatibility.ts";
 // import { DebugSquare } from "./_debug.ts";
 // import { Facades } from "./manager.ts";
 
-// export class EditorFacadeRigidbody2D extends PixiEntity {
+// export class EditorFacadeRigidbody extends PixiEntity {
 //   static {
 //     Entity.registerType(this, "@editor");
-//     Facades.register(Rigidbody2D, this);
+//     Facades.register(Rigidbody, this);
 //   }
 
-//   static readonly icon = Rigidbody2D.icon;
+//   static readonly icon = Rigidbody.icon;
 //   get bounds(): Readonly<IVector2> | undefined {
 //     return { x: 1, y: 1 };
 //   }
 
 //   #debug: DebugSquare | undefined;
 
-//   type: Rigidbody2D["type"] = "fixed";
+//   type: Rigidbody["type"] = "fixed";
 
 //   constructor(ctx: EntityContext) {
 //     super(ctx, false);
-//     this.defineValues(EditorFacadeRigidbody2D, "type");
+//     this.defineValues(EditorFacadeRigidbody, "type");
 //   }
 
 //   onInitialize(): void {
@@ -32,6 +32,6 @@
 // }
 
 // type _HasAllValues = EnsureCompatible<
-//   Omit<EntityValueProps<Rigidbody2D>, "body" | "collider">,
-//   EntityValueProps<EditorFacadeRigidbody2D>
+//   Omit<EntityValueProps<Rigidbody>, "body" | "collider">,
+//   EntityValueProps<EditorFacadeRigidbody>
 // >;

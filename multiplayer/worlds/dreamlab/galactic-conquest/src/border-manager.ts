@@ -1,4 +1,4 @@
-import { Behavior, Rigidbody2D, TilingSprite2D, Vector2 } from "@dreamlab/engine";
+import { Behavior, Rigidbody2D, TilingSprite, Vector2 } from "@dreamlab/engine";
 import { MAP_BOUNDARY } from "./_constants.ts";
 
 export default class BorderManager extends Behavior {
@@ -45,7 +45,7 @@ export default class BorderManager extends Behavior {
         values: { type: "fixed" },
         children: [
           {
-            type: TilingSprite2D,
+            type: TilingSprite,
             name: "BorderSprite",
             values: {
               texture: "res://assets/asteroid-belt.png", // TODO: improve border design

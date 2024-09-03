@@ -1,5 +1,5 @@
 import { Behavior, BehaviorContext } from "../../../../behavior/mod.ts";
-import { Entity, Sprite2D } from "../../../../entity/mod.ts";
+import { Entity, Sprite } from "../../../../entity/mod.ts";
 import { GamePostRender } from "../../../../signals/mod.ts";
 import { PlayerBehavior } from "../entities/player.ts";
 
@@ -32,7 +32,7 @@ export class Supercharge extends Behavior {
     playerBehavior.fireRateMultiplier = 10;
 
     this.#superchargeEffect = this.entity.game.world.spawn({
-      type: Sprite2D,
+      type: Sprite,
       name: "SuperchargeEffect",
       transform: {
         position: this.entity.transform.position.clone(),

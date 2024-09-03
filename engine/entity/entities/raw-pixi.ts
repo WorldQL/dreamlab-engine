@@ -2,7 +2,7 @@ import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { Entity } from "../entity.ts";
 import { PixiEntity } from "../pixi-entity.ts";
 
-export class RawPixi2D extends PixiEntity {
+export class RawPixi extends PixiEntity {
   static {
     Entity.registerType(this, "@core");
   }
@@ -15,7 +15,7 @@ export class RawPixi2D extends PixiEntity {
   }
 }
 
-export class RawGraphics2D extends PixiEntity {
+export class RawGraphics extends PixiEntity {
   static {
     Entity.registerType(this, "@core");
   }

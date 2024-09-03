@@ -1,5 +1,5 @@
 import { Behavior, BehaviorContext } from "../../../../behavior/mod.ts";
-import { Sprite2D, TilingSprite2D, Camera } from "../../../../entity/mod.ts";
+import { Camera, Sprite, TilingSprite } from "../../../../entity/mod.ts";
 import { Vector2 } from "../../../../math/mod.ts";
 import { Vector2Adapter } from "../../../../value/adapters/vector-adapter.ts";
 
@@ -7,20 +7,20 @@ export class BackgroundBehavior extends Behavior {
   parallax: Vector2 = Vector2.ZERO;
 
   // TODO: AnimatedSprite2D
-  #sprite: Sprite2D | TilingSprite2D;
+  #sprite: Sprite | TilingSprite;
   #origin = Vector2.ZERO;
 
   constructor(ctx: BehaviorContext) {
     super(ctx);
 
     try {
-      this.#sprite = this.entity.cast(Sprite2D);
+      this.#sprite = this.entity.cast(Sprite);
     } catch {
       // Ignore
     }
 
     try {
-      this.#sprite = this.entity.cast(TilingSprite2D);
+      this.#sprite = this.entity.cast(TilingSprite);
     } catch {
       // Ignore
     }
@@ -43,7 +43,7 @@ export class BackgroundBehavior extends Behavior {
 
     const cam = new Vector2(camera.smoothed.position);
     const sprite = this.#sprite;
-    const tileScale = sprite instanceof TilingSprite2D ? sprite.tileScale : { x: 1, y: 1 };
+    const tileScale = sprite instanceof TilingSprite ? sprite.tileScale : { x: 1, y: 1 };
 
     const distance = cam.mul(this.parallax);
     const inverse = cam.mul(Vector2.ONE.sub(this.parallax));

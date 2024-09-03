@@ -37,7 +37,7 @@
         {
           "ref": "ent_kcisq0pxstn8dak4dtwmvzk2",
           "name": "Background",
-          "type": "@core/TilingSprite2D",
+          "type": "@core/TilingSprite",
           "transform": { "z": -999999999 },
           "values": {
             "width": 2000,
@@ -112,7 +112,7 @@
             {
               "ref": "ent_cg02ptt1hyfcy7o0snsvvbkj",
               "name": "EnemySprite",
-              "type": "@core/Sprite2D",
+              "type": "@core/Sprite",
               "values": {
                 "texture": "res://assets/enemy.png"
               }
@@ -137,7 +137,7 @@
             {
               "ref": "ent_yv8uag5hmm6mxc92x79v4fm3",
               "name": "AsteroidSprite",
-              "type": "@core/Sprite2D",
+              "type": "@core/Sprite",
               "values": {
                 "texture": "res://assets/asteroid.png"
               }

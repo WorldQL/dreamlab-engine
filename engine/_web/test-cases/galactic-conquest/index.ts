@@ -1,4 +1,4 @@
-import { TilingSprite2D } from "../../../entity/entities/tiling-sprite.ts";
+import { TilingSprite } from "../../../entity/entities/tiling-sprite.ts";
 import { UILayer } from "../../../entity/entities/ui-layer.ts";
 import { Vector2 } from "../../../math/vector/vector2.ts";
 import { BackgroundBehavior } from "./behaviors/background-behavior.ts";
@@ -11,7 +11,7 @@ camera.smooth = 0.05;
 game.physics.world.gravity = { x: 0, y: 0 };
 
 export const background = game.local.spawn({
-  type: TilingSprite2D,
+  type: TilingSprite,
   name: "Background",
   values: {
     texture: "https://files.lulu.dev/ydQdgTIPWW73.png",

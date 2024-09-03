@@ -1,4 +1,4 @@
-import { Behavior, BehaviorContext, Entity, Sprite2D } from "@dreamlab/engine";
+import { Behavior, BehaviorContext, Entity, Sprite } from "@dreamlab/engine";
 import PlayerBehavior from "../player.ts";
 
 export default class Supercharge extends Behavior {
@@ -31,7 +31,7 @@ export default class Supercharge extends Behavior {
     playerBehavior.fireRateMultiplier = 10;
 
     this.#superchargeEffect = this.entity.game.world.spawn({
-      type: Sprite2D,
+      type: Sprite,
       name: "SuperchargeEffect",
       transform: {
         position: this.entity.transform.position.clone(),

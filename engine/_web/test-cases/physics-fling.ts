@@ -1,4 +1,4 @@
-import { Behavior, Rigidbody2D, Sprite2D } from "../../mod.ts";
+import { Behavior, Rigidbody2D, Sprite } from "../../mod.ts";
 import { PhysicsDebug, slider } from "../debug.ts";
 
 game.local.spawn({ type: PhysicsDebug, name: "PhysicsDebug" });
@@ -21,12 +21,12 @@ setInterval(() => {
     behaviors: [{ type: Lifetime }],
     children: [
       {
-        type: Sprite2D,
+        type: Sprite,
         name: "Sprite",
       },
     ],
   });
-  /* 
+  /*
   body.body.applyTorqueImpulse(-1, false);
   body.body.applyImpulse({ x: 15 + Math.random() * 5, y: 5 + Math.random() * 1.5 }, true);
   */

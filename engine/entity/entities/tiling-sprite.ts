@@ -6,7 +6,7 @@ import { Vector2Adapter } from "../../value/adapters/vector-adapter.ts";
 import { Entity, EntityContext } from "../entity.ts";
 import { PixiEntity } from "../pixi-entity.ts";
 
-export class TilingSprite2D extends PixiEntity {
+export class TilingSprite extends PixiEntity {
   static {
     Entity.registerType(this, "@core");
   }
@@ -33,10 +33,10 @@ export class TilingSprite2D extends PixiEntity {
   constructor(ctx: EntityContext) {
     super(ctx);
 
-    this.defineValues(TilingSprite2D, "width", "height", "alpha", "tileRotation");
-    this.defineValue(TilingSprite2D, "tilePosition", { type: Vector2Adapter });
-    this.defineValue(TilingSprite2D, "tileScale", { type: Vector2Adapter });
-    this.defineValue(TilingSprite2D, "texture", { type: TextureAdapter });
+    this.defineValues(TilingSprite, "width", "height", "alpha", "tileRotation");
+    this.defineValue(TilingSprite, "tilePosition", { type: Vector2Adapter });
+    this.defineValue(TilingSprite, "tileScale", { type: Vector2Adapter });
+    this.defineValue(TilingSprite, "texture", { type: TextureAdapter });
 
     if (this.game.isClient() && this.texture !== "") {
       PIXI.Assets.backgroundLoad(this.game.resolveResource(this.texture));
