@@ -17,6 +17,7 @@ import { Camera, ClientGame } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
+import { stats } from "./_stats.ts";
 import { CameraPanBehavior } from "./camera-pan.ts";
 import { connectToGame } from "./game-connection.ts";
 import { setupGame } from "./game-setup.ts";
@@ -78,10 +79,12 @@ logViewer.setup(inspector);
 
 let now = performance.now();
 const onFrame = (time: number) => {
+  stats.begin();
   const delta = time - now;
   now = time;
   games.edit.tickClient(delta);
   games.play?.tickClient(delta);
+  stats.end();
 
   requestAnimationFrame(onFrame);
 };

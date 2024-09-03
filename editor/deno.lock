@@ -19,6 +19,7 @@
       "npm:@dimforge/rapier2d-compat@0.14.0": "npm:@dimforge/rapier2d-compat@0.14.0",
       "npm:@paralleldrive/cuid2@2.2.2": "npm:@paralleldrive/cuid2@2.2.2",
       "npm:@types/object-inspect@1.13.0": "npm:@types/object-inspect@1.13.0",
+      "npm:@types/stats.js@0.17.3": "npm:@types/stats.js@0.17.3",
       "npm:esbuild-plugin-copy@2.1.1": "npm:esbuild-plugin-copy@2.1.1_esbuild@0.20.2",
       "npm:esbuild@0.20.2": "npm:esbuild@0.20.2",
       "npm:lucide-static": "npm:lucide-static@0.427.0",
@@ -28,6 +29,7 @@
       "npm:pixi.js@8.2.6": "npm:pixi.js@8.2.6",
       "npm:simple-icons": "npm:simple-icons@13.6.0",
       "npm:simple-icons@13.6.0": "npm:simple-icons@13.6.0",
+      "npm:stats.js@0.17.0": "npm:stats.js@0.17.0",
       "npm:strip-ansi@7.1.0": "npm:strip-ansi@7.1.0",
       "npm:type-fest@4.23.0": "npm:type-fest@4.23.0",
       "npm:zod-validation-error@3.3.1": "npm:zod-validation-error@3.3.1_zod@3.23.8"
@@ -226,6 +228,10 @@
       },
       "@types/object-inspect@1.13.0": {
         "integrity": "sha512-lwGTVESDDV+XsQ1pH4UifpJ1f7OtXzQ6QBOX2Afq2bM/T3oOt8hF6exJMjjIjtEWeAN2YAo25J7HxWh97CCz9w==",
+        "dependencies": {}
+      },
+      "@types/stats.js@0.17.3": {
+        "integrity": "sha512-pXNfAD3KHOdif9EQXZ9deK82HVNaXP5ZIF5RP2QG6OQFNTaY2YIetfrE9t528vEreGQvEPRDDc8muaoYeK0SxQ==",
         "dependencies": {}
       },
       "@webgpu/types@0.1.44": {
@@ -532,6 +538,10 @@
       },
       "slash@3.0.0": {
         "integrity": "sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==",
+        "dependencies": {}
+      },
+      "stats.js@0.17.0": {
+        "integrity": "sha512-hNKz8phvYLPEcRkeG1rsGmV5ChMjKDAWU7/OJJdDErPBNChQXxCo3WZurGpnWc6gZhAzEPFad1aVgyOANH1sMw==",
         "dependencies": {}
       },
       "strip-ansi@7.1.0": {

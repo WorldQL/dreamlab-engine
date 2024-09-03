@@ -79,14 +79,11 @@ export class InspectorUI {
   }
 
   show(uiRoot: HTMLElement) {
-    if (this.editMode) {
-      this.gameOverlays.show(uiRoot);
-    }
-
     this.sceneGraph.show(uiRoot);
     this.properties.show(uiRoot);
     this.behaviorPanel.show(uiRoot);
     this.contextMenu.show(uiRoot);
+    this.gameOverlays.show(uiRoot);
     this.fileTree.show(uiRoot);
   }
 

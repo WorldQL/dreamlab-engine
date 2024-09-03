@@ -19,29 +19,44 @@ import {
   Scale3D,
   ZoomIn,
 } from "../_icons.ts";
+import { stats } from "../_stats.ts";
 import { ButtonGroup, IconButton } from "../components/mod.ts";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 
 export class GameOverlays implements InspectorUIWidget {
-  #overlay: HTMLElement;
+  #editMode: boolean = false;
 
-  constructor(
-    private game: ClientGame,
-    private gameContainer: HTMLDivElement,
-  ) {
-    this.#overlay = elem("div", { id: "game-overlays" }, [
-      this.drawGizmoButtons(),
-      this.drawCursorOverlay(),
-    ]);
+  #overlay: HTMLElement;
+  #editOverlays: HTMLElement[];
+
+  constructor(private game: ClientGame, private gameContainer: HTMLDivElement) {
+    this.#overlay = elem("div", { id: "game-overlays" });
+    this.#editOverlays = [this.drawGizmoButtons(), this.drawCursorOverlay()];
   }
 
-  setup(_ui: InspectorUI): void {}
+  setup(ui: InspectorUI): void {
+    this.#editMode = ui.editMode;
+  }
 
   show(_uiRoot: HTMLElement): void {
+    if (this.#editMode) {
+      this.#overlay.append(...this.#editOverlays);
+    } else {
+      this.#overlay.append(stats.dom);
+      stats.dom.style.position = "absolute";
+      stats.dom.style.right = "0px";
+      stats.dom.style.left = "";
+    }
+
     this.gameContainer.append(this.#overlay);
   }
 
   hide(): void {
+    stats.dom.remove();
+    for (const element of this.#editOverlays) {
+      element.remove();
+    }
+
     this.#overlay.remove();
   }
 
