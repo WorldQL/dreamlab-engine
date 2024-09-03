@@ -8,7 +8,7 @@ import {
   Root,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
-import { element as elem } from "@dreamlab/ui";
+import { element as elem, element } from "@dreamlab/ui";
 import { EditorMetadataEntity, EditorRootFacadeEntity, Facades } from "../../common/mod.ts";
 import { ChevronDown, icon } from "../_icons.ts";
 import { ContextMenuItem } from "./context-menu.ts";
@@ -151,9 +151,21 @@ export class SceneGraph implements InspectorUIWidget {
       ev.preventDefault();
     });
 
+    // TODO: maybe some 'click to show more' thing would work well here
+    const tooManyEntities = element("div", { className: "too-many-entities" }, [
+      `[${entity.children.size} entities not shown]`,
+    ]);
+
     entity.on(EntityChildSpawned, event => {
       const newEntity = event.child;
-      this.renderEntry(ui, entryElement, newEntity);
+      if (entity.children.size > 2500) {
+        tooManyEntities.textContent = `[${entity.children.size} entities not shown]`;
+        entryElement.innerHTML = "";
+        entryElement.append(summary);
+        entryElement.append(tooManyEntities);
+      } else {
+        this.renderEntry(ui, entryElement, newEntity);
+      }
     });
 
     entity.on(EntityReparented, () => {
@@ -180,10 +192,14 @@ export class SceneGraph implements InspectorUIWidget {
     this.handleEntryContextMenu(ui, entity, entryElement);
 
     parent.append(entryElement);
-    for (const child of entity.children.values()) {
-      this.renderEntry(ui, entryElement, child);
+    if (entity.children.size > 2500) {
+      entryElement.append(tooManyEntities);
+    } else {
+      for (const child of entity.children.values()) {
+        this.renderEntry(ui, entryElement, child);
+      }
+      this.sortEntries(entryElement);
     }
-    this.sortEntries(entryElement);
   }
 
   handleEntryRename(entity: Entity, entryElement: HTMLElement) {
