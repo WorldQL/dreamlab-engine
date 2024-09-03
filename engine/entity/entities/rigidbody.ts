@@ -1,6 +1,6 @@
 import RAPIER from "@dreamlab/vendor/rapier.ts";
 import { IVector2, Vector2 } from "../../math/mod.ts";
-import { EntityDestroyed, EntityPreUpdate, EntityUpdate } from "../../signals/mod.ts";
+import { EntityDestroyed } from "../../signals/mod.ts";
 import { enumAdapter } from "../../value/adapters/enum-adapter.ts";
 import { Entity, EntityContext } from "../entity.ts";
 
@@ -52,54 +52,53 @@ export class Rigidbody2D extends Entity {
     const typeValue = this.values.get("type");
     typeValue?.onChanged(() => this.#initializeBody());
 
-    // EntityPreUpdate happens before physics runs, so we can set the physics body to match our transform
-    this.on(
-      EntityPreUpdate,
-      () => {
-        if (!this.game.physics.enabled) return;
-        if (!this.#internal) return;
-
-        this.#internal.body.setTranslation(
-          {
-            x: this.globalTransform.position.x,
-            y: this.globalTransform.position.y,
-          },
-          false,
-        );
-        this.#internal.body.setRotation(this.globalTransform.rotation, false);
-        this.#internal.shape.halfExtents = {
-          x: this.globalTransform.scale.x / 2,
-          y: this.globalTransform.scale.y / 2,
-        };
-      },
-      -10,
-    );
-
-    // EntityUpdate happens after physics runs, so we can update our transform
-    // to reflect the movement of the physics body
-    this.on(
-      EntityUpdate,
-      () => {
-        if (!this.game.physics.enabled) return;
-        if (!this.#internal) return;
-
-        // FIXME: free-for-all entities should not have transform reported from the client for benign physics transform updates
-        // for now, we just don't update the transform on the client.
-        if (this.authority === undefined && this.game.isClient()) return;
-
-        this.globalTransform.position = new Vector2(this.#internal.body.translation());
-        this.globalTransform.rotation = this.#internal.body.rotation();
-        this.globalTransform.scale = new Vector2(
-          this.#internal.shape.halfExtents.x * 2,
-          this.#internal.shape.halfExtents.y * 2,
-        );
-      },
-      10,
-    );
-
     this.on(EntityDestroyed, () => {
       if (this.#internal) this.game.physics.world.removeRigidBody(this.#internal.body);
     });
+  }
+
+  onPreUpdate(): void {
+    super.onPreUpdate();
+    this.#preparePhysicsUpdate();
+  }
+
+  onUpdate(): void {
+    this.#applyPhysicsUpdate();
+    super.onUpdate();
+  }
+
+  #preparePhysicsUpdate() {
+    if (!this.game.physics.enabled) return;
+    if (!this.#internal) return;
+
+    this.#internal.body.setTranslation(
+      {
+        x: this.globalTransform.position.x,
+        y: this.globalTransform.position.y,
+      },
+      false,
+    );
+    this.#internal.body.setRotation(this.globalTransform.rotation, false);
+    this.#internal.shape.halfExtents = {
+      x: this.globalTransform.scale.x / 2,
+      y: this.globalTransform.scale.y / 2,
+    };
+  }
+
+  #applyPhysicsUpdate() {
+    if (!this.game.physics.enabled) return;
+    if (!this.#internal) return;
+
+    // FIXME: free-for-all entities should not have transform reported from the client for benign physics transform updates
+    // for now, we just don't update the transform on the client.
+    if (this.authority === undefined && this.game.isClient()) return;
+
+    this.globalTransform.position = new Vector2(this.#internal.body.translation());
+    this.globalTransform.rotation = this.#internal.body.rotation();
+    this.globalTransform.scale = new Vector2(
+      this.#internal.shape.halfExtents.x * 2,
+      this.#internal.shape.halfExtents.y * 2,
+    );
   }
 
   #initializeBody() {

@@ -1,7 +1,7 @@
 import {
   BoxResizeGizmo,
   ClientGame,
-  EntityUpdate,
+  GameTick,
   Gizmo,
   IVector2,
   MouseMove,
@@ -114,7 +114,7 @@ export class GameOverlays implements InspectorUIWidget {
     const cursorPos = elem("span", {}, [this.formatVector(Vector2.ZERO)]);
     const zoomLevel = elem("span", {}, ["1.00 \u00d7"]);
 
-    this.game.local._.Camera.on(EntityUpdate, () => {
+    this.game.on(GameTick, () => {
       const camera = this.game.local._.Camera;
       cameraPos.textContent = this.formatVector(camera.pos);
       const zoom = camera.globalTransform.scale.x;

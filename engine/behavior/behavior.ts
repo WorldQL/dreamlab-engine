@@ -19,7 +19,6 @@ import {
   BehaviorDestroyed,
   BehaviorSpawned,
 } from "../signals/behavior-lifecycle.ts";
-import { EntityUpdate } from "../signals/entity-updates.ts";
 import { GamePostTick, GamePreTick, GameRender } from "../signals/game-events.ts";
 import {
   AdapterTypeTag,
@@ -251,7 +250,6 @@ export class Behavior implements ISignalHandler {
     }
 
     if (!isPrefab) {
-      if (this.onTick) this.listen(this.entity, EntityUpdate, this.onTick);
       if (this.onPreTick) this.listen(this.entity.game, GamePreTick, this.onPreTick);
       if (this.onFrame) this.listen(this.entity.game, GameRender, this.onFrame);
       if (this.onPostTick) this.listen(this.entity.game, GamePostTick, this.onPostTick);

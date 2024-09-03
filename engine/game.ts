@@ -2,7 +2,14 @@ import { initRapier } from "@dreamlab/vendor/rapier.ts";
 
 import { BehaviorLoader } from "./behavior/behavior-loader.ts";
 import { BehaviorConstructor } from "./behavior/mod.ts";
-import { EntityStore, LocalRoot, PrefabsRoot, ServerRoot, WorldRoot } from "./entity/mod.ts";
+import {
+  Entity,
+  EntityStore,
+  LocalRoot,
+  PrefabsRoot,
+  ServerRoot,
+  WorldRoot,
+} from "./entity/mod.ts";
 import { Inputs } from "./input/mod.ts";
 import * as internal from "./internal.ts";
 import { ClientNetworking, ServerNetworking } from "./network.ts";
@@ -145,10 +152,24 @@ export abstract class BaseGame implements ISignalHandler {
     this.#physics = new PhysicsEngine(this as unknown as Game);
   }
 
+  [internal.entityTickingOrderDirty]: boolean = true;
+  [internal.entityTickingOrder]: Entity[] = [];
+
+  [internal.submitEntityTickingOrder](entities: Entity[]) {
+    this.world[internal.submitEntityTickingOrder](entities);
+  }
+
   tick() {
     if (this.status === GameStatus.Shutdown) return;
     if (!this.#initialized)
       throw new Error("Illegal state: Game was not initialized before tick loop began!");
+
+    const entityTickingOrder = this[internal.entityTickingOrder];
+    if (this[internal.entityTickingOrderDirty]) {
+      entityTickingOrder.length = 0; // size list down to 0 but keep capacity (avoid expensive realloc on array grow!)
+      this[internal.submitEntityTickingOrder](entityTickingOrder);
+      this[internal.entityTickingOrderDirty] = false;
+    }
 
     this.time[internal.timeSetMode]("tick");
     this.time[internal.timeTick]();
@@ -159,24 +180,17 @@ export abstract class BaseGame implements ISignalHandler {
 
     this.fire(GamePreTick);
 
-    this[internal.preTickEntities]();
+    const entityCount = entityTickingOrder.length;
+    for (let i = 0; i < entityCount; i++) {
+      entityTickingOrder[i].onPreUpdate();
+    }
     this.physics.tick();
-    this[internal.tickEntities]();
+    for (let i = 0; i < entityCount; i++) {
+      entityTickingOrder[i].onUpdate();
+    }
 
     this.fire(GameTick);
     this.fire(GamePostTick);
-  }
-
-  [internal.preTickEntities]() {
-    this.world[internal.preTickEntities]();
-  }
-
-  [internal.tickEntities]() {
-    this.world[internal.tickEntities]();
-  }
-
-  [internal.updateInterpolation]() {
-    this.world[internal.updateInterpolation]();
   }
 
   shutdown() {
@@ -234,18 +248,9 @@ export class ServerGame extends BaseGame {
     this.network.disconnect();
   }
 
-  [internal.preTickEntities]() {
-    super[internal.preTickEntities]();
-    this.remote[internal.preTickEntities]();
-  }
-
-  [internal.tickEntities]() {
-    super[internal.tickEntities]();
-    this.remote[internal.tickEntities]();
-  }
-
-  [internal.updateInterpolation]() {
-    // No-op
+  [internal.submitEntityTickingOrder](entities: Entity[]) {
+    super[internal.submitEntityTickingOrder](entities);
+    this.remote[internal.submitEntityTickingOrder](entities);
   }
 }
 
@@ -290,6 +295,11 @@ export class ClientGame extends BaseGame {
   readonly local: LocalRoot = new LocalRoot(this);
   readonly remote: undefined;
 
+  [internal.submitEntityTickingOrder](entities: Entity[]) {
+    super[internal.submitEntityTickingOrder](entities);
+    this.local[internal.submitEntityTickingOrder](entities);
+  }
+
   #tickAccumulator = 0;
   tickClient(delta: number): void {
     if (this.status === GameStatus.Shutdown) return;
@@ -309,26 +319,16 @@ export class ClientGame extends BaseGame {
 
     this.time[internal.timeSetMode]("render");
     this.time[internal.timeIncrement](delta, this.#tickAccumulator / this.physics.tickDelta);
-    this[internal.updateInterpolation]();
+
+    const entityTickingOrder = this[internal.entityTickingOrder];
+    const entityCount = entityTickingOrder.length;
+    for (let i = 0; i < entityCount; i++) {
+      entityTickingOrder[i][internal.updateInterpolation]();
+    }
 
     this.fire(GameRender);
     this.renderer.renderFrame();
     this.fire(GamePostRender);
-  }
-
-  [internal.preTickEntities]() {
-    super[internal.preTickEntities]();
-    this.local[internal.preTickEntities]();
-  }
-
-  [internal.tickEntities]() {
-    super[internal.tickEntities]();
-    this.local[internal.tickEntities]();
-  }
-
-  [internal.updateInterpolation]() {
-    super[internal.updateInterpolation]();
-    this.local[internal.updateInterpolation]();
   }
 }
 

@@ -34,12 +34,10 @@ import {
   EntityDescendantSpawned,
   EntityDestroyed,
   EntityExclusiveAuthorityChanged,
-  EntityPreUpdate,
   EntityRenamed,
   EntityReparented,
   EntitySpawned,
   EntityTransformUpdate,
-  EntityUpdate,
 } from "../signals/mod.ts";
 import {
   AdapterTypeTag,
@@ -189,6 +187,8 @@ export abstract class Entity implements ISignalHandler {
         ancestor.fire(EntityDescendantReparented, child, oldParent);
         ancestor = ancestor.parent;
       }
+
+      this.game[internal.entityTickingOrderDirty] = true;
     }
 
     if (nonConflictingName) {
@@ -782,45 +782,35 @@ export abstract class Entity implements ISignalHandler {
       this.game[internal.behaviorLoader].initialize(behaviorType);
       behavior.spawn();
     }
+
+    this.game[internal.entityTickingOrderDirty] = true;
   }
 
   onInitialize(): void {}
 
-  [internal.preTickEntities]() {
-    if (!this.#spawned) return;
+  [internal.submitEntityTickingOrder](entities: Entity[]) {
+    entities.push(this);
+    for (const child of this.#children.values()) {
+      child[internal.submitEntityTickingOrder](entities);
+    }
+  }
 
+  onPreUpdate() {
     const tr = this.globalTransform;
-    this.#prevPosition.x = tr.position.x;
-    this.#prevPosition.y = tr.position.y;
+    const pos = tr.position;
+    this.#prevPosition.x = pos.x;
+    this.#prevPosition.y = pos.y;
     this.#prevRotation = tr.rotation;
-    this.#prevScale.x = tr.scale.x;
-    this.#prevScale.y = tr.scale.y;
-
-    try {
-      this.fire(EntityPreUpdate);
-    } catch (err) {
-      console.error(err);
-    }
-
-    for (const child of this.#children.values()) {
-      child[internal.preTickEntities]();
+    const scale = tr.scale;
+    this.#prevScale.x = scale.x;
+    this.#prevScale.y = scale.y;
+  }
+  onUpdate() {
+    const behaviorCount = this.behaviors.length;
+    for (let i = 0; i < behaviorCount; i++) {
+      this.behaviors[i].onTick?.();
     }
   }
-
-  [internal.tickEntities]() {
-    if (!this.#spawned) return;
-
-    try {
-      this.fire(EntityUpdate);
-    } catch (err) {
-      console.error(err);
-    }
-
-    for (const child of this.#children.values()) {
-      child[internal.tickEntities]();
-    }
-  }
-
   [internal.updateInterpolation]() {
     const partial = this.time.partial;
 
@@ -837,14 +827,6 @@ export abstract class Entity implements ISignalHandler {
     this.#interpolated.scale.assign(
       Vector2.lerp(this.#prevScale, this.globalTransform.scale, partial),
     );
-
-    for (const child of this.#children.values()) {
-      try {
-        child[internal.updateInterpolation]();
-      } catch (err) {
-        console.error(err);
-      }
-    }
   }
 
   #destroyed: boolean = false;
@@ -882,6 +864,8 @@ export abstract class Entity implements ISignalHandler {
 
     this.externalListeners.forEach(s => s.unsubscribe());
     this.signalSubscriptionMap.clear();
+
+    this.game[internal.entityTickingOrderDirty] = true;
   }
   // #endregion
 

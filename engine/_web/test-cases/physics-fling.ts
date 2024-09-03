@@ -1,4 +1,4 @@
-import { Behavior, EntityUpdate, Rigidbody2D, Sprite2D } from "../../mod.ts";
+import { Behavior, Rigidbody2D, Sprite2D } from "../../mod.ts";
 import { PhysicsDebug, slider } from "../debug.ts";
 
 game.local.spawn({ type: PhysicsDebug, name: "PhysicsDebug" });
@@ -26,13 +26,10 @@ setInterval(() => {
       },
     ],
   });
-
+  /* 
   body.body.applyTorqueImpulse(-1, false);
   body.body.applyImpulse({ x: 15 + Math.random() * 5, y: 5 + Math.random() * 1.5 }, true);
-
-  body.on(EntityUpdate, () => {
-    if (body.pos.x > 10.0) body.destroy();
-  });
+  */
 }, 500);
 
 slider(

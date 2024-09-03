@@ -12,7 +12,5 @@ export class InertEntity extends Entity {
 
   bounds = undefined;
 
-  [internal.preTickEntities]() {}
-  [internal.tickEntities]() {}
-  [internal.updateInterpolation]() {}
+  [internal.submitEntityTickingOrder]() {}
 }

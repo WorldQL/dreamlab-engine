@@ -33,7 +33,7 @@ export class Sprite2D extends PixiEntity {
     this.defineValue(Sprite2D, "texture", { type: TextureAdapter });
 
     if (this.game.isClient() && this.texture !== "") {
-      PIXI.Assets.backgroundLoad(this.game.resolveResource(this.texture));
+      // PIXI.Assets.backgroundLoad(this.game.resolveResource(this.texture));
     }
 
     const updateSize = () => {
