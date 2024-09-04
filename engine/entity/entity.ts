@@ -795,7 +795,13 @@ export abstract class Entity implements ISignalHandler {
     }
   }
 
-  onPreUpdate() {
+  onUpdate() {
+    const behaviorCount = this.behaviors.length;
+    for (let i = 0; i < behaviorCount; i++) {
+      this.behaviors[i].onTick?.();
+    }
+  }
+  [internal.interpolationStartTick]() {
     const tr = this.globalTransform;
     const pos = tr.position;
     this.#prevPosition.x = pos.x;
@@ -805,15 +811,7 @@ export abstract class Entity implements ISignalHandler {
     this.#prevScale.x = scale.x;
     this.#prevScale.y = scale.y;
   }
-  onUpdate() {
-    const behaviorCount = this.behaviors.length;
-    for (let i = 0; i < behaviorCount; i++) {
-      this.behaviors[i].onTick?.();
-    }
-  }
-  [internal.updateInterpolation]() {
-    const partial = this.time.partial;
-
+  [internal.interpolationStartFrame](partial: number) {
     this.#interpolated.position.assign(
       Vector2.lerp(this.#prevPosition, this.globalTransform.position, partial),
     );

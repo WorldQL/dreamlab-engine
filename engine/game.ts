@@ -164,13 +164,6 @@ export abstract class BaseGame implements ISignalHandler {
     if (!this.#initialized)
       throw new Error("Illegal state: Game was not initialized before tick loop began!");
 
-    const entityTickingOrder = this[internal.entityTickingOrder];
-    if (this[internal.entityTickingOrderDirty]) {
-      entityTickingOrder.length = 0; // size list down to 0 but keep capacity (avoid expensive realloc on array grow!)
-      this[internal.submitEntityTickingOrder](entityTickingOrder);
-      this[internal.entityTickingOrderDirty] = false;
-    }
-
     this.time[internal.timeSetMode]("tick");
     this.time[internal.timeTick]();
 
@@ -180,9 +173,16 @@ export abstract class BaseGame implements ISignalHandler {
 
     this.fire(GamePreTick);
 
+    const entityTickingOrder = this[internal.entityTickingOrder];
+    if (this[internal.entityTickingOrderDirty]) {
+      entityTickingOrder.length = 0; // size list down to 0 but keep capacity (avoid expensive realloc on array grow!)
+      this[internal.submitEntityTickingOrder](entityTickingOrder);
+      this[internal.entityTickingOrderDirty] = false;
+    }
     const entityCount = entityTickingOrder.length;
+
     for (let i = 0; i < entityCount; i++) {
-      entityTickingOrder[i].onPreUpdate();
+      entityTickingOrder[i][internal.interpolationStartTick]();
     }
     this.physics.tick();
     for (let i = 0; i < entityCount; i++) {
@@ -319,11 +319,12 @@ export class ClientGame extends BaseGame {
 
     this.time[internal.timeSetMode]("render");
     this.time[internal.timeIncrement](delta, this.#tickAccumulator / this.physics.tickDelta);
+    const partial = this.time.partial;
 
     const entityTickingOrder = this[internal.entityTickingOrder];
     const entityCount = entityTickingOrder.length;
     for (let i = 0; i < entityCount; i++) {
-      entityTickingOrder[i][internal.updateInterpolation]();
+      entityTickingOrder[i][internal.interpolationStartFrame](partial);
     }
 
     this.fire(GameRender);
