@@ -1,4 +1,10 @@
-import { JsonValue, ValueTypeAdapter } from "../data.ts";
+import type { AdapterTypeTag, JsonValue } from "../data.ts";
+import { ValueTypeAdapter } from "../data.ts";
+
+export declare namespace enumAdapter {
+  // deno-lint-ignore no-explicit-any
+  type Union<T extends AdapterTypeTag<any>> = T extends AdapterTypeTag<infer U> ? U : never;
+}
 
 export function enumAdapter<const T extends readonly string[]>(values: T) {
   function isValid(v: unknown): v is T[number] {

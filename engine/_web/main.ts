@@ -48,7 +48,7 @@ declare global {
 Object.assign(window, { game, camera, Vector2 });
 // #endregion
 
-const mod = await import("./test-cases/svg-sprite.ts");
+const mod = await import("./test-cases/enum.ts");
 Object.assign(window, { ...mod });
 
 game.setStatus(GameStatus.Running);
