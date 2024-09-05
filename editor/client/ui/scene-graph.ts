@@ -7,10 +7,10 @@ import {
   EntityReparented,
   Root,
 } from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
 import { element as elem, element } from "@dreamlab/ui";
 import { EditorMetadataEntity, EditorRootFacadeEntity, Facades } from "../../common/mod.ts";
 import { ChevronDown, icon } from "../_icons.ts";
+import { createEntityMenu } from "../util/entity-types.ts";
 import { ContextMenuItem } from "./context-menu.ts";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 
@@ -52,22 +52,14 @@ export class SceneGraph implements InspectorUIWidget {
       event.stopPropagation();
 
       ui.contextMenu.drawContextMenu(event.clientX, event.clientY, [
-        [
-          "New Entity",
-          [...Entity[internal.entityTypeRegistry].entries()]
-            .filter(([_, namespace]) => namespace !== "@editor")
-            .map(([type, _]) => [
-              type.name,
-              () => {
-                const newEntity = world.spawn({
-                  type: Facades.lookupFacadeEntityType(type),
-                  name: type.name,
-                });
-                const newEntryElement = this.entryElementMap.get(newEntity.ref);
-                if (newEntryElement) this.triggerRename(newEntity, newEntryElement);
-              },
-            ]),
-        ],
+        createEntityMenu("New Entity", type => {
+          const newEntity = world.spawn({
+            type: Facades.lookupFacadeEntityType(type),
+            name: type.name,
+          });
+          const newEntryElement = this.entryElementMap.get(newEntity.ref);
+          if (newEntryElement) this.triggerRename(newEntity, newEntryElement);
+        }),
       ]);
     });
   }
@@ -300,22 +292,14 @@ export class SceneGraph implements InspectorUIWidget {
 
       const contextMenuItems: ContextMenuItem[] = [
         ["Focus", () => this.game.local._.Camera.pos.assign(entity.pos)],
-        [
-          "New Entity",
-          [...Entity[internal.entityTypeRegistry].entries()]
-            .filter(([_, namespace]) => namespace !== "@editor")
-            .map(([type, _]) => [
-              type.name,
-              () => {
-                const newEntity = entity.spawn({
-                  type: Facades.lookupFacadeEntityType(type),
-                  name: type.name,
-                });
-                const newEntryElement = this.entryElementMap.get(newEntity.ref);
-                if (newEntryElement) this.triggerRename(newEntity, newEntryElement);
-              },
-            ]) as [string, () => void][],
-        ],
+        createEntityMenu("New Entity", type => {
+          const newEntity = entity.spawn({
+            type: Facades.lookupFacadeEntityType(type),
+            name: type.name,
+          });
+          const newEntryElement = this.entryElementMap.get(newEntity.ref);
+          if (newEntryElement) this.triggerRename(newEntity, newEntryElement);
+        }),
       ];
 
       if (!entity.protected) contextMenuItems.push(["Delete", () => entity.destroy()]);
