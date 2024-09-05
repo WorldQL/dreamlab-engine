@@ -94,6 +94,7 @@ export const convertBehaviorDefinition = async (
 ): Promise<BehaviorDefinition> => {
   const type = await game[internal.behaviorLoader].loadScript(def.script);
   return {
+    _ref: def.ref,
     type,
     values: def.values,
   };

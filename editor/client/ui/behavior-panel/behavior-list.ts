@@ -1,4 +1,5 @@
-import { ClientGame, Entity } from "@dreamlab/engine";
+import { BehaviorConstructor, ClientGame, Entity, JsonValue } from "@dreamlab/engine";
+import * as internal from "@dreamlab/engine/internal";
 import { SceneDescBehavior, BehaviorSchema as SceneDescBehaviorSchema } from "@dreamlab/scene";
 import { element as elem } from "@dreamlab/ui";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
@@ -18,7 +19,7 @@ export class BehaviorList {
   game: ClientGame;
 
   constructor(
-    ui: InspectorUI,
+    private ui: InspectorUI,
     public entity: Entity,
     public useEditorMetadata: boolean,
   ) {
@@ -95,6 +96,20 @@ export class BehaviorList {
       });
     } else {
       // TODO: populate behaviors from entity data proper
+      this.behaviors = [];
+      for (const behavior of this.entity.behaviors) {
+        const behaviorType = behavior.constructor as BehaviorConstructor;
+        const script = this.game[internal.behaviorLoader].lookup(behaviorType);
+        if (!script) continue;
+        const values: SceneDescBehavior["values"] = {};
+        for (const [key, value] of behavior.values.entries()) {
+          values[key] = value.adapter
+            ? value.adapter.convertToPrimitive(value.value)
+            : (value.value as JsonValue);
+        }
+
+        this.behaviors.push({ ref: behavior.ref, script, values });
+      }
     }
 
     this.#drawAddBehavior(ui);
@@ -173,8 +188,32 @@ export class BehaviorList {
       }
 
       editorMetadata.behaviorsJson = JSON.stringify(this.behaviors);
-    }
+    } else {
+      for (const behavior of this.behaviors) {
+        const behaviorObj = this.entity.behaviors.find(b => b.ref === behavior.ref);
+        if (behaviorObj === undefined) {
+          this.game.loadBehavior(behavior.script).then(behaviorType => {
+            // check if the behavior loaded while we were waiting for the promise:
+            const newBehaviorObj = this.entity.behaviors.find(b => b.ref === behavior.ref);
+            if (newBehaviorObj !== undefined) return;
 
-    // TODO: play mode
+            this.entity.addBehavior({
+              _ref: behavior.ref,
+              type: behaviorType,
+              values: behavior.values,
+            });
+          });
+        } else {
+          console.log(behaviorObj, behavior.values);
+          for (const [key, value] of Object.entries(behavior.values ?? {})) {
+            const valueObj = behaviorObj.values.get(key);
+            if (valueObj === undefined) continue;
+            valueObj.value = valueObj.adapter
+              ? valueObj.adapter.convertFromPrimitive(value as JsonValue)
+              : value;
+          }
+        }
+      }
+    }
   }
 }

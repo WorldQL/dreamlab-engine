@@ -1,4 +1,5 @@
 export * from "./actions.ts";
+export * from "./behavior-lifecycle.ts";
 export * from "./camera.ts";
 export * from "./entity-collision.ts";
 export * from "./entity-lifecycle.ts";

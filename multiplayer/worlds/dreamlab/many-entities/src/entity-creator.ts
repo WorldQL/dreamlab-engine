@@ -32,7 +32,7 @@ export default class EntityCreator extends Behavior {
 
         for (let x = 0; x < this.width; x++) {
           for (let y = 0; y < this.height; y++) {
-            this.entity._.Empty.spawn({
+            this.entity._.EntityContainer.spawn({
               type: Sprite,
               name: `${zFill(x, 3)}_${zFill(y, 3)}`,
               transform: {

@@ -5,34 +5,67 @@
   },
   "scenes": {
     "main": {
-      "local": [
+      "registration": [],
+      "world": [
         {
-          "ref": "ent_rthb692t18htouso0q6fwqb3",
-          "name": "Camera",
-          "type": "@core/Camera",
-          "transform": {
-            "position": { "x": 0, "y": 0 },
-            "rotation": 0,
-            "scale": { "x": 1, "y": 1 },
-            "z": 0
-          },
-          "values": {
-            "active": true
-          }
-        },
-        {
-          "ref": "ent_i09xjhef9j6tt630jn2ngdta",
-          "name": "PlayerSpawnManager",
           "type": "@core/Empty",
+          "name": "Empty",
+          "transform": {
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
           "behaviors": [
             {
-              "script": "res://src/player-spawner.js",
-              "ref": "bhv_dqg9eccve24e6rxphsx4y4px"
+              "ref": "bhv_mqynbrn6xt5zfeehyo8fob1w",
+              "script": "res://src/log-repeatedly.ts",
+              "values": {
+                "message": "12345"
+              }
             }
-          ]
+          ],
+          "ref": "ent_rvbfd3tiws36sa8fkjzzp4sb"
         }
       ],
-      "world": []
+      "local": [
+        {
+          "type": "@core/Camera",
+          "name": "Camera",
+          "values": {
+            "active": true,
+            "smooth": 0.1,
+            "unlocked": false
+          },
+          "transform": {
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "ref": "ent_rthb692t18htouso0q6fwqb3"
+        },
+        {
+          "type": "@core/Empty",
+          "name": "PlayerSpawnManager",
+          "transform": {
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_dqg9eccve24e6rxphsx4y4px",
+              "script": "res://src/player-spawner.js",
+              "values": {}
+            }
+          ],
+          "ref": "ent_i09xjhef9j6tt630jn2ngdta"
+        }
+      ],
+      "server": [],
+      "prefabs": []
     }
   }
 }
