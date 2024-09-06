@@ -1,3 +1,4 @@
+import type { Game } from "../../game.ts";
 import type { AdapterTypeTag, JsonValue } from "../data.ts";
 import { ValueTypeAdapter } from "../data.ts";
 
@@ -6,29 +7,42 @@ export declare namespace enumAdapter {
   type Union<T extends AdapterTypeTag<any>> = T extends AdapterTypeTag<infer U> ? U : never;
 }
 
-export function enumAdapter<const T extends readonly string[]>(values: T) {
-  function isValid(v: unknown): v is T[number] {
-    if (typeof v !== "string") return false;
-    return values.includes(v);
+export abstract class EnumAdapter<const T extends readonly string[]> extends ValueTypeAdapter<
+  T[number]
+> {
+  constructor(
+    public readonly values: T,
+    game: Game,
+  ) {
+    super(game);
   }
 
-  return class EnumAdapter extends ValueTypeAdapter<T[number]> {
-    isValue(value: unknown): value is T[number] {
-      return isValid(value);
-    }
-    convertToPrimitive(value: T[number]): JsonValue {
-      if (!isValid(value)) {
-        throw new TypeError("invalid enum member");
-      }
+  isValue(value: unknown): value is T[number] {
+    if (typeof value !== "string") return false;
+    return this.values.includes(value);
+  }
 
-      return value;
+  convertToPrimitive(value: T[number]): JsonValue {
+    if (!this.isValue(value)) {
+      throw new TypeError("invalid enum member");
     }
-    convertFromPrimitive(value: JsonValue): T[number] {
-      if (!isValid(value)) {
-        throw new TypeError("invalid enum member");
-      }
+    return value;
+  }
 
-      return value;
+  convertFromPrimitive(value: JsonValue): T[number] {
+    if (!this.isValue(value)) {
+      throw new TypeError("invalid enum member");
+    }
+    return value;
+  }
+}
+
+export function enumAdapter<const T extends readonly string[]>(
+  values: T,
+): AdapterTypeTag<T[number]> {
+  return class ConcreteEnumAdapter extends EnumAdapter<T> {
+    constructor(game: Game) {
+      super(values, game);
     }
   };
 }
