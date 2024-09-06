@@ -40,17 +40,20 @@ export class GameSession {
     },
   ) {
     const addr = CONFIG.bindAddress;
-    this.ipc = new IPCWorker({
-      workerId: generateCUID("wrk"),
-      workerConnectUrl: `ws://${addr.hostname}:${addr.port}/internal/worker`,
-      instanceId: parent.info.instanceId,
-      worldId: parent.info.worldId,
-      worldDirectory: path.join(parent.info.worldDirectory, opts.worldSubDirectory),
-      worldResourcesBaseUrl: `${CONFIG.publicUrlBase}/worlds`,
-      worldSubdirectory: opts.worldSubDirectory,
-      editMode: opts.editMode,
-      inspect: parent.info.inspect,
-    });
+    this.ipc = new IPCWorker(
+      {
+        workerId: generateCUID("wrk"),
+        workerConnectUrl: `ws://${addr.hostname}:${addr.port}/internal/worker`,
+        instanceId: parent.info.instanceId,
+        worldId: parent.info.worldId,
+        worldDirectory: path.join(parent.info.worldDirectory, opts.worldSubDirectory),
+        worldResourcesBaseUrl: `${CONFIG.publicUrlBase}/worlds`,
+        worldSubdirectory: opts.worldSubDirectory,
+        editMode: opts.editMode,
+        inspect: parent.info.inspect,
+      },
+      parent.logs,
+    );
 
     this.#readyPromise = new Promise((resolve, _reject) => {
       this.#readyPromiseResolve = resolve;

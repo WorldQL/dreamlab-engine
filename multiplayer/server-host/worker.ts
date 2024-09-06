@@ -1,9 +1,9 @@
 import { HostIPCMessage, WorkerIPCMessage } from "../server-common/ipc.ts";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 
-import * as colors from "jsr:@std/fmt/colors";
-import { TextLineStream } from "jsr:@std/streams@0.224.5";
-import { GameInstance } from "./instance.ts";
+import * as colors from "jsr:@std/fmt@1/colors";
+import { TextLineStream } from "jsr:@std/streams@1";
+import { LogStore } from "./util/log-store.ts";
 
 export type IPCMessageListener = {
   op: WorkerIPCMessage["op"] | undefined;
@@ -19,7 +19,7 @@ export class IPCWorker {
   #activeIPCSocket: WebSocket | undefined;
   #ipcListeners: IPCMessageListener[] = [];
 
-  constructor(workerData: WorkerInitData) {
+  constructor(workerData: WorkerInitData, logs: LogStore) {
     this.workerId = workerData.workerId;
 
     const command = new Deno.Command(Deno.execPath(), {
@@ -56,18 +56,14 @@ export class IPCWorker {
       .pipeThrough(new TextLineStream());
     void (async () => {
       for await (const line of outLines.values()) {
-        // console.log(colors.dim(`[worker …${shortId}] stdout |`) + ` ${line}`);
-        GameInstance.INSTANCES.get(workerData.instanceId)?.logs.info(line);
+        console.log(colors.dim(`[worker …${shortId}]`) + ` ${line}`);
+        logs.log("stdout", line);
       }
     })();
     void (async () => {
       for await (const line of errLines.values()) {
-        // console.log(
-        //   colors.dim(`[worker …${shortId}] ` + colors.yellow("stderr")) +
-        //     colors.dim(" | ") +
-        //     line,
-        // );
-        GameInstance.INSTANCES.get(workerData.instanceId)?.logs.error(line);
+        console.log(colors.dim(`[worker …${shortId}]`) + ` ${line}`);
+        logs.log("stderr", line);
       }
     })();
   }

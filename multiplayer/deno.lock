@@ -16,6 +16,7 @@
       "jsr:@std/bytes@^0.223.0": "jsr:@std/bytes@0.223.0",
       "jsr:@std/bytes@^1.0.0-rc.3": "jsr:@std/bytes@1.0.2",
       "jsr:@std/bytes@^1.0.1-rc.3": "jsr:@std/bytes@1.0.2",
+      "jsr:@std/bytes@^1.0.2": "jsr:@std/bytes@1.0.2",
       "jsr:@std/bytes@^1.0.2-rc.3": "jsr:@std/bytes@1.0.2",
       "jsr:@std/cli@1": "jsr:@std/cli@1.0.1",
       "jsr:@std/collections@^1.0.4": "jsr:@std/collections@1.0.5",
@@ -45,6 +46,7 @@
       "jsr:@std/path@^1": "jsr:@std/path@1.0.2",
       "jsr:@std/path@^1.0.2": "jsr:@std/path@1.0.2",
       "jsr:@std/streams@0.224.5": "jsr:@std/streams@0.224.5",
+      "jsr:@std/streams@1": "jsr:@std/streams@1.0.4",
       "jsr:@std/toml": "jsr:@std/toml@1.0.0",
       "jsr:@std/uuid@1": "jsr:@std/uuid@1.0.0",
       "npm:@dimforge/rapier2d-compat@0.13.1": "npm:@dimforge/rapier2d-compat@0.13.1",
@@ -243,6 +245,12 @@
         "dependencies": [
           "jsr:@std/bytes@^1.0.0-rc.3",
           "jsr:@std/io@^0.224.1"
+        ]
+      },
+      "@std/streams@1.0.4": {
+        "integrity": "a1a5b01c74ca1d2dcaacfe1d4bbb91392e765946d82a3471bd95539adc6da83a",
+        "dependencies": [
+          "jsr:@std/bytes@^1.0.2"
         ]
       },
       "@std/toml@1.0.0": {

@@ -56,7 +56,7 @@ export class GameInstance {
   #printLogs() {
     const shortId = this.info.instanceId.substring(this.info.instanceId.length - 8);
     this.logs.subscribe().on(entry => {
-      if (entry.level === "stdio") return; // already handled by worker stdio forwarding code
+      if (entry.level === "stdout" || entry.level === "stderr") return; // already handled by worker stdio forwarding code
 
       const separator = colors.black("|");
       const workerTag = colors.dim(`[worker …${shortId}]`);

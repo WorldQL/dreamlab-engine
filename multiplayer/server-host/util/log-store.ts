@@ -1,4 +1,4 @@
-export type LogLevel = "error" | "warn" | "info" | "debug" | "stdio";
+export type LogLevel = "error" | "warn" | "info" | "debug" | "stdout" | "stderr";
 
 type LogDetails = Record<string, unknown>;
 
