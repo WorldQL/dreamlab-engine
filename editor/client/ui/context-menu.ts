@@ -1,6 +1,6 @@
 import { ClientGame } from "@dreamlab/engine";
-import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 import { element as elem } from "@dreamlab/ui";
+import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 
 export type ContextMenuItem =
   | [label: string, action: () => void]
@@ -63,12 +63,28 @@ export class ContextMenu implements InspectorUIWidget {
         subsection.style.setProperty("--section-offset", `${2.25 * index}em`);
 
         button.addEventListener("mouseenter", () => {
+          while (section.nextElementSibling) {
+            section.nextElementSibling.remove();
+          }
+
           button.dataset.selected = "";
           section.insertAdjacentElement("afterend", subsection);
         });
 
-        const tryHideSection = () => {
+        const tryHideSubsection = () => {
           if (button.matches(":hover") || subsection.matches(":hover")) return;
+
+          let descendantHovered = false;
+          let nextSection: Element | null = subsection.nextElementSibling;
+          while (nextSection !== null) {
+            if (nextSection.matches(":hover")) {
+              descendantHovered = true;
+              break;
+            }
+            nextSection = nextSection.nextElementSibling;
+          }
+          if (descendantHovered) return;
+
           delete button.dataset.selected;
           subsection.remove();
         };
@@ -78,12 +94,12 @@ export class ContextMenu implements InspectorUIWidget {
             event.relatedTarget instanceof HTMLElement &&
             event.relatedTarget.closest("section") === section
           ) {
-            setTimeout(tryHideSection, 50);
+            setTimeout(tryHideSubsection, 50);
           } else {
-            setTimeout(tryHideSection, 125);
+            setTimeout(tryHideSubsection, 125);
           }
         });
-        subsection.addEventListener("mouseleave", () => setTimeout(tryHideSection, 125));
+        subsection.addEventListener("mouseleave", () => setTimeout(tryHideSubsection, 125));
       }
     };
 
