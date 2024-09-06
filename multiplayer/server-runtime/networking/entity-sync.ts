@@ -1,14 +1,48 @@
 import {
+  Behavior,
+  BehaviorConstructor,
+  BehaviorDefinition,
+  BehaviorDescendantDestroyed,
+  BehaviorDescendantSpawned,
   EntityDescendantDestroyed,
   EntityDescendantReparented,
   EntityDescendantSpawned,
+  Game,
   GameStatus,
 } from "@dreamlab/engine";
+import * as internal from "@dreamlab/engine/internal";
 import {
+  convertBehaviorDefinition,
   convertEntityDefinition,
+  serializeBehaviorDefinition,
   serializeEntityDefinition,
 } from "@dreamlab/proto/common/entity-sync.ts";
 import { ServerNetworkSetupRoutine } from "./net-manager.ts";
+
+// TODO: deduplicate (almost the same as Entity.#generateBehaviorDefinition)
+function generateBehaviorDefinition(
+  game: Game,
+  behavior: Behavior,
+  withRefs: boolean,
+): BehaviorDefinition & { uri: string } {
+  const behaviorValues: Partial<Record<string, unknown>> = {};
+  for (const [key, value] of behavior.values.entries()) {
+    const newValue = value.adapter
+      ? value.adapter.convertFromPrimitive(value.adapter.convertToPrimitive(value.value))
+      : structuredClone(value.value);
+    behaviorValues[key] = newValue;
+  }
+
+  const uri = game[internal.behaviorLoader].lookup(behavior.constructor as BehaviorConstructor);
+  if (!uri) throw new Error("Attempted to serialize behavior with no associated uri");
+
+  return {
+    _ref: withRefs ? behavior.ref : undefined,
+    type: behavior.constructor as BehaviorConstructor,
+    values: behaviorValues,
+    uri,
+  };
+}
 
 export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
   const changeIgnoreSet = new Set<string>();
@@ -46,6 +80,42 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
 
   game.world.on(EntityDescendantDestroyed, syncDestroyEvent);
   game.prefabs.on(EntityDescendantDestroyed, syncDestroyEvent);
+
+  const syncBehaviorSpawnEvent = (event: BehaviorDescendantSpawned) => {
+    if (game.status !== GameStatus.Running) return;
+
+    const behavior = event.behavior;
+    const entity = behavior.entity;
+    if (changeIgnoreSet.has(entity.ref)) return;
+    if (!entity[internal.entityDoneSpawning]) return;
+
+    const definition = serializeBehaviorDefinition(
+      game,
+      generateBehaviorDefinition(game, behavior, true),
+    );
+
+    net.broadcast({
+      t: "SpawnBehavior",
+      entity: entity.ref,
+      definition,
+    });
+  };
+
+  const syncBehaviorDestroyEvent = (event: BehaviorDescendantDestroyed) => {
+    if (game.status !== GameStatus.Running) return;
+
+    const behavior = event.behavior;
+    const entity = behavior.entity;
+    if (changeIgnoreSet.has(entity.ref)) return;
+
+    net.broadcast({ t: "DeleteBehavior", entity: entity.ref, behavior: behavior.ref });
+  };
+
+  game.world.on(BehaviorDescendantSpawned, syncBehaviorSpawnEvent);
+  game.prefabs.on(BehaviorDescendantSpawned, syncBehaviorSpawnEvent);
+
+  game.world.on(BehaviorDescendantDestroyed, syncBehaviorDestroyEvent);
+  game.prefabs.on(BehaviorDescendantDestroyed, syncBehaviorDestroyEvent);
 
   net.registerPacketHandler("SpawnEntity", async (from, packet) => {
     const def = packet.definition;
@@ -143,6 +213,52 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
       from,
       entity: packet.entity,
       name: entity.name,
+    });
+  });
+
+  net.registerPacketHandler("SpawnBehavior", async (from, packet) => {
+    const entity = game.entities.lookupByRef(packet.entity);
+    if (!entity)
+      throw new Error(
+        `entity sync: Tried to add a behavior to a non-existent entity! (${packet.entity})`,
+      );
+
+    const definition = await convertBehaviorDefinition(game, packet.definition);
+
+    changeIgnoreSet.add(entity.ref);
+    entity.addBehavior(definition);
+    changeIgnoreSet.delete(entity.ref);
+
+    net.broadcast({
+      t: "SpawnBehavior",
+      entity: packet.entity,
+      definition: packet.definition,
+      from,
+    });
+  });
+
+  net.registerPacketHandler("DeleteBehavior", (from, packet) => {
+    const entity = game.entities.lookupByRef(packet.entity);
+    if (!entity)
+      throw new Error(
+        `entity sync: Tried to delete a behavior from a non-existent entity! (${packet.entity})`,
+      );
+
+    const behavior = entity.behaviors.find(it => it.ref === packet.behavior);
+    if (!behavior)
+      throw new Error(
+        `entity sync: Tried to delete a non-existent behavior! (${packet.behavior})`,
+      );
+
+    changeIgnoreSet.add(entity.ref);
+    behavior.destroy();
+    changeIgnoreSet.delete(entity.ref);
+
+    net.broadcast({
+      t: "DeleteBehavior",
+      entity: packet.entity,
+      behavior: packet.behavior,
+      from,
     });
   });
 };
