@@ -1,4 +1,5 @@
 export * from "./animated-sprite.ts";
+export * from "./audio-source.ts";
 export * from "./box-resize.ts";
 export * from "./camera.ts";
 export * from "./clickable.ts";
