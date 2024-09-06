@@ -2,7 +2,7 @@ import {
   Behavior,
   BehaviorContext,
   EntityDestroyed,
-  RectCollider2D,
+  RectCollider,
   Vector2,
 } from "@dreamlab/engine";
 import { Collider, KinematicCharacterController } from "@dreamlab/vendor/rapier.ts";
@@ -26,7 +26,7 @@ export default class PlayerMovement extends Behavior {
   onInitialize(): void {
     if (this.entity.authority !== this.game.network.self) return;
 
-    if (this.entity instanceof RectCollider2D) {
+    if (this.entity instanceof RectCollider) {
       this.#controller = {
         collider: this.entity.collider,
         controller: this.game.physics.world.createCharacterController(0.01),

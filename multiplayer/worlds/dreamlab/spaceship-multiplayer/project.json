@@ -31,7 +31,7 @@
           "ref": "ent_x3sf88ucqj0s0dacqrqilom0"
         },
         {
-          "type": "@core/RectCollider2D",
+          "type": "@core/RectCollider",
           "name": "WallRight",
           "transform": {
             "position": {
@@ -65,7 +65,7 @@
           "ref": "ent_g22jlia34ybmxm1c7eij22pv"
         },
         {
-          "type": "@core/RectCollider2D",
+          "type": "@core/RectCollider",
           "name": "WallLeft",
           "transform": {
             "position": {
@@ -99,7 +99,7 @@
           "ref": "ent_qs8315p7h23vgqriycvs5bl9"
         },
         {
-          "type": "@core/RectCollider2D",
+          "type": "@core/RectCollider",
           "name": "WallTop",
           "transform": {
             "position": {
@@ -133,7 +133,7 @@
           "ref": "ent_sseg99k7ke5tmo2mpkzg0jxe"
         },
         {
-          "type": "@core/RectCollider2D",
+          "type": "@core/RectCollider",
           "name": "WallBottom",
           "transform": {
             "position": {
@@ -206,7 +206,7 @@
       "server": [],
       "prefabs": [
         {
-          "type": "@core/RectCollider2D",
+          "type": "@core/RectCollider",
           "name": "Player",
           "values": {
             "type": "fixed"

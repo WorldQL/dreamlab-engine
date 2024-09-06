@@ -3,6 +3,7 @@ import { IVector2, Vector2 } from "../../math/mod.ts";
 import { EntityDestroyed } from "../../signals/mod.ts";
 import { enumAdapter } from "../../value/adapters/enum-adapter.ts";
 import { Entity, EntityContext } from "../entity.ts";
+import * as internal from "../../internal.ts";
 
 type RigidBodyType = (typeof rigidbodyTypes)[number];
 const rigidbodyTypes = [
@@ -57,8 +58,8 @@ export class Rigidbody extends Entity {
     });
   }
 
-  onPreUpdate(): void {
-    super.onPreUpdate();
+  [internal.interpolationStartTick](): void {
+    super[internal.interpolationStartTick]();
     this.#preparePhysicsUpdate();
   }
 
