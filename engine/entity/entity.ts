@@ -761,6 +761,7 @@ export abstract class Entity implements ISignalHandler {
 
   // #region Lifecycle
   #spawned = false;
+  [internal.entityDoneSpawning] = false;
   #spawn() {
     if (this.#spawned) return;
 
@@ -783,6 +784,7 @@ export abstract class Entity implements ISignalHandler {
       behavior[internal.behaviorSpawn]();
     }
 
+    this[internal.entityDoneSpawning] = true;
     this.game[internal.entityTickingOrderDirty] = true;
   }
 

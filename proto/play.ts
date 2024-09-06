@@ -1,5 +1,6 @@
 import { z } from "@dreamlab/vendor/zod.ts";
 import {
+  BehaviorDefinitionSchema,
   ConnectionIdSchema,
   EntityDefinitionSchema,
   EntityReferenceSchema,
@@ -201,6 +202,26 @@ export const ServerScriptEditedPacket = z.object({
   behavior_script_id: z.string().optional(),
 });
 
+export const ClientSpawnBehaviorPacket = z.object({
+  t: z.literal("SpawnBehavior"),
+  entity: EntityReferenceSchema,
+  definition: BehaviorDefinitionSchema,
+});
+
+export const ServerSpawnBehaviorPacket = ClientSpawnBehaviorPacket.extend({
+  from: ConnectionIdSchema.optional(),
+});
+
+export const ClientDeleteBehaviorPacket = z.object({
+  t: z.literal("DeleteBehavior"),
+  entity: EntityReferenceSchema,
+  behavior: z.string(),
+});
+
+export const ServerDeleteBehaviorPacket = ClientDeleteBehaviorPacket.extend({
+  from: ConnectionIdSchema.optional(),
+});
+
 export const ClientPacketSchema = z.discriminatedUnion("t", [
   PingPacketSchema,
   ClientLoadPhaseChangedPacket,
@@ -214,6 +235,8 @@ export const ClientPacketSchema = z.discriminatedUnion("t", [
   ClientRelinquishExclusiveAuthorityPacket,
   ClientReportEntityTransformsPacket,
   ClientReportValuesPacket,
+  ClientSpawnBehaviorPacket,
+  ClientDeleteBehaviorPacket,
 ]);
 export type ClientPacket = z.infer<typeof ClientPacketSchema>;
 
@@ -238,6 +261,8 @@ export const ServerPacketSchema = z.discriminatedUnion("t", [
   ServerReportValuesPacketSchema,
   ServerRichReportValuesPacketSchema,
   ServerScriptEditedPacket,
+  ServerSpawnBehaviorPacket,
+  ServerDeleteBehaviorPacket,
 ]);
 export type ServerPacket = z.infer<typeof ServerPacketSchema>;
 
