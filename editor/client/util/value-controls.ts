@@ -1,5 +1,6 @@
 import {
   ClientGame,
+  EnumAdapter,
   SpritesheetAdapter,
   TextureAdapter,
   ValueTypeTag,
@@ -27,6 +28,29 @@ export function createValueControl(
   game: ClientGame,
   _opts: ValueControlOptions<unknown>,
 ): [control: HTMLElement, refresh: () => void] {
+  // @ts-expect-error: ugly TS hack to check enum adapter
+  if (_opts.typeTag.prototype instanceof EnumAdapter) {
+    // @ts-expect-error: ugly TS hack to force instantiate and get enum out of the type tag
+    const adapter = new _opts.typeTag(game) as EnumAdapter<string[]>;
+    const control = elem(
+      "select",
+      {},
+      adapter.values.map(value => elem("option", { value }, [value])),
+    );
+
+    control.addEventListener("input", () => _opts.set(control.value));
+
+    const refresh = () => {
+      const val = _opts.get();
+      if (typeof val !== "string") throw new TypeError("enum value was not a string");
+
+      control.value = val;
+    };
+
+    refresh();
+    return [control, refresh];
+  }
+
   switch (_opts.typeTag) {
     case String: {
       const opts = _opts as ValueControlOptions<string | undefined>;
