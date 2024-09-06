@@ -27,8 +27,10 @@
       "npm:@dimforge/rapier2d-compat@0.14.0": "npm:@dimforge/rapier2d-compat@0.14.0",
       "npm:@paralleldrive/cuid2@2.2.2": "npm:@paralleldrive/cuid2@2.2.2",
       "npm:@pixi/ticker": "npm:@pixi/ticker@7.4.2",
+      "npm:@types/howler@2.2.11": "npm:@types/howler@2.2.11",
       "npm:esbuild-plugin-d.ts@1.2.3": "npm:esbuild-plugin-d.ts@1.2.3_typescript@5.4.5",
       "npm:esbuild@0.20.2": "npm:esbuild@0.20.2",
+      "npm:howler@2.2.4": "npm:howler@2.2.4",
       "npm:pixi.js@8.1.5": "npm:pixi.js@8.1.5",
       "npm:pixi.js@8.1.6": "npm:pixi.js@8.1.6",
       "npm:pixi.js@8.2.6": "npm:pixi.js@8.2.6",
@@ -294,6 +296,10 @@
         "integrity": "sha512-qp3m9PPz4gULB9MhjGID7wpo3gJ4bTGXm7ltNDsmOvsPduTeHp8wSW9YckBj3mljeOh4F0m2z/0JKAALRKbmLQ==",
         "dependencies": {}
       },
+      "@types/howler@2.2.11": {
+        "integrity": "sha512-7aBoUL6RbSIrqKnpEgfa1wSNUBK06mn08siP2QI0zYk7MXfEJAaORc4tohamQYqCqVESoDyRWSdQn2BOKWj2Qw==",
+        "dependencies": {}
+      },
       "@webgpu/types@0.1.40": {
         "integrity": "sha512-/BBkHLS6/eQjyWhY2H7Dx5DHcVrS2ICj9owvSRdgtQT6KcafLZA86tPze0xAOsd4FbsYKCUBUQyNi87q7gV7kw==",
         "dependencies": {}
@@ -444,6 +450,10 @@
         "dependencies": {
           "function-bind": "function-bind@1.1.2"
         }
+      },
+      "howler@2.2.4": {
+        "integrity": "sha512-iARIBPgcQrwtEr+tALF+rapJ8qSc+Set2GJQl7xT1MQzWaVkFebdJhR3alVlSiUf5U7nAANKuj3aWpwerocD5w==",
+        "dependencies": {}
       },
       "ismobilejs@1.1.1": {
         "integrity": "sha512-VaFW53yt8QO61k2WJui0dHf4SlL8lxBofUuUmwBo0ljPk0Drz2TiuDW4jo3wDcv41qy/SxrJ+VAzJ/qYqsmzRw==",
