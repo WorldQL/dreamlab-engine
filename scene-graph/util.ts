@@ -51,7 +51,7 @@ export const serializeTransform = (transform: TransformOptions): SceneDescTransf
 
   if (txfm.position?.x === 0 && txfm.position?.y === 0) txfm.position = undefined;
   if (txfm?.rotation === 0) txfm.rotation = undefined;
-  if (txfm.scale?.x === 0 && txfm.scale?.y === 0) txfm.scale = undefined;
+  if (txfm.scale?.x === 1 && txfm.scale?.y === 1) txfm.scale = undefined;
   if (txfm?.z === 0) txfm.z = undefined;
 
   return txfm;
