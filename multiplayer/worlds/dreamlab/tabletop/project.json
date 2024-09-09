@@ -1,0 +1,111 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "engine_revision": "2024-08.001"
+  },
+  "scenes": {
+    "main": {
+      "registration": [],
+      "world": [
+        {
+          "type": "@core/Empty",
+          "name": "Board",
+          "transform": {},
+          "behaviors": [
+            {
+              "ref": "bhv_rk9fh6iebxt74ic8wu7fbdoj",
+              "script": "res://src/board.ts",
+              "values": {}
+            }
+          ],
+          "ref": "ent_jxp3ncnom26jemwdo1kcy9ux"
+        },
+        {
+          "type": "@core/ClickableRect",
+          "name": "TestPiece",
+          "values": {
+            "width": 1,
+            "height": 1
+          },
+          "transform": {},
+          "behaviors": [
+            {
+              "ref": "bhv_nds2478uo4bgi4tvxlw9u6zh",
+              "script": "res://src/item.ts",
+              "values": {
+                "canRotate": true,
+                "canDrag": true,
+                "canSnap": true
+              }
+            }
+          ],
+          "children": [
+            {
+              "type": "@core/Sprite",
+              "name": "Sprite",
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "alpha": 1,
+                "texture": "https://lulu.dev/avatar.png"
+              },
+              "transform": {
+                "z": 10
+              },
+              "ref": "ent_cch8qm97qa1wz6ub6c35tz6h"
+            }
+          ],
+          "ref": "ent_gnuju17mznifiaprrorouppz"
+        }
+      ],
+      "local": [
+        {
+          "type": "@core/Camera",
+          "name": "Camera",
+          "values": {
+            "active": true,
+            "smooth": 0.1,
+            "unlocked": false
+          },
+          "transform": {},
+          "ref": "ent_l2jrfub9p7u3buxicjpmhx8f"
+        }
+      ],
+      "server": [],
+      "prefabs": [
+        {
+          "type": "@core/ClickableRect",
+          "name": "Card",
+          "values": {
+            "width": 1,
+            "height": 1
+          },
+          "transform": {},
+          "ref": "ent_ipenu6s5ev2l1rxmogokrfi7"
+        },
+        {
+          "type": "@core/ClickableRect",
+          "name": "Coin",
+          "values": {
+            "width": 1,
+            "height": 1
+          },
+          "transform": {},
+          "ref": "ent_wtqe3g5d5a0rnb5yc1hbe3yh"
+        },
+        {
+          "type": "@core/ClickableRect",
+          "name": "ChessPiece",
+          "values": {
+            "width": 1,
+            "height": 1
+          },
+          "transform": {},
+          "ref": "ent_u6d3faivwyzfa5wx7ejlve30"
+        }
+      ]
+    }
+  }
+}
