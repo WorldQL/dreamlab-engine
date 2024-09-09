@@ -294,11 +294,33 @@ export class Vector2 implements IVector2, Vector<IVector2, Vector2> {
   }
   // #endregion
 
-  // #region DistanceTo
-  public distanceTo(this: Vector2, other: Vector2): number {
-    const dx = this.x - other.x;
-    const dy = this.y - other.y;
+  // #region distance
+  public static distance(a: IVector2, b: IVector2): number {
+    const dx = a.x - b.x;
+    const dy = a.y - b.y;
     return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  /**
+   * Returns a new vector with the magnitude (length) normalized to 1.
+   */
+  public distance(this: Vector2, other: IVector2): number {
+    return Vector2.distance(this, other);
+  }
+  // #endregion
+
+  // #region distanceSquared
+  public static distanceSquared(a: IVector2, b: IVector2): number {
+    const dx = a.x - b.x;
+    const dy = a.y - b.y;
+    return dx * dx + dy * dy;
+  }
+
+  /**
+   * Returns a new vector with the magnitude (length) normalized to 1.
+   */
+  public distanceSquared(this: Vector2, other: IVector2): number {
+    return Vector2.distanceSquared(this, other);
   }
   // #endregion
   // #endregion

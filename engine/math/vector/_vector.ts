@@ -37,6 +37,9 @@ export interface Vector<I, T extends I> {
    */
   lookAt(this: T, target: I): number;
 
+  distance(this: T, target: I): number;
+  distanceSquared(this: T, target: I): number;
+
   /**
    * @ignore
    */
