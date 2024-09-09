@@ -64,6 +64,7 @@ export class AudioSource extends Entity {
       src: [this.game.resolveResource(this.clip)],
       volume: this.volume,
       loop: this.loop,
+      preload: "metadata",
     });
 
     this.#updateHRTF();
