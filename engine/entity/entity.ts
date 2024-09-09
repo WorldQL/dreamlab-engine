@@ -480,57 +480,57 @@ export abstract class Entity implements ISignalHandler {
   }
 
   setTransform(opts: TransformOptions): void {
-    if (opts.position?.x) {
+    if (opts.position?.x !== undefined) {
       this.transform.position.x = opts.position.x;
       this.#prevPosition.x = opts.position.x;
     }
-    if (opts.position?.y) {
+    if (opts.position?.y !== undefined) {
       this.transform.position.y = opts.position.y;
       this.#prevPosition.y = opts.position.y;
     }
 
-    if (opts.rotation) {
+    if (opts.rotation !== undefined) {
       this.transform.rotation = opts.rotation;
       this.#prevRotation = opts.rotation;
     }
 
-    if (opts.scale?.x) {
+    if (opts.scale?.x !== undefined) {
       this.transform.scale.x = opts.scale.x;
       this.#prevScale.x = opts.scale.x;
     }
-    if (opts.scale?.y) {
+    if (opts.scale?.y !== undefined) {
       this.transform.scale.y = opts.scale.y;
       this.#prevScale.y = opts.scale.y;
     }
 
-    if (opts.z) this.transform.z = opts.z;
+    if (opts.z !== undefined) this.transform.z = opts.z;
   }
 
   setGlobalTransform(opts: TransformOptions): void {
-    if (opts.position?.x) {
+    if (opts.position?.x !== undefined) {
       this.globalTransform.position.x = opts.position.x;
       this.#prevPosition.x = opts.position.x;
     }
-    if (opts.position?.y) {
+    if (opts.position?.y !== undefined) {
       this.globalTransform.position.y = opts.position.y;
       this.#prevPosition.y = opts.position.y;
     }
 
-    if (opts.rotation) {
+    if (opts.rotation !== undefined) {
       this.globalTransform.rotation = opts.rotation;
       this.#prevRotation = opts.rotation;
     }
 
-    if (opts.scale?.x) {
+    if (opts.scale?.x !== undefined) {
       this.globalTransform.scale.x = opts.scale.x;
       this.#prevScale.x = opts.scale.x;
     }
-    if (opts.scale?.y) {
+    if (opts.scale?.y !== undefined) {
       this.globalTransform.scale.y = opts.scale.y;
       this.#prevScale.y = opts.scale.y;
     }
 
-    if (opts.z) this.globalTransform.z = opts.z;
+    if (opts.z !== undefined) this.globalTransform.z = opts.z;
   }
   // #endregion
 
