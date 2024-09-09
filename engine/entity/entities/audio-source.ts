@@ -1,4 +1,4 @@
-import { Howl } from "@dreamlab/vendor/howler.ts";
+import * as Howler from "@dreamlab/vendor/howler.ts";
 import { Vector2 } from "../../math/mod.ts";
 import { GameRender } from "../../signals/mod.ts";
 import { AudioAdapter } from "../../value/adapters/audio-adapter.ts";
@@ -21,7 +21,7 @@ export class AudioSource extends Entity {
   falloff: number = 0.8;
   stream: boolean = false;
 
-  #howl: Howl | undefined;
+  #howl: Howler.Howl | undefined;
 
   constructor(ctx: EntityContext) {
     super(ctx);
@@ -69,7 +69,7 @@ export class AudioSource extends Entity {
     if (!this.game.isClient()) return;
     if (this.clip === "") return;
 
-    this.#howl = new Howl({
+    this.#howl = new Howler.Howl({
       src: [this.game.resolveResource(this.clip)],
       volume: this.volume,
       loop: this.loop,

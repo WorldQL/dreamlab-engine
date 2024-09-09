@@ -18,10 +18,12 @@
       "jsr:@std/uuid@1": "jsr:@std/uuid@1.0.0",
       "npm:@dimforge/rapier2d-compat@0.14.0": "npm:@dimforge/rapier2d-compat@0.14.0",
       "npm:@paralleldrive/cuid2@2.2.2": "npm:@paralleldrive/cuid2@2.2.2",
+      "npm:@types/howler@2.2.11": "npm:@types/howler@2.2.11",
       "npm:@types/object-inspect@1.13.0": "npm:@types/object-inspect@1.13.0",
       "npm:@types/stats.js@0.17.3": "npm:@types/stats.js@0.17.3",
       "npm:esbuild-plugin-copy@2.1.1": "npm:esbuild-plugin-copy@2.1.1_esbuild@0.20.2",
       "npm:esbuild@0.20.2": "npm:esbuild@0.20.2",
+      "npm:howler@2.2.4": "npm:howler@2.2.4",
       "npm:lucide-static": "npm:lucide-static@0.427.0",
       "npm:lucide-static@0.429.0": "npm:lucide-static@0.429.0",
       "npm:object-inspect@1.13.2": "npm:object-inspect@1.13.2",
@@ -226,6 +228,10 @@
         "integrity": "sha512-qp3m9PPz4gULB9MhjGID7wpo3gJ4bTGXm7ltNDsmOvsPduTeHp8wSW9YckBj3mljeOh4F0m2z/0JKAALRKbmLQ==",
         "dependencies": {}
       },
+      "@types/howler@2.2.11": {
+        "integrity": "sha512-7aBoUL6RbSIrqKnpEgfa1wSNUBK06mn08siP2QI0zYk7MXfEJAaORc4tohamQYqCqVESoDyRWSdQn2BOKWj2Qw==",
+        "dependencies": {}
+      },
       "@types/object-inspect@1.13.0": {
         "integrity": "sha512-lwGTVESDDV+XsQ1pH4UifpJ1f7OtXzQ6QBOX2Afq2bM/T3oOt8hF6exJMjjIjtEWeAN2YAo25J7HxWh97CCz9w==",
         "dependencies": {}
@@ -416,6 +422,10 @@
       },
       "has-flag@4.0.0": {
         "integrity": "sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==",
+        "dependencies": {}
+      },
+      "howler@2.2.4": {
+        "integrity": "sha512-iARIBPgcQrwtEr+tALF+rapJ8qSc+Set2GJQl7xT1MQzWaVkFebdJhR3alVlSiUf5U7nAANKuj3aWpwerocD5w==",
         "dependencies": {}
       },
       "ignore@5.3.1": {
