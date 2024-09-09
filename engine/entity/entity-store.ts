@@ -1,3 +1,4 @@
+import { Behavior, BehaviorConstructor } from "../behavior/mod.ts";
 import {
   entityStoreRegister,
   entityStoreRegisterRoot,
@@ -49,6 +50,14 @@ export class EntityStore {
         local.y <= bounds.y / 2;
 
       if (inBounds) entities.push(entity);
+    }
+    return entities;
+  }
+
+  lookupByBehavior<B extends Behavior>(behavior: BehaviorConstructor<B>): readonly Entity[] {
+    const entities: Entity[] = [];
+    for (const entity of this.#entitiesById.values()) {
+      if (entity.behaviors.some(b => b instanceof behavior)) entities.push(entity);
     }
     return entities;
   }
