@@ -1,4 +1,4 @@
-import { BehaviorConstructor, ClientGame, Empty, ValueTypeTag } from "@dreamlab/engine";
+import { BehaviorConstructor, ClientGame, Empty, Entity, ValueTypeTag } from "@dreamlab/engine";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import * as internal from "../../../engine/internal.ts";
 
@@ -20,6 +20,7 @@ export class BehaviorTypeInfoService {
 
   #createInfo(dummyGame: ClientGame, behaviorType: BehaviorConstructor): BehaviorTypeInfo {
     const dummyEntity = dummyGame.world.spawn({ type: Empty, name: "DummyEntity" });
+    dummyEntity.cast = <T extends Entity>() => this as unknown as T;
     const behavior = new behaviorType({ game: dummyGame, entity: dummyEntity });
     dummyEntity.behaviors.push(behavior);
     dummyGame[internal.behaviorLoader].initialize(behaviorType);

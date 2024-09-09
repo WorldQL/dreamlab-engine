@@ -1,4 +1,4 @@
-import { EntityConstructor, EntityDefinition } from "@dreamlab/engine";
+import { Entity, EntityConstructor, EntityDefinition } from "@dreamlab/engine";
 
 export class Facades {
   static #facades = new Map<EntityConstructor, EntityConstructor>();
@@ -7,6 +7,8 @@ export class Facades {
   static register(entity: EntityConstructor, facade: EntityConstructor): void {
     this.#facades.set(entity, facade);
     this.#reverse.set(facade, entity);
+
+    facade.prototype.cast = <T extends Entity>() => this as unknown as T;
   }
 
   static lookupFacadeEntityType(entityType: EntityConstructor): EntityConstructor {
