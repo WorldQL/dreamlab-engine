@@ -56,15 +56,14 @@ export abstract class ClickableEntity extends Entity {
 
     if (this.game.isClient()) {
       if (!ClickableEntity.#GameRenderListeners.has(this.game)) {
-        const canvas =
-          document.getElementById("dreamlab-pointer-style-target") ??
-          this.game.renderer.app.canvas;
+        const canvas = this.game.renderer.app.canvas;
 
         // TODO: Make z sorting optional
         const fn = (_: GameRender) => {
           const cursor = this.inputs.cursor;
           const entities = this.game.entities
             .lookupByType(ClickableEntity)
+            .filter(entity => entity.root !== this.game.prefabs)
             .toSorted((a, b) => b.z - a.z);
 
           let hoverCount = 0;
@@ -90,6 +89,7 @@ export abstract class ClickableEntity extends Entity {
         const fn = ({ button, cursor }: MouseDown) => {
           const entities = this.game.entities
             .lookupByType(ClickableEntity)
+            .filter(entity => entity.root !== this.game.prefabs)
             .toSorted((a, b) => b.z - a.z);
 
           let clickedCount = 0;
@@ -108,7 +108,10 @@ export abstract class ClickableEntity extends Entity {
 
       if (!ClickableEntity.#MouseUpListeners.has(this.game)) {
         const fn = ({ button, cursor }: MouseUp) => {
-          const entities = this.game.entities.lookupByType(ClickableEntity);
+          const entities = this.game.entities
+            .lookupByType(ClickableEntity)
+            .filter(entity => entity.root !== this.game.prefabs);
+
           for (const entity of entities) entity[clickedSetter](false, button, cursor);
         };
 
