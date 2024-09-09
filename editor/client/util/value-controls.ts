@@ -1,4 +1,5 @@
 import {
+  AudioAdapter,
   ClientGame,
   EnumAdapter,
   SpritesheetAdapter,
@@ -138,7 +139,6 @@ export function createValueControl(
     }
 
     case SpritesheetAdapter: {
-      // TODO: spritesheet picker
       const opts = _opts as ValueControlOptions<string | undefined>;
       const [control, refresh] = createInputFieldWithDefault({
         default: opts.default,
@@ -159,6 +159,59 @@ export function createValueControl(
         },
         convertBack: x => x,
       });
+      return [control, refresh];
+    }
+
+    case AudioAdapter: {
+      const opts = _opts as ValueControlOptions<string | undefined>;
+
+      const convert = async (value: string) => {
+        const url = z.literal("").or(z.string().url()).parse(value);
+        if (url === "") return url;
+
+        try {
+          const resp = await fetch(url);
+          if (!resp.ok) throw new Error("");
+
+          // TODO: Validate if is actualy audio
+          return url;
+        } catch {
+          throw new TypeError("Audio URL could not be resolved");
+        }
+      };
+
+      const [control, refresh] = createInputFieldWithDefault({
+        default: opts.default,
+        get: opts.get,
+        set: opts.set,
+        convert,
+      });
+
+      const getUrl = async (): Promise<string | undefined> => {
+        const dragTarget = document.querySelector(
+          "[data-file][data-dragging]",
+        ) as HTMLElement | null;
+        if (!dragTarget) return;
+
+        const file = `res://${dragTarget.dataset.file}`;
+        try {
+          const url = await convert(file);
+          return url;
+        } catch {
+          return undefined;
+        }
+      };
+
+      control.addEventListener("dragover", async ev => {
+        const url = await getUrl();
+        if (url !== undefined) ev.preventDefault();
+      });
+
+      control.addEventListener("drop", async () => {
+        const url = await getUrl();
+        if (url) opts.set(url);
+      });
+
       return [control, refresh];
     }
 

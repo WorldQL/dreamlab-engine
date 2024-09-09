@@ -1,7 +1,17 @@
 import { ClientGame } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 import * as path from "jsr:@std/path@1";
-import { Braces, CodeXml, File, Folder, icon, Image, Settings, SimpleIcon } from "../_icons.ts";
+import {
+  AudioLines,
+  Braces,
+  CodeXml,
+  File,
+  Folder,
+  icon,
+  Image,
+  Settings,
+  SimpleIcon,
+} from "../_icons.ts";
 import { DataTree } from "../components/mod.ts";
 import TypeScript from "../svg/typescript.svg";
 import { SERVER_URL } from "../util/server-url.ts";
@@ -27,6 +37,7 @@ export class FileTree implements InspectorUIWidget {
     this.#registerIcon(CodeXml, ".html", ".xml", ".svg");
     this.#registerIcon(Settings, ".env", ".env.local");
     this.#registerIcon(TypeScript, ".ts");
+    this.#registerIcon(AudioLines, ".mp3", ".ogg", ".wav", ".flac");
   }
 
   #section = elem("section", { id: "file-tree" }, [elem("h1", {}, ["Project"])]);
