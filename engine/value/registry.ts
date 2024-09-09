@@ -2,6 +2,7 @@ import { Game } from "../game.ts";
 import * as internal from "../internal.ts";
 
 import { ConnectionId } from "../network.ts";
+import { JsonValue } from "./data.ts";
 import { Value } from "./value.ts";
 
 type ValueChangedListener = (
@@ -24,6 +25,19 @@ export class ValueRegistry {
         if (idx !== -1) this.#changeListeners.splice(idx, 1);
       },
     };
+  }
+
+  applyValueUpdateFromPrimitive(
+    value: Value,
+    newValue: unknown,
+    clock: number,
+    source: ConnectionId,
+  ) {
+    const newValueFromPrimitive = value.adapter
+      ? value.adapter.convertFromPrimitive(newValue as JsonValue)
+      : newValue;
+
+    this.applyValueUpdate(value, newValueFromPrimitive, clock, source);
   }
 
   /** todo: use internal symbol for this */

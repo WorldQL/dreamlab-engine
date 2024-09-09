@@ -48,7 +48,7 @@ export const handleValueChanges: ServerNetworkSetupRoutine = (net, game) => {
       const value = game.values.lookup(report.identifier);
       if (!value || !value.replicated) continue;
       affectedValues.set(report.identifier, value);
-      game.values.applyValueUpdate(value, report.value, report.clock, from);
+      game.values.applyValueUpdateFromPrimitive(value, report.value, report.clock, from);
     }
 
     const validReports = packet.reports.filter(

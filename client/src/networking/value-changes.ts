@@ -49,7 +49,12 @@ export const handleValueChanges: ClientNetworkSetupRoutine = (
       const value = game.values.lookup(report.identifier);
       if (!value || !value.replicated) continue;
 
-      game.values.applyValueUpdate(value, report.value, report.clock, packet.from ?? "server");
+      game.values.applyValueUpdateFromPrimitive(
+        value,
+        report.value,
+        report.clock,
+        packet.from ?? "server",
+      );
     }
   });
 
@@ -57,7 +62,7 @@ export const handleValueChanges: ClientNetworkSetupRoutine = (
     for (const report of packet.reports) {
       const value = game.values.lookup(report.identifier);
       if (!value || !value.replicated) continue;
-      game.values.applyValueUpdate(
+      game.values.applyValueUpdateFromPrimitive(
         value,
         report.value,
         report.clock,
