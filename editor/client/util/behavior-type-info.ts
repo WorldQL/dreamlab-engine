@@ -26,7 +26,7 @@ export class BehaviorTypeInfoService {
     dummyGame[internal.behaviorLoader].initialize(behaviorType);
 
     try {
-      behavior.spawn();
+      behavior[internal.behaviorSpawn]();
     } catch (_err) {
       // ignore
     }

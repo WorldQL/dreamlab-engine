@@ -8,6 +8,7 @@ export const submitEntityTickingOrder = Symbol.for(
 );
 export const setValueRegistrySource = Symbol.for("dreamlab.internal.setValueRegistrySource");
 export const behaviorLoader = Symbol.for("dreamlab.internal.behaviorLoader");
+export const behaviorSpawn = Symbol.for("dreamlab.internal.behaviorSpawn");
 export const vectorOnChanged = Symbol.for("dreamlab.internal.vectorOnChanged");
 export const transformOnChanged = Symbol.for("dreamlab.internal.transformOnChanged");
 export const transformForceUpdate = Symbol.for("dreamlab.internal.transformForceUpdate");
