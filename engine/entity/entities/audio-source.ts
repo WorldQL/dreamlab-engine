@@ -19,6 +19,7 @@ export class AudioSource extends Entity {
   minRange: number = 0.2;
   maxRange: number = Number.POSITIVE_INFINITY;
   falloff: number = 0.8;
+  stream: boolean = false;
 
   #howl: Howl | undefined;
 
@@ -26,7 +27,15 @@ export class AudioSource extends Entity {
     super(ctx);
 
     this.defineValue(AudioSource, "clip", { type: AudioAdapter });
-    this.defineValues(AudioSource, "volume", "loop", "minRange", "maxRange", "falloff");
+    this.defineValues(
+      AudioSource,
+      "volume",
+      "loop",
+      "minRange",
+      "maxRange",
+      "falloff",
+      "stream",
+    );
 
     const clipValue = this.values.get("clip");
     clipValue?.onChanged(() => {
@@ -65,6 +74,7 @@ export class AudioSource extends Entity {
       volume: this.volume,
       loop: this.loop,
       preload: "metadata",
+      html5: this.stream,
     });
 
     this.#updateHRTF();
