@@ -111,7 +111,7 @@ export const serveScriptEditingAPI = (router: Router) => {
         ),
         response: z.object({ success: z.boolean() }),
       },
-      async (ctx, { params, body }) => {
+      async (_ctx, { params, body }) => {
         const instance = params.instance;
         const worldFolder = instance.info.worldDirectory;
 
@@ -157,12 +157,9 @@ export const serveScriptEditingAPI = (router: Router) => {
             params: { status: Status.BadRequest, throwEarly: true },
           }),
         }),
-        query: z.object({
-          no_restart: z.coerce.boolean().default(false),
-        }),
         response: z.object({ success: z.boolean() }),
       },
-      async (ctx, { query, params }) => {
+      async (ctx, { params }) => {
         const instance = params.instance;
         const worldFolder = instance.info.worldDirectory;
 
@@ -211,12 +208,9 @@ export const serveScriptEditingAPI = (router: Router) => {
             params: { status: Status.BadRequest, throwEarly: true },
           }),
         }),
-        query: z.object({
-          no_restart: z.coerce.boolean().default(false),
-        }),
         response: z.object({ success: z.boolean() }),
       },
-      async (_ctx, { query, params }) => {
+      async (_ctx, { params }) => {
         const instance = params.instance;
         const worldFolder = instance.info.worldDirectory;
 

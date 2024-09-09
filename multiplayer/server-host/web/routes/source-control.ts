@@ -407,10 +407,6 @@ export const serveSourceControlAPI = (router: Router) => {
     await ctx.request.body.stream?.pipeTo(file.writable);
 
     ctx.response.body = { success: true };
-
-    if (ctx.request.url.searchParams.get("no_restart") !== "true") {
-      instance.restart();
-    }
   });
 
   router.post("/api/v1/source-control/:instance_id/discard", async ctx => {
@@ -455,10 +451,6 @@ export const serveSourceControlAPI = (router: Router) => {
         success: true,
         message: `Changes discarded successfully for file: ${filePath}`,
       };
-
-      if (ctx.request.url.searchParams.get("no_restart") !== "true") {
-        instance.restart();
-      }
     } catch (error) {
       throw new JsonAPIError(Status.InternalServerError, error.message);
     }
