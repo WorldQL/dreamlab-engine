@@ -42,6 +42,7 @@ export class SceneGraph implements InspectorUIWidget {
       this.renderEntry(ui, treeRoot, this.game.world._.EditEntities._.prefabs);
     } else {
       this.renderEntry(ui, treeRoot, this.game.world);
+      this.renderEntry(ui, treeRoot, this.game.local);
       this.renderEntry(ui, treeRoot, this.game.prefabs);
     }
 
