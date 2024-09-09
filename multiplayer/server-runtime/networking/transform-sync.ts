@@ -62,6 +62,7 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
           position: entity.transform.position.bare(),
           rotation: entity.transform.rotation,
           scale: entity.transform.scale.bare(),
+          z: entity.transform.z,
         });
       }
     }
@@ -138,7 +139,7 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
             position: report.position,
             rotation: report.rotation,
             scale: report.scale,
-            z: entity.transform.z,
+            z: report.z,
           }),
         );
         entity.transform[internal.transformOnChanged]();

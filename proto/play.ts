@@ -1,8 +1,8 @@
 import { z } from "@dreamlab/vendor/zod.ts";
 import {
+  ConnectionIdSchema,
   EntityDefinitionSchema,
   EntityReferenceSchema,
-  ConnectionIdSchema,
   Vector2Schema,
 } from "./datamodel.ts";
 
@@ -160,6 +160,7 @@ export const EntityTransformReportSchema = z.object({
   position: Vector2Schema,
   rotation: z.number(),
   scale: Vector2Schema,
+  z: z.number(),
 });
 
 export const ClientReportEntityTransformsPacket = z.object({
