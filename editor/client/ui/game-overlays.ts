@@ -27,15 +27,20 @@ export class GameOverlays implements InspectorUIWidget {
   #editMode: boolean = false;
 
   #overlay: HTMLElement;
-  #editOverlays: HTMLElement[];
+  #editOverlays: HTMLElement[] = [];
 
-  constructor(private game: ClientGame, private gameContainer: HTMLDivElement) {
+  constructor(
+    private game: ClientGame,
+    private gameContainer: HTMLDivElement,
+  ) {
     this.#overlay = elem("div", { id: "game-overlays" });
-    this.#editOverlays = [this.drawGizmoButtons(), this.drawCursorOverlay()];
   }
 
   setup(ui: InspectorUI): void {
     this.#editMode = ui.editMode;
+    if (this.#editMode) {
+      this.#editOverlays.push(this.drawGizmoButtons(), this.drawCursorOverlay());
+    }
   }
 
   show(_uiRoot: HTMLElement): void {
