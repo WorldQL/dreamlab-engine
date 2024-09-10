@@ -1,4 +1,4 @@
-import { BehaviorContext, Vector2 } from "@dreamlab/engine";
+import { BehaviorContext, Entity, Vector2 } from "@dreamlab/engine";
 import {
   Behavior,
   ClickableEntity,
@@ -9,10 +9,12 @@ import {
 } from "@dreamlab/engine";
 import Dropzone from "./dropzone.ts";
 import { areAABBvsOBBIntersecting, Box, RotatedBox } from "../lib/intersection.ts";
+import Hand from "./hand.ts";
 
 export default class Item extends Behavior {
   #clickable: ClickableEntity;
   #origin: Vector2 | undefined;
+  #oldParent: Entity | undefined;
 
   canDrag: boolean = true;
   canFlip: boolean = false;
@@ -31,6 +33,11 @@ export default class Item extends Behavior {
       if (!this.canDrag) return;
       if (button !== "left") return;
 
+      if (this.#oldParent) {
+        this.entity.parent = this.#oldParent;
+        this.#oldParent = undefined;
+      }
+
       this.#origin = world.sub(this.entity.pos);
     });
 
@@ -48,30 +55,43 @@ export default class Item extends Behavior {
         height: this.entity.globalTransform.scale.y,
       };
 
-      // TODO: Snap
       const zones = this.game.entities
         .lookupByBehavior(Dropzone)
         .filter(e => e.root !== this.game.prefabs)
-        .filter(e => {
-          const zone = e.getBehavior(Dropzone);
+        .map(e => e.getBehavior(Dropzone));
+
+      const hands = this.game.entities
+        .lookupByBehavior(Hand)
+        .filter(e => e.root !== this.game.prefabs)
+        .map(e => e.getBehavior(Hand));
+
+      const targets = [...zones, ...hands]
+        .filter(b => {
+          const e = b.entity;
           const aabb: Box = {
-            x: e.pos.x - zone.width / 2,
-            y: e.pos.y - zone.width / 2,
-            width: zone.width,
-            height: zone.height,
+            x: e.pos.x - b.width / 2,
+            y: e.pos.y - b.height / 2,
+            width: b.width,
+            height: b.height,
           };
 
           return areAABBvsOBBIntersecting(aabb, obb);
         })
         .toSorted(
           (a, b) =>
-            a.pos.distanceSquared(this.entity.pos) - b.pos.distanceSquared(this.entity.pos),
+            a.entity.pos.distanceSquared(this.entity.pos) -
+            b.entity.pos.distanceSquared(this.entity.pos),
         );
 
-      const [zone] = zones;
-      if (!zone) return;
+      const [target] = targets;
+      if (!target) return;
 
-      this.entity.setGlobalTransform({ position: zone.pos });
+      if (target instanceof Dropzone) {
+        this.entity.setGlobalTransform({ position: target.entity.pos });
+      } else {
+        this.#oldParent = this.entity.parent;
+        this.entity.parent = target.entity;
+      }
     });
 
     this.listen(this.inputs, Scroll, ({ delta: { y: delta } }) => {

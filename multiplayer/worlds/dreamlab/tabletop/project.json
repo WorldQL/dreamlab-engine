@@ -8,26 +8,18 @@
       "registration": [],
       "world": [
         {
-          "type": "@core/Empty",
-          "name": "Board",
-          "transform": {},
-          "behaviors": [
-            {
-              "ref": "bhv_rk9fh6iebxt74ic8wu7fbdoj",
-              "script": "res://src/board.ts",
-              "values": {}
-            }
-          ],
-          "ref": "ent_jxp3ncnom26jemwdo1kcy9ux"
-        },
-        {
           "type": "@core/ClickableRect",
           "name": "TestPiece",
           "values": {
             "width": 1,
             "height": 1
           },
-          "transform": {},
+          "transform": {
+            "position": {
+              "x": -3.99,
+              "y": -0.3799999999999999
+            }
+          },
           "behaviors": [
             {
               "ref": "bhv_nds2478uo4bgi4tvxlw9u6zh",
@@ -58,6 +50,174 @@
             }
           ],
           "ref": "ent_gnuju17mznifiaprrorouppz"
+        },
+        {
+          "type": "@core/ClickableRect",
+          "name": "TestPiece.1",
+          "values": {
+            "width": 1,
+            "height": 1
+          },
+          "transform": {
+            "position": {
+              "x": -0.17999999999999972,
+              "y": 1.87
+            }
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_nds2478uo4bgi4tvxlw9u6zh",
+              "script": "res://src/item.ts",
+              "values": {
+                "canRotate": true,
+                "canDrag": true,
+                "canSnap": true
+              }
+            }
+          ],
+          "children": [
+            {
+              "type": "@core/Sprite",
+              "name": "Sprite",
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "alpha": 1,
+                "texture": "https://lulu.dev/avatar.png"
+              },
+              "transform": {
+                "z": 10
+              },
+              "ref": "ent_dwmwoxu2yccq133k8w054san"
+            }
+          ],
+          "ref": "ent_ybjezndr1zesna09wqd2jw0p"
+        },
+        {
+          "type": "@core/Empty",
+          "name": "Hand",
+          "transform": {
+            "position": {
+              "x": 0.040000000000000924,
+              "y": -1.6799999999999997
+            }
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_eu35n8l9e9eo0l5mqfcv7vvk",
+              "script": "res://src/hand.ts",
+              "values": {
+                "width": 3
+              }
+            }
+          ],
+          "children": [
+            {
+              "type": "@core/Sprite",
+              "name": "Sprite",
+              "values": {
+                "static": true,
+                "hidden": false,
+                "width": 3,
+                "height": 1,
+                "alpha": 1,
+                "texture": ""
+              },
+              "transform": {},
+              "ref": "ent_jpnj1b8r5jtd5iy6pk7lki5d"
+            }
+          ],
+          "ref": "ent_mcxn0p34vl500zv50d1792ir"
+        },
+        {
+          "type": "@core/ClickableRect",
+          "name": "TestPiece.2",
+          "values": {
+            "width": 1,
+            "height": 1
+          },
+          "transform": {
+            "position": {
+              "x": 1,
+              "y": 0
+            }
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_nds2478uo4bgi4tvxlw9u6zh",
+              "script": "res://src/item.ts",
+              "values": {
+                "canRotate": true,
+                "canDrag": true,
+                "canSnap": true
+              }
+            }
+          ],
+          "children": [
+            {
+              "type": "@core/Sprite",
+              "name": "Sprite",
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "alpha": 1,
+                "texture": "https://lulu.dev/avatar.png"
+              },
+              "transform": {
+                "z": 10
+              },
+              "ref": "ent_zfhem8zl1myfixjqqjb3pvd1"
+            }
+          ],
+          "ref": "ent_kxuuvjg2lhtovifkhf9we6z0"
+        },
+        {
+          "type": "@core/ClickableRect",
+          "name": "TestPiece.3",
+          "values": {
+            "width": 1,
+            "height": 1
+          },
+          "transform": {
+            "position": {
+              "x": -1,
+              "y": 0
+            }
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_nds2478uo4bgi4tvxlw9u6zh",
+              "script": "res://src/item.ts",
+              "values": {
+                "canRotate": true,
+                "canDrag": true,
+                "canSnap": true
+              }
+            }
+          ],
+          "children": [
+            {
+              "type": "@core/Sprite",
+              "name": "Sprite",
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "alpha": 1,
+                "texture": "https://lulu.dev/avatar.png"
+              },
+              "transform": {
+                "z": 10
+              },
+              "ref": "ent_a30cql60qvdu9yetbr03po59"
+            }
+          ],
+          "ref": "ent_g10hhqadfgklv8f812halv7u"
         }
       ],
       "local": [
@@ -104,6 +264,19 @@
           },
           "transform": {},
           "ref": "ent_u6d3faivwyzfa5wx7ejlve30"
+        },
+        {
+          "type": "@core/Empty",
+          "name": "Board",
+          "transform": {},
+          "behaviors": [
+            {
+              "ref": "bhv_rk9fh6iebxt74ic8wu7fbdoj",
+              "script": "res://src/board.ts",
+              "values": {}
+            }
+          ],
+          "ref": "ent_jxp3ncnom26jemwdo1kcy9ux"
         }
       ]
     }
