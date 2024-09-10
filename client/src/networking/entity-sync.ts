@@ -135,8 +135,6 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
   });
 
   game.world.on(EntityDescendantReparented, event => {
-    console.log(event);
-
     if (game.status !== GameStatus.Running) return;
 
     const entity = event.descendant;

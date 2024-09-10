@@ -52,7 +52,6 @@ export default class Board extends Behavior {
           y: y * tileSize - this.size / 2 + tileSize / 2,
         });
 
-        this.spawn();
         this.entity.spawn({
           type: Empty,
           name: "Dropzone",
