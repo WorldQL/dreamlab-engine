@@ -159,7 +159,7 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
   });
 
   const statusListener = game.on(GameStatusChange, () => {
-    if (game.status === GameStatus.LoadingFinished) {
+    if (game.status === GameStatus.Running) {
       statusListener.unsubscribe();
 
       changeIgnoreSet = changeIgnoreSet.union(initialNetSpawnedEntityRefs);
@@ -167,6 +167,7 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
         if (!entity) continue;
 
         try {
+          console.log("spawning", entity.id);
           entity[internal.entitySpawnFinalize]();
         } catch (err) {
           console.warn(`spawning ${entity.id}:`, err);

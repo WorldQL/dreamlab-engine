@@ -568,7 +568,7 @@ export abstract class Entity implements ISignalHandler {
     const originalValue: T = this[prop] as T;
     let defaultValue: T = originalValue;
 
-    if (prop in this.#defaultValues) {
+    if (this.#defaultValues[prop] !== undefined) {
       if (opts.type && (opts.type as AdapterTypeTag<T>).prototype instanceof ValueTypeAdapter) {
         const adapter = new (opts.type as AdapterTypeTag<T>)(this.game);
         defaultValue = (
@@ -580,6 +580,8 @@ export abstract class Entity implements ISignalHandler {
         defaultValue = this.#defaultValues[prop] as T;
       }
     }
+
+    if (defaultValue === undefined) defaultValue = originalValue;
 
     const original = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(this), prop);
     const _get = original?.get?.bind(this);

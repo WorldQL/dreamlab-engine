@@ -592,6 +592,9 @@
       }
     }
   },
+  "redirects": {
+    "https://esm.sh/v135/@types/howler@~2.2/index.d.ts": "https://esm.sh/v135/@types/howler@2.2.11/index.d.ts"
+  },
   "remote": {
     "https://deno.land/x/cbor@v1.6.0/decode.js": "c002b5c7abd716e6d57fe1127c674cc72a7cffc781ca20970db699e9a2bf7f38",
     "https://deno.land/x/cbor@v1.6.0/encode.js": "98be7aefb63f34da50dbb30a5a6d4648d05baa8effd85611fc73796ded7bc613",
@@ -609,6 +612,8 @@
     "https://deno.land/x/zod@v3.23.8/index.ts": "d27aabd973613985574bc31f39e45cb5d856aa122ef094a9f38a463b8ef1a268",
     "https://deno.land/x/zod@v3.23.8/locales/en.ts": "a7a25cd23563ccb5e0eed214d9b31846305ddbcdb9c5c8f508b108943366ab4c",
     "https://deno.land/x/zod@v3.23.8/mod.ts": "ec6e2b1255c1a350b80188f97bd0a6bac45801bb46fc48f50b9763aa66046039",
-    "https://deno.land/x/zod@v3.23.8/types.ts": "1b172c90782b1eaa837100ebb6abd726d79d6c1ec336350c8e851e0fd706bf5c"
+    "https://deno.land/x/zod@v3.23.8/types.ts": "1b172c90782b1eaa837100ebb6abd726d79d6c1ec336350c8e851e0fd706bf5c",
+    "https://esm.sh/howler@2.2.4": "b0be1da91763162061c1affbc7147c0ca8adaf61f45c5065e133c4a44ad73e7c",
+    "https://esm.sh/v135/howler@2.2.4/denonext/howler.mjs": "de9b35fbd84782aa2b98d591266745ce93af93c83aebfca274e629b32bd423d9"
   }
 }

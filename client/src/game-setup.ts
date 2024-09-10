@@ -63,6 +63,8 @@ export const setupGame = async (
   await networkSnapshotPromise;
   conn.send({ t: "LoadPhaseChanged", phase: "loaded" });
   game.setStatus(GameStatus.LoadingFinished);
+  game.setStatus(GameStatus.Running);
+
   for (const entity of localSpawnedEntities) {
     try {
       entity[internal.entitySpawnFinalize]();
@@ -70,6 +72,4 @@ export const setupGame = async (
       console.warn(`spawning ${entity.id}:`, err);
     }
   }
-
-  game.setStatus(GameStatus.Running);
 };

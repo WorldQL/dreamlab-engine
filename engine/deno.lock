@@ -581,6 +581,7 @@
     }
   },
   "redirects": {
+    "https://esm.sh/v135/@types/howler@~2.2/index.d.ts": "https://esm.sh/v135/@types/howler@2.2.11/index.d.ts",
     "https://esm.sh/v135/@types/punycode@^2/index.d.ts": "https://esm.sh/v135/@types/punycode@2.1.4/index.d.ts",
     "https://esm.sh/v135/punycode": "https://esm.sh/v135/punycode@2.3.1",
     "https://esm.sh/v135/url": "https://esm.sh/v135/url@0.11.3"
@@ -603,6 +604,7 @@
     "https://deno.land/x/zod@v3.23.8/locales/en.ts": "a7a25cd23563ccb5e0eed214d9b31846305ddbcdb9c5c8f508b108943366ab4c",
     "https://deno.land/x/zod@v3.23.8/mod.ts": "ec6e2b1255c1a350b80188f97bd0a6bac45801bb46fc48f50b9763aa66046039",
     "https://deno.land/x/zod@v3.23.8/types.ts": "1b172c90782b1eaa837100ebb6abd726d79d6c1ec336350c8e851e0fd706bf5c",
+    "https://esm.sh/howler@2.2.4": "b0be1da91763162061c1affbc7147c0ca8adaf61f45c5065e133c4a44ad73e7c",
     "https://esm.sh/pixi.js@7.4.2": "9023504e0fd24091a892ada45957ffc8020c7e50527553505149a89ca7e1339c",
     "https://esm.sh/v135/@pixi/accessibility@7.4.2/denonext/accessibility.mjs": "7af2b606bd51bfc5999d6c24dca4cd1e00a0e71145c0c03d10b63129d52db5d0",
     "https://esm.sh/v135/@pixi/app@7.4.2/denonext/app.mjs": "c3669c36e88b64c5cd8af06310821994ac0f9ff2f148a5b84f963532b0f4cc80",
@@ -654,6 +656,7 @@
     "https://esm.sh/v135/has-proto@1.0.1/denonext/has-proto.mjs": "443f9773e464b39534dbecaee040e5de8384e8efaeea7a6d3e333df4069d1f85",
     "https://esm.sh/v135/has-symbols@1.0.3/denonext/has-symbols.mjs": "452727b5dbec94d538c5e8e062ed82bee701c3b752eb21e6189978e92292b7c6",
     "https://esm.sh/v135/hasown@2.0.0/denonext/hasown.mjs": "ba954305c23d6c4059f02f6b244bdbf45349e1228e3570ea3dc096d418b9f2f8",
+    "https://esm.sh/v135/howler@2.2.4/denonext/howler.mjs": "de9b35fbd84782aa2b98d591266745ce93af93c83aebfca274e629b32bd423d9",
     "https://esm.sh/v135/ismobilejs@1.1.1/denonext/ismobilejs.mjs": "69b28a5e331477be56dba80f6b90221419d8624687eec6b0a3bf9dfd6abb7518",
     "https://esm.sh/v135/object-inspect@1.13.1/denonext/object-inspect.mjs": "5792b0c8afecacc836f58bae74de5ae3cc14c42db9ad40689308a051fb2b432b",
     "https://esm.sh/v135/pixi.js@7.4.2/denonext/pixi.mjs": "13b5f597ce7199f9e2e2495f35c2bd752807b24befb4db5d0a2704fee349cab3",

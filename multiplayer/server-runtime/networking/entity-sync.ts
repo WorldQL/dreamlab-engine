@@ -217,6 +217,8 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
   });
 
   net.registerPacketHandler("SpawnBehavior", async (from, packet) => {
+    console.log(packet);
+
     const entity = game.entities.lookupByRef(packet.entity);
     if (!entity)
       throw new Error(

@@ -7,12 +7,13 @@ export default class MyBehavior extends Behavior {
 
   constructor(ctx: BehaviorContext) {
     super(ctx);
-    this.defineValue(MyBehavior, "a");
-    this.defineValue(MyBehavior, "b");
-    this.defineValue(MyBehavior, "c");
   }
 
   onInitialize() {
+    this.defineValue(MyBehavior, "a");
+    this.defineValue(MyBehavior, "b");
+    this.defineValue(MyBehavior, "c");
+
     console.log("Hello, world!");
   }
 }

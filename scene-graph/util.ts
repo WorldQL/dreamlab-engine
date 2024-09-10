@@ -158,7 +158,7 @@ export const loadSceneDefinition = async (game: Game, scene: Scene) => {
     await Promise.all(scene.registration.map(script => import(game.resolveResource(script))));
   }
 
-  const spawnedEntities: Entity[] = [];
+  let spawnedEntities: Entity[] = [];
 
   if (scene.prefabs) {
     const defs = await Promise.all(
@@ -197,6 +197,7 @@ export const loadSceneDefinition = async (game: Game, scene: Scene) => {
     if (game.status === GameStatus.LoadingFinished) {
       listener.unsubscribe();
       spawnedEntities.forEach(e => e[internal.entitySpawnFinalize]());
+      spawnedEntities = [];
     }
   });
 };

@@ -1,4 +1,10 @@
-import { BehaviorConstructor, ClientGame, Entity, JsonValue } from "@dreamlab/engine";
+import {
+  BehaviorConstructor,
+  BehaviorSpawned,
+  ClientGame,
+  Entity,
+  JsonValue,
+} from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { SceneDescBehavior, BehaviorSchema as SceneDescBehaviorSchema } from "@dreamlab/scene";
 import { element as elem } from "@dreamlab/ui";
@@ -95,7 +101,6 @@ export class BehaviorList {
         });
       });
     } else {
-      // TODO: populate behaviors from entity data proper
       this.behaviors = [];
       for (const behavior of this.entity.behaviors) {
         const behaviorType = behavior.constructor as BehaviorConstructor;
@@ -108,8 +113,26 @@ export class BehaviorList {
             : (value.value as JsonValue);
         }
 
-        this.behaviors.push({ ref: behavior.ref, script, values });
+        const newBehavior = { ref: behavior.ref, script, values };
+        this.behaviors.push(newBehavior);
       }
+
+      this.entity.on(BehaviorSpawned, ({ behavior }) => {
+        const behaviorType = behavior.constructor as BehaviorConstructor;
+        const script = this.game[internal.behaviorLoader].lookup(behaviorType);
+        if (!script) return;
+        const values: SceneDescBehavior["values"] = {};
+        for (const [key, value] of behavior.values.entries()) {
+          values[key] = value.adapter
+            ? value.adapter.convertToPrimitive(value.value)
+            : (value.value as JsonValue);
+        }
+
+        const newBehavior = { ref: behavior.ref, script, values };
+        const editor = new BehaviorEditor(ui, newBehavior, this);
+        this.editors.set(newBehavior.ref, editor);
+        this.behaviors.push(newBehavior);
+      });
     }
 
     this.#drawAddBehavior(ui);
