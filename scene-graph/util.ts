@@ -186,7 +186,6 @@ export const loadSceneDefinition = async (game: Game, scene: Scene) => {
 
   if (scene.server && game instanceof ServerGame) {
     const defs = await Promise.all(scene.server.map(def => convertEntityDefinition(game, def)));
-    for (const def of defs) game.remote.spawn(def);
 
     spawnedEntities.push(
       ...defs.map(d => game.remote[internal.entitySpawn](d, { inert: true })),
