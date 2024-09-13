@@ -124,8 +124,6 @@ export class LogViewer {
   }
 
   private injectConsoleWrapper() {
-    if (true) return;
-
     const log = console.log;
     // TODO: wrap console.warn
     // TODO: wrap console.error
