@@ -1,4 +1,4 @@
-import { ClientGame, GameStatus, GameTick, Value } from "@dreamlab/engine";
+import { ClientGame, GameStatus, InternalGameTick, Value } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { ClientConnection, ClientNetworkSetupRoutine } from "./net-connection.ts";
 
@@ -23,7 +23,7 @@ export const handleValueChanges: ClientNetworkSetupRoutine = (
     dirtyValues.set(value, clock);
   });
 
-  game.on(GameTick, () => {
+  game.on(InternalGameTick, () => {
     const reports: { identifier: string; value: unknown; clock: number }[] = [];
 
     for (const [valueObj, momentaryClock] of dirtyValues.entries()) {

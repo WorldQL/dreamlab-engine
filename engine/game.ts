@@ -1,5 +1,6 @@
 import { initRapier } from "@dreamlab/vendor/rapier.ts";
 
+import { Value } from "@dreamlab/engine";
 import { BehaviorLoader } from "./behavior/behavior-loader.ts";
 import { BehaviorConstructor } from "./behavior/mod.ts";
 import {
@@ -31,6 +32,7 @@ import {
   GameRender,
   GameShutdown,
   GameTick,
+  InternalGameTick,
 } from "./signals/game-events.ts";
 import { GameStatusChange } from "./signals/mod.ts";
 import { Time } from "./time.ts";
@@ -159,10 +161,18 @@ export abstract class BaseGame implements ISignalHandler {
     this.world[internal.submitEntityTickingOrder](entities);
   }
 
+  paused = new Value<boolean>(this.values, "paused", false, Boolean, "paused");
+
   tick() {
     if (this.status === GameStatus.Shutdown) return;
     if (!this.#initialized)
       throw new Error("Illegal state: Game was not initialized before tick loop began!");
+
+    // don't tick at all when we're paused!
+    if (this.paused.value) {
+      this.fire(InternalGameTick);
+      return;
+    }
 
     this.time[internal.timeSetMode]("tick");
     this.time[internal.timeTick]();
@@ -191,6 +201,8 @@ export abstract class BaseGame implements ISignalHandler {
 
     this.fire(GameTick);
     this.fire(GamePostTick);
+
+    this.fire(InternalGameTick);
   }
 
   shutdown() {

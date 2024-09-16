@@ -3,7 +3,7 @@ import {
   Entity,
   EntityDescendantSpawned,
   EntityTransformUpdate,
-  GameTick,
+  InternalGameTick,
   IVector2,
   Transform,
 } from "@dreamlab/engine";
@@ -47,7 +47,7 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
     });
   });
 
-  game.on(GameTick, () => {
+  game.on(InternalGameTick, () => {
     const entityTransformReports: EntityTransformReport[] = [];
     for (const entity of transformDirtyEntities.values()) {
       if (entity.authority !== undefined && entity.authority !== game.network.self) continue;

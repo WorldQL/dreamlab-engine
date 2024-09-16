@@ -33,3 +33,9 @@ export class GameShutdown {
 export class GameStatusChange {
   [exclusiveSignalType] = BaseGame;
 }
+
+export class InternalGameTick {
+  // fired even when game is paused
+  static __singleton = new this();
+  [exclusiveSignalType] = BaseGame;
+}
