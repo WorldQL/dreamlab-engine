@@ -40,6 +40,9 @@ export interface Vector<I, T extends I> {
   distance(this: T, target: I): number;
   distanceSquared(this: T, target: I): number;
 
+  max(this: T, other: I): T;
+  min(this: T, other: I): T;
+
   /**
    * @ignore
    */

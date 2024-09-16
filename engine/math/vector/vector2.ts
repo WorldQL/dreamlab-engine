@@ -323,6 +323,26 @@ export class Vector2 implements IVector2, Vector<IVector2, Vector2> {
     return Vector2.distanceSquared(this, other);
   }
   // #endregion
+
+  // #region Max
+  public static max(a: IVector2, b: IVector2): Vector2 {
+    return new Vector2(Math.max(a.x, b.x), Math.max(a.y, b.y));
+  }
+
+  public max(this: Vector2, other: IVector2): Vector2 {
+    return Vector2.max(this, other);
+  }
+  // #endregion
+
+  // #region Min
+  public static min(a: IVector2, b: IVector2): Vector2 {
+    return new Vector2(Math.min(a.x, b.x), Math.min(a.y, b.y));
+  }
+
+  public min(this: Vector2, other: IVector2): Vector2 {
+    return Vector2.min(this, other);
+  }
+  // #endregion
   // #endregion
 
   /**
