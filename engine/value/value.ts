@@ -100,7 +100,7 @@ export class Value<T = unknown> {
 
     if (this.typeTag !== Number && this.typeTag !== String && this.typeTag !== Boolean) {
       const adapterTypeTag = this.typeTag as AdapterTypeTag<T>;
-      this.adapter = new adapterTypeTag(registry.game);
+      this.adapter = new adapterTypeTag(registry.game, this);
       if (!(this.adapter instanceof ValueTypeAdapter))
         throw new Error("AdapterTypeTag was not the correct type!");
     }
@@ -114,6 +114,15 @@ export class Value<T = unknown> {
 
   [Symbol.dispose]() {
     this.destroy();
+  }
+
+  forceSync() {
+    this.#registry.applyValueUpdate(
+      this as Value<unknown>,
+      this.#value,
+      this.clock + 1,
+      this.#registry.source,
+    );
   }
 
   [internal.valueApplyUpdate](

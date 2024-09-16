@@ -111,7 +111,7 @@ export class Behavior implements ISignalHandler {
 
     if (this.#defaultValues[prop] !== undefined) {
       if (opts.type && (opts.type as AdapterTypeTag<T>).prototype instanceof ValueTypeAdapter) {
-        const adapter = new (opts.type as AdapterTypeTag<T>)(this.game);
+        const adapter = new (opts.type as AdapterTypeTag<T>)(this.game, undefined);
         defaultValue = (
           adapter.isValue(this.#defaultValues[prop])
             ? this.#defaultValues[prop]

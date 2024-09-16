@@ -10,19 +10,12 @@
         {
           "type": "@core/Empty",
           "name": "Empty",
-          "transform": {
-            "scale": {
-              "x": 1,
-              "y": 1
-            }
-          },
+          "transform": {},
           "behaviors": [
             {
-              "ref": "bhv_mqynbrn6xt5zfeehyo8fob1w",
-              "script": "res://src/log-repeatedly.ts",
-              "values": {
-                "message": "12345"
-              }
+              "ref": "bhv_njk1e7o0k91rkgr54lcksk6v",
+              "script": "res://src/my-new-behavior.ts",
+              "values": {}
             }
           ],
           "ref": "ent_rvbfd3tiws36sa8fkjzzp4sb"
@@ -37,23 +30,13 @@
             "smooth": 0.1,
             "unlocked": false
           },
-          "transform": {
-            "scale": {
-              "x": 1,
-              "y": 1
-            }
-          },
+          "transform": {},
           "ref": "ent_rthb692t18htouso0q6fwqb3"
         },
         {
           "type": "@core/Empty",
           "name": "PlayerSpawnManager",
-          "transform": {
-            "scale": {
-              "x": 1,
-              "y": 1
-            }
-          },
+          "transform": {},
           "behaviors": [
             {
               "ref": "bhv_dqg9eccve24e6rxphsx4y4px",
