@@ -138,7 +138,7 @@ export class GameOverlays implements InspectorUIWidget {
       const camera = this.game.local._.Camera;
       cameraPos.textContent = this.formatVector(camera.pos);
       const zoom = camera.globalTransform.scale.x;
-      zoomLevel.textContent = `${zoom.toFixed(2)} \u00d7`;
+      zoomLevel.textContent = `${(1 / zoom).toFixed(2)} \u00d7`;
     });
 
     this.game.inputs.on(MouseMove, ({ cursor }) => {

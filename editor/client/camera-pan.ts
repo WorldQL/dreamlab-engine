@@ -133,8 +133,8 @@ export class CameraPanBehavior extends Behavior {
         Math.pow(zoomFactor, zoomDirection),
       );
 
-      const clampedScale = new Vector2(Math.max(newScale.x, 0.1), Math.max(newScale.y, 0.1));
-      this.#camera.globalTransform.scale = clampedScale;
+      const clampedScale = newScale.max(Vector2.splat(0.1)).min(Vector2.splat(100));
+      this.#camera.globalTransform.scale.assign(clampedScale);
 
       if (!CameraPanBehavior.#IS_MAC) {
         const cursorPos = this.game.inputs.cursor.world;
