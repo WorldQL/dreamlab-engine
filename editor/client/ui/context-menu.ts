@@ -41,10 +41,7 @@ export class ContextMenu implements InspectorUIWidget {
     ) => {
       const button: HTMLAnchorElement = elem(
         "a",
-        {
-          role: "button",
-          href: "javascript:void(0)",
-        },
+        { role: "button", href: "javascript:void(0)" },
         [label],
       ) as HTMLAnchorElement;
 
@@ -66,35 +63,52 @@ export class ContextMenu implements InspectorUIWidget {
         button.dataset.group = "";
 
         const subsection = elem("section");
-        for (let i = 0; i < actionOrChildren.length; i++)
+        for (let i = 0; i < actionOrChildren.length; i++) {
           renderItem(subsection, actionOrChildren[i], i);
+        }
 
         subsection.style.setProperty("--section-offset", `${2.25 * index}em`);
 
-        if (!disabled) {
-          button.addEventListener("mouseenter", () => {
-            button.dataset.selected = "";
-            section.insertAdjacentElement("afterend", subsection);
-          });
+        button.addEventListener("mouseenter", () => {
+          while (section.nextElementSibling) {
+            section.nextElementSibling.remove();
+          }
 
-          const tryHideSection = () => {
-            if (button.matches(":hover") || subsection.matches(":hover")) return;
+          button.dataset.selected = "";
+          section.insertAdjacentElement("afterend", subsection);
+        });
+
+        const tryHideSubsection = () => {
+          if (button.matches(":hover") || subsection.matches(":hover")) return;
+
+          let descendantHovered = false;
+          let nextSection: Element | null = subsection.nextElementSibling;
+          while (nextSection !== null) {
+            if (nextSection.matches(":hover")) {
+              descendantHovered = true;
+              break;
+            }
+            nextSection = nextSection.nextElementSibling;
+          }
+
+          if (!descendantHovered) {
             delete button.dataset.selected;
             subsection.remove();
-          };
+          }
+        };
 
-          button.addEventListener("mouseleave", event => {
-            if (
-              event.relatedTarget instanceof HTMLElement &&
-              event.relatedTarget.closest("section") === section
-            ) {
-              setTimeout(tryHideSection, 50);
-            } else {
-              setTimeout(tryHideSection, 125);
-            }
-          });
-          subsection.addEventListener("mouseleave", () => setTimeout(tryHideSection, 125));
-        }
+        button.addEventListener("mouseleave", event => {
+          if (
+            event.relatedTarget instanceof HTMLElement &&
+            event.relatedTarget.closest("section") === section
+          ) {
+            setTimeout(tryHideSubsection, 50);
+          } else {
+            setTimeout(tryHideSubsection, 125);
+          }
+        });
+
+        subsection.addEventListener("mouseleave", () => setTimeout(tryHideSubsection, 125));
       }
     };
 
