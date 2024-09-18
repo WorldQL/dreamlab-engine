@@ -48,6 +48,7 @@ import {
   inferValueTypeTag,
 } from "../value/mod.ts";
 import type { Root } from "./entity-roots.ts";
+import { Empty } from "./mod.ts";
 
 export interface EntityContext {
   game: Game;
@@ -922,7 +923,10 @@ export abstract class Entity implements ISignalHandler {
     for (const [type, namespace] of Entity.#entityTypeRegistry.entries())
       if (typeName === `${namespace}/${type.name}`) return type;
 
-    throw new Error(`Entity type ${typeName} is not registered!`);
+    console.warn(
+      `Attempted to load entity ${typeName} but it's not registered. Replacing with Empty.`,
+    );
+    return Empty;
   }
   // #endregion
 
