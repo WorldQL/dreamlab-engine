@@ -3,8 +3,8 @@ import { element as elem } from "@dreamlab/ui";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 
 export type ContextMenuItem =
-  | [label: string, action: () => void]
-  | [label: string, children: ContextMenuItem[]];
+  | [label: string, action: () => void, disabled?: boolean]
+  | [label: string, children: ContextMenuItem[], disabled?: boolean];
 
 export class ContextMenu implements InspectorUIWidget {
   #menu: HTMLElement = elem("div", { id: "context-menu" }, []);
@@ -32,80 +32,96 @@ export class ContextMenu implements InspectorUIWidget {
   }
 
   drawContextMenu(cursorX: number, cursorY: number, items: ContextMenuItem[]) {
-    this.#menu.style.setProperty("--cursor-x", `${cursorX}px`);
-    this.#menu.style.setProperty("--cursor-y", `${cursorY}px`);
-    this.#menu.dataset.open = "";
-
     this.#menu.innerHTML = "";
 
     const renderItem = (
       section: HTMLElement,
-      [label, action]: ContextMenuItem,
+      [label, actionOrChildren, disabled = false]: ContextMenuItem,
       index: number,
     ) => {
-      let button: HTMLAnchorElement;
-      section.append(
-        (button = elem("a", { role: "button", href: "javascript:void(0)" }, [label])),
-      );
+      const button: HTMLAnchorElement = elem(
+        "a",
+        {
+          role: "button",
+          href: "javascript:void(0)",
+        },
+        [label],
+      ) as HTMLAnchorElement;
 
-      if (action instanceof Function) {
-        button.addEventListener("click", event => {
-          event.preventDefault();
-          this.hideContextMenu();
-          action();
-        });
+      if (disabled) {
+        button.setAttribute("aria-disabled", "true");
+      }
+
+      section.append(button);
+
+      if (typeof actionOrChildren === "function") {
+        if (!disabled) {
+          button.addEventListener("click", event => {
+            event.preventDefault();
+            this.hideContextMenu();
+            actionOrChildren();
+          });
+        }
       } else {
         button.dataset.group = "";
 
         const subsection = elem("section");
-        for (let i = 0; i < action.length; i++) renderItem(subsection, action[i], i);
+        for (let i = 0; i < actionOrChildren.length; i++)
+          renderItem(subsection, actionOrChildren[i], i);
 
         subsection.style.setProperty("--section-offset", `${2.25 * index}em`);
 
-        button.addEventListener("mouseenter", () => {
-          while (section.nextElementSibling) {
-            section.nextElementSibling.remove();
-          }
+        if (!disabled) {
+          button.addEventListener("mouseenter", () => {
+            button.dataset.selected = "";
+            section.insertAdjacentElement("afterend", subsection);
+          });
 
-          button.dataset.selected = "";
-          section.insertAdjacentElement("afterend", subsection);
-        });
+          const tryHideSection = () => {
+            if (button.matches(":hover") || subsection.matches(":hover")) return;
+            delete button.dataset.selected;
+            subsection.remove();
+          };
 
-        const tryHideSubsection = () => {
-          if (button.matches(":hover") || subsection.matches(":hover")) return;
-
-          let descendantHovered = false;
-          let nextSection: Element | null = subsection.nextElementSibling;
-          while (nextSection !== null) {
-            if (nextSection.matches(":hover")) {
-              descendantHovered = true;
-              break;
+          button.addEventListener("mouseleave", event => {
+            if (
+              event.relatedTarget instanceof HTMLElement &&
+              event.relatedTarget.closest("section") === section
+            ) {
+              setTimeout(tryHideSection, 50);
+            } else {
+              setTimeout(tryHideSection, 125);
             }
-            nextSection = nextSection.nextElementSibling;
-          }
-          if (descendantHovered) return;
-
-          delete button.dataset.selected;
-          subsection.remove();
-        };
-
-        button.addEventListener("mouseleave", event => {
-          if (
-            event.relatedTarget instanceof HTMLElement &&
-            event.relatedTarget.closest("section") === section
-          ) {
-            setTimeout(tryHideSubsection, 50);
-          } else {
-            setTimeout(tryHideSubsection, 125);
-          }
-        });
-        subsection.addEventListener("mouseleave", () => setTimeout(tryHideSubsection, 125));
+          });
+          subsection.addEventListener("mouseleave", () => setTimeout(tryHideSection, 125));
+        }
       }
     };
 
     const section = elem("section");
     for (let i = 0; i < items.length; i++) renderItem(section, items[i], i);
     this.#menu.append(section);
+
+    document.body.append(this.#container);
+
+    const menuRect = this.#menu.getBoundingClientRect();
+    const menuWidth = menuRect.width;
+    const menuHeight = menuRect.height;
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    if (cursorX + menuWidth > viewportWidth) {
+      cursorX = viewportWidth - menuWidth - 10;
+    }
+
+    if (cursorY + menuHeight > viewportHeight) {
+      cursorY = viewportHeight - menuHeight - 10;
+    }
+
+    this.#container.style.setProperty("--cursor-x", `${cursorX}px`);
+    this.#container.style.setProperty("--cursor-y", `${cursorY}px`);
+
+    this.#menu.dataset.open = "";
   }
 
   hideContextMenu() {
