@@ -446,7 +446,18 @@ export abstract class Entity implements ISignalHandler {
   }
 
   cloneInto(other: Entity, overrides: Partial<EntityDefinition<this>> = {}): this {
-    return other.spawn({ ...this.#generateRichDefinition(false), ...overrides });
+    const transform = {
+      position: overrides.transform?.position ?? this.transform.position.bare(),
+      rotation: overrides.transform?.rotation ?? this.transform.rotation,
+      scale: overrides.transform?.scale ?? this.transform.scale.bare(),
+      z: overrides.transform?.z ?? this.transform.z,
+    };
+
+    return other.spawn({
+      ...this.#generateRichDefinition(false),
+      ...overrides,
+      transform,
+    });
   }
   // #endregion
 
