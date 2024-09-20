@@ -27,6 +27,10 @@ export function createEntityMenu(
   action: (type: EntityConstructor) => void,
 ): ContextMenuItem {
   const entityTypes = getEntityTypes().filter(([_, namespace]) => namespace !== "@editor");
+  const entityLabel = (type: EntityConstructor): string => {
+    if ("icon" in type && typeof type.icon === "string") return `${type.icon} ${type.name}`;
+    return type.name;
+  };
 
   const items: ContextMenuItem[] = [];
   for (const [category, names] of categories) {
@@ -41,14 +45,14 @@ export function createEntityMenu(
         return entity;
       })
       .filter(item => item !== undefined)
-      .map(([type, _]) => [type.name, () => action(type)] satisfies ContextMenuItem);
+      .map(([type, _]) => [entityLabel(type), () => action(type)] satisfies ContextMenuItem);
 
     items.push([category, categoryItems]);
   }
 
   items.push(
     ...entityTypes.map(
-      ([type, _]) => [type.name, () => action(type)] satisfies ContextMenuItem,
+      ([type, _]) => [entityLabel(type), () => action(type)] satisfies ContextMenuItem,
     ),
   );
 
