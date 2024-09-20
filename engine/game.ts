@@ -206,6 +206,7 @@ export abstract class BaseGame implements ISignalHandler {
   }
 
   shutdown() {
+    this.world.destroy();
     this.setStatus(GameStatus.Shutdown);
     this.fire(GameShutdown);
     this.physics.shutdown();
@@ -256,6 +257,7 @@ export class ServerGame extends BaseGame {
   }
 
   override shutdown(): void {
+    this.remote.destroy();
     super.shutdown();
     this.network.disconnect();
   }
@@ -299,6 +301,7 @@ export class ClientGame extends BaseGame {
   override shutdown() {
     this[internal.inputsShutdownFn]?.();
     this.ui[internal.uiDestroy]();
+    this.local.destroy();
     super.shutdown();
     this.renderer.app.destroy({ removeView: true });
     this.network.disconnect();
