@@ -170,10 +170,8 @@ export function createValueControl(
         if (url === "") return url;
 
         try {
-          const resp = await fetch(url);
-          if (!resp.ok) throw new Error("");
-
-          // TODO: Validate if is actualy audio
+          const loaded = await PIXI.Assets.load(game.resolveResource(url));
+          if (typeof loaded !== "string") throw new Error(); // custom pixi loader returns strings
           return url;
         } catch {
           throw new TypeError("Audio URL could not be resolved");
