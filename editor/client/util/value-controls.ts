@@ -106,7 +106,7 @@ export function createValueControl(
       const [control, refresh] = createInputFieldWithDefault({
         default: opts.default,
         get: opts.get,
-        set: opts.set,
+        set: v => opts.set(v ?? ""),
         convert,
       });
 
