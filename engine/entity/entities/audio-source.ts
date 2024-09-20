@@ -17,7 +17,7 @@ export class AudioSource extends Entity {
   volume: number = 1;
   loop: boolean = false;
   minRange: number = 0.2;
-  maxRange: number = Number.POSITIVE_INFINITY;
+  maxRange: number = -1;
   falloff: number = 0.8;
   stream: boolean = false;
 
@@ -82,7 +82,7 @@ export class AudioSource extends Entity {
 
   #updateHRTF() {
     if (!this.#howl) return;
-    if (Number.isFinite(this.maxRange)) {
+    if (this.maxRange >= 0) {
       this.#howl.pannerAttr({
         coneInnerAngle: 360,
         coneOuterAngle: 360,
@@ -110,7 +110,7 @@ export class AudioSource extends Entity {
   #updatePosition() {
     if (!this.#howl) return;
     const camera = Camera.getActive(this.game);
-    if (!camera || !Number.isFinite(this.maxRange)) {
+    if (!camera || this.maxRange < 0) {
       this.#howl.pos(0, 0, 0);
       return;
     }
