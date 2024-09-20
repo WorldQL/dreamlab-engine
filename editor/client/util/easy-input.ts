@@ -72,22 +72,22 @@ export function createInputFieldWithDefault<T>({
   });
 
   input.addEventListener("input", async () => {
-    if (input.value === "") {
-      input.setCustomValidity("");
-      set(undefined);
-    } else {
-      try {
+    try {
+      if (input.value === "") {
+        input.setCustomValidity("");
+        set(undefined);
+      } else {
         const val = await convert(input.value);
         input.setCustomValidity("");
         set(val);
-      } catch (err) {
-        if (err instanceof Error) {
-          let message = err.message;
-          if (err instanceof ZodError) message = validationError.fromError(err).message;
-          input.setCustomValidity(message);
-        } else {
-          input.setCustomValidity("Unknown error");
-        }
+      }
+    } catch (err) {
+      if (err instanceof Error) {
+        let message = err.message;
+        if (err instanceof ZodError) message = validationError.fromError(err).message;
+        input.setCustomValidity(message);
+      } else {
+        input.setCustomValidity("Unknown error");
       }
     }
 
