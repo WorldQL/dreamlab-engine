@@ -1,0 +1,59 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "engine_revision": "2024-08.001"
+  },
+  "scenes": {
+    "main": {
+      "registration": [],
+      "world": [
+        {
+          "type": "@core/AudioSource",
+          "name": "AudioSource",
+          "values": {
+            "clip": "res://assets/test.ogg",
+            "volume": 1,
+            "loop": true,
+            "minRange": 0.2,
+            "maxRange": -1,
+            "falloff": 0.8,
+            "stream": false
+          },
+          "transform": {},
+          "children": [
+            {
+              "type": "@core/Sprite",
+              "name": "Sprite",
+              "values": {
+                "static": true,
+                "hidden": false,
+                "width": 0.2,
+                "height": 0.2,
+                "alpha": 1,
+                "texture": ""
+              },
+              "transform": {},
+              "ref": "ent_s4pp76juu7guhv8j1c7b21p5"
+            }
+          ],
+          "ref": "ent_rz3seywxi55blexc67ne7cpl"
+        }
+      ],
+      "local": [
+        {
+          "type": "@core/Camera",
+          "name": "Camera",
+          "values": {
+            "active": true,
+            "smooth": 0.1,
+            "unlocked": false
+          },
+          "transform": {},
+          "ref": "ent_qm2m83y2qs0wu9lw50xww7ke"
+        }
+      ],
+      "server": [],
+      "prefabs": []
+    }
+  }
+}
