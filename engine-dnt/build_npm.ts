@@ -1,143 +1,98 @@
-import { build, emptyDir } from "https://deno.land/x/dnt@0.40.0/mod.ts";
+import * as dnt from "jsr:@deno/dnt@0.41.3";
 import * as fs from "jsr:@std/fs@1";
+import * as io from "jsr:@std/io@0.224.8";
 import * as path from "jsr:@std/path@1";
-import { copySync } from "https://deno.land/std@0.224.0/fs/copy.ts";
+import { Tar } from "jsr:@std/archive@0.225.3/tar";
 
-await emptyDir("./engineout");
-await emptyDir("./rapierout");
-await emptyDir("./uiout");
+const OUT_DIR = "./out";
+await fs.emptyDir(OUT_DIR);
 
-await build({
-  entryPoints: ["../engine/mod.ts"],
-  outDir: "./engineout",
-  shims: {
-    deno: true,
-  },
+const CODE_EDITOR_DIR = "../../dreamlab-code-editor/public/dreamlab-engine-intellisense";
+await fs.emptyDir(CODE_EDITOR_DIR);
+
+const commonOptions = {
+  shims: { deno: true },
   declaration: "inline",
   skipSourceOutput: true,
-  package: {
-    name: "dreamlab-engine",
-    version: "0",
-    description: "",
-    license: "UNLICENSED",
-  },
-  postBuild() {},
+  scriptModule: "cjs",
+  esModule: false,
   compilerOptions: {
+    target: "Latest",
     lib: ["ESNext", "DOM"],
   },
   importMap: "../deno.json",
   test: false,
-});
+} satisfies Partial<dnt.BuildOptions>;
 
-await build({
-  entryPoints: ["../ui/mod.ts"],
-  outDir: "./uiout",
-  shims: {
-    deno: true,
-  },
-  declaration: "inline",
-  skipSourceOutput: true,
-  package: {
-    name: "dreamlab-ui",
-    version: "0",
-    description: "",
-    license: "UNLICENSED",
-  },
-  postBuild() {},
-  compilerOptions: {
-    lib: ["ESNext", "DOM"],
-  },
-  importMap: "../deno.json",
-  test: false,
-});
+const generate = async (options: {
+  packageName: string;
+  tarballName: string;
+  entryPoint: string;
+  outDir: string;
+}) => {
+  await dnt.build({
+    ...commonOptions,
+    entryPoints: [options.entryPoint],
+    outDir: options.outDir,
+    package: {
+      name: options.packageName,
+      version: "0.0.0",
+    },
+  });
 
-await build({
-  entryPoints: ["../engine/_deps/rapier.ts"],
-  outDir: "./rapierout",
-  shims: {
-    deno: true,
-  },
-  declaration: "inline",
-  skipSourceOutput: true,
-  package: {
-    name: "dreamlab-rapier",
-    version: "0",
-    description: "",
-    license: "UNLICENSED",
-  },
-  postBuild() {},
-  compilerOptions: {
-    lib: ["ESNext", "DOM"],
-  },
-  importMap: "../deno.json",
-  test: false,
-});
+  const dir = fs.walk(options.outDir);
+  const tar = new Tar();
+  for await (const entry of dir) {
+    if (!entry.isFile) continue;
 
-await build({
-  entryPoints: ["../engine/_deps/pixi.ts"],
-  outDir: "./pixiout",
-  shims: {
-    deno: true,
-  },
-  declaration: "inline",
-  skipSourceOutput: true,
-  package: {
-    name: "dreamlab-rapier",
-    version: "0",
-    description: "",
-    license: "UNLICENSED",
-  },
-  postBuild() {},
-  compilerOptions: {
-    lib: ["ESNext", "DOM"],
-  },
-  importMap: "../deno.json",
-  test: false,
-});
+    const filepath = path.relative(options.outDir, entry.path);
+    if (filepath.startsWith("node_modules/")) continue;
 
-async function listFiles(directory: string): Promise<string[]> {
-  const files: string[] = [];
+    const content = await Deno.readFile(entry.path);
 
-  for await (const entry of fs.walk(directory, { includeDirs: false })) {
-    const relativePath = path.relative(directory, entry.path);
-
-    // Skip node_modules directory
-    if (relativePath.startsWith("node_modules")) {
-      continue;
-    }
-
-    files.push("/" + relativePath.replace(/\\/g, "/"));
+    tar.append(filepath, {
+      reader: new io.Buffer(content),
+      contentSize: content.byteLength,
+    });
   }
 
-  return files;
-}
+  const writer = await Deno.open(path.join(OUT_DIR, `${options.tarballName}.tgz`), {
+    write: true,
+    create: true,
+  });
 
-async function createFilelist(outDir: string) {
-  const outputFile = `${outDir}file_list.json`;
+  await io
+    .toReadableStream(tar.getReader())
+    .pipeThrough(new CompressionStream("gzip"))
+    .pipeTo(io.toWritableStream(writer));
 
-  try {
-    const files = await listFiles(outDir);
-    const jsonContent = JSON.stringify(files, null, 2);
+  await Deno.remove(options.outDir, { recursive: true });
+};
 
-    await Deno.writeTextFile(outputFile, jsonContent);
-    console.log(`File list has been written to ${outputFile}`);
-  } catch (error) {
-    console.error("An error occurred:", error);
-  }
-}
+const generatePackage = async (options: { name: string; entryPoint: string }) => {
+  const outDir = path.join(OUT_DIR, `dreamlab-${options.name}`);
+  await generate({
+    packageName: `@dreamlab/${options.name}`,
+    tarballName: `dreamlab-${options.name}`,
+    entryPoint: options.entryPoint,
+    outDir,
+  });
+};
 
-await Deno.remove("./engineout/node_modules", { recursive: true });
-await Deno.remove("./engineout/.npmignore", { recursive: true });
-await Deno.remove("./uiout/node_modules", { recursive: true });
-await Deno.remove("./uiout/.npmignore", { recursive: true });
+const generateVendor = async (options: { name: string }) => {
+  const outDir = path.join(OUT_DIR, `vendor-${options.name}`);
+  await generate({
+    packageName: `@dreamlab/vendor/${options.name}`,
+    tarballName: `vendor-${options.name}`,
+    entryPoint: `../engine/_deps/${options.name}.ts`,
+    outDir,
+  });
+};
 
-await createFilelist("./engineout/");
-await createFilelist("./uiout/");
+await generatePackage({ name: "engine", entryPoint: "../engine/mod.ts" });
+await generatePackage({ name: "ui", entryPoint: "../ui/mod.ts" });
+await generateVendor({ name: "rapier" });
+await generateVendor({ name: "pixi" });
+await generateVendor({ name: "howler" });
 
-await emptyDir("../../dreamlab-code-editor/public/dreamlab-engine-intellisense/");
-
-copySync(
-  "./engineout",
-  "../../dreamlab-code-editor/public/dreamlab-engine-intellisense/engine",
-);
-copySync("./uiout", "../../dreamlab-code-editor/public/dreamlab-engine-intellisense/ui");
+await fs.copy(OUT_DIR, CODE_EDITOR_DIR, { overwrite: true });
