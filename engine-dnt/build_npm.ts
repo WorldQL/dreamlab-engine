@@ -1,8 +1,8 @@
 import * as dnt from "jsr:@deno/dnt@0.41.3";
+import { Tar } from "jsr:@std/archive@0.225.3/tar";
 import * as fs from "jsr:@std/fs@1";
 import * as io from "jsr:@std/io@0.224.8";
 import * as path from "jsr:@std/path@1";
-import { Tar } from "jsr:@std/archive@0.225.3/tar";
 
 const OUT_DIR = "./out";
 await fs.emptyDir(OUT_DIR);
@@ -47,6 +47,10 @@ const generate = async (options: {
 
     const filepath = path.relative(options.outDir, entry.path);
     if (filepath.startsWith("node_modules/")) continue;
+    if (filepath === "package-lock.json") continue;
+
+    const { ext } = path.parse(filepath);
+    if (ext === ".js") continue;
 
     const content = await Deno.readFile(entry.path);
 
