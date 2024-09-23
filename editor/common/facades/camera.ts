@@ -1,4 +1,12 @@
-import { Camera, Entity, EntityContext, IVector2, PixiEntity } from "@dreamlab/engine";
+import {
+  Camera,
+  Entity,
+  EntityContext,
+  EntityTransformUpdate,
+  IVector2,
+  PixiEntity,
+  Vector2,
+} from "@dreamlab/engine";
 import { EnsureCompatible, EntityValueProps } from "./_compatibility.ts";
 import { Facades } from "./manager.ts";
 
@@ -26,9 +34,24 @@ export class EditorFacadeCamera extends PixiEntity {
 
   // #debug: DebugSquare | undefined;
 
+  public zoom: number;
+
   constructor(ctx: EntityContext) {
     super(ctx, false);
     this.defineValues(EditorFacadeCamera, "active", "smooth", "unlocked");
+
+    this.zoom = 1 / this.globalTransform.scale.x;
+    const zoom = this.defineValue(EditorFacadeCamera, "zoom");
+    let zoomChanging = false;
+    zoom.onChanged(() => {
+      zoomChanging = true;
+      this.globalTransform.scale = Vector2.ONE.mul(1 / this.zoom);
+      zoomChanging = false;
+    });
+    this.on(EntityTransformUpdate, () => {
+      if (zoomChanging) return;
+      this.zoom = 1 / this.globalTransform.scale.x;
+    });
   }
 
   onInitialize(): void {

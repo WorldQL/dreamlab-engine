@@ -76,7 +76,8 @@ export class ServerNetworkManager {
           try {
             await handler(connection, packet);
           } catch (err) {
-            console.warn(`Uncaught error while handling packet of type '${packet.t}': ${err}`);
+            console.warn(`Uncaught error while handling packet of type '${packet.t}'`);
+            console.warn(err.stack);
           }
         }
 

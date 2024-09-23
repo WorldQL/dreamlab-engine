@@ -29,11 +29,13 @@
       "npm:object-inspect@1.13.2": "npm:object-inspect@1.13.2",
       "npm:partysocket@1.0.2": "npm:partysocket@1.0.2",
       "npm:pixi.js@8.2.6": "npm:pixi.js@8.2.6",
+      "npm:pixi.js@8.4.1": "npm:pixi.js@8.4.1",
       "npm:simple-icons": "npm:simple-icons@13.6.0",
       "npm:simple-icons@13.6.0": "npm:simple-icons@13.6.0",
       "npm:stats.js@0.17.0": "npm:stats.js@0.17.0",
       "npm:strip-ansi@7.1.0": "npm:strip-ansi@7.1.0",
       "npm:type-fest@4.23.0": "npm:type-fest@4.23.0",
+      "npm:type-fest@4.26.1": "npm:type-fest@4.26.1",
       "npm:zod-validation-error@3.3.1": "npm:zod-validation-error@3.3.1_zod@3.23.8"
     },
     "jsr": {
@@ -522,6 +524,20 @@
           "parse-svg-path": "parse-svg-path@0.1.2"
         }
       },
+      "pixi.js@8.4.1": {
+        "integrity": "sha512-3ZbEIkLYYi602UB5wuN7kPz3VsGHoJa6nxD8ustvMLRySxHAR9Z8tCAYY8ISgNplpPbaDw03B0yTD4/k9f6cAQ==",
+        "dependencies": {
+          "@pixi/colord": "@pixi/colord@2.9.6",
+          "@types/css-font-loading-module": "@types/css-font-loading-module@0.0.12",
+          "@types/earcut": "@types/earcut@2.1.4",
+          "@webgpu/types": "@webgpu/types@0.1.44",
+          "@xmldom/xmldom": "@xmldom/xmldom@0.8.10",
+          "earcut": "earcut@2.2.4",
+          "eventemitter3": "eventemitter3@5.0.1",
+          "ismobilejs": "ismobilejs@1.1.1",
+          "parse-svg-path": "parse-svg-path@0.1.2"
+        }
+      },
       "queue-microtask@1.2.3": {
         "integrity": "sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==",
         "dependencies": {}
@@ -574,6 +590,10 @@
       },
       "type-fest@4.23.0": {
         "integrity": "sha512-ZiBujro2ohr5+Z/hZWHESLz3g08BBdrdLMieYFULJO+tWc437sn8kQsWLJoZErY8alNhxre9K4p3GURAG11n+w==",
+        "dependencies": {}
+      },
+      "type-fest@4.26.1": {
+        "integrity": "sha512-yOGpmOAL7CkKe/91I5O3gPICmJNLJ1G4zFYVAsRHg7M64biSnPtRj0WNQt++bRkjYOqjWXrhnUw1utzmVErAdg==",
         "dependencies": {}
       },
       "universalify@2.0.1": {

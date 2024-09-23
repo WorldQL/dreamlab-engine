@@ -1,3 +1,4 @@
+import { EntityTransformUpdate } from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { ClientGame, Game } from "../../game.ts";
 import { IVector2, Vector2, smoothLerp } from "../../math/mod.ts";
@@ -103,6 +104,8 @@ export class Camera extends Entity {
     return game.entities.lookupByType(Camera).find(camera => camera.active);
   }
 
+  public zoom: number;
+
   constructor(ctx: EntityContext) {
     super(ctx);
 
@@ -168,6 +171,19 @@ export class Camera extends Entity {
       game.renderer.app.stage.addChild(game.renderer.scene);
       // Destroy container after
       this.container.destroy();
+    });
+
+    this.zoom = 1 / this.globalTransform.scale.x;
+    const zoom = this.defineValue(Camera, "zoom", { replicated: false });
+    let zoomChanging = false;
+    zoom.onChanged(() => {
+      zoomChanging = true;
+      this.globalTransform.scale = Vector2.ONE.mul(1 / this.zoom);
+      zoomChanging = false;
+    });
+    this.on(EntityTransformUpdate, () => {
+      if (zoomChanging) return;
+      this.zoom = 1 / this.globalTransform.scale.x;
     });
   }
 
