@@ -34,8 +34,10 @@
       "npm:pixi.js@8.1.5": "npm:pixi.js@8.1.5",
       "npm:pixi.js@8.1.6": "npm:pixi.js@8.1.6",
       "npm:pixi.js@8.2.6": "npm:pixi.js@8.2.6",
+      "npm:pixi.js@8.4.1": "npm:pixi.js@8.4.1",
       "npm:type-fest@4.20.1": "npm:type-fest@4.20.1",
       "npm:type-fest@4.23.0": "npm:type-fest@4.23.0",
+      "npm:type-fest@4.26.1": "npm:type-fest@4.26.1",
       "npm:zod-validation-error@3.3.1": "npm:zod-validation-error@3.3.1_zod@3.23.8"
     },
     "jsr": {
@@ -513,6 +515,20 @@
           "parse-svg-path": "parse-svg-path@0.1.2"
         }
       },
+      "pixi.js@8.4.1": {
+        "integrity": "sha512-3ZbEIkLYYi602UB5wuN7kPz3VsGHoJa6nxD8ustvMLRySxHAR9Z8tCAYY8ISgNplpPbaDw03B0yTD4/k9f6cAQ==",
+        "dependencies": {
+          "@pixi/colord": "@pixi/colord@2.9.6",
+          "@types/css-font-loading-module": "@types/css-font-loading-module@0.0.12",
+          "@types/earcut": "@types/earcut@2.1.4",
+          "@webgpu/types": "@webgpu/types@0.1.40",
+          "@xmldom/xmldom": "@xmldom/xmldom@0.8.10",
+          "earcut": "earcut@2.2.4",
+          "eventemitter3": "eventemitter3@5.0.1",
+          "ismobilejs": "ismobilejs@1.1.1",
+          "parse-svg-path": "parse-svg-path@0.1.2"
+        }
+      },
       "punycode@1.4.1": {
         "integrity": "sha512-jmYNElW7yvO7TV33CjSmvSiE2yco3bV2czu/OzDKdMNVZQWfxCblURLhf+47syQRBntjfLdd/H0egrzIG+oaFQ==",
         "dependencies": {}
@@ -555,6 +571,10 @@
       },
       "type-fest@4.23.0": {
         "integrity": "sha512-ZiBujro2ohr5+Z/hZWHESLz3g08BBdrdLMieYFULJO+tWc437sn8kQsWLJoZErY8alNhxre9K4p3GURAG11n+w==",
+        "dependencies": {}
+      },
+      "type-fest@4.26.1": {
+        "integrity": "sha512-yOGpmOAL7CkKe/91I5O3gPICmJNLJ1G4zFYVAsRHg7M64biSnPtRj0WNQt++bRkjYOqjWXrhnUw1utzmVErAdg==",
         "dependencies": {}
       },
       "typescript@5.4.5": {
