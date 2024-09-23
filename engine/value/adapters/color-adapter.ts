@@ -12,6 +12,6 @@ export class ColorAdapter extends ValueTypeAdapter<string> {
     return new PIXI.Color(value).toArray();
   }
   convertFromPrimitive(value: JsonValue): string {
-    return new PIXI.Color(value).toHexa();
+    return new PIXI.Color(value as string).toHexa();
   }
 }
