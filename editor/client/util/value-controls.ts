@@ -1,6 +1,7 @@
 import {
   AudioAdapter,
   ClientGame,
+  ColorAdapter,
   EnumAdapter,
   SpritesheetAdapter,
   TextureAdapter,
@@ -11,6 +12,7 @@ import {
 import { element as elem } from "@dreamlab/ui";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
+import "npm:vanilla-colorful/hex-alpha-color-picker.js";
 import { createBooleanField, createInputFieldWithDefault } from "./easy-input.ts";
 
 interface ValueControlOptions<T> {
@@ -250,6 +252,23 @@ export function createValueControl(
       };
 
       return [control, refresh];
+    }
+
+    case ColorAdapter: {
+      const opts = _opts as ValueControlOptions<string | undefined>;
+
+      const picker = elem("hex-alpha-color-picker");
+      picker.addEventListener("color-changed", () => {
+        opts.set(picker.color);
+      });
+
+      const refresh = () => {
+        const color = new PIXI.Color(opts.get() ?? opts.default ?? "#ffffffff");
+        picker.color = color.toHexa();
+      };
+
+      refresh();
+      return [picker, refresh];
     }
 
     default: {

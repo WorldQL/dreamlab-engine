@@ -36,6 +36,8 @@
       "npm:strip-ansi@7.1.0": "npm:strip-ansi@7.1.0",
       "npm:type-fest@4.23.0": "npm:type-fest@4.23.0",
       "npm:type-fest@4.26.1": "npm:type-fest@4.26.1",
+      "npm:vanilla-colorful": "npm:vanilla-colorful@0.7.2",
+      "npm:vanilla-colorful@0.7.2": "npm:vanilla-colorful@0.7.2",
       "npm:zod-validation-error@3.3.1": "npm:zod-validation-error@3.3.1_zod@3.23.8"
     },
     "jsr": {
@@ -598,6 +600,10 @@
       },
       "universalify@2.0.1": {
         "integrity": "sha512-gptHNQghINnc/vTGIk0SOFGFNXw7JVrlRUtConJRlvaw6DuX0wO5Jeko9sWrMBhh+PsYAZ7oXAiOnf/UKogyiw==",
+        "dependencies": {}
+      },
+      "vanilla-colorful@0.7.2": {
+        "integrity": "sha512-z2YZusTFC6KnLERx1cgoIRX2CjPRP0W75N+3CC6gbvdX5Ch47rZkEMGO2Xnf+IEmi3RiFLxS18gayMA27iU7Kg==",
         "dependencies": {}
       },
       "zod-validation-error@3.3.1_zod@3.23.8": {
