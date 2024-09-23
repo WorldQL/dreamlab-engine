@@ -1,21 +1,27 @@
 main {
+  --drag-handle-size: 0.5em;
+  --left-sidebar-width: 4fr;
+  --right-sidebar-width: 4fr;
+  --bottom-bar-height: 4fr;
+
   padding: 0.5em;
 
   width: 100vw;
   height: 100vh;
 
   display: grid;
-  gap: 0.5em;
-  grid-template-columns: minmax(16em, 4fr) minmax(0, 16fr) minmax(16em, 4fr);
-  grid-template-rows: 3em 12fr minmax(0, 1.5fr);
-  grid-template-areas:
-    "top    top       top"
-    "left   viewport  right"
-    "left   bottom    right";
 
-  &.expand-logs {
-    grid-template-rows: 3em 12fr minmax(0, 8fr);
-  }
+  grid-template-areas:
+    "top    top      top       top      top"
+    "left   drag-l   viewport  drag-r   right"
+    "left   drag-l   drag-b    drag-r   right"
+    "left   drag-l   bottom    drag-r   right";
+
+  grid-template-columns:
+    minmax(8em, var(--left-sidebar-width)) var(--drag-handle-size) /* left */
+    minmax(0, 16fr) /* viewport */
+    var(--drag-handle-size) minmax(8em, var(--right-sidebar-width)); /* right */
+  grid-template-rows: 3em 12fr var(--drag-handle-size) minmax(0, var(--bottom-bar-height));
 }
 
 main > div {
@@ -25,6 +31,7 @@ main > div {
 
 #top-bar {
   grid-area: top;
+  margin-bottom: 0.5em;
 }
 
 #left-sidebar {
@@ -50,6 +57,26 @@ main > div {
   display: flex;
   flex-direction: column;
   gap: 0.5em;
+}
+
+#left-sidebar-drag {
+  grid-area: drag-l;
+}
+#right-sidebar-drag {
+  grid-area: drag-r;
+}
+#bottom-bar-drag {
+  grid-area: drag-b;
+}
+
+#left-sidebar-drag,
+#right-sidebar-drag,
+#bottom-bar-drag {
+  cursor: pointer;
+
+  &:hover {
+    background-color: rgb(var(--color-accent) / 1);
+  }
 }
 
 #viewport > div {

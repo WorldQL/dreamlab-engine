@@ -29,15 +29,6 @@ export class LogViewer {
   }
 
   setup(_ui: InspectorUI): void {
-    const sizeToggle = elem("p", { role: "button", id: "size-toggle" }, ["Expand"]);
-    sizeToggle.addEventListener("click", () => {
-      const layout = document.querySelector("#layout")!;
-      const expanded = layout.classList.toggle("expand-logs");
-      sizeToggle.innerText = expanded ? "Collapse" : "Expand";
-      this.games.edit.renderer.app.resize();
-      this.games.play?.renderer.app.resize();
-    });
-
     const toggleGrid = elem("div", { role: "button" }, [icon(Grid2X2)]);
     const toggleCaseSens = elem("div", { role: "button" }, [icon(CaseSensitive)]);
     const filter = elem("input", { type: "search", placeholder: "Filter" });
@@ -91,7 +82,7 @@ export class LogViewer {
     const status = elem("div", { id: "log-status" }, [connected, disconnected]);
 
     const toolbar = elem("div", { id: "log-toolbar" }, [
-      elem("div", {}, [elem("h1", {}, ["Logs"]), sizeToggle]),
+      elem("div", {}, [elem("h1", {}, ["Logs"])]),
       elem("div", {}, [toggleGrid, toggleCaseSens, filter, clearLogs]),
       status,
     ]);

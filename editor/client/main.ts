@@ -11,6 +11,8 @@ const fonts = preloadFonts({
   weights: ["400", "500"],
 });
 
+import "./draggable-layout.ts";
+
 import "../common/mod.ts";
 
 import { Camera, ClientGame } from "@dreamlab/engine";
@@ -52,6 +54,11 @@ const games: { edit: ClientGame; play: ClientGame | undefined } = {
   edit: game,
   play: undefined,
 };
+
+new ResizeObserver(_ => {
+  games.edit.renderer.app.resize();
+  games.play?.renderer.app.resize();
+}).observe(uiRoot.querySelector("#viewport")!);
 
 Object.defineProperties(globalThis, {
   game: { value: game },
