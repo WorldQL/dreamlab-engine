@@ -8,17 +8,37 @@
       "registration": [],
       "world": [
         {
-          "type": "@core/Empty",
-          "name": "Empty",
-          "transform": {},
-          "behaviors": [
+          "type": "@core/SolidColor",
+          "name": "SolidColor",
+          "values": {
+            "static": false,
+            "hidden": false,
+            "width": 2,
+            "height": 2,
+            "color": "#8ace00ff"
+          },
+          "transform": {
+            "position": {
+              "x": 0,
+              "y": 2
+            }
+          },
+          "children": [
             {
-              "ref": "bhv_njk1e7o0k91rkgr54lcksk6v",
-              "script": "res://src/my-new-behavior.ts",
-              "values": {}
+              "type": "@core/UIPanel",
+              "name": "UIPanel",
+              "transform": {},
+              "behaviors": [
+                {
+                  "ref": "bhv_kae9tshiuxw6witkvjpgmbn7",
+                  "script": "res://src/brat.ts",
+                  "values": {}
+                }
+              ],
+              "ref": "ent_iwegy0y1fd7cerh2x63kzikn"
             }
           ],
-          "ref": "ent_rvbfd3tiws36sa8fkjzzp4sb"
+          "ref": "ent_f96eymr42kbiqrk2o9bb9hdq"
         }
       ],
       "local": [
@@ -28,7 +48,8 @@
           "values": {
             "active": true,
             "smooth": 0.1,
-            "unlocked": false
+            "unlocked": false,
+            "zoom": 1
           },
           "transform": {},
           "ref": "ent_rthb692t18htouso0q6fwqb3"
