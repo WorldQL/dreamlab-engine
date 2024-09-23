@@ -75,6 +75,8 @@ if (handshake.edit_mode) {
   game.local._.Camera.cast(Camera).addBehavior({ type: CameraPanBehavior });
 }
 
+(document.querySelector("#loading")! as HTMLElement).style.display = "none";
+
 const inspector = new InspectorUI(game, conn, handshake.edit_mode, container);
 inspector.show(uiRoot);
 
