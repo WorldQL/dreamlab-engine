@@ -26,7 +26,7 @@ Deno.addSignalListener("SIGTERM", () => {
   Deno.exit();
 });
 
-const args = cli.parseArgs(Deno.args, { string: ["spawn"] });
+const args = cli.parseArgs(Deno.args, { string: ["spawn"], boolean: ["play-mode"] });
 
 await Promise.all([
   // boot instance
@@ -40,7 +40,7 @@ await Promise.all([
       instanceId: NIL_UUID,
       worldId: world,
       worldDirectory: `${Deno.cwd()}/worlds/${world}`,
-      editMode: true,
+      editMode: !(args["play-mode"] ?? false),
       inspect: "127.0.0.1:9229",
     });
 
