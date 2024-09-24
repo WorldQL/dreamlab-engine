@@ -9,6 +9,7 @@ let bottomDragging = false;
 let animationFrame: number | null = null;
 
 const minHeightPx = 3 * parseFloat(getComputedStyle(document.documentElement).fontSize);
+const minWidthPx = 8 * parseFloat(getComputedStyle(document.documentElement).fontSize);
 
 document.addEventListener("pointerup", () => {
   leftDragging = false;
@@ -33,16 +34,24 @@ document.addEventListener("pointermove", e => {
   animationFrame = requestAnimationFrame(() => {
     if (leftDragging) {
       document.body.classList.add("col-resize");
-      const width =
-        (e.clientX - layoutRect.left - dragL.getBoundingClientRect().width) / layoutRect.width;
-      layout.style.setProperty("--left-sidebar-width", `${(width * 100).toFixed(2)}%`);
+      let widthPx = e.clientX - layoutRect.left - dragL.getBoundingClientRect().width;
+
+      if (widthPx < minWidthPx) widthPx = minWidthPx;
+
+      const widthPercentage = (widthPx / layoutRect.width) * 100;
+      layout.style.setProperty("--left-sidebar-width", `${widthPercentage.toFixed(2)}%`);
     }
+
     if (rightDragging) {
       document.body.classList.add("col-resize");
-      const width =
-        (layoutRect.right - e.clientX - dragR.getBoundingClientRect().width) / layoutRect.width;
-      layout.style.setProperty("--right-sidebar-width", `${(width * 100).toFixed(2)}%`);
+      let widthPx = layoutRect.right - e.clientX - dragR.getBoundingClientRect().width;
+
+      if (widthPx < minWidthPx) widthPx = minWidthPx;
+
+      const widthPercentage = (widthPx / layoutRect.width) * 100;
+      layout.style.setProperty("--right-sidebar-width", `${widthPercentage.toFixed(2)}%`);
     }
+
     if (bottomDragging) {
       document.body.classList.add("row-resize");
       let heightPx = layoutRect.bottom - e.clientY - dragB.getBoundingClientRect().height;
