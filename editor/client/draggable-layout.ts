@@ -8,6 +8,8 @@ let rightDragging = false;
 let bottomDragging = false;
 let animationFrame: number | null = null;
 
+const minHeightPx = 3 * parseFloat(getComputedStyle(document.documentElement).fontSize);
+
 document.addEventListener("pointerup", () => {
   leftDragging = false;
   rightDragging = false;
@@ -43,10 +45,12 @@ document.addEventListener("pointermove", e => {
     }
     if (bottomDragging) {
       document.body.classList.add("row-resize");
-      const height =
-        (layoutRect.bottom - e.clientY - dragB.getBoundingClientRect().height) /
-        layoutRect.height;
-      layout.style.setProperty("--bottom-bar-height", `${(height * 100).toFixed(2)}%`);
+      let heightPx = layoutRect.bottom - e.clientY - dragB.getBoundingClientRect().height;
+
+      if (heightPx < minHeightPx) heightPx = minHeightPx;
+
+      const heightPercentage = (heightPx / layoutRect.height) * 100;
+      layout.style.setProperty("--bottom-bar-height", `${heightPercentage.toFixed(2)}%`);
     }
   });
 });
