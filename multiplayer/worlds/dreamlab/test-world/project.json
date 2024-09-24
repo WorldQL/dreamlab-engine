@@ -63,6 +63,11 @@
               "ref": "bhv_dqg9eccve24e6rxphsx4y4px",
               "script": "res://src/player-spawner.js",
               "values": {}
+            },
+            {
+              "ref": "bhv_g4lx3mjh7raeo1p23hsd9980",
+              "script": "res://src/my-library.ts",
+              "values": {}
             }
           ],
           "ref": "ent_i09xjhef9j6tt630jn2ngdta"

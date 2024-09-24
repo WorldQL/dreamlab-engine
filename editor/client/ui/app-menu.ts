@@ -20,6 +20,8 @@ import { Ping } from "../networking/ping.ts";
 import { SERVER_URL } from "../util/server-url.ts";
 import { InspectorUI } from "./inspector.ts";
 
+let saveInterval: number | undefined;
+
 export class AppMenu {
   #section = elem("section", { id: "app-menu" });
 
@@ -39,12 +41,23 @@ export class AppMenu {
       ariaLabel: "Save",
     });
 
-    saveButton.addEventListener("click", async () => {
+    // TODO: don't save if we know the scene hasn't changed
+    const save = async () => {
       const url = new URL(SERVER_URL);
       url.pathname = `/api/v1/save-edit-session/${this.games.edit.instanceId}`;
-      await fetch(url, { method: "POST" });
-      // TODO: toast or something when the save goes through
-    });
+
+      const button = saveButton.querySelector("button")!;
+      try {
+        button.disabled = true;
+        await fetch(url, { method: "POST" });
+      } finally {
+        button.disabled = false;
+      }
+    };
+    saveButton.addEventListener("click", save);
+
+    if (saveInterval) clearInterval(saveInterval);
+    saveInterval = setInterval(save, 5000);
 
     this.controls = {
       play: new IconButton(Play, {
