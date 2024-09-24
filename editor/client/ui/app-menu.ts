@@ -20,8 +20,6 @@ import { Ping } from "../networking/ping.ts";
 import { SERVER_URL } from "../util/server-url.ts";
 import { InspectorUI } from "./inspector.ts";
 
-let saveInterval: number | undefined;
-
 export class AppMenu {
   #section = elem("section", { id: "app-menu" });
 
@@ -55,9 +53,6 @@ export class AppMenu {
       }
     };
     saveButton.addEventListener("click", save);
-
-    if (saveInterval) clearInterval(saveInterval);
-    saveInterval = setInterval(save, 5000);
 
     this.controls = {
       play: new IconButton(Play, {

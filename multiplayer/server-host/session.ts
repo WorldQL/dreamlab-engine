@@ -3,7 +3,7 @@ import { PlayCodec } from "@dreamlab/proto/codecs/mod.ts";
 import { ServerPacket } from "@dreamlab/proto/play.ts";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import { CONFIG } from "./config.ts";
-import { GameInstance } from "./instance.ts";
+import { dumpSceneDefinition, GameInstance } from "./instance.ts";
 import { IPCWorker } from "./worker.ts";
 
 import * as path from "jsr:@std/path@1";
@@ -31,6 +31,8 @@ export class GameSession {
   #readyPromiseResolve: (() => void) | undefined;
 
   startedAt = new Date();
+
+  #autoSaveInterval: ReturnType<typeof setInterval> | undefined;
 
   constructor(
     public parent: GameInstance,
@@ -76,6 +78,22 @@ export class GameSession {
     this.ipc.addMessageListener("SetStatus", message => {
       this.status = message.status;
     });
+
+    if (opts.editMode) {
+      const save = async () => {
+        try {
+          const scene = await dumpSceneDefinition(parent);
+          const projectJsonFile = path.join(parent.info.worldDirectory, "project.json");
+          const projectDesc = JSON.parse(await Deno.readTextFile(projectJsonFile));
+          projectDesc.scenes = { ...(projectDesc.scenes ?? {}), main: scene };
+          await Deno.writeTextFile(projectJsonFile, JSON.stringify(projectDesc, undefined, 2));
+        } catch (_err) {
+          // ignore
+        }
+      };
+
+      this.#autoSaveInterval = setInterval(save, 5000);
+    }
   }
 
   broadcastPacket(packet: ServerPacket) {
@@ -103,5 +121,7 @@ export class GameSession {
       connection.socket.close(1001);
     }
     this.connections.clear();
+
+    if (this.#autoSaveInterval) clearInterval(this.#autoSaveInterval);
   }
 }
