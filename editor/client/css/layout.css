@@ -70,13 +70,30 @@ main > div {
 }
 
 #left-sidebar-drag,
-#right-sidebar-drag,
-#bottom-bar-drag {
-  cursor: pointer;
+#right-sidebar-drag {
+  width: 4px;
+  cursor: col-resize;
+  transition: background-color 0.3s;
+}
 
-  &:hover {
-    background-color: rgb(var(--color-accent) / 1);
-  }
+#left-sidebar-drag {
+  justify-self: start;
+}
+
+#right-sidebar-drag {
+  justify-self: end;
+}
+
+#bottom-bar-drag {
+  height: 4px;
+  cursor: row-resize;
+  transition: background-color 0.3s;
+}
+
+#left-sidebar-drag:hover,
+#right-sidebar-drag:hover,
+#bottom-bar-drag:hover {
+  background-color: #999;
 }
 
 #viewport > div {
