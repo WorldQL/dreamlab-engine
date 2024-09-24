@@ -21,7 +21,7 @@ main {
     minmax(8em, var(--left-sidebar-width)) var(--drag-handle-size) /* left */
     minmax(0, 16fr) /* viewport */
     var(--drag-handle-size) minmax(8em, var(--right-sidebar-width)); /* right */
-  grid-template-rows: 3em 12fr var(--drag-handle-size) minmax(0, var(--bottom-bar-height));
+  grid-template-rows: 3em 12fr var(--drag-handle-size) minmax(3em, var(--bottom-bar-height));
 }
 
 main > div {
@@ -94,6 +94,14 @@ main > div {
 #right-sidebar-drag:hover,
 #bottom-bar-drag:hover {
   background-color: #999;
+}
+
+.col-resize {
+  cursor: col-resize !important;
+}
+
+.row-resize {
+  cursor: row-resize !important;
 }
 
 #viewport > div {
