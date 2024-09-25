@@ -11,30 +11,68 @@ const opts = await prepareBundleWorld({
   dir,
   outDirName: "_dist_test",
 });
-opts.write = false;
 
-console.log(opts);
+// console.log(opts);
 
 try {
   const res = await esbuild.build(opts);
   console.log(res);
 } catch (err_) {
-  // first: resolve the glob
-  const entryPoints = new Set<string>();
-  for (const glob of opts.entryPoints as string[]) {
-    const globResults = await Array.fromAsync(fs.expandGlob(glob));
-    for (const r of globResults) entryPoints.add(path.relative(dir, r.path));
-  }
-
-  // TODO: stub out the failed entry points
-
   const err = err_ as esbuild.BuildFailure;
+  const failures = new Map<string, esbuild.Message[]>();
   for (const error of err.errors) {
-    const file = error.location?.file;
-    if (file) entryPoints.delete(path.relative(dir, file));
+    const _filepath = error.location?.file;
+    if (!_filepath) continue;
+
+    const filepath = path.relative(dir, _filepath);
+    const messages = failures.get(filepath) ?? [];
+    messages.push(error);
+    failures.set(filepath, messages);
   }
 
-  opts.entryPoints = [...entryPoints].map(p => path.join(dir, p));
+  console.log(failures);
+
+  const detourfailuresplugin: esbuild.Plugin = {
+    name: "detour-failures",
+    setup: build => {
+      build.onLoad({ filter: /.*/ }, async args => {
+        const _path = path.relative(dir, args.path);
+        const messages = failures.get(_path);
+        if (!messages) return undefined;
+
+        const formatted = await esbuild.formatMessages(messages, { kind: "error" });
+
+        const contents = `
+import { Behavior } from "@dreamlab/engine";
+
+export default class StubBehavior extends Behavior {
+  private static errors = ${JSON.stringify(formatted)};
+}
+`.trimStart();
+
+        return { contents, loader: "ts" };
+      });
+    },
+  };
+
+  opts.plugins = [detourfailuresplugin, ...(opts.plugins ?? [])];
+
+  // // first: resolve the glob
+  // const entryPoints = new Set<string>();
+  // for (const glob of opts.entryPoints as string[]) {
+  //   const globResults = await Array.fromAsync(fs.expandGlob(glob));
+  //   for (const r of globResults) entryPoints.add(path.relative(dir, r.path));
+  // }
+
+  // // TODO: stub out the failed entry points
+
+  // const err = err_ as esbuild.BuildFailure;
+  // for (const error of err.errors) {
+  //   const file = error.location?.file;
+  //   if (file) entryPoints.delete(path.relative(dir, file));
+  // }
+
+  // opts.entryPoints = [...entryPoints].map(p => path.join(dir, p));
 
   const res = await esbuild.build(opts);
   console.log(res);
