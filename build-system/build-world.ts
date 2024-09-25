@@ -1,12 +1,12 @@
-import { BASE_BUILD_OPTIONS, bundle, BundleOptions } from "./build-components.ts";
+import * as fs from "jsr:@std/fs@1";
+import * as path from "jsr:@std/path@^1";
 import {
   denoPlugins,
   dreamlabEngineExternalPlugin,
   dreamlabVendorExternalPlugin,
   esbuild,
 } from "./_esbuild.ts";
-import * as fs from "jsr:@std/fs@1";
-import * as path from "jsr:@std/path@^1";
+import { BASE_BUILD_OPTIONS, bundle, BundleOptions } from "./build-components.ts";
 
 import { copy as esbuildCopy } from "npm:esbuild-plugin-copy@2.1.1";
 

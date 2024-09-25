@@ -1,6 +1,6 @@
 import { Behavior, Sprite } from "@dreamlab/engine";
-import WASDMovementBehavior from "./wasd.ts";
 import CleanupOnLeaveBehavior from "./cleanup-on-leave.ts";
+import WASDMovementBehavior from "./wasd.ts";
 
 export default class PlayerSpawner extends Behavior {
   onInitialize(): void {
