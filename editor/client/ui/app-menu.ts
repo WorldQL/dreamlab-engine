@@ -1,3 +1,6 @@
+import { connectToGame } from "@dreamlab/client/game-connection.ts";
+import { setupGame } from "@dreamlab/client/game-setup.ts";
+import { SERVER_URL } from "@dreamlab/client/util/server-url.ts";
 import { ClientGame, PlayerJoined, PlayerLeft } from "@dreamlab/engine";
 import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
 import { element as elem } from "@dreamlab/ui";
@@ -14,10 +17,7 @@ import {
   User,
 } from "../_icons.ts";
 import { IconButton } from "../components/mod.ts";
-import { connectToGame } from "../game-connection.ts";
-import { setupGame } from "../game-setup.ts";
 import { Ping } from "../networking/ping.ts";
-import { SERVER_URL } from "../util/server-url.ts";
 import { InspectorUI } from "./inspector.ts";
 
 export class AppMenu {

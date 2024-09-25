@@ -19,14 +19,14 @@ import { Camera, ClientGame } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
+import { connectToGame } from "../../client/src/game-connection.ts";
+import { setupGame } from "../../client/src/game-setup.ts";
+import { INSTANCE_ID, SERVER_URL } from "../../client/src/util/server-url.ts";
 import { stats } from "./_stats.ts";
 import { CameraPanBehavior } from "./camera-pan.ts";
-import { connectToGame } from "./game-connection.ts";
-import { setupGame } from "./game-setup.ts";
 import { AppMenu } from "./ui/app-menu.ts";
 import { InspectorUI } from "./ui/inspector.ts";
 import { LogViewer } from "./ui/log-viewer.ts";
-import { INSTANCE_ID, SERVER_URL } from "./util/server-url.ts";
 
 // TODO: loading screen ?
 

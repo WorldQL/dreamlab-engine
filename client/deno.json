@@ -8,7 +8,6 @@
     "@dreamlab/engine/internal": "../engine/internal.ts",
     "@dreamlab/vendor/": "../engine/_deps/",
     "@dreamlab/proto/": "../proto/",
-    "@dreamlab/editor/": "../editor/client/",
     "@dreamlab/scene": "../scene-graph/mod.ts",
     "@dreamlab/ui": "../ui/mod.ts"
   },

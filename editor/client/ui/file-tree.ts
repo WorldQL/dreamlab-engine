@@ -1,3 +1,4 @@
+import { SERVER_URL } from "@dreamlab/client/util/server-url.ts";
 import { ClientGame } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 import * as path from "jsr:@std/path@1";
@@ -14,7 +15,6 @@ import {
 } from "../_icons.ts";
 import { DataTree } from "../components/mod.ts";
 import TypeScript from "../svg/typescript.svg";
-import { SERVER_URL } from "../util/server-url.ts";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 
 type FileTreeNode =

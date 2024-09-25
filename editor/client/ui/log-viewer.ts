@@ -1,3 +1,4 @@
+import { SERVER_URL } from "@dreamlab/client/util/server-url.ts";
 import { ClientGame } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 // @deno-types="npm:@types/object-inspect@1.13.0"
@@ -6,7 +7,6 @@ import { WebSocket } from "npm:partysocket@1.0.2";
 import stripAnsi from "npm:strip-ansi@7.1.0";
 import type { LogEntry } from "../../../multiplayer/server-host/util/log-store.ts";
 import { Activity, CaseSensitive, Grid2X2, icon, Trash2 as Trash, Unplug } from "../_icons.ts";
-import { SERVER_URL } from "../util/server-url.ts";
 import { InspectorUI } from "./inspector.ts";
 
 type LogMessage = { t: "New"; entry: LogEntry };
