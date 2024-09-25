@@ -2,3 +2,5 @@ _dist
 _dist_*
 /*
 !/dreamlab
+
+!/*.ts
