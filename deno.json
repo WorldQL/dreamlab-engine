@@ -7,6 +7,7 @@
     "@dreamlab/scene": "./scene-graph/mod.ts"
   },
   "compilerOptions": {
-    "lib": ["deno.window", "dom"]
+    "lib": ["deno.window", "dom"],
+    "noImplicitOverride": true
   }
 }
