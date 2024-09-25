@@ -115,5 +115,50 @@ export const bundleWorld = async (
   opts?: BundleOptions,
 ) => {
   const buildOpts = await prepareBundleWorld(worldOpts, opts);
-  await bundle(`world ${worldName}`, buildOpts, opts);
+  try {
+    await bundle(`world ${worldName}`, buildOpts, opts);
+  } catch (_err) {
+    const err = _err as esbuild.BuildFailure;
+    buildOpts.plugins = [stubFailures(err, worldOpts), ...(buildOpts.plugins ?? [])];
+    await bundle(`world ${worldName}`, buildOpts, opts);
+  }
+};
+
+export const stubFailures = (
+  err: esbuild.BuildFailure,
+  worldOpts: WorldBuildOptions,
+): esbuild.Plugin => {
+  const failures = new Map<string, esbuild.Message[]>();
+  for (const error of err.errors) {
+    const _filepath = error.location?.file;
+    if (!_filepath) continue;
+
+    const filepath = path.relative(worldOpts.dir, _filepath);
+    const messages = failures.get(filepath) ?? [];
+    messages.push(error);
+    failures.set(filepath, messages);
+  }
+
+  return {
+    name: "stub-failures",
+    setup: build => {
+      build.onLoad({ filter: /.*/ }, async args => {
+        const _path = path.relative(worldOpts.dir, args.path);
+        const messages = failures.get(_path);
+        if (!messages) return undefined;
+
+        const formatted = await esbuild.formatMessages(messages, { kind: "error" });
+
+        const contents = `
+import { Behavior } from "@dreamlab/engine";
+
+export default class StubBehavior extends Behavior {
+  private static errors = ${JSON.stringify(formatted)};
+}
+`.trimStart();
+
+        return { contents, loader: "ts" };
+      });
+    },
+  };
 };
