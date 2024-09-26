@@ -6,12 +6,20 @@ dreamlab-data-tree {
     margin-top: 0.125em;
   }
 
-  & details[data-selected] > summary {
+  & details:not(.directory)[data-selected] > summary {
     background-color: rgb(var(--color-primary) / 1);
   }
 
-  & details[data-selected] > summary:hover {
-    background-color: rgb(var(--color-primary) / 1);
+  & details:not(.directory)[data-selected] > summary:hover {
+    background-color: rgb(var(--color-primary) / 0.85);
+  }
+
+  & details.directory[data-selected] > summary {
+    background-color: rgb(var(--color-bg-2) / 0.5);
+  }
+
+  & details.directory[data-selected] > summary:hover {
+    background-color: rgb(var(--color-bg-2) / 0.7);
   }
 
   & details > summary {
@@ -21,17 +29,18 @@ dreamlab-data-tree {
     padding: 0.25em;
     font-size: 0.95em;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
 
     &::marker {
       content: "";
     }
-    &::-webkit-details-marker {
-      display: none;
-    }
+
     &::before {
-      display: inline-block;
-      width: 2.25ch;
       content: "";
+      width: 2.25ch;
+      flex-shrink: 0;
     }
 
     & > .arrow {
@@ -39,12 +48,12 @@ dreamlab-data-tree {
       top: 0;
       left: 0;
       height: 100%;
-      width: auto;
-      aspect-ratio: 1 / 1;
+      width: 2.25ch;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
+      flex-shrink: 0;
 
       & > svg {
         width: 1.25em;
@@ -64,7 +73,14 @@ dreamlab-data-tree {
       transform: rotate(0deg);
     }
   }
-  & details:not(:has(> details)) {
+
+  & details.directory {
+    & > summary > div.arrow {
+      display: flex;
+    }
+  }
+
+  & details:not(.directory) {
     & > summary > div.arrow {
       display: none;
     }
