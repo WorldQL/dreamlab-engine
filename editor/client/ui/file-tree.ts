@@ -177,6 +177,8 @@ export class FileTree implements InspectorUIWidget {
     });
 
     this.#section.replaceChildren(tree);
+    const titleElement = elem("h1", {}, ["Project"]);
+    this.#section.prepend(titleElement);
   }
 
   #createImagePreview(imagePath: string, _event: MouseEvent): HTMLElement {
