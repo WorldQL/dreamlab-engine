@@ -1,4 +1,5 @@
 import {
+  ActionChanged,
   Behavior,
   BoxResizeGizmo,
   Camera,
@@ -6,6 +7,8 @@ import {
   Gizmo,
   MouseDown,
   MouseMove,
+  MouseOut,
+  MouseOver,
   MouseUp,
   Scroll,
   Vector2,
@@ -16,23 +19,45 @@ export class CameraPanBehavior extends Behavior {
   ui: InspectorUI | undefined;
 
   #camera = this.entity.cast(Camera);
+  #hover = false;
   #drag: Vector2 | undefined = undefined;
   #wasGizmo: boolean = false;
   #space = this.game.inputs.create("@editor/cameragrip", "Camera Grip", "Space");
 
   onInitialize(): void {
     if (!this.game.isClient()) return;
+
+    const canvas = this.game.renderer.app.canvas;
+    this.#hover = canvas.matches(":hover");
+
     this.listen(this.game.inputs, MouseDown, this.onMouseDown.bind(this));
     this.listen(this.game.inputs, MouseMove, this.onMouseMove.bind(this));
     this.listen(this.game.inputs, MouseUp, this.onMouseUp.bind(this));
+    this.listen(this.game.inputs, MouseOver, this.onMouseOver.bind(this));
+    this.listen(this.game.inputs, MouseOut, this.onMouseOut.bind(this));
     this.listen(this.game.inputs, Scroll, this.onScroll.bind(this));
+
+    this.listen(this.#space, ActionChanged, ({ value }) => {
+      if (value) canvas.classList.add("grab");
+      else canvas.classList.remove("grab");
+    });
+  }
+
+  #setDrag(value: Vector2 | undefined) {
+    this.#drag = value;
+
+    if (!this.game.isClient()) return;
+    const canvas = this.game.renderer.app.canvas;
+
+    if (value === undefined) canvas.classList.remove("grabbing");
+    else canvas.classList.add("grabbing");
   }
 
   onMouseDown(event: MouseDown) {
     if (!this.game.isClient()) return;
     if (event.button === "left") {
       if (this.#space.held) {
-        this.#drag = event.cursor.screen.clone();
+        this.#setDrag(event.cursor.screen.clone());
         return;
       }
       // Ignore click event if mouse is over a local entity (clickable for gizmo)
@@ -48,7 +73,7 @@ export class CameraPanBehavior extends Behavior {
 
       this.#wasGizmo = local.length > 0;
     } else if (event.button === "middle") {
-      this.#drag = event.cursor.screen.clone();
+      this.#setDrag(event.cursor.screen.clone());
     }
   }
 
@@ -57,7 +82,7 @@ export class CameraPanBehavior extends Behavior {
   onMouseUp(event: MouseUp) {
     if (!this.game.isClient()) return;
 
-    if (this.#drag) this.#drag = undefined;
+    if (this.#drag) this.#setDrag(undefined);
 
     if (!this.#drag && event.button === "left" && event.cursor.world && !this.#wasGizmo) {
       const gizmo = this.game.local.children.get("Gizmo")?.cast(Gizmo);
@@ -94,18 +119,28 @@ export class CameraPanBehavior extends Behavior {
     this.#wasGizmo = false;
   }
 
-  onMouseMove(event: MouseMove) {
+  onMouseMove({ cursor }: MouseMove) {
     if (!this.game.isClient()) return;
     if (!this.#drag) return;
+    if (!this.#hover) return;
 
-    const delta = this.#drag.sub(event.cursor.screen);
-    this.#drag = event.cursor.screen.clone();
+    const delta = this.#drag.sub(cursor.screen);
+    this.#setDrag(cursor.screen.clone());
 
     const worldDelta = this.#camera
       .screenToWorld(delta)
       .sub(this.#camera.screenToWorld(Vector2.ZERO));
 
     this.#camera.pos.assign(this.#camera.pos.add(worldDelta));
+  }
+
+  onMouseOver() {
+    this.#hover = true;
+  }
+
+  onMouseOut() {
+    this.#hover = false;
+    if (this.#drag) this.#setDrag(undefined);
   }
 
   static readonly #IS_MAC = /Mac|iPod|iPhone|iPad/.test(navigator.userAgent);

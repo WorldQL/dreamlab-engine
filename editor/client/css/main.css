@@ -5,6 +5,7 @@
 @import url(./typography.css);
 @import url(./basic.css);
 @import url(./loading.css);
+@import url(./cursor.css);
 
 @import url(../components/mod.css);
 @import url(../ui/css/mod.css);
