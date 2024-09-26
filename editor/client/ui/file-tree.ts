@@ -41,25 +41,33 @@ export class FileTree implements InspectorUIWidget {
   }
 
   #section = elem("section", { id: "file-tree" }, [elem("h1", {}, ["Project"])]);
+  #openDirectories: Set<string> = new Set();
 
-  constructor(private game: ClientGame) {}
+  constructor(private game: ClientGame) {
+    const savedState = localStorage.getItem(`${this.game.worldId}/editor/openDirectories`);
+    if (savedState) {
+      this.#openDirectories = new Set(JSON.parse(savedState));
+    }
+  }
 
   #getIconForNode(node: FileTreeNode): Icon {
     if (node.type === "directory") {
       return Folder;
     }
-
     const ext = path.extname(node.path);
-    const icon = FileTree.#fileIcons.get(ext);
-    if (icon) return icon;
-
-    return File;
+    return FileTree.#fileIcons.get(ext) || File;
   }
 
   #extname(filename: string): string {
     const lastDotIndex = filename.lastIndexOf(".");
-    if (lastDotIndex === -1) return "";
-    return filename.slice(lastDotIndex);
+    return lastDotIndex === -1 ? "" : filename.slice(lastDotIndex);
+  }
+
+  #saveOpenDirectories() {
+    localStorage.setItem(
+      `${this.game.worldId}/editor/openDirectories`,
+      JSON.stringify([...this.#openDirectories]),
+    );
   }
 
   setup(_ui: InspectorUI): void {
@@ -94,7 +102,8 @@ export class FileTree implements InspectorUIWidget {
         current.children.set(finalPart, { type: "file", name: finalPart, path: file });
       }
 
-      const addNode = (node: FileTreeNode, parent?: HTMLElement) => {
+      const addNode = (node: FileTreeNode, parent?: HTMLElement, path = "") => {
+        const currentPath = path ? `${path}/${node.name}` : node.name;
         const header = elem("span", {}, [
           elem("span", { className: "icon" }, [icon(this.#getIconForNode(node))]),
           elem("span", { className: "name" }, [node.name]),
@@ -143,8 +152,21 @@ export class FileTree implements InspectorUIWidget {
         }
 
         if (node.type === "directory") {
+          element.classList.add("directory");
+          const isOpen = this.#openDirectories.has(currentPath);
+          element.open = isOpen;
+
+          element.addEventListener("toggle", () => {
+            if (element.open) {
+              this.#openDirectories.add(currentPath);
+            } else {
+              this.#openDirectories.delete(currentPath);
+            }
+            this.#saveOpenDirectories();
+          });
+
           for (const child of node.children.values()) {
-            addNode(child, element);
+            addNode(child, element, currentPath);
           }
         }
       };
