@@ -1,6 +1,8 @@
 import { BehaviorConstructor, ClientGame, Empty, Entity, ValueTypeTag } from "@dreamlab/engine";
+import * as internal from "@dreamlab/engine/internal";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
-import * as internal from "../../../engine/internal.ts";
+
+const RUN_BEHAVIOR_INITIALIZATION = false;
 
 export interface ValueInfo<T = unknown> {
   key: string;
@@ -25,10 +27,12 @@ export class BehaviorTypeInfoService {
     dummyEntity.behaviors.push(behavior);
     dummyGame[internal.behaviorLoader].initialize(behaviorType);
 
-    try {
-      behavior[internal.behaviorSpawn]();
-    } catch (_err) {
-      // ignore
+    if (RUN_BEHAVIOR_INITIALIZATION) {
+      try {
+        behavior[internal.behaviorSpawn]();
+      } catch (_err) {
+        // ignore
+      }
     }
 
     const info: BehaviorTypeInfo = {
