@@ -86,7 +86,7 @@ const generatePackage = async (options: { name: string; entryPoint: string }) =>
 const generateVendor = async (options: { name: string }) => {
   const outDir = path.join(OUT_DIR, `vendor-${options.name}`);
   await generate({
-    packageName: `@dreamlab/vendor/${options.name}`,
+    packageName: `@dreamlab/vendor/${options.name}.ts`,
     tarballName: `vendor-${options.name}`,
     entryPoint: `../engine/_deps/${options.name}.ts`,
     outDir,

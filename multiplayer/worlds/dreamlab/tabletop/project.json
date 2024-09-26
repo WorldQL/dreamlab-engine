@@ -227,7 +227,8 @@
           "values": {
             "active": true,
             "smooth": 0.1,
-            "unlocked": false
+            "unlocked": false,
+            "zoom": 1
           },
           "transform": {},
           "ref": "ent_l2jrfub9p7u3buxicjpmhx8f"
