@@ -56,7 +56,7 @@ export class BehaviorEditor {
 
     parent.container.append(this.details);
 
-    this.#table.addEntry("id", "ID", elem("code", {}, [behavior.ref]));
+    // this.#table.addEntry("id", "ID", elem("code", {}, [behavior.ref]));
     const scriptElement = elem("code", {}, [behavior.script]);
     this.#table.addEntry("script", "Script", scriptElement);
 
