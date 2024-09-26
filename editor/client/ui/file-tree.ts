@@ -176,7 +176,7 @@ export class FileTree implements InspectorUIWidget {
       }
     });
 
-    this.#section.append(tree);
+    this.#section.replaceChildren(tree);
   }
 
   #createImagePreview(imagePath: string, _event: MouseEvent): HTMLElement {
