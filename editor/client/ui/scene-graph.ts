@@ -26,8 +26,21 @@ export class SceneGraph implements InspectorUIWidget {
 
   entryElementMap = new Map<string, HTMLElement>();
   currentDragSource: [entity: Entity, entry: HTMLElement] | undefined;
+  #openEntities: Set<string> = new Set();
 
-  constructor(private game: ClientGame) {}
+  constructor(private game: ClientGame) {
+    const savedState = localStorage.getItem(`${this.game.worldId}/editor/openEntities`);
+    if (savedState) {
+      this.#openEntities = new Set(JSON.parse(savedState));
+    }
+  }
+
+  #saveOpenEntities() {
+    localStorage.setItem(
+      `${this.game.worldId}/editor/openEntities`,
+      JSON.stringify([...this.#openEntities]),
+    );
+  }
 
   setup(ui: InspectorUI): void {
     const treeRoot = elem("div", { id: "scene-graph-tree" });
@@ -120,6 +133,8 @@ export class SceneGraph implements InspectorUIWidget {
   renderEntry(ui: InspectorUI, parent: HTMLElement, entity: Entity) {
     if (entity instanceof EditorMetadataEntity) return;
 
+    const currentEntityRef = entity.ref;
+
     const toggle = elem("div", { className: "arrow" }, [icon(ChevronDown)]);
     const summary = elem("summary", {}, [
       toggle,
@@ -132,12 +147,21 @@ export class SceneGraph implements InspectorUIWidget {
       ]),
     ]);
 
-    const entryElement = elem("details", { open: true }, [summary]);
+    const entryElement = elem("details", { open: this.#openEntities.has(currentEntityRef) }, [
+      summary,
+    ]);
     entryElement.dataset.entity = entity.ref;
     this.entryElementMap.set(entity.ref, entryElement);
 
     toggle.addEventListener("click", () => {
       entryElement.open = !entryElement.open;
+
+      if (entryElement.open) {
+        this.#openEntities.add(currentEntityRef);
+      } else {
+        this.#openEntities.delete(currentEntityRef);
+      }
+      this.#saveOpenEntities();
     });
 
     summary.addEventListener("click", ev => {
