@@ -21,7 +21,7 @@ main {
     minmax(8em, var(--left-sidebar-width)) var(--drag-handle-size) /* left */
     minmax(0, 16fr) /* viewport */
     var(--drag-handle-size) minmax(8em, var(--right-sidebar-width)); /* right */
-  grid-template-rows: 3em 12fr var(--drag-handle-size) minmax(3em, var(--bottom-bar-height));
+  grid-template-rows: 3em 12fr 0 minmax(3em, var(--bottom-bar-height));
 }
 
 main > div {
@@ -31,25 +31,28 @@ main > div {
 
 #top-bar {
   grid-area: top;
-  margin-bottom: 0.5em;
 }
 
 #left-sidebar {
   grid-area: left;
+  margin-top: 0.5em;
 }
 
 #viewport {
   grid-area: viewport;
   overflow: hidden;
+  margin-top: 0.5em;
 }
 
 #right-sidebar {
   grid-area: right;
+  margin-top: 0.5em;
 }
 
 #bottom-bar {
   grid-area: bottom;
   overflow: auto;
+  margin-top: 0.5em;
 }
 
 #left-sidebar,
@@ -61,9 +64,11 @@ main > div {
 
 #left-sidebar-drag {
   grid-area: drag-l;
+  margin-top: 0.5em;
 }
 #right-sidebar-drag {
   grid-area: drag-r;
+  margin-top: 0.5em;
 }
 #bottom-bar-drag {
   grid-area: drag-b;
