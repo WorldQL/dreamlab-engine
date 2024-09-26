@@ -4,6 +4,7 @@ import { pointLocalToWorld, pointWorldToLocal } from "../../math/spatial-transfo
 import { EntityDestroyed, GameRender, MouseDown } from "../../signals/mod.ts";
 import type { EntityContext } from "../entity.ts";
 import { Entity } from "../entity.ts";
+import { Camera } from "./camera.ts";
 import { ClickableRect } from "./clickable.ts";
 import { Empty } from "./empty.ts";
 
@@ -182,14 +183,17 @@ export class BoxResizeGizmo extends Entity {
     translateBoth.on(MouseDown, translateOnMouseDown("both"));
   }
 
-  #updateHandlePositions() {
+  #updateHandlePositions(camera: Camera) {
     // We dont want the handle sizes to change with scale
 
     const entity = this.#target;
     if (!entity) return;
     const bounds = entity.bounds;
     if (!bounds) return;
-    const scaled = Vector2.mul(bounds, entity.globalTransform.scale);
+    const scaled = Vector2.div(
+      Vector2.mul(bounds, entity.globalTransform.scale),
+      camera.smoothed.scale,
+    );
 
     const container = this.children.get("Container")?.cast(Empty);
     if (container) container.globalTransform.rotation = entity.globalTransform.rotation;
@@ -360,30 +364,35 @@ export class BoxResizeGizmo extends Entity {
       if (!this.#gfx) return;
       this.#gfx.clear();
 
+      const camera = Camera.getActive(this.game);
+      if (!camera) return;
+      this.#gfx.scale = camera.smoothed.scale;
+      this.globalTransform.scale = camera.smoothed.scale;
+
       const entity = this.#target;
       if (!entity) return;
 
       const pos = entity.pos;
       this.pos.assign(entity.pos);
 
-      const bounds = entity.bounds;
-      if (!bounds) return;
+      const _bounds = entity.bounds;
+      if (!_bounds) return;
+      const bounds = Vector2.div(
+        Vector2.mul(_bounds, entity.globalTransform.scale),
+        camera.smoothed.scale,
+      );
 
-      this.#updateHandlePositions();
+      this.#updateHandlePositions(camera);
 
       const halfx = bounds.x / 2;
       const halfy = bounds.y / 2;
 
-      const a = pointLocalToWorld(entity.globalTransform, { x: -halfx, y: -halfy });
-      const b = pointLocalToWorld(entity.globalTransform, { x: -halfx, y: halfy });
-      const c = pointLocalToWorld(entity.globalTransform, { x: halfx, y: -halfy });
-      const d = pointLocalToWorld(entity.globalTransform, { x: halfx, y: halfy });
+      const a = { x: -halfx, y: halfy };
+      const b = { x: -halfx, y: -halfy };
+      const c = { x: halfx, y: halfy };
+      const d = { x: halfx, y: -halfy };
 
-      a.y = -a.y;
-      b.y = -b.y;
-      c.y = -c.y;
-      d.y = -d.y;
-
+      this.#gfx.position = { x: pos.x, y: -pos.y };
       this.#gfx
         .poly([a, b, d, c])
         .stroke({
@@ -392,7 +401,7 @@ export class BoxResizeGizmo extends Entity {
           alpha: 1,
           alignment: -0,
         })
-        .rect(pos.x - 0.15, -(pos.y + 0.15), 0.3, 0.3)
+        .rect(-0.15, -0.15, 0.3, 0.3)
         .fill({ alpha: 0.2, color: "blue" })
         .stroke({ alpha: 0.5, color: "blue", width: 0.01 });
 
