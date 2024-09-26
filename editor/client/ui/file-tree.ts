@@ -56,6 +56,12 @@ export class FileTree implements InspectorUIWidget {
     return File;
   }
 
+  #extname(filename: string): string {
+    const lastDotIndex = filename.lastIndexOf(".");
+    if (lastDotIndex === -1) return "";
+    return filename.slice(lastDotIndex);
+  }
+
   setup(_ui: InspectorUI): void {
     const tree = new DataTree();
     tree.style.setProperty("--tree-indent-amount", "0.5em");
@@ -100,6 +106,26 @@ export class FileTree implements InspectorUIWidget {
           element.draggable = true;
           element.dataset["file"] = node.path;
 
+          element.addEventListener("mouseover", event => {
+            if (
+              node.type === "file" &&
+              [".png", ".jpg", ".jpeg", ".gif", ".webp"].includes(this.#extname(node.path))
+            ) {
+              const imagePreview = this.#createImagePreview(node.path, event);
+
+              element.addEventListener("mousemove", moveEvent => {
+                const { clientX: x, clientY: y } = moveEvent;
+                const { offsetWidth: imgW, offsetHeight: imgH } = imagePreview;
+                const { innerWidth: screenW, innerHeight: screenH } = window;
+
+                imagePreview.style.top = `${Math.min(y + 10, screenH - imgH - 10)}px`;
+                imagePreview.style.left = `${Math.min(x + 10, screenW - imgW - 10)}px`;
+              });
+
+              element.addEventListener("mouseleave", () => imagePreview.remove());
+            }
+          });
+
           element.addEventListener("dragstart", () => {
             element.dataset.dragging = "";
           });
@@ -129,6 +155,26 @@ export class FileTree implements InspectorUIWidget {
     });
 
     this.#section.replaceChildren(tree);
+  }
+
+  #createImagePreview(imagePath: string, _event: MouseEvent): HTMLElement {
+    const imagePreview = document.createElement("img");
+
+    const url = new URL(SERVER_URL);
+    url.pathname = `/api/v1/edit/${this.game.instanceId}/files/${imagePath}`;
+
+    imagePreview.src = url.toString();
+    imagePreview.alt = "Image Preview";
+    imagePreview.classList.add("image-preview");
+
+    document.body.appendChild(imagePreview);
+
+    imagePreview.onload = () => {
+      imagePreview.classList.remove("hidden");
+      imagePreview.classList.add("show");
+    };
+
+    return imagePreview;
   }
 
   show(uiRoot: HTMLElement): void {

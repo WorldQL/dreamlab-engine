@@ -32,3 +32,27 @@
     }
   }
 }
+
+.image-preview {
+  position: fixed;
+  width: 200px;
+  border-radius: 8px;
+  background-color: rgba(var(--color-bg-2));
+  border: none;
+  padding: 5px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 1000;
+}
+
+.image-preview.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.image-preview.hidden {
+  opacity: 0;
+  transform: translateY(10px);
+}
