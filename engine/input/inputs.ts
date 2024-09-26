@@ -190,12 +190,12 @@ export class Inputs extends BasicSignalHandler<Inputs> {
     }
 
     const { world } = this.cursor;
-    if (world) this.fire(MouseOver, { screen: this.#screenCursor, world });
+    if (world) this.fire(MouseOver, { screen: this.#screenCursor, world }, ev);
   };
 
-  #onMouseOut = (_: MouseEvent) => {
+  #onMouseOut = (ev: MouseEvent) => {
     this.#screenCursor = undefined;
-    this.fire(MouseOut, { screen: undefined, world: undefined });
+    this.fire(MouseOut, { screen: undefined, world: undefined }, ev);
   };
 
   #onMouseMove = (ev: MouseEvent) => {
@@ -207,7 +207,7 @@ export class Inputs extends BasicSignalHandler<Inputs> {
     }
 
     const { world } = this.cursor;
-    if (world) this.fire(MouseMove, { screen: this.#screenCursor, world });
+    if (world) this.fire(MouseMove, { screen: this.#screenCursor, world }, ev);
   };
 
   #onWheel = (ev: WheelEvent) => {

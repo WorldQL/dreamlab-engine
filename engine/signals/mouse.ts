@@ -21,15 +21,24 @@ export class MouseUp {
 }
 
 export class MouseOver {
-  public constructor(public readonly cursor: Simplify<SetNonNullable<Cursor>>) {}
+  public constructor(
+    public readonly cursor: Simplify<SetNonNullable<Cursor>>,
+    public readonly ev?: MouseEvent,
+  ) {}
 }
 
 export class MouseMove {
-  public constructor(public readonly cursor: Simplify<SetNonNullable<Cursor>>) {}
+  public constructor(
+    public readonly cursor: Simplify<SetNonNullable<Cursor>>,
+    public readonly ev: MouseEvent,
+  ) {}
 }
 
 export class MouseOut {
-  public constructor(public readonly cursor: Cursor) {}
+  public constructor(
+    public readonly cursor: Cursor,
+    public readonly ev?: MouseEvent,
+  ) {}
 }
 
 export class Scroll {
