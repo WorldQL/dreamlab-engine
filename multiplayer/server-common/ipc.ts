@@ -24,11 +24,16 @@ interface SceneDefinitionRequestMessage {
   op: "SceneDefinitionRequest";
 }
 
+interface ReloadEditSceneMessage {
+  op: "ReloadEditScene";
+}
+
 export type HostIPCMessage =
   | ConnectionEstablishedMessage
   | ConnectionDroppedMessage
   | IncomingPacketMessage
-  | SceneDefinitionRequestMessage;
+  | SceneDefinitionRequestMessage
+  | ReloadEditSceneMessage;
 
 interface WorkerUpMessage {
   op: "WorkerUp";

@@ -135,6 +135,10 @@ export const serveScriptEditingAPI = (router: Router) => {
               ? `res://${relativePath.replace(/\.tsx?$/, ".js")}`
               : undefined,
           });
+
+          if (file.path === "project.json") {
+            instance.session?.ipc.send({ op: "ReloadEditScene" });
+          }
         }
 
         await buildWorld(instance.info.worldId, instance.info.worldDirectory, "_dist");
@@ -190,6 +194,10 @@ export const serveScriptEditingAPI = (router: Router) => {
             ? `res://${relativePath.replace(/\.tsx?$/, ".js")}`
             : undefined,
         });
+
+        if (params.path === "project.json") {
+          instance.session?.ipc.send({ op: "ReloadEditScene" });
+        }
 
         return { success: true };
       },
