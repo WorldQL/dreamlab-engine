@@ -21,6 +21,13 @@ export class BehaviorList {
   editors = new Map<string, BehaviorEditor>();
 
   behaviors: SceneDescBehavior[] = [];
+  addBehavior(behavior: SceneDescBehavior) {
+    if (this.behaviors.find(it => it.ref === behavior.ref))
+      throw new Error(
+        "Behavior with given ref already exists in entity metadata:" + behavior.ref,
+      );
+    this.behaviors.push(behavior);
+  }
 
   game: ClientGame;
 
@@ -53,7 +60,9 @@ export class BehaviorList {
         );
 
         const behavior = { ref: generateCUID("bhv"), script: scriptPath, values };
-        this.behaviors.push(behavior);
+        const editor = new BehaviorEditor(ui, behavior, this);
+        this.editors.set(behavior.ref, editor);
+        this.addBehavior(behavior);
         this.sync();
       } catch (error) {
         // FIXME: uhh catch onInitialize() throwing and deal with it better
@@ -86,7 +95,7 @@ export class BehaviorList {
           } else {
             const editor = new BehaviorEditor(ui, newBehavior, this);
             this.editors.set(newBehavior.ref, editor);
-            this.behaviors.push(newBehavior);
+            this.addBehavior(newBehavior);
           }
         }
 
@@ -114,7 +123,7 @@ export class BehaviorList {
         }
 
         const newBehavior = { ref: behavior.ref, script, values };
-        this.behaviors.push(newBehavior);
+        this.addBehavior(newBehavior);
       }
 
       this.entity.on(BehaviorSpawned, ({ behavior }) => {
@@ -131,7 +140,7 @@ export class BehaviorList {
         const newBehavior = { ref: behavior.ref, script, values };
         const editor = new BehaviorEditor(ui, newBehavior, this);
         this.editors.set(newBehavior.ref, editor);
-        this.behaviors.push(newBehavior);
+        this.addBehavior(newBehavior);
       });
     }
 
@@ -186,7 +195,7 @@ export class BehaviorList {
       event.preventDefault();
       if (script === "") return;
 
-      this.behaviors.push({
+      this.addBehavior({
         ref: generateCUID("bhv"),
         script,
       });

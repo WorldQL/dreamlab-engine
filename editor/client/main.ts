@@ -56,8 +56,8 @@ const games: { edit: ClientGame; play: ClientGame | undefined } = {
 };
 
 new ResizeObserver(_ => {
-  games.edit.renderer.app.resize();
-  games.play?.renderer.app.resize();
+  games.edit.renderer?.app?.resize?.();
+  games.play?.renderer?.app?.resize?.();
 }).observe(uiRoot.querySelector("#viewport")!);
 
 Object.defineProperties(globalThis, {

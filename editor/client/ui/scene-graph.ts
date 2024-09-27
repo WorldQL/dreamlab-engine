@@ -147,9 +147,11 @@ export class SceneGraph implements InspectorUIWidget {
       ]),
     ]);
 
-    const entryElement = elem("details", { open: this.#openEntities.has(currentEntityRef) }, [
-      summary,
-    ]);
+    const entryElement = elem(
+      "details",
+      { open: this.#openEntities.has(currentEntityRef) || entity.children.size === 0 },
+      [summary],
+    );
     entryElement.dataset.entity = entity.ref;
     this.entryElementMap.set(entity.ref, entryElement);
 

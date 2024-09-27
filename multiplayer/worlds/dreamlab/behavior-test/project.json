@@ -22,11 +22,6 @@
             {
               "ref": "bhv_ifuj975we59tqis66zvpvknm",
               "script": "res://src/spin.ts",
-              "values": {}
-            },
-            {
-              "ref": "bhv_ifuj975we59tqis66zvpvknm",
-              "script": "res://src/spin.ts",
               "values": {
                 "speed": 0.1
               }
