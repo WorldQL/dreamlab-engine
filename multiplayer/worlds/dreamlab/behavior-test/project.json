@@ -8,26 +8,17 @@
       "registration": [],
       "world": [
         {
-          "type": "@core/SolidColor",
-          "name": "SolidColor",
-          "values": {
-            "static": false,
-            "hidden": false,
-            "width": 1,
-            "height": 1,
-            "color": "#ff58edff"
-          },
+          "type": "@core/Empty",
+          "name": "SpriteSpawner",
           "transform": {},
           "behaviors": [
             {
-              "ref": "bhv_ifuj975we59tqis66zvpvknm",
-              "script": "res://src/spin.ts",
-              "values": {
-                "speed": 0.1
-              }
+              "ref": "bhv_g0ytsi4e3colrumyp9j2s53n",
+              "script": "res://src/sprite-spawner.ts",
+              "values": {}
             }
           ],
-          "ref": "ent_xp08icuhk3f14omo5vsq9wj0"
+          "ref": "ent_n3ylmuebfcab3e7vn40nl8ta"
         }
       ],
       "local": [
@@ -45,7 +36,31 @@
         }
       ],
       "server": [],
-      "prefabs": []
+      "prefabs": [
+        {
+          "type": "@core/Sprite",
+          "name": "TheSprite",
+          "values": {
+            "static": false,
+            "hidden": false,
+            "width": 1,
+            "height": 1,
+            "alpha": 1,
+            "texture": "https://lulu.dev/avatar.png"
+          },
+          "transform": {},
+          "behaviors": [
+            {
+              "ref": "bhv_ydolpemvjjmxntd77t1ast0x",
+              "script": "res://src/spin.ts",
+              "values": {
+                "speed": 0.2
+              }
+            }
+          ],
+          "ref": "ent_q6hp3sqemypn220nl3mnc9ad"
+        }
+      ]
     }
   }
 }
