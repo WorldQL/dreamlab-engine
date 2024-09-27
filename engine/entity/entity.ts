@@ -356,6 +356,7 @@ export abstract class Entity implements ISignalHandler {
 
     const behaviorType = behavior.constructor as BehaviorConstructor<B>;
     this.game[internal.behaviorLoader].initialize(behaviorType);
+    b.setup();
     b[internal.behaviorSpawn]();
 
     return b;

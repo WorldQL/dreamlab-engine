@@ -210,8 +210,6 @@ export class Behavior implements ISignalHandler {
 
     if (ctx.ref) this.ref = ctx.ref;
     if (ctx.values) this.#defaultValues = ctx.values;
-
-    this.setup();
   }
 
   destroy() {
