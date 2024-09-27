@@ -12,6 +12,7 @@ import { Empty, Entity, EntityDefinition, ServerGame } from "@dreamlab/engine";
 import {
   EditorMetadataEntity,
   Facades,
+  LocalRootFacade,
   PrefabRootFacade,
   ServerRootFacade,
   WorldRootFacade,
@@ -105,7 +106,7 @@ export const handleEditMode = async (
     _ref: "EDIT_PREFABS",
   });
   const editLocal = editEntities.spawn({
-    type: WorldRootFacade,
+    type: LocalRootFacade,
     name: "local",
     _ref: "EDIT_LOCAL",
   });
