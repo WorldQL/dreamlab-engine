@@ -1,0 +1,56 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "engine_revision": "2024-08.001"
+  },
+  "scenes": {
+    "main": {
+      "registration": [],
+      "world": [
+        {
+          "type": "@core/SolidColor",
+          "name": "SolidColor",
+          "values": {
+            "static": false,
+            "hidden": false,
+            "width": 1,
+            "height": 1,
+            "color": "#ff58edff"
+          },
+          "transform": {},
+          "behaviors": [
+            {
+              "ref": "bhv_ifuj975we59tqis66zvpvknm",
+              "script": "res://src/spin.ts",
+              "values": {}
+            },
+            {
+              "ref": "bhv_ifuj975we59tqis66zvpvknm",
+              "script": "res://src/spin.ts",
+              "values": {
+                "speed": 0.1
+              }
+            }
+          ],
+          "ref": "ent_xp08icuhk3f14omo5vsq9wj0"
+        }
+      ],
+      "local": [
+        {
+          "type": "@core/Camera",
+          "name": "Camera",
+          "values": {
+            "active": true,
+            "smooth": 0.1,
+            "unlocked": false,
+            "zoom": 1
+          },
+          "transform": {},
+          "ref": "ent_jfzqstxw52tu4lds1jj2vfqz"
+        }
+      ],
+      "server": [],
+      "prefabs": []
+    }
+  }
+}

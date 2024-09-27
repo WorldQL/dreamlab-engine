@@ -303,13 +303,14 @@ export abstract class Entity implements ISignalHandler {
 
     if (def.behaviors) {
       def.behaviors.forEach(b => {
-        const behavior = new b.type({
+        const behavior: Behavior = new b.type({
           game: this.game,
           entity,
           ref: b._ref,
           values: b.values,
         });
         entity.behaviors.push(behavior);
+        behavior.setup();
       });
     }
 
