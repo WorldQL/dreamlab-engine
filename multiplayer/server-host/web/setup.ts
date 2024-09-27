@@ -1,14 +1,15 @@
+import { oakCors } from "https://deno.land/x/cors@v1.2.2/mod.ts";
 import { Application, Router, Status } from "../deps/oak.ts";
 import { handleJsonAPIErrors } from "./util/api.ts";
-import { oakCors } from "https://deno.land/x/cors@v1.2.2/mod.ts";
 
-import { workerInternalRoute } from "./worker.ts";
 import { serveInstanceManagementAPI } from "./routes/instance-management.ts";
-import { serveWorlds } from "./routes/worlds.ts";
-import { servePlayRoutes } from "./routes/play.ts";
 import { serveLogStreamingAPI } from "./routes/log-streaming.ts";
+import { servePlayRoutes } from "./routes/play.ts";
+import { serveSchemas } from "./routes/schemas.ts";
 import { serveScriptEditingAPI } from "./routes/script-editing.ts";
 import { serveSourceControlAPI } from "./routes/source-control.ts";
+import { serveWorlds } from "./routes/worlds.ts";
+import { workerInternalRoute } from "./worker.ts";
 
 export const setupWeb = async (app: Application) => {
   const router = new Router();
@@ -16,6 +17,7 @@ export const setupWeb = async (app: Application) => {
   router.get("/internal/worker", workerInternalRoute);
   await servePlayRoutes(router);
   serveWorlds(router);
+  serveSchemas(router);
   serveInstanceManagementAPI(router);
   serveLogStreamingAPI(router);
   serveScriptEditingAPI(router);

@@ -3,9 +3,12 @@ import { z } from "@dreamlab/vendor/zod.ts";
 export const CURRENT_SCHEMA_VERSION: number = 1;
 
 /** cuid: ent_* */
-export const EntityReferenceSchema = z.string().describe("Entity Reference");
+export const EntityReferenceSchema = z.string().startsWith("ent_").describe("Entity Reference");
 /** cuid: bhv_* */
-export const BehaviorReferenceSchema = z.string().describe("Behavior Reference");
+export const BehaviorReferenceSchema = z
+  .string()
+  .startsWith("bhv_")
+  .describe("Behavior Reference");
 /** e.g. "@core/Sprite", "@my-game/MyCustomEntity" */
 export const EntityTypeSchema = z.string().describe("Entity Type");
 
@@ -85,6 +88,7 @@ export const SceneSchema = z.object({
 });
 
 export const ProjectSchema = z.object({
+  $schema: z.string().url().optional(),
   meta: z.object({
     schema_version: z.number(),
     engine_revision: z.string(),

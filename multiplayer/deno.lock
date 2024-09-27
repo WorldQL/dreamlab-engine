@@ -65,6 +65,7 @@
       "npm:type-fest@4.20.1": "npm:type-fest@4.20.1",
       "npm:type-fest@4.23.0": "npm:type-fest@4.23.0",
       "npm:type-fest@4.26.1": "npm:type-fest@4.26.1",
+      "npm:zod-to-json-schema": "npm:zod-to-json-schema@3.23.2_zod@3.23.8",
       "npm:zod-validation-error@3.3.1": "npm:zod-validation-error@3.3.1_zod@3.23.8"
     },
     "jsr": {
@@ -762,6 +763,12 @@
       "universalify@2.0.1": {
         "integrity": "sha512-gptHNQghINnc/vTGIk0SOFGFNXw7JVrlRUtConJRlvaw6DuX0wO5Jeko9sWrMBhh+PsYAZ7oXAiOnf/UKogyiw==",
         "dependencies": {}
+      },
+      "zod-to-json-schema@3.23.2_zod@3.23.8": {
+        "integrity": "sha512-uSt90Gzc/tUfyNqxnjlfBs8W6WSGpNBv0rVsNxP/BVSMHMKGdthPYff4xtCHYloJGM0CFxFsb3NbC0eqPhfImw==",
+        "dependencies": {
+          "zod": "zod@3.23.8"
+        }
       },
       "zod-validation-error@3.3.1_zod@3.23.8": {
         "integrity": "sha512-uFzCZz7FQis256dqw4AhPQgD6f3pzNca/Zh62RNELavlumQB3nDIUFbF5JQfFLcMbO1s02Q7Xg/gpcOBlEnYZA==",
