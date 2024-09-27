@@ -1,12 +1,7 @@
 # Dreamlab v2
 
-Monorepo. Next iteration of the Dreamlab game engine & platform.
+Dreamlab engine monorepo. Includes the shared libraries, editor UI, and multiplayer host.
 
 ## Setup
 
-Start the multiplayer server & development webserver for the editor frontend:
-
-```shell
-multiplayer/ $ deno task start
-editor/ $ deno task watch
-```
+TODO: Write this tomorrow (9/27/2024)
