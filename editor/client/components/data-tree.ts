@@ -71,6 +71,7 @@ export class DataTree extends HTMLElement {
     summary.addEventListener("click", ev => {
       ev.preventDefault();
       details.open = !details.open;
+      if (details.children.length <= 1) details.open = true;
     });
     (parent ?? this).append(details);
     return details;
