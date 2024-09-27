@@ -1,7 +1,7 @@
 import "./css/main.css";
 
 import "../../build-system/live-reload.js";
-import "./_env.ts";
+import "@dreamlab/client/_env.ts";
 
 import { preloadFonts } from "./fonts.ts";
 
