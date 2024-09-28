@@ -145,19 +145,15 @@ export const handleEditMode = async (
     ipc.send({ op: "SceneDefinitionResponse", sceneJson: newScene });
   });
 
-  const sceneRoots: [SceneDescEntity[], Entity][] = [
+  let sceneRoots: [SceneDescEntity[], Entity][] = [
     [scene.world, editWorld],
     [scene.local, editLocal],
     [scene.server, editServer],
     [scene.prefabs, editPrefabs],
   ];
 
-  const loadFromScene = async (
-    customSceneRoots?: ReadonlyArray<[SceneDescEntity[], Entity]>,
-  ) => {
-    const rootsToUse = customSceneRoots || sceneRoots;
-
-    for (const [sceneRoot, editRoot] of rootsToUse) {
+  const loadFromScene = async () => {
+    for (const [sceneRoot, editRoot] of sceneRoots) {
       const defs = await Promise.all(
         sceneRoot.map(sceneDef =>
           convertEntityDefinition(game, sceneDef).then(
@@ -191,13 +187,13 @@ export const handleEditMode = async (
     scene.server = newScene.server;
     scene.prefabs = newScene.prefabs;
 
-    const updatedSceneRoots: [SceneDescEntity[], Entity][] = [
+    sceneRoots = [
       [scene.world, editWorld],
       [scene.local, editLocal],
       [scene.server, editServer],
       [scene.prefabs, editPrefabs],
     ];
 
-    await loadFromScene(updatedSceneRoots);
+    await loadFromScene();
   });
 };
