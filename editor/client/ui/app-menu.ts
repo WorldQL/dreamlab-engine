@@ -50,6 +50,7 @@ export class AppMenu {
         await fetch(url, { method: "POST" });
       } finally {
         button.disabled = false;
+        window.parent.postMessage({ action: "reloadProject" }, "*");
       }
     };
     saveButton.addEventListener("click", save);
