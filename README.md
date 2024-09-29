@@ -1,7 +1,7 @@
-# Dreamlab v2
+# Dreamlab
 
-Dreamlab engine monorepo. Includes the shared libraries, editor UI, and multiplayer host.
+Dreamlab engine monorepo. Includes the shared libraries, editor UI, and multiplayer host. https://app.dreamlab.gg/
 
 ## Setup
 
-TODO: Write this tomorrow (9/27/2024)
+`deno task start` in /multiplayer and `deno task watch` in /editor. Proper docs coming very soon!
