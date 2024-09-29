@@ -4,7 +4,7 @@ main {
   --right-sidebar-width: 4fr;
   --bottom-bar-height: 4fr;
 
-  padding: 0.5em;
+  padding: 0 0.5em 0.5em 0.5em;
 
   width: 100vw;
   height: 100vh;
