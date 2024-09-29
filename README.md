@@ -1,6 +1,6 @@
 # Dreamlab
 
-Dreamlab engine monorepo. Includes the shared libraries, editor UI, and multiplayer host. https://app.dreamlab.gg/
+Dreamlab engine monorepo. Includes the shared libraries, editor UI, and multiplayer host. Try it at https://app.dreamlab.gg/
 
 ## Setup
 
