@@ -285,16 +285,16 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
 
   conn.registerPacketHandler("DeleteBehavior", packet => {
     const entity = game.entities.lookupByRef(packet.entity);
-    if (!entity)
-      throw new Error(
-        `entity sync: Tried to delete a behavior from a non-existent entity! (${packet.entity})`,
-      );
+    if (!entity) return;
+    // throw new Error(
+    //   `entity sync: Tried to delete a behavior from a non-existent entity! (${packet.entity})`,
+    // );
 
     const behavior = entity.behaviors.find(it => it.ref === packet.behavior);
-    if (!behavior)
-      throw new Error(
-        `entity sync: Tried to delete a non-existent behavior! (${packet.behavior})`,
-      );
+    if (!behavior) return;
+    // throw new Error(
+    //   `entity sync: Tried to delete a non-existent behavior! (${packet.behavior})`,
+    // );
 
     changeIgnoreSet.add(entity.ref);
     behavior.destroy();

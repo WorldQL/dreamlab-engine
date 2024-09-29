@@ -133,6 +133,7 @@ export class LogViewer {
         timestamp: Date.now(),
         message,
         detail: {},
+        source: "client",
       });
 
       return log(...args);
@@ -141,9 +142,15 @@ export class LogViewer {
 
   private appendLogEntry(log: LogEntry): void {
     const ts = new Date(log.timestamp).toISOString().replace("T", " ").replace("Z", "");
-    const level = log.level.toUpperCase().padEnd(5, " ");
+    let level = log.level.toUpperCase().padEnd(5, " ");
 
-    const entry = elem("div", { className: "log-entry" }, [
+    let style = "";
+    if (log.source === "client") {
+      level = "CLIENT".padEnd(5, " ");
+      style = "background-color: rgba(253, 255, 112, 0.2)";
+    }
+    // @ts-expect-error CSS
+    const entry = elem("div", { className: "log-entry", style }, [
       elem("code", {}, [ts]),
       elem("code", {}, [level]),
       ...this.logMessage(log),
