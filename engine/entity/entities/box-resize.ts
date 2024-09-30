@@ -393,6 +393,7 @@ export class BoxResizeGizmo extends Entity {
       const d = { x: halfx, y: -halfy };
 
       this.#gfx.position = { x: pos.x, y: -pos.y };
+      this.#gfx.rotation = -entity.globalTransform.rotation;
       this.#gfx
         .poly([a, b, d, c])
         .stroke({
