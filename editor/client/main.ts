@@ -1,7 +1,7 @@
 import "./css/main.css";
 
-import "../../build-system/live-reload.js";
 import "@dreamlab/client/_env.ts";
+import "../../build-system/live-reload.js";
 
 import { preloadFonts } from "./fonts.ts";
 
@@ -15,7 +15,7 @@ import "./draggable-layout.ts";
 
 import "../common/mod.ts";
 
-import { Camera, ClientGame } from "@dreamlab/engine";
+import { Camera, ClientGame, Entity } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
@@ -69,6 +69,12 @@ Object.defineProperties(globalThis, {
 // setupMultiplayerCursors(game);
 await fonts;
 await setupGame(game, conn, handshake.edit_mode);
+
+const registry = Entity[internal.entityTypeRegistry];
+for (const [type, namespace] of registry) {
+  if (namespace === "@editor") continue;
+  Object.defineProperty(globalThis, type.name, { value: type });
+}
 
 if (handshake.edit_mode) {
   game[internal.behaviorLoader].registerInternalBehavior(CameraPanBehavior, "@editor");
