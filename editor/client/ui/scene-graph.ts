@@ -70,6 +70,9 @@ export class SceneGraph implements InspectorUIWidget {
           const newEntity = world.spawn({
             type: Facades.lookupFacadeEntityType(type),
             name: type.name,
+            transform: {
+              position: this.game.local._.Camera.globalTransform.position,
+            },
           });
           const newEntryElement = this.entryElementMap.get(newEntity.ref);
           if (newEntryElement) this.triggerRename(newEntity, newEntryElement);
@@ -323,6 +326,9 @@ export class SceneGraph implements InspectorUIWidget {
           const newEntity = entity.spawn({
             type: Facades.lookupFacadeEntityType(type),
             name: type.name,
+            transform: {
+              position: this.game.local._.Camera.globalTransform.position,
+            },
           });
           const newEntryElement = this.entryElementMap.get(newEntity.ref);
           if (newEntryElement) this.triggerRename(newEntity, newEntryElement);
