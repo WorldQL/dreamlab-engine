@@ -45,10 +45,12 @@ export class SolidColor extends PixiEntity {
   #draw(): void {
     if (!this.#gfx) return;
 
+    const width = this.width * this.globalTransform.scale.x;
+    const height = this.height * this.globalTransform.scale.y;
     const color = new PIXI.Color(this.color);
     this.#gfx
       .clear()
-      .rect(-this.width / 2, -this.height / 2, this.width, this.height)
+      .rect(-width / 2, -height / 2, width, height)
       .fill({ color: color, alpha: color.alpha });
   }
 
