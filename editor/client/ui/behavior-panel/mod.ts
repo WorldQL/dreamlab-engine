@@ -3,6 +3,9 @@ import { element as elem } from "@dreamlab/ui";
 import { icon, MinusCircle, PlusCircle } from "../../_icons.ts";
 import { InspectorUI, InspectorUIWidget } from "../inspector.ts";
 import { BehaviorList } from "./behavior-list.ts";
+import { EditorMetadataEntity } from "../../../common/mod.ts";
+import { generateCUID } from "@dreamlab/vendor/cuid.ts";
+import { SceneDescBehavior } from "@dreamlab/scene";
 
 export class BehaviorPanel implements InspectorUIWidget {
   #titleBar = elem("header", {}, [elem("h1", {}, ["Behaviors"])]);
@@ -13,6 +16,42 @@ export class BehaviorPanel implements InspectorUIWidget {
   constructor(private game: ClientGame) {}
 
   setup(ui: InspectorUI): void {
+    // TODO: clean this up lol
+    // @ts-expect-error it's there.
+    if (!globalThis.addBehaviorToEntity) {
+      Object.defineProperties(globalThis, {
+        addBehaviorToEntity: {
+          value: async (scriptPath: string, entity: Entity) => {
+            let editorMetadata = entity.children
+              .get("__EditorMetadata")
+              ?.cast(EditorMetadataEntity);
+            if (!editorMetadata) {
+              editorMetadata = entity.spawn({
+                type: EditorMetadataEntity,
+                name: "__EditorMetadata",
+              });
+            }
+
+            const behaviors: SceneDescBehavior[] = JSON.parse(editorMetadata.behaviorsJson);
+
+            const info = await ui.behaviorTypeInfo.get(scriptPath);
+            const values = Object.fromEntries(
+              info.values.map(({ key }) => [key, undefined] as const),
+            );
+
+            const behavior = { ref: generateCUID("bhv"), script: scriptPath, values };
+            if (behaviors.find(it => it.ref === behavior.ref))
+              throw new Error(
+                "Behavior with given ref already exists in entity metadata:" + behavior.ref,
+              );
+            behaviors.push(behavior);
+
+            editorMetadata.behaviorsJson = JSON.stringify(behaviors);
+          },
+        },
+      });
+    }
+
     const selectSomethingNotification = elem("p", { id: "select-something-notification" }, [
       "Select an entity to view its behaviors.",
     ]);
