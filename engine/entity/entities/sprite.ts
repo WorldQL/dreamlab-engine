@@ -91,6 +91,7 @@ export class Sprite extends PixiEntity {
       width: this.width * this.globalTransform.scale.x,
       height: this.height * this.globalTransform.scale.y,
       anchor: 0.5,
+      alpha: this.alpha,
     });
 
     this.container.addChild(this.#sprite);
