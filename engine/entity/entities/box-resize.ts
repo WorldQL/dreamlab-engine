@@ -11,7 +11,6 @@ import { SolidColor } from "./solid-color.ts";
 
 type Handle = Exclude<`${"t" | "b" | ""}${"l" | "" | "r"}`, "">;
 
-// TODO: implement rotation handle logic
 // TODO: make work when rotated lol
 export class BoxResizeGizmo extends Entity {
   static {
@@ -192,6 +191,11 @@ export class BoxResizeGizmo extends Entity {
       values: handleValues,
     });
 
+    rotate.on(MouseDown, ({ button }) => {
+      if (button !== "left") return;
+      this.#action = { type: "rotate" };
+    });
+
     const onMouseDown =
       (handle: Handle) =>
       ({ button, cursor: { world } }: MouseDown) => {
@@ -325,6 +329,7 @@ export class BoxResizeGizmo extends Entity {
   // #region Action / Signals
   #action:
     | { type: "translate"; axis: "x" | "y" | "both"; offset: Vector2 }
+    | { type: "rotate" }
     | {
         type: "scale";
         handle: Handle;
@@ -340,6 +345,13 @@ export class BoxResizeGizmo extends Entity {
 
     const cursor = this.inputs.cursor;
     if (!cursor.world) return;
+
+    if (this.#action.type === "rotate") {
+      const angle = Vector2.lookAt(this.#target.globalTransform.position, cursor.world);
+      this.#target.globalTransform.rotation = angle;
+
+      return;
+    }
 
     const pos = cursor.world.sub(this.#action.offset);
     if (this.#action.type === "translate") {
