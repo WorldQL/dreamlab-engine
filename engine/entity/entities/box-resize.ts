@@ -1,5 +1,5 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import { Transform, Vector2 } from "../../math/mod.ts";
+import { IVector2, Transform, Vector2 } from "../../math/mod.ts";
 import { pointLocalToWorld, pointWorldToLocal } from "../../math/spatial-transforms.ts";
 import { EntityDestroyed, GameRender, MouseDown } from "../../signals/mod.ts";
 import type { EntityContext } from "../entity.ts";
@@ -7,12 +7,12 @@ import { Entity } from "../entity.ts";
 import { Camera } from "./camera.ts";
 import { ClickableRect } from "./clickable.ts";
 import { Empty } from "./empty.ts";
+import { SolidColor } from "./solid-color.ts";
 
 type Handle = Exclude<`${"t" | "b" | ""}${"l" | "" | "r"}`, "">;
 
-// TODO: Make work when rotated lol
-// TODO: Add handle to center for dragging
-
+// TODO: implement rotation handle logic
+// TODO: make work when rotated lol
 export class BoxResizeGizmo extends Entity {
   static {
     Entity.registerType(this, "@editor");
@@ -23,6 +23,10 @@ export class BoxResizeGizmo extends Entity {
   static readonly #STROKE_WIDTH = 5 / 100;
   static readonly #CLICK_WIDTH = BoxResizeGizmo.#STROKE_WIDTH * 2.5;
   static readonly #CORNER_WIDTH = BoxResizeGizmo.#CLICK_WIDTH * 1.25;
+  static readonly #ROTATE_OFFSET = 0.25;
+  static readonly #STROKE_COLOR = 0x22a2ff;
+
+  static readonly #__DEBUG__ = false;
 
   #gfx: PIXI.Graphics | undefined;
 
@@ -36,6 +40,32 @@ export class BoxResizeGizmo extends Entity {
   }
 
   // #region Handles
+  #calculateGripSizes(scaled: IVector2): IVector2 {
+    const offset = BoxResizeGizmo.#CORNER_WIDTH / 2;
+    return {
+      x: scaled.x - offset,
+      y: scaled.y - offset,
+    };
+  }
+
+  #calculateHandlePositions(
+    scaled: IVector2,
+  ): Record<`${"t" | "b"}${"l" | "r"}` | "rot", IVector2> {
+    const offset = BoxResizeGizmo.#CORNER_WIDTH / 1.5;
+    const pos: IVector2 = {
+      x: scaled.x / 2 - BoxResizeGizmo.#STROKE_WIDTH + offset,
+      y: scaled.y / 2 - BoxResizeGizmo.#STROKE_WIDTH + offset,
+    };
+
+    return {
+      tl: { x: -pos.x, y: pos.y },
+      tr: { x: pos.x, y: pos.y },
+      bl: { x: -pos.x, y: -pos.y },
+      br: { x: pos.x, y: -pos.y },
+      rot: { x: 0, y: scaled.y / 2 + BoxResizeGizmo.#ROTATE_OFFSET },
+    };
+  }
+
   #updateHandles() {
     // Destroy existing chilldren
     this.children.forEach(c => c.destroy());
@@ -49,6 +79,23 @@ export class BoxResizeGizmo extends Entity {
 
     const container = this.spawn({ type: Empty, name: "Container" });
 
+    const __debug__ = (color: string, ...clickables: ClickableRect[]) => {
+      if (!BoxResizeGizmo.#__DEBUG__) return;
+      for (const clickable of clickables) {
+        const width = clickable.width;
+        const height = clickable.height;
+
+        clickable.spawn({
+          type: SolidColor,
+          name: "__DEBUG__",
+          transform: { z: Number.MAX_SAFE_INTEGER },
+          values: { width, height, color },
+        });
+      }
+    };
+
+    const grip = this.#calculateGripSizes(scaled);
+
     const leftEdge = container.spawn({
       type: ClickableRect,
       name: "LeftEdge",
@@ -56,7 +103,7 @@ export class BoxResizeGizmo extends Entity {
         z: 999_999,
         position: { x: -(scaled.x / 2 + BoxResizeGizmo.#CLICK_WIDTH / 2), y: 0 },
       },
-      values: { width: BoxResizeGizmo.#CLICK_WIDTH, height: scaled.y },
+      values: { width: BoxResizeGizmo.#CLICK_WIDTH, height: grip.y },
     });
 
     const rightEdge = container.spawn({
@@ -66,7 +113,7 @@ export class BoxResizeGizmo extends Entity {
         z: 999_999,
         position: { x: scaled.x / 2 + BoxResizeGizmo.#CLICK_WIDTH / 2, y: 0 },
       },
-      values: { width: BoxResizeGizmo.#CLICK_WIDTH, height: scaled.y },
+      values: { width: BoxResizeGizmo.#CLICK_WIDTH, height: grip.y },
     });
 
     const topEdge = container.spawn({
@@ -76,7 +123,7 @@ export class BoxResizeGizmo extends Entity {
         z: 999_999,
         position: { x: 0, y: scaled.y / 2 + BoxResizeGizmo.#CLICK_WIDTH / 2 },
       },
-      values: { width: scaled.x, height: BoxResizeGizmo.#CLICK_WIDTH },
+      values: { width: grip.x, height: BoxResizeGizmo.#CLICK_WIDTH },
     });
 
     const bottomEdge = container.spawn({
@@ -86,20 +133,23 @@ export class BoxResizeGizmo extends Entity {
         z: 999_999,
         position: { x: 0, y: -(scaled.y / 2 + BoxResizeGizmo.#CLICK_WIDTH / 2) },
       },
-      values: { width: scaled.x, height: BoxResizeGizmo.#CLICK_WIDTH },
+      values: { width: grip.x, height: BoxResizeGizmo.#CLICK_WIDTH },
     });
+
+    const handles = this.#calculateHandlePositions(scaled);
+    const handleValues = {
+      width: BoxResizeGizmo.#CORNER_WIDTH * 1.2,
+      height: BoxResizeGizmo.#CORNER_WIDTH * 1.2,
+    };
 
     const topLeft = container.spawn({
       type: ClickableRect,
       name: "TopLeft",
       transform: {
         z: 1_000_000,
-        position: {
-          x: -(scaled.x / 2 + BoxResizeGizmo.#CORNER_WIDTH / 2),
-          y: scaled.y / 2 + BoxResizeGizmo.#CORNER_WIDTH / 2,
-        },
+        position: handles.tl,
       },
-      values: { width: BoxResizeGizmo.#CORNER_WIDTH, height: BoxResizeGizmo.#CORNER_WIDTH },
+      values: handleValues,
     });
 
     const topRight = container.spawn({
@@ -107,12 +157,9 @@ export class BoxResizeGizmo extends Entity {
       name: "TopRight",
       transform: {
         z: 1_000_000,
-        position: {
-          x: scaled.x / 2 + BoxResizeGizmo.#CORNER_WIDTH / 2,
-          y: scaled.y / 2 + BoxResizeGizmo.#CORNER_WIDTH / 2,
-        },
+        position: handles.tr,
       },
-      values: { width: BoxResizeGizmo.#CORNER_WIDTH, height: BoxResizeGizmo.#CORNER_WIDTH },
+      values: handleValues,
     });
 
     const bottomLeft = container.spawn({
@@ -120,12 +167,9 @@ export class BoxResizeGizmo extends Entity {
       name: "BottomLeft",
       transform: {
         z: 1_000_000,
-        position: {
-          x: -(scaled.x / 2 + BoxResizeGizmo.#CORNER_WIDTH / 2),
-          y: -(scaled.y / 2 + BoxResizeGizmo.#CORNER_WIDTH / 2),
-        },
+        position: handles.bl,
       },
-      values: { width: BoxResizeGizmo.#CORNER_WIDTH, height: BoxResizeGizmo.#CORNER_WIDTH },
+      values: handleValues,
     });
 
     const bottomRight = container.spawn({
@@ -133,12 +177,19 @@ export class BoxResizeGizmo extends Entity {
       name: "BottomRight",
       transform: {
         z: 1_000_000,
-        position: {
-          x: scaled.x / 2 + BoxResizeGizmo.#CORNER_WIDTH / 2,
-          y: -(scaled.y / 2 + BoxResizeGizmo.#CORNER_WIDTH / 2),
-        },
+        position: handles.br,
       },
-      values: { width: BoxResizeGizmo.#CORNER_WIDTH, height: BoxResizeGizmo.#CORNER_WIDTH },
+      values: handleValues,
+    });
+
+    const rotate = container.spawn({
+      type: ClickableRect,
+      name: "Rotate",
+      transform: {
+        z: 1_000_000,
+        position: handles.rot,
+      },
+      values: handleValues,
     });
 
     const onMouseDown =
@@ -181,6 +232,10 @@ export class BoxResizeGizmo extends Entity {
       values: { width: 0.3, height: 0.3 },
     });
     translateBoth.on(MouseDown, translateOnMouseDown("both"));
+
+    __debug__("#ff0000af", leftEdge, rightEdge, topEdge, bottomEdge);
+    __debug__("#00ff00af", topLeft, topRight, bottomLeft, bottomRight);
+    __debug__("#ff00ffaf", rotate);
   }
 
   #updateHandlePositions(camera: Camera) {
@@ -198,53 +253,72 @@ export class BoxResizeGizmo extends Entity {
     const container = this.children.get("Container")?.cast(Empty);
     if (container) container.globalTransform.rotation = entity.globalTransform.rotation;
 
+    const __debug__ = (...clickables: (ClickableRect | undefined)[]) => {
+      if (!BoxResizeGizmo.#__DEBUG__) return;
+      for (const clickable of clickables) {
+        if (!clickable) continue;
+        const debug = clickable?.children.get("__DEBUG__") as
+          | { width: number; height: number }
+          | undefined;
+
+        if (!debug) continue;
+        debug.width = clickable.width;
+        debug.height = clickable.height;
+      }
+    };
+
+    const grip = this.#calculateGripSizes(scaled);
+    const handles = this.#calculateHandlePositions(scaled);
+
     const leftEdge = container?.children.get("LeftEdge")?.cast(ClickableRect);
     if (leftEdge) {
-      leftEdge.height = scaled.y;
+      leftEdge.height = grip.y;
       leftEdge.transform.position.x = -(scaled.x / 2 + BoxResizeGizmo.#CLICK_WIDTH / 2);
     }
 
     const rightEdge = container?.children.get("RightEdge")?.cast(ClickableRect);
     if (rightEdge) {
-      rightEdge.height = scaled.y;
+      rightEdge.height = grip.y;
       rightEdge.transform.position.x = scaled.x / 2 + BoxResizeGizmo.#CLICK_WIDTH / 2;
     }
 
     const topEdge = container?.children.get("TopEdge")?.cast(ClickableRect);
     if (topEdge) {
-      topEdge.width = scaled.x;
+      topEdge.width = grip.x;
       topEdge.transform.position.y = scaled.y / 2 + BoxResizeGizmo.#CLICK_WIDTH / 2;
     }
 
     const bottomEdge = container?.children.get("BottomEdge")?.cast(ClickableRect);
     if (bottomEdge) {
-      bottomEdge.width = scaled.x;
+      bottomEdge.width = grip.x;
       bottomEdge.transform.position.y = -(scaled.y / 2 + BoxResizeGizmo.#CLICK_WIDTH / 2);
     }
 
     const topLeft = container?.children.get("TopLeft")?.cast(ClickableRect);
-    if (topLeft) {
-      topLeft.transform.position.x = -(scaled.x / 2 + BoxResizeGizmo.#CORNER_WIDTH / 2);
-      topLeft.transform.position.y = scaled.y / 2 + BoxResizeGizmo.#CORNER_WIDTH / 2;
-    }
+    if (topLeft) topLeft.transform.position.assign(handles.tl);
 
     const topRight = container?.children.get("TopRight")?.cast(ClickableRect);
-    if (topRight) {
-      topRight.transform.position.x = scaled.x / 2 + BoxResizeGizmo.#CORNER_WIDTH / 2;
-      topRight.transform.position.y = scaled.y / 2 + BoxResizeGizmo.#CORNER_WIDTH / 2;
-    }
+    if (topRight) topRight.transform.position.assign(handles.tr);
 
     const bottomLeft = container?.children.get("BottomLeft")?.cast(ClickableRect);
-    if (bottomLeft) {
-      bottomLeft.transform.position.x = -(scaled.x / 2 + BoxResizeGizmo.#CORNER_WIDTH / 2);
-      bottomLeft.transform.position.y = -(scaled.y / 2 + BoxResizeGizmo.#CORNER_WIDTH / 2);
-    }
+    if (bottomLeft) bottomLeft.transform.position.assign(handles.bl);
 
     const bottomRight = container?.children.get("BottomRight")?.cast(ClickableRect);
-    if (bottomRight) {
-      bottomRight.transform.position.x = scaled.x / 2 + BoxResizeGizmo.#CORNER_WIDTH / 2;
-      bottomRight.transform.position.y = -(scaled.y / 2 + BoxResizeGizmo.#CORNER_WIDTH / 2);
-    }
+    if (bottomRight) bottomRight.transform.position.assign(handles.br);
+
+    const rotate = container?.children.get("Rotate")?.cast(ClickableRect);
+    if (rotate) rotate.transform.position.assign(handles.rot);
+
+    __debug__(
+      leftEdge,
+      rightEdge,
+      topEdge,
+      bottomEdge,
+      topLeft,
+      topRight,
+      bottomLeft,
+      bottomRight,
+    );
   }
   // #endregion
 
@@ -394,19 +468,48 @@ export class BoxResizeGizmo extends Entity {
 
       this.#gfx.position = { x: pos.x, y: -pos.y };
       this.#gfx.rotation = -entity.globalTransform.rotation;
-      this.#gfx
+
+      const STROKE = {
+        width: BoxResizeGizmo.#STROKE_WIDTH,
+        color: BoxResizeGizmo.#STROKE_COLOR,
+        alpha: 1,
+        alignment: -0,
+      } satisfies PIXI.StrokeInput;
+
+      const HANDLE_STROKE = { ...STROKE, width: STROKE.width / 2 } satisfies PIXI.StrokeInput;
+      const CORNER_SIZE = BoxResizeGizmo.#STROKE_WIDTH * 2;
+
+      const CORNER_X_POS = halfx - BoxResizeGizmo.#STROKE_WIDTH / 2;
+      const CORNER_Y_POS = halfy - BoxResizeGizmo.#STROKE_WIDTH / 2;
+      const CORNER_X_NEG = -halfx - BoxResizeGizmo.#STROKE_WIDTH / 2 - CORNER_SIZE / 2;
+      const CORNER_Y_NEG = -halfy - BoxResizeGizmo.#STROKE_WIDTH / 2 - CORNER_SIZE / 2;
+
+      this.#gfx.context
+        .moveTo(0, -halfy)
+        .lineTo(0, -halfy - BoxResizeGizmo.#ROTATE_OFFSET)
+        .stroke({ ...STROKE, alignment: 0.5, width: STROKE.width / 2 })
         .poly([a, b, d, c])
-        .stroke({
-          width: BoxResizeGizmo.#STROKE_WIDTH,
-          color: "22a2ff",
-          alpha: 1,
-          alignment: -0,
-        })
+        .stroke(STROKE)
+        .rect(CORNER_X_POS, CORNER_Y_POS, CORNER_SIZE, CORNER_SIZE)
+        .fill("white")
+        .stroke(HANDLE_STROKE)
+        .rect(CORNER_X_POS, CORNER_Y_NEG, CORNER_SIZE, CORNER_SIZE)
+        .fill("white")
+        .stroke(HANDLE_STROKE)
+        .rect(CORNER_X_NEG, CORNER_Y_POS, CORNER_SIZE, CORNER_SIZE)
+        .fill("white")
+        .stroke(HANDLE_STROKE)
+        .rect(CORNER_X_NEG, CORNER_Y_NEG, CORNER_SIZE, CORNER_SIZE)
+        .fill("white")
+        .stroke(HANDLE_STROKE)
+        .scale(0.01)
+        .circle(0, (-halfy - BoxResizeGizmo.#ROTATE_OFFSET) / 0.01, 5)
+        .fill("white")
+        .stroke(HANDLE_STROKE)
+        .scale(1 / 0.01)
         .rect(-0.15, -0.15, 0.3, 0.3)
         .fill({ alpha: 0.2, color: "blue" })
         .stroke({ alpha: 0.5, color: "blue", width: 0.01 });
-
-      // TODO: Draw corner boxes
     });
 
     this.on(EntityDestroyed, () => {
