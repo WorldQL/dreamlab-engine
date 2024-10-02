@@ -44,7 +44,7 @@ export function createValueControl(
     control.addEventListener("input", () => _opts.set(control.value));
 
     const refresh = () => {
-      const val = _opts.get();
+      const val = _opts.get() ?? _opts.default;
       if (typeof val !== "string") throw new TypeError("enum value was not a string");
 
       control.value = val;
