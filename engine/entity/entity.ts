@@ -816,7 +816,14 @@ export abstract class Entity implements ISignalHandler {
   onUpdate() {
     const behaviorCount = this.behaviors.length;
     for (let i = 0; i < behaviorCount; i++) {
-      this.behaviors[i].onTick?.();
+      const behavior = this.behaviors[i];
+      try {
+        behavior.onTick?.();
+      } catch (err) {
+        console.error(
+          `An error occurred while ticking ${behavior.constructor.name} on ${this.id}:\n${err.stack}`,
+        );
+      }
     }
   }
   [internal.interpolationStartTick]() {
