@@ -161,6 +161,11 @@ export const serveSourceControlAPI = (router: Router) => {
               fileContent = new TextDecoder().decode(diffOutputResult.stdout);
             }
 
+            // if the path has a space in it, for some reason it's wrapped in quotes which we need to remove
+            if (filePath[0] === '"' && filePath[filePath.length - 1] === '"') {
+              filePath = filePath.slice(1, -1);
+            }
+
             return {
               path: filePath,
               changeType:
