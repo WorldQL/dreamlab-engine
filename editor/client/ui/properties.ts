@@ -47,7 +47,7 @@ export class Properties implements InspectorUIWidget {
 
   show(uiRoot: HTMLElement): void {
     const right = uiRoot.querySelector("#right-sidebar")!;
-    right.append(this.#section);
+    right.prepend(this.#section);
   }
 
   hide(): void {

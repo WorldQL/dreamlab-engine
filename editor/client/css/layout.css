@@ -3,6 +3,8 @@ main {
   --left-sidebar-width: 4fr;
   --right-sidebar-width: 4fr;
   --bottom-bar-height: 4fr;
+  --left-center-height: 50%;
+  --right-center-height: 50%;
 
   padding: 0 0.5em 0.5em 0.5em;
 
@@ -36,6 +38,10 @@ main > div {
 #left-sidebar {
   grid-area: left;
   margin-top: 0.5em;
+
+  & > :first-child {
+    height: var(--left-center-height);
+  }
 }
 
 #viewport {
@@ -47,6 +53,10 @@ main > div {
 #right-sidebar {
   grid-area: right;
   margin-top: 0.5em;
+
+  & > :first-child {
+    height: var(--right-center-height);
+  }
 }
 
 #bottom-bar {
@@ -59,19 +69,24 @@ main > div {
 #right-sidebar {
   display: flex;
   flex-direction: column;
-  gap: 0.5em;
+  gap: calc(0.5em - 4px);
 }
 
 #left-sidebar-drag {
   grid-area: drag-l;
   margin-top: 0.5em;
+  justify-self: start;
 }
 #right-sidebar-drag {
   grid-area: drag-r;
   margin-top: 0.5em;
+  justify-self: end;
 }
 #bottom-bar-drag {
   grid-area: drag-b;
+  height: 4px;
+  cursor: row-resize;
+  transition: background-color 0.3s;
 }
 
 #left-sidebar-drag,
@@ -81,24 +96,23 @@ main > div {
   transition: background-color 0.3s;
 }
 
-#left-sidebar-drag {
-  justify-self: start;
+#left-sidebar-drag,
+#right-sidebar-drag,
+#bottom-bar-drag,
+#left-center-drag,
+#right-center-drag {
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: #999;
+  }
 }
 
-#right-sidebar-drag {
-  justify-self: end;
-}
-
-#bottom-bar-drag {
+#left-center-drag,
+#right-center-drag {
   height: 4px;
   cursor: row-resize;
-  transition: background-color 0.3s;
-}
-
-#left-sidebar-drag:hover,
-#right-sidebar-drag:hover,
-#bottom-bar-drag:hover {
-  background-color: #999;
+  border-radius: 4px;
 }
 
 .col-resize {

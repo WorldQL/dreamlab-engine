@@ -83,7 +83,7 @@ export class SceneGraph implements InspectorUIWidget {
 
   show(uiRoot: HTMLElement): void {
     const left = uiRoot.querySelector("#left-sidebar")!;
-    left.append(this.#section);
+    left.prepend(this.#section);
   }
 
   hide(): void {
