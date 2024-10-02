@@ -98,7 +98,13 @@ const onFrame = (time: number) => {
   const delta = time - now;
   now = time;
   games.edit.tickClient(delta);
-  games.play?.tickClient(delta);
+  if (games.play) {
+    try {
+      games.play.tickClient(delta);
+    } catch (err) {
+      console.error(err);
+    }
+  }
   stats.end();
 
   requestAnimationFrame(onFrame);
