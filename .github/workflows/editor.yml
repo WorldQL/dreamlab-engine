@@ -38,5 +38,5 @@ jobs:
           cp -R ../dreamlab/editor/web/. .
           echo "${{ env.TARGET_CNAME }}" > CNAME
           git add --all
-          git commit -m "generated from ${{ github.repository }}@${{ github.sha }}"
+          git commit -m "generated from ${{ github.repository }}@${{ github.sha }}" || exit 0
           git push
