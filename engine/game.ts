@@ -168,13 +168,13 @@ export abstract class BaseGame implements ISignalHandler {
     if (!this.#initialized)
       throw new Error("Illegal state: Game was not initialized before tick loop began!");
 
+    this.time[internal.timeSetMode]("tick");
+
     // don't tick at all when we're paused!
     if (this.paused.value) {
       this.fire(InternalGameTick);
       return;
     }
-
-    this.time[internal.timeSetMode]("tick");
     this.time[internal.timeTick]();
 
     // run the pre tick phase, then a physics update, then the tick phase
@@ -333,7 +333,10 @@ export class ClientGame extends BaseGame {
     }
 
     this.time[internal.timeSetMode]("render");
-    this.time[internal.timeIncrement](delta, this.#tickAccumulator / this.physics.tickDelta);
+    this.time[internal.timeIncrement](
+      delta,
+      this.paused.value ? 0 : this.#tickAccumulator / this.physics.tickDelta,
+    );
     const partial = this.time.partial;
 
     const entityTickingOrder = this[internal.entityTickingOrder];

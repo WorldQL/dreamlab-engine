@@ -11,6 +11,7 @@ import {
   Hammer,
   icon,
   OctagonX,
+  Pause,
   Play,
   Save,
   ScrollText,
@@ -61,6 +62,11 @@ export class AppMenu {
         title: "Play",
         ariaLabel: "Play",
       }),
+      pause: new IconButton(Pause, {
+        id: "pause-button",
+        title: "Pause",
+        ariaLabel: "Pause",
+      }),
       edit: new IconButton(Hammer, {
         id: "edit-button",
         title: "Return to Edit (without stopping server)",
@@ -95,6 +101,7 @@ export class AppMenu {
     this.controls.play.enable();
     this.controls.edit.disable();
     this.controls.stop.disable();
+    this.controls.pause.disable();
 
     this.navigation.script.addEventListener("click", event => {
       event.preventDefault();
@@ -128,6 +135,7 @@ export class AppMenu {
       // this is so that we can always join the other session
       // this.controls.play.disable();
       this.controls.edit.enable();
+      this.controls.pause.enable();
     });
 
     this.controls.edit.addEventListener("click", event => {
@@ -143,6 +151,7 @@ export class AppMenu {
       this.controls.edit.disable();
       this.controls.play.enable();
       this.controls.stop.enable();
+      this.controls.pause.disable();
     });
 
     this.controls.stop.addEventListener("click", async event => {
@@ -153,6 +162,14 @@ export class AppMenu {
       this.controls.stop.disable();
       this.controls.edit.disable();
       this.controls.play.enable();
+      this.controls.pause.disable();
+    });
+
+    this.controls.pause.addEventListener("click", () => {
+      if (!this.games.play) return;
+      this.games.play.paused.value = !this.games.play.paused.value;
+      // TODO: better feedback for pause (it should show if the game is paused or not!!)
+      // perhaps it should replace the 'play' button when the play game is focused
     });
 
     this.#section.append(
