@@ -1,0 +1,42 @@
+name: Build and Deploy Client
+on: push
+
+env:
+  TARGET_CNAME: gameclient.dreamlab.gg
+  TARGET_REPO: WorldQL/dreamlab-gameclient-deploy
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: dreamlab
+      - name: Setup deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
+      - name: Build client
+        working-directory: ./dreamlab/client
+        run: deno task build
+      - name: Checkout deployment repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.TARGET_REPO }}
+          path: deploy
+          token: ${{ secrets.REPO_PAT }}
+      - name: Deploy
+        run: |
+          cd deploy
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm -r *
+          cp -R ../dreamlab/client/web/. .
+          echo "${{ env.TARGET_CNAME }}" > CNAME
+          git add --all
+          git commit -m "generated from ${{ github.repository }}@${{ github.sha }}"
+          git push
