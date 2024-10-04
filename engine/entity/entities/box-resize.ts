@@ -1,5 +1,5 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import { IVector2, Transform, Vector2 } from "../../math/mod.ts";
+import { IVector2, Vector2 } from "../../math/mod.ts";
 import { pointLocalToWorld, pointWorldToLocal } from "../../math/spatial-transforms.ts";
 import { EntityDestroyed, GameRender, MouseDown } from "../../signals/mod.ts";
 import type { EntityContext } from "../entity.ts";
@@ -9,7 +9,68 @@ import { ClickableRect } from "./clickable.ts";
 import { Empty } from "./empty.ts";
 import { SolidColor } from "./solid-color.ts";
 
+type HandleType = "corner" | "edge";
 type Handle = Exclude<`${"t" | "b" | ""}${"l" | "" | "r"}`, "">;
+
+const oppositeHandle = (handle: Handle): Handle => {
+  switch (handle) {
+    case "t":
+      return "b";
+    case "b":
+      return "t";
+    case "l":
+      return "r";
+    case "r":
+      return "l";
+    case "tl":
+      return "br";
+    case "tr":
+      return "bl";
+    case "bl":
+      return "tr";
+    case "br":
+      return "tl";
+  }
+};
+
+const handlePos = (handle: Handle, entity: Entity): Vector2 => {
+  const bounds = entity.bounds!;
+  const pos = Vector2.div(bounds, 2);
+
+  switch (handle) {
+    case "t": {
+      pos.assign({ x: 0 });
+      break;
+    }
+    case "b": {
+      pos.assign({ x: 0, y: -pos.y });
+      break;
+    }
+    case "l": {
+      pos.assign({ x: -pos.x, y: 0 });
+      break;
+    }
+    case "r": {
+      pos.assign({ y: 0 });
+      break;
+    }
+    case "tl": {
+      pos.assign({ x: -pos.x });
+      break;
+    }
+    // case "tr" does nothing
+    case "bl": {
+      pos.assign({ x: -pos.x, y: -pos.y });
+      break;
+    }
+    case "br": {
+      pos.assign({ y: -pos.y });
+      break;
+    }
+  }
+
+  return pointLocalToWorld(entity.globalTransform, pos);
+};
 
 // TODO: make work when rotated lol
 export class BoxResizeGizmo extends Entity {
@@ -199,28 +260,26 @@ export class BoxResizeGizmo extends Entity {
     });
 
     const onMouseDown =
-      (handle: Handle) =>
-      ({ button, cursor: { world } }: MouseDown) => {
+      (handle: Handle, handleType: HandleType) =>
+      ({ button }: MouseDown) => {
         if (button !== "left") return;
 
-        const offset = world.sub(this.globalTransform.position);
+        const opposite = handlePos(oppositeHandle(handle), this.#target!);
         this.#action = {
           type: "scale",
-          handle,
-          offset,
-          transform: new Transform(entity.transform),
-          globalTransform: new Transform(entity.globalTransform),
+          handleType,
+          opposite,
         };
       };
 
-    leftEdge.on(MouseDown, onMouseDown("l"));
-    rightEdge.on(MouseDown, onMouseDown("r"));
-    topEdge.on(MouseDown, onMouseDown("t"));
-    bottomEdge.on(MouseDown, onMouseDown("b"));
-    topLeft.on(MouseDown, onMouseDown("tl"));
-    topRight.on(MouseDown, onMouseDown("tr"));
-    bottomLeft.on(MouseDown, onMouseDown("bl"));
-    bottomRight.on(MouseDown, onMouseDown("br"));
+    leftEdge.on(MouseDown, onMouseDown("l", "edge"));
+    rightEdge.on(MouseDown, onMouseDown("r", "edge"));
+    topEdge.on(MouseDown, onMouseDown("t", "edge"));
+    bottomEdge.on(MouseDown, onMouseDown("b", "edge"));
+    topLeft.on(MouseDown, onMouseDown("tl", "corner"));
+    topRight.on(MouseDown, onMouseDown("tr", "corner"));
+    bottomLeft.on(MouseDown, onMouseDown("bl", "corner"));
+    bottomRight.on(MouseDown, onMouseDown("br", "corner"));
 
     const translateOnMouseDown =
       (axis: "x" | "y" | "both") =>
@@ -334,10 +393,8 @@ export class BoxResizeGizmo extends Entity {
     | { type: "rotate" }
     | {
         type: "scale";
-        handle: Handle;
-        offset: Vector2;
-        transform: Transform;
-        globalTransform: Transform;
+        handleType: HandleType;
+        opposite: Vector2;
       }
     | undefined;
 
@@ -359,82 +416,32 @@ export class BoxResizeGizmo extends Entity {
       return;
     }
 
-    const pos = cursor.world.sub(this.#action.offset);
     if (this.#action.type === "translate") {
+      const pos = cursor.world.sub(this.#action.offset);
       const local = pointWorldToLocal(this.globalTransform, pos);
       if (this.#action.axis === "x") local.y = 0;
       if (this.#action.axis === "y") local.x = 0;
-      const world = pointLocalToWorld(this.globalTransform, local);
 
+      const world = pointLocalToWorld(this.globalTransform, local);
       this.#target.globalTransform.position = world;
 
       return;
     }
 
-    const local = pointWorldToLocal(this.#action.globalTransform, pos);
-    const scaled = this.#action.transform.scale.mul(local);
+    if (this.#action.handleType === "corner") {
+      const rotation = this.#target.globalTransform.rotation;
+      const rotated = Vector2.rotateAbout(cursor.world, -rotation, this.#action.opposite);
 
-    switch (this.#action.handle) {
-      case "l": {
-        this.#target.transform.scale.x = this.#action.transform.scale.x - scaled.x;
-        this.#target.transform.position.x = this.#action.transform.position.x + scaled.x / 2;
+      const edge = Vector2.sub(rotated, this.#action.opposite);
+      this.#target.globalTransform.scale.assign(Vector2.abs(edge));
 
-        break;
-      }
-      case "r": {
-        this.#target.transform.scale.x = this.#action.transform.scale.x + scaled.x;
-        this.#target.transform.position.x = this.#action.transform.position.x + scaled.x / 2;
-
-        break;
-      }
-      case "t": {
-        this.#target.transform.scale.y = this.#action.transform.scale.y + scaled.y;
-        this.#target.transform.position.y = this.#action.transform.position.y + scaled.y / 2;
-
-        break;
-      }
-      case "b": {
-        this.#target.transform.scale.y = this.#action.transform.scale.y - scaled.y;
-        this.#target.transform.position.y = this.#action.transform.position.y + scaled.y / 2;
-
-        break;
-      }
-
-      case "tl": {
-        this.#target.transform.scale.x = this.#action.transform.scale.x - scaled.x;
-        this.#target.transform.scale.y = this.#action.transform.scale.y + scaled.y;
-        this.#target.transform.position.x = this.#action.transform.position.x + scaled.x / 2;
-        this.#target.transform.position.y = this.#action.transform.position.y + scaled.y / 2;
-
-        break;
-      }
-      case "tr": {
-        const scaled = this.#action.transform.scale.mul(local);
-        this.#target.transform.scale.x = this.#action.transform.scale.x + scaled.x;
-        this.#target.transform.scale.y = this.#action.transform.scale.y + scaled.y;
-        this.#target.transform.position.x = this.#action.transform.position.x + scaled.x / 2;
-        this.#target.transform.position.y = this.#action.transform.position.y + scaled.y / 2;
-
-        break;
-      }
-      case "bl": {
-        const scaled = this.#action.transform.scale.mul(local);
-        this.#target.transform.scale.x = this.#action.transform.scale.x - scaled.x;
-        this.#target.transform.scale.y = this.#action.transform.scale.y - scaled.y;
-        this.#target.transform.position.x = this.#action.transform.position.x + scaled.x / 2;
-        this.#target.transform.position.y = this.#action.transform.position.y + scaled.y / 2;
-
-        break;
-      }
-      case "br": {
-        const scaled = this.#action.transform.scale.mul(local);
-        this.#target.transform.scale.x = this.#action.transform.scale.x + scaled.x;
-        this.#target.transform.scale.y = this.#action.transform.scale.y - scaled.y;
-        this.#target.transform.position.x = this.#action.transform.position.x + scaled.x / 2;
-        this.#target.transform.position.y = this.#action.transform.position.y + scaled.y / 2;
-
-        break;
-      }
+      this.#target.globalTransform.position = Vector2.rotateAbout(
+        Vector2.add(this.#action.opposite, Vector2.div(edge, 2)),
+        rotation,
+        this.#action.opposite,
+      );
+    } else {
+      // TODO: Implement edge handles
     }
   };
 
@@ -466,6 +473,7 @@ export class BoxResizeGizmo extends Entity {
 
       const pos = entity.pos;
       this.pos.assign(entity.pos);
+      this.globalTransform.rotation = entity.globalTransform.rotation;
 
       const _bounds = entity.bounds;
       if (!_bounds) return;
