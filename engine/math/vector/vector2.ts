@@ -343,6 +343,35 @@ export class Vector2 implements IVector2, Vector<IVector2, Vector2> {
     return Vector2.min(this, other);
   }
   // #endregion
+
+  // #region Rotate
+  public static rotate(vector: IVector2, angle: number): Vector2 {
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+
+    return new Vector2(vector.x * cos - vector.y * sin, vector.x * sin + vector.y * cos);
+  }
+
+  public rotate(this: Vector2, angle: number): Vector2 {
+    return Vector2.rotate(this, angle);
+  }
+  // #endregion
+
+  // #region Rotate About
+  public static rotateAbout(vector: IVector2, angle: number, point: IVector2): Vector2 {
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+
+    return new Vector2(
+      point.x + ((vector.x - point.x) * cos - (vector.y - point.y) * sin),
+      point.y + ((vector.x - point.x) * sin + (vector.y - point.y) * cos),
+    );
+  }
+
+  public rotateAbout(this: Vector2, angle: number, point: IVector2): Vector2 {
+    return Vector2.rotateAbout(this, angle, point);
+  }
+  // #endregion
   // #endregion
 
   /**
