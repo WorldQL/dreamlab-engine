@@ -1,14 +1,16 @@
-import {
-  Scene,
-  SceneDescEntity,
-  BehaviorSchema as SceneDescBehaviorSchema,
-  SceneDescBehavior,
-  serializeEntityDefinition,
-  convertEntityDefinition,
-  SceneSchema,
-  ProjectSchema,
-} from "@dreamlab/scene";
 import { Empty, Entity, EntityDefinition, ServerGame } from "@dreamlab/engine";
+import {
+  convertEntityDefinition,
+  getSceneFromProject,
+  ProjectSchema,
+  Scene,
+  SceneDescBehavior,
+  BehaviorSchema as SceneDescBehaviorSchema,
+  SceneDescEntity,
+  SceneSchema,
+  serializeEntityDefinition,
+} from "@dreamlab/scene";
+import { z } from "@dreamlab/vendor/zod.ts";
 import {
   EditorMetadataEntity,
   Facades,
@@ -18,7 +20,6 @@ import {
   WorldRootFacade,
 } from "../../editor/common/mod.ts";
 import { IPCMessageBus } from "./ipc.ts";
-import { z } from "@dreamlab/vendor/zod.ts";
 
 const addEditorMetadata = (
   sceneDef: SceneDescEntity,
@@ -181,7 +182,7 @@ export const handleEditMode = async (
       }
     }
 
-    const newScene = projectDesc.scenes.main;
+    const newScene = await getSceneFromProject(game, projectDesc, "main");
     scene.world = newScene.world;
     scene.local = newScene.local;
     scene.server = newScene.server;

@@ -86,6 +86,7 @@ export const SceneSchema = z.object({
 
   registration: ResourceLocationSchema.array().default([]),
 });
+export const SceneOrSceneLocationSchema = SceneSchema.or(z.string());
 
 export const ProjectSchema = z.object({
   $schema: z.string().url().optional(),
@@ -93,7 +94,9 @@ export const ProjectSchema = z.object({
     schema_version: z.number(),
     engine_revision: z.string(),
   }),
-  scenes: z.object({ main: SceneSchema }).and(z.record(SceneSchema)),
+  scenes: z
+    .object({ main: SceneOrSceneLocationSchema })
+    .and(z.record(SceneOrSceneLocationSchema)),
 });
 
 export type Scene = z.input<typeof SceneSchema>;

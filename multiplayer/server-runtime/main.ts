@@ -3,7 +3,7 @@ import { WorkerInitData } from "../server-common/worker-data.ts";
 import { IPCMessageBus } from "./ipc.ts";
 import { ServerNetworkManager } from "./networking/net-manager.ts";
 
-import { ProjectSchema, loadSceneDefinition } from "@dreamlab/scene";
+import { ProjectSchema, getSceneFromProject, loadSceneDefinition } from "@dreamlab/scene";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { handleEditMode } from "./edit-mode.ts";
 
@@ -44,13 +44,12 @@ const projectDesc = await game
   .then(r => r.json())
   .then(ProjectSchema.parse);
 
-// TODO: for multi-scene should we take some param from WorkerInitData here?
-const scene = projectDesc.scenes.main;
+const mainScene = await getSceneFromProject(game, projectDesc, "main");
 
 if (workerData.editMode) {
-  await handleEditMode(ipc, game, scene);
+  await handleEditMode(ipc, game, mainScene);
 } else {
-  await loadSceneDefinition(game, scene);
+  await loadSceneDefinition(game, mainScene);
 }
 
 game.setStatus(GameStatus.LoadingFinished);

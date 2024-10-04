@@ -1,7 +1,7 @@
 import { Camera, ClientGame, Entity, GameStatus, Gizmo } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { ReceivedInitialNetworkSnapshot } from "@dreamlab/proto/common/signals.ts";
-import { convertEntityDefinition, ProjectSchema } from "@dreamlab/scene";
+import { convertEntityDefinition, getSceneFromProject, ProjectSchema } from "@dreamlab/scene";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { ClientConnection } from "../../editor/client/networking/net-connection.ts";
 
@@ -17,7 +17,7 @@ export const setupGame = async (
     .then(r => r.text())
     .then(JSON.parse)
     .then(ProjectSchema.parse);
-  const scene = projectDesc.scenes.main;
+  const scene = await getSceneFromProject(game, projectDesc, "main");
   await Promise.all(scene.registration.map(script => import(game.resolveResource(script))));
 
   const behaviors = await game

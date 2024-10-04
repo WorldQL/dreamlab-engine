@@ -10,12 +10,15 @@ import {
   TransformOptions,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
+import { z } from "@dreamlab/vendor/zod.ts";
 import {
   EntitySchema,
+  ProjectSchema,
   Scene,
   SceneDescBehavior,
   SceneDescEntity,
   SceneDescTransform,
+  SceneSchema,
 } from "./schema.ts";
 
 export const serializeBehaviorDefinition = (
@@ -199,4 +202,21 @@ export const loadSceneDefinition = async (game: Game, scene: Scene) => {
       spawnedEntities = [];
     }
   });
+};
+
+export const getSceneFromProject = async (
+  game: Game,
+  project: z.output<typeof ProjectSchema>,
+  sceneName: string,
+): Promise<z.output<typeof SceneSchema>> => {
+  const maybeScene = project.scenes[sceneName];
+  if (maybeScene === undefined)
+    throw new Error(`No scene named '${sceneName}' exists in the project.`);
+  if (typeof maybeScene === "string") {
+    return await game
+      .fetch(maybeScene)
+      .then(r => r.json())
+      .then(SceneSchema.parse);
+  }
+  return maybeScene;
 };
