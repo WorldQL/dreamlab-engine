@@ -29,6 +29,8 @@ export class BoxResizeGizmo extends Entity {
 
   #gfx: PIXI.Graphics | undefined;
 
+  #shift = this.inputs.create("@box-resize/Shift", "Shift", "ShiftLeft");
+
   #target: Entity | undefined;
   get target(): Entity | undefined {
     return this.#target;
@@ -347,9 +349,13 @@ export class BoxResizeGizmo extends Entity {
     if (!cursor.world) return;
 
     if (this.#action.type === "rotate") {
-      const angle = Vector2.lookAt(this.#target.globalTransform.position, cursor.world);
-      this.#target.globalTransform.rotation = angle;
+      let angle = Vector2.lookAt(this.#target.globalTransform.position, cursor.world);
+      if (this.#shift.held) {
+        const snap = Math.PI / 8;
+        angle = Math.round(angle / snap) * snap;
+      }
 
+      this.#target.globalTransform.rotation = angle;
       return;
     }
 
