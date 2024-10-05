@@ -9,10 +9,6 @@ export class RawPixi extends PixiEntity {
 
   public static readonly icon = "🎨";
   readonly bounds: undefined; // TODO: bounds of gfx, this depends on non-centered bounds support
-
-  public get canvas(): PIXI.Container | undefined {
-    return this.container;
-  }
 }
 
 export class RawGraphics extends PixiEntity {
