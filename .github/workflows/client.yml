@@ -1,5 +1,8 @@
 name: Build and Deploy Client
-on: push
+on:
+  push:
+    tags:        
+      - '*'    
 
 env:
   TARGET_CNAME: gameclient.dreamlab.gg
