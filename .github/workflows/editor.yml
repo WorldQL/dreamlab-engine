@@ -1,5 +1,8 @@
 name: Build and Deploy Editor
-on: push
+on:
+  push:
+    tags:        
+      - '*'    
 
 env:
   TARGET_CNAME: editor.dreamlab.gg
