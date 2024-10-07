@@ -14,6 +14,7 @@ import {
   transformWorldToLocal,
 } from "../math/mod.ts";
 import { ConnectionId } from "../network.ts";
+import { Scene } from "../scene.ts";
 import {
   DefaultSignalHandlerImpls,
   ISignalHandler,
@@ -52,6 +53,7 @@ import { Empty } from "./mod.ts";
 
 export interface EntityContext {
   game: Game;
+  scene: Scene;
   name: string;
   parent?: Entity;
   transform?: TransformOptions;
@@ -106,7 +108,16 @@ export abstract class Entity implements ISignalHandler {
     return this.parent?.id === "game.world._.EditEntities";
   }
 
-  readonly game: Game;
+  readonly #game_: Game;
+  #scene_: Scene;
+  get scene(): Scene {
+    return this.#scene_;
+  }
+  get game() {
+    this.#game_.currentScene = this.scene;
+    return this.#game_;
+  }
+
   protected get time() {
     return this.game.time;
   }
@@ -176,6 +187,11 @@ export abstract class Entity implements ISignalHandler {
 
     this.#children.set(nonConflictingName ?? child.name, child);
     child.#parent = this;
+    // @ts-expect-error assign to readonly
+    child.root = this.root;
+
+    child.#scene_ = this.scene;
+    this.scene[internal.entityTickingOrderDirty] = true;
 
     if (oldParent) {
       // fire reparent events:
@@ -189,7 +205,7 @@ export abstract class Entity implements ISignalHandler {
         ancestor = ancestor.parent;
       }
 
-      this.game[internal.entityTickingOrderDirty] = true;
+      oldParent.scene[internal.entityTickingOrderDirty] = true;
     }
 
     if (nonConflictingName) {
@@ -203,6 +219,7 @@ export abstract class Entity implements ISignalHandler {
     if (child.parent !== this) return;
     this.#children.delete(name ?? child.name);
     child.#parent = undefined;
+    this.scene[internal.entityTickingOrderDirty] = true;
   }
 
   #findNonConflictingName(child: Entity): string {
@@ -278,7 +295,7 @@ export abstract class Entity implements ISignalHandler {
     this.id = serializeIdentifier(this.#parent?.id, this.#name);
     for (const child of this.children.values()) child.#recomputeId();
 
-    this.game.entities[internal.entityStoreRegister](this, oldId);
+    this.scene.entities[internal.entityStoreRegister](this, oldId);
 
     this.#hierarchyGeneration = this.parent ? this.parent.#hierarchyGeneration + 1 : 0;
 
@@ -293,6 +310,7 @@ export abstract class Entity implements ISignalHandler {
   ) {
     const entity = new def.type({
       game: this.game,
+      scene: this.scene,
       name: def.name,
       parent: this,
       transform: def.transform,
@@ -304,7 +322,6 @@ export abstract class Entity implements ISignalHandler {
     if (def.behaviors) {
       def.behaviors.forEach(b => {
         const behavior: Behavior = new b.type({
-          game: this.game,
           entity,
           ref: b._ref,
           values: b.values,
@@ -699,7 +716,8 @@ export abstract class Entity implements ISignalHandler {
 
     if (ctx.ref) this.ref = ctx.ref;
 
-    this.game = ctx.game;
+    this.#game_ = ctx.game;
+    this.#scene_ = ctx.scene;
     // @ts-expect-error: must inherit
     this.root = ctx.parent?.root;
 
@@ -733,7 +751,7 @@ export abstract class Entity implements ISignalHandler {
     this.#prevScale = this.globalTransform.scale.bare();
     this.#interpolated = new Transform(this.globalTransform);
 
-    this.game.entities[internal.entityStoreRegister](this);
+    this.scene.entities[internal.entityStoreRegister](this);
   }
 
   // #region Signals
@@ -801,7 +819,7 @@ export abstract class Entity implements ISignalHandler {
     }
 
     this[internal.entityDoneSpawning] = true;
-    this.game[internal.entityTickingOrderDirty] = true;
+    this.scene[internal.entityTickingOrderDirty] = true;
   }
 
   onInitialize(): void {}
@@ -884,12 +902,12 @@ export abstract class Entity implements ISignalHandler {
     }
 
     this.#parent = undefined;
-    this.game.entities[internal.entityStoreUnregister](this);
+    this.scene.entities[internal.entityStoreUnregister](this);
 
     this.externalListeners.forEach(s => s.unsubscribe());
     this.signalSubscriptionMap.clear();
 
-    this.game[internal.entityTickingOrderDirty] = true;
+    this.scene[internal.entityTickingOrderDirty] = true;
   }
   // #endregion
 

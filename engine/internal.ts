@@ -33,3 +33,4 @@ export const entityStoreUnregister = Symbol.for("dreamlab.internal.entityStoreUn
 export const entityTypeRegistry = Symbol.for("dreamlab.internal.entityTypeRegistry");
 export const valueRelatedEntity = Symbol.for("dreamlab.internal.valueRelatedEntity");
 export const valueApplyUpdate = Symbol.for("dreamlab.internal.valueApplyUpdate");
+export const scenePhysicsRealm = Symbol.for("dreamlab.internal.scenePhysicsRealm");

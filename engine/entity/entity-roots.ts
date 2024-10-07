@@ -1,5 +1,6 @@
 import type { Game } from "../game.ts";
 import * as internal from "../internal.ts";
+import { Scene } from "../scene.ts";
 import { EntityStore } from "./entity-store.ts";
 import { Entity } from "./entity.ts";
 
@@ -9,8 +10,8 @@ export abstract class Root extends Entity {
   readonly entities: EntityStore;
   readonly bounds: undefined;
 
-  constructor(game: Game, name: string) {
-    super({ game, name, ref: name.toUpperCase() });
+  constructor(scene: Scene, game: Game, name: string) {
+    super({ scene, game, name, ref: name.toUpperCase() });
 
     this.entities = new EntityStore();
     game.entities[internal.entityStoreRegisterRoot](`game.${name}`, this.entities);
@@ -29,25 +30,25 @@ export abstract class Root extends Entity {
 }
 
 export class WorldRoot extends Root {
-  constructor(game: Game) {
-    super(game, "world");
+  constructor(scene: Scene, game: Game) {
+    super(scene, game, "world");
   }
 }
 
 export class ServerRoot extends Root {
-  constructor(game: Game) {
-    super(game, "server");
+  constructor(scene: Scene, game: Game) {
+    super(scene, game, "server");
   }
 }
 
 export class LocalRoot extends Root {
-  constructor(game: Game) {
-    super(game, "local");
+  constructor(scene: Scene, game: Game) {
+    super(scene, game, "local");
   }
 }
 
 export class PrefabsRoot extends Root {
-  constructor(game: Game) {
-    super(game, "prefabs");
+  constructor(scene: Scene, game: Game) {
+    super(scene, game, "prefabs");
   }
 }

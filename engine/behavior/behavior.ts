@@ -31,7 +31,6 @@ import {
 } from "../value/mod.ts";
 
 export interface BehaviorContext {
-  game: Game;
   entity: Entity;
   ref?: string;
   values?: Record<string, Primitive>;
@@ -63,8 +62,10 @@ type BehaviorValueOpts<B extends Behavior, P extends BehaviorValueProp<B>> = {
 };
 
 export class Behavior implements ISignalHandler {
-  readonly game: Game;
   readonly entity: Entity;
+  get game() {
+    return this.entity.game;
+  }
 
   protected get time() {
     return this.game.time;
@@ -205,7 +206,6 @@ export class Behavior implements ISignalHandler {
   // #endregion
 
   constructor(ctx: BehaviorContext) {
-    this.game = ctx.game;
     this.entity = ctx.entity;
 
     if (ctx.ref) this.ref = ctx.ref;

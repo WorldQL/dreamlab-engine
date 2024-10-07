@@ -8,6 +8,7 @@ export * from "./math/mod.ts";
 export * from "./network.ts";
 export * from "./physics.ts";
 export * from "./renderer/mod.ts";
+export * from "./scene.ts";
 export * from "./signal.ts";
 export * from "./signals/mod.ts";
 export * from "./value/mod.ts";

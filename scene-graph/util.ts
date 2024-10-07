@@ -1,20 +1,19 @@
 import {
   BehaviorDefinition,
-  ClientGame,
   Entity,
   EntityDefinition,
   Game,
   GameStatus,
   GameStatusChange,
-  ServerGame,
   TransformOptions,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { z } from "@dreamlab/vendor/zod.ts";
+import { Scene } from "../engine/scene.ts";
 import {
   EntitySchema,
   ProjectSchema,
-  Scene,
+  SceneDesc,
   SceneDescBehavior,
   SceneDescEntity,
   SceneDescTransform,
@@ -139,7 +138,7 @@ export const convertEntityDefinition = async (
 // it also lets us materialize scene.local and scene.server into groups inside world so everything can multiplayer sync
 // (an edit-mode game does not need to actually put these things in .local and .server because we're not simulating!!)
 
-export const serializeSceneDefinition = (game: Game): Scene => {
+export const serializeSceneDefinition = (game: Game): SceneDesc => {
   const world: SceneDescEntity[] = [];
   for (const entity of game.world.children.values()) {
     world.push(serializeEntityDefinition(game, entity.getDefinition()));
@@ -156,55 +155,58 @@ export const serializeSceneDefinition = (game: Game): Scene => {
   };
 };
 
-export const loadSceneDefinition = async (game: Game, scene: Scene) => {
-  if (scene.registration) {
-    await Promise.all(scene.registration.map(script => import(game.resolveResource(script))));
+export const loadSceneDefinition = async (game: Game, scene: Scene, desc: SceneDesc) => {
+  if (desc.registration) {
+    await Promise.all(desc.registration.map(script => import(game.resolveResource(script))));
   }
 
   let spawnedEntities: Entity[] = [];
 
-  if (scene.prefabs) {
-    const defs = await Promise.all(
-      scene.prefabs.map(def => convertEntityDefinition(game, def)),
-    );
+  if (desc.prefabs) {
+    const defs = await Promise.all(desc.prefabs.map(def => convertEntityDefinition(game, def)));
     spawnedEntities.push(
-      ...defs.map(d => game.prefabs[internal.entitySpawn](d, { inert: true })),
+      ...defs.map(d => scene.prefabs[internal.entitySpawn](d, { inert: true })),
     );
   }
 
-  if (scene.world) {
-    const defs = await Promise.all(scene.world.map(def => convertEntityDefinition(game, def)));
+  if (desc.world) {
+    const defs = await Promise.all(desc.world.map(def => convertEntityDefinition(game, def)));
     spawnedEntities.push(
-      ...defs.map(d => game.world[internal.entitySpawn](d, { inert: true })),
+      ...defs.map(d => scene.world[internal.entitySpawn](d, { inert: true })),
     );
   }
 
-  if (scene.local && game instanceof ClientGame) {
-    const defs = await Promise.all(scene.local.map(def => convertEntityDefinition(game, def)));
+  if (desc.local && scene.local) {
+    const defs = await Promise.all(desc.local.map(def => convertEntityDefinition(game, def)));
 
     spawnedEntities.push(
-      ...defs.map(d => game.local[internal.entitySpawn](d, { inert: true })),
+      ...defs.map(d => scene.local[internal.entitySpawn](d, { inert: true })),
     );
   }
 
-  if (scene.server && game instanceof ServerGame) {
-    const defs = await Promise.all(scene.server.map(def => convertEntityDefinition(game, def)));
+  if (desc.server && scene.server) {
+    const defs = await Promise.all(desc.server.map(def => convertEntityDefinition(game, def)));
 
     spawnedEntities.push(
-      ...defs.map(d => game.remote[internal.entitySpawn](d, { inert: true })),
+      ...defs.map(d => scene.server[internal.entitySpawn](d, { inert: true })),
     );
   }
 
-  const listener = game.on(GameStatusChange, () => {
-    if (game.status === GameStatus.LoadingFinished) {
-      listener.unsubscribe();
-      spawnedEntities.forEach(e => e[internal.entitySpawnFinalize]());
-      spawnedEntities = [];
-    }
-  });
+  if (game.status !== GameStatus.Running) {
+    const listener = game.on(GameStatusChange, () => {
+      if (game.status === GameStatus.LoadingFinished) {
+        listener.unsubscribe();
+        spawnedEntities.forEach(e => e[internal.entitySpawnFinalize]());
+        spawnedEntities = [];
+      }
+    });
+  } else {
+    spawnedEntities.forEach(e => e[internal.entitySpawnFinalize]());
+    spawnedEntities = [];
+  }
 };
 
-export const getSceneFromProject = async (
+export const getSceneDescFromProject = async (
   game: Game,
   project: z.output<typeof ProjectSchema>,
   sceneName: string,

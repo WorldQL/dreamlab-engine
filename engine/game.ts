@@ -3,19 +3,13 @@ import { initRapier } from "@dreamlab/vendor/rapier.ts";
 import { Value } from "@dreamlab/engine";
 import { BehaviorLoader } from "./behavior/behavior-loader.ts";
 import { BehaviorConstructor } from "./behavior/mod.ts";
-import {
-  Entity,
-  EntityStore,
-  LocalRoot,
-  PrefabsRoot,
-  ServerRoot,
-  WorldRoot,
-} from "./entity/mod.ts";
+import { EntityStore, LocalRoot, PrefabsRoot, ServerRoot, WorldRoot } from "./entity/mod.ts";
 import { Inputs } from "./input/mod.ts";
 import * as internal from "./internal.ts";
 import { ClientNetworking, ServerNetworking } from "./network.ts";
 import { PhysicsEngine } from "./physics.ts";
 import { GameRenderer } from "./renderer/mod.ts";
+import { ClientScene, Scene, ServerScene, tickScene } from "./scene.ts";
 import {
   DefaultSignalHandlerImpls,
   ISignalHandler,
@@ -59,6 +53,12 @@ export enum GameStatus {
   Shutdown = "shutdown",
 }
 
+export type GameScene<G extends BaseGame> = G extends ClientGame
+  ? ClientScene
+  : G extends ServerGame
+    ? ServerScene
+    : Scene;
+
 export abstract class BaseGame implements ISignalHandler {
   public abstract isClient(): this is ClientGame;
   public abstract isServer(): this is ServerGame;
@@ -77,18 +77,33 @@ export abstract class BaseGame implements ISignalHandler {
   }
 
   readonly values = new ValueRegistry(this as unknown as Game);
-
-  readonly entities = new EntityStore();
-
-  readonly world = new WorldRoot(this as unknown as Game);
-  readonly prefabs = new PrefabsRoot(this as unknown as Game);
-
   readonly time = new Time(this as unknown as Game);
   readonly inputs = new Inputs(this as unknown as Game);
 
   [internal.behaviorLoader] = new BehaviorLoader(this as unknown as Game);
   loadBehavior(scriptUri: string): Promise<BehaviorConstructor> {
     return this[internal.behaviorLoader].loadScript(scriptUri);
+  }
+
+  readonly scenes: Record<string, GameScene<this>> = {};
+  #currentScene: GameScene<this> | undefined;
+  get currentScene(): GameScene<this> {
+    if (this.#currentScene === undefined) throw new Error("There is no current scene!");
+    return this.#currentScene;
+  }
+  set currentScene(scene: GameScene<this>) {
+    this.#currentScene = scene;
+  }
+
+  get world(): WorldRoot {
+    return this.currentScene.world;
+  }
+  get prefabs(): PrefabsRoot {
+    return this.currentScene.prefabs;
+  }
+  // TODO: should a Game have an independent global store from the Scene ?
+  get entities(): EntityStore {
+    return this.currentScene.entities;
   }
 
   #initialized: boolean = false;
@@ -154,13 +169,6 @@ export abstract class BaseGame implements ISignalHandler {
     this.#physics = new PhysicsEngine(this as unknown as Game);
   }
 
-  [internal.entityTickingOrderDirty]: boolean = true;
-  [internal.entityTickingOrder]: Entity[] = [];
-
-  [internal.submitEntityTickingOrder](entities: Entity[]) {
-    this.world[internal.submitEntityTickingOrder](entities);
-  }
-
   paused = new Value<boolean>(this.values, "paused", false, Boolean, "paused");
 
   tick() {
@@ -183,20 +191,8 @@ export abstract class BaseGame implements ISignalHandler {
 
     this.fire(GamePreTick);
 
-    const entityTickingOrder = this[internal.entityTickingOrder];
-    if (this[internal.entityTickingOrderDirty]) {
-      entityTickingOrder.length = 0; // size list down to 0 but keep capacity (avoid expensive realloc on array grow!)
-      this[internal.submitEntityTickingOrder](entityTickingOrder);
-      this[internal.entityTickingOrderDirty] = false;
-    }
-    const entityCount = entityTickingOrder.length;
-
-    for (let i = 0; i < entityCount; i++) {
-      entityTickingOrder[i][internal.interpolationStartTick]();
-    }
-    this.physics.tick();
-    for (let i = 0; i < entityCount; i++) {
-      entityTickingOrder[i].onUpdate();
+    for (const scene of Object.values(this.scenes)) {
+      tickScene(this as unknown as Game, scene);
     }
 
     this.fire(GameTick);
@@ -206,10 +202,10 @@ export abstract class BaseGame implements ISignalHandler {
   }
 
   shutdown() {
-    this.world.destroy();
+    // TODO: destroy scenes
+
     this.setStatus(GameStatus.Shutdown);
     this.fire(GameShutdown);
-    this.physics.shutdown();
   }
 
   [Symbol.dispose]() {
@@ -246,8 +242,10 @@ export class ServerGame extends BaseGame {
   public isClient = (): this is ClientGame => false;
   public isServer = (): this is ServerGame => true;
 
-  readonly remote: ServerRoot = new ServerRoot(this);
-  readonly local: undefined;
+  get remote(): ServerRoot {
+    return this.currentScene.server;
+  }
+  readonly local = undefined;
 
   readonly network: ServerNetworking;
 
@@ -260,11 +258,6 @@ export class ServerGame extends BaseGame {
     this.remote.destroy();
     super.shutdown();
     this.network.disconnect();
-  }
-
-  [internal.submitEntityTickingOrder](entities: Entity[]) {
-    super[internal.submitEntityTickingOrder](entities);
-    this.remote[internal.submitEntityTickingOrder](entities);
   }
 }
 
@@ -307,13 +300,10 @@ export class ClientGame extends BaseGame {
     this.network.disconnect();
   }
 
-  readonly local: LocalRoot = new LocalRoot(this);
-  readonly remote: undefined;
-
-  [internal.submitEntityTickingOrder](entities: Entity[]) {
-    super[internal.submitEntityTickingOrder](entities);
-    this.local[internal.submitEntityTickingOrder](entities);
+  get local(): LocalRoot {
+    return this.currentScene.local;
   }
+  readonly remote = undefined;
 
   #tickAccumulator = 0;
   tickClient(delta: number): void {
@@ -339,10 +329,15 @@ export class ClientGame extends BaseGame {
     );
     const partial = this.time.partial;
 
-    const entityTickingOrder = this[internal.entityTickingOrder];
-    const entityCount = entityTickingOrder.length;
-    for (let i = 0; i < entityCount; i++) {
-      entityTickingOrder[i][internal.interpolationStartFrame](partial);
+    try {
+      const scene = this.currentScene;
+      const tickOrder = scene[internal.entityTickingOrder];
+      const entityCount = tickOrder.length;
+      for (let i = 0; i < entityCount; i++) {
+        tickOrder[i][internal.interpolationStartFrame](partial);
+      }
+    } catch (_err) {
+      // ignore: it's probably just that `this.currentScene` threw because we don't yet have a scene
     }
 
     this.fire(GameRender);

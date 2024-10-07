@@ -3,8 +3,9 @@ import { WorkerInitData } from "../server-common/worker-data.ts";
 import { IPCMessageBus } from "./ipc.ts";
 import { ServerNetworkManager } from "./networking/net-manager.ts";
 
-import { ProjectSchema, getSceneFromProject, loadSceneDefinition } from "@dreamlab/scene";
+import { ProjectSchema, getSceneDescFromProject, loadSceneDefinition } from "@dreamlab/scene";
 import { z } from "@dreamlab/vendor/zod.ts";
+import { ServerScene } from "../../engine/scene.ts";
 import { handleEditMode } from "./edit-mode.ts";
 
 const workerData = JSON.parse(Deno.env.get("DREAMLAB_MP_WORKER_DATA")!) as WorkerInitData;
@@ -44,12 +45,15 @@ const projectDesc = await game
   .then(r => r.json())
   .then(ProjectSchema.parse);
 
-const mainScene = await getSceneFromProject(game, projectDesc, "main");
+const mainSceneDesc = await getSceneDescFromProject(game, projectDesc, "main");
+const mainScene = new ServerScene(game);
+game.scenes["main"] = mainScene;
+game.currentScene = mainScene;
 
 if (workerData.editMode) {
-  await handleEditMode(ipc, game, mainScene);
+  await handleEditMode(ipc, game, mainScene, mainSceneDesc);
 } else {
-  await loadSceneDefinition(game, mainScene);
+  await loadSceneDefinition(game, mainScene, mainSceneDesc);
 }
 
 game.setStatus(GameStatus.LoadingFinished);

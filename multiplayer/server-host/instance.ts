@@ -1,4 +1,4 @@
-import { Scene } from "@dreamlab/scene";
+import { SceneDesc } from "@dreamlab/scene";
 
 import { WorkerIPCMessage } from "../server-common/ipc.ts";
 import { GameSession } from "./session.ts";
@@ -185,13 +185,13 @@ export class GameInstance {
   }
 }
 
-export const dumpSceneDefinition = async (instance: GameInstance): Promise<Scene> => {
+export const dumpSceneDefinition = async (instance: GameInstance): Promise<SceneDesc> => {
   if (!instance.info.editMode) throw new Error("The given instance is not in edit mode!");
   if (!instance.session)
     throw new Error("The given instance is not currently running a session.");
 
   const ipc = instance.session.ipc;
-  const scene: Scene = await new Promise(resolve => {
+  const scene: SceneDesc = await new Promise(resolve => {
     const sceneDefListener = (
       message: WorkerIPCMessage & { op: "SceneDefinitionResponse" },
     ) => {

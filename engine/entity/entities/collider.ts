@@ -36,7 +36,7 @@ export class RectCollider extends Entity {
         .setTranslation(this.globalTransform.position.x, this.globalTransform.position.y)
         .setRotation(this.globalTransform.rotation);
 
-      const collider = this.game.physics.world.createCollider(desc);
+      const collider = this.scene.physics.world.createCollider(desc);
       collider.setActiveCollisionTypes(
         RAPIER.ActiveCollisionTypes.DEFAULT |
           RAPIER.ActiveCollisionTypes.KINEMATIC_FIXED |
@@ -52,7 +52,7 @@ export class RectCollider extends Entity {
 
     this.on(EntityDestroyed, () => {
       if (this.#internal) {
-        this.game.physics.world.removeCollider(this.#internal.collider, false);
+        this.scene.physics.world.removeCollider(this.#internal.collider, false);
         this.#internal = undefined;
       }
     });

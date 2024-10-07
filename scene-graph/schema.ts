@@ -99,5 +99,5 @@ export const ProjectSchema = z.object({
     .and(z.record(SceneOrSceneLocationSchema)),
 });
 
-export type Scene = z.input<typeof SceneSchema>;
-export type Project = z.input<typeof ProjectSchema>;
+export type SceneDesc = z.input<typeof SceneSchema>;
+export type ProjectDesc = z.input<typeof ProjectSchema>;

@@ -1,9 +1,9 @@
-import { Empty, Entity, EntityDefinition, ServerGame } from "@dreamlab/engine";
+import { Empty, Entity, EntityDefinition, ServerGame, ServerScene } from "@dreamlab/engine";
 import {
   convertEntityDefinition,
-  getSceneFromProject,
+  getSceneDescFromProject,
   ProjectSchema,
-  Scene,
+  SceneDesc,
   SceneDescBehavior,
   BehaviorSchema as SceneDescBehaviorSchema,
   SceneDescEntity,
@@ -85,13 +85,16 @@ const reinjectBehaviors = (entity: Entity, def: SceneDescEntity): SceneDescEntit
 export const handleEditMode = async (
   ipc: IPCMessageBus,
   game: ServerGame,
-  scene: z.output<typeof SceneSchema>,
+  scene: ServerScene,
+  sceneDesc: z.output<typeof SceneSchema>,
 ) => {
-  if (scene.registration) {
-    await Promise.all(scene.registration.map(script => import(game.resolveResource(script))));
+  if (sceneDesc.registration) {
+    await Promise.all(
+      sceneDesc.registration.map(script => import(game.resolveResource(script))),
+    );
   }
 
-  const editEntities = game.world.spawn({
+  const editEntities = scene.world.spawn({
     type: Empty,
     name: "EditEntities",
     _ref: "EDIT_ROOT",
@@ -127,8 +130,8 @@ export const handleEditMode = async (
         ),
       );
 
-    const newScene: Scene = {
-      registration: scene.registration,
+    const newScene: SceneDesc = {
+      registration: sceneDesc.registration,
       world: [...editWorld.children.values()]
         .filter(e => !(e instanceof EditorMetadataEntity))
         .map(serializeForScene),
@@ -147,10 +150,10 @@ export const handleEditMode = async (
   });
 
   let sceneRoots: [SceneDescEntity[], Entity][] = [
-    [scene.world, editWorld],
-    [scene.local, editLocal],
-    [scene.server, editServer],
-    [scene.prefabs, editPrefabs],
+    [sceneDesc.world, editWorld],
+    [sceneDesc.local, editLocal],
+    [sceneDesc.server, editServer],
+    [sceneDesc.prefabs, editPrefabs],
   ];
 
   const loadFromScene = async () => {
@@ -182,17 +185,17 @@ export const handleEditMode = async (
       }
     }
 
-    const newScene = await getSceneFromProject(game, projectDesc, "main");
-    scene.world = newScene.world;
-    scene.local = newScene.local;
-    scene.server = newScene.server;
-    scene.prefabs = newScene.prefabs;
+    const newScene = await getSceneDescFromProject(game, projectDesc, "main");
+    sceneDesc.world = newScene.world;
+    sceneDesc.local = newScene.local;
+    sceneDesc.server = newScene.server;
+    sceneDesc.prefabs = newScene.prefabs;
 
     sceneRoots = [
-      [scene.world, editWorld],
-      [scene.local, editLocal],
-      [scene.server, editServer],
-      [scene.prefabs, editPrefabs],
+      [sceneDesc.world, editWorld],
+      [sceneDesc.local, editLocal],
+      [sceneDesc.server, editServer],
+      [sceneDesc.prefabs, editPrefabs],
     ];
 
     await loadFromScene();

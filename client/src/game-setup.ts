@@ -1,7 +1,11 @@
-import { Camera, ClientGame, Entity, GameStatus, Gizmo } from "@dreamlab/engine";
+import { Camera, ClientGame, ClientScene, Entity, GameStatus, Gizmo } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { ReceivedInitialNetworkSnapshot } from "@dreamlab/proto/common/signals.ts";
-import { convertEntityDefinition, getSceneFromProject, ProjectSchema } from "@dreamlab/scene";
+import {
+  convertEntityDefinition,
+  getSceneDescFromProject,
+  ProjectSchema,
+} from "@dreamlab/scene";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { ClientConnection } from "../../editor/client/networking/net-connection.ts";
 
@@ -17,8 +21,12 @@ export const setupGame = async (
     .then(r => r.text())
     .then(JSON.parse)
     .then(ProjectSchema.parse);
-  const scene = await getSceneFromProject(game, projectDesc, "main");
-  await Promise.all(scene.registration.map(script => import(game.resolveResource(script))));
+  const sceneDesc = await getSceneDescFromProject(game, projectDesc, "main");
+  const mainScene = new ClientScene(game);
+  game.scenes["main"] = mainScene;
+  game.currentScene = mainScene;
+
+  await Promise.all(sceneDesc.registration.map(script => import(game.resolveResource(script))));
 
   const behaviors = await game
     .fetch("res://_dreamlab_behaviors.json")
@@ -40,12 +48,12 @@ export const setupGame = async (
   if (editMode) {
     game.physics.enabled = false;
 
-    game.local.spawn({
+    mainScene.local.spawn({
       type: Gizmo,
       name: "Gizmo",
     });
 
-    game.local.spawn({
+    mainScene.local.spawn({
       type: Camera,
       name: "Camera",
       values: { smooth: 0.025, active: true, unlocked: true },
@@ -54,9 +62,11 @@ export const setupGame = async (
     // we don't need to load the scene here because the server should have put everything
     // in game.world._.EditorEntities and they should sync good automatically
   } else {
-    const defs = await Promise.all(scene.local.map(def => convertEntityDefinition(game, def)));
+    const defs = await Promise.all(
+      sceneDesc.local.map(def => convertEntityDefinition(game, def)),
+    );
     for (const def of defs) {
-      localSpawnedEntities.push(game.local[internal.entitySpawn](def, { inert: true }));
+      localSpawnedEntities.push(mainScene.local[internal.entitySpawn](def, { inert: true }));
     }
   }
 

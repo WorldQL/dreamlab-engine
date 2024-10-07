@@ -1,5 +1,5 @@
 import RAPIER, { Collider, RigidBody } from "@dreamlab/vendor/rapier.ts";
-import { Entity } from "./entity/mod.ts";
+import { Entity, EntityStore } from "./entity/mod.ts";
 import { Game } from "./game.ts";
 import { EntityCollision } from "./signals/entity-collision.ts";
 
@@ -8,11 +8,26 @@ interface ColliderWithUserData extends Collider {
   userData?: any;
 }
 
+export interface PhysicsRealm {
+  readonly world: RAPIER.World;
+  readonly events: RAPIER.EventQueue;
+}
+
+export function createPhysicsRealm(game: Game): PhysicsRealm {
+  const world = new RAPIER.World({ x: 0, y: -9.81 });
+  world.integrationParameters.dt = 1.0 / game.time.TPS;
+  const events = new RAPIER.EventQueue(true);
+  return { world, events };
+}
+
+export function freePhysicsRealm(realm: PhysicsRealm) {
+  realm.world.free();
+  realm.events.free();
+}
+
 export class PhysicsEngine {
   game: Game;
 
-  world: RAPIER.World;
-  #events: RAPIER.EventQueue;
   readonly tickDelta: number;
 
   // TODO: figure out how to network sync this
@@ -22,9 +37,6 @@ export class PhysicsEngine {
     this.game = game;
 
     this.tickDelta = 1000.0 / game.time.TPS;
-    this.world = new RAPIER.World({ x: 0, y: -9.81 });
-    this.world.integrationParameters.dt = 1.0 / game.time.TPS;
-    this.#events = new RAPIER.EventQueue(true);
   }
 
   registerBody(entity: Entity, body: RigidBody) {
@@ -37,14 +49,11 @@ export class PhysicsEngine {
     collider.userData = { ...ud, entityRef: entity.ref };
   }
 
-  tick() {
-    if (this.enabled) this.world.step(this.#events);
-    this.#events.drainCollisionEvents((handle1, handle2, started) => {
-      // const body1 = this.world.bodies.get(handle1);
-      // const body2 = this.world.bodies.get(handle2);
-
-      const body1 = this.world.colliders.get(handle1) as ColliderWithUserData;
-      const body2 = this.world.colliders.get(handle2) as ColliderWithUserData;
+  tick(entities: EntityStore, world: RAPIER.World, events: RAPIER.EventQueue) {
+    if (this.enabled) world.step(events);
+    events.drainCollisionEvents((handle1, handle2, started) => {
+      const body1 = world.colliders.get(handle1) as ColliderWithUserData;
+      const body2 = world.colliders.get(handle2) as ColliderWithUserData;
 
       const udata1 = body1?.userData;
       const udata2 = body2?.userData;
@@ -59,17 +68,12 @@ export class PhysicsEngine {
       }
 
       if (!entityRef1 || !entityRef2) return;
-      const entity1 = this.game.entities.lookupByRef(entityRef1);
-      const entity2 = this.game.entities.lookupByRef(entityRef2);
+      const entity1 = entities.lookupByRef(entityRef1);
+      const entity2 = entities.lookupByRef(entityRef2);
       if (!entity1 || !entity2) return;
 
       entity1.fire(EntityCollision, started, entity2);
       entity2.fire(EntityCollision, started, entity1);
     });
-  }
-
-  shutdown() {
-    this.world.free();
-    this.#events.free();
   }
 }

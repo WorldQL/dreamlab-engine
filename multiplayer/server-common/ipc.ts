@@ -1,6 +1,6 @@
 import { ConnectionId } from "@dreamlab/engine";
 import { ClientPacket, ServerPacket } from "@dreamlab/proto/play.ts";
-import { Scene } from "@dreamlab/scene";
+import { SceneDesc } from "@dreamlab/scene";
 
 interface ConnectionEstablishedMessage {
   op: "ConnectionEstablished";
@@ -52,7 +52,7 @@ interface SetStatusMessage {
 
 interface SceneDefinitionResponseMessage {
   op: "SceneDefinitionResponse";
-  sceneJson: Scene;
+  sceneJson: SceneDesc;
 }
 
 export type WorkerIPCMessage =

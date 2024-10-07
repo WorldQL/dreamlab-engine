@@ -40,10 +40,10 @@ const camera = game.local.spawn({
   values: { active: true, unlocked: true },
 });
 
-declare global {
+/* declare global {
   const game: ClientGame;
   const camera: Camera;
-}
+} */
 
 Object.assign(window, { game, camera, Vector2 });
 // #endregion
