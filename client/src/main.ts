@@ -5,6 +5,7 @@ import "./_env.ts";
 
 import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
+import { initRapier } from "@dreamlab/vendor/rapier.ts";
 import { connectToGame } from "./game-connection.ts";
 import { setupGame } from "./game-setup.ts";
 import { INSTANCE_ID, SERVER_URL } from "./util/server-url.ts";
@@ -18,6 +19,8 @@ connectUrl.searchParams.set("nickname", "Player" + Math.floor(Math.random() * 99
 const uiRoot = document.querySelector("main")! as HTMLElement;
 const container = document.createElement("div");
 uiRoot.querySelector("#viewport")!.append(container);
+
+await initRapier();
 
 const socket = new WebSocket(connectUrl);
 socket.binaryType = "arraybuffer";

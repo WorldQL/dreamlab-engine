@@ -19,6 +19,7 @@ import { Camera, ClientGame, Entity } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
+import { initRapier } from "@dreamlab/vendor/rapier.ts";
 import { connectToGame } from "../../client/src/game-connection.ts";
 import { setupGame } from "../../client/src/game-setup.ts";
 import { INSTANCE_ID, SERVER_URL } from "../../client/src/util/server-url.ts";
@@ -39,6 +40,8 @@ connectUrl.searchParams.set("nickname", "Player" + Math.floor(Math.random() * 99
 const uiRoot = document.querySelector("main")! as HTMLElement;
 const container = document.createElement("div");
 uiRoot.querySelector("#viewport")!.append(container);
+
+await initRapier();
 
 const socket = new WebSocket(connectUrl);
 socket.binaryType = "arraybuffer";

@@ -1,11 +1,11 @@
-import { GameStatus, ServerGame } from "@dreamlab/engine";
+import { GameStatus, ServerGame, ServerScene } from "@dreamlab/engine";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 import { IPCMessageBus } from "./ipc.ts";
 import { ServerNetworkManager } from "./networking/net-manager.ts";
 
 import { ProjectSchema, getSceneDescFromProject, loadSceneDefinition } from "@dreamlab/scene";
+import { initRapier } from "@dreamlab/vendor/rapier.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
-import { ServerScene } from "../../engine/scene.ts";
 import { handleEditMode } from "./edit-mode.ts";
 
 const workerData = JSON.parse(Deno.env.get("DREAMLAB_MP_WORKER_DATA")!) as WorkerInitData;
@@ -13,6 +13,8 @@ Deno.env.delete("DREAMLAB_MP_WORKER_DATA");
 
 const ipc = new IPCMessageBus(workerData);
 await ipc.connected();
+
+await initRapier();
 
 // TODO: hook the console to do proper logging
 
@@ -22,10 +24,12 @@ const game = new ServerGame({
   worldId: workerData.worldId,
   network: net.createNetworking(),
 });
+game.currentScene = game.scenes["main"] = new ServerScene(game);
+
 game.worldScriptBaseURL = `file://${workerData.worldDirectory}/`;
 Object.defineProperties(globalThis, { net: { value: net }, game: { value: game } });
-net.setup(game);
 await game.initialize();
+net.setup(game);
 
 const behaviors = await game
   .fetch("res://_dreamlab_behaviors.json")
@@ -46,9 +50,7 @@ const projectDesc = await game
   .then(ProjectSchema.parse);
 
 const mainSceneDesc = await getSceneDescFromProject(game, projectDesc, "main");
-const mainScene = new ServerScene(game);
-game.scenes["main"] = mainScene;
-game.currentScene = mainScene;
+const mainScene = game.currentScene;
 
 if (workerData.editMode) {
   await handleEditMode(ipc, game, mainScene, mainSceneDesc);

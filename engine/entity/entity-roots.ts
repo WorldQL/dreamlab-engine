@@ -14,8 +14,8 @@ export abstract class Root extends Entity {
     super({ scene, game, name, ref: name.toUpperCase() });
 
     this.entities = new EntityStore();
-    game.entities[internal.entityStoreRegisterRoot](`game.${name}`, this.entities);
-    game.entities[internal.entityStoreUnregister](this);
+    scene.entities[internal.entityStoreRegisterRoot](`game.${name}`, this.entities);
+    scene.entities[internal.entityStoreUnregister](this);
 
     this.name = `game.${name}`;
     // @ts-expect-error assign readonly id
@@ -23,7 +23,7 @@ export abstract class Root extends Entity {
     // @ts-expect-error assign readonly id
     this.root = this;
 
-    game.entities[internal.entityStoreRegister](this);
+    scene.entities[internal.entityStoreRegister](this);
 
     this[internal.entitySpawnFinalize]();
   }
