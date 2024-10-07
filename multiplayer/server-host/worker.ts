@@ -1,6 +1,7 @@
 import { HostIPCMessage, WorkerIPCMessage } from "../server-common/ipc.ts";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 
+import { Decoder } from "@dreamlab/vendor/cbor-x.ts";
 import * as colors from "jsr:@std/fmt@1/colors";
 import { TextLineStream } from "jsr:@std/streams@1";
 import { LogStore } from "./util/log-store.ts";
@@ -69,6 +70,8 @@ export class IPCWorker {
   }
 
   acceptConnection(socket: WebSocket) {
+    const cborDecoder = new Decoder();
+
     socket.addEventListener("open", () => {
       if (this.#activeIPCSocket !== undefined) {
         this.#activeIPCSocket?.close(1000, "Replaced");
@@ -77,6 +80,16 @@ export class IPCWorker {
     });
     socket.addEventListener("message", event => {
       const data = event.data;
+      if (typeof data === "object") {
+        try {
+          const buffer = "buffer" in data ? data.buffer : data;
+          const buf = new Uint8Array(buffer);
+          const message = cborDecoder.decode(buf);
+          this.#onReceive(message);
+        } catch {
+          // skip
+        }
+      }
       if (typeof data === "string") {
         try {
           const message = JSON.parse(data);

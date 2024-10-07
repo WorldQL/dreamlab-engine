@@ -49,6 +49,8 @@ export class ClientConnection {
       this.#queue.packets = [];
       if (packets.length === 0) break;
       for (const packet of packets) {
+        console.log(`[<-] ${packet.t}`);
+
         const handlers = this.getPacketHandlers(packet.t);
         for (const handler of handlers) {
           try {

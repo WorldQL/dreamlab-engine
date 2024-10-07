@@ -1,19 +1,64 @@
+// deno-lint-ignore-file ban-types no-explicit-any
 import { JsonObject, JsonValue, ValueTypeAdapter } from "../data.ts";
-import { Value } from "../value.ts";
 
-function createAutoSyncProxy<T extends object>(object: T, valueObj: Value<JsonObject>): T {
-  return new Proxy(object, {
-    get: (...args) => {
-      const result = Reflect.get(...args);
-      if (typeof result === "object" && result !== null) {
-        return createAutoSyncProxy(result, valueObj);
-      }
+const marker = Symbol("dreamlab.object-adapter.marker");
+const orig = Symbol("dreamlab.object-adapter.orig");
+
+function createMutationDetector<T extends object>(
+  obj: T,
+  onMutation: (target: any) => void,
+): T {
+  return new Proxy(obj, {
+    set(target, property, value, receiver) {
+      const result = Reflect.set(target, property, value, receiver);
+      onMutation(target);
       return result;
     },
-    set: (...args) => {
-      const result = Reflect.set(...args);
-      valueObj.forceSync();
+    deleteProperty(target, property) {
+      const result = Reflect.deleteProperty(target, property);
+      onMutation(target);
       return result;
+    },
+    has(target, property) {
+      if (property === marker || property === orig) return true;
+      return Reflect.has(target, property);
+    },
+    get(target, property, receiver) {
+      if (property === marker) {
+        return true;
+      }
+      if (property === orig) {
+        return target;
+      }
+
+      const propValue = Reflect.get(target, property, receiver);
+
+      // If the property is a function and the target is an array, intercept mutating methods
+      if (typeof propValue === "function" && Array.isArray(target)) {
+        const mutatingMethods = [
+          "push",
+          "pop",
+          "shift",
+          "unshift",
+          "splice",
+          "sort",
+          "reverse",
+        ];
+        if (mutatingMethods.includes(property as string)) {
+          return function (this: unknown, ...args: any[]) {
+            const result = (propValue as Function).apply(this, args);
+            onMutation(target);
+            return result;
+          };
+        }
+      }
+
+      // For nested objects or arrays, return a proxy to detect mutations within them
+      if (typeof propValue === "object" && propValue !== null) {
+        return createMutationDetector(propValue, onMutation);
+      }
+
+      return propValue;
     },
   });
 }
@@ -26,7 +71,12 @@ export class ObjectAdapter extends ValueTypeAdapter<JsonObject> {
   isValue(value: unknown): value is JsonObject {
     return typeof value === "object";
   }
-  convertToPrimitive(value: JsonObject): JsonValue {
+  convertToPrimitive(value_: JsonObject): JsonValue {
+    let value = value_;
+    if (orig in value) {
+      value = value[orig] as JsonObject;
+    }
+
     try {
       // since the netcode needs to serialize and deserialize values,
       // you can't store any special data in a value covered by ObjectAdapter
@@ -46,6 +96,12 @@ export class ObjectAdapter extends ValueTypeAdapter<JsonObject> {
     }
 
     const object = value as JsonObject;
-    return this.valueObj ? createAutoSyncProxy(object, this.valueObj) : object;
+    if (marker in object) {
+      return object;
+    } else {
+      return createMutationDetector(object, () => {
+        this.valueObj?.forceSync();
+      });
+    }
   }
 }

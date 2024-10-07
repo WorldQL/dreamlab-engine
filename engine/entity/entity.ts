@@ -578,24 +578,27 @@ export abstract class Entity implements ISignalHandler {
     if (this.#values.has(identifier))
       throw new Error(`A value with the identifier '${identifier}' already exists!`);
 
-    type T = Value<E[typeof prop]>["value"];
-    const originalValue: T = this[prop] as T;
-    let defaultValue: T = originalValue;
+    type T = E[typeof prop];
+    type T_ = Value<T>["value"];
+    const originalValue: T_ = this[prop] as T_;
+    let defaultValue: T_ = originalValue;
+
+    let adapter: ValueTypeAdapter<T> | undefined;
+    if (opts.type && (opts.type as AdapterTypeTag<T>).prototype instanceof ValueTypeAdapter) {
+      adapter = new (opts.type as AdapterTypeTag<T>)(this.game, undefined);
+    }
 
     if (this.#defaultValues[prop] !== undefined) {
-      if (opts.type && (opts.type as AdapterTypeTag<T>).prototype instanceof ValueTypeAdapter) {
-        const adapter = new (opts.type as AdapterTypeTag<T>)(this.game);
+      if (adapter) {
         defaultValue = (
           adapter.isValue(this.#defaultValues[prop])
             ? this.#defaultValues[prop]
             : adapter.convertFromPrimitive(this.#defaultValues[prop] as JsonValue)
-        ) as T;
+        ) as T_;
       } else {
-        defaultValue = this.#defaultValues[prop] as T;
+        defaultValue = this.#defaultValues[prop] as T_;
       }
     }
-
-    if (defaultValue === undefined) defaultValue = originalValue;
 
     const original = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(this), prop);
     const _get = original?.get?.bind(this);
@@ -610,6 +613,7 @@ export abstract class Entity implements ISignalHandler {
       defaultValue,
       opts.type ?? (inferValueTypeTag(defaultValue) as ValueTypeTag<E[typeof prop]>),
       opts.description ?? prop, // TODO: autogenerate description (fix casing & spacing)
+      adapter,
     );
     if (opts.replicated) value.replicated = opts.replicated;
     value[internal.valueRelatedEntity] = this;

@@ -105,20 +105,25 @@ export class Behavior implements ISignalHandler {
     if (this.#values.has(identifier))
       throw new Error(`A value with the identifier '${identifier}' already exists!`);
 
-    type T = Value<B[typeof prop]>["value"];
-    const originalValue: T = this[prop] as T;
-    let defaultValue: T = originalValue;
+    type T = B[typeof prop];
+    type T_ = Value<T>["value"];
+    const originalValue: T_ = this[prop] as T_;
+    let defaultValue: T_ = originalValue;
+
+    let adapter: ValueTypeAdapter<T> | undefined;
+    if (opts.type && (opts.type as AdapterTypeTag<T>).prototype instanceof ValueTypeAdapter) {
+      adapter = new (opts.type as AdapterTypeTag<T>)(this.game, undefined);
+    }
 
     if (this.#defaultValues[prop] !== undefined) {
-      if (opts.type && (opts.type as AdapterTypeTag<T>).prototype instanceof ValueTypeAdapter) {
-        const adapter = new (opts.type as AdapterTypeTag<T>)(this.game, undefined);
+      if (adapter) {
         defaultValue = (
           adapter.isValue(this.#defaultValues[prop])
             ? this.#defaultValues[prop]
             : adapter.convertFromPrimitive(this.#defaultValues[prop] as JsonValue)
-        ) as T;
+        ) as T_;
       } else {
-        defaultValue = this.#defaultValues[prop] as T;
+        defaultValue = this.#defaultValues[prop] as T_;
       }
     }
 
@@ -129,12 +134,13 @@ export class Behavior implements ISignalHandler {
     // TODO: deep equality check?
     if (defaultValue !== originalValue) _set?.(defaultValue);
 
-    const value = new Value(
+    const value = new Value<T>(
       this.game.values,
       identifier,
       defaultValue,
       opts.type ?? (inferValueTypeTag(defaultValue) as ValueTypeTag<B[typeof prop]>),
       opts.description ?? prop, // TODO: autogenerate description (fix casing & spacing)
+      adapter,
     );
     if (opts.replicated) value.replicated = opts.replicated;
     value[internal.valueRelatedEntity] = this.entity;

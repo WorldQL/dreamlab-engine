@@ -2,7 +2,8 @@ import type { ReadonlyDeep } from "@dreamlab/vendor/type-fest.ts";
 import { Entity } from "../entity/mod.ts";
 import * as internal from "../internal.ts";
 import { ConnectionId } from "../network.ts";
-import { AdapterTypeTag, ValueTypeAdapter } from "./data.ts";
+import { ObjectAdapter } from "./adapters/object-adapter.ts";
+import { AdapterTypeTag, JsonObject, ValueTypeAdapter } from "./data.ts";
 import { ValueRegistry } from "./registry.ts";
 
 // prettier-ignore
@@ -88,6 +89,7 @@ export class Value<T = unknown> {
     defaultValue: Value<T>["value"],
     typeTag: ValueTypeTag<T>,
     description: string,
+    adapter?: ValueTypeAdapter<T>,
   ) {
     this.#registry = registry;
     this.identifier = identifier;
@@ -98,11 +100,25 @@ export class Value<T = unknown> {
 
     this.description = description;
 
-    if (this.typeTag !== Number && this.typeTag !== String && this.typeTag !== Boolean) {
-      const adapterTypeTag = this.typeTag as AdapterTypeTag<T>;
-      this.adapter = new adapterTypeTag(registry.game, this);
-      if (!(this.adapter instanceof ValueTypeAdapter))
-        throw new Error("AdapterTypeTag was not the correct type!");
+    if (adapter) {
+      this.adapter = adapter;
+    } else {
+      if (this.typeTag !== Number && this.typeTag !== String && this.typeTag !== Boolean) {
+        const adapterTypeTag = this.typeTag as AdapterTypeTag<T>;
+        this.adapter = new adapterTypeTag(registry.game, this);
+        if (!(this.adapter instanceof ValueTypeAdapter))
+          throw new Error("AdapterTypeTag was not the correct type!");
+      }
+    }
+
+    if (this.adapter) {
+      this.adapter.valueObj = this;
+
+      if (this.adapter instanceof ObjectAdapter) {
+        this.#value = this.adapter.convertFromPrimitive(
+          this.adapter.convertToPrimitive(this.#value as JsonObject),
+        ) as Value<T>["value"];
+      }
     }
 
     this.#registry.register(this as Value<unknown>);

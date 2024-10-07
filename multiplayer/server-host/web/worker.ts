@@ -15,5 +15,6 @@ export const workerInternalRoute = (ctx: Context) => {
     throw new JsonAPIError(Status.NotFound, "No matching worker is running.");
 
   const socket = ctx.upgrade();
+  socket.binaryType = "arraybuffer";
   worker.acceptConnection(socket);
 };
