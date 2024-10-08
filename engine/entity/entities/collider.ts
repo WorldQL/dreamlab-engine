@@ -1,7 +1,7 @@
 import RAPIER from "@dreamlab/vendor/rapier.ts";
 import * as internal from "../../internal.ts";
 import { IVector2, Vector2 } from "../../math/mod.ts";
-import { EntityDestroyed } from "../../signals/mod.ts";
+import { EntityDestroyed, EntityEnableChanged } from "../../signals/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
 
 export class RectCollider extends Entity {
@@ -55,6 +55,10 @@ export class RectCollider extends Entity {
         this.game.physics.world.removeCollider(this.#internal.collider, false);
         this.#internal = undefined;
       }
+    });
+
+    this.on(EntityEnableChanged, ({ enabled }) => {
+      this.#internal?.collider.setEnabled(enabled);
     });
   }
 
