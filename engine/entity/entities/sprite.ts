@@ -29,8 +29,8 @@ export class Sprite extends PixiEntity {
   constructor(ctx: EntityContext) {
     super(ctx);
 
-    this.defineValues(Sprite, "width", "height", "alpha");
     this.defineValue(Sprite, "texture", { type: TextureAdapter });
+    this.defineValues(Sprite, "width", "height", "alpha");
 
     if (this.game.isClient() && this.texture !== "") {
       // PIXI.Assets.backgroundLoad(this.game.resolveResource(this.texture));
