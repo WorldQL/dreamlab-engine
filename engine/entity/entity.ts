@@ -33,6 +33,7 @@ import {
   EntityDescendantReparented,
   EntityDescendantSpawned,
   EntityDestroyed,
+  EntityEnableChanged,
   EntityExclusiveAuthorityChanged,
   EntityRenamed,
   EntityReparented,
@@ -671,6 +672,26 @@ export abstract class Entity implements ISignalHandler {
   }
   // #endregion
 
+  // #region Enablement
+  #enabled: boolean = true;
+  get enabled(): boolean {
+    if (!this.#enabled) return false;
+    if (this.parent && !this.parent.enabled) return false;
+    return true;
+  }
+  set enabled(value) {
+    this.#enabled = value;
+    this.#notifyEnableChanged(this.enabled);
+    this.game[internal.entityTickingOrderDirty] = true;
+  }
+  #notifyEnableChanged(enabled: boolean) {
+    this.fire(EntityEnableChanged, enabled);
+    for (const child of this.children.values()) {
+      child.#notifyEnableChanged(enabled);
+    }
+  }
+  // #endregion
+
   // internal id for stable internal reference. we only really need this for networking
   readonly ref: string = generateCUID("ent");
 
@@ -811,6 +832,8 @@ export abstract class Entity implements ISignalHandler {
   onInitialize(): void {}
 
   [internal.submitEntityTickingOrder](entities: Entity[]) {
+    if (!this.enabled) return;
+
     entities.push(this);
     for (const child of this.#children.values()) {
       child[internal.submitEntityTickingOrder](entities);
