@@ -153,3 +153,7 @@
     }
   }
 }
+
+.log-entry.log-entry-error code:nth-of-type(2) {
+  color: red;
+}

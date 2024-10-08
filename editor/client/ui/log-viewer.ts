@@ -17,15 +17,18 @@ export class LogViewer {
   #logs: HTMLElement[] = [];
 
   #ws: WebSocket;
+  private maxLogs: number;
 
   constructor(
     private uiRoot: HTMLElement,
     private games: { edit: ClientGame; play?: ClientGame },
+    maxLogs = 100, // Default maximum number of logs
   ) {
     const url = new URL(SERVER_URL);
     url.pathname = `/api/v1/log-stream/${this.games.edit.instanceId}`;
     url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
     this.#ws = new WebSocket(url.toString());
+    this.maxLogs = maxLogs;
   }
 
   setup(_ui: InspectorUI): void {
@@ -143,14 +146,20 @@ export class LogViewer {
   private appendLogEntry(log: LogEntry): void {
     const ts = new Date(log.timestamp).toISOString().replace("T", " ").replace("Z", "");
     let level = log.level.toUpperCase().padEnd(5, " ");
+    let className = "log-entry";
 
     let style = "";
     if (log.source === "client") {
       level = "CLIENT".padEnd(5, " ");
       style = "background-color: rgba(253, 255, 112, 0.2)";
     }
+
+    if (log.level === "error") {
+      className += " log-entry-error";
+    }
+    
     // @ts-expect-error CSS
-    const entry = elem("div", { className: "log-entry", style }, [
+    const entry = elem("div", { className, style }, [
       elem("code", {}, [ts]),
       elem("code", {}, [level]),
       ...this.logMessage(log),
@@ -158,6 +167,14 @@ export class LogViewer {
 
     this.#logs.push(entry);
     this.#logcontent.prepend(entry);
+
+    // Remove old logs if we exceed the maximum
+    if (this.#logs.length > this.maxLogs) {
+      const oldEntry = this.#logs.shift();
+      if (oldEntry) {
+        oldEntry.remove();
+      }
+    }
   }
 
   private logMessage(log: LogEntry): HTMLElement[] {
