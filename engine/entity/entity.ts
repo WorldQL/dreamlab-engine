@@ -690,6 +690,9 @@ export abstract class Entity implements ISignalHandler {
       child.#notifyEnableChanged(enabled);
     }
   }
+  get [internal.entityOwnEnabled](): boolean {
+    return this.#enabled;
+  }
   // #endregion
 
   // internal id for stable internal reference. we only really need this for networking

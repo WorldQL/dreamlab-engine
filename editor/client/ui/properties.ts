@@ -2,15 +2,17 @@ import {
   ClientGame,
   Entity,
   EntityConstructor,
+  EntityOwnEnableChanged,
   EntityRenamed,
   EntityReparented,
   EntityTransformUpdate,
 } from "@dreamlab/engine";
+import * as internal from "@dreamlab/engine/internal";
 import { element as elem } from "@dreamlab/ui";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { Facades } from "../../common/mod.ts";
 import { DataDetails, DataTable } from "../components/mod.ts";
-import { createInputField } from "../util/easy-input.ts";
+import { createBooleanField, createInputField } from "../util/easy-input.ts";
 import { createValueControl } from "../util/value-controls.ts";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 
@@ -90,6 +92,14 @@ export class Properties implements InspectorUIWidget {
       Facades.reverseFacadeEntityType(entity.constructor as EntityConstructor).name,
     ]);
     table.addEntry("type", "Type", typeField);
+
+    const [enabledField, refreshEnabled] = createBooleanField({
+      default: true,
+      get: () => entity[internal.entityOwnEnabled],
+      set: v => (entity.enabled = v),
+    });
+    entity.on(EntityOwnEnableChanged, () => refreshEnabled());
+    table.addEntry("enabled", "Enabled", enabledField);
 
     const transformSection = new DataDetails();
     container.append(transformSection);

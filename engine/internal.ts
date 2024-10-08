@@ -31,5 +31,6 @@ export const entityStoreRegister = Symbol.for("dreamlab.internal.entityStoreRegi
 export const entityStoreRegisterRoot = Symbol.for("dreamlab.internal.entityStoreRegisterRoot");
 export const entityStoreUnregister = Symbol.for("dreamlab.internal.entityStoreUnregister");
 export const entityTypeRegistry = Symbol.for("dreamlab.internal.entityTypeRegistry");
+export const entityOwnEnabled = Symbol.for("dreamlab.internal.entityOwnEnabled");
 export const valueRelatedEntity = Symbol.for("dreamlab.internal.valueRelatedEntity");
 export const valueApplyUpdate = Symbol.for("dreamlab.internal.valueApplyUpdate");
