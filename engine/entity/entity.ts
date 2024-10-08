@@ -35,6 +35,7 @@ import {
   EntityDestroyed,
   EntityEnableChanged,
   EntityExclusiveAuthorityChanged,
+  EntityOwnEnableChanged,
   EntityRenamed,
   EntityReparented,
   EntitySpawned,
@@ -681,6 +682,7 @@ export abstract class Entity implements ISignalHandler {
   }
   set enabled(value) {
     this.#enabled = value;
+    this.fire(EntityOwnEnableChanged, value);
     this.#notifyEnableChanged(this.enabled);
     this.game[internal.entityTickingOrderDirty] = true;
   }

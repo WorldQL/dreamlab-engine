@@ -9,6 +9,7 @@ import {
   EntityDescendantRenamed,
   EntityDescendantReparented,
   EntityDescendantSpawned,
+  EntityOwnEnableChanged,
   Game,
   GameStatus,
   GameStatusChange,
@@ -298,6 +299,27 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
 
     changeIgnoreSet.add(entity.ref);
     behavior.destroy();
+    changeIgnoreSet.delete(entity.ref);
+  });
+
+  const handleEntityEnableChanged = (event: EntityDescendantSpawned) => {
+    const entity = event.descendant;
+    entity.on(EntityOwnEnableChanged, ({ enabled }) => {
+      if (changeIgnoreSet.has(entity.ref)) return;
+      conn.send({ t: "EntityEnableChanged", entity: entity.ref, enabled });
+    });
+  };
+  game.world.on(EntityDescendantSpawned, handleEntityEnableChanged);
+  game.prefabs.on(EntityDescendantSpawned, handleEntityEnableChanged);
+
+  conn.registerPacketHandler("EntityEnableChanged", packet => {
+    if (packet.from === conn.id) return;
+
+    const entity = game.entities.lookupByRef(packet.entity);
+    if (!entity) return;
+
+    changeIgnoreSet.add(entity.ref);
+    entity.enabled = packet.enabled;
     changeIgnoreSet.delete(entity.ref);
   });
 };

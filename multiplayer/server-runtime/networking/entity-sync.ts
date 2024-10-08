@@ -7,6 +7,7 @@ import {
   EntityDescendantDestroyed,
   EntityDescendantReparented,
   EntityDescendantSpawned,
+  EntityOwnEnableChanged,
   Game,
   GameStatus,
 } from "@dreamlab/engine";
@@ -260,6 +261,32 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
       t: "DeleteBehavior",
       entity: packet.entity,
       behavior: packet.behavior,
+      from,
+    });
+  });
+
+  const handleEntityEnableChanged = (event: EntityDescendantSpawned) => {
+    const entity = event.descendant;
+    entity.on(EntityOwnEnableChanged, ({ enabled }) => {
+      if (changeIgnoreSet.has(entity.ref)) return;
+      net.broadcast({ t: "EntityEnableChanged", entity: entity.ref, enabled });
+    });
+  };
+  game.world.on(EntityDescendantSpawned, handleEntityEnableChanged);
+  game.prefabs.on(EntityDescendantSpawned, handleEntityEnableChanged);
+
+  net.registerPacketHandler("EntityEnableChanged", (from, packet) => {
+    const entity = game.entities.lookupByRef(packet.entity);
+    if (!entity) return;
+
+    changeIgnoreSet.add(entity.ref);
+    entity.enabled = packet.enabled;
+    changeIgnoreSet.delete(entity.ref);
+
+    net.broadcast({
+      t: "EntityEnableChanged",
+      entity: packet.entity,
+      enabled: packet.enabled,
       from,
     });
   });

@@ -222,6 +222,16 @@ export const ServerDeleteBehaviorPacket = ClientDeleteBehaviorPacket.extend({
   from: ConnectionIdSchema.optional(),
 });
 
+export const ClientEntityEnableChanged = z.object({
+  t: z.literal("EntityEnableChanged"),
+  entity: EntityReferenceSchema,
+  enabled: z.boolean(),
+});
+
+export const ServerEntityEnableChanged = ClientEntityEnableChanged.extend({
+  from: ConnectionIdSchema.optional(),
+});
+
 export const ClientPacketSchema = z.discriminatedUnion("t", [
   PingPacketSchema,
   ClientLoadPhaseChangedPacket,
@@ -237,6 +247,7 @@ export const ClientPacketSchema = z.discriminatedUnion("t", [
   ClientReportValuesPacket,
   ClientSpawnBehaviorPacket,
   ClientDeleteBehaviorPacket,
+  ClientEntityEnableChanged,
 ]);
 export type ClientPacket = z.infer<typeof ClientPacketSchema>;
 
@@ -263,6 +274,7 @@ export const ServerPacketSchema = z.discriminatedUnion("t", [
   ServerScriptEditedPacket,
   ServerSpawnBehaviorPacket,
   ServerDeleteBehaviorPacket,
+  ServerEntityEnableChanged,
 ]);
 export type ServerPacket = z.infer<typeof ServerPacketSchema>;
 

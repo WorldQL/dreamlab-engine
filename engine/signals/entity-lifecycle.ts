@@ -104,6 +104,11 @@ export class EntityDescendantReparented {
   [exclusiveSignalType] = Entity;
 }
 
+export class EntityOwnEnableChanged {
+  constructor(public enabled: boolean) {}
+  [exclusiveSignalType] = Entity;
+}
+
 export class EntityEnableChanged {
   constructor(public enabled: boolean) {}
   [exclusiveSignalType] = Entity;
