@@ -70,7 +70,7 @@ export class IPCWorker {
   }
 
   acceptConnection(socket: WebSocket) {
-    const cborDecoder = new Decoder();
+    const textDecoder = new TextDecoder();
 
     socket.addEventListener("open", () => {
       if (this.#activeIPCSocket !== undefined) {
@@ -82,9 +82,9 @@ export class IPCWorker {
       const data = event.data;
       if (typeof data === "object") {
         try {
-          const buffer = "buffer" in data ? data.buffer : data;
+          const buffer = data;
           const buf = new Uint8Array(buffer);
-          const message = cborDecoder.decode(buf);
+          const message = JSON.parse(textDecoder.decode(buf));
           this.#onReceive(message);
         } catch {
           // skip

@@ -1,4 +1,3 @@
-import { Encoder } from "@dreamlab/vendor/cbor-x.ts";
 import { HostIPCMessage, WorkerIPCMessage } from "../server-common/ipc.ts";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 
@@ -13,7 +12,7 @@ export class IPCMessageBus {
   #connectedPromise: Promise<void>;
   #connected: boolean;
 
-  cborEncoder = new Encoder();
+  textEncoder = new TextEncoder();
 
   constructor(public workerData: WorkerInitData) {
     const connectUrl = new URL(workerData.workerConnectUrl);
@@ -55,7 +54,7 @@ export class IPCMessageBus {
   }
 
   send(message: WorkerIPCMessage) {
-    const data = this.cborEncoder.encode(message);
+    const data = this.textEncoder.encode(JSON.stringify(message));
     this.#socket.send(data);
   }
 
