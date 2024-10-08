@@ -1,5 +1,5 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import { EntityDestroyed, GameRender } from "../../signals/mod.ts";
+import { EntityDestroyed, EntityEnableChanged, GameRender } from "../../signals/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
 import { Camera } from "./camera.ts";
 
@@ -40,7 +40,14 @@ export class UIPanel extends Entity {
     super(ctx);
 
     this.listen(this.game, GameRender, () => {
+      if (!this.enabled) return;
       this.#updateDiv();
+    });
+
+    this.on(EntityEnableChanged, ({ enabled }) => {
+      if (!this.#ui) return;
+      if (enabled) this.#ui.root.append(this.#ui.element);
+      else this.#ui.element.remove();
     });
 
     this.on(EntityDestroyed, () => {

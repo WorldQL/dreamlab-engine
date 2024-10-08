@@ -68,8 +68,9 @@ export abstract class ClickableEntity extends Entity {
 
           let hoverCount = 0;
           for (const entity of entities) {
-            const isInBounds =
-              hoverCount > 0
+            const isInBounds = !this.enabled
+              ? false
+              : hoverCount > 0
                 ? false
                 : (cursor.world && entity.isInBounds(cursor.world)) ?? false;
 
@@ -87,6 +88,7 @@ export abstract class ClickableEntity extends Entity {
 
       if (!ClickableEntity.#MouseDownListeners.has(this.game)) {
         const fn = ({ button, cursor }: MouseDown) => {
+          if (!this.enabled) return;
           const entities = this.game.entities
             .lookupByType(ClickableEntity)
             .filter(entity => entity.root !== this.game.prefabs)

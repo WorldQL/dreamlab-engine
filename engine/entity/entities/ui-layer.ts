@@ -1,5 +1,5 @@
+import { EntityDestroyed, EntityEnableChanged } from "../../signals/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
-import { EntityDestroyed } from "../../signals/mod.ts";
 
 export class UILayer extends Entity {
   static {
@@ -36,6 +36,12 @@ export class UILayer extends Entity {
 
   constructor(ctx: EntityContext) {
     super(ctx);
+
+    this.on(EntityEnableChanged, ({ enabled }) => {
+      if (!this.#ui) return;
+      if (enabled) this.#ui.root.append(this.#ui.element);
+      else this.#ui.element.remove();
+    });
 
     this.on(EntityDestroyed, () => {
       if (!this.#ui) return;
