@@ -59,7 +59,7 @@ export interface EntityContext {
   transform?: TransformOptions;
   authority?: ConnectionId;
   ref?: string;
-  values?: Record<string, JsonValue>;
+  values?: Record<string, unknown>;
 }
 
 export type EntityConstructor<
@@ -384,11 +384,11 @@ export abstract class Entity implements ISignalHandler {
   #generatePlainDefinition(withRefs: boolean): EntityDefinition<this> & { typeName: string } {
     const entityValues: Partial<Omit<this, keyof Entity>> = {};
     for (const [key, value] of this.values.entries()) {
-      const newValue = value.adapter
-        ? value.adapter.convertFromPrimitive(value.adapter.convertToPrimitive(value.value))
+      const serializableValue = value.adapter
+        ? value.adapter.convertToPrimitive(value.value)
         : structuredClone(value.value);
       // @ts-expect-error can't prove that key is keyof this because the value map is keyed by string
-      entityValues[key] = newValue;
+      entityValues[key] = serializableValue;
     }
 
     return {
@@ -414,10 +414,10 @@ export abstract class Entity implements ISignalHandler {
   ): BehaviorDefinition & { uri: string } {
     const behaviorValues: Partial<Record<string, unknown>> = {};
     for (const [key, value] of behavior.values.entries()) {
-      const newValue = value.adapter
-        ? value.adapter.convertFromPrimitive(value.adapter.convertToPrimitive(value.value))
+      const serializableValue = value.adapter
+        ? value.adapter.convertToPrimitive(value.value)
         : structuredClone(value.value);
-      behaviorValues[key] = newValue;
+      behaviorValues[key] = serializableValue;
     }
 
     const uri = this.game[internal.behaviorLoader].lookup(
