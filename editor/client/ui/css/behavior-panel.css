@@ -1,5 +1,6 @@
 #behavior-panel {
   flex-grow: 1;
+  flex-shrink: 99999999;
   display: flex;
   flex-direction: column;
 
