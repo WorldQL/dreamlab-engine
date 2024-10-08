@@ -1,6 +1,11 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { SignalSubscription } from "../signal.ts";
-import { EntityDestroyed, EntityReparented, GameRender } from "../signals/mod.ts";
+import {
+  EntityDestroyed,
+  EntityEnableChanged,
+  EntityReparented,
+  GameRender,
+} from "../signals/mod.ts";
 import { Entity, EntityConstructor, EntityContext } from "./entity.ts";
 
 export abstract class PixiEntity extends Entity {
@@ -42,7 +47,7 @@ export abstract class PixiEntity extends Entity {
     if (!this.container) return;
 
     // cull pixi container if in prefabs tree
-    const culled = this.root === this.game.prefabs;
+    const culled = !this.enabled || this.root === this.game.prefabs;
     const visible = !(this.hidden || culled);
     this.container.visible = visible;
   }
@@ -74,6 +79,10 @@ export abstract class PixiEntity extends Entity {
     this.#updateTransformListeners();
 
     this.on(EntityReparented, () => {
+      this.#updateVisibility();
+    });
+
+    this.on(EntityEnableChanged, () => {
       this.#updateVisibility();
     });
 
