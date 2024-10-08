@@ -20,8 +20,11 @@ export class IPCWorker {
   #activeIPCSocket: WebSocket | undefined;
   #ipcListeners: IPCMessageListener[] = [];
 
+  logs: LogStore;
+
   constructor(workerData: WorkerInitData, logs: LogStore) {
     this.workerId = workerData.workerId;
+    this.logs = logs;
 
     const command = new Deno.Command(Deno.execPath(), {
       args: [
@@ -70,8 +73,6 @@ export class IPCWorker {
   }
 
   acceptConnection(socket: WebSocket) {
-    const textDecoder = new TextDecoder();
-
     socket.addEventListener("open", () => {
       if (this.#activeIPCSocket !== undefined) {
         this.#activeIPCSocket?.close(1000, "Replaced");
@@ -80,16 +81,6 @@ export class IPCWorker {
     });
     socket.addEventListener("message", event => {
       const data = event.data;
-      if (typeof data === "object") {
-        try {
-          const buffer = data;
-          const buf = new Uint8Array(buffer);
-          const message = JSON.parse(textDecoder.decode(buf));
-          this.#onReceive(message);
-        } catch {
-          // skip
-        }
-      }
       if (typeof data === "string") {
         try {
           const message = JSON.parse(data);
@@ -97,6 +88,13 @@ export class IPCWorker {
         } catch {
           // skip message
         }
+      }
+    });
+    socket.addEventListener("error", event => {
+      if ((event as ErrorEvent).message === "Frame too large") {
+        this.logs.error(
+          "SEVERE: Packet dropped for being too large!!! Are you attempting to sync an extremely large object?",
+        );
       }
     });
   }

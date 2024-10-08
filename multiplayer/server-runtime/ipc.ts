@@ -12,14 +12,11 @@ export class IPCMessageBus {
   #connectedPromise: Promise<void>;
   #connected: boolean;
 
-  textEncoder = new TextEncoder();
-
   constructor(public workerData: WorkerInitData) {
     const connectUrl = new URL(workerData.workerConnectUrl);
     connectUrl.searchParams.set("token", workerData.workerId);
 
     const socket = new WebSocket(connectUrl);
-    socket.binaryType = "arraybuffer";
 
     this.#connected = false;
     this.#connectedPromise = new Promise(resolve =>
@@ -54,8 +51,7 @@ export class IPCMessageBus {
   }
 
   send(message: WorkerIPCMessage) {
-    const data = this.textEncoder.encode(JSON.stringify(message));
-    this.#socket.send(data);
+    this.#socket.send(JSON.stringify(message));
   }
 
   addMessageListener<const Op extends HostIPCMessage["op"]>(
