@@ -80,6 +80,7 @@ export interface EntityDefinition<
 > {
   type: EntityConstructor<T>;
   name: string;
+  enabled?: boolean;
   transform?: TransformOptions;
   authority?: ConnectionId;
   values?: Partial<Omit<T, keyof Entity>>;
@@ -301,6 +302,8 @@ export abstract class Entity implements ISignalHandler {
       values: def.values ? Object.fromEntries(Object.entries(def.values)) : undefined,
     });
 
+    if (def.enabled !== undefined) entity.enabled = def.enabled;
+
     if (def.behaviors) {
       def.behaviors.forEach(b => {
         const behavior: Behavior = new b.type({
@@ -394,6 +397,7 @@ export abstract class Entity implements ISignalHandler {
       type: this.constructor as EntityConstructor<this>,
       typeName: Entity.getTypeName(this.constructor as EntityConstructor),
       authority: this.authority,
+      enabled: this.#enabled,
       transform: {
         position: this.transform.position.bare(),
         rotation: this.transform.rotation,

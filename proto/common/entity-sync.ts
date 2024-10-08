@@ -41,6 +41,7 @@ export const convertEntityDefinition = async (
     _ref: def.ref,
     type: Entity.getEntityType(def.type),
     name: def.name,
+    enabled: def.enabled,
     values: def.values,
     transform: def.transform,
     authority: def.authority,
@@ -103,6 +104,7 @@ export const serializeEntityDefinition = (
   return {
     type: Entity.getTypeName(def.type),
     name: def.name,
+    enabled: def.enabled,
     values: def.values,
     transform: def.transform ? serializeTransform(def.transform) : undefined,
     authority: def.authority,

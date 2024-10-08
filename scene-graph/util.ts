@@ -83,6 +83,7 @@ export const serializeEntityDefinition = (
   return {
     type: Entity.getTypeName(def.type),
     name: def.name,
+    enabled: def.enabled,
     values,
     transform: def.transform ? serializeTransform(def.transform) : undefined,
     behaviors,
@@ -123,6 +124,7 @@ export const convertEntityDefinition = async (
   return {
     _ref: definition.ref,
     name: definition.name,
+    enabled: definition.enabled,
     type: Entity.getEntityType(definition.type),
     transform: definition.transform,
     children,

@@ -30,6 +30,7 @@ const BaseEntityDefinitionSchema = z.object({
   type: EntityTypeSchema,
   parent: EntityReferenceSchema,
   name: z.string(),
+  enabled: z.boolean().optional(),
   values: z.record(z.string(), z.any()).optional(),
   behaviors: BehaviorDefinitionSchema.array().optional(),
   transform: TransformSchema.optional(),

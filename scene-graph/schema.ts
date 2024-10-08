@@ -58,6 +58,7 @@ export type SceneDescBehavior = z.input<typeof BehaviorSchema>;
 const EntitySchemaNoChildren = z.object({
   ref: EntityReferenceSchema,
   name: z.string(),
+  enabled: z.boolean().default(true),
   type: EntityTypeSchema,
   transform: TransformSchema.default(TransformSchema.parse({})),
   values: z.record(ValueSchema).default({}),
