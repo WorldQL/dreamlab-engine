@@ -136,7 +136,6 @@ export function setupKeyboardShortcuts(
 
     // Delete
     if (event.key === "Backspace") {
-      event.preventDefault();
       const toDelete: Entity[] = [...selectedService.entities];
       filterChildNodes(toDelete);
 
