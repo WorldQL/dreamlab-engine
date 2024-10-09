@@ -137,7 +137,9 @@ export const serveScriptEditingAPI = (router: Router) => {
           });
 
           if (file.path === "project.json") {
-            instance.session?.ipc.send({ op: "ReloadEditScene" });
+            // instance.session?.ipc.send({ op: "ReloadEditScene" });
+            // This was easy to shoot yourself in the foot with.
+            // TODO: Properly address the rename file problem server-side or something.
           }
         }
 
