@@ -15,7 +15,7 @@ import "./draggable-layout.ts";
 
 import "../common/mod.ts";
 
-import { Camera, ClientGame, Entity } from "@dreamlab/engine";
+import { Camera, ClientGame, Entity, GameStatusChange } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
@@ -36,12 +36,22 @@ connectUrl.pathname = `/api/v1/connect/${INSTANCE_ID}`;
 connectUrl.searchParams.set("player_id", generateCUID("ply"));
 connectUrl.searchParams.set("nickname", "Player" + Math.floor(Math.random() * 999) + 1);
 
+const loadingElem = document.querySelector("#loading")! as HTMLElement;
+
 const uiRoot = document.querySelector("main")! as HTMLElement;
 const container = document.createElement("div");
 uiRoot.querySelector("#viewport")!.append(container);
+uiRoot.style.display = "none";
 
 const socket = new WebSocket(connectUrl);
 socket.binaryType = "arraybuffer";
+
+loadingElem.textContent =
+  "Connecting... (If you see this message for more than 5 seconds, try to reload the page.)";
+
+socket.addEventListener("error", () => {
+  loadingElem.textContent = `Failed to connect. Try reloading the page.`;
+});
 
 const [game, conn, handshake] = await connectToGame(
   INSTANCE_ID,
@@ -49,6 +59,14 @@ const [game, conn, handshake] = await connectToGame(
   socket,
   DEFAULT_CODEC,
 );
+
+game.on(GameStatusChange, () => {
+  if (game.statusDescription) {
+    loadingElem.textContent = `${game.status}: ${game.statusDescription}`;
+  } else {
+    loadingElem.textContent = `Loading... (${game.status})`;
+  }
+});
 
 const games: { edit: ClientGame; play: ClientGame | undefined } = {
   edit: game,
@@ -81,7 +99,8 @@ if (handshake.edit_mode) {
   game.local._.Camera.cast(Camera).addBehavior({ type: CameraPanBehavior });
 }
 
-(document.querySelector("#loading")! as HTMLElement).style.display = "none";
+loadingElem.style.display = "none";
+uiRoot.style.display = "";
 
 const inspector = new InspectorUI(game, conn, handshake.edit_mode, container);
 inspector.show(uiRoot);

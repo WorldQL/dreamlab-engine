@@ -69,8 +69,9 @@ export class DefaultSignalHandlerImpls {
       signal = new type(...params);
     }
 
-    const subscriptions = handler.signalSubscriptionMap.get(type);
-    if (!subscriptions) return signal;
+    const subscriptions_ = handler.signalSubscriptionMap.get(type);
+    if (!subscriptions_) return signal;
+    const subscriptions = [...subscriptions_];
 
     const len = subscriptions.length;
     if (isSignalStoppable(signal)) {

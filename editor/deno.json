@@ -10,7 +10,8 @@
     "@dreamlab/proto/": "../proto/",
     "@dreamlab/scene": "../scene-graph/mod.ts",
     "@dreamlab/ui": "../ui/mod.ts",
-    "@dreamlab/client/": "../client/src/"
+    "@dreamlab/client/": "../client/src/",
+    "env": "data:application/javascript,export default {}"
   },
   "compilerOptions": {
     "lib": ["deno.window", "dom"]

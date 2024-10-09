@@ -53,7 +53,6 @@ abstract class DebugShape {
     readonly alignment?: number;
   }) {
     this.entity = entity;
-    // @ts-expect-error: private access
     const container = this.entity.container!;
 
     this.#suffix = suffix;
