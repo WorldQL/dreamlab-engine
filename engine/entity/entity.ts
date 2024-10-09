@@ -190,6 +190,11 @@ export abstract class Entity implements ISignalHandler {
         ancestor = ancestor.parent;
       }
 
+      const enabled = this.enabled;
+      if (oldParent.enabled !== enabled) {
+        child.#notifyEnableChanged(enabled);
+      }
+
       this.game[internal.entityTickingOrderDirty] = true;
     }
 
@@ -688,7 +693,8 @@ export abstract class Entity implements ISignalHandler {
     this.#notifyEnableChanged(this.enabled);
     this.game[internal.entityTickingOrderDirty] = true;
   }
-  #notifyEnableChanged(enabled: boolean) {
+  #notifyEnableChanged(enabled_: boolean) {
+    const enabled = enabled_ && this.#enabled;
     this.fire(EntityEnableChanged, enabled);
     for (const child of this.children.values()) {
       child.#notifyEnableChanged(enabled);
@@ -800,10 +806,11 @@ export abstract class Entity implements ISignalHandler {
     receiver: T,
     signalType: SignalConstructor<SignalMatching<S, T>>,
     signalListener: SignalListener<SignalMatching<S, T>>,
-  ) {
+  ): SignalSubscription<S> {
     const boundSignalListener = signalListener.bind(this);
     const subscription = receiver.on(signalType, boundSignalListener);
     this.externalListeners.push(subscription);
+    return subscription;
   }
   // #endregion
 

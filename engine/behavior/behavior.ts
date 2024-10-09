@@ -20,6 +20,7 @@ import {
   BehaviorSpawned,
 } from "../signals/behavior-lifecycle.ts";
 import { GamePostTick, GamePreTick, GameRender } from "../signals/game-events.ts";
+import { EntityEnableChanged } from "../signals/mod.ts";
 import {
   AdapterTypeTag,
   JsonValue,
@@ -171,7 +172,7 @@ export class Behavior implements ISignalHandler {
     receiver: T,
     signalType: SignalConstructor<SignalMatching<S, T>>,
     signalListener: SignalListener<SignalMatching<S, T>>,
-  ) {
+  ): SignalSubscription<S> {
     const listenerOwnedByThis = Object.values(
       Object.getOwnPropertyDescriptors(this.constructor.prototype),
     )
@@ -183,6 +184,7 @@ export class Behavior implements ISignalHandler {
 
     const subscription = receiver.on(signalType, boundSignalListener);
     this.externalListeners.push(subscription);
+    return subscription;
   }
   // #endregion
 
@@ -238,14 +240,49 @@ export class Behavior implements ISignalHandler {
     this.destroy();
   }
 
+  #needsSetup = true;
+  #initialized = false;
+  #gameListeners: { readonly unsubscribe: () => void }[] = [];
+
+  #enable() {
+    if (!this.#needsSetup) return;
+    this.#needsSetup = false;
+
+    if (!this.#initialized) {
+      this.onInitialize();
+      this.#initialized = true;
+    }
+
+    const listenInternal: typeof this.listen = (o, s, f) => {
+      const sub = this.listen(o, s, f);
+      this.#gameListeners.push(sub);
+      return sub;
+    };
+    if (this.onPreTick) listenInternal(this.entity.game, GamePreTick, this.onPreTick);
+    if (this.onFrame) listenInternal(this.entity.game, GameRender, this.onFrame);
+    if (this.onPostTick) listenInternal(this.entity.game, GamePostTick, this.onPostTick);
+  }
+
+  #disable() {
+    this.#needsSetup = true;
+    this.#gameListeners.forEach(sub => sub.unsubscribe());
+    this.#gameListeners.length = 0;
+  }
+
   #spawned = false;
 
   [internal.behaviorSpawn](): void {
     if (this.#spawned) return;
     this.#spawned = true;
 
-    const isPrefab = this.entity.root === this.game.prefabs;
-    if (!isPrefab) this.onInitialize();
+    if (this.entity.enabled) {
+      this.#enable();
+    }
+
+    this.entity.on(EntityEnableChanged, ({ enabled }) => {
+      if (enabled) this.#enable();
+      else this.#disable();
+    });
 
     this.fire(BehaviorSpawned, this);
     this.entity.fire(BehaviorSpawned, this);
@@ -253,12 +290,6 @@ export class Behavior implements ISignalHandler {
     while (ancestor) {
       ancestor.fire(BehaviorDescendantSpawned, this);
       ancestor = ancestor.parent;
-    }
-
-    if (!isPrefab) {
-      if (this.onPreTick) this.listen(this.entity.game, GamePreTick, this.onPreTick);
-      if (this.onFrame) this.listen(this.entity.game, GameRender, this.onFrame);
-      if (this.onPostTick) this.listen(this.entity.game, GamePostTick, this.onPostTick);
     }
   }
 

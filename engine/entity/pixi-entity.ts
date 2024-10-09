@@ -46,8 +46,7 @@ export abstract class PixiEntity extends Entity {
   #updateVisibility() {
     if (!this.container) return;
 
-    // cull pixi container if in prefabs tree
-    const culled = !this.enabled || this.root === this.game.prefabs;
+    const culled = !this.enabled;
     const visible = !(this.hidden || culled);
     this.container.visible = visible;
   }

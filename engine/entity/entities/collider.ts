@@ -28,7 +28,7 @@ export class RectCollider extends Entity {
     super(ctx);
     this.defineValue(RectCollider, "isSensor");
 
-    if (this.root !== this.game.prefabs) {
+    if (this.enabled) {
       const desc = RAPIER.ColliderDesc.cuboid(
         this.globalTransform.scale.x / 2,
         this.globalTransform.scale.y / 2,

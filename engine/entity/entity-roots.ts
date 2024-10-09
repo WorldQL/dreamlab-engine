@@ -49,5 +49,7 @@ export class LocalRoot extends Root {
 export class PrefabsRoot extends Root {
   constructor(game: Game) {
     super(game, "prefabs");
+
+    this.enabled = false;
   }
 }
