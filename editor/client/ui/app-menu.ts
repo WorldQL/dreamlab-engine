@@ -40,6 +40,15 @@ export class AppMenu {
       ariaLabel: "Save",
     });
 
+    this.uiRoot.querySelector("#viewport")?.addEventListener("click", () => {
+      // unfocus the active element when we click on the viewport.
+      // fixes extremely annoying behavior where pressing space can toggle your last selected checkbox, etc.
+      const activeElement = document.activeElement as HTMLElement;
+      if (activeElement) {
+        activeElement.blur();
+      }
+    });
+
     // TODO: don't save if we know the scene hasn't changed
     const save = async () => {
       const url = new URL(SERVER_URL);
