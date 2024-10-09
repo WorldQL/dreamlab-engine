@@ -33,7 +33,6 @@ export class IPCWorker {
           ? [`--inspect=${workerData.inspect}`]
           : []),
         "--unstable-sloppy-imports",
-        "--allow-hrtime",
         `--allow-net=${new URL(workerData.workerConnectUrl).host}`,
         `--allow-read=${workerData.worldDirectory}`,
         `--allow-env`,
