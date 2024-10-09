@@ -25,8 +25,9 @@ export class SceneGraph implements InspectorUIWidget {
   ]);
 
   entryElementMap = new Map<string, HTMLElement>();
-  currentDragSource: [entity: Entity, entry: HTMLElement] | undefined;
+  currentDragSource: { entities: Entity[]; entries: HTMLElement[] } | undefined;
   #openEntities: Set<string> = new Set();
+  lastSelectedEntry: HTMLElement | null = null; // Keep track of the last selected entry
 
   constructor(private game: ClientGame) {
     const savedState = localStorage.getItem(`${this.game.worldId}/editor/openEntities`);
@@ -209,7 +210,7 @@ export class SceneGraph implements InspectorUIWidget {
       name.textContent = entity.name;
     });
 
-    this.handleEntryDragAndDrop(entity, entryElement);
+    this.handleEntryDragAndDrop(ui, entity, entryElement);
     this.handleEntryRename(entity, entryElement);
     this.handleEntryContextMenu(ui, entity, entryElement);
 
@@ -263,13 +264,21 @@ export class SceneGraph implements InspectorUIWidget {
     });
   }
 
-  handleEntryDragAndDrop(entity: Entity, entryElement: HTMLElement) {
+  handleEntryDragAndDrop(ui: InspectorUI, entity: Entity, entryElement: HTMLElement) {
     entryElement.addEventListener("dragover", event => {
       if (!eventTargetsEntry(event, entryElement)) return;
 
       if (!this.currentDragSource) return;
-      const [otherEntity, _] = this.currentDragSource;
-      if (otherEntity === entity) return;
+      const targetEntity = entity;
+      const sourceEntities = this.currentDragSource.entities;
+
+      // Prevent dropping onto self or descendants
+      if (
+        sourceEntities.includes(targetEntity) ||
+        sourceEntities.some(se => this.isDescendant(targetEntity, se))
+      ) {
+        return;
+      }
       event.preventDefault();
 
       entryElement.classList.add("drag-target");
@@ -287,13 +296,32 @@ export class SceneGraph implements InspectorUIWidget {
       if (!eventTargetsEntry(event, entryElement)) return;
 
       if (!this.currentDragSource) return;
-      const [otherEntity, _] = this.currentDragSource;
-      if (otherEntity === entity) return;
+      const targetEntity = entity;
+      const sourceEntities = this.currentDragSource.entities;
+
+      // Prevent dropping onto self or descendants
+      if (
+        sourceEntities.includes(targetEntity) ||
+        sourceEntities.some(se => this.isDescendant(targetEntity, se))
+      ) {
+        return;
+      }
+
+      // Determine top-level entities (those without a selected parent)
+      const topLevelEntities = sourceEntities.filter(
+        entity => !sourceEntities.includes(entity.parent!),
+      );
 
       if (event.getModifierState("Control")) {
-        otherEntity.cloneInto(entity);
+        // Clone top-level entities into target
+        for (const sourceEntity of topLevelEntities) {
+          sourceEntity.cloneInto(targetEntity);
+        }
       } else {
-        otherEntity.parent = entity;
+        // Move top-level entities under target
+        for (const sourceEntity of topLevelEntities) {
+          sourceEntity.parent = targetEntity;
+        }
       }
     });
 
@@ -304,13 +332,37 @@ export class SceneGraph implements InspectorUIWidget {
     entryElement.addEventListener("dragstart", event => {
       if (!eventTargetsEntry(event, entryElement)) return;
 
-      this.currentDragSource = [entity, entryElement];
-      entryElement.dataset.dragging = "";
+      const selectedEntities = ui.selectedEntity.entities;
+      const selectedEntries = selectedEntities
+        .map(e => this.entryElementMap.get(e.ref))
+        .filter(e => e !== undefined) as HTMLElement[];
+
+      if (selectedEntities.includes(entity)) {
+        // Dragging multiple entities
+        this.currentDragSource = {
+          entities: selectedEntities as Entity[],
+          entries: selectedEntries,
+        };
+        for (const entry of selectedEntries) {
+          entry.dataset.dragging = "";
+        }
+      } else {
+        // Dragging single entity
+        this.currentDragSource = {
+          entities: [entity],
+          entries: [entryElement],
+        };
+        entryElement.dataset.dragging = "";
+      }
     });
 
     entryElement.addEventListener("dragend", () => {
+      if (this.currentDragSource) {
+        for (const entry of this.currentDragSource.entries) {
+          delete entry.dataset.dragging;
+        }
+      }
       this.currentDragSource = undefined;
-      delete entryElement.dataset.dragging;
     });
   }
 
@@ -358,12 +410,13 @@ export class SceneGraph implements InspectorUIWidget {
     treeRoot.addEventListener("click", event => {
       if (!(event.target instanceof Element)) return;
 
-      // TODO: handle range-select
+      // Handle shift-click range selection
       const selectMultiple = event.getModifierState("Control");
+      const rangeSelect = event.getModifierState("Shift");
 
       const entryElement = event.target.closest("details[data-entity] > summary")?.parentNode;
       if (!entryElement) {
-        if (!selectMultiple) ui.selectedEntity.entities = [];
+        if (!selectMultiple && !rangeSelect) ui.selectedEntity.entities = [];
         return;
       }
       const entity = this.game.entities.lookupByRef(
@@ -371,15 +424,52 @@ export class SceneGraph implements InspectorUIWidget {
       );
       if (!entity) return;
 
-      if (selectMultiple) {
+      const allEntries = Array.from(
+        treeRoot.querySelectorAll("details[data-entity]"),
+      ) as HTMLElement[];
+
+      if (rangeSelect && this.lastSelectedEntry) {
+        // Perform range selection
+        const startIndex = allEntries.indexOf(this.lastSelectedEntry);
+        const endIndex = allEntries.indexOf(entryElement as HTMLElement);
+
+        if (startIndex !== -1 && endIndex !== -1) {
+          const [from, to] =
+            startIndex < endIndex ? [startIndex, endIndex] : [endIndex, startIndex];
+          const entriesInRange = allEntries.slice(from, to + 1);
+          const entitiesInRange = entriesInRange
+            .map(entry => {
+              const entityRef = entry.dataset.entity!;
+              return this.game.entities.lookupByRef(entityRef);
+            })
+            .filter(e => e !== undefined) as Entity[];
+
+          ui.selectedEntity.entities = selectMultiple
+            ? Array.from(new Set([...ui.selectedEntity.entities, ...entitiesInRange]))
+            : entitiesInRange;
+        }
+        this.lastSelectedEntry = entryElement as HTMLElement;
+      } else if (selectMultiple) {
         if (ui.selectedEntity.entities.includes(entity)) {
           ui.selectedEntity.entities = ui.selectedEntity.entities.filter(e => e !== entity);
         } else {
           ui.selectedEntity.entities = [...ui.selectedEntity.entities, entity];
         }
+        this.lastSelectedEntry = entryElement as HTMLElement;
       } else {
         ui.selectedEntity.entities = [entity];
+        this.lastSelectedEntry = entryElement as HTMLElement;
       }
     });
+  }
+
+  // Helper method to check if target is a descendant of source
+  private isDescendant(target: Entity, source: Entity): boolean {
+    let current = target.parent;
+    while (current) {
+      if (current === source) return true;
+      current = current.parent;
+    }
+    return false;
   }
 }
