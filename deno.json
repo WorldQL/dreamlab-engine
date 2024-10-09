@@ -8,6 +8,6 @@
   },
   "compilerOptions": {
     "lib": ["deno.window", "dom"],
-    "noImplicitOverride": true
+    "noImplicitOverride": false
   }
 }
