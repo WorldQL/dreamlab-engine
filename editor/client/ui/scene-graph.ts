@@ -305,10 +305,12 @@ export class SceneGraph implements InspectorUIWidget {
       if (!eventTargetsEntry(event, entryElement)) return;
 
       this.currentDragSource = [entity, entryElement];
+      entryElement.dataset.dragging = "";
     });
 
     entryElement.addEventListener("dragend", () => {
       this.currentDragSource = undefined;
+      delete entryElement.dataset.dragging;
     });
   }
 

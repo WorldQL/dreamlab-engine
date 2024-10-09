@@ -48,6 +48,27 @@ dreamlab-data-table {
         flex: 1;
       }
 
+      & .entity-inputs {
+        display: flex;
+        align-items: center;
+
+        & > code {
+          flex: 1;
+          overflow: clip;
+          text-overflow: ellipsis;
+        }
+
+        & > button {
+          all: unset;
+          cursor: pointer;
+
+          & > svg {
+            width: 0.8rem;
+            height: 0.8rem;
+          }
+        }
+      }
+
       & code {
         cursor: pointer;
         user-select: all;

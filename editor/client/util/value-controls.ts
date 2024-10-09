@@ -2,6 +2,8 @@ import {
   AudioAdapter,
   ClientGame,
   ColorAdapter,
+  Entity,
+  EntityByRefAdapter,
   EnumAdapter,
   SpritesheetAdapter,
   TextureAdapter,
@@ -13,6 +15,7 @@ import { element as elem } from "@dreamlab/ui";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
 import "npm:vanilla-colorful/hex-alpha-color-picker.js";
+import { icon, X } from "../_icons.ts";
 import { createBooleanField, createInputFieldWithDefault } from "./easy-input.ts";
 
 interface ValueControlOptions<T> {
@@ -269,6 +272,49 @@ export function createValueControl(
 
       refresh();
       return [picker, refresh];
+    }
+
+    case EntityByRefAdapter: {
+      const opts = _opts as ValueControlOptions<string | undefined>;
+
+      const valueDisplay = elem("code", {}, []);
+      const clear = elem("button", { type: "button" }, [icon(X)]);
+      const control = elem("div", { className: "entity-inputs" }, [valueDisplay, clear]);
+
+      const getEntity = (): Entity | null | undefined => {
+        const dragTarget = document.querySelector(
+          "[data-entity][data-dragging]",
+        ) as HTMLElement | null;
+        if (!dragTarget) return;
+
+        if (!dragTarget.dataset.entity) return undefined;
+        return game.entities.lookupByRef(dragTarget.dataset.entity);
+      };
+
+      control.addEventListener("dragover", ev => {
+        const entity = getEntity();
+        if (entity !== null) ev.preventDefault();
+      });
+
+      control.addEventListener("drop", () => {
+        const entity = getEntity();
+        if (entity !== null) opts.set(entity?.ref);
+      });
+
+      clear.addEventListener("click", () => {
+        opts.set(undefined);
+        refresh();
+      });
+
+      const refresh = () => {
+        const value = opts.get();
+        const entity = value ? game.entities.lookupByRef(value) : undefined;
+        valueDisplay.textContent =
+          entity?.id.replace("game.world._.EditEntities._.", "game.") ?? "";
+      };
+
+      refresh();
+      return [control, refresh];
     }
 
     default: {
