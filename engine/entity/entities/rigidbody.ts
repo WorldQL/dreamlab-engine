@@ -16,6 +16,7 @@ const rigidbodyTypes = [
 
 const RigidbodyTypeAdapter = enumAdapter(rigidbodyTypes);
 
+/* THIS ENTITY IS UNUSED AND IS ONLY HERE FOR REFERENCE PURPOSES */
 export class Rigidbody extends Entity {
   static {
     Entity.registerType(this, "@core");

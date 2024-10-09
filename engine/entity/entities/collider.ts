@@ -27,8 +27,26 @@ export class RectCollider extends Entity {
   constructor(ctx: EntityContext) {
     super(ctx);
     this.defineValue(RectCollider, "isSensor");
+  }
 
-    if (this.enabled) {
+  onInitialize(): void {
+    this.#setupCollider();
+
+    this.on(EntityDestroyed, () => {
+      if (this.#internal) {
+        this.game.physics.world.removeCollider(this.#internal.collider, false);
+        this.#internal = undefined;
+      }
+    });
+
+    this.on(EntityEnableChanged, ({ enabled }) => {
+      this.#setupCollider();
+      this.#internal?.collider.setEnabled(enabled);
+    });
+  }
+
+  #setupCollider() {
+    if (this.enabled && !this.#internal) {
       const desc = RAPIER.ColliderDesc.cuboid(
         this.globalTransform.scale.x / 2,
         this.globalTransform.scale.y / 2,
@@ -49,17 +67,6 @@ export class RectCollider extends Entity {
 
       this.#internal = { collider, shape };
     }
-
-    this.on(EntityDestroyed, () => {
-      if (this.#internal) {
-        this.game.physics.world.removeCollider(this.#internal.collider, false);
-        this.#internal = undefined;
-      }
-    });
-
-    this.on(EntityEnableChanged, ({ enabled }) => {
-      this.#internal?.collider.setEnabled(enabled);
-    });
   }
 
   [internal.interpolationStartTick](): void {
