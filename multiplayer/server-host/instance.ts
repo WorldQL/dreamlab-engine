@@ -174,6 +174,7 @@ export class GameInstance {
   shutdown() {
     this.session?.shutdown();
     this.playSession?.shutdown();
+    this.playSession = undefined;
     this.setStatus(GameInstanceState.Idle, "Shut down");
   }
 
@@ -181,7 +182,16 @@ export class GameInstance {
     this.setStatus(GameInstanceState.Starting, "Restarting");
     this.session?.shutdown();
     this.playSession?.shutdown();
+    this.playSession = undefined;
     bootInstance(this, true);
+  }
+
+  sendPlaySessionState() {
+    this.session?.ipc.send({
+      op: "PlaySessionState",
+      running: this.playSession !== undefined,
+      paused: this.playSession?.paused ?? false,
+    });
   }
 }
 
@@ -289,6 +299,11 @@ export const bootPlaySession = async (instance: GameInstance) => {
     worldSubDirectory: "_dist_play",
   });
   instance.playSession = session;
+  instance.sendPlaySessionState();
+  session.ipc.addMessageListener("PauseChanged", () => {
+    instance.sendPlaySessionState();
+  });
+
   await session.ready();
   instance.notifyPlaySessionBoot();
 };

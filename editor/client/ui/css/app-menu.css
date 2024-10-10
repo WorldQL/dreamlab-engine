@@ -32,6 +32,38 @@
     margin-bottom: 0;
   }
 
+  & :is(#edit-button, #play-button):has(> .disabled) {
+    display: none;
+  }
+
+  &[data-play-running] #play-button {
+    --color: rgb(var(--color-accent) / 1);
+    --color-hover: rgb(var(--color-accent-lighter) / 1);
+    --color-active: rgb(var(--color-accent-lighter) / 1);
+  }
+
+  & #edit-button {
+    --color: rgb(var(--color-black) / 1);
+    --color-hover: rgb(var(--color-black-lighter) / 1);
+    --color-active: rgb(var(--color-black-lighter) / 1);
+  }
+
+  &[data-play-focused] #pause-button {
+    --color: rgb(var(--color-yellow) / 1);
+    --color-hover: rgb(var(--color-yellow-lighter) / 1);
+    --color-active: rgb(var(--color-yellow-lighter) / 1);
+    &.resume {
+      --color: rgb(var(--color-green) / 1);
+      --color-hover: rgb(var(--color-green-lighter) / 1);
+      --color-active: rgb(var(--color-green-lighter) / 1);
+    }
+  }
+  &:not([data-play-focused]) #pause-button {
+    --color: rgb(var(--color-grey) / 1);
+    --color-hover: rgb(var(--color-grey-lighter) / 1);
+    --color-active: rgb(var(--color-grey-lighter) / 1);
+  }
+
   & #stop-button {
     --color: rgb(var(--color-danger) / 1);
     --color-hover: rgb(var(--color-danger-lighter) / 1);

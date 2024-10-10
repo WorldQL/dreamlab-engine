@@ -153,9 +153,10 @@ export const serveInstanceManagementAPI = (router: Router) => {
         params: z.object({ instance: EditModeInstanceSchema }),
         response: z.object({ success: z.boolean() }),
       },
-      async (_ctx, { params }) => {
-        params.instance.playSession?.shutdown();
-        params.instance.playSession = undefined;
+      async (_ctx, { params: { instance } }) => {
+        instance.playSession?.shutdown();
+        instance.playSession = undefined;
+        instance.sendPlaySessionState();
 
         return { success: true };
       },

@@ -11,6 +11,7 @@
     "@dreamlab/ui": "../ui/mod.ts"
   },
   "compilerOptions": {
-    "lib": ["deno.window", "dom"]
+    "lib": ["deno.window", "dom"],
+    "useUnknownInCatchVariables": false
   }
 }

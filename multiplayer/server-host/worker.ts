@@ -1,7 +1,6 @@
 import { HostIPCMessage, WorkerIPCMessage } from "../server-common/ipc.ts";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 
-import { Decoder } from "@dreamlab/vendor/cbor-x.ts";
 import * as colors from "jsr:@std/fmt@1/colors";
 import { TextLineStream } from "jsr:@std/streams@1";
 import { LogStore } from "./util/log-store.ts";

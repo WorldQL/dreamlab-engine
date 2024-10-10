@@ -24,6 +24,11 @@ const game = new ServerGame({
 game.worldScriptBaseURL = `file://${workerData.worldDirectory}/`;
 Object.defineProperties(globalThis, { net: { value: net }, game: { value: game } });
 net.setup(game);
+
+game.paused.onChanged(paused => {
+  ipc.send({ op: "PauseChanged", paused });
+});
+
 await game.initialize();
 
 const behaviors = await game

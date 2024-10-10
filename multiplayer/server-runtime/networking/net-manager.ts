@@ -88,6 +88,8 @@ export class ServerNetworkManager {
     queue.processing = false;
   }
 
+  #playSessionState: { running: boolean; paused: boolean } | undefined;
+
   constructor(private ipc: IPCMessageBus) {}
 
   setup(game: ServerGame) {
@@ -100,6 +102,18 @@ export class ServerNetworkManager {
         void this.#flushPacketQueue(sender, packetQueue);
       }
     });
+
+    const editMode = this.ipc.workerData.editMode;
+    if (editMode) {
+      this.ipc.addMessageListener("PlaySessionState", message => {
+        this.#playSessionState = { paused: message.paused, running: message.running };
+        this.broadcast({
+          t: "CustomMessage",
+          channel: "edit:play-session",
+          data: this.#playSessionState,
+        });
+      });
+    }
 
     this.ipc.addMessageListener("ConnectionEstablished", message => {
       this.broadcast({
@@ -135,6 +149,14 @@ export class ServerNetworkManager {
           player_id: p.playerId,
         })),
       });
+
+      if (editMode && this.#playSessionState) {
+        this.send(message.connectionId, {
+          t: "CustomMessage",
+          channel: "edit:play-session",
+          data: this.#playSessionState,
+        });
+      }
 
       game.fire(PlayerConnectionEstablished, peerInfo);
     });

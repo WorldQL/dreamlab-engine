@@ -25,6 +25,7 @@ export class GameSession {
   connections = new Map<string, ConnectedClient>();
 
   status: object = {};
+  paused: boolean = false;
 
   #readied: boolean = false;
   #readyPromise: Promise<void>;
@@ -77,6 +78,10 @@ export class GameSession {
 
     this.ipc.addMessageListener("SetStatus", message => {
       this.status = message.status;
+    });
+
+    this.ipc.addMessageListener("PauseChanged", message => {
+      this.paused = message.paused;
     });
 
     if (opts.editMode) {

@@ -28,12 +28,19 @@ interface ReloadEditSceneMessage {
   op: "ReloadEditScene";
 }
 
+interface PlaySessionStateMessage {
+  op: "PlaySessionState";
+  running: boolean;
+  paused: boolean;
+}
+
 export type HostIPCMessage =
   | ConnectionEstablishedMessage
   | ConnectionDroppedMessage
   | IncomingPacketMessage
   | SceneDefinitionRequestMessage
-  | ReloadEditSceneMessage;
+  | ReloadEditSceneMessage
+  | PlaySessionStateMessage;
 
 interface WorkerUpMessage {
   op: "WorkerUp";
@@ -55,8 +62,14 @@ interface SceneDefinitionResponseMessage {
   sceneJson: Scene;
 }
 
+interface PauseChangedMessage {
+  op: "PauseChanged";
+  paused: boolean;
+}
+
 export type WorkerIPCMessage =
   | WorkerUpMessage
   | OutgoingPacketMessage
   | SetStatusMessage
-  | SceneDefinitionResponseMessage;
+  | SceneDefinitionResponseMessage
+  | PauseChangedMessage;

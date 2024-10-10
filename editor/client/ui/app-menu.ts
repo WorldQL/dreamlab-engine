@@ -10,6 +10,7 @@ import {
   GitCompareArrows,
   Hammer,
   icon,
+  MonitorPlay,
   OctagonX,
   Pause,
   Play,
@@ -27,6 +28,12 @@ export class AppMenu {
   playInspector: InspectorUI | undefined;
   private controls: Record<string, IconButton> = {};
   private navigation: Record<string, IconButton> = {};
+
+  private playSessionState: { running: boolean; paused: boolean } = {
+    running: false,
+    paused: false,
+  };
+  private playFocused: boolean = false;
 
   constructor(
     private uiRoot: HTMLElement,
@@ -66,20 +73,20 @@ export class AppMenu {
     saveButton.addEventListener("click", save);
 
     this.controls = {
-      play: new IconButton(Play, {
+      play: new IconButton(MonitorPlay, {
         id: "play-button",
-        title: "Play",
-        ariaLabel: "Play",
-      }),
-      pause: new IconButton(Pause, {
-        id: "pause-button",
-        title: "Pause",
-        ariaLabel: "Pause",
+        title: "Test in a play session",
+        ariaLabel: "Test in a play session",
       }),
       edit: new IconButton(Hammer, {
         id: "edit-button",
         title: "Return to Edit (without stopping server)",
         ariaLabel: "Return to Editor",
+      }),
+      pause: new IconButton(Pause, {
+        id: "pause-button",
+        title: "Pause",
+        ariaLabel: "Pause",
       }),
       stop: new IconButton(OctagonX, {
         id: "stop-button",
@@ -87,6 +94,30 @@ export class AppMenu {
         ariaLabel: "Stop",
       }),
     };
+
+    this.controls.play.addEventListener("click", async () => {
+      if (!this.games.play) {
+        await this.#connectToPlayGame(editUI);
+      }
+
+      this.playFocused = true;
+      this.updateButtonStates();
+      this.updateViewportStates(editUI);
+    });
+    this.controls.edit.addEventListener("click", () => {
+      this.playFocused = false;
+      this.updateButtonStates();
+      this.updateViewportStates(editUI);
+    });
+    this.controls.pause.addEventListener("click", () => {
+      if (this.games.play) {
+        this.games.play.paused.value = !this.games.play.paused.value;
+      }
+    });
+    this.controls.stop.addEventListener("click", async () => {
+      this.playFocused = false;
+      await this.#stopPlayGame();
+    });
 
     this.navigation = {
       editor: new IconButton(Box, {
@@ -107,10 +138,6 @@ export class AppMenu {
     };
 
     this.navigation.editor.disable();
-    this.controls.play.enable();
-    this.controls.edit.disable();
-    this.controls.stop.disable();
-    this.controls.pause.disable();
 
     this.navigation.script.addEventListener("click", event => {
       event.preventDefault();
@@ -122,65 +149,6 @@ export class AppMenu {
       window.parent.postMessage({ action: "goToTab", tab: "source-control" }, "*");
     });
 
-    this.controls.play.addEventListener("click", async event => {
-      event.preventDefault();
-      this.controls.stop.enable();
-
-      // TODO: if someone spams this button we should still only connect once
-      if (this.games.play === undefined) {
-        await this.#connectToPlayGame(editUI);
-      }
-
-      editUI.hide();
-      this.games.edit.container.style.display = "none";
-
-      this.playInspector?.show(this.uiRoot);
-      if (this.games.play) {
-        this.games.play.container.style.display = "block";
-        this.games.play.renderer.app.resize();
-      }
-
-      // TODO: Fix enabling / disabling these buttons based on actual server game state
-      // this is so that we can always join the other session
-      // this.controls.play.disable();
-      this.controls.edit.enable();
-      this.controls.pause.enable();
-    });
-
-    this.controls.edit.addEventListener("click", event => {
-      event.preventDefault();
-
-      this.playInspector?.hide();
-      if (this.games.play) this.games.play.container.style.display = "none";
-
-      editUI.show(this.uiRoot);
-      this.games.edit.container.style.display = "block";
-      this.games.edit.renderer.app.resize();
-
-      this.controls.edit.disable();
-      this.controls.play.enable();
-      this.controls.stop.enable();
-      this.controls.pause.disable();
-    });
-
-    this.controls.stop.addEventListener("click", async event => {
-      event.preventDefault();
-
-      await this.#stopPlayGame();
-
-      this.controls.stop.disable();
-      this.controls.edit.disable();
-      this.controls.play.enable();
-      this.controls.pause.disable();
-    });
-
-    this.controls.pause.addEventListener("click", () => {
-      if (!this.games.play) return;
-      this.games.play.paused.value = !this.games.play.paused.value;
-      // TODO: better feedback for pause (it should show if the game is paused or not!!)
-      // perhaps it should replace the 'play' button when the play game is focused
-    });
-
     this.#section.append(
       elem("div", {}, Object.values(this.navigation)),
       elem("div", {}, Object.values(this.controls)),
@@ -189,6 +157,9 @@ export class AppMenu {
 
     const topBar = this.uiRoot.querySelector("#top-bar")!;
     topBar.append(this.#section);
+
+    this.setupButtonStates();
+    this.updateButtonStates();
   }
 
   setupStats(game: ClientGame): HTMLElement {
@@ -243,14 +214,13 @@ export class AppMenu {
     );
 
     playSocket.addEventListener("close", () => {
+      this.playFocused = false;
+      this.updateViewportStates(editUI);
+      this.updateButtonStates();
+
       if (this.games.play === playGame) this.games.play = undefined;
       playGame.container.remove();
       playGame.shutdown();
-      this.playInspector?.hide();
-
-      editUI.show(this.uiRoot);
-      this.games.edit.container.style.display = "block";
-      this.games.edit.renderer.app.resize();
     });
 
     await setupGame(playGame, conn, false);
@@ -272,5 +242,85 @@ export class AppMenu {
     // edit and play instanceIds match
     url.pathname = `/api/v1/stop-play-session/${this.games.edit.instanceId}`;
     await fetch(url, { method: "POST" });
+  }
+
+  updateViewportStates(editUI: InspectorUI) {
+    if (this.playFocused) {
+      editUI.hide();
+      this.playInspector?.show(this.uiRoot);
+
+      if (this.games.play) {
+        this.games.play.container.style.display = "block";
+        this.games.play.renderer.app.resize();
+      }
+      this.games.edit.container.style.display = "none";
+    } else {
+      editUI.show(this.uiRoot);
+      this.playInspector?.hide();
+
+      if (this.games.play) {
+        this.games.play.container.style.display = "none";
+      }
+      this.games.edit.container.style.display = "block";
+      this.games.edit.renderer.app.resize();
+    }
+  }
+
+  updateButtonStates() {
+    const { running, paused } = this.playSessionState;
+    const playFocused = this.playFocused;
+
+    if (running) this.#section.dataset.playRunning = "";
+    else delete this.#section.dataset.playRunning;
+
+    if (paused) this.#section.dataset.paused = "";
+    else delete this.#section.dataset.paused;
+
+    if (playFocused) this.#section.dataset.playFocused = "";
+    else delete this.#section.dataset.playFocused;
+
+    const { edit, play, pause, stop } = this.controls;
+
+    if (playFocused) {
+      edit.enable();
+      play.disable();
+      stop.enable();
+      pause.enable();
+    } else {
+      play.enable();
+      edit.disable();
+      pause.disable();
+    }
+
+    if (paused) {
+      pause.setIcon(Play);
+      pause.className = "resume";
+      pause.setAttrs({
+        title: "Resume",
+        ariaLabel: "Resume",
+      });
+    } else {
+      pause.setIcon(Pause);
+      pause.className = "";
+      pause.setAttrs({
+        title: "Pause",
+        ariaLabel: "Pause",
+      });
+    }
+
+    if (running) {
+      stop.enable();
+    } else {
+      stop.disable();
+    }
+  }
+
+  setupButtonStates() {
+    this.games.edit.network.onReceiveCustomMessage((from, channel, data) => {
+      if (channel !== "edit:play-session") return;
+      if (from !== "server") return;
+      this.playSessionState = data as typeof this.playSessionState;
+      this.updateButtonStates();
+    });
   }
 }
