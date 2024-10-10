@@ -10,7 +10,9 @@ import { Empty } from "./empty.ts";
 import { SolidColor } from "./solid-color.ts";
 
 type HandleType = "corner" | "edge";
-type Handle = Exclude<`${"t" | "b" | ""}${"l" | "" | "r"}`, "">;
+type CornerHandle = `${"t" | "b"}${"l" | "r"}`;
+type EdgeHandle = "t" | "l" | "b" | "r";
+type Handle = CornerHandle | EdgeHandle;
 
 const oppositeHandle = (handle: Handle): Handle => {
   switch (handle) {
@@ -267,6 +269,7 @@ export class BoxResizeGizmo extends Entity {
         const opposite = handlePos(oppositeHandle(handle), this.#target!);
         this.#action = {
           type: "scale",
+          handle,
           handleType,
           opposite,
         };
@@ -393,6 +396,7 @@ export class BoxResizeGizmo extends Entity {
     | { type: "rotate" }
     | {
         type: "scale";
+        handle: Handle;
         handleType: HandleType;
         opposite: Vector2;
       }
@@ -428,21 +432,34 @@ export class BoxResizeGizmo extends Entity {
       return;
     }
 
+    const handle = this.#action.handle;
+    const lockedAxis: "x" | "y" | undefined =
+      handle === "t" || handle === "b"
+        ? "x"
+        : handle === "l" || handle === "r"
+          ? "y"
+          : undefined;
+
+    const rotation = this.#target.globalTransform.rotation;
+    const rotated = Vector2.rotateAbout(cursor.world, -rotation, this.#action.opposite);
+
+    const edge = Vector2.sub(rotated, this.#action.opposite);
+    if (lockedAxis === "x") edge.x = this.#target.globalTransform.scale.x;
+    if (lockedAxis === "y") edge.y = this.#target.globalTransform.scale.y;
+    this.#target.globalTransform.scale.assign(Vector2.abs(edge));
+
+    const newOrigin = Vector2.ZERO;
     if (this.#action.handleType === "corner") {
-      const rotation = this.#target.globalTransform.rotation;
-      const rotated = Vector2.rotateAbout(cursor.world, -rotation, this.#action.opposite);
-
-      const edge = Vector2.sub(rotated, this.#action.opposite);
-      this.#target.globalTransform.scale.assign(Vector2.abs(edge));
-
-      this.#target.globalTransform.position = Vector2.rotateAbout(
-        Vector2.add(this.#action.opposite, Vector2.div(edge, 2)),
-        rotation,
-        this.#action.opposite,
-      );
+      newOrigin.assign(Vector2.add(this.#action.opposite, Vector2.div(edge, 2)));
     } else {
-      // TODO: Implement edge handles
+      const x = Vector2.div(edge, 2);
+      if (lockedAxis === "x") x.x = 0;
+      if (lockedAxis === "y") x.y = 0;
+
+      newOrigin.assign(Vector2.add(this.#action.opposite, x));
     }
+
+    this.#target.pos.assign(Vector2.rotateAbout(newOrigin, rotation, this.#action.opposite));
   };
 
   #onMouseUp = (_: MouseEvent) => {
@@ -549,7 +566,7 @@ export class BoxResizeGizmo extends Entity {
     });
   }
 
-  onInitialize(): void {
+  override onInitialize(): void {
     if (!this.game.isClient()) return;
 
     this.#gfx = new PIXI.Graphics({ zIndex: 9999999999 });
