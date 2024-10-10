@@ -47,6 +47,7 @@ export interface GameOptions {
 export interface ClientGameOptions extends GameOptions {
   network: ClientNetworking;
   container: HTMLDivElement;
+  cacheBuster?: string;
 }
 export interface ServerGameOptions extends GameOptions {
   network: ServerNetworking;
@@ -119,7 +120,7 @@ export abstract class BaseGame implements ISignalHandler {
   cloudAssetBaseURL: string = "https://s3-assets.dreamlab.gg/";
 
   /** Resolves res:// and cloud:// URIs to https:// URLs */
-  resolveResource(uri: string) {
+  protected resolveResourceURL(uri: string): URL {
     let url = new URL(uri);
     if (
       (["res:", "cloud:", "s3:"].includes(url.protocol) && url.host) ||
@@ -130,13 +131,17 @@ export abstract class BaseGame implements ISignalHandler {
 
     switch (url.protocol) {
       case "res:":
-        return new URL(url.pathname, this.worldScriptBaseURL).toString();
+        return new URL(url.pathname, this.worldScriptBaseURL);
       case "cloud:":
       case "s3:": // s3:// URIs are discouraged; kept for backwards-compat reasons.
-        return new URL(url.pathname, this.cloudAssetBaseURL).toString();
+        return new URL(url.pathname, this.cloudAssetBaseURL);
       default:
-        return uri;
+        return new URL(uri);
     }
+  }
+
+  resolveResource(uri: string): string {
+    return this.resolveResourceURL(uri).toString();
   }
 
   /** Fetches a resource (supports res:// and cloud:// URIs) */
@@ -285,6 +290,7 @@ export class ClientGame extends BaseGame {
     this.container = opts.container;
     this.renderer = new GameRenderer(this);
 
+    this.#cachebust = opts.cacheBuster;
     this.network = opts.network;
     this.values[internal.setValueRegistrySource](this.network.self); // FIXME(Charlotte): remove (ValueRegistry has Game so we can just do game.network.self)
   }
@@ -313,6 +319,13 @@ export class ClientGame extends BaseGame {
   [internal.submitEntityTickingOrder](entities: Entity[]) {
     super[internal.submitEntityTickingOrder](entities);
     this.local[internal.submitEntityTickingOrder](entities);
+  }
+
+  #cachebust: string | undefined;
+  protected override resolveResourceURL(uri: string): URL {
+    const url = super.resolveResourceURL(uri);
+    if (this.#cachebust) url.searchParams.set("__dreamlab_cache_bust", this.#cachebust);
+    return url;
   }
 
   #tickAccumulator = 0;

@@ -211,6 +211,7 @@ export class AppMenu {
       container,
       playSocket,
       DEFAULT_CODEC,
+      true,
     );
 
     playSocket.addEventListener("close", () => {

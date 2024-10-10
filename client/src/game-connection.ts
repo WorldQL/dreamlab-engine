@@ -2,12 +2,14 @@ import { ClientGame } from "@dreamlab/engine";
 import { PlayCodec } from "@dreamlab/proto/codecs/mod.ts";
 import { PlayPacket, ServerPacket } from "@dreamlab/proto/play.ts";
 import { ClientConnection } from "../../editor/client/networking/net-connection.ts";
+import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 
 export const connectToGame = (
   instanceId: string,
   container: HTMLDivElement,
   socket: WebSocket,
   codec: PlayCodec,
+  cacheBust: boolean = false,
 ): Promise<[game: ClientGame, conn: ClientConnection, handshake: PlayPacket<"Handshake">]> => {
   socket.binaryType = "arraybuffer";
 
@@ -27,6 +29,7 @@ export const connectToGame = (
           worldId,
           container,
           network: conn.createNetworking(),
+          cacheBuster: cacheBust ? generateCUID("cch") : undefined,
         });
         game.worldScriptBaseURL = packet.world_script_base_url;
         conn.setup(game);

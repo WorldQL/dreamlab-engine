@@ -15,13 +15,13 @@ import "./draggable-layout.ts";
 
 import "../common/mod.ts";
 
+import { connectToGame } from "@dreamlab/client/game-connection.ts";
+import { setupGame } from "@dreamlab/client/game-setup.ts";
+import { INSTANCE_ID, SERVER_URL } from "@dreamlab/client/util/server-url.ts";
 import { Camera, ClientGame, Entity, GameStatusChange } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
-import { connectToGame } from "../../client/src/game-connection.ts";
-import { setupGame } from "../../client/src/game-setup.ts";
-import { INSTANCE_ID, SERVER_URL } from "../../client/src/util/server-url.ts";
 import { stats } from "./_stats.ts";
 import { CameraPanBehavior } from "./camera-pan.ts";
 import { AppMenu } from "./ui/app-menu.ts";
@@ -58,6 +58,7 @@ const [game, conn, handshake] = await connectToGame(
   container,
   socket,
   DEFAULT_CODEC,
+  true,
 );
 
 game.on(GameStatusChange, () => {
