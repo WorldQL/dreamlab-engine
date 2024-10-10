@@ -168,7 +168,6 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
         if (!entity) continue;
 
         try {
-          console.log("spawning", entity.id);
           entity[internal.entitySpawnFinalize]();
         } catch (err) {
           console.warn(`spawning ${entity.id}:`, err);

@@ -318,7 +318,7 @@ export abstract class Entity implements ISignalHandler {
           values: b.values,
         });
         entity.behaviors.push(behavior);
-        behavior.setup();
+        if (!opts.inert) behavior.setup();
       });
     }
 
@@ -345,6 +345,7 @@ export abstract class Entity implements ISignalHandler {
   }
 
   [internal.entitySpawnFinalize]() {
+    for (const behavior of this.behaviors) behavior.setup();
     this.#spawn();
     for (const child of this.children.values()) child[internal.entitySpawnFinalize]();
   }
