@@ -322,5 +322,6 @@ export class AppMenu {
       this.playSessionState = data as typeof this.playSessionState;
       this.updateButtonStates();
     });
+    this.games.edit.network.sendCustomMessage("server", "edit:play-session", {});
   }
 }

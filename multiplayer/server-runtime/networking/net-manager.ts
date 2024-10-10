@@ -113,6 +113,17 @@ export class ServerNetworkManager {
           data: this.#playSessionState,
         });
       });
+
+      this.customMessageListeners.push((from, channel, _data) => {
+        if (channel !== "edit:play-session") return;
+        if (!this.#playSessionState) return;
+
+        this.send(from, {
+          t: "CustomMessage",
+          channel: "edit:play-session",
+          data: this.#playSessionState,
+        });
+      });
     }
 
     this.ipc.addMessageListener("ConnectionEstablished", message => {
@@ -149,14 +160,6 @@ export class ServerNetworkManager {
           player_id: p.playerId,
         })),
       });
-
-      if (editMode && this.#playSessionState) {
-        this.send(message.connectionId, {
-          t: "CustomMessage",
-          channel: "edit:play-session",
-          data: this.#playSessionState,
-        });
-      }
 
       game.fire(PlayerConnectionEstablished, peerInfo);
     });
