@@ -156,6 +156,7 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
     }
 
     initialNetSpawnedEntities = await Promise.all(entityPromises);
+    console.log('finished spawning init snapshot')
     game.fire(ReceivedInitialNetworkSnapshot);
   });
 

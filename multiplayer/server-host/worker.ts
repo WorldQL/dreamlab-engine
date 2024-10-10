@@ -26,6 +26,8 @@ export class IPCWorker {
     this.workerId = workerData.workerId;
     this.logs = logs;
 
+    workerData.inspect = "0.0.0.0:9222";
+
     const command = new Deno.Command(Deno.execPath(), {
       args: [
         "run",

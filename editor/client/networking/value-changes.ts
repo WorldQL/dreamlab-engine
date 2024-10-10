@@ -59,9 +59,13 @@ export const handleValueChanges: ClientNetworkSetupRoutine = (
   });
 
   conn.registerPacketHandler("RichReportValues", packet => {
+    console.log(game.status)
     for (const report of packet.reports) {
       const value = game.values.lookup(report.identifier);
       if (!value || !value.replicated) continue;
+      if (report.identifier === 'ent_qbvv0gfwql8j7ysl38jor0ts/bhv_d23e7ajsbg2f7fgoeq171vly/playerToSpawn') {
+        console.log(report)
+      }
       game.values.applyValueUpdateFromPrimitive(
         value,
         report.value,

@@ -33,9 +33,16 @@ export class ValueRegistry {
     clock: number,
     source: ConnectionId,
   ) {
+    if (
+      value.identifier ===
+      "ent_qbvv0gfwql8j7ysl38jor0ts/bhv_d23e7ajsbg2f7fgoeq171vly/playerToSpawn"
+    ) {
+      console.log(newValue);
+    }
     const newValueFromPrimitive = value.adapter
       ? value.adapter.convertFromPrimitive(newValue as JsonValue)
       : newValue;
+
 
     this.applyValueUpdate(value, newValueFromPrimitive, clock, source);
   }

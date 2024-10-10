@@ -1,5 +1,6 @@
 import { Entity } from "../../entity/mod.ts";
 import { JsonValue, ValueTypeAdapter } from "../data.ts";
+import { ReceivedInitialNetworkSnapshot } from "../../../proto/common/signals.ts";
 
 /**
  * This supports a `Value<Entity | undefined>`
@@ -17,6 +18,15 @@ export class EntityByRefAdapter extends ValueTypeAdapter<Entity | undefined> {
     if (typeof value !== "string")
       throw new TypeError("An EntityByRef value should be a string!");
     const ref: string = value;
-    return this.game.entities.lookupByRef(ref);
+    const entity = this.game.entities.lookupByRef(ref);
+    if (entity === undefined) {
+      console.log("lookup failed for " + ref);
+      setTimeout(() => {
+        // now our lookup succeeds
+        const entity = this.game.entities.lookupByRef(ref);
+        console.log(entity);
+      }, 1000)
+    }
+    return entity;
   }
 }
