@@ -97,7 +97,7 @@ export class UndoRedoManager {
 
       case "transform-change": {
         const entity = this.#game.entities.lookupByRef(op.entityRef);
-        entity?.setTransform(op.previous);
+        entity?.setGlobalTransform(op.previous);
 
         break;
       }
@@ -136,7 +136,7 @@ export class UndoRedoManager {
 
       case "transform-change": {
         const entity = this.#game.entities.lookupByRef(op.entityRef);
-        entity?.setTransform(op.transform);
+        entity?.setGlobalTransform(op.transform);
 
         break;
       }
