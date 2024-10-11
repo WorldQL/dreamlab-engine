@@ -27,6 +27,7 @@ import { CameraPanBehavior } from "./camera-pan.ts";
 import { AppMenu } from "./ui/app-menu.ts";
 import { InspectorUI } from "./ui/inspector.ts";
 import { LogViewer } from "./ui/log-viewer.ts";
+import { UndoRedoManager } from "./undo-redo.ts";
 
 // TODO: loading screen ?
 
@@ -111,6 +112,8 @@ appMenu.setup(inspector);
 
 const logViewer = new LogViewer(uiRoot, games);
 logViewer.setup(inspector);
+
+const _ = new UndoRedoManager(game);
 
 let now = performance.now();
 const onFrame = (time: number) => {

@@ -1,4 +1,12 @@
-import { ClientGame, Entity, EntityDefinition } from "@dreamlab/engine";
+import {
+  BoxResizeGizmoResizeEnd,
+  ClientGame,
+  Entity,
+  GizmoRotateEnd,
+  GizmoScaleEnd,
+  GizmoTranslateEnd,
+  type ITransform,
+} from "@dreamlab/engine";
 import { SelectedEntityService } from "./selected-entity.ts";
 import {
   LocalRootFacade,
@@ -6,7 +14,8 @@ import {
   ServerRootFacade,
   WorldRootFacade,
 } from "../../common/mod.ts";
-import { EntityDefWithParent } from "../undo-redo.ts";
+import type { UndoRedoOperation } from "../undo-redo.ts";
+import { UndoRedoManager } from "../undo-redo.ts";
 
 function isRoot(e: Entity): boolean {
   if (
@@ -79,8 +88,58 @@ export function setupKeyboardShortcuts(
   let currentlyCopiedEntities: Entity[] = [];
   const cooldownManager = new CooldownManager();
 
-  window.undoStack = [];
-  window.redoStack = [];
+  // TODO: do we want to move these signal listeners?
+  game.on(GizmoTranslateEnd, ({ entity, previous: prev }) => {
+    const transform = entity.transform.bare();
+    const previous = { ...transform, position: prev.bare() } satisfies ITransform;
+
+    UndoRedoManager._.push({
+      t: "transform-change",
+      entityRef: entity.ref,
+      transform,
+      previous,
+    });
+  });
+
+  game.on(GizmoRotateEnd, ({ entity, previous: prev }) => {
+    const transform = entity.transform.bare();
+    const previous = { ...transform, rotation: prev } satisfies ITransform;
+
+    UndoRedoManager._.push({
+      t: "transform-change",
+      entityRef: entity.ref,
+      transform,
+      previous,
+    });
+  });
+
+  game.on(GizmoScaleEnd, ({ entity, previous: prev }) => {
+    const transform = entity.transform.bare();
+    const previous = { ...transform, scale: prev.bare() } satisfies ITransform;
+
+    UndoRedoManager._.push({
+      t: "transform-change",
+      entityRef: entity.ref,
+      transform,
+      previous,
+    });
+  });
+
+  game.on(BoxResizeGizmoResizeEnd, ({ entity, previous: prev }) => {
+    const transform = entity.transform.bare();
+    const previous = {
+      ...transform,
+      position: prev.position.bare(),
+      scale: prev.scale.bare(),
+    } satisfies ITransform;
+
+    UndoRedoManager._.push({
+      t: "transform-change",
+      entityRef: entity.ref,
+      transform,
+      previous,
+    });
+  });
 
   document.addEventListener("keydown", (event: KeyboardEvent) => {
     if (document.activeElement instanceof HTMLInputElement) {
@@ -120,7 +179,18 @@ export function setupKeyboardShortcuts(
           pastedEntities.push(copied.cloneInto(copied.parent!));
         }
       }
-      window.undoStack.push({ operation: "destroyEntities", entities: pastedEntities });
+      // window.undoStack.push({ operation: "destroyEntities", entities: pastedEntities });
+
+      const ops = pastedEntities.map(
+        x =>
+          ({
+            t: "create-entity",
+            parentRef: x.parent!.ref,
+            def: x.getDefinition(),
+          } satisfies UndoRedoOperation),
+      );
+
+      UndoRedoManager._.push({ t: "compound", ops });
       return;
     }
 
@@ -139,13 +209,20 @@ export function setupKeyboardShortcuts(
       const toDelete: Entity[] = [...selectedService.entities];
       filterChildNodes(toDelete);
 
-      const deletedDefs: EntityDefWithParent[] = [];
+      const ops = toDelete.map(
+        x =>
+          ({
+            t: "destroy-entity",
+            parentRef: x.parent!.ref,
+            def: x.getDefinition(),
+          } satisfies UndoRedoOperation),
+      );
+
       for (const entity of toDelete) {
-        deletedDefs.push({ def: entity.getDefinition(), parent: entity.parent! });
         entity.destroy();
       }
 
-      window.undoStack.push({ operation: "createEntities", entityDefinitions: deletedDefs });
+      UndoRedoManager._.push({ t: "compound", ops });
       selectedService.entities = [];
       return;
     }
@@ -154,24 +231,10 @@ export function setupKeyboardShortcuts(
     if (event.key === "z" && (event.ctrlKey || event.metaKey)) {
       if (cooldownManager.isOnCooldown("undo")) return;
 
-      const op = window.undoStack.pop();
-      if (!op) return;
-
-      if (op.operation === "createEntities") {
-        const entities = [];
-        for (const e of op.entityDefinitions!) {
-          entities.push(e.parent.spawn(e.def));
-        }
-        window.redoStack.push({ operation: "destroyEntities", entities });
-      } else if (op.operation === "destroyEntities") {
-        const deletedDefs: EntityDefWithParent[] = [];
-        for (const entity of op.entities!) {
-          deletedDefs.push({ def: entity.getDefinition(), parent: entity.parent! });
-          entity.destroy();
-        }
-        window.redoStack.push({ operation: "createEntities", entityDefinitions: deletedDefs });
-      }
+      UndoRedoManager._.undo();
       selectedService.entities = [];
+      // TODO: Only deselect on certain ops
+
       return;
     }
 
@@ -179,24 +242,10 @@ export function setupKeyboardShortcuts(
     if (event.key === "y" && (event.ctrlKey || event.metaKey)) {
       if (cooldownManager.isOnCooldown("redo")) return;
 
-      const op = window.redoStack.pop();
-      if (!op) return;
-
-      if (op.operation === "destroyEntities") {
-        const deletedDefs: EntityDefWithParent[] = [];
-        for (const entity of op.entities!) {
-          deletedDefs.push({ def: entity.getDefinition(), parent: entity.parent! });
-          entity.destroy();
-        }
-        window.undoStack.push({ operation: "createEntities", entityDefinitions: deletedDefs });
-      } else if (op.operation === "createEntities") {
-        const entities = [];
-        for (const e of op.entityDefinitions!) {
-          entities.push(e.parent.spawn(e.def));
-        }
-        window.undoStack.push({ operation: "destroyEntities", entities });
-      }
+      UndoRedoManager._.redo();
       selectedService.entities = [];
+      // TODO: Only deselect on certain ops
+
       return;
     }
   });

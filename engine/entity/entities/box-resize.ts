@@ -8,6 +8,17 @@ import { Camera } from "./camera.ts";
 import { ClickableRect } from "./clickable.ts";
 import { Empty } from "./empty.ts";
 import { SolidColor } from "./solid-color.ts";
+import { GizmoRotateEnd, GizmoTranslateEnd } from "./gizmo.ts";
+
+export class BoxResizeGizmoResizeEnd {
+  constructor(
+    public readonly entity: Entity,
+    public readonly previous: { position: Vector2; scale: Vector2 },
+    public readonly scale: { position: Vector2; scale: Vector2 },
+  ) {}
+}
+
+// TODO: implement signals
 
 type HandleType = "corner" | "edge";
 type CornerHandle = `${"t" | "b"}${"l" | "r"}`;
@@ -257,21 +268,29 @@ export class BoxResizeGizmo extends Entity {
     });
 
     rotate.on(MouseDown, ({ button }) => {
+      if (!this.#target) return;
       if (button !== "left") return;
-      this.#action = { type: "rotate" };
+
+      const original = this.#target.globalTransform.rotation;
+      this.#action = { type: "rotate", original };
     });
 
     const onMouseDown =
       (handle: Handle, handleType: HandleType) =>
       ({ button }: MouseDown) => {
+        if (!this.#target) return;
         if (button !== "left") return;
 
-        const opposite = handlePos(oppositeHandle(handle), this.#target!);
+        const opposite = handlePos(oppositeHandle(handle), this.#target);
+        const originalPos = this.#target.pos.clone();
+        const originalScale = this.#target.globalTransform.scale.clone();
         this.#action = {
           type: "scale",
           handle,
           handleType,
           opposite,
+          originalPos,
+          originalScale,
         };
       };
 
@@ -287,10 +306,12 @@ export class BoxResizeGizmo extends Entity {
     const translateOnMouseDown =
       (axis: "x" | "y" | "both") =>
       ({ button, cursor: { world } }: MouseDown) => {
+        if (!this.#target) return;
         if (button !== "left") return;
 
         const offset = world.sub(this.globalTransform.position);
-        this.#action = { type: "translate", axis, offset };
+        const original = this.#target.pos.clone();
+        this.#action = { type: "translate", axis, offset, original };
       };
 
     const translateBoth = this.spawn({
@@ -392,17 +413,19 @@ export class BoxResizeGizmo extends Entity {
 
   // #region Action / Signals
   #action:
-    | { type: "translate"; axis: "x" | "y" | "both"; offset: Vector2 }
-    | { type: "rotate" }
+    | { type: "translate"; axis: "x" | "y" | "both"; offset: Vector2; original: Vector2 }
+    | { type: "rotate"; original: number }
     | {
         type: "scale";
         handle: Handle;
         handleType: HandleType;
         opposite: Vector2;
+        originalPos: Vector2;
+        originalScale: Vector2;
       }
     | undefined;
 
-  #onMouseMove = (_: MouseEvent) => {
+  #onMouseMove = (_: PointerEvent) => {
     if (!this.#target) return;
     if (!this.#action) return;
 
@@ -437,8 +460,8 @@ export class BoxResizeGizmo extends Entity {
       handle === "t" || handle === "b"
         ? "x"
         : handle === "l" || handle === "r"
-          ? "y"
-          : undefined;
+        ? "y"
+        : undefined;
 
     const rotation = this.#target.globalTransform.rotation;
     const rotated = Vector2.rotateAbout(cursor.world, -rotation, this.#action.opposite);
@@ -462,8 +485,55 @@ export class BoxResizeGizmo extends Entity {
     this.#target.pos.assign(Vector2.rotateAbout(newOrigin, rotation, this.#action.opposite));
   };
 
-  #onMouseUp = (_: MouseEvent) => {
+  #onMouseUp = (_: PointerEvent) => {
     if (!this.#action) return;
+    if (!this.#target) {
+      console.warn("mouse released without target, events will not fire");
+      this.#action = undefined;
+      return;
+    }
+
+    if (this.#action.type === "translate") {
+      this.fire(
+        GizmoTranslateEnd,
+        this.#target,
+        this.#action.original.clone(),
+        this.#target.pos.clone(),
+      );
+      this.game.fire(
+        GizmoTranslateEnd,
+        this.#target,
+        this.#action.original.clone(),
+        this.#target.pos.clone(),
+      );
+    } else if (this.#action.type === "rotate") {
+      this.fire(
+        GizmoRotateEnd,
+        this.#target,
+        this.#action.original,
+        this.#target.globalTransform.rotation,
+      );
+      this.game.fire(
+        GizmoRotateEnd,
+        this.#target,
+        this.#action.original,
+        this.#target.globalTransform.rotation,
+      );
+    } else if (this.#action.type === "scale") {
+      const previous = {
+        position: this.#action.originalPos.clone(),
+        scale: this.#action.originalScale.clone(),
+      };
+
+      const current = {
+        position: this.#target.pos.clone(),
+        scale: this.#target.globalTransform.scale.clone(),
+      };
+
+      this.fire(BoxResizeGizmoResizeEnd, this.#target, previous, current);
+      this.game.fire(BoxResizeGizmoResizeEnd, this.#target, previous, current);
+    }
+
     this.#action = undefined;
   };
   // #endregion
@@ -560,8 +630,8 @@ export class BoxResizeGizmo extends Entity {
 
       if (this.game.isClient()) {
         const canvas = this.game.renderer.app.canvas;
-        canvas.removeEventListener("mousemove", this.#onMouseMove);
-        canvas.removeEventListener("mouseup", this.#onMouseUp);
+        canvas.removeEventListener("pointermove", this.#onMouseMove);
+        canvas.removeEventListener("pointerup", this.#onMouseUp);
       }
     });
   }
@@ -575,7 +645,7 @@ export class BoxResizeGizmo extends Entity {
     this.#updateHandles();
 
     const canvas = this.game.renderer.app.canvas;
-    canvas.addEventListener("mousemove", this.#onMouseMove);
-    canvas.addEventListener("mouseup", this.#onMouseUp);
+    canvas.addEventListener("pointermove", this.#onMouseMove);
+    canvas.addEventListener("pointerup", this.#onMouseUp);
   }
 }

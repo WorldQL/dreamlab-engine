@@ -1,6 +1,13 @@
 import { IVector2, Vector2 } from "./vector/vector2.ts";
 import { transformOnChanged, transformForceUpdate, vectorOnChanged } from "../internal.ts";
 
+export interface ITransform {
+  position: IVector2;
+  rotation: number;
+  scale: IVector2;
+  z: number;
+}
+
 export type TransformOptions = {
   position?: Partial<IVector2>;
   scale?: Partial<IVector2>;
@@ -89,12 +96,20 @@ export class Transform {
     this.#assignSignalListeners();
   }
 
-  toJSON() {
+  clone(): Transform {
+    return new Transform(this);
+  }
+
+  bare(): ITransform {
     return {
       position: this.#position.bare(),
       rotation: this.#rotation,
       scale: this.#scale.bare(),
       z: this.#z,
     };
+  }
+
+  toJSON() {
+    return this.bare();
   }
 }
