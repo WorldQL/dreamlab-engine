@@ -1,6 +1,6 @@
+import { ClientConnection } from "@dreamlab/client/networking/net-connection.ts";
 import { ClientGame } from "@dreamlab/engine";
 import { CameraPanBehavior } from "../camera-pan.ts";
-import { ClientConnection } from "../networking/net-connection.ts";
 import { BehaviorTypeInfoService } from "../util/behavior-type-info.ts";
 import { BehaviorPanel } from "./behavior-panel/mod.ts";
 import { ContextMenu } from "./context-menu.ts";

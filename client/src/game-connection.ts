@@ -1,8 +1,8 @@
 import { ClientGame } from "@dreamlab/engine";
 import { PlayCodec } from "@dreamlab/proto/codecs/mod.ts";
 import { PlayPacket, ServerPacket } from "@dreamlab/proto/play.ts";
-import { ClientConnection } from "../../editor/client/networking/net-connection.ts";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
+import { ClientConnection } from "./networking/net-connection.ts";
 
 export const connectToGame = (
   instanceId: string,
