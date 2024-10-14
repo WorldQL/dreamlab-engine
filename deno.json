@@ -1,4 +1,5 @@
 {
+  "lock": false,
   "imports": {
     "@dreamlab/engine": "./engine/mod.ts",
     "@dreamlab/engine/internal": "./engine/internal.ts",
