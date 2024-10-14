@@ -7,8 +7,8 @@ import { Entity } from "../entity.ts";
 import { Camera } from "./camera.ts";
 import { ClickableRect } from "./clickable.ts";
 import { Empty } from "./empty.ts";
-import { SolidColor } from "./solid-color.ts";
 import { GizmoRotateEnd, GizmoTranslateEnd } from "./gizmo.ts";
+import { SolidColor } from "./solid-color.ts";
 
 export class BoxResizeGizmoResizeEnd {
   constructor(
@@ -148,6 +148,26 @@ export class BoxResizeGizmo extends Entity {
     // Don't spawn handles if no target entity or no bounds
     const entity = this.#target;
     if (!entity) return;
+
+    const translateOnMouseDown =
+      (axis: "x" | "y" | "both") =>
+      ({ button, cursor: { world } }: MouseDown) => {
+        if (!this.#target) return;
+        if (button !== "left") return;
+
+        const offset = world.sub(this.globalTransform.position);
+        const original = this.#target.pos.clone();
+        this.#action = { type: "translate", axis, offset, original };
+      };
+
+    const translateBoth = this.spawn({
+      type: ClickableRect,
+      name: "TranslateBoth",
+      transform: { position: { x: 0, y: 0 } },
+      values: { width: 0.3, height: 0.3 },
+    });
+    translateBoth.on(MouseDown, translateOnMouseDown("both"));
+
     const bounds = entity.bounds;
     if (!bounds) return;
     const scaled = Vector2.mul(bounds, entity.globalTransform.scale);
@@ -303,25 +323,6 @@ export class BoxResizeGizmo extends Entity {
     bottomLeft.on(MouseDown, onMouseDown("bl", "corner"));
     bottomRight.on(MouseDown, onMouseDown("br", "corner"));
 
-    const translateOnMouseDown =
-      (axis: "x" | "y" | "both") =>
-      ({ button, cursor: { world } }: MouseDown) => {
-        if (!this.#target) return;
-        if (button !== "left") return;
-
-        const offset = world.sub(this.globalTransform.position);
-        const original = this.#target.pos.clone();
-        this.#action = { type: "translate", axis, offset, original };
-      };
-
-    const translateBoth = this.spawn({
-      type: ClickableRect,
-      name: "TranslateBoth",
-      transform: { position: { x: 0, y: 0 } },
-      values: { width: 0.3, height: 0.3 },
-    });
-    translateBoth.on(MouseDown, translateOnMouseDown("both"));
-
     __debug__("#ff0000af", leftEdge, rightEdge, topEdge, bottomEdge);
     __debug__("#00ff00af", topLeft, topRight, bottomLeft, bottomRight);
     __debug__("#ff00ffaf", rotate);
@@ -334,6 +335,7 @@ export class BoxResizeGizmo extends Entity {
     if (!entity) return;
     const bounds = entity.bounds;
     if (!bounds) return;
+
     const scaled = Vector2.div(
       Vector2.mul(bounds, entity.globalTransform.scale),
       camera.smoothed.scale,
@@ -460,8 +462,8 @@ export class BoxResizeGizmo extends Entity {
       handle === "t" || handle === "b"
         ? "x"
         : handle === "l" || handle === "r"
-        ? "y"
-        : undefined;
+          ? "y"
+          : undefined;
 
     const rotation = this.#target.globalTransform.rotation;
     const rotated = Vector2.rotateAbout(cursor.world, -rotation, this.#action.opposite);
@@ -562,8 +564,19 @@ export class BoxResizeGizmo extends Entity {
       this.pos.assign(entity.pos);
       this.globalTransform.rotation = entity.globalTransform.rotation;
 
+      this.#gfx.position = { x: pos.x, y: -pos.y };
+      this.#gfx.rotation = -entity.globalTransform.rotation;
+
       const _bounds = entity.bounds;
-      if (!_bounds) return;
+      if (!_bounds) {
+        this.#gfx.context
+          .rect(-0.15, -0.15, 0.3, 0.3)
+          .fill({ alpha: 0.2, color: "blue" })
+          .stroke({ alpha: 0.5, color: "blue", width: 0.01 });
+
+        return;
+      }
+
       const bounds = Vector2.div(
         Vector2.mul(_bounds, entity.globalTransform.scale),
         camera.smoothed.scale,
@@ -578,9 +591,6 @@ export class BoxResizeGizmo extends Entity {
       const b = { x: -halfx, y: -halfy };
       const c = { x: halfx, y: halfy };
       const d = { x: halfx, y: -halfy };
-
-      this.#gfx.position = { x: pos.x, y: -pos.y };
-      this.#gfx.rotation = -entity.globalTransform.rotation;
 
       const STROKE = {
         width: BoxResizeGizmo.#STROKE_WIDTH,
