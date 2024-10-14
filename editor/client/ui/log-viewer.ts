@@ -1,4 +1,4 @@
-import { SERVER_URL } from "@dreamlab/client/util/server-url.ts";
+import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
 import { ClientGame } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 // @deno-types="npm:@types/object-inspect@1.13.0"
@@ -24,7 +24,7 @@ export class LogViewer {
     private games: { edit: ClientGame; play?: ClientGame },
     maxLogs = 100, // Default maximum number of logs
   ) {
-    const url = new URL(SERVER_URL);
+    const url = new URL(connectionDetails.serverUrl);
     url.pathname = `/api/v1/log-stream/${this.games.edit.instanceId}`;
     url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
     this.#ws = new WebSocket(url.toString());
@@ -157,7 +157,7 @@ export class LogViewer {
     if (log.level === "error") {
       className += " log-entry-error";
     }
-    
+
     // @ts-expect-error CSS
     const entry = elem("div", { className, style }, [
       elem("code", {}, [ts]),

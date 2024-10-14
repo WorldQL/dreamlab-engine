@@ -17,7 +17,7 @@ import "../common/mod.ts";
 
 import { connectToGame } from "@dreamlab/client/game-connection.ts";
 import { setupGame } from "@dreamlab/client/game-setup.ts";
-import { INSTANCE_ID, SERVER_URL } from "@dreamlab/client/util/server-url.ts";
+import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
 import { Camera, ClientGame, Entity, GameStatusChange } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
@@ -31,9 +31,9 @@ import { UndoRedoManager } from "./undo-redo.ts";
 
 // TODO: loading screen ?
 
-const connectUrl = new URL(SERVER_URL);
+const connectUrl = new URL(connectionDetails.serverUrl);
 connectUrl.protocol = connectUrl.protocol === "https:" ? "wss:" : "ws:";
-connectUrl.pathname = `/api/v1/connect/${INSTANCE_ID}`;
+connectUrl.pathname = `/api/v1/connect/${connectionDetails.instanceId}`;
 connectUrl.searchParams.set("player_id", generateCUID("ply"));
 connectUrl.searchParams.set("nickname", "Player" + Math.floor(Math.random() * 999) + 1);
 
@@ -55,7 +55,7 @@ socket.addEventListener("error", () => {
 });
 
 const [game, conn, handshake] = await connectToGame(
-  INSTANCE_ID,
+  connectionDetails.instanceId,
   container,
   socket,
   DEFAULT_CODEC,

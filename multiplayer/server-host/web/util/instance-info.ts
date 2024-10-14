@@ -19,7 +19,7 @@ export const instanceInfo = (instance: GameInstance): z.infer<typeof InstanceInf
   id: instance.info.instanceId,
   server: convertToWebSocketUrl(CONFIG.publicUrlBase),
   world: instance.info.worldId,
-  edit_mode: true,
+  edit_mode: instance.info.editMode ?? false,
   started_at: instance.session?.startedAt?.getTime(),
   started_by: instance.info.startedBy ?? null,
   status_detail: instance.statusDetail ?? null,

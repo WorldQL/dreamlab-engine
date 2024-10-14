@@ -1,8 +1,8 @@
 @import url(https://cdn.jsdelivr.net/npm/modern-normalize@3.0.0/modern-normalize.css);
 
-@import url(./palette.css);
+@import url(../../../client/src/css/base.css);
+
 @import url(./layout.css);
-@import url(./typography.css);
 @import url(./basic.css);
 @import url(./loading.css);
 @import url(./cursor.css);

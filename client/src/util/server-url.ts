@@ -1,18 +1,47 @@
 import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 
-const searchParams = new URLSearchParams(window.location.search);
-const instanceId = searchParams.get("instance") || NIL_UUID;
-const serverUrl: string | null = import.meta.env.IS_DEV
-  ? import.meta.env.SERVER_URL
-  : searchParams.get("server");
-
-if (!serverUrl) {
-  // TODO: better error popup
-  alert("error: server url not set in url params!");
-  throw new Error("server url undefined");
+export interface ServerConnectionDetails {
+  serverUrl: string;
+  instanceId: string;
 }
 
-const SERVER_URL = new URL(serverUrl);
-SERVER_URL.protocol = SERVER_URL.protocol === "wss:" ? "https:" : "http:";
+export const connectionDetails: ServerConnectionDetails = { serverUrl: "", instanceId: "" };
+export function setConnectionDetails(details: ServerConnectionDetails) {
+  connectionDetails.serverUrl = details.serverUrl;
+  connectionDetails.instanceId = details.instanceId;
+}
 
-export { instanceId as INSTANCE_ID, SERVER_URL };
+export function convertURLToWebSocket(url_: string): string {
+  const url = new URL(url_);
+  if (url.protocol === "https:") url.protocol = "wss:";
+  if (url.protocol === "http:") url.protocol = "ws:";
+  return url.toString();
+}
+
+export function convertURLToHTTP(url_: string): string {
+  const url = new URL(url_);
+  if (url.protocol === "wss:") url.protocol = "https:";
+  if (url.protocol === "ws:") url.protocol = "http:";
+  return url.toString();
+}
+
+const useDefaultDetails = () => {
+  const searchParams = new URLSearchParams(window.location.search);
+
+  const server: string | null = import.meta.env.IS_DEV
+    ? import.meta.env.SERVER_URL
+    : searchParams.get("server");
+  if (server) {
+    const serverUrl = new URL(server);
+    serverUrl.protocol = serverUrl.protocol === "wss:" ? "https:" : "http:";
+    connectionDetails.serverUrl = serverUrl.toString();
+  }
+
+  const instanceId =
+    (searchParams.get("instance") ?? import.meta.env.IS_DEV) ? NIL_UUID : undefined;
+  if (instanceId) {
+    connectionDetails.instanceId = instanceId;
+  }
+};
+
+useDefaultDetails();

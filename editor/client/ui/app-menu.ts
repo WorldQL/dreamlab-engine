@@ -1,7 +1,7 @@
 import { connectToGame } from "@dreamlab/client/game-connection.ts";
 import { setupGame } from "@dreamlab/client/game-setup.ts";
 import { Ping } from "@dreamlab/client/networking/ping.ts";
-import { SERVER_URL } from "@dreamlab/client/util/server-url.ts";
+import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
 import { ClientGame, PlayerJoined, PlayerLeft } from "@dreamlab/engine";
 import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
 import { element as elem } from "@dreamlab/ui";
@@ -58,7 +58,7 @@ export class AppMenu {
 
     // TODO: don't save if we know the scene hasn't changed
     const save = async () => {
-      const url = new URL(SERVER_URL);
+      const url = new URL(connectionDetails.serverUrl);
       url.pathname = `/api/v1/save-edit-session/${this.games.edit.instanceId}`;
 
       const button = saveButton.querySelector("button")!;
@@ -193,7 +193,7 @@ export class AppMenu {
     const container = document.createElement("div");
     this.uiRoot.querySelector("#viewport")!.append(container);
 
-    const connectURL = new URL(SERVER_URL);
+    const connectURL = new URL(connectionDetails.serverUrl);
     connectURL.pathname = `/api/v1/connect/${this.games.edit.instanceId}`;
     const player = this.games.edit.network.connections.find(
       c => c.id === this.games.edit.network.self,
@@ -239,7 +239,7 @@ export class AppMenu {
   async #stopPlayGame() {
     // we need to be able to stop the server even if this.games.play is not created successfully.
     // if (!this.games.play) return;
-    const url = new URL(SERVER_URL);
+    const url = new URL(connectionDetails.serverUrl);
     // edit and play instanceIds match
     url.pathname = `/api/v1/stop-play-session/${this.games.edit.instanceId}`;
     await fetch(url, { method: "POST" });

@@ -1,4 +1,4 @@
-import { SERVER_URL } from "@dreamlab/client/util/server-url.ts";
+import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
 import { ClientGame } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 import * as path from "jsr:@std/path@1";
@@ -74,7 +74,7 @@ export class FileTree implements InspectorUIWidget {
     const tree = new DataTree();
     tree.style.setProperty("--tree-indent-amount", "0.5em");
 
-    const filesURL = new URL(SERVER_URL);
+    const filesURL = new URL(connectionDetails.serverUrl);
     filesURL.pathname = `/api/v1/edit/${this.game.instanceId}/files`;
     const files = fetch(filesURL)
       .then(r => r.json())
@@ -184,7 +184,7 @@ export class FileTree implements InspectorUIWidget {
   #createImagePreview(imagePath: string, _event: MouseEvent): HTMLElement {
     const imagePreview = document.createElement("img");
 
-    const url = new URL(SERVER_URL);
+    const url = new URL(connectionDetails.serverUrl);
     url.pathname = `/api/v1/edit/${this.game.instanceId}/files/${imagePath}`;
 
     imagePreview.src = url.toString();

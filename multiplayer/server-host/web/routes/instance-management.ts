@@ -13,19 +13,27 @@ import { instanceInfo, InstanceInfoSchema } from "../util/instance-info.ts";
 export const serveInstanceManagementAPI = (router: Router) => {
   router.get(
     "/api/v1/instances",
-    bearerTokenAuth(CONFIG.coordAuthSecret),
     typedJsonHandler(
       {
         query: z.object({ world: z.string().optional() }),
         response: z.record(z.string(), InstanceInfoSchema),
       },
-      async (_ctx, { query }) => {
+      async (ctx, { query }) => {
+        const hasAuth =
+          ctx.request.headers.get("Authorization") === `Bearer ${CONFIG.coordAuthSecret}`;
+
+        let instances = [...GameInstance.INSTANCES.entries()];
+
+        if (query.world)
+          instances = instances.filter(
+            ([_id, instance]) => instance.info.worldId === query.world,
+          );
+
+        if (!hasAuth)
+          instances = instances.filter(([_id, instance]) => !(instance.info.editMode ?? false));
+
         return Object.fromEntries(
-          [...GameInstance.INSTANCES.entries()]
-            .filter(([_id, instance]) =>
-              query.world ? instance.info.worldId === query.world : true,
-            )
-            .map(([id, instance]) => [id, instanceInfo(instance)]),
+          instances.map(([id, instance]) => [id, instanceInfo(instance)]),
         );
       },
     ),
