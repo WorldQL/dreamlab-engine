@@ -3,7 +3,7 @@ import * as internal from "@dreamlab/engine/internal";
 import { ReceivedInitialNetworkSnapshot } from "@dreamlab/proto/common/signals.ts";
 import { convertEntityDefinition, getSceneFromProject, ProjectSchema } from "@dreamlab/scene";
 import { z } from "@dreamlab/vendor/zod.ts";
-import { ClientConnection } from "../../editor/client/networking/net-connection.ts";
+import { ClientConnection } from "./networking/net-connection.ts";
 
 export const setupGame = async (
   game: ClientGame,
