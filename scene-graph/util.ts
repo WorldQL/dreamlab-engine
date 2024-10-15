@@ -133,14 +133,6 @@ export const convertEntityDefinition = async (
   };
 };
 
-// FIXME: the editor should be keeping a long-lived Scene object (source of truth!) around,
-// instead of loading into the Game and serializing back --
-// this is the best way to persist data like Scene.registration (autoload scripts for custom entity registration)
-// without keeping superfluous data arond (the registration array is only required at game load time otherwise)
-
-// it also lets us materialize scene.local and scene.server into groups inside world so everything can multiplayer sync
-// (an edit-mode game does not need to actually put these things in .local and .server because we're not simulating!!)
-
 export const serializeSceneDefinition = (game: Game): Scene => {
   const world: SceneDescEntity[] = [];
   for (const entity of game.world.children.values()) {
