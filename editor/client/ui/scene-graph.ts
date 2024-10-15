@@ -10,6 +10,7 @@ import {
 import { element as elem, element } from "@dreamlab/ui";
 import { EditorMetadataEntity, EditorRootFacadeEntity, Facades } from "../../common/mod.ts";
 import { ChevronDown, icon } from "../_icons.ts";
+import { UndoRedoManager } from "../undo-redo.ts";
 import { createEntityMenu } from "../util/entity-types.ts";
 import { ContextMenuItem } from "./context-menu.ts";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
@@ -75,6 +76,13 @@ export class SceneGraph implements InspectorUIWidget {
               position: this.game.local._.Camera.globalTransform.position,
             },
           });
+
+          UndoRedoManager._.push({
+            t: "create-entity",
+            parentRef: world.ref,
+            def: newEntity.getDefinition(),
+          });
+
           const newEntryElement = this.entryElementMap.get(newEntity.ref);
           if (newEntryElement) this.triggerRename(newEntity, newEntryElement);
         }),
@@ -236,6 +244,7 @@ export class SceneGraph implements InspectorUIWidget {
   }
 
   triggerRename(entity: Entity, entryElement: HTMLElement) {
+    const previousName = entity.name;
     const name = entryElement.querySelector(":scope > summary .name")! as HTMLElement;
 
     name.style.display = "none";
@@ -260,6 +269,13 @@ export class SceneGraph implements InspectorUIWidget {
       }
 
       entity.name = input.value;
+      UndoRedoManager._.push({
+        t: "rename-entity",
+        entityRef: entity.ref,
+        previous: previousName,
+        name: entity.name,
+      });
+
       reset();
     });
   }
@@ -384,6 +400,13 @@ export class SceneGraph implements InspectorUIWidget {
               position: this.game.local._.Camera.globalTransform.position,
             },
           });
+
+          UndoRedoManager._.push({
+            t: "create-entity",
+            parentRef: entity.ref,
+            def: newEntity.getDefinition(),
+          });
+
           const newEntryElement = this.entryElementMap.get(newEntity.ref);
           if (newEntryElement) this.triggerRename(newEntity, newEntryElement);
         }),
