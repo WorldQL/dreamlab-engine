@@ -159,12 +159,15 @@ export const bundleClient = async (
   ],
   opts?: BundleOptions,
 ) => {
+  const isDev = Deno.env.get("IS_DEV");
+  const envLoad = isDev ? ".env.local" : ".env.production";
+
   const buildOpts: esbuild.BuildOptions = {
     ...BASE_BUILD_OPTIONS,
     plugins: [
       dreamlabCssPlugin(),
       dreamlabTextImportPlugin(".svg"),
-      dreamlabEnvironmentPlugin(),
+      dreamlabEnvironmentPlugin([envLoad, ".env"]),
       dreamlabVendorExternalPlugin(),
       dreamlabEngineExternalPlugin(),
       dreamlabUIExternalPlugin(),

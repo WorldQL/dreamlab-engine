@@ -1,8 +1,8 @@
 name: Build and Deploy Editor
 on:
   push:
-    tags:        
-      - '*'    
+    tags:
+      - "*"
 
 env:
   TARGET_CNAME: editor.dreamlab.gg
@@ -26,6 +26,8 @@ jobs:
       - name: Build editor
         working-directory: ./dreamlab/editor
         run: deno task build
+        env:
+          IS_DEV: "true"
       - name: Checkout deployment repo
         uses: actions/checkout@v4
         with:

@@ -1,8 +1,8 @@
 name: Build and Deploy Client
 on:
   push:
-    tags:        
-      - '*'    
+    tags:
+      - "*"
 
 env:
   TARGET_CNAME: gameclient.dreamlab.gg
@@ -26,6 +26,8 @@ jobs:
       - name: Build client
         working-directory: ./dreamlab/client
         run: deno task build
+        env:
+          IS_DEV: "true"
       - name: Checkout deployment repo
         uses: actions/checkout@v4
         with:
