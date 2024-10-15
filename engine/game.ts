@@ -293,7 +293,6 @@ export class ClientGame extends BaseGame {
 
     this.#cachebust = opts.cacheBuster;
     this.network = opts.network;
-    this.values[internal.setValueRegistrySource](this.network.self); // FIXME(Charlotte): remove (ValueRegistry has Game so we can just do game.network.self)
   }
 
   [internal.inputsShutdownFn]: (() => void) | undefined;

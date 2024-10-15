@@ -47,14 +47,6 @@ export class ValueRegistry {
     value[internal.valueApplyUpdate](newValue, clock, source);
   }
 
-  #source: ConnectionId = "server";
-  get source() {
-    return this.#source;
-  }
-  [internal.setValueRegistrySource](value: ConnectionId) {
-    this.#source = value;
-  }
-
   constructor(public readonly game: Game) {}
 
   get values(): readonly Value[] {
