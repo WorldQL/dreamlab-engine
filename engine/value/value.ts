@@ -76,7 +76,7 @@ export class Value<T = unknown> {
       this as Value<unknown>,
       newValue,
       this.clock + 1,
-      this.#registry.game.network.self,
+      this.#registry.game.network?.self,
     );
   }
 
@@ -96,7 +96,7 @@ export class Value<T = unknown> {
     this.#value = defaultValue;
     this.typeTag = typeTag;
     this.clock = 0;
-    this.lastSource = this.#registry.game.network.self;
+    this.lastSource = this.#registry.game.network?.self;
 
     this.description = description;
 
@@ -137,7 +137,7 @@ export class Value<T = unknown> {
       this as Value<unknown>,
       this.#value,
       this.clock + 1,
-      this.#registry.game.network.self,
+      this.#registry.game.network?.self,
     );
   }
 
