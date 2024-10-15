@@ -4,13 +4,14 @@
     "watch": "deno run -A ./_build.ts --watch"
   },
   "imports": {
+    "@dreamlab/client/": "../client/src/",
     "@dreamlab/engine": "../engine/mod.ts",
     "@dreamlab/engine/internal": "../engine/internal.ts",
     "@dreamlab/vendor/": "../engine/_deps/",
     "@dreamlab/proto/": "../proto/",
     "@dreamlab/scene": "../scene-graph/mod.ts",
     "@dreamlab/ui": "../ui/mod.ts",
-    "@dreamlab/client/": "../client/src/",
+    "@dreamlab/util/": "../util/",
     "env": "data:application/javascript,export default {}"
   },
   "compilerOptions": {

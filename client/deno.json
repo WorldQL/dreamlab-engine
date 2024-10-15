@@ -10,6 +10,7 @@
     "@dreamlab/proto/": "../proto/",
     "@dreamlab/scene": "../scene-graph/mod.ts",
     "@dreamlab/ui": "../ui/mod.ts",
+    "@dreamlab/util/": "../util/",
     "env": "data:application/javascript,export default {}"
   },
   "compilerOptions": {

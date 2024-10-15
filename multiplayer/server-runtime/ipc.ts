@@ -1,3 +1,4 @@
+import { urlWithParams } from "@dreamlab/util/url.ts";
 import { HostIPCMessage, WorkerIPCMessage } from "../server-common/ipc.ts";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 
@@ -13,9 +14,9 @@ export class IPCMessageBus {
   #connected: boolean;
 
   constructor(public workerData: WorkerInitData) {
-    const connectUrl = new URL(workerData.workerConnectUrl);
-    connectUrl.searchParams.set("token", workerData.workerId);
-
+    const connectUrl = urlWithParams(workerData.workerConnectUrl, {
+      token: workerData.workerId,
+    });
     const socket = new WebSocket(connectUrl);
 
     this.#connected = false;

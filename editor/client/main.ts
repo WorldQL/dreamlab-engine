@@ -21,6 +21,7 @@ import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
 import { Camera, ClientGame, Entity, GameStatusChange } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
+import { urlToWebSocket } from "@dreamlab/util/url.ts";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import { stats } from "./_stats.ts";
 import { CameraPanBehavior } from "./camera-pan.ts";
@@ -31,8 +32,7 @@ import { UndoRedoManager } from "./undo-redo.ts";
 
 // TODO: loading screen ?
 
-const connectUrl = new URL(connectionDetails.serverUrl);
-connectUrl.protocol = connectUrl.protocol === "https:" ? "wss:" : "ws:";
+const connectUrl = urlToWebSocket(connectionDetails.serverUrl);
 connectUrl.pathname = `/api/v1/connect/${connectionDetails.instanceId}`;
 connectUrl.searchParams.set("player_id", generateCUID("ply"));
 connectUrl.searchParams.set("nickname", "Player" + Math.floor(Math.random() * 999) + 1);

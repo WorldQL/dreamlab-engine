@@ -11,20 +11,6 @@ export function setConnectionDetails(details: ServerConnectionDetails) {
   connectionDetails.instanceId = details.instanceId;
 }
 
-export function convertURLToWebSocket(url_: string): string {
-  const url = new URL(url_);
-  if (url.protocol === "https:") url.protocol = "wss:";
-  if (url.protocol === "http:") url.protocol = "ws:";
-  return url.toString();
-}
-
-export function convertURLToHTTP(url_: string): string {
-  const url = new URL(url_);
-  if (url.protocol === "wss:") url.protocol = "https:";
-  if (url.protocol === "ws:") url.protocol = "http:";
-  return url.toString();
-}
-
 const useDefaultDetails = () => {
   const searchParams = new URLSearchParams(window.location.search);
 

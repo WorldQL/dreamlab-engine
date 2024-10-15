@@ -5,7 +5,8 @@
     "@dreamlab/engine/internal": "./engine/internal.ts",
     "@dreamlab/vendor/": "./engine/_deps/",
     "@dreamlab/proto/": "./proto/",
-    "@dreamlab/scene": "./scene-graph/mod.ts"
+    "@dreamlab/scene": "./scene-graph/mod.ts",
+    "@dreamlab/util/": "./util/"
   },
   "compilerOptions": {
     "lib": ["deno.window", "dom"],

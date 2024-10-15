@@ -4,15 +4,12 @@ import "../../build-system/live-reload.js";
 import "./_env.ts";
 
 import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
+import { urlToHTTP, urlToWebSocket } from "@dreamlab/util/url.ts";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import { createConnectForm } from "./connect-form.ts";
 import { connectToGame } from "./game-connection.ts";
 import { setupGame } from "./game-setup.ts";
-import {
-  connectionDetails,
-  convertURLToHTTP,
-  setConnectionDetails,
-} from "./util/server-url.ts";
+import { connectionDetails, setConnectionDetails } from "./util/server-url.ts";
 
 let nickname = "Player" + Math.floor(Math.random() * 999) + 1;
 
@@ -27,12 +24,11 @@ if (connectionDetails.instanceId === "") {
   const connectForm = await createConnectForm(worldId);
   document.body.prepend(connectForm.form);
   const { serverUrl, instanceId, nickname: nickname_ } = await connectForm.onConnect;
-  setConnectionDetails({ instanceId, serverUrl: convertURLToHTTP(serverUrl) });
+  setConnectionDetails({ instanceId, serverUrl: urlToHTTP(serverUrl).toString() });
   nickname = nickname_;
 }
 
-const connectUrl = new URL(connectionDetails.serverUrl);
-connectUrl.protocol = connectUrl.protocol === "https:" ? "wss:" : "ws:";
+const connectUrl = urlToWebSocket(connectionDetails.serverUrl);
 connectUrl.pathname = `/api/v1/connect/${connectionDetails.instanceId}`;
 // TODO: connect with an auth token instead, if one is passed via search params
 connectUrl.searchParams.set("player_id", generateCUID("ply"));

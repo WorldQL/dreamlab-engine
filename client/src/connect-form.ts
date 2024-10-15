@@ -1,6 +1,7 @@
-import "../polyfills/with-resolvers.ts";
+import "@dreamlab/util/polyfills/with-resolvers.ts";
 
 import { element as elem } from "@dreamlab/ui";
+import { urlWithParams } from "@dreamlab/util/url.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
 
 class DreamlabConnectFormElement extends HTMLElement {}
@@ -28,9 +29,9 @@ export const createInstancePicker = async (worldId: string) => {
     }),
   );
 
-  const url = new URL("/api/v1/instances", import.meta.env.SERVER_URL);
-  url.searchParams.set("world", worldId);
-
+  const url = urlWithParams(new URL("/api/v1/instances", import.meta.env.SERVER_URL), {
+    world: worldId,
+  });
   const instances = await fetch(url)
     .then(r => r.json())
     .then(APIInstancesSchema.parse);

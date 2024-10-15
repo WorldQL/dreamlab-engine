@@ -1,6 +1,7 @@
 import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
 import { ClientGame } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
+import { urlToWebSocket } from "@dreamlab/util/url.ts";
 // @deno-types="npm:@types/object-inspect@1.13.0"
 import inspect from "npm:object-inspect@1.13.2";
 import { WebSocket } from "npm:partysocket@1.0.2";
@@ -24,9 +25,10 @@ export class LogViewer {
     private games: { edit: ClientGame; play?: ClientGame },
     maxLogs = 100, // Default maximum number of logs
   ) {
-    const url = new URL(connectionDetails.serverUrl);
-    url.pathname = `/api/v1/log-stream/${this.games.edit.instanceId}`;
-    url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
+    const url = new URL(
+      `/api/v1/log-stream/${this.games.edit.instanceId}`,
+      urlToWebSocket(connectionDetails.serverUrl),
+    );
     this.#ws = new WebSocket(url.toString());
     this.maxLogs = maxLogs;
   }

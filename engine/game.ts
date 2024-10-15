@@ -1,6 +1,7 @@
 import { initRapier } from "@dreamlab/vendor/rapier.ts";
 
 import { Value } from "@dreamlab/engine";
+import { urlWithParams } from "@dreamlab/util/url.ts";
 import { BehaviorLoader } from "./behavior/behavior-loader.ts";
 import { BehaviorConstructor } from "./behavior/mod.ts";
 import {
@@ -323,9 +324,9 @@ export class ClientGame extends BaseGame {
 
   #cachebust: string | undefined;
   protected override resolveResourceURL(uri: string): URL {
-    const url = super.resolveResourceURL(uri);
-    if (this.#cachebust) url.searchParams.set("__dreamlab_cache_bust", this.#cachebust);
-    return url;
+    return urlWithParams(super.resolveResourceURL(uri), {
+      __dreamlab_cache_bust: this.#cachebust,
+    });
   }
 
   #tickAccumulator = 0;

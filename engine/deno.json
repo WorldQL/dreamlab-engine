@@ -9,7 +9,8 @@
     "@dreamlab/engine": "./mod.ts",
     "@dreamlab/engine/internal": "./internal.ts",
     "@dreamlab/vendor/": "./_deps/",
-    "@dreamlab/ui": "../ui/mod.ts"
+    "@dreamlab/ui": "../ui/mod.ts",
+    "@dreamlab/util/": "../util/"
   },
   "compilerOptions": {
     "lib": ["deno.window", "dom"],

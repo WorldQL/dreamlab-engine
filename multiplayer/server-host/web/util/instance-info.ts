@@ -1,3 +1,4 @@
+import { urlToWebSocket } from "@dreamlab/util/url.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { CONFIG } from "../../config.ts";
 import { GameInstance } from "../../instance.ts";
@@ -17,7 +18,7 @@ export const InstanceInfoSchema = z.object({
 
 export const instanceInfo = (instance: GameInstance): z.infer<typeof InstanceInfoSchema> => ({
   id: instance.info.instanceId,
-  server: convertToWebSocketUrl(CONFIG.publicUrlBase),
+  server: urlToWebSocket(CONFIG.publicUrlBase).toString(),
   world: instance.info.worldId,
   edit_mode: instance.info.editMode ?? false,
   started_at: instance.session?.startedAt?.getTime(),
@@ -27,10 +28,3 @@ export const instanceInfo = (instance: GameInstance): z.infer<typeof InstanceInf
   uptime_secs: (Date.now() - instance.createdAt.getTime()) / 1000,
   rich_status: instance.session?.status,
 });
-
-const convertToWebSocketUrl = (httpUrl: string) => {
-  const url = new URL(httpUrl);
-  if (url.protocol === "http:") url.protocol = "ws:";
-  if (url.protocol === "https:") url.protocol = "wss:";
-  return url.toString();
-};
