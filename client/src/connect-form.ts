@@ -13,21 +13,21 @@ export interface DreamlabConnectForm {
   onConnect: Promise<ConnectDetails>;
 }
 
+const InstanceInfoSchema = z.object({
+  id: z.string().uuid(),
+  server: z.string(),
+  world: z.string(),
+  status: z.string(),
+  status_detail: z.string().nullable().optional(),
+  started_by: z.string().nullable().optional(),
+  edit_mode: z.boolean(),
+  uptime_secs: z.number(),
+  started_at: z.number().optional(),
+  rich_status: z.any().optional(),
+});
+
 export const createInstancePicker = async (worldId: string) => {
-  const APIInstancesSchema = z.record(
-    z.object({
-      id: z.string().uuid(),
-      server: z.string(),
-      world: z.string(),
-      status: z.string(),
-      status_detail: z.string().nullable().optional(),
-      started_by: z.string().nullable().optional(),
-      edit_mode: z.boolean(),
-      uptime_secs: z.number(),
-      started_at: z.number().optional(),
-      rich_status: z.any().optional(),
-    }),
-  );
+  const APIInstancesSchema = z.record(InstanceInfoSchema);
 
   const url = urlWithParams(new URL("/api/v1/instances", import.meta.env.SERVER_URL), {
     world: worldId,
@@ -111,7 +111,27 @@ export const createConnectForm = async (worldId: string): Promise<DreamlabConnec
           instanceId: instance,
         });
       } else {
-        // TODO: create new instance
+        const instancePromise = fetch(
+          new URL("/api/v1/start-play-world", import.meta.env.SERVER_URL),
+          {
+            method: "POST",
+            body: JSON.stringify({ world_id: worldId }),
+            headers: {
+              "Content-Type": "application/json",
+            },
+          },
+        )
+          .then(r => r.json())
+          .then(InstanceInfoSchema.parse);
+
+        instancePromise.then(instance => {
+          connectForm.remove();
+          onConnect.resolve({
+            nickname,
+            serverUrl: instance.server,
+            instanceId: instance.id,
+          });
+        });
       }
     }
   });

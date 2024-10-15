@@ -39,6 +39,38 @@ export const serveInstanceManagementAPI = (router: Router) => {
     ),
   );
 
+  router.post(
+    "/api/v1/start-play-world",
+    typedJsonHandler(
+      {
+        body: z.object({
+          world_id: z.string(),
+        }),
+        response: InstanceInfoSchema,
+      },
+      async (_ctx, { body }) => {
+        const worldId = body.world_id;
+        const instanceId = crypto.randomUUID();
+
+        if (worldId.includes("../")) {
+          throw new JsonAPIError(Status.BadRequest, "The world ID contians a path traversal");
+        }
+
+        if (GameInstance.INSTANCES.has(instanceId)) {
+          throw new JsonAPIError(Status.Conflict, "An instance with this ID already exists!");
+        }
+
+        const instance = createInstance({
+          instanceId,
+          worldId,
+          worldDirectory: `${Deno.cwd()}/worlds/${worldId}`,
+        });
+
+        return instanceInfo(instance);
+      },
+    ),
+  );
+
   router.put(
     "/api/v1/instances",
     bearerTokenAuth(CONFIG.coordAuthSecret),
