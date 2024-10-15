@@ -12,6 +12,7 @@ import { element as elem } from "@dreamlab/ui";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { Facades } from "../../common/mod.ts";
 import { DataDetails, DataTable } from "../components/mod.ts";
+import { UndoRedoManager } from "../undo-redo.ts";
 import { createBooleanField, createInputField } from "../util/easy-input.ts";
 import { createValueControl } from "../util/value-controls.ts";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
@@ -78,6 +79,27 @@ export class Properties implements InspectorUIWidget {
       });
       entity.on(EntityRenamed, refreshName);
       nameField.id = "rename-entity-input";
+
+      let renameState: string | undefined;
+      nameField.addEventListener("focus", () => {
+        renameState = entity.name;
+      });
+
+      nameField.addEventListener("blur", () => {
+        if (renameState === undefined) return;
+        const previous = renameState;
+        const newName = entity.name;
+        renameState === undefined;
+
+        if (newName !== previous) {
+          UndoRedoManager._.push({
+            t: "rename-entity",
+            entityRef: entity.ref,
+            previous,
+            name: newName,
+          });
+        }
+      });
     }
 
     table.addEntry("name", "Name", nameField);
