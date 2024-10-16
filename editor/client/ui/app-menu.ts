@@ -8,6 +8,7 @@ import { element as elem } from "@dreamlab/ui";
 import {
   ArrowUpDown,
   Box,
+  Check,
   GitCompareArrows,
   Hammer,
   icon,
@@ -65,6 +66,14 @@ export class AppMenu {
       try {
         button.disabled = true;
         await fetch(url, { method: "POST" });
+
+        button.style.backgroundColor = "rgb(var(--color-green) / 1)";
+        saveButton.setIcon(Check);
+
+        setTimeout(() => {
+          button.style.backgroundColor = "";
+          saveButton.setIcon(Save);
+        }, 3000);
       } finally {
         button.disabled = false;
         window.parent.postMessage({ action: "reloadProject" }, "*");
