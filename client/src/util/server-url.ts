@@ -24,7 +24,7 @@ const useDefaultDetails = () => {
   }
 
   const instanceId =
-    (searchParams.get("instance") ?? import.meta.env.IS_DEV) ? NIL_UUID : undefined;
+    searchParams.get("instance") ?? (import.meta.env.IS_DEV ? NIL_UUID : undefined);
   if (instanceId) {
     connectionDetails.instanceId = instanceId;
   }
