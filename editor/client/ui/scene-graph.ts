@@ -10,7 +10,7 @@ import {
 import { element as elem, element } from "@dreamlab/ui";
 import { EditorMetadataEntity, EditorRootFacadeEntity, Facades } from "../../common/mod.ts";
 import { ChevronDown, icon } from "../_icons.ts";
-import { UndoRedoManager } from "../undo-redo.ts";
+import { UndoRedoManager, type UndoRedoOperation } from "../undo-redo.ts";
 import { createEntityMenu } from "../util/entity-types.ts";
 import { ContextMenuItem } from "./context-menu.ts";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
@@ -328,16 +328,36 @@ export class SceneGraph implements InspectorUIWidget {
         entity => !sourceEntities.includes(entity.parent!),
       );
 
+      const undoableOperations: (UndoRedoOperation & { t: "compound" })["ops"] = [];
+
       if (event.getModifierState("Control")) {
         // Clone top-level entities into target
         for (const sourceEntity of topLevelEntities) {
-          sourceEntity.cloneInto(targetEntity);
+          const newEntity = sourceEntity.cloneInto(targetEntity);
+          undoableOperations.push({
+            t: "create-entity",
+            def: newEntity.getDefinition(),
+            parentRef: targetEntity.ref,
+          });
         }
       } else {
         // Move top-level entities under target
         for (const sourceEntity of topLevelEntities) {
+          const prevParentRef = sourceEntity.parent?.ref;
           sourceEntity.parent = targetEntity;
+          if (prevParentRef) {
+            undoableOperations.push({
+              t: "move-entity",
+              entityRef: sourceEntity.ref,
+              prevParentRef,
+              parentRef: targetEntity.ref,
+            });
+          }
         }
+      }
+
+      if (undoableOperations.length > 0) {
+        UndoRedoManager._.push({ t: "compound", ops: undoableOperations });
       }
     });
 
@@ -412,7 +432,22 @@ export class SceneGraph implements InspectorUIWidget {
         }),
       ];
 
-      if (!entity.protected) contextMenuItems.push(["Delete", () => entity.destroy()]);
+      if (!entity.protected)
+        contextMenuItems.push([
+          "Delete",
+          () => {
+            const parent = entity.parent;
+            if (parent) {
+              UndoRedoManager._.push({
+                t: "destroy-entity",
+                def: entity.getDefinition(),
+                parentRef: parent.ref,
+              });
+            }
+
+            entity.destroy();
+          },
+        ]);
 
       ui.contextMenu.drawContextMenu(event.clientX, event.clientY, contextMenuItems);
     });

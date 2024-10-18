@@ -12,6 +12,7 @@ export type UndoRedoOperation =
   | { t: "destroy-entity"; parentRef: string; def: EntityDefinition }
   | { t: "transform-change"; entityRef: string; previous: ITransform; transform: ITransform }
   | { t: "rename-entity"; entityRef: string; previous: string; name: string }
+  | { t: "move-entity"; entityRef: string; prevParentRef: string; parentRef: string }
   // | { t: "add-behavior" }
   // | { t: "remove-behavior" }
   // | { t: "modify-entity-value" }
@@ -110,6 +111,14 @@ export class UndoRedoManager {
         break;
       }
 
+      case "move-entity": {
+        const entity = this.#game.entities.lookupByRef(op.entityRef);
+        const prevParent = this.#game.entities.lookupByRef(op.prevParentRef);
+        if (entity && prevParent) entity.parent = prevParent;
+
+        break;
+      }
+
       default: {
         const t = (op as unknown as UndoRedoOperation).t;
         throw new NotImplementedError(`undo operation not implemented: ${t}`);
@@ -152,6 +161,14 @@ export class UndoRedoManager {
       case "rename-entity": {
         const entity = this.#game.entities.lookupByRef(op.entityRef);
         if (entity) entity.name = op.name;
+
+        break;
+      }
+
+      case "move-entity": {
+        const entity = this.#game.entities.lookupByRef(op.entityRef);
+        const parent = this.#game.entities.lookupByRef(op.parentRef);
+        if (entity && parent) entity.parent = parent;
 
         break;
       }
