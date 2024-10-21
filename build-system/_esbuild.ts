@@ -1,8 +1,8 @@
-import { denoPlugins } from "jsr:@luca/esbuild-deno-loader@0.10.3";
-import * as esbuild from "npm:esbuild@0.20.2";
+import { denoPlugins } from "jsr:@luca/esbuild-deno-loader@0.11.0";
+import * as esbuild from "npm:esbuild@0.24.0";
 export { denoPlugins, esbuild };
 
-import * as dotenv from "jsr:@std/dotenv@0.225.0";
+import * as dotenv from "jsr:@std/dotenv@0.225.2";
 import * as path from "jsr:@std/path@^1";
 
 export const dreamlabEngineExternalPlugin = (): esbuild.Plugin => ({

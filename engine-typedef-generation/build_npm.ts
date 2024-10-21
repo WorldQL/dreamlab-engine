@@ -1,8 +1,8 @@
 import * as dnt from "jsr:@deno/dnt@0.41.3";
-import { Tar } from "jsr:@std/archive@0.225.3/tar";
-import * as fs from "jsr:@std/fs@1";
-import * as io from "jsr:@std/io@0.224.8";
-import * as path from "jsr:@std/path@1";
+import { Tar } from "jsr:@std/archive@0.225.4/tar";
+import * as fs from "jsr:@std/fs@^1";
+import * as io from "jsr:@std/io@0.225.0";
+import * as path from "jsr:@std/path@^1";
 
 const OUT_DIR = "./out";
 await fs.emptyDir(OUT_DIR);
