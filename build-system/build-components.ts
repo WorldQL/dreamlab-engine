@@ -167,7 +167,7 @@ export const bundleClient = async (
     plugins: [
       dreamlabCssPlugin(),
       dreamlabTextImportPlugin(".svg"),
-      dreamlabEnvironmentPlugin([envLoad, ".env"]),
+      dreamlabEnvironmentPlugin([".env", envLoad]),
       dreamlabVendorExternalPlugin(),
       dreamlabEngineExternalPlugin(),
       dreamlabUIExternalPlugin(),
