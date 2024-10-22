@@ -269,7 +269,7 @@ export class Behavior implements ISignalHandler {
     this.#gameListeners.length = 0;
   }
 
-  clientHasAuthority() {
+  hasAuthority() {
     return this.game.network.self === this.entity.authority || this.entity.authority === undefined
   }
 
