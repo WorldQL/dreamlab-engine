@@ -133,7 +133,9 @@ export class ClientConnection {
   }
 
   send(packet: ClientPacket) {
-    this.socket.send(this.codec.encodePacket(packet));
+    if (this.socket.readyState === this.socket.OPEN) {
+      this.socket.send(this.codec.encodePacket(packet));
+    }
   }
 
   createNetworking(): ClientNetworking {

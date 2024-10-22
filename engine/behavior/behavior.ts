@@ -269,6 +269,10 @@ export class Behavior implements ISignalHandler {
     this.#gameListeners.length = 0;
   }
 
+  isMine() {
+    return this.game.network.self === this.entity.authority
+  }
+
   #spawned = false;
 
   [internal.behaviorSpawn](): void {
