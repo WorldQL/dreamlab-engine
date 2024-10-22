@@ -66,7 +66,7 @@ export class Camera extends Entity {
 
   #active = false;
   get active(): boolean {
-    return this.#active;
+    return this.#active && this.enabled;
   }
   set active(value: boolean) {
     // Early return if we are already active
