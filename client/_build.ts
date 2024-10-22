@@ -30,6 +30,6 @@ if (import.meta.main) {
     "./web/dist",
     "./deno.json",
     [{ in: "./src/main.ts", out: "client-main" }],
-    { watch, serve: { host: "127.0.0.1", port: 5173, servedir: "./web" } },
+    { watch, serve: { host: "127.0.0.1", port: 5179, servedir: "./web" } },
   );
 }

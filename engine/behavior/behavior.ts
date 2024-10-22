@@ -269,8 +269,13 @@ export class Behavior implements ISignalHandler {
     this.#gameListeners.length = 0;
   }
 
+  /**
+   * Returns true if the current client has authority over the entity this behavior is attached to.
+   */
   hasAuthority() {
-    return this.game.network.self === this.entity.authority || this.entity.authority === undefined
+    return (
+      this.game.network.self === this.entity.authority || this.entity.authority === undefined
+    );
   }
 
   #spawned = false;
