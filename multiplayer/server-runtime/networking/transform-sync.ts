@@ -2,6 +2,7 @@ import {
   ConnectionId,
   Entity,
   EntityDescendantSpawned,
+  EntityExclusiveAuthorityChanged,
   EntityTransformUpdate,
   InternalGameTick,
   IVector2,
@@ -95,6 +96,10 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
       to: authority,
     });
   }
+
+  game.on(EntityExclusiveAuthorityChanged, event => {
+    announceAuthority(event.entity, event.clock, event.authority);
+  });
 
   net.registerPacketHandler("RequestExclusiveAuthority", (from, packet) => {
     const entity = game.entities.lookupByRef(packet.entity);
