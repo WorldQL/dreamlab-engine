@@ -8,25 +8,25 @@
   --color-bg-2: 55 65 81;
   --color-bg-danger: 92 42 54;
 
-  --color-primary: 56 103 214;
-  --color-primary-lighter: 117 147 228;
-  --color-primary-darker: 40 77 160;
+  --color-primary: 0 128 255;
+  --color-primary-lighter: 128 179 255;
+  --color-primary-darker: 0 102 204;
 
-  --color-accent: 211 62 106;
-  --color-accent-lighter: 232 135 162;
-  --color-accent-darker: 151 42 76;
+  --color-accent: 255 0 102;
+  --color-accent-lighter: 255 128 170;
+  --color-accent-darker: 204 0 82;
 
-  --color-green: 76 175 80;
-  --color-green-lighter: 129 199 132;
-  --color-green-darker: 56 142 60;
+  --color-green: 0 255 0;
+  --color-green-lighter: 0 255 128;
+  --color-green-darker: 0 200 0;
 
-  --color-yellow: 237 137 54;
-  --color-yellow-lighter: 245 189 142;
-  --color-yellow-darker: 217 116 38;
+  --color-yellow: 255 204 0;
+  --color-yellow-lighter: 255 223 128;
+  --color-yellow-darker: 204 163 0;
 
-  --color-danger: 244 67 54;
-  --color-danger-lighter: 229 115 115;
-  --color-danger-darker: 198 40 40;
+  --color-danger: 255 51 51;
+  --color-danger-lighter: 255 102 102;
+  --color-danger-darker: 204 0 0;
 
   --color-grey: 55 65 81;
   --color-grey-lighter: 75 85 99;
