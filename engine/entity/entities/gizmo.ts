@@ -10,11 +10,17 @@ import { ClickableCircle, ClickableRect } from "./clickable.ts";
 // #region Signals
 // #region Translate
 export class GizmoTranslateStart {
-  constructor(public readonly entity: Entity, public readonly axis: "x" | "y" | "both") {}
+  constructor(
+    public readonly entity: Entity,
+    public readonly axis: "x" | "y" | "both",
+  ) {}
 }
 
 export class GizmoTranslateMove {
-  constructor(public readonly entity: Entity, public readonly position: Vector2) {}
+  constructor(
+    public readonly entity: Entity,
+    public readonly position: Vector2,
+  ) {}
 }
 
 export class GizmoTranslateEnd {
@@ -32,7 +38,10 @@ export class GizmoRotateStart {
 }
 
 export class GizmoRotateMove {
-  constructor(public readonly entity: Entity, public readonly rotation: number) {}
+  constructor(
+    public readonly entity: Entity,
+    public readonly rotation: number,
+  ) {}
 }
 
 export class GizmoRotateEnd {
@@ -46,11 +55,17 @@ export class GizmoRotateEnd {
 
 // #region Scale
 export class GizmoScaleStart {
-  constructor(public readonly entity: Entity, public readonly axis: "x" | "y" | "both") {}
+  constructor(
+    public readonly entity: Entity,
+    public readonly axis: "x" | "y" | "both",
+  ) {}
 }
 
 export class GizmoScaleMove {
-  constructor(public readonly entity: Entity, public readonly scale: Vector2) {}
+  constructor(
+    public readonly entity: Entity,
+    public readonly scale: Vector2,
+  ) {}
 }
 
 export class GizmoScaleEnd {
@@ -553,7 +568,7 @@ export class Gizmo extends Entity {
     this.#updateHandles();
 
     const canvas = this.game.renderer.app.canvas;
-    canvas.addEventListener("pointerdown", this.#onMouseMove);
+    canvas.addEventListener("pointermove", this.#onMouseMove);
     canvas.addEventListener("pointerup", this.#onMouseUp);
   }
 }
