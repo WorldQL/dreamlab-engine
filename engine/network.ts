@@ -1,7 +1,7 @@
 import { JsonValue } from "./value/mod.ts";
 
 export type ConnectionId = "server" | (string & Record<never, never>); // LiteralUnion<'server', string>
-export type CustomMessageData = object & JsonValue;
+export type CustomMessageData = JsonValue;
 
 export type CustomMessageListener = (
   from: ConnectionId,
