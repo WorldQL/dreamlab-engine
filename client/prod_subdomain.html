@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subdomain Extractor</title>
+    <script>
+        function getSubdomain() {
+            // Get the full hostname (e.g., cities.dreamlab.gg)
+            const hostname = window.location.hostname;
+
+            // Split the hostname by dots
+            const parts = hostname.split('.');
+
+            // If there are more than 2 parts, the first one is the subdomain
+            if (parts.length > 2) {
+                return parts[0];  // This assumes subdomain.domain.tld structure
+            } else {
+                return "No subdomain";  // In case there's no subdomain
+            }
+        }
+
+        function displaySubdomain() {
+            const subdomain = getSubdomain();
+            document.getElementById('subdomain').innerText = subdomain;
+        }
+
+        window.onload = displaySubdomain;
+    </script>
+</head>
+<body>
+    <h1>Subdomain Extractor</h1>
+    <p>The subdomain is: <span id="subdomain"></span></p>
+</body>
+</html>
