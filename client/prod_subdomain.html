@@ -1,35 +1,62 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Subdomain Extractor</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title></title>
     <script>
-        function getSubdomain() {
-            // Get the full hostname (e.g., cities.dreamlab.gg)
-            const hostname = window.location.hostname;
+      function getSubdomain() {
+        // Get the full hostname (e.g., cities.dreamlab.gg)
+        const hostname = window.location.hostname;
 
-            // Split the hostname by dots
-            const parts = hostname.split('.');
+        // Split the hostname by dots
+        const parts = hostname.split(".");
 
-            // If there are more than 2 parts, the first one is the subdomain
-            if (parts.length > 2) {
-                return parts[0];  // This assumes subdomain.domain.tld structure
-            } else {
-                return "No subdomain";  // In case there's no subdomain
-            }
+        // If there are more than 2 parts, the first one is the subdomain
+        if (parts.length > 2) {
+          return parts[0]; // This assumes subdomain.domain.tld structure
+        } else {
+          return "No subdomain"; // In case there's no subdomain
         }
+      }
 
-        function displaySubdomain() {
-            const subdomain = getSubdomain();
-            document.getElementById('subdomain').innerText = subdomain;
+      async function fetchGameId(sd) {
+        const url = `https://app.dreamlab.gg/api/world/subdomain-to-id?subdomain=${sd}`;
+
+        try {
+          const response = await fetch(url);
+
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+
+          const data = await response.json();
+
+          return data;
+        } catch (error) {
+          document.getElementById("result").textContent = `Error: ${error.message}`;
         }
+      }
 
-        window.onload = displaySubdomain;
+      async function setup() {
+        // const subdomain = getSubdomain();
+        const subdomain = "testplatforming";
+        const data = await fetchGameId(subdomain);
+        if (data.found) {
+          document.getElementById("remark").remove();
+          console.log(data)
+
+        } else {
+          document.getElementById("remark").innerText =
+            "Error: Game with given subdomain not found.";
+        }
+      }
+
+      window.onload = setup;
     </script>
-</head>
-<body>
-    <h1>Subdomain Extractor</h1>
-    <p>The subdomain is: <span id="subdomain"></span></p>
-</body>
+  </head>
+  <body>
+    <h1>Loading game</h1>
+    <p id="remark">Looking up game...</p>
+  </body>
 </html>
