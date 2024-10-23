@@ -28,6 +28,7 @@ export class BehaviorTypeInfoService {
     dummyGame[internal.behaviorLoader].initialize(behaviorType);
 
     behavior.setup();
+    behavior[internal.implicitSetup]()
 
     if (RUN_BEHAVIOR_INITIALIZATION) {
       try {

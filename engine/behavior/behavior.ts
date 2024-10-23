@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-explicit-any
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import type { ConditionalExcept } from "@dreamlab/vendor/type-fest.ts";
 
@@ -62,6 +63,23 @@ type BehaviorValueOpts<B extends Behavior, P extends BehaviorValueProp<B>> = {
   description?: string;
   replicated?: boolean;
 };
+
+// TODO: Fix adapterType type. Can't quite get it to work in browser editor.
+// export function syncedValue(adapterType?: ValueTypeAdapter<any>) {
+export function syncedValue(adapterType?: any) {
+  return function (target: any, propertyKey: string) {
+    if (!target.constructor[internal.defineValuesProperties]) {
+      Object.defineProperty(target.constructor, internal.defineValuesProperties, {
+        value: [],
+        writable: true,
+        configurable: false,
+        enumerable: false,
+      });
+    }
+
+    target.constructor[internal.defineValuesProperties].push({ propertyKey, adapterType });
+  };
+}
 
 export class Behavior implements ISignalHandler {
   readonly game: Game;
@@ -165,7 +183,6 @@ export class Behavior implements ISignalHandler {
   // #endregion
 
   // #region External Listeners
-  // deno-lint-ignore no-explicit-any
   readonly externalListeners: SignalSubscription<any>[] = [];
 
   protected listen<S extends Signal, T extends ISignalHandler>(
@@ -299,6 +316,23 @@ export class Behavior implements ISignalHandler {
     while (ancestor) {
       ancestor.fire(BehaviorDescendantSpawned, this);
       ancestor = ancestor.parent;
+    }
+  }
+
+  [internal.implicitSetup]() {
+    // @ts-expect-error ... = "I know this is correct"
+    const valuesToDefine = this.constructor[internal.defineValuesProperties];
+
+    if (valuesToDefine && valuesToDefine.length > 0) {
+      for (const td of valuesToDefine) {
+        if (td.adapterType) {
+          // @ts-expect-error ...
+          this.defineValue(this.constructor, td.propertyKey, { type: td.adapterType });
+        } else {
+          // @ts-expect-error ...
+          this.defineValue(this.constructor, td.propertyKey);
+        }
+      }
     }
   }
 

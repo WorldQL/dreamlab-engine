@@ -33,3 +33,5 @@ export const entityTypeRegistry = Symbol.for("dreamlab.internal.entityTypeRegist
 export const entityOwnEnabled = Symbol.for("dreamlab.internal.entityOwnEnabled");
 export const valueRelatedEntity = Symbol.for("dreamlab.internal.valueRelatedEntity");
 export const valueApplyUpdate = Symbol.for("dreamlab.internal.valueApplyUpdate");
+export const defineValuesProperties = Symbol.for("dreamlab.internal.defineValuesProperties");
+export const implicitSetup = Symbol.for("dreamlab.internal.implicitBehaviorSetup")

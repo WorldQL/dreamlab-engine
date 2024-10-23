@@ -318,7 +318,10 @@ export abstract class Entity implements ISignalHandler {
           values: b.values,
         });
         entity.behaviors.push(behavior);
-        if (!opts.inert) behavior.setup();
+        if (!opts.inert) {
+          behavior.setup();
+          behavior[internal.implicitSetup]();
+        }
       });
     }
 
@@ -345,7 +348,10 @@ export abstract class Entity implements ISignalHandler {
   }
 
   [internal.entitySpawnFinalize]() {
-    for (const behavior of this.behaviors) behavior.setup();
+    for (const behavior of this.behaviors) {
+      behavior.setup();
+      behavior[internal.implicitSetup]()
+    }
     this.#spawn();
     for (const child of this.children.values()) child[internal.entitySpawnFinalize]();
   }
@@ -367,6 +373,7 @@ export abstract class Entity implements ISignalHandler {
     const behaviorType = behavior.constructor as BehaviorConstructor<B>;
     this.game[internal.behaviorLoader].initialize(behaviorType);
     b.setup();
+    b[internal.implicitSetup]();
     b[internal.behaviorSpawn]();
 
     return b;
