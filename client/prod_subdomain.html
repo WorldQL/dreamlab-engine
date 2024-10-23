@@ -4,6 +4,21 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title></title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      iframe#gameiframe {
+        width: 100%;
+        height: 100vh;
+        border: none; /* Remove border to ensure no extra height is added */
+      }
+    </style>
     <script>
       function getSubdomain() {
         // Get the full hostname (e.g., cities.dreamlab.gg)
@@ -39,24 +54,32 @@
       }
 
       async function setup() {
-        // const subdomain = getSubdomain();
-        const subdomain = "testplatforming";
+        const subdomain = getSubdomain();
         const data = await fetchGameId(subdomain);
         if (data.found) {
           document.getElementById("remark").remove();
-          console.log(data)
+          document.getElementById("loading").remove();
 
+          createGameIframe(data.id);
         } else {
           document.getElementById("remark").innerText =
             "Error: Game with given subdomain not found.";
         }
       }
 
+      function createGameIframe(worldId) {
+        const iframe = document.createElement("iframe");
+        iframe.id = "gameiframe";
+        iframe.src = `https://gameclient.dreamlab.gg/?worldId=${worldId}`;
+        iframe.style.border = "none";
+        document.body.appendChild(iframe);
+      }
+
       window.onload = setup;
     </script>
   </head>
   <body>
-    <h1>Loading game</h1>
+    <h1 id="loading">Loading game</h1>
     <p id="remark">Looking up game...</p>
   </body>
 </html>
