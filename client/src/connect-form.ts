@@ -1,5 +1,3 @@
-import "@dreamlab/util/polyfills/with-resolvers.ts";
-
 import { element as elem } from "@dreamlab/ui";
 import { urlWithParams } from "@dreamlab/util/url.ts";
 import { z } from "@dreamlab/vendor/zod.ts";

@@ -1,6 +1,7 @@
 import { ConnectionId } from "@dreamlab/engine";
 import { ClientPacket, ServerPacket } from "@dreamlab/proto/play.ts";
 import { Scene } from "@dreamlab/scene";
+import type { RichGameStatus } from "./rich-status.ts";
 
 interface ConnectionEstablishedMessage {
   op: "ConnectionEstablished";
@@ -52,9 +53,9 @@ interface OutgoingPacketMessage {
   packet: ServerPacket;
 }
 
-interface SetStatusMessage {
-  op: "SetStatus";
-  status: object;
+interface ReportRichStatusMessage {
+  op: "ReportRichStatus";
+  status: RichGameStatus;
 }
 
 interface SceneDefinitionResponseMessage {
@@ -70,6 +71,6 @@ interface PauseChangedMessage {
 export type WorkerIPCMessage =
   | WorkerUpMessage
   | OutgoingPacketMessage
-  | SetStatusMessage
+  | ReportRichStatusMessage
   | SceneDefinitionResponseMessage
   | PauseChangedMessage;

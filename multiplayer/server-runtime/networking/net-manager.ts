@@ -154,11 +154,25 @@ export class ServerNetworkManager {
 
       this.send(message.connectionId, {
         t: "PeerListSnapshot",
-        peers: [...this.clients.values()].map(p => ({
-          nickname: p.nickname,
-          connection_id: p.id,
-          player_id: p.playerId,
-        })),
+        peers: this.clients
+          .values()
+          .map(p => ({
+            nickname: p.nickname,
+            connection_id: p.id,
+            player_id: p.playerId,
+          }))
+          .toArray(),
+      });
+
+      this.ipc.send({
+        op: "ReportRichStatus",
+        status: {
+          player_count: this.clients.size,
+          players: this.clients
+            .values()
+            .map(({ id, nickname }) => ({ id, nickname }))
+            .toArray(),
+        },
       });
 
       game.fire(PlayerConnectionEstablished, peerInfo);

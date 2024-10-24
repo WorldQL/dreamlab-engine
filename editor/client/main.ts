@@ -1,3 +1,5 @@
+import "@dreamlab/vendor/polyfills.ts";
+
 import "./css/main.css";
 
 import "@dreamlab/client/_env.ts";

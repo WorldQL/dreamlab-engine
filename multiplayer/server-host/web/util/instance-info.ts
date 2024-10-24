@@ -26,5 +26,5 @@ export const instanceInfo = (instance: GameInstance): z.infer<typeof InstanceInf
   status_detail: instance.statusDetail ?? null,
   status: instance.status,
   uptime_secs: (Date.now() - instance.createdAt.getTime()) / 1000,
-  rich_status: instance.session?.status,
+  rich_status: instance.session?.richStatus,
 });

@@ -455,7 +455,10 @@ export abstract class Entity implements ISignalHandler {
     definition.children =
       this.children.size === 0
         ? undefined
-        : [...this.children.values()].map(entity => entity.#generateRichDefinition(withRefs));
+        : this.children
+            .values()
+            .map(entity => entity.#generateRichDefinition(withRefs))
+            .toArray();
 
     return definition;
   }

@@ -1,3 +1,5 @@
+import "@dreamlab/vendor/polyfills.ts";
+
 import "./css/client.css";
 
 import "../../build-system/live-reload.js";

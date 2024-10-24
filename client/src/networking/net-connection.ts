@@ -150,7 +150,7 @@ export class ClientConnection {
         return conn.id;
       },
       get connections(): ConnectionInfo[] {
-        return [...conn.peers.values()];
+        return conn.peers.values().toArray();
       },
       sendCustomMessage(to: ConnectionId, channel: string, data: CustomMessageData) {
         conn.send({ t: "CustomMessage", channel, data, to: to === "server" ? undefined : to });

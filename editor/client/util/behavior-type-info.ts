@@ -40,11 +40,14 @@ export class BehaviorTypeInfoService {
 
     const info: BehaviorTypeInfo = {
       typeName: behaviorType.name,
-      values: [...behavior.values.entries()].map(([key, value]) => ({
-        key,
-        default: value.value,
-        typeTag: value.typeTag,
-      })),
+      values: behavior.values
+        .entries()
+        .map(([key, value]) => ({
+          key,
+          default: value.value,
+          typeTag: value.typeTag,
+        }))
+        .toArray(),
     };
 
     dummyEntity.destroy();

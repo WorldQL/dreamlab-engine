@@ -15,7 +15,8 @@
     "env": "data:application/javascript,export default {}"
   },
   "compilerOptions": {
-    "lib": ["deno.window", "dom"]
+    "lib": ["deno.window", "dom"],
+    "noImplicitOverride": false
   },
   "exclude": ["./web/dist/*"],
   "lint": {

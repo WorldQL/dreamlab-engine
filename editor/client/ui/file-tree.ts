@@ -14,8 +14,10 @@ import {
   SimpleIcon,
 } from "../_icons.ts";
 import { DataTree } from "../components/mod.ts";
-import TypeScript from "../svg/typescript.svg";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
+
+// @ts-expect-error svg import bundled by esbuild
+import TypeScript from "../svg/typescript.svg";
 
 type FileTreeNode =
   | { type: "file"; name: string; path: string }

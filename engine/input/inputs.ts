@@ -50,7 +50,10 @@ export class Inputs extends BasicSignalHandler<Inputs> {
 
   public get bindings(): readonly (readonly [action: Action, input: Input | undefined])[] {
     return Object.freeze(
-      [...this.#actions.values()].map(action => [action, action.binding] as const),
+      this.#actions
+        .values()
+        .map(action => [action, action.binding] as const)
+        .toArray(),
     );
   }
 

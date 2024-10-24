@@ -72,7 +72,10 @@ export const serializeEntityDefinition = (
 
   const children =
     def.children && def.children.length > 0
-      ? [...def.children.values()].map(child => serializeEntityDefinition(game, child))
+      ? def.children
+          .values()
+          .map(child => serializeEntityDefinition(game, child))
+          .toArray()
       : undefined;
 
   const behaviors =

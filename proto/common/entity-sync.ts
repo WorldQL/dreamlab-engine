@@ -94,7 +94,10 @@ export const serializeEntityDefinition = (
     throw new Error("Attempted to serialize EntityDefinition with undefined ref");
 
   const children = def.children
-    ? [...def.children.values()].map(child => serializeEntityDefinition(game, child, ref))
+    ? def.children
+        .values()
+        .map(child => serializeEntityDefinition(game, child, ref))
+        .toArray()
     : undefined;
 
   const behaviors = def.behaviors

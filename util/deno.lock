@@ -1,0 +1,11 @@
+{
+  "version": "4",
+  "specifiers": {
+    "npm:iterator-helpers-polyfill@3.0.1": "3.0.1"
+  },
+  "npm": {
+    "iterator-helpers-polyfill@3.0.1": {
+      "integrity": "sha512-9uSoKErC0+TG7uoXlv5k7rs196/l/VGr9hb9KbptpMhszsSksxJCwetp0p7FvgM3SwxlxgEkvokmeOi02PARlQ=="
+    }
+  }
+}

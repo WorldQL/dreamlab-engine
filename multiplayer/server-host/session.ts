@@ -7,6 +7,7 @@ import { dumpSceneDefinition, GameInstance } from "./instance.ts";
 import { IPCWorker } from "./worker.ts";
 
 import * as path from "jsr:@std/path@1";
+import type { RichGameStatus } from "../server-common/rich-status.ts";
 
 interface ConnectedClient {
   connectionId: string;
@@ -24,7 +25,7 @@ export class GameSession {
 
   connections = new Map<string, ConnectedClient>();
 
-  status: object = {};
+  richStatus: RichGameStatus = { players: [], player_count: 0 };
   paused: boolean = false;
 
   #readied: boolean = false;
@@ -76,8 +77,8 @@ export class GameSession {
       this.sendPacket(message.to, message.packet);
     });
 
-    this.ipc.addMessageListener("SetStatus", message => {
-      this.status = message.status;
+    this.ipc.addMessageListener("ReportRichStatus", message => {
+      this.richStatus = message.status;
     });
 
     this.ipc.addMessageListener("PauseChanged", message => {
