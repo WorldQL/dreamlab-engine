@@ -256,5 +256,9 @@ export function setupKeyboardShortcuts(
 
       return;
     }
+
+    if (event.key === 'Escape') {
+      selectedService.entities = [];
+    }
   });
 }
