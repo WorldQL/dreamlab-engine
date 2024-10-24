@@ -164,18 +164,9 @@ export class ServerNetworkManager {
           .toArray(),
       });
 
-      this.ipc.send({
-        op: "ReportRichStatus",
-        status: {
-          player_count: this.clients.size,
-          players: this.clients
-            .values()
-            .map(({ id, nickname }) => ({ id, nickname }))
-            .toArray(),
-        },
-      });
-
       game.fire(PlayerConnectionEstablished, peerInfo);
+
+      this.updateRichStatus();
     });
 
     this.ipc.addMessageListener("ConnectionDropped", message => {
@@ -186,6 +177,8 @@ export class ServerNetworkManager {
       const peerInfo = this.clients.get(message.connectionId);
       this.clients.delete(message.connectionId);
       if (peerInfo) game.fire(PlayerConnectionDropped, peerInfo);
+
+      this.updateRichStatus();
     });
 
     handlePing(this, game);
@@ -194,6 +187,19 @@ export class ServerNetworkManager {
     handleCustomMessages(this, game);
     handleEntitySync(this, game);
     handleTransformSync(this, game);
+  }
+
+  updateRichStatus() {
+    this.ipc.send({
+      op: "ReportRichStatus",
+      status: {
+        player_count: this.clients.size,
+        players: this.clients
+          .values()
+          .map(({ id, nickname }) => ({ id, nickname }))
+          .toArray(),
+      },
+    });
   }
 
   send(to: ConnectionId, packet: ServerPacket) {
