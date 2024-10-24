@@ -187,7 +187,7 @@ export function setupKeyboardShortcuts(
             t: "create-entity",
             parentRef: x.parent!.ref,
             def: x.getDefinition(),
-          } satisfies UndoRedoOperation),
+          }) satisfies UndoRedoOperation,
       );
 
       UndoRedoManager._.push({ t: "compound", ops });
@@ -215,7 +215,7 @@ export function setupKeyboardShortcuts(
             t: "destroy-entity",
             parentRef: x.parent!.ref,
             def: x.getDefinition(),
-          } satisfies UndoRedoOperation),
+          }) satisfies UndoRedoOperation,
       );
 
       for (const entity of toDelete) {
@@ -231,9 +231,10 @@ export function setupKeyboardShortcuts(
     if (event.key === "z" && (event.ctrlKey || event.metaKey)) {
       if (cooldownManager.isOnCooldown("undo")) return;
 
-      UndoRedoManager._.undo();
-      selectedService.entities = [];
-      // TODO: Only deselect on certain ops
+      const op = UndoRedoManager._.undo();
+      const selectedEntityRefs = selectedService.entities.map(e => e.ref);
+      if (op?.t === "create-entity" && selectedEntityRefs.includes(op.def._ref ?? ""))
+        selectedService.entities = [];
 
       return;
     }
@@ -242,9 +243,16 @@ export function setupKeyboardShortcuts(
     if (event.key === "y" && (event.ctrlKey || event.metaKey)) {
       if (cooldownManager.isOnCooldown("redo")) return;
 
-      UndoRedoManager._.redo();
-      selectedService.entities = [];
-      // TODO: Only deselect on certain ops
+      const op = UndoRedoManager._.redo();
+
+      const selectedEntityRefs = selectedService.entities.map(e => e.ref);
+      if (
+        op?.t === "compound" &&
+        op.ops.some(
+          op => op.t === "destroy-entity" && selectedEntityRefs.includes(op.def._ref ?? ""),
+        )
+      )
+        selectedService.entities = [];
 
       return;
     }
