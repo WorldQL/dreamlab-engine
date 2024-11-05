@@ -11,6 +11,7 @@ export const behaviorSpawn = Symbol.for("dreamlab.internal.behaviorSpawn");
 export const vectorOnChanged = Symbol.for("dreamlab.internal.vectorOnChanged");
 export const transformOnChanged = Symbol.for("dreamlab.internal.transformOnChanged");
 export const transformForceUpdate = Symbol.for("dreamlab.internal.transformForceUpdate");
+export const transformFromNetwork = Symbol.for("dreamlab.internal.transformFromNetwork");
 export const timeTick = Symbol.for("dreamlab.internal.timeTick");
 export const timeIncrement = Symbol.for("dreamlab.internal.timeIncrement");
 export const timeSetMode = Symbol.for("dreamlab.internal.timeSetMode");

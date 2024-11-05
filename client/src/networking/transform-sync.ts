@@ -72,6 +72,15 @@ export const handleTransformSync: ClientNetworkSetupRoutine = (conn, game) => {
       if (entity.authority === conn.id) continue;
 
       ignoredEntityRefs.add(entity.ref);
+      entity[internal.transformFromNetwork](
+        packet.from,
+        new Transform({
+          position: report.position,
+          rotation: report.rotation,
+          scale: report.scale,
+          z: report.z,
+        }),
+      );
       entity.transform[internal.transformForceUpdate](
         new Transform({
           position: report.position,
