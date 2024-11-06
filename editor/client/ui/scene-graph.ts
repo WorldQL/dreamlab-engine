@@ -242,6 +242,15 @@ export class SceneGraph implements InspectorUIWidget {
       if (entryElement.querySelector(":scope > summary input")) return;
       this.triggerRename(entity, entryElement);
     });
+
+    entryElement.addEventListener("keydown", event => {
+      if (event.key === "F2") {
+        if (!eventTargetsEntry(event, entryElement)) return;
+        if (entryElement.querySelector(":scope > summary input")) return;
+        event.preventDefault();
+        this.triggerRename(entity, entryElement);
+      }
+    });
   }
 
   triggerRename(entity: Entity, entryElement: HTMLElement) {
