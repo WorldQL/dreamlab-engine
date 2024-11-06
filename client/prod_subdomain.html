@@ -73,6 +73,11 @@
         iframe.src = `https://gameclient.dreamlab.gg/?worldId=${worldId}`;
         iframe.style.border = "none";
         document.body.appendChild(iframe);
+
+        // iframe.focus() does not work but this little incantation does
+        iframe.addEventListener("load", () => {
+          iframe.contentWindow.focus();
+        });
       }
 
       window.onload = setup;

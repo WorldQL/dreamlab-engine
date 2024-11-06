@@ -153,8 +153,6 @@ export class Inputs extends BasicSignalHandler<Inputs> {
       return;
     }
 
-    ev.preventDefault();
-
     const input: Input | undefined =
       ev.button === 0
         ? "MouseLeft"
@@ -163,6 +161,11 @@ export class Inputs extends BasicSignalHandler<Inputs> {
           : ev.button === 2
             ? "MouseRight"
             : undefined;
+
+    // required to allow focusing the game if it's in an iframe
+    if (input !== 'MouseLeft') {
+      ev.preventDefault()
+    }
 
     if (!input) return;
     const button =
