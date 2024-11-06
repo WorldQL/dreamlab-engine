@@ -1,5 +1,5 @@
 type FontStyle = "normal" | "italic" | "oblique";
-type FontWeight = `${1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9}00` | "bold" | "semibold";
+type FontWeight = `${1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9}00` | "normal" | "bold" | "semibold";
 
 export async function preloadFonts({
   families = [],

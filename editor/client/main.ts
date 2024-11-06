@@ -5,12 +5,12 @@ import "./css/main.css";
 import "@dreamlab/client/_env.ts";
 import "../../build-system/live-reload.js";
 
-import { preloadFonts } from "./fonts.ts";
+import { preloadFonts } from "@dreamlab/client/fonts.ts";
 
 const fonts = preloadFonts({
-  families: ["Inter", "Iosevka"],
+  families: ["Inter", "Iosevka", "Eas VHS"],
   styles: ["normal"],
-  weights: ["400", "500"],
+  weights: ["normal", "400", "500"],
 });
 
 import "./draggable-layout.ts";

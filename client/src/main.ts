@@ -9,9 +9,16 @@ import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
 import { urlToHTTP, urlToWebSocket } from "@dreamlab/util/url.ts";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import { createConnectForm, fetchInstances, spawnNewInstance } from "./connect-form.ts";
+import { preloadFonts } from "./fonts.ts";
 import { connectToGame } from "./game-connection.ts";
 import { setupGame } from "./game-setup.ts";
 import { connectionDetails, setConnectionDetails } from "./util/server-url.ts";
+
+const fonts = preloadFonts({
+  families: ["Inter", "Iosevka", "Eas VHS"],
+  styles: ["normal"],
+  weights: ["normal", "400", "500"],
+});
 
 let nickname =
   window.localStorage.getItem("dreamlab/nickname") ??
@@ -65,6 +72,7 @@ const [game, conn, handshake] = await connectToGame(
   DEFAULT_CODEC,
 );
 
+await fonts;
 await setupGame(game, conn, handshake.edit_mode);
 
 new ResizeObserver(_ => {
