@@ -284,8 +284,8 @@ export class Text extends PixiEntity {
     });
 
     const sizeValue = this.values.get("size");
-    this.on(EntityTransformUpdate, updateSize);
-    sizeValue?.onChanged(() => updateSize);
+    this.on(EntityTransformUpdate, () => updateSize());
+    sizeValue?.onChanged(() => updateSize());
 
     const alignValue = this.values.get("align");
     alignValue?.onChanged(() => {
