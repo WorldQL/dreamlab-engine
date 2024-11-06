@@ -83,6 +83,8 @@ export class SceneGraph implements InspectorUIWidget {
             def: newEntity.getDefinition(),
           });
 
+          ui.selectedEntity.entities = [newEntity];
+
           const newEntryElement = this.entryElementMap.get(newEntity.ref);
           if (newEntryElement) this.triggerRename(newEntity, newEntryElement);
         }),
@@ -433,6 +435,8 @@ export class SceneGraph implements InspectorUIWidget {
             parentRef: entity.ref,
             def: newEntity.getDefinition(),
           });
+
+          ui.selectedEntity.entities = [newEntity];
 
           const newEntryElement = this.entryElementMap.get(newEntity.ref);
           if (newEntryElement) this.triggerRename(newEntity, newEntryElement);
