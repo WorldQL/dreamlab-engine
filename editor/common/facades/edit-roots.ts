@@ -3,7 +3,7 @@ import { Empty, Entity } from "@dreamlab/engine";
 export abstract class EditorRootFacadeEntity extends Empty {}
 
 export class WorldRootFacade extends EditorRootFacadeEntity {
-  public static readonly icon: string = "🏠";
+  public static readonly icon: string = "🌐";
   static {
     Entity.registerType(this, "@editor");
   }
