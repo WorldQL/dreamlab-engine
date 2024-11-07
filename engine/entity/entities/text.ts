@@ -245,11 +245,9 @@ export class Text extends PixiEntity {
     );
   }
 
-  async onInitialize() {
+  onInitialize() {
     super.onInitialize();
     if (!this.container) return;
-
-    await this.#reflow();
 
     const updateSize = () => {
       if (!this.#mesh) return;
@@ -324,5 +322,7 @@ export class Text extends PixiEntity {
     letterSpacingValue?.onChanged(() => {
       this.#reflow();
     });
+
+    void this.#reflow();
   }
 }
