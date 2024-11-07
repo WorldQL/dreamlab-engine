@@ -39,19 +39,39 @@ export class EditorFacadeCamera extends PixiEntity {
   constructor(ctx: EntityContext) {
     super(ctx, false);
     this.defineValues(EditorFacadeCamera, "active", "smooth", "unlocked");
-
-    this.zoom = 1 / this.globalTransform.scale.x;
+    
+    const transform = this.globalTransform;
+    let updating = false;
+  
+    // Initialize zoom and aspect ratio
+    this.zoom = 1 / transform.scale.x;
+    let aspectRatio = transform.scale.y / transform.scale.x;
+  
     const zoom = this.defineValue(EditorFacadeCamera, "zoom");
-    let zoomChanging = false;
-    zoom.onChanged(() => {
-      zoomChanging = true;
-      this.globalTransform.scale = Vector2.ONE.mul(1 / this.zoom);
-      zoomChanging = false;
-    });
-    this.on(EntityTransformUpdate, () => {
-      if (zoomChanging) return;
-      this.zoom = 1 / this.globalTransform.scale.x;
-    });
+  
+    const updateScaleFromZoom = () => {
+      if (updating) return;
+      updating = true;
+      // Update scale.x and scale.y while preserving aspect ratio
+      transform.scale.x = 1 / this.zoom;
+      transform.scale.y = (1 / this.zoom) * aspectRatio;
+      updating = false;
+    };
+  
+    const updateZoomFromScale = () => {
+      if (updating) return;
+      updating = true;
+      // Update zoom based on scale.x
+      this.zoom = 1 / transform.scale.x;
+      // Update aspect ratio
+      aspectRatio = transform.scale.y / transform.scale.x;
+      updating = false;
+    };
+  
+    zoom.onChanged(updateScaleFromZoom);
+  
+    // Listen for changes in the scale to update zoom and aspect ratio
+    this.on(EntityTransformUpdate, updateZoomFromScale);
   }
 
   onInitialize(): void {
