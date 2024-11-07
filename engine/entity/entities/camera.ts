@@ -117,10 +117,6 @@ export class Camera extends Entity {
     this.container = new PIXI.Container();
     this.game.renderer.app.stage.addChild(this.container);
 
-    this.defineValue(Camera, "active", { replicated: false });
-    this.defineValue(Camera, "smooth", { replicated: false });
-    this.defineValue(Camera, "unlocked", { replicated: false });
-
     this.listen(this.game, GameRender, () => {
       if (!this.#active) return;
       const delta = this.game.time.delta;
@@ -181,6 +177,9 @@ export class Camera extends Entity {
     let aspectRatio = transform.scale.y / transform.scale.x;
 
     const zoom = this.defineValue(Camera, "zoom", { replicated: false });
+    this.defineValue(Camera, "active", { replicated: false });
+    this.defineValue(Camera, "smooth", { replicated: false });
+    this.defineValue(Camera, "unlocked", { replicated: false });
 
     const updateScaleFromZoom = () => {
       if (updating) return;

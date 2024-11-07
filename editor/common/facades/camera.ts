@@ -38,6 +38,7 @@ export class EditorFacadeCamera extends PixiEntity {
 
   constructor(ctx: EntityContext) {
     super(ctx, false);
+    const zoom = this.defineValue(EditorFacadeCamera, "zoom");
     this.defineValues(EditorFacadeCamera, "active", "smooth", "unlocked");
     
     const transform = this.globalTransform;
@@ -47,7 +48,6 @@ export class EditorFacadeCamera extends PixiEntity {
     this.zoom = 1 / transform.scale.x;
     let aspectRatio = transform.scale.y / transform.scale.x;
   
-    const zoom = this.defineValue(EditorFacadeCamera, "zoom");
   
     const updateScaleFromZoom = () => {
       if (updating) return;
