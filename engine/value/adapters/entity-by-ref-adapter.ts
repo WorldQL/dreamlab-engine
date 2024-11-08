@@ -20,3 +20,5 @@ export class EntityByRefAdapter extends ValueTypeAdapter<Entity | undefined> {
     return this.game.entities.lookupByRef(ref);
   }
 }
+
+export { EntityByRefAdapter as EntityRef };
