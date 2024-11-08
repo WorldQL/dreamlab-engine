@@ -112,6 +112,7 @@ export class AppMenu {
       this.playFocused = true;
       this.updateButtonStates();
       this.updateViewportStates(editUI);
+      window.parent.postMessage("analytics-playButtonClicked", "*");
     });
     this.controls.edit.addEventListener("click", () => {
       this.playFocused = false;
