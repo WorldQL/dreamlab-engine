@@ -5,6 +5,7 @@ import { urlWithParams } from "@dreamlab/util/url.ts";
 import { BehaviorLoader } from "./behavior/behavior-loader.ts";
 import { BehaviorConstructor } from "./behavior/mod.ts";
 import {
+  ClickableEntity,
   Entity,
   EntityStore,
   LocalRoot,
@@ -309,6 +310,7 @@ export class ClientGame extends BaseGame {
     this.ui[internal.uiDestroy]();
     this.local.destroy();
     super.shutdown();
+    ClickableEntity[internal.clickableTeardownGame](this);
     this.renderer.app.destroy({ removeView: true });
     this.network.disconnect();
   }

@@ -1,6 +1,7 @@
 import { Cursor } from "../../input/inputs.ts";
+import * as internal from "../../internal.ts";
 import { IVector2, Vector2, pointWorldToLocal } from "../../math/mod.ts";
-import { BaseGame } from "../../mod.ts";
+import { ClientGame } from "../../mod.ts";
 import {
   Click,
   GameRender,
@@ -47,9 +48,9 @@ export abstract class ClickableEntity extends Entity {
     }
   }
 
-  static #GameRenderListeners = new Map<BaseGame, (ev: GameRender) => void>();
-  static #MouseDownListeners = new Map<BaseGame, (ev: MouseDown) => void>();
-  static #MouseUpListeners = new Map<BaseGame, (ev: MouseUp) => void>();
+  static #GameRenderListeners = new Map<ClientGame, (ev: GameRender) => void>();
+  static #MouseDownListeners = new Map<ClientGame, (ev: MouseDown) => void>();
+  static #MouseUpListeners = new Map<ClientGame, (ev: MouseUp) => void>();
 
   constructor(ctx: EntityContext) {
     super(ctx);
@@ -124,6 +125,12 @@ export abstract class ClickableEntity extends Entity {
   }
 
   protected abstract isInBounds(worldPosition: Vector2): boolean;
+
+  static [internal.clickableTeardownGame](game: ClientGame) {
+    ClickableEntity.#GameRenderListeners.delete(game);
+    ClickableEntity.#MouseDownListeners.delete(game);
+    ClickableEntity.#MouseUpListeners.delete(game);
+  }
 }
 
 export class ClickableRect extends ClickableEntity {

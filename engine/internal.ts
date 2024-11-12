@@ -36,3 +36,4 @@ export const valueRelatedEntity = Symbol.for("dreamlab.internal.valueRelatedEnti
 export const valueApplyUpdate = Symbol.for("dreamlab.internal.valueApplyUpdate");
 export const defineValuesProperties = Symbol.for("dreamlab.internal.defineValuesProperties");
 export const implicitSetup = Symbol.for("dreamlab.internal.implicitBehaviorSetup");
+export const clickableTeardownGame = Symbol.for("dreamlab.internal.clickableTeardownGame");
