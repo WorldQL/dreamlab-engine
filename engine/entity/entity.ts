@@ -765,14 +765,18 @@ export abstract class Entity implements ISignalHandler {
     }
   }
 
-  #incomingNetworkTransform: Transform | undefined;
-  #incomingNetworkTransformTicks: number = 0;
+  #netTransformTo: Transform | undefined;
+  #netTransformFrom: Transform | undefined;
+  #netTransformTicks: number = 0;
   [internal.transformFromNetwork](_from: ConnectionId, transform: Transform) {
-    this.#incomingNetworkTransform = transform;
-    this.#incomingNetworkTransformTicks = this.game.time.ticks;
+    this.#netTransformFrom = new Transform(this.globalTransform);
+    this.#netTransformTo = this.parent
+      ? transformLocalToWorld(this.parent.globalTransform, transform)
+      : transform;
+    this.#netTransformTicks = this.game.time.ticks;
 
-    this.transform[internal.transformForceUpdate](transform);
-    this.transform[internal.transformOnChanged]();
+    // this.transform[internal.transformForceUpdate](transform);
+    // this.transform[internal.transformOnChanged]();
   }
 
   #sourceRef: string | undefined; // entity ref: cloned from
@@ -917,6 +921,24 @@ export abstract class Entity implements ISignalHandler {
     }
   }
   [internal.interpolationStartTick]() {
+    if (this.#netTransformFrom && this.#netTransformTo) {
+      const INTERP_TIME_TICKS = 6; // 6 ticks = 100ms
+
+      const age = this.game.time.ticks - this.#netTransformTicks;
+      if (age <= INTERP_TIME_TICKS) {
+        const t = age / INTERP_TIME_TICKS;
+        let newTransform = new Transform(this.#netTransformTo);
+        newTransform.position.assign(
+          Vector2.lerp(this.#netTransformFrom.position, this.#netTransformTo.position, t),
+        );
+        newTransform = this.parent
+          ? transformWorldToLocal(this.parent.globalTransform, newTransform)
+          : newTransform;
+        this.transform[internal.transformForceUpdate](newTransform);
+        this.transform[internal.transformOnChanged]();
+      }
+    }
+
     const tr = this.globalTransform;
     const pos = tr.position;
     this.#prevPosition.x = pos.x;
@@ -927,8 +949,6 @@ export abstract class Entity implements ISignalHandler {
     this.#prevScale.y = scale.y;
   }
   [internal.interpolationStartFrame](partial: number) {
-    // TODO: interpolate using this.#incomingNetworkTransform if it's in-date (150ms = 9 ticks)
-
     this.#interpolated.position.assign(
       Vector2.lerp(this.#prevPosition, this.globalTransform.position, partial),
     );

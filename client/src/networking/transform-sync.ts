@@ -73,7 +73,7 @@ export const handleTransformSync: ClientNetworkSetupRoutine = (conn, game) => {
 
       ignoredEntityRefs.add(entity.ref);
       entity[internal.transformFromNetwork](
-        packet.from,
+        packet.from ?? "server",
         new Transform({
           position: report.position,
           rotation: report.rotation,
@@ -81,15 +81,6 @@ export const handleTransformSync: ClientNetworkSetupRoutine = (conn, game) => {
           z: report.z,
         }),
       );
-      entity.transform[internal.transformForceUpdate](
-        new Transform({
-          position: report.position,
-          rotation: report.rotation,
-          scale: report.scale,
-          z: report.z,
-        }),
-      );
-      entity.transform[internal.transformOnChanged]();
       ignoredEntityRefs.delete(entity.ref);
     }
   });
