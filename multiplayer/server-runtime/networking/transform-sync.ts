@@ -64,6 +64,7 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
           rotation: entity.transform.rotation,
           scale: entity.transform.scale.bare(),
           z: entity.transform.z,
+          teleport: entity[internal.entityTeleportingThisTick],
         });
       }
     }
@@ -139,6 +140,7 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
       if (entity === undefined) return;
       if (entity.authority === undefined || from === entity.authority) {
         ignoredEntityRefs.add(entity.ref);
+        entity[internal.entityTeleportingThisTick] = report.teleport ?? false;
         entity.transform[internal.transformForceUpdate](
           new Transform({
             position: report.position,

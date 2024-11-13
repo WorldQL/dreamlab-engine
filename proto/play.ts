@@ -162,6 +162,7 @@ export const EntityTransformReportSchema = z.object({
   rotation: z.number(),
   scale: Vector2Schema,
   z: z.number(),
+  teleport: z.boolean().optional(),
 });
 
 export const ClientReportEntityTransformsPacket = z.object({

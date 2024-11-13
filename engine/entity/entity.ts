@@ -533,7 +533,9 @@ export abstract class Entity implements ISignalHandler {
     return this.#interpolated;
   }
 
-  setTransform(opts: TransformOptions): void {
+  setTransform(opts: TransformOptions, teleport: boolean = false): void {
+    this[internal.entityTeleportingThisTick] = teleport;
+
     if (opts.position?.x !== undefined) {
       this.transform.position.x = opts.position.x;
       this.#prevPosition.x = opts.position.x;
@@ -560,7 +562,9 @@ export abstract class Entity implements ISignalHandler {
     if (opts.z !== undefined) this.transform.z = opts.z;
   }
 
-  setGlobalTransform(opts: TransformOptions): void {
+  setGlobalTransform(opts: TransformOptions, teleport: boolean = false): void {
+    this[internal.entityTeleportingThisTick] = teleport;
+
     if (opts.position?.x !== undefined) {
       this.globalTransform.position.x = opts.position.x;
       this.#prevPosition.x = opts.position.x;
@@ -765,18 +769,26 @@ export abstract class Entity implements ISignalHandler {
     }
   }
 
+  [internal.entityTeleportingThisTick]: boolean = false;
   #netTransformTo: Transform | undefined;
   #netTransformFrom: Transform | undefined;
   #netTransformTicks: number = 0;
-  [internal.transformFromNetwork](_from: ConnectionId, transform: Transform) {
-    this.#netTransformFrom = new Transform(this.globalTransform);
-    this.#netTransformTo = this.parent
-      ? transformLocalToWorld(this.parent.globalTransform, transform)
-      : transform;
-    this.#netTransformTicks = this.game.time.ticks;
-
-    // this.transform[internal.transformForceUpdate](transform);
-    // this.transform[internal.transformOnChanged]();
+  [internal.transformFromNetwork](
+    _from: ConnectionId,
+    transform: Transform,
+    teleporting: boolean = false,
+  ) {
+    if (teleporting) {
+      this[internal.entityTeleportingThisTick] = true;
+      this.transform[internal.transformForceUpdate](transform);
+      this.transform[internal.transformOnChanged]();
+    } else {
+      this.#netTransformFrom = new Transform(this.globalTransform);
+      this.#netTransformTo = this.parent
+        ? transformLocalToWorld(this.parent.globalTransform, transform)
+        : transform;
+      this.#netTransformTicks = this.game.time.ticks;
+    }
   }
 
   #sourceRef: string | undefined; // entity ref: cloned from
@@ -921,6 +933,8 @@ export abstract class Entity implements ISignalHandler {
     }
   }
   [internal.interpolationStartTick]() {
+    this[internal.entityTeleportingThisTick] = false;
+
     if (this.#netTransformFrom && this.#netTransformTo) {
       const INTERP_TIME_TICKS = 6; // 6 ticks = 100ms
 

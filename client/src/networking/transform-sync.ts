@@ -34,6 +34,7 @@ export const handleTransformSync: ClientNetworkSetupRoutine = (conn, game) => {
         rotation: entity.transform.rotation,
         scale: entity.transform.scale.bare(),
         z: entity.transform.z,
+        teleport: entity[internal.entityTeleportingThisTick],
       });
     }
 
@@ -80,6 +81,7 @@ export const handleTransformSync: ClientNetworkSetupRoutine = (conn, game) => {
           scale: report.scale,
           z: report.z,
         }),
+        report.teleport ?? false,
       );
       ignoredEntityRefs.delete(entity.ref);
     }
