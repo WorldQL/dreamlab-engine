@@ -91,6 +91,7 @@ export class EditorFacadeCamera extends PixiEntity {
     this.#debug = new DebugSquare({
       entity: this,
       enabled: false,
+      width: 0.04,
       suffix: this.active ? " (active)" : "",
       getBounds: () => Vector2.splat(Camera.TARGET_VIEWPORT_SIZE),
     });
