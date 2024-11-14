@@ -86,7 +86,7 @@ export class AudioSource extends Entity {
 
   #updateHRTF() {
     if (!this.#howl) return;
-    if (this.maxRange >= 0) {
+    if (this.maxRange > 0) {
       this.#howl.pannerAttr({
         coneInnerAngle: 360,
         coneOuterAngle: 360,
@@ -114,7 +114,7 @@ export class AudioSource extends Entity {
   #updatePosition() {
     if (!this.#howl) return;
     const camera = Camera.getActive(this.game);
-    if (!camera || this.maxRange < 0) {
+    if (!camera || this.maxRange <= 0) {
       this.#howl.pos(0, 0, 0);
       return;
     }
