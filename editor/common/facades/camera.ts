@@ -2,10 +2,11 @@ import {
   Camera,
   Entity,
   EntityContext,
+  EntityDestroyed,
   EntityTransformUpdate,
   PixiEntity,
+  Vector2,
 } from "@dreamlab/engine";
-import { Vector2 } from "../../../engine/math/mod.ts";
 import { InitSelectedEntityService } from "../../client/ui/selected-entity.ts";
 import { EnsureCompatible, EntityValueProps } from "./_compatibility.ts";
 import { DebugSquare } from "./_debug.ts";
@@ -26,6 +27,7 @@ export class EditorFacadeCamera extends PixiEntity {
   public zoom: number;
 
   #debug: DebugSquare | undefined;
+  #debugListener: { unsubscribe: () => void } | undefined;
 
   constructor(ctx: EntityContext) {
     super(ctx, false);
@@ -64,10 +66,14 @@ export class EditorFacadeCamera extends PixiEntity {
     this.on(EntityTransformUpdate, updateZoomFromScale);
 
     this.listen(this.game, InitSelectedEntityService, ({ svc }) => {
-      svc.listen(selected => {
+      this.#debugListener = svc.listen(selected => {
         if (!this.#debug) return;
         this.#debug.enabled = selected.includes(this);
       });
+    });
+
+    this.on(EntityDestroyed, () => {
+      this.#debugListener?.unsubscribe();
     });
   }
 

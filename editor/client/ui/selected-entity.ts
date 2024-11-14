@@ -5,10 +5,17 @@ export class InitSelectedEntityService {
   constructor(public svc: SelectedEntityService) {}
 }
 
+type OnSelectedFn = (selected: readonly Entity[]) => void;
 export class SelectedEntityService {
-  #changeListeners: ((selected: readonly Entity[]) => void)[] = [];
-  listen(listener: (selected: readonly Entity[]) => void) {
-    this.#changeListeners.push(listener);
+  #changeListeners = new Set<OnSelectedFn>();
+  listen(listener: OnSelectedFn): { unsubscribe: () => void } {
+    this.#changeListeners.add(listener);
+
+    return {
+      unsubscribe: () => {
+        this.#changeListeners.delete(listener);
+      },
+    };
   }
 
   #entities: ReadonlyArray<Entity> = [];
