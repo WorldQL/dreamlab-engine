@@ -14,6 +14,7 @@ import {
 import { EnsureCompatible, EntityValueProps } from "./_compatibility.ts";
 import { DebugSquare } from "./_debug.ts";
 import { Facades } from "./manager.ts";
+import { cameraZoomValue } from "@dreamlab/engine/internal";
 
 export class EditorFacadeCamera extends PixiEntity {
   static {
@@ -102,6 +103,15 @@ export class EditorFacadeCamera extends PixiEntity {
         this.#debug.suffix = this.active ? " (active)" : "";
       }
     });
+
+    const activeEditorCamera = Camera.getActive(this.game);
+    if (activeEditorCamera) {
+      const zoomValue = activeEditorCamera[cameraZoomValue];
+      zoomValue.onChanged(() => {
+        this.#debug!.width = 0.04 * (1 / activeEditorCamera.zoom);
+        this.#debug?.redraw()
+      });
+    }
   }
 
   #onSelectedSvc(svc: SelectedEntityService) {

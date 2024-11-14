@@ -45,7 +45,7 @@ abstract class DebugShape {
 
   protected readonly color: PIXI.ColorSource;
   protected readonly alpha: number;
-  protected readonly width: number;
+  public width: number;
   protected readonly alignment: number;
   protected readonly getBounds: () => IVector2 | undefined;
 

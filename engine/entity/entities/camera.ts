@@ -1,9 +1,10 @@
-import { EntityTransformUpdate } from "@dreamlab/engine";
+import { EntityTransformUpdate, Value } from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { ClientGame, Game } from "../../game.ts";
 import { IVector2, Vector2, smoothLerp } from "../../math/mod.ts";
 import { ActiveCameraChanged, EntityDestroyed, GameRender } from "../../signals/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
+import { cameraZoomValue } from "@dreamlab/engine/internal";
 
 export class Camera extends Entity {
   static {
@@ -105,6 +106,16 @@ export class Camera extends Entity {
   }
 
   public zoom: number;
+  [cameraZoomValue]: Value<
+    | number
+    | boolean
+    | PIXI.Container<PIXI.ContainerChild>
+    | {
+        readonly position: IVector2;
+        readonly rotation: number;
+        readonly scale: IVector2;
+      }
+  >;
 
   constructor(ctx: EntityContext) {
     super(ctx);
@@ -177,6 +188,7 @@ export class Camera extends Entity {
     let aspectRatio = transform.scale.y / transform.scale.x;
 
     const zoom = this.defineValue(Camera, "zoom", { replicated: false });
+    this[cameraZoomValue] = zoom;
     this.defineValue(Camera, "active", { replicated: false });
     this.defineValue(Camera, "smooth", { replicated: false });
     this.defineValue(Camera, "unlocked", { replicated: false });
