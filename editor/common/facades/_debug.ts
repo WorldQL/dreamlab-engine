@@ -1,5 +1,13 @@
-import { EntityTransformUpdate, IVector2, PixiEntity, Vector2 } from "@dreamlab/engine";
+import {
+  Camera,
+  ClientGame,
+  EntityTransformUpdate,
+  IVector2,
+  PixiEntity,
+  Vector2,
+} from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
+import { cameraZoomValue } from "@dreamlab/engine/internal";
 
 export type Label = { readonly container: PIXI.Container; readonly text: PIXI.Text };
 export const createLabel = (icon: string, text?: string): Label => {
@@ -35,6 +43,7 @@ interface DebugShapeOptions {
   readonly width?: number;
   readonly alignment?: number;
   readonly getBounds?: () => IVector2 | undefined;
+  game?: ClientGame;
 }
 
 abstract class DebugShape {
@@ -43,9 +52,9 @@ abstract class DebugShape {
   // protected label: Label;
   readonly gfx = new PIXI.Graphics();
 
-  protected readonly color: PIXI.ColorSource;
-  protected readonly alpha: number;
-  public width: number;
+  protected color: PIXI.ColorSource;
+  protected alpha: number;
+  protected width: number;
   protected readonly alignment: number;
   protected readonly getBounds: () => IVector2 | undefined;
 
@@ -69,6 +78,7 @@ abstract class DebugShape {
     width = 0.02,
     alignment = 1,
     getBounds = () => entity.bounds,
+    game,
   }: DebugShapeOptions) {
     this.entity = entity;
     const container = this.entity.container!;
@@ -95,6 +105,17 @@ abstract class DebugShape {
     this.entity.on(EntityTransformUpdate, () => {
       this.#redraw();
     });
+
+    if (game) {
+      const activeEditorCamera = Camera.getActive(game);
+      if (activeEditorCamera) {
+        const zoomValue = activeEditorCamera[cameraZoomValue];
+        zoomValue.onChanged(() => {
+          this.width = 0.04 * (1 / activeEditorCamera.zoom);
+          this.redraw();
+        });
+      }
+    }
   }
 
   #suffix: string;
