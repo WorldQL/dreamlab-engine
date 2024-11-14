@@ -167,9 +167,16 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
       changeIgnoreSet = changeIgnoreSet.union(initialNetSpawnedEntityRefs);
       for (const entity of initialNetSpawnedEntities) {
         if (!entity) continue;
-
         try {
-          entity[internal.entitySpawnFinalize]();
+          entity[internal.entitySpawnFinalize1]();
+        } catch (err) {
+          console.warn(`spawning ${entity.id}:`, err);
+        }
+      }
+      for (const entity of initialNetSpawnedEntities) {
+        if (!entity) continue;
+        try {
+          entity[internal.entitySpawnFinalize2]();
         } catch (err) {
           console.warn(`spawning ${entity.id}:`, err);
         }

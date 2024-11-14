@@ -362,22 +362,18 @@ export abstract class Entity implements ISignalHandler {
     return this[internal.entitySpawn](def);
   }
 
-  [internal.entitySpawnFinalize]() {
-    const phase1 = (entity: Entity) => {
-      for (const behavior of entity.behaviors) {
-        behavior.setup();
-        behavior[internal.implicitSetup]();
-      }
-      for (const child of entity.children.values()) phase1(child);
-    };
-    phase1(this);
-
-    const phase2 = (entity: Entity) => {
-      entity.#spawn();
-      for (const child of entity.children.values()) phase2(child);
-    };
-    phase2(this);
+  [internal.entitySpawnFinalize1]() {
+    for (const behavior of this.behaviors) {
+      behavior.setup();
+      behavior[internal.implicitSetup]();
+    }
+    for (const child of this.children.values()) child[internal.entitySpawnFinalize1]();
   }
+  [internal.entitySpawnFinalize2]() {
+    this.#spawn();
+    for (const child of this.children.values()) child[internal.entitySpawnFinalize2]();
+  }
+
   // #endregion
 
   // #region Behaviors
@@ -769,6 +765,8 @@ export abstract class Entity implements ISignalHandler {
     }
   }
 
+  #sourceRef: string | undefined; // entity ref: cloned from
+
   constructor(ctx: EntityContext) {
     Entity.#ensureEntityTypeIsRegistered(new.target);
 
@@ -809,6 +807,9 @@ export abstract class Entity implements ISignalHandler {
     this.#interpolated = new Transform(this.globalTransform);
 
     this.game.entities[internal.entityStoreRegister](this);
+
+    // @ts-expect-error we dont expect base Entity to have values rn
+    this.defineValue(Entity, "#sourceRef", { type: String });
   }
 
   // #region Signals

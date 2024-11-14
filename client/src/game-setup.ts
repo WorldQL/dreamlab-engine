@@ -68,7 +68,14 @@ export const setupGame = async (
 
   for (const entity of localSpawnedEntities) {
     try {
-      entity[internal.entitySpawnFinalize]();
+      entity[internal.entitySpawnFinalize1]();
+    } catch (err) {
+      console.warn(`spawning ${entity.id}:`, err);
+    }
+  }
+  for (const entity of localSpawnedEntities) {
+    try {
+      entity[internal.entitySpawnFinalize2]();
     } catch (err) {
       console.warn(`spawning ${entity.id}:`, err);
     }
