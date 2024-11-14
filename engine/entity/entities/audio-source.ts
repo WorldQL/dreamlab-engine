@@ -103,7 +103,7 @@ export class AudioSource extends Entity {
         coneOuterAngle: 360,
         coneOuterGain: 0,
         distanceModel: "inverse",
-        maxDistance: 10000,
+        maxDistance: 100000,
         panningModel: "HRTF",
         refDistance: 1,
         rolloffFactor: 1,
@@ -119,7 +119,7 @@ export class AudioSource extends Entity {
       return;
     }
 
-    const { x, y } = Vector2.sub(this.pos, camera.interpolated.position);
+    const { x, y } = Vector2.sub(this.interpolated.position, camera.smoothed.position);
     this.#howl.pos(x, y, 0);
   }
 
