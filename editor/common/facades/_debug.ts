@@ -1,4 +1,4 @@
-import { EntityTransformUpdate, PixiEntity, Vector2 } from "@dreamlab/engine";
+import { EntityTransformUpdate, IVector2, PixiEntity, Vector2 } from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 
 export type Label = { readonly container: PIXI.Container; readonly text: PIXI.Text };
@@ -26,6 +26,17 @@ export const createLabel = (icon: string, text?: string): Label => {
   return Object.freeze({ container, text: _text } satisfies Label);
 };
 
+interface DebugShapeOptions {
+  readonly entity: PixiEntity;
+  readonly enabled?: boolean;
+  readonly suffix?: string;
+  readonly color?: PIXI.ColorSource;
+  readonly alpha?: number;
+  readonly width?: number;
+  readonly alignment?: number;
+  readonly getBounds?: () => IVector2 | undefined;
+}
+
 abstract class DebugShape {
   protected entity: PixiEntity;
 
@@ -36,25 +47,33 @@ abstract class DebugShape {
   protected readonly alpha: number;
   protected readonly width: number;
   protected readonly alignment: number;
+  protected readonly getBounds: () => IVector2 | undefined;
+
+  #enabled;
+  get enabled(): boolean {
+    return this.#enabled;
+  }
+  set enabled(value) {
+    if (this.#enabled !== value) {
+      this.#enabled = value;
+      this.#redraw();
+    }
+  }
 
   constructor({
     entity,
+    enabled = true,
     suffix = "",
     color = "white",
     alpha = 0.8,
     width = 0.02,
     alignment = 1,
-  }: {
-    readonly entity: PixiEntity;
-    readonly suffix?: string;
-    readonly color?: PIXI.ColorSource;
-    readonly alpha?: number;
-    readonly width?: number;
-    readonly alignment?: number;
-  }) {
+    getBounds = () => entity.bounds,
+  }: DebugShapeOptions) {
     this.entity = entity;
     const container = this.entity.container!;
 
+    this.#enabled = enabled;
     this.#suffix = suffix;
     // const icon = (entity.constructor as typeof Entity).icon ?? "📦";
     // this.label = createLabel(icon, entity.name + this.#suffix);
@@ -65,15 +84,16 @@ abstract class DebugShape {
     this.alpha = alpha;
     this.width = width;
     this.alignment = alignment;
+    this.getBounds = getBounds;
 
-    this.redraw();
+    this.#redraw();
 
     // this.entity.on(EntityRenamed, () => {
     //   this.label.text.text = this.entity.name + this.#suffix;
     // });
 
     this.entity.on(EntityTransformUpdate, () => {
-      this.redraw();
+      this.#redraw();
     });
   }
 
@@ -86,12 +106,31 @@ abstract class DebugShape {
     // this.label.text.text = this.entity.name + this.#suffix;
   }
 
+  #redraw() {
+    if (!this.#enabled) {
+      this.gfx.clear();
+      return;
+    }
+
+    this.redraw();
+  }
+
   abstract redraw(): void;
 }
 
 export class DebugSquare extends DebugShape {
+  readonly #diagonals: boolean;
+
+  constructor({
+    diagonals = false,
+    ...opts
+  }: DebugShapeOptions & { readonly diagonals?: boolean }) {
+    super(opts);
+    this.#diagonals = diagonals;
+  }
+
   redraw(): void {
-    const _bounds = this.entity.bounds;
+    const _bounds = this.getBounds();
     if (!_bounds) return;
     const bounds = Vector2.mul(_bounds, this.entity.globalTransform.scale);
 
@@ -106,18 +145,22 @@ export class DebugSquare extends DebugShape {
     this.gfx
       .clear()
       .rect(bounds.x / -2, bounds.y / -2, bounds.x, bounds.y)
-      .stroke({ color, width, alignment: this.alignment })
-      .moveTo(bounds.x / -2 + offset, bounds.y / -2 + offset)
-      .lineTo(bounds.x / 2 - offset, bounds.y / 2 - offset)
-      .moveTo(bounds.x / -2 + offset, bounds.y / 2 - offset)
-      .lineTo(bounds.x / 2 - offset, bounds.y / -2 + offset)
-      .stroke({ color, width });
+      .stroke({ color, width, alignment: this.alignment });
+
+    if (this.#diagonals) {
+      this.gfx
+        .moveTo(bounds.x / -2 + offset, bounds.y / -2 + offset)
+        .lineTo(bounds.x / 2 - offset, bounds.y / 2 - offset)
+        .moveTo(bounds.x / -2 + offset, bounds.y / 2 - offset)
+        .lineTo(bounds.x / 2 - offset, bounds.y / -2 + offset)
+        .stroke({ color, width });
+    }
   }
 }
 
 export class DebugCircle extends DebugShape {
   redraw(): void {
-    const _bounds = this.entity.bounds;
+    const _bounds = this.getBounds();
     if (!_bounds) return;
     const radius = Vector2.mul(_bounds, this.entity.globalTransform.scale).x / 2;
 
@@ -143,7 +186,7 @@ export class DebugCircle extends DebugShape {
 // TODO: fix capsule drawing
 export class DebugCapsule extends DebugShape {
   redraw(): void {
-    const _bounds = this.entity.bounds;
+    const _bounds = this.getBounds();
     if (!_bounds) return;
 
     const width = Vector2.mul(_bounds, this.entity.globalTransform.scale).x;
@@ -166,14 +209,5 @@ export class DebugCapsule extends DebugShape {
       .arcTo(width / 2, -height / 2, -width / 2, -height / 2, radius)
       .closePath()
       .stroke();
-  }
-}
-
-export class TemporaryCameraDebugDisplay extends DebugShape {
-  redraw(): void {
-    // this.label.container.pivot.set(
-    //   this.label.container.width / 2,
-    //   this.label.container.height / 2,
-    // );
   }
 }

@@ -1,9 +1,13 @@
 import { BoxResizeGizmo, ClientGame, Entity, Gizmo, Root } from "@dreamlab/engine";
 import { EditorRootFacadeEntity } from "../../common/mod.ts";
 
+export class InitSelectedEntityService {
+  constructor(public svc: SelectedEntityService) {}
+}
+
 export class SelectedEntityService {
-  #changeListeners: (() => void)[] = [];
-  listen(listener: () => void) {
+  #changeListeners: ((selected: readonly Entity[]) => void)[] = [];
+  listen(listener: (selected: readonly Entity[]) => void) {
     this.#changeListeners.push(listener);
   }
 
@@ -21,7 +25,7 @@ export class SelectedEntityService {
         .at(0);
     }
 
-    for (const listener of this.#changeListeners) listener();
+    for (const listener of this.#changeListeners) listener(newEntities);
   }
 
   get #gizmo() {
@@ -31,5 +35,7 @@ export class SelectedEntityService {
     return gizmo ?? boxresize;
   }
 
-  constructor(private game: ClientGame) {}
+  constructor(private game: ClientGame) {
+    game.fire(InitSelectedEntityService, this);
+  }
 }

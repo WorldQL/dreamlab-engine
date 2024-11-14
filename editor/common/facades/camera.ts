@@ -3,11 +3,12 @@ import {
   Entity,
   EntityContext,
   EntityTransformUpdate,
-  IVector2,
   PixiEntity,
-  Vector2,
 } from "@dreamlab/engine";
+import { Vector2 } from "../../../engine/math/mod.ts";
+import { InitSelectedEntityService } from "../../client/ui/selected-entity.ts";
 import { EnsureCompatible, EntityValueProps } from "./_compatibility.ts";
+import { DebugSquare } from "./_debug.ts";
 import { Facades } from "./manager.ts";
 
 export class EditorFacadeCamera extends PixiEntity {
@@ -17,38 +18,27 @@ export class EditorFacadeCamera extends PixiEntity {
   }
 
   static readonly icon = Camera.icon;
+  readonly bounds: undefined;
 
   public smooth: number = 0.1;
   public unlocked: boolean = false;
   public active: boolean = false;
-
-  // readonly bounds: Readonly<IVector2> = Object.freeze({
-  //   x: Camera.TARGET_VIEWPORT_SIZE,
-  //   y: Camera.TARGET_VIEWPORT_SIZE,
-  // });
-
-  readonly bounds: Readonly<IVector2> = Object.freeze({
-    x: 0,
-    y: 0,
-  });
-
-  // #debug: DebugSquare | undefined;
-
   public zoom: number;
+
+  #debug: DebugSquare | undefined;
 
   constructor(ctx: EntityContext) {
     super(ctx, false);
     const zoom = this.defineValue(EditorFacadeCamera, "zoom");
     this.defineValues(EditorFacadeCamera, "active", "smooth", "unlocked");
-    
+
     const transform = this.globalTransform;
     let updating = false;
-  
+
     // Initialize zoom and aspect ratio
     this.zoom = 1 / transform.scale.x;
     let aspectRatio = transform.scale.y / transform.scale.x;
-  
-  
+
     const updateScaleFromZoom = () => {
       if (updating) return;
       updating = true;
@@ -57,7 +47,7 @@ export class EditorFacadeCamera extends PixiEntity {
       transform.scale.y = (1 / this.zoom) * aspectRatio;
       updating = false;
     };
-  
+
     const updateZoomFromScale = () => {
       if (updating) return;
       updating = true;
@@ -67,25 +57,37 @@ export class EditorFacadeCamera extends PixiEntity {
       aspectRatio = transform.scale.y / transform.scale.x;
       updating = false;
     };
-  
+
     zoom.onChanged(updateScaleFromZoom);
-  
+
     // Listen for changes in the scale to update zoom and aspect ratio
     this.on(EntityTransformUpdate, updateZoomFromScale);
+
+    this.listen(this.game, InitSelectedEntityService, ({ svc }) => {
+      svc.listen(selected => {
+        if (!this.#debug) return;
+        this.#debug.enabled = selected.includes(this);
+      });
+    });
   }
 
   onInitialize(): void {
     super.onInitialize();
     if (!this.container) return;
 
-    // this.#debug = new TemporaryCameraDebugDisplay({ entity: this, suffix: this.active ? " (active)" : "" });
+    this.#debug = new DebugSquare({
+      entity: this,
+      enabled: false,
+      suffix: this.active ? " (active)" : "",
+      getBounds: () => Vector2.splat(Camera.TARGET_VIEWPORT_SIZE),
+    });
 
-    // const activeValue = this.values.get("active");
-    // activeValue?.onChanged(() => {
-    //  if (this.#debug) {
-    //    this.#debug.suffix = this.active ? " (active)" : "";
-    //  }
-    // });
+    const activeValue = this.values.get("active");
+    activeValue?.onChanged(() => {
+      if (this.#debug) {
+        this.#debug.suffix = this.active ? " (active)" : "";
+      }
+    });
   }
 }
 
