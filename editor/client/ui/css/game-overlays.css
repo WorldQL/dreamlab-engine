@@ -6,26 +6,20 @@
 
 #game-overlays #cursor-overlay {
   position: absolute;
-  bottom: 1em;
-  left: 1em;
-  border-radius: var(--border-radius);
+  bottom: 0em;
+  left: 0em;
+  border-radius: 0 var(--border-radius) 0 0;
 
-  display: grid;
-  grid-template-columns: 1em auto auto;
-  align-items: center;
-  gap: 0.5em;
+  display: flex;
+  flex-direction: row;
+  gap: 0.4rem;
   padding: 0.5em;
   background-color: rgb(var(--color-bg-2) / 1);
-  width: 16em;
-  font-size: 0.9em;
-
-  pointer-events: auto;
+  width: auto;
+  font-size: 0.7em;
   opacity: 0.5;
-  transition: opacity 0.2s ease;
 
-  &:hover {
-    opacity: 0.9;
-  }
+  pointer-events: none;
 
   & * {
     font-family: var(--font-mono);
@@ -37,10 +31,14 @@
     height: 1em;
   }
 
-  & :nth-child(3n) {
-    text-align: right;
+  & > :nth-child(3) {
+    margin-right: 0.5rem;
+  }
+  & > :nth-child(6) {
+    margin-right: 0.5rem;
   }
 }
+
 
 #game-overlays #gizmo-buttons {
   position: absolute;
