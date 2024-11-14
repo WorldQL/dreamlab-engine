@@ -360,12 +360,20 @@ export abstract class Entity implements ISignalHandler {
   }
 
   [internal.entitySpawnFinalize]() {
-    for (const behavior of this.behaviors) {
-      behavior.setup();
-      behavior[internal.implicitSetup]();
-    }
-    this.#spawn();
-    for (const child of this.children.values()) child[internal.entitySpawnFinalize]();
+    const phase1 = (entity: Entity) => {
+      for (const behavior of entity.behaviors) {
+        behavior.setup();
+        behavior[internal.implicitSetup]();
+      }
+      for (const child of entity.children.values()) phase1(child);
+    };
+    phase1(this);
+
+    const phase2 = (entity: Entity) => {
+      entity.#spawn();
+      for (const child of entity.children.values()) phase2(child);
+    };
+    phase2(this);
   }
   // #endregion
 
