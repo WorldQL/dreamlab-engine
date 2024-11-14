@@ -146,6 +146,29 @@ export class Inputs extends BasicSignalHandler<Inputs> {
   // #region Mouse
   #onMouseDown = (ev: MouseEvent) => this.#onMouse(ev, true);
   #onMouseUp = (ev: MouseEvent) => this.#onMouse(ev, false);
+  #onTouchStart = (ev: TouchEvent) => {
+    // @ts-expect-error: we know it's a client game
+    if (ev.target !== this.#game.renderer.app.canvas) {
+      return;
+    }
+  
+    // Update cursor position
+    const cursor = this.cursor;
+  
+    const input: Input = "MouseLeft";
+    const button = "left";
+  
+    if (cursor.screen && cursor.world) {
+      this.fire(MouseDown, button, { screen: cursor.screen, world: cursor.world });
+      this.fire(Click, { screen: cursor.screen, world: cursor.world });
+    }
+  
+    const tick = this.#game.time.ticks;
+    for (const action of this.actions.values()) {
+      if (action.binding !== input) continue;
+      action[actionSetHeld](true, tick);
+    }
+  };
 
   #onMouse = (ev: MouseEvent, pressed: boolean) => {
     // @ts-expect-error: we know its a client game
@@ -270,6 +293,7 @@ export class Inputs extends BasicSignalHandler<Inputs> {
     globalThis.addEventListener("keydown", this.#onKeyDown);
     globalThis.addEventListener("keyup", this.#onKeyUp);
     globalThis.addEventListener("mousedown", this.#onMouseDown);
+    globalThis.addEventListener("touchstart", this.#onTouchStart);
     globalThis.addEventListener("mouseup", this.#onMouseUp);
     globalThis.addEventListener("wheel", this.#onWheel, { passive: false });
     globalThis.addEventListener("blur", this.#clearActions);
