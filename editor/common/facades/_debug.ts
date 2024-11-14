@@ -119,14 +119,14 @@ abstract class DebugShape {
 }
 
 export class DebugSquare extends DebugShape {
-  readonly #diagonals: boolean;
+  private readonly diagonals: boolean;
 
   constructor({
     diagonals = false,
     ...opts
   }: DebugShapeOptions & { readonly diagonals?: boolean }) {
     super(opts);
-    this.#diagonals = diagonals;
+    this.diagonals = diagonals;
   }
 
   redraw(): void {
@@ -147,7 +147,7 @@ export class DebugSquare extends DebugShape {
       .rect(bounds.x / -2, bounds.y / -2, bounds.x, bounds.y)
       .stroke({ color, width, alignment: this.alignment });
 
-    if (this.#diagonals) {
+    if (this.diagonals) {
       this.gfx
         .moveTo(bounds.x / -2 + offset, bounds.y / -2 + offset)
         .lineTo(bounds.x / 2 - offset, bounds.y / 2 - offset)
