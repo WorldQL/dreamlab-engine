@@ -7,7 +7,10 @@ import {
   PixiEntity,
   Vector2,
 } from "@dreamlab/engine";
-import { InitSelectedEntityService } from "../../client/ui/selected-entity.ts";
+import {
+  InitSelectedEntityService,
+  SelectedEntityService,
+} from "../../client/ui/selected-entity.ts";
 import { EnsureCompatible, EntityValueProps } from "./_compatibility.ts";
 import { DebugSquare } from "./_debug.ts";
 import { Facades } from "./manager.ts";
@@ -65,12 +68,16 @@ export class EditorFacadeCamera extends PixiEntity {
     // Listen for changes in the scale to update zoom and aspect ratio
     this.on(EntityTransformUpdate, updateZoomFromScale);
 
-    this.listen(this.game, InitSelectedEntityService, ({ svc }) => {
-      this.#debugListener = svc.listen(selected => {
-        if (!this.#debug) return;
-        this.#debug.enabled = selected.includes(this);
-      });
-    });
+    if (this.game.isClient()) {
+      const svc = SelectedEntityService.serviceForGame(this.game);
+      if (svc) {
+        this.#onSelectedSvc(svc);
+      } else {
+        this.listen(this.game, InitSelectedEntityService, ({ svc }) => {
+          this.#onSelectedSvc(svc);
+        });
+      }
+    }
 
     this.on(EntityDestroyed, () => {
       this.#debugListener?.unsubscribe();
@@ -93,6 +100,13 @@ export class EditorFacadeCamera extends PixiEntity {
       if (this.#debug) {
         this.#debug.suffix = this.active ? " (active)" : "";
       }
+    });
+  }
+
+  #onSelectedSvc(svc: SelectedEntityService) {
+    this.#debugListener = svc.listen(selected => {
+      if (!this.#debug) return;
+      this.#debug.enabled = selected.includes(this);
     });
   }
 }
