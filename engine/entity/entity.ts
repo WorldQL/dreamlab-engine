@@ -322,7 +322,7 @@ export abstract class Entity implements ISignalHandler {
     };
     def.children?.forEach(it => addChild(entity, it));
 
-    const finalize = (targetEnt: Entity, targetDef: EntityDefinition) => {
+    const finalizeBehaviors = (targetEnt: Entity, targetDef: EntityDefinition) => {
       targetDef.behaviors?.forEach(b => {
         const behavior: Behavior = new b.type({
           game: this.game,
@@ -336,12 +336,15 @@ export abstract class Entity implements ISignalHandler {
           behavior[internal.implicitSetup]();
         }
       });
-
-      if (!opts.inert) targetEnt.#spawn();
     };
 
     for (const { entity, def } of spawnOrder) {
-      finalize(entity, def);
+      finalizeBehaviors(entity, def);
+    }
+    if (!opts.inert) {
+      for (const { entity } of spawnOrder) {
+        entity.#spawn();
+      }
     }
 
     const from = opts.from ?? this.game.network.self;
