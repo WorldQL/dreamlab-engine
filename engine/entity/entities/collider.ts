@@ -261,4 +261,45 @@ export class Collider extends Entity {
     //   );
     // }
   }
+
+  /**
+   * Returns an array of Collider entities that are currently intersecting with this collider
+   * @returns Array of intersecting Collider entities
+   */
+  getIntersecting(): Collider[] {
+    if (!this.#internal) return [];
+
+    const world = this.game.physics.world;
+    const position = this.#internal.collider.translation();
+    const rotation = this.#internal.collider.rotation();
+
+    let queryShape: RAPIER.Shape;
+    if (this.shape === "Rectangle" && this.#internal.shape instanceof RAPIER.Cuboid) {
+      queryShape = new RAPIER.Cuboid(
+        this.#internal.shape.halfExtents.x,
+        this.#internal.shape.halfExtents.y,
+      );
+    } else if (this.shape === "Circle" && this.#internal.shape instanceof RAPIER.Ball) {
+      queryShape = new RAPIER.Ball(this.#internal.shape.radius);
+    } else {
+      return [];
+    }
+
+    const intersecting: Collider[] = [];
+    world.intersectionsWithShape(position, rotation, queryShape, collider => {
+      if (collider === this.#internal?.collider) return true;
+
+      // deno-lint-ignore no-explicit-any
+      const userData = (collider as RAPIER.Collider & { userData?: any }).userData;
+      if (userData && typeof userData === "object" && "entityRef" in userData) {
+        const entity = this.game.entities.lookupByRef(userData.entityRef as string);
+        if (entity instanceof Collider) {
+          intersecting.push(entity);
+        }
+      }
+      return true;
+    });
+
+    return intersecting;
+  }
 }
