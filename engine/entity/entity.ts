@@ -533,8 +533,13 @@ export abstract class Entity implements ISignalHandler {
     return this.#interpolated;
   }
 
-  setTransform(opts: TransformOptions, teleport: boolean = false): void {
-    this[internal.entityTeleportingThisTick] = teleport;
+  /**
+   * Sets the entities transform as a teleport operation, disabling interpolation.
+   *
+   * Use {@link transform} setter to set transform *with* interpolation.
+   */
+  setTransform(opts: TransformOptions): void {
+    this[internal.entityTeleportingThisTick] = true;
 
     if (opts.position?.x !== undefined) {
       this.transform.position.x = opts.position.x;
@@ -562,8 +567,13 @@ export abstract class Entity implements ISignalHandler {
     if (opts.z !== undefined) this.transform.z = opts.z;
   }
 
-  setGlobalTransform(opts: TransformOptions, teleport: boolean = false): void {
-    this[internal.entityTeleportingThisTick] = teleport;
+  /**
+   * Sets the entities global transform as a teleport operation, disabling interpolation.
+   *
+   * Use {@link globalTransform} setter to set global transform *with* interpolation.
+   */
+  setGlobalTransform(opts: TransformOptions): void {
+    this[internal.entityTeleportingThisTick] = true;
 
     if (opts.position?.x !== undefined) {
       this.globalTransform.position.x = opts.position.x;
