@@ -66,7 +66,6 @@ export const handleTransformSync: ClientNetworkSetupRoutine = (conn, game) => {
 
   conn.registerPacketHandler("ReportEntityTransforms", packet => {
     if (packet.from === conn.id) return;
-
     for (const report of packet.reports) {
       const entity = game.entities.lookupByRef(report.entity);
       if (entity === undefined) continue;
@@ -82,6 +81,8 @@ export const handleTransformSync: ClientNetworkSetupRoutine = (conn, game) => {
           z: report.z,
         }),
         report.teleport ?? false,
+        // Required because this.parent.globalTransform may be incorrect inside internal.transformFromNetwork
+        packet.reports,
       );
       ignoredEntityRefs.delete(entity.ref);
     }

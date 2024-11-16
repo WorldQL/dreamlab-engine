@@ -53,6 +53,7 @@ import {
 } from "../value/mod.ts";
 import type { Root } from "./entity-roots.ts";
 import { Empty } from "./mod.ts";
+import { EntityTransformReport } from "../../proto/play.ts";
 
 export interface EntityContext {
   game: Game;
@@ -787,6 +788,7 @@ export abstract class Entity implements ISignalHandler {
     _from: ConnectionId,
     transform: Transform,
     teleporting: boolean = false,
+    originalReports: EntityTransformReport[],
   ) {
     if (teleporting) {
       this[internal.entityTeleportingThisTick] = true;
@@ -794,9 +796,20 @@ export abstract class Entity implements ISignalHandler {
       this.transform[internal.transformOnChanged]();
     } else {
       this.#netTransformFrom = new Transform(this.globalTransform);
-      this.#netTransformTo = this.parent
-        ? transformLocalToWorld(this.parent.globalTransform, transform)
+      const parentReport = originalReports.find(e => e.entity === this.parent?.ref);
+      const parentGlobalTransform = parentReport
+        ? new Transform({
+            position: parentReport.position,
+            rotation: parentReport.rotation,
+            scale: parentReport.scale,
+            z: parentReport.z,
+          })
+        : undefined;
+
+      this.#netTransformTo = parentGlobalTransform
+        ? transformLocalToWorld(parentGlobalTransform, transform)
         : transform;
+
       this.#netTransformTicks = this.game.time.ticks;
     }
   }
