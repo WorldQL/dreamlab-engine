@@ -1,4 +1,4 @@
-import type { Entity, ITransform } from "@dreamlab/engine";
+import type { ITransform } from "@dreamlab/engine";
 import { ClientGame, EntityDefinition } from "@dreamlab/engine";
 
 class NotImplementedError extends Error {}
