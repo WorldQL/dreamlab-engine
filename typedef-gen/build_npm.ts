@@ -2,7 +2,7 @@ import { Tar } from "jsr:@std/archive@0.225.4/tar";
 import * as fs from "jsr:@std/fs@^1";
 import * as io from "jsr:@std/io@0.225.0";
 import * as path from "jsr:@std/path@^1";
-import * as dnt from "../../dnt/mod.ts";
+import * as dnt from "./dnt/mod.ts";
 
 const OUT_DIR = "./out";
 await fs.emptyDir(OUT_DIR);
