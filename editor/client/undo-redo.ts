@@ -1,4 +1,4 @@
-import type { ITransform } from "@dreamlab/engine";
+import type { Entity, ITransform } from "@dreamlab/engine";
 import { ClientGame, EntityDefinition } from "@dreamlab/engine";
 
 class NotImplementedError extends Error {}
@@ -21,6 +21,13 @@ export type UndoRedoOperation =
       key: string;
       value: unknown;
       previous: unknown;
+    }
+  | {
+      t: "modify-entity-transform";
+      entityRef: string;
+      path: string[];
+      value: string;
+      previous: string;
     }
   // | { t: "modify-behavior-value" }
   | { t: "compound"; ops: Exclude<UndoRedoOperation, { t: "compound" }>[] };
@@ -133,6 +140,16 @@ export class UndoRedoManager {
         break;
       }
 
+      case "modify-entity-transform": {
+        const entity = this.#game.entities.lookupByRef(op.entityRef);
+
+        if (entity && entity.transform) {
+          changeAtPath(entity.transform, op.path, op.previous);
+        }
+
+        break;
+      }
+
       default: {
         const t = (op as unknown as UndoRedoOperation).t;
         throw new NotImplementedError(`undo operation not implemented: ${t}`);
@@ -195,10 +212,32 @@ export class UndoRedoManager {
         break;
       }
 
+      case "modify-entity-transform": {
+        const entity = this.#game.entities.lookupByRef(op.entityRef);
+
+        if (entity && entity.transform) {
+          changeAtPath(entity.transform, op.path, op.value);
+        }
+
+        break;
+      }
+
       default: {
         const t = (op as unknown as UndoRedoOperation).t;
         throw new NotImplementedError(`redo operation not implemented: ${t}`);
       }
     }
   }
+}
+
+function changeAtPath(object: any, path: string[], value: string) {
+  let current = object;
+  for (let i = 0; i < path.length - 1; i++) {
+    current = current[path[i]];
+  }
+  let val = parseFloat(value);
+  if (path[path.length - 1] === "rotation") {
+    val = val * (Math.PI / 180);
+  }
+  current[path[path.length - 1]] = val;
 }
