@@ -13,7 +13,7 @@ await fs.emptyDir(CODE_EDITOR_DIR);
 const commonOptions = {
   shims: { deno: true },
   declaration: "inline",
-  skipSourceOutput: false,
+  skipSourceOutput: true,
   scriptModule: "cjs",
   esModule: false,
   compilerOptions: {
