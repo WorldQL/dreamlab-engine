@@ -20,6 +20,10 @@ const game = new ServerGame({
   instanceId: workerData.instanceId,
   worldId: workerData.worldId,
   network: net.createNetworking(),
+  kv: {
+    url: workerData.kvUrl,
+    signingKey: workerData.kvSigningKey,
+  },
 });
 game.worldScriptBaseURL = `file://${workerData.worldDirectory}/`;
 Object.defineProperties(globalThis, { net: { value: net }, game: { value: game } });

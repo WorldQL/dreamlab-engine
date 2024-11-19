@@ -1,6 +1,6 @@
+import { z } from "@dreamlab/vendor/zod.ts";
 import { load as dotenv } from "jsr:@std/dotenv@0.224.2";
 import env from "./util/env.ts";
-import { z } from "@dreamlab/vendor/zod.ts";
 
 const readConfig = () => {
   const bindAddress = env("BIND_ADDRESS", env.socketAddress("127.0.0.1:8001"));
@@ -18,6 +18,8 @@ const readConfig = () => {
   );
   const coordAuthSecret = env("COORDINATOR_AUTH_TOKEN");
   const gameAuthSecret = env("GAME_AUTH_SECRET");
+  const kvUrl = env("KV_URL");
+  const kvSigningKey = env("KV_SIGNING_KEY");
 
   return {
     bindAddress,
@@ -26,6 +28,8 @@ const readConfig = () => {
     gitBase,
     coordAuthSecret,
     gameAuthSecret,
+    kvUrl,
+    kvSigningKey,
   };
 };
 

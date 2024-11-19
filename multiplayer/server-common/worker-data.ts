@@ -10,5 +10,8 @@ export interface WorkerInitData {
 
   editMode: boolean;
 
+  kvUrl: string;
+  kvSigningKey: string;
+
   inspect?: string;
 }

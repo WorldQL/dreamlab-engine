@@ -54,6 +54,8 @@ export class GameSession {
         worldResourcesBaseUrl: `${CONFIG.publicUrlBase}/worlds`,
         worldSubdirectory: opts.worldSubDirectory,
         editMode: opts.editMode,
+        kvUrl: CONFIG.kvUrl,
+        kvSigningKey: CONFIG.kvSigningKey,
         inspect: parent.info.inspect,
       },
       parent.logs,
