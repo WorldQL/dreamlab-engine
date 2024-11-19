@@ -17,7 +17,7 @@ export function getEntityTypes(): [type: EntityConstructor, namespace: string][]
 const categories = new Map<string, string[]>([
   [
     "Sprites",
-    ["@core/AnimatedSprite", "@core/Sprite", "@core/TilingSprite", "@core/VectorSprite"],
+    ["@core/AnimatedSprite", "@core/Sprite", "@core/TilingSprite"],
   ],
   ["UI", ["@core/UILayer", "@core/UIPanel"]],
   ["Graphics", ["@core/RawPixi", "@core/ColoredSquare", "@core/ColoredPolygon"]],
