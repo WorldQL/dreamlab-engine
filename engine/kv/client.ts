@@ -34,8 +34,12 @@ export class KvClient implements ClientKV {
   };
 
   #scope(): string {
-    // TODO: return player ID
-    return this.#game.network.self;
+    const self = this.#game.network.connections.find(
+      conn => conn.id === this.#game.network.self,
+    );
+
+    if (!self) throw new Error("no self connection");
+    return common.scope(this.#game, self.playerId);
   }
 
   #presignResolvers = new Map<string, (resp: PresignResponse) => void>();

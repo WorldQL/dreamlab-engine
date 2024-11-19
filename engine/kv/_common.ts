@@ -1,4 +1,12 @@
-import { JsonValue } from "../value/data.ts";
+import type { ClientGame, ServerGame } from "../game.ts";
+import type { JsonValue } from "../value/data.ts";
+
+export function scope(game: ClientGame | ServerGame, playerId?: string): string {
+  const world = "WORLD"; // TODO: Get current world ID from game
+
+  if (!playerId) return world;
+  return `${world}:${playerId}`;
+}
 
 export async function get(presigned: string): Promise<JsonValue | undefined> {
   const resp = await fetch(presigned);

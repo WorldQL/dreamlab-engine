@@ -58,10 +58,7 @@ export class KvServer implements ServerKV {
   // #endregion
 
   #scope(playerId?: string): string {
-    const world = "WORLD"; // TODO: Get current world ID
-
-    if (!playerId) return world;
-    return `${world}:${playerId}`;
+    return common.scope(this.#game, playerId);
   }
 
   async #get(scope: string, key: string): Promise<JsonValue | undefined> {
