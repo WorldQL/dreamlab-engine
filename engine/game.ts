@@ -15,6 +15,9 @@ import {
 } from "./entity/mod.ts";
 import { Inputs } from "./input/mod.ts";
 import * as internal from "./internal.ts";
+import { KvClient } from "./kv/client.ts";
+import { ClientKV, ServerKV } from "./kv/mod.ts";
+import { KvServer } from "./kv/server.ts";
 import { ClientNetworking, ServerNetworking } from "./network.ts";
 import { PhysicsEngine } from "./physics.ts";
 import { GameRenderer } from "./renderer/mod.ts";
@@ -53,6 +56,10 @@ export interface ClientGameOptions extends GameOptions {
 }
 export interface ServerGameOptions extends GameOptions {
   network: ServerNetworking;
+  kv: {
+    url: string;
+    signingKey: string;
+  };
 }
 
 export enum GameStatus {
@@ -258,9 +265,12 @@ export class ServerGame extends BaseGame {
 
   readonly network: ServerNetworking;
 
+  readonly kv: ServerKV;
+
   constructor(opts: ServerGameOptions) {
     super(opts);
     this.network = opts.network;
+    this.kv = new KvServer({ game: this, ...opts.kv });
   }
 
   override shutdown(): void {
@@ -286,6 +296,8 @@ export class ClientGame extends BaseGame {
 
   readonly network: ClientNetworking;
 
+  readonly kv: ClientKV;
+
   constructor(opts: ClientGameOptions) {
     super(opts);
 
@@ -294,6 +306,7 @@ export class ClientGame extends BaseGame {
 
     this.#cachebust = opts.cacheBuster;
     this.network = opts.network;
+    this.kv = new KvClient({ game: this });
   }
 
   [internal.inputsShutdownFn]: (() => void) | undefined;

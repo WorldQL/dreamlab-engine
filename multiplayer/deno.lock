@@ -3,6 +3,7 @@
   "specifiers": {
     "jsr:@luca/esbuild-deno-loader@0.10.3": "0.10.3",
     "jsr:@luca/esbuild-deno-loader@0.11.0": "0.11.0",
+    "jsr:@noble/ed25519@2.1.0": "2.1.0",
     "jsr:@oak/commons@0.11": "0.11.0",
     "jsr:@oak/oak@16": "16.1.0",
     "jsr:@std/assert@0.223": "0.223.0",
@@ -25,6 +26,7 @@
     "jsr:@std/dotenv@0.225.2": "0.225.2",
     "jsr:@std/encoding@0.213": "0.213.1",
     "jsr:@std/encoding@0.223": "0.223.0",
+    "jsr:@std/encoding@1": "1.0.5",
     "jsr:@std/encoding@1.0.0-rc.1": "1.0.0-rc.1",
     "jsr:@std/encoding@^1.0.5": "1.0.5",
     "jsr:@std/fmt@*": "1.0.0",
@@ -89,6 +91,9 @@
         "jsr:@std/encoding@^1.0.5",
         "jsr:@std/path@^1.0.6"
       ]
+    },
+    "@noble/ed25519@2.1.0": {
+      "integrity": "59a6ad395a37a0d065f6a2771e56fe52ea4bd9070c77bdaca5c475f5184412cc"
     },
     "@oak/commons@0.11.0": {
       "integrity": "07702bfe5c07cd8144c422022994da1f9fea466b185824f4be63a2b1b1a65125",
