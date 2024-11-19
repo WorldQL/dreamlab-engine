@@ -15,7 +15,13 @@ export type UndoRedoOperation =
   | { t: "move-entity"; entityRef: string; prevParentRef: string; parentRef: string }
   // | { t: "add-behavior" }
   // | { t: "remove-behavior" }
-  // | { t: "modify-entity-value" }
+  | {
+      t: "modify-entity-value";
+      entityRef: string;
+      key: string;
+      value: unknown;
+      previous: unknown;
+    }
   // | { t: "modify-behavior-value" }
   | { t: "compound"; ops: Exclude<UndoRedoOperation, { t: "compound" }>[] };
 
@@ -119,6 +125,14 @@ export class UndoRedoManager {
         break;
       }
 
+      case "modify-entity-value": {
+        const entity = this.#game.entities.lookupByRef(op.entityRef);
+        const v = entity?.values.get(op.key);
+        if (v) v.value = op.previous;
+
+        break;
+      }
+
       default: {
         const t = (op as unknown as UndoRedoOperation).t;
         throw new NotImplementedError(`undo operation not implemented: ${t}`);
@@ -169,6 +183,14 @@ export class UndoRedoManager {
         const entity = this.#game.entities.lookupByRef(op.entityRef);
         const parent = this.#game.entities.lookupByRef(op.parentRef);
         if (entity && parent) entity.parent = parent;
+
+        break;
+      }
+
+      case "modify-entity-value": {
+        const entity = this.#game.entities.lookupByRef(op.entityRef);
+        const v = entity?.values.get(op.key);
+        if (v) v.value = op.value;
 
         break;
       }

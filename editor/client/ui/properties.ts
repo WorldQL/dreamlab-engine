@@ -207,7 +207,7 @@ export class Properties implements InspectorUIWidget {
     valuesSection.addContent(valuesTable);
 
     for (const [key, value] of entity.values.entries()) {
-      if (key === "#sourceRef") continue
+      if (key === "#sourceRef") continue;
       const [valueField, refreshValue] = createValueControl(this.game, {
         id: `${entity.ref}/${key}`,
         typeTag: value.typeTag,
@@ -215,6 +215,27 @@ export class Properties implements InspectorUIWidget {
         set: v => (value.value = v),
         default: undefined,
         relatedEntity: entity,
+      });
+
+      let state: { value: unknown } | undefined = undefined;
+
+      valueField.addEventListener("focus", () => {
+        state = { value: value.value };
+      });
+
+      valueField.addEventListener("blur", () => {
+        if (!state) return;
+        const previous = state.value;
+        state = undefined;
+        if (value.value === previous) return;
+
+        UndoRedoManager._.push({
+          t: "modify-entity-value",
+          entityRef: entity.ref,
+          key,
+          value: value.value,
+          previous,
+        });
       });
 
       valuesTable.addEntry(`value:${key}`, key, valueField);
