@@ -29,8 +29,8 @@ import { stats } from "./_stats.ts";
 import { CameraPanBehavior } from "./camera-pan.ts";
 import { AppMenu } from "./ui/app-menu.ts";
 import { InspectorUI } from "./ui/inspector.ts";
-import { LogViewer } from "./ui/log-viewer.ts";
 import { UndoRedoManager } from "./undo-redo.ts";
+import { BottomTabs } from "./ui/bottom-tabs.ts";
 
 // TODO: loading screen ?
 
@@ -168,8 +168,9 @@ inspector.show(uiRoot);
 const appMenu = new AppMenu(uiRoot, games);
 appMenu.setup(inspector);
 
-const logViewer = new LogViewer(uiRoot, games);
-logViewer.setup(inspector);
+const bottomTabs = new BottomTabs(uiRoot, games);
+bottomTabs.setup(inspector);
+bottomTabs.show(uiRoot);
 
 const _ = new UndoRedoManager(game);
 

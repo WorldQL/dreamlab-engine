@@ -21,7 +21,7 @@ export class LogViewer {
   private maxLogs: number;
 
   constructor(
-    private uiRoot: HTMLElement,
+    private container: HTMLElement,
     private games: { edit: ClientGame; play?: ClientGame },
     maxLogs = 100, // Default maximum number of logs
   ) {
@@ -52,8 +52,8 @@ export class LogViewer {
           query === ""
             ? true
             : caseSensitive
-              ? text.includes(query)
-              : text.toLowerCase().includes(query.toLowerCase());
+            ? text.includes(query)
+            : text.toLowerCase().includes(query.toLowerCase());
 
         if (!matches) log.dataset.filtered = "";
       }
@@ -113,8 +113,7 @@ export class LogViewer {
       if (message.t === "New") this.appendLogEntry(message.entry);
     });
 
-    const bottom = this.uiRoot.querySelector("#bottom-bar")!;
-    bottom.append(this.#section);
+    this.container.append(this.#section);
 
     this.injectConsoleWrapper();
   }

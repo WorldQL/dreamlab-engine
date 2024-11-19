@@ -1,0 +1,40 @@
+.bottom-tabs {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.bottom-tabs-bar {
+  height: 2rem;
+  display: flex;
+  border-bottom: 1px solid rgb(var(--color-grey));
+  background: rgb(var(--color-bg-1));
+}
+
+.bottom-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0 1em;
+  font-size: 0.875rem;
+  color: rgb(var(--color-text-darker));
+  cursor: pointer;
+}
+
+.bottom-tab.active {
+  color: rgb(var(--color-text));
+  background: rgb(var(--color-bg-2));
+  border-bottom: 2px solid rgb(var(--color-primary));
+}
+
+.bottom-tabs-content {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.bottom-tabs-content > * {
+  flex: 1;
+  min-height: 0;
+}
