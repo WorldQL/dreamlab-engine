@@ -169,41 +169,24 @@ export class Camera extends Entity {
       this.container.destroy();
     });
 
-    const transform = this.globalTransform;
-    let updating = false;
-
-    // Initialize zoom and aspect ratio
-    this.zoom = 1 / transform.scale.x;
-    let aspectRatio = transform.scale.y / transform.scale.x;
-
-    const zoom = this.defineValue(Camera, "zoom", { replicated: false });
     this.defineValue(Camera, "active", { replicated: false });
     this.defineValue(Camera, "smooth", { replicated: false });
     this.defineValue(Camera, "unlocked", { replicated: false });
 
-    const updateScaleFromZoom = () => {
-      if (updating) return;
-      updating = true;
-      // Update scale.x and scale.y while preserving aspect ratio
-      transform.scale.x = 1 / this.zoom;
-      transform.scale.y = (1 / this.zoom) * aspectRatio;
-      updating = false;
-    };
+    this.zoom = 1 / this.globalTransform.scale.x;
+    const zoom = this.defineValue(Camera, "zoom", { replicated: false });
+    let zoomChanging = false;
 
-    const updateZoomFromScale = () => {
-      if (updating) return;
-      updating = true;
-      // Update zoom based on scale.x
-      this.zoom = 1 / transform.scale.x;
-      // Update aspect ratio
-      aspectRatio = transform.scale.y / transform.scale.x;
-      updating = false;
-    };
+    zoom.onChanged(() => {
+      zoomChanging = true;
+      this.globalTransform.scale = Vector2.ONE.mul(1 / this.zoom);
+      zoomChanging = false;
+    });
 
-    zoom.onChanged(updateScaleFromZoom);
-
-    // Listen for changes in the scale to update zoom and aspect ratio
-    this.on(EntityTransformUpdate, updateZoomFromScale);
+    this.on(EntityTransformUpdate, () => {
+      if (zoomChanging) return;
+      this.zoom = 1 / this.globalTransform.scale.x;
+    });
   }
 
   public worldToScreen(position: IVector2): Vector2 {
