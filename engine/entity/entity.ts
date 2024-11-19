@@ -959,7 +959,7 @@ export abstract class Entity implements ISignalHandler {
     this[internal.entityTeleportingThisTick] = false;
 
     if (this.#netTransformFrom && this.#netTransformTo) {
-      const INTERP_TIME_TICKS = 6; // 6 ticks = 100ms
+      const INTERP_TIME_TICKS = 4; // 6 ticks = 100ms
 
       const age = this.game.time.ticks - this.#netTransformTicks;
       if (age <= INTERP_TIME_TICKS) {

@@ -115,13 +115,15 @@ export class Properties implements InspectorUIWidget {
     ]);
     table.addEntry("type", "Type", typeField);
 
-    const [enabledField, refreshEnabled] = createBooleanField({
-      default: true,
-      get: () => entity[internal.entityOwnEnabled],
-      set: v => (entity.enabled = v),
-    });
-    entity.on(EntityOwnEnableChanged, () => refreshEnabled());
-    table.addEntry("enabled", "Enabled", enabledField);
+    if (!entity.protected) {
+      const [enabledField, refreshEnabled] = createBooleanField({
+        default: true,
+        get: () => entity[internal.entityOwnEnabled],
+        set: v => (entity.enabled = v),
+      });
+      entity.on(EntityOwnEnableChanged, () => refreshEnabled());
+      table.addEntry("enabled", "Enabled", enabledField);
+    }
 
     const transformSection = new DataDetails();
     container.append(transformSection);
