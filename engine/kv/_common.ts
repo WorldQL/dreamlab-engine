@@ -13,19 +13,18 @@ export async function get(presigned: string): Promise<JsonValue | undefined> {
   if (resp.status === 404) return undefined;
 
   const json = await resp.json();
-  if (!("value" in json) || typeof json.value !== "string") {
+  if (!("value" in json)) {
     throw new TypeError("invalid kv response");
   }
 
-  const value = JSON.parse(json.value) as JsonValue;
-  return value;
+  return json.value as JsonValue;
 }
 
 export async function set(presigned: string, value: JsonValue): Promise<void> {
   await fetch(presigned, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ value: JSON.stringify(value) }), // lol, see comments in mod.ts
+    body: JSON.stringify({ value }),
   });
 
   // TODO: error handling?

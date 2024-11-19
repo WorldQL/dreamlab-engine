@@ -20,6 +20,3 @@ export interface ServerKV {
     readonly delete: (key: string, playerId: string) => Promise<void>;
   };
 }
-
-// TODO: consider rewriting KV server to accept JSON blobs instead of just strings
-// TODO: consider rewriting KV server to use Deno KV instead of SQLite

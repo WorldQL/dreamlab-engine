@@ -3,7 +3,7 @@ import { getPublicKeyAsync, signAsync, verifyAsync } from "jsr:@noble/ed25519@2.
 import { decodeBase64Url, encodeBase64Url } from "jsr:@std/encoding@^1/base64url";
 
 export type Action = (typeof actions)[number];
-export const actions = ["get", "set", "append", "incr", "delete"] as const;
+export const actions = ["get", "set", "delete"] as const;
 
 export function isAction(value: string): value is Action {
   // @ts-expect-error type guard
