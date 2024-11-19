@@ -272,6 +272,12 @@ export class Behavior implements ISignalHandler {
     this.#needsSetup = false;
 
     if (!this.#initialized) {
+      if (this.game.isClient()) {
+        this.onInitializeClient?.();
+      }
+      if (this.game.isServer()) {
+        this.onInitializeServer?.();
+      }
       this.onInitialize();
       this.#initialized = true;
     }
@@ -348,4 +354,22 @@ export class Behavior implements ISignalHandler {
   onTick?(): void;
   onPostTick?(): void;
   onFrame?(): void;
+
+  /**
+   * Runs every time this Behavior ticks on the client.
+   */
+  onTickClient?(): void;
+  /**
+   * Runs every time this Behavior ticks on the server.
+   */
+  onTickServer?(): void;
+
+  /**
+   * Runs when this Behavior initializes on the client.
+   */
+  onInitializeClient?(): void;
+  /**
+   * Runs when this Behavior initializes on the server.
+   */
+  onInitializeServer?(): void;
 }

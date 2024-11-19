@@ -160,7 +160,6 @@ export class LogViewer {
       className += " log-entry-error";
     }
 
-    // @ts-expect-error CSS
     const entry = elem("div", { className, style }, [
       elem("code", {}, [ts]),
       elem("code", {}, [level]),

@@ -946,6 +946,12 @@ export abstract class Entity implements ISignalHandler {
     for (let i = 0; i < behaviorCount; i++) {
       const behavior = this.behaviors[i];
       try {
+        if (this.game.isClient()) {
+          behavior.onTickClient?.();
+        }
+        if (this.game.isServer()) {
+          behavior.onTickServer?.();
+        }
         behavior.onTick?.();
       } catch (err) {
         console.error(
