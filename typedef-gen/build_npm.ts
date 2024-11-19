@@ -1,8 +1,8 @@
-import * as dnt from "jsr:@deno/dnt@0.41.3";
 import { Tar } from "jsr:@std/archive@0.225.4/tar";
 import * as fs from "jsr:@std/fs@^1";
 import * as io from "jsr:@std/io@0.225.0";
 import * as path from "jsr:@std/path@^1";
+import * as dnt from "../../dnt/mod.ts";
 
 const OUT_DIR = "./out";
 await fs.emptyDir(OUT_DIR);
@@ -13,7 +13,7 @@ await fs.emptyDir(CODE_EDITOR_DIR);
 const commonOptions = {
   shims: { deno: true },
   declaration: "inline",
-  skipSourceOutput: true,
+  skipSourceOutput: false,
   scriptModule: "cjs",
   esModule: false,
   compilerOptions: {

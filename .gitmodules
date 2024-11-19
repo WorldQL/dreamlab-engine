@@ -1,0 +1,3 @@
+[submodule "typedef-gen/dnt"]
+	path = typedef-gen/dnt
+	url = https://github.com/char/dnt.git
