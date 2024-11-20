@@ -203,8 +203,8 @@ export abstract class Entity implements ISignalHandler {
           child.#netTransformFrom,
         );
         child.#netTransformFrom = transformWorldToLocal(
-          child.#netTransformFrom,
           this.globalTransform,
+          child.#netTransformFrom,
         );
       }
       if (child.#netTransformTo) {
@@ -213,8 +213,8 @@ export abstract class Entity implements ISignalHandler {
           child.#netTransformTo,
         );
         child.#netTransformTo = transformWorldToLocal(
-          child.#netTransformTo,
           this.globalTransform,
+          child.#netTransformTo,
         );
       }
 

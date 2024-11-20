@@ -152,7 +152,7 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
             scale: report.scale,
             z: report.z,
           }),
-          report.teleport ?? false,
+          true,
         );
         ignoredEntityRefs.delete(entity.ref);
       }

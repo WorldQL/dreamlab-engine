@@ -22,7 +22,7 @@ export const handleTransformSync: ClientNetworkSetupRoutine = (conn, game) => {
 
       if (!ignoredEntityRefs.has(event.source.ref)) {
         transformDirtyEntities.add(entity);
-        // if (entity.name === "Ball") console.trace({ event, entity });
+        if (entity.name === "Ball") console.trace({ event, entity });
       }
     });
   });
