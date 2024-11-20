@@ -1,4 +1,5 @@
 import {
+  Camera,
   ClientGame,
   Entity,
   EntityChildSpawned,
@@ -8,6 +9,7 @@ import {
 import { element as elem } from "@dreamlab/ui";
 import { InspectorUI } from "./inspector.ts";
 import { EditorMetadataEntity } from "../../common/mod.ts";
+import { SelectedEntityService } from "./selected-entity.ts";
 
 export class PrefabViewer {
   #section = elem("section", { id: "prefab-viewer" });
@@ -16,7 +18,10 @@ export class PrefabViewer {
   currentDragSource: { entities: Entity[]; entries: HTMLElement[] } | undefined;
   prefabsRoot!: Entity;
 
-  constructor(private game: ClientGame, private container: HTMLElement) {}
+  constructor(
+    private game: ClientGame,
+    private container: HTMLElement,
+  ) {}
 
   setup(ui: InspectorUI): void {
     this.#section.append(this.#content);
@@ -117,6 +122,17 @@ export class PrefabViewer {
         for (const entry of this.currentDragSource.entries) {
           delete entry.dataset.dragging;
         }
+      }
+
+      const selectedService = SelectedEntityService.serviceForGame(this.game);
+      const entity = selectedService?.entities.at(0);
+      if (entity && selectedService?.entities.length === 1) {
+        this.currentDragSource?.entities.forEach(e => {
+          // TODO: Incomplete. Make this spawn roughly at cursor position and also work without parent selected
+          e.cloneInto(entity, {
+            transform: { position: Camera.getActive(this.game)?.transform.position },
+          });
+        });
       }
       this.currentDragSource = undefined;
     });

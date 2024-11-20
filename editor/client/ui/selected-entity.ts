@@ -1,7 +1,7 @@
 import { BoxResizeGizmo, ClientGame, Entity, Gizmo, Root } from "@dreamlab/engine";
 import { EditorRootFacadeEntity } from "../../common/mod.ts";
 
-const internalSelectedService = Symbol.for("dreamlab.engine.internalSelectedService");
+export const internalSelectedService = Symbol.for("dreamlab.engine.internalSelectedService");
 export class InitSelectedEntityService {
   constructor(public svc: SelectedEntityService) {}
 }
