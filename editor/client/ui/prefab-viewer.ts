@@ -118,23 +118,28 @@ export class PrefabViewer {
     });
 
     card.addEventListener("dragend", () => {
-      if (this.currentDragSource) {
-        for (const entry of this.currentDragSource.entries) {
-          delete entry.dataset.dragging;
+      // ungainly settimeout hack because the mouse position doesn't update when dragging
+      // major deja vu on this (i have done this before)
+      setTimeout(() => {
+        if (this.currentDragSource) {
+          for (const entry of this.currentDragSource.entries) {
+            delete entry.dataset.dragging;
+          }
         }
-      }
 
-      const selectedService = SelectedEntityService.serviceForGame(this.game);
-      const entity = selectedService?.entities.at(0);
-      if (entity && selectedService?.entities.length === 1) {
-        this.currentDragSource?.entities.forEach(e => {
-          // TODO: Incomplete. Make this spawn roughly at cursor position and also work without parent selected
-          e.cloneInto(entity, {
-            transform: { position: Camera.getActive(this.game)?.transform.position },
+        const selectedService = SelectedEntityService.serviceForGame(this.game);
+        if (!selectedService) return;
+        if (selectedService.entities.length === 0) selectedService.entities = [this.game.world._.EditEntities._.world]
+        const entity = selectedService?.entities.at(0);
+        if (entity && selectedService?.entities.length === 1) {
+          this.currentDragSource?.entities.forEach(e => {
+            e.cloneInto(entity, {
+              transform: { position: this.game.inputs.cursor.world },
+            });
           });
-        });
-      }
-      this.currentDragSource = undefined;
+        }
+        this.currentDragSource = undefined;
+      }, 20);
     });
 
     this.entryElementMap.set(entity.ref, card);
