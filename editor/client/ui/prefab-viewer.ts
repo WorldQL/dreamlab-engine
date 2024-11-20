@@ -31,6 +31,17 @@ export class PrefabViewer {
       }
     }
 
+    ui.selectedEntity.listen(() => {
+      for (const [entityRef, card] of this.entryElementMap.entries()) {
+        const entity = this.game.entities.lookupByRef(entityRef);
+        if (entity && ui.selectedEntity.entities.includes(entity)) {
+          card.classList.add("selected");
+        } else {
+          card.classList.remove("selected");
+        }
+      }
+    });
+
     this.prefabsRoot.on(EntityChildSpawned, event => {
       const newEntity = event.child;
       if (!(newEntity instanceof EditorMetadataEntity)) {

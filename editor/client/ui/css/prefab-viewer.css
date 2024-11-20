@@ -22,11 +22,28 @@
   background: rgb(var(--color-bg-1));
   border-radius: var(--border-radius);
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  position: relative;
+  overflow: hidden;
 }
 
 .prefab-card:hover {
   background: rgb(var(--color-bg-2));
+}
+
+.prefab-card.selected {
+  background: rgb(var(--color-bg-2));
+  border-color: rgb(var(--color-primary));
+  box-shadow: 0 0 0 1px rgb(var(--color-primary) / 0.3);
+}
+
+.prefab-card.selected::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgb(var(--color-primary) / 0.1);
+  pointer-events: none;
 }
 
 .prefab-icon {
@@ -45,4 +62,9 @@
 
 .prefab-card.drag-target {
   background: rgb(var(--color-primary) / 0.2);
+}
+
+.prefab-card.selected:hover {
+  background: rgb(var(--color-bg-2));
+  transform: scale(1.02);
 }
