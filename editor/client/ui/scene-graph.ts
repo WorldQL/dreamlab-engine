@@ -146,9 +146,9 @@ export class SceneGraph implements InspectorUIWidget {
 
   renderEntry(ui: InspectorUI, parent: HTMLElement, entity: Entity) {
     if (entity instanceof EditorMetadataEntity) return;
-    if (this.entryElementMap.has(entity.ref)) return;
-
     const currentEntityRef = entity.ref;
+
+    if (this.entryElementMap.has(currentEntityRef)) return;
 
     const toggle = elem("div", { className: "arrow" }, [icon(ChevronDown)]);
     const summary = elem("summary", {}, [
@@ -167,8 +167,8 @@ export class SceneGraph implements InspectorUIWidget {
       { open: this.#openEntities.has(currentEntityRef) || entity.children.size === 0 },
       [summary],
     );
-    entryElement.dataset.entity = entity.ref;
-    this.entryElementMap.set(entity.ref, entryElement);
+    entryElement.dataset.entity = currentEntityRef;
+    this.entryElementMap.set(currentEntityRef, entryElement);
 
     toggle.addEventListener("click", () => {
       entryElement.open = !entryElement.open;
@@ -214,6 +214,7 @@ export class SceneGraph implements InspectorUIWidget {
 
     entity.on(EntityDestroyed, () => {
       entryElement.remove();
+      this.entryElementMap.delete(currentEntityRef);
     });
 
     entity.on(EntityRenamed, () => {
