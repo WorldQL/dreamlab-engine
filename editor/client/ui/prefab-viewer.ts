@@ -1,4 +1,10 @@
-import { ClientGame, Entity } from "@dreamlab/engine";
+import {
+  ClientGame,
+  Entity,
+  EntityChildSpawned,
+  EntityDestroyed,
+  EntityRenamed,
+} from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 import { InspectorUI } from "./inspector.ts";
 import { EditorMetadataEntity } from "../../common/mod.ts";
@@ -8,21 +14,37 @@ export class PrefabViewer {
   #content = elem("div", { id: "prefab-grid" });
   entryElementMap = new Map<string, HTMLElement>();
   currentDragSource: { entities: Entity[]; entries: HTMLElement[] } | undefined;
+  prefabsRoot!: Entity;
 
   constructor(private game: ClientGame, private container: HTMLElement) {}
 
   setup(ui: InspectorUI): void {
     this.#section.append(this.#content);
 
-    const prefabsRoot = ui.editMode
+    this.prefabsRoot = ui.editMode
       ? this.game.world._.EditEntities._.prefabs
       : this.game.prefabs;
 
-    for (const prefab of prefabsRoot.children.values()) {
+    for (const prefab of this.prefabsRoot.children.values()) {
       if (!(prefab instanceof EditorMetadataEntity)) {
         this.renderPrefabCard(ui, prefab);
       }
     }
+
+    this.prefabsRoot.on(EntityChildSpawned, event => {
+      const newEntity = event.child;
+      if (!(newEntity instanceof EditorMetadataEntity)) {
+        this.renderPrefabCard(ui, newEntity);
+      }
+    });
+
+    this.prefabsRoot.on(EntityDestroyed, () => {
+      const card = this.entryElementMap.get(this.prefabsRoot.ref);
+      if (card) {
+        card.remove();
+        this.entryElementMap.delete(this.prefabsRoot.ref);
+      }
+    });
 
     this.container.append(this.#section);
   }
@@ -36,6 +58,18 @@ export class PrefabViewer {
       ]),
       elem("div", { className: "prefab-name" }, [entity.name]),
     ]);
+
+    entity.on(EntityDestroyed, () => {
+      card.remove();
+      this.entryElementMap.delete(entity.ref);
+    });
+
+    entity.on(EntityRenamed, () => {
+      const nameElement = card.querySelector(".prefab-name");
+      if (nameElement) {
+        nameElement.textContent = entity.name;
+      }
+    });
 
     card.addEventListener("click", () => {
       ui.selectedEntity.entities = [entity];
