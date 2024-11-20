@@ -168,7 +168,7 @@ inspector.show(uiRoot);
 const appMenu = new AppMenu(uiRoot, games);
 appMenu.setup(inspector);
 
-const bottomTabs = new BottomTabs(uiRoot, games);
+const bottomTabs = new BottomTabs(games);
 bottomTabs.setup(inspector);
 bottomTabs.show(uiRoot);
 
