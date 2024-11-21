@@ -31,7 +31,6 @@ import {
   ValueTypeTag,
   inferValueTypeTag,
 } from "../value/mod.ts";
-import type { Vector2 } from "@dreamlab/engine";
 
 export interface BehaviorContext {
   game: Game;
