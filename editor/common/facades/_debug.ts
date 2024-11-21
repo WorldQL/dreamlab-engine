@@ -102,7 +102,7 @@ abstract class DebugShape {
     const zoom = activeEditorCamera?.values.get("zoom");
     zoom?.onChanged(() => {
       this.width = 0.04 * (1 / activeEditorCamera.zoom);
-      this.redraw();
+      this.#redraw();
     });
   }
 
