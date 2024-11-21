@@ -31,6 +31,7 @@ import {
   ValueTypeTag,
   inferValueTypeTag,
 } from "../value/mod.ts";
+import type { Vector2 } from "@dreamlab/engine";
 
 export interface BehaviorContext {
   game: Game;
@@ -372,4 +373,20 @@ export class Behavior implements ISignalHandler {
    * Runs when this Behavior initializes on the server.
    */
   onInitializeServer?(): void;
+
+  /**
+   * Called when the uses mouses down (clicks) over the entity this Behavior is attached to.
+   * Works ONLY IF the entity is a ClickableRect or ClickableCircle
+   */
+  onMouseDown?(
+    button: "left" | "right" | "middle",
+  ): void;
+
+  /**
+   * Called when the uses mouses releases their mouse after clicking the entity this Behavior is attached to.
+   * Works ONLY IF the entity is a ClickableRect or ClickableCircle
+   */
+  onMouseUp?(
+    button: "left" | "right" | "middle",
+  ): void;
 }

@@ -27,9 +27,11 @@ export abstract class ClickableEntity extends Entity {
     if (!prev && value) {
       const x = { screen: cursor.screen!, world: cursor.world! };
       this.fire(MouseDown, button, x);
+      this.behaviors.forEach(b => b.onMouseDown?.(button));
       if (button === "left") this.fire(Click, x);
     } else if (prev && !value) {
       this.fire(MouseUp, button, cursor);
+      this.behaviors.forEach(b => b.onMouseUp?.(button));
     }
   }
 
