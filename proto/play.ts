@@ -163,6 +163,7 @@ export const EntityTransformReportSchema = z.object({
   scale: Vector2Schema,
   z: z.number(),
   teleport: z.boolean().optional(),
+  parent: EntityReferenceSchema.optional(),
 });
 
 export const ClientReportEntityTransformsPacket = z.object({

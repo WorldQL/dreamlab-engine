@@ -53,7 +53,6 @@ import {
 } from "../value/mod.ts";
 import type { Root } from "./entity-roots.ts";
 import { Empty } from "./mod.ts";
-import { EntityTransformReport } from "../../proto/play.ts";
 
 export interface EntityContext {
   game: Game;
@@ -196,6 +195,27 @@ export abstract class Entity implements ISignalHandler {
       const enabled = this.enabled;
       if (oldParent.enabled !== enabled) {
         child.#notifyEnableChanged(enabled);
+      }
+
+      if (child.#netTransformFrom) {
+        child.#netTransformFrom = transformLocalToWorld(
+          oldParent.globalTransform,
+          child.#netTransformFrom,
+        );
+        child.#netTransformFrom = transformWorldToLocal(
+          this.globalTransform,
+          child.#netTransformFrom,
+        );
+      }
+      if (child.#netTransformTo) {
+        child.#netTransformTo = transformLocalToWorld(
+          oldParent.globalTransform,
+          child.#netTransformTo,
+        );
+        child.#netTransformTo = transformWorldToLocal(
+          this.globalTransform,
+          child.#netTransformTo,
+        );
       }
 
       this.game[internal.entityTickingOrderDirty] = true;
@@ -756,7 +776,11 @@ export abstract class Entity implements ISignalHandler {
   // internal id for stable internal reference. we only really need this for networking
   readonly ref: string = generateCUID("ent");
 
-  #updateTransform(fromGlobal: boolean, source: Entity = this) {
+  #updateTransform(
+    fromGlobal: boolean,
+    source: Entity = this,
+    fromNetwork: ConnectionId | undefined = undefined,
+  ) {
     if (!this.transform || !this.globalTransform) return;
 
     if (fromGlobal) {
@@ -773,43 +797,32 @@ export abstract class Entity implements ISignalHandler {
       this.globalTransform[internal.transformForceUpdate](worldSpaceTransform);
     }
 
-    this.fire(EntityTransformUpdate, source);
+    this.fire(EntityTransformUpdate, source, fromNetwork);
 
     for (const child of this.children.values()) {
-      child.#updateTransform(false, source);
+      child.#updateTransform(false, source, fromNetwork);
     }
   }
 
   [internal.entityTeleportingThisTick]: boolean = false;
   #netTransformTo: Transform | undefined;
   #netTransformFrom: Transform | undefined;
+  #netTransformSource: ConnectionId | undefined;
   #netTransformTicks: number = 0;
   [internal.transformFromNetwork](
-    _from: ConnectionId,
+    from: ConnectionId,
     transform: Transform,
     teleporting: boolean = false,
-    originalReports: EntityTransformReport[],
   ) {
+    this.#netTransformSource = from;
+
     if (teleporting) {
       this[internal.entityTeleportingThisTick] = true;
       this.transform[internal.transformForceUpdate](transform);
       this.transform[internal.transformOnChanged]();
     } else {
-      this.#netTransformFrom = new Transform(this.globalTransform);
-      const parentReport = originalReports.find(e => e.entity === this.parent?.ref);
-      const parentGlobalTransform = parentReport
-        ? new Transform({
-            position: parentReport.position,
-            rotation: parentReport.rotation,
-            scale: parentReport.scale,
-            z: parentReport.z,
-          })
-        : undefined;
-
-      this.#netTransformTo = parentGlobalTransform
-        ? transformLocalToWorld(parentGlobalTransform, transform)
-        : transform;
-
+      this.#netTransformFrom = new Transform(this.transform);
+      this.#netTransformTo = new Transform(transform);
       this.#netTransformTicks = this.game.time.ticks;
     }
   }
@@ -970,15 +983,13 @@ export abstract class Entity implements ISignalHandler {
       const age = this.game.time.ticks - this.#netTransformTicks;
       if (age <= INTERP_TIME_TICKS) {
         const t = age / INTERP_TIME_TICKS;
-        let newTransform = new Transform(this.#netTransformTo);
+        const newTransform = new Transform(this.#netTransformTo);
         newTransform.position.assign(
           Vector2.lerp(this.#netTransformFrom.position, this.#netTransformTo.position, t),
         );
-        newTransform = this.parent
-          ? transformWorldToLocal(this.parent.globalTransform, newTransform)
-          : newTransform;
         this.transform[internal.transformForceUpdate](newTransform);
-        this.transform[internal.transformOnChanged]();
+        this.#updateTransform(false, this, this.#netTransformSource);
+        // this.transform[internal.transformOnChanged]();
       }
     }
 

@@ -41,7 +41,10 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
 
   game.world.on(EntityDescendantSpawned, event => {
     const entity = event.descendant;
-    entity.on(EntityTransformUpdate, ({ source }) => {
+    entity.on(EntityTransformUpdate, ({ source, fromNetwork }) => {
+      if (source !== entity) return;
+      if (fromNetwork !== undefined) return;
+
       if (!ignoredEntityRefs.has(source.ref)) {
         transformDirtyEntities.add(entity);
       }
@@ -65,6 +68,7 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
           scale: entity.transform.scale.bare(),
           z: entity.transform.z,
           teleport: entity[internal.entityTeleportingThisTick],
+          parent: entity.parent?.ref,
         });
       }
     }
@@ -140,16 +144,16 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
       if (entity === undefined) return;
       if (entity.authority === undefined || from === entity.authority) {
         ignoredEntityRefs.add(entity.ref);
-        entity[internal.entityTeleportingThisTick] = report.teleport ?? false;
-        entity.transform[internal.transformForceUpdate](
+        entity[internal.transformFromNetwork](
+          from,
           new Transform({
             position: report.position,
             rotation: report.rotation,
             scale: report.scale,
             z: report.z,
           }),
+          true,
         );
-        entity.transform[internal.transformOnChanged]();
         ignoredEntityRefs.delete(entity.ref);
       }
     }
