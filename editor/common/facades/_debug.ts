@@ -1,4 +1,11 @@
-import { Camera, EntityTransformUpdate, IVector2, PixiEntity, Vector2 } from "@dreamlab/engine";
+import {
+  Camera,
+  EntityDestroyed,
+  EntityTransformUpdate,
+  IVector2,
+  PixiEntity,
+  Vector2,
+} from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 
 export type Label = { readonly container: PIXI.Container; readonly text: PIXI.Text };
@@ -85,7 +92,10 @@ abstract class DebugShape {
     this.width = width;
     this.alignment = alignment;
     this.getBounds = getBounds;
-
+    const activeEditorCamera = Camera.getActive(entity.game);
+    if (activeEditorCamera) {
+      this.width = 0.04 * (1 / activeEditorCamera.zoom);
+    }
     this.#redraw();
 
     // this.entity.on(EntityRenamed, () => {
@@ -96,13 +106,17 @@ abstract class DebugShape {
       this.#redraw();
     });
 
-    const activeEditorCamera = Camera.getActive(entity.game);
     if (!activeEditorCamera) return;
 
     const zoom = activeEditorCamera?.values.get("zoom");
-    zoom?.onChanged(() => {
+    const zoomCallback = () => {
       this.width = 0.04 * (1 / activeEditorCamera.zoom);
       this.#redraw();
+    };
+    zoom?.onChanged(zoomCallback);
+
+    this.entity.on(EntityDestroyed, () => {
+      zoom?.removeChangeListener(zoomCallback);
     });
   }
 

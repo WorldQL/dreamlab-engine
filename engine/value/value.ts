@@ -52,6 +52,14 @@ export class Value<T = unknown> {
     this.#changeListeners.push(listener);
   }
 
+  removeChangeListener(listener: (newValue: this["value"]) => void) {
+    if (!this.#changeListeners) return;
+    const index = this.#changeListeners.indexOf(listener);
+    if (index !== -1) {
+      this.#changeListeners.splice(index, 1);
+    }
+  }
+
   get value() {
     return this.#value;
   }

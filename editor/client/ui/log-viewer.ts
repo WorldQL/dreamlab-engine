@@ -52,8 +52,8 @@ export class LogViewer {
           query === ""
             ? true
             : caseSensitive
-            ? text.includes(query)
-            : text.toLowerCase().includes(query.toLowerCase());
+              ? text.includes(query)
+              : text.toLowerCase().includes(query.toLowerCase());
 
         if (!matches) log.dataset.filtered = "";
       }
@@ -115,7 +115,9 @@ export class LogViewer {
 
     this.container.append(this.#section);
 
-    this.injectConsoleWrapper();
+    if (!(window.location.hostname === "localhost")) {
+      this.injectConsoleWrapper();
+    }
   }
 
   private injectConsoleWrapper() {
