@@ -2,24 +2,29 @@ import { element as elem } from "@dreamlab/ui";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 import { LogViewer } from "./log-viewer.ts";
 import { PrefabViewer } from "./prefab-viewer.ts";
-import { Terminal, Box, icon } from "../_icons.ts";
+import { Terminal, Box, icon, Bot } from "../_icons.ts";
 import { ClientGame } from "@dreamlab/engine";
+import { Assistant } from "./assistant/assistant.ts";
 
 export class BottomTabs implements InspectorUIWidget {
   #container: HTMLElement;
   #logViewer: LogViewer;
+  #assistant: Assistant
   #prefabViewer: PrefabViewer;
   #logContent: HTMLElement;
   #prefabContent: HTMLElement;
+  #assistantContent: HTMLElement;
 
   constructor(games: { edit: ClientGame; play?: ClientGame }) {
     this.#container = elem("div", { className: "bottom-tabs" });
 
     this.#logContent = elem("div", { id: "log-viewer-content" });
     this.#prefabContent = elem("div", { id: "prefab-viewer-content" });
+    this.#assistantContent = elem("div", { id: "assistant-viewer-content" })
 
     this.#logViewer = new LogViewer(this.#logContent, games);
     this.#prefabViewer = new PrefabViewer(games.edit, this.#prefabContent);
+    this.#assistant = new Assistant(games.edit, this.#assistantContent);
   }
 
   setup(ui: InspectorUI): void {
@@ -33,9 +38,10 @@ export class BottomTabs implements InspectorUIWidget {
 
       this.#logContent.style.display = tabId === "logs" ? "flex" : "none";
       this.#prefabContent.style.display = tabId === "prefabs" ? "flex" : "none";
+      this.#assistantContent.style.display = tabId === "assistant" ? "flex" : "none";
     };
 
-    const logsTab = elem("div", { className: "bottom-tab active" });
+    const logsTab = elem("div", { className: "bottom-tab" });
     logsTab.setAttribute("data-tab-id", "logs");
     logsTab.append(icon(Terminal), elem("span", {}, ["Logs"]));
 
@@ -43,7 +49,11 @@ export class BottomTabs implements InspectorUIWidget {
     prefabsTab.setAttribute("data-tab-id", "prefabs");
     prefabsTab.append(icon(Box), elem("span", {}, ["Prefabs"]));
 
-    const tabBar = elem("div", { className: "bottom-tabs-bar" }, [logsTab, prefabsTab]);
+    const assistantTab = elem("div", { className: "bottom-tab active" });
+    assistantTab.setAttribute("data-tab-id", "assistant");
+    assistantTab.append(icon(Bot), elem("span", {}, ["Assistant"]));
+
+    const tabBar = elem("div", { className: "bottom-tabs-bar" }, [assistantTab, prefabsTab, logsTab]);
 
     tabBar.addEventListener("click", e => {
       const tab = (e.target as HTMLElement).closest(".bottom-tab");
@@ -56,13 +66,17 @@ export class BottomTabs implements InspectorUIWidget {
     const content = elem("div", { className: "bottom-tabs-content" }, [
       this.#logContent,
       this.#prefabContent,
+      this.#assistantContent
     ]);
 
     this.#prefabContent.style.display = "none";
+    this.#assistantContent.style.display = "flex";
+    this.#logContent.style.display = "none";
     this.#container.append(tabBar, content);
 
     this.#logViewer.setup(ui);
     this.#prefabViewer.setup(ui);
+    this.#assistant.setup(ui);
   }
 
   show(uiRoot: HTMLElement): void {

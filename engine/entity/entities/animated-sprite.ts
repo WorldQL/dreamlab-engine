@@ -5,7 +5,7 @@ import { SpritesheetAdapter } from "../../value/adapters/texture-adapter.ts";
 import { Entity, EntityContext } from "../entity.ts";
 import { PixiEntity } from "../pixi-entity.ts";
 import { AbstractRenderer } from "@dreamlab/vendor/pixi.ts";
-import { EntityEnableChanged } from "@dreamlab/engine";
+import { EntityEnableChanged, ObjectAdapter, TextureAdapter } from "@dreamlab/engine";
 
 // this shockingly fixes spritesheet bleeding
 AbstractRenderer.defaultOptions.roundPixels = true;
@@ -23,12 +23,17 @@ export class AnimatedSprite extends PixiEntity {
 
   width: number = 1;
   height: number = 1;
-  spritesheet: string = "";
+  spritesheetJSON: string = "";
   alpha: number = 1;
   speed: number = 0.1;
   loop: boolean = true;
   startFrame: number = 0;
   endFrame: number = -1;
+
+  texture: string = "";
+  frameWidth: number = 0;
+  frameHeight: number = 0;
+  cachedAtlas = '{"stringifiedJson": "we can hide this"}';
 
   #sprite: PIXI.AnimatedSprite | undefined;
   get sprite(): PIXI.AnimatedSprite | undefined {
@@ -50,9 +55,12 @@ export class AnimatedSprite extends PixiEntity {
       "startFrame",
       "endFrame",
     );
-    this.defineValue(AnimatedSprite, "spritesheet", { type: SpritesheetAdapter });
+    this.defineValue(AnimatedSprite, "spritesheetJSON", { type: SpritesheetAdapter });
+    this.defineValue(AnimatedSprite, "texture", { type: TextureAdapter });
+    this.defineValues(AnimatedSprite, "frameWidth", "frameHeight");
+    this.defineValue(AnimatedSprite, "cachedAtlas");
 
-    if (this.game.isClient() && this.spritesheet !== "") {
+    if (this.game.isClient() && this.spritesheetJSON !== "") {
       // PIXI.Assets.backgroundLoad(this.game.resolveResource(this.spritesheet));
     }
 
