@@ -1,11 +1,11 @@
-import { ClientGame, Entity, EntityDestroyed } from "@dreamlab/engine";
+import { ClientGame, Entity, EntityDestroyed, Root } from "@dreamlab/engine";
+import { SceneDescBehavior } from "@dreamlab/scene";
 import { element as elem } from "@dreamlab/ui";
+import { generateCUID } from "@dreamlab/vendor/cuid.ts";
+import { EditorMetadataEntity, EditorRootFacadeEntity } from "../../../common/mod.ts";
 import { icon, MinusCircle, PlusCircle } from "../../_icons.ts";
 import { InspectorUI, InspectorUIWidget } from "../inspector.ts";
 import { BehaviorList } from "./behavior-list.ts";
-import { EditorMetadataEntity } from "../../../common/mod.ts";
-import { generateCUID } from "@dreamlab/vendor/cuid.ts";
-import { SceneDescBehavior } from "@dreamlab/scene";
 
 export class BehaviorPanel implements InspectorUIWidget {
   #titleBar = elem("header", {}, [elem("h1", {}, ["Behaviors"])]);
@@ -91,7 +91,7 @@ export class BehaviorPanel implements InspectorUIWidget {
 
     ui.selectedEntity.listen(() => {
       const entity = ui.selectedEntity.entities.at(0);
-      if (entity) {
+      if (entity && !(entity instanceof Root || entity instanceof EditorRootFacadeEntity)) {
         selectSomethingNotification.style.display = "none";
         addBehaviorButton.style.display = "inline-block";
         behaviorList.style.display = "block";
