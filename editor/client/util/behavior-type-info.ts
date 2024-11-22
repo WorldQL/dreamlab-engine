@@ -28,7 +28,7 @@ export class BehaviorTypeInfoService {
     dummyGame[internal.behaviorLoader].initialize(behaviorType);
 
     behavior.setup();
-    behavior[internal.implicitSetup]()
+    behavior[internal.implicitSetup]();
 
     if (RUN_BEHAVIOR_INITIALIZATION) {
       try {
@@ -74,6 +74,14 @@ export class BehaviorTypeInfoService {
   async reload(script: string): Promise<BehaviorTypeInfo> {
     this.#cache.delete(script);
     return await this.get(script);
+  }
+
+  rename(oldScript: string, newScript: string) {
+    const existingInfo = this.#cache.get(oldScript);
+    if (existingInfo) {
+      this.#cache.delete(oldScript);
+      this.#cache.set(newScript, existingInfo);
+    }
   }
 
   async #createDummyGame(): Promise<ClientGame> {
