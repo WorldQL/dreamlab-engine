@@ -1,15 +1,6 @@
-import {
-  Camera,
-  ClientGame,
-  Entity,
-  EntityChildSpawned,
-  EntityDestroyed,
-  EntityRenamed,
-} from "@dreamlab/engine";
+import { ClientGame } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 import { InspectorUI } from "../inspector.ts";
-import { EditorMetadataEntity } from "../../../common/mod.ts";
-import { SelectedEntityService } from "../selected-entity.ts";
 import { Book, Check, Copy, icon, PlusCircle, RotateCcw, Send } from "../../_icons.ts";
 import { fileContents, step1, step2 } from "./prompts.ts";
 import markdownit from "npm:markdown-it@14.1.0";
@@ -45,21 +36,21 @@ export class Assistant {
     }) as HTMLDivElement;
     const minRows = 1;
     const maxRows = 4;
-    
+
     this.#chatInput = elem("textarea", {
       className: "chat-input",
       placeholder: "Type a message...",
       rows: minRows,
       style: "overflow-y: auto; resize: none; padding: 0.5rem; box-sizing: border-box;",
     }) as HTMLTextAreaElement;
-    
-    this.#chatInput.addEventListener('input', function() {
+
+    this.#chatInput.addEventListener("input", function () {
       // Reset the height to allow shrinkage when deleting content
-      this.style.height = 'auto';
-    
+      this.style.height = "auto";
+
       // Get computed styles for accurate measurements
       const computed = window.getComputedStyle(this);
-    
+
       // Use parseFloat to handle decimal values and units like 'rem'
       const lineHeight = parseFloat(computed.lineHeight);
       const paddingTop = parseFloat(computed.paddingTop);
@@ -68,22 +59,21 @@ export class Assistant {
       const borderTop = parseFloat(computed.borderTopWidth);
       const borderBottom = parseFloat(computed.borderBottomWidth);
       const border = borderTop + borderBottom;
-    
+
       // Calculate the total height for min and max rows
       const maxHeight = lineHeight * maxRows + padding + border;
-    
+
       // Set the new height, ensuring it doesn't exceed the maximum
       const newHeight = Math.min(this.scrollHeight, maxHeight);
-      this.style.height = newHeight + 'px';
-    
+      this.style.height = newHeight + "px";
+
       // If content exceeds max height, show scrollbar
       if (this.scrollHeight > maxHeight) {
-        this.style.overflowY = 'auto';
+        this.style.overflowY = "auto";
       } else {
-        this.style.overflowY = 'hidden';
+        this.style.overflowY = "hidden";
       }
     });
-    
 
     this.#sendButton = elem("button", { className: "send-button", title: "Send message" }, [
       icon(Send),
@@ -126,9 +116,10 @@ export class Assistant {
     this.#section.append(this.#chatContent, chatInputContainer);
 
     this.#chatContent.addEventListener("scroll", this.handleScroll.bind(this));
-    const botMessageElement = elem("div", { className: "bot-message" }, ["Hi! I'm here to help you create your game. I can write code, create reusable objects you can place using the editor, and modify your scene!"]);
-    this.#chatContent.appendChild(botMessageElement)
-
+    const botMessageElement = elem("div", { className: "bot-message" }, [
+      "Hi! I'm here to help you create your game. I can write code, create reusable objects you can place using the editor, and modify your scene!",
+    ]);
+    this.#chatContent.appendChild(botMessageElement);
 
     this.showSuggestions();
     this.container.append(this.#section);
@@ -410,7 +401,7 @@ ${(fileContents as any)[topic]}
           ]);
 
           copyButton.onclick = () => {
-            console.log('copybutton')
+            console.log("copybutton");
             const tempElement = document.createElement("div");
             tempElement.innerHTML = textParts[i];
             const plainText = tempElement.textContent || tempElement.innerText;
