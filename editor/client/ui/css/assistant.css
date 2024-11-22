@@ -94,7 +94,7 @@
   width: 100%;
   margin: 0;
   justify-content: flex-start;
-  gap: 0.8em; /* Add spacing between suggestion messages */
+  gap: 0em; /* Add spacing between suggestion messages */
 }
 
 .suggestion-message {
@@ -286,7 +286,7 @@
 
 /* Bot messages */
 .bot-message {
-  border: 1px solid rgb(56, 56, 56);
+  border: 1px solid rgb(90, 90, 90);
   background-color: rgb(var(--color-bg-1));
   color: rgb(var(--color-text));
   padding: 0.3rem 0.7rem;

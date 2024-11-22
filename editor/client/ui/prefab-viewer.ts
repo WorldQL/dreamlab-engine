@@ -10,6 +10,7 @@ import { element as elem } from "@dreamlab/ui";
 import { InspectorUI } from "./inspector.ts";
 import { EditorMetadataEntity } from "../../common/mod.ts";
 import { SelectedEntityService } from "./selected-entity.ts";
+import { UndoRedoManager } from "../undo-redo.ts";
 
 export class PrefabViewer {
   #section = elem("section", { id: "prefab-viewer" });
@@ -129,12 +130,18 @@ export class PrefabViewer {
 
         const selectedService = SelectedEntityService.serviceForGame(this.game);
         if (!selectedService) return;
-        if (selectedService.entities.length === 0) selectedService.entities = [this.game.world._.EditEntities._.world]
+        if (selectedService.entities.length === 0)
+          selectedService.entities = [this.game.world._.EditEntities._.world];
         const entity = selectedService?.entities.at(0);
         if (entity && selectedService?.entities.length === 1) {
           this.currentDragSource?.entities.forEach(e => {
-            e.cloneInto(entity, {
+            const newEntity = e.cloneInto(entity, {
               transform: { position: this.game.inputs.cursor.world },
+            });
+            UndoRedoManager._.push({
+              t: "create-entity",
+              parentRef: entity.ref,
+              def: newEntity.getDefinition(),
             });
           });
         }
