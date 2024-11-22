@@ -9,7 +9,7 @@ import { Assistant } from "./assistant/assistant.ts";
 export class BottomTabs implements InspectorUIWidget {
   #container: HTMLElement;
   #logViewer: LogViewer;
-  #assistant: Assistant
+  #assistant: Assistant;
   #prefabViewer: PrefabViewer;
   #logContent: HTMLElement;
   #prefabContent: HTMLElement;
@@ -20,7 +20,7 @@ export class BottomTabs implements InspectorUIWidget {
 
     this.#logContent = elem("div", { id: "log-viewer-content" });
     this.#prefabContent = elem("div", { id: "prefab-viewer-content" });
-    this.#assistantContent = elem("div", { id: "assistant-viewer-content" })
+    this.#assistantContent = elem("div", { id: "assistant-viewer-content" });
 
     this.#logViewer = new LogViewer(this.#logContent, games);
     this.#prefabViewer = new PrefabViewer(games.edit, this.#prefabContent);
@@ -53,7 +53,11 @@ export class BottomTabs implements InspectorUIWidget {
     assistantTab.setAttribute("data-tab-id", "assistant");
     assistantTab.append(icon(Bot), elem("span", {}, ["Assistant"]));
 
-    const tabBar = elem("div", { className: "bottom-tabs-bar" }, [assistantTab, prefabsTab, logsTab]);
+    const tabBar = elem("div", { className: "bottom-tabs-bar" }, [
+      assistantTab,
+      prefabsTab,
+      logsTab,
+    ]);
 
     tabBar.addEventListener("click", e => {
       const tab = (e.target as HTMLElement).closest(".bottom-tab");
@@ -66,7 +70,7 @@ export class BottomTabs implements InspectorUIWidget {
     const content = elem("div", { className: "bottom-tabs-content" }, [
       this.#logContent,
       this.#prefabContent,
-      this.#assistantContent
+      this.#assistantContent,
     ]);
 
     this.#prefabContent.style.display = "none";

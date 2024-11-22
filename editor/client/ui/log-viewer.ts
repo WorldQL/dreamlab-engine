@@ -52,8 +52,8 @@ export class LogViewer {
           query === ""
             ? true
             : caseSensitive
-              ? text.includes(query)
-              : text.toLowerCase().includes(query.toLowerCase());
+            ? text.includes(query)
+            : text.toLowerCase().includes(query.toLowerCase());
 
         if (!matches) log.dataset.filtered = "";
       }

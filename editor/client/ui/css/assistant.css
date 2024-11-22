@@ -116,9 +116,6 @@
   margin-left: 5px;
 }
 
-
-
-
 .suggestion-message:hover {
   background-color: rgba(var(--color-primary));
   transform: translateY(-3px);
@@ -188,9 +185,7 @@
   color: rgb(var(--color-text));
   cursor: pointer;
   padding: 0.5em;
-  transition:
-    background-color 0.3s ease,
-    transform 0.2s ease;
+  transition: background-color 0.3s ease, transform 0.2s ease;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   height: 100%;
 }
@@ -358,16 +353,14 @@
   margin: 0;
   padding: 10px;
   overflow-x: auto;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
   background-color: rgb(var(--color-bg-1));
   color: rgb(var(--color-text));
 }
 
 .code-container code {
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
 }
-
-
 
 /* HIGHLIGHTJS */
 /*!

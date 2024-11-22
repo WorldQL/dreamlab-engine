@@ -29,10 +29,7 @@ export class GameOverlays implements InspectorUIWidget {
   #overlay: HTMLElement;
   #editOverlays: HTMLElement[] = [];
 
-  constructor(
-    private game: ClientGame,
-    private gameContainer: HTMLDivElement,
-  ) {
+  constructor(private game: ClientGame, private gameContainer: HTMLDivElement) {
     this.#overlay = elem("div", { id: "game-overlays" });
   }
 

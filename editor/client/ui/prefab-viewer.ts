@@ -1,5 +1,4 @@
 import {
-  Camera,
   ClientGame,
   Entity,
   EntityChildSpawned,
@@ -19,10 +18,7 @@ export class PrefabViewer {
   currentDragSource: { entities: Entity[]; entries: HTMLElement[] } | undefined;
   prefabsRoot!: Entity;
 
-  constructor(
-    private game: ClientGame,
-    private container: HTMLElement,
-  ) {}
+  constructor(private game: ClientGame, private container: HTMLElement) {}
 
   setup(ui: InspectorUI): void {
     this.#section.append(this.#content);

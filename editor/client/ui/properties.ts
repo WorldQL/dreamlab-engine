@@ -69,7 +69,8 @@ export class Properties implements InspectorUIWidget {
     let nameField: HTMLElement;
     let refreshName: (() => void) | undefined;
 
-    const transformFieldsToRegisterWithUndoRedo: {field: HTMLInputElement, path: string[]}[] = []
+    const transformFieldsToRegisterWithUndoRedo: { field: HTMLInputElement; path: string[] }[] =
+      [];
 
     if (entity.protected) {
       nameField = elem("code", {}, [entity.name]);
@@ -149,7 +150,10 @@ export class Properties implements InspectorUIWidget {
       convertBack: n => n.toFixed(4),
     });
     txfmTable.addEntry("posX", "Position X", transformXField);
-    transformFieldsToRegisterWithUndoRedo.push({field: transformXField, path: ['position', 'x']});
+    transformFieldsToRegisterWithUndoRedo.push({
+      field: transformXField,
+      path: ["position", "x"],
+    });
 
     const [transformYField, refreshY] = createInputField({
       get: () => entity.transform.position.y,
@@ -158,8 +162,10 @@ export class Properties implements InspectorUIWidget {
       convertBack: n => n.toFixed(4),
     });
     txfmTable.addEntry("posY", "Position Y", transformYField);
-    transformFieldsToRegisterWithUndoRedo.push({field: transformYField, path: ['position', 'y']});
-
+    transformFieldsToRegisterWithUndoRedo.push({
+      field: transformYField,
+      path: ["position", "y"],
+    });
 
     const [transformRotation, refreshRotation] = createInputField({
       get: () => entity.transform.rotation,
@@ -168,7 +174,10 @@ export class Properties implements InspectorUIWidget {
       convertBack: v => ((v * 180) / Math.PI).toFixed(1),
     });
     txfmTable.addEntry("rot", "Rotation", transformRotation);
-    transformFieldsToRegisterWithUndoRedo.push({field: transformRotation, path: ['rotation']});
+    transformFieldsToRegisterWithUndoRedo.push({
+      field: transformRotation,
+      path: ["rotation"],
+    });
 
     const [scaleXField, refreshScaleX] = createInputField({
       get: () => entity.transform.scale.x,
@@ -177,7 +186,7 @@ export class Properties implements InspectorUIWidget {
       convertBack: n => n.toFixed(4),
     });
     txfmTable.addEntry("scaleX", "Scale X", scaleXField);
-    transformFieldsToRegisterWithUndoRedo.push({field: scaleXField, path: ['scale', 'x']});
+    transformFieldsToRegisterWithUndoRedo.push({ field: scaleXField, path: ["scale", "x"] });
 
     const [scaleYField, refreshScaleY] = createInputField({
       get: () => entity.transform.scale.y,
@@ -186,8 +195,7 @@ export class Properties implements InspectorUIWidget {
       convertBack: n => n.toFixed(4),
     });
     txfmTable.addEntry("scaleY", "Scale Y", scaleYField);
-    transformFieldsToRegisterWithUndoRedo.push({field: scaleYField, path: ['scale', 'y']});
-
+    transformFieldsToRegisterWithUndoRedo.push({ field: scaleYField, path: ["scale", "y"] });
 
     const [zIndexField, refreshZIndex] = createInputField({
       get: () => entity.transform.z,
@@ -196,7 +204,7 @@ export class Properties implements InspectorUIWidget {
       convertBack: n => n.toFixed(0),
     });
     txfmTable.addEntry("z", "Z Index", zIndexField);
-    transformFieldsToRegisterWithUndoRedo.push({field: zIndexField, path: ['z']});
+    transformFieldsToRegisterWithUndoRedo.push({ field: zIndexField, path: ["z"] });
 
     entity.on(EntityTransformUpdate, () => {
       refreshX();
@@ -259,7 +267,6 @@ export class Properties implements InspectorUIWidget {
         state = { value: transformField.field.value };
       });
 
-
       transformField.field.addEventListener("blur", () => {
         if (!state) return;
         const previous = state.value as string;
@@ -275,7 +282,5 @@ export class Properties implements InspectorUIWidget {
         });
       });
     }
-
-
   }
 }
