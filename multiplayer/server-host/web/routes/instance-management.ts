@@ -236,4 +236,28 @@ export const serveInstanceManagementAPI = (router: Router) => {
       },
     ),
   );
+
+  router.post(
+    "/api/v1/rename-behavior-script/:instance",
+    typedJsonHandler(
+      {
+        params: z.object({ instance: EditModeInstanceSchema }),
+        response: z.object({ success: z.boolean() }),
+        body: z.object({ oldUri: z.string(), newUri: z.string() }),
+      },
+      async (_ctx, { params, body }) => {
+        const { instance } = params;
+        if (!instance.session)
+          throw new Error("The given instance is not currently running a session.");
+
+        instance.session.broadcastPacket({
+          t: "CustomMessage",
+          channel: "@editor/rename-behavior",
+          data: { oldUri: body.oldUri, newUri: body.newUri },
+        });
+
+        return { success: true };
+      },
+    ),
+  );
 };
