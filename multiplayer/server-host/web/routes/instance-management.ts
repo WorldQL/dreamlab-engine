@@ -250,10 +250,17 @@ export const serveInstanceManagementAPI = (router: Router) => {
         if (!instance.session)
           throw new Error("The given instance is not currently running a session.");
 
-        instance.session.broadcastPacket({
+        const packet = {
           t: "CustomMessage",
           channel: "@editor/rename-behavior",
           data: { oldUri: body.oldUri, newUri: body.newUri },
+        } as const;
+
+        instance.session.broadcastPacket(packet);
+        instance.session.ipc.send({
+          op: "IncomingPacket",
+          from: "server",
+          packet,
         });
 
         return { success: true };

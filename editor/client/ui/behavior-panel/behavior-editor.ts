@@ -20,6 +20,7 @@ export class BehaviorEditor {
 
   valueFields = new Map<string, ReturnType<typeof createValueControl>>();
   values: Record<string, ThinValue<unknown>> = {};
+  scriptElement: HTMLElement;
 
   game: ClientGame;
 
@@ -57,10 +58,10 @@ export class BehaviorEditor {
     parent.container.append(this.details);
 
     // this.#table.addEntry("id", "ID", elem("code", {}, [behavior.ref]));
-    const scriptElement = elem("code", {}, [behavior.script]);
-    this.#table.addEntry("script", "Script", scriptElement);
+    this.scriptElement = elem("code", {}, [behavior.script]);
+    this.#table.addEntry("script", "Script", this.scriptElement);
 
-    scriptElement.addEventListener("dblclick", () => {
+    this.scriptElement.addEventListener("dblclick", () => {
       window.parent.postMessage(
         { action: "goToTab", tab: "scripts", fileName: behavior.script.replace("res://", "") },
         "*",
@@ -167,6 +168,7 @@ export class BehaviorEditor {
 
   resolveUpdate(newBehavior: SceneDescBehavior) {
     this.behavior.script = newBehavior.script;
+    this.scriptElement.textContent = newBehavior.script;
 
     for (const [key, value] of Object.entries(newBehavior.values ?? {})) {
       const valueField = this.valueFields.get(key);

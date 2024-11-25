@@ -84,6 +84,8 @@ export class BehaviorList {
       );
 
       editorMetadata.values.get("behaviorsJson")?.onChanged(newValue => {
+        console.log("resyncing behavior json", entity.id);
+
         const newBehaviors = SceneDescBehaviorSchema.array().parse(
           JSON.parse(newValue as string),
         );
