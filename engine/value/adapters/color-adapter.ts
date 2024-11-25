@@ -5,13 +5,25 @@ import { JsonValue, ValueTypeAdapter } from "../data.ts";
  * `Value<ColorAdapter>` is the same as `Value<string>`
  */
 export class ColorAdapter extends ValueTypeAdapter<string> {
+  static readonly DEFAULT_COLOR = "white";
+
   isValue(_value: unknown): _value is string {
     return true;
   }
   convertToPrimitive(value: string): JsonValue {
-    return new PIXI.Color(value).toArray();
+    try {
+      return new PIXI.Color(value).toArray();
+    } catch {
+      console.warn(`invalid color: ${value}`);
+      return new PIXI.Color(ColorAdapter.DEFAULT_COLOR).toArray();
+    }
   }
   convertFromPrimitive(value: JsonValue): string {
-    return new PIXI.Color(value as string).toHexa();
+    try {
+      return new PIXI.Color(value as string).toHexa();
+    } catch {
+      console.warn(`invalid color: ${value}`);
+      return ColorAdapter.DEFAULT_COLOR;
+    }
   }
 }
