@@ -25,12 +25,13 @@ import * as internal from "@dreamlab/engine/internal";
 import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
 import { urlToWebSocket } from "@dreamlab/util/url.ts";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
+import { z } from "@dreamlab/vendor/zod.ts";
 import { stats } from "./_stats.ts";
 import { CameraPanBehavior } from "./camera-pan.ts";
 import { AppMenu } from "./ui/app-menu.ts";
+import { BottomTabs } from "./ui/bottom-tabs.ts";
 import { InspectorUI } from "./ui/inspector.ts";
 import { UndoRedoManager } from "./undo-redo.ts";
-import { BottomTabs } from "./ui/bottom-tabs.ts";
 
 // TODO: loading screen ?
 
@@ -164,6 +165,15 @@ uiRoot.style.display = "";
 
 const inspector = new InspectorUI(game, conn, handshake.edit_mode, container);
 inspector.show(uiRoot);
+
+if (handshake.edit_mode) {
+  game.network.onReceiveCustomMessage((_from, channel, data) => {
+    if (channel !== "@editor/rename-behavior") return;
+    const packet = z.object({ oldUri: z.string(), newUri: z.string() }).parse(data);
+    inspector.behaviorTypeInfo.rename(packet.oldUri, packet.newUri);
+    game[internal.behaviorLoader].tryRenameBehavior(packet.oldUri, packet.newUri);
+  });
+}
 
 const appMenu = new AppMenu(uiRoot, games);
 appMenu.setup(inspector);

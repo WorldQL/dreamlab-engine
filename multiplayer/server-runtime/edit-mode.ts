@@ -13,6 +13,7 @@ import {
 import { z } from "@dreamlab/vendor/zod.ts";
 import {
   EditorMetadataEntity,
+  editorRenameBehavior,
   Facades,
   LocalRootFacade,
   PrefabRootFacade,
@@ -196,5 +197,11 @@ export const handleEditMode = async (
     ];
 
     await loadFromScene();
+  });
+
+  game.network.onReceiveCustomMessage((_from, channel, data) => {
+    if (channel !== "@editor/rename-behavior") return;
+    const packet = z.object({ oldUri: z.string(), newUri: z.string() }).parse(data);
+    editorRenameBehavior(game, packet.oldUri, packet.newUri);
   });
 };

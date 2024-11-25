@@ -46,6 +46,15 @@ export class BehaviorLoader {
     this.#cache.set(newUri, type);
   }
 
+  tryRenameBehavior(oldUri: string, newUri: string) {
+    const type = this.#cache.get(oldUri);
+    if (!type) return;
+
+    this.#cache.delete(oldUri);
+    this.#resourceLocationLookup.set(type, newUri);
+    this.#cache.set(newUri, type);
+  }
+
   async loadScript(script: string): Promise<BehaviorConstructor> {
     const replaced = script.replace(/\.tsx?$/, ".js");
 
