@@ -62,6 +62,7 @@ export interface EntityContext {
   authority?: ConnectionId;
   ref?: string;
   values?: Record<string, unknown>;
+  clonedFrom?: string;
 }
 
 export type EntityConstructor<
@@ -315,7 +316,11 @@ export abstract class Entity implements ISignalHandler {
       console.warn(`${this.id} is very deeply nested!! You may run into issues.`);
   }
 
-  static #constructEntity<T extends Entity>(parent: Entity, def: EntityDefinition<T>) {
+  static #constructEntity<T extends Entity>(
+    parent: Entity,
+    def: EntityDefinition<T>,
+    clonedFrom?: string,
+  ) {
     const entity = new def.type({
       game: parent.game,
       name: def.name,
@@ -324,6 +329,7 @@ export abstract class Entity implements ISignalHandler {
       authority: def.authority ?? parent.authority,
       ref: def._ref,
       values: def.values ? Object.fromEntries(Object.entries(def.values)) : undefined,
+      clonedFrom,
     });
     if (def.enabled !== undefined) entity.enabled = def.enabled;
     return entity;
@@ -332,12 +338,23 @@ export abstract class Entity implements ISignalHandler {
   // deno-lint-ignore no-explicit-any
   [internal.entitySpawn]<T extends Entity, C extends any[], B extends any[]>(
     def: EntityDefinition<T, C, B>,
-    opts: { inert?: boolean; from?: ConnectionId } = {},
+    opts: { inert?: boolean; from?: ConnectionId; cloning?: boolean } = {},
   ) {
-    const entity = Entity.#constructEntity(this, def);
+    let clonedFrom: string | undefined;
+    if (opts.cloning) {
+      clonedFrom = def._ref;
+      delete def._ref;
+    }
+    const entity = Entity.#constructEntity(this, def, clonedFrom);
     const spawnOrder: { entity: Entity; def: EntityDefinition }[] = [{ entity, def }];
     const addChild = (parent: Entity, childDef: EntityDefinition) => {
-      const child = Entity.#constructEntity(parent, childDef);
+      let clonedFrom: string | undefined;
+      if (opts.cloning) {
+        clonedFrom = childDef._ref;
+        delete childDef._ref;
+      }
+
+      const child = Entity.#constructEntity(parent, childDef, clonedFrom);
       spawnOrder.push({ entity: child, def: childDef });
       childDef.children?.forEach(it => addChild(child, it));
     };
@@ -345,6 +362,10 @@ export abstract class Entity implements ISignalHandler {
 
     const finalizeBehaviors = (targetEnt: Entity, targetDef: EntityDefinition) => {
       targetDef.behaviors?.forEach(b => {
+        if (opts.cloning) {
+          delete b._ref;
+        }
+
         const behavior: Behavior = new b.type({
           game: this.game,
           entity: targetEnt,
@@ -516,11 +537,14 @@ export abstract class Entity implements ISignalHandler {
       z: overrides.transform?.z ?? this.transform.z,
     };
 
-    return other.spawn({
-      ...this.#generateRichDefinition(false),
-      ...overrides,
-      transform,
-    });
+    return other[internal.entitySpawn](
+      {
+        ...this.#generateRichDefinition(true),
+        ...overrides,
+        transform,
+      },
+      { cloning: true },
+    );
   }
   // #endregion
 
@@ -827,12 +851,13 @@ export abstract class Entity implements ISignalHandler {
     }
   }
 
-  #sourceRef: string | undefined; // entity ref: cloned from
+  #clonedFromRef: string | undefined;
 
   constructor(ctx: EntityContext) {
     Entity.#ensureEntityTypeIsRegistered(new.target);
 
     if (ctx.ref) this.ref = ctx.ref;
+    if (ctx.clonedFrom) this.#clonedFromRef = ctx.clonedFrom;
 
     this.game = ctx.game;
     // @ts-expect-error: must inherit
