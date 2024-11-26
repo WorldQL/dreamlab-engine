@@ -8,6 +8,7 @@ import "./_env.ts";
 import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
 import { urlToHTTP, urlToWebSocket } from "@dreamlab/util/url.ts";
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
+import { auth } from "./auth.ts";
 import { createConnectForm, fetchInstances, spawnNewInstance } from "./connect-form.ts";
 import { preloadFonts } from "./fonts.ts";
 import { connectToGame } from "./game-connection.ts";
@@ -52,11 +53,14 @@ if (connectionDetails.instanceId === "") {
   }
 }
 
+const info = await auth(nickname);
+
 const connectUrl = urlToWebSocket(connectionDetails.serverUrl);
 connectUrl.pathname = `/api/v1/connect/${connectionDetails.instanceId}`;
 // TODO: connect with an auth token instead, if one is passed via search params
-connectUrl.searchParams.set("player_id", generateCUID("ply"));
-connectUrl.searchParams.set("nickname", nickname);
+connectUrl.searchParams.set("token", info.token);
+connectUrl.searchParams.set("player_id", info.playerId);
+connectUrl.searchParams.set("nickname", info.nickname);
 
 const uiRoot = document.querySelector("main")! as HTMLElement;
 const container = document.createElement("div");

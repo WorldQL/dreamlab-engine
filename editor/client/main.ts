@@ -17,6 +17,7 @@ import "./draggable-layout.ts";
 
 import "../common/mod.ts";
 
+import { auth } from "@dreamlab/client/auth.ts";
 import { connectToGame } from "@dreamlab/client/game-connection.ts";
 import { setupGame } from "@dreamlab/client/game-setup.ts";
 import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
@@ -24,7 +25,6 @@ import { Camera, ClientGame, Entity, GameStatusChange } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
 import { urlToWebSocket } from "@dreamlab/util/url.ts";
-import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { stats } from "./_stats.ts";
 import { CameraPanBehavior } from "./camera-pan.ts";
@@ -35,10 +35,14 @@ import { UndoRedoManager } from "./undo-redo.ts";
 
 // TODO: loading screen ?
 
+const nickname = "Player" + Math.floor(Math.random() * 999) + 1;
+const info = await auth(nickname);
+
 const connectUrl = urlToWebSocket(connectionDetails.serverUrl);
 connectUrl.pathname = `/api/v1/connect/${connectionDetails.instanceId}`;
-connectUrl.searchParams.set("player_id", generateCUID("ply"));
-connectUrl.searchParams.set("nickname", "Player" + Math.floor(Math.random() * 999) + 1);
+connectUrl.searchParams.set("token", info.token);
+connectUrl.searchParams.set("player_id", info.playerId);
+connectUrl.searchParams.set("nickname", info.nickname);
 
 // #region Handle dropping files to upload directly into /assets
 export async function createFile(fileName: string, content: unknown = "", no_restart = false) {
