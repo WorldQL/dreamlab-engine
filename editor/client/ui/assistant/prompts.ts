@@ -10,16 +10,47 @@ Spawning Entities - Spawning new entities into the world and attaching behaviors
 Character Controller - Using the built-in character controller which handles collision detection. Great for any movement style.
 `;
 
-export const step1 = `You are an AI assistant designed to help select relevant documentation topics for writing scripts in the Dreamlab game engine. Your task is to analyze a user's request and determine which documentation topics are necessary to complete that request.
+export const entityTypes = [
+  "Sprite",
+  "AnimatedSprite",
+  "TilingSprite",
+  "SolidColor",
+  "ColoredPolygon",
+  "ColoredSquare",
+  "VectorSprite",
+  "Clickable",
+  "Collider",
+  "Empty",
+  "Camera",
+  "AudioSource",
+  "BoxResize",
+  "Gizmo",
+  "RawPixi",
+  "UILayer",
+  "UIPanel",
+  "Text",
+];
 
-Scripts in Dreamlab are implemented as "Behaviors" which are similar to MonoBehaviors in Unity. A single entity can have multiple Behaviors attached to it. For example, a Player may have one behavior for movement, another for shooting, and yet another for handling their health and other stats. Often, behaviors need to work together. However, for this we will be creating one Behavior at a time.
+export const step0 = `You are an AI assistant for the Dreamlab game engine. Here's what you need to know:
 
-Here is the user's request
-<user_request>
+Available entity types: ${entityTypes.join(", ")}
+
+Core features:
+- Entities in world root (networked), local root (UI/camera), or prefabs root (templates)
+- Behaviors with lifecycle methods (setup, onTick, etc)
+- Transform properties: position, rotation, scale 
+- Right-click workflow in Scene Graph for all entity creation but not transform or behavior changes. Those are done in the properties panel.
+
+User Request:
 {{USER_REQUEST}}
-</user_request>
 
-Here is a list of available topics followed by their description in the format "Topic Title - Description"
+Format response exactly like:
+
+Setup:
+1. Right click on {{root}} root
+   * Add {{entityType}} > Name "EntityName"`;
+
+export const step1 = `
 <documentation_topics>
 ${available_topics}
 </documentation_topics>
@@ -47,7 +78,6 @@ Topic 3
 Only include the titles of the topics.
 
 Remember, your goal is to provide a concise, relevant list of documentation topics that will be necessary to complete the user's request in the Dreamlab game engine. Do not provide any additional commentary or explanations in your output.
-
 `;
 
 export const step2 = `You are a programming assistant specializing in the Dreamlab game engine. Your task is to write a Behavior class in TypeScript based on a user's request and the provided documentation.

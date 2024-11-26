@@ -2,7 +2,7 @@ import { ClientGame } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 import { InspectorUI } from "../inspector.ts";
 import { Book, Check, Copy, icon, PlusCircle, RotateCcw, Send } from "../../_icons.ts";
-import { fileContents, step1, step2 } from "./prompts.ts";
+import { fileContents, step0, step1, step2 } from "./prompts.ts";
 import markdownit from "npm:markdown-it@14.1.0";
 import hljs from "npm:highlight.js/lib/core";
 import typescript from "npm:highlight.js/lib/languages/typescript";
@@ -106,7 +106,7 @@ export class Assistant {
     this.#newChatButton.onclick = () => {
       this.#chatContent.innerHTML = "";
       ScriptSession.chatContext = [];
-      ScriptSession.chatState = "step1";
+      ScriptSession.chatState = "step0";
       this.#chatInput.value = "";
       this.#chatInput.focus();
       this.showSuggestions();
@@ -151,9 +151,12 @@ export class Assistant {
   }
 
   async fetchChatbotBehavior(prompt: string): Promise<void> {
-    if (ScriptSession.chatState === "step1") {
-      const m = step1.replace("{{USER_REQUEST}}", prompt);
+    if (ScriptSession.chatState === "step0") {
+      const m = step0.replace("{{USER_REQUEST}}", prompt);
       const p: ContextItem = { role: "user", content: m };
+      ScriptSession.chatContext.push(p);
+    } else if (ScriptSession.chatState === "step1") {
+      const p: ContextItem = { role: "user", content: step1 };
       ScriptSession.chatContext.push(p);
     } else if (ScriptSession.chatState === "step2") {
       ScriptSession.chatContext = [];
@@ -281,7 +284,7 @@ export class Assistant {
       content: accumulatedText,
     });
 
-    if (ScriptSession.chatState !== "step1") {
+    if (ScriptSession.chatState === "step2") {
       this.#isChatbotReplying = false;
       this.#chatInput.disabled = false;
       this.#sendButton.disabled = false;
@@ -289,6 +292,9 @@ export class Assistant {
       this.#chatInput.placeholder = "Type your message...";
       this.#chatInput.classList.remove("disabled-input");
       this.#chatInput.focus();
+    } else if (ScriptSession.chatState === "step0") {
+      ScriptSession.chatState = "step1";
+      this.fetchChatbotBehavior(prompt);
     }
 
     observer.disconnect();
@@ -516,6 +522,6 @@ export interface ContextItem {
 export type ChatbotContext = ContextItem[];
 class ScriptSession {
   public static chatContext: ChatbotContext = [];
-  public static chatState: "step1" | "step2" | "followup" = "step1";
+  public static chatState: "step0" | "step1" | "step2" | "followup" = "step0";
   public static chatDocumentation: string = "";
 }
