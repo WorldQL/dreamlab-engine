@@ -284,7 +284,7 @@ export class Assistant {
       content: accumulatedText,
     });
 
-    if (ScriptSession.chatState === "step2") {
+    if (ScriptSession.chatState !== "step0" && ScriptSession.chatState !== "step1") {
       this.#isChatbotReplying = false;
       this.#chatInput.disabled = false;
       this.#sendButton.disabled = false;
