@@ -333,8 +333,8 @@ export class Assistant {
 
       if (topic in fileContents) {
         collectedDocumentation += `\`\`\`typescript
-${(fileContents as any)[topic]}
-\`\`\`\n`;
+  ${(fileContents as any)[topic]}
+  \`\`\`\n`;
       } else {
         console.warn("Tried to look up topic not in docs!");
       }
@@ -348,7 +348,6 @@ ${(fileContents as any)[topic]}
       list,
     ]);
 
-    botMessageElement.innerHTML = "";
     botMessageElement.appendChild(chatMetaBox);
 
     ScriptSession.chatDocumentation = collectedDocumentation;
