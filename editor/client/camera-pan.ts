@@ -30,12 +30,12 @@ export class CameraPanBehavior extends Behavior {
     const canvas = this.game.renderer.app.canvas;
     this.#hover = canvas.matches(":hover");
 
-    this.listen(this.game.inputs, MouseDown, this.onMouseDown.bind(this));
-    this.listen(this.game.inputs, MouseMove, this.onMouseMove.bind(this));
-    this.listen(this.game.inputs, MouseUp, this.onMouseUp.bind(this));
-    this.listen(this.game.inputs, MouseOver, this.onMouseOver.bind(this));
-    this.listen(this.game.inputs, MouseOut, this.onMouseOut.bind(this));
-    this.listen(this.game.inputs, Scroll, this.onScroll.bind(this));
+    this.listen(this.game.inputs, MouseDown, this.#onMouseDown.bind(this));
+    this.listen(this.game.inputs, MouseMove, this.#onMouseMove.bind(this));
+    this.listen(this.game.inputs, MouseUp, this.#onMouseUp.bind(this));
+    this.listen(this.game.inputs, MouseOver, this.#onMouseOver.bind(this));
+    this.listen(this.game.inputs, MouseOut, this.#onMouseOut.bind(this));
+    this.listen(this.game.inputs, Scroll, this.#onScroll.bind(this));
 
     this.listen(this.#space, ActionChanged, ({ value }) => {
       if (value) canvas.classList.add("grab");
@@ -53,7 +53,7 @@ export class CameraPanBehavior extends Behavior {
     else canvas.classList.add("grabbing");
   }
 
-  onMouseDown(event: MouseDown) {
+  #onMouseDown(event: MouseDown) {
     if (!this.game.isClient()) return;
     if (event.button === "left") {
       if (this.#space.held) {
@@ -79,7 +79,7 @@ export class CameraPanBehavior extends Behavior {
 
   #lastClickTime = 0;
 
-  onMouseUp(event: MouseUp) {
+  #onMouseUp(event: MouseUp) {
     if (!this.game.isClient()) return;
 
     if (this.#drag) this.#setDrag(undefined);
@@ -119,7 +119,7 @@ export class CameraPanBehavior extends Behavior {
     this.#wasGizmo = false;
   }
 
-  onMouseMove({ cursor }: MouseMove) {
+  #onMouseMove({ cursor }: MouseMove) {
     if (!this.game.isClient()) return;
     if (!this.#drag) return;
     if (!this.#hover) return;
@@ -134,23 +134,27 @@ export class CameraPanBehavior extends Behavior {
     this.#camera.pos.assign(this.#camera.pos.add(worldDelta));
   }
 
-  onMouseOver() {
+  #onMouseOver() {
     this.#hover = true;
   }
 
-  onMouseOut() {
+  #onMouseOut() {
     this.#hover = false;
     if (this.#drag) this.#setDrag(undefined);
   }
 
   static readonly #IS_MAC = /Mac|iPod|iPhone|iPad/.test(navigator.userAgent);
 
-  onScroll({ delta, ev }: Scroll) {
+  #onScroll({ delta, ev }: Scroll) {
     if (this.game.isClient() && ev.target !== this.game.renderer.app.canvas) return;
 
     ev.preventDefault();
 
-    if (ev.ctrlKey || ev.metaKey) {
+    const isMacPan = CameraPanBehavior.#IS_MAC && !(ev.ctrlKey || ev.metaKey);
+    const isWinPan = !CameraPanBehavior.#IS_MAC && (ev.ctrlKey || ev.metaKey);
+
+    if (isMacPan || isWinPan) {
+      // Pan the camera
       const scale = 100;
       const deltaX = ev.shiftKey ? delta.y : delta.x;
       const deltaY = ev.shiftKey ? 0 : delta.y;
@@ -162,6 +166,7 @@ export class CameraPanBehavior extends Behavior {
 
       this.#camera.pos.assign(this.#camera.pos.add(worldDelta));
     } else {
+      // Zoom the camera
       const zoomFactor = ev.altKey ? 1.5 : 1.1;
       const zoomDirection = delta.y > 0 ? 1 : -1;
       const newScale = this.#camera.globalTransform.scale.mul(
