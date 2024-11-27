@@ -150,10 +150,9 @@ export class CameraPanBehavior extends Behavior {
 
     ev.preventDefault();
 
-    const isMacPan = CameraPanBehavior.#IS_MAC && !(ev.ctrlKey || ev.metaKey);
-    const isWinPan = !CameraPanBehavior.#IS_MAC && (ev.ctrlKey || ev.metaKey);
+    const isPan = !(ev.ctrlKey || ev.metaKey);
 
-    if (isMacPan || isWinPan) {
+    if (isPan) {
       // Pan the camera
       const scale = 100;
       const deltaX = ev.shiftKey ? delta.y : delta.x;
@@ -166,22 +165,22 @@ export class CameraPanBehavior extends Behavior {
 
       this.#camera.pos.assign(this.#camera.pos.add(worldDelta));
     } else {
-      // Zoom the camera
-      const zoomFactor = ev.altKey ? 1.5 : 1.1;
-      const zoomDirection = delta.y > 0 ? 1 : -1;
-      const newScale = this.#camera.globalTransform.scale.mul(
-        Math.pow(zoomFactor, zoomDirection),
-      );
+      // Zoom the camera proportionally to the pinch gesture
+      const zoomAmount = ev.deltaY * 0.01; // Adjust sensitivity as needed
+      const zoomFactor = Math.exp(zoomAmount);
+      const newScale = this.#camera.globalTransform.scale.mul(zoomFactor);
 
+      // Clamp the scale to prevent extreme zoom levels
       const clampedScale = newScale.max(Vector2.splat(0.1)).min(Vector2.splat(100));
       this.#camera.globalTransform.scale.assign(clampedScale);
 
-      if (!CameraPanBehavior.#IS_MAC) {
-        const cursorPos = this.game.inputs.cursor.world;
-        if (delta.y < 0 && cursorPos) {
-          const cursorDelta = cursorPos.sub(this.#camera.pos);
-          this.#camera.pos = this.#camera.pos.add(cursorDelta.mul(1 / 10));
-        }
+      // Keep the zoom centered around the cursor position
+      const cursorPos = this.game.inputs.cursor.world;
+      if (cursorPos) {
+        const beforeZoom = cursorPos.sub(this.#camera.pos);
+        const afterZoom = beforeZoom.mul(zoomFactor);
+        const adjustment = beforeZoom.sub(afterZoom);
+        this.#camera.pos.assign(this.#camera.pos.add(adjustment));
       }
     }
   }
