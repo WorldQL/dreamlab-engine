@@ -234,7 +234,12 @@ export class Text extends PixiEntity {
       this.#mesh.geometry = this.#geometry;
     } else {
       this.#mesh = new PIXI.Mesh({ shader: this.#shader, geometry: this.#geometry });
-      this.#mesh.scale.set(this.size / 24 / Camera.METERS_TO_PIXELS);
+      const scale = this.size / 24 / Camera.METERS_TO_PIXELS;
+      this.#mesh.scale.set(
+        scale * this.globalTransform.scale.x,
+        scale * this.globalTransform.scale.y,
+      );
+
       this.container!.addChild(this.#mesh);
     }
 
