@@ -7,7 +7,6 @@ import "./_env.ts";
 
 import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
 import { urlToHTTP, urlToWebSocket } from "@dreamlab/util/url.ts";
-import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import { auth } from "./auth.ts";
 import { createConnectForm, fetchInstances, spawnNewInstance } from "./connect-form.ts";
 import { preloadFonts } from "./fonts.ts";

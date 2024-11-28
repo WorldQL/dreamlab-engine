@@ -1,3 +1,4 @@
+import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { jwtDecode } from "npm:jwt-decode";
 import { connectionDetails } from "./util/server-url.ts";
@@ -9,6 +10,9 @@ type AuthToken = {
 };
 
 export const auth = async (nickname: string): Promise<AuthToken> => {
+  // TODO: way to bypass?
+  if (import.meta.env.IS_DEV) return devAuth(nickname);
+
   const searchParams = new URLSearchParams(window.location.search);
   const passedToken = searchParams.get("token");
   if (passedToken) return decodeToken(passedToken);
@@ -41,4 +45,12 @@ const decodeToken = (token: string): AuthToken => {
     nickname: claims.nickname,
     playerId: claims.player_id,
   };
+};
+
+const devAuth = (nickname: string): AuthToken => {
+  const PLAYER_ID = "dreamlab/player-id";
+  const playerId = window.localStorage.getItem(PLAYER_ID) ?? generateCUID("ply");
+  window.localStorage.setItem(PLAYER_ID, playerId);
+
+  return { nickname, playerId, token: "" } satisfies AuthToken;
 };
