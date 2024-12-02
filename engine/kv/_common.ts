@@ -2,7 +2,7 @@ import type { ClientGame, ServerGame } from "../game.ts";
 import type { JsonValue } from "../value/data.ts";
 
 export function scope(game: ClientGame | ServerGame, playerId?: string): string {
-  const world = game.worldId;
+  const world = game.worldId.replaceAll("/", ":");
   if (!playerId) return world;
 
   return `${world}:${playerId}`;
