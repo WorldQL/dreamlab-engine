@@ -21,17 +21,19 @@ export async function get(presigned: string): Promise<JsonValue | undefined> {
 }
 
 export async function set(presigned: string, value: JsonValue): Promise<void> {
-  await fetch(presigned, {
+  const resp = await fetch(presigned, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ value }),
   });
 
-  // TODO: error handling?
+  // TODO: actual error handling?
+  if (!resp.ok) console.error(resp);
 }
 
 export async function del(presigned: string): Promise<void> {
-  await fetch(presigned, { method: "DELETE" });
+  const resp = await fetch(presigned, { method: "DELETE" });
 
-  // TODO: error handling?
+  // TODO: actual error handling?
+  if (!resp.ok) console.error(resp);
 }
