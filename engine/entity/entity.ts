@@ -894,9 +894,6 @@ export abstract class Entity implements ISignalHandler {
     this.#interpolated = new Transform(this.globalTransform);
 
     this.game.entities[internal.entityStoreRegister](this);
-
-    // @ts-expect-error we dont expect base Entity to have values rn
-    this.defineValue(Entity, "#sourceRef", { type: String });
   }
 
   // #region Signals
