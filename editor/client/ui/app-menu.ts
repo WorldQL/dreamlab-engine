@@ -105,15 +105,25 @@ export class AppMenu {
     };
 
     this.controls.play.addEventListener("click", async () => {
-      if (!this.games.play) {
-        await this.#connectToPlayGame(editUI);
-      }
+      const playButton = this.controls.play.querySelector("button")!;
+      if (playButton.disabled) return;
 
-      this.playFocused = true;
-      this.updateButtonStates();
-      this.updateViewportStates(editUI);
-      window.parent.postMessage("analytics-playButtonClicked", "*");
+      playButton.disabled = true;
+
+      try {
+        if (!this.games.play) {
+          await this.#connectToPlayGame(editUI);
+        }
+
+        this.playFocused = true;
+        this.updateButtonStates();
+        this.updateViewportStates(editUI);
+        window.parent.postMessage("analytics-playButtonClicked", "*");
+      } finally {
+        playButton.disabled = false;
+      }
     });
+
     this.controls.edit.addEventListener("click", () => {
       this.playFocused = false;
       this.updateButtonStates();
