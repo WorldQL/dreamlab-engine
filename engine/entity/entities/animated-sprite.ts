@@ -5,7 +5,7 @@ import { SpritesheetAdapter } from "../../value/adapters/texture-adapter.ts";
 import { Entity, EntityContext } from "../entity.ts";
 import { PixiEntity } from "../pixi-entity.ts";
 import { AbstractRenderer } from "@dreamlab/vendor/pixi.ts";
-import { EntityEnableChanged, ObjectAdapter, TextureAdapter } from "@dreamlab/engine";
+import { EntityEnableChanged, TextureAdapter } from "@dreamlab/engine";
 
 // this shockingly fixes spritesheet bleeding
 AbstractRenderer.defaultOptions.roundPixels = true;
@@ -120,12 +120,12 @@ export class AnimatedSprite extends PixiEntity {
   }
 
   async #getTextures(): Promise<void> {
-    if (this.spritesheet === "") {
+    if (this.spritesheetJSON === "") {
       this.#originalTextures = [PIXI.Texture.WHITE];
       return;
     }
 
-    const spritesheet = await PIXI.Assets.load(this.game.resolveResource(this.spritesheet));
+    const spritesheet = await PIXI.Assets.load(this.game.resolveResource(this.spritesheetJSON));
     if (!(spritesheet instanceof PIXI.Spritesheet)) {
       throw new TypeError("texture is not a pixi spritesheet");
     }
