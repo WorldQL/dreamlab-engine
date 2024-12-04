@@ -173,6 +173,9 @@ export class Camera extends Entity {
     this.defineValue(Camera, "smooth", { replicated: false });
     this.defineValue(Camera, "unlocked", { replicated: false });
     this.defineValue(Camera, "zoom", { replicated: false });
+
+    // apply new scale from incoming synced value
+    this.#scale = Vector2.splat(1 / this.zoom);
   }
 
   public worldToScreen(position: IVector2): Vector2 {
