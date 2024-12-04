@@ -29,12 +29,24 @@ export class EditorFacadeCamera extends PixiEntity {
   public unlocked: boolean = false;
   public active: boolean = false;
   public zoom: number = 1;
+  public showBounds: boolean = false;
+
+  #selected: boolean = false;
+  #updateShowBounds() {
+    if (!this.#debug) return;
+    this.#debug.enabled = this.#selected || this.showBounds;
+  }
 
   #debug: DebugSquare | undefined;
   #debugListener: { unsubscribe: () => void } | undefined;
 
   constructor(ctx: EntityContext) {
     super(ctx, false);
+    this.defineValue(EditorFacadeCamera, "showBounds", {
+      replicated: false,
+      persistent: false,
+    });
+
     this.defineValues(EditorFacadeCamera, "active", "smooth", "unlocked", "zoom");
 
     if (this.game.isClient()) {
@@ -66,6 +78,11 @@ export class EditorFacadeCamera extends PixiEntity {
       getBounds: () => Vector2.splat(Camera.TARGET_VIEWPORT_SIZE).div(this.zoom),
     });
 
+    const showBounds = this.values.get("showBounds");
+    showBounds?.onChanged(() => {
+      this.#updateShowBounds();
+    });
+
     const zoom = this.values.get("zoom");
     zoom?.onChanged(() => {
       this.#debug?.redraw();
@@ -81,8 +98,8 @@ export class EditorFacadeCamera extends PixiEntity {
 
   #onSelectedSvc(svc: SelectedEntityService) {
     this.#debugListener = svc.listen(selected => {
-      if (!this.#debug) return;
-      this.#debug.enabled = selected.includes(this);
+      this.#selected = selected.includes(this);
+      this.#updateShowBounds();
     });
   }
 }
