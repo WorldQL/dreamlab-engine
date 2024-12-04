@@ -101,6 +101,8 @@ type EntityValueOpts<E extends Entity, P extends EntityValueProp<E>> = {
   type?: ValueTypeTag<E[P]>;
   description?: string;
   replicated?: boolean;
+  hidden?: boolean;
+  persistent?: boolean;
 };
 
 export abstract class Entity implements ISignalHandler {
@@ -460,6 +462,7 @@ export abstract class Entity implements ISignalHandler {
   #generatePlainDefinition(withRefs: boolean): EntityDefinition<this> & { typeName: string } {
     const entityValues: Partial<Omit<this, keyof Entity>> = {};
     for (const [key, value] of this.values.entries()) {
+      if (!value.persistent) continue;
       const serializableValue = value.adapter
         ? value.adapter.convertToPrimitive(value.value)
         : structuredClone(value.value);
@@ -490,6 +493,7 @@ export abstract class Entity implements ISignalHandler {
   ): BehaviorDefinition & { uri: string } {
     const behaviorValues: Partial<Record<string, unknown>> = {};
     for (const [key, value] of behavior.values.entries()) {
+      if (!value.persistent) continue;
       const serializableValue = value.adapter
         ? value.adapter.convertToPrimitive(value.value)
         : structuredClone(value.value);
@@ -717,7 +721,11 @@ export abstract class Entity implements ISignalHandler {
       opts.description ?? prop, // TODO: autogenerate description (fix casing & spacing)
       adapter,
     );
-    if (opts.replicated) value.replicated = opts.replicated;
+
+    if (opts.replicated !== undefined) value.replicated = opts.replicated;
+    if (opts.hidden !== undefined) value.hidden = opts.hidden;
+    if (opts.persistent !== undefined) value.persistent = opts.persistent;
+
     value[internal.valueRelatedEntity] = this;
     if (adapter) adapter.valueObj = value;
 

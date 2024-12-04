@@ -225,6 +225,8 @@ export class Properties implements InspectorUIWidget {
     valuesSection.addContent(valuesTable);
 
     for (const [key, value] of entity.values.entries()) {
+      if (value.hidden) continue;
+
       // uncomment the following line to hide clonedFromRef from values once prefab UX is built
       // if (key === "clonedFromRef") continue;
       const [valueField, refreshValue] = createValueControl(this.game, {

@@ -62,6 +62,8 @@ type BehaviorValueOpts<B extends Behavior, P extends BehaviorValueProp<B>> = {
   type?: ValueTypeTag<B[P]>;
   description?: string;
   replicated?: boolean;
+  hidden?: boolean;
+  persistent?: boolean;
 };
 
 // TODO: Fix adapterType type. Can't quite get it to work in browser editor.
@@ -166,7 +168,11 @@ export class Behavior implements ISignalHandler {
       opts.description ?? prop, // TODO: autogenerate description (fix casing & spacing)
       adapter,
     );
-    if (opts.replicated) value.replicated = opts.replicated;
+
+    if (opts.replicated !== undefined) value.replicated = opts.replicated;
+    if (opts.hidden !== undefined) value.hidden = opts.hidden;
+    if (opts.persistent !== undefined) value.persistent = opts.persistent;
+
     value[internal.valueRelatedEntity] = this.entity;
     if (adapter) adapter.valueObj = value;
 
@@ -377,15 +383,11 @@ export class Behavior implements ISignalHandler {
    * Called when the uses mouses down (clicks) over the entity this Behavior is attached to.
    * Works ONLY IF the entity is a ClickableRect or ClickableCircle
    */
-  onMouseDown?(
-    button: "left" | "right" | "middle",
-  ): void;
+  onMouseDown?(button: "left" | "right" | "middle"): void;
 
   /**
    * Called when the uses mouses releases their mouse after clicking the entity this Behavior is attached to.
    * Works ONLY IF the entity is a ClickableRect or ClickableCircle
    */
-  onMouseUp?(
-    button: "left" | "right" | "middle",
-  ): void;
+  onMouseUp?(button: "left" | "right" | "middle"): void;
 }

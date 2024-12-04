@@ -90,6 +90,8 @@ export class Value<T = unknown> {
 
   description: string;
   replicated: boolean = true;
+  hidden: boolean = false;
+  persistent: boolean = true;
 
   constructor(
     registry: ValueRegistry,
