@@ -1,4 +1,5 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
+import * as internal from "../../internal.ts";
 import { Vector2 } from "../../math/mod.ts";
 import { pointLocalToWorld, pointWorldToLocal } from "../../math/spatial-transforms.ts";
 import { EntityDestroyed, GameRender, MouseDown } from "../../signals/mod.ts";
@@ -77,6 +78,10 @@ export class GizmoScaleEnd {
 }
 // #endregion
 // #endregion
+
+function isCamera(entity: Entity): entity is Camera {
+  return internal.cameraMarker in entity && entity[internal.cameraMarker] === true;
+}
 
 export class Gizmo extends Entity {
   static {
@@ -304,7 +309,10 @@ export class Gizmo extends Entity {
         if (button !== "left") return;
 
         const offset = world.sub(this.globalTransform.position);
-        const original = this.#target.globalTransform.scale.clone();
+        const original = isCamera(this.#target)
+          ? Vector2.splat(1 / this.#target.zoom)
+          : this.#target.globalTransform.scale.clone();
+
         this.#action = { type: "scale", axis, offset, original };
         this.fire(GizmoScaleStart, this.#target, axis);
       };
@@ -397,7 +405,10 @@ export class Gizmo extends Entity {
         if (button !== "left") return;
 
         const offset = world.sub(this.globalTransform.position);
-        const original = this.#target.globalTransform.scale.clone();
+        const original = isCamera(this.#target)
+          ? Vector2.splat(1 / this.#target.zoom)
+          : this.#target.globalTransform.scale.clone();
+
         this.#action = { type: "scale", axis, offset, original };
         this.fire(GizmoScaleStart, this.#target, axis);
       };
@@ -449,7 +460,11 @@ export class Gizmo extends Entity {
       const scale = this.#action.original.mul(mul);
 
       this.fire(GizmoScaleMove, this.#target, scale.clone());
-      this.#target.globalTransform.scale = scale;
+      if (isCamera(this.#target)) {
+        this.#target.zoom = 1 / (this.#action.axis === "y" ? scale.y : scale.x);
+      } else {
+        this.#target.globalTransform.scale = scale;
+      }
     }
   };
 

@@ -1,11 +1,13 @@
-import { EntityTransformUpdate } from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { ClientGame, Game } from "../../game.ts";
+import * as internal from "../../internal.ts";
 import { IVector2, Vector2, smoothLerp } from "../../math/mod.ts";
 import { ActiveCameraChanged, EntityDestroyed, GameRender } from "../../signals/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
 
 export class Camera extends Entity {
+  [internal.cameraMarker] = true as const;
+
   static {
     Entity.registerType(this, "@core");
   }
@@ -28,9 +30,11 @@ export class Camera extends Entity {
     this.#lnsmooth = value === 0 ? 0 : Math.log(2) / (this.#smooth * 1000);
   }
 
+  public zoom: number = 1;
+
   #position: Vector2 = new Vector2(this.interpolated.position);
   #rotation: number = this.interpolated.rotation;
-  #scale: Vector2 = new Vector2(this.interpolated.scale);
+  #scale: Vector2 = Vector2.splat(1 / this.zoom); // TODO: optimize this to remove the reciprocal
 
   #matrix() {
     const game = this.game as ClientGame;
@@ -89,7 +93,7 @@ export class Camera extends Entity {
     // Instantly set smoothed values
     this.#position = new Vector2(this.interpolated.position);
     this.#rotation = this.interpolated.rotation;
-    this.#scale = new Vector2(this.interpolated.scale);
+    this.#scale = Vector2.splat(1 / this.zoom);
 
     // Reparent scene container
     const game = this.game as ClientGame;
@@ -103,8 +107,6 @@ export class Camera extends Entity {
   public static getActive(game: Game): Camera | undefined {
     return game.entities.lookupByType(Camera).find(camera => camera.active);
   }
-
-  public zoom: number;
 
   constructor(ctx: EntityContext) {
     super(ctx);
@@ -126,8 +128,10 @@ export class Camera extends Entity {
         this.#position.x = this.interpolated.position.x;
         this.#position.y = this.interpolated.position.y;
         this.#rotation = this.interpolated.rotation;
-        this.#scale.x = this.interpolated.scale.x;
-        this.#scale.y = this.interpolated.scale.y;
+
+        const scale = 1 / this.zoom;
+        this.#scale.x = scale;
+        this.#scale.y = scale;
 
         this.container.setFromMatrix(this.#matrix());
         return;
@@ -147,12 +151,8 @@ export class Camera extends Entity {
         delta,
       );
 
-      this.#scale = Vector2.smoothLerp(
-        this.#scale,
-        this.interpolated.scale,
-        this.#lnsmooth,
-        delta,
-      );
+      const scale = Vector2.splat(1 / this.zoom);
+      this.#scale = Vector2.smoothLerp(this.#scale, scale, this.#lnsmooth, delta);
 
       this.container.setFromMatrix(this.#matrix());
     });
@@ -172,21 +172,7 @@ export class Camera extends Entity {
     this.defineValue(Camera, "active", { replicated: false });
     this.defineValue(Camera, "smooth", { replicated: false });
     this.defineValue(Camera, "unlocked", { replicated: false });
-
-    this.zoom = 1 / this.globalTransform.scale.x;
-    const zoom = this.defineValue(Camera, "zoom", { replicated: false });
-    let zoomChanging = false;
-
-    zoom.onChanged(() => {
-      zoomChanging = true;
-      this.globalTransform.scale = Vector2.ONE.mul(1 / this.zoom);
-      zoomChanging = false;
-    });
-
-    this.on(EntityTransformUpdate, () => {
-      if (zoomChanging) return;
-      this.zoom = 1 / this.globalTransform.scale.x;
-    });
+    this.defineValue(Camera, "zoom", { replicated: false });
   }
 
   public worldToScreen(position: IVector2): Vector2 {

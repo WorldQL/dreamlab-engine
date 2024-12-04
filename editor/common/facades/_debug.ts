@@ -41,6 +41,7 @@ interface DebugShapeOptions {
   readonly alpha?: number;
   readonly width?: number;
   readonly alignment?: number;
+  readonly disableScale?: boolean;
   readonly getBounds?: () => IVector2 | undefined;
 }
 
@@ -54,6 +55,7 @@ abstract class DebugShape {
   protected alpha: number;
   protected width: number;
   protected readonly alignment: number;
+  protected readonly disableScale: boolean;
   protected readonly getBounds: () => IVector2 | undefined;
 
   #enabled;
@@ -75,6 +77,7 @@ abstract class DebugShape {
     alpha = 0.8,
     width = 0.02,
     alignment = 1,
+    disableScale = false,
     getBounds = () => entity.bounds,
   }: DebugShapeOptions) {
     this.entity = entity;
@@ -91,6 +94,7 @@ abstract class DebugShape {
     this.alpha = alpha;
     this.width = width;
     this.alignment = alignment;
+    this.disableScale = disableScale;
     this.getBounds = getBounds;
     const activeEditorCamera = Camera.getActive(entity.game);
     if (activeEditorCamera) {
@@ -155,7 +159,10 @@ export class DebugSquare extends DebugShape {
   redraw(): void {
     const _bounds = this.getBounds();
     if (!_bounds) return;
-    const bounds = Vector2.mul(_bounds, this.entity.globalTransform.scale);
+    const bounds = Vector2.mul(
+      _bounds,
+      this.disableScale ? 1 : this.entity.globalTransform.scale,
+    );
 
     const color = this.color;
     const width = this.width;
@@ -185,7 +192,8 @@ export class DebugCircle extends DebugShape {
   redraw(): void {
     const _bounds = this.getBounds();
     if (!_bounds) return;
-    const radius = Vector2.mul(_bounds, this.entity.globalTransform.scale).x / 2;
+    const radius =
+      Vector2.mul(_bounds, this.disableScale ? 1 : this.entity.globalTransform.scale).x / 2;
 
     this.gfx.alpha = this.alpha;
     this.gfx.clear();

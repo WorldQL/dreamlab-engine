@@ -3,10 +3,10 @@ import {
   Entity,
   EntityContext,
   EntityDestroyed,
-  EntityTransformUpdate,
   PixiEntity,
   Vector2,
 } from "@dreamlab/engine";
+import * as internal from "@dreamlab/engine/internal";
 import {
   InitSelectedEntityService,
   SelectedEntityService,
@@ -15,6 +15,8 @@ import { EnsureCompatible, EntityValueProps } from "./_compatibility.ts";
 import { DebugSquare } from "./_debug.ts";
 import { Facades } from "./manager.ts";
 export class EditorFacadeCamera extends PixiEntity {
+  [internal.cameraMarker] = true as const;
+
   static {
     Entity.registerType(this, "@editor");
     Facades.register(Camera, this);
@@ -26,29 +28,14 @@ export class EditorFacadeCamera extends PixiEntity {
   public smooth: number = 0.1;
   public unlocked: boolean = false;
   public active: boolean = false;
-  public zoom: number;
+  public zoom: number = 1;
 
   #debug: DebugSquare | undefined;
   #debugListener: { unsubscribe: () => void } | undefined;
 
   constructor(ctx: EntityContext) {
     super(ctx, false);
-    this.defineValues(EditorFacadeCamera, "active", "smooth", "unlocked");
-
-    this.zoom = 1 / this.globalTransform.scale.x;
-    const zoom = this.defineValue(EditorFacadeCamera, "zoom");
-    let zoomChanging = false;
-
-    zoom.onChanged(() => {
-      zoomChanging = true;
-      this.globalTransform.scale = Vector2.ONE.mul(1 / this.zoom);
-      zoomChanging = false;
-    });
-
-    this.on(EntityTransformUpdate, () => {
-      if (zoomChanging) return;
-      this.zoom = 1 / this.globalTransform.scale.x;
-    });
+    this.defineValues(EditorFacadeCamera, "active", "smooth", "unlocked", "zoom");
 
     if (this.game.isClient()) {
       const svc = SelectedEntityService.serviceForGame(this.game);
@@ -74,8 +61,14 @@ export class EditorFacadeCamera extends PixiEntity {
       entity: this,
       enabled: false,
       width: 0.04,
+      disableScale: true,
       suffix: this.active ? " (active)" : "",
-      getBounds: () => Vector2.splat(Camera.TARGET_VIEWPORT_SIZE),
+      getBounds: () => Vector2.splat(Camera.TARGET_VIEWPORT_SIZE).div(this.zoom),
+    });
+
+    const zoom = this.values.get("zoom");
+    zoom?.onChanged(() => {
+      this.#debug?.redraw();
     });
 
     const activeValue = this.values.get("active");
