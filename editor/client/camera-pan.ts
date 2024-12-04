@@ -170,6 +170,8 @@ export class CameraPanBehavior extends Behavior {
     }
     // #endregion
 
+    console.log('touchpad mode? ', TOUCHPAD_DETECTED)
+
     // mouse mode
     if (!TOUCHPAD_DETECTED) {
       if (ev.ctrlKey || ev.metaKey) {
