@@ -15,6 +15,9 @@ import {
 } from "@dreamlab/engine";
 import { InspectorUI } from "./ui/inspector.ts";
 
+let TOUCHPAD_DETECTED = true;
+let TOUCHPAD_DETECTION_lastScrollTime = Date.now();
+
 export class CameraPanBehavior extends Behavior {
   ui: InspectorUI | undefined;
 
@@ -143,38 +146,94 @@ export class CameraPanBehavior extends Behavior {
     if (this.#drag) this.#setDrag(undefined);
   }
 
-  static readonly #IS_MAC = /Mac|iPod|iPhone|iPad/.test(navigator.userAgent);
-
   #onScroll({ delta, ev }: Scroll) {
     if (this.game.isClient() && ev.target !== this.game.renderer.app.canvas) return;
 
     ev.preventDefault();
 
-    if (ev.ctrlKey || ev.metaKey) {
-      const scale = 100;
-      const deltaX = ev.shiftKey ? delta.y : delta.x;
-      const deltaY = ev.shiftKey ? 0 : delta.y;
-      const scrollDelta = new Vector2(deltaX, deltaY).mul(scale);
+    // #region Touchpad detection
+    const currentTime = Date.now();
+    const timeDiff = currentTime - TOUCHPAD_DETECTION_lastScrollTime;
+    TOUCHPAD_DETECTION_lastScrollTime = currentTime;
 
-      const worldDelta = this.#camera
-        .screenToWorld(scrollDelta)
-        .sub(this.#camera.screenToWorld(Vector2.ZERO));
+    // Check deltaY value and deltaMode
+    const deltaY = Math.abs(ev.deltaY);
+    const deltaMode = ev.deltaMode;
 
-      this.#camera.pos.assign(this.#camera.pos.add(worldDelta));
-    } else {
-      const zoomFactor = ev.altKey ? 1.5 : 1.1;
-      const zoomDirection = delta.y > 0 ? 1 : -1;
+    // Heuristic checks
+    if (deltaMode === WheelEvent.DOM_DELTA_PIXEL && deltaY < 50 && timeDiff < 200) {
+      // Likely a touchpad
+      TOUCHPAD_DETECTED = true;
+    } else if (deltaMode === WheelEvent.DOM_DELTA_LINE && deltaY >= 100) {
+      // Likely a mouse wheel
+      TOUCHPAD_DETECTED = false;
+    }
+    // #endregion
 
-      // TODO: untangle the reciprocals to optimize calulcation
-      const newScale = (1 / this.#camera.zoom) * Math.pow(zoomFactor, zoomDirection);
-      const clampedScale = Math.max(Math.min(newScale, 100), 0.1);
-      this.#camera.zoom = 1 / clampedScale;
+    // mouse mode
+    if (!TOUCHPAD_DETECTED) {
+      if (ev.ctrlKey || ev.metaKey) {
+        const scale = 100;
+        const deltaX = ev.shiftKey ? delta.y : delta.x;
+        const deltaY = ev.shiftKey ? 0 : delta.y;
+        const scrollDelta = new Vector2(deltaX, deltaY).mul(scale);
 
-      if (!CameraPanBehavior.#IS_MAC) {
+        const worldDelta = this.#camera
+          .screenToWorld(scrollDelta)
+          .sub(this.#camera.screenToWorld(Vector2.ZERO));
+
+        this.#camera.pos.assign(this.#camera.pos.add(worldDelta));
+      } else {
+        const zoomFactor = ev.altKey ? 1.5 : 1.1;
+        const zoomDirection = delta.y > 0 ? 1 : -1;
+
+        // TODO: untangle the reciprocals to optimize calulcation
+        const newScale = (1 / this.#camera.zoom) * Math.pow(zoomFactor, zoomDirection);
+        const clampedScale = Math.max(Math.min(newScale, 100), 0.1);
+        this.#camera.zoom = 1 / clampedScale;
+
         const cursorPos = this.game.inputs.cursor.world;
         if (delta.y < 0 && cursorPos) {
           const cursorDelta = cursorPos.sub(this.#camera.pos);
           this.#camera.pos = this.#camera.pos.add(cursorDelta.mul(1 / 10));
+        }
+      }
+    }
+
+    // trackpad mode
+    if (TOUCHPAD_DETECTED) {
+      const isPan = !(ev.ctrlKey || ev.metaKey);
+
+      if (isPan) {
+        // Pan the camera with two fingers
+        const scale = 100;
+        const deltaX = delta.x;
+        const deltaY = delta.y;
+        const scrollDelta = new Vector2(deltaX, deltaY).mul(scale);
+
+        const worldDelta = this.#camera
+          .screenToWorld(scrollDelta)
+          .sub(this.#camera.screenToWorld(Vector2.ZERO));
+
+        this.#camera.pos.assign(this.#camera.pos.add(worldDelta));
+      } else {
+        // Zoom the camera proportionally to the pinch gesture
+        const zoomAmount = ev.deltaY * 0.018; // Adjust sensitivity as needed
+        const zoomFactor = Math.exp(zoomAmount);
+
+        const newScale = (1 / this.#camera.zoom) * zoomFactor;
+
+        // Clamp the scale to prevent extreme zoom levels
+        const clampedScale = Math.max(Math.min(newScale, 100), 0.1);
+        this.#camera.zoom = 1 / clampedScale;
+
+        // Keep the zoom centered around the cursor position
+        const cursorPos = this.game.inputs.cursor.world;
+        if (cursorPos) {
+          const beforeZoom = cursorPos.sub(this.#camera.pos);
+          const afterZoom = beforeZoom.mul(zoomFactor);
+          const adjustment = beforeZoom.sub(afterZoom);
+          this.#camera.pos.assign(this.#camera.pos.add(adjustment));
         }
       }
     }
