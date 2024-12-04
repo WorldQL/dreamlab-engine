@@ -158,7 +158,10 @@ export class SceneGraph implements InspectorUIWidget {
           (entity.constructor as typeof Entity).icon ?? "🌟",
         ]),
         " ",
-        elem("span", { className: "name" }, [entity.name]),
+        elem("span", { className: "name" }, [
+          // change name color if it's a prefab instance
+          elem("span", { style: entity.clonedFromRef ? "color: #9cedff" : "" }, [entity.name]),
+        ]),
       ]),
     ]);
 

@@ -350,8 +350,10 @@ export abstract class Entity implements ISignalHandler {
     const addChild = (parent: Entity, childDef: EntityDefinition) => {
       let clonedFrom: string | undefined;
       if (opts.cloning) {
-        clonedFrom = childDef._ref;
-        delete childDef._ref;
+        // only carry refs on the top-level cloned entity. this is simpler/better.
+        // uncomment line below if you need the refs for cloned children.
+        // clonedFrom = childDef._ref;
+        delete childDef._ref; // if I delete this line cloneInto doesn't refresh the editor and I can't see what I pasted?
       }
 
       const child = Entity.#constructEntity(parent, childDef, clonedFrom);
@@ -851,13 +853,49 @@ export abstract class Entity implements ISignalHandler {
     }
   }
 
-  #clonedFromRef: string | undefined;
+  clonedFromRef: string | undefined;
 
   constructor(ctx: EntityContext) {
     Entity.#ensureEntityTypeIsRegistered(new.target);
 
     if (ctx.ref) this.ref = ctx.ref;
-    if (ctx.clonedFrom) this.#clonedFromRef = ctx.clonedFrom;
+    if (ctx.clonedFrom) {
+      const clonedFrom = game.entities.lookupByRef(ctx.clonedFrom);
+
+      /*
+      We should only set clonedFromRef if both:
+      1. The clone source must be under "prefabs".
+      2. The clone destination must not be a direct descendant of "prefabs"
+
+      Some notes:
+      - When a prefab is cloned into the world, its children carry references to children of the original prefab.
+      - Remember that the __EditorMetadata entities exist under every entity!!! There is never a child-free entity. This constructor is called twice when you paste a single entity.
+      */
+
+      let shouldSetClonedFrom = true;
+
+      if (!clonedFrom?.parent) {
+        shouldSetClonedFrom = false;
+      }
+
+      // 1. The clone source must be a direct descendant of "prefabs".
+      if (shouldSetClonedFrom && clonedFrom) {
+        if (clonedFrom.parent?.constructor.name !== "PrefabRootFacade") {
+          shouldSetClonedFrom = false;
+        }
+      }
+
+      // 2. The clone destination must not be a direct descendant of "prefabs"
+      if (ctx.parent?.constructor.name === "PrefabRootFacade") {
+        shouldSetClonedFrom = false;
+      }
+
+      // this setup allows for nested prefabs! :)
+
+      if (shouldSetClonedFrom) {
+        this.clonedFromRef = ctx.clonedFrom;
+      }
+    }
 
     this.game = ctx.game;
     // @ts-expect-error: must inherit
@@ -894,6 +932,9 @@ export abstract class Entity implements ISignalHandler {
     this.#interpolated = new Transform(this.globalTransform);
 
     this.game.entities[internal.entityStoreRegister](this);
+
+    // @ts-expect-error we dont expect base Entity to have values rn
+    this.defineValue(Entity, "clonedFromRef", { type: String });
   }
 
   // #region Signals
@@ -1158,3 +1199,23 @@ export const serializeIdentifier = (parent: string | undefined, child: string) =
   isValidPlainIdentifier(child)
     ? parent ? `${parent}._.${child}` : `${child}`
     : parent ? `${parent}._[${JSON.stringify(child)}]` : `[${JSON.stringify(child)}]`;
+
+// unused. leaving for reference.
+// get the facade root of an entity since in edit mode root is always "world"
+function getFacadeRoot(e: Entity): string | undefined {
+  let highestAncestor = e?.parent;
+
+  // We can't do "instanceof EditorRootFacadeEntity" here because it's a descendant of this class
+  // so we have to do this string check for facade roots instead
+  while (
+    highestAncestor?.parent &&
+    highestAncestor.constructor.name !== "WorldRootFacade" &&
+    highestAncestor.constructor.name !== "LocalRootFacade" &&
+    highestAncestor.constructor.name !== "ServerRootFacade" &&
+    highestAncestor.constructor.name !== "PrefabRootFacade"
+  ) {
+    highestAncestor = highestAncestor?.parent;
+  }
+
+  return highestAncestor?.constructor.name;
+}
