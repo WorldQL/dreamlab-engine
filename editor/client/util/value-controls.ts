@@ -5,8 +5,8 @@ import {
   ColorAdapter,
   Entity,
   EntityByRefAdapter,
-  RelativeEntity,
   EnumAdapter,
+  RelativeEntity,
   resolveEntityFromRelativeSelector,
   SpritesheetAdapter,
   TextureAdapter,
@@ -419,6 +419,9 @@ export function createValueControl(
 
         valueDisplay.title = id;
         valueDisplay.textContent = id;
+
+        if (entity === undefined) clear.classList.add("hidden");
+        else clear.classList.remove("hidden");
       };
 
       refresh();

@@ -56,6 +56,10 @@ dreamlab-data-table {
           max-width: calc(100% - 1rem);
           overflow: clip;
           text-overflow: ellipsis;
+
+          &:has(~ button.hidden) {
+            max-width: 100%;
+          }
         }
 
         & > .spacer {
@@ -72,6 +76,10 @@ dreamlab-data-table {
           display: flex;
           justify-content: center;
           align-items: center;
+
+          &.hidden {
+            display: none;
+          }
         }
       }
 
