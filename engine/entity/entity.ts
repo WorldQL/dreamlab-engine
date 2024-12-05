@@ -340,18 +340,18 @@ export abstract class Entity implements ISignalHandler {
   // deno-lint-ignore no-explicit-any
   [internal.entitySpawn]<T extends Entity, C extends any[], B extends any[]>(
     def: EntityDefinition<T, C, B>,
-    opts: { inert?: boolean; from?: ConnectionId; cloning?: boolean } = {},
+    opts: { inert?: boolean; from?: ConnectionId; cloneFrom?: string } = {},
   ) {
     let clonedFrom: string | undefined;
-    if (opts.cloning) {
-      clonedFrom = def._ref;
-      delete def._ref;
+    if (opts.cloneFrom) {
+      clonedFrom = opts.cloneFrom;
+      if (def._ref === opts.cloneFrom) delete def._ref;
     }
     const entity = Entity.#constructEntity(this, def, clonedFrom);
     const spawnOrder: { entity: Entity; def: EntityDefinition }[] = [{ entity, def }];
     const addChild = (parent: Entity, childDef: EntityDefinition) => {
       let clonedFrom: string | undefined;
-      if (opts.cloning) {
+      if (opts.cloneFrom) {
         // only carry refs on the top-level cloned entity. this is simpler/better.
         // uncomment line below if you need the refs for cloned children.
         // clonedFrom = childDef._ref;
@@ -366,7 +366,7 @@ export abstract class Entity implements ISignalHandler {
 
     const finalizeBehaviors = (targetEnt: Entity, targetDef: EntityDefinition) => {
       targetDef.behaviors?.forEach(b => {
-        if (opts.cloning) {
+        if (opts.cloneFrom) {
           delete b._ref;
         }
 
@@ -549,7 +549,7 @@ export abstract class Entity implements ISignalHandler {
         ...overrides,
         transform,
       },
-      { cloning: true },
+      { cloneFrom: this.ref },
     );
   }
   // #endregion
