@@ -84,6 +84,7 @@ export const serializeEntityDefinition = (
       : undefined;
 
   return {
+    ref,
     type: Entity.getTypeName(def.type),
     name: def.name,
     enabled: def.enabled,
@@ -91,7 +92,6 @@ export const serializeEntityDefinition = (
     transform: def.transform ? serializeTransform(def.transform) : undefined,
     behaviors,
     children,
-    ref,
   };
 };
 
