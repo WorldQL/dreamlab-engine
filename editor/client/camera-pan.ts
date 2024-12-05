@@ -15,9 +15,7 @@ import {
 } from "@dreamlab/engine";
 import { InspectorUI } from "./ui/inspector.ts";
 
-let TOUCHPAD_DETECTED = true;
-let TOUCHPAD_DETECTION_lastScrollTime = Date.now();
-
+let TOUCHPAD_DETECTED = false;
 export class CameraPanBehavior extends Behavior {
   ui: InspectorUI | undefined;
 
@@ -151,26 +149,10 @@ export class CameraPanBehavior extends Behavior {
 
     ev.preventDefault();
 
-    // #region Touchpad detection
-    const currentTime = Date.now();
-    const timeDiff = currentTime - TOUCHPAD_DETECTION_lastScrollTime;
-    TOUCHPAD_DETECTION_lastScrollTime = currentTime;
-
-    // Check deltaY value and deltaMode
-    const deltaY = Math.abs(ev.deltaY);
-    const deltaMode = ev.deltaMode;
-
-    // Heuristic checks
-    if (deltaMode === WheelEvent.DOM_DELTA_PIXEL && deltaY < 50 && timeDiff < 200) {
-      // Likely a touchpad
-      TOUCHPAD_DETECTED = true;
-    } else if (deltaMode === WheelEvent.DOM_DELTA_LINE && deltaY >= 100) {
-      // Likely a mouse wheel
-      TOUCHPAD_DETECTED = false;
+    if (!TOUCHPAD_DETECTED) {
+      // @ts-expect-error non-standard
+      TOUCHPAD_DETECTED = ev.wheelDeltaY ? ev.wheelDeltaY === -3 * ev.deltaY : ev.deltaMode === 0
     }
-    // #endregion
-
-    console.log('touchpad mode? ', TOUCHPAD_DETECTED)
 
     // mouse mode
     if (!TOUCHPAD_DETECTED) {
