@@ -868,7 +868,7 @@ export abstract class Entity implements ISignalHandler {
 
     if (ctx.ref) this.ref = ctx.ref;
     if (ctx.clonedFrom) {
-      const clonedFrom = game.entities.lookupByRef(ctx.clonedFrom);
+      const clonedFrom = ctx.game.entities.lookupByRef(ctx.clonedFrom);
 
       /*
       We should only set clonedFromRef if both:
