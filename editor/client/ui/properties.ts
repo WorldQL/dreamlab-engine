@@ -10,7 +10,8 @@ import {
 import * as internal from "@dreamlab/engine/internal";
 import { element as elem } from "@dreamlab/ui";
 import { z } from "@dreamlab/vendor/zod.ts";
-import { Facades } from "../../common/mod.ts";
+import { Facades, PrefabRootFacade } from "../../common/mod.ts";
+import { icon, X } from "../_icons.ts";
 import { DataDetails, DataTable } from "../components/mod.ts";
 import { UndoRedoManager } from "../undo-redo.ts";
 import { createBooleanField, createInputField } from "../util/easy-input.ts";
@@ -128,6 +129,49 @@ export class Properties implements InspectorUIWidget {
       table.addEntry("enabled", "Enabled", enabledField);
     }
 
+    if (entity.parent instanceof PrefabRootFacade) {
+      const button = elem("button", { type: "button" }, ["Update Instances"]);
+
+      button.addEventListener("click", () => {
+        for (const instance of [...this.game.entities]) {
+          if (instance.clonedFromRef !== entity.ref) continue;
+
+          const name = instance.name;
+          const ref = instance.ref;
+          const parent = instance.parent!;
+          const transform = instance.transform.bare();
+
+          instance.destroy();
+          entity.cloneInto(parent, { _ref: ref, name, transform });
+        }
+      });
+
+      table.addEntry("prefab", "Prefab", button);
+    }
+
+    const clonedFrom = entity.clonedFromRef
+      ? this.game.entities.lookupByRef(entity.clonedFromRef)
+      : undefined;
+
+    if (clonedFrom) {
+      const valueDisplay = elem("code", {}, []);
+      const clear = elem("button", { type: "button", title: "Unlink" }, [icon(X)]);
+      const spacer = elem("div", { className: "spacer" });
+      const control = elem("div", { className: "entity-inputs" }, [
+        valueDisplay,
+        spacer,
+        clear,
+      ]);
+
+      valueDisplay.textContent = clonedFrom.id.replace("game.world._.EditEntities._.", "game.");
+      clear.addEventListener("click", () => {
+        entity.clonedFromRef = "";
+        table.removeEntry("prefab-instance");
+      });
+
+      table.addEntry("prefab-instance", "Prefab Instance", control);
+    }
+
     const transformSection = new DataDetails();
     container.append(transformSection);
 
@@ -228,8 +272,6 @@ export class Properties implements InspectorUIWidget {
     for (const [key, value] of entity.values.entries()) {
       if (value.hidden) continue;
 
-      // uncomment the following line to hide clonedFromRef from values once prefab UX is built
-      // if (key === "clonedFromRef") continue;
       const [valueField, refreshValue] = createValueControl(this.game, {
         id: `${entity.ref}/${key}`,
         typeTag: value.typeTag,

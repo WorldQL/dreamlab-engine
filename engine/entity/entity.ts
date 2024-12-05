@@ -942,7 +942,7 @@ export abstract class Entity implements ISignalHandler {
     this.game.entities[internal.entityStoreRegister](this);
 
     // @ts-expect-error we dont expect base Entity to have values rn
-    this.defineValue(Entity, "clonedFromRef", { type: String });
+    this.defineValue(Entity, "clonedFromRef", { type: String, hidden: true });
   }
 
   // #region Signals
