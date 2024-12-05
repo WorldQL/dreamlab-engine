@@ -97,3 +97,7 @@
 #scene-graph-tree details[open] > summary > div.arrow > svg {
   transform: rotate(0deg);
 }
+
+#scene-graph-tree details[data-prefab-instance] span.name {
+  color: #9cedff;
+}

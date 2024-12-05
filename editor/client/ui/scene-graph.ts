@@ -158,10 +158,7 @@ export class SceneGraph implements InspectorUIWidget {
           (entity.constructor as typeof Entity).icon ?? "🌟",
         ]),
         " ",
-        elem("span", { className: "name" }, [
-          // change name color if it's a prefab instance
-          elem("span", { style: entity.clonedFromRef ? "color: #9cedff" : "" }, [entity.name]),
-        ]),
+        elem("span", { className: "name" }, [elem("span", {}, [entity.name])]),
       ]),
     ]);
 
@@ -171,6 +168,7 @@ export class SceneGraph implements InspectorUIWidget {
       [summary],
     );
     entryElement.dataset.entity = currentEntityRef;
+    if (entity.clonedFromRef) entryElement.dataset.prefabInstance = entity.clonedFromRef;
     this.entryElementMap.set(currentEntityRef, entryElement);
 
     toggle.addEventListener("click", () => {
