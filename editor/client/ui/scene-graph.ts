@@ -171,6 +171,12 @@ export class SceneGraph implements InspectorUIWidget {
     if (entity.clonedFromRef) entryElement.dataset.prefabInstance = entity.clonedFromRef;
     this.entryElementMap.set(currentEntityRef, entryElement);
 
+    const clonedFromRef = entity.values.get("clonedFromRef");
+    clonedFromRef?.onChanged(() => {
+      if (entity.clonedFromRef) entryElement.dataset.prefabInstance = entity.clonedFromRef;
+      else delete entryElement.dataset.prefabInstance;
+    });
+
     toggle.addEventListener("click", () => {
       entryElement.open = !entryElement.open;
 
