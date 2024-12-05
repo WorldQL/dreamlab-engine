@@ -215,7 +215,8 @@ export class Properties implements InspectorUIWidget {
       refreshZIndex();
     });
 
-    if (entity.values.size === 0) return;
+    const count = [...entity.values.values()].filter(v => !v.hidden).length;
+    if (count === 0) return;
 
     const valuesSection = new DataDetails();
     container.append(valuesSection);
