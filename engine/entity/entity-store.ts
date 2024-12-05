@@ -12,6 +12,13 @@ export class EntityStore {
   #entitiesByRef = new Map<string, Entity>();
   #entitiesByType = new Map<EntityConstructor, Set<Entity>>();
 
+  [Symbol.iterator](): IterableIterator<Entity> {
+    return this.#entitiesById.values();
+  }
+
+  /**
+   * @deprecated {@link EntityStore} has [Symbol.iterator]()
+   */
   get all(): IterableIterator<Entity> {
     return this.#entitiesById.values();
   }
