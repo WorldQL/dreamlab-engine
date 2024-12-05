@@ -139,7 +139,7 @@ export class Properties implements InspectorUIWidget {
           const name = instance.name;
           const ref = instance.ref;
           const parent = instance.parent!;
-          const transform = instance.transform.bare();
+          const { scale: _, ...transform } = instance.transform.bare();
 
           instance.destroy();
           entity.cloneInto(parent, { _ref: ref, name, transform });
