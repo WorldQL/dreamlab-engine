@@ -861,49 +861,12 @@ export abstract class Entity implements ISignalHandler {
     }
   }
 
-  clonedFromRef: string | undefined;
+  clonedFromRef: string = "";
 
   constructor(ctx: EntityContext) {
     Entity.#ensureEntityTypeIsRegistered(new.target);
 
     if (ctx.ref) this.ref = ctx.ref;
-    if (ctx.clonedFrom) {
-      const clonedFrom = ctx.game.entities.lookupByRef(ctx.clonedFrom);
-
-      /*
-      We should only set clonedFromRef if both:
-      1. The clone source must be under "prefabs".
-      2. The clone destination must not be a direct descendant of "prefabs"
-
-      Some notes:
-      - When a prefab is cloned into the world, its children carry references to children of the original prefab.
-      - Remember that the __EditorMetadata entities exist under every entity!!! There is never a child-free entity. This constructor is called twice when you paste a single entity.
-      */
-
-      let shouldSetClonedFrom = true;
-
-      if (!clonedFrom?.parent) {
-        shouldSetClonedFrom = false;
-      }
-
-      // 1. The clone source must be a direct descendant of "prefabs".
-      if (shouldSetClonedFrom && clonedFrom) {
-        if (clonedFrom.parent?.constructor.name !== "PrefabRootFacade") {
-          shouldSetClonedFrom = false;
-        }
-      }
-
-      // 2. The clone destination must not be a direct descendant of "prefabs"
-      if (ctx.parent?.constructor.name === "PrefabRootFacade") {
-        shouldSetClonedFrom = false;
-      }
-
-      // this setup allows for nested prefabs! :)
-
-      if (shouldSetClonedFrom) {
-        this.clonedFromRef = ctx.clonedFrom;
-      }
-    }
 
     this.game = ctx.game;
     // @ts-expect-error: must inherit
@@ -943,6 +906,43 @@ export abstract class Entity implements ISignalHandler {
 
     // @ts-expect-error we dont expect base Entity to have values rn
     this.defineValue(Entity, "clonedFromRef", { type: String, hidden: true });
+    if (ctx.clonedFrom) {
+      const clonedFrom = ctx.game.entities.lookupByRef(ctx.clonedFrom);
+
+      /*
+      We should only set clonedFromRef if both:
+      1. The clone source must be under "prefabs".
+      2. The clone destination must not be a direct descendant of "prefabs"
+
+      Some notes:
+      - When a prefab is cloned into the world, its children carry references to children of the original prefab.
+      - Remember that the __EditorMetadata entities exist under every entity!!! There is never a child-free entity. This constructor is called twice when you paste a single entity.
+      */
+
+      let shouldSetClonedFrom = true;
+
+      if (!clonedFrom?.parent) {
+        shouldSetClonedFrom = false;
+      }
+
+      // 1. The clone source must be a direct descendant of "prefabs".
+      if (shouldSetClonedFrom && clonedFrom) {
+        if (clonedFrom.parent?.constructor.name !== "PrefabRootFacade") {
+          shouldSetClonedFrom = false;
+        }
+      }
+
+      // 2. The clone destination must not be a direct descendant of "prefabs"
+      if (ctx.parent?.constructor.name === "PrefabRootFacade") {
+        shouldSetClonedFrom = false;
+      }
+
+      // this setup allows for nested prefabs! :)
+
+      if (shouldSetClonedFrom) {
+        this.clonedFromRef = ctx.clonedFrom;
+      }
+    }
   }
 
   // #region Signals
