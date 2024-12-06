@@ -101,6 +101,9 @@ export class BoxResizeGizmo extends Entity {
 
   static readonly #__DEBUG__ = false;
 
+  static readonly SNAP_THRESHOLD = 0.1;
+  static readonly POSITION_TOLERANCE = 0.001;
+
   #gfx: PIXI.Graphics | undefined;
 
   #shift = this.inputs.create("@box-resize/Shift", "Shift", "ShiftLeft");
@@ -451,9 +454,14 @@ export class BoxResizeGizmo extends Entity {
       if (this.#action.axis === "x") local.y = 0;
       if (this.#action.axis === "y") local.x = 0;
 
-      const world = pointLocalToWorld(this.globalTransform, local);
-      this.#target.globalTransform.position = world;
+      let world = pointLocalToWorld(this.globalTransform, local);
 
+      if (this.#shift.held) {
+        const allEntities = Array.from(this.game.entities);
+        world = this.#snapPosition(world, allEntities, this.#action.axis);
+      }
+
+      this.#target.globalTransform.position = world;
       return;
     }
 
@@ -462,8 +470,8 @@ export class BoxResizeGizmo extends Entity {
       handle === "t" || handle === "b"
         ? "x"
         : handle === "l" || handle === "r"
-          ? "y"
-          : undefined;
+        ? "y"
+        : undefined;
 
     const rotation = this.#target.globalTransform.rotation;
     const rotated = Vector2.rotateAbout(cursor.world, -rotation, this.#action.opposite);
@@ -473,19 +481,99 @@ export class BoxResizeGizmo extends Entity {
     if (lockedAxis === "y") edge.y = this.#target.globalTransform.scale.y;
     this.#target.globalTransform.scale.assign(Vector2.abs(edge));
 
-    const newOrigin = Vector2.ZERO;
+    let newOrigin: Vector2;
     if (this.#action.handleType === "corner") {
-      newOrigin.assign(Vector2.add(this.#action.opposite, Vector2.div(edge, 2)));
+      newOrigin = Vector2.add(this.#action.opposite, Vector2.div(edge, 2));
     } else {
-      const x = Vector2.div(edge, 2);
-      if (lockedAxis === "x") x.x = 0;
-      if (lockedAxis === "y") x.y = 0;
-
-      newOrigin.assign(Vector2.add(this.#action.opposite, x));
+      const halfEdge = Vector2.div(edge, 2);
+      if (lockedAxis === "x") halfEdge.x = 0;
+      if (lockedAxis === "y") halfEdge.y = 0;
+      newOrigin = Vector2.add(this.#action.opposite, halfEdge);
     }
 
-    this.#target.pos.assign(Vector2.rotateAbout(newOrigin, rotation, this.#action.opposite));
+    newOrigin = Vector2.rotateAbout(newOrigin, rotation, this.#action.opposite);
+
+    if (this.#shift.held) {
+      const allEntities = Array.from(this.game.entities);
+
+      const snapAxis: "x" | "y" | "both" =
+        this.#action.handleType === "corner" ? "both" : "both";
+      newOrigin = this.#snapPosition(newOrigin, allEntities, snapAxis);
+    }
+
+    this.#target.pos.assign(newOrigin);
   };
+
+  #getSnapCandidates(entities: Entity[]): { xLines: number[]; yLines: number[] } {
+    const xLines: number[] = [];
+    const yLines: number[] = [];
+
+    if (!this.#target) return { xLines, yLines };
+
+    const targetPos = this.#target.pos;
+
+    for (const e of entities) {
+      if (e === this.#target) continue;
+      const size = e.bounds;
+      if (!size) continue;
+
+      const pos = e.pos;
+      const dx = pos.x - targetPos.x;
+      const dy = pos.y - targetPos.y;
+      const distSquared = dx * dx + dy * dy;
+      if (distSquared < BoxResizeGizmo.POSITION_TOLERANCE * BoxResizeGizmo.POSITION_TOLERANCE) {
+        continue;
+      }
+
+      const halfW = size.x / 2;
+      const halfH = size.y / 2;
+
+      const left = pos.x - halfW;
+      const right = pos.x + halfW;
+      const bottom = pos.y - halfH;
+      const top = pos.y + halfH;
+
+      const centerX = pos.x;
+      const centerY = pos.y;
+
+      xLines.push(left, centerX, right);
+      yLines.push(bottom, centerY, top);
+    }
+
+    return { xLines, yLines };
+  }
+
+  #snapPosition(pos: Vector2, entities: Entity[], axis: "x" | "y" | "both"): Vector2 {
+    const { xLines, yLines } = this.#getSnapCandidates(entities);
+
+    let snapX = pos.x;
+    let snapY = pos.y;
+
+    let nearestXDist = Infinity;
+    let nearestYDist = Infinity;
+
+    if (axis === "x" || axis === "both") {
+      for (const xLine of xLines) {
+        const dist = Math.abs(xLine - pos.x);
+        if (dist < BoxResizeGizmo.SNAP_THRESHOLD && dist < nearestXDist) {
+          nearestXDist = dist;
+          snapX = xLine;
+        }
+      }
+    }
+
+    if (axis === "y" || axis === "both") {
+      for (const yLine of yLines) {
+        const dist = Math.abs(yLine - pos.y);
+        if (dist < BoxResizeGizmo.SNAP_THRESHOLD && dist < nearestYDist) {
+          nearestYDist = dist;
+          snapY = yLine;
+        }
+      }
+    }
+
+    return new Vector2(snapX, snapY);
+  }
 
   #onMouseUp = (_: PointerEvent) => {
     if (!this.#action) return;
