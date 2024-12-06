@@ -11,17 +11,11 @@ import { ClickableCircle, ClickableRect } from "./clickable.ts";
 // #region Signals
 // #region Translate
 export class GizmoTranslateStart {
-  constructor(
-    public readonly entity: Entity,
-    public readonly axis: "x" | "y" | "both",
-  ) {}
+  constructor(public readonly entity: Entity, public readonly axis: "x" | "y" | "both") {}
 }
 
 export class GizmoTranslateMove {
-  constructor(
-    public readonly entity: Entity,
-    public readonly position: Vector2,
-  ) {}
+  constructor(public readonly entity: Entity, public readonly position: Vector2) {}
 }
 
 export class GizmoTranslateEnd {
@@ -39,10 +33,7 @@ export class GizmoRotateStart {
 }
 
 export class GizmoRotateMove {
-  constructor(
-    public readonly entity: Entity,
-    public readonly rotation: number,
-  ) {}
+  constructor(public readonly entity: Entity, public readonly rotation: number) {}
 }
 
 export class GizmoRotateEnd {
@@ -56,17 +47,11 @@ export class GizmoRotateEnd {
 
 // #region Scale
 export class GizmoScaleStart {
-  constructor(
-    public readonly entity: Entity,
-    public readonly axis: "x" | "y" | "both",
-  ) {}
+  constructor(public readonly entity: Entity, public readonly axis: "x" | "y" | "both") {}
 }
 
 export class GizmoScaleMove {
-  constructor(
-    public readonly entity: Entity,
-    public readonly scale: Vector2,
-  ) {}
+  constructor(public readonly entity: Entity, public readonly scale: Vector2) {}
 }
 
 export class GizmoScaleEnd {
@@ -89,6 +74,7 @@ export class Gizmo extends Entity {
   }
 
   public static readonly icon = "➡️";
+  static readonly SNAP_THRESHOLD = 0.1;
   readonly bounds: undefined;
 
   // #region Graphics
@@ -425,7 +411,7 @@ export class Gizmo extends Entity {
     | { type: "scale"; axis: "x" | "y" | "both"; offset: Vector2; original: Vector2 }
     | undefined;
 
-  #onMouseMove = (_: PointerEvent) => {
+  #onMouseMove = (event: PointerEvent) => {
     if (!this.#target) return;
     if (!this.#action) return;
 
@@ -438,7 +424,12 @@ export class Gizmo extends Entity {
       const local = pointWorldToLocal(this.globalTransform, pos);
       if (this.#action.axis === "x") local.y = 0;
       if (this.#action.axis === "y") local.x = 0;
-      const world = pointLocalToWorld(this.globalTransform, local);
+      let world = pointLocalToWorld(this.globalTransform, local);
+
+      if (event.shiftKey) {
+        const allEntities = Array.from(this.game.entities);
+        world = this.#snapPosition(world, allEntities, this.#action.axis);
+      }
 
       this.fire(GizmoTranslateMove, this.#target, world.clone());
       this.#target.globalTransform.position = world;
@@ -520,6 +511,67 @@ export class Gizmo extends Entity {
     this.#action = undefined;
   };
   // #endregion
+
+  #getSnapCandidates(entities: Entity[]): { xLines: number[]; yLines: number[] } {
+    const xLines: number[] = [];
+    const yLines: number[] = [];
+
+    for (const e of entities) {
+      if (e === this.#target) continue;
+      const size = e.bounds;
+      if (!size) continue;
+
+      const halfW = size.x / 2;
+      const halfH = size.y / 2;
+
+      const pos = e.pos;
+
+      const left = pos.x - halfW;
+      const right = pos.x + halfW;
+      const bottom = pos.y - halfH;
+      const top = pos.y + halfH;
+
+      const centerX = pos.x;
+      const centerY = pos.y;
+
+      xLines.push(left, centerX, right);
+      yLines.push(bottom, centerY, top);
+    }
+
+    return { xLines, yLines };
+  }
+
+  #snapPosition(pos: Vector2, entities: Entity[], axis: "x" | "y" | "both"): Vector2 {
+    const { xLines, yLines } = this.#getSnapCandidates(entities);
+
+    let snapX = pos.x;
+    let snapY = pos.y;
+
+    let nearestXDist = Infinity;
+    let nearestYDist = Infinity;
+
+    if (axis === "x" || axis === "both") {
+      for (const xLine of xLines) {
+        const dist = Math.abs(xLine - pos.x);
+        if (dist < Gizmo.SNAP_THRESHOLD && dist < nearestXDist) {
+          nearestXDist = dist;
+          snapX = xLine;
+        }
+      }
+    }
+
+    if (axis === "y" || axis === "both") {
+      for (const yLine of yLines) {
+        const dist = Math.abs(yLine - pos.y);
+        if (dist < Gizmo.SNAP_THRESHOLD && dist < nearestYDist) {
+          nearestYDist = dist;
+          snapY = yLine;
+        }
+      }
+    }
+
+    return new Vector2(snapX, snapY);
+  }
 
   #target: Entity | undefined;
   get target(): Entity | undefined {
