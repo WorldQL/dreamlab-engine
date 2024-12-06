@@ -106,9 +106,12 @@ export class AppMenu {
 
     this.controls.play.addEventListener("click", async () => {
       const playButton = this.controls.play.querySelector("button")!;
-      if (playButton.disabled) return;
+      const stopButton = this.controls.stop.querySelector("button")!;
+
+      if (playButton.disabled || stopButton.disabled) return;
 
       playButton.disabled = true;
+      stopButton.disabled = false;
 
       try {
         if (!this.games.play) {
