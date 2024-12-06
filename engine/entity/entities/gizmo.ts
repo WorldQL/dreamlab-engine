@@ -74,7 +74,7 @@ export class Gizmo extends Entity {
   }
 
   public static readonly icon = "➡️";
-  static readonly SNAP_THRESHOLD = 0.1;
+  static readonly SNAP_THRESHOLD = 0.3;
   static readonly POSITION_TOLERANCE = 0.001;
   readonly bounds: undefined;
 
@@ -553,30 +553,49 @@ export class Gizmo extends Entity {
   }
 
   #snapPosition(pos: Vector2, entities: Entity[], axis: "x" | "y" | "both"): Vector2 {
+    if (!this.#target?.bounds) return pos;
+
     const { xLines, yLines } = this.#getSnapCandidates(entities);
+    const size = this.#target.bounds;
+    const halfW = size.x / 2;
+    const halfH = size.y / 2;
+
+    const tPos = pos;
+    const left = tPos.x - halfW;
+    const right = tPos.x + halfW;
+    const centerX = tPos.x;
+
+    const bottom = tPos.y - halfH;
+    const top = tPos.y + halfH;
+    const centerY = tPos.y;
 
     let snapX = pos.x;
     let snapY = pos.y;
-
-    let nearestXDist = Infinity;
-    let nearestYDist = Infinity;
+    let minDistX = Infinity;
+    let minDistY = Infinity;
 
     if (axis === "x" || axis === "both") {
-      for (const xLine of xLines) {
-        const dist = Math.abs(xLine - pos.x);
-        if (dist < Gizmo.SNAP_THRESHOLD && dist < nearestXDist) {
-          nearestXDist = dist;
-          snapX = xLine;
+      for (const tLine of [left, centerX, right]) {
+        for (const xLine of xLines) {
+          const dist = Math.abs(xLine - tLine);
+          if (dist < Gizmo.SNAP_THRESHOLD && dist < minDistX) {
+            minDistX = dist;
+            const offset = tLine - pos.x;
+            snapX = xLine - offset;
+          }
         }
       }
     }
 
     if (axis === "y" || axis === "both") {
-      for (const yLine of yLines) {
-        const dist = Math.abs(yLine - pos.y);
-        if (dist < Gizmo.SNAP_THRESHOLD && dist < nearestYDist) {
-          nearestYDist = dist;
-          snapY = yLine;
+      for (const tLine of [bottom, centerY, top]) {
+        for (const yLine of yLines) {
+          const dist = Math.abs(yLine - tLine);
+          if (dist < Gizmo.SNAP_THRESHOLD && dist < minDistY) {
+            minDistY = dist;
+            const offset = tLine - pos.y;
+            snapY = yLine - offset;
+          }
         }
       }
     }
