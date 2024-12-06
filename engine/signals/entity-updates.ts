@@ -7,10 +7,7 @@ export class EntityTransformUpdate {
   /**
    * @param source the entity that originated this transform update (the entity itself or an ancestor)
    */
-  constructor(
-    public source: Entity,
-    public fromNetwork: ConnectionId | undefined,
-  ) {}
+  constructor(public source: Entity, public fromNetwork: ConnectionId | undefined) {}
   [exclusiveSignalType] = Entity;
 }
 

@@ -35,6 +35,7 @@ export class GameSession {
   startedAt = new Date();
 
   #autoSaveInterval: ReturnType<typeof setInterval> | undefined;
+  #autoSaveTimeout: number | undefined;
 
   constructor(
     public parent: GameInstance,
@@ -87,20 +88,33 @@ export class GameSession {
       this.paused = message.paused;
     });
 
-    if (opts.editMode) {
-      const save = async () => {
-        try {
-          const scene = await dumpSceneDefinition(parent);
-          const projectJsonFile = path.join(parent.info.worldDirectory, "project.json");
-          const projectDesc = JSON.parse(await Deno.readTextFile(projectJsonFile));
-          projectDesc.scenes = { ...(projectDesc.scenes ?? {}), main: scene };
-          await Deno.writeTextFile(projectJsonFile, JSON.stringify(projectDesc, undefined, 2));
-        } catch (_err) {
-          // ignore
-        }
-      };
+    this.ipc.addMessageListener("RequestAutoSave", () => {
+      this.triggerAutoSave();
+    });
+  }
 
-      // this.#autoSaveInterval = setInterval(save, 5000);
+  triggerAutoSave() {
+    if (!this.parent.info.editMode) return;
+
+    if (this.#autoSaveTimeout !== undefined) {
+      clearTimeout(this.#autoSaveTimeout);
+    }
+
+    this.#autoSaveTimeout = setTimeout(async () => {
+      this.#autoSaveTimeout = undefined;
+      await this.#save();
+    }, 3000);
+  }
+
+  async #save() {
+    try {
+      const scene = await dumpSceneDefinition(this.parent);
+      const projectJsonFile = path.join(this.parent.info.worldDirectory, "project.json");
+      const projectDesc = JSON.parse(await Deno.readTextFile(projectJsonFile));
+      projectDesc.scenes = { ...(projectDesc.scenes ?? {}), main: scene };
+      await Deno.writeTextFile(projectJsonFile, JSON.stringify(projectDesc, undefined, 2));
+    } catch (err) {
+      console.error("Auto-save failed:", err);
     }
   }
 

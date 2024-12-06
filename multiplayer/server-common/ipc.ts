@@ -68,9 +68,14 @@ interface PauseChangedMessage {
   paused: boolean;
 }
 
+interface RequestAutoSaveMessage {
+  op: "RequestAutoSave";
+}
+
 export type WorkerIPCMessage =
   | WorkerUpMessage
   | OutgoingPacketMessage
   | ReportRichStatusMessage
   | SceneDefinitionResponseMessage
-  | PauseChangedMessage;
+  | PauseChangedMessage
+  | RequestAutoSaveMessage;
