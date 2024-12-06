@@ -7,6 +7,7 @@ import markdownit from "npm:markdown-it@14.1.0";
 import hljs from "npm:highlight.js/lib/core";
 import typescript from "npm:highlight.js/lib/languages/typescript";
 import javascript from "npm:highlight.js/lib/languages/javascript";
+import { buildScriptMap } from "./files.ts";
 hljs.registerLanguage("typescript", typescript);
 hljs.registerLanguage("javascript", javascript);
 
@@ -123,6 +124,20 @@ export class Assistant {
 
     this.showSuggestions();
     this.container.append(this.#section);
+
+    const urlParams = new URLSearchParams(window.location.search);
+
+    const websocketServer = urlParams.get("server");
+    const instance = urlParams.get("instance");
+
+    const httpServer = websocketServer
+      ? websocketServer.replace(/^wss:/, "https:").replace(/^ws:/, "http:")
+      : null;
+
+    ScriptSession.httpServer = httpServer!;
+    ScriptSession.instance = instance!;
+
+    buildScriptMap();
   }
 
   async sendMessage(): Promise<void> {
@@ -520,8 +535,10 @@ export interface ContextItem {
 }
 
 export type ChatbotContext = ContextItem[];
-class ScriptSession {
+export class ScriptSession {
   public static chatContext: ChatbotContext = [];
   public static chatState: "step0" | "step1" | "step2" | "followup" = "step0";
   public static chatDocumentation: string = "";
+  public static httpServer: string;
+  public static instance: string;
 }
