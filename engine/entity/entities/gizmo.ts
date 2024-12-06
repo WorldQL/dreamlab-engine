@@ -75,6 +75,7 @@ export class Gizmo extends Entity {
 
   public static readonly icon = "➡️";
   static readonly SNAP_THRESHOLD = 0.1;
+  static readonly POSITION_TOLERANCE = 0.001;
   readonly bounds: undefined;
 
   // #region Graphics
@@ -516,15 +517,25 @@ export class Gizmo extends Entity {
     const xLines: number[] = [];
     const yLines: number[] = [];
 
+    if (!this.#target) return { xLines, yLines };
+
+    const targetPos = this.#target.pos;
+
     for (const e of entities) {
       if (e === this.#target) continue;
       const size = e.bounds;
       if (!size) continue;
 
+      const pos = e.pos;
+      const dx = pos.x - targetPos.x;
+      const dy = pos.y - targetPos.y;
+      const distSquared = dx * dx + dy * dy;
+      if (distSquared < Gizmo.POSITION_TOLERANCE * Gizmo.POSITION_TOLERANCE) {
+        continue;
+      }
+
       const halfW = size.x / 2;
       const halfH = size.y / 2;
-
-      const pos = e.pos;
 
       const left = pos.x - halfW;
       const right = pos.x + halfW;
