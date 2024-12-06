@@ -100,7 +100,7 @@ export class GameSession {
         }
       };
 
-      this.#autoSaveInterval = setInterval(save, 30000);
+      // this.#autoSaveInterval = setInterval(save, 5000);
     }
   }
 
