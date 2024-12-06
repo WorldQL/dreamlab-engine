@@ -126,21 +126,50 @@ export class PrefabViewer {
 
         const selectedService = SelectedEntityService.serviceForGame(this.game);
         if (!selectedService) return;
-        if (selectedService.entities.length === 0)
+
+        const canvas = this.game.renderer.app.canvas;
+        const screenPos = this.game.inputs.cursor.screen;
+        if (!screenPos) {
+          this.currentDragSource = undefined;
+          return;
+        }
+
+        if (
+          screenPos.x < 0 ||
+          screenPos.y < 0 ||
+          screenPos.x > canvas.width ||
+          screenPos.y > canvas.height
+        ) {
+          this.currentDragSource = undefined;
+          return;
+        }
+
+        if (selectedService.entities.length === 0) {
           selectedService.entities = [this.game.world._.EditEntities._.world];
-        const entity = selectedService?.entities.at(0);
-        if (entity && selectedService?.entities.length === 1) {
-          this.currentDragSource?.entities.forEach(e => {
-            const newEntity = e.cloneInto(entity, {
-              transform: { position: this.game.inputs.cursor.world },
+        }
+
+        const parentEntity = selectedService.entities.at(0);
+        if (parentEntity && selectedService.entities.length === 1 && this.currentDragSource) {
+          const spawnPosition = this.game.inputs.cursor.world;
+
+          const newEntities: Entity[] = [];
+          this.currentDragSource.entities.forEach(e => {
+            const newEntity = e.cloneInto(parentEntity, {
+              transform: { position: spawnPosition },
             });
             UndoRedoManager._.push({
               t: "create-entity",
-              parentRef: entity.ref,
+              parentRef: parentEntity.ref,
               def: newEntity.getDefinition(),
             });
+            newEntities.push(newEntity);
           });
+
+          if (newEntities.length > 0) {
+            selectedService.entities = [newEntities[newEntities.length - 1]];
+          }
         }
+
         this.currentDragSource = undefined;
       }, 20);
     });
