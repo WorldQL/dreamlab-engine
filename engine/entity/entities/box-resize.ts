@@ -8,7 +8,7 @@ import { Camera } from "./camera.ts";
 import { ClickableRect } from "./clickable.ts";
 import { Empty } from "./empty.ts";
 import { GizmoRotateEnd, GizmoTranslateEnd } from "./gizmo.ts";
-import { SolidColor } from "./solid-color.ts";
+import { ColoredSquare } from "./colored-square.ts";
 
 export class BoxResizeGizmoResizeEnd {
   constructor(
@@ -184,7 +184,7 @@ export class BoxResizeGizmo extends Entity {
         const height = clickable.height;
 
         clickable.spawn({
-          type: SolidColor,
+          type: ColoredSquare,
           name: "__DEBUG__",
           transform: { z: Number.MAX_SAFE_INTEGER },
           values: { width, height, color },
