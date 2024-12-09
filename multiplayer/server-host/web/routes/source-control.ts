@@ -1,8 +1,8 @@
 import { z } from "@dreamlab/vendor/zod.ts";
-import { Router, Status } from "../../deps/oak.ts";
-import { JsonAPIError } from "../util/api.ts";
-import { GameInstance } from "../../instance.ts";
 import { CONFIG } from "../../config.ts";
+import { Router, Status } from "../../deps/oak.ts";
+import { GameInstance } from "../../instance.ts";
+import { JsonAPIError } from "../util/api.ts";
 
 import * as fs from "jsr:@std/fs@1";
 import * as path from "jsr:@std/path@1";
@@ -458,6 +458,10 @@ export const serveSourceControlAPI = (router: Router) => {
       };
     } catch (error) {
       throw new JsonAPIError(Status.InternalServerError, error.message);
+    }
+
+    if (filePath === "project.json") {
+      instance.session?.ipc.send({ op: "ReloadEditScene" });
     }
   });
 
