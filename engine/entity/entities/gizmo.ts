@@ -76,6 +76,10 @@ export class Gizmo extends Entity {
   public static readonly icon = "➡️";
   static readonly SNAP_THRESHOLD = 0.3;
   static readonly POSITION_TOLERANCE = 0.001;
+
+  // A small threshold to prevent jittery resnapping:
+  static readonly DEAD_ZONE = 0.05;
+
   readonly bounds: undefined;
 
   // #region Graphics
@@ -187,10 +191,8 @@ export class Gizmo extends Entity {
 
   // #region Handles
   #updateHandles() {
-    // Destroy existing chilldren
     this.children.forEach(c => c.destroy());
 
-    // Don't spawn handles if no target entity
     if (!this.#target) return;
 
     if (this.mode === "translate") this.#translateHandles();
@@ -231,6 +233,7 @@ export class Gizmo extends Entity {
         if (!this.#target) return;
         if (button !== "left") return;
 
+        this.#clearSnapLines();
         const offset = world.sub(this.globalTransform.position);
         const original = this.#target.pos.clone();
         this.#action = { type: "translate", axis, offset, original };
@@ -255,6 +258,7 @@ export class Gizmo extends Entity {
       if (!this.#target) return;
       if (button !== "left") return;
 
+      this.#clearSnapLines();
       const pos = world.sub(this.globalTransform.position);
       const rot = Math.atan2(pos.x, pos.y);
       const original = this.#target.globalTransform.rotation;
@@ -295,6 +299,7 @@ export class Gizmo extends Entity {
         if (!this.#target) return;
         if (button !== "left") return;
 
+        this.#clearSnapLines();
         const offset = world.sub(this.globalTransform.position);
         const original = isCamera(this.#target)
           ? Vector2.splat(1 / this.#target.zoom)
@@ -363,6 +368,7 @@ export class Gizmo extends Entity {
         if (!this.#target) return;
         if (button !== "left") return;
 
+        this.#clearSnapLines();
         const offset = world.sub(this.globalTransform.position);
         const original = this.#target.pos.clone();
         this.#action = { type: "translate", axis, offset, original };
@@ -377,6 +383,7 @@ export class Gizmo extends Entity {
       if (!this.#target) return;
       if (button !== "left") return;
 
+      this.#clearSnapLines();
       const pos = world.sub(this.globalTransform.position);
       const rot = Math.atan2(pos.x, pos.y);
       const original = this.#target.globalTransform.rotation;
@@ -391,6 +398,7 @@ export class Gizmo extends Entity {
         if (!this.#target) return;
         if (button !== "left") return;
 
+        this.#clearSnapLines();
         const offset = world.sub(this.globalTransform.position);
         const original = isCamera(this.#target)
           ? Vector2.splat(1 / this.#target.zoom)
@@ -412,33 +420,230 @@ export class Gizmo extends Entity {
     | { type: "scale"; axis: "x" | "y" | "both"; offset: Vector2; original: Vector2 }
     | undefined;
 
+  // Snap lock fields:
+  #snappedXLine: number | null = null;
+  #snappedYLine: number | null = null;
+
+  #clearSnapLines() {
+    this.#snappedXLine = null;
+    this.#snappedYLine = null;
+  }
+
+  // Helper to get global bounding lines for an entity
+  static getGlobalBoundingLines(
+    entity: Entity,
+  ): {
+    left: number;
+    right: number;
+    top: number;
+    bottom: number;
+    centerX: number;
+    centerY: number;
+  } | null {
+    const size = entity.bounds;
+    if (!size) return null;
+
+    const pos = entity.globalTransform.position;
+    const scale = entity.globalTransform.scale;
+    const rotation = entity.globalTransform.rotation;
+
+    const halfW = size.x / 2;
+    const halfH = size.y / 2;
+
+    const corners = [
+      { x: -halfW, y: -halfH },
+      { x: halfW, y: -halfH },
+      { x: halfW, y: halfH },
+      { x: -halfW, y: halfH },
+    ];
+
+    const cosR = Math.cos(rotation);
+    const sinR = Math.sin(rotation);
+
+    for (const c of corners) {
+      // scale
+      c.x *= scale.x;
+      c.y *= scale.y;
+      // rotate
+      const rx = c.x * cosR - c.y * sinR;
+      const ry = c.x * sinR + c.y * cosR;
+      c.x = rx;
+      c.y = ry;
+      // translate
+      c.x += pos.x;
+      c.y += pos.y;
+    }
+
+    const xs = corners.map(c => c.x);
+    const ys = corners.map(c => c.y);
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+    const minY = Math.min(...ys);
+    const maxY = Math.max(...ys);
+
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+
+    return { left: minX, right: maxX, top: maxY, bottom: minY, centerX, centerY };
+  }
+
+  #getSnapCandidates(entities: Entity[]): { xLines: number[]; yLines: number[] } {
+    const xLines: number[] = [];
+    const yLines: number[] = [];
+
+    if (!this.#target) return { xLines, yLines };
+
+    const targetLines = Gizmo.getGlobalBoundingLines(this.#target);
+    if (!targetLines) return { xLines, yLines };
+
+    for (const e of entities) {
+      if (e === this.#target) continue;
+      const lines = Gizmo.getGlobalBoundingLines(e);
+      if (!lines) continue;
+
+      const dx = lines.centerX - targetLines.centerX;
+      const dy = lines.centerY - targetLines.centerY;
+      const distSquared = dx * dx + dy * dy;
+      if (distSquared < Gizmo.POSITION_TOLERANCE * Gizmo.POSITION_TOLERANCE) {
+        continue;
+      }
+
+      xLines.push(lines.left, lines.centerX, lines.right);
+      yLines.push(lines.bottom, lines.centerY, lines.top);
+    }
+
+    return { xLines, yLines };
+  }
+
+  #trySnapPosition(
+    pos: Vector2,
+    entities: Entity[],
+    axis: "x" | "y" | "both",
+    shiftKey: boolean,
+  ): Vector2 {
+    if (!shiftKey) {
+      // If shift is not held, no snapping
+      this.#clearSnapLines();
+      return pos;
+    }
+
+    // If we already snapped to a line, check dead zone
+    if ((axis === "x" || axis === "both") && this.#snappedXLine !== null) {
+      if (Math.abs(this.#snappedXLine - pos.x) < Gizmo.DEAD_ZONE) {
+        pos.x = this.#snappedXLine;
+      } else {
+        this.#snappedXLine = null;
+      }
+    }
+
+    if ((axis === "y" || axis === "both") && this.#snappedYLine !== null) {
+      if (Math.abs(this.#snappedYLine - pos.y) < Gizmo.DEAD_ZONE) {
+        pos.y = this.#snappedYLine;
+      } else {
+        this.#snappedYLine = null;
+      }
+    }
+
+    // If we are still snapped on both axes or no need to find new snaps, return early
+    if (
+      (axis === "x" || axis === "both") &&
+      this.#snappedXLine !== null &&
+      (axis === "y" || axis === "both") &&
+      this.#snappedYLine !== null
+    ) {
+      return pos;
+    }
+    if (axis === "x" && this.#snappedXLine !== null && axis !== "y") return pos;
+    if (axis === "y" && this.#snappedYLine !== null && axis !== "x") return pos;
+
+    const { xLines, yLines } = this.#getSnapCandidates(entities);
+    const targetLines = Gizmo.getGlobalBoundingLines(this.#target!);
+    if (!targetLines) return pos;
+
+    const halfW = (targetLines.right - targetLines.left) / 2;
+    const halfH = (targetLines.top - targetLines.bottom) / 2;
+
+    const left = pos.x - halfW;
+    const right = pos.x + halfW;
+    const centerX = pos.x;
+
+    const bottom = pos.y - halfH;
+    const top = pos.y + halfH;
+    const centerY = pos.y;
+
+    let bestXDist = Infinity;
+    let bestXValue = pos.x;
+    if (axis === "x" || axis === "both") {
+      for (const tLine of [left, centerX, right]) {
+        for (const xLine of xLines) {
+          const dist = Math.abs(xLine - tLine);
+          if (dist < Gizmo.SNAP_THRESHOLD && dist < bestXDist) {
+            bestXDist = dist;
+            const offset = tLine - pos.x;
+            bestXValue = xLine - offset;
+          }
+        }
+      }
+    }
+
+    let bestYDist = Infinity;
+    let bestYValue = pos.y;
+    if (axis === "y" || axis === "both") {
+      for (const tLine of [bottom, centerY, top]) {
+        for (const yLine of yLines) {
+          const dist = Math.abs(yLine - tLine);
+          if (dist < Gizmo.SNAP_THRESHOLD && dist < bestYDist) {
+            bestYDist = dist;
+            const offset = tLine - pos.y;
+            bestYValue = yLine - offset;
+          }
+        }
+      }
+    }
+
+    // Apply the best snap found
+    if (bestXDist < Infinity && (axis === "x" || axis === "both")) {
+      pos.x = bestXValue;
+      this.#snappedXLine = pos.x;
+    }
+    if (bestYDist < Infinity && (axis === "y" || axis === "both")) {
+      pos.y = bestYValue;
+      this.#snappedYLine = pos.y;
+    }
+
+    return pos;
+  }
+
   #onMouseMove = (event: PointerEvent) => {
-    if (!this.#target) return;
-    if (!this.#action) return;
+    if (!this.#target || !this.#action) return;
 
     const cursor = this.inputs.cursor;
     if (!cursor.world) return;
 
     if (this.#action.type === "translate") {
-      const pos = cursor.world.sub(this.#action.offset);
+      let pos = cursor.world.sub(this.#action.offset);
 
+      // Convert to local space and constrain axis
       const local = pointWorldToLocal(this.globalTransform, pos);
       if (this.#action.axis === "x") local.y = 0;
       if (this.#action.axis === "y") local.x = 0;
-      let world = pointLocalToWorld(this.globalTransform, local);
+      pos = pointLocalToWorld(this.globalTransform, local);
 
-      if (event.shiftKey) {
-        const allEntities = Array.from(this.game.entities);
-        world = this.#snapPosition(world, allEntities, this.#action.axis);
-      }
+      pos = this.#trySnapPosition(
+        pos,
+        Array.from(this.game.entities),
+        this.#action.axis,
+        event.shiftKey,
+      );
 
-      this.fire(GizmoTranslateMove, this.#target, world.clone());
-      this.#target.globalTransform.position = world;
+      this.fire(GizmoTranslateMove, this.#target, pos.clone());
+      this.#target.globalTransform.position = pos;
     } else if (this.#action.type === "rotate") {
       const pos = cursor.world.sub(this.globalTransform.position);
       const rot = Math.atan2(pos.x, pos.y);
 
       const rotation = -rot + this.#action.offset;
+      // For rotation, you could also implement snapping to certain angles if needed
       this.fire(GizmoRotateMove, this.#target, rotation);
       this.#target.globalTransform.rotation = rotation;
     } else if (this.#action.type === "scale") {
@@ -499,125 +704,24 @@ export class Gizmo extends Entity {
         GizmoScaleEnd,
         this.#target,
         this.#action.original.clone(),
-        this.#target.globalTransform.scale.clone(),
+        isCamera(this.#target)
+          ? Vector2.splat(1 / this.#target.zoom)
+          : this.#target.globalTransform.scale.clone(),
       );
       this.game.fire(
         GizmoScaleEnd,
         this.#target,
         this.#action.original.clone(),
-        this.#target.globalTransform.scale.clone(),
+        isCamera(this.#target)
+          ? Vector2.splat(1 / this.#target.zoom)
+          : this.#target.globalTransform.scale.clone(),
       );
     }
 
     this.#action = undefined;
+    this.#clearSnapLines();
   };
   // #endregion
-
-  #getSnapCandidates(entities: Entity[]): { xLines: number[]; yLines: number[] } {
-    const xLines: number[] = [];
-    const yLines: number[] = [];
-
-    if (!this.#target) return { xLines, yLines };
-
-    // Use global position and scaled bounds for the target entity
-    const targetPos = this.#target.globalTransform.position;
-    const targetScale = this.#target.globalTransform.scale;
-    const targetBounds = this.#target.bounds
-      ? new Vector2(
-          this.#target.bounds.x * Math.abs(targetScale.x),
-          this.#target.bounds.y * Math.abs(targetScale.y),
-        )
-      : undefined;
-
-    for (const e of entities) {
-      if (e === this.#target) continue;
-      if (!e.bounds) continue;
-
-      // Use global position and scaled bounds for other entities
-      const pos = e.globalTransform.position;
-      const scale = e.globalTransform.scale;
-      const size = new Vector2(e.bounds.x * Math.abs(scale.x), e.bounds.y * Math.abs(scale.y));
-
-      const dx = pos.x - targetPos.x;
-      const dy = pos.y - targetPos.y;
-      const distSquared = dx * dx + dy * dy;
-      if (distSquared < Gizmo.POSITION_TOLERANCE * Gizmo.POSITION_TOLERANCE) {
-        continue;
-      }
-
-      const halfW = size.x / 2;
-      const halfH = size.y / 2;
-
-      const left = pos.x - halfW;
-      const right = pos.x + halfW;
-      const bottom = pos.y - halfH;
-      const top = pos.y + halfH;
-      const centerX = pos.x;
-      const centerY = pos.y;
-
-      xLines.push(left, centerX, right);
-      yLines.push(bottom, centerY, top);
-    }
-
-    return { xLines, yLines };
-  }
-
-  #snapPosition(pos: Vector2, entities: Entity[], axis: "x" | "y" | "both"): Vector2 {
-    if (!this.#target?.bounds) return pos;
-
-    // Get scaled target bounds and global position
-    const { xLines, yLines } = this.#getSnapCandidates(entities);
-    const tPos = this.#target.globalTransform.position;
-    const tScale = this.#target.globalTransform.scale;
-    const size = new Vector2(
-      this.#target.bounds.x * Math.abs(tScale.x),
-      this.#target.bounds.y * Math.abs(tScale.y),
-    );
-
-    const halfW = size.x / 2;
-    const halfH = size.y / 2;
-
-    const left = pos.x - halfW;
-    const right = pos.x + halfW;
-    const centerX = pos.x;
-
-    const bottom = pos.y - halfH;
-    const top = pos.y + halfH;
-    const centerY = pos.y;
-
-    let snapX = pos.x;
-    let snapY = pos.y;
-    let minDistX = Infinity;
-    let minDistY = Infinity;
-
-    if (axis === "x" || axis === "both") {
-      for (const tLine of [left, centerX, right]) {
-        for (const xLine of xLines) {
-          const dist = Math.abs(xLine - tLine);
-          if (dist < Gizmo.SNAP_THRESHOLD && dist < minDistX) {
-            minDistX = dist;
-            const offset = tLine - pos.x;
-            snapX = xLine - offset;
-          }
-        }
-      }
-    }
-
-    if (axis === "y" || axis === "both") {
-      for (const tLine of [bottom, centerY, top]) {
-        for (const yLine of yLines) {
-          const dist = Math.abs(yLine - tLine);
-          if (dist < Gizmo.SNAP_THRESHOLD && dist < minDistY) {
-            minDistY = dist;
-            const offset = tLine - pos.y;
-            snapY = yLine - offset;
-          }
-        }
-      }
-    }
-
-    return new Vector2(snapX, snapY);
-  }
 
   #target: Entity | undefined;
   get target(): Entity | undefined {
@@ -632,7 +736,7 @@ export class Gizmo extends Entity {
   constructor(ctx: EntityContext) {
     super(ctx);
 
-    // Must be a local entity
+    // Must be a local entity on the client
     if (ctx.parent !== this.game.local || !this.game.isClient()) {
       throw new Error(`${this.constructor.name} must be spawned as a local client entity`);
     }
