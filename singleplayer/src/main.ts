@@ -28,10 +28,7 @@ const game = new ClientGame({
   worldId,
   network: network.createNetworking(),
 });
-game.worldScriptBaseURL = new URL(
-  `./worlds/${worldId}/_dist_singleplayer/`,
-  window.location.href,
-).toString();
+game.worldScriptBaseURL = new URL(`./worlds/${worldId}/`, window.location.href).toString();
 
 Object.defineProperty(globalThis, "game", { value: game });
 

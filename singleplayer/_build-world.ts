@@ -1,5 +1,5 @@
-import { copy, ensureDir } from "jsr:@std/fs@1";
-import { dirname } from "jsr:@std/path@1";
+import { ensureDir } from "jsr:@std/fs@1";
+import { dirname, relative } from "jsr:@std/path@1";
 import { bundleWorld } from "../build-system/mod.ts";
 
 export async function bundleSingleplayerWorld(worldId: string) {
@@ -7,15 +7,15 @@ export async function bundleSingleplayerWorld(worldId: string) {
   // 2.
 
   const sourceWorldDir = "../multiplayer/worlds/" + worldId;
-  const worldDir = "./web/worlds/" + worldId;
+  const targetWorldDir = "./web/worlds/" + worldId;
+  const rel = relative(sourceWorldDir, targetWorldDir);
 
-  await ensureDir(dirname(worldDir));
-  await copy(sourceWorldDir, worldDir, { overwrite: true });
+  await ensureDir(dirname(targetWorldDir));
 
   await bundleWorld(worldId, {
     denoJsonPath: "./deno.json",
-    dir: worldDir,
-    outDirName: "_dist_singleplayer",
+    dir: sourceWorldDir,
+    outDirName: rel,
   });
 }
 
