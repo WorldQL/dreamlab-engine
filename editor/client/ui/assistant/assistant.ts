@@ -1,7 +1,7 @@
 import { ClientGame } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 import { InspectorUI } from "../inspector.ts";
-import { Book, Check, Copy, icon, PlusCircle, RotateCcw, Send } from "../../_icons.ts";
+import { Book, Check, CircleDotDashed, Clock, Copy, icon, Loader, PlusCircle, RotateCcw, Send } from "../../_icons.ts";
 import { fileContents, step0, step1, step2 } from "./prompts.ts";
 import markdownit from "npm:markdown-it@14.1.0";
 import hljs from "npm:highlight.js/lib/core";
@@ -255,43 +255,43 @@ export class Assistant {
       const chunk = decoder.decode(value);
       const events = chunk.split("\n\n");
 
-      for (const event of events) {
-        if (event.trim() !== "") {
-          const [, data] = event.split("data: ");
-          if (data) {
-            try {
-              const d = JSON.parse(data);
-              if (d.done) break;
+      // for (const event of events) {
+      //   if (event.trim() !== "") {
+      //     const [, data] = event.split("data: ");
+      //     if (data) {
+      //       try {
+      //         const d = JSON.parse(data);
+      //         if (d.done) break;
 
-              if (d.error) throw new Error(d.error);
+      //         if (d.error) throw new Error(d.error);
 
-              let line: string = d.text;
-              accumulatedText += line;
+      //         let line: string = d.text;
+      //         accumulatedText += line;
 
-              if (accumulatedText.includes("<selected_topics>") && !isHandlingSelectedTopics) {
-                isHandlingSelectedTopics = true;
-                selectedTopicsText = "<selected_topics>";
-                continue;
-              }
+      //         if (accumulatedText.includes("<selected_topics>") && !isHandlingSelectedTopics) {
+      //           isHandlingSelectedTopics = true;
+      //           selectedTopicsText = "<selected_topics>";
+      //           continue;
+      //         }
 
-              if (isHandlingSelectedTopics) {
-                selectedTopicsText += d.text;
-                if (selectedTopicsText.includes("</selected_topics>")) {
-                  this.handleSelectedTopics(botMessageElement, selectedTopicsText, prompt);
-                  isHandlingSelectedTopics = false;
-                  accumulatedText = "";
-                  return;
-                }
-              } else {
-                const renderedContent = md.render(accumulatedText);
-                this.renderContent(botMessageElement, renderedContent);
-              }
-            } catch (error) {
-              console.error("Error parsing JSON:", error);
-            }
-          }
-        }
-      }
+      //         if (isHandlingSelectedTopics) {
+      //           selectedTopicsText += d.text;
+      //           if (selectedTopicsText.includes("</selected_topics>")) {
+      //             this.handleSelectedTopics(botMessageElement, selectedTopicsText, prompt);
+      //             isHandlingSelectedTopics = false;
+      //             accumulatedText = "";
+      //             return;
+      //           }
+      //         } else {
+      //           const renderedContent = md.render(accumulatedText);
+      //           this.renderContent(botMessageElement, renderedContent);
+      //         }
+      //       } catch (error) {
+      //         console.error("Error parsing JSON:", error);
+      //       }
+      //     }
+      //   }
+      // }
     }
 
     ScriptSession.chatContext.push({
@@ -299,17 +299,34 @@ export class Assistant {
       content: accumulatedText,
     });
 
-    if (ScriptSession.chatState !== "step0" && ScriptSession.chatState !== "step1") {
-      this.#isChatbotReplying = false;
-      this.#chatInput.disabled = false;
-      this.#sendButton.disabled = false;
-      this.#newChatButton.disabled = false; // Re-enable new chat button
-      this.#chatInput.placeholder = "Type your message...";
-      this.#chatInput.classList.remove("disabled-input");
-      this.#chatInput.focus();
-    } else if (ScriptSession.chatState === "step0") {
-      ScriptSession.chatState = "step1";
-      this.fetchChatbotBehavior(prompt);
+    // if (ScriptSession.chatState !== "step0" && ScriptSession.chatState !== "step1") {
+    //   this.#isChatbotReplying = false;
+    //   this.#chatInput.disabled = false;
+    //   this.#sendButton.disabled = false;
+    //   this.#newChatButton.disabled = false; // Re-enable new chat button
+    //   this.#chatInput.placeholder = "Type your message...";
+    //   this.#chatInput.classList.remove("disabled-input");
+    //   this.#chatInput.focus();
+    // } else if (ScriptSession.chatState === "step0") {
+    //   ScriptSession.chatState = "step1";
+    //   this.fetchChatbotBehavior(prompt);
+    // }
+
+    if (ScriptSession.chatState === "step0") {
+      const stepsContainer = elem("div", { className: "chat-steps-container" });
+      const steps = [
+        [icon(Check), "Looking at docs"],
+        [icon(Check), "Analyzing project"],
+        [icon(Loader), "Writing new code"],
+        [icon(Clock), "Creating Prefabs"],
+      ];
+
+      for (const step of steps) {
+        const stepElement = elem("div", { className: "chat-step" }, step);
+        stepsContainer.appendChild(stepElement);
+      }
+
+      botMessageElement.appendChild(stepsContainer);
     }
 
     observer.disconnect();
@@ -321,7 +338,9 @@ export class Assistant {
         if (lang && hljs.getLanguage(lang)) {
           try {
             return hljs.highlight(str, { language: lang }).value;
-          } catch (__) {}
+          } catch (__) {
+            // dont blow up
+          }
         }
         return ""; // use external default escaping
       },
@@ -354,6 +373,7 @@ export class Assistant {
 
       if (topic in fileContents) {
         collectedDocumentation += `\`\`\`typescript
+  // deno-lint-ignore no-explicit-any
   ${(fileContents as any)[topic]}
   \`\`\`\n`;
       } else {
