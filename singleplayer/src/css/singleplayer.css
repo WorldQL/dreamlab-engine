@@ -1,9 +1,19 @@
 @import url(https://cdn.jsdelivr.net/npm/modern-normalize@3.0.0/modern-normalize.css);
 
+:root {
+  --color-text: 255 255 255;
+  --color-bg-0: 0 0 0;
+}
+
 html,
 body {
   color: rgb(var(--color-text));
   background: rgb(var(--color-bg-0) / 1);
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
 }
 
 #viewport {
@@ -15,4 +25,19 @@ body {
     height: 100%;
     overflow: hidden;
   }
+}
+
+body > #loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+
+  color: rgb(var(--color-text));
+  background: rgb(var(--color-bg-0) / 1);
+
+  width: 100vw;
+  height: 100vh;
+  position: absolute;
+  z-index: 99;
 }
