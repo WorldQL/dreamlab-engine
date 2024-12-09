@@ -1,0 +1,26 @@
+{
+  "lock": false,
+  "tasks": {
+    "build": "deno run -A ../client/_build.ts",
+    "watch": "deno run -A ../client/_build.ts --watch --serve-port 5181"
+  },
+  "imports": {
+    "@dreamlab/engine": "../engine/mod.ts",
+    "@dreamlab/engine/internal": "../engine/internal.ts",
+    "@dreamlab/vendor/": "../engine/_deps/",
+    "@dreamlab/proto/": "../proto/",
+    "@dreamlab/scene": "../scene-graph/mod.ts",
+    "@dreamlab/ui": "../ui/mod.ts",
+    "@dreamlab/util/": "../util/",
+    "env": "data:application/javascript,export default {}"
+  },
+  "compilerOptions": {
+    "lib": ["deno.window", "dom"]
+  },
+  "exclude": ["./web/dist/*"],
+  "lint": {
+    "rules": {
+      "exclude": ["no-window"]
+    }
+  }
+}
