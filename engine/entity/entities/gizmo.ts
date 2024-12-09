@@ -519,14 +519,25 @@ export class Gizmo extends Entity {
 
     if (!this.#target) return { xLines, yLines };
 
-    const targetPos = this.#target.pos;
+    // Use global position and scaled bounds for the target entity
+    const targetPos = this.#target.globalTransform.position;
+    const targetScale = this.#target.globalTransform.scale;
+    const targetBounds = this.#target.bounds
+      ? new Vector2(
+          this.#target.bounds.x * Math.abs(targetScale.x),
+          this.#target.bounds.y * Math.abs(targetScale.y),
+        )
+      : undefined;
 
     for (const e of entities) {
       if (e === this.#target) continue;
-      const size = e.bounds;
-      if (!size) continue;
+      if (!e.bounds) continue;
 
-      const pos = e.pos;
+      // Use global position and scaled bounds for other entities
+      const pos = e.globalTransform.position;
+      const scale = e.globalTransform.scale;
+      const size = new Vector2(e.bounds.x * Math.abs(scale.x), e.bounds.y * Math.abs(scale.y));
+
       const dx = pos.x - targetPos.x;
       const dy = pos.y - targetPos.y;
       const distSquared = dx * dx + dy * dy;
@@ -541,7 +552,6 @@ export class Gizmo extends Entity {
       const right = pos.x + halfW;
       const bottom = pos.y - halfH;
       const top = pos.y + halfH;
-
       const centerX = pos.x;
       const centerY = pos.y;
 
@@ -555,19 +565,25 @@ export class Gizmo extends Entity {
   #snapPosition(pos: Vector2, entities: Entity[], axis: "x" | "y" | "both"): Vector2 {
     if (!this.#target?.bounds) return pos;
 
+    // Get scaled target bounds and global position
     const { xLines, yLines } = this.#getSnapCandidates(entities);
-    const size = this.#target.bounds;
+    const tPos = this.#target.globalTransform.position;
+    const tScale = this.#target.globalTransform.scale;
+    const size = new Vector2(
+      this.#target.bounds.x * Math.abs(tScale.x),
+      this.#target.bounds.y * Math.abs(tScale.y),
+    );
+
     const halfW = size.x / 2;
     const halfH = size.y / 2;
 
-    const tPos = pos;
-    const left = tPos.x - halfW;
-    const right = tPos.x + halfW;
-    const centerX = tPos.x;
+    const left = pos.x - halfW;
+    const right = pos.x + halfW;
+    const centerX = pos.x;
 
-    const bottom = tPos.y - halfH;
-    const top = tPos.y + halfH;
-    const centerY = tPos.y;
+    const bottom = pos.y - halfH;
+    const top = pos.y + halfH;
+    const centerY = pos.y;
 
     let snapX = pos.x;
     let snapY = pos.y;
