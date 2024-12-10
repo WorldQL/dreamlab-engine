@@ -453,10 +453,17 @@ export class Gizmo extends Entity {
           if (e.id === "game.local._.Gizmo" || e.parent?.id === "game.local._.Gizmo") continue;
           if (e.id.includes("__EditorMetadata")) continue;
           if (!e.parent) continue;
-          if (e.constructor.name === "Camera") continue;
+          // constructor.name checks because imports sometimes cause circular import issues
+          if (e.constructor.name === "Camera" || e.constructor.name === "EditorFacadeCamera")
+            continue;
+          if (e.id === "game.world._.EditEntities") continue;
+          if (e.constructor.name === "WorldRootFacade") continue;
+          if (e.constructor.name === "ServerRootFacade") continue;
+          if (e.constructor.name === "LocalRootFacade") continue;
+          if (e.constructor.name === "PrefabRootFacade") continue;
 
-          const distanceFromTarget = this.#target.pos.distance(e.pos);
-          console.log(distanceFromTarget, e.id, e.parent?.id);
+          // const distanceFromTarget = this.#target.pos.distance(e.pos);
+          // console.log(distanceFromTarget, e.id, e.parent?.id);
 
           const entityBounds = this.#computeGlobalBounds(e);
 
@@ -484,27 +491,37 @@ export class Gizmo extends Entity {
           }
 
           if (this.#action.axis === "y" || this.#action.axis === "both") {
-            // Check top/bottom edges
+            // Parallel top alignment (target's top to entity's top)
             const dyTop = entityBounds.minY - targetBounds.minY;
             if (Math.abs(dyTop) < snapThreshold) {
               snapY = snapY === undefined ? world.y + dyTop : snapY;
             }
-            
-            // Align bottom edges (maxY with maxY)
+
+            // Parallel bottom alignment (target's bottom to entity's bottom)
             const dyBottom = entityBounds.maxY - targetBounds.maxY;
             if (Math.abs(dyBottom) < snapThreshold) {
               snapY = snapY === undefined ? world.y + dyBottom : snapY;
             }
 
-            // Check center alignment vertically
+            // Touching: target’s top (minY) to entity’s bottom (maxY)
+            const dyTopTouch = entityBounds.maxY - targetBounds.minY;
+            if (Math.abs(dyTopTouch) < snapThreshold) {
+              snapY = snapY === undefined ? world.y + dyTopTouch : snapY;
+            }
+
+            // Touching: target’s bottom (maxY) to entity’s top (minY)
+            const dyBottomTouch = entityBounds.minY - targetBounds.maxY;
+            if (Math.abs(dyBottomTouch) < snapThreshold) {
+              snapY = snapY === undefined ? world.y + dyBottomTouch : snapY;
+            }
+
+            // Center alignment vertically
             const dyCenter = entityCenterY - targetCenterY;
             if (Math.abs(dyCenter) < snapThreshold) {
               snapY = snapY === undefined ? world.y + dyCenter : snapY;
             }
           }
         }
-
-        console.log(snapX, snapY);
 
         // Apply any snap adjustments
         if (snapX !== undefined) world.x = snapX;
