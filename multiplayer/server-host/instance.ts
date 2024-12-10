@@ -29,6 +29,8 @@ export interface GameInstanceInfo {
   editMode?: boolean;
 
   inspect?: string;
+
+  variant?: string;
 }
 
 export class GameInstance {
@@ -237,7 +239,11 @@ export const bootInstance = async (instance: GameInstance, restart: boolean = fa
 
   try {
     instance.setStatus(GameInstanceState.Starting, "Building world scripts");
-    await buildWorld(instance.info.worldId, instance.info.worldDirectory, "_dist");
+    await buildWorld(
+      instance.info.worldId,
+      instance.info.worldDirectory,
+      instance.info.variant ? `_dist_${instance.info.variant}` : "_dist",
+    );
   } catch (err) {
     instance.logs.error("Failed to build world bundle", { err: err.stack });
     instance.setStatus(GameInstanceState.Errored, "World script build failed", err.toString());

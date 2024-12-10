@@ -40,7 +40,7 @@ export class GameSession {
     public parent: GameInstance,
     opts: GameSessionOpts = {
       editMode: parent.info.editMode ?? false,
-      worldSubDirectory: "_dist",
+      worldSubDirectory: parent.info.variant ? `_dist_${parent.info.variant}` : "_dist",
     },
   ) {
     const addr = CONFIG.bindAddress;

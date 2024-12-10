@@ -2,6 +2,7 @@ import { oakCors } from "https://deno.land/x/cors@v1.2.2/mod.ts";
 import { Application, Router, Status } from "../deps/oak.ts";
 import { handleJsonAPIErrors } from "./util/api.ts";
 
+import { serveDiscordRoutes } from "./routes/discord.ts";
 import { serveInstanceManagementAPI } from "./routes/instance-management.ts";
 import { serveLogStreamingAPI } from "./routes/log-streaming.ts";
 import { servePlayRoutes } from "./routes/play.ts";
@@ -22,6 +23,7 @@ export const setupWeb = async (app: Application) => {
   serveLogStreamingAPI(router);
   serveScriptEditingAPI(router);
   serveSourceControlAPI(router);
+  await serveDiscordRoutes(router);
   router.get("/:path*", ctx =>
     ctx
       .send({

@@ -1,0 +1,164 @@
+import { z } from "@dreamlab/vendor/zod.ts";
+import { create } from "https://deno.land/x/djwt@v3.0.1/mod.ts";
+import { CONFIG } from "../../config.ts";
+import { Router, Status } from "../../deps/oak.ts";
+import { createInstance, GameInstance } from "../../instance.ts";
+import { AuthToken, importSecretKey } from "../../util/game-auth.ts";
+import { JsonAPIError, typedJsonHandler } from "../util/api.ts";
+import { instanceInfo } from "../util/instance-info.ts";
+
+const DetailsResponseSchema = z.object({
+  id: z.string(),
+  secret: z.string(),
+  world: z.string(),
+  world_revision: z.string().optional(),
+});
+
+const DiscordTokenResponseSchema = z.object({
+  token_type: z.string(),
+  access_token: z.string(),
+  expires_in: z.number(),
+  refresh_token: z.string(),
+  scope: z.string(),
+});
+
+const DiscordUserSchema = z.object({
+  id: z.string(),
+  username: z.string(),
+  global_name: z.string().nullable(),
+});
+
+const userInfo = async (
+  profile: z.infer<typeof DiscordUserSchema>,
+): Promise<{ player_id: string; nickname: string }> => {
+  try {
+    const params = new URLSearchParams();
+    params.set("discordId", profile.id);
+
+    const url = `${CONFIG.dreamlabNextUrl}/api/applications/lookup-user?${params}`;
+    const resp = await fetch(url, {
+      headers: { Authorization: `Bearer ${CONFIG.coordAuthSecret}` },
+    });
+
+    if (!resp.ok) {
+      console.log(resp);
+      throw new Error("failed to lookup user");
+    }
+
+    const user = z
+      .object({
+        id: z.string(),
+        displayName: z.string(),
+      })
+      .parse(await resp.json());
+    return {
+      player_id: user.id,
+      nickname: user.displayName,
+    };
+  } catch {
+    // Fallback to discord details
+    return {
+      player_id: `discord_${profile.id}`,
+      nickname: profile.global_name ?? profile.username,
+    };
+  }
+};
+
+export const serveDiscordRoutes = async (router: Router) => {
+  const gameAuthSecret = await importSecretKey(CONFIG.gameAuthSecret);
+
+  router.get(
+    "/api/v1/discord/auth",
+    typedJsonHandler(
+      {
+        body: z.object({
+          application_id: z.string().min(1),
+          instance_id: z.string().min(1),
+          code: z.string().min(1),
+        }),
+        response: z.object({
+          discord_token: z.string().min(1),
+          dreamlab_token: z.string().min(1),
+          info: z.record(z.string(), z.unknown()),
+        }),
+      },
+      async (_ctx, { body }) => {
+        const detailsResp = await fetch(
+          `${CONFIG.dreamlabNextUrl}/api/applications/details/${body.application_id}`,
+          { headers: { Authorization: `Bearer ${CONFIG.coordAuthSecret}` } },
+        );
+        if (detailsResp.status === 404)
+          throw new JsonAPIError(Status.InternalServerError, "unknown app id");
+        if (!detailsResp.ok)
+          throw new JsonAPIError(
+            Status.InternalServerError,
+            "failed to fetch discord app details",
+          );
+
+        const details = DetailsResponseSchema.parse(await detailsResp.json());
+
+        const tokenResp = await fetch("https://discord.com/api/oauth2/token", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: new URLSearchParams({
+            client_id: details.id,
+            client_secret: details.secret,
+            grant_type: "authorization_code",
+            code: body.code,
+          }),
+        });
+        if (!tokenResp.ok)
+          throw new JsonAPIError(
+            Status.InternalServerError,
+            "failed to authenticate discord user",
+          );
+        const token = DiscordTokenResponseSchema.parse(await tokenResp.json());
+
+        const userResp = await fetch("https://discord.com/api/v10/users/@me", {
+          headers: { Authorization: `Bearer ${token.access_token}` },
+        });
+        if (!userResp.ok)
+          throw new JsonAPIError(
+            Status.InternalServerError,
+            "failed to fetch discord user profile",
+          );
+        const user = DiscordUserSchema.parse(await userResp.json());
+        const info = await userInfo(user);
+
+        const claims = {
+          instance_id: body.instance_id,
+          world: details.world,
+          ...info,
+        } satisfies AuthToken;
+
+        const instanceId = body.instance_id;
+        if (!GameInstance.INSTANCES.has(instanceId)) {
+          const instance = createInstance({
+            instanceId,
+            worldId: details.world,
+            worldDirectory: `${Deno.cwd()}/worlds/${details.world}`,
+            variant: "discord",
+            worldRevision: details.world_revision,
+          });
+
+          GameInstance.INSTANCES.set(instanceId, instance);
+        }
+
+        const instance = GameInstance.INSTANCES.get(instanceId);
+        if (!instance)
+          throw new JsonAPIError(Status.InternalServerError, "failed to start instance");
+        await instance.waitForSessionBoot();
+
+        const dreamlab_token = await create({ alg: "HS256" }, claims, gameAuthSecret);
+
+        return {
+          discord_token: token.access_token,
+          dreamlab_token,
+          info: instanceInfo(instance),
+        };
+      },
+    ),
+  );
+};

@@ -20,6 +20,7 @@ const readConfig = () => {
   const gameAuthSecret = env("GAME_AUTH_SECRET");
   const kvUrl = env("KV_URL");
   const kvSigningKey = env("KV_SIGNING_KEY");
+  const dreamlabNextUrl = env("DREAMLAB_NEXT_URL", env.defaultsTo("https://app.dreamlab.gg"));
 
   return {
     bindAddress,
@@ -30,6 +31,7 @@ const readConfig = () => {
     gameAuthSecret,
     kvUrl,
     kvSigningKey,
+    dreamlabNextUrl,
   };
 };
 
