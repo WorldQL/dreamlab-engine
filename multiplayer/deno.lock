@@ -3,6 +3,7 @@
   "specifiers": {
     "jsr:@luca/esbuild-deno-loader@0.10.3": "0.10.3",
     "jsr:@luca/esbuild-deno-loader@0.11.0": "0.11.0",
+    "jsr:@luca/esbuild-deno-loader@0.11.1": "0.11.1",
     "jsr:@noble/ed25519@2.1.0": "2.1.0",
     "jsr:@oak/commons@0.11": "0.11.0",
     "jsr:@oak/oak@16": "16.1.0",
@@ -15,9 +16,10 @@
     "jsr:@std/bytes@0.224": "0.224.0",
     "jsr:@std/bytes@^1.0.0-rc.3": "1.0.2",
     "jsr:@std/bytes@^1.0.1-rc.3": "1.0.2",
-    "jsr:@std/bytes@^1.0.2": "1.0.2",
+    "jsr:@std/bytes@^1.0.2": "1.0.4",
     "jsr:@std/bytes@^1.0.2-rc.3": "1.0.2",
-    "jsr:@std/cli@1": "1.0.6",
+    "jsr:@std/bytes@^1.0.3": "1.0.4",
+    "jsr:@std/cli@1": "1.0.8",
     "jsr:@std/collections@^1.0.4": "1.0.5",
     "jsr:@std/crypto@0.223": "0.223.0",
     "jsr:@std/crypto@0.224": "0.224.0",
@@ -28,13 +30,14 @@
     "jsr:@std/encoding@0.223": "0.223.0",
     "jsr:@std/encoding@1": "1.0.5",
     "jsr:@std/encoding@1.0.0-rc.1": "1.0.0-rc.1",
+    "jsr:@std/encoding@1.0.0-rc.2": "1.0.0-rc.2",
     "jsr:@std/encoding@^1.0.5": "1.0.5",
     "jsr:@std/fmt@*": "1.0.0",
-    "jsr:@std/fmt@1": "1.0.0",
+    "jsr:@std/fmt@1": "1.0.3",
     "jsr:@std/fmt@1.0.0-rc.1": "1.0.0-rc.1",
-    "jsr:@std/fs@1": "1.0.4",
+    "jsr:@std/fs@1": "1.0.6",
     "jsr:@std/http@0.223": "0.223.0",
-    "jsr:@std/http@0.224": "0.224.3",
+    "jsr:@std/http@0.224": "0.224.5",
     "jsr:@std/io@0.223": "0.223.0",
     "jsr:@std/io@~0.224.1": "0.224.5",
     "jsr:@std/json@~0.213.1": "0.213.1",
@@ -43,14 +46,15 @@
     "jsr:@std/media-types@0.224": "0.224.1",
     "jsr:@std/path@0.213": "0.213.1",
     "jsr:@std/path@0.223": "0.223.0",
-    "jsr:@std/path@1": "1.0.6",
+    "jsr:@std/path@1": "1.0.8",
     "jsr:@std/path@1.0.0": "1.0.0",
     "jsr:@std/path@^1.0.2": "1.0.2",
-    "jsr:@std/path@^1.0.6": "1.0.6",
+    "jsr:@std/path@^1.0.6": "1.0.8",
+    "jsr:@std/path@^1.0.8": "1.0.8",
     "jsr:@std/streams@0.224.5": "0.224.5",
-    "jsr:@std/streams@1": "1.0.4",
+    "jsr:@std/streams@1": "1.0.8",
     "jsr:@std/toml@*": "1.0.0",
-    "jsr:@std/uuid@1": "1.0.0",
+    "jsr:@std/uuid@1": "1.0.4",
     "npm:@dimforge/rapier2d-compat@0.13.1": "0.13.1",
     "npm:@dimforge/rapier2d-compat@0.14.0": "0.14.0",
     "npm:@paralleldrive/cuid2@2.2.2": "2.2.2",
@@ -86,6 +90,14 @@
     },
     "@luca/esbuild-deno-loader@0.11.0": {
       "integrity": "c05a989aa7c4ee6992a27be5f15cfc5be12834cab7ff84cabb47313737c51a2c",
+      "dependencies": [
+        "jsr:@std/bytes@^1.0.2",
+        "jsr:@std/encoding@^1.0.5",
+        "jsr:@std/path@^1.0.6"
+      ]
+    },
+    "@luca/esbuild-deno-loader@0.11.1": {
+      "integrity": "dc020d16d75b591f679f6b9288b10f38bdb4f24345edb2f5732affa1d9885267",
       "dependencies": [
         "jsr:@std/bytes@^1.0.2",
         "jsr:@std/encoding@^1.0.5",
@@ -143,11 +155,17 @@
     "@std/bytes@1.0.2": {
       "integrity": "fbdee322bbd8c599a6af186a1603b3355e59a5fb1baa139f8f4c3c9a1b3e3d57"
     },
+    "@std/bytes@1.0.4": {
+      "integrity": "11a0debe522707c95c7b7ef89b478c13fb1583a7cfb9a85674cd2cc2e3a28abc"
+    },
     "@std/cli@1.0.1": {
       "integrity": "d0661fba13b30e3c0121646589fa9beeeabe92482c6b04679ea0e7ec683d97f2"
     },
     "@std/cli@1.0.6": {
       "integrity": "d22d8b38c66c666d7ad1f2a66c5b122da1704f985d3c47f01129f05abb6c5d3d"
+    },
+    "@std/cli@1.0.8": {
+      "integrity": "3762d8dc9a373715c08d871c38d45e637b25266f013a1d0bbe560bca409de94e"
     },
     "@std/collections@1.0.5": {
       "integrity": "ab9eac23b57a0c0b89ba45134e61561f69f3d001f37235a248ed40be260c0c10"
@@ -183,6 +201,9 @@
     "@std/encoding@1.0.0-rc.1": {
       "integrity": "28065e53f31b4f2da5abb5a4a2776906c6a72ffe25d130d45c13ff7572b2ec35"
     },
+    "@std/encoding@1.0.0-rc.2": {
+      "integrity": "160d7674a20ebfbccdf610b3801fee91cf6e42d1c106dd46bbaf46e395cd35ef"
+    },
     "@std/encoding@1.0.5": {
       "integrity": "ecf363d4fc25bd85bd915ff6733a7e79b67e0e7806334af15f4645c569fefc04"
     },
@@ -194,6 +215,9 @@
     },
     "@std/fmt@1.0.0": {
       "integrity": "8a95c9fdbb61559418ccbc0f536080cf43341655e1444f9d375a66886ceaaa3d"
+    },
+    "@std/fmt@1.0.3": {
+      "integrity": "97765c16aa32245ff4e2204ecf7d8562496a3cb8592340a80e7e554e0bb9149f"
     },
     "@std/fs@1.0.0": {
       "integrity": "d72e4a125af7168d717a2ed1dca77a728b422b0d138fd20579e3fa41a77da943",
@@ -213,6 +237,12 @@
         "jsr:@std/path@^1.0.6"
       ]
     },
+    "@std/fs@1.0.6": {
+      "integrity": "42b56e1e41b75583a21d5a37f6a6a27de9f510bcd36c0c85791d685ca0b85fa2",
+      "dependencies": [
+        "jsr:@std/path@^1.0.8"
+      ]
+    },
     "@std/http@0.223.0": {
       "integrity": "15ab8a0c5a7e9d5be017a15b01600f20f66602ceec48b378939fa24fcec522aa",
       "dependencies": [
@@ -224,6 +254,12 @@
       "integrity": "dac3a3640c730b9a4bcdb916b5231f4f2f5c141daf8dafc2b46011e1dab08eed",
       "dependencies": [
         "jsr:@std/encoding@1.0.0-rc.1"
+      ]
+    },
+    "@std/http@0.224.5": {
+      "integrity": "b03b5d1529f6c423badfb82f6640f9f2557b4034cd7c30655ba5bb447ff750a4",
+      "dependencies": [
+        "jsr:@std/encoding@1.0.0-rc.2"
       ]
     },
     "@std/io@0.223.0": {
@@ -281,6 +317,9 @@
     "@std/path@1.0.6": {
       "integrity": "ab2c55f902b380cf28e0eec501b4906e4c1960d13f00e11cfbcd21de15f18fed"
     },
+    "@std/path@1.0.8": {
+      "integrity": "548fa456bb6a04d3c1a1e7477986b6cffbce95102d0bb447c67c4ee70e0364be"
+    },
     "@std/streams@0.224.5": {
       "integrity": "bcde7818dd5460d474cdbd674b15f6638b9cd73cd64e52bd852fba2bd4d8ec91",
       "dependencies": [
@@ -294,6 +333,12 @@
         "jsr:@std/bytes@^1.0.2"
       ]
     },
+    "@std/streams@1.0.8": {
+      "integrity": "b41332d93d2cf6a82fe4ac2153b930adf1a859392931e2a19d9fabfb6f154fb3",
+      "dependencies": [
+        "jsr:@std/bytes@^1.0.3"
+      ]
+    },
     "@std/toml@1.0.0": {
       "integrity": "c9e37564eedd84084871c66238e00196ec67aa958e09a7f761b3f36273a7a8a5",
       "dependencies": [
@@ -304,6 +349,12 @@
       "integrity": "32595ccd31756728c9110cb98e25000e72b8d63151b7211034ea081761ed2104",
       "dependencies": [
         "jsr:@std/bytes@^1.0.1-rc.3"
+      ]
+    },
+    "@std/uuid@1.0.4": {
+      "integrity": "f4233149cc8b4753cc3763fd83a7c4101699491f55c7be78dc7b30281946d7a0",
+      "dependencies": [
+        "jsr:@std/bytes@^1.0.2"
       ]
     }
   },
