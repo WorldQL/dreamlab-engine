@@ -11,7 +11,7 @@ export interface DreamlabConnectForm {
   onConnect: Promise<ConnectDetails>;
 }
 
-const InstanceInfoSchema = z.object({
+export const InstanceInfoSchema = z.object({
   id: z.string().uuid(),
   server: z.string(),
   world: z.string(),

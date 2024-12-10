@@ -89,6 +89,7 @@ export const bundleEngineDependencies = async (
         loader: "native",
         configPath: await Deno.realPath(denoJsonPath),
       }),
+      // FIXME: disable this if doing discord stuff
       unwasmRapierPlugin(),
     ],
     entryPoints,

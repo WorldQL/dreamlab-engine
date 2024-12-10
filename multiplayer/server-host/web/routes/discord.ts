@@ -67,7 +67,7 @@ const userInfo = async (
 export const serveDiscordRoutes = async (router: Router) => {
   const gameAuthSecret = await importSecretKey(CONFIG.gameAuthSecret);
 
-  router.get(
+  router.post(
     "/api/v1/discord/auth",
     typedJsonHandler(
       {
@@ -100,7 +100,7 @@ export const serveDiscordRoutes = async (router: Router) => {
         const tokenResp = await fetch("https://discord.com/api/oauth2/token", {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type": "application/x-www-form-urlencoded",
           },
           body: new URLSearchParams({
             client_id: details.id,
