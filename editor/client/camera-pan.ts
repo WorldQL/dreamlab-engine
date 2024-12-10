@@ -148,10 +148,13 @@ export class CameraPanBehavior extends Behavior {
     if (this.game.isClient() && ev.target !== this.game.renderer.app.canvas) return;
 
     ev.preventDefault();
+    ev.stopPropagation();
 
     if (!TOUCHPAD_DETECTED) {
       // @ts-expect-error non-standard
-      TOUCHPAD_DETECTED = ev.wheelDeltaY ? ev.wheelDeltaY === -3 * ev.deltaY : ev.deltaMode === 0
+      TOUCHPAD_DETECTED = ev.wheelDeltaY
+        ? ev.wheelDeltaY === -3 * ev.deltaY
+        : ev.deltaMode === 0;
     }
 
     // mouse mode

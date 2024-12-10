@@ -302,7 +302,7 @@ export class Vector2 implements IVector2, Vector<IVector2, Vector2> {
   }
 
   /**
-   * Returns a new vector with the magnitude (length) normalized to 1.
+   * Get Euclidean distance between two vectors
    */
   public distance(this: Vector2, other: IVector2): number {
     return Vector2.distance(this, other);
