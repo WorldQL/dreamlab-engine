@@ -5,14 +5,13 @@ import "./css/client.css";
 import "../../build-system/live-reload.js";
 import "./_env.ts";
 
+import { ClientGame } from "@dreamlab/engine";
 import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
-import { urlToHTTP, urlToWebSocket } from "@dreamlab/util/url.ts";
-import { auth } from "./auth.ts";
-import { createConnectForm, fetchInstances, spawnNewInstance } from "./connect-form.ts";
 import { preloadFonts } from "./fonts.ts";
 import { connectToGame } from "./game-connection.ts";
 import { setupGame } from "./game-setup.ts";
-import { connectionDetails, setConnectionDetails } from "./util/server-url.ts";
+
+// only used for non-discord connections:
 
 const fonts = preloadFonts({
   families: ["Inter", "Iosevka", "Eas VHS"],
@@ -20,80 +19,54 @@ const fonts = preloadFonts({
   weights: ["normal", "400", "500"],
 });
 
-let nickname =
-  window.localStorage.getItem("dreamlab/nickname") ??
-  "Player" + Math.floor(Math.random() * 999) + 1;
+export async function startGame(
+  connectUrl: string | URL,
+  instanceId: string,
+  gameCallback: (game: ClientGame) => void = () => {},
+) {
+  const uiRoot = document.querySelector("main")! as HTMLElement;
+  const container = document.createElement("div");
+  uiRoot.querySelector("#viewport")!.append(container);
 
-if (connectionDetails.instanceId === "") {
-  const searchParams = new URLSearchParams(window.location.search);
-  const worldId = searchParams.get("worldId");
-  if (worldId === null) {
-    alert("Missing a worldId or a connect URL");
-    throw new Error();
-  }
+  const socket = new WebSocket(connectUrl);
+  socket.binaryType = "arraybuffer";
 
-  const instances = await fetchInstances(worldId);
-  const connectForm = createConnectForm(worldId, instances);
-  const instanceCount = Object.values(instances).length;
-  if (instanceCount === 0) {
-    const instance = await spawnNewInstance(worldId);
-    setConnectionDetails({ instanceId: instance.id, serverUrl: instance.server });
-  } else if (
-    instanceCount === 1 ||
-    new URLSearchParams(window.location.search).has("autojoin")
-  ) {
-    const instance = Object.values(instances)[0];
-    setConnectionDetails({ instanceId: instance.id, serverUrl: instance.server });
-  } else {
-    document.body.prepend(connectForm.form);
-    const { serverUrl, instanceId, nickname: nickname_ } = await connectForm.onConnect;
-    setConnectionDetails({ instanceId, serverUrl: urlToHTTP(serverUrl).toString() });
-    nickname = nickname_;
-  }
-}
+  const [game, conn, handshake] = await connectToGame(
+    instanceId,
+    container,
+    socket,
+    DEFAULT_CODEC,
+  );
+  gameCallback(game);
 
-const info = await auth(nickname);
+  await fonts;
+  await setupGame(game, conn, handshake.edit_mode);
 
-const connectUrl = urlToWebSocket(connectionDetails.serverUrl);
-connectUrl.pathname = `/api/v1/connect/${connectionDetails.instanceId}`;
-// TODO: connect with an auth token instead, if one is passed via search params
-connectUrl.searchParams.set("token", info.token);
-connectUrl.searchParams.set("player_id", info.playerId);
-connectUrl.searchParams.set("nickname", info.nickname);
+  new ResizeObserver(_ => {
+    game.renderer.app.resize();
+  }).observe(uiRoot.querySelector("#viewport")!);
 
-const uiRoot = document.querySelector("main")! as HTMLElement;
-const container = document.createElement("div");
-uiRoot.querySelector("#viewport")!.append(container);
+  Object.defineProperties(globalThis, {
+    game: { value: game },
+    conn: { value: conn },
+  });
 
-const socket = new WebSocket(connectUrl);
-socket.binaryType = "arraybuffer";
+  let now = performance.now();
+  const onFrame = (time: number) => {
+    const delta = time - now;
+    now = time;
+    game.tickClient(delta);
 
-const [game, conn, handshake] = await connectToGame(
-  connectionDetails.instanceId,
-  container,
-  socket,
-  DEFAULT_CODEC,
-);
-
-await fonts;
-await setupGame(game, conn, handshake.edit_mode);
-
-new ResizeObserver(_ => {
-  game.renderer.app.resize();
-}).observe(uiRoot.querySelector("#viewport")!);
-
-Object.defineProperties(globalThis, {
-  game: { value: game },
-  conn: { value: conn },
-});
-
-let now = performance.now();
-const onFrame = (time: number) => {
-  const delta = time - now;
-  now = time;
-  game.tickClient(delta);
+    requestAnimationFrame(onFrame);
+  };
 
   requestAnimationFrame(onFrame);
-};
+}
 
-requestAnimationFrame(onFrame);
+const USE_DISCORD = new URLSearchParams(window.location.search).has("frame_id");
+
+if (USE_DISCORD) {
+  void import("./init-discord.ts");
+} else {
+  void import("./init.ts");
+}
