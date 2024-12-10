@@ -162,6 +162,8 @@ export class Gizmo extends Entity {
 
   #gfx: PIXI.Graphics | undefined;
 
+  #snapLinesGfx: PIXI.Graphics | undefined;
+
   get #ctx() {
     if (!this.#target) return Gizmo.#blankCtx;
 
@@ -413,6 +415,7 @@ export class Gizmo extends Entity {
     | undefined;
 
   #onMouseMove = (event: PointerEvent) => {
+    this.#snapLinesGfx!.clear();
     if (!this.#target) return;
     if (!this.#action) return;
 
@@ -472,75 +475,136 @@ export class Gizmo extends Entity {
 
           if (this.#action.axis === "x" || this.#action.axis === "both") {
             // Align target's left edge to entity's right edge
-            // (target slides so its left side aligns with the entity's right side)
             const dxLeft = entityBounds.maxX - targetBounds.minX;
             if (Math.abs(dxLeft) < snapThreshold) {
               snapX = snapX === undefined ? world.x + dxLeft : snapX;
+
+              // Compute a vertical line that covers both entity and target vertically
+              const combinedMinY = Math.min(entityBounds.minY, targetBounds.minY);
+              const combinedMaxY = Math.max(entityBounds.maxY, targetBounds.maxY);
+
+              this.#snapLinesGfx!.context.moveTo(entityBounds.maxX, -combinedMinY)
+                .lineTo(entityBounds.maxX, -combinedMaxY)
+                .stroke({ color: 0xabddff, width: 0.03 });
             }
 
             // Align target's right edge to entity's left edge
-            // (target slides so its right side aligns with the entity's left side)
             const dxRight = entityBounds.minX - targetBounds.maxX;
             if (Math.abs(dxRight) < snapThreshold) {
               snapX = snapX === undefined ? world.x + dxRight : snapX;
+
+              const combinedMinY = Math.min(entityBounds.minY, targetBounds.minY);
+              const combinedMaxY = Math.max(entityBounds.maxY, targetBounds.maxY);
+
+              this.#snapLinesGfx!.context.moveTo(entityBounds.minX, -combinedMinY)
+                .lineTo(entityBounds.minX, -combinedMaxY)
+                .stroke({ color: 0xabddff, width: 0.03 });
             }
 
             // Align target's left edge to entity's left edge
-            // (target is moved so both objects share the same left boundary)
             const dxLeftToLeft = entityBounds.minX - targetBounds.minX;
             if (Math.abs(dxLeftToLeft) < snapThreshold) {
               snapX = snapX === undefined ? world.x + dxLeftToLeft : snapX;
+
+              const combinedMinY = Math.min(entityBounds.minY, targetBounds.minY);
+              const combinedMaxY = Math.max(entityBounds.maxY, targetBounds.maxY);
+
+              this.#snapLinesGfx!.context.moveTo(entityBounds.minX, -combinedMinY)
+                .lineTo(entityBounds.minX, -combinedMaxY)
+                .stroke({ color: 0xabddff, width: 0.03 });
             }
 
             // Align target's right edge to entity's right edge
-            // (target is moved so both objects share the same right boundary)
             const dxRightToRight = entityBounds.maxX - targetBounds.maxX;
             if (Math.abs(dxRightToRight) < snapThreshold) {
               snapX = snapX === undefined ? world.x + dxRightToRight : snapX;
+
+              const combinedMinY = Math.min(entityBounds.minY, targetBounds.minY);
+              const combinedMaxY = Math.max(entityBounds.maxY, targetBounds.maxY);
+
+              this.#snapLinesGfx!.context.moveTo(entityBounds.maxX, -combinedMinY)
+                .lineTo(entityBounds.maxX, -combinedMaxY)
+                .stroke({ color: 0xabddff, width: 0.03 });
             }
 
             // Center alignment horizontally
-            // (target is moved so their center points align horizontally)
             const dxCenter = entityCenterX - targetCenterX;
             if (Math.abs(dxCenter) < snapThreshold) {
               snapX = snapX === undefined ? world.x + dxCenter : snapX;
+
+              const combinedMinY = Math.min(entityBounds.minY, targetBounds.minY);
+              const combinedMaxY = Math.max(entityBounds.maxY, targetBounds.maxY);
+
+              this.#snapLinesGfx!.context.moveTo(entityCenterX, -combinedMinY)
+                .lineTo(entityCenterX, -combinedMaxY)
+                .stroke({ color: 0xabddff, width: 0.03 });
             }
           }
 
           if (this.#action.axis === "y" || this.#action.axis === "both") {
             // Align target's top edge to entity's top edge
-            // (target is moved so both have the same top boundary)
             const dyTop = entityBounds.minY - targetBounds.minY;
             if (Math.abs(dyTop) < snapThreshold) {
               snapY = snapY === undefined ? world.y + dyTop : snapY;
+
+              const combinedMinX = Math.min(entityBounds.minX, targetBounds.minX);
+              const combinedMaxX = Math.max(entityBounds.maxX, targetBounds.maxX);
+
+              this.#snapLinesGfx!.context.moveTo(combinedMinX, -entityBounds.minY)
+                .lineTo(combinedMaxX, -entityBounds.minY)
+                .stroke({ color: 0xabddff, width: 0.03 });
             }
 
             // Align target's bottom edge to entity's bottom edge
-            // (target is moved so both have the same bottom boundary)
             const dyBottom = entityBounds.maxY - targetBounds.maxY;
             if (Math.abs(dyBottom) < snapThreshold) {
               snapY = snapY === undefined ? world.y + dyBottom : snapY;
+
+              const combinedMinX = Math.min(entityBounds.minX, targetBounds.minX);
+              const combinedMaxX = Math.max(entityBounds.maxX, targetBounds.maxX);
+
+              this.#snapLinesGfx!.context.moveTo(combinedMinX, -entityBounds.maxY)
+                .lineTo(combinedMaxX, -entityBounds.maxY)
+                .stroke({ color: 0xabddff, width: 0.03 });
             }
 
-            // Align target's top edge to entity's bottom edge
-            // (target is placed just below the entity, with no vertical gap)
+            // Align target's top edge to entity's bottom edge (no vertical gap)
             const dyTopTouch = entityBounds.maxY - targetBounds.minY;
             if (Math.abs(dyTopTouch) < snapThreshold) {
               snapY = snapY === undefined ? world.y + dyTopTouch : snapY;
+
+              const combinedMinX = Math.min(entityBounds.minX, targetBounds.minX);
+              const combinedMaxX = Math.max(entityBounds.maxX, targetBounds.maxX);
+
+              this.#snapLinesGfx!.context.moveTo(combinedMinX, -entityBounds.maxY)
+                .lineTo(combinedMaxX, -entityBounds.maxY)
+                .stroke({ color: 0xabddff, width: 0.03 });
             }
 
-            // Align target's bottom edge to entity's top edge
-            // (target is placed just above the entity, with no vertical gap)
+            // Align target's bottom edge to entity's top edge (no vertical gap)
             const dyBottomTouch = entityBounds.minY - targetBounds.maxY;
             if (Math.abs(dyBottomTouch) < snapThreshold) {
               snapY = snapY === undefined ? world.y + dyBottomTouch : snapY;
+
+              const combinedMinX = Math.min(entityBounds.minX, targetBounds.minX)
+              const combinedMaxX = Math.max(entityBounds.maxX, targetBounds.maxX);
+
+              this.#snapLinesGfx!.context.moveTo(combinedMinX, -entityBounds.minY)
+                .lineTo(combinedMaxX, -entityBounds.minY)
+                .stroke({ color: 0xabddff, width: 0.03 });
             }
 
             // Center alignment vertically
-            // (target is moved so their center points align vertically)
             const dyCenter = entityCenterY - targetCenterY;
             if (Math.abs(dyCenter) < snapThreshold) {
               snapY = snapY === undefined ? world.y + dyCenter : snapY;
+
+              const combinedMinX = Math.min(entityBounds.minX, targetBounds.minX);
+              const combinedMaxX = Math.max(entityBounds.maxX, targetBounds.maxX);
+
+              this.#snapLinesGfx!.context.moveTo(combinedMinX, -entityCenterY)
+                .lineTo(combinedMaxX, -entityCenterY)
+                .stroke({ color: 0xabddff, width: 0.03 });
             }
           }
         }
@@ -690,6 +754,10 @@ export class Gizmo extends Entity {
     this.#gfx = new PIXI.Graphics(this.#ctx);
     this.#gfx.zIndex = 9999999999;
     this.game.renderer.scene.addChild(this.#gfx);
+
+    this.#snapLinesGfx = new PIXI.Graphics();
+    this.#snapLinesGfx.zIndex = 9999999999;
+    this.game.renderer.scene.addChild(this.#snapLinesGfx);
 
     this.#updateHandles();
 
