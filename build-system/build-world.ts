@@ -50,6 +50,7 @@ export const prepareBundleWorld = async (
         loader: "native",
         configPath: await Deno.realPath(worldOpts.denoJsonPath),
       }),
+      // @ts-expect-error esbuild version mismatch
       esbuildCopy({
         resolveFrom: "cwd",
         assets: {
@@ -58,6 +59,7 @@ export const prepareBundleWorld = async (
         },
         watch: opts?.watch ?? false,
       }),
+      // @ts-expect-error esbuild version mismatch
       esbuildCopy({
         resolveFrom: "cwd",
         assets: {
