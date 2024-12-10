@@ -453,6 +453,7 @@ export class Gizmo extends Entity {
           if (e.id === "game.local._.Gizmo" || e.parent?.id === "game.local._.Gizmo") continue;
           if (e.id.includes("__EditorMetadata")) continue;
           if (!e.parent) continue;
+          if (e.constructor.name === "Camera") continue;
 
           const distanceFromTarget = this.#target.pos.distance(e.pos);
           console.log(distanceFromTarget, e.id, e.parent?.id);
@@ -484,12 +485,13 @@ export class Gizmo extends Entity {
 
           if (this.#action.axis === "y" || this.#action.axis === "both") {
             // Check top/bottom edges
-            const dyTop = entityBounds.minY - targetBounds.maxY; // Align target top
+            const dyTop = entityBounds.minY - targetBounds.minY;
             if (Math.abs(dyTop) < snapThreshold) {
               snapY = snapY === undefined ? world.y + dyTop : snapY;
             }
-
-            const dyBottom = entityBounds.maxY - targetBounds.minY; // Align target bottom
+            
+            // Align bottom edges (maxY with maxY)
+            const dyBottom = entityBounds.maxY - targetBounds.maxY;
             if (Math.abs(dyBottom) < snapThreshold) {
               snapY = snapY === undefined ? world.y + dyBottom : snapY;
             }
