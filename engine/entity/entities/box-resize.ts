@@ -462,8 +462,8 @@ export class BoxResizeGizmo extends Entity {
       handle === "t" || handle === "b"
         ? "x"
         : handle === "l" || handle === "r"
-          ? "y"
-          : undefined;
+        ? "y"
+        : undefined;
 
     const rotation = this.#target.globalTransform.rotation;
     const rotated = Vector2.rotateAbout(cursor.world, -rotation, this.#action.opposite);
