@@ -452,6 +452,7 @@ export class Gizmo extends Entity {
 
         for (const e of allEntities) {
           if (e === this.#target) continue;
+          if (e.parent === this.#target) continue;
           if (!(e instanceof Entity)) continue;
           if (e.id === "game.local._.Gizmo" || e.parent?.id === "game.local._.Gizmo") continue;
           if (e.id.includes("__EditorMetadata")) continue;
@@ -586,7 +587,7 @@ export class Gizmo extends Entity {
             if (Math.abs(dyBottomTouch) < snapThreshold) {
               snapY = snapY === undefined ? world.y + dyBottomTouch : snapY;
 
-              const combinedMinX = Math.min(entityBounds.minX, targetBounds.minX)
+              const combinedMinX = Math.min(entityBounds.minX, targetBounds.minX);
               const combinedMaxX = Math.max(entityBounds.maxX, targetBounds.maxX);
 
               this.#snapLinesGfx!.context.moveTo(combinedMinX, -entityBounds.minY)
