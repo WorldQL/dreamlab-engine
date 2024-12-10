@@ -470,20 +470,37 @@ export class Gizmo extends Entity {
           const entityCenterX = (entityBounds.minX + entityBounds.maxX) / 2;
           const entityCenterY = (entityBounds.minY + entityBounds.maxY) / 2;
 
-          // Check for edge snapping
           if (this.#action.axis === "x" || this.#action.axis === "both") {
-            // Check left/right edges
-            const dxLeft = entityBounds.maxX - targetBounds.minX; // Align target's left to entity's right
+            // Align target's left edge to entity's right edge
+            // (target slides so its left side aligns with the entity's right side)
+            const dxLeft = entityBounds.maxX - targetBounds.minX;
             if (Math.abs(dxLeft) < snapThreshold) {
               snapX = snapX === undefined ? world.x + dxLeft : snapX;
             }
 
-            const dxRight = entityBounds.minX - targetBounds.maxX; // Align target's right to entity's left
+            // Align target's right edge to entity's left edge
+            // (target slides so its right side aligns with the entity's left side)
+            const dxRight = entityBounds.minX - targetBounds.maxX;
             if (Math.abs(dxRight) < snapThreshold) {
               snapX = snapX === undefined ? world.x + dxRight : snapX;
             }
 
-            // Check center alignment horizontally
+            // Align target's left edge to entity's left edge
+            // (target is moved so both objects share the same left boundary)
+            const dxLeftToLeft = entityBounds.minX - targetBounds.minX;
+            if (Math.abs(dxLeftToLeft) < snapThreshold) {
+              snapX = snapX === undefined ? world.x + dxLeftToLeft : snapX;
+            }
+
+            // Align target's right edge to entity's right edge
+            // (target is moved so both objects share the same right boundary)
+            const dxRightToRight = entityBounds.maxX - targetBounds.maxX;
+            if (Math.abs(dxRightToRight) < snapThreshold) {
+              snapX = snapX === undefined ? world.x + dxRightToRight : snapX;
+            }
+
+            // Center alignment horizontally
+            // (target is moved so their center points align horizontally)
             const dxCenter = entityCenterX - targetCenterX;
             if (Math.abs(dxCenter) < snapThreshold) {
               snapX = snapX === undefined ? world.x + dxCenter : snapX;
@@ -491,31 +508,36 @@ export class Gizmo extends Entity {
           }
 
           if (this.#action.axis === "y" || this.#action.axis === "both") {
-            // Parallel top alignment (target's top to entity's top)
+            // Align target's top edge to entity's top edge
+            // (target is moved so both have the same top boundary)
             const dyTop = entityBounds.minY - targetBounds.minY;
             if (Math.abs(dyTop) < snapThreshold) {
               snapY = snapY === undefined ? world.y + dyTop : snapY;
             }
 
-            // Parallel bottom alignment (target's bottom to entity's bottom)
+            // Align target's bottom edge to entity's bottom edge
+            // (target is moved so both have the same bottom boundary)
             const dyBottom = entityBounds.maxY - targetBounds.maxY;
             if (Math.abs(dyBottom) < snapThreshold) {
               snapY = snapY === undefined ? world.y + dyBottom : snapY;
             }
 
-            // Touching: target’s top (minY) to entity’s bottom (maxY)
+            // Align target's top edge to entity's bottom edge
+            // (target is placed just below the entity, with no vertical gap)
             const dyTopTouch = entityBounds.maxY - targetBounds.minY;
             if (Math.abs(dyTopTouch) < snapThreshold) {
               snapY = snapY === undefined ? world.y + dyTopTouch : snapY;
             }
 
-            // Touching: target’s bottom (maxY) to entity’s top (minY)
+            // Align target's bottom edge to entity's top edge
+            // (target is placed just above the entity, with no vertical gap)
             const dyBottomTouch = entityBounds.minY - targetBounds.maxY;
             if (Math.abs(dyBottomTouch) < snapThreshold) {
               snapY = snapY === undefined ? world.y + dyBottomTouch : snapY;
             }
 
             // Center alignment vertically
+            // (target is moved so their center points align vertically)
             const dyCenter = entityCenterY - targetCenterY;
             if (Math.abs(dyCenter) < snapThreshold) {
               snapY = snapY === undefined ? world.y + dyCenter : snapY;
