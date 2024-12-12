@@ -1,6 +1,6 @@
 import { ConnectionId } from "@dreamlab/engine";
 import { ClientPacket, ServerPacket } from "@dreamlab/proto/play.ts";
-import { Scene } from "@dreamlab/scene";
+import { Scene, SceneDescEntity } from "@dreamlab/scene";
 import type { RichGameStatus } from "./rich-status.ts";
 
 interface ConnectionEstablishedMessage {
@@ -35,13 +35,19 @@ interface PlaySessionStateMessage {
   paused: boolean;
 }
 
+interface ImportEditPrefab {
+  op: "ImportEditPrefab";
+  entity: SceneDescEntity;
+}
+
 export type HostIPCMessage =
   | ConnectionEstablishedMessage
   | ConnectionDroppedMessage
   | IncomingPacketMessage
   | SceneDefinitionRequestMessage
   | ReloadEditSceneMessage
-  | PlaySessionStateMessage;
+  | PlaySessionStateMessage
+  | ImportEditPrefab;
 
 interface WorkerUpMessage {
   op: "WorkerUp";

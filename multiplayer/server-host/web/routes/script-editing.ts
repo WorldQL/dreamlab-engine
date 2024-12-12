@@ -6,7 +6,9 @@ import * as fs from "jsr:@std/fs@1";
 import * as path from "jsr:@std/path@1";
 
 import { PlayPacket } from "@dreamlab/proto/play.ts";
+import { ProjectSchema, SceneDescEntity } from "@dreamlab/scene";
 import { fileIsProbablyBehaviorScript } from "../../../../build-system/build-world.ts";
+import { CONFIG } from "../../config.ts";
 import { GameInstance } from "../../instance.ts";
 import { sortPaths } from "../../util/sort-paths.ts";
 import { buildWorld } from "../../world-build.ts";
@@ -345,4 +347,65 @@ export const serveScriptEditingAPI = (router: Router) => {
 
     ctx.response.body = { files: filesWithVersion };
   });
+
+  router.post(
+    "/api/v1/edit/:instance/import-project",
+    typedJsonHandler(
+      {
+        params: z.object({
+          instance: EditModeInstanceSchema,
+        }),
+        body: z.object({ sourceProject: z.string() }),
+        response: z.object({ success: z.boolean() }),
+      },
+      async (ctx, { params, body }) => {
+        const { instance } = params;
+
+        const targetProjectDir = instance.info.worldDirectory;
+        const sourceProjectDir = await Deno.makeTempDir({ prefix: "dreamlab-import" });
+
+        const cloneProcess = new Deno.Command("git", {
+          args: ["clone", `${CONFIG.gitBase}/${body.sourceProject}.git`, sourceProjectDir],
+        }).spawn();
+        const cloneStatus = await cloneProcess.status;
+        if (!cloneStatus.success)
+          throw new JsonAPIError(Status.InternalServerError, "Failed to clone sourceProject");
+
+        const sourceProjectName = sourceProjectDir.substring(
+          sourceProjectDir.lastIndexOf("/") + 1,
+        );
+
+        const importedDir = path.join(targetProjectDir, "src", "imported", sourceProjectName);
+        await fs.ensureDir(path.dirname(importedDir));
+        await fs.copy(sourceProjectDir, importedDir);
+
+        const importedProjectJson = await Deno.readTextFile(
+          path.join(importedDir, "project.json"),
+        );
+        const importedProject = ProjectSchema.parse(JSON.parse(importedProjectJson));
+        const importedScene = importedProject.scenes.main;
+        if (typeof importedScene === "string") {
+          // FIXME
+          throw new Error("Can't import from externalized scene JSON!");
+        }
+
+        const importedScriptLocation = `res://src/imported/${sourceProjectName}`;
+        const rewriteScriptLocations = (e: SceneDescEntity): void => {
+          for (const behavior of e.behaviors ?? []) {
+            behavior.script = behavior.script.replace(/^res:\/\//, importedScriptLocation);
+          }
+          if (e.children) e.children.forEach(rewriteScriptLocations);
+        };
+
+        for (const prefabEntity of importedScene.prefabs) {
+          rewriteScriptLocations(prefabEntity);
+          instance.session?.ipc.send({ op: "ImportEditPrefab", entity: prefabEntity });
+        }
+
+        await Deno.remove(path.join(importedDir, "project.json"));
+
+        return { success: true };
+      },
+    ),
+  );
 };

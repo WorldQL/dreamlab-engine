@@ -171,6 +171,11 @@ export const handleEditMode = async (
   };
   await loadFromScene();
 
+  ipc.addMessageListener("ImportEditPrefab", async message => {
+    const def = await convertEntityDefinition(game, message.entity);
+    editPrefabs.spawn(addEditorMetadata(message.entity, Facades.useEditorFacades(def)));
+  });
+
   ipc.addMessageListener("ReloadEditScene", async () => {
     const projectDesc = await game
       .fetch("res://project.json")
