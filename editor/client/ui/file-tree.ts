@@ -76,6 +76,9 @@ export class FileTree implements InspectorUIWidget {
     const tree = new DataTree();
     tree.style.setProperty("--tree-indent-amount", "0.5em");
 
+    // remove open image preview which are about to have their listeners destroyed and become stuck on screen
+    document.querySelectorAll(".image-preview").forEach(e => e.remove());
+
     const filesURL = new URL(connectionDetails.serverUrl);
     filesURL.pathname = `/api/v1/edit/${this.game.instanceId}/files`;
     const files = fetch(filesURL)
