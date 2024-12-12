@@ -69,6 +69,9 @@ export const serializeEntityDefinition = (
     throw new Error("Attempted to serialize EntityDefinition with undefined ref");
 
   const values = def.values && Object.keys(def.values).length > 0 ? def.values : undefined;
+  if (values && "clonedFromRef" in values && values.clonedFromRef === "") {
+    delete values.clonedFromRef;
+  }
 
   const children =
     def.children && def.children.length > 0
