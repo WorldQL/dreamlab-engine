@@ -94,6 +94,7 @@ document.addEventListener("dragover", event => {
 document.addEventListener("drop", async event => {
   event.preventDefault();
   const files = event.dataTransfer?.files;
+  const toHighlight: string[] = [];
 
   if (files && files.length > 0) {
     const uploadPromises: Promise<void>[] = [];
@@ -104,6 +105,7 @@ document.addEventListener("drop", async event => {
 
       // Upload the file using createFile
       uploadPromises.push(createFile(fileName, file));
+      toHighlight.push(fileName);
     }
 
     try {
@@ -113,6 +115,15 @@ document.addEventListener("drop", async event => {
       console.error("Error uploading files:", error);
     }
   }
+
+  setTimeout(() => {
+    for (const fileName of toHighlight) {
+      const element = document.querySelector(`[data-file="${fileName}"]`);
+      if (element) {
+        element.setAttribute("data-selected", "true");
+      }
+    }
+  }, 150);
 });
 
 // #endregion
