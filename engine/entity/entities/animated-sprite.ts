@@ -23,10 +23,10 @@ export class AnimatedSprite extends PixiEntity {
   width: number = 1;
   height: number = 1;
 
+  jsonSpritesheet: string = "";
   spritesheet: string = "";
-  atlas: string = "";
-  atlasFramesX: number = 1;
-  atlasFramesY: number = 1;
+  frameWidth: number = 1;
+  frameHeight: number = 1;
 
   alpha: number = 1;
   speed: number = 0.1;
@@ -40,8 +40,8 @@ export class AnimatedSprite extends PixiEntity {
   }
 
   async #loadTextures(): Promise<PIXI.Texture[]> {
-    if (this.spritesheet !== "") {
-      const resource = this.game.resolveResource(this.spritesheet);
+    if (this.jsonSpritesheet !== "") {
+      const resource = this.game.resolveResource(this.jsonSpritesheet);
       const spritesheet = await PIXI.Assets.load(resource);
       if (!(spritesheet instanceof PIXI.Spritesheet)) {
         throw new TypeError(`${this.id}.spritesheet is not a pixi spritesheet`);
@@ -50,18 +50,18 @@ export class AnimatedSprite extends PixiEntity {
       return Object.values(spritesheet.textures);
     }
 
-    if (this.atlas !== "") {
-      const resource = this.game.resolveResource(this.atlas);
-      const atlas = await PIXI.Assets.load(resource);
-      if (!(atlas instanceof PIXI.Texture)) {
-        throw new TypeError(`${this.id}.atlas is not a pixi texture`);
+    if (this.spritesheet !== "") {
+      const resource = this.game.resolveResource(this.spritesheet);
+      const spritesheetTexture = await PIXI.Assets.load(resource);
+      if (!(spritesheetTexture instanceof PIXI.Texture)) {
+        throw new TypeError(`${this.id}.spritesheet is not a pixi texture`);
       }
 
-      const framesX = Math.max(this.atlasFramesX, 1);
-      const framesY = Math.max(this.atlasFramesY, 1);
+      const framesX = Math.max(this.frameWidth, 1);
+      const framesY = Math.max(this.frameHeight, 1);
 
-      const frameWidth = atlas.width / framesX;
-      const frameHeight = atlas.height / framesY;
+      const frameWidth = spritesheetTexture.width / framesX;
+      const frameHeight = spritesheetTexture.height / framesY;
 
       const frames: PIXI.SpritesheetData["frames"] = {};
       for (let y = 0; y < framesY; y++) {
@@ -78,18 +78,18 @@ export class AnimatedSprite extends PixiEntity {
         frames,
         meta: {
           image: resource,
-          size: { w: atlas.width, h: atlas.height },
+          size: { w: spritesheetTexture.width, h: spritesheetTexture.height },
           scale: 1,
         },
       };
 
-      const spritesheet = new PIXI.Spritesheet(atlas, data);
+      const spritesheet = new PIXI.Spritesheet(spritesheetTexture, data);
       await spritesheet.parse();
 
       const textures = Object.values(spritesheet.textures);
       if (textures.length > 0) return textures;
 
-      console.error(`${this.id}: atlas config had no textures`);
+      console.error(`${this.id}: spritesheet config had no textures`);
     }
 
     return [PIXI.Texture.WHITE];
@@ -123,9 +123,9 @@ export class AnimatedSprite extends PixiEntity {
       "loop",
     );
 
-    this.defineValue(AnimatedSprite, "spritesheet", { type: SpritesheetAdapter });
-    this.defineValue(AnimatedSprite, "atlas", { type: TextureAdapter });
-    this.defineValues(AnimatedSprite, "atlasFramesX", "atlasFramesY");
+    this.defineValue(AnimatedSprite, "jsonSpritesheet", { type: SpritesheetAdapter });
+    this.defineValue(AnimatedSprite, "spritesheet", { type: TextureAdapter });
+    this.defineValues(AnimatedSprite, "frameWidth", "frameHeight");
 
     // why was this disabled?
     // if (this.game.isClient() && this.spritesheet !== "") {
@@ -164,7 +164,7 @@ export class AnimatedSprite extends PixiEntity {
     widthValue?.onChanged(updateSize);
     heightValue?.onChanged(updateSize);
 
-    const spritesheetValue = this.values.get("spritesheet");
+    const spritesheetValue = this.values.get("jsonSpritesheet");
     spritesheetValue?.onChanged(updateTextures);
 
     const alphaValue = this.values.get("alpha");
@@ -193,10 +193,10 @@ export class AnimatedSprite extends PixiEntity {
     startFrameValue?.onChanged(updateTextures);
     endFrameValue?.onChanged(updateTextures);
 
-    const atlasFramesXValue = this.values.get("atlasFramesX");
-    const atlasFramesYValue = this.values.get("atlasFramesY");
-    atlasFramesXValue?.onChanged(updateTextures);
-    atlasFramesYValue?.onChanged(updateTextures);
+    const frameWidthValue = this.values.get("frameWidth");
+    const frameHeightValue = this.values.get("frameHeight");
+    frameWidthValue?.onChanged(updateTextures);
+    frameHeightValue?.onChanged(updateTextures);
   }
 
   async onInitialize() {

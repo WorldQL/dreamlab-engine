@@ -1,4 +1,5 @@
 import {
+  AnimatedSprite,
   ClientGame,
   Entity,
   EntityConstructor,
@@ -304,6 +305,30 @@ export class Properties implements InspectorUIWidget {
 
       valuesTable.addEntry(`value:${key}`, key, valueField);
       value.onChanged(refreshValue);
+    }
+
+    if (entity instanceof AnimatedSprite) {
+      const button = elem("button", { type: "button" }, ["View Sheet Guide"]);
+
+      button.addEventListener("click", () => {
+        const spritesheet = entity.values.get("spritesheet")?.value;
+        const framesX = entity.values.get("frameWidth")?.value;
+        const framesY = entity.values.get("frameHeight")?.value;
+        const spritesheetJSON = entity.values.get("jsonSpritesheet")?.value;
+        if (typeof spritesheet === "string" && spritesheet !== "" && framesX !== 1 && framesY !== 1) {
+          const url = this.game.resolveResource(spritesheet);
+          const popupUrl = `/spriteguide.html?spritesheetUrl=${url}&frameX=${framesX}&frameY=${framesY}`;
+          window.open(popupUrl, "_blank", "popup");
+        } else if (typeof spritesheetJSON === "string" && spritesheetJSON !== "") {
+          const url = this.game.resolveResource(spritesheetJSON);
+          const popupUrl = `/spriteguide.html?spritesheetJson=${url}`;
+          window.open(popupUrl, "_blank", "popup");
+        } else {
+          alert("Please set spritesheet (and frameWidth + frameHeight) or spritesheetJSON.");
+        }
+      });
+
+      valuesTable.addEntry("spritesheetguide", "Guide", button);
     }
 
     for (const transformField of transformFieldsToRegisterWithUndoRedo) {

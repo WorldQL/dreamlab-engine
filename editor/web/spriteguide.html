@@ -1,0 +1,272 @@
+<!-- rapid prototype spaghetti code. it works! -->
+<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" href="./dist/client-main.css" />
+    <title>Spritesheet Guide</title>
+    <style>
+      table {
+        position: relative;
+      }
+
+      td {
+        position: relative;
+        overflow: hidden;
+      }
+
+      div {
+        position: relative;
+        overflow: hidden;
+        display: inline-block;
+      }
+
+      .frame-number {
+        position: absolute;
+        top: 0;
+        left: 0;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        font-size: 12px;
+        padding: 2px 4px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div style="position: fixed; z-index: 2; background-color: rgb(27, 34, 49); width: 100%; border-bottom: 1px solid gray;">
+      <button
+        onclick="toggleBg()"
+        style="margin-bottom: 4px; margin-top: 4px; margin-left: 4px;"
+      >
+        Toggle background color
+      </button>
+      <button onclick="zoom('in')">Zoom In</button>
+      <button onclick="zoom('out')">Zoom Out</button>
+    </div>
+    <div
+      id="container"
+      style="overflow: auto; margin-top: 2rem;"
+    ></div>
+
+    <script>
+      let cellSizeMultiplier = 1; // Multiplier to adjust cell size
+      const minMultiplier = 0.5; // Minimum zoom level
+      const maxMultiplier = 5; // Maximum zoom level
+
+      function toggleBg() {
+        const b = document.querySelector("body");
+        if (b.style.backgroundColor === "black") {
+          b.style.backgroundColor = "white";
+        } else {
+          b.style.backgroundColor = "black";
+        }
+      }
+
+      function zoom(direction) {
+        if (direction === "in" && cellSizeMultiplier < maxMultiplier) {
+          cellSizeMultiplier += 0.5;
+        } else if (direction === "out" && cellSizeMultiplier > minMultiplier) {
+          cellSizeMultiplier -= 0.5;
+        }
+
+        const table = document.querySelector("table");
+        if (!table) return;
+
+        table.querySelectorAll("canvas").forEach(canvas => {
+          const originalWidth = parseInt(canvas.getAttribute("data-original-width"));
+          const originalHeight = parseInt(canvas.getAttribute("data-original-height"));
+
+          // Update canvas width and height using CSS styles to ensure proportional scaling
+          canvas.style.width = `${originalWidth * cellSizeMultiplier}px`;
+          canvas.style.height = `${originalHeight * cellSizeMultiplier}px`;
+        });
+
+        table.querySelectorAll("td").forEach(td => {
+          // Adjust the size of the cells to match the scaled canvas
+          td.style.width = `${parseInt(td.getAttribute("data-width")) * cellSizeMultiplier}px`;
+          td.style.height = `${parseInt(td.getAttribute("data-height")) * cellSizeMultiplier}px`;
+        });
+      }
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        function generateSpriteTableFromWidthHeight(spritesheetUrl, frameWidth, frameHeight) {
+          const img = new Image();
+          img.src = spritesheetUrl;
+
+          img.onload = () => {
+            const rows = Math.ceil(img.height / frameHeight);
+            const cols = Math.ceil(img.width / frameWidth);
+
+            const table = document.createElement("table");
+            table.style.borderCollapse = "collapse";
+
+            let spriteNumber = 0;
+
+            for (let row = 0; row < rows; row++) {
+              const tr = document.createElement("tr");
+
+              for (let col = 0; col < cols; col++) {
+                const canvas = document.createElement("canvas");
+                canvas.width = frameWidth;
+                canvas.height = frameHeight;
+                canvas.setAttribute("data-original-width", frameWidth);
+                canvas.setAttribute("data-original-height", frameHeight);
+                canvas.setAttribute("data-col", col);
+                canvas.setAttribute("data-row", row);
+                canvas.setAttribute("data-src", spritesheetUrl);
+                canvas.style.display = "block";
+                canvas.style.margin = "0";
+                canvas.style.padding = "0";
+
+                const ctx = canvas.getContext("2d");
+                ctx.imageSmoothingEnabled = false; // Disable smoothing for pixel art
+                ctx.drawImage(
+                  img,
+                  col * frameWidth, // frame pos x
+                  row * frameHeight, // frame pos y
+                  frameWidth,
+                  frameHeight,
+                  0,
+                  0,
+                  frameWidth,
+                  frameHeight,
+                );
+
+                const td = document.createElement("td");
+                td.style.border = "1px solid #ccc";
+                td.style.padding = "0"; // Ensure no padding
+                td.style.margin = "0"; // Ensure no margin
+                td.style.width = `${frameWidth}px`; // Match canvas width
+                td.style.height = `${frameHeight}px`; // Match canvas height
+                td.setAttribute("data-width", frameWidth);
+                td.setAttribute("data-height", frameHeight);
+
+                // Create frame number div
+                const frameNumberDiv = document.createElement("div");
+                frameNumberDiv.className = "frame-number";
+                frameNumberDiv.textContent = spriteNumber;
+
+                td.appendChild(frameNumberDiv);
+                td.appendChild(canvas);
+                tr.appendChild(td);
+
+                spriteNumber++;
+              }
+
+              table.appendChild(tr);
+            }
+
+            document.querySelector("#container").appendChild(table);
+          };
+
+          img.onerror = () => {
+            console.error("Failed to load spritesheet image.");
+          };
+        }
+
+        function generateSpriteTableFromTexturepackerData(jsonData, parentUrl) {
+          const img = new Image();
+          img.src = parentUrl + jsonData.meta.image;
+
+          img.onload = () => {
+            const rows = Math.ceil(jsonData.meta.size.h / frameHeight);
+            const cols = Math.ceil(jsonData.meta.size.w / frameWidth);
+
+            const table = document.createElement("table");
+            table.style.borderCollapse = "collapse";
+
+            let spriteNumber = 0;
+
+            const frames = Object.keys(jsonData.frames);
+            let tr = document.createElement("tr");
+
+            let lastY = 0;
+
+            for (const frameKey of frames) {
+              const frameData = jsonData.frames[frameKey];
+              const canvas = document.createElement("canvas");
+
+              const frameWidth = frameData.frame.w;
+              const frameHeight = frameData.frame.h;
+
+              canvas.width = frameWidth;
+              canvas.height = frameHeight;
+              canvas.setAttribute("data-original-width", frameWidth);
+              canvas.setAttribute("data-original-height", frameHeight);
+              canvas.setAttribute("data-src", spritesheetUrl);
+              canvas.style.display = "block";
+              canvas.style.margin = "0";
+              canvas.style.padding = "0";
+
+              const ctx = canvas.getContext("2d");
+              ctx.imageSmoothingEnabled = false; // Disable smoothing for pixel art
+              ctx.drawImage(
+                img,
+                frameData.frame.x, // frame pos x
+                frameData.frame.y, // frame pos y
+                frameWidth,
+                frameHeight,
+                0,
+                0,
+                frameWidth,
+                frameHeight,
+              );
+
+              const td = document.createElement("td");
+              td.style.border = "1px solid #ccc";
+              td.style.padding = "0"; // Ensure no padding
+              td.style.margin = "0"; // Ensure no margin
+              td.style.width = `${frameWidth}px`; // Match canvas width
+              td.style.height = `${frameHeight}px`; // Match canvas height
+              td.setAttribute("data-width", frameWidth);
+              td.setAttribute("data-height", frameHeight);
+
+              // Create frame number div
+              const frameNumberDiv = document.createElement("div");
+              frameNumberDiv.className = "frame-number";
+              frameNumberDiv.textContent = spriteNumber;
+
+              td.appendChild(frameNumberDiv);
+              td.appendChild(canvas);
+
+              // Check if we need to start a new row
+              if (frameData.frame.y !== lastY) {
+                if (tr) {
+                  table.appendChild(tr);
+                }
+                tr = document.createElement("tr");
+              }
+
+              tr.appendChild(td);
+              spriteNumber++;
+              lastY = frameData.frame.y;
+            }
+            // Append the last row
+            if (tr) {
+              table.appendChild(tr);
+            }
+
+            document.querySelector("#container").appendChild(table);
+          };
+
+          img.onerror = () => {
+            console.error("Failed to load spritesheet image.");
+          };
+        }
+        const spritesheetUrl = urlParams.get("spritesheetUrl");
+        const frameWidth = parseInt(urlParams.get("frameX"));
+        const frameHeight = parseFloat(urlParams.get("frameY"));
+
+        if (spritesheetUrl) {
+          generateSpriteTableFromWidthHeight(spritesheetUrl, frameWidth, frameHeight);
+        } else {
+          const spritesheetJsonUrl = urlParams.get("spritesheetJson");
+          const choppedUrl = spritesheetJsonUrl.split("/").slice(0, -1).join("/") + "/";
+          const spritesheetJsonContents = await (await fetch(spritesheetJsonUrl)).json();
+          generateSpriteTableFromTexturepackerData(spritesheetJsonContents, choppedUrl);
+        }
+      });
+    </script>
+  </body>
+</html>

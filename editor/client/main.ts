@@ -32,6 +32,10 @@ import { AppMenu } from "./ui/app-menu.ts";
 import { BottomTabs } from "./ui/bottom-tabs.ts";
 import { InspectorUI } from "./ui/inspector.ts";
 import { UndoRedoManager } from "./undo-redo.ts";
+import { TextureStyle } from "@dreamlab/vendor/pixi.ts";
+
+// makes pixel graphics not blurry
+TextureStyle.defaultOptions.scaleMode = "nearest";
 
 // TODO: loading screen ?
 
@@ -45,13 +49,25 @@ connectUrl.searchParams.set("player_id", info.playerId);
 connectUrl.searchParams.set("nickname", info.nickname);
 
 // #region Handle dropping files to upload directly into /assets
-export async function createFile(fileName: string, content: unknown = "", no_restart = false) {
-  let contentType = "application/octet-stream";
+export async function createFile(fileName: string, file: File, no_restart = false) {
+  function isTextFile(mimeType: string): boolean {
+    const textTypes = [
+      "text/",
+      "application/json",
+      "application/javascript",
+      "application/xml",
+      "application/x-httpd-php",
+    ];
+    return textTypes.some(type => mimeType.startsWith(type));
+  }
 
-  if (typeof content === "string") {
-    contentType = "text/plain";
-  } else if (content instanceof File || content instanceof Blob) {
-    contentType = content.type || "application/octet-stream";
+  const isText = isTextFile(file.type);
+  let content: string | ArrayBuffer;
+
+  if (isText) {
+    content = await file.text();
+  } else {
+    content = await file.arrayBuffer();
   }
 
   const url = new URL(
@@ -61,8 +77,9 @@ export async function createFile(fileName: string, content: unknown = "", no_res
 
   await fetch(url, {
     method: "PUT",
+    body: content,
     headers: {
-      "content-type": contentType,
+      "Content-Type": "text/plain",
       Authorization: `Bearer `,
     },
   });
