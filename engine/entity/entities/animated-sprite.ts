@@ -1,14 +1,13 @@
+import { EntityEnableChanged } from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { IVector2, Vector2 } from "../../math/mod.ts";
 import { EntityTransformUpdate, GameRender } from "../../signals/mod.ts";
-import { SpritesheetAdapter } from "../../value/adapters/texture-adapter.ts";
+import { SpritesheetAdapter, TextureAdapter } from "../../value/adapters/texture-adapter.ts";
 import { Entity, EntityContext } from "../entity.ts";
 import { PixiEntity } from "../pixi-entity.ts";
-import { AbstractRenderer } from "@dreamlab/vendor/pixi.ts";
-import { EntityEnableChanged } from "@dreamlab/engine";
 
 // this shockingly fixes spritesheet bleeding
-AbstractRenderer.defaultOptions.roundPixels = true;
+PIXI.AbstractRenderer.defaultOptions.roundPixels = true;
 
 export class AnimatedSprite extends PixiEntity {
   static {
@@ -23,7 +22,12 @@ export class AnimatedSprite extends PixiEntity {
 
   width: number = 1;
   height: number = 1;
-  spritesheetJSON: string = "";
+
+  spritesheet: string = "";
+  atlas: string = "";
+  atlasFramesX: number = 1;
+  atlasFramesY: number = 1;
+
   alpha: number = 1;
   speed: number = 0.1;
   loop: boolean = true;
@@ -35,7 +39,75 @@ export class AnimatedSprite extends PixiEntity {
     return this.#sprite;
   }
 
-  #originalTextures: PIXI.Texture[] | undefined;
+  async #loadTextures(): Promise<PIXI.Texture[]> {
+    if (this.spritesheet !== "") {
+      const resource = this.game.resolveResource(this.spritesheet);
+      const spritesheet = await PIXI.Assets.load(resource);
+      if (!(spritesheet instanceof PIXI.Spritesheet)) {
+        throw new TypeError(`${this.id}.spritesheet is not a pixi spritesheet`);
+      }
+
+      return Object.values(spritesheet.textures);
+    }
+
+    if (this.atlas !== "") {
+      const resource = this.game.resolveResource(this.atlas);
+      const atlas = await PIXI.Assets.load(resource);
+      if (!(atlas instanceof PIXI.Texture)) {
+        throw new TypeError(`${this.id}.atlas is not a pixi texture`);
+      }
+
+      const framesX = Math.max(this.atlasFramesX, 1);
+      const framesY = Math.max(this.atlasFramesY, 1);
+
+      const frameWidth = atlas.width / framesX;
+      const frameHeight = atlas.height / framesY;
+
+      const frames: PIXI.SpritesheetData["frames"] = {};
+      for (let y = 0; y < framesY; y++) {
+        for (let x = 0; x < framesX; x++) {
+          const idx = `${x}-${y}`;
+          frames[idx] = {
+            frame: { w: frameWidth, h: frameHeight, x: x * frameWidth, y: y * frameHeight },
+            sourceSize: { w: frameWidth, h: frameHeight },
+          };
+        }
+      }
+
+      const data: PIXI.SpritesheetData = {
+        frames,
+        meta: {
+          image: resource,
+          size: { w: atlas.width, h: atlas.height },
+          scale: 1,
+        },
+      };
+
+      const spritesheet = new PIXI.Spritesheet(atlas, data);
+      await spritesheet.parse();
+
+      const textures = Object.values(spritesheet.textures);
+      if (textures.length > 0) return textures;
+
+      console.error(`${this.id}: atlas config had no textures`);
+    }
+
+    return [PIXI.Texture.WHITE];
+  }
+
+  async #textures(): Promise<PIXI.Texture[]> {
+    const textures = await this.#loadTextures();
+    if (textures.length === 0) throw new Error("failed to load textures");
+
+    const frames = textures.length;
+    const start = Math.max(0, Math.min(this.startFrame, frames - 1));
+    let end = Math.max(start, Math.min(this.endFrame, frames - 1));
+    if (this.endFrame === -1) {
+      end = frames - 1;
+    }
+
+    return textures.slice(start, end + 1);
+  }
 
   constructor(ctx: EntityContext) {
     super(ctx);
@@ -45,16 +117,30 @@ export class AnimatedSprite extends PixiEntity {
       "width",
       "height",
       "alpha",
-      "speed",
-      "loop",
       "startFrame",
       "endFrame",
+      "speed",
+      "loop",
     );
-    this.defineValue(AnimatedSprite, "spritesheetJSON", { type: SpritesheetAdapter });
 
-    if (this.game.isClient() && this.spritesheetJSON !== "") {
-      // PIXI.Assets.backgroundLoad(this.game.resolveResource(this.spritesheet));
-    }
+    this.defineValue(AnimatedSprite, "spritesheet", { type: SpritesheetAdapter });
+    this.defineValue(AnimatedSprite, "atlas", { type: TextureAdapter });
+    this.defineValues(AnimatedSprite, "atlasFramesX", "atlasFramesY");
+
+    // why was this disabled?
+    // if (this.game.isClient() && this.spritesheet !== "") {
+    //   PIXI.Assets.backgroundLoad(this.game.resolveResource(this.spritesheet));
+    // }
+
+    const updateTextures = () => {
+      const sprite = this.#sprite;
+      if (!sprite) return;
+
+      void this.#textures().then(textures => {
+        sprite.textures = textures;
+        sprite.play();
+      });
+    };
 
     const updateSize = () => {
       if (!this.#sprite) return;
@@ -69,6 +155,7 @@ export class AnimatedSprite extends PixiEntity {
       if (this.enabled && !this.game.paused.value) {
         this.#sprite.update(this.game.renderer.app.ticker);
       }
+
       updateSize();
     });
 
@@ -78,11 +165,7 @@ export class AnimatedSprite extends PixiEntity {
     heightValue?.onChanged(updateSize);
 
     const spritesheetValue = this.values.get("spritesheet");
-    spritesheetValue?.onChanged(() => {
-      void this.#getTextures().then(() => {
-        this.#updateTextures();
-      });
-    });
+    spritesheetValue?.onChanged(updateTextures);
 
     const alphaValue = this.values.get("alpha");
     alphaValue?.onChanged(() => {
@@ -107,57 +190,28 @@ export class AnimatedSprite extends PixiEntity {
 
     const startFrameValue = this.values.get("startFrame");
     const endFrameValue = this.values.get("endFrame");
-    startFrameValue?.onChanged(this.#updateTextures.bind(this));
-    endFrameValue?.onChanged(this.#updateTextures.bind(this));
-  }
+    startFrameValue?.onChanged(updateTextures);
+    endFrameValue?.onChanged(updateTextures);
 
-  async #getTextures(): Promise<void> {
-    if (this.spritesheetJSON === "") {
-      this.#originalTextures = [PIXI.Texture.WHITE];
-      return;
-    }
-
-    const spritesheet = await PIXI.Assets.load(this.game.resolveResource(this.spritesheetJSON));
-    if (!(spritesheet instanceof PIXI.Spritesheet)) {
-      throw new TypeError("texture is not a pixi spritesheet");
-    }
-    spritesheet.textureSource.scaleMode = "nearest";
-
-    this.#originalTextures = Object.values(spritesheet.textures);
-  }
-
-  #getCurrentTextures(): PIXI.Texture[] {
-    if (!this.#originalTextures) return [PIXI.Texture.WHITE];
-    const totalFrames = this.#originalTextures.length;
-    const start = Math.max(0, Math.min(this.startFrame, totalFrames - 1));
-    let end = Math.max(start, Math.min(this.endFrame, totalFrames - 1));
-    if (this.endFrame === -1) {
-      end = totalFrames - 1;
-    }
-    return this.#originalTextures.slice(start, end + 1);
-  }
-
-  #updateTextures() {
-    if (!this.#sprite || !this.#originalTextures) return;
-    this.#sprite.textures = this.#getCurrentTextures();
-    this.#sprite.play();
+    const atlasFramesXValue = this.values.get("atlasFramesX");
+    const atlasFramesYValue = this.values.get("atlasFramesY");
+    atlasFramesXValue?.onChanged(updateTextures);
+    atlasFramesYValue?.onChanged(updateTextures);
   }
 
   async onInitialize() {
     super.onInitialize();
     if (!this.container) return;
 
-    await this.#getTextures();
-    if (!this.#originalTextures) return;
-
     this.#sprite = new PIXI.AnimatedSprite({
       autoUpdate: false,
-      textures: this.#getCurrentTextures(),
+      textures: await this.#textures(),
       width: this.width * this.globalTransform.scale.x,
       height: this.height * this.globalTransform.scale.y,
       anchor: 0.5,
       alpha: this.alpha,
     });
+
     this.#sprite.animationSpeed = this.speed;
     this.#sprite.loop = this.loop;
     this.#sprite.play();
