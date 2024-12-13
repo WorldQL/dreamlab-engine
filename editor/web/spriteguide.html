@@ -177,9 +177,6 @@
           img.src = parentUrl + jsonData.meta.image;
 
           img.onload = () => {
-            const rows = Math.ceil(jsonData.meta.size.h / frameHeight);
-            const cols = Math.ceil(jsonData.meta.size.w / frameWidth);
-
             const table = document.createElement("table");
             table.style.borderCollapse = "collapse";
 
