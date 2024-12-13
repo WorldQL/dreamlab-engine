@@ -67,6 +67,9 @@ const reinjectBehaviors = (entity: Entity, def: SceneDescEntity): SceneDescEntit
       ) as SceneDescBehavior[];
 
       // TODO: elide any default values
+      behaviors.map(b => {
+        if (b.values && Object.keys(b.values).length === 0) delete b.values;
+      });
 
       def.behaviors = behaviors.length === 0 ? undefined : behaviors;
     }

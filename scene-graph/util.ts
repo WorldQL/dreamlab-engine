@@ -33,11 +33,15 @@ export const serializeBehaviorDefinition = (
   if (script === undefined)
     throw new Error("attempted to serialize BehaviorDefinition with unknown script location");
 
-  return {
+  const desc: SceneDescBehavior = {
     ref,
     script,
     values: def.values,
   };
+
+  if (desc.values && Object.keys(desc.values).length === 0) delete desc.values;
+
+  return desc;
 };
 
 export const serializeTransform = (transform: TransformOptions): SceneDescTransform => {
@@ -52,10 +56,10 @@ export const serializeTransform = (transform: TransformOptions): SceneDescTransf
     z: transform.z,
   };
 
-  if (txfm.position?.x === 0 && txfm.position?.y === 0) txfm.position = undefined;
-  if (txfm?.rotation === 0) txfm.rotation = undefined;
-  if (txfm.scale?.x === 1 && txfm.scale?.y === 1) txfm.scale = undefined;
-  if (txfm?.z === 0) txfm.z = undefined;
+  if (txfm.position?.x === 0 && txfm.position?.y === 0) delete txfm.position;
+  if (txfm?.rotation === 0) delete txfm.rotation;
+  if (txfm.scale?.x === 1 && txfm.scale?.y === 1) delete txfm.scale;
+  if (txfm?.z === 0) delete txfm.z;
 
   return txfm;
 };
@@ -86,16 +90,22 @@ export const serializeEntityDefinition = (
       ? def.behaviors.map(behavior => serializeBehaviorDefinition(game, behavior))
       : undefined;
 
-  return {
+  const desc: SceneDescEntity = {
     ref,
     type: Entity.getTypeName(def.type),
     name: def.name,
     enabled: def.enabled,
-    values,
     transform: def.transform ? serializeTransform(def.transform) : undefined,
+    values,
     behaviors,
     children,
   };
+
+  if (desc.values && Object.keys(desc.values).length === 0) delete desc.values;
+  if (desc.transform && Object.keys(desc.transform).length === 0) delete desc.transform;
+  if (desc.children && desc.children.length === 0) delete desc.children;
+
+  return desc;
 };
 
 export const convertBehaviorDefinition = async (
