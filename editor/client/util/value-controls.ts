@@ -176,6 +176,33 @@ export function createValueControl(
     }
 
     case SpritesheetAdapter: {
+      const resolve = async (url: string) => {
+        try {
+          const spritesheet = await PIXI.Assets.load(game.resolveResource(url));
+          if (!(spritesheet instanceof PIXI.Spritesheet)) {
+            throw new TypeError("not a spritesheet");
+          }
+
+          return url;
+        } catch {
+          throw new TypeError("Spritesheet URL could not be resolved");
+        }
+      };
+
+      const getUrl = async (): Promise<string | undefined> => {
+        const dragTarget = document.querySelector(
+          "[data-file][data-dragging]",
+        ) as HTMLElement | null;
+        if (!dragTarget) return;
+
+        const url = `res://${dragTarget.dataset.file}`;
+        try {
+          return await resolve(url);
+        } catch {
+          return undefined;
+        }
+      };
+
       const opts = _opts as ValueControlOptions<string | undefined>;
       const [control, refresh] = createInputFieldWithDefault({
         default: opts.default,
@@ -185,19 +212,21 @@ export function createValueControl(
         },
         convert: async value => {
           const url = z.literal("").or(z.string().url()).parse(value);
-          try {
-            const spritesheet = await PIXI.Assets.load(game.resolveResource(url));
-            if (!(spritesheet instanceof PIXI.Spritesheet)) {
-              throw new TypeError("not a spritesheet");
-            }
-
-            return url;
-          } catch {
-            throw new TypeError("Spritesheet URL could not be resolved");
-          }
+          return await resolve(url);
         },
         convertBack: x => x,
       });
+
+      control.addEventListener("dragover", async ev => {
+        const url = await getUrl();
+        if (url !== undefined) ev.preventDefault();
+      });
+
+      control.addEventListener("drop", async () => {
+        const url = await getUrl();
+        if (url) opts.set(url);
+      });
+
       return [control, refresh];
     }
 
