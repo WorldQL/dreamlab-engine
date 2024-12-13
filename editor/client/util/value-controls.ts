@@ -39,7 +39,7 @@ export function createValueControl(
   _opts: ValueControlOptions<unknown>,
 ): [control: HTMLElement, refresh: () => void] {
   // @ts-expect-error: ugly TS hack to check enum adapter
-  if (_opts.typeTag.prototype instanceof EnumAdapter) {
+  if (_opts.typeTag?.prototype instanceof EnumAdapter) {
     // @ts-expect-error: ugly TS hack to force instantiate and get enum out of the type tag
     const adapter = new _opts.typeTag(game) as EnumAdapter<string[]>;
     const control = elem(
