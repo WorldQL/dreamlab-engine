@@ -261,9 +261,6 @@ export class Properties implements InspectorUIWidget {
       refreshZIndex();
     });
 
-    const count = [...entity.values.values()].filter(v => !v.hidden).length;
-    if (count === 0) return;
-
     const valuesSection = new DataDetails();
     container.append(valuesSection);
     valuesSection.setHeaderContent(elem("h2", {}, ["Values"]));
@@ -272,8 +269,6 @@ export class Properties implements InspectorUIWidget {
     valuesSection.addContent(valuesTable);
 
     for (const [key, value] of entity.values.entries()) {
-      if (value.hidden) continue;
-
       const [valueField, refreshValue] = createValueControl(this.game, {
         id: `${entity.ref}/${key}`,
         typeTag: value.typeTag,
@@ -361,5 +356,26 @@ export class Properties implements InspectorUIWidget {
         });
       });
     }
+
+    const updateHiddenStates = () => {
+      let hiddenCount = 0;
+      for (const [id, element] of valuesTable.entries) {
+        if (!id.startsWith("value:")) continue;
+        const v = entity.values.get(id.replace("value:", ""));
+        if (!v) continue;
+
+        const hidden = typeof v.hidden === "boolean" ? v.hidden : v.hidden(entity.values);
+        if (hidden) element.dataset.hidden = "";
+        else delete element.dataset.hidden;
+
+        if (hidden) hiddenCount += 1;
+      }
+
+      if (hiddenCount === entity.values.size) valuesSection.dataset.hidden = "";
+      else delete valuesSection.dataset.hidden;
+    };
+
+    entity.values.forEach(value => value.onChanged(() => updateHiddenStates()));
+    updateHiddenStates();
   }
 }

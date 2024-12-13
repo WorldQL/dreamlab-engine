@@ -90,7 +90,7 @@ export class Value<T = unknown> {
 
   description: string;
   replicated: boolean = true;
-  hidden: boolean = false;
+  hidden: boolean | ((values: ReadonlyMap<string, Value>) => boolean) = false;
   persistent: boolean = true;
 
   constructor(

@@ -1,6 +1,10 @@
 dreamlab-data-details {
   display: block;
 
+  &[data-hidden] {
+    display: none;
+  }
+
   & > details > summary {
     display: flex;
     position: relative;

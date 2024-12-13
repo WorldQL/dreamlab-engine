@@ -101,7 +101,7 @@ type EntityValueOpts<E extends Entity, P extends EntityValueProp<E>> = {
   type?: ValueTypeTag<E[P]>;
   description?: string;
   replicated?: boolean;
-  hidden?: boolean;
+  hidden?: Value["hidden"];
   persistent?: boolean;
 };
 

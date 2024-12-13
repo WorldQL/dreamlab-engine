@@ -6,6 +6,10 @@ dreamlab-data-table {
     width: 100%;
     border-spacing: 2px;
 
+    tr[data-hidden] {
+      display: none;
+    }
+
     th,
     td {
       --padding: 0.5em;

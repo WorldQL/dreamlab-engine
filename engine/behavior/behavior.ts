@@ -62,7 +62,7 @@ type BehaviorValueOpts<B extends Behavior, P extends BehaviorValueProp<B>> = {
   type?: ValueTypeTag<B[P]>;
   description?: string;
   replicated?: boolean;
-  hidden?: boolean;
+  hidden?: Value["hidden"];
   persistent?: boolean;
 };
 
