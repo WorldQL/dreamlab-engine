@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-explicit-any
 import { generateCUID } from "@dreamlab/vendor/cuid.ts";
-import type { ConditionalExcept } from "@dreamlab/vendor/type-fest.ts";
+import type { ConditionalExcept, Except } from "@dreamlab/vendor/type-fest.ts";
 
 import { Entity } from "../entity/mod.ts";
 import { Game } from "../game.ts";
@@ -66,24 +66,45 @@ type BehaviorValueOpts<B extends Behavior, P extends BehaviorValueProp<B>> = {
   persistent?: boolean;
 };
 
-// TODO: Fix adapterType type. Can't quite get it to work in browser editor.
-// TODO: Add ability to pass EntityValueOpts
-// export function syncedValue(adapterType?: ValueTypeAdapter<any>) {
+type ValuesToDefine = Map<string, BehaviorValueOpts<Behavior, BehaviorValueProp<Behavior>>>;
+
 /**
  * Makes the following class property visible in the inspector and synced over the network.
  */
-export function syncedValue(adapterType?: any) {
-  return function (target: any, propertyKey: string) {
-    if (!target.constructor[internal.defineValuesProperties]) {
-      Object.defineProperty(target.constructor, internal.defineValuesProperties, {
-        value: [],
-        writable: true,
-        configurable: false,
-        enumerable: false,
-      });
-    }
+export function syncedValue<B extends Behavior, P extends BehaviorValueProp<B>>(
+  adapterType?: ValueTypeTag<B[P]>,
+  opts?: Except<BehaviorValueOpts<B, P>, "type" | "hidden"> & { hidden?: boolean },
+) {
+  return function (_: undefined, ctx: ClassFieldDecoratorContext<B>) {
+    if (typeof ctx.name !== "string") return;
+    if (ctx.static) return;
 
-    target.constructor[internal.defineValuesProperties].push({ propertyKey, adapterType });
+    const name = ctx.name as P;
+    ctx.addInitializer(function () {
+      // const ctor = this.constructor as BehaviorConstructor<B>;
+      const _opts: BehaviorValueOpts<B, P> = { type: adapterType, ...opts };
+      if (_opts.type === undefined) delete _opts.type;
+
+      // we could just do this but initializers run before the constructor and idk about the ramifications
+      // this.defineValue(ctor, name, _opts);
+
+      if (!(internal.defineValuesProperties in this)) {
+        Object.defineProperty(this, internal.defineValuesProperties, {
+          value: new Map() as ValuesToDefine,
+          writable: true,
+          configurable: false,
+          enumerable: false,
+        });
+      }
+
+      // somewhat redundant check to make the TS compiler happy lol
+      if (internal.defineValuesProperties in this) {
+        const toDefine = this[internal.defineValuesProperties] as ValuesToDefine;
+        toDefine.set(name, _opts);
+      } else {
+        throw new Error("oh no");
+      }
+    });
   };
 }
 
@@ -338,19 +359,15 @@ export class Behavior implements ISignalHandler {
   }
 
   [internal.implicitSetup]() {
-    // @ts-expect-error ... = "I know this is correct"
-    const valuesToDefine = this.constructor[internal.defineValuesProperties];
+    const ctor = this.constructor as BehaviorConstructor<this>;
+    if (!(internal.defineValuesProperties in this)) return;
 
-    if (valuesToDefine && valuesToDefine.length > 0) {
-      for (const td of valuesToDefine) {
-        if (td.adapterType) {
-          // @ts-expect-error ...
-          this.defineValue(this.constructor, td.propertyKey, { type: td.adapterType });
-        } else {
-          // @ts-expect-error ...
-          this.defineValue(this.constructor, td.propertyKey);
-        }
-      }
+    const toDefine = this[internal.defineValuesProperties] as ValuesToDefine;
+    if (toDefine.size === 0) return;
+
+    for (const [name, opts] of toDefine) {
+      // @ts-expect-error: props are never on base behavior
+      this.defineValue(ctor, name, opts);
     }
   }
 

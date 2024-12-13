@@ -58,11 +58,6 @@ Symbol.asyncDispose ??= Symbol.for("Symbol.asyncDispose");`,
   sourcemap: "linked",
   keepNames: true,
   splitting: true,
-  tsconfigRaw: {
-    compilerOptions: {
-      experimentalDecorators: true,
-    },
-  },
 };
 
 /**

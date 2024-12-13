@@ -27,8 +27,8 @@ export class BehaviorTypeInfoService {
     dummyEntity.behaviors.push(behavior);
     dummyGame[internal.behaviorLoader].initialize(behaviorType);
 
-    behavior.setup();
     behavior[internal.implicitSetup]();
+    behavior.setup();
 
     if (RUN_BEHAVIOR_INITIALIZATION) {
       try {
