@@ -33,20 +33,25 @@
   </head>
 
   <body>
-    <div style="position: fixed; z-index: 2; background-color: rgb(27, 34, 49); width: 100%; border-bottom: 1px solid gray;">
+    <div
+      style="
+        position: fixed;
+        z-index: 2;
+        background-color: rgb(27, 34, 49);
+        width: 100%;
+        border-bottom: 1px solid gray;
+      "
+    >
       <button
         onclick="toggleBg()"
-        style="margin-bottom: 4px; margin-top: 4px; margin-left: 4px;"
+        style="margin-bottom: 4px; margin-top: 4px; margin-left: 4px"
       >
         Toggle background color
       </button>
       <button onclick="zoom('in')">Zoom In</button>
       <button onclick="zoom('out')">Zoom Out</button>
     </div>
-    <div
-      id="container"
-      style="overflow: auto; margin-top: 2rem;"
-    ></div>
+    <div id="container" style="overflow: auto; margin-top: 2rem"></div>
 
     <script>
       let cellSizeMultiplier = 1; // Multiplier to adjust cell size
@@ -90,23 +95,25 @@
 
       document.addEventListener("DOMContentLoaded", async () => {
         const urlParams = new URLSearchParams(window.location.search);
-        function generateSpriteTableFromWidthHeight(spritesheetUrl, frameWidth, frameHeight) {
+        function generateSpriteTableFromWidthHeight(spritesheetUrl, framesX, framesY) {
           const img = new Image();
           img.src = spritesheetUrl;
 
           img.onload = () => {
-            const rows = Math.ceil(img.height / frameHeight);
-            const cols = Math.ceil(img.width / frameWidth);
+            const rows = framesX;
+            const cols = framesY;
+            const frameWidth = img.width / framesX;
+            const frameHeight = img.height / framesY;
 
             const table = document.createElement("table");
             table.style.borderCollapse = "collapse";
 
             let spriteNumber = 0;
 
-            for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
               const tr = document.createElement("tr");
 
-              for (let col = 0; col < cols; col++) {
+              for (let row = 0; row < rows; row++) {
                 const canvas = document.createElement("canvas");
                 canvas.width = frameWidth;
                 canvas.height = frameHeight;
@@ -123,8 +130,8 @@
                 ctx.imageSmoothingEnabled = false; // Disable smoothing for pixel art
                 ctx.drawImage(
                   img,
-                  col * frameWidth, // frame pos x
-                  row * frameHeight, // frame pos y
+                  row * frameWidth, // frame pos x
+                  col * frameHeight, // frame pos y
                   frameWidth,
                   frameHeight,
                   0,
@@ -255,11 +262,11 @@
           };
         }
         const spritesheetUrl = urlParams.get("spritesheetUrl");
-        const frameWidth = parseInt(urlParams.get("frameX"));
-        const frameHeight = parseFloat(urlParams.get("frameY"));
+        const framesX = parseInt(urlParams.get("frameX"));
+        const framesY = parseFloat(urlParams.get("frameY"));
 
         if (spritesheetUrl) {
-          generateSpriteTableFromWidthHeight(spritesheetUrl, frameWidth, frameHeight);
+          generateSpriteTableFromWidthHeight(spritesheetUrl, framesX, framesY);
         } else {
           const spritesheetJsonUrl = urlParams.get("spritesheetJson");
           const choppedUrl = spritesheetJsonUrl.split("/").slice(0, -1).join("/") + "/";
