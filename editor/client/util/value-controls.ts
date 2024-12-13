@@ -180,7 +180,9 @@ export function createValueControl(
       const [control, refresh] = createInputFieldWithDefault({
         default: opts.default,
         get: opts.get,
-        set: opts.set,
+        set: v => {
+          opts.set(v ?? "");
+        },
         convert: async value => {
           const url = z.literal("").or(z.string().url()).parse(value);
           try {
