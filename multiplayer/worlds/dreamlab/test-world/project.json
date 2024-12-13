@@ -12,6 +12,12 @@
           "type": "@core/SolidColor",
           "name": "SolidColor",
           "enabled": true,
+          "transform": {
+            "position": {
+              "x": 0,
+              "y": 2
+            }
+          },
           "values": {
             "static": false,
             "hidden": false,
@@ -24,25 +30,22 @@
               1
             ]
           },
-          "transform": {
-            "position": {
-              "x": 0,
-              "y": 2
+          "behaviors": [
+            {
+              "ref": "bhv_fz6dmezge7qfkhnjejvynriz",
+              "script": "res://src/spin.ts"
             }
-          },
+          ],
           "children": [
             {
               "ref": "ent_iwegy0y1fd7cerh2x63kzikn",
               "type": "@core/UIPanel",
               "name": "UIPanel",
               "enabled": true,
-              "values": {},
-              "transform": {},
               "behaviors": [
                 {
                   "ref": "bhv_kae9tshiuxw6witkvjpgmbn7",
-                  "script": "res://src/brat.ts",
-                  "values": {}
+                  "script": "res://src/brat.ts"
                 }
               ]
             }
@@ -52,9 +55,7 @@
           "ref": "ent_rnfnqlgcchh0dkin2g3tyklx",
           "type": "@core/Empty",
           "name": "grnm,gdr",
-          "enabled": true,
-          "values": {},
-          "transform": {},
+          "enabled": false,
           "behaviors": [
             {
               "ref": "bhv_mgph3c8i3rcj5a9px92sr666",
@@ -72,8 +73,6 @@
               "type": "@core/Empty",
               "name": "Empty",
               "enabled": true,
-              "values": {},
-              "transform": {},
               "behaviors": [
                 {
                   "ref": "bhv_zaa9stucchlzgcudle3s0frj",
@@ -92,7 +91,14 @@
           "ref": "ent_k1085ddms1jp67edfw4pe0ot",
           "type": "@core/AnimatedSprite",
           "name": "AnimatedSprite",
-          "enabled": true,
+          "enabled": false,
+          "transform": {
+            "scale": {
+              "x": 8,
+              "y": 8
+            },
+            "z": 100
+          },
           "values": {
             "static": false,
             "hidden": false,
@@ -109,13 +115,6 @@
               "x": 14,
               "y": 48
             }
-          },
-          "transform": {
-            "scale": {
-              "x": 8,
-              "y": 8
-            },
-            "z": 100
           }
         }
       ],
@@ -130,26 +129,21 @@
             "smooth": 0.1,
             "unlocked": false,
             "zoom": 1
-          },
-          "transform": {}
+          }
         },
         {
           "ref": "ent_i09xjhef9j6tt630jn2ngdta",
           "type": "@core/Empty",
           "name": "PlayerSpawnManager",
           "enabled": true,
-          "values": {},
-          "transform": {},
           "behaviors": [
             {
               "ref": "bhv_dqg9eccve24e6rxphsx4y4px",
-              "script": "res://src/player-spawner.js",
-              "values": {}
+              "script": "res://src/player-spawner.js"
             },
             {
               "ref": "bhv_g4lx3mjh7raeo1p23hsd9980",
-              "script": "res://src/my-library.ts",
-              "values": {}
+              "script": "res://src/my-library.ts"
             }
           ]
         }

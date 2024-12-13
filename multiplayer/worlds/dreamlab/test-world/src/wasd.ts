@@ -1,6 +1,7 @@
-import { Vector2, Behavior } from "@dreamlab/engine";
+import { Behavior, syncedValue, Vector2 } from "@dreamlab/engine";
 
 export default class WASDMovementBehavior extends Behavior {
+  @syncedValue()
   speed = 1.0;
 
   #up = this.inputs.create("@wasd/up", "Move Up", "KeyW");
@@ -8,14 +9,10 @@ export default class WASDMovementBehavior extends Behavior {
   #left = this.inputs.create("@wasd/left", "Move Left", "KeyA");
   #right = this.inputs.create("@wasd/right", "Move Right", "KeyD");
 
-  onInitialize(): void {
-    this.defineValue(WASDMovementBehavior, "speed");
-  }
-
-  onTick(): void {
+  override onTick(): void {
     if (this.entity.authority !== this.game.network.self) return;
 
-    const movement = new Vector2(0, 0);
+    const movement = Vector2.ZERO;
     if (this.#up.held) movement.y += 1;
     if (this.#down.held) movement.y -= 1;
     if (this.#right.held) movement.x += 1;
