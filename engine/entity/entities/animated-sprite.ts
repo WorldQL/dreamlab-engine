@@ -122,9 +122,20 @@ export class AnimatedSprite extends PixiEntity {
       "loop",
     );
 
-    this.defineValue(AnimatedSprite, "jsonSpritesheet", { type: SpritesheetAdapter });
-    this.defineValue(AnimatedSprite, "spritesheet", { type: TextureAdapter });
-    this.defineValue(AnimatedSprite, "frameCount", { type: Vector2Adapter });
+    this.defineValue(AnimatedSprite, "jsonSpritesheet", {
+      type: SpritesheetAdapter,
+      hidden: values => values.get("spritesheet")?.value !== "",
+    });
+
+    this.defineValue(AnimatedSprite, "spritesheet", {
+      type: TextureAdapter,
+      hidden: values => values.get("jsonSpritesheet")?.value !== "",
+    });
+
+    this.defineValue(AnimatedSprite, "frameCount", {
+      type: Vector2Adapter,
+      hidden: values => values.get("jsonSpritesheet")?.value !== "",
+    });
 
     // why was this disabled?
     // if (this.game.isClient() && this.spritesheet !== "") {
