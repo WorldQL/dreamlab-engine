@@ -174,7 +174,9 @@ export class AnimatedSprite extends PixiEntity {
     widthValue?.onChanged(updateSize);
     heightValue?.onChanged(updateSize);
 
-    const spritesheetValue = this.values.get("jsonSpritesheet");
+    const jsonSpritesheetValue = this.values.get("jsonSpritesheet");
+    const spritesheetValue = this.values.get("spritesheet");
+    jsonSpritesheetValue?.onChanged(updateTextures);
     spritesheetValue?.onChanged(updateTextures);
 
     const alphaValue = this.values.get("alpha");
