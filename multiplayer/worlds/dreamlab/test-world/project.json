@@ -8,6 +8,7 @@
       "registration": [],
       "world": [
         {
+          "ref": "ent_f96eymr42kbiqrk2o9bb9hdq",
           "type": "@core/SolidColor",
           "name": "SolidColor",
           "enabled": true,
@@ -31,9 +32,11 @@
           },
           "children": [
             {
+              "ref": "ent_iwegy0y1fd7cerh2x63kzikn",
               "type": "@core/UIPanel",
               "name": "UIPanel",
               "enabled": true,
+              "values": {},
               "transform": {},
               "behaviors": [
                 {
@@ -41,16 +44,16 @@
                   "script": "res://src/brat.ts",
                   "values": {}
                 }
-              ],
-              "ref": "ent_iwegy0y1fd7cerh2x63kzikn"
+              ]
             }
-          ],
-          "ref": "ent_f96eymr42kbiqrk2o9bb9hdq"
+          ]
         },
         {
+          "ref": "ent_rnfnqlgcchh0dkin2g3tyklx",
           "type": "@core/Empty",
           "name": "grnm,gdr",
           "enabled": true,
+          "values": {},
           "transform": {},
           "behaviors": [
             {
@@ -65,9 +68,11 @@
           ],
           "children": [
             {
+              "ref": "ent_l6y9w2c99fn09mam46wosv2g",
               "type": "@core/Empty",
               "name": "Empty",
               "enabled": true,
+              "values": {},
               "transform": {},
               "behaviors": [
                 {
@@ -79,15 +84,42 @@
                     ]
                   }
                 }
-              ],
-              "ref": "ent_l6y9w2c99fn09mam46wosv2g"
+              ]
             }
-          ],
-          "ref": "ent_rnfnqlgcchh0dkin2g3tyklx"
+          ]
+        },
+        {
+          "ref": "ent_k1085ddms1jp67edfw4pe0ot",
+          "type": "@core/AnimatedSprite",
+          "name": "AnimatedSprite",
+          "enabled": true,
+          "values": {
+            "static": false,
+            "hidden": false,
+            "width": 1,
+            "height": 1,
+            "alpha": 1,
+            "startFrame": 546,
+            "endFrame": 554,
+            "speed": 0.1,
+            "loop": true,
+            "jsonSpritesheet": "",
+            "spritesheet": "res://assets/PlayerSheet.png",
+            "frameWidth": 14,
+            "frameHeight": 48
+          },
+          "transform": {
+            "scale": {
+              "x": 8,
+              "y": 8
+            },
+            "z": 100
+          }
         }
       ],
       "local": [
         {
+          "ref": "ent_rthb692t18htouso0q6fwqb3",
           "type": "@core/Camera",
           "name": "Camera",
           "enabled": true,
@@ -97,13 +129,14 @@
             "unlocked": false,
             "zoom": 1
           },
-          "transform": {},
-          "ref": "ent_rthb692t18htouso0q6fwqb3"
+          "transform": {}
         },
         {
+          "ref": "ent_i09xjhef9j6tt630jn2ngdta",
           "type": "@core/Empty",
           "name": "PlayerSpawnManager",
           "enabled": true,
+          "values": {},
           "transform": {},
           "behaviors": [
             {
@@ -116,8 +149,7 @@
               "script": "res://src/my-library.ts",
               "values": {}
             }
-          ],
-          "ref": "ent_i09xjhef9j6tt630jn2ngdta"
+          ]
         }
       ],
       "server": [],
