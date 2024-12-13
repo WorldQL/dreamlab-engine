@@ -105,8 +105,10 @@
             "loop": true,
             "jsonSpritesheet": "",
             "spritesheet": "res://assets/PlayerSheet.png",
-            "frameWidth": 14,
-            "frameHeight": 48
+            "frameCount": {
+              "x": 14,
+              "y": 48
+            }
           },
           "transform": {
             "scale": {

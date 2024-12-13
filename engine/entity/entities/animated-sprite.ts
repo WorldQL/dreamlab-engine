@@ -2,7 +2,7 @@ import { EntityEnableChanged } from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { IVector2, Vector2 } from "../../math/mod.ts";
 import { EntityTransformUpdate, GameRender } from "../../signals/mod.ts";
-import { SpritesheetAdapter, TextureAdapter } from "../../value/adapters/texture-adapter.ts";
+import { SpritesheetAdapter, TextureAdapter, Vector2Adapter } from "../../value/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
 import { PixiEntity } from "../pixi-entity.ts";
 
@@ -25,8 +25,7 @@ export class AnimatedSprite extends PixiEntity {
 
   jsonSpritesheet: string = "";
   spritesheet: string = "";
-  frameWidth: number = 1;
-  frameHeight: number = 1;
+  frameCount: Vector2 = Vector2.ONE;
 
   alpha: number = 1;
   speed: number = 0.1;
@@ -57,8 +56,8 @@ export class AnimatedSprite extends PixiEntity {
         throw new TypeError(`${this.id}.spritesheet is not a pixi texture`);
       }
 
-      const framesX = Math.max(this.frameWidth, 1);
-      const framesY = Math.max(this.frameHeight, 1);
+      const framesX = Math.max(this.frameCount.x, 1);
+      const framesY = Math.max(this.frameCount.y, 1);
 
       const frameWidth = spritesheetTexture.width / framesX;
       const frameHeight = spritesheetTexture.height / framesY;
@@ -125,7 +124,7 @@ export class AnimatedSprite extends PixiEntity {
 
     this.defineValue(AnimatedSprite, "jsonSpritesheet", { type: SpritesheetAdapter });
     this.defineValue(AnimatedSprite, "spritesheet", { type: TextureAdapter });
-    this.defineValues(AnimatedSprite, "frameWidth", "frameHeight");
+    this.defineValue(AnimatedSprite, "frameCount", { type: Vector2Adapter });
 
     // why was this disabled?
     // if (this.game.isClient() && this.spritesheet !== "") {
@@ -193,10 +192,8 @@ export class AnimatedSprite extends PixiEntity {
     startFrameValue?.onChanged(updateTextures);
     endFrameValue?.onChanged(updateTextures);
 
-    const frameWidthValue = this.values.get("frameWidth");
-    const frameHeightValue = this.values.get("frameHeight");
-    frameWidthValue?.onChanged(updateTextures);
-    frameHeightValue?.onChanged(updateTextures);
+    const frameCountValue = this.values.get("frameCount");
+    frameCountValue?.onChanged(updateTextures);
   }
 
   async onInitialize() {

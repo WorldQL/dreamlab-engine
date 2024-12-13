@@ -7,6 +7,7 @@ import {
   EntityRenamed,
   EntityReparented,
   EntityTransformUpdate,
+  Vector2,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { element as elem } from "@dreamlab/ui";
@@ -312,10 +313,17 @@ export class Properties implements InspectorUIWidget {
 
       button.addEventListener("click", () => {
         const spritesheet = entity.values.get("spritesheet")?.value;
-        const framesX = entity.values.get("frameWidth")?.value;
-        const framesY = entity.values.get("frameHeight")?.value;
+        const frameCount = entity.values.get("frameCount")?.value as Vector2 | undefined;
+        const framesX = frameCount?.x;
+        const framesY = frameCount?.y;
+
         const spritesheetJSON = entity.values.get("jsonSpritesheet")?.value;
-        if (typeof spritesheet === "string" && spritesheet !== "" && framesX !== 1 && framesY !== 1) {
+        if (
+          typeof spritesheet === "string" &&
+          spritesheet !== "" &&
+          framesX !== 1 &&
+          framesY !== 1
+        ) {
           const url = this.game.resolveResource(spritesheet);
           const popupUrl = `/spriteguide.html?spritesheetUrl=${url}&frameX=${framesX}&frameY=${framesY}`;
           window.open(popupUrl, "_blank", "popup");
