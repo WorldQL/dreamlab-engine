@@ -9,6 +9,10 @@ import { PixiEntity } from "../pixi-entity.ts";
 // this shockingly fixes spritesheet bleeding
 PIXI.AbstractRenderer.defaultOptions.roundPixels = true;
 
+// todo: implement this using fancy new conditional fields.
+const SpriteSliceModes = ["Width and Height", "Rows and Columns"] as const;
+type SpriteSliceModes = (typeof SpriteSliceModes)[number];
+
 export class AnimatedSprite extends PixiEntity {
   static {
     Entity.registerType(this, "@core");
