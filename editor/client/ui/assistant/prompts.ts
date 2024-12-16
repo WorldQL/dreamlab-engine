@@ -170,7 +170,9 @@ fileKeys.forEach(key => {
   }
 });
 
-export const summarize = `You will be provided with a TypeScript source file from a game engine. Your task is to analyze this file and produce a concise summary of its functionality and how it works. This summary will be used to determine whether the file is relevant for implementing specific use cases in the game engine.
+export const summarize = `You will be provided with a TypeScript source file from a game engine. Your task is to analyze this file and produce a concise summary of its functionality and how it works. This summary will be used to determine whether the file is relevant for implementing specific use cases in the game.
+
+You are part of an AI agent which helps a user create a game. Your summaries will be used to give the agent context about the codebase.
 
 Here is the TypeScript file content:
 
@@ -188,7 +190,8 @@ Analyze the file carefully, focusing on the following aspects:
 When summarizing the file's functionality, keep in mind:
 - The summary is for an AI agent that already understands the structure of Behavior classes and the general context of a game engine.
 - Focus on the core functionality and avoid redundant information about basic game engine concepts.
+- Only talk about what the file specifically does. Do not include generic information or speculate.
 - Highlight any unique or specialized features implemented in this file.
-- Keep the summary concise but informative, aiming for 3-5 sentences.
+- Keep the summary concise but informative, aiming for 2-3 sentences.
 
-Provide your summary in a single <summary> tag. The summary should be clear, concise, and focused on how this file contributes to the game engine's functionality.`
+Provide your summary in a single <summary> tag. The summary should be clear, concise, and focused on how this file contributes to the game's functionality.`

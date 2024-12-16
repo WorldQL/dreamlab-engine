@@ -1,7 +1,18 @@
 import { ClientGame } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 import { InspectorUI } from "../inspector.ts";
-import { Book, Check, CircleDotDashed, Clock, Copy, icon, Loader, PlusCircle, RotateCcw, Send } from "../../_icons.ts";
+import {
+  Book,
+  Check,
+  CircleDotDashed,
+  Clock,
+  Copy,
+  icon,
+  Loader,
+  PlusCircle,
+  RotateCcw,
+  Send,
+} from "../../_icons.ts";
 import { fileContents, step0, step1, step2 } from "./prompts.ts";
 import markdownit from "npm:markdown-it@14.1.0";
 import hljs from "npm:highlight.js/lib/core";
@@ -84,6 +95,10 @@ export class Assistant {
       { className: "new-chat-button", title: "Start a new chat" },
       [icon(PlusCircle), "Clear Chat"],
     ) as HTMLButtonElement;
+
+    for (const ent of game.world._.EditEntities._.prefabs.children) {
+      console.log(ent);
+    }
   }
 
   setup(ui: InspectorUI): void {
@@ -255,43 +270,27 @@ export class Assistant {
       const chunk = decoder.decode(value);
       const events = chunk.split("\n\n");
 
-      // for (const event of events) {
-      //   if (event.trim() !== "") {
-      //     const [, data] = event.split("data: ");
-      //     if (data) {
-      //       try {
-      //         const d = JSON.parse(data);
-      //         if (d.done) break;
+      for (const event of events) {
+        if (event.trim() !== "") {
+          const [, data] = event.split("data: ");
+          if (data) {
+            try {
+              const d = JSON.parse(data);
+              if (d.done) break;
 
-      //         if (d.error) throw new Error(d.error);
+              if (d.error) throw new Error(d.error);
 
-      //         let line: string = d.text;
-      //         accumulatedText += line;
+              let line: string = d.text;
+              accumulatedText += line;
 
-      //         if (accumulatedText.includes("<selected_topics>") && !isHandlingSelectedTopics) {
-      //           isHandlingSelectedTopics = true;
-      //           selectedTopicsText = "<selected_topics>";
-      //           continue;
-      //         }
-
-      //         if (isHandlingSelectedTopics) {
-      //           selectedTopicsText += d.text;
-      //           if (selectedTopicsText.includes("</selected_topics>")) {
-      //             this.handleSelectedTopics(botMessageElement, selectedTopicsText, prompt);
-      //             isHandlingSelectedTopics = false;
-      //             accumulatedText = "";
-      //             return;
-      //           }
-      //         } else {
-      //           const renderedContent = md.render(accumulatedText);
-      //           this.renderContent(botMessageElement, renderedContent);
-      //         }
-      //       } catch (error) {
-      //         console.error("Error parsing JSON:", error);
-      //       }
-      //     }
-      //   }
-      // }
+              const renderedContent = md.render(accumulatedText);
+              this.renderContent(botMessageElement, renderedContent);
+            } catch (error) {
+              console.error("Error parsing JSON:", error);
+            }
+          }
+        }
+      }
     }
 
     ScriptSession.chatContext.push({
@@ -373,7 +372,6 @@ export class Assistant {
 
       if (topic in fileContents) {
         collectedDocumentation += `\`\`\`typescript
-  // deno-lint-ignore no-explicit-any
   ${(fileContents as any)[topic]}
   \`\`\`\n`;
       } else {
