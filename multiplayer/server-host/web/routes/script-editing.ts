@@ -371,13 +371,14 @@ export const serveScriptEditingAPI = (router: Router) => {
         if (!cloneStatus.success)
           throw new JsonAPIError(Status.InternalServerError, "Failed to clone sourceProject");
 
-        const sourceProjectName = sourceProjectDir.substring(
-          sourceProjectDir.lastIndexOf("/") + 1,
+        const sourceProjectName = body.sourceProject.substring(
+          body.sourceProject.lastIndexOf("/") + 1,
         );
 
         const importedDir = path.join(targetProjectDir, "src", "imported", sourceProjectName);
         await fs.ensureDir(path.dirname(importedDir));
         await fs.copy(sourceProjectDir, importedDir);
+        await Deno.remove(path.join(importedDir, ".git"), { recursive: true });
 
         const importedProjectJson = await Deno.readTextFile(
           path.join(importedDir, "project.json"),
@@ -389,7 +390,9 @@ export const serveScriptEditingAPI = (router: Router) => {
           throw new Error("Can't import from externalized scene JSON!");
         }
 
-        const importedScriptLocation = `res://src/imported/${sourceProjectName}`;
+        await buildWorld(instance.info.worldId, instance.info.worldDirectory, "_dist");
+
+        const importedScriptLocation = `res://src/imported/${sourceProjectName}/`;
         const rewriteScriptLocations = (e: SceneDescEntity): void => {
           for (const behavior of e.behaviors ?? []) {
             behavior.script = behavior.script.replace(/^res:\/\//, importedScriptLocation);
