@@ -1,5 +1,9 @@
+import type { Entity, JsonArray, JsonObject, Primitive } from "@dreamlab/engine";
 import { ScriptSession } from "./assistant.ts";
 import { summarize } from "./prompts.ts";
+import { EditorMetadataEntity } from "../../../common/mod.ts";
+import { BehaviorSchema } from "@dreamlab/scene";
+import type { InspectorUI } from "../inspector.ts";
 
 async function handleStreamingResponse(
   reader: ReadableStreamDefaultReader<Uint8Array>,
@@ -41,7 +45,7 @@ async function handleStreamingResponse(
 const map: { filename: string; summary: string }[] = [];
 
 export async function buildScriptMap() {
-  return
+  return;
   const fileUrl = new URL(ScriptSession.httpServer);
   fileUrl.pathname = `/api/v1/edit/${ScriptSession.instance}/files/`;
 
@@ -97,4 +101,53 @@ export async function buildScriptMap() {
     mdsummary += `\t- ${s}\n`;
   }
   console.log(mdsummary);
+}
+
+export async function buildPrefabMap(prefabEditRoot: Entity, ui: InspectorUI) {
+  interface BehaviorEntry {
+    path: string;
+    values: Record<string, Primitive | JsonArray | JsonObject>;
+  }
+  interface PrefabMapEntry {
+    name: string;
+    type: string;
+    children?: PrefabMapEntry[];
+    behaviors: BehaviorEntry[];
+  }
+
+  const prefabsMap: PrefabMapEntry[] = [];
+
+  for (const [_, child] of prefabEditRoot.children) {
+    const editorMetadata = child.children.get("__EditorMetadata")?.cast(EditorMetadataEntity);
+    if (!editorMetadata) continue;
+    const scriptNames: string[] = [];
+    const behaviors = BehaviorSchema.array().parse(JSON.parse(editorMetadata.behaviorsJson));
+    const behaviorEntries: BehaviorEntry[] = [];
+    for (const behavior of behaviors) {
+      const scriptPath = behavior.script.split("res://").pop()!;
+      scriptNames.push(scriptPath);
+      const info = await ui.behaviorTypeInfo.get(behavior.script);
+      const wipValues = behavior.values;
+
+      // add values that are default to desc
+      for (const v of info.values) {
+        if (!(v.key in wipValues)) {
+          wipValues[v.key] = v.default ?? "";
+        }
+      }
+      behaviorEntries.push({ path: scriptPath, values: wipValues });
+    }
+    const entityType = facadeToEntityTypeName(child.constructor.name);
+
+    prefabsMap.push({ name: child.name, type: entityType, behaviors: behaviorEntries });
+  }
+  console.log(prefabsMap);
+}
+
+function facadeToEntityTypeName(editEntityConstructorName: string) {
+  if (editEntityConstructorName === "EditorFacadeCamera") return "Camera";
+  if (editEntityConstructorName === "EditorFacadeRectCollider") return "RectCollider";
+  if (editEntityConstructorName === "EditorFacadeCollider") return "Collider";
+
+  return editEntityConstructorName;
 }

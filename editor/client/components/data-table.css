@@ -12,12 +12,11 @@ dreamlab-data-table {
 
     th,
     td {
-      --padding: 0.5em;
+      --padding: 0.26em;
       background-color: rgb(var(--color-bg-2) / 1);
       border-radius: var(--border-radius);
       padding: var(--padding);
       overflow: clip;
-      text-overflow: ellipsis;
 
       &:has(> input[type="text"]) {
         padding: 0;

@@ -1,4 +1,4 @@
-import { ClientGame } from "@dreamlab/engine";
+import { ClientGame, type JsonArray, type JsonObject, type Primitive } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 import { InspectorUI } from "../inspector.ts";
 import {
@@ -18,7 +18,9 @@ import markdownit from "npm:markdown-it@14.1.0";
 import hljs from "npm:highlight.js/lib/core";
 import typescript from "npm:highlight.js/lib/languages/typescript";
 import javascript from "npm:highlight.js/lib/languages/javascript";
-import { buildScriptMap } from "./files.ts";
+import { buildPrefabMap, buildScriptMap } from "./context.ts";
+import { EditorMetadataEntity } from "../../../common/mod.ts";
+import { BehaviorSchema } from "@dreamlab/scene";
 hljs.registerLanguage("typescript", typescript);
 hljs.registerLanguage("javascript", javascript);
 
@@ -95,10 +97,6 @@ export class Assistant {
       { className: "new-chat-button", title: "Start a new chat" },
       [icon(PlusCircle), "Clear Chat"],
     ) as HTMLButtonElement;
-
-    for (const ent of game.world._.EditEntities._.prefabs.children) {
-      console.log(ent);
-    }
   }
 
   setup(ui: InspectorUI): void {
@@ -153,6 +151,8 @@ export class Assistant {
     ScriptSession.instance = instance!;
 
     buildScriptMap();
+    const prefabEditRoot = this.game.world._.EditEntities._.prefabs;
+    buildPrefabMap(prefabEditRoot, ui);
   }
 
   async sendMessage(): Promise<void> {
