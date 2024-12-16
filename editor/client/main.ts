@@ -216,6 +216,44 @@ bottomTabs.show(uiRoot);
 
 const _ = new UndoRedoManager(game);
 
+// should we put this somewhere else?
+(async () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const doImportFrom = urlParams.get("doImportFrom");
+  const instance = urlParams.get("instance");
+
+  if (doImportFrom && instance) {
+    try {
+      const response = await fetch(
+        `${connectionDetails.serverUrl}api/v1/edit/${instance}/import-project`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ sourceProject: doImportFrom }),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to import project: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        urlParams.delete("doImportFrom");
+        const newUrl =
+          window.location.pathname + (urlParams.toString() ? `?${urlParams.toString()}` : "");
+        window.history.replaceState({}, "", newUrl);
+      } else {
+        throw new Error("Error importing project.");
+      }
+    } catch (error) {
+      console.error("Error during project import:", error);
+    }
+  }
+})();
+
 let now = performance.now();
 const onFrame = (time: number) => {
   stats.begin();
