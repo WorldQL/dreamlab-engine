@@ -287,7 +287,7 @@ export function setupKeyboardShortcuts(
       return;
     }
 
-    if (event.key === "s" && event.ctrlKey) {
+    if (event.key === "s" && (event.ctrlKey || event.metaKey)) {
       event.preventDefault();
       saveProject();
       return;
