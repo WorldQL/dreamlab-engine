@@ -377,6 +377,7 @@ export const serveScriptEditingAPI = (router: Router) => {
 
         const importedDir = path.join(targetProjectDir, "src", "imported", sourceProjectName);
         await fs.ensureDir(path.dirname(importedDir));
+        // TODO: what to do when AlreadyExistsError ?
         await fs.copy(sourceProjectDir, importedDir);
         await Deno.remove(path.join(importedDir, ".git"), { recursive: true });
 
@@ -391,6 +392,18 @@ export const serveScriptEditingAPI = (router: Router) => {
         }
 
         await buildWorld(instance.info.worldId, instance.info.worldDirectory, "_dist");
+
+        const importedScripts = fs.expandGlob(path.join(importedDir, "src/**/*.ts"));
+        const scriptEditPackets: PlayPacket<"ScriptEdited", "server">[] = [];
+        for await (const script of importedScripts) {
+          scriptEditPackets.push({
+            t: "ScriptEdited",
+            script_location: path.relative(instance.info.worldDirectory, script.path),
+          });
+        }
+        for (const packet of scriptEditPackets) {
+          instance.session?.broadcastPacket(packet);
+        }
 
         const importedScriptLocation = `res://src/imported/${sourceProjectName}/`;
         const rewriteScriptLocations = (e: SceneDescEntity): void => {
