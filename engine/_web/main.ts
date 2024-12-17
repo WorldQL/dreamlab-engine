@@ -45,7 +45,7 @@ const camera = game.local.spawn({
 Object.assign(window, { game, camera, Vector2 });
 // #endregion
 
-const mod = await import("./test-cases/text.ts");
+const mod = await import("./test-cases/character-controller.ts");
 Object.assign(window, { ...mod });
 
 game.setStatus(GameStatus.Running);

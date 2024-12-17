@@ -1,43 +1,45 @@
 import {
   Behavior,
-  EntityDestroyed,
-  RectCollider,
-  Rigidbody2D,
+  CharacterController,
+  ClientGame,
+  Collider,
   Sprite,
   Vector2,
 } from "@dreamlab/engine";
-import { KinematicCharacterController } from "@dreamlab/vendor/rapier.ts";
+
+// @ts-expect-error: global access
+const game = globalThis.game as ClientGame;
 
 game.world.spawn({
-  type: RectCollider,
+  type: Collider,
   name: "WallTop",
   transform: { position: { y: 5 }, scale: { x: 10, y: 0.2 } },
   children: [{ type: Sprite, name: Sprite.name }],
 });
 
 game.world.spawn({
-  type: RectCollider,
+  type: Collider,
   name: "WallBottom",
   transform: { position: { y: -5 }, scale: { x: 10, y: 0.2 } },
   children: [{ type: Sprite, name: Sprite.name }],
 });
 
 game.world.spawn({
-  type: RectCollider,
+  type: Collider,
   name: "WallLeft",
   transform: { position: { x: -5 }, scale: { x: 0.2, y: 10 } },
   children: [{ type: Sprite, name: Sprite.name }],
 });
 
 game.world.spawn({
-  type: RectCollider,
+  type: Collider,
   name: "WallRight",
   transform: { position: { x: 5 }, scale: { x: 0.2, y: 10 } },
   children: [{ type: Sprite, name: Sprite.name }],
 });
 
 game.world.spawn({
-  type: RectCollider,
+  type: Collider,
   name: "RandomBlock",
   transform: {
     position: { x: Math.random() * 10 - 5, y: Math.random() * 10 - 5 },
@@ -47,15 +49,13 @@ game.world.spawn({
 });
 
 class Movement extends Behavior {
-  #body = this.entity.cast(Rigidbody2D);
-  #controller: KinematicCharacterController | undefined;
+  #char = this.entity.cast(CharacterController);
 
   speed = 1.0;
   jumpForce = 3.0;
   gravity = 9.8;
 
   #verticalVelocity = 0;
-  #isGrounded = false;
 
   #up = this.inputs.create("@movement/up", "Move Up", "KeyW");
   #down = this.inputs.create("@movement/down", "Move Down", "KeyS");
@@ -63,18 +63,9 @@ class Movement extends Behavior {
   #right = this.inputs.create("@movement/right", "Move Right", "KeyD");
   #jump = this.inputs.create("@movement/jump", "Jump", "Space");
 
-  onInitialize(): void {
-    if (this.game.isClient()) {
-      this.#controller = this.game.physics.world.createCharacterController(0.01);
-    }
-
-    this.listen(this.entity, EntityDestroyed, () => {
-      if (this.#controller) this.game.physics.world.removeCharacterController(this.#controller);
-    });
-  }
-
   onTick(): void {
-    if (!this.#controller) return;
+    if (!this.game.isClient()) return;
+    if (this.entity.authority !== this.game.network.self) return;
 
     const movement = new Vector2(0, 0);
 
@@ -86,7 +77,7 @@ class Movement extends Behavior {
     this.#verticalVelocity -= this.gravity * (this.game.physics.tickDelta / 1000);
 
     // Jump
-    if (this.#jump.pressed && this.#isGrounded) {
+    if (this.#jump.pressed && this.#char.isGrounded) {
       this.#verticalVelocity = this.jumpForce;
     }
 
@@ -94,21 +85,14 @@ class Movement extends Behavior {
     movement.y = this.#verticalVelocity;
 
     const velocity = movement.mul((this.game.physics.tickDelta / 100) * this.speed);
-    this.#controller.computeColliderMovement(this.#body.collider, velocity);
-    const corrected = this.#controller.computedMovement();
-
-    this.#isGrounded = this.#controller.computedGrounded();
-
-    this.entity.pos = this.entity.pos.add(corrected);
+    this.entity.pos.assign(this.entity.pos.add(velocity));
   }
 }
 
-export const player = game.local.spawn({
-  type: Rigidbody2D,
-  name: "Player",
+game.world.spawn({
+  type: CharacterController,
+  name: CharacterController.name,
+  authority: game.network.self,
   behaviors: [{ type: Movement }],
-  children: [
-    { type: Sprite, name: Sprite.name, values: { texture: "https://lulu.dev/avatar.png" } },
-  ],
-  transform: { scale: { x: 2 } },
+  children: [{ type: Sprite, name: Sprite.name }],
 });
