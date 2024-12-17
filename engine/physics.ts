@@ -72,25 +72,24 @@ export class PhysicsEngine {
     });
   }
 
+  private activeCollisions = new Set<string>();
+
+  private makeCollisionKey(entity1Ref: string, entity2Ref: string): string {
+    const [first, second] = [entity1Ref, entity2Ref].sort();
+    return `${first}:${second}`;
+  }
+
   emitCharacterControllerCollisions(
     collider: Collider,
     controller: KinematicCharacterController,
-  ): void;
-  emitCharacterControllerCollisions(combined: {
-    collider: Collider;
-    controller: KinematicCharacterController;
-  }): void;
-  emitCharacterControllerCollisions(
-    combined: { collider: Collider; controller: KinematicCharacterController } | Collider,
-    controller?: KinematicCharacterController,
   ): void {
-    const collider: Collider = "collider" in combined ? combined.collider : combined;
-    const _controller = "controller" in combined ? combined.controller : controller;
-    if (!_controller) throw new TypeError("missing controller param");
+    if (!controller) throw new TypeError("missing controller param");
+    // Create a set for this tick's collisions
+    const currentTickCollisions = new Set<string>();
 
     const body1 = collider as ColliderWithUserData;
-    for (let i = 0; i < _controller.numComputedCollisions(); i++) {
-      const collision = _controller.computedCollision(i);
+    for (let i = 0; i < controller.numComputedCollisions(); i++) {
+      const collision = controller.computedCollision(i);
       const body2 = (collision?.collider ?? undefined) as ColliderWithUserData | undefined;
       if (!body2) continue;
 
@@ -106,16 +105,41 @@ export class PhysicsEngine {
         entityRef2 = udata2.entityRef as string;
       }
 
-      if (!entityRef1 || !entityRef2) return;
+      if (!entityRef1 || !entityRef2) continue;
       const entity1 = this.game.entities.lookupByRef(entityRef1);
       const entity2 = this.game.entities.lookupByRef(entityRef2);
-      if (!entity1 || !entity2) return;
+      if (!entity1 || !entity2) continue;
 
-      // TODO: store collisions and emit end??
-      const started = true;
+      // Create unique key for this collision
+      const collisionKey = this.makeCollisionKey(entityRef1, entityRef2);
 
-      entity1.fire(EntityCollision, started, entity2);
-      entity2.fire(EntityCollision, started, entity1);
+      // Add to current tick's collisions
+      currentTickCollisions.add(collisionKey);
+
+      // If this is a new collision, emit start event
+      if (!this.activeCollisions.has(collisionKey)) {
+        this.activeCollisions.add(collisionKey);
+        entity1.fire(EntityCollision, true, entity2); // true = collision start
+        entity2.fire(EntityCollision, true, entity1);
+      }
+    }
+
+    // Check for ended collisions
+    for (const key of this.activeCollisions) {
+      if (!currentTickCollisions.has(key)) {
+        // This collision is no longer active
+        this.activeCollisions.delete(key);
+
+        // Parse the key to get entity refs
+        const [_, ref1, ref2] = key.split(":");
+        const entity1 = this.game.entities.lookupByRef(ref1);
+        const entity2 = this.game.entities.lookupByRef(ref2);
+
+        if (entity1 && entity2) {
+          entity1.fire(EntityCollision, false, entity2); // false = collision end
+          entity2.fire(EntityCollision, false, entity1);
+        }
+      }
     }
   }
 
