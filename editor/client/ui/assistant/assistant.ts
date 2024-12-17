@@ -13,12 +13,12 @@ import {
   RotateCcw,
   Send,
 } from "../../_icons.ts";
-import { fileContents, step0, step1, step2 } from "./prompts.ts";
+import { available_topics, fileContents, plan, step0, step1, step2 } from "./prompts.ts";
 import markdownit from "npm:markdown-it@14.1.0";
 import hljs from "npm:highlight.js/lib/core";
 import typescript from "npm:highlight.js/lib/languages/typescript";
 import javascript from "npm:highlight.js/lib/languages/javascript";
-import { buildPrefabMap, buildScriptMap } from "./context.ts";
+import { buildPrefabMap, buildScriptMap, oneOffMessage, getTagContents } from "./context.ts";
 import { EditorMetadataEntity } from "../../../common/mod.ts";
 import { BehaviorSchema } from "@dreamlab/scene";
 hljs.registerLanguage("typescript", typescript);
@@ -40,6 +40,8 @@ export class Assistant {
 
   game: ClientGame;
   container: HTMLElement;
+
+  ui: InspectorUI | undefined;
 
   constructor(game: ClientGame, container: HTMLElement) {
     this.game = game;
@@ -105,6 +107,8 @@ export class Assistant {
     //   "Tip: You can drag the divider above the tab bar to change the Assistant's size.",
     // ]);
 
+    this.ui = ui;
+
     const chatInputContainer = elem("div", {
       className: "chat-input-container",
     });
@@ -120,7 +124,7 @@ export class Assistant {
     this.#newChatButton.onclick = () => {
       this.#chatContent.innerHTML = "";
       ScriptSession.chatContext = [];
-      ScriptSession.chatState = "step0";
+      ScriptSession.chatState = "plan";
       this.#chatInput.value = "";
       this.#chatInput.focus();
       this.showSuggestions();
@@ -150,9 +154,37 @@ export class Assistant {
     ScriptSession.httpServer = httpServer!;
     ScriptSession.instance = instance!;
 
-    buildScriptMap();
-    const prefabEditRoot = this.game.world._.EditEntities._.prefabs;
-    buildPrefabMap(prefabEditRoot, ui);
+    async () => {
+      // const scriptmap = await buildScriptMap();
+      const scriptmap = `- src/bullet-behavior.ts
+	- This file implements a bullet behavior that moves an entity in a straight line based on its initial rotation, with configurable speed and a 5-second lifetime after which the entity self-destructs. The behavior runs only on the server side and updates the entity's position each tick using trigonometric calculations to determine direction, making it suitable for projectile-based gameplay mechanics.
+- src/camera-follow.ts
+	- This file implements a camera following behavior that updates the active camera's position to match its attached entity's position on each post-tick update. The behavior only executes on the client side and when the entity has authority matching the network client, making it suitable for following player-controlled entities. It utilizes the game engine's Camera system and network authority checks to ensure proper camera positioning in a networked game environment.
+- src/cleanup-on-leave.ts
+	- This behavior automatically destroys an entity when the player who has authority over it leaves the game, functioning only on the server side. It listens for the PlayerLeft event and checks if the disconnected player's connection ID matches the entity's authority ID before triggering the cleanup, making it useful for managing entity lifecycle in multiplayer scenarios where entities need to be removed when their controlling player disconnects.
+- src/enemy-spawner.ts
+	- This file implements a server-side enemy spawning system through the EnemySpawner behavior, which periodically (every 5 seconds) creates new enemy entities at random positions within a 20x20 unit area. The spawner utilizes the game engine's prefab system to clone Enemy instances and positions them using Vector2 coordinates, with each enemy receiving a unique timestamp-based name. The behavior is explicitly designed to run only on the server side, preventing client-side spawning of enemies.
+- src/enemy.ts
+	- This file implements an enemy AI behavior that tracks and engages with players in a multiplayer game environment, running exclusively on the server side. The enemy follows the nearest player while maintaining a minimum distance, rotates to face them, and periodically shoots projectiles when within range, with randomized attributes for speed, health, and shoot cooldown. The behavior also includes health management through a HealthBar component and collision handling for bullet damage, demonstrating integration with the game's combat system through entity spawning, collision detection, and networked state management.
+- src/health.ts
+	- This file implements a visual health bar system that displays and updates an entity's health status through a sprite-based overlay, supporting both client and server-side operation. The HealthBar behavior automatically positions itself above its parent entity, scales its width based on the current health percentage, and handles damage events including entity destruction when health reaches zero. It includes network authority checks to ensure proper client/server execution and maintains synchronization between the parent entity and its health bar visualization.
+- src/parallax.ts
+	- This file implements a parallax scrolling behavior that creates depth illusion by moving background elements at different speeds relative to the player's movement. The ParallaxBehavior class tracks the player's total movement from their initial position and applies a configurable parallax factor to determine how much the attached entity should move, with smaller factors creating a slower-moving background effect. It integrates with a PlayerSpawner system to reference the local player's position and updates the entity's position every frame based on the calculated parallax offset.
+- src/player-spawner.ts
+	- This file implements a PlayerSpawner behavior that handles client-side player entity creation. When initialized, it creates a new player entity from a predefined prefab, positions it at the origin (0,0), assigns network authority based on the client's identity, and stores a reference to the local player in a static variable for global access. The spawner specifically targets a "PlayersContainer" in the game world and only executes on client instances.
+- src/player.ts
+	- This file implements a player-controlled spaceship behavior with WASD movement controls, mouse-aimed rotation, and shooting mechanics. It handles collision detection with enemy bullets (causing damage), implements character movement with physics-based collision correction, and spawns player bullets in the direction of the mouse cursor. The behavior is network-aware (checking for client/authority) and integrates with a health system, making it a core player gameplay component that manages both input handling and combat interactions.`;
+      const prefabEditRoot = this.game.world._.EditEntities._.prefabs;
+      const prefabmap = await buildPrefabMap(prefabEditRoot, ui);
+      const filled = plan
+        .replaceAll("{{SOURCE_TREE}}", scriptmap)
+        .replaceAll("{{PREFAB_TREE}}", prefabmap)
+        .replaceAll("{{DOCS_TOPICS}}", available_topics)
+        .replaceAll("{{USER_REQUEST}}", "Make the first child of bar yellow");
+      // console.log(filled);
+      // const result = await oneOffMessage(filled)
+      // console.log(result)
+    };
   }
 
   async sendMessage(): Promise<void> {
@@ -181,9 +213,34 @@ export class Assistant {
   }
 
   async fetchChatbotBehavior(prompt: string): Promise<void> {
-    if (ScriptSession.chatState === "step0") {
-      const m = step0.replace("{{USER_REQUEST}}", prompt);
-      const p: ContextItem = { role: "user", content: m };
+    if (ScriptSession.chatState === "plan") {
+      const scriptmap = `- src/bullet-behavior.ts
+      - This file implements a bullet behavior that moves an entity in a straight line based on its initial rotation, with configurable speed and a 5-second lifetime after which the entity self-destructs. The behavior runs only on the server side and updates the entity's position each tick using trigonometric calculations to determine direction, making it suitable for projectile-based gameplay mechanics.
+    - src/camera-follow.ts
+      - This file implements a camera following behavior that updates the active camera's position to match its attached entity's position on each post-tick update. The behavior only executes on the client side and when the entity has authority matching the network client, making it suitable for following player-controlled entities. It utilizes the game engine's Camera system and network authority checks to ensure proper camera positioning in a networked game environment.
+    - src/cleanup-on-leave.ts
+      - This behavior automatically destroys an entity when the player who has authority over it leaves the game, functioning only on the server side. It listens for the PlayerLeft event and checks if the disconnected player's connection ID matches the entity's authority ID before triggering the cleanup, making it useful for managing entity lifecycle in multiplayer scenarios where entities need to be removed when their controlling player disconnects.
+    - src/enemy-spawner.ts
+      - This file implements a server-side enemy spawning system through the EnemySpawner behavior, which periodically (every 5 seconds) creates new enemy entities at random positions within a 20x20 unit area. The spawner utilizes the game engine's prefab system to clone Enemy instances and positions them using Vector2 coordinates, with each enemy receiving a unique timestamp-based name. The behavior is explicitly designed to run only on the server side, preventing client-side spawning of enemies.
+    - src/enemy.ts
+      - This file implements an enemy AI behavior that tracks and engages with players in a multiplayer game environment, running exclusively on the server side. The enemy follows the nearest player while maintaining a minimum distance, rotates to face them, and periodically shoots projectiles when within range, with randomized attributes for speed, health, and shoot cooldown. The behavior also includes health management through a HealthBar component and collision handling for bullet damage, demonstrating integration with the game's combat system through entity spawning, collision detection, and networked state management.
+    - src/health.ts
+      - This file implements a visual health bar system that displays and updates an entity's health status through a sprite-based overlay, supporting both client and server-side operation. The HealthBar behavior automatically positions itself above its parent entity, scales its width based on the current health percentage, and handles damage events including entity destruction when health reaches zero. It includes network authority checks to ensure proper client/server execution and maintains synchronization between the parent entity and its health bar visualization.
+    - src/parallax.ts
+      - This file implements a parallax scrolling behavior that creates depth illusion by moving background elements at different speeds relative to the player's movement. The ParallaxBehavior class tracks the player's total movement from their initial position and applies a configurable parallax factor to determine how much the attached entity should move, with smaller factors creating a slower-moving background effect. It integrates with a PlayerSpawner system to reference the local player's position and updates the entity's position every frame based on the calculated parallax offset.
+    - src/player-spawner.ts
+      - This file implements a PlayerSpawner behavior that handles client-side player entity creation. When initialized, it creates a new player entity from a predefined prefab, positions it at the origin (0,0), assigns network authority based on the client's identity, and stores a reference to the local player in a static variable for global access. The spawner specifically targets a "PlayersContainer" in the game world and only executes on client instances.
+    - src/player.ts
+      - This file implements a player-controlled spaceship behavior with WASD movement controls, mouse-aimed rotation, and shooting mechanics. It handles collision detection with enemy bullets (causing damage), implements character movement with physics-based collision correction, and spawns player bullets in the direction of the mouse cursor. The behavior is network-aware (checking for client/authority) and integrates with a health system, making it a core player gameplay component that manages both input handling and combat interactions.`;
+      const prefabEditRoot = this.game.world._.EditEntities._.prefabs;
+      const prefabmap = await buildPrefabMap(prefabEditRoot, this.ui!);
+      const filled = plan
+        .replaceAll("{{SOURCE_TREE}}", scriptmap)
+        .replaceAll("{{PREFAB_TREE}}", prefabmap)
+        .replaceAll("{{DOCS_TOPICS}}", available_topics)
+        .replaceAll("{{USER_REQUEST}}", prompt);
+      // const m = plan.replace("{{USER_REQUEST}}", prompt);
+      const p: ContextItem = { role: "user", content: filled };
       ScriptSession.chatContext.push(p);
     } else if (ScriptSession.chatState === "step1") {
       const p: ContextItem = { role: "user", content: step1 };
@@ -284,7 +341,7 @@ export class Assistant {
               accumulatedText += line;
 
               const renderedContent = md.render(accumulatedText);
-              this.renderContent(botMessageElement, renderedContent);
+              // this.renderContent(botMessageElement, renderedContent);
             } catch (error) {
               console.error("Error parsing JSON:", error);
             }
@@ -310,23 +367,43 @@ export class Assistant {
     //   ScriptSession.chatState = "step1";
     //   this.fetchChatbotBehavior(prompt);
     // }
+    console.log(ScriptSession.chatState);
+    if (ScriptSession.chatState === "plan") {
+      const plan = getTagContents("plan", accumulatedText);
+      if (plan) {
+        const p = JSON.parse(plan);
+        const stepsContainer = elem("div", { className: "chat-steps-container" });
+        stepsContainer.append("Made plan: ");
+        console.log(p);
 
-    if (ScriptSession.chatState === "step0") {
-      const stepsContainer = elem("div", { className: "chat-steps-container" });
-      const steps = [
-        [icon(Check), "Looking at docs"],
-        [icon(Check), "Analyzing project"],
-        [icon(Loader), "Writing new code"],
-        [icon(Clock), "Creating Prefabs"],
-      ];
+        for (const step of p) {
+          const stepElement = elem("div", { className: "chat-step" }, [step.desc]);
+          stepsContainer.appendChild(stepElement);
+        }
+        botMessageElement.appendChild(stepsContainer);
 
-      for (const step of steps) {
-        const stepElement = elem("div", { className: "chat-step" }, step);
-        stepsContainer.appendChild(stepElement);
+        for (const step of p) {
+          if (step.action === "editValue") {
+            const target = "game.world._.EditEntities._.prefabs._." + step.target;
+            const { valueName, newValue } = step;
+            console.log(target);
+            const e = this.game.entities.lookupById(target);
+            console.log(e);
+            const valTarget = e?.values.get(valueName);
+            if (valTarget) {
+              valTarget.value = newValue;
+            }
+          }
+        }
       }
-
-      botMessageElement.appendChild(stepsContainer);
     }
+    this.#isChatbotReplying = false;
+    this.#chatInput.disabled = false;
+    this.#sendButton.disabled = false;
+    this.#newChatButton.disabled = false; // Re-enable new chat button
+    this.#chatInput.placeholder = "Type your message...";
+    this.#chatInput.classList.remove("disabled-input");
+    this.#chatInput.focus();
 
     observer.disconnect();
   }
@@ -555,7 +632,7 @@ export interface ContextItem {
 export type ChatbotContext = ContextItem[];
 export class ScriptSession {
   public static chatContext: ChatbotContext = [];
-  public static chatState: "step0" | "step1" | "step2" | "followup" = "step0";
+  public static chatState: "plan" | "step1" | "step2" | "followup" = "plan";
   public static chatDocumentation: string = "";
   public static httpServer: string;
   public static instance: string;

@@ -1,4 +1,4 @@
-const available_topics = `Detecting Collisions - Running code when one entity collides with another
+export const available_topics = `Detecting Collisions - Running code when one entity collides with another
 Handling Input - Handling user input, keypresses and mouse input
 Handling Transforms - Moving, scaling, and rotating objects
 Handling Values - Updating the public variables associated with behaviors. These should be used to store state that can be inspected in the editor.
@@ -195,3 +195,70 @@ When summarizing the file's functionality, keep in mind:
 - Keep the summary concise but informative, aiming for 2-3 sentences.
 
 Provide your summary in a single <summary> tag. The summary should be clear, concise, and focused on how this file contributes to the game's functionality.`
+
+
+export const plan = `You are an AI assistant tasked with creating a plan to modify a game based on a user request. You will be given information about the game's source code structure, current prefabs, and a specific user request. Your job is to create a plan that outlines the necessary changes to implement the user's request.
+First, review the source tree of the game:
+<source_tree>
+{{SOURCE_TREE}}
+</source_tree>
+Next, examine the current prefabs of the game world:
+<prefab_tree>
+{{PREFAB_TREE}}
+</prefab_tree>
+Children are nested under the entity in the markdown. Attached behavior scripts are also nested directly under.
+Finally, consider the following documentation topics:
+<documentation_topics>
+{{DOCS_TOPICS}}
+</documentation_topics>
+Now, consider the user's request:
+<user_request>
+{{USER_REQUEST}}
+</user_request>
+To create your plan, you can use the following actions:
+1. Modify an existing file
+2. Create a new file
+3. Create (or overwrite) a new prefab
+Each action should be represented as a JSON object with the following structure:
+- For modifying a file: {"action": "modifyFile", "target": "/path/to/file.ts", "instructions": "Description of changes", "addToContext": ["/src/path.ts"], "loadDocs": ["Topic Title"]}
+- For creating a file: {"action": "createFile", "target": "/path/to/newfile.ts", "instructions": "Description of file contents", "addToContext": ["/src/path.ts"], "loadDocs": ["Some Topic"]}
+- For creating a prefab: {"action": "createPrefab", "target": "prefabName", "instructions": "Description of prefab structure"}
+- For editing a value on an existing object: {"action": "editValue", "target": "prefabName", "valueName": "foo", "newValue": "bar"}
+
+When creating or modifying prefabs, you can use the following entities:
+- Sprite
+- AnimatedSprite
+- TilingSprite
+- ColoredPolygon
+- ColoredSquare (very useful for prototyping, add it as a child and set it to any color)
+- Clickable
+- Collider
+- Empty
+- Camera
+- AudioSource
+- RawPixi
+- UILayer
+- UIPanel
+- Text
+Create a plan that addresses the user's request by making appropriate changes to the game's code and prefabs. Your plan should be a series of steps, each represented by one of the action types described above.
+Present your plan as a JSON array of strings, with each string containing a single JSON object representing an action. For example to answer the request "add a jump pad that springs the player up" would be:
+<plan>
+[
+{"desc": "Create script jump-pad.ts", "action": "createFile", "target": "/src/jump-pad.ts", "instructions": "Spring the player upwards when they touch this. Consider player.ts for information on how the player controller works", "addToContext": ["/src/player.ts"], "loadDocs": ["Detecting Collisions"]},
+{"desc": "Create prefab jumpPad", "action": "createPrefab", "target": "jumpPad", "instructions": "Create a new prefab with a Collider parent and Sprite child, attach /src/jump-pad.ts to the prefab."},
+]
+</plan>
+Make sure that a human readable and descriptive "desc" tag is included on every step of your plan.
+
+createFile and createPrefab overwrite anything at the current path. addToContext should be used for if and only if you need to add one of the other files to the context so the coding agent can understand it.
+The three commands in the example are all that are available.
+Ensure that your plan is comprehensive and addresses all aspects of the user's request. If you need to make assumptions or have questions about the implementation, include these in comments within the "instructions" field of the relevant action.
+Do not write code, just describe the functionality. If you are describing the addition of new class methods, you should always name those methods!
+Format your answer like the following:
+<thinking>
+Reason about the problem here
+</thinking>
+<plan></plan>
+
+If the user request is not detailed enough, do not return a <plan> tag.
+`
