@@ -195,19 +195,46 @@ export class FileTree implements InspectorUIWidget {
       [icon(PlusCircle)],
     );
 
-    const importForm = elem("form", { id: "import-project-form" }, [
-      elem("input", {
-        type: "text",
-        name: "projectId",
-        placeholder: "Enter a Project ID",
-      }),
-      elem("button", { type: "submit" }, ["Import"]),
-    ]);
+    const importError = elem(
+      "p",
+      {
+        className: "import-error",
+        style: "display:none;color:red;font-size:0.9em;margin-top:0.5em;",
+      },
+      [],
+    );
+
+    const formFields = elem(
+      "div",
+      {
+        style: "display: flex; gap: 0.25em; align-items: center;",
+      },
+      [
+        elem("input", {
+          type: "text",
+          name: "projectId",
+          placeholder: "Enter a Project ID",
+        }),
+        elem("button", { type: "submit" }, ["Import"]),
+      ],
+    );
+
+    const importForm = elem(
+      "form",
+      {
+        id: "import-project-form",
+        style: "display: flex; flex-direction: column; gap: 0.5em;",
+      },
+      [formFields, importError],
+    );
 
     importForm.addEventListener("submit", async event => {
       event.preventDefault();
       const input = importForm.querySelector("input[name='projectId']") as HTMLInputElement;
       const projectId = input.value.trim();
+
+      importError.style.display = "none";
+      importError.textContent = "";
 
       if (projectId) {
         const url = new URL(connectionDetails.serverUrl);
@@ -225,8 +252,12 @@ export class FileTree implements InspectorUIWidget {
           importProjectButton.innerHTML = "";
           importProjectButton.append(icon(PlusCircle));
         } else {
-          console.error("Failed to import project.");
+          importError.textContent = "Please check the project ID and try again.";
+          importError.style.display = "block";
         }
+      } else {
+        importError.textContent = "Please enter a project ID.";
+        importError.style.display = "block";
       }
     });
 
@@ -245,7 +276,6 @@ export class FileTree implements InspectorUIWidget {
 
     this.#section.replaceChildren(tree);
     const titleElement = elem("h1", {}, ["Project", importProjectButton]);
-
     this.#section.replaceChildren(titleElement, importForm, tree);
   }
 
