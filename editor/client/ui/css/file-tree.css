@@ -26,20 +26,14 @@
 }
 
 #file-tree #import-project-form {
-  margin: 0.5em 0;
-  padding: 0 0.5em;
   display: none;
-  transition: 0.125s ease-out;
-  transition-property: padding-top, max-height;
-  max-height: 0;
-  overflow-y: clip;
-  align-items: center;
-  gap: 0.5em;
 }
 
 #file-tree #import-project-form[data-open] {
   display: flex;
-  max-height: 5.5em;
+  flex-direction: column;
+  gap: 0.5em;
+  padding: 0.5em;
 }
 
 #file-tree #import-project-form input[type="text"] {
@@ -55,6 +49,7 @@
 #file-tree #import-project-form button {
   border: none;
   padding: 0.25em 0.75em;
+  margin-left: 0.25em;
   border-radius: 4px;
   background: rgb(var(--color-primary));
   color: #fff;
@@ -64,6 +59,17 @@
 
 #file-tree #import-project-form button:hover {
   background: rgb(var(--color-primary) / 0.8);
+}
+
+#file-tree #import-project-form .import-error {
+  display: none;
+  color: rgb(var(--color-danger));
+  font-size: 0.9em;
+  margin-top: 0.5em;
+}
+
+#file-tree #import-project-form .import-error[style*="display: block"] {
+  display: block;
 }
 
 #file-tree > dreamlab-data-tree {

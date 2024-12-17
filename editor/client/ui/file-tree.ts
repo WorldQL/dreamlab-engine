@@ -195,38 +195,17 @@ export class FileTree implements InspectorUIWidget {
       [icon(PlusCircle)],
     );
 
-    const importError = elem(
-      "p",
-      {
-        className: "import-error",
-        style: "display:none;color:red;font-size:0.9em;margin-top:0.5em;",
-      },
-      [],
-    );
+    const importError = elem("p", { className: "import-error" }, []);
+    const formFields = elem("div", {}, [
+      elem("input", {
+        type: "text",
+        name: "projectId",
+        placeholder: "Enter a Project ID",
+      }),
+      elem("button", { type: "submit" }, ["Import"]),
+    ]);
 
-    const formFields = elem(
-      "div",
-      {
-        style: "display: flex; gap: 0.25em; align-items: center;",
-      },
-      [
-        elem("input", {
-          type: "text",
-          name: "projectId",
-          placeholder: "Enter a Project ID",
-        }),
-        elem("button", { type: "submit" }, ["Import"]),
-      ],
-    );
-
-    const importForm = elem(
-      "form",
-      {
-        id: "import-project-form",
-        style: "display: flex; flex-direction: column; gap: 0.5em;",
-      },
-      [formFields, importError],
-    );
+    const importForm = elem("form", { id: "import-project-form" }, [formFields, importError]);
 
     importForm.addEventListener("submit", async event => {
       event.preventDefault();
