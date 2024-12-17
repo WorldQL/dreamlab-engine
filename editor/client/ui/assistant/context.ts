@@ -122,8 +122,9 @@ export async function buildPrefabMap(prefabEditRoot: Entity, ui: InspectorUI) {
 
     const behaviors = BehaviorSchema.array().parse(JSON.parse(editorMetadata.behaviorsJson));
     const behaviorEntries: BehaviorEntry[] = [];
-
-    const id = entity.id.split("game.world._.EditEntities._.prefabs._.").at(-1)!;
+    // we never want the chatbot to be exposed to the EditEntities tree.
+    let id = entity.id.split("game.world._.EditEntities._.prefabs._").at(-1)!;
+    id = "game.prefabs._" + id;
 
     const valuesMap: ValuesSummary = {};
     for (const [k, v] of entity.values) {
@@ -253,7 +254,24 @@ export async function oneOffMessage(prompt: string) {
 
 export function getTagContents(tagName: string, xmlString: string): string | null {
   // Create a dynamic regex that matches <tagName> ... </tagName>
-  const regex = new RegExp(`<${tagName}>([\\s\\S]*?)</${tagName}>`, 'i');
+  const regex = new RegExp(`<${tagName}>([\\s\\S]*?)</${tagName}>`, "i");
   const match = xmlString.match(regex);
   return match ? match[1].trim() : null;
+}
+export async function getFileContent(fileName: string): Promise<string> {
+  const url = `${ScriptSession.httpServer}api/v1/edit/${ScriptSession.instance}/files/${fileName}`;
+  const headers = {
+    Authorization: `Bearer foobar`,
+  };
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: headers,
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch file content: ${response.status} ${response.statusText}`);
+  }
+
+  return await response.text();
 }

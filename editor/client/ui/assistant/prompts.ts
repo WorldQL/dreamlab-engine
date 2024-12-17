@@ -194,7 +194,7 @@ When summarizing the file's functionality, keep in mind:
 - Highlight any unique or specialized features implemented in this file.
 - Keep the summary concise but informative, aiming for 2-3 sentences.
 
-Provide your summary in a single <summary> tag. The summary should be clear, concise, and focused on how this file contributes to the game's functionality.`
+Provide your summary in a single <summary> tag. The summary should be clear, concise, and focused on how this file contributes to the game's functionality. Do not start with "this file" as it becomes very redundant in a list.`
 
 
 export const plan = `You are an AI assistant tasked with creating a plan to modify a game based on a user request. You will be given information about the game's source code structure, current prefabs, and a specific user request. Your job is to create a plan that outlines the necessary changes to implement the user's request.
