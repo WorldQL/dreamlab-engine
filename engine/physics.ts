@@ -72,7 +72,7 @@ export class PhysicsEngine {
     });
   }
 
-  private activeCollisions = new Set<string>();
+  private activeCollisions = new Map<string, number>(); // key -> missing ticks counter
 
   private makeCollisionKey(entity1Ref: string, entity2Ref: string): string {
     const [first, second] = [entity1Ref, entity2Ref].sort();
@@ -84,7 +84,6 @@ export class PhysicsEngine {
     controller: KinematicCharacterController,
   ): void {
     if (!controller) throw new TypeError("missing controller param");
-    // Create a set for this tick's collisions
     const currentTickCollisions = new Set<string>();
 
     const body1 = collider as ColliderWithUserData;
@@ -110,34 +109,32 @@ export class PhysicsEngine {
       const entity2 = this.game.entities.lookupByRef(entityRef2);
       if (!entity1 || !entity2) continue;
 
-      // Create unique key for this collision
       const collisionKey = this.makeCollisionKey(entityRef1, entityRef2);
-
-      // Add to current tick's collisions
       currentTickCollisions.add(collisionKey);
 
       // If this is a new collision, emit start event
       if (!this.activeCollisions.has(collisionKey)) {
-        this.activeCollisions.add(collisionKey);
-        entity1.fire(EntityCollision, true, entity2); // true = collision start
+        this.activeCollisions.set(collisionKey, 0);
+        entity1.fire(EntityCollision, true, entity2);
         entity2.fire(EntityCollision, true, entity1);
+      } else {
+        // Reset missing ticks counter for active collision
+        this.activeCollisions.set(collisionKey, 0);
       }
     }
 
     // Check for ended collisions
-    for (const key of this.activeCollisions) {
+    for (const [key, missingTicks] of this.activeCollisions) {
       if (!currentTickCollisions.has(key)) {
-        // This collision is no longer active
-        this.activeCollisions.delete(key);
-
-        // Parse the key to get entity refs
-        const [_, ref1, ref2] = key.split(":");
-        const entity1 = this.game.entities.lookupByRef(ref1);
-        const entity2 = this.game.entities.lookupByRef(ref2);
-
-        if (entity1 && entity2) {
-          entity1.fire(EntityCollision, false, entity2); // false = collision end
-          entity2.fire(EntityCollision, false, entity1);
+        // Increment missing ticks counter
+        const newMissingTicks = missingTicks + 1;
+        if (newMissingTicks >= 2) {
+          // Remove collision after 2 missing ticks
+          // this papers over rapier sometimes not reporting every collision every tick. happens randomly.
+          this.activeCollisions.delete(key);
+          // Could fire end collision event here if needed
+        } else {
+          this.activeCollisions.set(key, newMissingTicks);
         }
       }
     }
