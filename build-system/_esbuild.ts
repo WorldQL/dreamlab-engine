@@ -149,7 +149,8 @@ export const unwasmRapierPlugin = (): esbuild.Plugin => ({
       const replaced = contents.replace(`${ident}.toByteArray("${b64}")`, "wasm");
       const inject = `
       import wasmURL from "./rapier_wasm2d_bg.wasm";
-      const resp = await fetch(new URL(wasmURL, import.meta.url));
+      const needsDiscordProxy = globalThis.location.search.includes("frame_id");
+      const resp = await fetch(new URL(needsDiscordProxy ? "/.proxy/" + wasmURL : wasmURL, import.meta.url));
       const buf = await resp.arrayBuffer();
       const wasm = new Uint8Array(buf);
       `.trim();
