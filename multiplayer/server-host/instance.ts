@@ -30,7 +30,8 @@ export interface GameInstanceInfo {
 
   inspect?: string;
 
-  variant?: string;
+  variant?: "discord" | (string & Record<never, never>);
+  discordClientId?: string;
 }
 
 export class GameInstance {

@@ -23,6 +23,7 @@ const game = new ServerGame({
   kv: {
     url: workerData.kvUrl,
     signingKey: workerData.kvSigningKey,
+    clientUrl: workerData.kvClientUrl,
   },
 });
 game.worldScriptBaseURL = `file://${workerData.worldDirectory}/`;

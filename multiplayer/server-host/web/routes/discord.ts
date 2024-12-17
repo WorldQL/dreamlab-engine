@@ -140,6 +140,7 @@ export const serveDiscordRoutes = async (router: Router) => {
             worldId: details.world,
             worldDirectory: `${Deno.cwd()}/worlds/${details.world}`,
             variant: "discord",
+            discordClientId: body.application_id,
             worldRevision: details.world_revision,
           });
 

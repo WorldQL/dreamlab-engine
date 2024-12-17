@@ -8,6 +8,7 @@ import { IPCWorker } from "./worker.ts";
 
 import * as path from "jsr:@std/path@1";
 import type { RichGameStatus } from "../server-common/rich-status.ts";
+import { WorkerInitData } from "../server-common/worker-data.ts";
 
 interface ConnectedClient {
   connectionId: string;
@@ -44,22 +45,25 @@ export class GameSession {
     },
   ) {
     const addr = CONFIG.bindAddress;
-    this.ipc = new IPCWorker(
-      {
-        workerId: generateCUID("wrk"),
-        workerConnectUrl: `ws://${addr.hostname}:${addr.port}/internal/worker`,
-        instanceId: parent.info.instanceId,
-        worldId: parent.info.worldId,
-        worldDirectory: path.join(parent.info.worldDirectory, opts.worldSubDirectory),
-        worldResourcesBaseUrl: `${CONFIG.publicUrlBase}/worlds`,
-        worldSubdirectory: opts.worldSubDirectory,
-        editMode: opts.editMode,
-        kvUrl: CONFIG.kvUrl,
-        kvSigningKey: CONFIG.kvSigningKey,
-        inspect: parent.info.inspect,
-      },
-      parent.logs,
-    );
+    const ipcData: WorkerInitData = {
+      workerId: generateCUID("wrk"),
+      workerConnectUrl: `ws://${addr.hostname}:${addr.port}/internal/worker`,
+      instanceId: parent.info.instanceId,
+      worldId: parent.info.worldId,
+      worldDirectory: path.join(parent.info.worldDirectory, opts.worldSubDirectory),
+      worldResourcesBaseUrl: `${CONFIG.publicUrlBase}/worlds`,
+      worldSubdirectory: opts.worldSubDirectory,
+      editMode: opts.editMode,
+      kvUrl: CONFIG.kvUrl,
+      kvSigningKey: CONFIG.kvSigningKey,
+      inspect: parent.info.inspect,
+    };
+    if (parent.info.variant === "discord") {
+      const discordURLBase = "https://" + parent.info.discordClientId! + ".discordsays.com";
+      ipcData.kvClientUrl = discordURLBase + "/.proxy/kv";
+      ipcData.worldResourcesBaseUrl = discordURLBase + "/.proxy/mp/worlds";
+    }
+    this.ipc = new IPCWorker(ipcData, parent.logs);
 
     this.#readyPromise = new Promise((resolve, _reject) => {
       this.#readyPromiseResolve = resolve;
