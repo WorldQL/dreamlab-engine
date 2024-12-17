@@ -216,6 +216,7 @@ export class FileTree implements InspectorUIWidget {
         type: "text",
         name: "projectId",
         placeholder: "Enter a Project ID",
+        autocomplete: "off",
       }),
       elem("button", { type: "submit" }, ["Import"]),
     ]);
