@@ -74,9 +74,13 @@ export class PhysicsEngine {
 
   private activeCollisions = new Map<string, number>(); // key -> missing ticks counter
 
-  private makeCollisionKey(entity1Ref: string, entity2Ref: string): string {
+  private makeCollisionKey(
+    controllerHandle: number,
+    entity1Ref: string,
+    entity2Ref: string,
+  ): string {
     const [first, second] = [entity1Ref, entity2Ref].sort();
-    return `${first}:${second}`;
+    return `${controllerHandle}:${first}:${second}`;
   }
 
   emitCharacterControllerCollisions(
@@ -84,6 +88,7 @@ export class PhysicsEngine {
     controller: KinematicCharacterController,
   ): void {
     if (!controller) throw new TypeError("missing controller param");
+    const controllerHandle = collider.handle;
     const currentTickCollisions = new Set<string>();
 
     const body1 = collider as ColliderWithUserData;
@@ -109,7 +114,7 @@ export class PhysicsEngine {
       const entity2 = this.game.entities.lookupByRef(entityRef2);
       if (!entity1 || !entity2) continue;
 
-      const collisionKey = this.makeCollisionKey(entityRef1, entityRef2);
+      const collisionKey = this.makeCollisionKey(controllerHandle, entityRef1, entityRef2);
       currentTickCollisions.add(collisionKey);
 
       // If this is a new collision, emit start event
@@ -123,14 +128,16 @@ export class PhysicsEngine {
       }
     }
 
-    // Check for ended collisions
+    // Check for ended collisions, but only for this controller's collisions
     for (const [key, missingTicks] of this.activeCollisions) {
+      // Only process keys that belong to this controller
+      if (!key.startsWith(`${controllerHandle}:`)) continue;
+
       if (!currentTickCollisions.has(key)) {
         // Increment missing ticks counter
         const newMissingTicks = missingTicks + 1;
         if (newMissingTicks >= 2) {
           // Remove collision after 2 missing ticks
-          // this papers over rapier sometimes not reporting every collision every tick. happens randomly.
           this.activeCollisions.delete(key);
           // Could fire end collision event here if needed
         } else {
