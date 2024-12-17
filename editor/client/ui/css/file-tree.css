@@ -10,7 +10,7 @@
   align-items: center;
   justify-content: space-between;
   font-size: 1em;
-  margin: 0.5em 0;
+  margin-top: 0.5em;
   padding: 0 0.5em;
 }
 
@@ -33,7 +33,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.5em;
-  padding: 0.5em;
+  padding: 0 0.25em 0.5em 0.25em;
 }
 
 #file-tree #import-project-form input[type="text"] {
@@ -65,11 +65,20 @@
   display: none;
   color: rgb(var(--color-danger));
   font-size: 0.9em;
-  margin-top: 0.5em;
+  margin-top: 0.25em;
 }
 
 #file-tree #import-project-form .import-error[style*="display: block"] {
   display: block;
+}
+
+#import-project-form .import-description {
+  font-size: 0.725em;
+  line-height: 1.3;
+  color: rgb(var(--color-text-darker));
+  margin-bottom: 0.25em;
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 
 #file-tree > dreamlab-data-tree {

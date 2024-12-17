@@ -196,6 +196,21 @@ export class FileTree implements InspectorUIWidget {
     );
 
     const importError = elem("p", { className: "import-error" }, []);
+
+    const importDescription = elem("p", { className: "import-description" }, [
+      "Enter a Project ID from the Asset Store or your library to import its assets into this project. ",
+      elem(
+        "a",
+        {
+          href: "https://app.dreamlab.gg/asset-store",
+          target: "_blank",
+          rel: "noopener noreferrer",
+          style: "color: rgb(var(--color-primary)); text-decoration: underline;",
+        },
+        ["Open Asset Store"],
+      ),
+    ]);
+
     const formFields = elem("div", {}, [
       elem("input", {
         type: "text",
@@ -205,7 +220,11 @@ export class FileTree implements InspectorUIWidget {
       elem("button", { type: "submit" }, ["Import"]),
     ]);
 
-    const importForm = elem("form", { id: "import-project-form" }, [formFields, importError]);
+    const importForm = elem("form", { id: "import-project-form" }, [
+      importDescription,
+      formFields,
+      importError,
+    ]);
 
     importForm.addEventListener("submit", async event => {
       event.preventDefault();
