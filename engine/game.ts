@@ -56,10 +56,7 @@ export interface ClientGameOptions extends GameOptions {
 }
 export interface ServerGameOptions extends GameOptions {
   network: ServerNetworking;
-  kv: {
-    url: string;
-    signingKey: string;
-  };
+  kv: Omit<ConstructorParameters<typeof KvServer>["0"], "game">;
 }
 
 export enum GameStatus {

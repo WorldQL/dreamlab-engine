@@ -9,22 +9,25 @@ import type { ServerKV } from "./mod.ts";
 export class KvServer implements ServerKV {
   #game: ServerGame;
   #url: string;
+  #clientUrl: string | undefined;
   #signingKey: Uint8Array;
 
   constructor(opts: {
     readonly game: ServerGame;
     readonly url: string;
+    readonly clientUrl?: string;
     readonly signingKey: string;
   }) {
     this.#game = opts.game;
     this.#url = opts.url;
+    this.#clientUrl = opts.clientUrl ?? undefined;
     this.#signingKey = decodeBase64Url(opts.signingKey);
 
     this.#game.network.onReceiveCustomMessage(async (from, channel, data) => {
       if (channel !== "@kv/presign") return;
       const request = data as PresignRequest;
       const payload = createPayload(request.action, request.scope, request.key, 10);
-      const url = await presign(this.#url, this.#signingKey, payload);
+      const url = await presign(this.#clientUrl ?? this.#url, this.#signingKey, payload);
 
       const response = { _id: request._id, url } satisfies PresignResponse;
       this.#game.network.sendCustomMessage(from, channel, response);
