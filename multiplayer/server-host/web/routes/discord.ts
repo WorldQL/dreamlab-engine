@@ -127,13 +127,13 @@ export const serveDiscordRoutes = async (router: Router) => {
         const user = DiscordUserSchema.parse(await userResp.json());
         const info = await userInfo(user);
 
+        const instanceId = crypto.randomUUID();
         const claims = {
-          instance_id: body.instance_id,
+          instance_id: instanceId,
           world: details.world,
           ...info,
         } satisfies AuthToken;
 
-        const instanceId = body.instance_id;
         if (!GameInstance.INSTANCES.has(instanceId)) {
           const instance = createInstance({
             instanceId,

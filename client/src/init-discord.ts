@@ -37,10 +37,6 @@ const init = async () => {
     discord_token: z.string().min(1),
     dreamlab_token: z.string().min(1),
     info: InstanceInfoSchema,
-    user_info: z.object({
-      player_id: z.string(),
-      nickname: z.string(),
-    }),
   });
 
   const resp = await fetch("/mp/api/v1/discord/auth", {
