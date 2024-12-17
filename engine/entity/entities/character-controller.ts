@@ -21,7 +21,16 @@ export class CharacterController extends Collider {
   override onInitialize(): void {
     super.onInitialize();
 
-    if (this.collider) {
+    // ugly hack dont worry about it
+    let hasCollider;
+    try {
+      const _ = this.collider;
+      hasCollider = true;
+    } catch {
+      hasCollider = false;
+    }
+
+    if (hasCollider) {
       this.#controller = this.game.physics.world.createCharacterController(0.01);
     }
 
