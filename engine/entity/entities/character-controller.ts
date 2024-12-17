@@ -45,9 +45,6 @@ export class CharacterController extends Collider {
   private onPostUpdate() {
     if (!this.#controller) return;
 
-    const authority = this.authority ?? "server";
-    if (authority !== this.game.network.self) return;
-
     const delta = this.pos.sub(this.#prevPosition);
     this.#controller.computeColliderMovement(this.collider, delta);
     this.#isGrounded = this.#controller.computedGrounded();
@@ -55,9 +52,18 @@ export class CharacterController extends Collider {
     // TODO: emit collision events for all clients
     this.game.physics.emitCharacterControllerCollisions(this.collider, this.#controller);
 
-    const corrected = this.#controller.computedMovement();
-    const newPosition = this.#prevPosition.add(corrected);
-    this.pos.assign(newPosition);
+    // const authority = this.authority ?? "server";
+    // const hasAuthority = authority === this.game.network.self;
+    const hasAuthority = true;
+    // TODO: someone who knows more about authority determine if we should
+    // only correct movement on the owning client
+
+    if (hasAuthority) {
+      const corrected = this.#controller.computedMovement();
+      const newPosition = this.#prevPosition.add(corrected);
+      this.pos.assign(newPosition);
+    }
+
     this.#prevPosition.assign(this.pos);
   }
 }
