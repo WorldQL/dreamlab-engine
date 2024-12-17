@@ -2,8 +2,8 @@ import RAPIER from "@dreamlab/vendor/rapier.ts";
 import * as internal from "../../internal.ts";
 import { IVector2, Vector2 } from "../../math/mod.ts";
 import { EntityDestroyed, EntityEnableChanged } from "../../signals/mod.ts";
+import { enumAdapter } from "../../value/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
-import { enumAdapter } from "@dreamlab/engine";
 
 /**
  * @deprecated Use `Collider` with shape set to "Rectangle" instead.
@@ -126,7 +126,7 @@ export class Collider extends Entity {
     Entity.registerType(this, "@core");
   }
 
-  public static readonly icon = "🧱";
+  public static readonly icon: string = "🧱";
   shape: ColliderShape = "Rectangle";
   isSensor: boolean = false;
 
@@ -175,11 +175,11 @@ export class Collider extends Entity {
               this.globalTransform.scale.y / 2,
             )
           : this.shape === "Circle"
-          ? RAPIER.ColliderDesc.ball(this.globalTransform.scale.x / 2)
-          : RAPIER.ColliderDesc.capsule(
-              this.globalTransform.scale.y / 2,
-              this.globalTransform.scale.x / 2,
-            );
+            ? RAPIER.ColliderDesc.ball(this.globalTransform.scale.x / 2)
+            : RAPIER.ColliderDesc.capsule(
+                this.globalTransform.scale.y / 2,
+                this.globalTransform.scale.x / 2,
+              );
 
       desc
         .setTranslation(this.globalTransform.position.x, this.globalTransform.position.y)
