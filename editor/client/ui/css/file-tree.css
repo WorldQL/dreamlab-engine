@@ -3,31 +3,92 @@
   flex-shrink: 99999999;
   display: flex;
   flex-direction: column;
+}
 
-  & > dreamlab-data-tree {
-    user-select: none;
-    height: 100%;
+#file-tree h1 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1em;
+  margin: 0.5em 0;
+  padding: 0 0.5em;
+}
 
-    summary {
-      display: flex;
+#file-tree #import-project-button {
+  color: rgb(var(--color-primary) / 1);
+  transition: color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+}
+
+#file-tree #import-project-button:hover {
+  color: rgb(var(--color-primary) / 0.8);
+}
+
+#file-tree #import-project-form {
+  margin: 0.5em 0;
+  padding: 0 0.5em;
+  display: none;
+  transition: 0.125s ease-out;
+  transition-property: padding-top, max-height;
+  max-height: 0;
+  overflow-y: clip;
+  align-items: center;
+  gap: 0.5em;
+}
+
+#file-tree #import-project-form[data-open] {
+  display: flex;
+  max-height: 5.5em;
+}
+
+#file-tree #import-project-form input[type="text"] {
+  font-size: 0.95em;
+  padding: 0.25em 0.5em;
+  border-radius: 4px;
+  border: 1px solid rgb(var(--color-text) / 0.3);
+  background-color: rgb(var(--color-bg));
+  color: rgb(var(--color-text));
+  flex: 1;
+}
+
+#file-tree #import-project-form button {
+  border: none;
+  padding: 0.25em 0.75em;
+  border-radius: 4px;
+  background: rgb(var(--color-primary));
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+#file-tree #import-project-form button:hover {
+  background: rgb(var(--color-primary) / 0.8);
+}
+
+#file-tree > dreamlab-data-tree {
+  user-select: none;
+  height: 100%;
+
+  summary {
+    display: flex;
+    align-items: center;
+    font-size: 0.875rem;
+
+    & > span {
+      display: inline-flex;
+      gap: 0.25em;
       align-items: center;
-      font-size: 0.875rem;
 
-      & > span {
+      & .icon {
         display: inline-flex;
-        gap: 0.25em;
-        align-items: center;
+        aspect-ratio: 1 / 1;
+        width: 1em;
+        justify-content: center;
 
-        & .icon {
-          display: inline-flex;
-          aspect-ratio: 1 / 1;
-          width: 1em;
-          justify-content: center;
-
-          & > svg {
-            width: 100%;
-            height: 100%;
-          }
+        & > svg {
+          width: 100%;
+          height: 100%;
         }
       }
     }

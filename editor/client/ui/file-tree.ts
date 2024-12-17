@@ -10,6 +10,8 @@ import {
   Folder,
   icon,
   Image,
+  MinusCircle,
+  PlusCircle,
   Settings,
   SimpleIcon,
 } from "../_icons.ts";
@@ -181,9 +183,70 @@ export class FileTree implements InspectorUIWidget {
       }
     });
 
+    const importProjectButton = elem(
+      "a",
+      {
+        id: "import-project-button",
+        role: "button",
+        href: "javascript:void(0)",
+        title: "Import Project",
+        ariaLabel: "Import Project",
+      },
+      [icon(PlusCircle)],
+    );
+
+    const importForm = elem("form", { id: "import-project-form" }, [
+      elem("input", {
+        type: "text",
+        name: "projectId",
+        placeholder: "Enter a Project ID",
+      }),
+      elem("button", { type: "submit" }, ["Import"]),
+    ]);
+
+    importForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      const input = importForm.querySelector("input[name='projectId']") as HTMLInputElement;
+      const projectId = input.value.trim();
+
+      if (projectId) {
+        const url = new URL(connectionDetails.serverUrl);
+        url.pathname = `/api/v1/edit/${this.game.instanceId}/import-project`;
+
+        const response = await fetch(url.toString(), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sourceProject: projectId }),
+        });
+
+        if (response.ok) {
+          input.value = "";
+          importForm.removeAttribute("data-open");
+          importProjectButton.innerHTML = "";
+          importProjectButton.append(icon(PlusCircle));
+        } else {
+          console.error("Failed to import project.");
+        }
+      }
+    });
+
+    importProjectButton.addEventListener("click", event => {
+      event.preventDefault();
+      if (importForm.hasAttribute("data-open")) {
+        importForm.removeAttribute("data-open");
+        importProjectButton.innerHTML = "";
+        importProjectButton.append(icon(PlusCircle));
+      } else {
+        importForm.setAttribute("data-open", "");
+        importProjectButton.innerHTML = "";
+        importProjectButton.append(icon(MinusCircle));
+      }
+    });
+
     this.#section.replaceChildren(tree);
-    const titleElement = elem("h1", {}, ["Project"]);
-    this.#section.prepend(titleElement);
+    const titleElement = elem("h1", {}, ["Project", importProjectButton]);
+
+    this.#section.replaceChildren(titleElement, importForm, tree);
   }
 
   #createImagePreview(imagePath: string, _event: MouseEvent): HTMLElement {
