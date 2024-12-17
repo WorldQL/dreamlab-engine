@@ -8,6 +8,8 @@ export class EditorFacadeCharacterController extends EditorFacadeCollider {
     Entity.registerType(this, "@editor");
     Facades.register(CharacterController, this);
   }
+
+  public static override readonly icon = CharacterController.icon;
 }
 
 type _HasAllValues = EnsureCompatible<
