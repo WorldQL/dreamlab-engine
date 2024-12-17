@@ -1,13 +1,14 @@
 import { ClientGame } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 import { InspectorUI } from "../inspector.ts";
-import { Book, Check, CircleDotDashed, Clock, Copy, icon, Loader, PlusCircle, RotateCcw, Send } from "../../_icons.ts";
-import { fileContents, step0, step1, step2 } from "./prompts.ts";
+import { Book, Check, Copy, icon, PlusCircle, RotateCcw, Send } from "../../_icons.ts";
+import { available_topics, fileContents, plan, step1, step2 } from "./prompts.ts";
 import markdownit from "npm:markdown-it@14.1.0";
 import hljs from "npm:highlight.js/lib/core";
 import typescript from "npm:highlight.js/lib/languages/typescript";
 import javascript from "npm:highlight.js/lib/languages/javascript";
-import { buildScriptMap } from "./files.ts";
+import { buildPrefabMap, buildScriptMap, getFileContent, getTagContents } from "./context.ts";
+import { createFile } from "../../main.ts";
 hljs.registerLanguage("typescript", typescript);
 hljs.registerLanguage("javascript", javascript);
 
@@ -27,6 +28,8 @@ export class Assistant {
 
   game: ClientGame;
   container: HTMLElement;
+
+  ui: InspectorUI | undefined;
 
   constructor(game: ClientGame, container: HTMLElement) {
     this.game = game;
@@ -92,6 +95,8 @@ export class Assistant {
     //   "Tip: You can drag the divider above the tab bar to change the Assistant's size.",
     // ]);
 
+    this.ui = ui;
+
     const chatInputContainer = elem("div", {
       className: "chat-input-container",
     });
@@ -107,7 +112,7 @@ export class Assistant {
     this.#newChatButton.onclick = () => {
       this.#chatContent.innerHTML = "";
       ScriptSession.chatContext = [];
-      ScriptSession.chatState = "step0";
+      ScriptSession.chatState = "plan";
       this.#chatInput.value = "";
       this.#chatInput.focus();
       this.showSuggestions();
@@ -137,10 +142,32 @@ export class Assistant {
     ScriptSession.httpServer = httpServer!;
     ScriptSession.instance = instance!;
 
-    buildScriptMap();
+    (async () => {
+      let existingScriptMap = undefined;
+      try {
+        existingScriptMap = await getFileContent("script-map.md");
+        ScriptSession.scriptMap = existingScriptMap;
+      } catch {
+        // do nothing
+      }
+
+      if (existingScriptMap !== undefined) return;
+      console.log("building script map!");
+
+      const scriptMap = await buildScriptMap();
+      ScriptSession.scriptMap = scriptMap;
+
+      await createFile("script-map.md", scriptMap);
+      window.parent.postMessage({ action: "reloadFile", filename: "script-map.md" }, "*");
+    })();
   }
 
   async sendMessage(): Promise<void> {
+    if (!ScriptSession.scriptMap) {
+      alert("We're indexing your project! Try again in a few seconds.");
+      return;
+    }
+
     const userMessage = this.#chatInput.value.trim();
     if (userMessage) {
       this.clearSuggestions();
@@ -166,9 +193,19 @@ export class Assistant {
   }
 
   async fetchChatbotBehavior(prompt: string): Promise<void> {
-    if (ScriptSession.chatState === "step0") {
-      const m = step0.replace("{{USER_REQUEST}}", prompt);
-      const p: ContextItem = { role: "user", content: m };
+    if (ScriptSession.chatState === "plan") {
+      const scriptmap = ScriptSession.scriptMap;
+
+      const prefabEditRoot = this.game.world._.EditEntities._.prefabs;
+      const prefabmap = await buildPrefabMap(prefabEditRoot, this.ui!);
+      const filled = plan
+        .replaceAll("{{SOURCE_TREE}}", scriptmap)
+        .replaceAll("{{PREFAB_TREE}}", prefabmap)
+        .replaceAll("{{DOCS_TOPICS}}", available_topics)
+        .replaceAll("{{USER_REQUEST}}", prompt);
+      // const m = plan.replace("{{USER_REQUEST}}", prompt);
+      console.log(filled)
+      const p: ContextItem = { role: "user", content: filled };
       ScriptSession.chatContext.push(p);
     } else if (ScriptSession.chatState === "step1") {
       const p: ContextItem = { role: "user", content: step1 };
@@ -211,7 +248,7 @@ export class Assistant {
         throw new Error("Unable to read response body");
       }
 
-      await this.handleStreamingResponse(reader, prompt);
+      await this.handleStreamingResponse(reader);
     } catch (error) {
       console.error("Error in fetchChatbotBehavior:", error);
       //Toast.error("Failed to fetch chatbot! Try again later.");
@@ -228,7 +265,6 @@ export class Assistant {
 
   async handleStreamingResponse(
     reader: ReadableStreamDefaultReader<Uint8Array>,
-    prompt: string,
   ): Promise<void> {
     const decoder = new TextDecoder();
     let accumulatedText = "";
@@ -236,9 +272,6 @@ export class Assistant {
 
     const botMessageElement = elem("div", { className: "bot-message" });
     this.#chatContent.appendChild(botMessageElement);
-
-    let isHandlingSelectedTopics = false;
-    let selectedTopicsText = "";
 
     const observer = new MutationObserver(this.handleMutations.bind(this));
     observer.observe(this.#chatContent, {
@@ -255,43 +288,27 @@ export class Assistant {
       const chunk = decoder.decode(value);
       const events = chunk.split("\n\n");
 
-      // for (const event of events) {
-      //   if (event.trim() !== "") {
-      //     const [, data] = event.split("data: ");
-      //     if (data) {
-      //       try {
-      //         const d = JSON.parse(data);
-      //         if (d.done) break;
+      for (const event of events) {
+        if (event.trim() !== "") {
+          const [, data] = event.split("data: ");
+          if (data) {
+            try {
+              const d = JSON.parse(data);
+              if (d.done) break;
 
-      //         if (d.error) throw new Error(d.error);
+              if (d.error) throw new Error(d.error);
 
-      //         let line: string = d.text;
-      //         accumulatedText += line;
+              let line: string = d.text;
+              accumulatedText += line;
 
-      //         if (accumulatedText.includes("<selected_topics>") && !isHandlingSelectedTopics) {
-      //           isHandlingSelectedTopics = true;
-      //           selectedTopicsText = "<selected_topics>";
-      //           continue;
-      //         }
-
-      //         if (isHandlingSelectedTopics) {
-      //           selectedTopicsText += d.text;
-      //           if (selectedTopicsText.includes("</selected_topics>")) {
-      //             this.handleSelectedTopics(botMessageElement, selectedTopicsText, prompt);
-      //             isHandlingSelectedTopics = false;
-      //             accumulatedText = "";
-      //             return;
-      //           }
-      //         } else {
-      //           const renderedContent = md.render(accumulatedText);
-      //           this.renderContent(botMessageElement, renderedContent);
-      //         }
-      //       } catch (error) {
-      //         console.error("Error parsing JSON:", error);
-      //       }
-      //     }
-      //   }
-      // }
+              const renderedContent = md.render(accumulatedText);
+              this.renderContent(botMessageElement, renderedContent);
+            } catch (error) {
+              console.error("Error parsing JSON:", error);
+            }
+          }
+        }
+      }
     }
 
     ScriptSession.chatContext.push({
@@ -312,22 +329,44 @@ export class Assistant {
     //   this.fetchChatbotBehavior(prompt);
     // }
 
-    if (ScriptSession.chatState === "step0") {
-      const stepsContainer = elem("div", { className: "chat-steps-container" });
-      const steps = [
-        [icon(Check), "Looking at docs"],
-        [icon(Check), "Analyzing project"],
-        [icon(Loader), "Writing new code"],
-        [icon(Clock), "Creating Prefabs"],
-      ];
+    console.log(ScriptSession.chatState);
+    if (ScriptSession.chatState === "plan") {
+      const plan = getTagContents("plan", accumulatedText);
+      if (plan) {
+        const p = JSON.parse(plan);
+        const stepsContainer = elem("div", { className: "chat-steps-container" });
+        stepsContainer.append("Made plan: ");
+        console.log(p);
 
-      for (const step of steps) {
-        const stepElement = elem("div", { className: "chat-step" }, step);
-        stepsContainer.appendChild(stepElement);
+        for (const step of p) {
+          const stepElement = elem("div", { className: "chat-step" }, [step.desc]);
+          stepsContainer.appendChild(stepElement);
+        }
+        botMessageElement.appendChild(stepsContainer);
+
+        for (const step of p) {
+          if (step.action === "editValue") {
+            const target = "game.world._.EditEntities._.prefabs._" + step.target.split('game.prefabs._').at(-1);
+            console.log(target)
+            const { valueName, newValue } = step;
+            console.log(target);
+            const e = this.game.entities.lookupById(target);
+            console.log(e);
+            const valTarget = e?.values.get(valueName);
+            if (valTarget) {
+              valTarget.value = newValue;
+            }
+          }
+        }
       }
-
-      botMessageElement.appendChild(stepsContainer);
     }
+    this.#isChatbotReplying = false;
+    this.#chatInput.disabled = false;
+    this.#sendButton.disabled = false;
+    this.#newChatButton.disabled = false; // Re-enable new chat button
+    this.#chatInput.placeholder = "Type your message...";
+    this.#chatInput.classList.remove("disabled-input");
+    this.#chatInput.focus();
 
     observer.disconnect();
   }
@@ -373,7 +412,6 @@ export class Assistant {
 
       if (topic in fileContents) {
         collectedDocumentation += `\`\`\`typescript
-  // deno-lint-ignore no-explicit-any
   ${(fileContents as any)[topic]}
   \`\`\`\n`;
       } else {
@@ -557,8 +595,9 @@ export interface ContextItem {
 export type ChatbotContext = ContextItem[];
 export class ScriptSession {
   public static chatContext: ChatbotContext = [];
-  public static chatState: "step0" | "step1" | "step2" | "followup" = "step0";
+  public static chatState: "plan" | "step1" | "step2" | "followup" = "plan";
   public static chatDocumentation: string = "";
   public static httpServer: string;
   public static instance: string;
+  public static scriptMap: string;
 }

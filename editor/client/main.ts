@@ -49,7 +49,7 @@ connectUrl.searchParams.set("player_id", info.playerId);
 connectUrl.searchParams.set("nickname", info.nickname);
 
 // #region Handle dropping files to upload directly into /assets
-export async function createFile(fileName: string, file: File, no_restart = false) {
+export async function createFile(fileName: string, file: File | string, no_restart = false) {
   function isTextFile(mimeType: string): boolean {
     const textTypes = [
       "text/",
@@ -61,19 +61,26 @@ export async function createFile(fileName: string, file: File, no_restart = fals
     return textTypes.some(type => mimeType.startsWith(type));
   }
 
-  const isText = isTextFile(file.type);
   let content: string | ArrayBuffer;
 
-  if (isText) {
-    content = await file.text();
+  if (typeof file === "string") {
+    content = file;
   } else {
-    content = await file.arrayBuffer();
+    const isText = isTextFile(file.type);
+
+    if (isText) {
+      content = await file.text();
+    } else {
+      content = await file.arrayBuffer();
+    }
   }
 
   const url = new URL(
     `${connectionDetails.serverUrl}api/v1/edit/${connectionDetails.instanceId}/files/${fileName}`,
   );
   url.searchParams.set("no_restart", no_restart.toString());
+
+  console.log(content)
 
   await fetch(url, {
     method: "PUT",

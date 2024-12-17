@@ -303,6 +303,7 @@ export class Properties implements InspectorUIWidget {
       value.onChanged(refreshValue);
     }
 
+    // TODO: Move this into AnimatedSprite once we have a way to define button actions in the entities.
     if (entity instanceof AnimatedSprite) {
       const button = elem("button", { type: "button" }, ["View Sheet Guide"]);
 
