@@ -181,11 +181,20 @@ export class SceneGraph implements InspectorUIWidget {
     toggle.addEventListener("click", () => {
       entryElement.open = !entryElement.open;
 
-      if (entryElement.open) {
-        this.#openEntities.add(currentEntityRef);
-      } else {
-        this.#openEntities.delete(currentEntityRef);
-      }
+      if (entryElement.open) this.#openEntities.add(currentEntityRef);
+      else this.#openEntities.delete(currentEntityRef);
+
+      this.#saveOpenEntities();
+    });
+
+    entryElement.addEventListener("dblclick", event => {
+      if (!eventTargetsEntry(event, entryElement)) return;
+      if (entryElement.querySelector(":scope > summary input")) return;
+      entryElement.open = !entryElement.open;
+
+      if (entryElement.open) this.#openEntities.add(currentEntityRef);
+      else this.#openEntities.delete(currentEntityRef);
+
       this.#saveOpenEntities();
     });
 
@@ -247,12 +256,6 @@ export class SceneGraph implements InspectorUIWidget {
 
   handleEntryRename(entity: Entity, entryElement: HTMLElement) {
     if (entity instanceof EditorRootFacadeEntity || entity instanceof Root) return;
-
-    entryElement.addEventListener("dblclick", event => {
-      if (!eventTargetsEntry(event, entryElement)) return;
-      if (entryElement.querySelector(":scope > summary input")) return;
-      this.triggerRename(entity, entryElement);
-    });
 
     entryElement.addEventListener("keydown", event => {
       if (event.key === "F2") {
