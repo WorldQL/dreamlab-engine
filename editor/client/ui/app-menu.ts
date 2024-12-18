@@ -133,7 +133,7 @@ export class AppMenu {
       this.updateViewportStates(editUI);
     });
     this.controls.pause.addEventListener("click", () => {
-      if (this.games.play) {
+      if (this.games.play && this.playFocused) {
         this.games.play.paused.value = !this.games.play.paused.value;
       }
     });
