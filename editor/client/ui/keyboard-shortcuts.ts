@@ -125,8 +125,9 @@ export function setupKeyboardShortcuts(
   };
 
   // TODO: do we want to move these signal listeners?
+  // yes, to undo-redo.ts probably but I don't want to do it right now.
   game.on(GizmoTranslateEnd, ({ entity, previous: prev }) => {
-    const transform = entity.transform.bare();
+    const transform = entity.globalTransform.bare();
     const previous = { ...transform, position: prev.bare() } satisfies ITransform;
 
     UndoRedoManager._.push({
@@ -138,7 +139,7 @@ export function setupKeyboardShortcuts(
   });
 
   game.on(GizmoRotateEnd, ({ entity, previous: prev }) => {
-    const transform = entity.transform.bare();
+    const transform = entity.globalTransform.bare();
     const previous = { ...transform, rotation: prev } satisfies ITransform;
 
     UndoRedoManager._.push({
@@ -150,7 +151,7 @@ export function setupKeyboardShortcuts(
   });
 
   game.on(GizmoScaleEnd, ({ entity, previous: prev }) => {
-    const transform = entity.transform.bare();
+    const transform = entity.globalTransform.bare();
     const previous = { ...transform, scale: prev.bare() } satisfies ITransform;
 
     UndoRedoManager._.push({
@@ -162,7 +163,7 @@ export function setupKeyboardShortcuts(
   });
 
   game.on(BoxResizeGizmoResizeEnd, ({ entity, previous: prev }) => {
-    const transform = entity.transform.bare();
+    const transform = entity.globalTransform.bare();
     const previous = {
       ...transform,
       position: prev.position.bare(),
