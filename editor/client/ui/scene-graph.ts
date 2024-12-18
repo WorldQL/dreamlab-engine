@@ -14,6 +14,7 @@ import { UndoRedoManager, type UndoRedoOperation } from "../undo-redo.ts";
 import { createEntityMenu } from "../util/entity-types.ts";
 import { ContextMenuItem } from "./context-menu.ts";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
+import { Clipboard } from "./keyboard-shortcuts.ts";
 
 function eventTargetsEntry(event: Event, entryElement: HTMLElement) {
   if (!(event.target instanceof HTMLElement)) return false;
@@ -432,6 +433,7 @@ export class SceneGraph implements InspectorUIWidget {
 
       const contextMenuItems: ContextMenuItem[] = [
         ["Focus", () => this.game.local._.Camera.pos.assign(entity.pos)],
+
         createEntityMenu("New Entity", type => {
           const newEntity = entity.spawn({
             type: Facades.lookupFacadeEntityType(type),
@@ -451,7 +453,7 @@ export class SceneGraph implements InspectorUIWidget {
         }),
       ];
 
-      if (!entity.protected)
+      if (!entity.protected) {
         contextMenuItems.push([
           "Delete",
           () => {
@@ -463,10 +465,41 @@ export class SceneGraph implements InspectorUIWidget {
                 parentRef: parent.ref,
               });
             }
-
             entity.destroy();
           },
         ]);
+        contextMenuItems.push([
+          "Copy",
+          () => {
+            Clipboard.set([entity]);
+          },
+        ]);
+      }
+
+      if (Clipboard.get().length > 0) {
+        contextMenuItems.push([
+          "Paste",
+          () => {
+            const copiedEntities = Clipboard.get();
+            const pastedEntities: Entity[] = [];
+
+            for (const copied of copiedEntities) {
+              pastedEntities.push(copied.cloneInto(entity));
+            }
+
+            const ops = pastedEntities.map(
+              x =>
+                ({
+                  t: "create-entity",
+                  parentRef: x.parent!.ref,
+                  def: x.getDefinition(),
+                } satisfies UndoRedoOperation),
+            );
+
+            UndoRedoManager._.push({ t: "compound", ops });
+          },
+        ]);
+      }
 
       ui.contextMenu.drawContextMenu(event.clientX, event.clientY, contextMenuItems);
     });

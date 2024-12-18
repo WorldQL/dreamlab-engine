@@ -81,11 +81,23 @@ class CooldownManager {
   }
 }
 
+export const Clipboard = {
+  copiedEntities: [] as Entity[],
+  set(entities: Entity[]) {
+    this.copiedEntities = [...entities];
+  },
+  get(): Entity[] {
+    return [...this.copiedEntities];
+  },
+  clear() {
+    this.copiedEntities = [];
+  },
+};
+
 export function setupKeyboardShortcuts(
   game: ClientGame,
   selectedService: SelectedEntityService,
 ) {
-  let currentlyCopiedEntities: Entity[] = [];
   const cooldownManager = new CooldownManager();
 
   const saveProject = async () => {
@@ -183,33 +195,33 @@ export function setupKeyboardShortcuts(
       }
       return;
     }
-
     // Copy
     if (event.key === "c" && (event.ctrlKey || event.metaKey)) {
       event.preventDefault();
-      console.log("copy");
-      currentlyCopiedEntities = [...selectedService.entities.filter(e => !isRoot(e))];
+      Clipboard.set([...selectedService.entities.filter(e => !isRoot(e))]);
       return;
     }
 
     // Paste
     if (event.key === "v" && (event.ctrlKey || event.metaKey)) {
       event.preventDefault();
+      const copiedEntities = Clipboard.get();
       const pastedEntities: Entity[] = [];
-      if (selectedService.entities.length === 1 && currentlyCopiedEntities.length === 1) {
+
+      if (selectedService.entities.length === 1 && copiedEntities.length === 1) {
         const selected = selectedService.entities[0];
-        const copied = currentlyCopiedEntities[0];
+        const copied = copiedEntities[0];
+
         if (copied === selected) {
           pastedEntities.push(copied.cloneInto(selected.parent!));
         } else {
           pastedEntities.push(copied.cloneInto(selected));
         }
       } else {
-        for (const copied of currentlyCopiedEntities) {
+        for (const copied of copiedEntities) {
           pastedEntities.push(copied.cloneInto(copied.parent!));
         }
       }
-      // window.undoStack.push({ operation: "destroyEntities", entities: pastedEntities });
 
       const ops = pastedEntities.map(
         x =>
