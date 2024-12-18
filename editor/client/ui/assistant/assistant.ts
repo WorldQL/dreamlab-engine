@@ -1,13 +1,28 @@
 import { ClientGame, Collider, Empty, Entity, RectCollider } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 import { InspectorUI } from "../inspector.ts";
-import { Book, Check, Copy, icon, PlusCircle, RotateCcw, Send } from "../../_icons.ts";
-import { available_topics, fileContents, plan, step1, step2 } from "./prompts.ts";
+import {
+  Book,
+  Check,
+  Copy,
+  icon,
+  PlusCircle,
+  RotateCcw,
+  Send,
+  siCodingame,
+} from "../../_icons.ts";
+import { available_topics, codingPrompt, fileContents, plan, step1, step2 } from "./prompts.ts";
 import markdownit from "npm:markdown-it@14.1.0";
 import hljs from "npm:highlight.js/lib/core";
 import typescript from "npm:highlight.js/lib/languages/typescript";
 import javascript from "npm:highlight.js/lib/languages/javascript";
-import { buildPrefabMap, buildScriptMap, getFileContent, getTagContents } from "./context.ts";
+import {
+  buildPrefabMap,
+  buildScriptMap,
+  getFileContent,
+  getTagContents,
+  oneOffMessage,
+} from "./context.ts";
 import { createFile } from "../../main.ts";
 import { BehaviorSchema } from "@dreamlab/scene";
 import { EditorMetadataEntity, Facades } from "../../../common/mod.ts";
@@ -437,6 +452,63 @@ export class Assistant {
 
         if (step.action === "createPrefab") {
           spawnEntity(this.game.world._.EditEntities._.prefabs, step.definition);
+        }
+
+        if (step.action === "createFile") {
+          const fileUrl = new URL(ScriptSession.httpServer);
+          const { addToContext, loadDocs, instructions, target } = step;
+          console.log(step);
+          const filesLoaded = [];
+          for (const filePath of addToContext ?? []) {
+            fileUrl.pathname = `/api/v1/edit/${ScriptSession.instance}/files/${filePath}`;
+            const fileText = await (await fetch(fileUrl.toString())).text();
+            filesLoaded.push([filePath, fileText]);
+          }
+          // alphabetically sort by first element of key/value pairs
+          const alphasort = (a: string[], b: string[]) => {
+            if (a[0] < b[0]) return -1;
+            if (a[0] > b[0]) return 1;
+            return 0;
+          };
+          filesLoaded.sort(alphasort);
+          console.log("filesloaded:");
+          console.log(filesLoaded);
+
+          const topicsLoaded = [];
+
+          for (const docTopic of loadDocs ?? []) {
+            const text: string = fileContents[docTopic];
+            topicsLoaded.push([docTopic, text]);
+          }
+          topicsLoaded.sort(alphasort);
+          topicsLoaded.unshift(["Basic Behavior Structure", fileContents["_basic-structure"]]);
+
+          // prepare strings for the LLM context
+          let contextFiles = "";
+          let docCodeSamples = "";
+
+          for (const [title, body] of topicsLoaded) {
+            docCodeSamples += `${title}:\n${body}\n\n`;
+          }
+
+          for (const [path, code] of filesLoaded) {
+            contextFiles += `${path}:\n${code}\n\n`;
+          }
+
+          const prepared = codingPrompt
+            .replaceAll("{{CONTEXT_FILES}}", contextFiles)
+            .replaceAll("{{CODE_SAMPLES}}", docCodeSamples)
+            .replaceAll("{{EXISTING_FILE}}", "")
+            .replaceAll("{{FILE_INSTRUCTIONS}}", instructions);
+
+          console.log(prepared);
+          const result = await oneOffMessage(prepared);
+          console.log(result);
+          const code = getTagContents("code", result);
+          if (code) {
+            await createFile(target, code);
+            window.parent.postMessage({ action: "reloadFile", filename: "script-map.md" }, "*");
+          }
         }
       }
     }

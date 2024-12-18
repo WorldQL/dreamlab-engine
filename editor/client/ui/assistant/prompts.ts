@@ -123,7 +123,7 @@ Provide your response in the following format:
 
 Remember to be thorough in your implementation while keeping the code efficient and relevant to the user's request. Your goal is to provide a working Behavior class that fulfills the requested functionality using the Dreamlab game engine.
 `;
-export const fileContents = {
+export const fileContents: Record<string, string> = {
   "Handling Input":
     "import { Behavior, Vector2 } from '@dreamlab/engine'\nimport PlayerBehavior from './player.ts'\n\n/*\n  Handling Inputs in a Behavior:\n\n  This example demonstrates how to set up and handle various inputs within a behavior using the `Inputs` class.\n  Inputs are created for specific actions (e.g., movement or firing), and these actions are then checked and handled\n  during the behavior's update cycle (`onTick`).\n\n  Key Concepts:\n  - **Input Creation:**\n    Inputs are created using `this.inputs.create(...)`, binding a specific action to a key or mouse button.\n    These inputs are stored in private fields and can be checked every frame to determine if the corresponding\n    action should be executed.\n\n  - **Input Handling:**\n    Each frame, the behavior checks whether an input (e.g., a key or mouse button) is held down and executes\n    the appropriate logic, such as moving an entity or firing a weapon.\n\n  - **Cursor Tracking:**\n    The `Inputs` class also provides cursor tracking, which allows the entity to rotate or aim based on the cursor's\n    position in the game world.\n\n  Below is the implementation of the `Movement` behavior that handles player movement and firing based on input.\n\n  If you are using this.entity.transform.position.lookAt(this.inputs.cursor.world) you should ALWAYS do this before updating the transform position for the next frame.\n\n  This is correct:\n  const world = this.inputs.cursor.world;\n  if (!world) return;\n  // EXTREMELY IMPORTANT: Use the value of this.inputs.cursor.world before applying newPosition to the transform\n  const rotation = this.entity.transform.position.lookAt(world);\n  this.entity.transform.rotation = rotation;\n\n  // Apply the new position to the entity\n  this.entity.transform.position = newPosition;\n\n  This is wrong:\n  // Apply the new position to the entity\n  this.entity.transform.position = newPosition;\n\n  const world = this.inputs.cursor.world;\n  if (!world) return;\n  // EXTREMELY IMPORTANT: Use the value of this.inputs.cursor.world before applying newPosition to the transform\n  const rotation = this.entity.transform.position.lookAt(world);\n  this.entity.transform.rotation = rotation;\n\n  Please pay careful attention to this. It's tricky and important to remember when using cursor.world while also moving the entity and making it look at the cursor.\n\n*/\n\nexport default class Movement extends Behavior {\n  speed = 5.0\n\n  // Input bindings for movement\n  #up = this.inputs.create('@movement/up', 'Move Up', 'KeyW')\n  #down = this.inputs.create('@movement/down', 'Move Down', 'KeyS')\n  #left = this.inputs.create('@movement/left', 'Move Left', 'KeyA')\n  #right = this.inputs.create('@movement/right', 'Move Right', 'KeyD')\n\n  // Input binding for firing\n  #fire = this.inputs.create('@clickFire/fire', 'Fire', 'MouseLeft')\n\n  // Cooldown management for firing\n  readonly #cooldown = 0\n  #lastFired = 0\n\n  velocity = Vector2.ZERO\n\n  setup() {\n    this.defineValues(Movement, 'speed')\n  }\n\n  onTick(): void {\n    const movement = new Vector2(0, 0)\n    const currentSpeed = this.speed\n\n    // Handle movement inputs\n    if (this.#up.held) movement.y += 1\n    if (this.#down.held) movement.y -= 1\n    if (this.#right.held) movement.x += 1\n    if (this.#left.held) movement.x -= 1\n\n    // Calculate the velocity based on movement input and speed\n    this.velocity = movement.normalize().mul((this.game.physics.tickDelta / 100) * currentSpeed)\n\n    // Update entity's position\n    const newPosition = this.entity.transform.position.add(this.velocity)\n\n    // Boundary checks can be added here to restrict movement within certain limits\n\n    // Handle firing input with cooldown management\n    if (this.#lastFired > 0) {\n      this.#lastFired -= 1\n    } else {\n      if (this.#fire.held) {\n        const playerBehavior = this.entity.getBehavior(PlayerBehavior)\n        const fireRateMultiplier = playerBehavior.fireRateMultiplier\n\n        this.#lastFired = this.#cooldown / fireRateMultiplier\n\n        // Trigger the shooting pattern defined in PlayerBehavior\n        playerBehavior.shootingPattern()\n      }\n    }\n\n    // Rotate the entity to face the cursor's position\n\n    const world = this.inputs.cursor.world\n    if (!world) return\n    // EXTREMELY IMPORTANT: Use the value of this.inputs.cursor.world before applying newPosition to the transform\n    const rotation = this.entity.transform.position.lookAt(world)\n    this.entity.transform.rotation = rotation\n\n    // Apply the new position to the entity\n    this.entity.transform.position = newPosition\n  }\n}\n",
   "Looking Up and Referencing Entities":
@@ -268,7 +268,8 @@ When creating or modifying prefabs, you can use the following entities with the 
 - UIPanel
 - Text
 
-You can also trust the prefab tree for information on what values entities have. Most units are 1 unit wide and tall by default.
+You can also trust the prefab tree for information on what values entities have.
+Most units are 1 unit wide and tall by default. When setting the scale of objects, the preferred way is to use transform.scale!
 
 Create a plan that addresses the user's request by making appropriate changes to the game's code and prefabs. Your plan should be a series of steps, each represented by one of the action types described above.
 Present your plan as a JSON array of strings, with each string containing a single JSON object representing an action. For example to answer the request "add a jump pad that springs the player up" would be:
@@ -279,7 +280,7 @@ Present your plan as a JSON array of strings, with each string containing a sing
     "action": "createFile",
     "target": "src/jump-pad.ts",
     "instructions": "Spring the player upwards when they touch this. Consider player.ts for information on how the player controller works",
-    "addToContext": ["src/player.ts"],
+    "addToContext": ["src/player.ts"], // always addToContext any files you think might be relevant.
     "loadDocs": ["Detecting Collisions"]
   },
   {
@@ -298,8 +299,10 @@ Present your plan as a JSON array of strings, with each string containing a sing
             }
           }
         ],
+        "transform": { "scale": {"x": 2, "y": 0.5} } // make it wider than it is tall. Note that this transform is on the parent, not the child.
         "children": [
           {
+            // ColoredSquare and Sprite are both good choices here. If you think the user wants to specify an image or asks for a Sprite, use that.
             "type": "ColoredSquare",
             "name": "JumpPadVisuals",
             "values": {
@@ -313,6 +316,9 @@ Present your plan as a JSON array of strings, with each string containing a sing
 ]
 </plan>
 Make sure that a human readable and descriptive "desc" tag is included on every step of your plan.
+
+Always use the correct entity name in the "type" field. List the entities you plan to use before building the structure.
+
 
 createFile and createPrefab overwrite anything at the current path. addToContext should be used for if and only if you need to add one of the other files to the context so the coding agent can understand it.
 The three commands in the example are all that are available.
@@ -331,3 +337,59 @@ Now, consider the user's request:
 {{USER_REQUEST}}
 </user_request>
 `;
+
+export const codingPrompt = `You are an AI coding agent integrated into a video game engine. Your task is to generate or modify code based on the provided context, documentation, and instructions. Follow these steps carefully:
+
+These code samples serve as documentation and examples for the task at hand:
+<code_samples>
+{{CODE_SAMPLES}}
+</code_samples>
+
+Other files in the codebase, for context purposes, are provided here:
+<context_files>
+{{CONTEXT_FILES}}
+</context_files>
+This provides important information about the existing codebase and related files.
+
+If an existing file is provided, it will be included here. If provided, modify this file. Otherwise, write a new file.
+<existing_file>
+{{EXISTING_FILE}}
+</existing_file>
+
+2. Before writing any code, analyze the inputs and plan your approach. Use <thinking> tags to outline your thought process, considering the following:
+   - How the new code will integrate with the existing codebase
+   - Any potential conflicts or dependencies
+   - The most efficient way to implement the requested features
+   - How to maintain consistency with the game engine's coding style and best practices
+
+3. After your analysis, generate the code for the file. Output your code within <code> tags. Ensure that your code:
+   - Follows the file instructions precisely
+   - Integrates seamlessly with the existing codebase
+   - Adheres to the coding standards demonstrated in the context files and code samples
+   - Is well-commented and easy to understand
+   - Implements error handling and considers edge cases
+   - When importing code, always include the .ts extension.
+   - Is a complete implementation.
+
+4. If you're modifying an existing file, return the entire new file.
+
+5. Only include the code for the single file you're asked about. Any changes to other files will be made later.
+
+6. Do not include any explanations or comments outside of the <thinking> and <code> tags. Your output should be structured as follows:
+
+<thinking>
+Your analysis and planning goes here
+</thinking>
+
+<code>
+Your generated or modified code goes here
+</code>
+
+
+Remember, you are a part of the game engine, so focus solely on generating the requested code based on the provided inputs. Do not engage in dialogue or ask for clarifications outside of the specified tags.
+
+
+<file_instructions>
+{{FILE_INSTRUCTIONS}}
+</file_instructions>
+These are the user instructions to follow.`;
