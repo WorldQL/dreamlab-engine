@@ -75,7 +75,6 @@ class CooldownManager {
       return false;
     }
 
-    console.log("oncd");
     // On cooldown
     return true;
   }

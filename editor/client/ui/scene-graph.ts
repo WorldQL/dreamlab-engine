@@ -444,7 +444,6 @@ export class SceneGraph implements InspectorUIWidget {
             "Copy",
             () => {
               Clipboard.set([...ui.selectedEntity.entities]);
-              console.log("Copied:", Clipboard.get());
             },
             false,
             "Ctrl+C",
@@ -503,7 +502,6 @@ export class SceneGraph implements InspectorUIWidget {
             "Copy",
             () => {
               Clipboard.set([entity]);
-              console.log("Copied:", Clipboard.get());
             },
             false,
             "Ctrl+C",
