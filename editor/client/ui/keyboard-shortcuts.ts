@@ -299,12 +299,47 @@ export function setupKeyboardShortcuts(
       return;
     }
 
+    // Save Project
     if (event.key === "s" && (event.ctrlKey || event.metaKey)) {
       event.preventDefault();
       saveProject();
       return;
     }
 
+    // Up and Down Arrow Navigation
+    if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+      event.preventDefault();
+      const entries = Array.from(
+        document.querySelectorAll("#scene-graph-tree details[data-entity]"),
+      ) as HTMLElement[];
+
+      if (entries.length === 0) return;
+
+      const currentSelected = entries.find(entry => entry.classList.contains("selected"));
+
+      let newIndex = 0;
+
+      if (currentSelected) {
+        const currentIndex = entries.indexOf(currentSelected);
+        newIndex =
+          event.key === "ArrowUp"
+            ? Math.max(0, currentIndex - 1)
+            : Math.min(entries.length - 1, currentIndex + 1);
+
+        currentSelected.classList.remove("selected");
+      }
+
+      const newSelected = entries[newIndex];
+      newSelected.classList.add("selected");
+      newSelected.scrollIntoView({ behavior: "smooth", block: "center" });
+
+      const entityRef = newSelected.dataset.entity!;
+      const entity = game.entities.lookupByRef(entityRef);
+      if (entity) selectedService.entities = [entity];
+      return;
+    }
+
+    // Exit selected
     if (event.key === "Escape") {
       selectedService.entities = [];
     }
