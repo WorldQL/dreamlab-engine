@@ -490,25 +490,27 @@ export class SceneGraph implements InspectorUIWidget {
             const newEntryElement = this.entryElementMap.get(newEntity.ref);
             if (newEntryElement) this.triggerRename(newEntity, newEntryElement);
           }),
-          [
-            "Rename",
-            () => {
-              this.triggerRename(entity, entryElement);
-            },
-            false,
-            "F2",
-          ],
         );
 
         if (!entity.protected)
-          contextMenuItems.push([
-            "Copy",
-            () => {
-              Clipboard.set([entity]);
-            },
-            false,
-            "Ctrl+C",
-          ]);
+          contextMenuItems.push(
+            [
+              "Rename",
+              () => {
+                this.triggerRename(entity, entryElement);
+              },
+              false,
+              "F2",
+            ],
+            [
+              "Copy",
+              () => {
+                Clipboard.set([entity]);
+              },
+              false,
+              "Ctrl+C",
+            ],
+          );
 
         if (Clipboard.get().length > 0) {
           contextMenuItems.push([
