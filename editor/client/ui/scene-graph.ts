@@ -488,6 +488,14 @@ export class SceneGraph implements InspectorUIWidget {
             const newEntryElement = this.entryElementMap.get(newEntity.ref);
             if (newEntryElement) this.triggerRename(newEntity, newEntryElement);
           }),
+          [
+            "Rename",
+            () => {
+              this.triggerRename(entity, entryElement);
+            },
+            false,
+            "F2",
+          ],
         );
 
         if (!entity.protected)
