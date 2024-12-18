@@ -235,16 +235,6 @@ export function setupKeyboardShortcuts(
       return;
     }
 
-    // Enter to rename
-    if (event.key === "Enter" && selectedService.entities.length === 1) {
-      const inputElement = document.getElementById("rename-entity-input");
-      if (inputElement instanceof HTMLInputElement) {
-        inputElement.focus();
-        inputElement.select();
-      }
-      return;
-    }
-
     // Delete
     if (event.key === "Backspace") {
       const toDelete: Entity[] = [...selectedService.entities];

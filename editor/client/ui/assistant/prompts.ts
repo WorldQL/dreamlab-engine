@@ -194,8 +194,7 @@ When summarizing the file's functionality, keep in mind:
 - Highlight any unique or specialized features implemented in this file.
 - Keep the summary concise but informative, aiming for 2-3 sentences.
 
-Provide your summary in a single <summary> tag. The summary should be clear, concise, and focused on how this file contributes to the game's functionality. Do not start with "this file" as it becomes very redundant in a list.`
-
+Provide your summary in a single <summary> tag. The summary should be clear, concise, and focused on how this file contributes to the game's functionality. Do not start with "this file" as it becomes very redundant in a list.`;
 
 export const plan = `You are an AI assistant tasked with creating a plan to modify a game based on a user request. You will be given information about the game's source code structure, current prefabs, and a specific user request. Your job is to create a plan that outlines the necessary changes to implement the user's request.
 First, review the source tree of the game:
@@ -211,26 +210,54 @@ Finally, consider the following documentation topics:
 <documentation_topics>
 {{DOCS_TOPICS}}
 </documentation_topics>
-Now, consider the user's request:
-<user_request>
-{{USER_REQUEST}}
-</user_request>
 To create your plan, you can use the following actions:
 1. Modify an existing file
 2. Create a new file
 3. Create (or overwrite) a new prefab
 Each action should be represented as a JSON object with the following structure:
-- For modifying a file: {"action": "modifyFile", "target": "/path/to/file.ts", "instructions": "Description of changes", "addToContext": ["/src/path.ts"], "loadDocs": ["Topic Title"]}
-- For creating a file: {"action": "createFile", "target": "/path/to/newfile.ts", "instructions": "Description of file contents", "addToContext": ["/src/path.ts"], "loadDocs": ["Some Topic"]}
-- For creating a prefab: {"action": "createPrefab", "target": "prefabName", "instructions": "Description of prefab structure"}
-- For editing a value on an existing object: {"action": "editValue", "target": "prefabName", "valueName": "foo", "newValue": "bar"}
+- For modifying a file: {"action": "modifyFile", "target": "path/to/file.ts", "instructions": "Description of changes", "addToContext": ["src/path.ts"], "loadDocs": ["Topic Title"]}
+- For creating a file: {"action": "createFile", "target": "path/to/newfile.ts", "instructions": "Description of file contents", "addToContext": ["src/path.ts"], "loadDocs": ["Some Topic"]}
+- For creating a prefab: {
+  "action": "createPrefab",
+  "definition": {
+    "type": "Type",
+    "name": "New Entity Name",
+    "behaviors": [
+      {
+        "script": "src/somescript.ts",
+        "values": {
+          "someValue": "can be bool, string, number, object"
+        }
+      }
+    ],
+    "children": [
+      {
+        "type": "Type",
+        "name": "Child entity with color",
+        "values": {
+          "color": "#6678ff"
+        },
+        "transform": { "position": { "x": 0, "y": 0 }, "rotation": 3.14, "z": 0, "scale": {"x": 1, "y": 1} }
+        // rotation is in radians.
+        // position is relative to the parent. To be down and to the left you'd do x:-1,y:-1.
+        // z is z-index. Higher numbers render over lower numbers. Only include this if you need to.
+      }
+    ]
+  }
+}
+- For editing a value on an existing entity: {"action": "editEntityValue", "target": "prefabName", "valueName": "foo", "newValue": "bar"}
+- For editing a value on a script attached to an entity: {"action": "editBehaviorValue", "target": "prefabName", "script": "src/path.ts" "valueName": "foo", "newValue": "bar"}
 
-When creating or modifying prefabs, you can use the following entities:
+
+When creating or modifying prefabs, you can use the following entities with the following values:
 - Sprite
+  - hidden: bool, texture: string, width: number, height: number, alpha: number
 - AnimatedSprite
 - TilingSprite
 - ColoredPolygon
-- ColoredSquare (very useful for prototyping, add it as a child and set it to any color)
+- ColoredSquare
+  - color: '#hexstring'
+  - Their position is the center of the rectangle. Take this into account when positioning.
 - Clickable
 - Collider
 - Empty
@@ -240,12 +267,49 @@ When creating or modifying prefabs, you can use the following entities:
 - UILayer
 - UIPanel
 - Text
+
+You can also trust the prefab tree for information on what values entities have. Most units are 1 unit wide and tall by default.
+
 Create a plan that addresses the user's request by making appropriate changes to the game's code and prefabs. Your plan should be a series of steps, each represented by one of the action types described above.
 Present your plan as a JSON array of strings, with each string containing a single JSON object representing an action. For example to answer the request "add a jump pad that springs the player up" would be:
 <plan>
 [
-{"desc": "Create script jump-pad.ts", "action": "createFile", "target": "/src/jump-pad.ts", "instructions": "Spring the player upwards when they touch this. Consider player.ts for information on how the player controller works", "addToContext": ["/src/player.ts"], "loadDocs": ["Detecting Collisions"]},
-{"desc": "Create prefab jumpPad", "action": "createPrefab", "target": "jumpPad", "instructions": "Create a new prefab with a Collider parent and Sprite child, attach /src/jump-pad.ts to the prefab."},
+  {
+    "desc": "Create script jump-pad.ts",
+    "action": "createFile",
+    "target": "src/jump-pad.ts",
+    "instructions": "Spring the player upwards when they touch this. Consider player.ts for information on how the player controller works",
+    "addToContext": ["src/player.ts"],
+    "loadDocs": ["Detecting Collisions"]
+  },
+  {
+    "desc": "Create prefab jumpPad",
+    "action": "createPrefab",
+    "definition": {
+      "action": "createPrefab",
+      "definition": {
+        "type": "Collider",
+        "name": "JumpPad",
+        "behaviors": [
+          {
+            "script": "src/jump-pad.ts",
+            "values": {
+              "jumpAmount": 45
+            }
+          }
+        ],
+        "children": [
+          {
+            "type": "ColoredSquare",
+            "name": "JumpPadVisuals",
+            "values": {
+              "color": "#2b3233"
+            }
+          }
+        ]
+      }
+    }
+  }
 ]
 </plan>
 Make sure that a human readable and descriptive "desc" tag is included on every step of your plan.
@@ -261,4 +325,9 @@ Reason about the problem here
 <plan></plan>
 
 If the user request is not detailed enough, do not return a <plan> tag.
-`
+
+Now, consider the user's request:
+<user_request>
+{{USER_REQUEST}}
+</user_request>
+`;

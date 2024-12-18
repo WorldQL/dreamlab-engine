@@ -371,6 +371,7 @@
   background-color: rgba(var(--color-bg-2), 0.5);
   border: 1px solid rgba(var(--color-primary), 0.2);
   border-radius: 0.8em;
+  flex-wrap: wrap;
 }
 
 .chat-step {

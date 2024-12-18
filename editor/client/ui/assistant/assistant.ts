@@ -1,4 +1,4 @@
-import { ClientGame } from "@dreamlab/engine";
+import { ClientGame, Collider, Empty, Entity, RectCollider } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 import { InspectorUI } from "../inspector.ts";
 import { Book, Check, Copy, icon, PlusCircle, RotateCcw, Send } from "../../_icons.ts";
@@ -9,6 +9,11 @@ import typescript from "npm:highlight.js/lib/languages/typescript";
 import javascript from "npm:highlight.js/lib/languages/javascript";
 import { buildPrefabMap, buildScriptMap, getFileContent, getTagContents } from "./context.ts";
 import { createFile } from "../../main.ts";
+import { BehaviorSchema } from "@dreamlab/scene";
+import { EditorMetadataEntity, Facades } from "../../../common/mod.ts";
+import { generateCUID } from "@dreamlab/vendor/cuid.ts";
+import { spawnEntity } from "./editor-world-interaction-util.ts";
+import { createEntityMenu } from "../../util/entity-types.ts";
 hljs.registerLanguage("typescript", typescript);
 hljs.registerLanguage("javascript", javascript);
 
@@ -121,6 +126,10 @@ export class Assistant {
     chatInputContainer.append(this.#chatInput, this.#sendButton);
     this.#section.append(this.#chatContent, chatInputContainer);
 
+    this.#chatInput.addEventListener("keydown", function (event) {
+      event.stopPropagation();
+    });
+
     this.#chatContent.addEventListener("scroll", this.handleScroll.bind(this));
     const botMessageElement = elem("div", { className: "bot-message" }, [
       "Hi! I'm here to help you create your game. I can write code, create reusable objects you can place using the editor, and modify your scene!",
@@ -194,17 +203,54 @@ export class Assistant {
 
   async fetchChatbotBehavior(prompt: string): Promise<void> {
     if (ScriptSession.chatState === "plan") {
+      // const behaviors = [
+      //   {
+      //     ref: generateCUID("bhv"),
+      //     script: "res://src/collisiondetect.ts",
+      //     values: { foo: "4" },
+      //   },
+      // ];
+
+      // spawnEntity(this.game.world._.EditEntities._.prefabs, {
+      //   type: "Collider",
+      //   name: "hii",
+      //   behaviors: [{ script: "src/collisiondetect.ts", values: { foo: "4" } }],
+      //   children: [
+      //     {
+      //       type: "ColoredSquare",
+      //       name: "hi",
+      //       values: { color: "#6678ff" },
+      //       transform: { position: { x: 1, y: 0 }, rotation: 1, scale },
+      //     },
+      //   ],
+      // });
+      // return;
+
+      // // this.game.world._.EditEntities._.prefabs.spawn({
+      // //   type: RectCollider,
+      // //   name: "hiiii :)",
+      // //   children: [
+      // //     {
+      // //       type: EditorMetadataEntity,
+      // //       name: "__EditorMetadata",
+      // //       values: { behaviorsJson: JSON.stringify(behaviors) },
+      // //     },
+      // //   ],
+      // // });
+
+      // return;
       const scriptmap = ScriptSession.scriptMap;
 
       const prefabEditRoot = this.game.world._.EditEntities._.prefabs;
       const prefabmap = await buildPrefabMap(prefabEditRoot, this.ui!);
+      console.log(prefabmap);
       const filled = plan
         .replaceAll("{{SOURCE_TREE}}", scriptmap)
         .replaceAll("{{PREFAB_TREE}}", prefabmap)
         .replaceAll("{{DOCS_TOPICS}}", available_topics)
         .replaceAll("{{USER_REQUEST}}", prompt);
       // const m = plan.replace("{{USER_REQUEST}}", prompt);
-      console.log(filled)
+      console.log(filled);
       const p: ContextItem = { role: "user", content: filled };
       ScriptSession.chatContext.push(p);
     } else if (ScriptSession.chatState === "step1") {
@@ -221,6 +267,8 @@ export class Assistant {
       const p: ContextItem = { role: "user", content: prompt };
       ScriptSession.chatContext.push(p);
     }
+
+    console.log(ScriptSession.chatContext);
 
     try {
       const url = new URL(window.location.href);
@@ -263,6 +311,7 @@ export class Assistant {
   private isUserNearBottom = true;
   private observerTimeout: number | null = null;
 
+  // #region Handle Stream
   async handleStreamingResponse(
     reader: ReadableStreamDefaultReader<Uint8Array>,
   ): Promise<void> {
@@ -330,36 +379,69 @@ export class Assistant {
     // }
 
     console.log(ScriptSession.chatState);
-    if (ScriptSession.chatState === "plan") {
-      const plan = getTagContents("plan", accumulatedText);
-      if (plan) {
-        const p = JSON.parse(plan);
-        const stepsContainer = elem("div", { className: "chat-steps-container" });
-        stepsContainer.append("Made plan: ");
-        console.log(p);
+    const plan = getTagContents("plan", accumulatedText);
+    if (plan) {
+      const p = JSON.parse(plan);
+      const stepsContainer = elem("div", { className: "chat-steps-container" });
 
-        for (const step of p) {
-          const stepElement = elem("div", { className: "chat-step" }, [step.desc]);
-          stepsContainer.appendChild(stepElement);
-        }
-        botMessageElement.appendChild(stepsContainer);
+      for (const step of p) {
+        const stepElement = elem("div", { className: "chat-step" }, [step.desc]);
+        stepsContainer.appendChild(stepElement);
+      }
+      botMessageElement.appendChild(stepsContainer);
 
-        for (const step of p) {
-          if (step.action === "editValue") {
-            const target = "game.world._.EditEntities._.prefabs._" + step.target.split('game.prefabs._').at(-1);
-            console.log(target)
-            const { valueName, newValue } = step;
-            console.log(target);
-            const e = this.game.entities.lookupById(target);
-            console.log(e);
-            const valTarget = e?.values.get(valueName);
-            if (valTarget) {
-              valTarget.value = newValue;
-            }
+      for (const step of p) {
+        if (step.action === "editEntityValue") {
+          const target =
+            "game.world._.EditEntities._.prefabs._" +
+            step.target.split("game.prefabs._").at(-1);
+          console.log(target);
+          const { valueName, newValue } = step;
+          console.log(target);
+          const e = this.game.entities.lookupById(target);
+          console.log(e);
+          const valTarget = e?.values.get(valueName);
+          if (valTarget) {
+            valTarget.value = newValue;
           }
+        }
+        if (step.action === "editBehaviorValue") {
+          const target =
+            "game.world._.EditEntities._.prefabs._" +
+            step.target.split("game.prefabs._").at(-1);
+          const { script, valueName, newValue } = step;
+          const e = this.game.entities.lookupById(target);
+
+          const editorMetadata = e?.children
+            .get("__EditorMetadata")
+            ?.cast(EditorMetadataEntity);
+          if (!editorMetadata || !e) {
+            return;
+          }
+
+          const behaviors = BehaviorSchema.array().parse(
+            JSON.parse(editorMetadata.behaviorsJson),
+          );
+
+          const targetScript = behaviors.find(e => e.script == "res://" + script);
+          if (!targetScript) return;
+
+          targetScript.values[valueName] = newValue;
+          editorMetadata.behaviorsJson = JSON.stringify(behaviors);
+
+          const valTarget = e?.values.get(valueName);
+          if (valTarget) {
+            valTarget.value = newValue;
+          }
+        }
+
+        if (step.action === "createPrefab") {
+          spawnEntity(this.game.world._.EditEntities._.prefabs, step.definition);
         }
       }
     }
+    ScriptSession.chatState = "followup";
+
     this.#isChatbotReplying = false;
     this.#chatInput.disabled = false;
     this.#sendButton.disabled = false;
@@ -370,6 +452,7 @@ export class Assistant {
 
     observer.disconnect();
   }
+  // #endregion
 
   setupMarkdownIt(): markdownit {
     return markdownit({
