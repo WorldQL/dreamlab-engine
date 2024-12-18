@@ -33,6 +33,8 @@ import { BottomTabs } from "./ui/bottom-tabs.ts";
 import { InspectorUI } from "./ui/inspector.ts";
 import { UndoRedoManager } from "./undo-redo.ts";
 import { TextureStyle } from "@dreamlab/vendor/pixi.ts";
+import { element } from "@dreamlab/ui";
+import { icon, Loader } from "./_icons.ts";
 
 // makes pixel graphics not blurry
 TextureStyle.defaultOptions.scaleMode = "nearest";
@@ -80,8 +82,6 @@ export async function createFile(fileName: string, file: File | string, no_resta
   );
   url.searchParams.set("no_restart", no_restart.toString());
 
-  console.log(content)
-
   await fetch(url, {
     method: "PUT",
     body: content,
@@ -117,7 +117,6 @@ document.addEventListener("drop", async event => {
 
     try {
       await Promise.all(uploadPromises);
-      console.log("All files have been uploaded successfully.");
     } catch (error) {
       console.error("Error uploading files:", error);
     }
@@ -135,8 +134,6 @@ document.addEventListener("drop", async event => {
 
 // #endregion
 
-const loadingElem = document.querySelector("#loading")! as HTMLElement;
-
 const uiRoot = document.querySelector("main")! as HTMLElement;
 const container = document.createElement("div");
 uiRoot.querySelector("#viewport")!.append(container);
@@ -145,8 +142,22 @@ uiRoot.style.display = "none";
 const socket = new WebSocket(connectUrl);
 socket.binaryType = "arraybuffer";
 
-loadingElem.textContent =
-  "Connecting... (If you see this message for more than 5 seconds, try to reload the page.)";
+const loaderIcon = icon(Loader);
+loaderIcon.classList.add("connecting-icon");
+
+const loadingElem = element("div", { id: "connecting-container" }, [
+  loaderIcon,
+  element("span", { textContent: "Connecting..." }),
+]);
+
+document.body.appendChild(loadingElem);
+
+setTimeout(() => {
+  const message = loadingElem.querySelector("span");
+  if (message) {
+    message.textContent = "Still connecting... Try reloading the page.";
+  }
+}, 5000);
 
 socket.addEventListener("error", () => {
   loadingElem.textContent = `Failed to connect. Try reloading the page.`;

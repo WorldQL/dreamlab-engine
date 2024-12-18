@@ -1,0 +1,41 @@
+html,
+body {
+  color: rgb(var(--color-text));
+  background: rgb(var(--color-bg-0) / 1);
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+#connecting-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-radius: var(--border-radius);
+  background-color: rgb(var(--color-bg-1) / 1);
+  color: rgb(var(--color-text));
+  font-weight: 500;
+  font-size: 1rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.connecting-icon {
+  width: 24px;
+  height: 24px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
