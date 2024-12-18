@@ -211,7 +211,7 @@ export class FileTree implements InspectorUIWidget {
       ),
     ]);
 
-    const formFields = elem("div", {}, [
+    const formFields = elem("div", { id: "form" }, [
       elem("input", {
         type: "text",
         name: "projectId",

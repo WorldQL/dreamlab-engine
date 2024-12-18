@@ -34,27 +34,37 @@
   flex-direction: column;
   gap: 0.5em;
   padding: 0 0.25em 0.5em 0.25em;
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 
-#file-tree #import-project-form input[type="text"] {
+#file-tree #form {
+  display: flex;
+  align-items: center;
+}
+
+#file-tree #form input[type="text"] {
   font-size: 0.95em;
   padding: 0.25em 0.5em;
-  border-radius: 4px;
-  border: 1px solid rgb(var(--color-text) / 0.3);
-  background-color: rgb(var(--color-bg));
+  border-radius: 4px 0 0 4px;
+  background-color: rgb(var(--color-bg-2));
+  border: none;
+  outline: none;
   color: rgb(var(--color-text));
+  min-width: 0;
   flex: 1;
+  box-sizing: border-box;
 }
 
-#file-tree #import-project-form button {
+#file-tree #form button {
   border: none;
-  padding: 0.25em 0.75em;
-  margin-left: 0.25em;
-  border-radius: 4px;
+  padding: 0.2em 0.5em;
+  border-radius: 0 4px 4px 0;
   background: rgb(var(--color-primary));
   color: #fff;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  white-space: nowrap;
 }
 
 #file-tree #import-project-form button:hover {
