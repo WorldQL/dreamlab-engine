@@ -91,4 +91,14 @@
       }
     }
   }
+
+  #play-button:has(> button[disabled]) {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  #play-button:has(> button[disabled]):hover {
+    background-color: transparent;
+    color: rgb(var(--color-grey));
+  }
 }
