@@ -74,9 +74,14 @@ interface PauseChangedMessage {
   paused: boolean;
 }
 
+interface GameLoadedMessage {
+  op: "GameLoaded";
+}
+
 export type WorkerIPCMessage =
   | WorkerUpMessage
   | OutgoingPacketMessage
   | ReportRichStatusMessage
   | SceneDefinitionResponseMessage
-  | PauseChangedMessage;
+  | PauseChangedMessage
+  | GameLoadedMessage;

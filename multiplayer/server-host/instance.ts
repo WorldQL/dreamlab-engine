@@ -255,7 +255,7 @@ export const bootInstance = async (instance: GameInstance, restart: boolean = fa
   instance.setStatus(GameInstanceState.Starting, "Starting session");
   const session = new GameSession(instance);
   instance.session = session;
-  await session.ready();
+  await session.loaded();
   instance.setStatus(GameInstanceState.Running, "Started");
   instance.notifySessionBoot();
 };
@@ -311,6 +311,6 @@ export const bootPlaySession = async (instance: GameInstance) => {
     instance.sendPlaySessionState();
   });
 
-  await session.ready();
+  await session.loaded();
   instance.notifyPlaySessionBoot();
 };

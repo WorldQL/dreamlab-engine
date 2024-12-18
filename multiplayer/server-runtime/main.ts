@@ -65,6 +65,8 @@ if (workerData.editMode) {
 game.setStatus(GameStatus.LoadingFinished);
 game.setStatus(GameStatus.Running);
 
+ipc.send({ op: "GameLoaded" });
+
 const tickDelta = 1_000 / game.time.TPS;
 
 let tickAcc = 0.0;

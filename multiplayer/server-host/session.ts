@@ -33,6 +33,10 @@ export class GameSession {
   #readyPromise: Promise<void>;
   #readyPromiseResolve: (() => void) | undefined;
 
+  #loaded: boolean = false;
+  #loadedPromise: Promise<void>;
+  #loadedPromiseResolve: (() => void) | undefined;
+
   startedAt = new Date();
 
   #autoSaveInterval: ReturnType<typeof setInterval> | undefined;
@@ -65,13 +69,21 @@ export class GameSession {
     }
     this.ipc = new IPCWorker(ipcData, parent.logs);
 
-    this.#readyPromise = new Promise((resolve, _reject) => {
+    this.#readyPromise = new Promise(resolve => {
       this.#readyPromiseResolve = resolve;
+    });
+    this.#loadedPromise = new Promise(resolve => {
+      this.#loadedPromiseResolve = resolve;
     });
 
     this.ipc.addMessageListener("WorkerUp", _message => {
       this.#readyPromiseResolve?.();
       this.#readied = true;
+    });
+
+    this.ipc.addMessageListener("GameLoaded", _message => {
+      this.#loadedPromiseResolve?.();
+      this.#loaded = true;
     });
 
     this.ipc.addMessageListener("OutgoingPacket", message => {
@@ -133,6 +145,11 @@ export class GameSession {
   async ready() {
     if (this.#readied) return;
     await this.#readyPromise;
+  }
+
+  async loaded() {
+    if (this.#loaded) return;
+    await this.#loadedPromise;
   }
 
   shutdown() {
