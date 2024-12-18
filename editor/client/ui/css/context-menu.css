@@ -99,4 +99,10 @@
   font-size: 0.8em;
   color: rgb(150, 150, 150);
   opacity: 0.75;
+
+  #context-menu a:hover &,
+  #context-menu a[data-selected] & {
+    color: rgb(var(--color-text));
+    opacity: 0.7;
+  }
 }
