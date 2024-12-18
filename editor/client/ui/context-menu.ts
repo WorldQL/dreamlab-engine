@@ -3,8 +3,8 @@ import { element as elem } from "@dreamlab/ui";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 
 export type ContextMenuItem =
-  | [label: string, action: () => void, disabled?: boolean]
-  | [label: string, children: ContextMenuItem[], disabled?: boolean];
+  | [label: string, action: () => void, disabled?: boolean, hint?: string]
+  | [label: string, children: ContextMenuItem[], disabled?: boolean, hint?: string];
 
 export class ContextMenu implements InspectorUIWidget {
   #menu: HTMLElement = elem("div", { id: "context-menu" }, []);
@@ -36,7 +36,7 @@ export class ContextMenu implements InspectorUIWidget {
 
     const renderItem = (
       section: HTMLElement,
-      [label, actionOrChildren, disabled = false]: ContextMenuItem,
+      [label, actionOrChildren, disabled = false, hint]: ContextMenuItem,
       index: number,
     ) => {
       const button: HTMLAnchorElement = elem(
@@ -47,6 +47,11 @@ export class ContextMenu implements InspectorUIWidget {
 
       if (disabled) {
         button.setAttribute("aria-disabled", "true");
+      }
+
+      if (hint) {
+        const hintSpan = elem("span", { className: "context-menu-hint" }, [hint]);
+        button.append(hintSpan);
       }
 
       section.append(button);

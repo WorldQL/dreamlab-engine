@@ -91,3 +91,12 @@
     background-color: rgba(var(--color-text), 0.1);
   }
 }
+
+.context-menu-hint {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  font-size: 0.8em;
+  color: rgb(150, 150, 150);
+  opacity: 0.75;
+}

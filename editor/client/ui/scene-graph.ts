@@ -446,6 +446,8 @@ export class SceneGraph implements InspectorUIWidget {
               Clipboard.set([...ui.selectedEntity.entities]);
               console.log("Copied:", Clipboard.get());
             },
+            false,
+            "Ctrl+C",
           ],
           [
             "Delete",
@@ -461,6 +463,8 @@ export class SceneGraph implements InspectorUIWidget {
               UndoRedoManager._.push({ t: "compound", ops: undoOps });
               ui.selectedEntity.entities = [];
             },
+            false,
+            "Backspace",
           ],
         );
       } else {
@@ -493,6 +497,8 @@ export class SceneGraph implements InspectorUIWidget {
               Clipboard.set([entity]);
               console.log("Copied:", Clipboard.get());
             },
+            false,
+            "Ctrl+C",
           ]);
 
         if (Clipboard.get().length > 0) {
@@ -517,6 +523,8 @@ export class SceneGraph implements InspectorUIWidget {
 
               UndoRedoManager._.push({ t: "compound", ops });
             },
+            false,
+            "Ctrl+V",
           ]);
         }
 
@@ -534,6 +542,8 @@ export class SceneGraph implements InspectorUIWidget {
               }
               entity.destroy();
             },
+            false,
+            "Backspace",
           ]);
       }
 
