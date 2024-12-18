@@ -99,12 +99,13 @@ export function createValueControl(
       const opts = _opts as ValueControlOptions<string | undefined>;
 
       const container = elem("div", { className: "texture-control" });
-      const imgPreview = elem("img", { className: "texture-preview" });
-      imgPreview.style.display = "none";
+      const imgPreview = elem("img", { className: "texture-preview hidden" });
+      const noTextureClass = "no-texture";
 
       const updateImagePreview = async (url: string) => {
         if (!url) {
-          imgPreview.style.display = "none";
+          imgPreview.classList.add("hidden");
+          container.classList.add(noTextureClass);
           imgPreview.src = "";
           return;
         }
@@ -115,9 +116,11 @@ export function createValueControl(
           if (!(texture instanceof PIXI.Texture)) throw new TypeError("Not a texture");
 
           imgPreview.src = resolvedUrl;
-          imgPreview.style.display = "block";
+          imgPreview.classList.remove("hidden");
+          container.classList.remove(noTextureClass);
         } catch {
-          imgPreview.style.display = "none";
+          imgPreview.classList.add("hidden");
+          container.classList.add(noTextureClass);
           imgPreview.src = "";
         }
       };
