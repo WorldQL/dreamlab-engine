@@ -429,78 +429,113 @@ export class SceneGraph implements InspectorUIWidget {
       event.preventDefault();
       event.stopPropagation();
 
-      ui.selectedEntity.entities = [entity];
+      const selectedEntities = ui.selectedEntity.entities;
+      const isEntitySelected = selectedEntities.includes(entity);
 
-      const contextMenuItems: ContextMenuItem[] = [
-        ["Focus", () => this.game.local._.Camera.pos.assign(entity.pos)],
-
-        createEntityMenu("New Entity", type => {
-          const newEntity = entity.spawn({
-            type: Facades.lookupFacadeEntityType(type),
-            name: type.name,
-          });
-
-          UndoRedoManager._.push({
-            t: "create-entity",
-            parentRef: entity.ref,
-            def: newEntity.getDefinition(),
-          });
-
-          ui.selectedEntity.entities = [newEntity];
-
-          const newEntryElement = this.entryElementMap.get(newEntity.ref);
-          if (newEntryElement) this.triggerRename(newEntity, newEntryElement);
-        }),
-      ];
-
-      if (!entity.protected)
-        contextMenuItems.push([
-          "Copy",
-          () => {
-            Clipboard.set([entity]);
-          },
-        ]);
-
-      if (Clipboard.get().length > 0) {
-        contextMenuItems.push([
-          "Paste",
-          () => {
-            const copiedEntities = Clipboard.get();
-            const pastedEntities: Entity[] = [];
-
-            for (const copied of copiedEntities) {
-              pastedEntities.push(copied.cloneInto(entity));
-            }
-
-            const ops = pastedEntities.map(
-              x =>
-                ({
-                  t: "create-entity",
-                  parentRef: x.parent!.ref,
-                  def: x.getDefinition(),
-                } satisfies UndoRedoOperation),
-            );
-
-            UndoRedoManager._.push({ t: "compound", ops });
-          },
-        ]);
+      if (!isEntitySelected) {
+        ui.selectedEntity.entities = [entity];
       }
 
-      if (!entity.protected)
-        contextMenuItems.push([
-          "Delete",
-          () => {
-            const parent = entity.parent;
-            if (parent) {
-              UndoRedoManager._.push({
-                t: "destroy-entity",
+      const contextMenuItems: ContextMenuItem[] = [];
+
+      if (ui.selectedEntity.entities.length > 1) {
+        contextMenuItems.push(
+          [
+            "Copy",
+            () => {
+              Clipboard.set([...ui.selectedEntity.entities]);
+              console.log("Copied:", Clipboard.get());
+            },
+          ],
+          [
+            "Delete",
+            () => {
+              const toDelete = [...ui.selectedEntity.entities];
+              const undoOps = toDelete.map(entity => ({
+                t: "destroy-entity" as const,
                 def: entity.getDefinition(),
-                parentRef: parent.ref,
-              });
-            }
-            entity.destroy();
-          },
-        ]);
+                parentRef: entity.parent?.ref!,
+              }));
+
+              toDelete.forEach(entity => entity.destroy());
+              UndoRedoManager._.push({ t: "compound", ops: undoOps });
+              ui.selectedEntity.entities = [];
+            },
+          ],
+        );
+      } else {
+        contextMenuItems.push(
+          ["Focus", () => this.game.local._.Camera.pos.assign(entity.pos)],
+
+          createEntityMenu("New Entity", type => {
+            const newEntity = entity.spawn({
+              type: Facades.lookupFacadeEntityType(type),
+              name: type.name,
+            });
+
+            UndoRedoManager._.push({
+              t: "create-entity",
+              parentRef: entity.ref,
+              def: newEntity.getDefinition(),
+            });
+
+            ui.selectedEntity.entities = [newEntity];
+
+            const newEntryElement = this.entryElementMap.get(newEntity.ref);
+            if (newEntryElement) this.triggerRename(newEntity, newEntryElement);
+          }),
+        );
+
+        if (!entity.protected)
+          contextMenuItems.push([
+            "Copy",
+            () => {
+              Clipboard.set([entity]);
+              console.log("Copied:", Clipboard.get());
+            },
+          ]);
+
+        if (Clipboard.get().length > 0) {
+          contextMenuItems.push([
+            "Paste",
+            () => {
+              const copiedEntities = Clipboard.get();
+              const pastedEntities: Entity[] = [];
+
+              for (const copied of copiedEntities) {
+                pastedEntities.push(copied.cloneInto(entity));
+              }
+
+              const ops = pastedEntities.map(
+                x =>
+                  ({
+                    t: "create-entity" as const,
+                    parentRef: x.parent!.ref,
+                    def: x.getDefinition(),
+                  } satisfies UndoRedoOperation),
+              );
+
+              UndoRedoManager._.push({ t: "compound", ops });
+            },
+          ]);
+        }
+
+        if (!entity.protected)
+          contextMenuItems.push([
+            "Delete",
+            () => {
+              const parent = entity.parent;
+              if (parent) {
+                UndoRedoManager._.push({
+                  t: "destroy-entity",
+                  def: entity.getDefinition(),
+                  parentRef: parent.ref,
+                });
+              }
+              entity.destroy();
+            },
+          ]);
+      }
 
       ui.contextMenu.drawContextMenu(event.clientX, event.clientY, contextMenuItems);
     });
