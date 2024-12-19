@@ -633,7 +633,7 @@ export class SceneGraph implements InspectorUIWidget {
   }
 
   private scrollToEntity(entry: HTMLElement) {
-    entry.scrollIntoView({ behavior: "smooth", block: "center" });
+    entry.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
   private openParentNodes(entry: HTMLElement) {
