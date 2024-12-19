@@ -456,6 +456,11 @@ export abstract class Entity implements ISignalHandler {
   getBehaviors<B extends Behavior>(constructor: BehaviorConstructor<B>): B[] {
     return this.behaviors.filter((b): b is B => b instanceof constructor);
   }
+
+  getBehaviorIfExists<B extends Behavior>(constructor: BehaviorConstructor<B>): B | undefined {
+    const behavior = this.behaviors.find(b => b instanceof constructor);
+    return behavior as B;
+  }
   // #endregion
 
   // #region Cloning
@@ -1049,7 +1054,7 @@ export abstract class Entity implements ISignalHandler {
     this[internal.entityTeleportingThisTick] = false;
 
     if (this.#netTransformFrom && this.#netTransformTo) {
-      const INTERP_TIME_TICKS = 2; // 6 ticks = 100ms
+      const INTERP_TIME_TICKS = 1; // 6 ticks = 100ms
 
       const age = this.game.time.ticks - this.#netTransformTicks;
       if (age <= INTERP_TIME_TICKS) {

@@ -52,9 +52,9 @@ export class CharacterController extends Collider {
     // TODO: emit collision events for all clients
     this.game.physics.emitCharacterControllerCollisions(this.collider, this.#controller);
 
-    // const authority = this.authority ?? "server";
-    // const hasAuthority = authority === this.game.network.self;
-    const hasAuthority = true;
+    const authority = this.authority ?? "server";
+    const hasAuthority = authority === this.game.network.self;
+    // const hasAuthority = true;
     // TODO: someone who knows more about authority determine if we should
     // only correct movement on the owning client
 
