@@ -7,6 +7,7 @@ import * as path from "jsr:@std/path@1";
 
 import { PlayPacket } from "@dreamlab/proto/play.ts";
 import { ProjectSchema, SceneDescEntity } from "@dreamlab/scene";
+import { generateCUID } from "@dreamlab/vendor/cuid.ts";
 import { fileIsProbablyBehaviorScript } from "../../../../build-system/build-world.ts";
 import { CONFIG } from "../../config.ts";
 import { GameInstance } from "../../instance.ts";
@@ -377,7 +378,15 @@ export const serveScriptEditingAPI = (router: Router) => {
 
         const importedDir = path.join(targetProjectDir, "src", "imported", sourceProjectName);
         await fs.ensureDir(path.dirname(importedDir));
-        // TODO: what to do when AlreadyExistsError ?
+        try {
+          await Deno.remove(importedDir, { recursive: true });
+        } catch (err) {
+          if (err instanceof Deno.errors.NotFound) {
+            // ignore
+          } else {
+            throw err;
+          }
+        }
         await fs.copy(sourceProjectDir, importedDir);
         await Deno.remove(path.join(importedDir, ".git"), { recursive: true });
 
@@ -410,13 +419,39 @@ export const serveScriptEditingAPI = (router: Router) => {
           for (const behavior of e.behaviors ?? []) {
             behavior.script = behavior.script.replace(/^res:\/\//, importedScriptLocation);
           }
-          if (e.children) e.children.forEach(rewriteScriptLocations);
+          e.children?.forEach(rewriteScriptLocations);
         };
+        importedScene.prefabs.forEach(rewriteScriptLocations);
 
-        for (const prefabEntity of importedScene.prefabs) {
-          rewriteScriptLocations(prefabEntity);
-          instance.session?.ipc.send({ op: "ImportEditPrefab", entity: prefabEntity });
-        }
+        const refMap: Record<string, string> = {};
+        const generateNewRef = (e: SceneDescEntity): void => {
+          refMap[e.ref] = generateCUID("ent");
+          e.children?.forEach(generateNewRef);
+        };
+        importedScene.prefabs.forEach(generateNewRef);
+
+        const replaceRefs = (e: SceneDescEntity): void => {
+          e.ref = refMap[e.ref] ?? e.ref;
+
+          // rewrite behavior values
+          for (const behavior of e.behaviors ?? []) {
+            if (!behavior.values) continue;
+            for (const key of Object.keys(behavior.values)) {
+              const value = behavior.values[key];
+              if (typeof value !== "string") continue;
+              const remapped = refMap[value];
+              if (!remapped) continue;
+              behavior.values[key] = remapped;
+            }
+          }
+
+          e.children?.forEach(replaceRefs);
+        };
+        importedScene.prefabs.forEach(replaceRefs);
+
+        importedScene.prefabs.forEach(entity => {
+          instance.session?.ipc.send({ op: "ImportEditPrefab", entity });
+        });
 
         await Deno.remove(path.join(importedDir, "project.json"));
 
