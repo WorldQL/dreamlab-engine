@@ -1,0 +1,1304 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "engine_revision": "2024-08.001"
+  },
+  "scenes": {
+    "main": {
+      "registration": [],
+      "world": [
+        {
+          "ref": "ent_l47mzpgzgjeh0oqivp8l4nxy",
+          "type": "@core/Empty",
+          "name": "Colors",
+          "enabled": true,
+          "children": [
+            {
+              "ref": "ent_cube203zswda89uz1al331f1",
+              "type": "@core/ClickableRect",
+              "name": "Red",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -30,
+                  "y": -29
+                },
+                "scale": {
+                  "x": 2,
+                  "y": 2
+                }
+              },
+              "values": {
+                "width": 1,
+                "height": 1
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_kgx8k7kxdca2jgn7yo2fhvgk",
+                  "script": "res://src/palette-color-selector.ts"
+                }
+              ],
+              "children": [
+                {
+                  "ref": "ent_yawb83mzkre06jmaldp99lmy",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      1,
+                      0,
+                      0,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_ghfx2c0oui82ucdenrha8rmd",
+              "type": "@core/ClickableRect",
+              "name": "Orange",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -27,
+                  "y": -29
+                },
+                "scale": {
+                  "x": 2,
+                  "y": 2
+                }
+              },
+              "values": {
+                "width": 1,
+                "height": 1
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_of6ca0ka53gdew7spzekhkx2",
+                  "script": "res://src/palette-color-selector.ts"
+                }
+              ],
+              "children": [
+                {
+                  "ref": "ent_l9pp39bfxpltyh97e2u24pdk",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      1,
+                      0.6470588445663452,
+                      0,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_f1mg23f8yf2o9hh7pxmjdllz",
+              "type": "@core/ClickableRect",
+              "name": "Yellow",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -24,
+                  "y": -29
+                },
+                "scale": {
+                  "x": 2,
+                  "y": 2
+                }
+              },
+              "values": {
+                "width": 1,
+                "height": 1
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_cdit6cv43r2bf4aphbbiva60",
+                  "script": "res://src/palette-color-selector.ts"
+                }
+              ],
+              "children": [
+                {
+                  "ref": "ent_vvnnxej2l2hfph2vpz17r6yn",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      1,
+                      0.843137264251709,
+                      0,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_esygli4exhykwjgeu4avogbv",
+              "type": "@core/ClickableRect",
+              "name": "Green",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -21,
+                  "y": -29
+                },
+                "scale": {
+                  "x": 2,
+                  "y": 2
+                }
+              },
+              "values": {
+                "width": 1,
+                "height": 1
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_khagn3blx9tkhoniu46h4ya4",
+                  "script": "res://src/palette-color-selector.ts"
+                }
+              ],
+              "children": [
+                {
+                  "ref": "ent_o3m1ejpsvs8x2kfbam53ipu4",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0,
+                      0.7843137383460999,
+                      0.32549020648002625,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_ie31hv36o8nyhfxjoxdt38x7",
+              "type": "@core/ClickableRect",
+              "name": "Blue",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -18,
+                  "y": -29
+                },
+                "scale": {
+                  "x": 2,
+                  "y": 2
+                }
+              },
+              "values": {
+                "width": 1,
+                "height": 1
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_h1imyox14g89m9qhkx2hzlz8",
+                  "script": "res://src/palette-color-selector.ts"
+                }
+              ],
+              "children": [
+                {
+                  "ref": "ent_liwonoo2dofwnd00yku24zcz",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.12941177189350128,
+                      0.5882353186607361,
+                      0.9529411792755127,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_lvrtwjuhd9demy0w9n7tr6y9",
+              "type": "@core/ClickableRect",
+              "name": "Purple",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -15,
+                  "y": -29
+                },
+                "scale": {
+                  "x": 2,
+                  "y": 2
+                }
+              },
+              "values": {
+                "width": 1,
+                "height": 1
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_g8cy32u86d4kl0tkmwdd3aid",
+                  "script": "res://src/palette-color-selector.ts"
+                }
+              ],
+              "children": [
+                {
+                  "ref": "ent_t8w2rwo3zzacqjaa5fcqwd3q",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.6117647290229797,
+                      0.15294118225574493,
+                      0.6901960968971252,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_zga0aj155c7cj0fwzu1eu5vk",
+              "type": "@core/ClickableRect",
+              "name": "Pink",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -12,
+                  "y": -29
+                },
+                "scale": {
+                  "x": 2,
+                  "y": 2
+                }
+              },
+              "values": {
+                "width": 1,
+                "height": 1
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_tr9ws8iashuqk0lwewuej9te",
+                  "script": "res://src/palette-color-selector.ts"
+                }
+              ],
+              "children": [
+                {
+                  "ref": "ent_ikfylhb9ca7vv0lgwaljljmk",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.9137254953384399,
+                      0.11764705926179886,
+                      0.38823530077934265,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_hvorvihqq6ha6m41p8ua4nv4",
+              "type": "@core/ClickableRect",
+              "name": "Teal",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -9,
+                  "y": -29
+                },
+                "scale": {
+                  "x": 2,
+                  "y": 2
+                }
+              },
+              "values": {
+                "width": 1,
+                "height": 1
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_tajurwczdwqwy53d0yjzqaza",
+                  "script": "res://src/palette-color-selector.ts"
+                }
+              ],
+              "children": [
+                {
+                  "ref": "ent_sju8ui05t59257vq57j0ms9s",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0,
+                      0.7490196228027344,
+                      0.686274528503418,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_s0mh35ujjl5k7azu5mu6ny0u",
+              "type": "@core/ClickableRect",
+              "name": "Gold",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -6,
+                  "y": -29
+                },
+                "scale": {
+                  "x": 2,
+                  "y": 2
+                }
+              },
+              "values": {
+                "width": 1,
+                "height": 1
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_jrk61a5zf62ow164tcm2ledt",
+                  "script": "res://src/palette-color-selector.ts"
+                }
+              ],
+              "children": [
+                {
+                  "ref": "ent_j7r62brubqgi131cphjqbyb8",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      1,
+                      0.843137264251709,
+                      0,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_lvkb1zpo7v3cooleh3md4qde",
+              "type": "@core/ClickableRect",
+              "name": "White",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -3,
+                  "y": -29
+                },
+                "scale": {
+                  "x": 2,
+                  "y": 2
+                }
+              },
+              "values": {
+                "width": 1,
+                "height": 1
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_htvakq76zsddvzjf8ph3amg1",
+                  "script": "res://src/palette-color-selector.ts"
+                }
+              ],
+              "children": [
+                {
+                  "ref": "ent_u449nk28mmz7mt7wapc0khpx",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      1,
+                      1,
+                      1,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_eedpm3hzji6xuo89ixwuf7fm",
+              "type": "@core/ClickableRect",
+              "name": "LightGrey",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -30,
+                  "y": -32
+                },
+                "scale": {
+                  "x": 2,
+                  "y": 2
+                }
+              },
+              "values": {
+                "width": 1,
+                "height": 1
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_uq8b6jh7kos271u6ic7q30sz",
+                  "script": "res://src/palette-color-selector.ts"
+                }
+              ],
+              "children": [
+                {
+                  "ref": "ent_pyd03zmwwpuf52fb9koe2cqj",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.7411764860153198,
+                      0.7411764860153198,
+                      0.7411764860153198,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_rjtbrq5l2lc2d5ain633lxcg",
+              "type": "@core/ClickableRect",
+              "name": "DarkGrey",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -27,
+                  "y": -32
+                },
+                "scale": {
+                  "x": 2,
+                  "y": 2
+                }
+              },
+              "values": {
+                "width": 1,
+                "height": 1
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_r1ob1ujewdc8x3hyied2j3fp",
+                  "script": "res://src/palette-color-selector.ts"
+                }
+              ],
+              "children": [
+                {
+                  "ref": "ent_vgjw0wr8erqpktbu012qqw0j",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.25882354378700256,
+                      0.25882354378700256,
+                      0.25882354378700256,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_l1vigphpiq8ns0rwrnfa9k6p",
+              "type": "@core/ClickableRect",
+              "name": "Black",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -3,
+                  "y": -32
+                },
+                "scale": {
+                  "x": 2,
+                  "y": 2
+                }
+              },
+              "values": {
+                "width": 1,
+                "height": 1
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_e1uxbba89lu9k1eubtkngu54",
+                  "script": "res://src/palette-color-selector.ts"
+                }
+              ],
+              "children": [
+                {
+                  "ref": "ent_c6zm8j8wonhdrqre18zs6477",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0,
+                      0,
+                      0,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_lfvd9p47vpjp32krzf9vheap",
+                  "type": "@core/ColoredSquare",
+                  "name": "Outline",
+                  "enabled": true,
+                  "transform": {
+                    "scale": {
+                      "x": 1.05,
+                      "y": 1.05
+                    },
+                    "z": -1
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      1,
+                      1,
+                      1,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_fn2c122zhr6l0skpv7vt7erl",
+              "type": "@core/ClickableRect",
+              "name": "LightGreen",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -21,
+                  "y": -32
+                },
+                "scale": {
+                  "x": 2,
+                  "y": 2
+                }
+              },
+              "values": {
+                "width": 1,
+                "height": 1
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_iyphwg1bhyot4t2i5cwt6qnv",
+                  "script": "res://src/palette-color-selector.ts"
+                }
+              ],
+              "children": [
+                {
+                  "ref": "ent_i258tp8f0xht0m83aoeucupb",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.6470588445663452,
+                      0.8392156958580017,
+                      0.6549019813537598,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_z0cdlaqf5rcn1gmct4psnzcz",
+              "type": "@core/ClickableRect",
+              "name": "LightBlue",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -18,
+                  "y": -32
+                },
+                "scale": {
+                  "x": 2,
+                  "y": 2
+                }
+              },
+              "values": {
+                "width": 1,
+                "height": 1
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_nc4adkb8xm8mumk2j0wdjfup",
+                  "script": "res://src/palette-color-selector.ts"
+                }
+              ],
+              "children": [
+                {
+                  "ref": "ent_j6zr1pmiw3gjej64nk1zj55a",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.5058823823928833,
+                      0.8313725590705872,
+                      0.9803921580314636,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_idtjsk9chevr5yuncadm5cf3",
+              "type": "@core/ClickableRect",
+              "name": "DarkPurple",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -15,
+                  "y": -32
+                },
+                "scale": {
+                  "x": 2,
+                  "y": 2
+                }
+              },
+              "values": {
+                "width": 1,
+                "height": 1
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_ieztzu2zesi596e16jlj5l67",
+                  "script": "res://src/palette-color-selector.ts"
+                }
+              ],
+              "children": [
+                {
+                  "ref": "ent_qsg4dmpc0eke7vpu71wkd0wy",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.29019609093666077,
+                      0.0784313753247261,
+                      0.5490196347236633,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_okt3o1c8bicg0fdta74w6kr6",
+              "type": "@core/ClickableRect",
+              "name": "DarkRed",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -12,
+                  "y": -32
+                },
+                "scale": {
+                  "x": 2,
+                  "y": 2
+                }
+              },
+              "values": {
+                "width": 1,
+                "height": 1
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_m7y9vvuu36yr2he10mz8vdkx",
+                  "script": "res://src/palette-color-selector.ts"
+                }
+              ],
+              "children": [
+                {
+                  "ref": "ent_vmxy4yzct6fcmcctqpqxfuwm",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.7176470756530762,
+                      0.10980392247438431,
+                      0.10980392247438431,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_atwnk5etn2bujdz4ap2nnuqy",
+              "type": "@core/ClickableRect",
+              "name": "Cyan",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -9,
+                  "y": -32
+                },
+                "scale": {
+                  "x": 2,
+                  "y": 2
+                }
+              },
+              "values": {
+                "width": 1,
+                "height": 1
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_egz480cjpr4bezbg5jpwfwyw",
+                  "script": "res://src/palette-color-selector.ts"
+                }
+              ],
+              "children": [
+                {
+                  "ref": "ent_wtdfq3zj7bmi8z04elpcaef6",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0,
+                      0.7372549176216125,
+                      0.8313725590705872,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_mqpa5aqk4pk2yd7vl5d87stb",
+              "type": "@core/ClickableRect",
+              "name": "Brown",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -6,
+                  "y": -32
+                },
+                "scale": {
+                  "x": 2,
+                  "y": 2
+                }
+              },
+              "values": {
+                "width": 1,
+                "height": 1
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_wfxqfg7v6irbi11lk7tmicaz",
+                  "script": "res://src/palette-color-selector.ts"
+                }
+              ],
+              "children": [
+                {
+                  "ref": "ent_achbcf90z1pwt0qokllr3x1s",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.4745098054409027,
+                      0.3333333432674408,
+                      0.2823529541492462,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_vpda3ohnvepfxshk515duarm",
+              "type": "@core/ClickableRect",
+              "name": "DarkBlue",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -24,
+                  "y": -32
+                },
+                "scale": {
+                  "x": 2,
+                  "y": 2
+                }
+              },
+              "values": {
+                "width": 1,
+                "height": 1
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_c6denaf2g2laz929q7rg6sdm",
+                  "script": "res://src/palette-color-selector.ts"
+                }
+              ],
+              "children": [
+                {
+                  "ref": "ent_fkwo8o9xwu9oo0mz7cz62id5",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.05098039284348488,
+                      0.27843138575553894,
+                      0.6313725709915161,
+                      1
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": "ent_x6ghi3r2xjeeehymdypt7vt6",
+          "type": "@core/ClickableRect",
+          "name": "RandomColor",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": 18.805615574344493,
+              "y": -30.448696918636642
+            },
+            "scale": {
+              "x": 2,
+              "y": 2
+            }
+          },
+          "values": {
+            "width": 1,
+            "height": 1
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_tjak3mqbyi0q2hy58w2j6o2m",
+              "script": "res://src/random-color.ts"
+            }
+          ],
+          "children": [
+            {
+              "ref": "ent_ojl3ht3aqkrtfyzm05t82o48",
+              "type": "@core/ColoredSquare",
+              "name": "ColoredSquare",
+              "enabled": true,
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  1,
+                  1,
+                  1,
+                  1
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "ref": "ent_kyyj43lcpp89bnp0ulwx4fi9",
+          "type": "@core/ClickableRect",
+          "name": "ClearCanvas",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": 39.722024507702294,
+              "y": -30.448696918636642
+            },
+            "scale": {
+              "x": 2,
+              "y": 2
+            }
+          },
+          "values": {
+            "width": 1,
+            "height": 1
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_ifkavesggraoh4u9gxvxmj4l",
+              "script": "res://src/clear-canvas.ts"
+            }
+          ],
+          "children": [
+            {
+              "ref": "ent_prbf4ooxc75vlvkfk8voymop",
+              "type": "@core/ColoredSquare",
+              "name": "ColoredSquare",
+              "enabled": true,
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  1,
+                  1,
+                  1,
+                  1
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "ref": "ent_l4wvl9bll7an3itlkf7ckhl0",
+          "type": "@core/Empty",
+          "name": "Text",
+          "enabled": true,
+          "children": [
+            {
+              "ref": "ent_z3kng1chkn63xx3d2zn7b9mo",
+              "type": "@core/Text",
+              "name": "SelectColorText",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -45.62183041456489,
+                  "y": -29.833416327676453
+                },
+                "scale": {
+                  "x": 5.749604477880705,
+                  "y": 7.6114122996178954
+                }
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "text": "Select A Color:",
+                "size": 24,
+                "outlineSize": 0,
+                "smoothing": 0.05,
+                "buffer": 0.5,
+                "letterSpacing": 1,
+                "font": "inter",
+                "color": [
+                  1,
+                  1,
+                  1,
+                  1
+                ],
+                "align": "left",
+                "outlineColor": [
+                  0.501960813999176,
+                  0.501960813999176,
+                  0.501960813999176,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_sjlvd7heyypkj9kdt4af4rof",
+              "type": "@core/Text",
+              "name": "ClearCanvasText",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 33.83620973578701,
+                  "y": -27.142416347946213
+                },
+                "scale": {
+                  "x": 5.749604477880705,
+                  "y": 7.6114122996178954
+                }
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "text": "Clear Canvas:",
+                "size": 24,
+                "outlineSize": 0,
+                "smoothing": 0.05,
+                "buffer": 0.5,
+                "letterSpacing": 1,
+                "font": "inter",
+                "color": [
+                  1,
+                  1,
+                  1,
+                  1
+                ],
+                "align": "left",
+                "outlineColor": [
+                  0.501960813999176,
+                  0.501960813999176,
+                  0.501960813999176,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_qfzpdi6cwgatfxe69ryk5g4x",
+              "type": "@core/Text",
+              "name": "RandomColorText",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 3.1343463306828667,
+                  "y": -29.833416327676453
+                },
+                "scale": {
+                  "x": 5.749604477880705,
+                  "y": 7.6114122996178954
+                }
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "text": "Random Color:",
+                "size": 24,
+                "outlineSize": 0,
+                "smoothing": 0.05,
+                "buffer": 0.5,
+                "letterSpacing": 1,
+                "font": "inter",
+                "color": [
+                  1,
+                  1,
+                  1,
+                  1
+                ],
+                "align": "left",
+                "outlineColor": [
+                  0.501960813999176,
+                  0.501960813999176,
+                  0.501960813999176,
+                  1
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "ref": "ent_sduwdo5lddha45v0tpnld2rv",
+          "type": "@core/Empty",
+          "name": "CanvasContainer",
+          "enabled": true
+        }
+      ],
+      "local": [
+        {
+          "ref": "ent_jojreate4508y5fgez7exuma",
+          "type": "@core/Camera",
+          "name": "Camera",
+          "enabled": true,
+          "transform": {
+            "scale": {
+              "x": 10,
+              "y": 10
+            }
+          },
+          "values": {
+            "active": true,
+            "smooth": 0.1,
+            "unlocked": false,
+            "zoom": 0.15
+          }
+        }
+      ],
+      "server": [
+        {
+          "ref": "ent_mc6h9m3pzo4rq4cjf71o6r9p",
+          "type": "@core/Empty",
+          "name": "Canvas",
+          "enabled": true,
+          "behaviors": [
+            {
+              "ref": "bhv_m6etke2dhgzq6hqe82eryskp",
+              "script": "res://src/canvas.ts"
+            }
+          ]
+        }
+      ],
+      "prefabs": [
+        {
+          "ref": "ent_reg7ba2wxfmza5pmyoxtcd1p",
+          "type": "@core/ClickableRect",
+          "name": "ClickableRect",
+          "enabled": true,
+          "values": {
+            "width": 1,
+            "height": 1
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_nhzew1yyosvazyci8qjd82du",
+              "script": "res://src/click.ts"
+            }
+          ],
+          "children": [
+            {
+              "ref": "ent_xeq01nxy9lfqchhhl7kysok0",
+              "type": "@core/ColoredSquare",
+              "name": "ColoredSquare",
+              "enabled": true,
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  1,
+                  1,
+                  1,
+                  1
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "ref": "ent_a63yctx5bi3w4ydt68s70bpi",
+          "type": "@core/Text",
+          "name": "Hint1",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": -8.644433784886438,
+              "y": -23.347990399133014
+            },
+            "scale": {
+              "x": 5.216939684472873,
+              "y": 8.332714272597665
+            }
+          },
+          "values": {
+            "static": false,
+            "hidden": false,
+            "text": "Add Tools Below This",
+            "size": 24,
+            "outlineSize": 0,
+            "smoothing": 0.05,
+            "buffer": 0.5,
+            "letterSpacing": 1,
+            "font": "inter",
+            "color": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "align": "left",
+            "outlineColor": [
+              0.501960813999176,
+              0.501960813999176,
+              0.501960813999176,
+              1
+            ]
+          }
+        }
+      ]
+    }
+  }
+}
