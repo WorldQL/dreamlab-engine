@@ -13,6 +13,8 @@ export class CharacterController extends Collider {
   #controller: KinematicCharacterController | undefined;
   #prevPosition = this.pos.clone();
 
+  teleport = false;
+
   #isGrounded = false;
   public get isGrounded(): boolean {
     return this.#isGrounded;
@@ -45,23 +47,26 @@ export class CharacterController extends Collider {
   private onPostUpdate() {
     if (!this.#controller) return;
 
-    const delta = this.pos.sub(this.#prevPosition);
-    this.#controller.computeColliderMovement(this.collider, delta);
-    this.#isGrounded = this.#controller.computedGrounded();
+    if (!this.teleport) {
+      const delta = this.pos.sub(this.#prevPosition);
+      this.#controller.computeColliderMovement(this.collider, delta);
+      this.#isGrounded = this.#controller.computedGrounded();
 
-    // TODO: emit collision events for all clients
-    this.game.physics.emitCharacterControllerCollisions(this.collider, this.#controller);
+      this.game.physics.emitCharacterControllerCollisions(this.collider, this.#controller);
 
-    const authority = this.authority ?? "server";
-    const hasAuthority = authority === this.game.network.self;
-    // const hasAuthority = true;
-    // TODO: someone who knows more about authority determine if we should
-    // only correct movement on the owning client
+      const authority = this.authority ?? "server";
+      const hasAuthority = authority === this.game.network.self;
+      // const hasAuthority = true;
+      // TODO: someone who knows more about authority determine if we should
+      // only correct movement on the owning client
 
-    if (hasAuthority) {
-      const corrected = this.#controller.computedMovement();
-      const newPosition = this.#prevPosition.add(corrected);
-      this.pos.assign(newPosition);
+      if (hasAuthority) {
+        const corrected = this.#controller.computedMovement();
+        const newPosition = this.#prevPosition.add(corrected);
+        this.pos.assign(newPosition);
+      }
+    } else {
+      this.teleport = false;
     }
 
     this.#prevPosition.assign(this.pos);
