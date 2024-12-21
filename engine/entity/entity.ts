@@ -1124,9 +1124,11 @@ export abstract class Entity implements ISignalHandler {
           newTransform.position.assign(
             Vector2.lerp(this.#netTransformFrom.position, this.#netTransformTo.position, t),
           );
-          this.globalTransform.position = newTransform.position;
-          this.globalTransform.rotation = newTransform.rotation;
-          this.globalTransform.scale = newTransform.scale;
+          // this.globalTransform.position = newTransform.position;
+          // this.globalTransform.rotation = newTransform.rotation;
+          // this.globalTransform.scale = newTransform.scale;
+          this.transform[internal.transformForceUpdate](newTransform);
+          this.#updateTransform(false, this, this.#netTransformSource);
         }
       }
 
