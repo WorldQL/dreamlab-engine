@@ -596,7 +596,6 @@ export abstract class Entity implements ISignalHandler {
    */
   setTransform(opts: TransformOptions): void {
     this[internal.entityTeleportingThisTick] = true;
-
     if (opts.position?.x !== undefined) {
       this.transform.position.x = opts.position.x;
       this.#prevPosition.x = opts.position.x;
@@ -630,7 +629,6 @@ export abstract class Entity implements ISignalHandler {
    */
   setGlobalTransform(opts: TransformOptions): void {
     this[internal.entityTeleportingThisTick] = true;
-
     if (opts.position?.x !== undefined) {
       this.globalTransform.position.x = opts.position.x;
       this.#prevPosition.x = opts.position.x;
@@ -1050,11 +1048,27 @@ export abstract class Entity implements ISignalHandler {
       }
     }
   }
+
+  static foobar: IVector2 = { x: 99, y: 99 };
+  static lastFoobar: IVector2 = { x: 99, y: 3 };
+  static partialAccumulator = 0;
+
   [internal.interpolationStartTick]() {
     this[internal.entityTeleportingThisTick] = false;
 
+    const tr = this.globalTransform;
+    const pos = tr.position;
+    const scale = tr.scale;
+
     if (this.#netTransformFrom && this.#netTransformTo) {
-      const INTERP_TIME_TICKS = 1; // 6 ticks = 100ms
+      this.#prevPosition.x = pos.x;
+      this.#prevPosition.y = pos.y;
+
+      this.#prevRotation = tr.rotation;
+      this.#prevScale.x = scale.x;
+      this.#prevScale.y = scale.y;
+      // console.log(this.name);
+      const INTERP_TIME_TICKS = 3; // 6 ticks = 100ms
 
       const age = this.game.time.ticks - this.#netTransformTicks;
       if (age <= INTERP_TIME_TICKS) {
@@ -1063,25 +1077,62 @@ export abstract class Entity implements ISignalHandler {
         newTransform.position.assign(
           Vector2.lerp(this.#netTransformFrom.position, this.#netTransformTo.position, t),
         );
-        this.transform[internal.transformForceUpdate](newTransform);
-        this.#updateTransform(false, this, this.#netTransformSource);
+        // this.transform[internal.transformForceUpdate](newTransform);
+        // this.#updateTransform(false, this, this.#netTransformSource);
         // this.transform[internal.transformOnChanged]();
+        this.globalTransform.position = newTransform.position;
+        this.globalTransform.rotation = newTransform.rotation;
+        this.globalTransform.scale = newTransform.scale;
+
+        if (this.name === "Collider.2") {
+          Entity.foobar.x = this.#prevPosition.x;
+          Entity.foobar.y = this.#prevPosition.y;
+          // console.log(Entity.foobar);
+          Entity.partialAccumulator = 0;
+        }
       }
     }
 
-    const tr = this.globalTransform;
-    const pos = tr.position;
-    this.#prevPosition.x = pos.x;
-    this.#prevPosition.y = pos.y;
-    this.#prevRotation = tr.rotation;
-    const scale = tr.scale;
-    this.#prevScale.x = scale.x;
-    this.#prevScale.y = scale.y;
+    if (!(this.#netTransformFrom && this.#netTransformTo)) {
+      this.#prevPosition.x = pos.x;
+      this.#prevPosition.y = pos.y;
+
+      this.#prevRotation = tr.rotation;
+      this.#prevScale.x = scale.x;
+      this.#prevScale.y = scale.y;
+    }
   }
   [internal.interpolationStartFrame](partial: number) {
-    this.#interpolated.position.assign(
-      Vector2.lerp(this.#prevPosition, this.globalTransform.position, partial),
-    );
+    if (
+      !this.game.world.children.has("EditEntities") &&
+      !this.game.paused.value &&
+      this.name === "special"
+    ) {
+      let _partial = partial;
+      // if (!Entity.didNetUpdateThisTick) {
+      //   _partial = 1;
+      // }
+
+
+      const same = (Entity.foobar.x === Entity.lastFoobar.x && Entity.foobar.y === Entity.lastFoobar.y)
+      if (Entity.partialAccumulator > 1) {
+        _partial = 1;
+      }
+
+      Entity.partialAccumulator += partial;
+
+
+      this.#interpolated.position.assign(
+        Vector2.lerp(Entity.foobar, this.globalTransform.position, _partial),
+      );
+
+      Entity.lastFoobar.x = Entity.foobar.x;
+      Entity.lastFoobar.y = Entity.foobar.y;
+    } else {
+      this.#interpolated.position.assign(
+        Vector2.lerp(this.#prevPosition, this.globalTransform.position, partial),
+      );
+    }
 
     this.#interpolated.rotation = lerpAngle(
       this.#prevRotation,
