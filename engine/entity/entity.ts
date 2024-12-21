@@ -1073,12 +1073,12 @@ export abstract class Entity implements ISignalHandler {
   }
 
   [internal.interpolationStartTick]() {
-    if (this.game.world.children.has("EditEntities")) {
+    if (this.game.isEditMode) {
       // editor mode.
       this[internal.entityTeleportingThisTick] = false;
 
       if (this.#netTransformFrom && this.#netTransformTo) {
-        const INTERP_TIME_TICKS = 1; // 6 ticks = 100ms
+        const INTERP_TIME_TICKS = 7; // 6 ticks = 100ms
 
         const age = this.game.time.ticks - this.#netTransformTicks;
         if (age <= INTERP_TIME_TICKS) {

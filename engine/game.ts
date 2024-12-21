@@ -174,6 +174,9 @@ export abstract class BaseGame implements ISignalHandler {
 
   paused = new Value<boolean>(this.values, "paused", false, Boolean, "paused");
 
+  #needCheckForEditMode = true;
+  isEditMode = false;
+
   tick() {
     if (this.status === GameStatus.Shutdown) return;
     if (!this.#initialized)
@@ -214,6 +217,14 @@ export abstract class BaseGame implements ISignalHandler {
     this.fire(GamePostTick);
 
     this.fire(InternalGameTick);
+
+    // TODO stupid hack. how do I actually get this?
+    if (this.#needCheckForEditMode) {
+      if (this.world.children.has("EditEntities")) {
+        this.isEditMode = true;
+      }
+      this.#needCheckForEditMode = false;
+    }
   }
 
   shutdown() {
