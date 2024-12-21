@@ -1048,12 +1048,11 @@ export abstract class Entity implements ISignalHandler {
       }
     }
   }
-
-  // static foobar: IVector2 = { x: 99, y: 99 };
-  // static lastFoobar: IVector2 = { x: 99, y: 3 };
+  // TODO: Implement this
+  localVisualTransformOverride: Transform | undefined;
 
   partialAccumulator = 0;
-  localVisualPositionOverride: IVector2 | undefined;
+  parentGotNetTransformOnTickNumber: number = -1;
 
   setPrevPositionForSelfAndDescendants() {
     const tr = this.globalTransform;
@@ -1073,7 +1072,6 @@ export abstract class Entity implements ISignalHandler {
     }
   }
 
-  parentGotNetTransformOnTickNumber: number = -1;
   [internal.interpolationStartTick]() {
     this[internal.entityTeleportingThisTick] = false;
 
@@ -1081,6 +1079,7 @@ export abstract class Entity implements ISignalHandler {
     const pos = tr.position;
     const scale = tr.scale;
 
+    // do not set children's prevPosition as they have already been correctly updated prior to the network transform update.
     const parentNetTransformed =
       this.game.time.ticks === this.parentGotNetTransformOnTickNumber;
 
@@ -1111,11 +1110,10 @@ export abstract class Entity implements ISignalHandler {
     }
   }
   [internal.interpolationStartFrame](partial: number) {
-    if (
-      !this.game.world.children.has("EditEntities") &&
-      !this.game.paused.value &&
-      this.name === "special"
-    ) {
+    const parentNetTransformed =
+      this.game.time.ticks === this.parentGotNetTransformOnTickNumber;
+    if (parentNetTransformed) {
+      // partial accumulator logic only required if we're interpolating a networked transform.
       let _partial = partial;
       if (this.partialAccumulator > 1) {
         _partial = 1;
