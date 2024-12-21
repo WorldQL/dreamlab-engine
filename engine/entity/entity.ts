@@ -1049,10 +1049,31 @@ export abstract class Entity implements ISignalHandler {
     }
   }
 
-  static foobar: IVector2 = { x: 99, y: 99 };
-  static lastFoobar: IVector2 = { x: 99, y: 3 };
-  static partialAccumulator = 0;
+  // static foobar: IVector2 = { x: 99, y: 99 };
+  // static lastFoobar: IVector2 = { x: 99, y: 3 };
 
+  partialAccumulator = 0;
+  localVisualPositionOverride: IVector2 | undefined;
+
+  setPrevPositionForSelfAndDescendants() {
+    const tr = this.globalTransform;
+    const pos = tr.position;
+    const scale = tr.scale;
+    this.#prevPosition.x = pos.x;
+    this.#prevPosition.y = pos.y;
+
+    this.#prevRotation = tr.rotation;
+    this.#prevScale.x = scale.x;
+    this.#prevScale.y = scale.y;
+    this.partialAccumulator = 0;
+
+    for (const [_, child] of this.children) {
+      child.setPrevPositionForSelfAndDescendants();
+      child.parentGotNetTransformOnTickNumber = this.game.time.ticks;
+    }
+  }
+
+  parentGotNetTransformOnTickNumber: number = -1;
   [internal.interpolationStartTick]() {
     this[internal.entityTeleportingThisTick] = false;
 
@@ -1060,14 +1081,11 @@ export abstract class Entity implements ISignalHandler {
     const pos = tr.position;
     const scale = tr.scale;
 
-    if (this.#netTransformFrom && this.#netTransformTo) {
-      this.#prevPosition.x = pos.x;
-      this.#prevPosition.y = pos.y;
+    const parentNetTransformed =
+      this.game.time.ticks === this.parentGotNetTransformOnTickNumber;
 
-      this.#prevRotation = tr.rotation;
-      this.#prevScale.x = scale.x;
-      this.#prevScale.y = scale.y;
-      // console.log(this.name);
+    if (this.#netTransformFrom && this.#netTransformTo) {
+      this.setPrevPositionForSelfAndDescendants();
       const INTERP_TIME_TICKS = 3; // 6 ticks = 100ms
 
       const age = this.game.time.ticks - this.#netTransformTicks;
@@ -1077,23 +1095,13 @@ export abstract class Entity implements ISignalHandler {
         newTransform.position.assign(
           Vector2.lerp(this.#netTransformFrom.position, this.#netTransformTo.position, t),
         );
-        // this.transform[internal.transformForceUpdate](newTransform);
-        // this.#updateTransform(false, this, this.#netTransformSource);
-        // this.transform[internal.transformOnChanged]();
         this.globalTransform.position = newTransform.position;
         this.globalTransform.rotation = newTransform.rotation;
         this.globalTransform.scale = newTransform.scale;
-
-        if (this.name === "Collider.2") {
-          Entity.foobar.x = this.#prevPosition.x;
-          Entity.foobar.y = this.#prevPosition.y;
-          // console.log(Entity.foobar);
-          Entity.partialAccumulator = 0;
-        }
       }
     }
 
-    if (!(this.#netTransformFrom && this.#netTransformTo)) {
+    if (!(this.#netTransformFrom && this.#netTransformTo) && !parentNetTransformed) {
       this.#prevPosition.x = pos.x;
       this.#prevPosition.y = pos.y;
 
@@ -1109,25 +1117,14 @@ export abstract class Entity implements ISignalHandler {
       this.name === "special"
     ) {
       let _partial = partial;
-      // if (!Entity.didNetUpdateThisTick) {
-      //   _partial = 1;
-      // }
-
-
-      const same = (Entity.foobar.x === Entity.lastFoobar.x && Entity.foobar.y === Entity.lastFoobar.y)
-      if (Entity.partialAccumulator > 1) {
+      if (this.partialAccumulator > 1) {
         _partial = 1;
       }
-
-      Entity.partialAccumulator += partial;
-
+      this.partialAccumulator += partial;
 
       this.#interpolated.position.assign(
-        Vector2.lerp(Entity.foobar, this.globalTransform.position, _partial),
+        Vector2.lerp(this.#prevPosition, this.globalTransform.position, _partial),
       );
-
-      Entity.lastFoobar.x = Entity.foobar.x;
-      Entity.lastFoobar.y = Entity.foobar.y;
     } else {
       this.#interpolated.position.assign(
         Vector2.lerp(this.#prevPosition, this.globalTransform.position, partial),
