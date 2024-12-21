@@ -1073,40 +1073,71 @@ export abstract class Entity implements ISignalHandler {
   }
 
   [internal.interpolationStartTick]() {
-    this[internal.entityTeleportingThisTick] = false;
+    if (this.game.world.children.has("EditEntities")) {
+      // editor mode.
+      this[internal.entityTeleportingThisTick] = false;
 
-    const tr = this.globalTransform;
-    const pos = tr.position;
-    const scale = tr.scale;
+      if (this.#netTransformFrom && this.#netTransformTo) {
+        const INTERP_TIME_TICKS = 1; // 6 ticks = 100ms
 
-    // do not set children's prevPosition as they have already been correctly updated prior to the network transform update.
-    const parentNetTransformed =
-      this.game.time.ticks === this.parentGotNetTransformOnTickNumber;
-
-    if (this.#netTransformFrom && this.#netTransformTo) {
-      this.setPrevPositionForSelfAndDescendants();
-      const INTERP_TIME_TICKS = 3; // 6 ticks = 100ms
-
-      const age = this.game.time.ticks - this.#netTransformTicks;
-      if (age <= INTERP_TIME_TICKS) {
-        const t = age / INTERP_TIME_TICKS;
-        const newTransform = new Transform(this.#netTransformTo);
-        newTransform.position.assign(
-          Vector2.lerp(this.#netTransformFrom.position, this.#netTransformTo.position, t),
-        );
-        this.globalTransform.position = newTransform.position;
-        this.globalTransform.rotation = newTransform.rotation;
-        this.globalTransform.scale = newTransform.scale;
+        const age = this.game.time.ticks - this.#netTransformTicks;
+        if (age <= INTERP_TIME_TICKS) {
+          const t = age / INTERP_TIME_TICKS;
+          const newTransform = new Transform(this.#netTransformTo);
+          newTransform.position.assign(
+            Vector2.lerp(this.#netTransformFrom.position, this.#netTransformTo.position, t),
+          );
+          this.transform[internal.transformForceUpdate](newTransform);
+          this.#updateTransform(false, this, this.#netTransformSource);
+          // this.transform[internal.transformOnChanged]();
+        }
       }
-    }
 
-    if (!(this.#netTransformFrom && this.#netTransformTo) && !parentNetTransformed) {
+      const tr = this.globalTransform;
+      const pos = tr.position;
       this.#prevPosition.x = pos.x;
       this.#prevPosition.y = pos.y;
-
       this.#prevRotation = tr.rotation;
+      const scale = tr.scale;
       this.#prevScale.x = scale.x;
       this.#prevScale.y = scale.y;
+    } else {
+      // play mode
+      this[internal.entityTeleportingThisTick] = false;
+
+      const tr = this.globalTransform;
+      const pos = tr.position;
+      const scale = tr.scale;
+
+      // do not set children's prevPosition as they have already been correctly updated prior to the network transform update.
+      const parentNetTransformed =
+        this.game.time.ticks === this.parentGotNetTransformOnTickNumber;
+
+      if (this.#netTransformFrom && this.#netTransformTo) {
+        this.setPrevPositionForSelfAndDescendants();
+        const INTERP_TIME_TICKS = 3; // 6 ticks = 100ms
+
+        const age = this.game.time.ticks - this.#netTransformTicks;
+        if (age <= INTERP_TIME_TICKS) {
+          const t = age / INTERP_TIME_TICKS;
+          const newTransform = new Transform(this.#netTransformTo);
+          newTransform.position.assign(
+            Vector2.lerp(this.#netTransformFrom.position, this.#netTransformTo.position, t),
+          );
+          this.globalTransform.position = newTransform.position;
+          this.globalTransform.rotation = newTransform.rotation;
+          this.globalTransform.scale = newTransform.scale;
+        }
+      }
+
+      if (!(this.#netTransformFrom && this.#netTransformTo) && !parentNetTransformed) {
+        this.#prevPosition.x = pos.x;
+        this.#prevPosition.y = pos.y;
+
+        this.#prevRotation = tr.rotation;
+        this.#prevScale.x = scale.x;
+        this.#prevScale.y = scale.y;
+      }
     }
   }
   [internal.interpolationStartFrame](partial: number) {
