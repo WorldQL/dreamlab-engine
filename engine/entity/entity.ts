@@ -1048,8 +1048,9 @@ export abstract class Entity implements ISignalHandler {
       }
     }
   }
-  // TODO: Implement this
+
   localVisualTransformOverride: Transform | undefined;
+  #prevLocalVisualTransformOverride: Transform | undefined;
 
   partialAccumulator = 0;
   gotNetTransformOnTickNumber: number = -1;
@@ -1126,7 +1127,6 @@ export abstract class Entity implements ISignalHandler {
         }
       }
 
-      
       // do not set children's prevPosition as they have already been correctly updated when their parent ran the code above
       const wasNetTransformed = this.game.time.ticks === this.gotNetTransformOnTickNumber;
       if (!(this.#netTransformFrom && this.#netTransformTo) && !wasNetTransformed) {
@@ -1135,6 +1135,21 @@ export abstract class Entity implements ISignalHandler {
         this.#prevRotation = tr.rotation;
         this.#prevScale.x = scale.x;
         this.#prevScale.y = scale.y;
+      }
+
+      if (!(this.#netTransformFrom && !this.#netTransformTo)) {
+        /*
+        Remember the tick loop:
+        1. calls interpolationStartTick
+        2. Ticks entities (which would set localVisualTransformOverride)
+
+        So we save the current override (from last tick's behaviors) and by the time we interpolate it will be updated. 
+        */
+        if (this.localVisualTransformOverride) {
+          this.#prevLocalVisualTransformOverride = this.localVisualTransformOverride.clone();
+        }
+
+        this.localVisualTransformOverride = undefined;
       }
     }
   }
@@ -1166,6 +1181,28 @@ export abstract class Entity implements ISignalHandler {
     this.#interpolated.scale.assign(
       Vector2.lerp(this.#prevScale, this.globalTransform.scale, partial),
     );
+
+    if (this.localVisualTransformOverride && this.#prevLocalVisualTransformOverride) {
+      this.#interpolated.position.assign(
+        Vector2.lerp(
+          this.#prevLocalVisualTransformOverride.position,
+          this.localVisualTransformOverride.position,
+          partial,
+        ),
+      );
+      this.#interpolated.rotation = lerpAngle(
+        this.#prevLocalVisualTransformOverride.rotation,
+        this.localVisualTransformOverride.rotation,
+        partial,
+      );
+      this.#interpolated.scale.assign(
+        Vector2.lerp(
+          this.#prevLocalVisualTransformOverride.scale,
+          this.localVisualTransformOverride.scale,
+          partial,
+        ),
+      );
+    }
   }
 
   #destroyed: boolean = false;
