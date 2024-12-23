@@ -1052,7 +1052,7 @@ export abstract class Entity implements ISignalHandler {
   localVisualTransformOverride: Transform | undefined;
 
   partialAccumulator = 0;
-  parentGotNetTransformOnTickNumber: number = -1;
+  gotNetTransformOnTickNumber: number = -1;
 
   setPrevPositionForSelfAndDescendants() {
     const tr = this.globalTransform;
@@ -1066,9 +1066,10 @@ export abstract class Entity implements ISignalHandler {
     this.#prevScale.y = scale.y;
     this.partialAccumulator = 0;
 
+    this.gotNetTransformOnTickNumber = this.game.time.ticks;
+
     for (const [_, child] of this.children) {
       child.setPrevPositionForSelfAndDescendants();
-      child.parentGotNetTransformOnTickNumber = this.game.time.ticks;
     }
   }
 
@@ -1109,10 +1110,6 @@ export abstract class Entity implements ISignalHandler {
       const pos = tr.position;
       const scale = tr.scale;
 
-      // do not set children's prevPosition as they have already been correctly updated prior to the network transform update.
-      const parentNetTransformed =
-        this.game.time.ticks === this.parentGotNetTransformOnTickNumber;
-
       if (this.#netTransformFrom && this.#netTransformTo) {
         this.setPrevPositionForSelfAndDescendants();
         const INTERP_TIME_TICKS = 3; // 6 ticks = 100ms
@@ -1124,18 +1121,17 @@ export abstract class Entity implements ISignalHandler {
           newTransform.position.assign(
             Vector2.lerp(this.#netTransformFrom.position, this.#netTransformTo.position, t),
           );
-          // this.globalTransform.position = newTransform.position;
-          // this.globalTransform.rotation = newTransform.rotation;
-          // this.globalTransform.scale = newTransform.scale;
           this.transform[internal.transformForceUpdate](newTransform);
           this.#updateTransform(false, this, this.#netTransformSource);
         }
       }
 
-      if (!(this.#netTransformFrom && this.#netTransformTo) && !parentNetTransformed) {
+      
+      // do not set children's prevPosition as they have already been correctly updated when their parent ran the code above
+      const wasNetTransformed = this.game.time.ticks === this.gotNetTransformOnTickNumber;
+      if (!(this.#netTransformFrom && this.#netTransformTo) && !wasNetTransformed) {
         this.#prevPosition.x = pos.x;
         this.#prevPosition.y = pos.y;
-
         this.#prevRotation = tr.rotation;
         this.#prevScale.x = scale.x;
         this.#prevScale.y = scale.y;
@@ -1143,9 +1139,8 @@ export abstract class Entity implements ISignalHandler {
     }
   }
   [internal.interpolationStartFrame](partial: number) {
-    const parentNetTransformed =
-      this.game.time.ticks === this.parentGotNetTransformOnTickNumber;
-    if (parentNetTransformed) {
+    const wasNetTransformed = this.game.time.ticks === this.gotNetTransformOnTickNumber;
+    if (wasNetTransformed) {
       // partial accumulator logic only required if we're interpolating a networked transform.
       let _partial = partial;
       if (this.partialAccumulator > 1) {
