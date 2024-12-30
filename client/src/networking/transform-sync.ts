@@ -73,7 +73,7 @@ export const handleTransformSync: ClientNetworkSetupRoutine = (conn, game) => {
     for (const report of packet.reports) {
       const entity = game.entities.lookupByRef(report.entity);
       if (entity === undefined) continue;
-      if (entity.authority === conn.id) continue;
+      if (entity.authority === conn.id && packet.from !== undefined) continue;
 
       ignoredEntityRefs.add(entity.ref);
       entity[internal.transformFromNetwork](
