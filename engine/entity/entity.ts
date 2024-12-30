@@ -596,7 +596,6 @@ export abstract class Entity implements ISignalHandler {
    */
   setTransform(opts: TransformOptions): void {
     this[internal.entityTeleportingThisTick] = true;
-
     if (opts.position?.x !== undefined) {
       this.transform.position.x = opts.position.x;
       this.#prevPosition.x = opts.position.x;
@@ -630,7 +629,6 @@ export abstract class Entity implements ISignalHandler {
    */
   setGlobalTransform(opts: TransformOptions): void {
     this[internal.entityTeleportingThisTick] = true;
-
     if (opts.position?.x !== undefined) {
       this.globalTransform.position.x = opts.position.x;
       this.#prevPosition.x = opts.position.x;
@@ -1050,38 +1048,130 @@ export abstract class Entity implements ISignalHandler {
       }
     }
   }
-  [internal.interpolationStartTick]() {
-    this[internal.entityTeleportingThisTick] = false;
 
-    if (this.#netTransformFrom && this.#netTransformTo) {
-      const INTERP_TIME_TICKS = 1; // 6 ticks = 100ms
+  // Allow Behaviors to override the visual-only position of an entity. Ended up not needing this but leaving it in as it's tested and working.
+  localVisualTransformOverride: Transform | undefined;
+  #prevLocalVisualTransformOverride: Transform | undefined;
 
-      const age = this.game.time.ticks - this.#netTransformTicks;
-      if (age <= INTERP_TIME_TICKS) {
-        const t = age / INTERP_TIME_TICKS;
-        const newTransform = new Transform(this.#netTransformTo);
-        newTransform.position.assign(
-          Vector2.lerp(this.#netTransformFrom.position, this.#netTransformTo.position, t),
-        );
-        this.transform[internal.transformForceUpdate](newTransform);
-        this.#updateTransform(false, this, this.#netTransformSource);
-        // this.transform[internal.transformOnChanged]();
-      }
-    }
+  partialAccumulator = 0;
+  gotNetTransformOnTickNumber: number = -1;
 
+  setPrevPositionForSelfAndDescendants() {
     const tr = this.globalTransform;
     const pos = tr.position;
+    const scale = tr.scale;
     this.#prevPosition.x = pos.x;
     this.#prevPosition.y = pos.y;
+
     this.#prevRotation = tr.rotation;
-    const scale = tr.scale;
     this.#prevScale.x = scale.x;
     this.#prevScale.y = scale.y;
+    this.partialAccumulator = 0;
+
+    this.gotNetTransformOnTickNumber = this.game.time.ticks;
+
+    for (const [_, child] of this.children) {
+      child.setPrevPositionForSelfAndDescendants();
+    }
+  }
+
+  [internal.interpolationStartTick]() {
+    if (this.game.isEditMode) {
+      // editor mode.
+      this[internal.entityTeleportingThisTick] = false;
+
+      if (this.#netTransformFrom && this.#netTransformTo) {
+        const INTERP_TIME_TICKS = 7; // 6 ticks = 100ms
+
+        const age = this.game.time.ticks - this.#netTransformTicks;
+        if (age <= INTERP_TIME_TICKS) {
+          const t = age / INTERP_TIME_TICKS;
+          const newTransform = new Transform(this.#netTransformTo);
+          newTransform.position.assign(
+            Vector2.lerp(this.#netTransformFrom.position, this.#netTransformTo.position, t),
+          );
+          this.transform[internal.transformForceUpdate](newTransform);
+          this.#updateTransform(false, this, this.#netTransformSource);
+          // this.transform[internal.transformOnChanged]();
+        }
+      }
+
+      const tr = this.globalTransform;
+      const pos = tr.position;
+      this.#prevPosition.x = pos.x;
+      this.#prevPosition.y = pos.y;
+      this.#prevRotation = tr.rotation;
+      const scale = tr.scale;
+      this.#prevScale.x = scale.x;
+      this.#prevScale.y = scale.y;
+    } else {
+      // play mode
+      this[internal.entityTeleportingThisTick] = false;
+
+      const tr = this.globalTransform;
+      const pos = tr.position;
+      const scale = tr.scale;
+
+      if (this.#netTransformFrom && this.#netTransformTo) {
+        this.setPrevPositionForSelfAndDescendants();
+        const INTERP_TIME_TICKS = 3; // 6 ticks = 100ms
+
+        const age = this.game.time.ticks - this.#netTransformTicks;
+        if (age <= INTERP_TIME_TICKS) {
+          const t = age / INTERP_TIME_TICKS;
+          const newTransform = new Transform(this.#netTransformTo);
+          newTransform.position.assign(
+            Vector2.lerp(this.#netTransformFrom.position, this.#netTransformTo.position, t),
+          );
+          this.transform[internal.transformForceUpdate](newTransform);
+          this.#updateTransform(false, this, this.#netTransformSource);
+        }
+      }
+
+      // do not set children's prevPosition as they have already been correctly updated when their parent ran the code above
+      const wasNetTransformed = this.game.time.ticks === this.gotNetTransformOnTickNumber;
+      if (!(this.#netTransformFrom && this.#netTransformTo) && !wasNetTransformed) {
+        this.#prevPosition.x = pos.x;
+        this.#prevPosition.y = pos.y;
+        this.#prevRotation = tr.rotation;
+        this.#prevScale.x = scale.x;
+        this.#prevScale.y = scale.y;
+      }
+
+      if (!(this.#netTransformFrom && !this.#netTransformTo)) {
+        /*
+        Remember the tick loop:
+        1. calls interpolationStartTick
+        2. Ticks entities (which would set localVisualTransformOverride)
+
+        So we save the current override (from last tick's behaviors) and by the time we interpolate it will be updated. 
+        */
+        if (this.localVisualTransformOverride) {
+          this.#prevLocalVisualTransformOverride = this.localVisualTransformOverride.clone();
+        }
+
+        this.localVisualTransformOverride = undefined;
+      }
+    }
   }
   [internal.interpolationStartFrame](partial: number) {
-    this.#interpolated.position.assign(
-      Vector2.lerp(this.#prevPosition, this.globalTransform.position, partial),
-    );
+    const wasNetTransformed = this.game.time.ticks === this.gotNetTransformOnTickNumber;
+    if (wasNetTransformed) {
+      // partial accumulator logic only required if we're interpolating a networked transform.
+      let _partial = partial;
+      if (this.partialAccumulator > 1) {
+        _partial = 1;
+      }
+      this.partialAccumulator += partial;
+
+      this.#interpolated.position.assign(
+        Vector2.lerp(this.#prevPosition, this.globalTransform.position, _partial),
+      );
+    } else {
+      this.#interpolated.position.assign(
+        Vector2.lerp(this.#prevPosition, this.globalTransform.position, partial),
+      );
+    }
 
     this.#interpolated.rotation = lerpAngle(
       this.#prevRotation,
@@ -1092,6 +1182,28 @@ export abstract class Entity implements ISignalHandler {
     this.#interpolated.scale.assign(
       Vector2.lerp(this.#prevScale, this.globalTransform.scale, partial),
     );
+
+    if (this.localVisualTransformOverride && this.#prevLocalVisualTransformOverride) {
+      this.#interpolated.position.assign(
+        Vector2.lerp(
+          this.#prevLocalVisualTransformOverride.position,
+          this.localVisualTransformOverride.position,
+          partial,
+        ),
+      );
+      this.#interpolated.rotation = lerpAngle(
+        this.#prevLocalVisualTransformOverride.rotation,
+        this.localVisualTransformOverride.rotation,
+        partial,
+      );
+      this.#interpolated.scale.assign(
+        Vector2.lerp(
+          this.#prevLocalVisualTransformOverride.scale,
+          this.localVisualTransformOverride.scale,
+          partial,
+        ),
+      );
+    }
   }
 
   #destroyed: boolean = false;

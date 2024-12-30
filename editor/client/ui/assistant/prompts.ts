@@ -379,7 +379,9 @@ If an existing file is provided, it will be included here. If provided, modify t
 6. Do not include any explanations or comments outside of the <thinking> and <code> tags. Your output should be structured as follows:
 
 <thinking>
-Your analysis and planning goes here. Carefully consider whether you want your code running on the server or client. If you want server authority, run in onTickServer. If it's client-only, run in onTickClient.
+Your analysis and planning goes here.
+Carefully consider whether you want your code running on the server or client.
+If you want server authority, run in onTickServer. If it's client-only, run in onTickClient. If it has anything to do with player control, you probably want to tick on the client.
 </thinking>
 
 <code>
