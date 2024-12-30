@@ -96,7 +96,10 @@ export const Clipboard = {
 export function setupKeyboardShortcuts(
   game: ClientGame,
   selectedService: SelectedEntityService,
+  editMode: boolean
 ) {
+  // TODO: Make keyboard shortcuts work in play mode again.
+  if (!editMode) return;
   const cooldownManager = new CooldownManager();
 
   const saveProject = async () => {

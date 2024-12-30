@@ -57,8 +57,8 @@ export class InspectorUI {
     this.behaviorPanel.setup(this);
     this.contextMenu.setup(this);
     this.fileTree.setup(this);
-
-    setupKeyboardShortcuts(this.game, this.selectedEntity);
+    
+    setupKeyboardShortcuts(this.game, this.selectedEntity, editMode);
 
     conn.registerPacketHandler("ScriptEdited", async packet => {
       if (packet.behavior_script_id) {
