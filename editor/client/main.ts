@@ -27,7 +27,7 @@ import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
 import { urlToWebSocket } from "@dreamlab/util/url.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { stats } from "./_stats.ts";
-import { CameraPanBehavior } from "./camera-pan.ts";
+import { CameraPanBehavior } from "./panning-and-selection.ts";
 import { AppMenu } from "./ui/app-menu.ts";
 import { BottomTabs } from "./ui/bottom-tabs.ts";
 import { InspectorUI } from "./ui/inspector.ts";

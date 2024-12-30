@@ -4,6 +4,7 @@ import {
   BoxResizeGizmo,
   Camera,
   ClickableCircle,
+  Entity,
   Gizmo,
   MouseDown,
   MouseMove,
@@ -93,7 +94,12 @@ export class CameraPanBehavior extends Behavior {
       const entities = this.game.entities
         .lookupByPosition(event.cursor.world)
         .filter(entity => this.ui?.sceneGraph?.entryElementMap?.has(entity.ref) ?? true)
-        .toSorted((a, b) => a.z - b.z);
+        .toSorted((a, b) => {
+          const depthA = getDepth(a);
+          const depthB = getDepth(b);
+          if (depthA !== depthB) return depthA - depthB;
+          return b.z - a.z;
+        });
 
       const currentTime = Date.now();
       const target = gizmo?.target ?? boxresize?.target;
@@ -106,6 +112,11 @@ export class CameraPanBehavior extends Behavior {
 
       if (shouldUpdateIndex) {
         currentIdx = (currentIdx + 1) % entities.length;
+        queryEntity = entities[currentIdx];
+      }
+
+      if (currentIdx === -1) {
+        currentIdx = 0;
         queryEntity = entities[currentIdx];
       }
 
@@ -152,7 +163,7 @@ export class CameraPanBehavior extends Behavior {
 
     if (!TOUCHPAD_DETECTED) {
       // @ts-expect-error non-standard
-      TOUCHPAD_DETECTED = ev.wheelDeltaY
+      TOUCHPAD_DETECTED = ev.wheelDeltaY // @ts-expect-error non-standard
         ? ev.wheelDeltaY === -3 * ev.deltaY
         : ev.deltaMode === 0;
     }
@@ -225,4 +236,24 @@ export class CameraPanBehavior extends Behavior {
       }
     }
   }
+}
+
+function getDepth(e: Entity): number {
+  let depth = 1;
+  let pointer = e?.parent;
+
+  // We can't do "instanceof EditorRootFacadeEntity" here because it's a descendant of this class
+  // so we have to do this string check for facade roots instead
+  while (
+    pointer?.parent &&
+    pointer.constructor.name !== "WorldRootFacade" &&
+    pointer.constructor.name !== "LocalRootFacade" &&
+    pointer.constructor.name !== "ServerRootFacade" &&
+    pointer.constructor.name !== "PrefabRootFacade"
+  ) {
+    pointer = pointer?.parent;
+    depth++;
+  }
+
+  return depth;
 }
