@@ -1049,6 +1049,7 @@ export abstract class Entity implements ISignalHandler {
     }
   }
 
+  // Allow Behaviors to override the visual-only position of an entity. Ended up not needing this but leaving it in as it's tested and working.
   localVisualTransformOverride: Transform | undefined;
   #prevLocalVisualTransformOverride: Transform | undefined;
 
