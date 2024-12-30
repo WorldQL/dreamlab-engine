@@ -10,13 +10,10 @@ import {
 import { element as elem } from "@dreamlab/ui";
 import {
   BoxSelect,
-  Component,
   icon,
   MousePointer2,
   Move,
   Move3D,
-  Rotate3D,
-  Scale3D,
   ZoomIn,
 } from "../_icons.ts";
 import { stats } from "../_stats.ts";
@@ -29,7 +26,10 @@ export class GameOverlays implements InspectorUIWidget {
   #overlay: HTMLElement;
   #editOverlays: HTMLElement[] = [];
 
-  constructor(private game: ClientGame, private gameContainer: HTMLDivElement) {
+  constructor(
+    private game: ClientGame,
+    private gameContainer: HTMLDivElement,
+  ) {
     this.#overlay = elem("div", { id: "game-overlays" });
   }
 
@@ -64,14 +64,11 @@ export class GameOverlays implements InspectorUIWidget {
 
   drawGizmoButtons(): HTMLElement {
     const buttons = new ButtonGroup("column");
-    const combined = new IconButton(Component, { title: "Combined" });
-    const translate = new IconButton(Move3D, { title: "Translate" });
-    const rotate = new IconButton(Rotate3D, { title: "Rotate" });
-    const scale = new IconButton(Scale3D, { title: "Scale" });
-    const boxSelect = new IconButton(BoxSelect, { title: "Box Select" });
+    const combined = new IconButton(Move3D, { title: "Transform Gizmo" });
+    const boxSelect = new IconButton(BoxSelect, { title: "Box Gizmo" });
 
     type Tool = keyof typeof tools;
-    const tools = { combined, translate, rotate, scale, boxSelect } as const;
+    const tools = { combined, boxSelect } as const;
 
     let activeTool: Tool = "combined";
     const setActiveTool = (tool: Tool, force = false) => {
@@ -113,12 +110,9 @@ export class GameOverlays implements InspectorUIWidget {
 
     setActiveTool(activeTool, true);
     combined.addEventListener("click", () => setActiveTool("combined"));
-    translate.addEventListener("click", () => setActiveTool("translate"));
-    rotate.addEventListener("click", () => setActiveTool("rotate"));
-    scale.addEventListener("click", () => setActiveTool("scale"));
     boxSelect.addEventListener("click", () => setActiveTool("boxSelect"));
 
-    buttons.append(combined, translate, rotate, scale, boxSelect);
+    buttons.append(combined, boxSelect);
     return elem("div", { id: "gizmo-buttons" }, [buttons]);
   }
 

@@ -11,11 +11,17 @@ import { ClickableCircle, ClickableRect } from "./clickable.ts";
 // #region Signals
 // #region Translate
 export class GizmoTranslateStart {
-  constructor(public readonly entity: Entity, public readonly axis: "x" | "y" | "both") {}
+  constructor(
+    public readonly entity: Entity,
+    public readonly axis: "x" | "y" | "both",
+  ) {}
 }
 
 export class GizmoTranslateMove {
-  constructor(public readonly entity: Entity, public readonly position: Vector2) {}
+  constructor(
+    public readonly entity: Entity,
+    public readonly position: Vector2,
+  ) {}
 }
 
 export class GizmoTranslateEnd {
@@ -33,7 +39,10 @@ export class GizmoRotateStart {
 }
 
 export class GizmoRotateMove {
-  constructor(public readonly entity: Entity, public readonly rotation: number) {}
+  constructor(
+    public readonly entity: Entity,
+    public readonly rotation: number,
+  ) {}
 }
 
 export class GizmoRotateEnd {
@@ -47,11 +56,17 @@ export class GizmoRotateEnd {
 
 // #region Scale
 export class GizmoScaleStart {
-  constructor(public readonly entity: Entity, public readonly axis: "x" | "y" | "both") {}
+  constructor(
+    public readonly entity: Entity,
+    public readonly axis: "x" | "y" | "both",
+  ) {}
 }
 
 export class GizmoScaleMove {
-  constructor(public readonly entity: Entity, public readonly scale: Vector2) {}
+  constructor(
+    public readonly entity: Entity,
+    public readonly scale: Vector2,
+  ) {}
 }
 
 export class GizmoScaleEnd {
@@ -90,49 +105,6 @@ export class Gizmo extends Entity {
 
   static #blankCtx = new PIXI.GraphicsContext();
 
-  static #translateCtx = new PIXI.GraphicsContext()
-    .moveTo(0, 0)
-    .lineTo(1, 0)
-    .stroke({ color: Gizmo.#X_COLOR, width: 0.02 })
-    .moveTo(0, 0)
-    .lineTo(0, -1)
-    .stroke({ color: Gizmo.#Y_COLOR, width: 0.02 })
-    .moveTo(0.2, 0.2)
-    .rect(0.1, -0.4, 0.3, 0.3)
-    .fill({ alpha: 0.2, color: Gizmo.#Z_COLOR })
-    .stroke({ alpha: 0.5, color: Gizmo.#Z_COLOR, width: 0.01 })
-    .poly([1, Gizmo.#ARROW_W / 2, 1, -Gizmo.#ARROW_W / 2, 1 + Gizmo.#ARROW_H, 0])
-    .fill(Gizmo.#X_COLOR)
-    .poly([Gizmo.#ARROW_W / 2, -1, -Gizmo.#ARROW_W / 2, -1, 0, -1 - Gizmo.#ARROW_H])
-    .fill(Gizmo.#Y_COLOR);
-
-  static #rotateCtx = new PIXI.GraphicsContext()
-    .moveTo(-1, 0)
-    .lineTo(1, 0)
-    .stroke({ color: Gizmo.#X_COLOR, width: 0.02, alpha: 0.6 })
-    .moveTo(0, 1)
-    .lineTo(0, -1)
-    .stroke({ color: Gizmo.#Y_COLOR, width: 0.02, alpha: 0.6 })
-    .scale(0.1)
-    .circle(0, 0, 10)
-    .stroke({ color: Gizmo.#NEUTRAL_COLOR, width: 0.02 });
-
-  static #scaleCtx = new PIXI.GraphicsContext()
-    .moveTo(0, 0)
-    .lineTo(1, 0)
-    .stroke({ color: Gizmo.#X_COLOR, width: 0.02 })
-    .moveTo(0, 0)
-    .lineTo(0, -1)
-    .stroke({ color: Gizmo.#Y_COLOR, width: 0.02 })
-    .moveTo(0.2, 0.2)
-    .rect(1, -Gizmo.#SCALE_S / 2, Gizmo.#SCALE_S, Gizmo.#SCALE_S)
-    .fill(Gizmo.#X_COLOR)
-    .rect(-Gizmo.#SCALE_S / 2, -1 - Gizmo.#SCALE_S, Gizmo.#SCALE_S, Gizmo.#SCALE_S)
-    .fill(Gizmo.#Y_COLOR)
-    .rect(0.1, -0.4, 0.3, 0.3)
-    .fill({ alpha: 0.2, color: Gizmo.#Z_COLOR })
-    .stroke({ alpha: 0.5, color: Gizmo.#Z_COLOR, width: 0.01 });
-
   static #combinedCtx = new PIXI.GraphicsContext()
     // Lines
     .moveTo(0, 0)
@@ -166,17 +138,13 @@ export class Gizmo extends Entity {
 
   get #ctx() {
     if (!this.#target) return Gizmo.#blankCtx;
-
-    if (this.mode === "translate") return Gizmo.#translateCtx;
-    else if (this.mode === "rotate") return Gizmo.#rotateCtx;
-    else if (this.mode === "scale") return Gizmo.#scaleCtx;
     else if (this.mode === "combined") return Gizmo.#combinedCtx;
     else throw new Error("invalid mode");
   }
   // #endregion
 
   // #region Mode
-  #mode: "translate" | "rotate" | "scale" | "combined" = "combined";
+  #mode: "combined" = "combined";
   get mode() {
     return this.#mode;
   }
@@ -194,121 +162,8 @@ export class Gizmo extends Entity {
 
     // Don't spawn handles if no target entity
     if (!this.#target) return;
-
-    if (this.mode === "translate") this.#translateHandles();
-    else if (this.mode === "rotate") this.#rotateHandles();
-    else if (this.mode === "scale") this.#scaleHandles();
     else if (this.mode === "combined") this.#combinedHandles();
     else throw new Error("invalid mode");
-  }
-
-  #translateHandles() {
-    const handleSize = Math.max(Gizmo.#ARROW_W, Gizmo.#ARROW_H);
-    const clickSize = handleSize * 1.333;
-
-    const translateX = this.spawn({
-      type: ClickableRect,
-      name: "TranslateX",
-      transform: { position: { x: 1 + handleSize / 2, y: 0 } },
-      values: { width: clickSize, height: clickSize },
-    });
-
-    const translateY = this.spawn({
-      type: ClickableRect,
-      name: "TranslateY",
-      transform: { position: { x: 0, y: 1 + handleSize / 2 } },
-      values: { width: clickSize, height: clickSize },
-    });
-
-    const translateBoth = this.spawn({
-      type: ClickableRect,
-      name: "TranslateBoth",
-      transform: { position: { x: 0.25, y: 0.25 } },
-      values: { width: 0.3, height: 0.3 },
-    });
-
-    const onMouseDown =
-      (axis: "x" | "y" | "both") =>
-      ({ button, cursor: { world } }: MouseDown) => {
-        if (!this.#target) return;
-        if (button !== "left") return;
-
-        const offset = world.sub(this.globalTransform.position);
-        const original = this.#target.pos.clone();
-        this.#action = { type: "translate", axis, offset, original };
-        this.fire(GizmoTranslateStart, this.#target, axis);
-      };
-
-    translateX.on(MouseDown, onMouseDown("x"));
-    translateY.on(MouseDown, onMouseDown("y"));
-    translateBoth.on(MouseDown, onMouseDown("both"));
-  }
-
-  #rotateHandles() {
-    const width = 0.4;
-
-    const rotate = this.spawn({
-      type: ClickableCircle,
-      name: "Rotate",
-      values: { radius: 1 + width / 2, innerRadus: 1 - width / 2 },
-    });
-
-    rotate.on(MouseDown, ({ button, cursor: { world } }) => {
-      if (!this.#target) return;
-      if (button !== "left") return;
-
-      const pos = world.sub(this.globalTransform.position);
-      const rot = Math.atan2(pos.x, pos.y);
-      const original = this.#target.globalTransform.rotation;
-
-      this.#action = { type: "rotate", offset: rot + this.globalTransform.rotation, original };
-      this.fire(GizmoRotateStart, this.#target);
-    });
-  }
-
-  #scaleHandles() {
-    const handleSize = Gizmo.#SCALE_S;
-    const clickSize = handleSize * 1.333;
-
-    const scaleX = this.spawn({
-      type: ClickableRect,
-      name: "ScaleX",
-      transform: { position: { x: 1 + handleSize / 2, y: 0 } },
-      values: { width: clickSize, height: clickSize },
-    });
-
-    const scaleY = this.spawn({
-      type: ClickableRect,
-      name: "ScaleY",
-      transform: { position: { x: 0, y: 1 + handleSize / 2 } },
-      values: { width: clickSize, height: clickSize },
-    });
-
-    const scaleBoth = this.spawn({
-      type: ClickableRect,
-      name: "ScaleBoth",
-      transform: { position: { x: 0.25, y: 0.25 } },
-      values: { width: 0.3, height: 0.3 },
-    });
-
-    const onMouseDown =
-      (axis: "x" | "y" | "both") =>
-      ({ button, cursor: { world } }: MouseDown) => {
-        if (!this.#target) return;
-        if (button !== "left") return;
-
-        const offset = world.sub(this.globalTransform.position);
-        const original = isCamera(this.#target)
-          ? Vector2.splat(1 / this.#target.zoom)
-          : this.#target.globalTransform.scale.clone();
-
-        this.#action = { type: "scale", axis, offset, original };
-        this.fire(GizmoScaleStart, this.#target, axis);
-      };
-
-    scaleX.on(MouseDown, onMouseDown("x"));
-    scaleY.on(MouseDown, onMouseDown("y"));
-    scaleBoth.on(MouseDown, onMouseDown("both"));
   }
 
   #combinedHandles() {
@@ -621,7 +476,7 @@ export class Gizmo extends Entity {
       const pos = cursor.world.sub(this.globalTransform.position);
       const rot = Math.atan2(pos.x, pos.y);
 
-      let rotation = -rot + this.#action.offset;
+      const rotation = -rot + this.#action.offset;
       this.fire(GizmoRotateMove, this.#target, rotation);
 
       this.#target.globalTransform.rotation = rotation;
@@ -767,7 +622,6 @@ export class Gizmo extends Entity {
     canvas.addEventListener("pointerup", this.#onMouseUp);
   }
 
-  // Add this helper function somewhere in the class (e.g. at the bottom)
   #computeGlobalBounds(entity: Entity) {
     // Assume entity.bounds returns {x:1,y:1}
     // Compute half-size
