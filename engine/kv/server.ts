@@ -45,6 +45,9 @@ export class KvServer implements ServerKV {
     delete: (key: string): Promise<void> => {
       return this.#delete(this.#scope(), key);
     },
+    clear: (): Promise<void> => {
+      return this.#clear(this.#scope());
+    },
   };
 
   readonly player = {
@@ -56,6 +59,9 @@ export class KvServer implements ServerKV {
     },
     delete: (key: string, playerId: string): Promise<void> => {
       return this.#delete(this.#scope(playerId), key);
+    },
+    clear: (playerId: string): Promise<void> => {
+      return this.#clear(this.#scope(playerId));
     },
   };
   // #endregion
@@ -84,5 +90,11 @@ export class KvServer implements ServerKV {
     const data = createPayload("delete", scope, key, 10);
     const url = await presign(this.#url, this.#signingKey, data);
     return common.del(url);
+  }
+
+  async #clear(scope: string): Promise<void> {
+    const data = createPayload("clear", scope, "", 10);
+    const url = await presign(this.#url, this.#signingKey, data);
+    return common.clear(url);
   }
 }

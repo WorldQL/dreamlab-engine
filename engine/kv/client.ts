@@ -31,6 +31,9 @@ export class KvClient implements ClientKV {
     delete: (key: string): Promise<void> => {
       return this.#delete(this.#scope(), key);
     },
+    clear: (): Promise<void> => {
+      return this.#clear(this.#scope());
+    },
   };
 
   #scope(): string {
@@ -67,5 +70,10 @@ export class KvClient implements ClientKV {
   async #delete(scope: string, key: string): Promise<void> {
     const { url } = await this.#presign({ action: "delete", scope, key });
     return common.del(url);
+  }
+
+  async #clear(scope: string): Promise<void> {
+    const { url } = await this.#presign({ action: "clear", scope, key: "" });
+    return common.clear(url);
   }
 }

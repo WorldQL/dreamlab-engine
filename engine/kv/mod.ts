@@ -5,6 +5,7 @@ export interface ClientKV {
     readonly get: (key: string) => Promise<JsonValue | undefined>;
     readonly set: (key: string, value: JsonValue) => Promise<void>;
     readonly delete: (key: string) => Promise<void>;
+    readonly clear: () => Promise<void>;
   };
 }
 
@@ -13,10 +14,12 @@ export interface ServerKV {
     readonly get: (key: string) => Promise<JsonValue | undefined>;
     readonly set: (key: string, value: JsonValue) => Promise<void>;
     readonly delete: (key: string) => Promise<void>;
+    readonly clear: () => Promise<void>;
   };
   readonly player: {
     readonly get: (key: string, playerId: string) => Promise<JsonValue | undefined>;
     readonly set: (key: string, value: JsonValue, playerId: string) => Promise<void>;
     readonly delete: (key: string, playerId: string) => Promise<void>;
+    readonly clear: (playerId: string) => Promise<void>;
   };
 }

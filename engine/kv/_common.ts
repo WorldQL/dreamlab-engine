@@ -37,3 +37,10 @@ export async function del(presigned: string): Promise<void> {
   // TODO: actual error handling?
   if (!resp.ok) console.error(resp);
 }
+
+export async function clear(presigned: string): Promise<void> {
+  const resp = await fetch(presigned, { method: "DELETE" });
+
+  // TODO: actual error handling?
+  if (!resp.ok) console.error(resp);
+}

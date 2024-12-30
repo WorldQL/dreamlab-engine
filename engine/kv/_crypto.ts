@@ -3,7 +3,7 @@ import { getPublicKeyAsync, signAsync, verifyAsync } from "jsr:@noble/ed25519@2.
 import { decodeBase64Url, encodeBase64Url } from "jsr:@std/encoding@^1/base64url";
 
 export type Action = (typeof actions)[number];
-export const actions = ["get", "set", "delete"] as const;
+export const actions = ["get", "set", "delete", "clear"] as const;
 
 export function isAction(value: string): value is Action {
   // @ts-expect-error type guard
@@ -43,7 +43,7 @@ export function createPayload(
     expires,
     action,
     scope,
-    key,
+    key: action === "clear" ? "" : key,
   };
 }
 
@@ -131,7 +131,8 @@ export async function presign(
   payload: Payload,
 ): Promise<string> {
   const url = new URL(baseUrl);
-  url.pathname = `/kv/${payload.scope}/${payload.key}`;
+  url.pathname =
+    payload.action === "clear" ? `/kv/${payload.scope}` : `/kv/${payload.scope}/${payload.key}`;
 
   const { payload: serialized, sig } = await sign(key, payload);
   url.searchParams.set("payload", serialized);
