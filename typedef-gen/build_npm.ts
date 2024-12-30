@@ -98,5 +98,6 @@ await generatePackage({ name: "ui", entryPoint: "../ui/mod.ts" });
 await generateVendor({ name: "rapier" });
 await generateVendor({ name: "pixi" });
 await generateVendor({ name: "howler" });
+await generateVendor({ name: "zod" });
 
 await fs.copy(OUT_DIR, CODE_EDITOR_DIR, { overwrite: true });
