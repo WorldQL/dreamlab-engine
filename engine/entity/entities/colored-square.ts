@@ -20,6 +20,14 @@ export class ColoredSquare extends PixiEntity {
   height: number = 1;
   color: string = "white";
 
+  get #color(): PIXI.Color {
+    try {
+      return new PIXI.Color(this.color);
+    } catch {
+      return new PIXI.Color("white");
+    }
+  }
+
   #gfx: PIXI.Graphics | undefined;
 
   constructor(ctx: EntityContext) {
@@ -47,7 +55,7 @@ export class ColoredSquare extends PixiEntity {
 
     const width = this.width * this.globalTransform.scale.x;
     const height = this.height * this.globalTransform.scale.y;
-    const color = new PIXI.Color(this.color);
+    const color = this.#color;
     this.#gfx
       .clear()
       .rect(-width / 2, -height / 2, width, height)

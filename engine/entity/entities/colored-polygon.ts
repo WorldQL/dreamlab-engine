@@ -16,6 +16,14 @@ export class ColoredPolygon extends PixiEntity {
   height: number = 1;
   color: string = "white";
 
+  get #color(): PIXI.Color {
+    try {
+      return new PIXI.Color(this.color);
+    } catch {
+      return new PIXI.Color("white");
+    }
+  }
+
   #gfx: PIXI.Graphics | undefined;
 
   get bounds(): Readonly<IVector2> | undefined {
@@ -54,7 +62,7 @@ export class ColoredPolygon extends PixiEntity {
       return;
     }
 
-    const color = new PIXI.Color(this.color);
+    const color = this.#color;
     const halfWidth = (this.width * this.globalTransform.scale.x) / 2;
     const halfHeight = (this.height * this.globalTransform.scale.y) / 2;
 
