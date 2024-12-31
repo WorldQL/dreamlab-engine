@@ -68,6 +68,17 @@ export class Value<T = unknown> {
     // TODO: deep equality check?
     if (this.#value === newValue) return;
 
+    if (this.adapter !== undefined) {
+      if (!this.adapter.isValue(newValue)) {
+        try {
+          // @ts-expect-error: uhhh yeah
+          newValue = this.adapter.convertFromPrimitive(newValue);
+        } catch {
+          // ignore
+        }
+      }
+    }
+
     const isInvalid =
       (this.typeTag === Number && typeof newValue !== "number") ||
       (this.typeTag === String && typeof newValue !== "string") ||
