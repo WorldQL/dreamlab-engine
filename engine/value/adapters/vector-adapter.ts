@@ -2,12 +2,17 @@ import { vectorOnChanged } from "../../internal.ts";
 import { Vector2 } from "../../math/mod.ts";
 import { JsonValue, ValueTypeAdapter } from "../data.ts";
 
+const marked = Symbol.for("dreamlab.vector-adapter.marked");
+
 /**
  * This supports a `Value<Vector2>`
  */
 export class Vector2Adapter extends ValueTypeAdapter<Vector2> {
   isValue(value: unknown): value is Vector2 {
-    return value instanceof Vector2;
+    if (!(value instanceof Vector2)) return false;
+
+    // @ts-expect-error: class tainting
+    return value[marked] === true;
   }
   convertToPrimitive(value: Vector2): JsonValue {
     return { x: value.x, y: value.y };
@@ -19,6 +24,8 @@ export class Vector2Adapter extends ValueTypeAdapter<Vector2> {
 
     if (value === null || value === undefined) {
       const vec = Vector2.ZERO;
+      // @ts-expect-error: class tainting
+      vec[marked] = true;
       vec[vectorOnChanged] = () => {
         this.valueObj?.forceSync();
       };
@@ -35,6 +42,8 @@ export class Vector2Adapter extends ValueTypeAdapter<Vector2> {
     }
 
     const vec = new Vector2({ x: value.x, y: value.y });
+    // @ts-expect-error: class tainting
+    vec[marked] = true;
     vec[vectorOnChanged] = () => {
       this.valueObj?.forceSync();
     };
