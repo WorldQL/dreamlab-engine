@@ -18,7 +18,7 @@ export class Text extends PixiEntity {
     Entity.registerType(this, "@core");
   }
 
-  public static readonly icon: string = "🔡";
+  static readonly icon: string = "🔡";
   readonly bounds = undefined;
 
   static FONT_SOURCE_DIR = "";

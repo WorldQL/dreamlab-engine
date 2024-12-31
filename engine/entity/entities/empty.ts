@@ -9,6 +9,6 @@ export class Empty extends Entity {
     Entity.registerType(this, "@core");
   }
 
-  public static readonly icon: string = "📦";
+  static readonly icon = "📦";
   readonly bounds = undefined;
 }

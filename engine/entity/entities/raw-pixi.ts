@@ -7,7 +7,7 @@ export class RawPixi extends PixiEntity {
     Entity.registerType(this, "@core");
   }
 
-  public static readonly icon = "🖌️";
+  static readonly icon = "🖌️";
   readonly bounds: undefined; // TODO: bounds of gfx, this depends on non-centered bounds support
 }
 
@@ -19,7 +19,7 @@ export class RawGraphics extends PixiEntity {
     Entity.registerType(this, "@core");
   }
 
-  public static readonly icon = "🖌️";
+  static readonly icon = "🖌️";
   readonly bounds: undefined; // TODO: bounds of gfx, this depends on non-centered bounds support
 
   // TODO: maybe shim this on the server so draw calls are ignored and the type signature can be collapsed

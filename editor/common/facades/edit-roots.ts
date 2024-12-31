@@ -3,7 +3,7 @@ import { Empty, Entity } from "@dreamlab/engine";
 export abstract class EditorRootFacadeEntity extends Empty {}
 
 export class WorldRootFacade extends EditorRootFacadeEntity {
-  public static readonly icon: string = "🌐";
+  static readonly icon: string = "🌐";
   static {
     Entity.registerType(this, "@editor");
   }
@@ -14,7 +14,7 @@ export class WorldRootFacade extends EditorRootFacadeEntity {
 }
 
 export class LocalRootFacade extends EditorRootFacadeEntity {
-  public static readonly icon: string = "💻";
+  static readonly icon: string = "💻";
   static {
     Entity.registerType(this, "@editor");
   }
@@ -25,7 +25,7 @@ export class LocalRootFacade extends EditorRootFacadeEntity {
 }
 
 export class ServerRootFacade extends EditorRootFacadeEntity {
-  public static readonly icon: string = "📡";
+  static readonly icon: string = "📡";
   static {
     Entity.registerType(this, "@editor");
   }
@@ -36,7 +36,7 @@ export class ServerRootFacade extends EditorRootFacadeEntity {
 }
 
 export class PrefabRootFacade extends EditorRootFacadeEntity {
-  public static readonly icon: string = "📝";
+  static readonly icon: string = "📝";
   static {
     Entity.registerType(this, "@editor");
   }

@@ -12,7 +12,7 @@ export class Camera extends Entity {
     Entity.registerType(this, "@core");
   }
 
-  public static readonly icon = "🎥";
+  static readonly icon = "🎥";
   public static readonly METERS_TO_PIXELS = 100;
   public static readonly TARGET_VIEWPORT_SIZE = 10;
   public readonly bounds: undefined;

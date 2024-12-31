@@ -106,7 +106,8 @@ type EntityValueOpts<E extends Entity, P extends EntityValueProp<E>> = {
 };
 
 export abstract class Entity implements ISignalHandler {
-  static readonly icon: string | undefined;
+  static readonly icon: string = "❓";
+  #icon?: string;
 
   get protected(): boolean {
     return this.parent?.id === "game.world._.EditEntities";
@@ -145,6 +146,14 @@ export abstract class Entity implements ISignalHandler {
       ancestor.fire(EntityDescendantRenamed, this, oldName);
       ancestor = ancestor.parent;
     }
+  }
+
+  get icon(): string {
+    return this.#icon ?? (this.constructor as typeof Entity).icon;
+  }
+
+  set icon(newIcon: string) {
+    this.#icon = newIcon;
   }
 
   readonly id: string;

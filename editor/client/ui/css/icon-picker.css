@@ -1,0 +1,41 @@
+.icon-picker-container {
+  position: absolute;
+  background: rgb(var(--color-bg-2));
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 2px;
+  max-width: 300px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+}
+
+.icon-picker-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.icon-picker-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+
+  border-radius: 8px;
+}
+
+.icon-picker-container::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  margin: 2px;
+}
+
+.icon-button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.icon-button:hover {
+  transform: scale(1.2);
+}

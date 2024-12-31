@@ -10,7 +10,7 @@ export class ColoredPolygon extends PixiEntity {
     Entity.registerType(this, "@core");
   }
 
-  public static readonly icon = "🔷​";
+  static readonly icon = "🟢​";
   sides: number = 4;
   width: number = 1;
   height: number = 1;

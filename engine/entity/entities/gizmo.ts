@@ -11,17 +11,11 @@ import { ClickableCircle, ClickableRect } from "./clickable.ts";
 // #region Signals
 // #region Translate
 export class GizmoTranslateStart {
-  constructor(
-    public readonly entity: Entity,
-    public readonly axis: "x" | "y" | "both",
-  ) {}
+  constructor(public readonly entity: Entity, public readonly axis: "x" | "y" | "both") {}
 }
 
 export class GizmoTranslateMove {
-  constructor(
-    public readonly entity: Entity,
-    public readonly position: Vector2,
-  ) {}
+  constructor(public readonly entity: Entity, public readonly position: Vector2) {}
 }
 
 export class GizmoTranslateEnd {
@@ -39,10 +33,7 @@ export class GizmoRotateStart {
 }
 
 export class GizmoRotateMove {
-  constructor(
-    public readonly entity: Entity,
-    public readonly rotation: number,
-  ) {}
+  constructor(public readonly entity: Entity, public readonly rotation: number) {}
 }
 
 export class GizmoRotateEnd {
@@ -56,17 +47,11 @@ export class GizmoRotateEnd {
 
 // #region Scale
 export class GizmoScaleStart {
-  constructor(
-    public readonly entity: Entity,
-    public readonly axis: "x" | "y" | "both",
-  ) {}
+  constructor(public readonly entity: Entity, public readonly axis: "x" | "y" | "both") {}
 }
 
 export class GizmoScaleMove {
-  constructor(
-    public readonly entity: Entity,
-    public readonly scale: Vector2,
-  ) {}
+  constructor(public readonly entity: Entity, public readonly scale: Vector2) {}
 }
 
 export class GizmoScaleEnd {
@@ -88,7 +73,7 @@ export class Gizmo extends Entity {
     Entity.registerType(this, "@editor");
   }
 
-  public static readonly icon = "➡️";
+  static readonly icon = "➡️";
   static readonly SNAP_THRESHOLD = 0.3;
   static readonly POSITION_TOLERANCE = 0.001;
   readonly bounds: undefined;

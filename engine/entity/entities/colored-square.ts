@@ -10,7 +10,7 @@ export class ColoredSquare extends PixiEntity {
     Entity.registerType(this, "@core");
   }
 
-  public static readonly icon = "🟪";
+  static readonly icon = "🟩";
   get bounds(): Readonly<IVector2> | undefined {
     // TODO: Reuse the same vector
     return new Vector2(this.width, this.height);

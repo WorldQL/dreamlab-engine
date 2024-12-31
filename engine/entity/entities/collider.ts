@@ -13,7 +13,7 @@ export class RectCollider extends Entity {
     Entity.registerType(this, "@core");
   }
 
-  public static readonly icon = "🧱";
+  static readonly icon = "🧱";
   get bounds(): Readonly<IVector2> | undefined {
     // controlled by globalTransform
     return { x: 1, y: 1 };
@@ -126,7 +126,7 @@ export class Collider extends Entity {
     Entity.registerType(this, "@core");
   }
 
-  public static readonly icon: string = "🧱";
+  static readonly icon: string = "🧱";
   shape: ColliderShape = "Rectangle";
   isSensor: boolean = false;
 
@@ -175,11 +175,11 @@ export class Collider extends Entity {
               this.globalTransform.scale.y / 2,
             )
           : this.shape === "Circle"
-            ? RAPIER.ColliderDesc.ball(this.globalTransform.scale.x / 2)
-            : RAPIER.ColliderDesc.capsule(
-                this.globalTransform.scale.y / 2,
-                this.globalTransform.scale.x / 2,
-              );
+          ? RAPIER.ColliderDesc.ball(this.globalTransform.scale.x / 2)
+          : RAPIER.ColliderDesc.capsule(
+              this.globalTransform.scale.y / 2,
+              this.globalTransform.scale.x / 2,
+            );
 
       desc
         .setTranslation(this.globalTransform.position.x, this.globalTransform.position.y)

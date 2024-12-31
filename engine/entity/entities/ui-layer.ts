@@ -6,7 +6,7 @@ export class UILayer extends Entity {
     Entity.registerType(this, "@core");
   }
 
-  public static readonly icon = "🎨";
+  static readonly icon = "🎨";
   readonly bounds: undefined;
 
   #ui: { outer: HTMLDivElement; root: ShadowRoot; element: HTMLDivElement } | undefined;

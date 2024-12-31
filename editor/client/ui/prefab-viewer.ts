@@ -10,6 +10,8 @@ import { InspectorUI } from "./inspector.ts";
 import { EditorMetadataEntity } from "../../common/mod.ts";
 import { SelectedEntityService } from "./selected-entity.ts";
 import { UndoRedoManager } from "../undo-redo.ts";
+import { IconPicker } from "./icon-picker.ts";
+import { ContextMenuItem } from "./context-menu.ts";
 
 export class PrefabViewer {
   #section = elem("section", { id: "prefab-viewer" });
@@ -17,10 +19,18 @@ export class PrefabViewer {
   entryElementMap = new Map<string, HTMLElement>();
   currentDragSource: { entities: Entity[]; entries: HTMLElement[] } | undefined;
   prefabsRoot!: Entity;
+  #iconPicker: IconPicker;
 
-  constructor(private game: ClientGame, private container: HTMLElement) {}
+  constructor(private game: ClientGame, private container: HTMLElement) {
+    this.#iconPicker = new IconPicker((newIcon: string) => {
+      this.changeEntityIcon(this.inspectorUI, newIcon);
+    });
+  }
+
+  private inspectorUI!: InspectorUI;
 
   setup(ui: InspectorUI): void {
+    this.inspectorUI = ui;
     this.#section.append(this.#content);
 
     this.prefabsRoot = ui.editMode
@@ -66,9 +76,7 @@ export class PrefabViewer {
     if (this.entryElementMap.has(entity.ref)) return;
 
     const card = elem("div", { className: "prefab-card" }, [
-      elem("div", { className: "prefab-icon" }, [
-        (entity.constructor as typeof Entity).icon ?? "🌟",
-      ]),
+      elem("div", { className: "prefab-icon" }, [entity.icon ?? "🌟"]),
       elem("div", { className: "prefab-name" }, [entity.name]),
     ]);
 
@@ -86,6 +94,23 @@ export class PrefabViewer {
 
     card.addEventListener("click", () => {
       ui.selectedEntity.entities = [entity];
+    });
+
+    card.addEventListener("contextmenu", event => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const contextMenuItems: ContextMenuItem[] = [
+        [
+          "Change Icon",
+          () => {
+            this.openiconPicker(event.clientX, event.clientY, entity);
+          },
+          false,
+        ],
+      ];
+
+      ui.contextMenu.drawContextMenu(event.clientX, event.clientY, contextMenuItems);
     });
 
     card.draggable = true;
@@ -115,8 +140,6 @@ export class PrefabViewer {
     });
 
     card.addEventListener("dragend", () => {
-      // ungainly settimeout hack because the mouse position doesn't update when dragging
-      // major deja vu on this (i have done this before)
       setTimeout(() => {
         if (this.currentDragSource) {
           for (const entry of this.currentDragSource.entries) {
@@ -176,5 +199,31 @@ export class PrefabViewer {
 
     this.entryElementMap.set(entity.ref, card);
     this.#content.append(card);
+  }
+
+  private openiconPicker(x: number, y: number, entity: Entity) {
+    this.#iconPicker.open(x, y, () => {});
+    this.#iconPicker.onSelect = (icon: string) => {
+      entity.icon = icon;
+
+      const card = this.entryElementMap.get(entity.ref);
+      if (card) {
+        const iconElement = card.querySelector(".prefab-icon");
+        if (iconElement) iconElement.textContent = icon;
+      }
+    };
+  }
+
+  private changeEntityIcon(ui: InspectorUI, newIcon: string) {
+    const selectedEntity = ui.selectedEntity?.entities[0];
+    if (selectedEntity) {
+      selectedEntity.icon = newIcon;
+
+      const card = this.entryElementMap.get(selectedEntity.ref);
+      if (card) {
+        const iconElement = card.querySelector(".prefab-icon");
+        if (iconElement) iconElement.textContent = newIcon;
+      }
+    }
   }
 }

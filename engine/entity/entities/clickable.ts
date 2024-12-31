@@ -141,7 +141,7 @@ export class ClickableRect extends ClickableEntity {
     Entity.registerType(this, "@core");
   }
 
-  public static readonly icon = "👆";
+  static readonly icon = "👆";
   get bounds(): Readonly<IVector2> | undefined {
     return { x: this.width, y: this.height };
   }
@@ -171,7 +171,7 @@ export class ClickableCircle extends ClickableEntity {
     Entity.registerType(this, "@core");
   }
 
-  public static readonly icon = "👆";
+  static readonly icon = "👆";
   get bounds(): Readonly<IVector2> | undefined {
     const size = this.radius * 2;
     return new Vector2(size, size);
