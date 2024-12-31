@@ -61,9 +61,10 @@
               "ref": "bhv_mgph3c8i3rcj5a9px92sr666",
               "script": "res://src/test-relative-value.ts",
               "values": {
-                "e": [
+                "byRel": [
                   "Empty"
-                ]
+                ],
+                "byRef": "ent_l6y9w2c99fn09mam46wosv2g"
               }
             }
           ],
