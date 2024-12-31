@@ -155,9 +155,7 @@ export class SceneGraph implements InspectorUIWidget {
     const summary = elem("summary", {}, [
       toggle,
       elem("a", {}, [
-        elem("span", { className: "icon" }, [
-          (entity.constructor as typeof Entity).icon ?? "🌟",
-        ]),
+        elem("span", { className: "icon" }, [(entity.constructor as typeof Entity).icon]),
         " ",
         elem("span", { className: "name" }, [elem("span", {}, [entity.name])]),
       ]),

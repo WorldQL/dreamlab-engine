@@ -99,12 +99,13 @@ export class PrefabViewer {
     card.addEventListener("contextmenu", event => {
       event.preventDefault();
       event.stopPropagation();
+      ui.selectedEntity.entities = [entity];
 
       const contextMenuItems: ContextMenuItem[] = [
         [
           "Change Icon",
           () => {
-            this.openiconPicker(event.clientX, event.clientY, entity);
+            this.openIconPicker(event.clientX, event.clientY, entity);
           },
           false,
         ],
@@ -201,7 +202,7 @@ export class PrefabViewer {
     this.#content.append(card);
   }
 
-  private openiconPicker(x: number, y: number, entity: Entity) {
+  private openIconPicker(x: number, y: number, entity: Entity) {
     this.#iconPicker.open(x, y, () => {});
     this.#iconPicker.onSelect = (icon: string) => {
       entity.icon = icon;
