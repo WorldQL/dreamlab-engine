@@ -1,3 +1,4 @@
+import { vectorOnChanged } from "../../internal.ts";
 import { Vector2 } from "../../math/mod.ts";
 import { JsonValue, ValueTypeAdapter } from "../data.ts";
 
@@ -26,6 +27,11 @@ export class Vector2Adapter extends ValueTypeAdapter<Vector2> {
       throw new TypeError("Invalid Vector2 value");
     }
 
-    return new Vector2({ x: value.x, y: value.y });
+    const vec = new Vector2({ x: value.x, y: value.y });
+    vec[vectorOnChanged] = () => {
+      this.valueObj?.forceSync();
+    };
+
+    return vec;
   }
 }
