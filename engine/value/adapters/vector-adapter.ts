@@ -17,7 +17,14 @@ export class Vector2Adapter extends ValueTypeAdapter<Vector2> {
       throw new TypeError("A Vector2 value should be an object");
     }
 
-    if (value === null) return Vector2.ZERO;
+    if (value === null || value === undefined) {
+      const vec = Vector2.ZERO;
+      vec[vectorOnChanged] = () => {
+        this.valueObj?.forceSync();
+      };
+
+      return vec;
+    }
 
     if (
       !("x" in value && "y" in value) ||
