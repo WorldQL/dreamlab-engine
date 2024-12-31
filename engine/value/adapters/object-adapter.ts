@@ -91,7 +91,7 @@ export class ObjectAdapter extends ValueTypeAdapter<JsonObject> {
     return value;
   }
   convertFromPrimitive(value: JsonValue): JsonObject {
-    if (typeof value !== "object" || Array.isArray(value)) {
+    if (typeof value !== "object" && !Array.isArray(value)) {
       throw new TypeError("Should be an object");
     }
 
