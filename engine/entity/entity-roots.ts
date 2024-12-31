@@ -9,7 +9,7 @@ export abstract class Root extends Entity {
   readonly entities: EntityStore;
   readonly bounds: undefined;
 
-  constructor(game: Game, name: string) {
+  constructor(game: Game, name: string, icon: string) {
     super({ game, name, ref: name.toUpperCase() });
 
     this.entities = new EntityStore();
@@ -22,6 +22,9 @@ export abstract class Root extends Entity {
     // @ts-expect-error assign readonly id
     this.root = this;
 
+    //FIXME: this doesnt work
+    this.icon = icon;
+
     game.entities[internal.entityStoreRegister](this);
 
     this[internal.entitySpawnFinalize1]();
@@ -31,25 +34,25 @@ export abstract class Root extends Entity {
 
 export class WorldRoot extends Root {
   constructor(game: Game) {
-    super(game, "world");
+    super(game, "world", "🌐");
   }
 }
 
 export class ServerRoot extends Root {
   constructor(game: Game) {
-    super(game, "server");
+    super(game, "server", "📡");
   }
 }
 
 export class LocalRoot extends Root {
   constructor(game: Game) {
-    super(game, "local");
+    super(game, "local", "💻");
   }
 }
 
 export class PrefabsRoot extends Root {
   constructor(game: Game) {
-    super(game, "prefabs");
+    super(game, "prefabs", "📝");
 
     this.enabled = false;
   }
