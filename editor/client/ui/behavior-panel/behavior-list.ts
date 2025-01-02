@@ -262,6 +262,11 @@ export class BehaviorList {
           }
         }
       }
+
+      for (const behaviorObj of this.entity.behaviors) {
+        const behavior = this.behaviors.find(b => b.ref === behaviorObj.ref);
+        if (behavior === undefined) behaviorObj.destroy();
+      }
     }
   }
 }
