@@ -30,7 +30,7 @@ if (import.meta.main) {
     ".",
     "./web/dist",
     "./deno.json",
-    [{ in: "./src/_proxy.ts", out: "client-main" }],
+    [{ in: "./src/main.ts", out: "client-main" }],
     {
       watch: args.watch,
       serve: { host: "127.0.0.1", port: Number(args["serve-port"]), servedir: "./web" },
