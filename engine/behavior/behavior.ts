@@ -284,6 +284,7 @@ export class Behavior implements ISignalHandler {
 
     for (const value of this.#values.values()) value.destroy();
     this.externalListeners.forEach(s => s.unsubscribe());
+    this.#gameListeners.forEach(s => s.unsubscribe());
   }
 
   [Symbol.dispose]() {
@@ -329,9 +330,7 @@ export class Behavior implements ISignalHandler {
    * Returns true if the current client has authority over the entity this behavior is attached to.
    */
   hasAuthority() {
-    return (
-      this.game.network.self === this.entity.authority
-    );
+    return this.game.network.self === this.entity.authority;
   }
 
   #spawned = false;
