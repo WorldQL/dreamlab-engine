@@ -860,6 +860,7 @@ export abstract class Entity implements ISignalHandler {
     transform: Transform,
     teleporting: boolean = false,
   ) {
+    if (this.name !== "moving platform") return
     this.#netTransformSource = from;
 
     if (teleporting) {
