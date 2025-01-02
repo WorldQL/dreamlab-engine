@@ -1062,7 +1062,6 @@ export abstract class Entity implements ISignalHandler {
   localVisualTransformOverride: Transform | undefined;
   #prevLocalVisualTransformOverride: Transform | undefined;
 
-  partialAccumulator = 0;
   gotNetTransformOnTickNumber: number = -1;
 
   setPrevPositionForSelfAndDescendants() {
@@ -1075,7 +1074,6 @@ export abstract class Entity implements ISignalHandler {
     this.#prevRotation = tr.rotation;
     this.#prevScale.x = scale.x;
     this.#prevScale.y = scale.y;
-    this.partialAccumulator = 0;
 
     this.gotNetTransformOnTickNumber = this.game.time.ticks;
 
@@ -1164,23 +1162,9 @@ export abstract class Entity implements ISignalHandler {
     }
   }
   [internal.interpolationStartFrame](partial: number) {
-    const wasNetTransformed = this.game.time.ticks === this.gotNetTransformOnTickNumber;
-    if (wasNetTransformed) {
-      // partial accumulator logic only required if we're interpolating a networked transform.
-      let _partial = partial;
-      if (this.partialAccumulator > 1) {
-        _partial = 1;
-      }
-      this.partialAccumulator += partial;
-
-      this.#interpolated.position.assign(
-        Vector2.lerp(this.#prevPosition, this.globalTransform.position, _partial),
-      );
-    } else {
-      this.#interpolated.position.assign(
-        Vector2.lerp(this.#prevPosition, this.globalTransform.position, partial),
-      );
-    }
+    this.#interpolated.position.assign(
+      Vector2.lerp(this.#prevPosition, this.globalTransform.position, partial),
+    );
 
     this.#interpolated.rotation = lerpAngle(
       this.#prevRotation,
