@@ -10,8 +10,23 @@ export const getClientId = () => {
 };
 
 const showLoading = (): HTMLElement => {
-  // TODO: improve
-  const loading = elem("div", {}, ["Loading"]);
+  // TODO: make this look nicer
+  const span = elem("span", {}, ["Loading..."]);
+  span.style.fontSize = "4rem";
+  span.style.fontFamily = "bold";
+  span.style.fontFamily = "var(--font-sans)";
+
+  const loading = elem("div", {}, [span]);
+  loading.style.display = "flex";
+  loading.style.alignItems = "center";
+  loading.style.justifyContent = "center";
+  loading.style.position = "absolute";
+  loading.style.top = "0";
+  loading.style.left = "0";
+  loading.style.bottom = "0";
+  loading.style.right = "0";
+  loading.style.zIndex = "999999";
+
   document.body.appendChild(loading);
 
   return loading;
