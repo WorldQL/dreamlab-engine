@@ -21,7 +21,7 @@ import { auth } from "@dreamlab/client/auth.ts";
 import { connectToGame } from "@dreamlab/client/game-connection.ts";
 import { setupGame } from "@dreamlab/client/game-setup.ts";
 import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
-import { Camera, ClientGame, Entity, GameStatusChange } from "@dreamlab/engine";
+import { Camera, ClientGame, Entity, GameStatus, GameStatusChange } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
 import { urlToWebSocket } from "@dreamlab/util/url.ts";
@@ -172,6 +172,13 @@ const [game, conn, handshake] = await connectToGame(
 );
 
 game.on(GameStatusChange, () => {
+  if (game.status === GameStatus.LoadingFinished) {
+    window.parent.postMessage(
+      { type: "GAME_CONNECTED", instanceId: connectionDetails.instanceId },
+      "*",
+    );
+  }
+
   if (game.statusDescription) {
     loadingElem.textContent = `${game.status}: ${game.statusDescription}`;
   } else {
