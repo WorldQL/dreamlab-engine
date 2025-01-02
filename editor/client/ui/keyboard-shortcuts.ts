@@ -20,7 +20,7 @@ import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
 import { IconButton } from "../components/icon-button.ts";
 import { Check, Save } from "../_icons.ts";
 
-function isRoot(e: Entity): boolean {
+export function isRoot(e: Entity): boolean {
   return (
     e instanceof WorldRootFacade ||
     e instanceof LocalRootFacade ||
@@ -96,7 +96,7 @@ export const Clipboard = {
 export function setupKeyboardShortcuts(
   game: ClientGame,
   selectedService: SelectedEntityService,
-  editMode: boolean
+  editMode: boolean,
 ) {
   // TODO: Make keyboard shortcuts work in play mode again.
   if (!editMode) return;

@@ -3,6 +3,7 @@ import {
   Entity,
   EntityChildSpawned,
   EntityDestroyed,
+  EntityEnableChanged,
   EntityRenamed,
   EntityReparented,
   Root,
@@ -14,7 +15,9 @@ import { UndoRedoManager, type UndoRedoOperation } from "../undo-redo.ts";
 import { createEntityMenu } from "../util/entity-types.ts";
 import { ContextMenuItem } from "./context-menu.ts";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
-import { Clipboard } from "./keyboard-shortcuts.ts";
+import { Clipboard, isRoot } from "./keyboard-shortcuts.ts";
+import { getModifierKeySymbol } from "../util/platform.ts";
+import { getEntitiesEnabledState } from "../util/entity-utils.ts";
 
 function eventTargetsEntry(event: Event, entryElement: HTMLElement) {
   if (!(event.target instanceof HTMLElement)) return false;
@@ -163,12 +166,20 @@ export class SceneGraph implements InspectorUIWidget {
 
     const entryElement = elem(
       "details",
-      { open: this.#openEntities.has(currentEntityRef) || entity.children.size === 0 },
+      {
+        open: this.#openEntities.has(currentEntityRef) || entity.children.size === 0,
+      },
       [summary],
     );
+
+    entryElement.setAttribute("data-enabled", entity.enabled ? "true" : "false");
     entryElement.dataset.entity = currentEntityRef;
     if (entity.clonedFromRef) entryElement.dataset.prefabInstance = entity.clonedFromRef;
     this.entryElementMap.set(currentEntityRef, entryElement);
+
+    entity.on(EntityEnableChanged, signal => {
+      entryElement.setAttribute("data-enabled", signal.enabled ? "true" : "false");
+    });
 
     const clonedFromRef = entity.values.get("clonedFromRef");
     clonedFromRef?.onChanged(() => {
@@ -430,14 +441,15 @@ export class SceneGraph implements InspectorUIWidget {
       event.preventDefault();
       event.stopPropagation();
 
-      const selectedEntities = ui.selectedEntity.entities;
-      const isEntitySelected = selectedEntities.includes(entity);
+      const isEntitySelected = ui.selectedEntity.entities.includes(entity);
 
       if (!isEntitySelected) {
         ui.selectedEntity.entities = [entity];
       }
 
       const contextMenuItems: ContextMenuItem[] = [];
+      const modifierKey = getModifierKeySymbol();
+      const enabledState = getEntitiesEnabledState(ui.selectedEntity.entities);
 
       if (ui.selectedEntity.entities.length > 1) {
         contextMenuItems.push(
@@ -447,7 +459,22 @@ export class SceneGraph implements InspectorUIWidget {
               Clipboard.set([...ui.selectedEntity.entities]);
             },
             false,
-            "Ctrl+C",
+            `${modifierKey}+C`,
+          ],
+          [
+            enabledState === "allEnabled"
+              ? "Disable"
+              : enabledState === "allDisabled"
+              ? "Enable"
+              : "Toggle Enabled",
+            () => {
+              for (const e of ui.selectedEntity.entities) {
+                if (isRoot(e)) continue;
+                e.enabled = !(enabledState === "allEnabled");
+              }
+            },
+            false,
+            `${modifierKey}+E`,
           ],
           [
             "Delete",
@@ -506,7 +533,22 @@ export class SceneGraph implements InspectorUIWidget {
                 Clipboard.set([entity]);
               },
               false,
-              "Ctrl+C",
+              `${modifierKey}+C`,
+            ],
+            [
+              enabledState === "allEnabled"
+                ? "Disable"
+                : enabledState === "allDisabled"
+                ? "Enable"
+                : "Toggle Enabled",
+              () => {
+                for (const e of ui.selectedEntity.entities) {
+                  if (isRoot(e)) continue;
+                  e.enabled = !(enabledState === "allEnabled");
+                }
+              },
+              false,
+              `${modifierKey}+E`,
             ],
           );
 
@@ -533,7 +575,7 @@ export class SceneGraph implements InspectorUIWidget {
               UndoRedoManager._.push({ t: "compound", ops });
             },
             false,
-            "Ctrl+V",
+            `${modifierKey}+V`,
           ]);
         }
 
