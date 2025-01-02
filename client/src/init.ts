@@ -1,7 +1,7 @@
 import { urlToHTTP, urlToWebSocket } from "@dreamlab/util/url.ts";
 import { auth } from "./auth.ts";
 import { createConnectForm, fetchInstances, spawnNewInstance } from "./connect-form.ts";
-import { startGame } from "./main.ts";
+import { startGame } from "./start-game.ts";
 import { connectionDetails, setConnectionDetails } from "./util/server-url.ts";
 
 let nickname =

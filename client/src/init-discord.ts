@@ -1,7 +1,5 @@
-import { z } from "@dreamlab/vendor/zod.ts";
-import { DiscordSDK } from "npm:@discord/embedded-app-sdk";
-import { InstanceInfoSchema } from "./connect-form.ts";
-import { startGame } from "./main.ts";
+import { element as elem } from "@dreamlab/ui";
+import type { z } from "@dreamlab/vendor/zod.ts";
 
 export const getClientId = () => {
   const idMatches = /^(?<id>\d+)\.discordsays\.com$/.exec(window.location.host);
@@ -11,7 +9,23 @@ export const getClientId = () => {
   return clientId;
 };
 
+const showLoading = (): HTMLElement => {
+  // TODO: improve
+  const loading = elem("div", {}, ["Loading"]);
+  document.body.appendChild(loading);
+
+  return loading;
+};
+
 const init = async () => {
+  const loading = showLoading();
+
+  // load scripts **after** showing loading
+  const main = import("./start-game.ts");
+  const { z } = await import("@dreamlab/vendor/zod.ts");
+  const { DiscordSDK } = await import("npm:@discord/embedded-app-sdk");
+  const { InstanceInfoSchema } = await import("./connect-form.ts");
+
   const clientId = getClientId();
 
   const sdk = new DiscordSDK(clientId);
@@ -64,6 +78,8 @@ const init = async () => {
   connectUrl.pathname = `/.proxy/mp/api/v1/connect/${info.id as string}`;
   connectUrl.searchParams.set("token", dreamlab_token);
 
+  const { startGame } = await main;
+  loading.remove();
   startGame(connectUrl, info.id, game => {
     game.cloudAssetBaseURL = "/cloud";
   });
