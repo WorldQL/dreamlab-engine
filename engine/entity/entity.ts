@@ -683,11 +683,11 @@ export abstract class Entity implements ISignalHandler {
     }
   }
 
-  defineValue<E extends Entity>(
+  defineValue<E extends Entity, const P extends string & EntityValueProp<E>>(
     eType: EntityConstructor<E>,
-    prop: EntityValueProp<E> & string,
-    opts: EntityValueOpts<E, typeof prop> = {},
-  ): Value<E[typeof prop]> {
+    prop: P,
+    opts: EntityValueOpts<E, P> = {},
+  ): Value<E[P]> {
     if (!(this instanceof eType))
       throw new TypeError(`${this.constructor} is not an instance of ${eType}`);
 

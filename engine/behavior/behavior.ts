@@ -58,31 +58,33 @@ type BehaviorValueProp<B extends Behavior> = Exclude<
   keyof ConditionalExcept<B, Function>,
   keyof Behavior
 >;
-type BehaviorValueOpts<B extends Behavior, P extends BehaviorValueProp<B>> = {
-  type?: ValueTypeTag<B[P]>;
+type BehaviorValueOpts<T> = {
+  type?: ValueTypeTag<T>;
   description?: string;
   replicated?: boolean;
   hidden?: Value["hidden"];
   persistent?: boolean;
 };
 
-type ValuesToDefine = Map<string, BehaviorValueOpts<Behavior, BehaviorValueProp<Behavior>>>;
+type ValuesToDefine = Map<string, BehaviorValueOpts<unknown>>;
 
 /**
  * Makes the following class property visible in the inspector and synced over the network.
  */
-export function syncedValue<B extends Behavior, P extends BehaviorValueProp<B>>(
-  adapterType?: ValueTypeTag<B[P]>,
-  opts?: Except<BehaviorValueOpts<B, P>, "type" | "hidden"> & { hidden?: boolean },
+export function syncedValue<B extends Behavior, T>(
+  adapterType?: ValueTypeTag<T>,
+  opts?: Except<BehaviorValueOpts<T>, "type" | "hidden"> & {
+    hidden?: boolean;
+  },
 ) {
-  return function (_: undefined, ctx: ClassFieldDecoratorContext<B>) {
+  return function (_: undefined, ctx: ClassFieldDecoratorContext<B, T>) {
     if (typeof ctx.name !== "string") return;
     if (ctx.static) return;
 
-    const name = ctx.name as P;
+    const name = ctx.name;
     ctx.addInitializer(function () {
       // const ctor = this.constructor as BehaviorConstructor<B>;
-      const _opts: BehaviorValueOpts<B, P> = { type: adapterType, ...opts };
+      const _opts = { type: adapterType, ...opts };
       if (_opts.type === undefined) delete _opts.type;
 
       // we could just do this but initializers run before the constructor and idk about the ramifications
@@ -139,10 +141,10 @@ export class Behavior implements ISignalHandler {
     }
   }
 
-  defineValue<B extends Behavior>(
+  defineValue<B extends Behavior, const P extends string & BehaviorValueProp<B>>(
     bType: BehaviorConstructor<B>, // can't just be `this` because TypeScript :(
-    prop: BehaviorValueProp<B> & string,
-    opts: BehaviorValueOpts<B, typeof prop> = {},
+    prop: P,
+    opts: BehaviorValueOpts<B[P]> = {},
   ): Value<B[typeof prop]> {
     if (!(this instanceof bType))
       throw new TypeError(`${this.constructor} is not an instance of ${bType}`);

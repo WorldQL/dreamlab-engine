@@ -14,7 +14,7 @@ type BasicTypeTag<T> =
   : never;
 
 type ConcreteValueTypeTag<T> = AdapterTypeTag<T> | BasicTypeTag<T>;
-export type ValueTypeTag<T> = T extends unknown ? unknown : ConcreteValueTypeTag<T>;
+export type ValueTypeTag<T> = unknown extends T ? unknown : ConcreteValueTypeTag<T>;
 export function inferValueTypeTag<T>(value: T): ValueTypeTag<T> {
   switch (typeof value) {
     case "number":
