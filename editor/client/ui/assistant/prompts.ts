@@ -31,8 +31,7 @@ Looking Up and Referencing Entities - Getting entities by ID or keeping track of
 Vector2 API - Essential vector operations like addition, subtraction, and normalization using Vector2.
 User Interfaces - Creating GUIs (HUDs, health bars, etc)
 Spawning Entities - Spawning new entities into the world and attaching behaviors.
-Character Controller - Using the built-in character controller which handles collision detection. Great for any movement style.
-Behavior Structure - Behavior classes are used to implement all game functionality.`;
+Character Controller - Using the built-in character controller which handles collision detection. Great for any movement style.`;
 
 export const entityTypes = [
   "Sprite",
@@ -217,6 +216,7 @@ To create your plan, you can use the following actions:
 3. Create (or overwrite) a new prefab
 Each action should be represented as a JSON object with the following structure:
 - For modifying a file: {"action": "modifyFile", "target": "path/to/file.ts", "instructions": "Description of changes", "addToContext": ["src/path.ts"], "loadDocs": ["Topic Title"]}
+  - When modifying a file, you do not need to include the target in "addToContext". The target file will be provided automatically.
 - For creating a file: {"action": "createFile", "target": "path/to/newfile.ts", "instructions": "Description of file contents", "addToContext": ["src/path.ts"], "loadDocs": ["Some Topic"]}
 - For creating a prefab: {
   "action": "createPrefab",
@@ -331,7 +331,7 @@ Reason about the problem here
 </thinking>
 <plan></plan>
 
-If the user request is not detailed enough, do not return a <plan> tag.
+If the user request is not detailed enough, do not return a <plan> tag. Your plan should be valid JSON that parses. Do not include linebreaks inside your plan.
 
 Make sure to do only the minimum that the user is asking for.
 
@@ -393,6 +393,7 @@ Your generated or modified code goes here.
 Do not truncate this code. Write the whole file. It will be copied directly into the game. Even if the code is the same, write the whole file.
 </code>
 
+Existing code should be output verbatim. Your output will be used directly.
 
 Remember, you are a part of the game engine, so focus solely on generating the requested code based on the provided inputs. Do not engage in dialogue or ask for clarifications outside of the specified tags.
 
