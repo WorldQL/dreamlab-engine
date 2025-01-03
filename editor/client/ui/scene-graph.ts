@@ -7,6 +7,7 @@ import {
   EntityRenamed,
   EntityReparented,
   Root,
+  Vector2,
 } from "@dreamlab/engine";
 import { element as elem, element } from "@dreamlab/ui";
 import { EditorMetadataEntity, EditorRootFacadeEntity, Facades } from "../../common/mod.ts";
@@ -73,7 +74,6 @@ export class SceneGraph implements InspectorUIWidget {
 
       ui.contextMenu.drawContextMenu(event.clientX, event.clientY, [
         createEntityMenu("New Entity", type => {
-          console.log(this.game.local._.Camera.globalTransform.position)
           const newEntity = world.spawn({
             type: Facades.lookupFacadeEntityType(type),
             name: type.name,
@@ -466,8 +466,8 @@ export class SceneGraph implements InspectorUIWidget {
             enabledState === "allEnabled"
               ? "Disable"
               : enabledState === "allDisabled"
-              ? "Enable"
-              : "Toggle Enabled",
+                ? "Enable"
+                : "Toggle Enabled",
             () => {
               for (const e of ui.selectedEntity.entities) {
                 if (isRoot(e)) continue;
@@ -500,9 +500,14 @@ export class SceneGraph implements InspectorUIWidget {
           ["Focus", () => this.game.local._.Camera.pos.assign(entity.pos)],
 
           createEntityMenu("New Entity", type => {
+            let pos = new Vector2(0, 0);
+            if (entity instanceof EditorRootFacadeEntity || entity instanceof Root) {
+              pos = this.game.local._.Camera.globalTransform.position;
+            }
             const newEntity = entity.spawn({
               type: Facades.lookupFacadeEntityType(type),
               name: type.name,
+              transform: { position: pos },
             });
 
             UndoRedoManager._.push({
@@ -540,8 +545,8 @@ export class SceneGraph implements InspectorUIWidget {
               enabledState === "allEnabled"
                 ? "Disable"
                 : enabledState === "allDisabled"
-                ? "Enable"
-                : "Toggle Enabled",
+                  ? "Enable"
+                  : "Toggle Enabled",
               () => {
                 for (const e of ui.selectedEntity.entities) {
                   if (isRoot(e)) continue;
@@ -570,7 +575,7 @@ export class SceneGraph implements InspectorUIWidget {
                     t: "create-entity" as const,
                     parentRef: x.parent!.ref,
                     def: x.getDefinition(),
-                  } satisfies UndoRedoOperation),
+                  }) satisfies UndoRedoOperation,
               );
 
               UndoRedoManager._.push({ t: "compound", ops });
