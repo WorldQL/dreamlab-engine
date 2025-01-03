@@ -19,6 +19,7 @@ import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 import { Clipboard, isRoot } from "./keyboard-shortcuts.ts";
 import { getModifierKeySymbol } from "../util/platform.ts";
 import { getEntitiesEnabledState } from "../util/entity-utils.ts";
+import { SelectedEntityService } from "./selected-entity.ts";
 
 function eventTargetsEntry(event: Event, entryElement: HTMLElement) {
   if (!(event.target instanceof HTMLElement)) return false;
@@ -75,6 +76,39 @@ export class SceneGraph implements InspectorUIWidget {
       ui.contextMenu.drawContextMenu(event.clientX, event.clientY, [
         createEntityMenu("New Entity", type => {
           const newEntity = world.spawn({
+            type: Facades.lookupFacadeEntityType(type),
+            name: type.name,
+            transform: {
+              position: this.game.local._.Camera.globalTransform.position,
+            },
+          });
+
+          UndoRedoManager._.push({
+            t: "create-entity",
+            parentRef: world.ref,
+            def: newEntity.getDefinition(),
+          });
+
+          ui.selectedEntity.entities = [newEntity];
+
+          const newEntryElement = this.entryElementMap.get(newEntity.ref);
+          if (newEntryElement) this.triggerRename(newEntity, newEntryElement);
+        }),
+      ]);
+    });
+    this.game.renderer.app.canvas.addEventListener("contextmenu", event => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      console.log(event)
+
+      ui.contextMenu.drawContextMenu(event.clientX, event.clientY, [
+        createEntityMenu("New Entity", type => {
+          let target = world;
+          if (SelectedEntityService.serviceForGame(this.game)?.entities.length === 1) {
+            target = SelectedEntityService.serviceForGame(this.game)!.entities[0]
+          }
+          const newEntity = target.spawn({
             type: Facades.lookupFacadeEntityType(type),
             name: type.name,
             transform: {
