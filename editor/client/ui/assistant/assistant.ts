@@ -1,16 +1,7 @@
-import { ClientGame, Collider, Empty, Entity, RectCollider } from "@dreamlab/engine";
+import { ClientGame } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 import { InspectorUI } from "../inspector.ts";
-import {
-  Book,
-  Check,
-  Copy,
-  icon,
-  PlusCircle,
-  RotateCcw,
-  Send,
-  siCodingame,
-} from "../../_icons.ts";
+import { Book, Check, Copy, icon, PlusCircle, RotateCcw, Send } from "../../_icons.ts";
 import { available_topics, codingPrompt, fileContents, plan, step1, step2 } from "./prompts.ts";
 import markdownit from "npm:markdown-it@14.1.0";
 import hljs from "npm:highlight.js/lib/core";
@@ -25,10 +16,8 @@ import {
 } from "./context.ts";
 import { createFile } from "../../main.ts";
 import { BehaviorSchema } from "@dreamlab/scene";
-import { EditorMetadataEntity, Facades } from "../../../common/mod.ts";
-import { generateCUID } from "@dreamlab/vendor/cuid.ts";
+import { EditorMetadataEntity } from "../../../common/mod.ts";
 import { spawnEntity } from "./editor-world-interaction-util.ts";
-import { createEntityMenu } from "../../util/entity-types.ts";
 hljs.registerLanguage("typescript", typescript);
 hljs.registerLanguage("javascript", javascript);
 
@@ -104,16 +93,17 @@ export class Assistant {
     ]) as HTMLButtonElement;
     this.#newChatButton = elem(
       "button",
-      { className: "new-chat-button", title: "Start a new chat" },
-      [icon(PlusCircle), "Clear Chat"],
+      { className: "new-chat-button", title: "Clear and start a new chat" },
+      ["New Chat"],
     ) as HTMLButtonElement;
   }
 
   setup(ui: InspectorUI): void {
-    // const chatHeader = elem("div", { className: "chat-header" }, [
-    //   this.#newChatButton,
-    //   "Tip: You can drag the divider above the tab bar to change the Assistant's size.",
-    // ]);
+    const chatHeader = elem("div", { className: "chat-header", id: "chat-header" }, [
+      "Tip: You can drag the divider above the tab bar to change the Assistant's size.",
+      this.#newChatButton,
+    ]);
+    this.#section.append(chatHeader);
 
     this.ui = ui;
 
@@ -195,6 +185,7 @@ export class Assistant {
     const userMessage = this.#chatInput.value.trim();
     if (userMessage) {
       this.clearSuggestions();
+      document.getElementById("chat-header")!.style.display = "flex";
 
       const messageElement = elem("div", { className: "chat-message user" }, [
         elem("div", { className: "chat-message-content" }, [userMessage]),
@@ -218,42 +209,6 @@ export class Assistant {
 
   async fetchChatbotBehavior(prompt: string): Promise<void> {
     if (ScriptSession.chatState === "plan") {
-      // const behaviors = [
-      //   {
-      //     ref: generateCUID("bhv"),
-      //     script: "res://src/collisiondetect.ts",
-      //     values: { foo: "4" },
-      //   },
-      // ];
-
-      // spawnEntity(this.game.world._.EditEntities._.prefabs, {
-      //   type: "Collider",
-      //   name: "hii",
-      //   behaviors: [{ script: "src/collisiondetect.ts", values: { foo: "4" } }],
-      //   children: [
-      //     {
-      //       type: "ColoredSquare",
-      //       name: "hi",
-      //       values: { color: "#6678ff" },
-      //       transform: { position: { x: 1, y: 0 }, rotation: 1, scale },
-      //     },
-      //   ],
-      // });
-      // return;
-
-      // // this.game.world._.EditEntities._.prefabs.spawn({
-      // //   type: RectCollider,
-      // //   name: "hiiii :)",
-      // //   children: [
-      // //     {
-      // //       type: EditorMetadataEntity,
-      // //       name: "__EditorMetadata",
-      // //       values: { behaviorsJson: JSON.stringify(behaviors) },
-      // //     },
-      // //   ],
-      // // });
-
-      // return;
       const scriptmap = ScriptSession.scriptMap;
 
       const prefabEditRoot = this.game.world._.EditEntities._.prefabs;
@@ -380,19 +335,6 @@ export class Assistant {
       content: accumulatedText,
     });
 
-    // if (ScriptSession.chatState !== "step0" && ScriptSession.chatState !== "step1") {
-    //   this.#isChatbotReplying = false;
-    //   this.#chatInput.disabled = false;
-    //   this.#sendButton.disabled = false;
-    //   this.#newChatButton.disabled = false; // Re-enable new chat button
-    //   this.#chatInput.placeholder = "Type your message...";
-    //   this.#chatInput.classList.remove("disabled-input");
-    //   this.#chatInput.focus();
-    // } else if (ScriptSession.chatState === "step0") {
-    //   ScriptSession.chatState = "step1";
-    //   this.fetchChatbotBehavior(prompt);
-    // }
-
     console.log(ScriptSession.chatState);
     const plan = getTagContents("plan", accumulatedText);
     if (plan) {
@@ -507,7 +449,67 @@ export class Assistant {
           const code = getTagContents("code", result);
           if (code) {
             await createFile(target, code);
-            window.parent.postMessage({ action: "reloadFile", filename: "script-map.md" }, "*");
+            window.parent.postMessage({ action: "reloadFile", filename: target }, "*");
+          }
+        }
+        if (step.action === "modifyFile") {
+          const fileUrl = new URL(ScriptSession.httpServer);
+          const { addToContext, loadDocs, instructions, target } = step;
+          console.log(step);
+          const filesLoaded = [];
+          for (const filePath of addToContext ?? []) {
+            fileUrl.pathname = `/api/v1/edit/${ScriptSession.instance}/files/${filePath}`;
+            const fileText = await (await fetch(fileUrl.toString())).text();
+            filesLoaded.push([filePath, fileText]);
+          }
+          // alphabetically sort by first element of key/value pairs
+          const alphasort = (a: string[], b: string[]) => {
+            if (a[0] < b[0]) return -1;
+            if (a[0] > b[0]) return 1;
+            return 0;
+          };
+          filesLoaded.sort(alphasort);
+          console.log("filesloaded:");
+          console.log(filesLoaded);
+
+          const topicsLoaded = [];
+
+          for (const docTopic of loadDocs ?? []) {
+            const text: string = fileContents[docTopic];
+            topicsLoaded.push([docTopic, text]);
+          }
+          topicsLoaded.sort(alphasort);
+          topicsLoaded.unshift(["Basic Behavior Structure", fileContents["_basic-structure"]]);
+
+          // prepare strings for the LLM context
+          let contextFiles = "";
+          let docCodeSamples = "";
+
+          for (const [title, body] of topicsLoaded) {
+            docCodeSamples += `${title}:\n${body}\n\n`;
+          }
+
+          for (const [path, code] of filesLoaded) {
+            contextFiles += `${path}:\n${code}\n\n`;
+          }
+
+          // I <3 reusing URL objects like this.
+          fileUrl.pathname = `/api/v1/edit/${ScriptSession.instance}/files/${target}`;
+          const fileText = await (await fetch(fileUrl.toString())).text();
+
+          const prepared = codingPrompt
+            .replaceAll("{{CONTEXT_FILES}}", contextFiles)
+            .replaceAll("{{CODE_SAMPLES}}", docCodeSamples)
+            .replaceAll("{{EXISTING_FILE}}", fileText)
+            .replaceAll("{{FILE_INSTRUCTIONS}}", instructions);
+
+          console.log(prepared);
+          const result = await oneOffMessage(prepared);
+          console.log(result);
+          const code = getTagContents("code", result);
+          if (code) {
+            await createFile(target, code);
+            window.parent.postMessage({ action: "reloadFile", filename: target }, "*");
           }
         }
       }
@@ -542,51 +544,6 @@ export class Assistant {
       breaks: true,
       linkify: true,
     });
-  }
-
-  handleSelectedTopics(
-    botMessageElement: HTMLElement,
-    topicsText: string,
-    prompt: string,
-  ): void {
-    const topics = topicsText
-      .split("\n")
-      .filter(
-        line => line.trim() !== "<selected_topics>" && line.trim() !== "</selected_topics>",
-      );
-
-    const list = elem("ul", { className: "selected-topics-list" });
-    let collectedDocumentation = "";
-
-    topics.forEach(topic => {
-      const listItem = elem("li", {}, [
-        elem("span", { className: "topic-icon" }, [icon(Check)]),
-        elem("span", { className: "topic-text" }, [topic]),
-      ]);
-      list.appendChild(listItem);
-
-      if (topic in fileContents) {
-        collectedDocumentation += `\`\`\`typescript
-  ${(fileContents as any)[topic]}
-  \`\`\`\n`;
-      } else {
-        console.warn("Tried to look up topic not in docs!");
-      }
-    });
-
-    const chatMetaBox = elem("div", { className: "chat-meta-box" }, [
-      elem("div", { className: "chat-meta-header" }, [
-        icon(Book),
-        elem("span", {}, ["Fetched documentation:"]),
-      ]),
-      list,
-    ]);
-
-    botMessageElement.appendChild(chatMetaBox);
-
-    ScriptSession.chatDocumentation = collectedDocumentation;
-    ScriptSession.chatState = "step2";
-    this.fetchChatbotBehavior(prompt);
   }
 
   // TODO: make sure this doesn't cause too much load

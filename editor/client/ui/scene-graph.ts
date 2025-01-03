@@ -73,6 +73,7 @@ export class SceneGraph implements InspectorUIWidget {
 
       ui.contextMenu.drawContextMenu(event.clientX, event.clientY, [
         createEntityMenu("New Entity", type => {
+          console.log(this.game.local._.Camera.globalTransform.position)
           const newEntity = world.spawn({
             type: Facades.lookupFacadeEntityType(type),
             name: type.name,

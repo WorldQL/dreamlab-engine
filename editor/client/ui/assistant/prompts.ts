@@ -246,7 +246,7 @@ Each action should be represented as a JSON object with the following structure:
     ]
   }
 }
-- For editing a value on an existing entity: {"action": "editEntityValue", "target": "prefabName", "valueName": "foo", "newValue": "bar"}
+- For editing a value on an existing entity: {"action": "editEntityValue", "target": "game.prefabs._.PrefabName", "valueName": "foo", "newValue": "bar"}
 - For editing a value on a script attached to an entity: {"action": "editBehaviorValue", "target": "prefabName", "script": "src/path.ts" "valueName": "foo", "newValue": "bar"}
 
 
@@ -318,7 +318,7 @@ Present your plan as a JSON array of strings, with each string containing a sing
 </plan>
 Make sure that a human readable and descriptive "desc" tag is included on every step of your plan.
 
-Always use the correct entity name in the "type" field. List the entities you plan to use before building the structure.
+Always use the correct entity name in the "type" field. List the entities you plan to use before building the structure. If you plan on adding publicly exposed @syncedValue class properties, make sure you list the exact property names that will be used in the code in your plan.
 
 
 createFile and createPrefab overwrite anything at the current path. addToContext should be used for if and only if you need to add one of the other files to the context so the coding agent can understand it.
@@ -332,6 +332,10 @@ Reason about the problem here
 <plan></plan>
 
 If the user request is not detailed enough, do not return a <plan> tag.
+
+Make sure to do only the minimum that the user is asking for.
+
+If they complain of a bug or functionality not working right, you probably only need to do a single modifyFile. You should pass through the user's complaint about the bug to the modifyFile call. 
 
 Now, consider the user's request:
 <user_request>
@@ -385,7 +389,8 @@ If you want server authority, run in onTickServer. If it's client-only, run in o
 </thinking>
 
 <code>
-Your generated or modified code goes here
+Your generated or modified code goes here.
+Do not truncate this code. Write the whole file. It will be copied directly into the game. Even if the code is the same, write the whole file.
 </code>
 
 

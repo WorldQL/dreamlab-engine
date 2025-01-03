@@ -7,16 +7,16 @@
   color: rgb(var(--color-text));
   overflow: hidden;
   padding: 0;
-  padding-top: 10px;
 }
 
 .chat-header {
-  display: flex;
   align-items: center;
-  padding: 0em;
-  margin-bottom: 0;
+  padding: 0.1em;
   background-color: rgb(var(--color-bg-1));
-  border-bottom: 1px solid rgb(var(--color-bg-2));
+  font-size: 12px;
+  justify-content: right;
+  display: none;
+  border-bottom: 1px solid rgba(65, 65, 65, 0.651);
 }
 
 .chat-header h1 {
@@ -28,7 +28,7 @@
 }
 
 .new-chat-button {
-  background-color: transparent;
+  background-color: rgb(58, 58, 58);
   border: none;
   color: rgb(var(--color-text));
   cursor: pointer;
@@ -36,10 +36,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 7em;
   height: 1em;
-  border-radius: 50%;
   margin: 0;
+  margin-left: 10px;
+  padding: 0.5rem;
+  border-radius: 3px;
 }
 
 .new-chat-button:hover {
@@ -53,6 +54,7 @@
 .new-chat-button svg {
   width: 1.2em;
   height: 1.2em;
+  margin-right: 4px
 }
 
 .chat-content {
@@ -286,13 +288,16 @@
   color: rgb(var(--color-text));
   padding: 0.3rem 0.7rem;
   border-radius: 4px;
-  margin-bottom: 0px;
   font-size: 14px;
   line-height: 1.5;
   white-space: normal;
   word-wrap: break-word;
   margin-left: 5px;
   margin-right: 5px;
+  margin-top: 4px;
+}
+.bot-message:last-of-type {
+  margin-bottom: 5px;
 }
 
 .bot-message p {

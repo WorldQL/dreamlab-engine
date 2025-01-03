@@ -96,23 +96,24 @@ export class PrefabViewer {
       ui.selectedEntity.entities = [entity];
     });
 
-    card.addEventListener("contextmenu", event => {
-      event.preventDefault();
-      event.stopPropagation();
-      ui.selectedEntity.entities = [entity];
+    // TODO: Implement this feature or something else to disambiguate prefabs.
+    // card.addEventListener("contextmenu", event => {
+    //   event.preventDefault();
+    //   event.stopPropagation();
+    //   ui.selectedEntity.entities = [entity];
 
-      const contextMenuItems: ContextMenuItem[] = [
-        [
-          "Change Icon",
-          () => {
-            this.openIconPicker(event.clientX, event.clientY, entity);
-          },
-          false,
-        ],
-      ];
+    //   const contextMenuItems: ContextMenuItem[] = [
+    //     [
+    //       "Change Icon",
+    //       () => {
+    //         this.openIconPicker(event.clientX, event.clientY, entity);
+    //       },
+    //       false,
+    //     ],
+    //   ];
 
-      ui.contextMenu.drawContextMenu(event.clientX, event.clientY, contextMenuItems);
-    });
+    //   ui.contextMenu.drawContextMenu(event.clientX, event.clientY, contextMenuItems);
+    // });
 
     card.draggable = true;
     card.dataset.entity = entity.ref;

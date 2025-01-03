@@ -1,7 +1,8 @@
-import { KinematicCharacterController } from "@dreamlab/vendor/rapier.ts";
+import { KinematicCharacterController, QueryFilterFlags } from "@dreamlab/vendor/rapier.ts";
 import { EntityDestroyed, GamePostTick } from "../../signals/mod.ts";
 import { Entity } from "../entity.ts";
 import { Collider } from "./collider.ts";
+import { Vector2 } from "@dreamlab/engine";
 
 export class CharacterController extends Collider {
   static {
@@ -18,6 +19,14 @@ export class CharacterController extends Collider {
   #isGrounded = false;
   public get isGrounded(): boolean {
     return this.#isGrounded;
+  }
+
+  public get correctedPosition(): Vector2 {
+    const delta = this.pos.sub(this.#prevPosition);
+    if (!this.#controller) return new Vector2({ x: 0, y: 0 });
+    this.#controller.computeColliderMovement(this.collider, delta);
+    const corrected = this.#controller.computedMovement();
+    return this.#prevPosition.add(corrected);
   }
 
   override onInitialize(): void {
@@ -49,7 +58,7 @@ export class CharacterController extends Collider {
 
     if (!this.teleport) {
       const delta = this.pos.sub(this.#prevPosition);
-      this.#controller.computeColliderMovement(this.collider, delta);
+      this.#controller.computeColliderMovement(this.collider, delta, QueryFilterFlags['EXCLUDE_SENSORS']);
       this.#isGrounded = this.#controller.computedGrounded();
 
       this.game.physics.emitCharacterControllerCollisions(this.collider, this.#controller);
