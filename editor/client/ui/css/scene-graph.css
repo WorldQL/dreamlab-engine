@@ -102,10 +102,17 @@
   color: #9cedff;
 }
 
-#scene-graph-tree details[data-enabled="false"] > summary {
+#scene-graph-tree details[data-enabled="false"] {
+  background-color: rgb(var(--color-bg-2) / 0.3);
   opacity: 0.5;
 }
 
-#scene-graph-tree details[data-enabled="false"] {
-  background-color: rgb(var(--color-bg-2) / 0.3);
+#scene-graph-tree details[data-enabled="false"] > summary {
+  background-color: transparent;
+  opacity: 1;
+}
+
+#scene-graph-tree details[data-enabled="false"] details {
+  background-color: transparent;
+  opacity: 1;
 }

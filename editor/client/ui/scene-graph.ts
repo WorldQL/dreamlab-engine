@@ -100,13 +100,11 @@ export class SceneGraph implements InspectorUIWidget {
       event.preventDefault();
       event.stopPropagation();
 
-      console.log(event)
-
       ui.contextMenu.drawContextMenu(event.clientX, event.clientY, [
         createEntityMenu("New Entity", type => {
           let target = world;
           if (SelectedEntityService.serviceForGame(this.game)?.entities.length === 1) {
-            target = SelectedEntityService.serviceForGame(this.game)!.entities[0]
+            target = SelectedEntityService.serviceForGame(this.game)!.entities[0];
           }
           const newEntity = target.spawn({
             type: Facades.lookupFacadeEntityType(type),
@@ -500,8 +498,8 @@ export class SceneGraph implements InspectorUIWidget {
             enabledState === "allEnabled"
               ? "Disable"
               : enabledState === "allDisabled"
-                ? "Enable"
-                : "Toggle Enabled",
+              ? "Enable"
+              : "Toggle Enabled",
             () => {
               for (const e of ui.selectedEntity.entities) {
                 if (isRoot(e)) continue;
@@ -579,8 +577,8 @@ export class SceneGraph implements InspectorUIWidget {
               enabledState === "allEnabled"
                 ? "Disable"
                 : enabledState === "allDisabled"
-                  ? "Enable"
-                  : "Toggle Enabled",
+                ? "Enable"
+                : "Toggle Enabled",
               () => {
                 for (const e of ui.selectedEntity.entities) {
                   if (isRoot(e)) continue;
@@ -609,7 +607,7 @@ export class SceneGraph implements InspectorUIWidget {
                     t: "create-entity" as const,
                     parentRef: x.parent!.ref,
                     def: x.getDefinition(),
-                  }) satisfies UndoRedoOperation,
+                  } satisfies UndoRedoOperation),
               );
 
               UndoRedoManager._.push({ t: "compound", ops });
