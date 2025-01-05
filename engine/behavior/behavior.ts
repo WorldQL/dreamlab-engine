@@ -70,6 +70,9 @@ type ValuesToDefine = Map<string, BehaviorValueOpts<unknown>>;
 
 /**
  * Makes the following class property visible in the inspector and synced over the network.
+ * 
+ * Accepts an adapter such as `EntityByRef`, `Vector2Adapter`, etc. https://docs.dreamlab.gg/guide/Synced-Values-and-Adapters
+ * 
  */
 export function syncedValue<B extends Behavior, T>(
   adapterType?: ValueTypeTag<T>,

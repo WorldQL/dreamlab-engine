@@ -107,13 +107,16 @@ export class SceneGraph implements InspectorUIWidget {
           if (SelectedEntityService.serviceForGame(this.game)?.entities.length === 1) {
             target = SelectedEntityService.serviceForGame(this.game)!.entities[0];
           }
+          if (!posAtRightClick) return;
           const newEntity = target.spawn({
             type: Facades.lookupFacadeEntityType(type),
             name: type.name,
-            transform: {
-              position: posAtRightClick,
-            },
+            // transform: {
+            //   position: posAtRightClick,
+            // },
+            // TODO: Add ability to set globaltransform on entity.
           });
+          newEntity.globalTransform.position = posAtRightClick;
 
           UndoRedoManager._.push({
             t: "create-entity",
