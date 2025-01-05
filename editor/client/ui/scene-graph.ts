@@ -1,4 +1,5 @@
 import {
+  Camera,
   ClientGame,
   Entity,
   EntityChildSpawned,
@@ -99,7 +100,7 @@ export class SceneGraph implements InspectorUIWidget {
     this.game.renderer.app.canvas.addEventListener("contextmenu", event => {
       event.preventDefault();
       event.stopPropagation();
-
+      const posAtRightClick = this.game.inputs.cursor.world;
       ui.contextMenu.drawContextMenu(event.clientX, event.clientY, [
         createEntityMenu("New Entity", type => {
           let target = world;
@@ -110,7 +111,7 @@ export class SceneGraph implements InspectorUIWidget {
             type: Facades.lookupFacadeEntityType(type),
             name: type.name,
             transform: {
-              position: this.game.local._.Camera.globalTransform.position,
+              position: posAtRightClick,
             },
           });
 
@@ -498,8 +499,8 @@ export class SceneGraph implements InspectorUIWidget {
             enabledState === "allEnabled"
               ? "Disable"
               : enabledState === "allDisabled"
-              ? "Enable"
-              : "Toggle Enabled",
+                ? "Enable"
+                : "Toggle Enabled",
             () => {
               for (const e of ui.selectedEntity.entities) {
                 if (isRoot(e)) continue;
@@ -577,8 +578,8 @@ export class SceneGraph implements InspectorUIWidget {
               enabledState === "allEnabled"
                 ? "Disable"
                 : enabledState === "allDisabled"
-                ? "Enable"
-                : "Toggle Enabled",
+                  ? "Enable"
+                  : "Toggle Enabled",
               () => {
                 for (const e of ui.selectedEntity.entities) {
                   if (isRoot(e)) continue;
@@ -607,7 +608,7 @@ export class SceneGraph implements InspectorUIWidget {
                     t: "create-entity" as const,
                     parentRef: x.parent!.ref,
                     def: x.getDefinition(),
-                  } satisfies UndoRedoOperation),
+                  }) satisfies UndoRedoOperation,
               );
 
               UndoRedoManager._.push({ t: "compound", ops });
