@@ -1,5 +1,4 @@
 import {
-  Camera,
   ClientGame,
   Entity,
   EntityChildSpawned,
@@ -192,10 +191,19 @@ export class SceneGraph implements InspectorUIWidget {
     if (this.entryElementMap.has(currentEntityRef)) return;
 
     const toggle = elem("div", { className: "arrow" }, [icon(ChevronDown)]);
+    const entityIcon =
+      !this.game.isEditMode &&
+      (entity.id === "game.prefabs" ||
+        entity.id === "game.world" ||
+        entity.id === "game.local") &&
+      entity.root.icon
+        ? entity.root.icon
+        : (entity.constructor as typeof Entity).icon;
+
     const summary = elem("summary", {}, [
       toggle,
       elem("a", {}, [
-        elem("span", { className: "icon" }, [(entity.constructor as typeof Entity).icon]),
+        elem("span", { className: "icon" }, [entityIcon]),
         " ",
         elem("span", { className: "name" }, [elem("span", {}, [entity.name])]),
       ]),
@@ -502,8 +510,8 @@ export class SceneGraph implements InspectorUIWidget {
             enabledState === "allEnabled"
               ? "Disable"
               : enabledState === "allDisabled"
-                ? "Enable"
-                : "Toggle Enabled",
+              ? "Enable"
+              : "Toggle Enabled",
             () => {
               for (const e of ui.selectedEntity.entities) {
                 if (isRoot(e)) continue;
@@ -581,8 +589,8 @@ export class SceneGraph implements InspectorUIWidget {
               enabledState === "allEnabled"
                 ? "Disable"
                 : enabledState === "allDisabled"
-                  ? "Enable"
-                  : "Toggle Enabled",
+                ? "Enable"
+                : "Toggle Enabled",
               () => {
                 for (const e of ui.selectedEntity.entities) {
                   if (isRoot(e)) continue;
@@ -611,7 +619,7 @@ export class SceneGraph implements InspectorUIWidget {
                     t: "create-entity" as const,
                     parentRef: x.parent!.ref,
                     def: x.getDefinition(),
-                  }) satisfies UndoRedoOperation,
+                  } satisfies UndoRedoOperation),
               );
 
               UndoRedoManager._.push({ t: "compound", ops });
