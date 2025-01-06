@@ -1,6 +1,10 @@
 import { Empty, Entity } from "@dreamlab/engine";
 
-export abstract class EditorRootFacadeEntity extends Empty {}
+export abstract class EditorRootFacadeEntity extends Empty {
+  override get protected() {
+    return true;
+  }
+}
 
 export class WorldRootFacade extends EditorRootFacadeEntity {
   static readonly icon: string = "🌐";

@@ -110,7 +110,7 @@ export abstract class Entity implements ISignalHandler {
   #icon?: string;
 
   get protected(): boolean {
-    return this.parent?.id === "game.world._.EditEntities";
+    return false;
   }
 
   readonly game: Game;
