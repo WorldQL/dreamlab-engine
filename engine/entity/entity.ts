@@ -1030,6 +1030,7 @@ export abstract class Entity implements ISignalHandler {
 
   [internal.submitEntityTickingOrder](entities: Entity[]) {
     if (!this.enabled) return;
+    if (!this.#spawned) return;
 
     entities.push(this);
     for (const child of this.#children.values()) {

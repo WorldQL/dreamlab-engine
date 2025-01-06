@@ -52,71 +52,19 @@
           ]
         },
         {
-          "ref": "ent_rnfnqlgcchh0dkin2g3tyklx",
+          "ref": "ent_df4obcra99w3b5cjj819t3e4",
           "type": "@core/Empty",
-          "name": "grnm,gdr",
-          "enabled": false,
+          "name": "EnemySpawner",
+          "enabled": true,
           "behaviors": [
             {
-              "ref": "bhv_mgph3c8i3rcj5a9px92sr666",
-              "script": "res://src/test-relative-value.ts",
+              "ref": "bhv_iweg963larr1mf8601lj4ytt",
+              "script": "res://src/enemy-spawner.ts",
               "values": {
-                "byRel": [
-                  "Empty"
-                ],
-                "byRef": "ent_l6y9w2c99fn09mam46wosv2g"
+                "spawnInterval": 250
               }
             }
-          ],
-          "children": [
-            {
-              "ref": "ent_l6y9w2c99fn09mam46wosv2g",
-              "type": "@core/Empty",
-              "name": "Empty",
-              "enabled": true,
-              "behaviors": [
-                {
-                  "ref": "bhv_zaa9stucchlzgcudle3s0frj",
-                  "script": "res://src/test-relative-value.ts",
-                  "values": {
-                    "e": [
-                      null
-                    ]
-                  }
-                }
-              ]
-            }
           ]
-        },
-        {
-          "ref": "ent_k1085ddms1jp67edfw4pe0ot",
-          "type": "@core/AnimatedSprite",
-          "name": "AnimatedSprite",
-          "enabled": false,
-          "transform": {
-            "scale": {
-              "x": 8,
-              "y": 8
-            },
-            "z": 100
-          },
-          "values": {
-            "static": false,
-            "hidden": false,
-            "width": 1,
-            "height": 1,
-            "alpha": 1,
-            "startFrame": 546,
-            "endFrame": 554,
-            "speed": 0.1,
-            "loop": true,
-            "jsonSpritesheet": "",
-            "spritesheet": "res://assets/PlayerSheet.png",
-            "frameCount": {
-              "x": 14,
-              "y": 48
-            }
-          }
         }
       ],
       "local": [
@@ -150,7 +98,34 @@
         }
       ],
       "server": [],
-      "prefabs": []
+      "prefabs": [
+        {
+          "ref": "ent_c7bzjbw2llnz2fe6os74q1uz",
+          "type": "@core/Empty",
+          "name": "Enemy",
+          "enabled": true,
+          "children": [
+            {
+              "ref": "ent_jqbr60z7k3vgoufe4u1zwj2l",
+              "type": "@core/ColoredSquare",
+              "name": "ColoredSquare",
+              "enabled": true,
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  1,
+                  0,
+                  0,
+                  1
+                ]
+              }
+            }
+          ]
+        }
+      ]
     }
   }
 }
