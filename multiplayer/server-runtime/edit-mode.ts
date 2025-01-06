@@ -40,6 +40,7 @@ const addEditorMetadata = (
     name: "__EditorMetadata",
     values: {
       behaviorsJson,
+      locked: sceneDef.locked,
     },
   });
 
@@ -58,7 +59,7 @@ const dropEditorMetadata = (def: EntityDefinition): EntityDefinition => {
   return def;
 };
 
-const reinjectBehaviors = (entity: Entity, def: SceneDescEntity): SceneDescEntity => {
+const applyEditorMetadata = (entity: Entity, def: SceneDescEntity): SceneDescEntity => {
   try {
     const metadata = entity.children.get("__EditorMetadata")?.cast(EditorMetadataEntity);
     if (metadata) {
@@ -72,6 +73,7 @@ const reinjectBehaviors = (entity: Entity, def: SceneDescEntity): SceneDescEntit
       });
 
       def.behaviors = behaviors.length === 0 ? undefined : behaviors;
+      def.locked = metadata.locked || undefined;
     }
   } catch (err) {
     console.warn(err);
@@ -80,7 +82,7 @@ const reinjectBehaviors = (entity: Entity, def: SceneDescEntity): SceneDescEntit
   def.children?.forEach(c => {
     const childEntity = entity.children.get(c.name);
     if (!childEntity) return;
-    reinjectBehaviors(childEntity, c);
+    applyEditorMetadata(childEntity, c);
   });
 
   return def;
@@ -123,7 +125,7 @@ export const handleEditMode = async (
 
   ipc.addMessageListener("SceneDefinitionRequest", () => {
     const serializeForScene = (entity: Entity) =>
-      reinjectBehaviors(
+      applyEditorMetadata(
         entity,
         serializeEntityDefinition(
           game,
