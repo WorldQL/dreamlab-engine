@@ -65,6 +65,7 @@ export class CameraPanBehavior extends Behavior {
       // Ignore click event if mouse is over a local entity (clickable for gizmo)
       const local = this.game.local.entities
         .lookupByPosition(event.cursor.world)
+        .filter(entity => entity.enabled)
         .filter(entity => {
           // fix big rotate gizmo hitbox
           const isRotate = entity instanceof ClickableCircle && entity.parent instanceof Gizmo;
@@ -93,6 +94,7 @@ export class CameraPanBehavior extends Behavior {
 
       const entities = this.game.entities
         .lookupByPosition(event.cursor.world)
+        .filter(entity => entity.enabled)
         .filter(entity => this.ui?.sceneGraph?.entryElementMap?.has(entity.ref) ?? true)
         .toSorted((a, b) => {
           const depthA = getDepth(a);
