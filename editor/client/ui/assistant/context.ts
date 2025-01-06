@@ -1,10 +1,9 @@
 import type { Entity, JsonArray, JsonObject, Primitive } from "@dreamlab/engine";
+import { BehaviorSchema } from "@dreamlab/scene";
+import { EditorMetadataEntity } from "../../../common/mod.ts";
+import type { InspectorUI } from "../inspector.ts";
 import { ScriptSession } from "./assistant.ts";
 import { summarize } from "./prompts.ts";
-import { EditorMetadataEntity } from "../../../common/mod.ts";
-import { BehaviorSchema } from "@dreamlab/scene";
-import type { InspectorUI } from "../inspector.ts";
-import type { Values } from "@dreamlab/vendor/zod.ts";
 
 async function handleStreamingResponse(
   reader: ReadableStreamDefaultReader<Uint8Array>,
@@ -32,7 +31,7 @@ async function handleStreamingResponse(
 
             let line: string = d.text;
             accumulatedText += line;
-            console.log(accumulatedText)
+            console.log(accumulatedText);
           } catch (error) {
             console.error("Error parsing JSON:", error);
           }

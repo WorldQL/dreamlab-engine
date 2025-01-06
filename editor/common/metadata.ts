@@ -22,4 +22,21 @@ export class EditorMetadataEntity extends Entity {
   }
 
   readonly bounds = { x: 0, y: 0 };
+
+  static getInstanceFor(entity: Entity): EditorMetadataEntity {
+    const existingMetadataEntity = entity.children.get("__EditorMetadata");
+    if (
+      existingMetadataEntity !== undefined &&
+      existingMetadataEntity instanceof EditorMetadataEntity
+    ) {
+      return existingMetadataEntity;
+    }
+
+    const metadataEntity = entity.spawn({
+      type: EditorMetadataEntity,
+      name: "__EditorMetadata",
+    });
+
+    return metadataEntity;
+  }
 }

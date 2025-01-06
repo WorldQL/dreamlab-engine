@@ -71,13 +71,7 @@ export class BehaviorList {
     });
 
     if (useEditorMetadata) {
-      let editorMetadata = entity.children.get("__EditorMetadata")?.cast(EditorMetadataEntity);
-      if (!editorMetadata) {
-        editorMetadata = entity.spawn({
-          type: EditorMetadataEntity,
-          name: "__EditorMetadata",
-        });
-      }
+      const editorMetadata = EditorMetadataEntity.getInstanceFor(entity);
 
       this.behaviors = SceneDescBehaviorSchema.array().parse(
         JSON.parse(editorMetadata.behaviorsJson),
@@ -224,17 +218,7 @@ export class BehaviorList {
 
   sync() {
     if (this.useEditorMetadata) {
-      let editorMetadata = this.entity.children
-        .get("__EditorMetadata")
-        ?.cast(EditorMetadataEntity);
-
-      if (!editorMetadata) {
-        editorMetadata = this.entity.spawn({
-          type: EditorMetadataEntity,
-          name: "__EditorMetadata",
-        });
-      }
-
+      const editorMetadata = EditorMetadataEntity.getInstanceFor(this.entity);
       editorMetadata.behaviorsJson = JSON.stringify(this.behaviors);
     } else {
       for (const behavior of this.behaviors) {

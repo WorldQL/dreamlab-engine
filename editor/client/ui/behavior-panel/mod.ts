@@ -22,15 +22,7 @@ export class BehaviorPanel implements InspectorUIWidget {
       Object.defineProperties(globalThis, {
         addBehaviorToEntity: {
           value: async (scriptPath: string, entity: Entity) => {
-            let editorMetadata = entity.children
-              .get("__EditorMetadata")
-              ?.cast(EditorMetadataEntity);
-            if (!editorMetadata) {
-              editorMetadata = entity.spawn({
-                type: EditorMetadataEntity,
-                name: "__EditorMetadata",
-              });
-            }
+            const editorMetadata = EditorMetadataEntity.getInstanceFor(entity);
 
             const behaviors: SceneDescBehavior[] = JSON.parse(editorMetadata.behaviorsJson);
 
