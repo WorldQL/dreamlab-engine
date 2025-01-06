@@ -53,6 +53,10 @@
   & > summary {
     background-color: transparent;
     opacity: 1;
+
+    &:hover {
+      background-color: rgb(var(--color-bg-2) / 0.5);
+    }
   }
 
   & details {
