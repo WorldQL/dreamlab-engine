@@ -206,10 +206,18 @@ export function setupKeyboardShortcuts(
     }
 
     // Paste
+    /*
+    Rules:
+    - If we're selecting a single entity, we paste under that.
+    - If we're selecting the entity(ies) we copied, we paste alongside them
+    - If we're selecting multiple entities we do not paste.
+    */
     if (event.key === "v" && (event.ctrlKey || event.metaKey)) {
       event.preventDefault();
       const copiedEntities = Clipboard.get();
       const pastedEntities: Entity[] = [];
+
+      if (copiedEntities.length === 0) return;
 
       if (selectedService.entities.length === 1 && copiedEntities.length === 1) {
         const selected = selectedService.entities[0];
@@ -218,11 +226,43 @@ export function setupKeyboardShortcuts(
         if (copied === selected) {
           pastedEntities.push(copied.cloneInto(selected.parent!));
         } else {
+          // paste alongside
           pastedEntities.push(copied.cloneInto(selected));
         }
       } else {
-        for (const copied of copiedEntities) {
-          pastedEntities.push(copied.cloneInto(copied.parent!));
+        let shouldPasteAlongside = true;
+        // check if we're selecting the same entities we copied so we can paste alongside if needed
+        if (selectedService.entities.length !== copiedEntities.length)
+          shouldPasteAlongside = false;
+
+        const firstParent = copiedEntities[0].parent!.ref;
+        if (shouldPasteAlongside) {
+          for (const copied of copiedEntities) {
+            let found = false;
+            for (const selected of selectedService.entities) {
+              if (selected.ref === copied.ref) found = true;
+            }
+            if (!found) {
+              shouldPasteAlongside = false;
+              break;
+            }
+            if (copied.parent!.ref !== firstParent) {
+              // only paste alongside if all entities are at the same level
+              shouldPasteAlongside = false;
+            }
+          }
+        }
+
+        if (shouldPasteAlongside) {
+          for (const copied of copiedEntities) {
+            pastedEntities.push(copied.cloneInto(copied.parent!));
+          }
+        } else if (selectedService.entities.length === 1) {
+          for (const copied of copiedEntities) {
+            pastedEntities.push(copied.cloneInto(selectedService.entities[0]));
+          }
+        } else {
+          return;
         }
       }
 
@@ -232,7 +272,7 @@ export function setupKeyboardShortcuts(
             t: "create-entity",
             parentRef: x.parent!.ref,
             def: x.getDefinition(),
-          } satisfies UndoRedoOperation),
+          }) satisfies UndoRedoOperation,
       );
 
       UndoRedoManager._.push({ t: "compound", ops });
@@ -250,7 +290,7 @@ export function setupKeyboardShortcuts(
             t: "destroy-entity",
             parentRef: x.parent!.ref,
             def: x.getDefinition(),
-          } satisfies UndoRedoOperation),
+          }) satisfies UndoRedoOperation,
       );
 
       for (const entity of toDelete) {
