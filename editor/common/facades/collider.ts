@@ -90,8 +90,7 @@ export class EditorFacadeCollider extends PixiEntity {
   #onSelectedSvc(svc: SelectedEntityService) {
     this.#debugListener = svc.listen(selected => {
       this.#selected = selected.includes(this);
-
-      // TODO: always on top
+      if (this.#debug) this.#debug.alwaysOnTop = this.#selected;
     });
   }
 }
