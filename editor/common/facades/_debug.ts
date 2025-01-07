@@ -4,6 +4,8 @@ import {
   EntityTransformUpdate,
   IVector2,
   PixiEntity,
+  SignalSubscription,
+  Value,
   Vector2,
 } from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
@@ -69,13 +71,20 @@ abstract class DebugShape {
     }
   }
 
+  protected get scaledWidth(): number {
+    const camera = Camera.getActive(this.entity.game);
+    if (!camera) return this.width;
+
+    return this.width / camera.zoom;
+  }
+
   constructor({
     entity,
     enabled = true,
     suffix = "",
     color = "white",
     alpha = 0.8,
-    width = 0.02,
+    width = 0.04,
     alignment = 1,
     disableScale = false,
     getBounds = () => entity.bounds,
@@ -96,32 +105,31 @@ abstract class DebugShape {
     this.alignment = alignment;
     this.disableScale = disableScale;
     this.getBounds = getBounds;
-    const activeEditorCamera = Camera.getActive(entity.game);
-    if (activeEditorCamera) {
-      this.width = 0.04 * (1 / activeEditorCamera.zoom);
+
+    const camera = Camera.getActive(this.entity.game);
+    const zoom = camera?.values.get("zoom");
+    if (zoom) {
+      const fn = () => {
+        this.#redraw();
+      };
+
+      this.#zoomFn = [zoom, fn];
+      zoom.onChanged(fn);
     }
-    this.#redraw();
 
     // this.entity.on(EntityRenamed, () => {
     //   this.label.text.text = this.entity.name + this.#suffix;
     // });
 
-    this.entity.on(EntityTransformUpdate, () => {
+    this.#onTransformUpdate = this.entity.on(EntityTransformUpdate, () => {
       this.#redraw();
     });
-
-    if (!activeEditorCamera) return;
-
-    const zoom = activeEditorCamera?.values.get("zoom");
-    const zoomCallback = () => {
-      this.width = 0.04 * (1 / activeEditorCamera.zoom);
-      this.#redraw();
-    };
-    zoom?.onChanged(zoomCallback);
 
     this.entity.on(EntityDestroyed, () => {
-      zoom?.removeChangeListener(zoomCallback);
+      this.destroy();
     });
+
+    this.#redraw();
   }
 
   #suffix: string;
@@ -143,6 +151,24 @@ abstract class DebugShape {
   }
 
   abstract redraw(): void;
+
+  #zoomFn: [Value, () => void] | undefined;
+  #onTransformUpdate: SignalSubscription<EntityTransformUpdate> | undefined;
+  destroy(): void {
+    this.gfx.destroy();
+
+    if (this.#zoomFn) {
+      const [zoom, fn] = this.#zoomFn;
+      zoom.removeChangeListener(fn);
+
+      this.#zoomFn = undefined;
+    }
+
+    if (this.#onTransformUpdate) {
+      this.#onTransformUpdate.unsubscribe();
+      this.#onTransformUpdate = undefined;
+    }
+  }
 }
 
 export class DebugSquare extends DebugShape {
@@ -165,7 +191,7 @@ export class DebugSquare extends DebugShape {
     );
 
     const color = this.color;
-    const width = this.width;
+    const width = this.scaledWidth;
     const offset = this.alignment * width;
 
     // this.label.container.x = bounds.x / -2 - offset;
@@ -198,7 +224,7 @@ export class DebugCircle extends DebugShape {
     this.gfx.alpha = this.alpha;
     this.gfx.clear();
     this.gfx.setStrokeStyle({
-      width: this.width,
+      width: this.scaledWidth,
       color: this.color,
       alignment: this.alignment,
     });
@@ -227,7 +253,7 @@ export class DebugCapsule extends DebugShape {
     this.gfx.alpha = this.alpha;
     this.gfx.clear();
     this.gfx.setStrokeStyle({
-      width: this.width,
+      width: this.scaledWidth,
       color: this.color,
       alignment: this.alignment,
     });
