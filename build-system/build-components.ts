@@ -164,8 +164,8 @@ export const bundleClient = async (
 ) => {
   // only load `.env.production` on non-watch builds
   const envStack = opts?.watch
-    ? [".env", ".env.production", ".env.local"]
-    : [".env", ".env.local"];
+    ? [".env", ".env.local"]
+    : [".env", ".env.production", ".env.local"];
 
   const buildOpts: esbuild.BuildOptions = {
     ...BASE_BUILD_OPTIONS,
