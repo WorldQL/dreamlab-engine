@@ -1,13 +1,13 @@
 import {
+  Collider,
   Entity,
   EntityContext,
+  enumAdapter,
   IVector2,
   PixiEntity,
-  Collider,
-  enumAdapter,
 } from "@dreamlab/engine";
 import { EnsureCompatible, EntityValueProps } from "./_compatibility.ts";
-import { DebugSquare, DebugCircle, DebugCapsule } from "./_debug.ts";
+import { DebugCapsule, DebugCircle, DebugSquare } from "./_debug.ts";
 import { Facades } from "./manager.ts";
 
 // const ColliderShape = ["Rectangle", "Circle", "Capsule"] as const;
@@ -41,7 +41,6 @@ export class EditorFacadeCollider extends PixiEntity {
     if (!this.container) return;
 
     this.#debug = this.createDebugShape();
-    this.container.addChild(this.#debug.gfx);
 
     const shapeValue = this.values.get("shape");
     shapeValue?.onChanged(() => this.onShapeChanged());
@@ -51,18 +50,19 @@ export class EditorFacadeCollider extends PixiEntity {
     if (!this.container) return;
 
     if (this.#debug) {
-      this.container.removeChild(this.#debug.gfx);
+      this.#debug.destroy();
+      this.#debug = undefined;
     }
+
     this.#debug = this.createDebugShape();
-    this.container.addChild(this.#debug.gfx);
   }
 
   private createDebugShape(): DebugSquare | DebugCircle | DebugCapsule {
     return this.shape === "Rectangle"
       ? new DebugSquare({ entity: this })
       : this.shape === "Circle"
-      ? new DebugCircle({ entity: this })
-      : new DebugCapsule({ entity: this });
+        ? new DebugCircle({ entity: this })
+        : new DebugCapsule({ entity: this });
   }
 }
 
