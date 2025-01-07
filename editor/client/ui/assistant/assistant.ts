@@ -629,7 +629,7 @@ export class Assistant {
     // Toast.error("Failed to fetch chatbot! Try again later.");
 
     const lastBotMessage = this.#chatContent.querySelector(".bot-message:last-of-type");
-    lastBotMessage?.remove();
+    // lastBotMessage?.remove();
 
     const botMessageElement = elem("div", { className: "bot-message" });
 

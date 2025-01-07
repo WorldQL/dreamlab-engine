@@ -715,7 +715,6 @@ export class SceneGraph implements InspectorUIWidget {
         const entity = this.game.entities.lookupByRef(entityRef);
         if (entity && ui.selectedEntity.entities.includes(entity)) {
           entry.classList.add("selected");
-          this.openParentNodes(entry);
           this.scrollToEntity(entry);
         } else {
           entry.classList.remove("selected");
