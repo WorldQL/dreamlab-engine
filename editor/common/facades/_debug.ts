@@ -43,6 +43,7 @@ interface DebugShapeOptions {
   readonly color?: PIXI.ColorSource;
   readonly alpha?: number;
   readonly width?: number;
+  readonly zIndex?: number;
   readonly alignment?: number;
   readonly disableScale?: boolean;
   readonly getBounds?: () => IVector2 | undefined;
@@ -57,6 +58,7 @@ abstract class DebugShape {
   #color: PIXI.ColorSource;
   #alpha: number;
   #width: number;
+  #zIndex: number | undefined;
 
   protected get color(): PIXI.ColorSource {
     return this.#color;
@@ -79,6 +81,14 @@ abstract class DebugShape {
   }
   protected set width(value) {
     this.#width = value;
+    this.#redraw();
+  }
+
+  protected get zIndex(): number | undefined {
+    return this.#zIndex;
+  }
+  protected set zIndex(value) {
+    this.#zIndex = value;
     this.#redraw();
   }
 
@@ -111,6 +121,7 @@ abstract class DebugShape {
     color = "white",
     alpha = 0.8,
     width = 0.04,
+    zIndex = undefined,
     alignment = 1,
     disableScale = false,
     getBounds = () => entity.bounds,
@@ -129,6 +140,7 @@ abstract class DebugShape {
     this.#color = color;
     this.#alpha = alpha;
     this.#width = width;
+    this.#zIndex = zIndex;
     this.alignment = alignment;
     this.disableScale = disableScale;
     this.getBounds = getBounds;
@@ -179,7 +191,7 @@ abstract class DebugShape {
 
     this.gfx.position.set(pos.x, -pos.y);
     this.gfx.rotation = -rot;
-    this.gfx.zIndex = entity.z;
+    this.gfx.zIndex = this.#zIndex ?? entity.z;
   }
 
   #redraw() {
