@@ -2,10 +2,15 @@ import {
   Collider,
   Entity,
   EntityContext,
+  EntityDestroyed,
   enumAdapter,
   IVector2,
   PixiEntity,
 } from "@dreamlab/engine";
+import {
+  InitSelectedEntityService,
+  SelectedEntityService,
+} from "../../client/ui/selected-entity.ts";
 import { EnsureCompatible, EntityValueProps } from "./_compatibility.ts";
 import { DebugCapsule, DebugCircle, DebugSquare } from "./_debug.ts";
 import { Facades } from "./manager.ts";
@@ -32,9 +37,26 @@ export class EditorFacadeCollider extends PixiEntity {
     super(ctx, false);
     this.defineValue(EditorFacadeCollider, "isSensor");
     this.defineValue(EditorFacadeCollider, "shape", { type: enumAdapter(ColliderShape) });
+
+    if (this.game.isClient()) {
+      const svc = SelectedEntityService.serviceForGame(this.game);
+      if (svc) {
+        this.#onSelectedSvc(svc);
+      } else {
+        this.listen(this.game, InitSelectedEntityService, ({ svc }) => {
+          this.#onSelectedSvc(svc);
+        });
+      }
+    }
+
+    this.on(EntityDestroyed, () => {
+      this.#debugListener?.unsubscribe();
+    });
   }
 
+  #selected: boolean = false;
   #debug: DebugSquare | DebugCircle | DebugCapsule | undefined;
+  #debugListener: { unsubscribe: () => void } | undefined;
 
   onInitialize(): void {
     super.onInitialize();
@@ -63,6 +85,14 @@ export class EditorFacadeCollider extends PixiEntity {
       : this.shape === "Circle"
         ? new DebugCircle({ entity: this })
         : new DebugCapsule({ entity: this });
+  }
+
+  #onSelectedSvc(svc: SelectedEntityService) {
+    this.#debugListener = svc.listen(selected => {
+      this.#selected = selected.includes(this);
+
+      // TODO: always on top
+    });
   }
 }
 
