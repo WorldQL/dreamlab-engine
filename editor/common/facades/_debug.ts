@@ -54,9 +54,34 @@ abstract class DebugShape {
   // protected label: Label;
   readonly gfx = new PIXI.Graphics();
 
-  protected color: PIXI.ColorSource;
-  protected alpha: number;
-  protected width: number;
+  #color: PIXI.ColorSource;
+  #alpha: number;
+  #width: number;
+
+  protected get color(): PIXI.ColorSource {
+    return this.#color;
+  }
+  protected set color(value) {
+    this.#color = value;
+    this.#redraw();
+  }
+
+  protected get alpha(): number {
+    return this.#alpha;
+  }
+  protected set alpha(value) {
+    this.#alpha = value;
+    this.#redraw();
+  }
+
+  protected get width(): number {
+    return this.#width;
+  }
+  protected set width(value) {
+    this.#width = value;
+    this.#redraw();
+  }
+
   protected readonly alignment: number;
   protected readonly disableScale: boolean;
   protected readonly getBounds: () => IVector2 | undefined;
@@ -74,9 +99,9 @@ abstract class DebugShape {
 
   protected get scaledWidth(): number {
     const camera = Camera.getActive(this.entity.game);
-    if (!camera) return this.width;
+    if (!camera) return this.#width;
 
-    return this.width / camera.zoom;
+    return this.#width / camera.zoom;
   }
 
   constructor({
@@ -101,9 +126,9 @@ abstract class DebugShape {
     // container.addChild(this.label.container);
     scene.addChildAt(this.gfx, scene.getChildIndex(container));
 
-    this.color = color;
-    this.alpha = alpha;
-    this.width = width;
+    this.#color = color;
+    this.#alpha = alpha;
+    this.#width = width;
     this.alignment = alignment;
     this.disableScale = disableScale;
     this.getBounds = getBounds;
