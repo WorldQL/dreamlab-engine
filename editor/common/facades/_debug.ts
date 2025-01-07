@@ -200,7 +200,7 @@ abstract class DebugShape {
   #reparent() {
     if (this.#alwaysOnTop && this.container.parent !== this.#scene) {
       this.#scene.addChild(this.container);
-      this.container.zIndex = Number.MAX_SAFE_INTEGER;
+      this.container.zIndex = 999999999;
     } else if (!this.#alwaysOnTop && this.container.parent !== this.#entityContainer) {
       this.#entityContainer.addChild(this.container);
 
