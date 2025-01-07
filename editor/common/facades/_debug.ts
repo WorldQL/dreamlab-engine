@@ -3,6 +3,7 @@ import {
   EntityDestroyed,
   EntityEnableChanged,
   EntityTransformUpdate,
+  GameRender,
   IVector2,
   PixiEntity,
   SignalSubscription,
@@ -43,7 +44,7 @@ interface DebugShapeOptions {
   readonly color?: PIXI.ColorSource;
   readonly alpha?: number;
   readonly width?: number;
-  readonly zIndex?: number;
+  readonly alwaysOnTop?: boolean;
   readonly alignment?: number;
   readonly disableScale?: boolean;
   readonly getBounds?: () => IVector2 | undefined;
@@ -51,14 +52,17 @@ interface DebugShapeOptions {
 
 abstract class DebugShape {
   protected entity: PixiEntity;
+  #scene: PIXI.Container;
+  #entityContainer: PIXI.Container;
 
-  // protected label: Label;
-  readonly gfx = new PIXI.Graphics();
+  protected readonly container = new PIXI.Container();
+  protected readonly gfx = new PIXI.Graphics();
 
+  // #region: fields
   #color: PIXI.ColorSource;
   #alpha: number;
   #width: number;
-  #zIndex: number | undefined;
+  #alwaysOnTop: boolean;
 
   public get color(): PIXI.ColorSource {
     return this.#color;
@@ -84,11 +88,12 @@ abstract class DebugShape {
     this.#redraw();
   }
 
-  public get zIndex(): number | undefined {
-    return this.#zIndex;
+  public get alwaysOnTop(): boolean {
+    return this.#alwaysOnTop;
   }
-  public set zIndex(value) {
-    this.#zIndex = value;
+  public set alwaysOnTop(value) {
+    this.#alwaysOnTop = value;
+    this.#reparent();
     this.#redraw();
   }
 
@@ -113,6 +118,7 @@ abstract class DebugShape {
 
     return this.#width / camera.zoom;
   }
+  // #endregion
 
   constructor({
     entity,
@@ -121,26 +127,29 @@ abstract class DebugShape {
     color = "white",
     alpha = 0.8,
     width = 0.04,
-    zIndex = undefined,
+    alwaysOnTop = false,
     alignment = 1,
     disableScale = false,
     getBounds = () => entity.bounds,
   }: DebugShapeOptions) {
     this.entity = entity;
-    const container = this.entity.container!;
-    const scene = container.parent;
+    this.#entityContainer = this.entity.container!;
+    this.#scene = this.#entityContainer.parent;
 
     this.#enabled = enabled;
     this.#suffix = suffix;
     // const icon = (entity.constructor as typeof Entity).icon ?? "📦";
     // this.label = createLabel(icon, entity.name + this.#suffix);
     // container.addChild(this.label.container);
-    scene.addChildAt(this.gfx, scene.getChildIndex(container));
+
+    this.container.addChild(this.gfx);
+    this.#scene.addChild(this.container);
+    this.#reparent();
 
     this.#color = color;
     this.#alpha = alpha;
     this.#width = width;
-    this.#zIndex = zIndex;
+    this.#alwaysOnTop = alwaysOnTop;
     this.alignment = alignment;
     this.disableScale = disableScale;
     this.getBounds = getBounds;
@@ -159,6 +168,10 @@ abstract class DebugShape {
     // this.entity.on(EntityRenamed, () => {
     //   this.label.text.text = this.entity.name + this.#suffix;
     // });
+
+    this.#onGameRender = this.entity.game.on(GameRender, () => {
+      this.#updatePosition();
+    });
 
     this.#onTransformUpdate = this.entity.on(EntityTransformUpdate, () => {
       this.#redraw();
@@ -184,14 +197,30 @@ abstract class DebugShape {
     // this.label.text.text = this.entity.name + this.#suffix;
   }
 
+  #reparent() {
+    if (this.#alwaysOnTop && this.container.parent !== this.#scene) {
+      this.#scene.addChild(this.container);
+      this.container.zIndex = Number.MAX_SAFE_INTEGER;
+    } else if (!this.#alwaysOnTop && this.container.parent !== this.#entityContainer) {
+      this.#entityContainer.addChild(this.container);
+
+      this.gfx.position.set(0, 0);
+      this.gfx.rotation = 0;
+      this.container.zIndex = 0;
+    }
+
+    this.#updatePosition();
+  }
+
   #updatePosition() {
+    if (!this.#alwaysOnTop) return;
+
     const entity = this.entity;
     const pos = entity.interpolated.position;
     const rot = entity.interpolated.rotation;
 
     this.gfx.position.set(pos.x, -pos.y);
     this.gfx.rotation = -rot;
-    this.gfx.zIndex = this.#zIndex ?? entity.z;
   }
 
   #redraw() {
@@ -201,13 +230,13 @@ abstract class DebugShape {
       return;
     }
 
-    this.#updatePosition();
     this.redraw();
   }
 
   abstract redraw(): void;
 
   #zoomFn: [Value, () => void] | undefined;
+  #onGameRender: SignalSubscription<GameRender> | undefined;
   #onTransformUpdate: SignalSubscription<EntityTransformUpdate> | undefined;
   #onEnabledChange: SignalSubscription<EntityEnableChanged> | undefined;
   destroy(): void {
@@ -218,6 +247,11 @@ abstract class DebugShape {
       zoom.removeChangeListener(fn);
 
       this.#zoomFn = undefined;
+    }
+
+    if (this.#onGameRender) {
+      this.#onGameRender.unsubscribe();
+      this.#onGameRender = undefined;
     }
 
     if (this.#onTransformUpdate) {
