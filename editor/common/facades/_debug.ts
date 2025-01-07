@@ -92,13 +92,14 @@ abstract class DebugShape {
   }: DebugShapeOptions) {
     this.entity = entity;
     const container = this.entity.container!;
+    const scene = container.parent;
 
     this.#enabled = enabled;
     this.#suffix = suffix;
     // const icon = (entity.constructor as typeof Entity).icon ?? "📦";
     // this.label = createLabel(icon, entity.name + this.#suffix);
     // container.addChild(this.label.container);
-    container.addChild(this.gfx);
+    scene.addChildAt(this.gfx, scene.getChildIndex(container));
 
     this.color = color;
     this.alpha = alpha;
@@ -146,6 +147,16 @@ abstract class DebugShape {
     // this.label.text.text = this.entity.name + this.#suffix;
   }
 
+  #updatePosition() {
+    const entity = this.entity;
+    const pos = entity.interpolated.position;
+    const rot = entity.interpolated.rotation;
+
+    this.gfx.position.set(pos.x, -pos.y);
+    this.gfx.rotation = -rot;
+    this.gfx.zIndex = entity.z;
+  }
+
   #redraw() {
     const enabled = this.#enabled && this.entity.enabled;
     if (!enabled) {
@@ -153,6 +164,7 @@ abstract class DebugShape {
       return;
     }
 
+    this.#updatePosition();
     this.redraw();
   }
 
