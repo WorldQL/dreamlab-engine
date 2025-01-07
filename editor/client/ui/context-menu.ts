@@ -49,7 +49,7 @@ export class ContextMenu implements InspectorUIWidget {
         button.setAttribute("aria-disabled", "true");
       }
 
-      if (hint) {
+      if (hint && this.game.isEditMode) {
         const hintSpan = elem("span", { className: "context-menu-hint" }, [hint]);
         button.append(hintSpan);
       }
