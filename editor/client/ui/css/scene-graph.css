@@ -65,6 +65,14 @@
   }
 }
 
+#scene-graph-tree details[data-locked] {
+  filter: grayscale(100%);
+
+  & * {
+    cursor: not-allowed;
+  }
+}
+
 #scene-graph-tree details.selected > summary {
   --alpha: 1;
   background-color: rgb(var(--color-primary) / var(--alpha));

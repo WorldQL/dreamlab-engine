@@ -1,5 +1,6 @@
 import type { ITransform } from "@dreamlab/engine";
 import { ClientGame, EntityDefinition } from "@dreamlab/engine";
+import { EditorMetadataEntity } from "../common/mod.ts";
 
 class NotImplementedError extends Error {}
 
@@ -28,6 +29,12 @@ export type UndoRedoOperation =
       path: string[];
       value: string;
       previous: string;
+    }
+  | {
+      t: "modify-entity-locked";
+      entityRef: string;
+      locked: boolean;
+      previous: boolean;
     }
   // | { t: "modify-behavior-value" }
   | { t: "compound"; ops: Exclude<UndoRedoOperation, { t: "compound" }>[] };
@@ -150,6 +157,15 @@ export class UndoRedoManager {
         break;
       }
 
+      case "modify-entity-locked": {
+        const entity = this.#game.entities.lookupByRef(op.entityRef);
+        const metadata = entity?.children.get("__EditorMetadata")?.cast(EditorMetadataEntity);
+        if (metadata) {
+          metadata.locked = op.previous;
+        }
+        break;
+      }
+
       default: {
         const t = (op as unknown as UndoRedoOperation).t;
         throw new NotImplementedError(`undo operation not implemented: ${t}`);
@@ -219,6 +235,15 @@ export class UndoRedoManager {
           changeAtPath(entity.transform, op.path, op.value);
         }
 
+        break;
+      }
+
+      case "modify-entity-locked": {
+        const entity = this.#game.entities.lookupByRef(op.entityRef);
+        const metadata = entity?.children.get("__EditorMetadata")?.cast(EditorMetadataEntity);
+        if (metadata) {
+          metadata.locked = op.locked;
+        }
         break;
       }
 

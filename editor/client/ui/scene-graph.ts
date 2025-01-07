@@ -7,6 +7,7 @@ import {
   EntityRenamed,
   EntityReparented,
   Root,
+  Value,
   Vector2,
 } from "@dreamlab/engine";
 import { element as elem, element } from "@dreamlab/ui";
@@ -14,11 +15,11 @@ import { EditorMetadataEntity, EditorRootFacadeEntity, Facades } from "../../com
 import { ChevronDown, icon } from "../_icons.ts";
 import { UndoRedoManager, type UndoRedoOperation } from "../undo-redo.ts";
 import { createEntityMenu } from "../util/entity-types.ts";
+import { getEntitiesEnabledState } from "../util/entity-utils.ts";
+import { getModifierKeySymbol } from "../util/platform.ts";
 import { ContextMenuItem } from "./context-menu.ts";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 import { Clipboard, isRoot } from "./keyboard-shortcuts.ts";
-import { getModifierKeySymbol } from "../util/platform.ts";
-import { getEntitiesEnabledState } from "../util/entity-utils.ts";
 import { SelectedEntityService } from "./selected-entity.ts";
 
 function eventTargetsEntry(event: Event, entryElement: HTMLElement) {
@@ -225,6 +226,17 @@ export class SceneGraph implements InspectorUIWidget {
     entity.on(EntityEnableChanged, signal => {
       entryElement.setAttribute("data-enabled", signal.enabled ? "true" : "false");
     });
+
+    const metadata = entity.children.get("__EditorMetadata")?.cast(EditorMetadataEntity);
+    if (metadata) {
+      const lockedValue = metadata.values.get("locked") as Value<boolean>;
+      const updateLocked = () => {
+        if (lockedValue.value) entryElement.setAttribute("data-locked", "");
+        else entryElement.removeAttribute("data-locked");
+      };
+      lockedValue.onChanged(updateLocked);
+      updateLocked();
+    }
 
     const clonedFromRef = entity.values.get("clonedFromRef");
     clonedFromRef?.onChanged(() => {
@@ -486,9 +498,17 @@ export class SceneGraph implements InspectorUIWidget {
       event.preventDefault();
       event.stopPropagation();
 
+      const lockedEntry = entryElement.closest(
+        "details[data-entity][data-locked]",
+      ) as HTMLDetailsElement | null;
+      const lockedByEntityRef = lockedEntry?.dataset?.entity;
+      const lockedByEntity = lockedByEntityRef
+        ? this.game.entities.lookupByRef(lockedByEntityRef)
+        : undefined;
+
       const isEntitySelected = ui.selectedEntity.entities.includes(entity);
 
-      if (!isEntitySelected) {
+      if (!isEntitySelected && !lockedByEntity) {
         ui.selectedEntity.entities = [entity];
       }
 
@@ -539,35 +559,38 @@ export class SceneGraph implements InspectorUIWidget {
             "Backspace",
           ],
         );
+
+        // TODO: lock / unlock multi control
       } else {
-        contextMenuItems.push(
-          ["Focus", () => this.game.local._.Camera.pos.assign(entity.pos)],
+        contextMenuItems.push(["Focus", () => this.game.local._.Camera.pos.assign(entity.pos)]);
 
-          createEntityMenu("New Entity", type => {
-            let pos = new Vector2(0, 0);
-            if (entity instanceof EditorRootFacadeEntity || entity instanceof Root) {
-              pos = this.game.local._.Camera.globalTransform.position;
-            }
-            const newEntity = entity.spawn({
-              type: Facades.lookupFacadeEntityType(type),
-              name: type.name,
-              transform: { position: pos },
-            });
+        if (!lockedByEntity)
+          contextMenuItems.push(
+            createEntityMenu("New Entity", type => {
+              let pos = new Vector2(0, 0);
+              if (entity instanceof EditorRootFacadeEntity || entity instanceof Root) {
+                pos = this.game.local._.Camera.globalTransform.position;
+              }
+              const newEntity = entity.spawn({
+                type: Facades.lookupFacadeEntityType(type),
+                name: type.name,
+                transform: { position: pos },
+              });
 
-            UndoRedoManager._.push({
-              t: "create-entity",
-              parentRef: entity.ref,
-              def: newEntity.getDefinition(),
-            });
+              UndoRedoManager._.push({
+                t: "create-entity",
+                parentRef: entity.ref,
+                def: newEntity.getDefinition(),
+              });
 
-            ui.selectedEntity.entities = [newEntity];
+              ui.selectedEntity.entities = [newEntity];
 
-            const newEntryElement = this.entryElementMap.get(newEntity.ref);
-            if (newEntryElement) this.triggerRename(newEntity, newEntryElement);
-          }),
-        );
+              const newEntryElement = this.entryElementMap.get(newEntity.ref);
+              if (newEntryElement) this.triggerRename(newEntity, newEntryElement);
+            }),
+          );
 
-        if (!entity.protected)
+        if (!entity.protected && !lockedByEntity)
           contextMenuItems.push(
             [
               "Rename",
@@ -602,7 +625,7 @@ export class SceneGraph implements InspectorUIWidget {
             ],
           );
 
-        if (Clipboard.get().length > 0) {
+        if (Clipboard.get().length > 0 && !lockedByEntity) {
           contextMenuItems.push([
             "Paste",
             () => {
@@ -629,7 +652,7 @@ export class SceneGraph implements InspectorUIWidget {
           ]);
         }
 
-        if (!entity.protected)
+        if (!entity.protected && !lockedByEntity)
           contextMenuItems.push([
             "Delete",
             () => {
@@ -646,6 +669,40 @@ export class SceneGraph implements InspectorUIWidget {
             false,
             "Backspace",
           ]);
+
+        if (!entity.protected && ui.editMode) {
+          if (lockedByEntity) {
+            contextMenuItems.push([
+              "Unlock",
+              () => {
+                const metadata = EditorMetadataEntity.getInstanceFor(lockedByEntity);
+                const prevLocked = metadata.locked;
+                metadata.locked = false;
+                UndoRedoManager._.push({
+                  t: "modify-entity-locked" as const,
+                  entityRef: lockedByEntity.ref,
+                  locked: false,
+                  previous: prevLocked,
+                });
+              },
+            ]);
+          } else {
+            contextMenuItems.push([
+              "Lock",
+              () => {
+                const metadata = EditorMetadataEntity.getInstanceFor(entity);
+                const prevLocked = metadata.locked;
+                metadata.locked = true;
+                UndoRedoManager._.push({
+                  t: "modify-entity-locked" as const,
+                  entityRef: entity.ref,
+                  locked: true,
+                  previous: prevLocked,
+                });
+              },
+            ]);
+          }
+        }
       }
 
       ui.contextMenu.drawContextMenu(event.clientX, event.clientY, contextMenuItems);
