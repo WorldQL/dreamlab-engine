@@ -1,6 +1,7 @@
 import {
   Camera,
   EntityDestroyed,
+  EntityEnableChanged,
   EntityTransformUpdate,
   IVector2,
   PixiEntity,
@@ -125,6 +126,10 @@ abstract class DebugShape {
       this.#redraw();
     });
 
+    this.#onEnabledChange = this.entity.on(EntityEnableChanged, () => {
+      this.#redraw();
+    });
+
     this.entity.on(EntityDestroyed, () => {
       this.destroy();
     });
@@ -142,7 +147,8 @@ abstract class DebugShape {
   }
 
   #redraw() {
-    if (!this.#enabled) {
+    const enabled = this.#enabled && this.entity.enabled;
+    if (!enabled) {
       this.gfx.clear();
       return;
     }
@@ -154,6 +160,7 @@ abstract class DebugShape {
 
   #zoomFn: [Value, () => void] | undefined;
   #onTransformUpdate: SignalSubscription<EntityTransformUpdate> | undefined;
+  #onEnabledChange: SignalSubscription<EntityEnableChanged> | undefined;
   destroy(): void {
     this.gfx.destroy();
 
@@ -167,6 +174,11 @@ abstract class DebugShape {
     if (this.#onTransformUpdate) {
       this.#onTransformUpdate.unsubscribe();
       this.#onTransformUpdate = undefined;
+    }
+
+    if (this.#onEnabledChange) {
+      this.#onEnabledChange.unsubscribe();
+      this.#onEnabledChange = undefined;
     }
   }
 }
