@@ -11,13 +11,13 @@ type AuthToken = {
 
 export const auth = async (nickname: string): Promise<AuthToken> => {
   // TODO: way to bypass?
-  if (import.meta.env.IS_DEV) return devAuth(nickname);
+  if (globalThis.env.IS_DEV) return devAuth(nickname);
 
   const searchParams = new URLSearchParams(window.location.search);
   const passedToken = searchParams.get("token");
   if (passedToken) return decodeToken(passedToken);
 
-  const url = new URL("/api/game/auth/guest", import.meta.env.NEXT_URL);
+  const url = new URL("/api/game/auth/guest", globalThis.env.NEXT_URL);
   url.searchParams.set("id", connectionDetails.instanceId);
   url.searchParams.set("nickname", nickname);
 

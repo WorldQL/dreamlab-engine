@@ -12,7 +12,7 @@ import { SingleplayerNetworking } from "./singleplayer-networking.ts";
 
 const worldId =
   new URLSearchParams(window.location.search).get("worldId") ??
-  import.meta.env.DEFAULT_WORLD_ID ??
+  globalThis.env.DEFAULT_WORLD_ID ??
   undefined;
 
 if (worldId === undefined) {

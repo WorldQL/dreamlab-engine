@@ -15,7 +15,7 @@ const useDefaultDetails = () => {
   const searchParams = new URLSearchParams(window.location.search);
 
   // always prefer search param, fallback to SERVER_URL if set
-  const server = searchParams.get("server") ?? import.meta.env.SERVER_URL ?? null;
+  const server = searchParams.get("server") ?? globalThis.env.SERVER_URL ?? null;
   if (server) {
     const serverUrl = new URL(server);
     serverUrl.protocol = serverUrl.protocol === "wss:" ? "https:" : "http:";
@@ -23,7 +23,7 @@ const useDefaultDetails = () => {
   }
 
   const instanceId =
-    searchParams.get("instance") ?? (import.meta.env.IS_DEV ? NIL_UUID : undefined);
+    searchParams.get("instance") ?? (globalThis.env.IS_DEV ? NIL_UUID : undefined);
   if (instanceId) {
     connectionDetails.instanceId = instanceId;
   }
