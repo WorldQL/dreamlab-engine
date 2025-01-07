@@ -60,34 +60,34 @@ abstract class DebugShape {
   #width: number;
   #zIndex: number | undefined;
 
-  protected get color(): PIXI.ColorSource {
+  public get color(): PIXI.ColorSource {
     return this.#color;
   }
-  protected set color(value) {
+  public set color(value) {
     this.#color = value;
     this.#redraw();
   }
 
-  protected get alpha(): number {
+  public get alpha(): number {
     return this.#alpha;
   }
-  protected set alpha(value) {
+  public set alpha(value) {
     this.#alpha = value;
     this.#redraw();
   }
 
-  protected get width(): number {
+  public get width(): number {
     return this.#width;
   }
-  protected set width(value) {
+  public set width(value) {
     this.#width = value;
     this.#redraw();
   }
 
-  protected get zIndex(): number | undefined {
+  public get zIndex(): number | undefined {
     return this.#zIndex;
   }
-  protected set zIndex(value) {
+  public set zIndex(value) {
     this.#zIndex = value;
     this.#redraw();
   }
