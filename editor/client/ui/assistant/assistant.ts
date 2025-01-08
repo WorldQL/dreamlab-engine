@@ -1,8 +1,8 @@
 import { ClientGame } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 import { InspectorUI } from "../inspector.ts";
-import { Book, Check, Copy, icon, PlusCircle, RotateCcw, Send } from "../../_icons.ts";
-import { available_topics, codingPrompt, fileContents, plan, step1, step2 } from "./prompts.ts";
+import { Check, Copy, icon, RotateCcw, Send } from "../../_icons.ts";
+import { available_topics, codingPrompt, fileContents, plan } from "./prompts.ts";
 import markdownit from "npm:markdown-it@14.1.0";
 import hljs from "npm:highlight.js/lib/core";
 import typescript from "npm:highlight.js/lib/languages/typescript";
@@ -223,16 +223,6 @@ export class Assistant {
       console.log(filled);
       const p: ContextItem = { role: "user", content: filled };
       ScriptSession.chatContext.push(p);
-    } else if (ScriptSession.chatState === "step1") {
-      const p: ContextItem = { role: "user", content: step1 };
-      ScriptSession.chatContext.push(p);
-    } else if (ScriptSession.chatState === "step2") {
-      ScriptSession.chatContext = [];
-      let m = step2.replace("{{USER_REQUEST}}", prompt);
-      m = m.replace("{{TOPIC_DOCUMENTATION}}", ScriptSession.chatDocumentation);
-      m = m.replace("{{EXAMPLE_BEHAVIOR_CODE}}", fileContents["_basic-structure"]);
-      const p: ContextItem = { role: "user", content: m };
-      ScriptSession.chatContext.push(p);
     } else if (ScriptSession.chatState === "followup") {
       const p: ContextItem = { role: "user", content: prompt };
       ScriptSession.chatContext.push(p);
@@ -266,7 +256,7 @@ export class Assistant {
         throw new Error("Unable to read response body");
       }
 
-      await this.handleStreamingResponse(reader);
+      await this.handleStreamingResponse(reader, prompt);
     } catch (error) {
       console.error("Error in fetchChatbotBehavior:", error);
       //Toast.error("Failed to fetch chatbot! Try again later.");
@@ -283,7 +273,7 @@ export class Assistant {
 
   // #region Handle Stream
   async handleStreamingResponse(
-    reader: ReadableStreamDefaultReader<Uint8Array>,
+    reader: ReadableStreamDefaultReader<Uint8Array>, prompt: string
   ): Promise<void> {
     const decoder = new TextDecoder();
     let accumulatedText = "";
@@ -317,7 +307,7 @@ export class Assistant {
 
               if (d.error) throw new Error(d.error);
 
-              let line: string = d.text;
+              const line: string = d.text;
               accumulatedText += line;
 
               const renderedContent = md.render(accumulatedText);
@@ -337,17 +327,22 @@ export class Assistant {
 
     console.log(ScriptSession.chatState);
     const plan = getTagContents("plan", accumulatedText);
-    if (plan) {
-      const p = JSON.parse(plan);
+    let planArray = undefined;
+    try {
+      planArray = JSON.parse(plan!);
+    } catch {
+      alert("Plan failed to parse. Please reload the page and try again.");
+    }
+    if (planArray) {
       const stepsContainer = elem("div", { className: "chat-steps-container" });
 
-      for (const step of p) {
+      for (const step of planArray) {
         const stepElement = elem("div", { className: "chat-step" }, [step.desc]);
         stepsContainer.appendChild(stepElement);
       }
       botMessageElement.appendChild(stepsContainer);
 
-      for (const step of p) {
+      for (const step of planArray) {
         if (step.action === "editEntityValue") {
           const target =
             "game.world._.EditEntities._.prefabs._" +
@@ -398,7 +393,7 @@ export class Assistant {
 
         if (step.action === "createFile") {
           const fileUrl = new URL(ScriptSession.httpServer);
-          const { addToContext, loadDocs, instructions, target } = step;
+          const { addToContext, instructions, target } = step;
           console.log(step);
           const filesLoaded = [];
           for (const filePath of addToContext ?? []) {
@@ -418,12 +413,11 @@ export class Assistant {
 
           const topicsLoaded = [];
 
-          for (const docTopic of loadDocs ?? []) {
+          for (const docTopic of Object.keys(fileContents)) {
             const text: string = fileContents[docTopic];
             topicsLoaded.push([docTopic, text]);
           }
           topicsLoaded.sort(alphasort);
-          topicsLoaded.unshift(["Basic Behavior Structure", fileContents["_basic-structure"]]);
 
           // prepare strings for the LLM context
           let contextFiles = "";
@@ -441,9 +435,10 @@ export class Assistant {
             .replaceAll("{{CONTEXT_FILES}}", contextFiles)
             .replaceAll("{{CODE_SAMPLES}}", docCodeSamples)
             .replaceAll("{{EXISTING_FILE}}", "")
-            .replaceAll("{{FILE_INSTRUCTIONS}}", instructions);
+            .replaceAll("{{FILE_INSTRUCTIONS}}", instructions)
+            .replaceAll("{{PLAN}}", JSON.stringify(planArray))
+            .replaceAll("{{ORIG_REQUEST}}", prompt);
 
-          console.log(prepared);
           const result = await oneOffMessage(prepared);
           console.log(result);
           const code = getTagContents("code", result);
@@ -628,7 +623,7 @@ export class Assistant {
     console.error("Error:", error);
     // Toast.error("Failed to fetch chatbot! Try again later.");
 
-    const lastBotMessage = this.#chatContent.querySelector(".bot-message:last-of-type");
+    const _lastBotMessage = this.#chatContent.querySelector(".bot-message:last-of-type");
     // lastBotMessage?.remove();
 
     const botMessageElement = elem("div", { className: "bot-message" });
@@ -690,6 +685,7 @@ export class Assistant {
     suggestions.forEach(suggestion => suggestion.remove());
   }
 
+  // deno-lint-ignore no-explicit-any
   shuffleArray(array: any[]): any[] {
     for (let i = array.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));

@@ -1,6 +1,6 @@
 export const fileContents: Record<string, string> = {
   "Handling Input":
-    'import { Behavior, Vector2, syncedValue } from "@dreamlab/engine";\nimport PlayerBehavior from "./player.ts"; // this import is not an api, the user will have to have or create a player behavior for this example.\n\n/*\n  Handling Inputs in a Behavior:\n\n  This example demonstrates how to set up and handle various inputs within a behavior using the `Inputs` class.\n  Inputs are created for specific actions (e.g., movement or firing), and these actions are then checked and handled\n  during the behavior\'s update cycle (`onTick`).\n\n  Key Concepts:\n  - **Input Creation:**\n    Inputs are created using `this.inputs.create(...)`, binding a specific action to a key or mouse button.\n    These inputs are stored in private fields and can be checked every frame to determine if the corresponding\n    action should be executed.\n\n  - **Input Handling:**\n    Each frame, the behavior checks whether an input (e.g., a key or mouse button) is held down and executes\n    the appropriate logic, such as moving an entity or firing a weapon.\n\n  - **Cursor Tracking:**\n    The `Inputs` class also provides cursor tracking, which allows the entity to rotate or aim based on the cursor\'s\n    position in the game world.\n\n  Below is the implementation of the `Movement` behavior that handles player movement and firing based on input.\n\n  If you are using this.entity.transform.position.lookAt(this.inputs.cursor.world) you should ALWAYS do this before updating the transform position for the next frame.\n\n  This is correct:\n  const world = this.inputs.cursor.world;\n  if (!world) return;\n  // EXTREMELY IMPORTANT: Use the value of this.inputs.cursor.world before applying newPosition to the transform\n  const rotation = this.entity.transform.position.lookAt(world);\n  this.entity.transform.rotation = rotation;\n\n  // Apply the new position to the entity\n  this.entity.transform.position = newPosition;\n\n  This is wrong:\n  // Apply the new position to the entity\n  this.entity.transform.position = newPosition;\n\n  const world = this.inputs.cursor.world;\n  if (!world) return;\n  // EXTREMELY IMPORTANT: Use the value of this.inputs.cursor.world before applying newPosition to the transform\n  const rotation = this.entity.transform.position.lookAt(world);\n  this.entity.transform.rotation = rotation;\n\n  Please pay careful attention to this. It\'s tricky and important to remember when using cursor.world while also moving the entity and making it look at the cursor.\n\n*/\n\nexport default class Movement extends Behavior {\n  @syncedValue()\n  speed = 5.0;\n\n  // Input bindings for movement\n  // (method) Inputs.create(name: string, label: string, defaultBinding: Input): Action\n  #up = this.inputs.create("@movement/up", "Move Up", "KeyW");\n  #down = this.inputs.create("@movement/down", "Move Down", "KeyS");\n  #left = this.inputs.create("@movement/left", "Move Left", "KeyA");\n  #right = this.inputs.create("@movement/right", "Move Right", "KeyD");\n\n  // Input binding for firing\n  #fire = this.inputs.create("@clickFire/fire", "Fire", "MouseLeft");\n\n  // Cooldown management for firing\n  readonly #cooldown = 0;\n  #lastFired = 0;\n\n  velocity = Vector2.ZERO;\n\n  onTick(): void {\n    const movement = new Vector2(0, 0);\n    const currentSpeed = this.speed;\n\n    // Handle movement inputs\n    if (this.#up.held) movement.y += 1;\n    if (this.#down.held) movement.y -= 1;\n    if (this.#right.held) movement.x += 1;\n    if (this.#left.held) movement.x -= 1;\n\n    // Calculate the velocity based on movement input and speed\n    this.velocity = movement\n      .normalize()\n      .mul((this.game.physics.tickDelta / 100) * currentSpeed);\n\n    // Update entity\'s position\n    const newPosition = this.entity.transform.position.add(this.velocity);\n\n    // Boundary checks can be added here to restrict movement within certain limits\n\n    // Handle firing input with cooldown management\n    if (this.#lastFired > 0) {\n      this.#lastFired -= 1;\n    } else {\n      if (this.#fire.held) {\n        const playerBehavior = this.entity.getBehavior(PlayerBehavior);\n        const fireRateMultiplier = playerBehavior.fireRateMultiplier;\n\n        this.#lastFired = this.#cooldown / fireRateMultiplier;\n\n        // Trigger the shooting pattern defined in PlayerBehavior\n        playerBehavior.shootingPattern();\n      }\n    }\n\n    // Rotate the entity to face the cursor\'s position\n\n    const world = this.inputs.cursor.world;\n    if (!world) return;\n    // EXTREMELY IMPORTANT: Use the value of this.inputs.cursor.world before applying newPosition to the transform\n    const rotation = this.entity.transform.position.lookAt(world);\n    this.entity.transform.rotation = rotation;\n\n    // Apply the new position to the entity\n    this.entity.transform.position = newPosition;\n  }\n}\n',
+    'import { Behavior, Vector2, syncedValue } from "@dreamlab/engine";\n/*\n  Handling Inputs in a Behavior:\n\n  This example demonstrates how to set up and handle various inputs within a behavior using the `Inputs` class.\n  Inputs are created for specific actions (e.g., movement or firing), and these actions are then checked and handled\n  during the behavior\'s update cycle (`onTick`).\n\n  Key Concepts:\n  - **Input Creation:**\n    Inputs are created using `this.inputs.create(...)`, binding a specific action to a key or mouse button.\n    These inputs are stored in private fields and can be checked every frame to determine if the corresponding\n    action should be executed.\n\n  - **Input Handling:**\n    Each frame, the behavior checks whether an input (e.g., a key or mouse button) is held down and executes\n    the appropriate logic, such as moving an entity or firing a weapon.\n\n  - **Cursor Tracking:**\n    The `Inputs` class also provides cursor tracking, which allows the entity to rotate or aim based on the cursor\'s\n    position in the game world.\n\n  Below is the implementation of the `Movement` behavior that handles player movement and firing based on input.\n\n*/\n\nexport default class Movement extends Behavior {\n  @syncedValue()\n  speed = 5.0;\n\n  // Input bindings for movement\n  // (method) Inputs.create(name: string, label: string, defaultBinding: Input): Action\n  #up = this.inputs.create("@movement/up", "Move Up", "KeyW");\n  #down = this.inputs.create("@movement/down", "Move Down", "KeyS");\n  #left = this.inputs.create("@movement/left", "Move Left", "KeyA");\n  #right = this.inputs.create("@movement/right", "Move Right", "KeyD");\n\n  // Input binding for firing\n  #fire = this.inputs.create("@clickFire/fire", "Fire", "MouseLeft");\n\n  // Cooldown management for firing\n  readonly #cooldown = 0;\n  #lastFired = 0;\n\n  velocity = Vector2.ZERO;\n\n  onTick(): void {\n    const movement = new Vector2(0, 0);\n    const currentSpeed = this.speed;\n\n    // Handle movement inputs\n    if (this.#up.held) movement.y += 1;\n    if (this.#down.held) movement.y -= 1;\n    if (this.#right.held) movement.x += 1;\n    if (this.#left.held) movement.x -= 1;\n\n    // Calculate the velocity based on movement input and speed\n    this.velocity = movement\n      .normalize()\n      .mul((this.game.physics.tickDelta / 100) * currentSpeed);\n\n    // Update entity\'s position based on the input\n    const newPosition = this.entity.transform.position.add(this.velocity);\n\n    if (this.#fire.pressed) {\n      // create a bullet\n    }\n\n\n    // look at cursor\n    const cursorPosition = this.inputs.cursor.world;\n    if (!cursorPosition) return;\n    // EXTREMELY IMPORTANT: Use the value of this.inputs.cursor.world before applying newPosition to the transform\n    const rotation = this.entity.transform.position.lookAt(cursorPosition);\n    this.entity.transform.rotation = rotation;\n\n    // Apply the new position to the entity\n    this.entity.transform.position = newPosition;\n  }\n}\n',
   "Looking Up and Referencing Entities":
     'import { Behavior, ColoredSquare } from "@dreamlab/engine";\n/*\n  You can look up entities by their ID using the various roots (prefabs, local, world, & server).\n  Each root contains a collection of entities, and you can access a specific entity by its ID\n  using the following syntax: `this.game.root._.MyEntityID`.\n\n  Example:\n  Suppose you have an entity with the ID "Player" in the prefabs root and another with the ID "MainCamera" in the local root.\n\n  - To retrieve the Player entity from the prefabs root:\n    const playerEntity = this.game.prefabs._.Player;\n\n  - To retrieve the MainCamera entity from the local root:\n    const cameraEntity = this.game.local._.MainCamera;\n\n  These entities can then be manipulated directly. For example:\n  playerEntity.transform.position.assign({ x: 10, y: 5 });\n  cameraEntity.transform.scale.assign({ x: 1.5, y: 1.5 });\n\n  Accessing entity children:\n  Use `this.entity._.ChildName` to access a child entity directly. \n  For example: `this.entity._.ColoredSquare` will work if the entity has a child named \'ColoredSquare\'.\n\n  If the child\'s name contains a space, use bracket notation: `this.entity._["My_Entity"]`.\n\n  You can also access children of children by chaining: \n  `this.entity.myChild.myOtherChild`.\n\n  Important: \n  Do NOT use `this.entity.children.find(child => child.name === "ChildName")` as it is inefficient and unnecessary. \n  The `children` property provides a `ReadonlyMap` for reference but should not be used for lookups.\n\n    Accessing synced values in Dreamlab:\n\n  1. **Entity synced values**:\n     To access a synced value from an entity, use the `cast` method to cast the entity\'s child to its specific type.\n     Example:\n     ```javascript\n     private onCollide(e: EntityCollision): void {\n       // Change the wall\'s color to match the ball\'s color\n       // Color is a HEX value only in a String\n       const wallSolidColor = e.other._.ColoredSquare;\n       wallSolidColor.cast(ColoredSquare).color =\n         this.entity._.ColoredSquare.cast(ColoredSquare).color;\n     }\n     ```\n\n     - `cast` ensures you access the correct type, allowing you to manipulate its synced values safely.\n     - This is essential when interacting with child entities or components that expose synced values.\n\n  2. **Behavior synced values**:\n     To access synced values within a behavior, use the `getBehavior` method to retrieve the behavior instance attached to an entity.\n     Example:\n     ```javascript\n     onCollide(other: Entity) {\n       if (!other.name.startsWith("Bullet")) return;\n\n       other.destroy();\n       this.healthBar.takeDamage(1);\n       if (this.healthBar.currentHealth <= 0) {\n         const player = this.entity.game.world._.Player;\n         player.getBehavior(PlayerBehavior).score += 100;\n       }\n     }\n     ```\n\n     - `getBehavior` retrieves the behavior instance where the synced value is defined, allowing direct access to it.\n     - Use this method for behaviors instead of `getComponent`.\n\n  **Important**:\n  - Do NOT use `getComponent` for accessing synced values. It is less efficient and not recommended.\n  - Ensure type safety by using `cast` for entity properties and `getBehavior` for behavior-specific values.\n*/\n\nexport default class PlayerSpawner extends Behavior {\n  onInitialize(): void {\n    if (!this.game.isClient()) return;\n\n    this.game.prefabs._.Player.cloneInto(this.game.world, {\n      name: "Player." + this.game.network.self,\n      transform: { position: { x: 0, y: 0 } },\n      authority: this.game.network.self,\n    });\n\n    this.game.local._.Camera.transform.scale.assign({ x: 2, y: 2 });\n  }\n}\n',
   "Detecting Collisions":
@@ -20,7 +20,7 @@ export const fileContents: Record<string, string> = {
   "User Interfaces":
     'import { Behavior, UILayer, syncedValue } from "@dreamlab/engine";\nimport { element } from "@dreamlab/ui";\n\n/*\n  UI System Overview:\n\n  The UI system in this project allows you to create and manage user interface elements\n  dynamically within the game using the `element` method from the "@dreamlab/ui" package.\n\n  - **Creating Elements:**\n    You can create HTML elements by calling the `element` function, which takes the\n    element\'s tag name, an object with properties/attributes, and an array of child elements or text.\n\n  - **Appending to the UI Layer:**\n    Once created, elements are appended to the UI layer of an entity, making them visible\n    in the game\'s UI. This is typically done by accessing the `UILayer` component\n    of the current entity and using `appendChild` to add elements.\n\n  - **Event Handling:**\n    You can attach event listeners to UI elements, such as buttons, to handle user interactions.\n    This allows you to create responsive and interactive UIs within the game.\n\n  - **Example Usage:**\n    In the example below, a "Death Screen" UI is created, which displays a game over message,\n    the player\'s final score, and a button to respawn the player. The UI is dynamically created\n    when the player dies and removed when they respawn.\n\n    - The `element` method is used to create the UI elements.\n    - CSS styling is applied by creating a `<style>` element.\n    - The UI is integrated into the game\'s UI layer, ensuring it appears on the screen.\n\n  - **Best Practices:**\n    - Ensure to clean up any UI elements when they are no longer needed to avoid memory leaks.\n    - Use descriptive IDs and class names to maintain clarity in your UI components.\n    - Keep UI logic modular by separating the creation and management of UI elements into different methods.\n\n  Below is an example implementation of a death screen using this UI system.\n*/\n\nexport default class DeathScreen extends Behavior {\n  // Reference to the UI layer associated with the entity\n  #ui = this.entity.cast(UILayer);\n  #element!: HTMLDivElement;\n\n  @syncedValue()\n  score = 0;\n\n  onInitialize() {\n    // CSS for the death screen UI element\n    const css = `\n    #death-screen {\n      position: absolute;\n      top: 0;\n      left: 0;\n      width: 100%;\n      height: 100%;\n      display: flex;\n      flex-direction: column;\n      align-items: center;\n      justify-content: center;\n      color: white;\n      background: rgb(0 0 0 / 85%);\n      font-family: "Inter", sans-serif;\n    }\n\n    h1 {\n      font-size: 3rem;\n      font-weight: bold;\n      margin-bottom: 0;\n    }\n\n    p {\n      font-size: 1.5rem;\n      margin-bottom: 1rem;\n    }\n\n    button {\n      padding: 1rem 2rem;\n      font-size: 1.5rem;\n      cursor: pointer;\n      border: none;\n      border-radius: 0.4rem;\n      color: white;\n      background-color: #ff6600;\n      transition: background-color 0.3s ease;\n    }\n\n    button:hover {\n      background-color: #e65c00;\n    }\n    `;\n\n    // Create a <style> element and add the CSS to it\n    const style = element("style", { textContent: css });\n    this.#ui.dom.appendChild(style);\n\n    // Create a "Respawn" button using the new `element` method\n    const button = element("button", { type: "button" }, ["Respawn"]);\n    button.addEventListener("click", () => this.#respawnPlayer());\n\n    // Create the main death screen UI container\n    this.#element = element(\n      "div",\n      {\n        id: "death-screen", // Set the ID for the main container\n      },\n      [\n        // Add an <h1> element for the "Game Over" title\n        element("h1", { className: "example-classname" }, ["Game Over"]),\n\n        // Add a <p> element to display the player\'s final score\n        element("p", {}, [`Final Score: ${this.score.toLocaleString()}`]),\n\n        // Add the "Respawn" button created earlier\n        button,\n      ]\n    );\n\n    // Append the death screen UI container to the UI layer\n    this.#ui.element.appendChild(this.#element);\n  }\n\n  #respawnPlayer() {\n    // spawnPlayer(this.game)\n\n    // Destroy the current entity, removing the death screen from the UI\n    this.entity.destroy();\n  }\n}\n',
   "Interacting with Behaviors":
-    'import {\n  Behavior,\n  Entity,\n  EntityCollision,\n  ColoredSquare,\n} from "@dreamlab/engine";\nimport PlayerBehavior from "./player.ts"; // this import is not an api, the user will have to have or create a player behavior for this example.\n\n/*\n  Example: Using `getBehavior()` to Access Behaviors\n\n  The `getBehavior()` method allows you to retrieve an existing behavior attached to an entity.\n  This is particularly useful when you need to interact with or update a behavior that has already been set up,\n  such as a health bar or UI component, without needing to instantiate it again.\n\n  In this example, `getBehavior()` is used to update the player\'s score when an asteroid is destroyed,\n  as well as to interact with the asteroid\'s health bar.\n\n  Accessing entity children:\n  Use `this.entity._.ChildName` to access a child entity directly. \n  For example: `this.entity._.ColoredSquare` will work if the entity has a child named \'ColoredSquare\'.\n\n  If the child\'s name contains a space, use bracket notation: `this.entity._["My_Entity"]`.\n\n  You can also access children of children by chaining: \n  `this.entity.myChild.myOtherChild`.\n\n  Important: \n  Do NOT use `this.entity.children.find(child => child.name === "ChildName")` as it is inefficient and unnecessary. \n  The `children` property provides a `ReadonlyMap` for reference but should not be used for lookups.\n\n  Benefits of `getBehavior()`:\n  - Prevents duplication of behavior instances.\n  - Allows direct access to existing behaviors for updates or interactions.\n  - Ensures that only one instance of the behavior is manipulated, maintaining consistency.\n*/\n\nexport default class AsteroidBehavior extends Behavior {\n  onInitialize(): void {\n    this.listen(this.entity, EntityCollision, (e) => {\n      if (e.started) this.onCollide(e.other);\n    });\n  }\n\n  onCollide(other: Entity) {\n    if (!other.name.startsWith("Bullet")) return;\n    other.destroy();\n\n    // Retrieve the HealthBar behavior for this entity\n    const healthBar = this.entity.getBehavior(HealthBar);\n\n    // Reduce the asteroid\'s health by 1\n    healthBar.takeDamage(1);\n\n    // If health reaches zero, update the player\'s score and destroy the asteroid\n    if (healthBar.currentHealth <= 0) {\n      const player = this.game.world._.Player;\n\n      // Use getBehavior to access the PlayerBehavior and update the score\n      player.getBehavior(PlayerBehavior).score += 50;\n\n      // Destroy the asteroid entity (healthBar destruction is handled by takeDamage)\n      this.entity.destroy();\n    }\n  }\n}\n\n// Health bar behavior for reference\nimport {\n  Behavior,\n  BehaviorContext,\n  Entity,\n  GamePostTick,\n  Sprite,\n  Vector2,\n  syncedValue,\n} from "@dreamlab/engine";\n\nexport default class HealthBar extends Behavior {\n  @syncedValue()\n  maxHealth = 100;\n\n  @syncedValue()\n  currentHealth = 100;\n\n  healthBarEntity!: Entity;\n\n  onInitialize(): void {\n    this.healthBarEntity = this.game.world.spawn({\n      type: Sprite,\n      name: "HealthBar",\n      transform: { position: { x: 0, y: 1 }, scale: { x: 1, y: 0.1 } },\n      values: { texture: "res://assets/healthbar.png" },\n    });\n\n    this.game.on(GamePostTick, () => {\n      this.healthBarEntity.pos = this.entity.pos.add(new Vector2(0, 1));\n      this.updateHealthBar();\n    });\n  }\n\n  updateHealthBar(): void {\n    const healthRatio = this.currentHealth / this.maxHealth;\n    this.healthBarEntity.transform.scale.x = healthRatio;\n  }\n\n  takeDamage(damage: number): void {\n    this.currentHealth -= damage;\n    if (this.currentHealth <= 0) {\n      this.currentHealth = 0;\n      this.entity.destroy();\n      this.healthBarEntity.destroy();\n      this.spawnExplosionPieces();\n    }\n\n    this.updateHealthBar();\n  }\n\n  spawnExplosionPieces(): void {\n    const pieceCount = Math.random() * 5 + 3;\n    const pieceSize = { x: 0.15, y: 0.15 };\n\n    for (let i = 0; i < pieceCount; i++) {\n      this.entity.game.world.spawn({\n        type: Sprite,\n        name: "ExplosionPiece",\n        transform: {\n          position: this.entity.transform.position.clone(),\n          scale: pieceSize,\n        },\n        behaviors: [],\n        children: [\n          {\n            type: Sprite,\n            name: "PieceSprite",\n            values: { texture: "res://assets/asteroid.png" },\n          },\n        ],\n      });\n    }\n  }\n}\n',
+    'import {\n  Behavior,\n  Entity,\n  EntityCollision,\n  ColoredSquare,\n} from "@dreamlab/engine";\nimport PlayerBehavior from "./player.ts"; // this import is not an api, the user will have to have or create a player behavior for this example.\n\n/*\n  Example: Using `getBehavior()` to Access Behaviors\n\n  The `getBehavior()` method allows you to retrieve an existing behavior attached to an entity.\n  This is particularly useful when you need to interact with or update a behavior that has already been set up,\n  such as a health bar or UI component, without needing to instantiate it again.\n\n  In this example, `getBehavior()` is used to update the player\'s score when an asteroid is destroyed,\n  as well as to interact with the asteroid\'s health bar.\n\n  Accessing entity children:\n  Use `this.entity._.ChildName` to access a child entity directly. \n  For example: `this.entity._.ColoredSquare` will work if the entity has a child named \'ColoredSquare\'.\n\n  If the child\'s name contains a space, use bracket notation: `this.entity._["My_Entity"]`.\n\n  You can also access children of children by chaining: \n  `this.entity.myChild.myOtherChild`.\n\n  Important: \n  Do NOT use `this.entity.children.find(child => child.name === "ChildName")` as it is inefficient and unnecessary. \n  The `children` property provides a `ReadonlyMap` for reference but should not be used for lookups.\n\n  Benefits of `getBehavior()`:\n  - Prevents duplication of behavior instances.\n  - Allows direct access to existing behaviors for updates or interactions.\n  - Ensures that only one instance of the behavior is manipulated, maintaining consistency.\n*/\n\nexport default class AsteroidBehavior extends Behavior {\n  onInitialize(): void {\n    this.listen(this.entity, EntityCollision, (e) => {\n      if (e.started) this.onCollide(e.other);\n    });\n  }\n\n  onCollide(other: Entity) {\n    if (!other.name.startsWith("Bullet")) return;\n    other.destroy();\n\n    // Retrieve the HealthBar behavior for this entity\n    const healthBar = this.entity.getBehavior(HealthBar);\n\n    // Reduce the asteroid\'s health by 1\n    healthBar.takeDamage(1);\n\n    // If health reaches zero, update the player\'s score and destroy the asteroid\n    if (healthBar.currentHealth <= 0) {\n      const player = this.game.world._.Player;\n\n      // Use getBehavior to access the PlayerBehavior and update the score\n      player.getBehavior(PlayerBehavior).score += 50;\n\n      // Destroy the asteroid entity (healthBar destruction is handled by takeDamage)\n      this.entity.destroy();\n    }\n  }\n}\n\n// Health bar behavior for reference\nimport {\n  GamePostTick,\n  Sprite,\n  Vector2,\n  syncedValue,\n} from "@dreamlab/engine";\n\nexport default class HealthBar extends Behavior {\n  @syncedValue()\n  maxHealth = 100;\n\n  @syncedValue()\n  currentHealth = 100;\n\n  healthBarEntity!: Entity;\n\n  onInitialize(): void {\n    this.healthBarEntity = this.game.world.spawn({\n      type: Sprite,\n      name: "HealthBar",\n      transform: { position: { x: 0, y: 1, }, scale: { x: 1, y: 0.1 } },\n      values: { texture: "res://assets/healthbar.png" },\n    });\n\n    this.game.on(GamePostTick, () => {\n      this.healthBarEntity.pos = this.entity.pos.add(new Vector2(0, 1));\n      this.updateHealthBar();\n    });\n  }\n\n  updateHealthBar(): void {\n    const healthRatio = this.currentHealth / this.maxHealth;\n    this.healthBarEntity.transform.scale.x = healthRatio;\n  }\n\n  takeDamage(damage: number): void {\n    this.currentHealth -= damage;\n    if (this.currentHealth <= 0) {\n      this.currentHealth = 0;\n      this.entity.destroy();\n      this.healthBarEntity.destroy();\n      this.spawnExplosionPieces();\n    }\n\n    this.updateHealthBar();\n  }\n\n  spawnExplosionPieces(): void {\n    const pieceCount = Math.random() * 5 + 3;\n    const pieceSize = { x: 0.15, y: 0.15 };\n\n    for (let i = 0; i < pieceCount; i++) {\n      this.entity.game.world.spawn({\n        type: Sprite,\n        name: "ExplosionPiece",\n        transform: {\n          position: this.entity.transform.position.clone(),\n          scale: pieceSize,\n        },\n        behaviors: [],\n        children: [\n          {\n            type: Sprite,\n            name: "PieceSprite",\n            values: { texture: "res://assets/asteroid.png" },\n          },\n        ],\n      });\n    }\n  }\n}\n',
   "Basic Structure":
     'import {\n  Behavior,\n  Vector2,\n  Vector2Adapter,\n  syncedValue,\n  ColoredSquare,\n} from "@dreamlab/engine";\n/*\n  In "@dreamlab/engine", a `Behavior` represents a modular piece of logic that can be attached to an entity.\n  This allows you to encapsulate functionality, such as movement, health management, or AI, in reusable components.\n\n  Key Components:\n  - **Lifecycle Methods:**\n    - `onInitialize`: Called once when the behavior is first attached to an entity, used for setup tasks.\n    - `onTick`: Called on every game tick, ideal for updating logic like movement or state changes.\n    - `onPreTick`, `onPostTick`, `onFrame`: Additional lifecycle hooks for more granular control over update timing.\n\n  - **Values:** Behaviors can have properties (values) that are synchronized across the network or exposed to\n    an inspector GUI. These values are defined using `defineValue` or `defineValues` methods and can be of various\n    types, including primitives and complex types with adapters.\n\n  - **Signals:** Behaviors can listen for signals (events) from the game or other entities and respond accordingly.\n    This is done using the `listen` method for subscribing to signals, and `fire` to emit them.\n\n  - **Destruction:** Behaviors can be destroyed manually using `destroy()` or automatically via the entity lifecycle.\n    This cleanup process ensures all listeners and values are properly disposed of.\n\n  The `Behavior` class is highly flexible, supporting complex game mechanics through a combination of values, signals,\n  and lifecycle hooks. It serves as the foundation for defining how entities behave in the game world.\n\n  Accessing entity children:\n  Use `this.entity._.ChildName` to access a child entity directly. \n  For example: `this.entity._.ColoredSquare` will work if the entity has a child named \'ColoredSquare\'.\n\n  If the child\'s name contains a space, use bracket notation: `this.entity._["My_Entity"]`.\n\n  You can also access children of children by chaining: \n  `this.entity.myChild.myOtherChild`.\n\n  Important: \n  Do NOT use `this.entity.children.find(child => child.name === "ChildName")` as it is inefficient and unnecessary. \n  The `children` property provides a `ReadonlyMap` for reference but should not be used for lookups.\n\n  Important Notes:\n  - **Do Not Use Renderer for Game Screen Dimensions:**\n    The game screen is defined by the camera(s) in the game scene, not by the renderer or app.\n    Attempting to access `this.game.renderer.app.screen.width` or `this.game.renderer.app.screen.height` is incorrect.\n    To limit game space or define boundaries, use colliders (e.g., walls) in the world.\n    Avoid relying on renderer properties as they do not exist on `game` and are unrelated to defining game space.\n\n*/\n\n// example Behavior that allows for WASD movement as well as a pattern for firing projectiles.\n// this serves as an example for the general structure of a behavior\nexport default class Movement extends Behavior {\n  // the speed of the player\n  @syncedValue()\n  speed = 5.0;\n\n  // example value\n  @syncedValue()\n  anotherValue = 42.0;\n\n  // the current velocity of the player\n  @syncedValue(Vector2Adapter)\n  velocity = Vector2.ZERO;\n\n  // Input bindings for movement\n  // (method) Inputs.create(name: string, label: string, defaultBinding: Input): Action\n  #up = this.inputs.create("@movement/up", "Move Up", "KeyW");\n  #down = this.inputs.create("@movement/down", "Move Down", "KeyS");\n  #left = this.inputs.create("@movement/left", "Move Left", "KeyA");\n  #right = this.inputs.create("@movement/right", "Move Right", "KeyD");\n\n  onTick(): void {\n    const movement = new Vector2(0, 0);\n    const currentSpeed = this.speed;\n\n    if (this.#up.held) movement.y += 1;\n    if (this.#down.held) movement.y -= 1;\n    if (this.#right.held) movement.x += 1;\n    if (this.#left.held) movement.x -= 1;\n\n    this.velocity = movement\n      .normalize()\n      .mul((this.game.physics.tickDelta / 100) * currentSpeed);\n\n    const newPosition = this.entity.transform.position.add(this.velocity);\n  }\n}\n',
 };
@@ -57,99 +57,6 @@ export const entityTypes = [
   "UIPanel",
   "Text",
 ];
-
-export const step0 = `You are an AI assistant for the Dreamlab game engine. Here's what you need to know:
-
-Available entity types: ${entityTypes.join(", ")}
-
-Core features:
-- Entities in world root (networked), local root (UI/camera), or prefabs root (templates)
-- Behaviors with lifecycle methods (setup, onTick, etc)
-- Transform properties: position, rotation, scale 
-- Right-click workflow in Scene Graph for all entity creation but not transform or behavior changes. Those are done in the properties panel.
-
-User Request:
-{{USER_REQUEST}}
-
-Format response exactly like:
-
-Setup:
-1. Right click on {{root}} root
-   * Add {{entityType}} > Name "EntityName"`;
-
-export const step1 = `
-<documentation_topics>
-${available_topics}
-</documentation_topics>
-
-Please follow these steps:
-
-1. Carefully read and analyze the user's request to understand what they are trying to achieve in the Dreamlab game engine.
-2. Review the list of available documentation topics.
-3. Select the topics that are directly relevant to fulfilling the user's request. Consider the following:
-   - Core functionality required to implement the request
-   - Any additional features or components mentioned in the request
-   - Potential dependencies or related systems that might be necessary
-4. Do not include topics that are not directly related to the user's request, even if they might be generally useful.
-5. If you're unsure about a topic's relevance, err on the side of inclusion.
-6. Present your selected topics in a list format, enclosed in <selected_topics> tags. Each topic should be on a new line.
-
-Here's an example of how your output should be formatted:
-
-<selected_topics>
-Topic 1
-Topic 2
-Topic 3
-</selected_topics>
-
-Only include the titles of the topics.
-
-Remember, your goal is to provide a concise, relevant list of documentation topics that will be necessary to complete the user's request in the Dreamlab game engine. Do not provide any additional commentary or explanations in your output.
-`;
-
-export const step2 = `You are a programming assistant specializing in the Dreamlab game engine. Your task is to write a Behavior class in TypeScript based on a user's request and the provided documentation.
-
-First, review the documentation for the relevant topics:
-
-<topic_documentation>
-{{TOPIC_DOCUMENTATION}}
-</topic_documentation>
-
-Now, here's an example of a Behavior class structure to guide you:
-
-<example_behavior_code>
-{{EXAMPLE_BEHAVIOR_CODE}}
-</example_behavior_code>
-
-The user has requested the following functionality:
-
-<user_request>
-{{USER_REQUEST}}
-</user_request>
-
-Analyze the provided documentation and the user's request carefully. Consider the following steps:
-
-1. Identify the key components and functionalities required for the Behavior class.
-2. Determine which parts of the documentation are most relevant to implementing these functionalities.
-3. Plan out the structure of your Behavior class, including necessary properties, methods, and event handlers.
-
-When writing the Behavior code, follow these guidelines:
-
-1. Use TypeScript syntax and adhere to Dreamlab engine conventions as shown in the example code.
-2. Implement all functionality requested by the user.
-3. Use appropriate classes, methods, and properties from the Dreamlab engine as documented.
-4. Include clear and concise comments to explain complex logic or non-obvious implementations.
-5. Ensure your code is well-structured, readable, and follows best practices.
-
-Provide your response in the following format:
-
-
-[Briefly explain your approach to implementing the requested functionality, referencing key parts of the documentation you'll be using.]
-
-[Write your TypeScript code for the Behavior class here.] Be sure to use the Markdown typescript block.
-
-Remember to be thorough in your implementation while keeping the code efficient and relevant to the user's request. Your goal is to provide a working Behavior class that fulfills the requested functionality using the Dreamlab game engine.
-`;
 
 const topicList = available_topics
   .split("\n")
@@ -210,18 +117,15 @@ Next, examine the current prefabs of the game world:
 {{PREFAB_TREE}}
 </prefab_tree>
 Children are nested under the entity in the markdown. Attached behavior scripts are also nested directly under.
-Finally, consider the following documentation topics:
-<documentation_topics>
-{{DOCS_TOPICS}}
-</documentation_topics>
+
 To create your plan, you can use the following actions:
 1. Modify an existing file
 2. Create a new file
 3. Create (or overwrite) a new prefab
 Each action should be represented as a JSON object with the following structure:
-- For modifying a file: {"action": "modifyFile", "target": "path/to/file.ts", "instructions": "Description of changes", "addToContext": ["src/path.ts"], "loadDocs": ["Topic Title"]}
+- For modifying a file: {"action": "modifyFile", "target": "path/to/script-file.ts", "instructions": "Description of changes", "addToContext": ["src/path.ts"]}
   - When modifying a file, you do not need to include the target in "addToContext". The target file will be provided automatically.
-- For creating a file: {"action": "createFile", "target": "path/to/newfile.ts", "instructions": "Description of file contents", "addToContext": ["src/path.ts"], "loadDocs": ["Some Topic"]}
+- For creating a file: {"action": "createFile", "target": "path/to/newfile.ts", "instructions": "Description of file contents", "addToContext": ["src/path.ts"]}
 - For creating a prefab: {
   "action": "createPrefab",
   "definition": {
@@ -252,7 +156,9 @@ Each action should be represented as a JSON object with the following structure:
 }
 - For editing a value on an existing entity: {"action": "editEntityValue", "target": "game.prefabs._.PrefabName", "valueName": "foo", "newValue": "bar"}
 - For editing a value on a script attached to an entity: {"action": "editBehaviorValue", "target": "prefabName", "script": "src/path.ts" "valueName": "foo", "newValue": "bar"}
+- To modify an existing prefab, just issue another createPrefab command and it will be overwritten.
 
+Note that in Dreamlab, the positive y axis is up and the positive x axis is to the right.
 
 When creating or modifying prefabs, you can use the following entities with the following values:
 - Sprite
@@ -265,6 +171,7 @@ When creating or modifying prefabs, you can use the following entities with the 
   - Their position is the center of the rectangle. Take this into account when positioning.
 - Clickable
 - Collider
+- CharacterController
 - Empty
 - Camera
 - AudioSource
@@ -286,7 +193,6 @@ Present your plan as a JSON array of strings, with each string containing a sing
     "target": "src/jump-pad.ts",
     "instructions": "Spring the player upwards when they touch this. Consider player.ts for information on how the player controller works",
     "addToContext": ["src/player.ts"], // always addToContext any files you think might be relevant.
-    "loadDocs": ["Detecting Collisions"]
   },
   {
     "desc": "Create prefab jumpPad",
@@ -322,24 +228,25 @@ Present your plan as a JSON array of strings, with each string containing a sing
 </plan>
 Make sure that a human readable and descriptive "desc" tag is included on every step of your plan.
 
-Always use the correct entity name in the "type" field. List the entities you plan to use before building the structure. If you plan on adding publicly exposed @syncedValue class properties, make sure you list the exact property names that will be used in the code in your plan.
+An extremely important step for "createFile": Be sure to include all the public class properties and their types in your description. When another script in the same plan needs to interact with it, be sure to include the relevant properties in the description. This helps everything work together. Also, if you want a class property to be configurable in the editor (a syncedValue) please note it as such. You can only set a value on a behavior if you use the @syncedValue() decorator so use it liberally. 
+Always use the correct entity name in the "type" field. List the entities you plan to use before building the structure.
 
 
 createFile and createPrefab overwrite anything at the current path. addToContext should be used for if and only if you need to add one of the other files to the context so the coding agent can understand it.
 The three commands in the example are all that are available.
 Ensure that your plan is comprehensive and addresses all aspects of the user's request. If you need to make assumptions or have questions about the implementation, include these in comments within the "instructions" field of the relevant action.
 Do not write code, just describe the functionality. If you are describing the addition of new class methods, you should always name those methods!
+If the user request is not detailed enough, do not return a <plan> tag. Your plan should be valid JSON that parses. Do not include linebreaks inside your plan.
+
+Make sure to do only the minimum that the user is asking for. Aim to be as simple as possible. You want to create simple, reusable components. Avoid creating complex management systems unless asked.
+
+If they complain of a bug or functionality not working right, you probably only need to do a single modifyFile. You should pass through the user's complaint about the bug to the modifyFile call. 
+
 Format your answer like the following:
 <thinking>
 Reason about the problem here
 </thinking>
 <plan></plan>
-
-If the user request is not detailed enough, do not return a <plan> tag. Your plan should be valid JSON that parses. Do not include linebreaks inside your plan.
-
-Make sure to do only the minimum that the user is asking for.
-
-If they complain of a bug or functionality not working right, you probably only need to do a single modifyFile. You should pass through the user's complaint about the bug to the modifyFile call. 
 
 Now, consider the user's request:
 <user_request>
@@ -364,6 +271,18 @@ If an existing file is provided, it will be included here. If provided, modify t
 <existing_file>
 {{EXISTING_FILE}}
 </existing_file>
+
+You are executing a step from the following plan:
+<plan>
+Original user request: {{ORIG_REQUEST}}
+
+{{PLAN}}
+</plan>
+
+Some additional notes:
+- You may use TypeScript's regular setTimeout()
+- Do not hardcode entity lookups, use EntityByRef on a @syncedValue which allows to user to assign entity relationships by dragging and dropping in the editor.
+- In Dreamlab, the x direction is to the right and the y direction is up.
 
 2. Before writing any code, analyze the inputs and plan your approach. Use <thinking> tags to outline your thought process, considering the following:
    - How the new code will integrate with the existing codebase
