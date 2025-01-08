@@ -42,6 +42,7 @@
     "npm:lucide-static@0.429.0": "0.429.0",
     "npm:markdown-it@*": "14.1.0",
     "npm:markdown-it@14.1.0": "14.1.0",
+    "npm:nanoid@5.0.9": "5.0.9",
     "npm:object-inspect@1.13.2": "1.13.2",
     "npm:pako@2.1.0": "2.1.0",
     "npm:partysocket@1.0.2": "1.0.2",
@@ -694,6 +695,9 @@
       "dependencies": [
         "mime-db"
       ]
+    },
+    "nanoid@5.0.9": {
+      "integrity": "sha512-Aooyr6MXU6HpvvWXKoVoXwKMs/KyVakWwg7xQfv5/S/RIgJMy0Ifa45H9qqYy7pTCszrHzP21Uk4PZq2HpEM8Q=="
     },
     "normalize-path@3.0.0": {
       "integrity": "sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA=="
