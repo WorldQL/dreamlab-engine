@@ -168,6 +168,10 @@ export class GameSession {
     if (this.#shuttingDown) return;
     this.#shuttingDown = true;
 
+    if (this.parent.info.variant === "play") {
+      this.parent.sendPlaySessionState();
+    }
+
     this.ipc.destroy();
     for (const connection of this.connections.values()) {
       connection.socket.close(1001);
