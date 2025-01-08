@@ -40,9 +40,13 @@ export class PhysicsEngine {
     collider.userData = { ...ud, entityRef: entity.ref };
   }
 
-  #lookupHandle(handle: number): Entity | undefined {
-    const body = this.world.colliders.get(handle) as ColliderWithUserData;
-    const udata = body?.userData as unknown;
+  #lookupEntity(handlerOrCollider: Collider | RAPIER.ColliderHandle): Entity | undefined {
+    const body =
+      typeof handlerOrCollider === "number"
+        ? this.world.getCollider(handlerOrCollider)
+        : handlerOrCollider;
+
+    const udata = (body as ColliderWithUserData)?.userData as unknown;
 
     let entityRef: string | undefined;
     if (
@@ -61,8 +65,8 @@ export class PhysicsEngine {
   tick() {
     if (this.enabled) this.world.step(this.#events);
     this.#events.drainCollisionEvents((handle1, handle2, started) => {
-      const entity1 = this.#lookupHandle(handle1);
-      const entity2 = this.#lookupHandle(handle2);
+      const entity1 = this.#lookupEntity(handle1);
+      const entity2 = this.#lookupEntity(handle2);
       if (!entity1 || !entity2) return;
 
       entity1.fire(EntityCollision, started, entity2);
@@ -83,7 +87,7 @@ export class PhysicsEngine {
     if (!controller) throw new TypeError("missing controller param");
 
     const controllerHandle = collider.handle;
-    const entity1 = this.#lookupHandle(controllerHandle);
+    const entity1 = this.#lookupEntity(controllerHandle);
     if (!entity1) return;
 
     const currentTickCollisions = new Set<string>();
@@ -92,7 +96,7 @@ export class PhysicsEngine {
       const handle2 = collision?.collider?.handle ?? undefined;
       if (!handle2) continue;
 
-      const entity2 = this.#lookupHandle(handle2);
+      const entity2 = this.#lookupEntity(handle2);
       if (!entity2) continue;
 
       const collisionKey = this.#makeCollisionKey(controllerHandle, entity1.ref, entity2.ref);
