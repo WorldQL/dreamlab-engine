@@ -1,4 +1,4 @@
-import { generateCUID } from "@dreamlab/vendor/cuid.ts";
+import { createId } from "@dreamlab/vendor/nanoid.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { jwtDecode } from "npm:jwt-decode";
 import { connectionDetails } from "./util/server-url.ts";
@@ -49,7 +49,7 @@ const decodeToken = (token: string): AuthToken => {
 
 const devAuth = (nickname: string): AuthToken => {
   const PLAYER_ID = "dreamlab/player-id";
-  const playerId = window.localStorage.getItem(PLAYER_ID) ?? generateCUID("ply");
+  const playerId = window.localStorage.getItem(PLAYER_ID) ?? createId("ply");
   window.localStorage.setItem(PLAYER_ID, playerId);
 
   return { nickname, playerId, token: "" } satisfies AuthToken;

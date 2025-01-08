@@ -1,4 +1,4 @@
-import { generateCUID } from "@dreamlab/vendor/cuid.ts";
+import { createId } from "@dreamlab/vendor/nanoid.ts";
 import { Camera, ClientGame, GameStatus, Text, Vector2 } from "../mod.ts";
 
 // #region Setup
@@ -24,7 +24,7 @@ const game = new ClientGame({
   network: {
     ping: 0,
     connections: [],
-    self: generateCUID("conn"),
+    self: createId("conn"),
     sendCustomMessage() {},
     broadcastCustomMessage() {},
     onReceiveCustomMessage() {},

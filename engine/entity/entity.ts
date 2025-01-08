@@ -1,4 +1,4 @@
-import { generateCUID } from "@dreamlab/vendor/cuid.ts";
+import { createId } from "@dreamlab/vendor/nanoid.ts";
 import type { ConditionalExcept } from "@dreamlab/vendor/type-fest.ts";
 
 import { Behavior, BehaviorConstructor, BehaviorDefinition } from "../behavior/behavior.ts";
@@ -820,7 +820,7 @@ export abstract class Entity implements ISignalHandler {
   // #endregion
 
   // internal id for stable internal reference. we only really need this for networking
-  readonly ref: string = generateCUID("ent");
+  readonly ref: string = createId("ent", { length: 10 });
 
   #updateTransform(
     fromGlobal: boolean,
@@ -1152,7 +1152,7 @@ export abstract class Entity implements ISignalHandler {
         1. calls interpolationStartTick
         2. Ticks entities (which would set localVisualTransformOverride)
 
-        So we save the current override (from last tick's behaviors) and by the time we interpolate it will be updated. 
+        So we save the current override (from last tick's behaviors) and by the time we interpolate it will be updated.
         */
         if (this.localVisualTransformOverride) {
           this.#prevLocalVisualTransformOverride = this.localVisualTransformOverride.clone();

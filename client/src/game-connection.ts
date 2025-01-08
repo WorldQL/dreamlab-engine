@@ -1,7 +1,7 @@
 import { ClientGame } from "@dreamlab/engine";
 import { PlayCodec } from "@dreamlab/proto/codecs/mod.ts";
 import { PlayPacket, ServerPacket } from "@dreamlab/proto/play.ts";
-import { generateCUID } from "@dreamlab/vendor/cuid.ts";
+import { createId } from "@dreamlab/vendor/nanoid.ts";
 import { ClientConnection } from "./networking/net-connection.ts";
 
 export const connectToGame = (
@@ -29,7 +29,7 @@ export const connectToGame = (
           worldId,
           container,
           network: conn.createNetworking(),
-          cacheBuster: cacheBust ? generateCUID("cch") : undefined,
+          cacheBuster: cacheBust ? createId("cch", { secure: false }) : undefined,
         });
         game.worldScriptBaseURL = packet.world_script_base_url;
         conn.setup(game);

@@ -1,5 +1,4 @@
-// deno-lint-ignore-file no-explicit-any
-import { generateCUID } from "@dreamlab/vendor/cuid.ts";
+import { createId } from "@dreamlab/vendor/nanoid.ts";
 import type { ConditionalExcept, Except } from "@dreamlab/vendor/type-fest.ts";
 
 import { Entity } from "../entity/mod.ts";
@@ -70,9 +69,9 @@ type ValuesToDefine = Map<string, BehaviorValueOpts<unknown>>;
 
 /**
  * Makes the following class property visible in the inspector and synced over the network.
- * 
+ *
  * Accepts an adapter such as `EntityByRef`, `Vector2Adapter`, etc. https://docs.dreamlab.gg/guide/Synced-Values-and-Adapters
- * 
+ *
  */
 export function syncedValue<B extends Behavior, T>(
   adapterType?: ValueTypeTag<T>,
@@ -124,7 +123,7 @@ export class Behavior implements ISignalHandler {
     return this.game.inputs;
   }
 
-  readonly ref: string = generateCUID("bhv");
+  readonly ref: string = createId("bhv", { length: 10 });
 
   // #region Values
   #defaultValues: Record<string, unknown> = {};

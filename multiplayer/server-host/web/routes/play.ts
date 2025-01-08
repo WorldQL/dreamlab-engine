@@ -2,7 +2,7 @@ import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
 import { ClientPacketSchema } from "@dreamlab/proto/play.ts";
 import { Context, Router, Status } from "../../deps/oak.ts";
 
-import { generateCUID } from "@dreamlab/vendor/cuid.ts";
+import { createId } from "@dreamlab/vendor/nanoid.ts";
 import { CONFIG } from "../../config.ts";
 import { bootPlaySession, GameInstance } from "../../instance.ts";
 import { GameSession } from "../../session.ts";
@@ -16,7 +16,7 @@ const handleConnection = (
   nickname: string,
 ) => {
   const connection = {
-    connectionId: generateCUID("conn"),
+    connectionId: createId("conn"),
     socket,
     codec: DEFAULT_CODEC,
   };

@@ -2,9 +2,9 @@ import { z } from "@dreamlab/vendor/zod.ts";
 
 export const CURRENT_SCHEMA_VERSION: number = 1;
 
-/** cuid: ent_* */
+/** nanoid: ent_* */
 export const EntityReferenceSchema = z.string().startsWith("ent_").describe("Entity Reference");
-/** cuid: bhv_* */
+/** nanoid: bhv_* */
 export const BehaviorReferenceSchema = z
   .string()
   .startsWith("bhv_")

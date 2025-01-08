@@ -7,7 +7,7 @@ import * as path from "jsr:@std/path@1";
 
 import { PlayPacket } from "@dreamlab/proto/play.ts";
 import { ProjectSchema, SceneDescEntity } from "@dreamlab/scene";
-import { generateCUID } from "@dreamlab/vendor/cuid.ts";
+import { createId } from "@dreamlab/vendor/nanoid.ts";
 import { fileIsProbablyBehaviorScript } from "../../../../build-system/build-world.ts";
 import { CONFIG } from "../../config.ts";
 import { GameInstance } from "../../instance.ts";
@@ -425,7 +425,7 @@ export const serveScriptEditingAPI = (router: Router) => {
 
         const refMap: Record<string, string> = {};
         const generateNewRef = (e: SceneDescEntity): void => {
-          refMap[e.ref] = generateCUID("ent");
+          refMap[e.ref] = createId("ent", { length: 10 });
           e.children?.forEach(generateNewRef);
         };
         importedScene.prefabs.forEach(generateNewRef);

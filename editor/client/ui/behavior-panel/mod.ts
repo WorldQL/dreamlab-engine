@@ -1,7 +1,7 @@
 import { ClientGame, Entity, EntityDestroyed, Root } from "@dreamlab/engine";
 import { SceneDescBehavior } from "@dreamlab/scene";
 import { element as elem } from "@dreamlab/ui";
-import { generateCUID } from "@dreamlab/vendor/cuid.ts";
+import { createId } from "@dreamlab/vendor/nanoid.ts";
 import { EditorMetadataEntity, EditorRootFacadeEntity } from "../../../common/mod.ts";
 import { icon, MinusCircle, PlusCircle } from "../../_icons.ts";
 import { InspectorUI, InspectorUIWidget } from "../inspector.ts";
@@ -31,7 +31,11 @@ export class BehaviorPanel implements InspectorUIWidget {
               info.values.map(({ key }) => [key, undefined] as const),
             );
 
-            const behavior = { ref: generateCUID("bhv"), script: scriptPath, values };
+            const behavior = {
+              ref: createId("bhv", { length: 10 }),
+              script: scriptPath,
+              values,
+            };
             if (behaviors.find(it => it.ref === behavior.ref))
               throw new Error(
                 "Behavior with given ref already exists in entity metadata:" + behavior.ref,

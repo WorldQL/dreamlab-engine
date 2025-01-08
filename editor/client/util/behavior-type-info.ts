@@ -1,6 +1,6 @@
 import { BehaviorConstructor, ClientGame, Empty, Entity, ValueTypeTag } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
-import { generateCUID } from "@dreamlab/vendor/cuid.ts";
+import { createId } from "@dreamlab/vendor/nanoid.ts";
 
 const RUN_BEHAVIOR_INITIALIZATION = false;
 
@@ -92,7 +92,7 @@ export class BehaviorTypeInfoService {
       network: {
         ping: 0,
         connections: [],
-        self: generateCUID("conn"),
+        self: createId("conn"),
         sendCustomMessage() {},
         broadcastCustomMessage() {},
         onReceiveCustomMessage() {},

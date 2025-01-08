@@ -1,5 +1,5 @@
 import { urlWithParams } from "@dreamlab/util/url.ts";
-import { untaggedCUID } from "@dreamlab/vendor/cuid.ts";
+import { createId } from "@dreamlab/vendor/nanoid.ts";
 import { Game } from "../game.ts";
 import { Behavior, BehaviorConstructor } from "./behavior.ts";
 
@@ -65,7 +65,7 @@ export class BehaviorLoader {
   }
 
   async loadScriptFromSource(script: string, sourceURI: string): Promise<BehaviorConstructor> {
-    const url = urlWithParams(sourceURI, { cache: untaggedCUID() });
+    const url = urlWithParams(sourceURI, { cache: createId("cch", { secure: false }) });
 
     try {
       const module = await import(url.toString());

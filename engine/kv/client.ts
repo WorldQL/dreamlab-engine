@@ -1,4 +1,4 @@
-import { untaggedCUID as createId } from "@dreamlab/vendor/cuid.ts";
+import { createId } from "@dreamlab/vendor/nanoid.ts";
 import { ClientGame } from "../game.ts";
 import { JsonValue } from "../value/data.ts";
 import * as common from "./_common.ts";

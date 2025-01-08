@@ -1,7 +1,7 @@
 import { ConnectionId } from "@dreamlab/engine";
 import { PlayCodec } from "@dreamlab/proto/codecs/mod.ts";
 import { ServerPacket } from "@dreamlab/proto/play.ts";
-import { generateCUID } from "@dreamlab/vendor/cuid.ts";
+import { createId } from "@dreamlab/vendor/nanoid.ts";
 import { CONFIG } from "./config.ts";
 import { dumpSceneDefinition, GameInstance } from "./instance.ts";
 import { IPCWorker } from "./worker.ts";
@@ -51,7 +51,7 @@ export class GameSession {
   ) {
     const addr = CONFIG.bindAddress;
     const ipcData: WorkerInitData = {
-      workerId: generateCUID("wrk"),
+      workerId: createId("wrk"),
       workerConnectUrl: `ws://${addr.hostname}:${addr.port}/internal/worker`,
       instanceId: parent.info.instanceId,
       worldId: parent.info.worldId,
