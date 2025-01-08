@@ -5,6 +5,7 @@ import RAPIER, {
 } from "@dreamlab/vendor/rapier.ts";
 import { Entity } from "./entity/mod.ts";
 import { Game } from "./game.ts";
+import { Vector2 } from "./math/mod.ts";
 import { EntityCollision } from "./signals/entity-collision.ts";
 
 interface ColliderWithUserData extends Collider {
@@ -65,12 +66,17 @@ export class PhysicsEngine {
   tick() {
     if (this.enabled) this.world.step(this.#events);
     this.#events.drainCollisionEvents((handle1, handle2, started) => {
-      const entity1 = this.#lookupEntity(handle1);
-      const entity2 = this.#lookupEntity(handle2);
+      const collider1 = this.world.getCollider(handle1);
+      const collider2 = this.world.getCollider(handle2);
+
+      const entity1 = this.#lookupEntity(collider1);
+      const entity2 = this.#lookupEntity(collider2);
       if (!entity1 || !entity2) return;
 
-      entity1.fire(EntityCollision, started, entity2);
-      entity2.fire(EntityCollision, started, entity1);
+      // TODO: lookup contact pairs figure out contact point and normal
+
+      entity1.fire(EntityCollision, started, entity2, Vector2.ZERO, Vector2.ZERO); // TODO
+      entity2.fire(EntityCollision, started, entity1, Vector2.ZERO, Vector2.ZERO); // TODO
     });
   }
 
@@ -87,26 +93,52 @@ export class PhysicsEngine {
     if (!controller) throw new TypeError("missing controller param");
 
     const controllerHandle = collider.handle;
-    const entity1 = this.#lookupEntity(controllerHandle);
-    if (!entity1) return;
+    const controllerEntity = this.#lookupEntity(controllerHandle);
+    if (!controllerEntity) return;
 
     const currentTickCollisions = new Set<string>();
     for (let i = 0; i < controller.numComputedCollisions(); i++) {
       const collision = controller.computedCollision(i);
-      const handle2 = collision?.collider?.handle ?? undefined;
-      if (!handle2) continue;
+      if (!collision) continue;
 
-      const entity2 = this.#lookupEntity(handle2);
-      if (!entity2) continue;
+      const colliderHandle = collision.collider?.handle ?? undefined;
+      if (!colliderHandle) continue;
 
-      const collisionKey = this.#makeCollisionKey(controllerHandle, entity1.ref, entity2.ref);
+      const colliderEntity = this.#lookupEntity(colliderHandle);
+      if (!colliderEntity) continue;
+
+      const collisionKey = this.#makeCollisionKey(
+        controllerHandle,
+        controllerEntity.ref,
+        colliderEntity.ref,
+      );
       currentTickCollisions.add(collisionKey);
+
+      // TODO: docs say some of these are world space and some are local space
+      // this appears to be wrong? needs further investigation
+      const colliderContactPoint = new Vector2(collision.witness1);
+      const controllerContactPoint = new Vector2(collision.witness2);
+      const colliderNormal = new Vector2(collision.normal1);
+      const controllerNormal = new Vector2(collision.normal2);
 
       // If this is a new collision, emit start event
       if (!this.#activeCollisions.has(collisionKey)) {
         this.#activeCollisions.set(collisionKey, 0);
-        entity1.fire(EntityCollision, true, entity2);
-        entity2.fire(EntityCollision, true, entity1);
+        controllerEntity.fire(
+          EntityCollision,
+          true,
+          colliderEntity,
+          controllerContactPoint,
+          controllerNormal,
+        );
+
+        colliderEntity.fire(
+          EntityCollision,
+          true,
+          controllerEntity,
+          colliderContactPoint,
+          colliderNormal,
+        );
       } else {
         // Reset missing ticks counter for active collision
         this.#activeCollisions.set(collisionKey, 0);
