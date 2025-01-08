@@ -65,7 +65,9 @@ export class RectCollider extends Entity {
           RAPIER.ActiveCollisionTypes.FIXED_FIXED,
       );
       this.game.physics.registerCollider(this, collider);
-      collider.setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS);
+      collider.setActiveEvents(
+        RAPIER.ActiveEvents.COLLISION_EVENTS | RAPIER.ActiveEvents.CONTACT_FORCE_EVENTS,
+      );
       const shape = collider.shape as RAPIER.Cuboid;
       collider.setSensor(this.isSensor);
 
@@ -192,7 +194,9 @@ export class Collider extends Entity {
           RAPIER.ActiveCollisionTypes.FIXED_FIXED,
       );
       this.game.physics.registerCollider(this, collider);
-      collider.setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS);
+      collider.setActiveEvents(
+        RAPIER.ActiveEvents.COLLISION_EVENTS | RAPIER.ActiveEvents.CONTACT_FORCE_EVENTS,
+      );
       collider.setSensor(this.isSensor);
 
       this.#internal = {

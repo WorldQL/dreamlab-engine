@@ -135,7 +135,9 @@ export class Rigidbody extends Entity {
         RAPIER.ActiveCollisionTypes.KINEMATIC_FIXED |
         RAPIER.ActiveCollisionTypes.FIXED_FIXED,
     );
-    collider.setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS);
+    collider.setActiveEvents(
+      RAPIER.ActiveEvents.COLLISION_EVENTS | RAPIER.ActiveEvents.CONTACT_FORCE_EVENTS,
+    );
     const shape = collider.shape as RAPIER.Cuboid;
 
     this.game.physics.registerBody(this, body);
