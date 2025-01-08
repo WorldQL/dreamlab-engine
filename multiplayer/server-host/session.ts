@@ -36,6 +36,7 @@ export class GameSession {
   #loaded: boolean = false;
   #loadedPromise: Promise<void>;
   #loadedPromiseResolve: (() => void) | undefined;
+  #loadedPromiseReject: ((error: Error) => void) | undefined;
 
   startedAt = new Date();
 
@@ -68,13 +69,23 @@ export class GameSession {
       ipcData.worldResourcesBaseUrl = discordURLBase + "/.proxy/mp/worlds";
     }
     this.ipc = new IPCWorker(ipcData, parent.logs);
+    const ipc = this.ipc;
+    void (async () => {
+      await ipc.process.status;
 
-    this.#readyPromise = new Promise(resolve => {
-      this.#readyPromiseResolve = resolve;
-    });
-    this.#loadedPromise = new Promise(resolve => {
-      this.#loadedPromiseResolve = resolve;
-    });
+      this.shutdown();
+      if (!this.#loaded)
+        this.#loadedPromiseReject?.(new Error("instance crashed before load completed"));
+    })();
+
+    const ready = Promise.withResolvers<void>();
+    this.#readyPromise = ready.promise;
+    this.#readyPromiseResolve = ready.resolve;
+
+    const loaded = Promise.withResolvers<void>();
+    this.#loadedPromise = loaded.promise;
+    this.#loadedPromiseResolve = loaded.resolve;
+    this.#loadedPromiseReject = loaded.reject;
 
     this.ipc.addMessageListener("WorkerUp", _message => {
       this.#readyPromiseResolve?.();
@@ -152,7 +163,11 @@ export class GameSession {
     await this.#loadedPromise;
   }
 
+  #shuttingDown = false;
   shutdown() {
+    if (this.#shuttingDown) return;
+    this.#shuttingDown = true;
+
     this.ipc.destroy();
     for (const connection of this.connections.values()) {
       connection.socket.close(1001);
