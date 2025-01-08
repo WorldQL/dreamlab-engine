@@ -372,6 +372,23 @@ export class Vector2 implements IVector2, Vector<IVector2, Vector2> {
     return Vector2.rotateAbout(this, angle, point);
   }
   // #endregion
+
+  // #region Dot Product
+  /**
+   * Returns the dot product of two vectors.
+   */
+  public static dot(a: IVector2, b: IVector2): number {
+    return a.x * b.x + a.y * b.y;
+  }
+
+  /**
+   * Returns the dot product of this vector with another vector.
+   */
+  public dot(this: Vector2, other: IVector2): number {
+    return Vector2.dot(this, other);
+  }
+  // #endregion
+
   // #endregion
 
   /**
