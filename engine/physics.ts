@@ -81,33 +81,21 @@ export class PhysicsEngine {
     controller: KinematicCharacterController,
   ): void {
     if (!controller) throw new TypeError("missing controller param");
-    const controllerHandle = collider.handle;
-    const currentTickCollisions = new Set<string>();
 
-    const body1 = collider as ColliderWithUserData;
+    const controllerHandle = collider.handle;
+    const entity1 = this.#lookupHandle(controllerHandle);
+    if (!entity1) return;
+
+    const currentTickCollisions = new Set<string>();
     for (let i = 0; i < controller.numComputedCollisions(); i++) {
       const collision = controller.computedCollision(i);
-      const body2 = (collision?.collider ?? undefined) as ColliderWithUserData | undefined;
-      if (!body2) continue;
+      const handle2 = collision?.collider?.handle ?? undefined;
+      if (!handle2) continue;
 
-      const udata1 = body1?.userData;
-      const udata2 = body2?.userData;
+      const entity2 = this.#lookupHandle(handle2);
+      if (!entity2) continue;
 
-      let entityRef1: string | undefined;
-      let entityRef2: string | undefined;
-      if (udata1 && typeof udata1 === "object" && "entityRef" in udata1) {
-        entityRef1 = udata1.entityRef as string;
-      }
-      if (udata2 && typeof udata2 === "object" && "entityRef" in udata2) {
-        entityRef2 = udata2.entityRef as string;
-      }
-
-      if (!entityRef1 || !entityRef2) continue;
-      const entity1 = this.game.entities.lookupByRef(entityRef1);
-      const entity2 = this.game.entities.lookupByRef(entityRef2);
-      if (!entity1 || !entity2) continue;
-
-      const collisionKey = this.#makeCollisionKey(controllerHandle, entityRef1, entityRef2);
+      const collisionKey = this.#makeCollisionKey(controllerHandle, entity1.ref, entity2.ref);
       currentTickCollisions.add(collisionKey);
 
       // If this is a new collision, emit start event
