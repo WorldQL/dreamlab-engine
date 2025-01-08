@@ -40,6 +40,7 @@
     "npm:howler@2.2.4": "2.2.4",
     "npm:iterator-helpers-polyfill@3.0.1": "3.0.1",
     "npm:layout-bmfont-text@1.3.4": "1.3.4",
+    "npm:nanoid@5.0.9": "5.0.9",
     "npm:pako@2.1.0": "2.1.0",
     "npm:pixi.js@8.1.5": "8.1.5",
     "npm:pixi.js@8.1.6": "8.1.6",
@@ -576,6 +577,9 @@
     },
     "lodash.merge@4.6.2": {
       "integrity": "sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ=="
+    },
+    "nanoid@5.0.9": {
+      "integrity": "sha512-Aooyr6MXU6HpvvWXKoVoXwKMs/KyVakWwg7xQfv5/S/RIgJMy0Ifa45H9qqYy7pTCszrHzP21Uk4PZq2HpEM8Q=="
     },
     "object-inspect@1.13.1": {
       "integrity": "sha512-5qoj1RUiKOMsCCNLV1CBiPYE10sziTsnmNxkAI/rZhiD63CF7IqdFGC/XzjWjpSgLf0LxXX3bDFIh0E18f6UhQ=="
