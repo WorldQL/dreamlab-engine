@@ -238,6 +238,9 @@ export class AppMenu {
 
       this.updateViewportStates(editUI);
       this.updateButtonStates();
+
+      const playButton = this.controls.play.querySelector("button")!;
+      playButton.disabled = false;
     });
 
     const [playGame, conn, _handshake] = await connectToGame(
