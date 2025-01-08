@@ -229,6 +229,17 @@ export class AppMenu {
     const playSocket = new WebSocket(connectURL);
     playSocket.binaryType = "arraybuffer";
 
+    playSocket.addEventListener("error", () => {
+      playSocket.close();
+
+      this.playSessionState.paused = false;
+      this.playSessionState.running = false;
+      this.playFocused = false;
+
+      this.updateViewportStates(editUI);
+      this.updateButtonStates();
+    });
+
     const [playGame, conn, _handshake] = await connectToGame(
       this.games.edit.instanceId,
       container,
