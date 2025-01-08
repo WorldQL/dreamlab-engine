@@ -141,8 +141,7 @@ export class GameInstance {
   }
 
   #notifyPlayBooted: (() => void) | undefined;
-  // deno-lint-ignore no-explicit-any
-  #notifyPlayBootFail: ((reason?: any) => void) | undefined;
+  #notifyPlayBootFail: ((error: Error) => void) | undefined;
   #playBootedPromise: Promise<unknown> | undefined;
   #playBooting = false;
   resetPlayBooting() {
@@ -157,10 +156,9 @@ export class GameInstance {
     this.#notifyPlayBooted?.();
     this.#playBooting = false;
   }
-  // deno-lint-ignore no-explicit-any
-  notifyPlaySessionBootFail(reason?: any) {
+  notifyPlaySessionBootFail(error: Error) {
     if (!this.#playBooting) return;
-    this.#notifyPlayBootFail?.(reason);
+    this.#notifyPlayBootFail?.(error);
     this.#playBooting = false;
   }
   async waitForPlaySessionBoot() {
@@ -275,7 +273,9 @@ export const bootPlaySession = async (instance: GameInstance) => {
     await buildWorld(instance.info.worldId, instance.info.worldDirectory, "_dist_play");
   } catch (err) {
     instance.logs.error("Failed to build world bundle for play session", { err: err.stack });
-    instance.notifyPlaySessionBootFail();
+    instance.notifyPlaySessionBootFail(
+      new Error("Failed to build world bundle for play session", { cause: err }),
+    );
     return;
   }
 
@@ -296,7 +296,11 @@ export const bootPlaySession = async (instance: GameInstance) => {
     instance.logs.error("Failed to write scene definition for play session", {
       err: err.stack,
     });
-    instance.notifyPlaySessionBootFail();
+    instance.notifyPlaySessionBootFail(
+      new Error("Failed to write scene definition for play session", {
+        cause: err,
+      }),
+    );
     return;
   }
 
@@ -311,6 +315,10 @@ export const bootPlaySession = async (instance: GameInstance) => {
     instance.sendPlaySessionState();
   });
 
-  await session.loaded();
-  instance.notifyPlaySessionBoot();
+  try {
+    await session.loaded();
+    instance.notifyPlaySessionBoot();
+  } catch (error) {
+    instance.notifyPlaySessionBootFail(new Error("failed to load session", { cause: error }));
+  }
 };
