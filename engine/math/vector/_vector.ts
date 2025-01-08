@@ -17,6 +17,8 @@ export interface Vector<I, T extends I> {
   mul(this: T, other: I | number): T;
   div(this: T, other: I | number): T;
 
+  dot(this: T, other: I): number;
+
   /**
    * Returns the magnitude (length) of this vector.
    */
