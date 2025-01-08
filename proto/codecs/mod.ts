@@ -11,6 +11,7 @@ export interface PlayCodec {
   ): PlayPacket<undefined, "any">;
 }
 
+export * from "./cbor-compressed.ts";
 export * from "./cbor.ts";
 export * from "./simple-json.ts";
 

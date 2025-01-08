@@ -6,7 +6,7 @@ const encoder = new Encoder();
 const decoder = new Decoder();
 
 export const CBOR_CODEC: PlayCodec = {
-  encodePacket(packet: PlayPacket): string {
+  encodePacket(packet: PlayPacket): Uint8Array {
     return encoder.encode(packet);
   },
   decodePacket(data: string | ArrayBufferLike | Blob | ArrayBufferView): PlayPacket {
