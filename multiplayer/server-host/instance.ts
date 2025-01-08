@@ -317,8 +317,10 @@ export const bootPlaySession = async (instance: GameInstance) => {
 
   try {
     await session.loaded();
+  } catch {
+    instance.playSession.shutdown();
+    instance.playSession = undefined;
+  } finally {
     instance.notifyPlaySessionBoot();
-  } catch (error) {
-    instance.notifyPlaySessionBootFail(new Error("failed to load session", { cause: error }));
   }
 };
