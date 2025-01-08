@@ -236,7 +236,6 @@ export class BehaviorList {
             });
           });
         } else {
-          console.log(behaviorObj, behavior.values);
           for (const [key, value] of Object.entries(behavior.values ?? {})) {
             const valueObj = behaviorObj.values.get(key);
             if (valueObj === undefined) continue;
