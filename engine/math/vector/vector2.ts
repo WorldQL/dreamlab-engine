@@ -389,6 +389,22 @@ export class Vector2 implements IVector2, Vector<IVector2, Vector2> {
   }
   // #endregion
 
+  // #region Cross Product
+  /**
+   * Returns the cross product of two vectors.
+   */
+  public static cross(a: IVector2, b: IVector2): number {
+    return a.x * b.y - a.y * b.x;
+  }
+
+  /**
+   * Returns the cross product of this vector with another vector.
+   */
+  public cross(this: Vector2, other: IVector2): number {
+    return Vector2.cross(this, other);
+  }
+  // #endregion
+
   // #endregion
 
   /**

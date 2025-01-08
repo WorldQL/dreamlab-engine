@@ -18,6 +18,7 @@ export interface Vector<I, T extends I> {
   div(this: T, other: I | number): T;
 
   dot(this: T, other: I): number;
+  cross(this: T, other: I): number;
 
   /**
    * Returns the magnitude (length) of this vector.
