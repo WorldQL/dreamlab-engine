@@ -8,8 +8,7 @@ import { Game } from "./game.ts";
 import { EntityCollision } from "./signals/entity-collision.ts";
 
 interface ColliderWithUserData extends Collider {
-  // deno-lint-ignore no-explicit-any
-  userData?: any;
+  userData?: unknown;
 }
 
 export class PhysicsEngine {
@@ -41,30 +40,29 @@ export class PhysicsEngine {
     collider.userData = { ...ud, entityRef: entity.ref };
   }
 
+  #lookupHandle(handle: number): Entity | undefined {
+    const body = this.world.colliders.get(handle) as ColliderWithUserData;
+    const udata = body?.userData as unknown;
+
+    let entityRef: string | undefined;
+    if (
+      udata &&
+      typeof udata === "object" &&
+      "entityRef" in udata &&
+      typeof udata.entityRef === "string"
+    ) {
+      entityRef = udata.entityRef;
+    }
+
+    if (!entityRef) return;
+    return this.game.entities.lookupByRef(entityRef);
+  }
+
   tick() {
     if (this.enabled) this.world.step(this.#events);
     this.#events.drainCollisionEvents((handle1, handle2, started) => {
-      // const body1 = this.world.bodies.get(handle1);
-      // const body2 = this.world.bodies.get(handle2);
-
-      const body1 = this.world.colliders.get(handle1) as ColliderWithUserData;
-      const body2 = this.world.colliders.get(handle2) as ColliderWithUserData;
-
-      const udata1 = body1?.userData;
-      const udata2 = body2?.userData;
-
-      let entityRef1: string | undefined;
-      let entityRef2: string | undefined;
-      if (udata1 && typeof udata1 === "object" && "entityRef" in udata1) {
-        entityRef1 = udata1.entityRef as string;
-      }
-      if (udata2 && typeof udata2 === "object" && "entityRef" in udata2) {
-        entityRef2 = udata2.entityRef as string;
-      }
-
-      if (!entityRef1 || !entityRef2) return;
-      const entity1 = this.game.entities.lookupByRef(entityRef1);
-      const entity2 = this.game.entities.lookupByRef(entityRef2);
+      const entity1 = this.#lookupHandle(handle1);
+      const entity2 = this.#lookupHandle(handle2);
       if (!entity1 || !entity2) return;
 
       entity1.fire(EntityCollision, started, entity2);
