@@ -70,13 +70,8 @@ export class PhysicsEngine {
     });
   }
 
-  private activeCollisions = new Map<string, number>(); // key -> missing ticks counter
-
-  private makeCollisionKey(
-    controllerHandle: number,
-    entity1Ref: string,
-    entity2Ref: string,
-  ): string {
+  #activeCollisions = new Map<string, number>(); // key -> missing ticks counter
+  #makeCollisionKey(controllerHandle: number, entity1Ref: string, entity2Ref: string): string {
     const [first, second] = [entity1Ref, entity2Ref].sort();
     return `${controllerHandle}:${first}:${second}`;
   }
@@ -112,22 +107,22 @@ export class PhysicsEngine {
       const entity2 = this.game.entities.lookupByRef(entityRef2);
       if (!entity1 || !entity2) continue;
 
-      const collisionKey = this.makeCollisionKey(controllerHandle, entityRef1, entityRef2);
+      const collisionKey = this.#makeCollisionKey(controllerHandle, entityRef1, entityRef2);
       currentTickCollisions.add(collisionKey);
 
       // If this is a new collision, emit start event
-      if (!this.activeCollisions.has(collisionKey)) {
-        this.activeCollisions.set(collisionKey, 0);
+      if (!this.#activeCollisions.has(collisionKey)) {
+        this.#activeCollisions.set(collisionKey, 0);
         entity1.fire(EntityCollision, true, entity2);
         entity2.fire(EntityCollision, true, entity1);
       } else {
         // Reset missing ticks counter for active collision
-        this.activeCollisions.set(collisionKey, 0);
+        this.#activeCollisions.set(collisionKey, 0);
       }
     }
 
     // Check for ended collisions, but only for this controller's collisions
-    for (const [key, missingTicks] of this.activeCollisions) {
+    for (const [key, missingTicks] of this.#activeCollisions) {
       // Only process keys that belong to this controller
       if (!key.startsWith(`${controllerHandle}:`)) continue;
 
@@ -136,10 +131,10 @@ export class PhysicsEngine {
         const newMissingTicks = missingTicks + 1;
         if (newMissingTicks >= 2) {
           // Remove collision after 2 missing ticks
-          this.activeCollisions.delete(key);
+          this.#activeCollisions.delete(key);
           // Could fire end collision event here if needed
         } else {
-          this.activeCollisions.set(key, newMissingTicks);
+          this.#activeCollisions.set(key, newMissingTicks);
         }
       }
     }
