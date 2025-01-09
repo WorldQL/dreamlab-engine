@@ -1,4 +1,4 @@
-import { Behavior, syncedValue, Vector2 } from "@dreamlab/engine";
+import { Behavior, EntityRef, syncedValue, Vector2, Entity } from "@dreamlab/engine";
 
 export default class EnemySpawner extends Behavior {
   @syncedValue()
@@ -6,6 +6,9 @@ export default class EnemySpawner extends Behavior {
 
   @syncedValue()
   maxEnemies = 10;
+
+  @syncedValue(EntityRef)
+  prefab: Entity | undefined;
 
   private lastSpawnTime = -Infinity;
 
@@ -26,8 +29,13 @@ export default class EnemySpawner extends Behavior {
   }
 
   private spawnEnemy(): void {
+    if (!this.prefab) {
+      console.warn("cannot spawn, no prefab");
+      return;
+    }
+
     const spawnPosition = this.getRandomSpawnPosition();
-    this.game.prefabs._.Enemy.cloneInto(this.game.world, {
+    this.prefab.cloneInto(this.game.world, {
       name: `Enemy_${Date.now()}`,
       transform: { position: spawnPosition },
       authority: "server",

@@ -61,7 +61,8 @@
               "ref": "bhv_iweg963larr1mf8601lj4ytt",
               "script": "res://src/enemy-spawner.ts",
               "values": {
-                "spawnInterval": 250
+                "spawnInterval": 250,
+                "prefab": "ent_c7bzjbw2llnz2fe6os74q1uz"
               }
             }
           ]
