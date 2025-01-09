@@ -820,7 +820,10 @@ export abstract class Entity implements ISignalHandler {
   // #endregion
 
   // internal id for stable internal reference. we only really need this for networking
-  readonly ref: string = createId("ent", { length: 10 });
+  static createRef(): string {
+    return createId("ent", { length: 10 });
+  }
+  readonly ref: string = Entity.createRef();
 
   #updateTransform(
     fromGlobal: boolean,

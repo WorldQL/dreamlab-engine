@@ -1,4 +1,5 @@
 import {
+  Behavior,
   BehaviorConstructor,
   BehaviorSpawned,
   ClientGame,
@@ -8,7 +9,6 @@ import {
 import * as internal from "@dreamlab/engine/internal";
 import { SceneDescBehavior, BehaviorSchema as SceneDescBehaviorSchema } from "@dreamlab/scene";
 import { element as elem } from "@dreamlab/ui";
-import { createId } from "@dreamlab/vendor/nanoid.ts";
 import { EditorMetadataEntity } from "../../../common/mod.ts";
 import { DataTable } from "../../components/mod.ts";
 import { createInputField } from "../../util/easy-input.ts";
@@ -59,7 +59,7 @@ export class BehaviorList {
           info.values.map(({ key }) => [key, undefined] as const),
         );
 
-        const behavior = { ref: createId("bhv", { length: 10 }), script: scriptPath, values };
+        const behavior = { ref: Behavior.createRef(), script: scriptPath, values };
         const editor = new BehaviorEditor(ui, behavior, this);
         this.editors.set(behavior.ref, editor);
         this.addBehavior(behavior);
@@ -206,7 +206,7 @@ export class BehaviorList {
       if (script === "") return;
 
       this.addBehavior({
-        ref: createId("bhv", { length: 10 }),
+        ref: Behavior.createRef(),
         script,
       });
 

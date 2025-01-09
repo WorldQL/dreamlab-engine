@@ -123,7 +123,11 @@ export class Behavior implements ISignalHandler {
     return this.game.inputs;
   }
 
-  readonly ref: string = createId("bhv", { length: 10 });
+  static createRef(): string {
+    return createId("bhv", { length: 10 });
+  }
+
+  readonly ref: string = Behavior.createRef();
 
   // #region Values
   #defaultValues: Record<string, unknown> = {};

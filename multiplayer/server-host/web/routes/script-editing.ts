@@ -5,9 +5,9 @@ import { contentType } from "https://deno.land/std@0.224.0/media_types/mod.ts";
 import * as fs from "jsr:@std/fs@1";
 import * as path from "jsr:@std/path@1";
 
+import { Entity } from "@dreamlab/engine";
 import { PlayPacket } from "@dreamlab/proto/play.ts";
 import { ProjectSchema, SceneDescEntity } from "@dreamlab/scene";
-import { createId } from "@dreamlab/vendor/nanoid.ts";
 import { fileIsProbablyBehaviorScript } from "../../../../build-system/build-world.ts";
 import { CONFIG } from "../../config.ts";
 import { GameInstance } from "../../instance.ts";
@@ -425,7 +425,7 @@ export const serveScriptEditingAPI = (router: Router) => {
 
         const refMap: Record<string, string> = {};
         const generateNewRef = (e: SceneDescEntity): void => {
-          refMap[e.ref] = createId("ent", { length: 10 });
+          refMap[e.ref] = Entity.createRef();
           e.children?.forEach(generateNewRef);
         };
         importedScene.prefabs.forEach(generateNewRef);

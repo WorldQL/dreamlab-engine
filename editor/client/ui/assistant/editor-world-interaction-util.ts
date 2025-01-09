@@ -1,7 +1,6 @@
 // deno-lint-ignore-file no-explicit-any
-import { Entity, type EntityDefinition } from "@dreamlab/engine";
+import { Behavior, Entity, type EntityDefinition } from "@dreamlab/engine";
 import type { SceneDescBehavior } from "@dreamlab/scene";
-import { createId } from "@dreamlab/vendor/nanoid.ts";
 import { EditorMetadataEntity, Facades } from "../../../common/mod.ts";
 
 /**
@@ -33,7 +32,7 @@ export function spawnEntity(parent: Entity, toSpawn: SimplifiedEntityDefinition)
     behaviors.push({
       script: scriptPath,
       values: b.values,
-      ref: createId("bhv", { length: 10 }),
+      ref: Behavior.createRef(),
     });
   }
 

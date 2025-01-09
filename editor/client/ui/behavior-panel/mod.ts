@@ -1,7 +1,6 @@
-import { ClientGame, Entity, EntityDestroyed, Root } from "@dreamlab/engine";
+import { Behavior, ClientGame, Entity, EntityDestroyed, Root } from "@dreamlab/engine";
 import { SceneDescBehavior } from "@dreamlab/scene";
 import { element as elem } from "@dreamlab/ui";
-import { createId } from "@dreamlab/vendor/nanoid.ts";
 import { EditorMetadataEntity, EditorRootFacadeEntity } from "../../../common/mod.ts";
 import { icon, MinusCircle, PlusCircle } from "../../_icons.ts";
 import { InspectorUI, InspectorUIWidget } from "../inspector.ts";
@@ -32,7 +31,7 @@ export class BehaviorPanel implements InspectorUIWidget {
             );
 
             const behavior = {
-              ref: createId("bhv", { length: 10 }),
+              ref: Behavior.createRef(),
               script: scriptPath,
               values,
             };
