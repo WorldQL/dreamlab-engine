@@ -498,13 +498,7 @@ export class SceneGraph implements InspectorUIWidget {
       event.preventDefault();
       event.stopPropagation();
 
-      const lockedEntry = entryElement.closest(
-        "details[data-entity][data-locked]",
-      ) as HTMLDetailsElement | null;
-      const lockedByEntityRef = lockedEntry?.dataset?.entity;
-      const lockedByEntity = lockedByEntityRef
-        ? this.game.entities.lookupByRef(lockedByEntityRef)
-        : undefined;
+      const lockedByEntity = ui.editMode ? EditorMetadataEntity.getLockedBy(entity) : undefined;
 
       const isEntitySelected = ui.selectedEntity.entities.includes(entity);
 
@@ -530,8 +524,8 @@ export class SceneGraph implements InspectorUIWidget {
             enabledState === "allEnabled"
               ? "Disable"
               : enabledState === "allDisabled"
-              ? "Enable"
-              : "Toggle Enabled",
+                ? "Enable"
+                : "Toggle Enabled",
             () => {
               for (const e of ui.selectedEntity.entities) {
                 if (isRoot(e)) continue;
@@ -560,7 +554,69 @@ export class SceneGraph implements InspectorUIWidget {
           ],
         );
 
-        // TODO: lock / unlock multi control
+        if (ui.editMode && !entity.protected) {
+          if (lockedByEntity) {
+            contextMenuItems.push([
+              "Unlock",
+              () => {
+                const undoOps = [];
+
+                const lockRoots = new Set<Entity>();
+                ui.selectedEntity.entities.forEach(e => {
+                  const lockedBy = EditorMetadataEntity.getLockedBy(e);
+                  if (lockedBy) lockRoots.add(lockedBy);
+                });
+
+                for (const lockRoot of lockRoots) {
+                  const metadata = EditorMetadataEntity.getInstanceFor(lockRoot);
+                  const prevLocked = metadata.locked;
+                  metadata.locked = false;
+                  undoOps.push({
+                    t: "modify-entity-locked",
+                    entityRef: lockRoot.ref,
+                    locked: false,
+                    previous: prevLocked,
+                  } as const);
+                }
+
+                UndoRedoManager._.push({
+                  t: "compound" as const,
+                  ops: undoOps,
+                });
+              },
+            ]);
+          } else {
+            contextMenuItems.push([
+              "Lock",
+              () => {
+                const lockRoots = new Set<Entity>();
+                ui.selectedEntity.entities.forEach(e => lockRoots.add(e));
+                const toRemove = ui.selectedEntity.entities.filter(
+                  e => e.parent && lockRoots.has(e.parent),
+                );
+                toRemove.forEach(e => lockRoots.delete(e));
+
+                const undoOps = [];
+
+                for (const lockRoot of lockRoots) {
+                  const metadata = EditorMetadataEntity.getInstanceFor(lockRoot);
+                  const prevLocked = metadata.locked;
+                  metadata.locked = true;
+                  undoOps.push({
+                    t: "modify-entity-locked",
+                    entityRef: lockRoot.ref,
+                    locked: true,
+                    previous: prevLocked,
+                  } as const);
+                }
+                UndoRedoManager._.push({
+                  t: "compound" as const,
+                  ops: undoOps,
+                });
+              },
+            ]);
+          }
+        }
       } else {
         contextMenuItems.push(["Focus", () => this.game.local._.Camera.pos.assign(entity.pos)]);
 
@@ -612,8 +668,8 @@ export class SceneGraph implements InspectorUIWidget {
               enabledState === "allEnabled"
                 ? "Disable"
                 : enabledState === "allDisabled"
-                ? "Enable"
-                : "Toggle Enabled",
+                  ? "Enable"
+                  : "Toggle Enabled",
               () => {
                 for (const e of ui.selectedEntity.entities) {
                   if (isRoot(e)) continue;
@@ -642,7 +698,7 @@ export class SceneGraph implements InspectorUIWidget {
                     t: "create-entity" as const,
                     parentRef: x.parent!.ref,
                     def: x.getDefinition(),
-                  } satisfies UndoRedoOperation),
+                  }) satisfies UndoRedoOperation,
               );
 
               UndoRedoManager._.push({ t: "compound", ops });

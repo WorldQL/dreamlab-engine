@@ -23,7 +23,7 @@ export class EditorMetadataEntity extends Entity {
 
   readonly bounds = { x: 0, y: 0 };
 
-  static getInstanceFor(entity: Entity): EditorMetadataEntity {
+  static getExistingInstanceFor(entity: Entity): EditorMetadataEntity | undefined {
     const existingMetadataEntity = entity.children.get("__EditorMetadata");
     if (
       existingMetadataEntity !== undefined &&
@@ -32,11 +32,32 @@ export class EditorMetadataEntity extends Entity {
       return existingMetadataEntity;
     }
 
+    return undefined;
+  }
+
+  static getInstanceFor(entity: Entity): EditorMetadataEntity {
+    const existing = EditorMetadataEntity.getExistingInstanceFor(entity);
+    if (existing) return existing;
+
     const metadataEntity = entity.spawn({
       type: EditorMetadataEntity,
       name: "__EditorMetadata",
     });
 
     return metadataEntity;
+  }
+
+  static getLockedBy(entity: Entity): Entity | undefined {
+    let e: Entity | undefined = entity;
+    while (e !== undefined) {
+      const metadata = EditorMetadataEntity.getExistingInstanceFor(e);
+      if (metadata && metadata.locked) {
+        return e;
+      }
+
+      e = e.parent;
+    }
+
+    return undefined;
   }
 }
