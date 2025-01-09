@@ -14,6 +14,7 @@ import {
   Scroll,
   Vector2,
 } from "@dreamlab/engine";
+import { EditorMetadataEntity } from "../common/mod.ts";
 import { InspectorUI } from "./ui/inspector.ts";
 
 let TOUCHPAD_DETECTED = false;
@@ -96,6 +97,7 @@ export class CameraPanBehavior extends Behavior {
         .lookupByPosition(event.cursor.world)
         .filter(entity => entity.enabled)
         .filter(entity => this.ui?.sceneGraph?.entryElementMap?.has(entity.ref) ?? true)
+        .filter(entity => EditorMetadataEntity.getLockedBy(entity) === undefined)
         .toSorted((a, b) => {
           const depthA = getDepth(a);
           const depthB = getDepth(b);

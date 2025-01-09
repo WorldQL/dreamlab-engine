@@ -48,6 +48,9 @@ export class EditorMetadataEntity extends Entity {
   }
 
   static getLockedBy(entity: Entity): Entity | undefined {
+    // TODO: we should probably propagate this down so that we don't have to
+    // traverse up the graph every time we want to check lock state
+
     let e: Entity | undefined = entity;
     while (e !== undefined) {
       const metadata = EditorMetadataEntity.getExistingInstanceFor(e);
