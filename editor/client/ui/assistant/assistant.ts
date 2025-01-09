@@ -273,7 +273,8 @@ export class Assistant {
 
   // #region Handle Stream
   async handleStreamingResponse(
-    reader: ReadableStreamDefaultReader<Uint8Array>, prompt: string
+    reader: ReadableStreamDefaultReader<Uint8Array>,
+    prompt: string,
   ): Promise<void> {
     const decoder = new TextDecoder();
     let accumulatedText = "";
@@ -329,7 +330,7 @@ export class Assistant {
     const plan = getTagContents("plan", accumulatedText);
     let planArray = undefined;
     try {
-      planArray = JSON.parse(plan!);
+      planArray = JSON.parse(plan!.replace(/\r?\n/g, " "));
     } catch {
       alert("Plan failed to parse. Please reload the page and try again.");
     }

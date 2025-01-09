@@ -46,3 +46,5 @@ export function enumAdapter<const T extends readonly string[]>(
     }
   };
 }
+
+export { enumAdapter as optionsAdapter };

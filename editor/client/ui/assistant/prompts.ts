@@ -8,13 +8,13 @@ export const fileContents: Record<string, string> = {
   "Message Channels":
     'import { Behavior, ClickableEntity, MouseDown, Sprite } from "@dreamlab/engine";\n\n/*\n  Custom Messages and Synced Values:\n\n  In multiplayer game development, behaviors often need to communicate with each other to maintain\n  consistency across the network. This can be achieved using custom messages or synced values.\n\n  Key Points:\n  - **Custom Messages:**\n    Custom messages are event-driven and useful for sending specific data or triggering actions\n    between behaviors. These messages are handled explicitly in the code, providing flexibility\n    for dynamic interactions.\n\n  - **Synced Values:**\n    Synced values automatically synchronize data between the server and clients. They are ideal\n    for maintaining shared states like scores, health, or leaderboard information. Using synced\n    values reduces the complexity of managing data consistency manually.\n\n  - **When to Use:**\n    Use custom messages for one-time events or interactions, such as button clicks or attacks.\n    Use synced values for persistent or frequently updated data that needs to remain consistent\n    across the network.\n*/\n\nexport default class ClickableColorChanger extends Behavior {\n  #clickable: ClickableEntity;\n  private isClicked = false;\n  private effectTimer = 0;\n  private originalScale = { x: 1, y: 1 };\n\n  onInitialize(): void {\n    this.#clickable = this.entity.cast(ClickableEntity);\n\n    this.listen(this.#clickable, MouseDown, ({ button }) => {\n      if (button !== "left") return;\n\n      const player = this.game.network.connections.find(\n        (conn) => conn.id === this.game.network.self\n      );\n\n      if (!player) return;\n\n      this.game.network.sendCustomMessage("server", "@cookie/click", {\n        playerId: player.playerId,\n        nickname: player.nickname || "Unknown",\n      });\n\n      if (!this.isClicked) this.startClickEffect();\n    });\n  }\n\n  private startClickEffect(): void {\n    const sprite = this.entity._.Sprite.cast(Sprite);\n    if (!sprite) return;\n\n    this.isClicked = true;\n    this.effectTimer = 150;\n\n    this.originalScale = this.entity.transform.scale;\n    sprite.alpha = 0.5;\n    this.entity.transform.scale = {\n      x: this.originalScale.x * 0.8,\n      y: this.originalScale.y * 0.8,\n    };\n  }\n\n  onTick(): void {\n    if (this.isClicked) {\n      const sprite = this.entity._.Sprite.cast(Sprite);\n      if (!sprite) return;\n\n      this.effectTimer -= this.time.delta;\n      if (this.effectTimer <= 0) {\n        sprite.alpha = 1;\n        this.entity.transform.scale = this.originalScale;\n        this.isClicked = false;\n      }\n    }\n  }\n}\n\nimport {\n  Behavior,\n  ObjectAdapter,\n  PlayerJoined,\n  syncedValue,\n} from "@dreamlab/engine";\nimport { z } from "@dreamlab/vendor/zod.ts";\n\nexport default class GlobalStats extends Behavior {\n  @syncedValue(ObjectAdapter)\n  leaderboard: Record<string, { nickname: string; clicks: number }> = {};\n\n  @syncedValue()\n  totalClicks = 0;\n\n  private playerClicks = new Map<\n    string,\n    { nickname: string; clicks: number }\n  >();\n  private playerIds = new Set<string>();\n\n  async onInitialize() {\n    if (!this.game.isServer()) return;\n\n    const totalClicks = await this.game.kv.server.get("totalClicks");\n    if (typeof totalClicks === "number") this.totalClicks = totalClicks;\n\n    const savedPlayers = await this.game.kv.server.get("allPlayers");\n    if (Array.isArray(savedPlayers)) {\n      for (const { playerId, nickname } of savedPlayers) {\n        const storedClicks = await this.game.kv.server.get(\n          `playerClicks:${playerId}`\n        );\n        const clicks = typeof storedClicks === "number" ? storedClicks : 0;\n        this.playerClicks.set(playerId, { nickname, clicks });\n        this.playerIds.add(playerId);\n      }\n    }\n\n    this.updateLeaderboard();\n\n    this.listen(this.game, PlayerJoined, async (player) => {\n      if (!this.game.isServer()) return;\n\n      const playerId = player.connection.playerId;\n      const nickname = player.connection.nickname || "Unknown";\n\n      if (!this.playerIds.has(playerId)) {\n        this.playerIds.add(playerId);\n        await this.persistPlayer(playerId, nickname);\n      }\n\n      const storedClicks = await this.game.kv.server.get(\n        `playerClicks:${playerId}`\n      );\n      const clicks = typeof storedClicks === "number" ? storedClicks : 0;\n\n      this.playerClicks.set(playerId, { nickname, clicks });\n      this.updateLeaderboard();\n    });\n\n    this.game.network.onReceiveCustomMessage((from, channel, data) => {\n      if (channel !== "@cookie/click" || !this.game.isServer()) return;\n\n      const ClickSchema = z.object({\n        playerId: z.string(),\n        nickname: z.string(),\n      });\n      const packet = ClickSchema.safeParse(data);\n      if (!packet.success) return;\n\n      const { playerId, nickname } = packet.data;\n\n      this.totalClicks += 1;\n      this.game.kv.server.set("totalClicks", this.totalClicks);\n\n      const playerData = this.playerClicks.get(playerId) || {\n        nickname,\n        clicks: 0,\n      };\n      playerData.clicks += 1;\n      this.playerClicks.set(playerId, playerData);\n\n      this.game.kv.server.set(`playerClicks:${playerId}`, playerData.clicks);\n      this.persistPlayer(playerId, nickname);\n\n      this.updateLeaderboard();\n    });\n  }\n\n  private async persistPlayer(playerId: string, nickname: string) {\n    if (!this.game.isServer()) return;\n\n    const allPlayersRaw = await this.game.kv.server.get("allPlayers");\n    const allPlayers = Array.isArray(allPlayersRaw) ? allPlayersRaw : [];\n\n    const updatedPlayers = [\n      ...allPlayers.filter(\n        (player) => typeof player === "object" && player.playerId !== playerId\n      ),\n      { playerId, nickname },\n    ];\n\n    await this.game.kv.server.set("allPlayers", updatedPlayers);\n  }\n\n  private updateLeaderboard() {\n    this.leaderboard = Object.fromEntries(this.playerClicks.entries());\n  }\n}\n',
   "Handling Values":
-    'import {\n  Behavior,\n  Vector2,\n  Vector2Adapter,\n  syncedValue,\n} from "@dreamlab/engine";\n\n/*\n  Handling Values in Behaviors:\n\n  In "@dreamlab/engine", values within behaviors are critical for maintaining and synchronizing\n  the state across the network. Values can represent anything from simple properties like speed\n  or health to more complex game states.\n\n  Key Points:\n  - **Defining Values:**\n    Values are defined using the `defineValues` decorator, which binds a property\n    to the behavior, ensuring it is properly managed and optionally synchronized across the network.\n\n  - **Value Synchronization:**\n    By default, values are local to the behavior, but they can be set to replicate across\n    the network by configuring the `opts.replicated` option when defining a value.\n\n  - **Accessing Values:**\n    Once defined, values can be accessed and modified like any other property. However,\n    they are wrapped in a `Value` object that manages synchronization, type checking,\n    and default values.\n\n  - **Using Adapters for Complex Values:**\n    If your synced value requires additional processing or conversion, you must use an adapter.\n    Below are examples of adapters and their usage:\n\n    - **Vector2Adapter:** For vector data, like positions or velocities.\n      ```typescript\n      @syncedValue(Vector2Adapter)\n      velocity = Vector2.ZERO;\n      ```\n\n    - **TextureAdapter:** For textures that need preloading.\n      ```typescript\n      @syncedValue(TextureAdapter)\n      texture = "path/to/texture.png";\n      ```\n\n    - **SpritesheetAdapter:** For spritesheets requiring preloading.\n      ```typescript\n      @syncedValue(SpritesheetAdapter)\n      spritesheet = "path/to/spritesheet.json";\n      ```\n\n    - **ObjectAdapter:** For synchronizing plain objects with mutation detection.\n      ```typescript\n      @syncedValue(ObjectAdapter)\n      config = { key: "value" };\n      ```\n\n    - **EntityByRefAdapter:** For referencing game entities.\n      ```typescript\n      @syncedValue(EntityByRefAdapter)\n      targetEntity = undefined;\n      ```\n\n    - **ColorAdapter:** For color values.\n      ```typescript\n      @syncedValue(ColorAdapter)\n      color = "#FFFFFF";\n      ```\n\n    - **AudioAdapter:** For preloading audio resources.\n      ```typescript\n      @syncedValue(AudioAdapter)\n      audio = "path/to/sound.mp3";\n      ```\n\n  Below is an example demonstrating how to define and use values within a behavior.\n*/\n\nexport default class PlayerMovement extends Behavior {\n  /*\n    Define a synced value for the player\'s speed\n    - The `defineValues` method is used to specify which properties should be treated as values.\n    - Once defined, `speed` will be managed by the internal value system, allowing it to be\n      synchronized across the network if needed.\n  */\n  @syncedValue()\n  speed = 5.0;\n\n  /*\n    Define a synced value for velocity using the Vector2Adapter\n    - This ensures that the `velocity` property can handle vector data correctly\n      and synchronize it across the network if needed.\n  */\n  @syncedValue(Vector2Adapter)\n  velocity = Vector2.ZERO;\n\n  #up = this.inputs.create("@movement/up", "Move Up", "KeyW");\n  #down = this.inputs.create("@movement/down", "Move Down", "KeyS");\n  #left = this.inputs.create("@movement/left", "Move Left", "KeyA");\n  #right = this.inputs.create("@movement/right", "Move Right", "KeyD");\n  #boost = this.inputs.create("@movement/boost", "Speed Boost", "ShiftLeft");\n\n  onTick(): void {\n    // Ensure that only the entity\'s owner can control it\n    if (this.entity.authority !== this.game.network.self) return;\n\n    const movement = new Vector2(0, 0);\n\n    if (this.#up.held) movement.y += 1;\n    if (this.#down.held) movement.y -= 1;\n    if (this.#right.held) movement.x += 1;\n    if (this.#left.held) movement.x -= 1;\n\n    // Adjust speed if boost is held\n    let currentSpeed = this.speed;\n    if (this.#boost.held) currentSpeed *= 2;\n\n    const velocity = movement\n      .normalize()\n      .mul((this.game.physics.tickDelta / 100) * currentSpeed);\n\n    this.entity.transform.position =\n      this.entity.transform.position.add(velocity);\n  }\n}\n',
+    'import {\n  Behavior,\n  Vector2,\n  Vector2Adapter,\n  syncedValue,\n} from "@dreamlab/engine";\n\n/*\n  Handling Values in Behaviors:\n\n  In "@dreamlab/engine", values within behaviors are critical for maintaining and synchronizing\n  the state across the network. Values can represent anything from simple properties like speed\n  or health to more complex game states.\n\n  Key Points:\n  - **Defining Values:**\n    Values are defined using the `defineValues` decorator, which binds a property\n    to the behavior, ensuring it is properly managed and optionally synchronized across the network.\n\n  - **Value Synchronization:**\n    By default, values are local to the behavior, but they can be set to replicate across\n    the network by configuring the `opts.replicated` option when defining a value.\n\n  - **Accessing Values:**\n    Once defined, values can be accessed and modified like any other property. However,\n    they are wrapped in a `Value` object that manages synchronization, type checking,\n    and default values.\n\n  - **Using Adapters for Complex Values:**\n    If your synced value requires additional processing or conversion, you must use an adapter.\n    Below are examples of adapters and their usage:\n\n    - **Vector2Adapter:** For vector data, like positions or velocities.\n      ```typescript\n      @syncedValue(Vector2Adapter)\n      velocity = Vector2.ZERO;\n      ```\n\n    - **TextureAdapter:** For textures that need preloading.\n      ```typescript\n      @syncedValue(TextureAdapter)\n      texture = "path/to/texture.png";\n      ```\n\n    - **SpritesheetAdapter:** For spritesheets requiring preloading.\n      ```typescript\n      @syncedValue(SpritesheetAdapter)\n      spritesheet = "path/to/spritesheet.json";\n      ```\n\n    - **ObjectAdapter:** For synchronizing plain objects with mutation detection.\n      ```typescript\n      @syncedValue(ObjectAdapter)\n      config = { key: "value" };\n      ```\n\n    - **EntityByRefAdapter:** For referencing game entities.\n      ```typescript\n      @syncedValue(EntityByRefAdapter)\n      targetEntity = undefined;\n      ```\n\n    - **ColorAdapter:** For color values.\n      ```typescript\n      @syncedValue(ColorAdapter)\n      color = "#FFFFFF";\n      ```\n\n    - **AudioAdapter:** For preloading audio resources.\n      ```typescript\n      @syncedValue(AudioAdapter)\n      audio = "path/to/sound.mp3";\n      ```\n\n  Below is an example demonstrating how to define and use values within a behavior.\n*/\n\nexport default class PlayerMovement extends Behavior {\n  /*\n    Define a synced value for the player\'s speed\n    - The `defineValues` method is used to specify which properties should be treated as values.\n    - Once defined, `speed` will be managed by the internal value system, allowing it to be\n      synchronized across the network if needed.\n  */\n  @syncedValue()\n  speed = 5.0;\n\n  /*\n    Define a synced value for velocity using the Vector2Adapter\n    - This ensures that the `velocity` property can handle vector data correctly\n      and synchronize it across the network if needed.\n  */\n  @syncedValue(Vector2Adapter)\n  velocity = Vector2.ZERO;\n\n  #up = this.inputs.create("@movement/up", "Move Up", "KeyW");\n  #down = this.inputs.create("@movement/down", "Move Down", "KeyS");\n  #left = this.inputs.create("@movement/left", "Move Left", "KeyA");\n  #right = this.inputs.create("@movement/right", "Move Right", "KeyD");\n  #boost = this.inputs.create("@movement/boost", "Speed Boost", "ShiftLeft");\n\n  onTick(): void {\n    // Ensure that only the entity\'s owner can control it\n    if (this.hasAuthority()) return;\n\n    const movement = new Vector2(0, 0);\n\n    if (this.#up.held) movement.y += 1;\n    if (this.#down.held) movement.y -= 1;\n    if (this.#right.held) movement.x += 1;\n    if (this.#left.held) movement.x -= 1;\n\n    // Adjust speed if boost is held\n    let currentSpeed = this.speed;\n    if (this.#boost.held) currentSpeed *= 2;\n\n    const velocity = movement\n      .normalize()\n      .mul((this.game.physics.tickDelta / 100) * currentSpeed);\n\n    this.entity.transform.position =\n      this.entity.transform.position.add(velocity);\n  }\n}\n',
   "Handling Transforms":
     '// Example of changing an entities position through a behavior. This one is more basic.\nimport { Behavior, Vector2, syncedValue } from "@dreamlab/engine";\n\n/*\n  Key Points:\n  - **Basic Movement:** Calculate the new position by adding a direction vector to the current position.\n  - **Transform Properties:** Use properties like `position`, `rotation`, and `scale` to control entity movement and appearance.\n\n  This example moves an asteroid in a random direction at a constant speed.\n*/\nexport default class AsteroidMovement extends Behavior {\n  readonly #direction = new Vector2(\n    Math.random() * 2 - 1,\n    Math.random() * 2 - 1\n  ).normalize();\n\n  @syncedValue()\n  speed = 0.2;\n\n  /*\n  Properties available under entity.transform are:\n  - scale.x, scale.y\n  - position.x, position.y\n  - entity.transform.z (used for zIndex ordering)\n  - entity.transform.rotation (radians)\n  */\n\n  onTick(): void {\n    this.entity.transform.position = this.entity.transform.position.add(\n      this.#direction.mul((this.time.delta / 100) * this.speed)\n    );\n  }\n}\n\n// Example of moving an entity based on another entities position. A more advanced example\nimport { Behavior, Collider, Sprite } from "@dreamlab/engine";\nimport BulletBehavior from "./bullet.ts"; // this import is not an api, the user will have to make this behavior for this example\n\nexport default class EnemyMovement extends Behavior {\n  speed = Math.random() * 0.5 + 0.5;\n  minDistance = 5;\n  shootDistance = 10;\n  lastShootTime = 0;\n  shootCooldown = Math.random() * 2000 + 1000;\n\n  onTick(): void {\n    // Find the player entity\n    const player = this.entity.game.world.children.get("Player");\n    const playerPos = player?.globalTransform.position;\n    if (!playerPos) return;\n\n    const direction = playerPos.sub(this.entity.transform.position).normalize();\n    const distance = playerPos.sub(this.entity.transform.position).magnitude();\n\n    // In this example we only move the entity towards the player if they are outside a certain distance\n    if (distance > this.minDistance + 5) {\n      let speedFactor = 1;\n      if (distance < this.minDistance + 10) {\n        speedFactor = (distance - this.minDistance) / 10;\n      }\n      this.entity.transform.position = this.entity.transform.position.add(\n        direction.mul((this.time.delta / 100) * this.speed * speedFactor)\n      );\n    }\n\n    // Adjust rotation of entity so its facing the correct direction\n    const rotation = Math.atan2(direction.y, direction.x);\n    this.entity.transform.rotation = rotation - Math.PI / 2;\n\n    if (distance <= this.shootDistance) {\n      const now = Date.now();\n      if (now - this.lastShootTime > this.shootCooldown) {\n        this.lastShootTime = now;\n        this.shootAtPlayer();\n      }\n    }\n  }\n\n  shootAtPlayer(): void {\n    const rotation = this.entity.transform.rotation + Math.PI / 2;\n\n    this.entity.game.world.spawn({\n      type: Collider,\n      name: "EnemyBullet",\n      transform: {\n        position: this.entity.transform.position.clone(),\n        rotation,\n        scale: { x: 0.25, y: 0.25 },\n      },\n      behaviors: [{ type: BulletBehavior, values: { speed: 8 } }],\n      children: [\n        {\n          type: Sprite,\n          name: "BulletSprite",\n          transform: {\n            scale: { x: 0.75, y: 0.75 },\n          },\n        },\n      ],\n    });\n  }\n}\n',
   "Spawning Entities":
     'import { Behavior, Collider, Sprite } from "@dreamlab/engine";\nimport BulletBehavior from "./bullet.ts"; // this import is not an API, the user will need to make this behavior\n\n/*\n  Spawning Entities Overview:\n\n  There are multiple ways to spawn entities in the game using the "@dreamlab/engine" package.\n  Each method is suitable for different scenarios, depending on your needs.\n\n  1. **Cloning a Prefab:**\n     - This method is ideal for spawning predefined entities, such as players or enemies, that have been set up as prefabs.\n     - You can clone a prefab into the world and customize its properties (e.g., name, position, authority).\n\n     Example:\n     this.game.prefabs._.Player.cloneInto(this.game.world, {\n       name: "Player." + this.game.network.self,\n       transform: { position: { x: 0, y: 0 } },\n       authority: this.game.network.self,\n     });\n\n\n  2. **Spawning from Scratch:**\n     - For more complex entities that may not have a predefined prefab, you can spawn them directly by defining their components and behaviors in the spawn call.\n     - This method allows you to create fully customized entities on the fly.\n\n     Example:\n     this.entity.game.world.spawn({\n       type: RectCollider,\n       name: "EnemyBullet",\n       transform: {\n         position: this.entity.transform.position.clone(),\n         rotation,\n         scale: { x: 0.25, y: 0.25 },\n       },\n       behaviors: [{ type: BulletBehavior, values: { speed: 8 } }],\n       children: [\n         {\n           type: Sprite,\n           name: "BulletSprite",\n           transform: {\n             scale: { x: 0.75, y: 0.75 },\n           },\n         },\n       ],\n     });\n\n*/\n\nexport default class PlayerSpawner extends Behavior {\n  onInitialize(): void {\n    // Cloning a prefab to spawn a player entity.\n    if (!this.game.isClient()) return;\n\n    this.game.prefabs._.Player.cloneInto(this.game.world, {\n      name: "Player." + this.game.network.self,\n      transform: { position: { x: 0, y: 0 } },\n      authority: this.game.network.self,\n    });\n\n    // Modify the local camera entity\'s scale after spawning the player.\n    this.game.local._.Camera.transform.scale.assign({ x: 2, y: 2 });\n  }\n}\n\nexport default class EnemyMovement extends Behavior {\n  speed = Math.random() * 0.5 + 0.5;\n  minDistance = 5;\n  shootDistance = 10;\n  lastShootTime = 0;\n  shootCooldown = Math.random() * 2000 + 1000;\n\n  onTick(): void {\n    const player = this.entity.game.world.children.get("Player");\n    const playerPos = player?.globalTransform.position;\n    if (!playerPos) return;\n\n    const direction = playerPos.sub(this.entity.transform.position).normalize();\n    const distance = playerPos.sub(this.entity.transform.position).magnitude();\n\n    if (distance > this.minDistance + 5) {\n      let speedFactor = 1;\n      if (distance < this.minDistance + 10) {\n        speedFactor = (distance - this.minDistance) / 10;\n      }\n      this.entity.transform.position = this.entity.transform.position.add(\n        direction.mul((this.time.delta / 100) * this.speed * speedFactor)\n      );\n    }\n\n    const rotation = Math.atan2(direction.y, direction.x);\n    this.entity.transform.rotation = rotation - Math.PI / 2;\n\n    if (distance <= this.shootDistance) {\n      const now = Date.now();\n      if (now - this.lastShootTime > this.shootCooldown) {\n        this.lastShootTime = now;\n        this.shootAtPlayer();\n      }\n    }\n  }\n\n  shootAtPlayer(): void {\n    const rotation = this.entity.transform.rotation + Math.PI / 2;\n\n    // Spawning a bullet entity with custom transform, behaviors, and children entities\n    this.entity.game.world.spawn({\n      type: Collider,\n      name: "EnemyBullet",\n      transform: {\n        position: this.entity.transform.position.clone(),\n        rotation,\n        scale: { x: 0.25, y: 0.25 },\n      },\n      behaviors: [{ type: BulletBehavior, values: { speed: 8 } }],\n      children: [\n        {\n          type: Sprite,\n          name: "BulletSprite",\n          transform: {\n            scale: { x: 0.75, y: 0.75 },\n          },\n        },\n      ],\n    });\n  }\n}\n',
   "Vector2 API":
-    '// The following code demonstrates the `Vector2` class, which is part of the `@dreamlab/engine` package.\n// This class provides a 2D vector with a variety of utility methods for vector operations,\n// such as addition, subtraction, normalization, and more.\n// You can import and use this class in your project to handle 2D vector mathematics efficiently.\n\n// Abstract representation of Vector2 API usage\nimport { Vector2 } from "@dreamlab/engine";\n\n/**\n * Abstract class that provides examples of the Vector2 API.\n * This class ensures that the AI model understands all available Vector2 functions.\n */\nexport abstract class Vector2AIExample {\n  /**\n   * Demonstrates addition of two vectors.\n   * @param vecA First vector.\n   * @param vecB Second vector.\n   */\n  static addVectors(vecA: Vector2, vecB: Vector2): Vector2 {\n    return vecA.add(vecB);\n  }\n\n  /**\n   * Demonstrates subtraction of two vectors.\n   * @param vecA First vector.\n   * @param vecB Second vector.\n   */\n  static subtractVectors(vecA: Vector2, vecB: Vector2): Vector2 {\n    return vecA.sub(vecB);\n  }\n\n  /**\n   * Demonstrates multiplication of a vector by a scalar.\n   * @param vec Vector to multiply.\n   * @param scalar Scalar value.\n   */\n  static multiplyByScalar(vec: Vector2, scalar: number): Vector2 {\n    return vec.mul(scalar);\n  }\n\n  /**\n   * Demonstrates division of a vector by a scalar.\n   * @param vec Vector to divide.\n   * @param scalar Scalar value.\n   */\n  static divideByScalar(vec: Vector2, scalar: number): Vector2 {\n    return vec.div(scalar);\n  }\n\n  /**\n   * Demonstrates negation of a vector.\n   * @param vec Vector to negate.\n   */\n  static negateVector(vec: Vector2): Vector2 {\n    return vec.neg();\n  }\n\n  /**\n   * Demonstrates normalization of a vector.\n   * @param vec Vector to normalize.\n   */\n  static normalizeVector(vec: Vector2): Vector2 {\n    return vec.normalize();\n  }\n\n  /**\n   * Demonstrates calculation of the magnitude of a vector.\n   * @param vec Vector to calculate magnitude for.\n   */\n  static calculateMagnitude(vec: Vector2): number {\n    return vec.magnitude();\n  }\n\n  /**\n   * Demonstrates calculation of the squared magnitude of a vector.\n   * @param vec Vector to calculate squared magnitude for.\n   */\n  static calculateMagnitudeSquared(vec: Vector2): number {\n    return vec.magnitudeSquared();\n  }\n\n  /**\n   * Demonstrates calculation of the distance between two vectors.\n   * @param vecA First vector.\n   * @param vecB Second vector.\n   */\n  static calculateDistance(vecA: Vector2, vecB: Vector2): number {\n    return vecA.distance(vecB);\n  }\n\n  /**\n   * Demonstrates calculation of the squared distance between two vectors.\n   * @param vecA First vector.\n   * @param vecB Second vector.\n   */\n  static calculateDistanceSquared(vecA: Vector2, vecB: Vector2): number {\n    return vecA.distanceSquared(vecB);\n  }\n\n  /**\n   * Demonstrates the absolute value of a vector.\n   * @param vec Vector to calculate absolute value for.\n   */\n  static absoluteValue(vec: Vector2): Vector2 {\n    return vec.abs();\n  }\n\n  /**\n   * Demonstrates rotation of a vector by a specified angle.\n   * @param vec Vector to rotate.\n   * @param angle Angle in radians.\n   */\n  static rotateVector(vec: Vector2, angle: number): Vector2 {\n    return vec.rotate(angle);\n  }\n\n  /**\n   * Demonstrates rotation of a vector around a specific point by a specified angle.\n   * @param vec Vector to rotate.\n   * @param angle Angle in radians.\n   * @param point Point to rotate around.\n   */\n  static rotateVectorAroundPoint(vec: Vector2, angle: number, point: Vector2): Vector2 {\n    return vec.rotateAbout(angle, point);\n  }\n\n  /**\n   * Demonstrates the lookAt functionality to calculate the angle to another vector.\n   * @param vec Source vector.\n   * @param target Target vector.\n   */\n  static calculateLookAt(vec: Vector2, target: Vector2): number {\n    return vec.lookAt(target);\n  }\n\n  /**\n   * Demonstrates linear interpolation between two vectors.\n   * @param vecA First vector.\n   * @param vecB Second vector.\n   * @param t Interpolation factor (0 to 1).\n   */\n  static linearInterpolation(vecA: Vector2, vecB: Vector2, t: number): Vector2 {\n    return Vector2.lerp(vecA, vecB, t);\n  }\n\n  /**\n   * Demonstrates smooth interpolation between two vectors.\n   * @param current Current vector.\n   * @param target Target vector.\n   * @param decay Decay rate.\n   * @param deltaTime Time elapsed.\n   */\n  static smoothInterpolation(current: Vector2, target: Vector2, decay: number, deltaTime: number): Vector2 {\n    return Vector2.smoothLerp(current, target, decay, deltaTime);\n  }\n}\n',
+    '// Vector2 is a common class in Dreamlab\nimport { Vector2, IVector2 } from "@dreamlab/engine";\n\n// example use\nconst v: IVector2 = {x:0, y:0}\nconst myVector: Vector2 = new Vector2(v)\n\n\ninterface IVector2 {\n  x: number;\n  y: number;\n}\n\n// It has the following methods.\nclass Vector2 {\n  // Constants\n  static ZERO: Vector2    // (0, 0)\n  static ONE: Vector2     // (1, 1) \n  static NEG_ONE: Vector2 // (-1, -1)\n  static X: Vector2       // (1, 0)\n  static Y: Vector2       // (0, 1)\n  static NEG_X: Vector2   // (-1, 0)\n  static NEG_Y: Vector2   // (0, -1)\n\n  // Properties\n  x: number\n  y: number\n\n  // Constructors\n  constructor(x: number, y: number)\n  constructor(vector: IVector2)\n  \n  // Static Methods\n  static splat(value: number): Vector2                    // Creates vector with all elements set to value\n  static eq(a: IVector2, b: IVector2): boolean           // Compare equality\n  static abs(vector: IVector2): Vector2                  // Absolute values\n  static neg(vector: IVector2): Vector2                  // Negate values\n  static inverse(vector: IVector2): Vector2              // 1/value for each component\n  static add(a: IVector2, b: IVector2): Vector2         // Add vectors\n  static sub(a: IVector2, b: IVector2): Vector2         // Subtract vectors\n  static mul(a: IVector2, b: IVector2|number): Vector2  // Multiply by vector or scalar\n  static div(a: IVector2, b: IVector2|number): Vector2  // Divide by vector or scalar\n  static magnitude(vector: IVector2): number            // Length of vector\n  static magnitudeSquared(vector: IVector2): number     // Squared length\n  static normalize(vector: IVector2): Vector2           // Convert to unit vector\n  static lookAt(vector: IVector2, target: IVector2): number  // Get angle to target\n  static lerp(a: IVector2, b: IVector2, t: number): Vector2 // Linear interpolation\n  static smoothLerp(current: IVector2, target: IVector2, decay: number, deltaTime: number, epsilon?: number): Vector2\n  static distance(a: IVector2, b: IVector2): number     // Distance between vectors\n  static distanceSquared(a: IVector2, b: IVector2): number  // Squared distance\n  static max(a: IVector2, b: IVector2): Vector2        // Component-wise maximum\n  static min(a: IVector2, b: IVector2): Vector2        // Component-wise minimum\n  static rotate(vector: IVector2, angle: number): Vector2    // Rotate vector\n  static rotateAbout(vector: IVector2, angle: number, point: IVector2): Vector2  // Rotate around point\n  static dot(a: IVector2, b: IVector2): number         // Dot product\n\n  // Instance Methods\n  clone(): Vector2                    // Create copy\n  bare(): IVector2                    // Get raw x,y object\n  assign(value: Partial<IVector2>): boolean  // Update components\n  eq(other: IVector2): boolean\n  abs(): Vector2\n  neg(): Vector2\n  inverse(): Vector2\n  add(other: IVector2): Vector2\n  sub(other: IVector2): Vector2\n  mul(other: IVector2|number): Vector2\n  div(other: IVector2|number): Vector2\n  magnitude(): number\n  magnitudeSquared(): number\n  normalize(): Vector2\n  lookAt(target: IVector2): number\n  distance(other: IVector2): number\n  distanceSquared(other: IVector2): number\n  max(other: IVector2): Vector2\n  min(other: IVector2): Vector2\n  rotate(angle: number): Vector2\n  rotateAbout(angle: number, point: IVector2): Vector2\n  dot(other: IVector2): number\n}',
   "Character Controller":
     '// This is an example of how to implement a platformer controller using the KinematicCharacterController\n\nimport {\n  Behavior,\n  EntityDestroyed,\n  Collider,\n  Vector2,\n  syncedValue,\n} from "@dreamlab/engine";\nimport { KinematicCharacterController } from "@dreamlab/vendor/rapier.ts";\n\nexport default class PlatformMovement extends Behavior {\n  #collider: Collider = this.entity.cast(Collider);\n  #controller: KinematicCharacterController | undefined;\n\n  @syncedValue()\n  speed = 10.0;\n\n  @syncedValue()\n  jumpForce = 20.0;\n\n  @syncedValue()\n  jumpAcceleration = 40;\n\n  @syncedValue()\n  gravity = 90.0;\n\n  @syncedValue()\n  maxJumpTime = 1; // Maximum duration the jump key affects the jump\n\n  #verticalVelocity = 0;\n  #isGrounded = false;\n  #jumpTimeCounter = 0;\n\n  #up = this.inputs.create("@movement/up", "Move Up", "KeyW");\n  #down = this.inputs.create("@movement/down", "Move Down", "KeyS");\n  #left = this.inputs.create("@movement/left", "Move Left", "KeyA");\n  #right = this.inputs.create("@movement/right", "Move Right", "KeyD");\n  #jump = this.inputs.create("@movement/jump", "Jump", "Space");\n\n  onInitialize(): void {\n    if (this.game.isClient()) {\n      this.#controller =\n        this.game.physics.world.createCharacterController(0.01);\n    }\n\n    this.listen(this.entity, EntityDestroyed, () => {\n      if (this.#controller)\n        this.game.physics.world.removeCharacterController(this.#controller);\n    });\n  }\n\n  onTick(): void {\n    if (!this.#controller) return;\n\n    const deltaTime = this.game.physics.tickDelta / 1000; // Convert to seconds\n\n    let horizontalInput = 0;\n    if (this.#right.held) horizontalInput += 1;\n    if (this.#left.held) horizontalInput -= 1;\n\n    const horizontalVelocity = horizontalInput * this.speed;\n\n    // Jumping logic\n    if (this.#jump.pressed && this.#isGrounded) {\n      this.#verticalVelocity = this.jumpForce;\n      this.#jumpTimeCounter = 0;\n    }\n\n    if (this.#jump.held && this.#jumpTimeCounter < this.maxJumpTime) {\n      // Apply upward acceleration while the jump key is held\n      this.#verticalVelocity += this.jumpAcceleration * deltaTime;\n      this.#jumpTimeCounter += deltaTime;\n    }\n\n    // Create movement vector\n    const movement = new Vector2(\n      horizontalVelocity * deltaTime,\n      this.#verticalVelocity * deltaTime\n    );\n\n    this.#controller.computeColliderMovement(this.#collider.collider, movement);\n    const corrected = this.#controller.computedMovement();\n\n    this.#isGrounded = this.#controller.computedGrounded();\n    if (!this.#isGrounded) this.#verticalVelocity -= this.gravity * deltaTime;\n\n    this.entity.pos = this.entity.pos.add(corrected);\n  }\n}\n',
   "User Interfaces":
@@ -107,26 +107,128 @@ When summarizing the file's functionality, keep in mind:
 
 Provide your summary in a single <summary> tag. The summary should be clear, concise, and focused on how this file contributes to the game's functionality. Do not start with "this file" as it becomes very redundant in a list.`;
 
-export const plan = `You are an AI assistant tasked with creating a plan to modify a game based on a user request. You will be given information about the game's source code structure, current prefabs, and a specific user request. Your job is to create a plan that outlines the necessary changes to implement the user's request.
+export const plan = `<examples>
+<example>
+<PREFAB_TREE>
+...
+</PREFAB_TREE>
+<SOURCE_TREE>
+- src/player.ts
+    - A player controller that allows the player to move with WASD
+</SOURCE_TREE>
+<USER_REQUEST>
+add a jump pad that springs the player up
+</USER_REQUEST>
+<ideal_output>
+<analysis>
+Task breakdown:
+1. Create a new script for the jump pad functionality
+2. Create a new prefab for the jump pad
+
+Relevant files and prefabs:
+- src/player.ts (existing file, for reference on player controller)
+- New file: src/jump-pad.ts
+- New prefab: JumpPad
+
+Potential challenges:
+- Ensuring proper interaction between the jump pad and the player
+- Balancing the jump force for good gameplay
+
+Implementation strategy:
+1. Create a new script (jump-pad.ts) to handle the jump pad logic
+2. Create a new prefab (JumpPad) using the Collider entity type
+3. Attach the jump-pad script to the JumpPad prefab
+4. Add a visual representation as a child of the JumpPad prefab
+
+Considering client/server ticking:
+- The jump pad functionality should be implemented on the server side to ensure consistency in multiplayer scenarios and prevent cheating.
+- The visual representation can be handled on the client side for better performance.
+</analysis>
+
+<plan>
+[
+  {
+    "desc": "Create script jump-pad.ts",
+    "action": "createFile",
+    "target": "src/jump-pad.ts",
+    "instructions": "Create a script to handle jump pad logic. Include the following:\n- @syncedValue() jumpForce: number\n- onTriggerEnter method to apply upward force to the player\n- Implement server-side ticking for consistent multiplayer behavior\n- Reference player.ts for interaction with the player controller",
+    "addToContext": ["src/player.ts"]
+  },
+  {
+    "desc": "Create prefab JumpPad",
+    "action": "createPrefab",
+    "definition": {
+      "type": "Collider",
+      "name": "JumpPad",
+      "behaviors": [
+        {
+          "script": "src/jump-pad.ts",
+          "values": {
+            "jumpForce": 45
+          }
+        }
+      ],
+      "transform": { "scale": {"x": 2, "y": 0.5} },
+      "children": [
+        {
+          "type": "ColoredSquare",
+          "name": "JumpPadVisuals",
+          "values": {
+            "color": "#2b3233"
+          }
+        }
+      ]
+    }
+  }
+]
+</plan>
+</ideal_output>
+</example>
+</examples>
+
+You are an AI assistant specialized in game development. Your task is to create a structured plan for modifying a game based on user requests. This plan will guide developers in implementing new features or fixing bugs efficiently.
+
 First, review the source tree of the game:
+
 <source_tree>
 {{SOURCE_TREE}}
 </source_tree>
+
 Next, examine the current prefabs of the game world:
+
 <prefab_tree>
 {{PREFAB_TREE}}
 </prefab_tree>
+
 Children are nested under the entity in the markdown. Attached behavior scripts are also nested directly under.
 
 To create your plan, you can use the following actions:
 1. Modify an existing file
 2. Create a new file
 3. Create (or overwrite) a new prefab
+
 Each action should be represented as a JSON object with the following structure:
-- For modifying a file: {"action": "modifyFile", "target": "path/to/script-file.ts", "instructions": "Description of changes", "addToContext": ["src/path.ts"]}
-  - When modifying a file, you do not need to include the target in "addToContext". The target file will be provided automatically.
-- For creating a file: {"action": "createFile", "target": "path/to/newfile.ts", "instructions": "Description of file contents", "addToContext": ["src/path.ts"]}
-- For creating a prefab: {
+
+1. For modifying a file:
+{
+  "action": "modifyFile",
+  "target": "path/to/script-file.ts",
+  "instructions": "Description of changes",
+  "addToContext": ["src/path.ts"]
+}
+Note: When modifying a file, you do not need to include the target in "addToContext". The target file will be provided automatically.
+
+2. For creating a file:
+{
+  "action": "createFile",
+  "target": "path/to/newfile.ts",
+  "instructions": "Description of file contents",
+  "addToContext": ["src/path.ts"]
+}
+
+
+3. For creating or overwriting a prefab:
+{
   "action": "createPrefab",
   "definition": {
     "type": "Type",
@@ -146,21 +248,45 @@ Each action should be represented as a JSON object with the following structure:
         "values": {
           "color": "#6678ff"
         },
-        "transform": { "position": { "x": 0, "y": 0 }, "rotation": 3.14, "z": 0, "scale": {"x": 1, "y": 1} }
-        // rotation is in radians.
-        // position is relative to the parent. To be down and to the left you'd do x:-1,y:-1.
-        // z is z-index. Higher numbers render over lower numbers. Only include this if you need to.
+        "transform": {
+          "position": { "x": 0, "y": 0 },
+          "rotation": 3.14,
+          "z": 0,
+          "scale": {"x": 1, "y": 1}
+        }
       }
     ]
   }
 }
-- For editing a value on an existing entity: {"action": "editEntityValue", "target": "game.prefabs._.PrefabName", "valueName": "foo", "newValue": "bar"}
-- For editing a value on a script attached to an entity: {"action": "editBehaviorValue", "target": "prefabName", "script": "src/path.ts" "valueName": "foo", "newValue": "bar"}
-- To modify an existing prefab, just issue another createPrefab command and it will be overwritten.
 
-Note that in Dreamlab, the positive y axis is up and the positive x axis is to the right.
+Note: rotation is in radians. Position is relative to the parent. To be down and to the left, use x:-1,y:-1. Z is z-index; higher numbers render over lower numbers. Only include z if necessary.
 
-When creating or modifying prefabs, you can use the following entities with the following values:
+4. For editing a value on an existing entity:
+{
+  "action": "editEntityValue",
+  "target": "game.prefabs._.PrefabName",
+  "valueName": "foo",
+  "newValue": "bar"
+}
+
+
+5. For editing a value on a script attached to an entity:
+{
+  "action": "editBehaviorValue",
+  "target": "prefabName",
+  "script": "src/path.ts",
+  "valueName": "foo",
+  "newValue": "bar"
+}
+
+
+Important considerations:
+- In Dreamlab, the positive y axis is up and the positive x axis is to the right.
+- Most units are 1 unit wide and tall by default. When setting the scale of objects, use transform.scale.
+- Carefully consider whether each script should initialize and tick on the client or the server. For multiplayer scenarios, bias towards server ticking unless user input is involved.
+- If the user specifically requests client-side functionality, ensure it's implemented that way in your plan.
+
+When creating or modifying prefabs, you can use the following entity types:
 - Sprite
   - hidden: bool, texture: string, width: number, height: number, alpha: number
 - AnimatedSprite
@@ -172,6 +298,7 @@ When creating or modifying prefabs, you can use the following entities with the 
 - Clickable
 - Collider
 - CharacterController
+  - A collider that will attempt to track position set but will stop at other colliders. Useful if you want a player that is stopped by walls.
 - Empty
 - Camera
 - AudioSource
@@ -181,78 +308,45 @@ When creating or modifying prefabs, you can use the following entities with the 
 - Text
 
 You can also trust the prefab tree for information on what values entities have.
-Most units are 1 unit wide and tall by default. When setting the scale of objects, the preferred way is to use transform.scale!
 
-Create a plan that addresses the user's request by making appropriate changes to the game's code and prefabs. Your plan should be a series of steps, each represented by one of the action types described above.
-Present your plan as a JSON array of strings, with each string containing a single JSON object representing an action. For example to answer the request "add a jump pad that springs the player up" would be:
+
+Instructions for creating your plan:
+1. Carefully analyze the user's request.
+2. Create a series of steps to address the request, using the action types described above.
+3. Present your plan as a JSON array of strings, with each string containing a single JSON object representing an action.
+4. Include a human-readable and descriptive "desc" tag for every step in your plan.
+5. For "createFile" actions:
+   - Include all public class properties and their types in your description.
+   - Note if a class property should be configurable in the editor (a syncedValue).
+   - Use the @syncedValue() decorator liberally for editor-configurable properties.
+6. Use the correct entity name in the "type" field when creating prefabs.
+7. Only use createFile, createPrefab, and the other commands listed above. Do not attempt to modify prefab objects with "modifyFile".
+8. Aim for simplicity in your plan. Create simple, reusable components unless specifically asked for complex systems.
+9. If the user reports a bug or non-working functionality, focus on modifying the relevant file(s) and pass through the user's complaint in the modifyFile call.
+
+Before presenting your final plan, wrap your analysis in <analysis> tags. In this analysis:
+- Break down the user request into specific tasks or features.
+- List relevant files and prefabs that might need modification.
+- Consider potential challenges and edge cases.
+- Outline a high-level strategy for implementing the request.
+
+Your final output should be formatted as follows:
+
+<analysis>
+[Your comprehensive analysis of the problem, including task breakdown, relevant files/prefabs, potential challenges, and implementation strategy]
+</analysis>
+
 <plan>
-[
-  {
-    "desc": "Create script jump-pad.ts",
-    "action": "createFile",
-    "target": "src/jump-pad.ts",
-    "instructions": "Spring the player upwards when they touch this. Consider player.ts for information on how the player controller works",
-    "addToContext": ["src/player.ts"], // always addToContext any files you think might be relevant.
-  },
-  {
-    "desc": "Create prefab jumpPad",
-    "action": "createPrefab",
-    "definition": {
-      "action": "createPrefab",
-      "definition": {
-        "type": "Collider",
-        "name": "JumpPad",
-        "behaviors": [
-          {
-            "script": "src/jump-pad.ts",
-            "values": {
-              "jumpAmount": 45
-            }
-          }
-        ],
-        "transform": { "scale": {"x": 2, "y": 0.5} } // make it wider than it is tall. Note that this transform is on the parent, not the child.
-        "children": [
-          {
-            // ColoredSquare and Sprite are both good choices here. If you think the user wants to specify an image or asks for a Sprite, use that.
-            "type": "ColoredSquare",
-            "name": "JumpPadVisuals",
-            "values": {
-              "color": "#2b3233"
-            }
-          }
-        ]
-      }
-    }
-  }
-]
+[Your JSON array of actions as a single string. Must be inside <plan> tag. Ensure this is valid JSON.]
 </plan>
-Make sure that a human readable and descriptive "desc" tag is included on every step of your plan.
-
-An extremely important step for "createFile": Be sure to include all the public class properties and their types in your description. When another script in the same plan needs to interact with it, be sure to include the relevant properties in the description. This helps everything work together. Also, if you want a class property to be configurable in the editor (a syncedValue) please note it as such. You can only set a value on a behavior if you use the @syncedValue() decorator so use it liberally. 
-Always use the correct entity name in the "type" field. List the entities you plan to use before building the structure.
-
-
-createFile and createPrefab overwrite anything at the current path. addToContext should be used for if and only if you need to add one of the other files to the context so the coding agent can understand it.
-The three commands in the example are all that are available.
-Ensure that your plan is comprehensive and addresses all aspects of the user's request. If you need to make assumptions or have questions about the implementation, include these in comments within the "instructions" field of the relevant action.
-Do not write code, just describe the functionality. If you are describing the addition of new class methods, you should always name those methods!
-If the user request is not detailed enough, do not return a <plan> tag. Your plan should be valid JSON that parses. Do not include linebreaks inside your plan.
-
-Make sure to do only the minimum that the user is asking for. Aim to be as simple as possible. You want to create simple, reusable components. Avoid creating complex management systems unless asked.
-
-If they complain of a bug or functionality not working right, you probably only need to do a single modifyFile. You should pass through the user's complaint about the bug to the modifyFile call. 
-
-Format your answer like the following:
-<thinking>
-Reason about the problem here
-</thinking>
-<plan></plan>
 
 Now, consider the user's request:
+
 <user_request>
 {{USER_REQUEST}}
 </user_request>
-`;
+
+Based on this request, create a comprehensive plan that addresses all aspects of the user's needs while adhering to the guidelines provided.`;
 
 export const codingPrompt = `You are an AI coding agent integrated into a video game engine. Your task is to generate or modify code based on the provided context, documentation, and instructions. Follow these steps carefully:
 
