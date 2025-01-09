@@ -5,6 +5,7 @@ import {
   ColorAdapter,
   Entity,
   EntityByRefAdapter,
+  EntityRenamed,
   EnumAdapter,
   RelativeEntity,
   resolveEntityFromRelativeSelector,
@@ -433,7 +434,11 @@ export function createValueControl(
         }
       };
 
+      let unsubscribe: (() => void) | undefined;
       const refresh = () => {
+        unsubscribe?.();
+        unsubscribe = undefined;
+
         let entity: Entity | undefined;
         if (_opts.typeTag === EntityByRefAdapter) {
           const opts = _opts as ValueControlOptions<string | undefined>;
@@ -445,6 +450,14 @@ export function createValueControl(
           if (selector !== undefined) {
             entity = resolveEntityFromRelativeSelector(_opts.relatedEntity, selector);
           }
+        }
+
+        if (entity) {
+          const sub = entity.on(EntityRenamed, () => {
+            refresh();
+          });
+
+          unsubscribe = sub.unsubscribe;
         }
 
         valueDisplay.style.opacity = entity === undefined ? "0.65" : "";
