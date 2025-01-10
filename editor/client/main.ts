@@ -18,12 +18,11 @@ import "./draggable-layout.ts";
 import "../common/mod.ts";
 
 import { auth } from "@dreamlab/client/auth.ts";
-import { connectToGame } from "@dreamlab/client/game-connection.ts";
+import { connectToGame, pickCodec } from "@dreamlab/client/game-connection.ts";
 import { setupGame } from "@dreamlab/client/game-setup.ts";
 import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
 import { Camera, ClientGame, Entity, GameStatus, GameStatusChange } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
-import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
 import { urlToWebSocket } from "@dreamlab/util/url.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { stats } from "./_stats.ts";
@@ -139,6 +138,7 @@ const container = document.createElement("div");
 uiRoot.querySelector("#viewport")!.append(container);
 uiRoot.style.display = "none";
 
+const codec = pickCodec(connectUrl, undefined);
 const socket = new WebSocket(connectUrl);
 socket.binaryType = "arraybuffer";
 
@@ -167,7 +167,7 @@ const [game, conn, handshake] = await connectToGame(
   connectionDetails.instanceId,
   container,
   socket,
-  DEFAULT_CODEC,
+  codec,
   true,
 );
 

@@ -1,7 +1,6 @@
 import type { ClientGame } from "@dreamlab/engine";
-import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
 import { preloadFonts } from "./fonts.ts";
-import { connectToGame } from "./game-connection.ts";
+import { connectToGame, pickCodec } from "./game-connection.ts";
 import { setupGame } from "./game-setup.ts";
 
 const fonts = preloadFonts({
@@ -19,15 +18,13 @@ export async function startGame(
   const container = document.createElement("div");
   uiRoot.querySelector("#viewport")!.append(container);
 
-  const socket = new WebSocket(connectUrl);
+  const url = new URL(connectUrl);
+  const codec = pickCodec(url, undefined);
+
+  const socket = new WebSocket(url);
   socket.binaryType = "arraybuffer";
 
-  const [game, conn, handshake] = await connectToGame(
-    instanceId,
-    container,
-    socket,
-    DEFAULT_CODEC,
-  );
+  const [game, conn, handshake] = await connectToGame(instanceId, container, socket, codec);
   gameCallback(game);
 
   await fonts;

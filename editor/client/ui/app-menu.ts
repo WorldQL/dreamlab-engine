@@ -1,9 +1,8 @@
-import { connectToGame } from "@dreamlab/client/game-connection.ts";
+import { connectToGame, pickCodec } from "@dreamlab/client/game-connection.ts";
 import { setupGame } from "@dreamlab/client/game-setup.ts";
 import { Ping } from "@dreamlab/client/networking/ping.ts";
 import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
 import { ClientGame, PlayerJoined, PlayerLeft } from "@dreamlab/engine";
-import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
 import { element as elem } from "@dreamlab/ui";
 import {
   ArrowUpDown,
@@ -226,6 +225,7 @@ export class AppMenu {
     connectURL.searchParams.set("nickname", player.nickname);
     connectURL.searchParams.set("play_session", "1");
 
+    const codec = pickCodec(connectURL, undefined);
     const playSocket = new WebSocket(connectURL);
     playSocket.binaryType = "arraybuffer";
 
@@ -247,7 +247,7 @@ export class AppMenu {
       this.games.edit.instanceId,
       container,
       playSocket,
-      DEFAULT_CODEC,
+      codec,
       true,
     );
 

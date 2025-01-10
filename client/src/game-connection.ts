@@ -1,8 +1,16 @@
 import { ClientGame } from "@dreamlab/engine";
-import { PlayCodec } from "@dreamlab/proto/codecs/mod.ts";
+import { PlayCodec, Codec, isCodec, getCodec } from "@dreamlab/proto/codecs/mod.ts";
 import { PlayPacket, ServerPacket } from "@dreamlab/proto/play.ts";
 import { createId } from "@dreamlab/vendor/nanoid.ts";
 import { ClientConnection } from "./networking/net-connection.ts";
+
+export const pickCodec = (url: URL, codec: Codec | undefined): PlayCodec => {
+  const codecType = isCodec(codec) ? codec : undefined;
+  const playCodec = getCodec(codecType);
+
+  if (codecType) url.searchParams.set("codec", codecType);
+  return playCodec;
+};
 
 export const connectToGame = (
   instanceId: string,

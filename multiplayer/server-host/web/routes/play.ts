@@ -1,4 +1,4 @@
-import { DEFAULT_CODEC } from "@dreamlab/proto/codecs/mod.ts";
+import { Codec, getCodec, isCodec, PlayCodec } from "@dreamlab/proto/codecs/mod.ts";
 import { ClientPacketSchema } from "@dreamlab/proto/play.ts";
 import { Context, Router, Status } from "../../deps/oak.ts";
 
@@ -14,11 +14,12 @@ const handleConnection = (
   session: GameSession,
   playerId: string,
   nickname: string,
+  codec: PlayCodec,
 ) => {
   const connection = {
     connectionId: createId("conn"),
     socket,
-    codec: DEFAULT_CODEC,
+    codec,
   };
   session.connections.set(connection.connectionId, connection);
   socket.addEventListener("close", () => {
@@ -66,11 +67,14 @@ const handlePlayerConnectionRequest = async (
   gameAuthSecret: CryptoKey,
   session: GameSession,
 ) => {
+  const codecParam = ctx.request.url.searchParams.get("codec") ?? undefined;
+  const codec: Codec | undefined = isCodec(codecParam) ? codecParam : undefined;
+
   if (CONFIG.isDev) {
     const playerId = ctx.request.url.searchParams.get("player_id");
     const nickname = ctx.request.url.searchParams.get("nickname");
     if (nickname && playerId) {
-      handleConnection(ctx.upgrade(), session, playerId, nickname);
+      handleConnection(ctx.upgrade(), session, playerId, nickname, getCodec(codec));
       return;
     }
   }
@@ -81,7 +85,7 @@ const handlePlayerConnectionRequest = async (
 
   try {
     const auth = await validateAuthToken(gameAuthSecret, token);
-    handleConnection(ctx.upgrade(), session, auth.player_id, auth.nickname);
+    handleConnection(ctx.upgrade(), session, auth.player_id, auth.nickname, getCodec(codec));
   } catch (err) {
     throw new JsonAPIError(Status.Forbidden, "The auth token provided was invalid.", {
       reason: err.message,
