@@ -31,7 +31,6 @@ async function handleStreamingResponse(
 
             let line: string = d.text;
             accumulatedText += line;
-            console.log(accumulatedText);
           } catch (error) {
             console.error("Error parsing JSON:", error);
           }
