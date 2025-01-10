@@ -29,12 +29,21 @@ export class BottomTabs implements InspectorUIWidget {
 
   setup(ui: InspectorUI): void {
     const switchTab = (tabId: string) => {
-      const tabs = this.#container.querySelectorAll(".bottom-tab");
-      tabs.forEach(tab => {
-        if (tab instanceof HTMLElement) {
-          tab.classList.toggle("active", tab.getAttribute("data-tab-id") === tabId);
-        }
-      });
+      const tabs = Array.from(this.#container.querySelectorAll(".bottom-tab"));
+      for (const tab of tabs) {
+        if (!(tab instanceof HTMLElement)) continue;
+
+        const isActive = tab.getAttribute("data-tab-id") === tabId;
+        if (isActive) tab.setAttribute("data-active", "");
+        else tab.removeAttribute("data-active");
+      }
+      // tabs.forEach(tab => {
+      //   i
+      //   if (tab instanceof HTMLElement) {
+      //     tab
+      //     // tab.classList.toggle("active", tab.getAttribute("data-tab-id") === tabId);
+      //   }
+      // });
 
       this.#logContent.style.display = tabId === "logs" ? "flex" : "none";
       this.#prefabContent.style.display = tabId === "prefabs" ? "flex" : "none";
@@ -49,8 +58,9 @@ export class BottomTabs implements InspectorUIWidget {
     prefabsTab.setAttribute("data-tab-id", "prefabs");
     prefabsTab.append(icon(Box), elem("span", {}, ["Prefabs"]));
 
-    const assistantTab = elem("div", { className: "bottom-tab active" });
+    const assistantTab = elem("div", { className: "bottom-tab" });
     assistantTab.setAttribute("data-tab-id", "assistant");
+    assistantTab.setAttribute("data-active", "");
     assistantTab.append(icon(Bot), elem("span", {}, ["Assistant"]));
 
     const tabBar = elem("div", { className: "bottom-tabs-bar" }, [

@@ -19,12 +19,14 @@
   font-size: 0.875rem;
   color: rgb(var(--color-text-darker));
   cursor: pointer;
-}
+  border-top: 2px solid transparent;
+  border-bottom: 2px solid transparent;
 
-.bottom-tab.active {
-  color: rgb(var(--color-text));
-  background: rgb(var(--color-bg-2));
-  border-bottom: 2px solid rgb(var(--color-primary));
+  &[data-active] {
+    color: rgb(var(--color-text));
+    background: rgb(var(--color-bg-2));
+    border-bottom: 2px solid rgb(var(--color-primary));
+  }
 }
 
 .bottom-tabs-content {
@@ -32,9 +34,9 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-}
 
-.bottom-tabs-content > * {
-  flex: 1;
-  min-height: 0;
+  & > * {
+    flex: 1;
+    min-height: 0;
+  }
 }
