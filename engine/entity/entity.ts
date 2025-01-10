@@ -1022,7 +1022,14 @@ export abstract class Entity implements ISignalHandler {
     for (const behavior of this.behaviors) {
       const behaviorType = behavior.constructor as BehaviorConstructor;
       this.game[internal.behaviorLoader].initialize(behaviorType);
-      behavior[internal.behaviorSpawn]();
+      try {
+        behavior[internal.behaviorSpawn]();
+      } catch (err) {
+        console.warn(
+          `Encountered error while initializing behavior: ${this.id} ${behaviorType.name}`,
+          err,
+        );
+      }
     }
 
     this[internal.entityDoneSpawning] = true;
