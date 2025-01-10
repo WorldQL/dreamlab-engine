@@ -87,6 +87,15 @@ export class BehaviorEditor {
     try {
       const info = await ui.behaviorTypeInfo.get(this.behavior.script);
       for (const value of info.values) {
+        // check if incoming value has a different type tag
+        const existingValue = this.values[value.key];
+        if (existingValue && existingValue.typeTag !== value.typeTag) {
+          // update type tag and remove existing inspector
+          existingValue.typeTag = value.typeTag;
+          this.#table.removeEntry(`value:${value.key}`);
+          this.valueFields.delete(value.key);
+        }
+
         if (this.valueFields.has(value.key)) continue;
 
         // TODO: add the value to the data model and create a new field
