@@ -84,16 +84,15 @@ export async function buildScriptMap() {
     }
 
     const result = await handleStreamingResponse(reader);
+    console.log(result);
     map.push({ filename: file, summary: result });
   }
 
   let mdsummary = "";
-  const parser = new DOMParser();
   for (const file of map) {
     const { filename, summary } = file;
     mdsummary += `- ${filename}\n`;
-    const doc = parser.parseFromString(summary, "application/xml");
-    const s = doc.getElementsByTagName("summary")[0].childNodes[0].nodeValue?.trim();
+    const s = getTagContents("summary", summary);
     mdsummary += `\t- ${s}\n`;
   }
   return mdsummary;

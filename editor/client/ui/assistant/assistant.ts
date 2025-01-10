@@ -1,7 +1,7 @@
 import { ClientGame } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 import { InspectorUI } from "../inspector.ts";
-import { Check, Copy, icon, RotateCcw, Send } from "../../_icons.ts";
+import { Check, Clock, Copy, icon, RotateCcw, Send } from "../../_icons.ts";
 import { available_topics, codingPrompt, fileContents, plan } from "./prompts.ts";
 import markdownit from "npm:markdown-it@14.1.0";
 import hljs from "npm:highlight.js/lib/core";
@@ -311,7 +311,11 @@ export class Assistant {
               const line: string = d.text;
               accumulatedText += line;
 
-              const renderedContent = md.render(accumulatedText);
+              const renderedContent = md.render(
+                ScriptSession.chatState === "plan"
+                  ? accumulatedText.split("<plan>")[0]
+                  : accumulatedText,
+              );
               this.renderContent(botMessageElement, renderedContent);
             } catch (error) {
               console.error("Error parsing JSON:", error);
@@ -338,12 +342,17 @@ export class Assistant {
       const stepsContainer = elem("div", { className: "chat-steps-container" });
 
       for (const step of planArray) {
-        const stepElement = elem("div", { className: "chat-step" }, [step.desc]);
+        const stepElement = elem(
+          "div",
+          { className: "chat-step", id: step.desc.replace(/\s/g, "") },
+          [step.desc],
+        );
         stepsContainer.appendChild(stepElement);
       }
       botMessageElement.appendChild(stepsContainer);
 
       for (const step of planArray) {
+        document.getElementById(step.desc.replace(/\s/g, ""))?.classList.add("chat-step-wip");
         if (step.action === "editEntityValue") {
           const target =
             "game.world._.EditEntities._.prefabs._" +
@@ -507,6 +516,12 @@ export class Assistant {
             await createFile(target, code);
             window.parent.postMessage({ action: "reloadFile", filename: target }, "*");
           }
+        }
+        const d = document.getElementById(step.desc.replace(/\s/g, ""));
+        if (d) {
+          d?.classList.remove("chat-step-wip");
+          d?.classList.add("chat-step-done");
+          d.innerHTML = "✔ " + d.innerHTML;
         }
       }
     }

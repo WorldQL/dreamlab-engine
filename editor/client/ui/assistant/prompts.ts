@@ -1,3 +1,5 @@
+import { syncedValue } from "@dreamlab/engine";
+
 export const fileContents: Record<string, string> = {
   "Handling Input":
     'import { Behavior, Vector2, syncedValue } from "@dreamlab/engine";\n/*\n  Handling Inputs in a Behavior:\n\n  This example demonstrates how to set up and handle various inputs within a behavior using the `Inputs` class.\n  Inputs are created for specific actions (e.g., movement or firing), and these actions are then checked and handled\n  during the behavior\'s update cycle (`onTick`).\n\n  Key Concepts:\n  - **Input Creation:**\n    Inputs are created using `this.inputs.create(...)`, binding a specific action to a key or mouse button.\n    These inputs are stored in private fields and can be checked every frame to determine if the corresponding\n    action should be executed.\n\n  - **Input Handling:**\n    Each frame, the behavior checks whether an input (e.g., a key or mouse button) is held down and executes\n    the appropriate logic, such as moving an entity or firing a weapon.\n\n  - **Cursor Tracking:**\n    The `Inputs` class also provides cursor tracking, which allows the entity to rotate or aim based on the cursor\'s\n    position in the game world.\n\n  Below is the implementation of the `Movement` behavior that handles player movement and firing based on input.\n\n*/\n\nexport default class Movement extends Behavior {\n  @syncedValue()\n  speed = 5.0;\n\n  // Input bindings for movement\n  // (method) Inputs.create(name: string, label: string, defaultBinding: Input): Action\n  #up = this.inputs.create("@movement/up", "Move Up", "KeyW");\n  #down = this.inputs.create("@movement/down", "Move Down", "KeyS");\n  #left = this.inputs.create("@movement/left", "Move Left", "KeyA");\n  #right = this.inputs.create("@movement/right", "Move Right", "KeyD");\n\n  // Input binding for firing\n  #fire = this.inputs.create("@clickFire/fire", "Fire", "MouseLeft");\n\n  // Cooldown management for firing\n  readonly #cooldown = 0;\n  #lastFired = 0;\n\n  velocity = Vector2.ZERO;\n\n  onTick(): void {\n    const movement = new Vector2(0, 0);\n    const currentSpeed = this.speed;\n\n    // Handle movement inputs\n    if (this.#up.held) movement.y += 1;\n    if (this.#down.held) movement.y -= 1;\n    if (this.#right.held) movement.x += 1;\n    if (this.#left.held) movement.x -= 1;\n\n    // Calculate the velocity based on movement input and speed\n    this.velocity = movement\n      .normalize()\n      .mul((this.game.physics.tickDelta / 100) * currentSpeed);\n\n    // Update entity\'s position based on the input\n    const newPosition = this.entity.transform.position.add(this.velocity);\n\n    if (this.#fire.pressed) {\n      // create a bullet\n    }\n\n\n    // look at cursor\n    const cursorPosition = this.inputs.cursor.world;\n    if (!cursorPosition) return;\n    // EXTREMELY IMPORTANT: Use the value of this.inputs.cursor.world before applying newPosition to the transform\n    const rotation = this.entity.transform.position.lookAt(cursorPosition);\n    this.entity.transform.rotation = rotation;\n\n    // Apply the new position to the entity\n    this.entity.transform.position = newPosition;\n  }\n}\n',
@@ -323,6 +325,9 @@ Instructions for creating your plan:
 7. Only use createFile, createPrefab, and the other commands listed above. Do not attempt to modify prefab objects with "modifyFile".
 8. Aim for simplicity in your plan. Create simple, reusable components unless specifically asked for complex systems.
 9. If the user reports a bug or non-working functionality, focus on modifying the relevant file(s) and pass through the user's complaint in the modifyFile call.
+10. Avoid creating or modifying prefab objects unless the user request requires it. Code changes usually don't require you to update values.
+11. If you are removing or adding a new @syncedValue, you do not need to assign/unassign them in your plan. They will autofill to the default value or be gracefully removed.
+12. Do not write code in your plan. Describe it in English.
 
 Before presenting your final plan, wrap your analysis in <analysis> tags. In this analysis:
 - Break down the user request into specific tasks or features.
@@ -346,7 +351,10 @@ Now, consider the user's request:
 {{USER_REQUEST}}
 </user_request>
 
-Based on this request, create a comprehensive plan that addresses all aspects of the user's needs while adhering to the guidelines provided.`;
+Based on this request, create a comprehensive plan that addresses all aspects of the user's needs while adhering to the guidelines provided.
+If there is not enough information, do not return a plan.
+
+`;
 
 export const codingPrompt = `You are an AI coding agent integrated into a video game engine. Your task is to generate or modify code based on the provided context, documentation, and instructions. Follow these steps carefully:
 
@@ -397,7 +405,19 @@ Some additional notes:
 
 5. Only include the code for the single file you're asked about. Any changes to other files will be made later.
 
-6. Do not include any explanations or comments outside of the <thinking> and <code> tags. Your output should be structured as follows:
+6. Do not include any explanations or comments outside of the <thinking> and <code> tags. Your output should be structured as follows
+
+7. When you need to reference another entity, always use \`@syncedValue(EntityRef) public myEntity: Entity | undefined;\`
+
+8. Do not use any node.js imports.
+
+9. If you want to provide a drop-down menu of options, use the following syntax:
+const MyShapeOptions = ["Rectangle", "Circle"] as const;
+type MyShapeOptions = (typeof ColliderShape)[number];
+// then in your entity
+import { optionsAdapter } from "@dreamlab/engine";
+@syncedValue(optionsAdapter(MyShapeOptions))
+
 
 <thinking>
 Your analysis and planning goes here.
@@ -406,8 +426,7 @@ If you want server authority, run in onTickServer. If it's client-only, run in o
 </thinking>
 
 <code>
-Your generated or modified code goes here.
-Do not truncate this code. Write the whole file. It will be copied directly into the game. Even if the code is the same, write the whole file.
+Your generated or modified code goes here. Do not truncate this code. Output the whole thing, it will be used directly.
 </code>
 
 Existing code should be output verbatim. Your output will be used directly.
@@ -419,3 +438,19 @@ Remember, you are a part of the game engine, so focus solely on generating the r
 {{FILE_INSTRUCTIONS}}
 </file_instructions>
 These are the user instructions to follow.`;
+
+`
+<findReplace>
+  <find>const myVar = 'foo';</find>
+  <replace>const myVar = 'bar';</find>
+  <find>
+    function myFunction() {
+      doSomething = true;
+    }
+  </find>
+  <replace>
+    function myRenamedFunction() {
+      doSomething = false;
+    }
+  </find>
+<findReplace>`

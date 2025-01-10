@@ -382,9 +382,9 @@
 .chat-step {
   background-color: rgb(var(--color-bg-0));
   color: rgb(var(--color-text));
-  padding: 0.1em 0.2em;
+  padding: 0.3em 0.5em;
   border-radius: 0.4em;
-  font-size: 0.85em;
+  font-size: 1em;
   white-space: nowrap;
   box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
@@ -393,9 +393,26 @@
   width: 0.85em;
   height: 0.85em;
   margin-right: 4px;
-  margin-left: 2px;
+  margin-left: 1px;
   position: relative;
   top: 1px;
+}
+
+.chat-step-wip {
+  animation: pulseOrange 1.5s infinite alternate;
+}
+
+.chat-step-done {
+  background-color: rgb(5, 41, 5);
+}
+
+@keyframes pulseOrange {
+  from {
+    background-color: rgb(var(--color-bg-0)); /* bright orange */
+  }
+  to {
+    background-color: #572e08; /* darker orange */
+  }
 }
 
 

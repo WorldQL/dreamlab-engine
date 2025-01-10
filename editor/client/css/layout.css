@@ -84,7 +84,7 @@ main > div {
 }
 #bottom-bar-drag {
   grid-area: drag-b;
-  height: 4px;
+  height: 8px;
   cursor: row-resize;
   transition: background-color 0.3s;
 }
