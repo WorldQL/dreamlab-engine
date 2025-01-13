@@ -34,6 +34,7 @@
 #scene-graph-tree details > summary {
   border-radius: var(--border-radius);
   padding: 0.25em;
+  user-select: none;
 
   cursor: pointer;
 
