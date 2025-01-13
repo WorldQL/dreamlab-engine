@@ -81,6 +81,27 @@ export class ContextMenu implements InspectorUIWidget {
 
           button.dataset.selected = "";
           section.insertAdjacentElement("afterend", subsection);
+
+          requestAnimationFrame(() => {
+            const submenuRect = subsection.getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+
+            let left = section.getBoundingClientRect().right;
+            let top = section.getBoundingClientRect().top;
+
+            if (left + submenuRect.width > viewportWidth) {
+              left = section.getBoundingClientRect().left - submenuRect.width;
+            }
+
+            if (top + submenuRect.height > viewportHeight) {
+              top = viewportHeight - submenuRect.height - 10;
+            }
+
+            subsection.style.position = "fixed";
+            subsection.style.left = `${left}px`;
+            subsection.style.top = `${top}px`;
+          });
         });
 
         const tryHideSubsection = () => {
@@ -124,21 +145,23 @@ export class ContextMenu implements InspectorUIWidget {
     document.body.append(this.#container);
 
     const menuRect = this.#menu.getBoundingClientRect();
+    let menuX = cursorX;
+    let menuY = cursorY;
     const menuWidth = menuRect.width;
     const menuHeight = menuRect.height;
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
-    if (cursorX + menuWidth > viewportWidth) {
-      cursorX = viewportWidth - menuWidth - 10;
+    if (menuX + menuWidth > viewportWidth) {
+      menuX = viewportWidth - menuWidth - 10;
     }
 
-    if (cursorY + menuHeight > viewportHeight) {
-      cursorY = viewportHeight - menuHeight - 10;
+    if (menuY + menuHeight > viewportHeight) {
+      menuY = viewportHeight - menuHeight - 10;
     }
 
-    this.#container.style.setProperty("--cursor-x", `${cursorX}px`);
-    this.#container.style.setProperty("--cursor-y", `${cursorY}px`);
+    this.#container.style.setProperty("--cursor-x", `${menuX}px`);
+    this.#container.style.setProperty("--cursor-y", `${menuY}px`);
 
     this.#menu.dataset.open = "";
   }
