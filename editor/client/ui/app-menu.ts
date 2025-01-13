@@ -241,6 +241,10 @@ export class AppMenu {
 
       const playButton = this.controls.play.querySelector("button")!;
       playButton.disabled = false;
+
+      if (this.games.play === playGame) this.games.play = undefined;
+      playGame.container.remove();
+      playGame.shutdown();
     });
 
     const [playGame, conn, _handshake] = await connectToGame(
