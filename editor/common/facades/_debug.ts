@@ -278,6 +278,10 @@ export class DebugSquare extends DebugShape {
   }
 
   redraw(): void {
+    if (!this.enabled) {
+      this.gfx.clear();
+      return;
+    }
     const _bounds = this.getBounds();
     if (!_bounds) return;
     const bounds = Vector2.mul(

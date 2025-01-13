@@ -30,6 +30,7 @@ import {
   ValueTypeTag,
   inferValueTypeTag,
 } from "../value/mod.ts";
+import { Collider, EntityCollision } from "@dreamlab/engine";
 
 export interface BehaviorContext {
   game: Game;
@@ -338,7 +339,20 @@ export class Behavior implements ISignalHandler {
    * Returns true if the current client has authority over the entity this behavior is attached to.
    */
   hasAuthority() {
-    return this.game.network.self === this.entity.authority || this.entity.authority === undefined;
+    return (
+      this.game.network.self === this.entity.authority || this.entity.authority === undefined
+    );
+  }
+
+  /**
+   * Registers a collision listener
+   */
+  registerCollisions(handler: (e: EntityCollision) => void) {
+    if (this.entity instanceof Collider) {
+      this.listen(this.entity, EntityCollision, handler);
+    } else {
+      console.warn("Tried to registerCollisions() for non-collider entity!");
+    }
   }
 
   #spawned = false;

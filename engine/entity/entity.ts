@@ -470,6 +470,11 @@ export abstract class Entity implements ISignalHandler {
     const behavior = this.behaviors.find(b => b instanceof constructor);
     return behavior as B;
   }
+
+  hasBehavior<B extends Behavior>(constructor: BehaviorConstructor<B>): boolean {
+    const behavior = this.behaviors.find(b => b instanceof constructor);
+    return behavior !== undefined;
+  }
   // #endregion
 
   // #region Cloning
