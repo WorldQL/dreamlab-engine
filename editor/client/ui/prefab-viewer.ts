@@ -4,6 +4,7 @@ import {
   EntityChildSpawned,
   EntityDestroyed,
   EntityRenamed,
+  getFacadeRoot,
 } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 import { InspectorUI } from "./inspector.ts";
@@ -25,7 +26,10 @@ export class PrefabViewer {
   prefabsRoot!: Entity;
   #iconPicker: IconPicker;
 
-  constructor(private game: ClientGame, private container: HTMLElement) {
+  constructor(
+    private game: ClientGame,
+    private container: HTMLElement,
+  ) {
     this.#iconPicker = new IconPicker((newIcon: string) => {
       this.changeEntityIcon(this.inspectorUI, newIcon);
     });
@@ -225,16 +229,15 @@ export class PrefabViewer {
           return;
         }
 
+        let parentEntity = undefined;
+
         if (selectedService.entities.length === 0) {
-          selectedService.entities = [this.game.world._.EditEntities._.world];
-        }
-
-        let parentEntity = selectedService.entities.at(0);
-        if (this.currentDragSource?.entities.some(e => selectedService.entities.includes(e))) {
           parentEntity = this.game.world._.EditEntities._.world;
+        } else {
+          parentEntity = getFacadeRoot(selectedService.entities[0]);
         }
 
-        if (parentEntity && selectedService.entities.length === 1 && this.currentDragSource) {
+        if (parentEntity && this.currentDragSource) {
           const spawnPosition = this.game.inputs.cursor.world;
 
           const newEntities: Entity[] = [];
@@ -249,10 +252,6 @@ export class PrefabViewer {
             });
             newEntities.push(newEntity);
           });
-
-          if (newEntities.length > 0) {
-            selectedService.entities = [newEntities[newEntities.length - 1]];
-          }
         }
 
         this.currentDragSource = undefined;
