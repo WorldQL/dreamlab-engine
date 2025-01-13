@@ -583,6 +583,8 @@ export class SceneGraph implements InspectorUIWidget {
                   ops: undoOps,
                 });
               },
+              false,
+              `${modifierKey}+Shift+L`,
             ]);
           } else {
             contextMenuItems.push([
@@ -613,6 +615,8 @@ export class SceneGraph implements InspectorUIWidget {
                   ops: undoOps,
                 });
               },
+              false,
+              `${modifierKey}+Shift+L`,
             ]);
           }
         }
@@ -746,6 +750,8 @@ export class SceneGraph implements InspectorUIWidget {
                   previous: prevLocked,
                 });
               },
+              false,
+              `${modifierKey}+Shift+L`,
             ]);
           } else {
             contextMenuItems.push([
@@ -761,6 +767,8 @@ export class SceneGraph implements InspectorUIWidget {
                   previous: prevLocked,
                 });
               },
+              false,
+              `${modifierKey}+Shift+L`,
             ]);
           }
         }

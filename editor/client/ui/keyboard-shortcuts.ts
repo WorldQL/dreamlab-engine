@@ -8,6 +8,7 @@ import {
   type ITransform,
 } from "@dreamlab/engine";
 import {
+  EditorMetadataEntity,
   LocalRootFacade,
   PrefabRootFacade,
   ServerRootFacade,
@@ -272,7 +273,7 @@ export function setupKeyboardShortcuts(
             t: "create-entity",
             parentRef: x.parent!.ref,
             def: x.getDefinition(),
-          }) satisfies UndoRedoOperation,
+          } satisfies UndoRedoOperation),
       );
 
       UndoRedoManager._.push({ t: "compound", ops });
@@ -290,7 +291,7 @@ export function setupKeyboardShortcuts(
             t: "destroy-entity",
             parentRef: x.parent!.ref,
             def: x.getDefinition(),
-          }) satisfies UndoRedoOperation,
+          } satisfies UndoRedoOperation),
       );
 
       for (const entity of toDelete) {
@@ -369,6 +370,32 @@ export function setupKeyboardShortcuts(
       const entityRef = newSelected.dataset.entity!;
       const entity = game.entities.lookupByRef(entityRef);
       if (entity) selectedService.entities = [entity];
+      return;
+    }
+
+    if (event.key === "L" && event.shiftKey && (event.ctrlKey || event.metaKey)) {
+      event.preventDefault();
+
+      const lockedEntities = selectedService.entities.filter(
+        entity => EditorMetadataEntity.getInstanceFor(entity)?.locked,
+      );
+
+      const unlock = lockedEntities.length > 0;
+
+      selectedService.entities.forEach(entity => {
+        const metadata = EditorMetadataEntity.getInstanceFor(entity);
+        if (!metadata) return;
+
+        const prevLocked = metadata.locked;
+        metadata.locked = !unlock;
+        UndoRedoManager._.push({
+          t: "modify-entity-locked",
+          entityRef: entity.ref,
+          locked: !unlock,
+          previous: prevLocked,
+        });
+      });
+
       return;
     }
 
