@@ -717,24 +717,6 @@ export class SceneGraph implements InspectorUIWidget {
           ]);
         }
 
-        if (!entity.protected && !lockedByEntity)
-          contextMenuItems.push([
-            "Delete",
-            () => {
-              const parent = entity.parent;
-              if (parent) {
-                UndoRedoManager._.push({
-                  t: "destroy-entity",
-                  def: entity.getDefinition(),
-                  parentRef: parent.ref,
-                });
-              }
-              entity.destroy();
-            },
-            false,
-            "Backspace",
-          ]);
-
         if (!entity.protected && ui.editMode) {
           if (lockedByEntity) {
             contextMenuItems.push([
@@ -772,6 +754,24 @@ export class SceneGraph implements InspectorUIWidget {
             ]);
           }
         }
+
+        if (!entity.protected && !lockedByEntity)
+          contextMenuItems.push([
+            "Delete",
+            () => {
+              const parent = entity.parent;
+              if (parent) {
+                UndoRedoManager._.push({
+                  t: "destroy-entity",
+                  def: entity.getDefinition(),
+                  parentRef: parent.ref,
+                });
+              }
+              entity.destroy();
+            },
+            false,
+            "Backspace",
+          ]);
       }
 
       ui.contextMenu.drawContextMenu(event.clientX, event.clientY, contextMenuItems);
