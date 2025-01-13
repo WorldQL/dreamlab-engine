@@ -119,6 +119,22 @@ export class PrefabViewer {
 
       const contextMenuItems: ContextMenuItem[] = [
         [
+          ...createEntityMenu("Add Child Entity", type => {
+            const newEntity = entity.spawn({
+              type: type,
+              name: type.name,
+            });
+
+            UndoRedoManager._.push({
+              t: "create-entity",
+              parentRef: entity.ref,
+              def: newEntity.getDefinition(),
+            });
+
+            ui.selectedEntity.entities = [newEntity];
+          }),
+        ],
+        [
           "Rename",
           () => {
             this.triggerRename(entity, card);
