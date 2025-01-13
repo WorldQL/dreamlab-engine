@@ -11,6 +11,7 @@ import { EditorMetadataEntity } from "../../common/mod.ts";
 import { UndoRedoManager } from "../undo-redo.ts";
 import { IconPicker } from "./icon-picker.ts";
 import { createEntityMenu } from "../util/entity-types.ts";
+import { SelectedEntityService } from "./selected-entity.ts";
 
 export class PrefabViewer {
   #section = elem("section", { id: "prefab-viewer" });
@@ -23,7 +24,10 @@ export class PrefabViewer {
   prefabsRoot!: Entity;
   #iconPicker: IconPicker;
 
-  constructor(private game: ClientGame, private container: HTMLElement) {
+  constructor(
+    private game: ClientGame,
+    private container: HTMLElement,
+  ) {
     this.#iconPicker = new IconPicker((newIcon: string) => {
       this.changeEntityIcon(this.inspectorUI, newIcon);
     });
@@ -128,6 +132,87 @@ export class PrefabViewer {
 
     card.draggable = true;
     card.dataset.entity = entity.ref;
+
+    card.addEventListener("dragstart", () => {
+      const selectedEntities = ui.selectedEntity.entities;
+      const selectedCards = selectedEntities
+        .map(e => this.entryElementMap.get(e.ref))
+        .filter(e => e !== undefined) as HTMLElement[];
+
+      if (selectedEntities.includes(entity)) {
+        this.currentDragSource = {
+          entities: selectedEntities as Entity[],
+          entries: selectedCards,
+        };
+        for (const entry of selectedCards) {
+          entry.dataset.dragging = "";
+        }
+      } else {
+        this.currentDragSource = {
+          entities: [entity],
+          entries: [card],
+        };
+        card.dataset.dragging = "";
+      }
+    });
+
+    card.addEventListener("dragend", () => {
+      setTimeout(() => {
+        if (this.currentDragSource) {
+          for (const entry of this.currentDragSource.entries) {
+            delete entry.dataset.dragging;
+          }
+        }
+
+        const selectedService = SelectedEntityService.serviceForGame(this.game);
+        if (!selectedService) return;
+
+        const canvas = this.game.renderer.app.canvas;
+        const screenPos = this.game.inputs.cursor.screen;
+        if (!screenPos) {
+          this.currentDragSource = undefined;
+          return;
+        }
+
+        if (
+          screenPos.x < 0 ||
+          screenPos.y < 0 ||
+          screenPos.x > canvas.width ||
+          screenPos.y > canvas.height
+        ) {
+          this.currentDragSource = undefined;
+          return;
+        }
+
+        if (selectedService.entities.length === 0) {
+          selectedService.entities = [this.game.world._.EditEntities._.world];
+        }
+
+        const parentEntity = selectedService.entities.at(0);
+        if (parentEntity && selectedService.entities.length === 1 && this.currentDragSource) {
+          const spawnPosition = this.game.inputs.cursor.world;
+
+          const newEntities: Entity[] = [];
+          this.currentDragSource.entities.forEach(e => {
+            const newEntity = e.cloneInto(parentEntity, {
+              transform: { position: spawnPosition },
+            });
+            UndoRedoManager._.push({
+              t: "create-entity",
+              parentRef: parentEntity.ref,
+              def: newEntity.getDefinition(),
+            });
+            newEntities.push(newEntity);
+          });
+
+          // if (newEntities.length > 0) {
+          //   selectedService.entities = [newEntities[newEntities.length - 1]];
+          // }
+        }
+
+        this.currentDragSource = undefined;
+      }, 20);
+    });
 
     this.entryElementMap.set(entity.ref, card);
     this.#content.append(card);
