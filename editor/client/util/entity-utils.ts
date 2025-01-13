@@ -1,10 +1,11 @@
 import { Entity } from "@dreamlab/engine";
+import { isRoot } from "../ui/keyboard-shortcuts.ts";
 
 /**
  * Determines the enabled state of a list of entities.
- *  - "allEnabled" if all entities are enabled.
- *  - "allDisabled" if all entities are disabled.
- *  - "mixed" if there's a mix of enabled and disabled entities.
+ *  - "allEnabled" if all entities and root children are enabled.
+ *  - "allDisabled" if all entities and root children are disabled.
+ *  - "mixed" if there's a mix of enabled and disabled entities or children.
  */
 export function getEntitiesEnabledState(
   entities: readonly Entity[],
@@ -15,14 +16,18 @@ export function getEntitiesEnabledState(
   let allDisabled = true;
 
   for (const entity of entities) {
-    if (entity.enabled) {
-      allDisabled = false;
-    } else {
-      allEnabled = false;
-    }
+    const entitiesToCheck = isRoot(entity) ? Array.from(entity.children.values()) : [entity];
 
-    if (!allEnabled && !allDisabled) {
-      return "mixed";
+    for (const e of entitiesToCheck) {
+      if (e.enabled) {
+        allDisabled = false;
+      } else {
+        allEnabled = false;
+      }
+
+      if (!allEnabled && !allDisabled) {
+        return "mixed";
+      }
     }
   }
 

@@ -521,21 +521,6 @@ export class SceneGraph implements InspectorUIWidget {
             `${modifierKey}+C`,
           ],
           [
-            enabledState === "allEnabled"
-              ? "Disable"
-              : enabledState === "allDisabled"
-                ? "Enable"
-                : "Toggle Enabled",
-            () => {
-              for (const e of ui.selectedEntity.entities) {
-                if (isRoot(e)) continue;
-                e.enabled = !(enabledState === "allEnabled");
-              }
-            },
-            false,
-            `${modifierKey}+E`,
-          ],
-          [
             "Delete",
             () => {
               const toDelete = [...ui.selectedEntity.entities];
@@ -555,6 +540,20 @@ export class SceneGraph implements InspectorUIWidget {
         );
 
         if (ui.editMode && !entity.protected) {
+          contextMenuItems.push([
+            enabledState === "allEnabled"
+              ? "Disable"
+              : enabledState === "allDisabled"
+              ? "Enable"
+              : "Toggle Enabled",
+            () => {
+              for (const e of ui.selectedEntity.entities) {
+                e.enabled = !(enabledState === "allEnabled");
+              }
+            },
+            false,
+            `${modifierKey}+E`,
+          ]);
           if (lockedByEntity) {
             contextMenuItems.push([
               "Unlock",
@@ -664,22 +663,28 @@ export class SceneGraph implements InspectorUIWidget {
               false,
               `${modifierKey}+C`,
             ],
-            [
-              enabledState === "allEnabled"
-                ? "Disable"
-                : enabledState === "allDisabled"
-                  ? "Enable"
-                  : "Toggle Enabled",
-              () => {
-                for (const e of ui.selectedEntity.entities) {
-                  if (isRoot(e)) continue;
-                  e.enabled = !(enabledState === "allEnabled");
-                }
-              },
-              false,
-              `${modifierKey}+E`,
-            ],
           );
+
+        contextMenuItems.push([
+          enabledState === "allEnabled"
+            ? "Disable"
+            : enabledState === "allDisabled"
+            ? "Enable"
+            : "Toggle Enabled",
+          () => {
+            for (const e of ui.selectedEntity.entities) {
+              if (isRoot(e)) {
+                for (const child of e.children.values()) {
+                  child.enabled = !(enabledState === "allEnabled");
+                }
+              } else {
+                e.enabled = !(enabledState === "allEnabled");
+              }
+            }
+          },
+          false,
+          `${modifierKey}+E`,
+        ]);
 
         if (Clipboard.get().length > 0 && !lockedByEntity) {
           contextMenuItems.push([
@@ -698,7 +703,7 @@ export class SceneGraph implements InspectorUIWidget {
                     t: "create-entity" as const,
                     parentRef: x.parent!.ref,
                     def: x.getDefinition(),
-                  }) satisfies UndoRedoOperation,
+                  } satisfies UndoRedoOperation),
               );
 
               UndoRedoManager._.push({ t: "compound", ops });
