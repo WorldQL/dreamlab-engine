@@ -68,3 +68,13 @@
   background: rgb(var(--color-bg-2));
   transform: scale(1.02);
 }
+
+.no-prefabs-message {
+  grid-column: 1 / -1;
+  text-align: center;
+  font-size: 1.25rem;
+  color: rgb(var(--color-text-secondary));
+  margin: 2rem 0;
+  padding: 1rem;
+  border-radius: var(--border-radius);
+}
