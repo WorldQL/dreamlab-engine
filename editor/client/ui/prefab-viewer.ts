@@ -213,7 +213,11 @@ export class PrefabViewer {
           selectedService.entities = [this.game.world._.EditEntities._.world];
         }
 
-        const parentEntity = selectedService.entities.at(0);
+        let parentEntity = selectedService.entities.at(0);
+        if (this.currentDragSource?.entities.some(e => selectedService.entities.includes(e))) {
+          parentEntity = this.game.world._.EditEntities._.world;
+        }
+
         if (parentEntity && selectedService.entities.length === 1 && this.currentDragSource) {
           const spawnPosition = this.game.inputs.cursor.world;
 
@@ -230,9 +234,9 @@ export class PrefabViewer {
             newEntities.push(newEntity);
           });
 
-          // if (newEntities.length > 0) {
-          //   selectedService.entities = [newEntities[newEntities.length - 1]];
-          // }
+          if (newEntities.length > 0) {
+            selectedService.entities = [newEntities[newEntities.length - 1]];
+          }
         }
 
         this.currentDragSource = undefined;
