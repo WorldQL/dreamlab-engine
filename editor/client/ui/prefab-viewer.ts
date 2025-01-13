@@ -12,6 +12,7 @@ import { UndoRedoManager } from "../undo-redo.ts";
 import { IconPicker } from "./icon-picker.ts";
 import { createEntityMenu } from "../util/entity-types.ts";
 import { SelectedEntityService } from "./selected-entity.ts";
+import { ContextMenuItem } from "./context-menu.ts";
 
 export class PrefabViewer {
   #section = elem("section", { id: "prefab-viewer" });
@@ -24,10 +25,7 @@ export class PrefabViewer {
   prefabsRoot!: Entity;
   #iconPicker: IconPicker;
 
-  constructor(
-    private game: ClientGame,
-    private container: HTMLElement,
-  ) {
+  constructor(private game: ClientGame, private container: HTMLElement) {
     this.#iconPicker = new IconPicker((newIcon: string) => {
       this.changeEntityIcon(this.inspectorUI, newIcon);
     });
@@ -111,24 +109,51 @@ export class PrefabViewer {
       ui.selectedEntity.entities = [entity];
     });
 
-    // TODO: Implement this feature or something else to disambiguate prefabs.
-    // card.addEventListener("contextmenu", event => {
-    //   event.preventDefault();
-    //   event.stopPropagation();
-    //   ui.selectedEntity.entities = [entity];
+    card.addEventListener("contextmenu", (event: MouseEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
 
-    //   const contextMenuItems: ContextMenuItem[] = [
-    //     [
-    //       "Change Icon",
-    //       () => {
-    //         this.openIconPicker(event.clientX, event.clientY, entity);
-    //       },
-    //       false,
-    //     ],
-    //   ];
+      if (!ui.selectedEntity.entities.includes(entity)) {
+        ui.selectedEntity.entities = [entity];
+      }
 
-    //   ui.contextMenu.drawContextMenu(event.clientX, event.clientY, contextMenuItems);
-    // });
+      const contextMenuItems: ContextMenuItem[] = [
+        [
+          "Rename",
+          () => {
+            this.triggerRename(entity, card);
+          },
+          false,
+          "F2",
+        ],
+        // [
+        //   "Change Icon",
+        //   () => {
+        //     this.openIconPicker(event.clientX, event.clientY, entity);
+        //   },
+        //   false,
+        // ],
+        [
+          "Delete",
+          () => {
+            const parent = entity.parent;
+            if (parent) {
+              UndoRedoManager._.push({
+                t: "destroy-entity",
+                def: entity.getDefinition(),
+                parentRef: parent.ref,
+              });
+              entity.destroy();
+              ui.selectedEntity.entities = [];
+            }
+          },
+          false,
+          "Backspace",
+        ],
+      ];
+
+      ui.contextMenu.drawContextMenu(event.clientX, event.clientY, contextMenuItems);
+    });
 
     card.draggable = true;
     card.dataset.entity = entity.ref;
@@ -219,26 +244,32 @@ export class PrefabViewer {
   }
 
   private addContextMenu(ui: InspectorUI) {
-    this.#content.addEventListener("contextmenu", event => {
+    this.#content.addEventListener("contextmenu", (event: MouseEvent) => {
+      if (event.target instanceof HTMLElement && event.target.closest(".prefab-card")) {
+        return;
+      }
+
       event.preventDefault();
       event.stopPropagation();
 
-      ui.contextMenu.drawContextMenu(event.clientX, event.clientY, [
-        createEntityMenu("New Prefab", type => {
-          const newEntity = this.prefabsRoot.spawn({
-            type: type,
-            name: type.name,
-          });
+      const entityMenu: ContextMenuItem = createEntityMenu("New Prefab", type => {
+        const newEntity = this.prefabsRoot.spawn({
+          type: type,
+          name: type.name,
+        });
 
-          UndoRedoManager._.push({
-            t: "create-entity",
-            parentRef: this.prefabsRoot.ref,
-            def: newEntity.getDefinition(),
-          });
+        UndoRedoManager._.push({
+          t: "create-entity",
+          parentRef: this.prefabsRoot.ref,
+          def: newEntity.getDefinition(),
+        });
 
-          ui.selectedEntity.entities = [newEntity];
-        }),
-      ]);
+        ui.selectedEntity.entities = [newEntity];
+      });
+
+      const contextMenuItems: ContextMenuItem[] = [entityMenu];
+
+      ui.contextMenu.drawContextMenu(event.clientX, event.clientY, contextMenuItems);
     });
   }
 
@@ -272,5 +303,50 @@ export class PrefabViewer {
         if (iconElement) iconElement.textContent = newIcon;
       }
     }
+  }
+
+  private triggerRename(entity: Entity, card: HTMLElement) {
+    const nameElement = card.querySelector(".prefab-name") as HTMLElement;
+    if (!nameElement) return;
+
+    const previousName = entity.name;
+
+    nameElement.style.display = "none";
+    const input = elem("input", {
+      type: "text",
+      value: entity.name,
+      className: "rename-input",
+    }) as HTMLInputElement;
+    card.appendChild(input);
+    input.focus();
+    input.select();
+
+    const reset = () => {
+      nameElement.style.display = "inherit";
+      input.remove();
+    };
+
+    input.addEventListener("keypress", event => {
+      if (event.key === "Enter") {
+        input.blur();
+      }
+    });
+
+    input.addEventListener("blur", () => {
+      const newName = input.value.trim();
+      if (newName && newName !== entity.name) {
+        entity.name = newName;
+
+        nameElement.textContent = newName;
+
+        UndoRedoManager._.push({
+          t: "rename-entity",
+          entityRef: entity.ref,
+          previous: previousName,
+          name: newName,
+        });
+      }
+      reset();
+    });
   }
 }

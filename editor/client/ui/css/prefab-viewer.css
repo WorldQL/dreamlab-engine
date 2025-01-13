@@ -78,3 +78,10 @@
   padding: 1rem;
   border-radius: var(--border-radius);
 }
+
+.rename-input {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 1em;
+  padding: 0.2em;
+}
