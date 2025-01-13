@@ -242,11 +242,13 @@ export class AppMenu {
       const playButton = this.controls.play.querySelector("button")!;
       playButton.disabled = false;
 
-      if (this.games.play === playGame) this.games.play = undefined;
-      playGame.container.remove();
-      playGame.shutdown();
-
-      container.remove();
+      try {
+        if (this.games.play === playGame) this.games.play = undefined;
+        playGame.container.remove();
+        playGame.shutdown();
+      } finally {
+        container.remove();
+      }
     });
 
     const [playGame, conn, _handshake] = await connectToGame(
@@ -262,11 +264,13 @@ export class AppMenu {
       this.updateViewportStates(editUI);
       this.updateButtonStates();
 
-      if (this.games.play === playGame) this.games.play = undefined;
-      playGame.container.remove();
-      playGame.shutdown();
-
-      container.remove();
+      try {
+        if (this.games.play === playGame) this.games.play = undefined;
+        playGame.container.remove();
+        playGame.shutdown();
+      } finally {
+        container.remove();
+      }
     });
 
     await setupGame(playGame, conn, false);
