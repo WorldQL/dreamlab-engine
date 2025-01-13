@@ -245,6 +245,8 @@ export class AppMenu {
       if (this.games.play === playGame) this.games.play = undefined;
       playGame.container.remove();
       playGame.shutdown();
+
+      container.remove();
     });
 
     const [playGame, conn, _handshake] = await connectToGame(
@@ -263,6 +265,8 @@ export class AppMenu {
       if (this.games.play === playGame) this.games.play = undefined;
       playGame.container.remove();
       playGame.shutdown();
+
+      container.remove();
     });
 
     await setupGame(playGame, conn, false);
