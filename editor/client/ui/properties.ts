@@ -12,7 +12,7 @@ import {
 import * as internal from "@dreamlab/engine/internal";
 import { element as elem } from "@dreamlab/ui";
 import { z } from "@dreamlab/vendor/zod.ts";
-import { Facades, PrefabRootFacade } from "../../common/mod.ts";
+import { EditorMetadataEntity, Facades, PrefabRootFacade } from "../../common/mod.ts";
 import { icon, X } from "../_icons.ts";
 import { DataDetails, DataTable } from "../components/mod.ts";
 import { UndoRedoManager } from "../undo-redo.ts";
@@ -129,6 +129,27 @@ export class Properties implements InspectorUIWidget {
       });
       entity.on(EntityOwnEnableChanged, () => refreshEnabled());
       table.addEntry("enabled", "Enabled", enabledField);
+
+      const metadata = EditorMetadataEntity.getInstanceFor(entity);
+      if (metadata) {
+        const [lockedField, refreshLocked] = createBooleanField({
+          default: false,
+          get: () => metadata.locked,
+          set: v => {
+            const prevLocked = metadata.locked;
+            metadata.locked = v;
+            UndoRedoManager._.push({
+              t: "modify-entity-locked",
+              entityRef: entity.ref,
+              locked: v,
+              previous: prevLocked,
+            });
+            refreshLocked();
+          },
+        });
+
+        table.addEntry("locked", "Locked", lockedField);
+      }
     }
 
     if (entity.parent instanceof PrefabRootFacade) {
