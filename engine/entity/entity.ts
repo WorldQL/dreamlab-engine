@@ -1336,20 +1336,17 @@ export const serializeIdentifier = (parent: string | undefined, child: string) =
 
 // unused. leaving for reference.
 // get the facade root of an entity since in edit mode root is always "world"
-function getFacadeRoot(e: Entity): string | undefined {
-  let highestAncestor = e?.parent;
+export function getFacadeRoot(e: Entity): Entity {
+  const roots = ["WorldRootFacade", "LocalRootFacade", "ServerRootFacade", "PrefabRootFacade"];
+  if (roots.includes(e.constructor.name)) return e;
+
+  let highestAncestor = e?.parent!;
 
   // We can't do "instanceof EditorRootFacadeEntity" here because it's a descendant of this class
   // so we have to do this string check for facade roots instead
-  while (
-    highestAncestor?.parent &&
-    highestAncestor.constructor.name !== "WorldRootFacade" &&
-    highestAncestor.constructor.name !== "LocalRootFacade" &&
-    highestAncestor.constructor.name !== "ServerRootFacade" &&
-    highestAncestor.constructor.name !== "PrefabRootFacade"
-  ) {
+  while (highestAncestor?.parent && !roots.includes(highestAncestor.constructor.name)) {
     highestAncestor = highestAncestor?.parent;
   }
 
-  return highestAncestor?.constructor.name;
+  return highestAncestor;
 }
