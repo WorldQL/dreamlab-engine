@@ -73,6 +73,8 @@ export class BottomTabs implements InspectorUIWidget {
       const tab = (e.target as HTMLElement).closest(".bottom-tab");
       if (tab && tab instanceof HTMLElement) {
         const tabId = tab.getAttribute("data-tab-id");
+        tab.style.backgroundColor = '';
+        tab.style.color = '';
         if (tabId) switchTab(tabId);
       }
     });

@@ -1,6 +1,6 @@
 import { ClientConnection } from "@dreamlab/client/networking/net-connection.ts";
 import { ClientGame } from "@dreamlab/engine";
-import { PrefabRootFacade } from "../../common/mod.ts";
+import { PrefabRootFacade, WorldRootFacade } from "../../common/mod.ts";
 import { CameraPanBehavior } from "../panning-and-selection.ts";
 import { BehaviorTypeInfoService } from "../util/behavior-type-info.ts";
 import { BehaviorPanel } from "./behavior-panel/mod.ts";
@@ -81,20 +81,23 @@ export class InspectorUI {
       this.fileTree.setup(this);
     });
 
-    if (this.game.isEditMode) {
-      const prefabRoot = this.game.world._.EditEntities._.prefabs.cast(PrefabRootFacade);
-      prefabRoot.localHidden = true;
-      this.selectedEntity.listen(entities => {
-        // don't hide prefabs if we select nothing, so that clicking empty space by accident doesn't disappear everything
-        // if you want to hide the prefabs, selecting and deselect the world works.
-        if (entities.length === 0) return;
+    // the worst shit ever. Need to wait before checking isEditMode.
+    setTimeout(() => {
+      if (this.game.isEditMode) {
+        const prefabRoot = this.game.world._.EditEntities._.prefabs.cast(PrefabRootFacade);
+        prefabRoot.localHidden = true;
+        this.selectedEntity.listen(entities => {
+          // don't hide prefabs if we select nothing, so that clicking empty space by accident doesn't disappear everything
+          // if you want to hide the prefabs, selecting and deselect the world works.
+          if (entities.length === 0) return;
 
-        const hasPrefabSelected = entities.some(
-          it => it === prefabRoot || it.id.startsWith(prefabRoot.id + "."),
-        );
-        prefabRoot.localHidden = !hasPrefabSelected;
-      });
-    }
+          const hasPrefabSelected = entities.some(
+            it => it === prefabRoot || it.id.startsWith(prefabRoot.id + "."),
+          );
+          prefabRoot.localHidden = !hasPrefabSelected;
+        });
+      }
+    }, 100);
   }
 
   show(uiRoot: HTMLElement) {

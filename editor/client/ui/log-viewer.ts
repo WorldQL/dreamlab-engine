@@ -52,8 +52,8 @@ export class LogViewer {
           query === ""
             ? true
             : caseSensitive
-            ? text.includes(query)
-            : text.toLowerCase().includes(query.toLowerCase());
+              ? text.includes(query)
+              : text.toLowerCase().includes(query.toLowerCase());
 
         if (!matches) log.dataset.filtered = "";
       }
@@ -176,6 +176,13 @@ export class LogViewer {
       if (oldEntry) {
         oldEntry.remove();
       }
+    }
+
+    // color logs tab yellow if it's not in view.
+    const logsTab = document.querySelector('[data-tab-id="logs"]') as HTMLDivElement;
+    if (logsTab.dataset.active === undefined) {
+      logsTab.style.backgroundColor = "#c3c32f";
+      logsTab.style.color = 'black';
     }
   }
 
