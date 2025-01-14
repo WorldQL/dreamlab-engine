@@ -95,6 +95,8 @@ export class PhysicsEngine {
     const currentTickCollisions = new Set<string>();
 
     const body1 = collider as ColliderWithUserData;
+    // @ts-expect-error ...
+    const characterEntity = this.game.entities.lookupByRef(body1.userData.entityRef);
     for (let i = 0; i < controller.numComputedCollisions(); i++) {
       const collision = controller.computedCollision(i);
       const body2 = (collision?.collider ?? undefined) as ColliderWithUserData | undefined;
@@ -123,7 +125,12 @@ export class PhysicsEngine {
       // If this is a new collision, emit start event
       if (!this.#activeCollisions.has(collisionKey)) {
         this.#activeCollisions.set(collisionKey, 0);
+        // @ts-expect-error TODO RESTORE CODE FOR NORMALS
         entity1.fire(EntityCollision, true, entity2);
+        // @ts-expect-error TODO RESTORE CODE FOR NORMALS
+
+        // to reproduce normal bug: Check out 95c348410d377da9452166d6eccbf540da78f6e7 and try jumping on a floor. It won't fire each landing.
+
         entity2.fire(EntityCollision, true, entity1);
       } else {
         // Reset missing ticks counter for active collision
@@ -139,8 +146,8 @@ export class PhysicsEngine {
       if (!currentTickCollisions.has(key)) {
         // Increment missing ticks counter
         const newMissingTicks = missingTicks + 1;
-        if (newMissingTicks >= 2) {
-          // Remove collision after 2 missing ticks
+        if (newMissingTicks >= 5) {
+          // Remove collision after 5 missing ticks
           this.#activeCollisions.delete(key);
           // Could fire end collision event here if needed
         } else {
