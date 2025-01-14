@@ -91,54 +91,40 @@ export class PhysicsEngine {
     controller: KinematicCharacterController,
   ): void {
     if (!controller) throw new TypeError("missing controller param");
-
     const controllerHandle = collider.handle;
-    const controllerEntity = this.#lookupEntity(controllerHandle);
-    if (!controllerEntity) return;
-
     const currentTickCollisions = new Set<string>();
+
+    const body1 = collider as ColliderWithUserData;
     for (let i = 0; i < controller.numComputedCollisions(); i++) {
       const collision = controller.computedCollision(i);
-      if (!collision) continue;
+      const body2 = (collision?.collider ?? undefined) as ColliderWithUserData | undefined;
+      if (!body2) continue;
 
-      const colliderHandle = collision.collider?.handle ?? undefined;
-      if (!colliderHandle) continue;
+      const udata1 = body1?.userData;
+      const udata2 = body2?.userData;
 
-      const colliderEntity = this.#lookupEntity(colliderHandle);
-      if (!colliderEntity) continue;
+      let entityRef1: string | undefined;
+      let entityRef2: string | undefined;
+      if (udata1 && typeof udata1 === "object" && "entityRef" in udata1) {
+        entityRef1 = udata1.entityRef as string;
+      }
+      if (udata2 && typeof udata2 === "object" && "entityRef" in udata2) {
+        entityRef2 = udata2.entityRef as string;
+      }
 
-      const collisionKey = this.#makeCollisionKey(
-        controllerHandle,
-        controllerEntity.ref,
-        colliderEntity.ref,
-      );
+      if (!entityRef1 || !entityRef2) continue;
+      const entity1 = this.game.entities.lookupByRef(entityRef1);
+      const entity2 = this.game.entities.lookupByRef(entityRef2);
+      if (!entity1 || !entity2) continue;
+
+      const collisionKey = this.#makeCollisionKey(controllerHandle, entityRef1, entityRef2);
       currentTickCollisions.add(collisionKey);
-
-      // TODO: docs say some of these are world space and some are local space
-      // this appears to be wrong? needs further investigation
-      const colliderContactPoint = new Vector2(collision.witness1);
-      const controllerContactPoint = new Vector2(collision.witness2);
-      const colliderNormal = new Vector2(collision.normal1);
-      const controllerNormal = new Vector2(collision.normal2);
 
       // If this is a new collision, emit start event
       if (!this.#activeCollisions.has(collisionKey)) {
         this.#activeCollisions.set(collisionKey, 0);
-        controllerEntity.fire(
-          EntityCollision,
-          true,
-          colliderEntity,
-          controllerContactPoint,
-          controllerNormal,
-        );
-
-        colliderEntity.fire(
-          EntityCollision,
-          true,
-          controllerEntity,
-          colliderContactPoint,
-          colliderNormal,
-        );
+        entity1.fire(EntityCollision, true, entity2);
+        entity2.fire(EntityCollision, true, entity1);
       } else {
         // Reset missing ticks counter for active collision
         this.#activeCollisions.set(collisionKey, 0);
