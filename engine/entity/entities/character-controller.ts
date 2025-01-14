@@ -42,8 +42,8 @@ export class CharacterController extends Collider {
     }
 
     if (hasCollider) {
-      this.#controller = this.game.physics.world.createCharacterController(0.01);
-      this.#controller.enableSnapToGround(0.1);
+      this.#controller = this.game.physics.world.createCharacterController(0.05);
+      // this.#controller.enableSnapToGround(0.1);
       // TODO: Make this and sliding configurable.
       // sliding is super buggy especially with the rect collider.
       this.#controller.enableAutostep(0.5, 1, false)
