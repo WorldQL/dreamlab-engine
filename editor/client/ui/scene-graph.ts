@@ -98,6 +98,7 @@ export class SceneGraph implements InspectorUIWidget {
       ]);
     });
     this.game.renderer.app.canvas.addEventListener("contextmenu", event => {
+      if (!this.game.isEditMode) return;
       event.preventDefault();
       event.stopPropagation();
       const posAtRightClick = this.game.inputs.cursor.world;
