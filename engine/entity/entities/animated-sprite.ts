@@ -102,8 +102,15 @@ export class AnimatedSprite extends PixiEntity {
     return [PIXI.Texture.WHITE];
   }
 
+  // prevents earlier texture loads from taking precedence when values are quickly changed
+  #textureLoadCounter = 0;
+
   async #textures(): Promise<PIXI.Texture[]> {
+    const currentCounter = ++this.#textureLoadCounter;
     const textures = await this.#loadTextures();
+    if (currentCounter !== this.#textureLoadCounter) {
+      return [];
+    }
     if (textures.length === 0) throw new Error("failed to load textures");
 
     const frames = textures.length;
@@ -155,8 +162,10 @@ export class AnimatedSprite extends PixiEntity {
       if (!sprite) return;
 
       void this.#textures().then(textures => {
-        sprite.textures = textures;
-        sprite.play();
+        if (textures.length > 0) {
+          sprite.textures = textures;
+          sprite.play();
+        }
       });
     };
 
@@ -215,7 +224,7 @@ export class AnimatedSprite extends PixiEntity {
 
     const frameDimensionsValue = this.values.get("frameDimensions");
     frameDimensionsValue?.onChanged(() => {
-      updateTextures()
+      updateTextures();
     });
   }
 
