@@ -3,6 +3,9 @@ export const interpolationStartTick = Symbol.for("dreamlab.internal.interpolatio
 export const interpolationStartFrame = Symbol.for("dreamlab.internal.interpolationStartFrame");
 export const entityTickingOrder = Symbol.for("dreamlab.internal.entityTickingOrder");
 export const entityTickingOrderDirty = Symbol.for("dreamlab.internal.entityTickingOrderDirty");
+export const entityNotifyEnableChanged = Symbol.for(
+  "dreamlab.internal.entityNotifyEnableChanged",
+);
 export const submitEntityTickingOrder = Symbol.for(
   "dreamlab.internal.submitEntityTickingOrder",
 );

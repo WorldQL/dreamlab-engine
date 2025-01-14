@@ -206,7 +206,7 @@ export abstract class Entity implements ISignalHandler {
 
       const enabled = this.enabled;
       if (oldParent.enabled !== enabled) {
-        child.#notifyEnableChanged(enabled);
+        child[internal.entityNotifyEnableChanged](enabled);
       }
 
       if (child.#netTransformFrom) {
@@ -809,14 +809,14 @@ export abstract class Entity implements ISignalHandler {
   set enabled(value) {
     this.#enabled = value;
     this.fire(EntityOwnEnableChanged, value);
-    this.#notifyEnableChanged(this.enabled);
+    this[internal.entityNotifyEnableChanged](this.enabled);
     this.game[internal.entityTickingOrderDirty] = true;
   }
-  #notifyEnableChanged(enabled_: boolean) {
+  [internal.entityNotifyEnableChanged](enabled_: boolean) {
     const enabled = enabled_ && this.#enabled;
     this.fire(EntityEnableChanged, enabled);
     for (const child of this.children.values()) {
-      child.#notifyEnableChanged(enabled);
+      child[internal.entityNotifyEnableChanged](enabled);
     }
   }
   get [internal.entityOwnEnabled](): boolean {
