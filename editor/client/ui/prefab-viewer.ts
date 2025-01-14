@@ -7,13 +7,12 @@ import {
   getFacadeRoot,
 } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
-import { InspectorUI } from "./inspector.ts";
 import { EditorMetadataEntity } from "../../common/mod.ts";
 import { UndoRedoManager } from "../undo-redo.ts";
-import { IconPicker } from "./icon-picker.ts";
 import { createEntityMenu } from "../util/entity-types.ts";
-import { SelectedEntityService } from "./selected-entity.ts";
 import { ContextMenuItem } from "./context-menu.ts";
+import { IconPicker } from "./icon-picker.ts";
+import { InspectorUI } from "./inspector.ts";
 
 export class PrefabViewer {
   #section = elem("section", { id: "prefab-viewer" });
@@ -209,9 +208,6 @@ export class PrefabViewer {
           }
         }
 
-        const selectedService = SelectedEntityService.serviceForGame(this.game);
-        if (!selectedService) return;
-
         const canvas = this.game.renderer.app.canvas;
         const screenPos = this.game.inputs.cursor.screen;
         if (!screenPos) {
@@ -231,10 +227,10 @@ export class PrefabViewer {
 
         let parentEntity = undefined;
 
-        if (selectedService.entities.length === 0) {
+        if (ui.selectedEntity.entities.length === 0) {
           parentEntity = this.game.world._.EditEntities._.world;
         } else {
-          parentEntity = getFacadeRoot(selectedService.entities[0]);
+          parentEntity = getFacadeRoot(ui.selectedEntity.entities[0]);
         }
 
         if (parentEntity && this.currentDragSource) {

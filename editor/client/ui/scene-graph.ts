@@ -20,7 +20,6 @@ import { getModifierKeySymbol } from "../util/platform.ts";
 import { ContextMenuItem } from "./context-menu.ts";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 import { Clipboard, isRoot } from "./keyboard-shortcuts.ts";
-import { SelectedEntityService } from "./selected-entity.ts";
 
 function eventTargetsEntry(event: Event, entryElement: HTMLElement) {
   if (!(event.target instanceof HTMLElement)) return false;
@@ -105,8 +104,8 @@ export class SceneGraph implements InspectorUIWidget {
       ui.contextMenu.drawContextMenu(event.clientX, event.clientY, [
         createEntityMenu("New Entity", type => {
           let target = world;
-          if (SelectedEntityService.serviceForGame(this.game)?.entities.length === 1) {
-            target = SelectedEntityService.serviceForGame(this.game)!.entities[0];
+          if (ui.selectedEntity.entities.length === 1) {
+            target = ui.selectedEntity.entities[0];
           }
           if (!posAtRightClick) return;
           const newEntity = target.spawn({
@@ -545,8 +544,8 @@ export class SceneGraph implements InspectorUIWidget {
             enabledState === "allEnabled"
               ? "Disable"
               : enabledState === "allDisabled"
-              ? "Enable"
-              : "Toggle Enabled",
+                ? "Enable"
+                : "Toggle Enabled",
             () => {
               for (const e of ui.selectedEntity.entities) {
                 e.enabled = !(enabledState === "allEnabled");
@@ -674,8 +673,8 @@ export class SceneGraph implements InspectorUIWidget {
           enabledState === "allEnabled"
             ? "Disable"
             : enabledState === "allDisabled"
-            ? "Enable"
-            : "Toggle Enabled",
+              ? "Enable"
+              : "Toggle Enabled",
           () => {
             for (const e of ui.selectedEntity.entities) {
               if (isRoot(e)) {
@@ -708,7 +707,7 @@ export class SceneGraph implements InspectorUIWidget {
                     t: "create-entity" as const,
                     parentRef: x.parent!.ref,
                     def: x.getDefinition(),
-                  } satisfies UndoRedoOperation),
+                  }) satisfies UndoRedoOperation,
               );
 
               UndoRedoManager._.push({ t: "compound", ops });
