@@ -5,6 +5,7 @@
     "jsr:@luca/esbuild-deno-loader@0.11.0": "0.11.0",
     "jsr:@luca/esbuild-deno-loader@0.11.1": "0.11.1",
     "jsr:@noble/ed25519@2.1.0": "2.1.0",
+    "jsr:@noble/ed25519@^2.2.3": "2.2.3",
     "jsr:@oak/commons@0.11": "0.11.0",
     "jsr:@oak/oak@16": "16.1.0",
     "jsr:@std/assert@0.223": "0.223.0",
@@ -108,6 +109,9 @@
     },
     "@noble/ed25519@2.1.0": {
       "integrity": "59a6ad395a37a0d065f6a2771e56fe52ea4bd9070c77bdaca5c475f5184412cc"
+    },
+    "@noble/ed25519@2.2.3": {
+      "integrity": "77d984ee6b823c8b1a4a36aa56105d60e696a4e7b599b821712d1251481e2f9c"
     },
     "@oak/commons@0.11.0": {
       "integrity": "07702bfe5c07cd8144c422022994da1f9fea466b185824f4be63a2b1b1a65125",

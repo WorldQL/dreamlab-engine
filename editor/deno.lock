@@ -5,6 +5,7 @@
     "jsr:@luca/esbuild-deno-loader@0.11.0": "0.11.0",
     "jsr:@luca/esbuild-deno-loader@0.11.1": "0.11.1",
     "jsr:@noble/ed25519@2.1.0": "2.1.0",
+    "jsr:@noble/ed25519@^2.2.3": "2.2.3",
     "jsr:@std/assert@~0.213.1": "0.213.1",
     "jsr:@std/bytes@^1.0.2": "1.0.4",
     "jsr:@std/collections@^1.0.4": "1.0.5",
@@ -87,6 +88,9 @@
     },
     "@noble/ed25519@2.1.0": {
       "integrity": "59a6ad395a37a0d065f6a2771e56fe52ea4bd9070c77bdaca5c475f5184412cc"
+    },
+    "@noble/ed25519@2.2.3": {
+      "integrity": "77d984ee6b823c8b1a4a36aa56105d60e696a4e7b599b821712d1251481e2f9c"
     },
     "@std/assert@0.213.1": {
       "integrity": "24c28178b30c8e0782c18e8e94ea72b16282207569cdd10ffb9d1d26f2edebfe"
