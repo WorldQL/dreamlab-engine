@@ -81,18 +81,20 @@ export class InspectorUI {
       this.fileTree.setup(this);
     });
 
-    const prefabRoot = this.game.world._.EditEntities._.prefabs.cast(PrefabRootFacade);
-    prefabRoot.localHidden = true;
-    this.selectedEntity.listen(entities => {
-      // don't hide prefabs if we select nothing, so that clicking empty space by accident doesn't disappear everything
-      // if you want to hide the prefabs, selecting and deselect the world works.
-      if (entities.length === 0) return;
+    if (this.game.isEditMode) {
+      const prefabRoot = this.game.world._.EditEntities._.prefabs.cast(PrefabRootFacade);
+      prefabRoot.localHidden = true;
+      this.selectedEntity.listen(entities => {
+        // don't hide prefabs if we select nothing, so that clicking empty space by accident doesn't disappear everything
+        // if you want to hide the prefabs, selecting and deselect the world works.
+        if (entities.length === 0) return;
 
-      const hasPrefabSelected = entities.some(
-        it => it === prefabRoot || it.id.startsWith(prefabRoot.id + "."),
-      );
-      prefabRoot.localHidden = !hasPrefabSelected;
-    });
+        const hasPrefabSelected = entities.some(
+          it => it === prefabRoot || it.id.startsWith(prefabRoot.id + "."),
+        );
+        prefabRoot.localHidden = !hasPrefabSelected;
+      });
+    }
   }
 
   show(uiRoot: HTMLElement) {
