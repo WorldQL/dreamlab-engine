@@ -100,20 +100,23 @@
           img.src = spritesheetUrl;
 
           img.onload = () => {
-            const rows = framesX;
-            const cols = framesY;
-            const frameWidth = img.width / framesX;
-            const frameHeight = img.height / framesY;
+            const rows = img.height / framesY;
+            const cols = img.width / framesX;
+
+            const frameWidth = framesX;
+            const frameHeight = framesY;
 
             const table = document.createElement("table");
             table.style.borderCollapse = "collapse";
 
             let spriteNumber = 0;
 
-            for (let col = 0; col < cols; col++) {
+            // spaghetii.... the variable names don't even match. redo this sometime.
+            // works tho
+            for (let col = 0; col < rows; col++) {
               const tr = document.createElement("tr");
 
-              for (let row = 0; row < rows; row++) {
+              for (let row = 0; row < cols; row++) {
                 const canvas = document.createElement("canvas");
                 canvas.width = frameWidth;
                 canvas.height = frameHeight;

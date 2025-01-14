@@ -330,7 +330,7 @@ export class Properties implements InspectorUIWidget {
 
       button.addEventListener("click", () => {
         const spritesheet = entity.values.get("spritesheet")?.value;
-        const frameCount = entity.values.get("frameCount")?.value as Vector2 | undefined;
+        const frameCount = entity.values.get("frameDimensions")?.value as Vector2 | undefined;
         const framesX = frameCount?.x;
         const framesY = frameCount?.y;
 

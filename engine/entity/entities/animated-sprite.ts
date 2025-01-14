@@ -29,7 +29,7 @@ export class AnimatedSprite extends PixiEntity {
 
   jsonSpritesheet: string = "";
   spritesheet: string = "";
-  frameCount: Vector2 = Vector2.ONE;
+  frameDimensions: Vector2 = new Vector2(128, 128);
 
   alpha: number = 1;
   speed: number = 0.1;
@@ -53,18 +53,22 @@ export class AnimatedSprite extends PixiEntity {
       return Object.values(spritesheet.textures);
     }
 
-    if (this.spritesheet !== "") {
+    if (
+      this.spritesheet !== "" &&
+      this.frameDimensions.x !== 1 &&
+      this.frameDimensions.y !== 1
+    ) {
       const resource = this.game.resolveResource(this.spritesheet);
       const spritesheetTexture = await PIXI.Assets.load(resource);
       if (!(spritesheetTexture instanceof PIXI.Texture)) {
         throw new TypeError(`${this.id}.spritesheet is not a pixi texture`);
       }
 
-      const framesX = Math.max(this.frameCount.x, 1);
-      const framesY = Math.max(this.frameCount.y, 1);
+      const frameWidth = this.frameDimensions.x;
+      const frameHeight = this.frameDimensions.y;
 
-      const frameWidth = spritesheetTexture.width / framesX;
-      const frameHeight = spritesheetTexture.height / framesY;
+      const framesX = spritesheetTexture.width / frameWidth;
+      const framesY = spritesheetTexture.height / frameHeight;
 
       const frames: PIXI.SpritesheetData["frames"] = {};
       for (let y = 0; y < framesY; y++) {
@@ -136,7 +140,7 @@ export class AnimatedSprite extends PixiEntity {
       hidden: values => values.get("jsonSpritesheet")?.value !== "",
     });
 
-    this.defineValue(AnimatedSprite, "frameCount", {
+    this.defineValue(AnimatedSprite, "frameDimensions", {
       type: Vector2Adapter,
       hidden: values => values.get("jsonSpritesheet")?.value !== "",
     });
@@ -209,8 +213,10 @@ export class AnimatedSprite extends PixiEntity {
     startFrameValue?.onChanged(updateTextures);
     endFrameValue?.onChanged(updateTextures);
 
-    const frameCountValue = this.values.get("frameCount");
-    frameCountValue?.onChanged(updateTextures);
+    const frameDimensionsValue = this.values.get("frameDimensions");
+    frameDimensionsValue?.onChanged(() => {
+      updateTextures()
+    });
   }
 
   async onInitialize() {
