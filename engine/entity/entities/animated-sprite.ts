@@ -1,4 +1,4 @@
-import { EntityEnableChanged } from "@dreamlab/engine";
+import { EntityEnableChanged, GamePostTick } from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { IVector2, Vector2 } from "../../math/mod.ts";
 import { EntityTransformUpdate, GameRender } from "../../signals/mod.ts";
@@ -123,6 +123,8 @@ export class AnimatedSprite extends PixiEntity {
     return textures.slice(start, end + 1);
   }
 
+  #lastEnabledState = true;
+
   constructor(ctx: EntityContext) {
     super(ctx);
 
@@ -213,8 +215,14 @@ export class AnimatedSprite extends PixiEntity {
       this.#sprite.gotoAndPlay(0);
     });
 
+    this.listen(this.game, GamePostTick, () => {
+      this.#lastEnabledState = this.enabled;
+    });
+
     this.on(EntityEnableChanged, () => {
-      this.#sprite?.gotoAndPlay(0);
+      if (this.enabled !== this.#lastEnabledState && this.enabled) {
+        this.#sprite?.gotoAndPlay(0);
+      }
     });
 
     const startFrameValue = this.values.get("startFrame");
