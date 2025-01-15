@@ -6,6 +6,8 @@ import { enumAdapter } from "../../value/adapters/enum-adapter.ts";
 import { Entity, EntityContext } from "../entity.ts";
 import { PixiEntity } from "../pixi-entity.ts";
 import { Camera } from "./camera.ts";
+// deno-lint-ignore no-unused-vars
+import type { RichText } from "./rich-text.ts";
 
 type FontFace = enumAdapter.Union<typeof FontEnumAdapter>;
 const FontEnumAdapter = enumAdapter(["iosevka", "inter", "roboto", "roboto-slab", "easvhs"]);
@@ -13,6 +15,7 @@ const FontEnumAdapter = enumAdapter(["iosevka", "inter", "roboto", "roboto-slab"
 type Align = enumAdapter.Union<typeof AlignEnumAdapter>;
 const AlignEnumAdapter = enumAdapter(["left", "center", "right"]);
 
+/** @deprecated Use {@link RichText} instead */
 export class Text extends PixiEntity {
   static {
     Entity.registerType(this, "@core");
