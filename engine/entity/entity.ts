@@ -807,6 +807,7 @@ export abstract class Entity implements ISignalHandler {
     return true;
   }
   set enabled(value) {
+    if (this.#enabled === value) return; // do nothing if already set to that value.
     this.#enabled = value;
     this.fire(EntityOwnEnableChanged, value);
     this[internal.entityNotifyEnableChanged](this.enabled);
