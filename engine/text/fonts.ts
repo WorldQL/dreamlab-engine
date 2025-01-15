@@ -1,6 +1,6 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 // @ts-ignore no typings
-import _loadFont from "https://esm.sh/load-bmfont@1.4.2";
+import _loadFont from "https://esm.sh/load-bmfont@1.4.2?pin=v135";
 // @ts-ignore no typings
 import _createLayout from "npm:layout-bmfont-text@1.3.4";
 // @ts-ignore no typings

@@ -769,6 +769,7 @@
     "https://esm.sh/buffer@6.0.3": "6c83bf9cd2aa8d70f2695784bb527fd671bb83797f4cbf20eafdff9b10b6b0cc",
     "https://esm.sh/howler@2.2.4": "b0be1da91763162061c1affbc7147c0ca8adaf61f45c5065e133c4a44ad73e7c",
     "https://esm.sh/load-bmfont@1.4.2": "909fd3e266134c90c751f56af4cb7efb22dcd4d3ad9bda2a92bf3a2689115d3e",
+    "https://esm.sh/load-bmfont@1.4.2?pin=v135": "909fd3e266134c90c751f56af4cb7efb22dcd4d3ad9bda2a92bf3a2689115d3e",
     "https://esm.sh/pixi.js@7.4.2": "9023504e0fd24091a892ada45957ffc8020c7e50527553505149a89ca7e1339c",
     "https://esm.sh/v135/@pixi/accessibility@7.4.2/denonext/accessibility.mjs": "7af2b606bd51bfc5999d6c24dca4cd1e00a0e71145c0c03d10b63129d52db5d0",
     "https://esm.sh/v135/@pixi/app@7.4.2/denonext/app.mjs": "c3669c36e88b64c5cd8af06310821994ac0f9ff2f148a5b84f963532b0f4cc80",

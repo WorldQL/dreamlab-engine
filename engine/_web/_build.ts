@@ -9,7 +9,7 @@ const opts: esbuild.BuildOptions = {
       setup: build => {
         build.onResolve({ filter: /.*/, namespace: "node" }, args => {
           if (args.path === "buffer") {
-            return { path: "//esm.sh/buffer@6.0.3", namespace: "https" };
+            return { path: "//esm.sh/buffer@6.0.3pin=v135", namespace: "https" };
           }
 
           return undefined;
