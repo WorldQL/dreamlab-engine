@@ -1,7 +1,7 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import { EntityTransformUpdate } from "../../signals/mod.ts";
 import { ColorAdapter } from "../../value/adapters/color-adapter.ts";
 import { enumAdapter } from "../../value/adapters/enum-adapter.ts";
+import { Value } from "../../value/value.ts";
 import { Entity, EntityContext } from "../entity.ts";
 import { PixiEntity } from "../pixi-entity.ts";
 import { Camera } from "./camera.ts";
@@ -29,6 +29,9 @@ const FontWeightAdapter = enumAdapter([
 type Align = enumAdapter.Union<typeof AlignAdapter>;
 const AlignAdapter = enumAdapter(["left", "center", "right", "justify"]);
 
+type StrokeJoin = enumAdapter.Union<typeof StrokeJoinAdapter>;
+const StrokeJoinAdapter = enumAdapter(["round", "bevel", "miter"]);
+
 export class RichText extends PixiEntity {
   static {
     Entity.registerType(this, "@core");
@@ -45,6 +48,11 @@ export class RichText extends PixiEntity {
   fontStyle: FontStyle = "normal";
   fontWeight: FontWeight = "normal";
   align: Align = "left";
+  color: string = "white";
+  stroke: boolean = false;
+  strokeColor: string = "black";
+  strokeWidth: number = 3;
+  strokeJoin: StrokeJoin = "round";
 
   #text: PIXI.Text | undefined;
   #style: PIXI.TextStyle | undefined;
@@ -56,6 +64,13 @@ export class RichText extends PixiEntity {
     this.defineValue(RichText, "fontStyle", { type: FontStyleAdapter });
     this.defineValue(RichText, "fontWeight", { type: FontWeightAdapter });
     this.defineValue(RichText, "align", { type: AlignAdapter });
+    this.defineValue(RichText, "color", { type: ColorAdapter });
+
+    this.defineValue(RichText, "stroke");
+    const hidden: Value["hidden"] = values => values.get("stroke")?.value !== true;
+    this.defineValue(RichText, "strokeColor", { type: ColorAdapter, hidden: hidden });
+    this.defineValue(RichText, "strokeWidth", { hidden: hidden });
+    this.defineValue(RichText, "strokeJoin", { type: StrokeJoinAdapter, hidden: hidden });
 
     const ignored = new Set(["clonedFromRef", "static", "hidden"]);
     for (const [key, value] of this.values) {
@@ -79,7 +94,17 @@ export class RichText extends PixiEntity {
     this.#style.fontSize = this.fontSize;
     this.#style.fontStyle = this.fontStyle;
     this.#style.fontWeight = this.fontWeight;
-    this.#style.fill = "white";
+    this.#style.fill = this.color;
+
+    if (this.stroke) {
+      this.#style.stroke = {
+        color: this.strokeColor,
+        width: this.strokeWidth,
+        join: this.strokeJoin,
+      };
+    } else {
+      this.#style.stroke = "transparent";
+    }
 
     this.#text.style = this.#style;
     this.#text.text = this.text;
