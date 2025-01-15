@@ -146,7 +146,7 @@ export class PhysicsEngine {
       if (!currentTickCollisions.has(key)) {
         // Increment missing ticks counter
         const newMissingTicks = missingTicks + 1;
-        if (newMissingTicks >= 5) {
+        if (newMissingTicks >= 10) {
           // Remove collision after 5 missing ticks
           this.#activeCollisions.delete(key);
           // Could fire end collision event here if needed

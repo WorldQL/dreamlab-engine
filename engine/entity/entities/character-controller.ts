@@ -18,7 +18,11 @@ export class CharacterController extends Collider {
 
   #isGrounded = false;
   public get isGrounded(): boolean {
-    return this.#isGrounded;
+    if (this.#isGrounded) return true
+    if (this.#lastTickGroundedResults.length !== 2) return this.#isGrounded
+    // rapier charactercontroller is kinda shitty and requires we buffer computeGrounded
+    // https://www.reddit.com/r/bevy/comments/144ww0n/issue_with_ground_detection_rapier3d/ (old but probably valid)
+    return this.#lastTickGroundedResults[0] || this.#lastTickGroundedResults[1];
   }
 
   public get correctedPosition(): Vector2 {
@@ -42,7 +46,7 @@ export class CharacterController extends Collider {
     }
 
     if (hasCollider) {
-      this.#controller = this.game.physics.world.createCharacterController(0.01);
+      this.#controller = this.game.physics.world.createCharacterController(0.05);
       // this.#controller.enableSnapToGround(0.1);
       // TODO: Make this and sliding configurable.
       // sliding is super buggy especially with the rect collider.
@@ -57,6 +61,8 @@ export class CharacterController extends Collider {
     this.listen(this.game, GamePostTick, () => this.onPostUpdate());
   }
 
+  #lastTickGroundedResults: boolean[] = []
+
   private onPostUpdate() {
     if (!this.#controller) return;
 
@@ -64,6 +70,10 @@ export class CharacterController extends Collider {
       const delta = this.pos.sub(this.#prevPosition);
       this.#controller.computeColliderMovement(this.collider, delta, QueryFilterFlags['EXCLUDE_SENSORS']);
       this.#isGrounded = this.#controller.computedGrounded();
+      this.#lastTickGroundedResults.push(this.#isGrounded)
+      if (this.#lastTickGroundedResults.length > 2) {
+        this.#lastTickGroundedResults.shift();
+      }
 
       this.game.physics.emitCharacterControllerCollisions(this.collider, this.#controller);
 
