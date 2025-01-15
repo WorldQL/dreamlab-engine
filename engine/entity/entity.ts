@@ -682,10 +682,14 @@ export abstract class Entity implements ISignalHandler {
     ...props: {
       [I in keyof Props]: Props[I] extends EntityValueProp<E> ? Props[I] : never;
     }
-  ) {
+  ): Value[] {
+    const values: Value[] = [];
     for (const prop of props) {
-      this.defineValue(eType, prop);
+      const value = this.defineValue(eType, prop);
+      values.push(value as Value);
     }
+
+    return values;
   }
 
   defineValue<E extends Entity, const P extends string & EntityValueProp<E>>(
