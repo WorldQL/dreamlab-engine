@@ -21,7 +21,7 @@ const categories = new Map<string, string[]>([
   ],
   ["UI", ["@core/UILayer", "@core/UIPanel"]],
   ["Graphics", ["@core/RawPixi", "@core/ColoredSquare", "@core/ColoredPolygon"]],
-  ["Hidden", ["@core/RectCollider", "@core/RawGraphics", "@core/SolidColor", "@core/VectorSprite"]], // deprecated/hidden entites
+  ["Hidden", ["@core/RectCollider", "@core/RawGraphics", "@core/SolidColor", "@core/VectorSprite", "@core/Text"]], // deprecated/hidden entites
 ]);
 
 export function createEntityMenu(
