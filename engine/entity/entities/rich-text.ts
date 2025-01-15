@@ -57,6 +57,11 @@ export class RichText extends PixiEntity {
   #text: PIXI.Text | undefined;
   #style: PIXI.TextStyle | undefined;
 
+  get style(): PIXI.TextStyle {
+    if (!this.#style) throw new Error("cannot access property 'style' on the server");
+    return this.#style;
+  }
+
   constructor(ctx: EntityContext) {
     super(ctx);
 
