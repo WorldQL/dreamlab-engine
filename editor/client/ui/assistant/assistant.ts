@@ -2,7 +2,14 @@ import { ClientGame } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 import { InspectorUI } from "../inspector.ts";
 import { Check, Clock, Copy, icon, RotateCcw, Send } from "../../_icons.ts";
-import { available_topics, codingPrompt, fileContents, plan } from "./prompts.ts";
+import {
+  available_topics,
+  codingPrompt,
+  fileContents,
+  findReplaceInstructions,
+  fullFileInstructions,
+  plan,
+} from "./prompts.ts";
 import markdownit from "npm:markdown-it@14.1.0";
 import hljs from "npm:highlight.js/lib/core";
 import typescript from "npm:highlight.js/lib/languages/typescript";
@@ -311,11 +318,17 @@ export class Assistant {
               const line: string = d.text;
               accumulatedText += line;
 
-              const renderedContent = md.render(
+              let renderedContent = md.render(
                 ScriptSession.chatState === "plan"
                   ? accumulatedText.split("<plan>")[0]
                   : accumulatedText,
               );
+              if (
+                accumulatedText.split("<plan>").length > 1 &&
+                !accumulatedText.includes("</plan>")
+              ) {
+                renderedContent += "<br>Generating plan...";
+              }
               this.renderContent(botMessageElement, renderedContent);
             } catch (error) {
               console.error("Error parsing JSON:", error);
@@ -502,18 +515,36 @@ export class Assistant {
           fileUrl.pathname = `/api/v1/edit/${ScriptSession.instance}/files/${target}`;
           const fileText = await (await fetch(fileUrl.toString())).text();
 
+          console.log(fileText.length);
+
           const prepared = codingPrompt
             .replaceAll("{{CONTEXT_FILES}}", contextFiles)
             .replaceAll("{{CODE_SAMPLES}}", docCodeSamples)
             .replaceAll("{{EXISTING_FILE}}", fileText)
-            .replaceAll("{{FILE_INSTRUCTIONS}}", instructions);
+            .replaceAll("{{FILE_INSTRUCTIONS}}", instructions)
+            .replaceAll(
+              "{{OUTPUT_TYPE}}",
+              fileText.length > 5000 ? findReplaceInstructions : fullFileInstructions,
+            );
 
-          console.log(prepared);
           const result = await oneOffMessage(prepared);
-          console.log(result);
-          const code = getTagContents("code", result);
+          let code = getTagContents("code", result);
+          if (code?.startsWith("<findReplace>")) {
+            const pairs = parseFindReplace(code);
+            console.log(pairs);
+            let wipNewFile = stripIndentation(fileText);
+            for (const pair of pairs) {
+              wipNewFile = wipNewFile.replace(
+                stripIndentation(pair.find),
+                stripIndentation(pair.replace),
+              );
+            }
+            code = wipNewFile;
+            console.log("used find replace");
+            console.log(code);
+          }
           if (code) {
-            await createFile(target, code);
+            await createFile(target, await formatTypeScript(code));
             window.parent.postMessage({ action: "reloadFile", filename: target }, "*");
           }
         }
@@ -724,4 +755,97 @@ export class ScriptSession {
   public static httpServer: string;
   public static instance: string;
   public static scriptMap: string;
+}
+
+interface FindReplacePair {
+  find: string;
+  replace: string;
+}
+
+function parseFindReplace(xml: string): FindReplacePair[] {
+  // First, let's extract all findReplace blocks
+  const findReplaceRegex = /<findReplace>([\s\S]*?)<\/findReplace>/g;
+  const pairs: FindReplacePair[] = [];
+
+  // Match each findReplace block
+  let findReplaceMatch;
+  while ((findReplaceMatch = findReplaceRegex.exec(xml)) !== null) {
+    const blockContent = findReplaceMatch[1];
+
+    // Find all find and replace sections within this block
+    const findRegex = /<find>([\s\S]*?)<\/find>/g;
+    const replaceRegex = /<replace>([\s\S]*?)<\/replace>/g;
+
+    const finds: string[] = [];
+    const replaces: string[] = [];
+
+    // Collect all finds
+    let findMatch;
+    while ((findMatch = findRegex.exec(blockContent)) !== null) {
+      finds.push(findMatch[1].trim());
+    }
+
+    // Collect all replaces
+    let replaceMatch;
+    while ((replaceMatch = replaceRegex.exec(blockContent)) !== null) {
+      replaces.push(replaceMatch[1].trim());
+    }
+
+    // Pair them up
+    for (let i = 0; i < finds.length; i++) {
+      if (replaces[i]) {
+        pairs.push({
+          find: finds[i],
+          replace: replaces[i],
+        });
+      }
+    }
+  }
+
+  return pairs;
+}
+
+/**
+ * Strips indentation from a code string while preserving newlines and line numbers.
+ * Also normalizes line endings by replacing \r\n with \n.
+ * @param code - The input code string
+ * @returns The code string with indentation removed and normalized line endings
+ */
+function stripIndentation(code: string): string {
+  // Normalize line endings to \n
+  const normalizedCode = code.replace(/\r\n/g, "\n");
+
+  // Split the code into lines
+  const lines = normalizedCode.split("\n");
+
+  // Process each line to remove leading whitespace
+  const strippedLines = lines.map(line =>
+    // Remove leading spaces and tabs while preserving empty lines
+    line.trimStart(),
+  );
+
+  // Join the lines back together with newlines
+  return strippedLines.join("\n");
+}
+
+// Import necessary modules from Prettier
+import * as prettier from "npm:prettier/standalone";
+import pluginEstree from "npm:prettier/plugins/estree";
+import * as parserTypescript from "npm:prettier/parser-typescript";
+
+// Define a function to format TypeScript code
+export async function formatTypeScript(code: string): Promise<string> {
+  try {
+    // Format the code using Prettier
+    const formatted = await prettier.format(code, {
+      parser: "typescript",
+      plugins: [pluginEstree, parserTypescript],
+      printWidth: 96,
+    });
+
+    return formatted.replace(/\r\n/g, "\n");
+  } catch (error) {
+    console.error("Error formatting code:", error);
+    throw error;
+  }
 }

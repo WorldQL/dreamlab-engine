@@ -50,6 +50,7 @@
     "npm:pixi.js@8.2.6": "8.2.6",
     "npm:pixi.js@8.4.1": "8.4.1",
     "npm:pixi.js@8.5.1": "8.5.1",
+    "npm:prettier@*": "3.4.2",
     "npm:quad-indices@2.0.1": "2.0.1",
     "npm:simple-icons@*": "13.6.0",
     "npm:simple-icons@13.6.0": "13.6.0",
@@ -768,6 +769,9 @@
         "ismobilejs",
         "parse-svg-path"
       ]
+    },
+    "prettier@3.4.2": {
+      "integrity": "sha512-e9MewbtFo+Fevyuxn/4rrcDAaq0IYxPGLvObpQjiZBMAzB9IGmzlnG9RZy3FFas+eBMu2vA0CszMeduow5dIuQ=="
     },
     "proxy-from-env@1.1.0": {
       "integrity": "sha512-D+zkORCbA9f1tdWRK0RaCR3GPv50cMxcrz4X8k5LTSUD1Dkw47mKJEZQNunItRTkWwgtaUSo1RVFRIG9ZXiFYg=="
