@@ -14,6 +14,7 @@ import {
   Game,
   GameStatus,
   GameStatusChange,
+  InternalGameTick,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { ClientNetworkSetupRoutine } from "./net-connection.ts";
@@ -304,15 +305,27 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
     changeIgnoreSet.delete(entity.ref);
   });
 
+  const prevEntityEnabled = new WeakMap<Entity, boolean>();
+  const enabledDirtyEntities = new Set<Entity>();
   const handleEntityEnableChanged = (event: EntityDescendantSpawned) => {
     const entity = event.descendant;
-    entity.on(EntityOwnEnableChanged, ({ enabled }) => {
+    entity.on(EntityOwnEnableChanged, () => {
       if (changeIgnoreSet.has(entity.ref)) return;
-      conn.send({ t: "EntityEnableChanged", entity: entity.ref, enabled });
+      enabledDirtyEntities.add(entity);
     });
   };
   game.world.on(EntityDescendantSpawned, handleEntityEnableChanged);
   game.prefabs.on(EntityDescendantSpawned, handleEntityEnableChanged);
+
+  game.on(InternalGameTick, () => {
+    for (const entity of enabledDirtyEntities) {
+      const enabled = entity[internal.entityOwnEnabled];
+      const prev = prevEntityEnabled.get(entity);
+      if (prev === undefined || prev !== enabled)
+        conn.send({ t: "EntityEnableChanged", entity: entity.ref, enabled });
+    }
+    enabledDirtyEntities.clear();
+  });
 
   conn.registerPacketHandler("EntityEnableChanged", packet => {
     if (packet.from === conn.id) return;
@@ -322,6 +335,7 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
 
     changeIgnoreSet.add(entity.ref);
     entity.enabled = packet.enabled;
+    prevEntityEnabled.set(entity, packet.enabled);
     changeIgnoreSet.delete(entity.ref);
   });
 };
