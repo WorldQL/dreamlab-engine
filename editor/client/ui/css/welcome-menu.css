@@ -58,7 +58,8 @@
   font-size: 22px;
   font-weight: 700;
   color: rgb(var(--color-text));
-  margin: 0;
+  margin-top: 1rem;
+  margin-bottom: 0rem;
   text-align: center;
 }
 
