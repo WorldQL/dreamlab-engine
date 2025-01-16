@@ -1,24 +1,61 @@
-import { ClientGame, ColoredSquare, GameRender, RichText } from "@dreamlab/engine";
+import {
+  ClientGame,
+  ColoredSquare,
+  EntityConstructor,
+  GameRender,
+  RichText,
+} from "@dreamlab/engine";
+import { Graphics } from "@dreamlab/vendor/pixi.ts";
 
 // @ts-expect-error: global access
 const game = globalThis.game as ClientGame;
 
-export const color = game.local.spawn({
-  type: ColoredSquare,
-  name: ColoredSquare.name,
-  values: { color: "#8ace00ff" },
-  // transform: { position: { x: 1, y: 1 } },
+const USE_SQUARE = false;
+const ROTATE = true;
+
+const ty: EntityConstructor<ColoredSquare | RichText> = USE_SQUARE ? ColoredSquare : RichText;
+export const entity = game.local.spawn({
+  type: ty,
+  name: ty.name,
+  values: { color: "red" },
+  transform: { position: { x: 1, y: 1 } },
 });
 
-export const text = color.spawn({
-  type: RichText,
-  name: RichText.name,
-  values: { text: "brat", align: "left", stroke: true, strokeColor: "blue", strokeWidth: 3 },
-  transform: { z: 10 },
-});
+if (!USE_SQUARE) {
+  (entity as RichText).fontFamily = "monospace";
+}
 
-// game.on(GameRender, () => {
-//   color.globalTransform.rotation += game.time.delta / 1000;
-//   color.globalTransform.scale.x = (Math.sin(game.time.now / 1200) + 1.5) / 2;
-//   color.globalTransform.scale.y = (Math.cos(game.time.now / 700) + 1.5) / 2;
-// });
+const gfx = new Graphics();
+game.renderer.scene.addChild(gfx);
+
+game.on(GameRender, () => {
+  if (ROTATE) {
+    const now = game.time.now / 500;
+    entity.pos.x = Math.sin(now);
+    entity.pos.y = Math.cos(now);
+  }
+
+  const bounds = entity.bounds;
+  if (!bounds) return;
+
+  gfx.position.x = entity.globalTransform.position.x;
+  gfx.position.y = -entity.globalTransform.position.y;
+
+  const offset = bounds.offset ?? { x: 0, y: 0 };
+  gfx
+    .clear()
+    .rect(
+      bounds.width / -2 + offset.x,
+      bounds.height / -2 + -offset.y,
+      bounds.width,
+      bounds.height,
+    )
+    .stroke({ color: "white", width: 0.01 });
+
+  const world = game.inputs.cursor.world;
+  if (!world) return;
+
+  const entities = game.entities.lookupByPosition(world);
+  if (entities.includes(entity)) entity.color = "#8ace00ff";
+  else entity.color = "red";
+});
