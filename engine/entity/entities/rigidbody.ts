@@ -1,6 +1,6 @@
 import RAPIER from "@dreamlab/vendor/rapier.ts";
 import * as internal from "../../internal.ts";
-import { IVector2, Vector2 } from "../../math/mod.ts";
+import { Bounds, IBounds, Vector2 } from "../../math/mod.ts";
 import { EntityDestroyed } from "../../signals/mod.ts";
 import { enumAdapter } from "../../value/adapters/enum-adapter.ts";
 import { Entity, EntityContext } from "../entity.ts";
@@ -23,10 +23,7 @@ export class Rigidbody extends Entity {
   }
 
   static readonly icon = "⚙️";
-  get bounds(): Readonly<IVector2> | undefined {
-    // controlled by globalTransform
-    return { x: 1, y: 1 };
-  }
+  readonly bounds: IBounds = Bounds.ONE;
 
   type: RigidBodyType = "fixed";
 

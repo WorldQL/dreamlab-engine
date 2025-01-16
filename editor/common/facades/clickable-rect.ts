@@ -1,4 +1,11 @@
-import { ClickableRect, Entity, EntityContext, IVector2, PixiEntity } from "@dreamlab/engine";
+import {
+  Bounds,
+  ClickableRect,
+  Entity,
+  EntityContext,
+  IBounds,
+  PixiEntity,
+} from "@dreamlab/engine";
 import { EnsureCompatible, EntityValueProps } from "./_compatibility.ts";
 import { DebugSquare } from "./_debug.ts";
 import { Facades } from "./manager.ts";
@@ -10,8 +17,9 @@ export class EditorFacadeClickableRect extends PixiEntity {
   }
 
   static readonly icon = ClickableRect.icon;
-  get bounds(): Readonly<IVector2> | undefined {
-    return { x: this.width, y: this.height };
+  get bounds(): IBounds | undefined {
+    // TODO: Reuse the same object
+    return new Bounds(this.width, this.height);
   }
 
   width: number = 1;

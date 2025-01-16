@@ -4,7 +4,7 @@ import {
   entityStoreRegisterRoot,
   entityStoreUnregister,
 } from "../internal.ts";
-import { IVector2, pointWorldToLocal } from "../math/mod.ts";
+import { IVector2, pointWorldToLocal, Vector2 } from "../math/mod.ts";
 import { Entity, EntityConstructor } from "./entity.ts";
 
 export class EntityStore {
@@ -49,12 +49,16 @@ export class EntityStore {
       const bounds = entity.bounds;
       if (!bounds) continue;
 
-      const local = pointWorldToLocal(entity.globalTransform, position);
+      let local = pointWorldToLocal(entity.globalTransform, position);
+      if (bounds.offset !== undefined) {
+        local = Vector2.sub(local, bounds.offset);
+      }
+
       const inBounds =
-        local.x >= bounds.x / -2 &&
-        local.x <= bounds.x / 2 &&
-        local.y >= bounds.y / -2 &&
-        local.y <= bounds.y / 2;
+        local.x >= bounds.width / -2 &&
+        local.x <= bounds.width / 2 &&
+        local.y >= bounds.height / -2 &&
+        local.y <= bounds.height / 2;
 
       if (inBounds) entities.push(entity);
     }

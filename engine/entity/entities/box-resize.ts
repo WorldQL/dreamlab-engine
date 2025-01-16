@@ -6,9 +6,9 @@ import type { EntityContext } from "../entity.ts";
 import { Entity } from "../entity.ts";
 import { Camera } from "./camera.ts";
 import { ClickableRect } from "./clickable.ts";
+import { ColoredSquare } from "./colored-square.ts";
 import { Empty } from "./empty.ts";
 import { GizmoRotateEnd, GizmoTranslateEnd } from "./gizmo.ts";
-import { ColoredSquare } from "./colored-square.ts";
 
 export class BoxResizeGizmoResizeEnd {
   constructor(
@@ -48,7 +48,9 @@ const oppositeHandle = (handle: Handle): Handle => {
 
 const handlePos = (handle: Handle, entity: Entity): Vector2 => {
   const bounds = entity.bounds!;
-  const pos = Vector2.div(bounds, 2);
+
+  // TODO: support offset bounds
+  const pos = Vector2.div({ x: bounds.width, y: bounds.height }, 2);
 
   switch (handle) {
     case "t": {
@@ -170,7 +172,12 @@ export class BoxResizeGizmo extends Entity {
 
     const bounds = entity.bounds;
     if (!bounds) return;
-    const scaled = Vector2.mul(bounds, entity.globalTransform.scale);
+
+    // TODO: support offset bounds
+    const scaled = Vector2.mul(
+      { x: bounds.width, y: bounds.height },
+      entity.globalTransform.scale,
+    );
 
     const container = this.spawn({ type: Empty, name: "Container" });
 
@@ -336,8 +343,9 @@ export class BoxResizeGizmo extends Entity {
     const bounds = entity.bounds;
     if (!bounds) return;
 
+    // TODO: support offset bounds
     const scaled = Vector2.div(
-      Vector2.mul(bounds, entity.globalTransform.scale),
+      Vector2.mul({ x: bounds.width, y: bounds.height }, entity.globalTransform.scale),
       camera.smoothed.scale,
     );
 
@@ -462,8 +470,8 @@ export class BoxResizeGizmo extends Entity {
       handle === "t" || handle === "b"
         ? "x"
         : handle === "l" || handle === "r"
-        ? "y"
-        : undefined;
+          ? "y"
+          : undefined;
 
     const rotation = this.#target.globalTransform.rotation;
     const rotated = Vector2.rotateAbout(cursor.world, -rotation, this.#action.opposite);
@@ -577,8 +585,9 @@ export class BoxResizeGizmo extends Entity {
         return;
       }
 
+      // TODO: support offset bounds
       const bounds = Vector2.div(
-        Vector2.mul(_bounds, entity.globalTransform.scale),
+        Vector2.mul({ x: _bounds.width, y: _bounds.height }, entity.globalTransform.scale),
         camera.smoothed.scale,
       );
 

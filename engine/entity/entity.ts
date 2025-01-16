@@ -5,6 +5,7 @@ import { Behavior, BehaviorConstructor, BehaviorDefinition } from "../behavior/b
 import type { Game } from "../game.ts";
 import * as internal from "../internal.ts";
 import {
+  IBounds,
   IVector2,
   Transform,
   TransformOptions,
@@ -1328,7 +1329,7 @@ export abstract class Entity implements ISignalHandler {
   }
   // #endregion
 
-  abstract get bounds(): Readonly<IVector2> | undefined;
+  abstract get bounds(): IBounds | undefined;
 }
 
 const ID_REGEX = /^\p{ID_Start}\p{ID_Continue}*$/v;

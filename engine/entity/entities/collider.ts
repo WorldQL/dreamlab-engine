@@ -1,6 +1,6 @@
 import RAPIER from "@dreamlab/vendor/rapier.ts";
 import * as internal from "../../internal.ts";
-import { IVector2, Vector2 } from "../../math/mod.ts";
+import { Bounds, IBounds, Vector2 } from "../../math/mod.ts";
 import { EntityDestroyed, EntityEnableChanged } from "../../signals/mod.ts";
 import { enumAdapter } from "../../value/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
@@ -14,10 +14,7 @@ export class RectCollider extends Entity {
   }
 
   static readonly icon = "🧱";
-  get bounds(): Readonly<IVector2> | undefined {
-    // controlled by globalTransform
-    return { x: 1, y: 1 };
-  }
+  readonly bounds: IBounds = Bounds.ONE;
 
   #internal: { collider: RAPIER.Collider; shape: RAPIER.Cuboid } | undefined;
 
@@ -136,9 +133,7 @@ export class Collider extends Entity {
     | { collider: RAPIER.Collider; shape: RAPIER.Cuboid | RAPIER.Ball | RAPIER.Capsule }
     | undefined;
 
-  get bounds(): Readonly<IVector2> | undefined {
-    return { x: 1, y: 1 };
-  }
+  readonly bounds: IBounds = Bounds.ONE;
 
   get collider(): RAPIER.Collider {
     if (!this.#internal) throw new Error("attempted to access .collider on a prefab object");
@@ -177,11 +172,11 @@ export class Collider extends Entity {
               this.globalTransform.scale.y / 2,
             )
           : this.shape === "Circle"
-          ? RAPIER.ColliderDesc.ball(this.globalTransform.scale.x / 2)
-          : RAPIER.ColliderDesc.capsule(
-              this.globalTransform.scale.y / 2,
-              this.globalTransform.scale.x / 2,
-            );
+            ? RAPIER.ColliderDesc.ball(this.globalTransform.scale.x / 2)
+            : RAPIER.ColliderDesc.capsule(
+                this.globalTransform.scale.y / 2,
+                this.globalTransform.scale.x / 2,
+              );
 
       desc
         .setTranslation(this.globalTransform.position.x, this.globalTransform.position.y)

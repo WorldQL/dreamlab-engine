@@ -1,5 +1,5 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import { IVector2, Vector2 } from "../../math/mod.ts";
+import { Bounds, IBounds, Vector2 } from "../../math/mod.ts";
 import { EntityDestroyed, GameRender } from "../../signals/mod.ts";
 import { TextureAdapter } from "../../value/adapters/texture-adapter.ts";
 import { Vector2Adapter } from "../../value/adapters/vector-adapter.ts";
@@ -12,9 +12,9 @@ export class TilingSprite extends PixiEntity {
   }
 
   static readonly icon = "🖼️";
-  get bounds(): Readonly<IVector2> | undefined {
-    // TODO: Reuse the same vector
-    return new Vector2(this.width, this.height);
+  get bounds(): IBounds | undefined {
+    // TODO: Reuse the same object
+    return new Bounds(this.width, this.height);
   }
 
   width: number = 1;

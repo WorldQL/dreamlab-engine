@@ -4,7 +4,7 @@ import {
   EntityEnableChanged,
   EntityTransformUpdate,
   GameRender,
-  IVector2,
+  IBounds,
   PixiEntity,
   SignalSubscription,
   Value,
@@ -47,7 +47,7 @@ interface DebugShapeOptions {
   readonly alwaysOnTop?: boolean;
   readonly alignment?: number;
   readonly disableScale?: boolean;
-  readonly getBounds?: () => IVector2 | undefined;
+  readonly getBounds?: () => IBounds | undefined;
 }
 
 abstract class DebugShape {
@@ -99,7 +99,7 @@ abstract class DebugShape {
 
   protected readonly alignment: number;
   protected readonly disableScale: boolean;
-  protected readonly getBounds: () => IVector2 | undefined;
+  protected readonly getBounds: () => IBounds | undefined;
 
   #enabled;
   get enabled(): boolean {
@@ -282,10 +282,15 @@ export class DebugSquare extends DebugShape {
       this.gfx.clear();
       return;
     }
+
     const _bounds = this.getBounds();
     if (!_bounds) return;
+
+    const center = Vector2.ZERO;
+    if (_bounds.offset) center.assign(_bounds.offset);
+
     const bounds = Vector2.mul(
-      _bounds,
+      { x: _bounds.width, y: _bounds.height },
       this.disableScale ? 1 : this.entity.globalTransform.scale,
     );
 
@@ -296,6 +301,7 @@ export class DebugSquare extends DebugShape {
     // this.label.container.x = bounds.x / -2 - offset;
     // this.label.container.y = bounds.y / -2 - 0.36;
 
+    this.gfx.position.set(center.x, center.y);
     this.gfx.alpha = this.alpha;
     this.gfx
       .clear()
@@ -317,9 +323,17 @@ export class DebugCircle extends DebugShape {
   redraw(): void {
     const _bounds = this.getBounds();
     if (!_bounds) return;
-    const radius =
-      Vector2.mul(_bounds, this.disableScale ? 1 : this.entity.globalTransform.scale).x / 2;
 
+    const center = Vector2.ZERO;
+    if (_bounds.offset) center.assign(_bounds.offset);
+
+    const radius =
+      Vector2.mul(
+        { x: _bounds.width, y: _bounds.height },
+        this.disableScale ? 1 : this.entity.globalTransform.scale,
+      ).x / 2;
+
+    this.gfx.position.set(center.x, center.y);
     this.gfx.alpha = this.alpha;
     this.gfx.clear();
     this.gfx.setStrokeStyle({
@@ -345,10 +359,19 @@ export class DebugCapsule extends DebugShape {
     const _bounds = this.getBounds();
     if (!_bounds) return;
 
-    const width = Vector2.mul(_bounds, this.entity.globalTransform.scale).x;
-    const height = Vector2.mul(_bounds, this.entity.globalTransform.scale).y;
+    const center = Vector2.ZERO;
+    if (_bounds.offset) center.assign(_bounds.offset);
+
+    const bounds = Vector2.mul(
+      { x: _bounds.width, y: _bounds.height },
+      this.disableScale ? 1 : this.entity.globalTransform.scale,
+    );
+
+    const width = bounds.x;
+    const height = bounds.y;
     const radius = width / 2;
 
+    this.gfx.position.set(center.x, center.y);
     this.gfx.alpha = this.alpha;
     this.gfx.clear();
     this.gfx.setStrokeStyle({

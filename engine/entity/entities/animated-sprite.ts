@@ -1,6 +1,6 @@
 import { EntityEnableChanged, GamePostTick } from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import { IVector2, Vector2 } from "../../math/mod.ts";
+import { Bounds, IBounds, Vector2 } from "../../math/mod.ts";
 import { EntityTransformUpdate, GameRender } from "../../signals/mod.ts";
 import { SpritesheetAdapter, TextureAdapter, Vector2Adapter } from "../../value/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
@@ -19,9 +19,9 @@ export class AnimatedSprite extends PixiEntity {
   }
 
   static readonly icon = "🖼️";
-  get bounds(): Readonly<IVector2> | undefined {
-    // TODO: Reuse the same vector
-    return new Vector2(this.width, this.height);
+  get bounds(): IBounds | undefined {
+    // TODO: Reuse the same object
+    return new Bounds(this.width, this.height);
   }
 
   width: number = 1;

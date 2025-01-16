@@ -1,5 +1,5 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import { IVector2, Vector2 } from "../../math/mod.ts";
+import { Bounds, IBounds } from "../../math/mod.ts";
 import { EntityTransformUpdate } from "../../signals/mod.ts";
 import { ColorAdapter } from "../../value/adapters/color-adapter.ts";
 import { Entity, EntityContext } from "../entity.ts";
@@ -11,9 +11,9 @@ export class ColoredSquare extends PixiEntity {
   }
 
   static readonly icon = "🟩";
-  get bounds(): Readonly<IVector2> | undefined {
-    // TODO: Reuse the same vector
-    return new Vector2(this.width, this.height);
+  get bounds(): Readonly<IBounds> | undefined {
+    // TODO: Reuse the same object
+    return new Bounds(this.width, this.height);
   }
 
   width: number = 1;

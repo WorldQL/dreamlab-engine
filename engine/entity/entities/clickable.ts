@@ -1,6 +1,6 @@
 import { Cursor } from "../../input/inputs.ts";
 import * as internal from "../../internal.ts";
-import { IVector2, Vector2, pointWorldToLocal } from "../../math/mod.ts";
+import { Bounds, IBounds, Vector2, pointWorldToLocal } from "../../math/mod.ts";
 import { ClientGame } from "../../mod.ts";
 import {
   Click,
@@ -142,8 +142,9 @@ export class ClickableRect extends ClickableEntity {
   }
 
   static readonly icon = "👆";
-  get bounds(): Readonly<IVector2> | undefined {
-    return { x: this.width, y: this.height };
+  get bounds(): IBounds | undefined {
+    // TODO: Reuse the same object
+    return new Bounds(this.width, this.height);
   }
 
   width: number = 1;
@@ -172,9 +173,10 @@ export class ClickableCircle extends ClickableEntity {
   }
 
   static readonly icon = "👆";
-  get bounds(): Readonly<IVector2> | undefined {
+  get bounds(): IBounds | undefined {
+    // TODO: Reuse the same object
     const size = this.radius * 2;
-    return new Vector2(size, size);
+    return new Bounds(size, size);
   }
 
   radius: number = 1;
