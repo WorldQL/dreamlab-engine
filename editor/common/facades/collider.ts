@@ -1,10 +1,10 @@
 import {
+  Bounds,
   Collider,
   Entity,
   EntityContext,
   EntityDestroyed,
   enumAdapter,
-  IVector2,
   PixiEntity,
 } from "@dreamlab/engine";
 import {
@@ -29,9 +29,7 @@ export class EditorFacadeCollider extends PixiEntity {
   shape: ColliderShape = "Rectangle";
 
   static readonly icon = Collider.icon;
-  get bounds(): Readonly<IVector2> | undefined {
-    return { x: 1, y: 1 };
-  }
+  readonly bounds = Bounds.ONE;
 
   constructor(ctx: EntityContext) {
     super(ctx, false);
