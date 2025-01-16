@@ -273,7 +273,7 @@ export function setupKeyboardShortcuts(
             t: "create-entity",
             parentRef: x.parent!.ref,
             def: x.getDefinition(),
-          } satisfies UndoRedoOperation),
+          }) satisfies UndoRedoOperation,
       );
 
       UndoRedoManager._.push({ t: "compound", ops });
@@ -291,7 +291,7 @@ export function setupKeyboardShortcuts(
             t: "destroy-entity",
             parentRef: x.parent!.ref,
             def: x.getDefinition(),
-          } satisfies UndoRedoOperation),
+          }) satisfies UndoRedoOperation,
       );
 
       for (const entity of toDelete) {
@@ -305,6 +305,15 @@ export function setupKeyboardShortcuts(
 
     // Undo
     if (event.key === "z" && (event.ctrlKey || event.metaKey)) {
+      if (
+        !(
+          document.activeElement &&
+          ["INPUT", "TEXTAREA"].includes(document.activeElement.tagName)
+        )
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
       if (cooldownManager.isOnCooldown("undo")) return;
 
       const op = UndoRedoManager._.undo();
@@ -317,6 +326,15 @@ export function setupKeyboardShortcuts(
 
     // Redo
     if (event.key === "y" && (event.ctrlKey || event.metaKey)) {
+      if (
+        !(
+          document.activeElement &&
+          ["INPUT", "TEXTAREA"].includes(document.activeElement.tagName)
+        )
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
       if (cooldownManager.isOnCooldown("redo")) return;
 
       const op = UndoRedoManager._.redo();
