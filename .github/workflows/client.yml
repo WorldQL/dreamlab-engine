@@ -1,6 +1,8 @@
 name: Build and Deploy Client
 on:
   push:
+    branches:
+      - trunk
     tags:
       - "*"
 
@@ -28,13 +30,23 @@ jobs:
         run: deno task build
         env:
           IS_DEV: "true"
+
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        if: ${{ ! startsWith(github.ref, 'refs/tags/') }}
+        with:
+          name: client
+          path: ./dreamlab/client/web
+          retention-days: 14
       - name: Checkout deployment repo
         uses: actions/checkout@v4
+        if: ${{ startsWith(github.ref, 'refs/tags/') }}
         with:
           repository: ${{ env.TARGET_REPO }}
           path: deploy
           token: ${{ secrets.REPO_PAT }}
       - name: Deploy
+        if: ${{ startsWith(github.ref, 'refs/tags/') }}
         run: |
           cd deploy
           git config user.name "github-actions[bot]"
