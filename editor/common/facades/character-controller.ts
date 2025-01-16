@@ -13,6 +13,9 @@ export class EditorFacadeCharacterController extends EditorFacadeCollider {
 }
 
 type _HasAllValues = EnsureCompatible<
-  Omit<EntityValueProps<CharacterController>, "collider" | "isGrounded">,
+  Omit<
+    EntityValueProps<CharacterController>,
+    "collider" | "isGrounded" | "teleport" | "correctedPosition"
+  >,
   EntityValueProps<EditorFacadeCharacterController>
 >;
