@@ -50,7 +50,6 @@ export class InspectorUI {
 
     if (editMode) {
       game.local._.Camera.getBehavior(CameraPanBehavior).ui = this;
-      game.local._.Camera.getBehavior(CameraPanBehavior).useUI(this);
     }
 
     this.gameOverlays.setup(this);

@@ -471,11 +471,7 @@ export class Gizmo extends Entity {
       }
 
       this.fire(GizmoTranslateMove, this.#target, world.clone());
-      const delta = world.sub(this.globalTransform.position);
-      this.#target.globalTransform.position = this.#target.globalTransform.position.add(delta);
-      for (const auxTarget of this.auxTargets) {
-        auxTarget.globalTransform.position = auxTarget.globalTransform.position.add(delta);
-      }
+      this.#target.globalTransform.position = world;
     } else if (this.#action.type === "rotate") {
       const pos = cursor.world.sub(this.globalTransform.position);
       const rot = Math.atan2(pos.x, pos.y);
@@ -566,8 +562,6 @@ export class Gizmo extends Entity {
     this.#updateHandles();
   }
 
-  auxTargets: Entity[] = [];
-
   constructor(ctx: EntityContext) {
     super(ctx);
 
@@ -580,12 +574,7 @@ export class Gizmo extends Entity {
       if (!this.#gfx) return;
 
       if (this.#target) {
-        const averagePosition = new Vector2(this.#target.globalTransform.position);
-        for (const auxTarget of this.auxTargets) {
-          averagePosition.x = (averagePosition.x + auxTarget.globalTransform.position.x) / 2;
-          averagePosition.y = (averagePosition.y + auxTarget.globalTransform.position.y) / 2;
-        }
-        this.globalTransform.position = averagePosition;
+        this.globalTransform.position = this.#target.globalTransform.position;
         this.globalTransform.rotation = this.#target.globalTransform.rotation;
       }
 
