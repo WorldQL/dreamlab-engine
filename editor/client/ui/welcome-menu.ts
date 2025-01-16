@@ -12,7 +12,6 @@ export class WelcomeMenu {
   private welcomeCard: HTMLElement | null = null;
 
   show(uiRoot: HTMLElement, worldId: string): void {
-    console.log(worldId);
     if (!worldId.includes("Dreamlab_Tutorial")) return;
     const storageKey = `@dreamlab_welcomeCardDismissed_${worldId}`;
     const isDismissed = localStorage.getItem(storageKey);

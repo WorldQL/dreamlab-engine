@@ -318,11 +318,7 @@ export class Assistant {
               const line: string = d.text;
               accumulatedText += line;
 
-              let renderedContent = md.render(
-                ScriptSession.chatState === "plan"
-                  ? accumulatedText.split("<plan>")[0]
-                  : accumulatedText,
-              );
+              let renderedContent = md.render(accumulatedText.split("<plan>")[0]);
               if (
                 accumulatedText.split("<plan>").length > 1 &&
                 !accumulatedText.includes("</plan>")
@@ -349,7 +345,7 @@ export class Assistant {
     try {
       planArray = JSON.parse(plan!.replace(/\r?\n/g, " "));
     } catch {
-      alert("Plan failed to parse. Please reload the page and try again.");
+      alert("Plan failed to parse. Please try giving the chatbot more detail. If it still doesn't work, reload the page.");
     }
     if (planArray) {
       const stepsContainer = elem("div", { className: "chat-steps-container" });
@@ -357,7 +353,10 @@ export class Assistant {
       for (const step of planArray) {
         const stepElement = elem(
           "div",
-          { className: "chat-step", id: step.desc.replace(/\s/g, "") },
+          {
+            className: "chat-step",
+            id: step.desc.replace(/\s/g, "") + ScriptSession.chatContext.length,
+          },
           [step.desc],
         );
         stepsContainer.appendChild(stepElement);
@@ -365,7 +364,9 @@ export class Assistant {
       botMessageElement.appendChild(stepsContainer);
 
       for (const step of planArray) {
-        document.getElementById(step.desc.replace(/\s/g, ""))?.classList.add("chat-step-wip");
+        document
+          .getElementById(step.desc.replace(/\s/g, "") + ScriptSession.chatContext.length)
+          ?.classList.add("chat-step-wip");
         if (step.action === "editEntityValue") {
           const target =
             "game.world._.EditEntities._.prefabs._" +
@@ -548,7 +549,9 @@ export class Assistant {
             window.parent.postMessage({ action: "reloadFile", filename: target }, "*");
           }
         }
-        const d = document.getElementById(step.desc.replace(/\s/g, ""));
+        const d = document.getElementById(
+          step.desc.replace(/\s/g, "") + ScriptSession.chatContext.length,
+        );
         if (d) {
           d?.classList.remove("chat-step-wip");
           d?.classList.add("chat-step-done");
@@ -706,6 +709,7 @@ export class Assistant {
   }
 
   showSuggestions(): void {
+    if (!window.location.href.includes("Dreamlab_Tutorial")) return;
     const suggestionsContainer = elem("div", {
       className: "suggestions-container",
     });
