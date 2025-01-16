@@ -473,23 +473,8 @@ export class Gizmo extends Entity {
       this.fire(GizmoTranslateMove, this.#target, world.clone());
       const delta = world.sub(this.globalTransform.position);
       this.#target.globalTransform.position = this.#target.globalTransform.position.add(delta);
-      // TODO: can we do this better because traversing up for every entity could be slow
-      const touchedEntities = new Set<Entity>();
-      touchedEntities.add(this.#target);
       for (const auxTarget of this.auxTargets) {
-        let curr = auxTarget.parent;
-        let found = false;
-        while (curr) {
-          if (touchedEntities.has(curr)) {
-            found = true;
-            break;
-          }
-          curr = curr.parent;
-        }
-        if (found) continue;
-
         auxTarget.globalTransform.position = auxTarget.globalTransform.position.add(delta);
-        touchedEntities.add(auxTarget);
       }
     } else if (this.#action.type === "rotate") {
       const pos = cursor.world.sub(this.globalTransform.position);
