@@ -75,7 +75,10 @@ export class EditorFacadeCamera extends PixiEntity {
       width: 0.04,
       disableScale: true,
       suffix: this.active ? " (active)" : "",
-      getBounds: () => Vector2.splat(Camera.TARGET_VIEWPORT_SIZE).div(this.zoom),
+      getBounds: () => {
+        const vec = Vector2.splat(Camera.TARGET_VIEWPORT_SIZE).div(this.zoom);
+        return { width: vec.x, height: vec.y };
+      },
     });
 
     const showBounds = this.values.get("showBounds");
