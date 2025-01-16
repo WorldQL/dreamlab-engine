@@ -12,6 +12,8 @@ export class WelcomeMenu {
   private welcomeCard: HTMLElement | null = null;
 
   show(uiRoot: HTMLElement, worldId: string): void {
+    console.log(worldId);
+    if (!worldId.includes("Dreamlab_Tutorial")) return;
     const storageKey = `@dreamlab_welcomeCardDismissed_${worldId}`;
     const isDismissed = localStorage.getItem(storageKey);
     if (isDismissed) {
@@ -38,7 +40,7 @@ export class WelcomeMenu {
 
     const titleElement = document.createElement("h3");
     titleElement.className = "welcome-card-title";
-    titleElement.textContent = "Welcome to the Editor!";
+    titleElement.textContent = "Welcome to Dreamlab!";
 
     header.appendChild(titleElement);
 
@@ -51,87 +53,99 @@ export class WelcomeMenu {
     const navSection = document.createElement("div");
     navSection.className = "welcome-card-section";
 
-    const navHeader = document.createElement("h3");
-    navHeader.className = "welcome-card-section-header";
-    navHeader.textContent = "Explore the Editor";
+    const leadpara = document.createElement("p");
+    leadpara.innerHTML = "This is the tutorial project. Click the button below to open the guide in a new tab.<br><br>";
 
-    const navDescription = document.createElement("p");
-    navDescription.textContent =
-      "Navigate through different views to build, script, and manage your game. To switch views, use the buttons at the top left of the editor.";
+    const openTutorialLink = document.createElement("a");
+    openTutorialLink.textContent = "Open tutorial!";
+    openTutorialLink.target = "_blank";
+    openTutorialLink.href = "https://docs.dreamlab.gg/";
+    openTutorialLink.className = "open-tutorial-button";
+   
+    navSection.appendChild(leadpara);
+    navSection.appendChild(openTutorialLink);
 
-    const navButtonsContainer = document.createElement("div");
-    navButtonsContainer.className = "welcome-buttons-container";
+    // const navHeader = document.createElement("h3");
+    // navHeader.className = "welcome-card-section-header";
+    // navHeader.textContent = "About the Editor";
 
-    const navButtons = [
-      {
-        iconSvg: Box,
-        label: "Game Editor",
-        description: "Craft and design your game worlds.",
-      },
-      {
-        iconSvg: ScrollText,
-        label: "Script Editor",
-        description: "Write and manage game logic.",
-      },
-      {
-        iconSvg: GitCompareArrows,
-        label: "Source Control",
-        description: "Version control.",
-      },
-    ];
+    // const navDescription = document.createElement("p");
+    // navDescription.textContent =
+    //   "To switch views, use buttons at the top left of the editor:";
 
-    navButtons.forEach(button => {
-      const buttonElement = document.createElement("div");
-      buttonElement.className = "welcome-button";
+    // const navButtonsContainer = document.createElement("div");
+    // navButtonsContainer.className = "welcome-buttons-container";
 
-      const iconElement = icon(button.iconSvg);
-      iconElement.classList.add("welcome-button-icon");
+    // const navButtons = [
+    //   {
+    //     iconSvg: Box,
+    //     label: "Game Editor",
+    //     description: "Edit your game world.",
+    //   },
+    //   {
+    //     iconSvg: ScrollText,
+    //     label: "Script Editor",
+    //     description: "Write and manage game logic.",
+    //   },
+    //   {
+    //     iconSvg: GitCompareArrows,
+    //     label: "Source Control",
+    //     description: "Version control.",
+    //   },
+    // ];
 
-      const labelElement = document.createElement("div");
-      labelElement.className = "welcome-button-label";
-      labelElement.textContent = button.label;
+    // navButtons.forEach(button => {
+    //   const buttonElement = document.createElement("div");
+    //   buttonElement.className = "welcome-button";
 
-      const tooltip = document.createElement("div");
-      tooltip.className = "welcome-button-tooltip";
-      tooltip.textContent = button.description;
+    //   const iconElement = icon(button.iconSvg);
+    //   iconElement.classList.add("welcome-button-icon");
 
-      buttonElement.appendChild(iconElement);
-      buttonElement.appendChild(labelElement);
-      buttonElement.appendChild(tooltip);
+    //   const labelElement = document.createElement("div");
+    //   labelElement.className = "welcome-button-label";
+    //   labelElement.textContent = button.label;
 
-      navButtonsContainer.appendChild(buttonElement);
-    });
+    //   const tooltip = document.createElement("div");
+    //   tooltip.className = "welcome-button-tooltip";
+    //   tooltip.textContent = button.description;
 
-    navSection.appendChild(navHeader);
-    navSection.appendChild(navDescription);
-    navSection.appendChild(navButtonsContainer);
+    //   buttonElement.appendChild(iconElement);
+    //   buttonElement.appendChild(labelElement);
+    //   buttonElement.appendChild(tooltip);
+
+    //   navButtonsContainer.appendChild(buttonElement);
+    // });
+
+    // navSection.appendChild(navHeader);
+    // navSection.appendChild(navDescription);
+    // navSection.appendChild(navButtonsContainer);
 
     const sidebarsSection = document.createElement("div");
     sidebarsSection.className = "welcome-card-section small-text";
 
-    const sidebarsHeader = document.createElement("h3");
-    sidebarsHeader.className = "welcome-card-section-header";
-    sidebarsHeader.textContent = "Your Toolset";
+    // const sidebarsHeader = document.createElement("h3");
+    // sidebarsHeader.className = "welcome-card-section-header";
+    // sidebarsHeader.textContent = "Your Toolset";
 
-    const leftSidebar = this.createSidebarInfo(Folder, "Left Sidebar", [
-      "Access your project files with the Project panel.",
-      "Manage game objects in the Scene Graph panel.",
-    ]);
+    // const leftSidebar = this.createSidebarInfo(Folder, "Left Sidebar", [
+    //   "Access your project files with the Project panel.",
+    //   "Manage game objects in the Scene Graph panel.",
+    // ]);
 
-    const rightSidebar = this.createSidebarInfo(Sliders, "Right Sidebar", [
-      "Adjust properties of selected objects.",
-      "Add or modify entity behaviors.",
-    ]);
+    // const rightSidebar = this.createSidebarInfo(Sliders, "Right Sidebar", [
+    //   "Adjust properties of selected objects.",
+    //   "Add or modify entity behaviors.",
+    // ]);
 
-    const bottomPanel = this.createSidebarInfo(Terminal, "Bottom Panel", [
-      "Monitor logs in real-time with the Logs panel.",
-      "Debug your game efficiently.",
-    ]);
+    // const bottomPanel = this.createSidebarInfo(Terminal, "Bottom Panel", [
+    //   "Monitor logs in real-time with the Logs panel.",
+    //   "Debug your game efficiently.",
+    // ]);
 
-    sidebarsSection.appendChild(sidebarsHeader);
-    sidebarsSection.appendChild(leftSidebar);
-    sidebarsSection.appendChild(rightSidebar);
-    sidebarsSection.appendChild(bottomPanel);
+    // sidebarsSection.appendChild(sidebarsHeader);
+    // sidebarsSection.appendChild(leftSidebar);
+    // sidebarsSection.appendChild(rightSidebar);
+    // sidebarsSection.appendChild(bottomPanel);
 
     contentWrapper.appendChild(navSection);
     contentWrapper.appendChild(sidebarsSection);

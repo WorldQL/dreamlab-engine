@@ -13,10 +13,11 @@
   line-height: 1.5;
   z-index: 1000;
   overflow: hidden;
-  top: 50%;
+  top: 30%;
   left: 50%;
   transform: translate(-50%, -50%);
   box-sizing: border-box;
+  text-align: center;
 }
 
 .welcome-card-content {
@@ -50,7 +51,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 
 .welcome-card-title {
@@ -132,6 +133,29 @@
   font-size: 11px;
 }
 
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.open-tutorial-button {
+  background-color: rgb(25, 25, 255);
+  color: white;
+  padding: 1rem;
+  border-radius: 5px;
+  text-decoration: none;
+  display: inline-block; /* Ensure it's treated as a button */
+  transition: transform 0.3s ease; /* Smooth interaction effects */
+  animation: pulse 1.5s infinite; /* Apply the pulsing animation */
+}
+
 .welcome-button:hover .welcome-button-tooltip {
   visibility: visible;
   opacity: 1;
@@ -177,7 +201,7 @@
 }
 
 .welcome-card-content p {
-  margin: 8px 0;
+  margin: 8px 8px;
   text-align: center;
   font-size: 13px;
 }
