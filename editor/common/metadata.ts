@@ -21,7 +21,7 @@ export class EditorMetadataEntity extends Entity {
     this.defineValues(EditorMetadataEntity, "locked", "behaviorsJson");
   }
 
-  readonly bounds = { x: 0, y: 0 };
+  readonly bounds = undefined;
 
   static getExistingInstanceFor(entity: Entity): EditorMetadataEntity | undefined {
     const existingMetadataEntity = entity.children.get("__EditorMetadata");
