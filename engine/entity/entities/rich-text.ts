@@ -1,4 +1,5 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
+import type { IBounds } from "../../math/mod.ts";
 import { EntityTransformUpdate } from "../../signals/mod.ts";
 import { ColorAdapter } from "../../value/adapters/color-adapter.ts";
 import { enumAdapter } from "../../value/adapters/enum-adapter.ts";
@@ -39,9 +40,11 @@ export class RichText extends PixiEntity {
   }
 
   static readonly icon: string = "🔡";
-  readonly bounds = undefined;
-  // TODO: update bounds with reflow
-  // this is currently not possible because bounds are assumed to be centered
+
+  #bounds: IBounds | undefined;
+  get bounds(): IBounds | undefined {
+    return this.#bounds;
+  }
 
   text: string = "Sample Text";
   fontFamily: string = "Inter";
@@ -127,6 +130,14 @@ export class RichText extends PixiEntity {
 
     const anchor = this.align === "center" ? 0.5 : this.align === "left" ? 0 : 1;
     this.#text.anchor.set(anchor, 0.5);
+
+    const localBounds = this.container.getLocalBounds().rectangle;
+    const width = localBounds.width;
+    const height = localBounds.height;
+    const x = localBounds.x + width / 2;
+    const y = localBounds.y + height / 2;
+
+    this.#bounds = { width, height, offset: { x, y } };
   }
 
   onInitialize(): void {
