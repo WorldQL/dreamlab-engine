@@ -1,4 +1,5 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
+import { EntityTransformUpdate } from "../../signals/mod.ts";
 import { ColorAdapter } from "../../value/adapters/color-adapter.ts";
 import { enumAdapter } from "../../value/adapters/enum-adapter.ts";
 import { Value } from "../../value/value.ts";
@@ -84,6 +85,13 @@ export class RichText extends PixiEntity {
         this.#reflow();
       });
     }
+
+    this.on(EntityTransformUpdate, () => {
+      if (!this.#text) return;
+
+      const scale = this.globalTransform.scale.div(Camera.METERS_TO_PIXELS);
+      this.#text.scale.set(scale.x, scale.y);
+    });
   }
 
   #reflow(): void {
@@ -113,7 +121,9 @@ export class RichText extends PixiEntity {
 
     this.#text.style = this.#style;
     this.#text.text = this.text;
-    this.#text.scale.set(1 / Camera.METERS_TO_PIXELS);
+
+    const scale = this.globalTransform.scale.div(Camera.METERS_TO_PIXELS);
+    this.#text.scale.set(scale.x, scale.y);
 
     const anchor = this.align === "center" ? 0.5 : this.align === "left" ? 0 : 1;
     this.#text.anchor.set(anchor, 0.5);
