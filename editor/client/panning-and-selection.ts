@@ -174,12 +174,12 @@ export class CameraPanBehavior extends Behavior {
     ev.preventDefault();
     ev.stopPropagation();
 
-    console.log(ev.wheelDeltaY, ev.deltaY, ev.deltaMode)
+    console.log(ev.wheelDeltaY, ev.deltaY, ev.deltaMode);
 
     if (!TOUCHPAD_DETECTED) {
       // @ts-expect-error non-standard
       TOUCHPAD_DETECTED = ev.wheelDeltaY // @ts-expect-error non-standard
-        ? ev.wheelDeltaY === -3 * ev.deltaY
+        ? (ev.wheelDeltaY === -3 * ev.deltaY) && ev.deltaY !== 0
         : ev.deltaMode === 0;
     }
 
