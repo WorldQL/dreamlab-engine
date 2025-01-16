@@ -178,9 +178,7 @@ export class CameraPanBehavior extends Behavior {
 
     if (!TOUCHPAD_DETECTED) {
       // @ts-expect-error non-standard
-      TOUCHPAD_DETECTED = ev.wheelDeltaY // @ts-expect-error non-standard
-        ? (ev.wheelDeltaY === -3 * ev.deltaY) && ev.deltaY !== 0
-        : ev.deltaMode === 0;
+      TOUCHPAD_DETECTED = (ev.wheelDeltaY === -3 * ev.deltaY) && ev.deltaY !== 0
     }
 
     // mouse mode
