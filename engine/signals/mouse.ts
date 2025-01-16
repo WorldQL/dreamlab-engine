@@ -10,6 +10,7 @@ export class MouseDown {
   public constructor(
     public readonly button: "left" | "right" | "middle",
     public readonly cursor: Simplify<SetNonNullable<Cursor>>,
+    public readonly ev: MouseEvent,
   ) {}
 }
 
@@ -17,6 +18,7 @@ export class MouseUp {
   public constructor(
     public readonly button: "left" | "right" | "middle",
     public readonly cursor: Cursor,
+    public readonly ev: MouseEvent,
   ) {}
 }
 
