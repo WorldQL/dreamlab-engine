@@ -29,7 +29,7 @@ hljs.registerLanguage("typescript", typescript);
 hljs.registerLanguage("javascript", javascript);
 
 export const suggestions = [
-  { text: "Add a double-jump to the player" },
+  { text: "Give the player a double jump" },
   { text: "Create a spike trap prefab that teleports the player back to PlayerSpawnpoint" },
   { text: "Add an enemy that chases the player" },
 ];
