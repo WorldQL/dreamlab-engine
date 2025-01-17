@@ -147,7 +147,7 @@ export class BoxResizeGizmo extends Entity {
     // Destroy existing chilldren
     this.children.forEach(c => c.destroy());
 
-    // Don't spawn handles if no target entity or no bounds
+    // Don't spawn handles if no target entity
     const entity = this.#target;
     if (!entity) return;
 
@@ -170,8 +170,10 @@ export class BoxResizeGizmo extends Entity {
     });
     translateBoth.on(MouseDown, translateOnMouseDown("both"));
 
+    // Don't spawn handles for entities with offset bounds
     const bounds = entity.bounds;
     if (!bounds) return;
+    if (bounds.offset && (bounds.offset.x !== 0 || bounds.offset.y !== 0)) return;
 
     // TODO: support offset bounds
     const scaled = Vector2.mul(
@@ -342,6 +344,7 @@ export class BoxResizeGizmo extends Entity {
     if (!entity) return;
     const bounds = entity.bounds;
     if (!bounds) return;
+    if (bounds.offset && (bounds.offset.x !== 0 || bounds.offset.y !== 0)) return;
 
     // TODO: support offset bounds
     const scaled = Vector2.div(
@@ -576,7 +579,7 @@ export class BoxResizeGizmo extends Entity {
       this.#gfx.rotation = -entity.globalTransform.rotation;
 
       const _bounds = entity.bounds;
-      if (!_bounds) {
+      if (!_bounds || (_bounds.offset && (_bounds.offset.x !== 0 || _bounds.offset.y !== 0))) {
         this.#gfx.context
           .rect(-0.15, -0.15, 0.3, 0.3)
           .fill({ alpha: 0.2, color: "blue" })
