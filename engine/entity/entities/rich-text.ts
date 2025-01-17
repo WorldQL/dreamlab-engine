@@ -29,7 +29,7 @@ const FontWeightAdapter = enumAdapter([
 ]);
 
 type Align = enumAdapter.Union<typeof AlignAdapter>;
-const AlignAdapter = enumAdapter(["left", "center", "right", "justify"]);
+const AlignAdapter = enumAdapter(["left", "center", "right"]);
 
 type StrokeJoin = enumAdapter.Union<typeof StrokeJoinAdapter>;
 const StrokeJoinAdapter = enumAdapter(["round", "bevel", "miter"]);
@@ -51,7 +51,7 @@ export class RichText extends PixiEntity {
   fontSize: number = 36;
   fontStyle: FontStyle = "normal";
   fontWeight: FontWeight = "normal";
-  align: Align = "left";
+  align: Align = "center";
   color: string = "white";
   stroke: boolean = false;
   strokeColor: string = "black";
