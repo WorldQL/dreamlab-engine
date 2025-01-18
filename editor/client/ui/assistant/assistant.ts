@@ -345,7 +345,9 @@ export class Assistant {
     try {
       planArray = JSON.parse(plan!.replace(/\r?\n/g, " "));
     } catch {
-      alert("Plan failed to parse. Please try giving the chatbot more detail. If it still doesn't work, reload the page.");
+      alert(
+        "Plan failed to parse. Please try giving the chatbot more detail. If it still doesn't work, reload the page.",
+      );
     }
     if (planArray) {
       const stepsContainer = elem("div", { className: "chat-steps-container" });

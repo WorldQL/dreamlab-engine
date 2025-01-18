@@ -1,4 +1,10 @@
-import { BehaviorConstructor, ClientGame, Empty, Entity, ValueTypeTag } from "@dreamlab/engine";
+import {
+  BehaviorConstructor,
+  ClientGame,
+  Empty,
+  Entity,
+  ValueTypeTag,
+} from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { createId } from "@dreamlab/vendor/nanoid.ts";
 
@@ -68,6 +74,20 @@ export class BehaviorTypeInfoService {
     } catch (err) {
       console.error(err);
       return { typeName: script, values: [] };
+    }
+  }
+
+  async hasBehavior(script: string): Promise<boolean> {
+    const cached = this.#cache.get(script);
+    if (cached) return true;
+
+    using dummyGame = await this.#createDummyGame();
+
+    try {
+      await dummyGame.loadBehavior(script);
+      return true;
+    } catch {
+      return false;
     }
   }
 
