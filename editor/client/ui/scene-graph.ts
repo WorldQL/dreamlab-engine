@@ -75,8 +75,9 @@ export class SceneGraph implements InspectorUIWidget {
 
       ui.contextMenu.drawContextMenu(event.clientX, event.clientY, [
         createEntityMenu("New Entity", type => {
+          const typeToSpawn = ui.editMode ? Facades.lookupFacadeEntityType(type) : type;
           const newEntity = world.spawn({
-            type: Facades.lookupFacadeEntityType(type),
+            type: typeToSpawn,
             name: type.name,
             transform: {
               position: this.game.local._.Camera.globalTransform.position,
@@ -108,8 +109,9 @@ export class SceneGraph implements InspectorUIWidget {
       ui.contextMenu.drawContextMenu(event.clientX, event.clientY, [
         createEntityMenu(`New Entity @${target.name}`, type => {
           if (!posAtRightClick) return;
+          const typeToSpawn = ui.editMode ? Facades.lookupFacadeEntityType(type) : type;
           const newEntity = target.spawn({
-            type: Facades.lookupFacadeEntityType(type),
+            type: typeToSpawn,
             name: type.name,
             // transform: {
             //   position: posAtRightClick,
@@ -544,8 +546,8 @@ export class SceneGraph implements InspectorUIWidget {
             enabledState === "allEnabled"
               ? "Disable"
               : enabledState === "allDisabled"
-              ? "Enable"
-              : "Toggle Enabled",
+                ? "Enable"
+                : "Toggle Enabled",
             () => {
               for (const e of ui.selectedEntity.entities) {
                 e.enabled = !(enabledState === "allEnabled");
@@ -630,8 +632,9 @@ export class SceneGraph implements InspectorUIWidget {
               if (entity instanceof EditorRootFacadeEntity || entity instanceof Root) {
                 pos = this.game.local._.Camera.globalTransform.position;
               }
+              const typeToSpawn = ui.editMode ? Facades.lookupFacadeEntityType(type) : type;
               const newEntity = entity.spawn({
-                type: Facades.lookupFacadeEntityType(type),
+                type: typeToSpawn,
                 name: type.name,
                 transform: { position: pos },
               });
@@ -673,8 +676,8 @@ export class SceneGraph implements InspectorUIWidget {
           enabledState === "allEnabled"
             ? "Disable"
             : enabledState === "allDisabled"
-            ? "Enable"
-            : "Toggle Enabled",
+              ? "Enable"
+              : "Toggle Enabled",
           () => {
             for (const e of ui.selectedEntity.entities) {
               if (isRoot(e)) {
@@ -707,7 +710,7 @@ export class SceneGraph implements InspectorUIWidget {
                     t: "create-entity" as const,
                     parentRef: x.parent!.ref,
                     def: x.getDefinition(),
-                  } satisfies UndoRedoOperation),
+                  }) satisfies UndoRedoOperation,
               );
 
               UndoRedoManager._.push({ t: "compound", ops });

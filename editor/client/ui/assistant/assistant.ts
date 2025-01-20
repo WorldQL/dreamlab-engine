@@ -1,7 +1,22 @@
 import { ClientGame } from "@dreamlab/engine";
+import { BehaviorSchema } from "@dreamlab/scene";
 import { element as elem } from "@dreamlab/ui";
+import hljs from "npm:highlight.js/lib/core";
+import javascript from "npm:highlight.js/lib/languages/javascript";
+import typescript from "npm:highlight.js/lib/languages/typescript";
+import markdownit from "npm:markdown-it@14.1.0";
+import { EditorMetadataEntity } from "../../../common/mod.ts";
+import { Check, Copy, icon, RotateCcw, Send } from "../../_icons.ts";
+import { createFile } from "../../main.ts";
 import { InspectorUI } from "../inspector.ts";
-import { Check, Clock, Copy, icon, RotateCcw, Send } from "../../_icons.ts";
+import {
+  buildPrefabMap,
+  buildScriptMap,
+  getFileContent,
+  getTagContents,
+  oneOffMessage,
+} from "./context.ts";
+import { spawnEntity } from "./editor-world-interaction-util.ts";
 import {
   available_topics,
   codingPrompt,
@@ -10,21 +25,6 @@ import {
   fullFileInstructions,
   plan,
 } from "./prompts.ts";
-import markdownit from "npm:markdown-it@14.1.0";
-import hljs from "npm:highlight.js/lib/core";
-import typescript from "npm:highlight.js/lib/languages/typescript";
-import javascript from "npm:highlight.js/lib/languages/javascript";
-import {
-  buildPrefabMap,
-  buildScriptMap,
-  getFileContent,
-  getTagContents,
-  oneOffMessage,
-} from "./context.ts";
-import { createFile } from "../../main.ts";
-import { BehaviorSchema } from "@dreamlab/scene";
-import { EditorMetadataEntity } from "../../../common/mod.ts";
-import { spawnEntity } from "./editor-world-interaction-util.ts";
 hljs.registerLanguage("typescript", typescript);
 hljs.registerLanguage("javascript", javascript);
 
@@ -414,7 +414,11 @@ export class Assistant {
         }
 
         if (step.action === "createPrefab") {
-          spawnEntity(this.game.world._.EditEntities._.prefabs, step.definition);
+          spawnEntity(
+            this.game.world._.EditEntities._.prefabs,
+            step.definition,
+            this.ui?.editMode ?? true,
+          );
         }
 
         if (step.action === "createFile") {
@@ -835,9 +839,9 @@ function stripIndentation(code: string): string {
 }
 
 // Import necessary modules from Prettier
-import * as prettier from "npm:prettier/standalone";
-import pluginEstree from "npm:prettier/plugins/estree";
 import * as parserTypescript from "npm:prettier/parser-typescript";
+import pluginEstree from "npm:prettier/plugins/estree";
+import * as prettier from "npm:prettier/standalone";
 
 // Define a function to format TypeScript code
 export async function formatTypeScript(code: string): Promise<string> {

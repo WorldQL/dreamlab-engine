@@ -20,7 +20,11 @@ export interface SimplifiedEntityDefinition<
   children?: { [I in keyof Children]: SimplifiedEntityDefinition<Children[I]> };
 }
 
-export function spawnEntity(parent: Entity, toSpawn: SimplifiedEntityDefinition) {
+export function spawnEntity(
+  parent: Entity,
+  toSpawn: SimplifiedEntityDefinition,
+  editMode: boolean = true,
+) {
   // create behaviors to spawn
   const behaviors: SceneDescBehavior[] = [];
   for (const b of toSpawn.behaviors ?? []) {
@@ -40,7 +44,9 @@ export function spawnEntity(parent: Entity, toSpawn: SimplifiedEntityDefinition)
   const toSpawnType: string = toSpawn.type.startsWith("@")
     ? toSpawn.type
     : "@core/" + toSpawn.type;
-  const entityType = Facades.lookupFacadeEntityType(Entity.getEntityType(toSpawnType));
+
+  let entityType = Entity.getEntityType(toSpawnType);
+  if (editMode) entityType = Facades.lookupFacadeEntityType(entityType);
 
   const newEntity = parent.spawn({
     type: entityType,
