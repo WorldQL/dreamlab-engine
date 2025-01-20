@@ -1,7 +1,11 @@
 import RAPIER from "@dreamlab/vendor/rapier.ts";
 import * as internal from "../../internal.ts";
 import { Bounds, IBounds, Vector2 } from "../../math/mod.ts";
-import { EntityDestroyed, EntityEnableChanged } from "../../signals/mod.ts";
+import {
+  EntityDestroyed,
+  EntityEnableChanged,
+  EntityTransformUpdate,
+} from "../../signals/mod.ts";
 import { enumAdapter } from "../../value/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
 
@@ -160,6 +164,10 @@ export class Collider extends Entity {
     this.on(EntityEnableChanged, ({ enabled }) => {
       this.#setupCollider();
       this.#internal?.collider.setEnabled(enabled);
+    });
+
+    this.on(EntityTransformUpdate, ({ source }) => {
+      if (source !== this) this.#preparePhysicsUpdate();
     });
   }
 
