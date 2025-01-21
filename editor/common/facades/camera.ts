@@ -80,6 +80,7 @@ export class EditorFacadeCamera extends PixiEntity {
         return { width: vec.x, height: vec.y };
       },
     });
+    this.#debug.alwaysOnTop = true;
 
     const showBounds = this.values.get("showBounds");
     showBounds?.onChanged(() => {
