@@ -1,4 +1,4 @@
-import { GameStatus, ServerGame } from "@dreamlab/engine";
+import { GameStatus, ServerGame, KvServer } from "@dreamlab/engine";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 import { IPCMessageBus } from "./ipc.ts";
 import { ServerNetworkManager } from "./networking/net-manager.ts";
@@ -20,11 +20,13 @@ const game = new ServerGame({
   instanceId: workerData.instanceId,
   worldId: workerData.worldId,
   network: net.createNetworking(),
-  kv: {
-    url: workerData.kvUrl,
-    signingKey: workerData.kvSigningKey,
-    clientUrl: workerData.kvClientUrl,
-  },
+  kv: game =>
+    new KvServer({
+      game,
+      url: workerData.kvUrl,
+      signingKey: workerData.kvSigningKey,
+      clientUrl: workerData.kvClientUrl,
+    }),
 });
 game.worldScriptBaseURL = `file://${workerData.worldDirectory}/`;
 Object.defineProperties(globalThis, { net: { value: net }, game: { value: game } });

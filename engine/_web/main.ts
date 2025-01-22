@@ -1,5 +1,5 @@
 import { createId } from "@dreamlab/vendor/nanoid.ts";
-import { Camera, ClientGame, GameStatus, Text, Vector2 } from "../mod.ts";
+import { Camera, ClientGame, ClientKV, GameStatus, Text, Vector2 } from "../mod.ts";
 
 // #region Setup
 // @ts-expect-error global
@@ -30,6 +30,14 @@ const game = new ClientGame({
     onReceiveCustomMessage() {},
     disconnect() {},
   },
+  kv: {
+    player: {
+      get: () => Promise.resolve(undefined),
+      set: () => Promise.resolve(),
+      delete: () => Promise.resolve(),
+      clear: () => Promise.resolve(),
+    },
+  } satisfies ClientKV,
   container,
 });
 

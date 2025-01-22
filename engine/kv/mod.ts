@@ -23,3 +23,6 @@ export interface ServerKV {
     readonly clear: (playerId: string) => Promise<void>;
   };
 }
+
+export * from "./client.ts";
+export * from "./server.ts";
