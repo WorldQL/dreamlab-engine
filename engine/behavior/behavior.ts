@@ -1,6 +1,9 @@
 import { createId } from "@dreamlab/vendor/nanoid.ts";
 import type { ConditionalExcept, Except } from "@dreamlab/vendor/type-fest.ts";
 
+import { Collider, EntityCollision } from "@dreamlab/engine";
+// deno-lint-ignore no-unused-vars
+import type { Clickable } from "../entity/entities/clickable.ts"; // this is used in jsdoc
 import { Entity } from "../entity/mod.ts";
 import { Game } from "../game.ts";
 import * as internal from "../internal.ts";
@@ -30,7 +33,6 @@ import {
   ValueTypeTag,
   inferValueTypeTag,
 } from "../value/mod.ts";
-import { Collider, EntityCollision } from "@dreamlab/engine";
 
 export interface BehaviorContext {
   game: Game;
@@ -419,13 +421,13 @@ export class Behavior implements ISignalHandler {
 
   /**
    * Called when the uses mouses down (clicks) over the entity this Behavior is attached to.
-   * Works ONLY IF the entity is a ClickableRect or ClickableCircle
+   * Works ONLY IF the entity is a {@link Clickable}
    */
   onMouseDown?(button: "left" | "right" | "middle"): void;
 
   /**
    * Called when the uses mouses releases their mouse after clicking the entity this Behavior is attached to.
-   * Works ONLY IF the entity is a ClickableRect or ClickableCircle
+   * Works ONLY IF the entity is a {@link Clickable}
    */
   onMouseUp?(button: "left" | "right" | "middle"): void;
 }
