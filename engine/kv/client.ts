@@ -3,8 +3,8 @@ import { ClientGame } from "../game.ts";
 import { JsonValue } from "../value/data.ts";
 import * as common from "./_common.ts";
 import type { PresignRequest, PresignResponse } from "./_rpc.ts";
+import { KvBase } from "./base.ts";
 import type { ClientKV } from "./mod.ts";
-import { KvBase } from "./mod.ts";
 
 export type KvClientBaseOptions = { readonly game: ClientGame };
 export abstract class KvClientBase extends KvBase implements ClientKV {

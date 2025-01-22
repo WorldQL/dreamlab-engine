@@ -4,8 +4,8 @@ import { JsonValue } from "../value/data.ts";
 import * as common from "./_common.ts";
 import { createPayload, presign } from "./_crypto.ts";
 import type { PresignRequest, PresignResponse } from "./_rpc.ts";
+import { KvBase } from "./base.ts";
 import type { ServerKV } from "./mod.ts";
-import { KvBase } from "./mod.ts";
 
 export type KvServerBaseOptions = { readonly game: ServerGame };
 export abstract class KvServerBase extends KvBase implements ServerKV {
