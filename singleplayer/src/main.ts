@@ -8,6 +8,7 @@ import "../../client/src/_env.ts";
 import { ClientGame, GameStatus, GameStatusChange } from "@dreamlab/engine";
 import { getSceneFromProject, loadSceneDefinition, ProjectSchema } from "@dreamlab/scene";
 import { z } from "@dreamlab/vendor/zod.ts";
+import { SingleplayerKv } from "./singleplayer-kv.ts";
 import { SingleplayerNetworking } from "./singleplayer-networking.ts";
 
 const worldId =
@@ -27,7 +28,7 @@ const game = new ClientGame({
   instanceId: "singleplayer",
   worldId,
   network: network.createNetworking(),
-  // TODO: KV
+  kv: game => new SingleplayerKv({ game }),
 });
 game.worldScriptBaseURL = new URL(`./worlds/${worldId}/`, window.location.href).toString();
 Object.defineProperty(globalThis, "game", { value: game });
