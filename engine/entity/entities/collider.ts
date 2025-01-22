@@ -10,7 +10,7 @@ import { enumAdapter } from "../../value/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
 
 /**
- * @deprecated Use `Collider` with shape set to "Rectangle" instead.
+ * @deprecated Use {@link Collider} with shape set to `Rectangle` instead.
  */
 export class RectCollider extends Entity {
   static {
@@ -120,9 +120,8 @@ export class RectCollider extends Entity {
 
 // #region NEW COLLIDER
 // TODO: implement capsule collider
-//const ColliderShape = ["Rectangle", "Circle", "Capsule"] as const;
-const ColliderShape = ["Rectangle", "Circle"] as const;
-type ColliderShape = (typeof ColliderShape)[number];
+type ColliderShape = enumAdapter.Union<typeof ColliderShapeAdapter>;
+const ColliderShapeAdapter = enumAdapter(["Rectangle", "Circle" /*, "Capsule" */]);
 
 export class Collider extends Entity {
   static {
@@ -148,7 +147,7 @@ export class Collider extends Entity {
     super(ctx);
     this.shape = shape;
     this.defineValue(Collider, "isSensor");
-    this.defineValue(Collider, "shape", { type: enumAdapter(ColliderShape) });
+    this.defineValue(Collider, "shape", { type: ColliderShapeAdapter });
   }
 
   onInitialize(): void {

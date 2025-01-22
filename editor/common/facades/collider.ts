@@ -15,9 +15,8 @@ import { EnsureCompatible, EntityValueProps } from "./_compatibility.ts";
 import { DebugCapsule, DebugCircle, DebugSquare } from "./_debug.ts";
 import { Facades } from "./manager.ts";
 
-// const ColliderShape = ["Rectangle", "Circle", "Capsule"] as const;
-const ColliderShape = ["Rectangle", "Circle"] as const;
-type ColliderShape = (typeof ColliderShape)[number];
+type ColliderShape = enumAdapter.Union<typeof ColliderShapeAdapter>;
+const ColliderShapeAdapter = enumAdapter(["Rectangle", "Circle" /*, "Capsule" */]);
 
 export class EditorFacadeCollider extends PixiEntity {
   static {
@@ -34,7 +33,7 @@ export class EditorFacadeCollider extends PixiEntity {
   constructor(ctx: EntityContext) {
     super(ctx, false);
     this.defineValue(EditorFacadeCollider, "isSensor");
-    this.defineValue(EditorFacadeCollider, "shape", { type: enumAdapter(ColliderShape) });
+    this.defineValue(EditorFacadeCollider, "shape", { type: ColliderShapeAdapter });
 
     if (this.game.isClient()) {
       const svc = SelectedEntityService.serviceForGame(this.game);
