@@ -167,7 +167,7 @@ export class Collider extends Entity {
     });
 
     this.on(EntityTransformUpdate, ({ source }) => {
-      if (source !== this) this.#preparePhysicsUpdate();
+      if (source !== this) this[internal.entityPreparePhysicsUpdate]();
     });
   }
 
@@ -211,15 +211,15 @@ export class Collider extends Entity {
 
   [internal.interpolationStartTick](): void {
     super[internal.interpolationStartTick]();
-    this.#preparePhysicsUpdate();
+    this[internal.entityPreparePhysicsUpdate]();
   }
 
   onUpdate(): void {
-    this.#applyPhysicsUpdate();
+    this[internal.entityApplyPhysicsUpdate]();
     super.onUpdate();
   }
 
-  #preparePhysicsUpdate() {
+  [internal.entityPreparePhysicsUpdate]() {
     if (!this.game.physics.enabled || !this.#internal) return;
 
     this.#internal.collider.setTranslation({
@@ -242,7 +242,7 @@ export class Collider extends Entity {
     // }
   }
 
-  #applyPhysicsUpdate() {
+  [internal.entityApplyPhysicsUpdate]() {
     if (!this.game.physics.enabled || !this.#internal) return;
 
     if (this.authority === undefined && this.game.isClient()) return;

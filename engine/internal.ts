@@ -40,6 +40,12 @@ export const entityOwnEnabled = Symbol.for("dreamlab.internal.entityOwnEnabled")
 export const entityTeleportingThisTick = Symbol.for(
   "dreamlab.internal.entityTeleportingThisTick",
 );
+export const entityApplyPhysicsUpdate = Symbol.for(
+  "dreamlab.internal.entityApplyPhysicsUpdate",
+);
+export const entityPreparePhysicsUpdate = Symbol.for(
+  "dreamlab.internal.entityPreparePhysicsUpdate",
+);
 export const valueRelatedEntity = Symbol.for("dreamlab.internal.valueRelatedEntity");
 export const valueApplyUpdate = Symbol.for("dreamlab.internal.valueApplyUpdate");
 export const defineValuesProperties = Symbol.for("dreamlab.internal.defineValuesProperties");

@@ -1,6 +1,5 @@
 import { initRapier } from "@dreamlab/vendor/rapier.ts";
 
-import { Value } from "@dreamlab/engine";
 import { urlWithParams } from "@dreamlab/util/url.ts";
 import { BehaviorLoader } from "./behavior/behavior-loader.ts";
 import { BehaviorConstructor } from "./behavior/mod.ts";
@@ -40,7 +39,7 @@ import {
 import { GameStatusChange } from "./signals/mod.ts";
 import { Time } from "./time.ts";
 import { UIManager } from "./ui.ts";
-import { ValueRegistry } from "./value/mod.ts";
+import { Value, ValueRegistry } from "./value/mod.ts";
 
 export interface GameOptions {
   instanceId: string;

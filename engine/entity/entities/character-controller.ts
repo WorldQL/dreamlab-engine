@@ -1,8 +1,9 @@
 import { KinematicCharacterController, QueryFilterFlags } from "@dreamlab/vendor/rapier.ts";
-import { EntityDestroyed, GamePostTick } from "../../signals/mod.ts";
+import * as internal from "../../internal.ts";
+import { Vector2 } from "../../math/mod.ts";
+import { EntityDestroyed } from "../../signals/mod.ts";
 import { Entity } from "../entity.ts";
 import { Collider } from "./collider.ts";
-import { Vector2 } from "@dreamlab/engine";
 
 export class CharacterController extends Collider {
   static {
@@ -42,28 +43,30 @@ export class CharacterController extends Collider {
     }
 
     if (hasCollider) {
-      // setting this to 0.05 makes the jittering less severe but still happen. 
+      // setting this to 0.05 makes the jittering less severe but still happen.
       this.#controller = this.game.physics.world.createCharacterController(0.01);
       // this.#controller.enableSnapToGround(0.1);
       // TODO: Make this and sliding configurable.
       // sliding is super buggy especially with the rect collider.
-      this.#controller.enableAutostep(0.25, 1, false)
+      this.#controller.enableAutostep(0.25, 1, false);
     }
 
     this.on(EntityDestroyed, () => {
       if (!this.#controller) return;
       this.game.physics.world.removeCharacterController(this.#controller);
     });
-
-    this.listen(this.game, GamePostTick, () => this.onPostUpdate());
   }
 
-  private onPostUpdate() {
+  #onPostUpdate() {
     if (!this.#controller) return;
 
     if (!this.teleport) {
       const delta = this.pos.sub(this.#prevPosition);
-      this.#controller.computeColliderMovement(this.collider, delta, QueryFilterFlags['EXCLUDE_SENSORS']);
+      this.#controller.computeColliderMovement(
+        this.collider,
+        delta,
+        QueryFilterFlags["EXCLUDE_SENSORS"],
+      );
       this.#isGrounded = this.#controller.computedGrounded();
 
       this.game.physics.emitCharacterControllerCollisions(this.collider, this.#controller);
@@ -84,5 +87,9 @@ export class CharacterController extends Collider {
     }
 
     this.#prevPosition.assign(this.pos);
+  }
+
+  override [internal.entityApplyPhysicsUpdate]() {
+    this.#onPostUpdate();
   }
 }
