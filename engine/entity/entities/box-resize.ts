@@ -2,10 +2,10 @@ import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { IVector2, Vector2 } from "../../math/mod.ts";
 import { pointLocalToWorld, pointWorldToLocal } from "../../math/spatial-transforms.ts";
 import { EntityDestroyed, GameRender, MouseDown } from "../../signals/mod.ts";
-import type { EntityContext } from "../entity.ts";
+import type { EntityContext, EntityDefinition } from "../entity.ts";
 import { Entity } from "../entity.ts";
 import { Camera } from "./camera.ts";
-import { ClickableRect } from "./clickable.ts";
+import { Clickable } from "./clickable.ts";
 import { ColoredSquare } from "./colored-square.ts";
 import { Empty } from "./empty.ts";
 import { GizmoRotateEnd, GizmoTranslateEnd } from "./gizmo.ts";
@@ -163,10 +163,10 @@ export class BoxResizeGizmo extends Entity {
       };
 
     const translateBoth = this.spawn({
-      type: ClickableRect,
+      type: Clickable,
       name: "TranslateBoth",
       transform: { position: { x: 0, y: 0 } },
-      values: { width: 0.3, height: 0.3 },
+      values: { shape: "Rectangle", width: 0.3, height: 0.3 },
     });
     translateBoth.on(MouseDown, translateOnMouseDown("both"));
 
@@ -183,7 +183,7 @@ export class BoxResizeGizmo extends Entity {
 
     const container = this.spawn({ type: Empty, name: "Container" });
 
-    const __debug__ = (color: string, ...clickables: ClickableRect[]) => {
+    const __debug__ = (color: string, ...clickables: Clickable[]) => {
       if (!BoxResizeGizmo.#__DEBUG__) return;
       for (const clickable of clickables) {
         const width = clickable.width;
@@ -201,53 +201,54 @@ export class BoxResizeGizmo extends Entity {
     const grip = this.#calculateGripSizes(scaled);
 
     const leftEdge = container.spawn({
-      type: ClickableRect,
+      type: Clickable,
       name: "LeftEdge",
       transform: {
         z: 999_999,
         position: { x: -(scaled.x / 2 + BoxResizeGizmo.#CLICK_WIDTH / 2), y: 0 },
       },
-      values: { width: BoxResizeGizmo.#CLICK_WIDTH, height: grip.y },
+      values: { shape: "Rectangle", width: BoxResizeGizmo.#CLICK_WIDTH, height: grip.y },
     });
 
     const rightEdge = container.spawn({
-      type: ClickableRect,
+      type: Clickable,
       name: "RightEdge",
       transform: {
         z: 999_999,
         position: { x: scaled.x / 2 + BoxResizeGizmo.#CLICK_WIDTH / 2, y: 0 },
       },
-      values: { width: BoxResizeGizmo.#CLICK_WIDTH, height: grip.y },
+      values: { shape: "Rectangle", width: BoxResizeGizmo.#CLICK_WIDTH, height: grip.y },
     });
 
     const topEdge = container.spawn({
-      type: ClickableRect,
+      type: Clickable,
       name: "TopEdge",
       transform: {
         z: 999_999,
         position: { x: 0, y: scaled.y / 2 + BoxResizeGizmo.#CLICK_WIDTH / 2 },
       },
-      values: { width: grip.x, height: BoxResizeGizmo.#CLICK_WIDTH },
+      values: { shape: "Rectangle", width: grip.x, height: BoxResizeGizmo.#CLICK_WIDTH },
     });
 
     const bottomEdge = container.spawn({
-      type: ClickableRect,
+      type: Clickable,
       name: "BottomEdge",
       transform: {
         z: 999_999,
         position: { x: 0, y: -(scaled.y / 2 + BoxResizeGizmo.#CLICK_WIDTH / 2) },
       },
-      values: { width: grip.x, height: BoxResizeGizmo.#CLICK_WIDTH },
+      values: { shape: "Rectangle", width: grip.x, height: BoxResizeGizmo.#CLICK_WIDTH },
     });
 
     const handles = this.#calculateHandlePositions(scaled);
     const handleValues = {
+      shape: "Rectangle",
       width: BoxResizeGizmo.#CORNER_WIDTH * 1.2,
       height: BoxResizeGizmo.#CORNER_WIDTH * 1.2,
-    };
+    } satisfies EntityDefinition<Clickable>["values"];
 
     const topLeft = container.spawn({
-      type: ClickableRect,
+      type: Clickable,
       name: "TopLeft",
       transform: {
         z: 1_000_000,
@@ -257,7 +258,7 @@ export class BoxResizeGizmo extends Entity {
     });
 
     const topRight = container.spawn({
-      type: ClickableRect,
+      type: Clickable,
       name: "TopRight",
       transform: {
         z: 1_000_000,
@@ -267,7 +268,7 @@ export class BoxResizeGizmo extends Entity {
     });
 
     const bottomLeft = container.spawn({
-      type: ClickableRect,
+      type: Clickable,
       name: "BottomLeft",
       transform: {
         z: 1_000_000,
@@ -277,7 +278,7 @@ export class BoxResizeGizmo extends Entity {
     });
 
     const bottomRight = container.spawn({
-      type: ClickableRect,
+      type: Clickable,
       name: "BottomRight",
       transform: {
         z: 1_000_000,
@@ -287,7 +288,7 @@ export class BoxResizeGizmo extends Entity {
     });
 
     const rotate = container.spawn({
-      type: ClickableRect,
+      type: Clickable,
       name: "Rotate",
       transform: {
         z: 1_000_000,
@@ -355,7 +356,7 @@ export class BoxResizeGizmo extends Entity {
     const container = this.children.get("Container")?.cast(Empty);
     if (container) container.globalTransform.rotation = entity.globalTransform.rotation;
 
-    const __debug__ = (...clickables: (ClickableRect | undefined)[]) => {
+    const __debug__ = (...clickables: (Clickable | undefined)[]) => {
       if (!BoxResizeGizmo.#__DEBUG__) return;
       for (const clickable of clickables) {
         if (!clickable) continue;
@@ -372,43 +373,43 @@ export class BoxResizeGizmo extends Entity {
     const grip = this.#calculateGripSizes(scaled);
     const handles = this.#calculateHandlePositions(scaled);
 
-    const leftEdge = container?.children.get("LeftEdge")?.cast(ClickableRect);
+    const leftEdge = container?.children.get("LeftEdge")?.cast(Clickable);
     if (leftEdge) {
       leftEdge.height = grip.y;
       leftEdge.transform.position.x = -(scaled.x / 2 + BoxResizeGizmo.#CLICK_WIDTH / 2);
     }
 
-    const rightEdge = container?.children.get("RightEdge")?.cast(ClickableRect);
+    const rightEdge = container?.children.get("RightEdge")?.cast(Clickable);
     if (rightEdge) {
       rightEdge.height = grip.y;
       rightEdge.transform.position.x = scaled.x / 2 + BoxResizeGizmo.#CLICK_WIDTH / 2;
     }
 
-    const topEdge = container?.children.get("TopEdge")?.cast(ClickableRect);
+    const topEdge = container?.children.get("TopEdge")?.cast(Clickable);
     if (topEdge) {
       topEdge.width = grip.x;
       topEdge.transform.position.y = scaled.y / 2 + BoxResizeGizmo.#CLICK_WIDTH / 2;
     }
 
-    const bottomEdge = container?.children.get("BottomEdge")?.cast(ClickableRect);
+    const bottomEdge = container?.children.get("BottomEdge")?.cast(Clickable);
     if (bottomEdge) {
       bottomEdge.width = grip.x;
       bottomEdge.transform.position.y = -(scaled.y / 2 + BoxResizeGizmo.#CLICK_WIDTH / 2);
     }
 
-    const topLeft = container?.children.get("TopLeft")?.cast(ClickableRect);
+    const topLeft = container?.children.get("TopLeft")?.cast(Clickable);
     if (topLeft) topLeft.transform.position.assign(handles.tl);
 
-    const topRight = container?.children.get("TopRight")?.cast(ClickableRect);
+    const topRight = container?.children.get("TopRight")?.cast(Clickable);
     if (topRight) topRight.transform.position.assign(handles.tr);
 
-    const bottomLeft = container?.children.get("BottomLeft")?.cast(ClickableRect);
+    const bottomLeft = container?.children.get("BottomLeft")?.cast(Clickable);
     if (bottomLeft) bottomLeft.transform.position.assign(handles.bl);
 
-    const bottomRight = container?.children.get("BottomRight")?.cast(ClickableRect);
+    const bottomRight = container?.children.get("BottomRight")?.cast(Clickable);
     if (bottomRight) bottomRight.transform.position.assign(handles.br);
 
-    const rotate = container?.children.get("Rotate")?.cast(ClickableRect);
+    const rotate = container?.children.get("Rotate")?.cast(Clickable);
     if (rotate) rotate.transform.position.assign(handles.rot);
 
     __debug__(

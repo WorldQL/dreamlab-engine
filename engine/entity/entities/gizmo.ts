@@ -6,7 +6,7 @@ import { EntityDestroyed, GameRender, MouseDown } from "../../signals/mod.ts";
 import type { EntityContext } from "../entity.ts";
 import { Entity } from "../entity.ts";
 import { Camera } from "./camera.ts";
-import { ClickableCircle, ClickableRect } from "./clickable.ts";
+import { Clickable } from "./clickable.ts";
 
 // #region Signals
 // #region Translate
@@ -171,47 +171,47 @@ export class Gizmo extends Entity {
     const translateClickSize = translateHandleSize * 1.333;
 
     const translateX = this.spawn({
-      type: ClickableRect,
+      type: Clickable,
       name: "TranslateX",
       transform: { position: { x: 1.1 + translateHandleSize / 2, y: 0 } },
-      values: { width: translateClickSize, height: translateClickSize },
+      values: { shape: "Rectangle", width: translateClickSize, height: translateClickSize },
     });
 
     const translateY = this.spawn({
-      type: ClickableRect,
+      type: Clickable,
       name: "TranslateY",
       transform: { position: { x: 0, y: 1.1 + translateHandleSize / 2 } },
-      values: { width: translateClickSize, height: translateClickSize },
+      values: { shape: "Rectangle", width: translateClickSize, height: translateClickSize },
     });
 
     const translateBoth = this.spawn({
-      type: ClickableRect,
+      type: Clickable,
       name: "TranslateBoth",
       transform: { position: { x: 0, y: 0 } },
-      values: { width: 0.3, height: 0.3 },
+      values: { shape: "Rectangle", width: 0.3, height: 0.3 },
     });
 
     const rotate = this.spawn({
-      type: ClickableCircle,
+      type: Clickable,
       name: "Rotate",
-      values: { radius: 1.05, innerRadus: 0.95 },
+      values: { shape: "Circle", radius: 1.05, innerRadius: 0.95 },
     });
 
     const scaleHandleSize = Gizmo.#SCALE_S;
     const scaleClickSize = scaleHandleSize * 1.333;
 
     const scaleX = this.spawn({
-      type: ClickableRect,
+      type: Clickable,
       name: "ScaleX",
       transform: { position: { x: 0.7 + scaleHandleSize / 2, y: 0 } },
-      values: { width: scaleClickSize, height: scaleClickSize },
+      values: { shape: "Rectangle", width: scaleClickSize, height: scaleClickSize },
     });
 
     const scaleY = this.spawn({
-      type: ClickableRect,
+      type: Clickable,
       name: "ScaleY",
       transform: { position: { x: 0, y: 0.7 + scaleHandleSize / 2 } },
-      values: { width: scaleClickSize, height: scaleClickSize },
+      values: { shape: "Rectangle", width: scaleClickSize, height: scaleClickSize },
     });
 
     const translateOnMouseDown =
