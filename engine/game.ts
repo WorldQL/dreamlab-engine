@@ -15,9 +15,7 @@ import {
 } from "./entity/mod.ts";
 import { Inputs } from "./input/mod.ts";
 import * as internal from "./internal.ts";
-import { KvClient } from "./kv/client.ts";
 import { ClientKV, ServerKV } from "./kv/mod.ts";
-import { KvServer } from "./kv/server.ts";
 import { ClientNetworking, ServerNetworking } from "./network.ts";
 import { PhysicsEngine } from "./physics.ts";
 import { GameRenderer } from "./renderer/mod.ts";
@@ -53,10 +51,11 @@ export interface ClientGameOptions extends GameOptions {
   network: ClientNetworking;
   container: HTMLDivElement;
   cacheBuster?: string;
+  kv: ClientKV | ((game: ClientGame) => ClientKV);
 }
 export interface ServerGameOptions extends GameOptions {
   network: ServerNetworking;
-  kv: Omit<ConstructorParameters<typeof KvServer>["0"], "game">;
+  kv: ServerKV | ((game: ServerGame) => ServerKV);
 }
 
 export enum GameStatus {
@@ -278,7 +277,9 @@ export class ServerGame extends BaseGame {
   constructor(opts: ServerGameOptions) {
     super(opts);
     this.network = opts.network;
-    this.kv = new KvServer({ game: this, ...opts.kv });
+
+    const kv = typeof opts.kv === "function" ? opts.kv(this) : opts.kv;
+    this.kv = kv;
   }
 
   override shutdown(): void {
@@ -314,7 +315,9 @@ export class ClientGame extends BaseGame {
 
     this.#cachebust = opts.cacheBuster;
     this.network = opts.network;
-    this.kv = new KvClient({ game: this });
+
+    const kv = typeof opts.kv === "function" ? opts.kv(this) : opts.kv;
+    this.kv = kv;
   }
 
   [internal.inputsShutdownFn]: (() => void) | undefined;
