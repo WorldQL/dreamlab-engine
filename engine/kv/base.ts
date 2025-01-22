@@ -1,3 +1,5 @@
+import type { JsonValue } from "../value/mod.ts";
+
 export abstract class KvBase {
   protected abstract scope(playerId?: string): string;
 

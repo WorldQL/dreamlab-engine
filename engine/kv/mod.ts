@@ -1,4 +1,4 @@
-import { JsonValue } from "../value/mod.ts";
+import type { JsonValue } from "../value/mod.ts";
 
 export interface ClientKV {
   readonly player: {
