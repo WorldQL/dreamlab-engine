@@ -15,13 +15,21 @@ export function getEntityTypes(): [type: EntityConstructor, namespace: string][]
 
 // TODO: flesh out categories
 const categories = new Map<string, string[]>([
-  [
-    "Sprites",
-    ["@core/AnimatedSprite", "@core/Sprite", "@core/TilingSprite"],
-  ],
+  ["Sprites", ["@core/AnimatedSprite", "@core/Sprite", "@core/TilingSprite"]],
   ["UI", ["@core/UILayer", "@core/UIPanel"]],
   ["Graphics", ["@core/RawPixi", "@core/ColoredSquare", "@core/ColoredPolygon"]],
-  ["Hidden", ["@core/RectCollider", "@core/RawGraphics", "@core/SolidColor", "@core/VectorSprite", "@core/Text"]], // deprecated/hidden entites
+  [
+    "Hidden",
+    [
+      "@core/RectCollider",
+      "@core/RawGraphics",
+      "@core/SolidColor",
+      "@core/VectorSprite",
+      "@core/Text",
+      "@core/ClickableRect",
+      "@core/ClickableCircle",
+    ],
+  ], // deprecated/hidden entites
 ]);
 
 export function createEntityMenu(

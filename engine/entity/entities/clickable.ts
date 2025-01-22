@@ -1,7 +1,7 @@
+import type { ClientGame } from "../../game.ts";
 import { Cursor } from "../../input/inputs.ts";
 import * as internal from "../../internal.ts";
 import { Bounds, IBounds, Vector2, pointWorldToLocal } from "../../math/mod.ts";
-import { ClientGame } from "../../mod.ts";
 import {
   Click,
   GameRender,
@@ -10,6 +10,8 @@ import {
   MouseOver,
   MouseUp,
 } from "../../signals/mod.ts";
+import { enumAdapter } from "../../value/adapters/enum-adapter.ts";
+import type { Value } from "../../value/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
 
 const clickedSetter = Symbol.for("dreamlab.internal.clickable.clicked-setter");
@@ -127,7 +129,7 @@ export abstract class ClickableEntity extends Entity {
     }
   }
 
-  protected abstract isInBounds(worldPosition: Vector2): boolean;
+  public abstract isInBounds(worldPosition: Vector2): boolean;
 
   static [internal.clickableTeardownGame](game: ClientGame) {
     ClickableEntity.#GameRenderListeners.delete(game);
@@ -136,6 +138,70 @@ export abstract class ClickableEntity extends Entity {
   }
 }
 
+type ClickableShape = enumAdapter.Union<typeof ClickableShapeAdapter>;
+const ClickableShapeAdapter = enumAdapter(["Rectangle", "Circle"]);
+
+export class Clickable extends ClickableEntity {
+  static {
+    Entity.registerType(this, "@core");
+  }
+
+  static readonly icon = "👆";
+  get bounds(): IBounds | undefined {
+    if (this.shape === "Rectangle") {
+      return new Bounds(this.width, this.height);
+    } else if (this.shape === "Circle") {
+      const size = this.radius * 2;
+      return new Bounds(size, size);
+    } else {
+      return undefined;
+    }
+  }
+
+  shape: ClickableShape = "Rectangle";
+  width: number = 1;
+  height: number = 1;
+  radius: number = 1;
+  innerRadius: number = 0;
+
+  constructor(ctx: EntityContext) {
+    super(ctx);
+    this.defineValue(Clickable, "shape", { type: ClickableShapeAdapter });
+
+    const isRect: Value["hidden"] = values => values.get("shape")?.value !== "Rectangle";
+    this.defineValue(Clickable, "width", { hidden: isRect });
+    this.defineValue(Clickable, "height", { hidden: isRect });
+
+    const isCircle: Value["hidden"] = values => values.get("shape")?.value !== "Circle";
+    this.defineValue(Clickable, "radius", { hidden: isCircle });
+    this.defineValue(Clickable, "innerRadius", { hidden: isCircle });
+  }
+
+  public isInBounds(worldPosition: Vector2): boolean {
+    const localPosition = pointWorldToLocal(this.globalTransform, worldPosition);
+
+    if (this.shape === "Rectangle") {
+      return (
+        localPosition.x >= this.width / -2 &&
+        localPosition.x <= this.width / 2 &&
+        localPosition.y >= this.height / -2 &&
+        localPosition.y <= this.height / 2
+      );
+    } else if (this.shape === "Circle") {
+      const radiusSq = this.radius * this.radius;
+      const innerSq = this.innerRadius * this.innerRadius;
+      const distanceSq = localPosition.magnitudeSquared();
+
+      return distanceSq >= innerSq && distanceSq <= radiusSq;
+    } else {
+      return false;
+    }
+  }
+}
+
+/**
+ * @deprecated Use {@link Clickable} with shape set to `Rectangle` instead.
+ */
 export class ClickableRect extends ClickableEntity {
   static {
     Entity.registerType(this, "@core");
@@ -167,6 +233,7 @@ export class ClickableRect extends ClickableEntity {
   }
 }
 
+/** @deprecated */
 export class ClickableCircle extends ClickableEntity {
   static {
     Entity.registerType(this, "@core");
@@ -180,18 +247,18 @@ export class ClickableCircle extends ClickableEntity {
   }
 
   radius: number = 1;
-  innerRadus: number = 0;
+  innerRadius: number = 0;
 
   constructor(ctx: EntityContext) {
     super(ctx);
-    this.defineValues(ClickableCircle, "radius", "innerRadus");
+    this.defineValues(ClickableCircle, "radius", "innerRadius");
   }
 
   public isInBounds(worldPosition: Vector2): boolean {
     const localPosition = pointWorldToLocal(this.globalTransform, worldPosition);
 
     const radiusSq = this.radius * this.radius;
-    const innerSq = this.innerRadus * this.innerRadus;
+    const innerSq = this.innerRadius * this.innerRadius;
     const distanceSq = localPosition.magnitudeSquared();
 
     return distanceSq >= innerSq && distanceSq <= radiusSq;
