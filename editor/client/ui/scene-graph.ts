@@ -284,6 +284,12 @@ export class SceneGraph implements InspectorUIWidget {
         entryElement.append(tooManyEntities);
       } else {
         this.renderEntry(ui, entryElement, newEntity);
+
+        if (!entryElement.open && this.game.isEditMode) {
+          entryElement.open = true;
+          this.#openEntities.add(entity.ref);
+          this.#saveOpenEntities();
+        }
       }
     });
 
@@ -546,8 +552,8 @@ export class SceneGraph implements InspectorUIWidget {
             enabledState === "allEnabled"
               ? "Disable"
               : enabledState === "allDisabled"
-                ? "Enable"
-                : "Toggle Enabled",
+              ? "Enable"
+              : "Toggle Enabled",
             () => {
               for (const e of ui.selectedEntity.entities) {
                 e.enabled = !(enabledState === "allEnabled");
@@ -676,8 +682,8 @@ export class SceneGraph implements InspectorUIWidget {
           enabledState === "allEnabled"
             ? "Disable"
             : enabledState === "allDisabled"
-              ? "Enable"
-              : "Toggle Enabled",
+            ? "Enable"
+            : "Toggle Enabled",
           () => {
             for (const e of ui.selectedEntity.entities) {
               if (isRoot(e)) {
@@ -710,7 +716,7 @@ export class SceneGraph implements InspectorUIWidget {
                     t: "create-entity" as const,
                     parentRef: x.parent!.ref,
                     def: x.getDefinition(),
-                  }) satisfies UndoRedoOperation,
+                  } satisfies UndoRedoOperation),
               );
 
               UndoRedoManager._.push({ t: "compound", ops });
