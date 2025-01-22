@@ -1,7 +1,7 @@
 import { createId } from "@dreamlab/vendor/nanoid.ts";
 import type { ConditionalExcept, Except } from "@dreamlab/vendor/type-fest.ts";
 
-import { Collider, EntityCollision } from "@dreamlab/engine";
+import { Collider } from "../entity/entities/collider.ts";
 // deno-lint-ignore no-unused-vars
 import type { Clickable } from "../entity/entities/clickable.ts"; // this is used in jsdoc
 import { Entity } from "../entity/mod.ts";
@@ -21,9 +21,12 @@ import {
   BehaviorDescendantSpawned,
   BehaviorDestroyed,
   BehaviorSpawned,
-} from "../signals/behavior-lifecycle.ts";
-import { GamePostTick, GamePreTick, GameRender } from "../signals/game-events.ts";
-import { EntityEnableChanged } from "../signals/mod.ts";
+  EntityCollision,
+  EntityEnableChanged,
+  GamePostTick,
+  GamePreTick,
+  GameRender,
+} from "../signals/mod.ts";
 import {
   AdapterTypeTag,
   JsonValue,

@@ -1,7 +1,11 @@
-import { EntityEnableChanged, GamePostTick } from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { Bounds, IBounds, Vector2 } from "../../math/mod.ts";
-import { EntityTransformUpdate, GameRender } from "../../signals/mod.ts";
+import {
+  EntityEnableChanged,
+  EntityTransformUpdate,
+  GamePostTick,
+  GameRender,
+} from "../../signals/mod.ts";
 import { SpritesheetAdapter, TextureAdapter, Vector2Adapter } from "../../value/mod.ts";
 import { Entity, EntityContext } from "../entity.ts";
 import { PixiEntity } from "../pixi-entity.ts";
