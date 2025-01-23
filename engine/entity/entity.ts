@@ -806,6 +806,7 @@ export abstract class Entity implements ISignalHandler {
 
   // #region Enablement
   #enabled: boolean = true;
+  #prevEnabled: boolean = this.#enabled;
   get enabled(): boolean {
     if (!this.#enabled) return false;
     if (this.parent && !this.parent.enabled) return false;
@@ -814,8 +815,6 @@ export abstract class Entity implements ISignalHandler {
   set enabled(value) {
     if (this.#enabled === value) return; // do nothing if already set to that value.
     this.#enabled = value;
-    this.fire(EntityOwnEnableChanged, value);
-    this[internal.entityNotifyEnableChanged](this.enabled);
     this.game[internal.entityTickingOrderDirty] = true;
   }
   [internal.entityNotifyEnableChanged](enabled_: boolean) {
@@ -827,6 +826,13 @@ export abstract class Entity implements ISignalHandler {
   }
   get [internal.entityOwnEnabled](): boolean {
     return this.#enabled;
+  }
+  [internal.entityFireEnabledSignals]() {
+    if (this.#enabled === this.#prevEnabled) return;
+    this.#prevEnabled = this.#enabled;
+
+    this.fire(EntityOwnEnableChanged, this.#enabled);
+    this[internal.entityNotifyEnableChanged](this.enabled);
   }
   // #endregion
 

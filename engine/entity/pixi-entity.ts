@@ -91,13 +91,10 @@ export abstract class PixiEntity extends Entity {
       this.container?.destroy({ children: true });
     });
 
-    const JITTER_FIX = true; // testing
-    if (!JITTER_FIX) {
-      this.on(EntityOwnEnableChanged, () => {
-        this[internal.interpolationStartTick]();
-        this[internal.interpolationStartFrame](0);
-      });
-    }
+    this.on(EntityOwnEnableChanged, () => {
+      this[internal.interpolationStartTick]();
+      this[internal.interpolationStartFrame](0);
+    });
   }
 
   onInitialize() {

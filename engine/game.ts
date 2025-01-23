@@ -216,6 +216,10 @@ export abstract class BaseGame implements ISignalHandler {
 
     this.fire(InternalGameTick);
 
+    for (const entity of this.entities) {
+      entity[internal.entityFireEnabledSignals]();
+    }
+
     // TODO stupid hack. how do I actually get this?
     if (this.#needCheckForEditMode) {
       if (this.world.children.has("EditEntities")) {
