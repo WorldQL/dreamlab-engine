@@ -69,7 +69,11 @@ export const serveSourceControlAPI = (router: Router) => {
         }
       }
 
-      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const timestamp = new Date()
+        .toISOString()
+        .replace("T", "-")
+        .replace("Z", "")
+        .replace(/[:.]/g, "-");
       const newBranch = `edit-${timestamp}`;
 
       {
