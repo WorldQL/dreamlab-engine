@@ -349,6 +349,61 @@ export const serveScriptEditingAPI = (router: Router) => {
     ctx.response.body = { files: filesWithVersion };
   });
 
+  //TODO: double check implementation and move to source-control.ts
+  router.post(
+    "/api/v1/edit/:instance/git-reset-hard",
+    typedJsonHandler(
+      {
+        params: z.object({
+          instance: EditModeInstanceSchema,
+        }),
+        response: z.object({ success: z.boolean() }),
+      },
+      async (_ctx, { params }) => {
+        const { instance } = params;
+        const cwd = instance.info.worldDirectory;
+
+        const gitFetch = new Deno.Command("git", {
+          args: ["fetch", "origin", "main"],
+          cwd,
+        }).spawn();
+        const fetchStatus = await gitFetch.status;
+        if (!fetchStatus.success) {
+          throw new JsonAPIError(
+            Status.InternalServerError,
+            "Failed to run `git fetch origin main`",
+          );
+        }
+
+        const gitResetCommand = new Deno.Command("git", {
+          args: ["reset", "--hard", "origin/main"],
+          cwd,
+        });
+        const resetProcess = gitResetCommand.spawn();
+        const resetStatus = await resetProcess.status;
+        if (!resetStatus.success) {
+          throw new JsonAPIError(
+            Status.InternalServerError,
+            "Failed to run `git reset --hard origin/main`",
+          );
+        }
+
+        // clean untracked files ?
+        const gitCleanCommand = new Deno.Command("git", {
+          args: ["clean", "-fd"],
+          cwd,
+        });
+        const cleanProc = gitCleanCommand.spawn();
+        const cleanStatus = await cleanProc.status;
+        if (!cleanStatus.success) {
+          throw new JsonAPIError(Status.InternalServerError, "Failed to run `git clean -fd`");
+        }
+
+        return { success: true };
+      },
+    ),
+  );
+
   router.post(
     "/api/v1/edit/:instance/import-project",
     typedJsonHandler(
