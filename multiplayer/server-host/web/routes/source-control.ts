@@ -524,14 +524,21 @@ export const serveSourceControlAPI = (router: Router) => {
     }
 
     if (!instance.info.editMode) {
-      throw new JsonAPIError(Status.Forbidden, "The instance is not in edit mode");
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode");
     }
 
     const sourceRoot = instance.info.worldDirectory;
 
     try {
       const logProcess = new Deno.Command("git", {
-        args: ["log", "--pretty=format:%H|%an|%ae|%cd|%s"],
+        args: [
+          "log",
+          "--all",
+          "--pretty=format:%H|%P|%D|%s|%an|%ae|%ad",
+          "--date=iso",
+          "--abbrev-commit",
+          "--topo-order",
+        ],
         cwd: sourceRoot,
         stdout: "piped",
         stderr: "piped",
@@ -539,26 +546,31 @@ export const serveSourceControlAPI = (router: Router) => {
 
       const outputResult = await logProcess.output();
       const logOutput = new TextDecoder().decode(outputResult.stdout);
+      const lines = logOutput.split("\n").filter(line => line.trim() !== "");
 
-      const commits = logOutput
-        .split("\n")
-        .filter(line => line.trim() !== "")
-        .map(line => {
-          const [hash, authorName, authorEmail, date, message] = line.split("|");
-          return {
-            hash,
-            author: {
-              name: authorName,
-              email: authorEmail,
-            },
-            date,
-            message,
-          };
-        });
+      const commits = lines.map(line => {
+        const [hash, parentLine, refLine, message, authorName, authorEmail, date] =
+          line.split("|");
+
+        const parents = parentLine ? parentLine.split(" ") : [];
+        const refs = refLine
+          .split(",")
+          .map(r => r.trim())
+          .filter(Boolean);
+
+        return {
+          hash,
+          parents,
+          refs,
+          message,
+          author: { name: authorName, email: authorEmail },
+          date,
+        };
+      });
 
       ctx.response.body = { commits };
-    } catch (error) {
-      throw new JsonAPIError(Status.InternalServerError, error.message);
+    } catch (err) {
+      throw new JsonAPIError(Status.InternalServerError, err.message);
     }
   });
 };
