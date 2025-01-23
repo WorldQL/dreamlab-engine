@@ -26,11 +26,11 @@ export const serveSourceControlAPI = (router: Router) => {
     const instanceId = ctx.params.instance_id;
     const instance = GameInstance.INSTANCES.get(instanceId);
     if (instance === undefined) {
-      throw new JsonAPIError(Status.NotFound, "An instance with the given ID does not exist");
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
     }
 
     if (!instance.info.editMode) {
-      throw new JsonAPIError(Status.Forbidden, "The instance is not in edit mode");
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
     }
 
     const sourceRoot = instance.info.worldDirectory;
@@ -45,7 +45,8 @@ export const serveSourceControlAPI = (router: Router) => {
       ],
       cwd: sourceRoot,
     }).spawn();
-    if (!(await commitProcess.status).success) {
+    const commitStatus = await commitProcess.status;
+    if (!commitStatus.success) {
       throw new JsonAPIError(Status.InternalServerError, "Failed to commit to repository");
     }
 
@@ -53,8 +54,58 @@ export const serveSourceControlAPI = (router: Router) => {
       args: ["push", `${CONFIG.gitBase}/${instance.info.worldId}.git`, "main"],
       cwd: sourceRoot,
     }).spawn();
-    if (!(await pushProcess.status).success) {
-      throw new JsonAPIError(Status.InternalServerError, "Failed to push to repository");
+    const pushStatus = await pushProcess.status;
+
+    if (!pushStatus.success) {
+      // If we failed to push to main, fallback to pushing a new branch
+      {
+        const fetchCmd = new Deno.Command("git", {
+          args: ["fetch", "origin", "main"],
+          cwd: sourceRoot,
+        }).spawn();
+        const fetchStatus = await fetchCmd.status;
+        if (!fetchStatus.success) {
+          throw new JsonAPIError(Status.InternalServerError, "Failed to fetch origin main");
+        }
+      }
+
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const newBranch = `edit-${timestamp}`;
+
+      {
+        const branchCmd = new Deno.Command("git", {
+          args: ["checkout", "-b", newBranch],
+          cwd: sourceRoot,
+        }).spawn();
+        const branchStatus = await branchCmd.status;
+        if (!branchStatus.success) {
+          throw new JsonAPIError(
+            Status.InternalServerError,
+            "Failed to create new branch locally",
+          );
+        }
+      }
+
+      {
+        const pushBranchCmd = new Deno.Command("git", {
+          args: ["push", "-u", `${CONFIG.gitBase}/${instance.info.worldId}.git`, newBranch],
+          cwd: sourceRoot,
+        }).spawn();
+        const pushBranchStatus = await pushBranchCmd.status;
+        if (!pushBranchStatus.success) {
+          throw new JsonAPIError(
+            Status.InternalServerError,
+            `Failed to push to new branch '${newBranch}'`,
+          );
+        }
+      }
+
+      ctx.response.body = {
+        success: true,
+        fallbackBranch: newBranch,
+        message: `Pushed to new branch '${newBranch}' since pushing 'main' was rejected.`,
+      };
+      return;
     }
 
     ctx.response.body = { success: true };
