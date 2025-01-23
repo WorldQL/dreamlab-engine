@@ -9,6 +9,7 @@ import * as path from "jsr:@std/path@1";
 
 export const serveSourceControlAPI = (router: Router) => {
   // TODO: auth ??
+  // #region commit
   router.post("/api/v1/source-control/:instance_id/commit", async ctx => {
     const BodySchema = z.object({
       commit_message: z.string(),
@@ -115,6 +116,7 @@ export const serveSourceControlAPI = (router: Router) => {
     ctx.response.body = { success: true };
     ctx.response.type = "application/json";
   });
+  // #endregion
 
   router.get("/api/v1/source-control/:instance_id/file/:path*", async ctx => {
     const instanceId = ctx.params.instance_id;
@@ -301,6 +303,7 @@ export const serveSourceControlAPI = (router: Router) => {
     }
   });
 
+  // #region stage
   router.put("/api/v1/source-control/:instance_id/stage", async ctx => {
     const instanceId = ctx.params.instance_id;
     const instance = GameInstance.INSTANCES.get(instanceId);
@@ -365,7 +368,9 @@ export const serveSourceControlAPI = (router: Router) => {
       throw new JsonAPIError(Status.InternalServerError, error.message);
     }
   });
+  // #endregion
 
+  // #region unstage
   router.delete("/api/v1/source-control/:instance_id/unstage", async ctx => {
     const instanceId = ctx.params.instance_id;
     const instance = GameInstance.INSTANCES.get(instanceId);
@@ -430,6 +435,7 @@ export const serveSourceControlAPI = (router: Router) => {
       throw new JsonAPIError(Status.InternalServerError, error.message);
     }
   });
+  // #endregion
 
   router.put("/api/v1/source-control/:instance_id/files/:path*", async ctx => {
     const instanceId = ctx.params.instance_id;
@@ -469,6 +475,7 @@ export const serveSourceControlAPI = (router: Router) => {
     ctx.response.body = { success: true };
   });
 
+  // #region discard
   router.post("/api/v1/source-control/:instance_id/discard", async ctx => {
     const instanceId = ctx.params.instance_id;
     const instance = GameInstance.INSTANCES.get(instanceId);
@@ -519,7 +526,9 @@ export const serveSourceControlAPI = (router: Router) => {
       instance.session?.ipc.send({ op: "ReloadEditScene" });
     }
   });
+  // #endregion
 
+  // #region history
   router.get("/api/v1/source-control/:instance_id/history", async ctx => {
     const instanceId = ctx.params.instance_id;
     const instance = GameInstance.INSTANCES.get(instanceId);
@@ -577,4 +586,61 @@ export const serveSourceControlAPI = (router: Router) => {
       throw new JsonAPIError(Status.InternalServerError, err.message);
     }
   });
+  // #endregion
+
+  // #region checkout
+  router.post("/api/v1/source-control/:instance_id/checkout", async ctx => {
+    const BodySchema = z.object({
+      branch_name: z.string(),
+    });
+
+    let body;
+    try {
+      body = BodySchema.parse(await ctx.request.body.json());
+    } catch (err) {
+      throw new JsonAPIError(Status.BadRequest, err.toString());
+    }
+
+    const instanceId = ctx.params.instance_id;
+    const instance = GameInstance.INSTANCES.get(instanceId);
+
+    if (instance === undefined) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+
+    if (!instance.info.editMode) {
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+
+    const sourceRoot = instance.info.worldDirectory;
+    const branchName = body.branch_name;
+
+    try {
+      const checkoutProcess = new Deno.Command("git", {
+        args: ["checkout", branchName],
+        cwd: sourceRoot,
+        stdout: "piped",
+        stderr: "piped",
+      });
+      const checkoutResult = await checkoutProcess.output();
+
+      if (checkoutResult.code !== 0) {
+        const errorOutput = new TextDecoder().decode(checkoutResult.stderr);
+        throw new JsonAPIError(
+          Status.InternalServerError,
+          `Failed to checkout branch: ${errorOutput}`,
+        );
+      }
+
+      ctx.response.body = {
+        success: true,
+        message: `Successfully checked out branch '${branchName}'`,
+      };
+      ctx.response.type = "application/json";
+    } catch (error) {
+      console.error(error);
+      throw new JsonAPIError(Status.InternalServerError, error.message);
+    }
+  });
+  // #endregion
 };
