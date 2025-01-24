@@ -14,11 +14,11 @@ export const dreamlabEngineExternalPlugin = (): esbuild.Plugin => ({
   },
 });
 
-export const dreamlabVendorExternalPlugin = (): esbuild.Plugin => ({
+export const dreamlabVendorExternalPlugin = (forDeno?: boolean): esbuild.Plugin => ({
   name: "dreamlab-vendor-external",
   setup: (build: esbuild.PluginBuild) => {
     build.onResolve({ filter: /^@dreamlab\/vendor/ }, args => {
-      return { path: args.path.replace(/\.ts$/, ".js"), external: true };
+      return { path: forDeno ? args.path : args.path.replace(/\.ts$/, ".js"), external: true };
     });
   },
 });

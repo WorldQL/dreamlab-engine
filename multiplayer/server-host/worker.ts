@@ -28,12 +28,14 @@ export class IPCWorker {
     const command = new Deno.Command(Deno.execPath(), {
       args: [
         "run",
+        "-c",
+        "./engine-out/deno.runtime.json",
         ...(!workerData.editMode && workerData.inspect
           ? [`--inspect=${workerData.inspect}`]
           : []),
         "--unstable-sloppy-imports",
         `--allow-net=${new URL(workerData.workerConnectUrl).host},${new URL(workerData.kvUrl).host}`,
-        `--allow-read=${workerData.worldDirectory}`,
+        `--allow-read=./engine-out/,${workerData.worldDirectory}`,
         `--allow-env`,
         "./server-runtime/main.ts",
       ],

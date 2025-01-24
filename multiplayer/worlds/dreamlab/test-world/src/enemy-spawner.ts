@@ -1,4 +1,4 @@
-import { Behavior, EntityRef, syncedValue, Vector2, Entity } from "@dreamlab/engine";
+import { Behavior, Entity, EntityRef, syncedValue, Vector2 } from "@dreamlab/engine";
 
 export default class EnemySpawner extends Behavior {
   @syncedValue()

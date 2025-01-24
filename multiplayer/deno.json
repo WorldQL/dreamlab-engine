@@ -1,6 +1,7 @@
 {
   "tasks": {
-    "start": "deno run -A ./server-host/main.ts"
+    "build-engine": "deno run -A ./build-worker/build-engine.ts",
+    "start": "deno task build-engine && deno run -c ./engine-out/deno.runtime.json -A ./server-host/main.ts"
   },
   "imports": {
     "@dreamlab/engine": "../engine/mod.ts",
@@ -12,7 +13,10 @@
     "@dreamlab/util/": "../util/"
   },
   "compilerOptions": {
-    "lib": ["deno.window", "dom"],
+    "lib": [
+      "deno.window",
+      "dom"
+    ],
     "useUnknownInCatchVariables": false
   }
 }

@@ -1,4 +1,6 @@
-import { GameStatus, ServerGame, KvServer } from "@dreamlab/engine";
+import "npm:source-map-support@0.5.21/register.js"; // evanw clutch
+
+import { GameStatus, KvServer, ServerGame } from "@dreamlab/engine";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 import { IPCMessageBus } from "./ipc.ts";
 import { ServerNetworkManager } from "./networking/net-manager.ts";

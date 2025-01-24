@@ -105,12 +105,13 @@ export const bundleEngine = async (
   outdir: string,
   denoJsonPath: string = "./deno.json",
   opts?: BundleOptions,
+  forDeno?: boolean,
 ) => {
   const buildOpts: esbuild.BuildOptions = {
     ...BASE_BUILD_OPTIONS,
     plugins: [
       dreamlabNodeShimPlugin(),
-      dreamlabVendorExternalPlugin(),
+      dreamlabVendorExternalPlugin(forDeno),
       dreamlabEngineExternalPlugin(),
       ...denoPlugins({
         loader: "native",
