@@ -643,4 +643,141 @@ export const serveSourceControlAPI = (router: Router) => {
     }
   });
   // #endregion
+
+  // #region pull
+  router.post("/api/v1/source-control/:instance_id/pull", async ctx => {
+    const instanceId = ctx.params.instance_id;
+    const instance = GameInstance.INSTANCES.get(instanceId);
+
+    if (!instance) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+    if (!instance.info.editMode) {
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+
+    const sourceRoot = instance.info.worldDirectory;
+
+    async function runGitCommand(args: string[]) {
+      const proc = new Deno.Command("git", {
+        args,
+        cwd: sourceRoot,
+        stdout: "piped",
+        stderr: "piped",
+      });
+      const output = await proc.output();
+      const code = output.code;
+      const stdout = new TextDecoder().decode(output.stdout);
+      const stderr = new TextDecoder().decode(output.stderr);
+
+      return { code, stdout, stderr };
+    }
+
+    try {
+      // 1) Check if there are ANY local changes. If so, stash them before pulling.
+      const statusRes = await runGitCommand(["status", "--porcelain"]);
+      const hasLocalChanges = statusRes.stdout.trim().length > 0;
+      let stashed = false;
+
+      if (hasLocalChanges) {
+        const stashMsg = `WIP: auto-stash local changes before pull ${new Date().toISOString()}`;
+        const stashRes = await runGitCommand(["stash", "push", "-u", "-m", stashMsg]);
+        if (stashRes.code !== 0) {
+          throw new JsonAPIError(
+            Status.InternalServerError,
+            `Failed to stash local changes: ${stashRes.stderr}`,
+          );
+        }
+        stashed = true;
+      }
+
+      // 2) Now do a normal "git pull"
+      const pullRes = await runGitCommand(["pull"]);
+      if (pullRes.code !== 0) {
+        if (stashed) {
+          await runGitCommand(["stash", "pop"]);
+        }
+        throw new JsonAPIError(
+          Status.InternalServerError,
+          `Pull failed: ${pullRes.stderr || pullRes.stdout}`,
+        );
+      }
+
+      // 3) If we stashed changes, attempt to reapply them (stash pop).
+      if (stashed) {
+        const popRes = await runGitCommand(["stash", "pop"]);
+
+        // Check if it's a conflict scenario
+        if (popRes.code !== 0) {
+          const { stdout, stderr } = popRes;
+          const conflictText = (stdout + stderr).toLowerCase();
+
+          if (
+            conflictText.includes("conflict") ||
+            conflictText.includes("merge conflict") ||
+            conflictText.includes("automatic merge failed")
+          ) {
+            // (a) Create conflict branch from current HEAD (which has partial stash changes).
+            const conflictBranch = `conflict-${new Date()
+              .toISOString()
+              .replace(/[^\d]/g, "-")}`;
+            const branchCmd = await runGitCommand(["checkout", "-b", conflictBranch]);
+            if (branchCmd.code !== 0) {
+              throw new JsonAPIError(
+                Status.InternalServerError,
+                `Failed to create conflict branch: ${branchCmd.stderr}`,
+              );
+            }
+
+            // (b) Stage & commit conflict markers
+            await runGitCommand(["add", "--all"]);
+            const commitRes = await runGitCommand([
+              "commit",
+              "-m",
+              `WIP: stash-pop conflict, see branch ${conflictBranch}`,
+              "--allow-empty",
+            ]);
+            if (commitRes.code !== 0) {
+              console.warn(
+                "Warning: Could not commit conflict markers. Possibly unmerged paths remain.",
+              );
+            }
+
+            // (c) Push the conflict branch
+            const pushRes = await runGitCommand(["push", "-u", "origin", conflictBranch]);
+            if (pushRes.code !== 0) {
+              throw new JsonAPIError(
+                Status.InternalServerError,
+                `Failed to push stash-conflict branch '${conflictBranch}': ${pushRes.stderr}`,
+              );
+            }
+
+            ctx.response.body = {
+              success: false,
+              conflictBranch,
+              message: `Pull succeeded, but reapplying local changes caused conflicts. A 'conflict' branch '${conflictBranch}' was created and pushed. Please resolve conflicts on Forgejo.`,
+            };
+            return;
+          } else {
+            throw new JsonAPIError(
+              Status.InternalServerError,
+              `Failed to reapply stashed changes (non-conflict error): ${stderr || stdout}`,
+            );
+          }
+        }
+      }
+
+      // 4) Success: either no stash needed or stash popped with no conflict
+      ctx.response.body = {
+        success: true,
+        message: stashed
+          ? "Pulled remote changes and re-applied your stashed changes successfully."
+          : "Pulled remote changes (no local changes to stash).",
+      };
+    } catch (error) {
+      console.error("=== Caught error in pull handler:", error);
+      throw new JsonAPIError(Status.InternalServerError, error.message);
+    }
+  });
+  // #endregion
 };
