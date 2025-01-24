@@ -532,36 +532,56 @@ export const serveSourceControlAPI = (router: Router) => {
   router.get("/api/v1/source-control/:instance_id/history", async ctx => {
     const instanceId = ctx.params.instance_id;
     const instance = GameInstance.INSTANCES.get(instanceId);
-    if (instance === undefined) {
+    if (!instance) {
       throw new JsonAPIError(Status.NotFound, "An instance with the given ID does not exist");
     }
-
     if (!instance.info.editMode) {
       throw new JsonAPIError(Status.Forbidden, "Not in edit mode");
     }
 
     const sourceRoot = instance.info.worldDirectory;
 
-    try {
-      const logProcess = new Deno.Command("git", {
-        args: [
-          "log",
-          "--all",
-          "--pretty=format:%H|%P|%D|%s|%an|%ae|%ad",
-          "--date=iso",
-          "--abbrev-commit",
-          "--topo-order",
-        ],
+    async function runGitCommand(args: string[]): Promise<string[]> {
+      const proc = new Deno.Command("git", {
+        args,
         cwd: sourceRoot,
         stdout: "piped",
         stderr: "piped",
       });
+      const output = await proc.output();
+      const stdout = new TextDecoder().decode(output.stdout);
+      if (output.code !== 0) {
+        const stderr = new TextDecoder().decode(output.stderr);
+        throw new Error(stderr || "Git command failed.");
+      }
+      return stdout
+        .split("\n")
+        .map(line => line.trim())
+        .filter(Boolean);
+    }
 
-      const outputResult = await logProcess.output();
-      const logOutput = new TextDecoder().decode(outputResult.stdout);
-      const lines = logOutput.split("\n").filter(line => line.trim() !== "");
+    try {
+      const remoteBranches = await runGitCommand(["branch", "-r", "--format=%(refname:short)"]);
+      const validRemoteBranches = remoteBranches.filter(
+        branch => !branch.startsWith("origin/HEAD"),
+      );
 
-      const commits = lines.map(line => {
+      if (validRemoteBranches.length === 0) {
+        ctx.response.body = { commits: [] };
+        return;
+      }
+
+      const logArgs = [
+        "log",
+        ...validRemoteBranches,
+        "--pretty=format:%H|%P|%D|%s|%an|%ae|%ad",
+        "--date=iso",
+        "--abbrev-commit",
+        "--topo-order",
+      ];
+      const logOutput = await runGitCommand(logArgs);
+
+      const commits = logOutput.map(line => {
         const [hash, parentLine, refLine, message, authorName, authorEmail, date] =
           line.split("|");
 
