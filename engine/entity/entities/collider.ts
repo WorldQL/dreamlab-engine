@@ -1,4 +1,4 @@
-import RAPIER from "@dreamlab/vendor/rapier.ts";
+import RAPIER, { RigidBody } from "@dreamlab/vendor/rapier.ts";
 import * as internal from "../../internal.ts";
 import { Bounds, IBounds, Vector2 } from "../../math/mod.ts";
 import {
@@ -170,7 +170,19 @@ export class Collider extends Entity {
     });
   }
 
-  #setupCollider() {
+  /**
+   * Destroys and re-creates this collider as a member of a rigidbody.
+   * @param body The rigidbody you want to attach this collider to.
+   */
+  attachColliderToRigidbody(body: RigidBody) {
+    if (this.#internal) {
+      this.game.physics.world.removeCollider(this.#internal.collider, false);
+      this.#internal = undefined;
+    }
+    this.#setupCollider(body);
+  }
+
+  #setupCollider(body?: RigidBody) {
     if (this.enabled && !this.#internal) {
       const desc =
         this.shape === "Rectangle"
@@ -189,7 +201,9 @@ export class Collider extends Entity {
         .setTranslation(this.globalTransform.position.x, this.globalTransform.position.y)
         .setRotation(this.globalTransform.rotation);
 
-      const collider = this.game.physics.world.createCollider(desc);
+      const collider = body
+        ? this.game.physics.world.createCollider(desc, body)
+        : this.game.physics.world.createCollider(desc);
       collider.setActiveCollisionTypes(
         RAPIER.ActiveCollisionTypes.DEFAULT |
           RAPIER.ActiveCollisionTypes.KINEMATIC_FIXED |
