@@ -1,7 +1,7 @@
 {
   "tasks": {
     "build-engine": "deno run -A ./build-worker/build-engine.ts",
-    "start-server": "deno run -c ./engine-out/deno.runtime.json -A ./server-host/main.ts",
+    "start-server": "deno run -c ./engine-out/deno.host.json -A ./server-host/main.ts",
     "start": "deno task build-engine && deno task start-server"
   },
   "imports": {
