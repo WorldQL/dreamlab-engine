@@ -1,7 +1,7 @@
-import * as cli from "jsr:@std/cli@1";
-import { NIL_UUID } from "jsr:@std/uuid@1/constants";
+import { Application } from "@oak/oak";
+import * as cli from "@std/cli";
+import { NIL_UUID } from "@std/uuid/constants";
 import { CONFIG } from "./config.ts";
-import { Application } from "./deps/oak.ts";
 import { startInstanceCollector } from "./instance-collector.ts";
 import { createInstance, GameInstance } from "./instance.ts";
 import { setupWeb } from "./web/setup.ts";

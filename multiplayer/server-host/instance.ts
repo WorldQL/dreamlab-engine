@@ -7,8 +7,8 @@ import { IPCMessageListener } from "./worker.ts";
 import { buildWorld } from "./world-build.ts";
 import { fetchWorld } from "./world-fetch.ts";
 
-import * as colors from "jsr:@std/fmt@1/colors";
-import * as path from "jsr:@std/path@1";
+import * as colors from "@std/fmt/colors";
+import * as path from "@std/path";
 
 export enum GameInstanceState {
   Idle,

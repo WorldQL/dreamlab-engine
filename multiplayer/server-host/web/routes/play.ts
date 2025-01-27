@@ -1,6 +1,6 @@
 import { Codec, getCodec, isCodec, PlayCodec } from "@dreamlab/proto/codecs/mod.ts";
 import { ClientPacketSchema } from "@dreamlab/proto/play.ts";
-import { Context, Router, Status } from "../../deps/oak.ts";
+import { Context, Router, Status } from "@oak/oak";
 
 import { createId } from "@dreamlab/vendor/nanoid.ts";
 import { CONFIG } from "../../config.ts";

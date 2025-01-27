@@ -1,10 +1,4 @@
-import {
-  RouteParams,
-  RouterMiddleware,
-  State as OakState,
-  Context,
-  Status,
-} from "../../deps/oak.ts";
+import { Context, State as OakState, RouteParams, RouterMiddleware, Status } from "@oak/oak";
 import { JsonAPIError } from "./api.ts";
 
 export function bearerTokenAuth<

@@ -6,7 +6,7 @@ import { CONFIG } from "./config.ts";
 import { dumpSceneDefinition, GameInstance } from "./instance.ts";
 import { IPCWorker } from "./worker.ts";
 
-import * as path from "jsr:@std/path@1";
+import * as path from "@std/path";
 import type { RichGameStatus } from "../server-common/rich-status.ts";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 

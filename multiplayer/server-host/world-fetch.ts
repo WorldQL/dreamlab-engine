@@ -1,7 +1,7 @@
 import { GameInstance } from "./instance.ts";
 
-import * as fs from "jsr:@std/fs@1";
-import * as path from "jsr:@std/path@1";
+import * as fs from "@std/fs";
+import * as path from "@std/path";
 import { CONFIG } from "./config.ts";
 
 export const fetchWorld = async (instance: GameInstance) => {

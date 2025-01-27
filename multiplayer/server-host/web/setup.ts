@@ -1,5 +1,5 @@
+import { Application, Router, Status } from "@oak/oak";
 import { oakCors } from "https://deno.land/x/cors@v1.2.2/mod.ts";
-import { Application, Router, Status } from "../deps/oak.ts";
 import { handleJsonAPIErrors } from "./util/api.ts";
 
 import { serveDiscordRoutes } from "./routes/discord.ts";

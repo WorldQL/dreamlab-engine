@@ -1,4 +1,4 @@
-import { Context, Status } from "../deps/oak.ts";
+import { Context, Status } from "@oak/oak";
 import { IPCWorker } from "../worker.ts";
 import { JsonAPIError } from "./util/api.ts";
 

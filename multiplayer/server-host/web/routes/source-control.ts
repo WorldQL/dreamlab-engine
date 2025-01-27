@@ -1,11 +1,11 @@
 import { z } from "@dreamlab/vendor/zod.ts";
+import { Router, Status } from "@oak/oak";
 import { CONFIG } from "../../config.ts";
-import { Router, Status } from "../../deps/oak.ts";
 import { GameInstance } from "../../instance.ts";
 import { JsonAPIError } from "../util/api.ts";
 
-import * as fs from "jsr:@std/fs@1";
-import * as path from "jsr:@std/path@1";
+import * as fs from "@std/fs";
+import * as path from "@std/path";
 
 export const serveSourceControlAPI = (router: Router) => {
   // TODO: auth ??

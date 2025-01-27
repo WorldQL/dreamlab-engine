@@ -1,9 +1,9 @@
 import { z } from "@dreamlab/vendor/zod.ts";
-import { Router, Status } from "../../deps/oak.ts";
+import { Router, Status } from "@oak/oak";
 
+import * as fs from "@std/fs";
+import * as path from "@std/path";
 import { contentType } from "https://deno.land/std@0.224.0/media_types/mod.ts";
-import * as fs from "jsr:@std/fs@1";
-import * as path from "jsr:@std/path@1";
 
 import { Entity } from "@dreamlab/engine";
 import { PlayPacket } from "@dreamlab/proto/play.ts";

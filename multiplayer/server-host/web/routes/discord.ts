@@ -1,7 +1,7 @@
 import { z } from "@dreamlab/vendor/zod.ts";
+import { Router, Status } from "@oak/oak";
 import { create } from "https://deno.land/x/djwt@v3.0.1/mod.ts";
 import { CONFIG } from "../../config.ts";
-import { Router, Status } from "../../deps/oak.ts";
 import { createInstance, GameInstance } from "../../instance.ts";
 import { AuthToken, importSecretKey } from "../../util/game-auth.ts";
 import { JsonAPIError, typedJsonHandler } from "../util/api.ts";

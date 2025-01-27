@@ -1,7 +1,7 @@
 import { z } from "@dreamlab/vendor/zod.ts";
-import * as path from "jsr:@std/path@1";
-import { generate as generateUUIDv5 } from "jsr:@std/uuid@1/v5";
-import { Router, Status } from "../../deps/oak.ts";
+import { Router, Status } from "@oak/oak";
+import * as path from "@std/path";
+import { generate as generateUUIDv5 } from "@std/uuid/v5";
 
 import { SceneSchema } from "@dreamlab/scene";
 import { CONFIG } from "../../config.ts";

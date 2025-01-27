@@ -1,4 +1,4 @@
-import * as cli from "jsr:@std/cli@1";
+import * as cli from "@std/cli";
 import { bundleWorld } from "../../build-system/mod.ts";
 
 if (import.meta.main) {

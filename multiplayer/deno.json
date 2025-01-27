@@ -11,7 +11,15 @@
     "@dreamlab/proto/": "../proto/",
     "@dreamlab/scene": "../scene-graph/mod.ts",
     "@dreamlab/ui": "../ui/mod.ts",
-    "@dreamlab/util/": "../util/"
+    "@dreamlab/util/": "../util/",
+    "@oak/oak": "jsr:@oak/oak@^17.1.4",
+    "@std/cli": "jsr:@std/cli@^1.0.11",
+    "@std/dotenv": "jsr:@std/dotenv@^0.225.3",
+    "@std/fmt": "jsr:@std/fmt@^1.0.4",
+    "@std/fs": "jsr:@std/fs@^1.0.10",
+    "@std/path": "jsr:@std/path@^1.0.8",
+    "@std/streams": "jsr:@std/streams@^1.0.8",
+    "@std/uuid": "jsr:@std/uuid@^1.0.4"
   },
   "compilerOptions": {
     "lib": [

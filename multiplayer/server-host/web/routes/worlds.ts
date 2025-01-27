@@ -1,5 +1,5 @@
-import { Router, Status } from "../../deps/oak.ts";
-import * as path from "jsr:@std/path@1";
+import { Router, Status } from "@oak/oak";
+import * as path from "@std/path";
 
 export const serveWorlds = (router: Router) => {
   // TODO: world variants?

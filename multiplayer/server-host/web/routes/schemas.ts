@@ -1,13 +1,13 @@
 // deno-lint-ignore-file no-explicit-any
 import {
-  ProjectSchema,
-  EntitySchema,
   BehaviorSchema,
-  VectorSchema,
+  EntitySchema,
+  ProjectSchema,
   ValueSchema,
+  VectorSchema,
 } from "@dreamlab/scene";
+import { Router } from "@oak/oak";
 import { zodToJsonSchema } from "npm:zod-to-json-schema";
-import { Router } from "../../deps/oak.ts";
 
 // zod versions are different, we need to cast to any to avoid deno lsp blowing up
 const projectJsonSchema = zodToJsonSchema(ProjectSchema as unknown as any, {

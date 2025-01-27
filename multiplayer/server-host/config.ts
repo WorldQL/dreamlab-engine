@@ -1,5 +1,5 @@
 import { z } from "@dreamlab/vendor/zod.ts";
-import { load as dotenv } from "jsr:@std/dotenv@0.224.2";
+import { load as dotenv } from "@std/dotenv";
 import env from "./util/env.ts";
 
 const readConfig = () => {
@@ -35,5 +35,6 @@ const readConfig = () => {
   };
 };
 
-await dotenv({ defaultsPath: ".env", envPath: ".env.local", export: true });
+await dotenv({ envPath: ".env", export: true });
+await dotenv({ envPath: ".env.local", export: true });
 export const CONFIG = readConfig();
