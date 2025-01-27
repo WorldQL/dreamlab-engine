@@ -6,6 +6,7 @@ export const buildWorld = async (
   const subprocess = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
+      "--no-lock",
       "-A",
       "./build-worker/main.ts",
       `--world=${world}`,

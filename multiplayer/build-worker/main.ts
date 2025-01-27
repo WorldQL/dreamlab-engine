@@ -11,7 +11,7 @@ if (import.meta.main) {
     args.world,
     {
       dir: args.dir,
-      denoJsonPath: "./deno.json",
+      denoJsonPath: "./engine-out/deno.runtime.json",
       outDirName: args.out,
     },
     { silent: true },
