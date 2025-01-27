@@ -1,30 +1,15 @@
 import { createId } from "@dreamlab/vendor/nanoid.ts";
 import type { ConditionalExcept } from "@dreamlab/vendor/type-fest.ts";
 
-import { Behavior, BehaviorConstructor, BehaviorDefinition } from "../behavior/behavior.ts";
-import type { Game } from "../game.ts";
-import * as internal from "../internal.ts";
+import type { Root } from "@dreamlab/engine";
 import {
-  IBounds,
-  IVector2,
-  Transform,
-  TransformOptions,
-  Vector2,
-  lerpAngle,
-  transformLocalToWorld,
-  transformWorldToLocal,
-} from "../math/mod.ts";
-import { ConnectionId } from "../network.ts";
-import {
+  AdapterTypeTag,
+  Behavior,
+  BehaviorConstructor,
+  BehaviorDefinition,
+  ConnectionId,
   DefaultSignalHandlerImpls,
-  ISignalHandler,
-  Signal,
-  SignalConstructor,
-  SignalListener,
-  SignalMatching,
-  SignalSubscription,
-} from "../signal.ts";
-import {
+  Empty,
   EntityChildDestroyed,
   EntityChildRenamed,
   EntityChildReparented,
@@ -43,17 +28,28 @@ import {
   EntitySpawnOperation,
   EntitySpawned,
   EntityTransformUpdate,
-} from "../signals/mod.ts";
-import {
-  AdapterTypeTag,
+  Game,
+  IBounds,
+  ISignalHandler,
+  IVector2,
   JsonValue,
+  Signal,
+  SignalConstructor,
+  SignalListener,
+  SignalMatching,
+  SignalSubscription,
+  Transform,
+  TransformOptions,
   Value,
   ValueTypeAdapter,
   ValueTypeTag,
+  Vector2,
   inferValueTypeTag,
-} from "../value/mod.ts";
-import type { Root } from "./entity-roots.ts";
-import { Empty } from "./mod.ts";
+  lerpAngle,
+  transformLocalToWorld,
+  transformWorldToLocal,
+} from "@dreamlab/engine";
+import * as internal from "@dreamlab/engine/internal";
 
 export interface EntityContext {
   game: Game;

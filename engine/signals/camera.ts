@@ -1,4 +1,4 @@
-import type { Camera } from "../entity/mod.ts";
+import type { Camera } from "@dreamlab/engine";
 
 export class ActiveCameraChanged {
   public constructor(

@@ -1,45 +1,44 @@
 import { initRapier } from "@dreamlab/vendor/rapier.ts";
 
-import { urlWithParams } from "@dreamlab/util/url.ts";
-import { BehaviorLoader } from "./behavior/behavior-loader.ts";
-import { BehaviorConstructor } from "./behavior/mod.ts";
 import {
+  BehaviorConstructor,
+  BehaviorLoader,
   ClickableEntity,
+  ClientKV,
+  ClientNetworking,
+  DefaultSignalHandlerImpls,
   Entity,
   EntityStore,
-  LocalRoot,
-  PrefabsRoot,
-  ServerRoot,
-  WorldRoot,
-} from "./entity/mod.ts";
-import { Inputs } from "./input/mod.ts";
-import * as internal from "./internal.ts";
-import { ClientKV, ServerKV } from "./kv/mod.ts";
-import { ClientNetworking, ServerNetworking } from "./network.ts";
-import { PhysicsEngine } from "./physics.ts";
-import { GameRenderer } from "./renderer/mod.ts";
-import {
-  DefaultSignalHandlerImpls,
+  GamePostRender,
+  GamePostTick,
+  GamePreTick,
+  GameRender,
+  GameRenderer,
+  GameShutdown,
+  GameStatusChange,
+  GameTick,
+  Inputs,
+  InternalGameTick,
   ISignalHandler,
+  LocalRoot,
+  PhysicsEngine,
+  PrefabsRoot,
+  ServerKV,
+  ServerNetworking,
+  ServerRoot,
   Signal,
   SignalConstructor,
   SignalListener,
   SignalMatching,
   SignalSubscription,
-} from "./signal.ts";
-import {
-  GamePostRender,
-  GamePostTick,
-  GamePreTick,
-  GameRender,
-  GameShutdown,
-  GameTick,
-  InternalGameTick,
-} from "./signals/game-events.ts";
-import { GameStatusChange } from "./signals/mod.ts";
-import { Time } from "./time.ts";
-import { UIManager } from "./ui.ts";
-import { Value, ValueRegistry } from "./value/mod.ts";
+  Time,
+  UIManager,
+  Value,
+  ValueRegistry,
+  WorldRoot,
+} from "@dreamlab/engine";
+import * as internal from "@dreamlab/engine/internal";
+import { urlWithParams } from "@dreamlab/util/url.ts";
 
 export interface GameOptions {
   instanceId: string;

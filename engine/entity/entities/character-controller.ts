@@ -1,9 +1,5 @@
+import { Collider, Entity, EntityDestroyed, Vector2 } from "@dreamlab/engine";
 import { KinematicCharacterController, QueryFilterFlags } from "@dreamlab/vendor/rapier.ts";
-import * as internal from "../../internal.ts";
-import { Vector2 } from "../../math/mod.ts";
-import { EntityDestroyed } from "../../signals/mod.ts";
-import { Entity } from "../entity.ts";
-import { Collider } from "./collider.ts";
 
 export class CharacterController extends Collider {
   static {
@@ -89,7 +85,8 @@ export class CharacterController extends Collider {
     this.#prevPosition.assign(this.pos);
   }
 
-  override [internal.entityApplyPhysicsUpdate]() {
+  /* override [internal.entityApplyPhysicsUpdate]() {
+    super[internal.entityApplyPhysicsUpdate]();
     this.#onPostUpdate();
-  }
+  } */
 }

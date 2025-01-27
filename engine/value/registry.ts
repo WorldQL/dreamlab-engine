@@ -1,9 +1,7 @@
-import { Game } from "../game.ts";
-import * as internal from "../internal.ts";
+import { Game } from "@dreamlab/engine";
+import * as internal from "@dreamlab/engine/internal";
 
-import { ConnectionId } from "../network.ts";
-import { JsonValue } from "./data.ts";
-import { Value } from "./value.ts";
+import { ConnectionId, JsonValue, Value } from "@dreamlab/engine";
 
 type ValueChangedListener = (
   value: Value,

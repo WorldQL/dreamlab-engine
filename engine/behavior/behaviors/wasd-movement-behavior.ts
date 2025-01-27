@@ -1,5 +1,4 @@
-import { Vector2 } from "../../math/mod.ts";
-import { Behavior } from "../behavior.ts";
+import { Behavior, Vector2 } from "@dreamlab/engine";
 
 export default class WASDMovementBehavior extends Behavior {
   speed = 1.0;

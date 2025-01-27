@@ -1,5 +1,4 @@
-import type { IVector2 } from "./vector/vector2.ts";
-import { Vector2 } from "./vector/vector2.ts";
+import { IVector2, Vector2 } from "@dreamlab/engine";
 
 export interface IBounds {
   readonly width: number;

@@ -1,23 +1,23 @@
-import { Camera } from "../entity/mod.ts";
-import type { Game } from "../game.ts";
-import { actionSetHeld, inputsRegisterHandlers } from "../internal.ts";
-import { IVector2, Vector2 } from "../math/mod.ts";
-import { BasicSignalHandler } from "../signal.ts";
+import type { Game, Input } from "@dreamlab/engine";
 import {
+  Action,
   ActionBound,
   ActionCreated,
   ActionDeleted,
+  BasicSignalHandler,
+  Camera,
   Click,
+  isInput,
+  IVector2,
   MouseDown,
   MouseMove,
   MouseOut,
   MouseOver,
   MouseUp,
   Scroll,
-} from "../signals/mod.ts";
-import { Action } from "./action.ts";
-import type { Input } from "./input.ts";
-import { isInput } from "./input.ts";
+  Vector2,
+} from "@dreamlab/engine";
+import { actionSetHeld, inputsRegisterHandlers } from "@dreamlab/engine/internal";
 
 // TODO: Scroll and cursor position support
 
@@ -152,35 +152,35 @@ export class Inputs extends BasicSignalHandler<Inputs> {
     if (ev.target !== this.#game.renderer.app?.canvas) {
       return;
     }
-  
+
     // Get the first touch point
     const touch = ev.touches[0];
     const touchPos = { x: touch.clientX, y: touch.clientY } satisfies IVector2;
-  
+
     // Get the canvas and its bounding rectangle
     // @ts-expect-error: we know it's a client game
     const canvas = this.#game.renderer.app.canvas as HTMLCanvasElement;
     const canvasRect = canvas.getBoundingClientRect();
-  
+
     // Calculate canvas-relative coordinates
     const canvasCoords = {
       x: touchPos.x - canvasRect.x,
       y: touchPos.y - canvasRect.y,
     } satisfies IVector2;
-  
+
     // Update the cursor position
     this.#screenCursor = new Vector2(canvasCoords);
-  
+
     const cursor = this.cursor;
     const input: Input = "MouseLeft";
     const button = "left";
-  
+
     // Fire MouseDown and Click events with updated cursor positions
     if (cursor.screen && cursor.world) {
       this.fire(MouseDown, button, { screen: cursor.screen, world: cursor.world });
       this.fire(Click, { screen: cursor.screen, world: cursor.world });
     }
-  
+
     // Update the action bindings
     const tick = this.#game.time.ticks;
     for (const action of this.actions.values()) {
@@ -205,8 +205,8 @@ export class Inputs extends BasicSignalHandler<Inputs> {
             : undefined;
 
     // required to allow focusing the game if it's in an iframe
-    if (input !== 'MouseLeft') {
-      ev.preventDefault()
+    if (input !== "MouseLeft") {
+      ev.preventDefault();
     }
 
     if (!input) return;

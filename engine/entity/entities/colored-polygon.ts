@@ -1,9 +1,13 @@
+import {
+  Bounds,
+  ColorAdapter,
+  Entity,
+  EntityContext,
+  EntityTransformUpdate,
+  IBounds,
+  PixiEntity,
+} from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import { Bounds, IBounds } from "../../math/mod.ts";
-import { EntityTransformUpdate } from "../../signals/mod.ts";
-import { ColorAdapter } from "../../value/adapters/color-adapter.ts";
-import { Entity, EntityContext } from "../entity.ts";
-import { PixiEntity } from "../pixi-entity.ts";
 
 export class ColoredPolygon extends PixiEntity {
   static {

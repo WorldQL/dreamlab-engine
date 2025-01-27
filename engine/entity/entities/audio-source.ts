@@ -1,9 +1,13 @@
+import {
+  AudioAdapter,
+  Camera,
+  Entity,
+  EntityContext,
+  EntityDestroyed,
+  GameRender,
+  Vector2,
+} from "@dreamlab/engine";
 import "@dreamlab/vendor/howler.ts";
-import { Vector2 } from "../../math/mod.ts";
-import { EntityDestroyed, GameRender } from "../../signals/mod.ts";
-import { AudioAdapter } from "../../value/adapters/audio-adapter.ts";
-import { Entity, EntityContext } from "../entity.ts";
-import { Camera } from "./camera.ts";
 
 export class AudioSource extends Entity {
   static {

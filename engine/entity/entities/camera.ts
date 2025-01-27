@@ -1,9 +1,17 @@
+import {
+  ActiveCameraChanged,
+  ClientGame,
+  Entity,
+  EntityContext,
+  EntityDestroyed,
+  Game,
+  GameRender,
+  IVector2,
+  Vector2,
+  smoothLerp,
+} from "@dreamlab/engine";
+import * as internal from "@dreamlab/engine/internal";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import { ClientGame, Game } from "../../game.ts";
-import * as internal from "../../internal.ts";
-import { IVector2, Vector2, smoothLerp } from "../../math/mod.ts";
-import { ActiveCameraChanged, EntityDestroyed, GameRender } from "../../signals/mod.ts";
-import { Entity, EntityContext } from "../entity.ts";
 
 export class Camera extends Entity {
   [internal.cameraMarker] = true as const;

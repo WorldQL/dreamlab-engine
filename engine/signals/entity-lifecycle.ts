@@ -1,7 +1,7 @@
-import { Entity, EntityDefinition } from "../entity/mod.ts";
-import { BaseGame } from "../game.ts";
-import { ConnectionId } from "../network.ts";
-import { exclusiveSignalType } from "../signal.ts";
+import { Entity, EntityDefinition } from "@dreamlab/engine";
+import { BaseGame } from "@dreamlab/engine";
+import { ConnectionId } from "@dreamlab/engine";
+import { exclusiveSignalType } from "@dreamlab/engine";
 
 // this could be called "EntitySpawned" if we obliterated all the other ones.
 // that would be a breaking change though

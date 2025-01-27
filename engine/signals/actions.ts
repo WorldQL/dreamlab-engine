@@ -1,5 +1,5 @@
-import { Action, Input, Inputs } from "../input/mod.ts";
-import { exclusiveSignalType } from "../signal.ts";
+import { Action, Input, Inputs } from "@dreamlab/engine";
+import { exclusiveSignalType } from "@dreamlab/engine";
 
 export class ActionCreated {
   constructor(public readonly action: Action) {}
@@ -10,7 +10,10 @@ export class ActionDeleted {
   [exclusiveSignalType] = Inputs;
 }
 export class ActionBound {
-  constructor(public readonly action: Action, public readonly input: Input | undefined) {}
+  constructor(
+    public readonly action: Action,
+    public readonly input: Input | undefined,
+  ) {}
   [exclusiveSignalType] = Action;
 }
 

@@ -1,7 +1,5 @@
-import { Entity } from "./entity/mod.ts";
-import { ClientGame } from "./game.ts";
-import { uiDestroy, uiInit } from "./internal.ts";
-import { EntityReparented } from "./signals/mod.ts";
+import { ClientGame, Entity, EntityReparented } from "@dreamlab/engine";
+import { uiDestroy, uiInit } from "@dreamlab/engine/internal";
 
 export class UIManager {
   #game: ClientGame;

@@ -1,6 +1,6 @@
 import { decodeBase64Url } from "jsr:@std/encoding@^1/base64url";
-import { ServerGame } from "../game.ts";
-import { JsonValue } from "../value/data.ts";
+import { ServerGame } from "@dreamlab/engine";
+import { JsonValue } from "@dreamlab/engine";
 import * as common from "./_common.ts";
 import { createPayload, presign } from "./_crypto.ts";
 import type { PresignRequest, PresignResponse } from "./_rpc.ts";

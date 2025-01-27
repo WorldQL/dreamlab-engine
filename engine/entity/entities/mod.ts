@@ -2,7 +2,6 @@ export * from "./animated-sprite.ts";
 export * from "./audio-source.ts";
 export * from "./box-resize.ts";
 export * from "./camera.ts";
-export * from "./character-controller.ts";
 export * from "./clickable.ts";
 export * from "./collider.ts";
 export * from "./colored-polygon.ts";
@@ -18,3 +17,6 @@ export * from "./tiling-sprite.ts";
 export * from "./ui-layer.ts";
 export * from "./ui-panel.ts";
 export * from "./vector-sprite.ts";
+
+// must load after Collider
+export * from "./character-controller.ts";

@@ -1,10 +1,16 @@
+import {
+  Bounds,
+  Entity,
+  EntityContext,
+  EntityDestroyed,
+  GameRender,
+  IBounds,
+  PixiEntity,
+  TextureAdapter,
+  Vector2,
+  Vector2Adapter,
+} from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import { Bounds, IBounds, Vector2 } from "../../math/mod.ts";
-import { EntityDestroyed, GameRender } from "../../signals/mod.ts";
-import { TextureAdapter } from "../../value/adapters/texture-adapter.ts";
-import { Vector2Adapter } from "../../value/adapters/vector-adapter.ts";
-import { Entity, EntityContext } from "../entity.ts";
-import { PixiEntity } from "../pixi-entity.ts";
 
 export class TilingSprite extends PixiEntity {
   static {

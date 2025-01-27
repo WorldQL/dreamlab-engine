@@ -112,7 +112,6 @@ export const bundleEngine = async (
     plugins: [
       dreamlabNodeShimPlugin(),
       dreamlabVendorExternalPlugin(forDeno),
-      dreamlabEngineExternalPlugin(),
       ...denoPlugins({
         loader: "native",
         configPath: await Deno.realPath(denoJsonPath),

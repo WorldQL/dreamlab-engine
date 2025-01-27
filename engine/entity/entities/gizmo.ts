@@ -1,12 +1,17 @@
+import type { EntityContext } from "@dreamlab/engine";
+import {
+  Camera,
+  Clickable,
+  Entity,
+  EntityDestroyed,
+  GameRender,
+  MouseDown,
+  pointLocalToWorld,
+  pointWorldToLocal,
+  Vector2,
+} from "@dreamlab/engine";
+import * as internal from "@dreamlab/engine/internal";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import * as internal from "../../internal.ts";
-import { Vector2 } from "../../math/mod.ts";
-import { pointLocalToWorld, pointWorldToLocal } from "../../math/spatial-transforms.ts";
-import { EntityDestroyed, GameRender, MouseDown } from "../../signals/mod.ts";
-import type { EntityContext } from "../entity.ts";
-import { Entity } from "../entity.ts";
-import { Camera } from "./camera.ts";
-import { Clickable } from "./clickable.ts";
 
 // #region Signals
 // #region Translate

@@ -1,6 +1,5 @@
-import type { Game } from "../../game.ts";
-import type { AdapterTypeTag, JsonValue } from "../data.ts";
-import { ValueTypeAdapter } from "../data.ts";
+import type { AdapterTypeTag, Game, JsonValue } from "@dreamlab/engine";
+import { ValueTypeAdapter } from "@dreamlab/engine";
 
 export declare namespace enumAdapter {
   // deno-lint-ignore no-explicit-any

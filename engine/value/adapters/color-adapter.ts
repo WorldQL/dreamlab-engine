@@ -1,5 +1,5 @@
+import { JsonValue, ValueTypeAdapter } from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import { JsonValue, ValueTypeAdapter } from "../data.ts";
 
 /**
  * `Value<ColorAdapter>` is the same as `Value<string>`

@@ -1,9 +1,13 @@
-import { EntityTransformUpdate } from "@dreamlab/engine";
+import {
+  Bounds,
+  Entity,
+  EntityContext,
+  EntityTransformUpdate,
+  IBounds,
+  PixiEntity,
+  TextureAdapter,
+} from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import { Bounds, IBounds } from "../../math/mod.ts";
-import { TextureAdapter } from "../../value/adapters/texture-adapter.ts";
-import { Entity, EntityContext } from "../entity.ts";
-import { PixiEntity } from "../pixi-entity.ts";
 
 export class VectorSprite extends PixiEntity {
   static {

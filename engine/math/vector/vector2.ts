@@ -1,5 +1,5 @@
-import { vectorOnChanged } from "../../internal.ts";
-import { EPSILON, lerp, smoothLerp } from "../lerp.ts";
+import { EPSILON, lerp, smoothLerp } from "@dreamlab/engine";
+import { vectorOnChanged } from "@dreamlab/engine/internal";
 import type { Vector } from "./_vector.ts";
 
 export interface IVector2 {

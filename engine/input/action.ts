@@ -1,21 +1,19 @@
-import { Game } from "../game.ts";
-import { actionSetHeld } from "../internal.ts";
 import {
+  ActionBound,
+  ActionChanged,
+  ActionPressed,
+  ActionReleased,
   DefaultSignalHandlerImpls,
+  Game,
+  Input,
   ISignalHandler,
   Signal,
   SignalConstructor,
   SignalListener,
   SignalMatching,
   SignalSubscription,
-} from "../signal.ts";
-import {
-  ActionBound,
-  ActionChanged,
-  ActionPressed,
-  ActionReleased,
-} from "../signals/actions.ts";
-import { Input } from "./input.ts";
+} from "@dreamlab/engine";
+import { actionSetHeld } from "@dreamlab/engine/internal";
 
 export class Action implements ISignalHandler {
   #game: Game;

@@ -1,10 +1,19 @@
-import { EntityEnableChanged, GamePostTick } from "@dreamlab/engine";
+import {
+  Bounds,
+  Entity,
+  EntityContext,
+  EntityEnableChanged,
+  EntityTransformUpdate,
+  GamePostTick,
+  GameRender,
+  IBounds,
+  PixiEntity,
+  SpritesheetAdapter,
+  TextureAdapter,
+  Vector2,
+  Vector2Adapter,
+} from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import { Bounds, IBounds, Vector2 } from "../../math/mod.ts";
-import { EntityTransformUpdate, GameRender } from "../../signals/mod.ts";
-import { SpritesheetAdapter, TextureAdapter, Vector2Adapter } from "../../value/mod.ts";
-import { Entity, EntityContext } from "../entity.ts";
-import { PixiEntity } from "../pixi-entity.ts";
 
 // this shockingly fixes spritesheet bleeding
 PIXI.AbstractRenderer.defaultOptions.roundPixels = true;

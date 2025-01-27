@@ -1,5 +1,4 @@
-import { EntityDestroyed, EntityEnableChanged } from "../../signals/mod.ts";
-import { Entity, EntityContext } from "../entity.ts";
+import { Entity, EntityContext, EntityDestroyed, EntityEnableChanged } from "@dreamlab/engine";
 
 export class UILayer extends Entity {
   static {

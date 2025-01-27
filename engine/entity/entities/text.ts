@@ -1,13 +1,16 @@
+import {
+  Camera,
+  ColorAdapter,
+  Entity,
+  EntityContext,
+  EntityTransformUpdate,
+  enumAdapter,
+  PixiEntity,
+} from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import { EntityTransformUpdate } from "../../signals/mod.ts";
 import { createIndices, createLayout, Font, loadFont, type Layout } from "../../text/fonts.ts";
-import { ColorAdapter } from "../../value/adapters/color-adapter.ts";
-import { enumAdapter } from "../../value/adapters/enum-adapter.ts";
-import { Entity, EntityContext } from "../entity.ts";
-import { PixiEntity } from "../pixi-entity.ts";
-import { Camera } from "./camera.ts";
 // deno-lint-ignore no-unused-vars
-import type { RichText } from "./rich-text.ts";
+import type { RichText } from "@dreamlab/engine";
 
 type FontFace = enumAdapter.Union<typeof FontEnumAdapter>;
 const FontEnumAdapter = enumAdapter(["iosevka", "inter", "roboto", "roboto-slab", "easvhs"]);

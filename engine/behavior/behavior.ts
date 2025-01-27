@@ -1,38 +1,37 @@
 import { createId } from "@dreamlab/vendor/nanoid.ts";
 import type { ConditionalExcept, Except } from "@dreamlab/vendor/type-fest.ts";
 
-import { Collider } from "../entity/mod.ts";
+import { Collider } from "@dreamlab/engine";
 // deno-lint-ignore no-unused-vars
-import type { Clickable } from "../entity/entities/clickable.ts"; // this is used in jsdoc
-import { Entity } from "../entity/mod.ts";
-import { Game } from "../game.ts";
-import * as internal from "../internal.ts";
+import type { Clickable } from "@dreamlab/engine"; // this is used in jsdoc
 import {
+  AdapterTypeTag,
+  BehaviorDescendantDestroyed,
+  BehaviorDescendantSpawned,
+  BehaviorDestroyed,
+  BehaviorSpawned,
   DefaultSignalHandlerImpls,
+  Entity,
+  EntityCollision,
+  EntityEnableChanged,
+  Game,
+  GamePostTick,
+  GamePreTick,
+  GameRender,
   ISignalHandler,
+  JsonValue,
+  Primitive,
   Signal,
   SignalConstructor,
   SignalListener,
   SignalMatching,
   SignalSubscription,
-} from "../signal.ts";
-import {
-  BehaviorDescendantDestroyed,
-  BehaviorDescendantSpawned,
-  BehaviorDestroyed,
-  BehaviorSpawned,
-} from "../signals/behavior-lifecycle.ts";
-import { GamePostTick, GamePreTick, GameRender } from "../signals/game-events.ts";
-import { EntityCollision, EntityEnableChanged } from "../signals/mod.ts";
-import {
-  AdapterTypeTag,
-  JsonValue,
-  Primitive,
   Value,
   ValueTypeAdapter,
   ValueTypeTag,
   inferValueTypeTag,
-} from "../value/mod.ts";
+} from "@dreamlab/engine";
+import * as internal from "@dreamlab/engine/internal";
 
 export interface BehaviorContext {
   game: Game;

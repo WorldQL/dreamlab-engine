@@ -1,4 +1,4 @@
-import { Behavior } from "../behavior.ts";
+import { Behavior } from "@dreamlab/engine";
 
 export default class SpinBehavior extends Behavior {
   speed: number = 1.0;

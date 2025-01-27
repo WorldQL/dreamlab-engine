@@ -1,6 +1,5 @@
-import { vectorOnChanged } from "../../internal.ts";
-import { Vector2 } from "../../math/mod.ts";
-import { JsonValue, ValueTypeAdapter } from "../data.ts";
+import { JsonValue, ValueTypeAdapter, Vector2 } from "@dreamlab/engine";
+import { vectorOnChanged } from "@dreamlab/engine/internal";
 
 const marked = Symbol.for("dreamlab.vector-adapter.marked");
 

@@ -1,4 +1,4 @@
-import { ClientGame } from "../game.ts";
+import { ClientGame } from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 
 export class GameRenderer {

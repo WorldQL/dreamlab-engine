@@ -1,5 +1,4 @@
-import { Entity } from "../../entity/mod.ts";
-import { JsonValue, ValueTypeAdapter } from "../data.ts";
+import { Entity, JsonValue, ValueTypeAdapter } from "@dreamlab/engine";
 
 /**
  * This supports a `Value<Entity | undefined>`

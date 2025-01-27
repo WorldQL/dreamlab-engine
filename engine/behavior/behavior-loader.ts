@@ -1,7 +1,6 @@
+import { Behavior, BehaviorConstructor, Game } from "@dreamlab/engine";
 import { urlWithParams } from "@dreamlab/util/url.ts";
 import { createId } from "@dreamlab/vendor/nanoid.ts";
-import { Game } from "../game.ts";
-import { Behavior, BehaviorConstructor } from "./behavior.ts";
 
 export class BehaviorLoader {
   #game: Game;

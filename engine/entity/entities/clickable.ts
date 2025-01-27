@@ -1,18 +1,21 @@
-import type { ClientGame } from "../../game.ts";
-import { Cursor } from "../../input/inputs.ts";
-import * as internal from "../../internal.ts";
-import { Bounds, IBounds, Vector2, pointWorldToLocal } from "../../math/mod.ts";
+import type { ClientGame, Value } from "@dreamlab/engine";
 import {
+  Bounds,
   Click,
+  Cursor,
+  Entity,
+  EntityContext,
   GameRender,
+  IBounds,
   MouseDown,
   MouseOut,
   MouseOver,
   MouseUp,
-} from "../../signals/mod.ts";
-import { enumAdapter } from "../../value/adapters/enum-adapter.ts";
-import type { Value } from "../../value/mod.ts";
-import { Entity, EntityContext } from "../entity.ts";
+  Vector2,
+  enumAdapter,
+  pointWorldToLocal,
+} from "@dreamlab/engine";
+import * as internal from "@dreamlab/engine/internal";
 
 const clickedSetter = Symbol.for("dreamlab.internal.clickable.clicked-setter");
 const hoverSetter = Symbol.for("dreamlab.internal.clickable.hover-setter");
@@ -77,7 +80,7 @@ export abstract class ClickableEntity extends Entity {
             const isInBounds =
               hoverCount > 0
                 ? false
-                : (cursor.world && entity.isInBounds(cursor.world)) ?? false;
+                : ((cursor.world && entity.isInBounds(cursor.world)) ?? false);
 
             entity[hoverSetter](isInBounds, cursor);
             if (isInBounds) hoverCount++;

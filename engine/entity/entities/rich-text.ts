@@ -1,12 +1,15 @@
+import {
+  Camera,
+  ColorAdapter,
+  Entity,
+  EntityContext,
+  EntityTransformUpdate,
+  enumAdapter,
+  IBounds,
+  PixiEntity,
+  Value,
+} from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import type { IBounds } from "../../math/mod.ts";
-import { EntityTransformUpdate } from "../../signals/mod.ts";
-import { ColorAdapter } from "../../value/adapters/color-adapter.ts";
-import { enumAdapter } from "../../value/adapters/enum-adapter.ts";
-import { Value } from "../../value/value.ts";
-import { Entity, EntityContext } from "../entity.ts";
-import { PixiEntity } from "../pixi-entity.ts";
-import { Camera } from "./camera.ts";
 
 type FontStyle = enumAdapter.Union<typeof FontStyleAdapter>;
 const FontStyleAdapter = enumAdapter(["normal", "italic", "oblique"]);

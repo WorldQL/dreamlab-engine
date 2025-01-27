@@ -1,7 +1,7 @@
-import { Entity } from "../entity/mod.ts";
-import { BaseGame } from "../game.ts";
-import { ConnectionId } from "../network.ts";
-import { exclusiveSignalType } from "../signal.ts";
+import { Entity } from "@dreamlab/engine";
+import { BaseGame } from "@dreamlab/engine";
+import { ConnectionId } from "@dreamlab/engine";
+import { exclusiveSignalType } from "@dreamlab/engine";
 
 export class EntityTransformUpdate {
   /**

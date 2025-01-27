@@ -1,13 +1,16 @@
-import RAPIER, { RigidBody } from "@dreamlab/vendor/rapier.ts";
-import * as internal from "../../internal.ts";
-import { Bounds, IBounds, Vector2 } from "../../math/mod.ts";
 import {
+  Bounds,
+  Entity,
+  EntityContext,
   EntityDestroyed,
   EntityEnableChanged,
   EntityTransformUpdate,
-} from "../../signals/mod.ts";
-import { enumAdapter } from "../../value/mod.ts";
-import { Entity, EntityContext } from "../entity.ts";
+  enumAdapter,
+  IBounds,
+  Vector2,
+} from "@dreamlab/engine";
+import * as internal from "@dreamlab/engine/internal";
+import RAPIER, { RigidBody } from "@dreamlab/vendor/rapier.ts";
 
 /**
  * @deprecated Use {@link Collider} with shape set to `Rectangle` instead.

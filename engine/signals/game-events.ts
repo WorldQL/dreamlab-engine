@@ -1,5 +1,5 @@
-import { BaseGame } from "../game.ts";
-import { exclusiveSignalType } from "../signal.ts";
+import { BaseGame } from "@dreamlab/engine";
+import { exclusiveSignalType } from "@dreamlab/engine";
 
 export class GamePreTick {
   static __singleton = new this();

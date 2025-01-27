@@ -1,11 +1,17 @@
-import { Behavior, BehaviorConstructor } from "../behavior/mod.ts";
+import {
+  Behavior,
+  BehaviorConstructor,
+  Entity,
+  EntityConstructor,
+  IVector2,
+  pointWorldToLocal,
+  Vector2,
+} from "@dreamlab/engine";
 import {
   entityStoreRegister,
   entityStoreRegisterRoot,
   entityStoreUnregister,
-} from "../internal.ts";
-import { IVector2, pointWorldToLocal, Vector2 } from "../math/mod.ts";
-import { Entity, EntityConstructor } from "./entity.ts";
+} from "@dreamlab/engine/internal";
 
 export class EntityStore {
   #entitiesById = new Map<string, Entity>();

@@ -1,6 +1,5 @@
-import { Entity } from "../../entity/mod.ts";
-import * as internal from "../../internal.ts";
-import { JsonValue, ValueTypeAdapter } from "../data.ts";
+import { Entity, JsonValue, ValueTypeAdapter } from "@dreamlab/engine";
+import * as internal from "@dreamlab/engine/internal";
 
 function pathSegmentsFromEntity(entity: Entity): string[] {
   const path: string[] = [];
@@ -44,7 +43,7 @@ export function resolveEntityFromRelativeSelector(entity: Entity, selector: (str
 
 /**
  * Allows you to attach a behavior to this entity by dragging it into the sidebar in the editor. If you copy or clone the entity, the relative relationships will be preserved.
- * 
+ *
  * Eg. if you copy from `prefabs` into `world`, the class properties will reference the entities that have been copied into the world.
  */
 export class RelativeEntity extends ValueTypeAdapter<Entity | undefined> {

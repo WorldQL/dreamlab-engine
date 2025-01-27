@@ -1,6 +1,6 @@
-import { Entity } from "../entity/mod.ts";
-import { Vector2 } from "../math/vector/vector2.ts";
-import { exclusiveSignalType } from "../signal.ts";
+import { Entity } from "@dreamlab/engine";
+import { Vector2 } from "@dreamlab/engine";
+import { exclusiveSignalType } from "@dreamlab/engine";
 
 export class EntityCollision {
   constructor(

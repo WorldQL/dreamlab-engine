@@ -1,4 +1,4 @@
-import { Entity } from "../entity.ts";
+import { Entity } from "@dreamlab/engine";
 
 /**
  * An entity with nothing but a transform.

@@ -1,9 +1,14 @@
+import {
+  Bounds,
+  Entity,
+  EntityContext,
+  EntityDestroyed,
+  enumAdapter,
+  IBounds,
+  Vector2,
+} from "@dreamlab/engine";
+import * as internal from "@dreamlab/engine/internal";
 import RAPIER from "@dreamlab/vendor/rapier.ts";
-import * as internal from "../../internal.ts";
-import { Bounds, IBounds, Vector2 } from "../../math/mod.ts";
-import { EntityDestroyed } from "../../signals/mod.ts";
-import { enumAdapter } from "../../value/adapters/enum-adapter.ts";
-import { Entity, EntityContext } from "../entity.ts";
 
 type RigidBodyType = (typeof rigidbodyTypes)[number];
 const rigidbodyTypes = [

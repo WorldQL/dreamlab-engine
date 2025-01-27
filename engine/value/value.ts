@@ -1,10 +1,14 @@
+import {
+  AdapterTypeTag,
+  ConnectionId,
+  Entity,
+  JsonObject,
+  ObjectAdapter,
+  ValueRegistry,
+  ValueTypeAdapter,
+} from "@dreamlab/engine";
+import * as internal from "@dreamlab/engine/internal";
 import type { ReadonlyDeep } from "@dreamlab/vendor/type-fest.ts";
-import { Entity } from "../entity/mod.ts";
-import * as internal from "../internal.ts";
-import { ConnectionId } from "../network.ts";
-import { ObjectAdapter } from "./adapters/object-adapter.ts";
-import { AdapterTypeTag, JsonObject, ValueTypeAdapter } from "./data.ts";
-import { ValueRegistry } from "./registry.ts";
 
 // prettier-ignore
 type BasicTypeTag<T> =

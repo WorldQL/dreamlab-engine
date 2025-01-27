@@ -1,5 +1,5 @@
 // deno-lint-ignore-file ban-types no-explicit-any
-import { JsonObject, JsonValue, ValueTypeAdapter } from "../data.ts";
+import { JsonObject, JsonValue, ValueTypeAdapter } from "@dreamlab/engine";
 
 const marker = Symbol("dreamlab.object-adapter.marker");
 const orig = Symbol("dreamlab.object-adapter.orig");

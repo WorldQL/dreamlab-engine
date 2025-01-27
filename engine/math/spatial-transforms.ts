@@ -1,5 +1,4 @@
-import { Transform } from "./entity-transform.ts";
-import { IVector2, Vector2 } from "./vector/mod.ts";
+import { IVector2, Transform, Vector2 } from "@dreamlab/engine";
 
 // prettier-ignore
 export interface Matrix2x2 {

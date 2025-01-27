@@ -1,7 +1,5 @@
-import type { Game } from "../game.ts";
-import * as internal from "../internal.ts";
-import { EntityStore } from "./entity-store.ts";
-import { Entity } from "./entity.ts";
+import { Entity, EntityStore, Game } from "@dreamlab/engine";
+import * as internal from "@dreamlab/engine/internal";
 
 export abstract class Root extends Entity {
   static [internal.internalEntity] = true;

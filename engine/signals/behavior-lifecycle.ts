@@ -1,4 +1,4 @@
-import { Behavior } from "../mod.ts";
+import { Behavior } from "@dreamlab/engine";
 
 export class BehaviorSpawned {
   constructor(public readonly behavior: Behavior) {}

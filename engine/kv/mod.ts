@@ -1,4 +1,4 @@
-import type { JsonValue } from "../value/mod.ts";
+import type { JsonValue } from "@dreamlab/engine";
 
 export interface ClientKV {
   readonly player: {

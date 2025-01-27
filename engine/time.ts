@@ -1,5 +1,5 @@
-import type { Game } from "./game.ts";
-import * as internal from "./internal.ts";
+import { Game } from "@dreamlab/engine";
+import * as internal from "@dreamlab/engine/internal";
 
 export class Time {
   #game: Game;

@@ -1,14 +1,21 @@
+import type { EntityContext, EntityDefinition } from "@dreamlab/engine";
+import {
+  Camera,
+  Clickable,
+  ColoredSquare,
+  Empty,
+  Entity,
+  EntityDestroyed,
+  GameRender,
+  GizmoRotateEnd,
+  GizmoTranslateEnd,
+  IVector2,
+  MouseDown,
+  pointLocalToWorld,
+  pointWorldToLocal,
+  Vector2,
+} from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import { IVector2, Vector2 } from "../../math/mod.ts";
-import { pointLocalToWorld, pointWorldToLocal } from "../../math/spatial-transforms.ts";
-import { EntityDestroyed, GameRender, MouseDown } from "../../signals/mod.ts";
-import type { EntityContext, EntityDefinition } from "../entity.ts";
-import { Entity } from "../entity.ts";
-import { Camera } from "./camera.ts";
-import { Clickable } from "./clickable.ts";
-import { ColoredSquare } from "./colored-square.ts";
-import { Empty } from "./empty.ts";
-import { GizmoRotateEnd, GizmoTranslateEnd } from "./gizmo.ts";
 
 export class BoxResizeGizmoResizeEnd {
   constructor(

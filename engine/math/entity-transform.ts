@@ -1,5 +1,9 @@
-import { IVector2, Vector2 } from "./vector/vector2.ts";
-import { transformOnChanged, transformForceUpdate, vectorOnChanged } from "../internal.ts";
+import { IVector2, Vector2 } from "@dreamlab/engine";
+import {
+  transformForceUpdate,
+  transformOnChanged,
+  vectorOnChanged,
+} from "@dreamlab/engine/internal";
 
 export interface ITransform {
   position: IVector2;

@@ -1,4 +1,4 @@
-import { JsonValue, ValueTypeAdapter } from "../data.ts";
+import { JsonValue, ValueTypeAdapter } from "@dreamlab/engine";
 
 /**
  * `Value<AudioAdapter>` is the same as `Value<string>`,

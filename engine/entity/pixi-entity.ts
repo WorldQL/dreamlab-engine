@@ -1,14 +1,16 @@
-import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import * as internal from "../internal.ts";
-import { SignalSubscription } from "../signal.ts";
 import {
+  Entity,
+  EntityConstructor,
+  EntityContext,
   EntityDestroyed,
   EntityEnableChanged,
   EntityOwnEnableChanged,
   EntityReparented,
   GameRender,
-} from "../signals/mod.ts";
-import { Entity, EntityConstructor, EntityContext } from "./entity.ts";
+  SignalSubscription,
+} from "@dreamlab/engine";
+import * as internal from "@dreamlab/engine/internal";
+import * as PIXI from "@dreamlab/vendor/pixi.ts";
 
 export abstract class PixiEntity extends Entity {
   public container: PIXI.Container | undefined;

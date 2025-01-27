@@ -1,6 +1,6 @@
 import { SetNonNullable, Simplify } from "@dreamlab/vendor/type-fest.ts";
-import { Cursor } from "../input/inputs.ts";
-import { Vector2 } from "../math/mod.ts";
+import { Cursor } from "@dreamlab/engine";
+import { Vector2 } from "@dreamlab/engine";
 
 export class Click {
   public constructor(public readonly cursor: Simplify<SetNonNullable<Cursor>>) {}

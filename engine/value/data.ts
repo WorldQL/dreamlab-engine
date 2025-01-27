@@ -1,7 +1,5 @@
-import { Entity } from "../entity/entity.ts";
-import { Game } from "../game.ts";
-import * as internal from "../internal.ts";
-import { Value } from "./value.ts";
+import { Entity, Game, Value } from "@dreamlab/engine";
+import * as internal from "@dreamlab/engine/internal";
 
 export type Primitive = string | number | boolean | undefined | null;
 

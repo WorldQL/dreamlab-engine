@@ -1,7 +1,4 @@
-import { Behavior } from "../behavior.ts";
-import { Entity } from "../../entity/mod.ts";
-import { EntityCollision } from "../../signals/entity-collision.ts";
-import { Value } from "../../value/mod.ts";
+import { Behavior, Entity, EntityCollision, Value } from "@dreamlab/engine";
 
 interface HasHealth {
   health: Value<number>;

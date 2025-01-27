@@ -1,7 +1,12 @@
+import {
+  Camera,
+  Entity,
+  EntityContext,
+  EntityDestroyed,
+  EntityEnableChanged,
+  GameRender,
+} from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import { EntityDestroyed, EntityEnableChanged, GameRender } from "../../signals/mod.ts";
-import { Entity, EntityContext } from "../entity.ts";
-import { Camera } from "./camera.ts";
 
 export class UIPanel extends Entity {
   static {
