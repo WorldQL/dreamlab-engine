@@ -35,6 +35,7 @@ const readConfig = () => {
   };
 };
 
-await dotenv({ envPath: ".env", export: true });
 await dotenv({ envPath: ".env.local", export: true });
+await dotenv({ envPath: ".env", export: true });
+
 export const CONFIG = readConfig();
