@@ -1,8 +1,8 @@
 {
   "tasks": {
-    "build-engine": "deno run -A ./build-worker/build-engine.ts",
-    "start-server": "deno run -c ./engine-out/deno.host.json -A ./server-host/main.ts",
-    "start": "deno task build-engine && deno task start-server"
+    "prepare-pre-exec": "deno run -A ./pre-exec/prepare.ts",
+    "start-server": "deno run -c ./pre-exec/deno.host.json -A ./server-host/main.ts",
+    "start": "deno task prepare-pre-exec && deno task start-server"
   },
   "imports": {
     "@dreamlab/engine": "../engine/mod.ts",

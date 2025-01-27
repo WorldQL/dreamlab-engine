@@ -29,13 +29,13 @@ export class IPCWorker {
       args: [
         "run",
         "-c",
-        "./engine-out/deno.runtime.json",
+        "./pre-exec/deno.runtime.json",
         ...(!workerData.editMode && workerData.inspect
           ? [`--inspect=${workerData.inspect}`]
           : []),
         "--unstable-sloppy-imports",
         `--allow-net=${new URL(workerData.workerConnectUrl).host},${new URL(workerData.kvUrl).host}`,
-        `--allow-read=./engine-out/,${workerData.worldDirectory}`,
+        `--allow-read=./pre-exec/,${workerData.worldDirectory}`,
         `--allow-env`,
         "./server-runtime/main.ts",
       ],
