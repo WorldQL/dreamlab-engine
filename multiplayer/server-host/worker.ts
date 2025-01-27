@@ -2,7 +2,7 @@ import { HostIPCMessage, WorkerIPCMessage } from "../server-common/ipc.ts";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 
 import * as colors from "@std/fmt/colors";
-import { TextLineStream } from "jsr:@std/streams@1";
+import { TextLineStream } from "@std/streams";
 import { LogStore } from "./util/log-store.ts";
 
 export type IPCMessageListener = {
