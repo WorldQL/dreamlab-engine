@@ -1,3 +1,4 @@
+import * as JSONC from "@std/jsonc";
 import { bundleEngine } from "../../build-system/mod.ts";
 
 try {
@@ -7,9 +8,9 @@ try {
   // ignore
 }
 
-await bundleEngine("../engine", "./pre-exec", "./deno.json", { silent: true }, true);
+await bundleEngine("../engine", "./pre-exec", "./deno.jsonc", { silent: true }, true);
 
-const denoJson = await Deno.readTextFile("./deno.json").then(t => JSON.parse(t));
+const denoJson = await Deno.readTextFile("./deno.jsonc").then(t => JSONC.parse(t));
 for (const key of Object.keys(denoJson.imports)) {
   if (denoJson.imports[key].startsWith("."))
     denoJson.imports[key] = "../" + denoJson.imports[key];

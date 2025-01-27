@@ -2,8 +2,10 @@
   "tasks": {
     "prepare-pre-exec": "deno run -A ./pre-exec/prepare.ts",
     "start-server": "deno run -c ./pre-exec/deno.host.json -A ./server-host/main.ts",
-    "start": "deno task prepare-pre-exec && deno task start-server"
+    "start": "deno task prepare-pre-exec && deno task start-server",
   },
+  // NOTE: any imports not in the "@dreamlab/" namespace are not present
+  // in server-common or server-runtime environments.
   "imports": {
     "@dreamlab/engine": "../engine/mod.ts",
     "@dreamlab/engine/internal": "../engine/internal.ts",
@@ -17,15 +19,13 @@
     "@std/dotenv": "jsr:@std/dotenv@^0.225.3",
     "@std/fmt": "jsr:@std/fmt@^1.0.4",
     "@std/fs": "jsr:@std/fs@^1.0.10",
+    "@std/jsonc": "jsr:@std/jsonc@^1.0.1",
     "@std/path": "jsr:@std/path@^1.0.8",
     "@std/streams": "jsr:@std/streams@^1.0.8",
-    "@std/uuid": "jsr:@std/uuid@^1.0.4"
+    "@std/uuid": "jsr:@std/uuid@^1.0.4",
   },
   "compilerOptions": {
-    "lib": [
-      "deno.window",
-      "dom"
-    ],
-    "useUnknownInCatchVariables": false
-  }
+    "lib": ["deno.window", "dom"],
+    "useUnknownInCatchVariables": false,
+  },
 }

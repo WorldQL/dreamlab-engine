@@ -54,6 +54,7 @@
     "jsr:@std/io@~0.224.1": "0.224.5",
     "jsr:@std/json@~0.213.1": "0.213.1",
     "jsr:@std/jsonc@0.213": "0.213.1",
+    "jsr:@std/jsonc@^1.0.1": "1.0.1",
     "jsr:@std/media-types@0.223": "0.223.0",
     "jsr:@std/media-types@0.224": "0.224.1",
     "jsr:@std/media-types@1": "1.1.0",
@@ -104,7 +105,7 @@
       "integrity": "32fc93f7e7f78060234fd5929a740668aab1c742b808c6048b57f9aaea514921",
       "dependencies": [
         "jsr:@std/encoding@0.213",
-        "jsr:@std/jsonc",
+        "jsr:@std/jsonc@0.213",
         "jsr:@std/path@0.213"
       ]
     },
@@ -362,6 +363,9 @@
         "jsr:@std/assert@~0.213.1",
         "jsr:@std/json"
       ]
+    },
+    "@std/jsonc@1.0.1": {
+      "integrity": "6b36956e2a7cbb08ca5ad7fbec72e661e6217c202f348496ea88747636710dda"
     },
     "@std/media-types@0.223.0": {
       "integrity": "84684680c2eb6bc6d9369c6d6f26a49decaf2c7603ff531862dda575d9d6776e"
@@ -1132,6 +1136,7 @@
       "jsr:@std/dotenv@~0.225.3",
       "jsr:@std/fmt@^1.0.4",
       "jsr:@std/fs@^1.0.10",
+      "jsr:@std/jsonc@^1.0.1",
       "jsr:@std/path@^1.0.8",
       "jsr:@std/streams@^1.0.8",
       "jsr:@std/uuid@^1.0.4"
