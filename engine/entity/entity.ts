@@ -1288,6 +1288,10 @@ export abstract class Entity implements ISignalHandler {
     }
   }
 
+  teleportTo(position: Vector2) {
+    this.setGlobalTransform({ position });
+  }
+
   [Symbol.for("Deno.customInspect")]() {
     return this.toString();
   }
