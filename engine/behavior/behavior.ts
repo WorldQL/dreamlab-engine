@@ -1,15 +1,13 @@
 import { createId } from "@dreamlab/vendor/nanoid.ts";
 import type { ConditionalExcept, Except } from "@dreamlab/vendor/type-fest.ts";
 
-import { Collider } from "@dreamlab/engine";
-// deno-lint-ignore no-unused-vars
-import type { Clickable } from "@dreamlab/engine"; // this is used in jsdoc
 import {
   AdapterTypeTag,
   BehaviorDescendantDestroyed,
   BehaviorDescendantSpawned,
   BehaviorDestroyed,
   BehaviorSpawned,
+  Collider,
   DefaultSignalHandlerImpls,
   Entity,
   EntityCollision,
@@ -32,6 +30,9 @@ import {
   inferValueTypeTag,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
+
+// deno-lint-ignore no-unused-vars
+import type { Clickable } from "@dreamlab/engine"; // this is used in jsdoc
 
 export interface BehaviorContext {
   game: Game;

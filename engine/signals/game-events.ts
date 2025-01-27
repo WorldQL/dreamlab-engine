@@ -1,5 +1,4 @@
-import { BaseGame } from "@dreamlab/engine";
-import { exclusiveSignalType } from "@dreamlab/engine";
+import { BaseGame, exclusiveSignalType } from "@dreamlab/engine";
 
 export class GamePreTick {
   static __singleton = new this();

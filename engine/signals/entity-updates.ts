@@ -1,7 +1,4 @@
-import { Entity } from "@dreamlab/engine";
-import { BaseGame } from "@dreamlab/engine";
-import { ConnectionId } from "@dreamlab/engine";
-import { exclusiveSignalType } from "@dreamlab/engine";
+import { BaseGame, ConnectionId, Entity, exclusiveSignalType } from "@dreamlab/engine";
 
 export class EntityTransformUpdate {
   /**
