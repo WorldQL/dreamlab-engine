@@ -561,6 +561,8 @@ export const serveSourceControlAPI = (router: Router) => {
     }
 
     try {
+      await runGitCommand(["fetch", "--all"]);
+
       const remoteBranches = await runGitCommand(["branch", "-r", "--format=%(refname:short)"]);
       const validRemoteBranches = remoteBranches.filter(
         branch => !branch.startsWith("origin/HEAD"),
