@@ -37,6 +37,7 @@ export interface SignalSubscription<S extends Signal = Signal> {
 
 export interface SignalListenerOptions {
   priority?: number;
+  abort?: AbortSignal;
 }
 
 export interface ISignalHandler {
@@ -98,16 +99,25 @@ export class DefaultSignalHandlerImpls {
     listener: SignalListener<S>,
     options: SignalListenerOptions = {},
   ): SignalSubscription<S> {
-    const { priority = 0 } = options;
+    const { priority = 0, abort } = options;
+
+    const unsubscribe = () => {
+      const idx = subscriptions.indexOf(subscription as SignalSubscription);
+      if (idx !== -1) subscriptions.splice(idx, 1);
+    };
+
+    const onAbort = () => {
+      abort?.removeEventListener("abort", onAbort);
+      unsubscribe();
+    };
+
+    abort?.addEventListener("abort", onAbort);
 
     const subscriptions = handler.signalSubscriptionMap.get(type) ?? [];
     const subscription: SignalSubscription<S> = {
       listener,
       priority,
-      unsubscribe: () => {
-        const idx = subscriptions.indexOf(subscription as SignalSubscription);
-        if (idx !== -1) subscriptions.splice(idx, 1);
-      },
+      unsubscribe,
     };
 
     // funny splicing for performance (instead of push() and sort())

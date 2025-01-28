@@ -1006,9 +1006,10 @@ export abstract class Entity implements ISignalHandler {
     receiver: T,
     signalType: SignalConstructor<SignalMatching<S, T>>,
     signalListener: SignalListener<SignalMatching<S, T>>,
+    options?: SignalListenerOptions,
   ): SignalSubscription<S> {
     const boundSignalListener = signalListener.bind(this);
-    const subscription = receiver.on(signalType, boundSignalListener);
+    const subscription = receiver.on(signalType, boundSignalListener, options);
     this.externalListeners.push(subscription);
     return subscription;
   }

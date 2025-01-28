@@ -234,6 +234,7 @@ export class Behavior implements ISignalHandler {
     receiver: T,
     signalType: SignalConstructor<SignalMatching<S, T>>,
     signalListener: SignalListener<SignalMatching<S, T>>,
+    options?: SignalListenerOptions,
   ): SignalSubscription<S> {
     const listenerOwnedByThis = Object.values(
       Object.getOwnPropertyDescriptors(this.constructor.prototype),
@@ -244,7 +245,7 @@ export class Behavior implements ISignalHandler {
       ? signalListener.bind(this)
       : signalListener;
 
-    const subscription = receiver.on(signalType, boundSignalListener);
+    const subscription = receiver.on(signalType, boundSignalListener, options);
     this.externalListeners.push(subscription);
     return subscription;
   }
