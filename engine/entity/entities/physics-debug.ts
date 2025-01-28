@@ -71,7 +71,7 @@ export class PhysicsDebug extends Entity {
       this.#gfx
         .moveTo(start.x, start.y)
         .lineTo(end.x, end.y)
-        .stroke({ width: 0.01, color, alpha: 1 });
+        .stroke({ color, alpha: 1, pixelLine: true });
     }
   }
 }
