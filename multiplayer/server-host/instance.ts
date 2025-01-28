@@ -233,6 +233,12 @@ export const bootInstance = async (instance: GameInstance, restart: boolean = fa
   );
   instance.resetBooting();
 
+  instance.setStatus(GameInstanceState.Starting, "Building engine");
+  await new Deno.Command(Deno.execPath(), {
+    args: ["run", "-A", "./pre-exec/prepare-play.ts"],
+    stdout: "null",
+  }).spawn().status;
+
   instance.setStatus(GameInstanceState.Starting, "Fetching world");
   await fetchWorld(instance);
 
@@ -265,6 +271,12 @@ export const bootPlaySession = async (instance: GameInstance) => {
     throw new Error("Can't start a play session without a running edit session!");
 
   instance.resetPlayBooting();
+
+  instance.logs.debug("play: Building engine...");
+  await new Deno.Command(Deno.execPath(), {
+    args: ["run", "-A", "./pre-exec/prepare-play.ts"],
+    stdout: "null",
+  }).spawn().status;
 
   instance.logs.debug("play: Fetching scene definition from edit session...");
 
@@ -305,6 +317,7 @@ export const bootPlaySession = async (instance: GameInstance) => {
   }
 
   instance.logs.debug("play: Booting session...");
+
   const session = new GameSession(instance, {
     editMode: false,
     worldSubDirectory: "_dist_play",
