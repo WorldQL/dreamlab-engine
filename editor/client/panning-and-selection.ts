@@ -3,7 +3,7 @@ import {
   Behavior,
   BoxResizeGizmo,
   Camera,
-  ClickableCircle,
+  Clickable,
   Entity,
   Gizmo,
   MouseDown,
@@ -40,7 +40,7 @@ export class CameraPanBehavior extends Behavior {
     this.listen(this.game.inputs, MouseOut, this.#onMouseOut.bind(this));
     this.listen(this.game.inputs, Scroll, this.#onScroll.bind(this));
 
-    this.#camera.zoom = 0.15
+    this.#camera.zoom = 0.15;
 
     this.listen(this.#space, ActionChanged, ({ value }) => {
       if (value) canvas.classList.add("grab");
@@ -71,7 +71,7 @@ export class CameraPanBehavior extends Behavior {
         .filter(entity => entity.enabled)
         .filter(entity => {
           // fix big rotate gizmo hitbox
-          const isRotate = entity instanceof ClickableCircle && entity.parent instanceof Gizmo;
+          const isRotate = entity instanceof Clickable && entity.parent instanceof Gizmo;
           if (!isRotate) return true;
 
           return entity.isInBounds(event.cursor.world);
@@ -169,7 +169,7 @@ export class CameraPanBehavior extends Behavior {
 
     if (!TOUCHPAD_DETECTED) {
       // @ts-expect-error non-standard
-      TOUCHPAD_DETECTED = (ev.wheelDeltaY === -3 * ev.deltaY) && ev.deltaY !== 0
+      TOUCHPAD_DETECTED = ev.wheelDeltaY === -3 * ev.deltaY && ev.deltaY !== 0;
     }
 
     // mouse mode
