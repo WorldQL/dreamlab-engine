@@ -686,113 +686,123 @@ export const serveSourceControlAPI = (router: Router) => {
         stderr: "piped",
       });
       const output = await proc.output();
-      const code = output.code;
-      const stdout = new TextDecoder().decode(output.stdout);
-      const stderr = new TextDecoder().decode(output.stderr);
-
-      return { code, stdout, stderr };
+      return {
+        code: output.code,
+        stdout: new TextDecoder().decode(output.stdout),
+        stderr: new TextDecoder().decode(output.stderr),
+      };
     }
 
     try {
-      // 1) Check if there are ANY local changes. If so, stash them before pulling.
-      const statusRes = await runGitCommand(["status", "--porcelain"]);
-      const hasLocalChanges = statusRes.stdout.trim().length > 0;
-      let stashed = false;
+      // Detect staged and unstaged changes
+      const diffIndex = await runGitCommand(["diff", "--cached", "--name-only"]);
+      const hasStagedChanges = diffIndex.stdout.trim().length > 0;
 
-      if (hasLocalChanges) {
-        const stashMsg = `WIP: auto-stash local changes before pull ${new Date().toISOString()}`;
-        const stashRes = await runGitCommand(["stash", "push", "-u", "-m", stashMsg]);
-        if (stashRes.code !== 0) {
+      const diffWorkspace = await runGitCommand(["diff", "--name-only"]);
+      const hasUnstagedChanges = diffWorkspace.stdout.trim().length > 0;
+
+      let tempBranch = null;
+
+      // Handle staged changes
+      if (hasStagedChanges || hasUnstagedChanges) {
+        tempBranch = `merge-conflict-${new Date() // branch will be deleted if there is no merge conflict
+          .toISOString()
+          .replace(/[^\d]/g, "-")
+          .replace(/-$/, "")}`;
+        await runGitCommand(["checkout", "-b", tempBranch]);
+        await runGitCommand(["add", "--all"]);
+        const commitRes = await runGitCommand([
+          "commit",
+          "-m",
+          `Saved local changes in branch '${tempBranch}'`,
+        ]);
+        if (commitRes.code !== 0) {
           throw new JsonAPIError(
             Status.InternalServerError,
-            `Failed to stash local changes: ${stashRes.stderr}`,
+            `Failed to commit local changes: ${commitRes.stderr}`,
           );
         }
-        stashed = true;
+
+        // Return to the main branch
+        const checkoutMain = await runGitCommand(["checkout", "main"]);
+        if (checkoutMain.code !== 0) {
+          throw new JsonAPIError(
+            Status.InternalServerError,
+            `Failed to switch back to main branch: ${checkoutMain.stderr}`,
+          );
+        }
       }
 
-      // 2) Now do a normal "git pull"
-      const pullRes = await runGitCommand(["pull"]);
+      // Pull remote changes
+      const pullRes = await runGitCommand(["pull", "--rebase"]);
       if (pullRes.code !== 0) {
-        if (stashed) {
-          await runGitCommand(["stash", "pop"]);
-        }
         throw new JsonAPIError(
           Status.InternalServerError,
-          `Pull failed: ${pullRes.stderr || pullRes.stdout}`,
+          `Failed to pull remote changes: ${pullRes.stderr}`,
         );
       }
 
-      // 3) If we stashed changes, attempt to reapply them (stash pop).
-      if (stashed) {
-        const popRes = await runGitCommand(["stash", "pop"]);
-
-        // Check if it's a conflict scenario
-        if (popRes.code !== 0) {
-          const { stdout, stderr } = popRes;
-          const conflictText = (stdout + stderr).toLowerCase();
-
+      // Reapply local changes
+      if (tempBranch) {
+        const cherryPickRes = await runGitCommand(["cherry-pick", "--no-commit", tempBranch]);
+        if (cherryPickRes.code !== 0) {
+          const conflictText = cherryPickRes.stderr.toLowerCase();
           if (
             conflictText.includes("conflict") ||
             conflictText.includes("merge conflict") ||
             conflictText.includes("automatic merge failed")
           ) {
-            // (a) Create conflict branch from current HEAD (which has partial stash changes).
-            const conflictBranch = `conflict-${new Date()
-              .toISOString()
-              .replace(/[^\d]/g, "-")}`;
-            const branchCmd = await runGitCommand(["checkout", "-b", conflictBranch]);
-            if (branchCmd.code !== 0) {
-              throw new JsonAPIError(
-                Status.InternalServerError,
-                `Failed to create conflict branch: ${branchCmd.stderr}`,
-              );
-            }
-
-            // (b) Stage & commit conflict markers
-            await runGitCommand(["add", "--all"]);
-            const commitRes = await runGitCommand([
-              "commit",
-              "-m",
-              `WIP: stash-pop conflict, see branch ${conflictBranch}`,
-              "--allow-empty",
+            // Push conflict branch for manual resolution
+            const pushConflictBranch = await runGitCommand([
+              "push",
+              "-u",
+              "origin",
+              tempBranch,
             ]);
-            if (commitRes.code !== 0) {
-              console.warn(
-                "Warning: Could not commit conflict markers. Possibly unmerged paths remain.",
-              );
-            }
-
-            // (c) Push the conflict branch
-            const pushRes = await runGitCommand(["push", "-u", "origin", conflictBranch]);
-            if (pushRes.code !== 0) {
+            if (pushConflictBranch.code !== 0) {
               throw new JsonAPIError(
                 Status.InternalServerError,
-                `Failed to push stash-conflict branch '${conflictBranch}': ${pushRes.stderr}`,
+                `Failed to push conflict branch '${tempBranch}': ${pushConflictBranch.stderr}`,
               );
             }
 
             ctx.response.body = {
               success: false,
-              conflictBranch,
-              message: `Pull succeeded, but reapplying local changes caused conflicts. A 'conflict' branch '${conflictBranch}' was created and pushed. Please resolve conflicts on Forgejo.`,
+              conflictBranch: tempBranch,
+              message: `Conflicts detected while reapplying local changes. Changes pushed to conflict branch '${tempBranch}'. Please resolve manually.`,
             };
             return;
-          } else {
-            throw new JsonAPIError(
-              Status.InternalServerError,
-              `Failed to reapply stashed changes (non-conflict error): ${stderr || stdout}`,
-            );
           }
+
+          throw new JsonAPIError(
+            Status.InternalServerError,
+            `Failed to reapply local changes: ${cherryPickRes.stderr}`,
+          );
+        }
+
+        // Unstage the applied changes (convert them back to unstaged)
+        const resetRes = await runGitCommand(["reset"]);
+        if (resetRes.code !== 0) {
+          throw new JsonAPIError(
+            Status.InternalServerError,
+            `Failed to unstage reapplied changes: ${resetRes.stderr}`,
+          );
+        }
+
+        // Delete the temporary branch
+        const deleteBranchRes = await runGitCommand(["branch", "-D", tempBranch]);
+        if (deleteBranchRes.code !== 0) {
+          console.warn(
+            `Failed to delete temporary branch '${tempBranch}': ${deleteBranchRes.stderr}`,
+          );
         }
       }
 
-      // 4) Success: either no stash needed or stash popped with no conflict
       ctx.response.body = {
         success: true,
-        message: stashed
-          ? "Pulled remote changes and re-applied your stashed changes successfully."
-          : "Pulled remote changes (no local changes to stash).",
+        message: tempBranch
+          ? "Pulled remote changes and reapplied local changes as unstaged."
+          : "Pulled remote changes successfully. No local changes to reapply.",
       };
     } catch (error) {
       console.error("=== Caught error in pull handler:", error);
