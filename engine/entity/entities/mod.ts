@@ -19,3 +19,5 @@ export * from "./vector-sprite.ts";
 
 // must load after Collider
 export * from "./character-controller.ts";
+
+export * from "./rigidbody.ts";

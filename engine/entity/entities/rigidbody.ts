@@ -1,10 +1,12 @@
 import {
   Bounds,
+  Collider,
   Entity,
   EntityContext,
   EntityDestroyed,
   enumAdapter,
   IBounds,
+  LocalRoot,
   Vector2,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
@@ -21,34 +23,25 @@ const rigidbodyTypes = [
 
 const RigidbodyTypeAdapter = enumAdapter(rigidbodyTypes);
 
-/* THIS ENTITY IS UNUSED AND IS ONLY HERE FOR REFERENCE PURPOSES */
 export class Rigidbody extends Entity {
   static {
     Entity.registerType(this, "@core");
   }
 
   static readonly icon = "⚙️";
-  readonly bounds: IBounds = Bounds.ONE;
+  readonly bounds = undefined;
 
-  type: RigidBodyType = "fixed";
+  type: RigidBodyType = "dynamic";
 
-  #internal:
-    | { body: RAPIER.RigidBody; collider: RAPIER.Collider; shape: RAPIER.Cuboid }
-    | undefined;
+  #body: RAPIER.RigidBody | undefined;
 
   get body(): RAPIER.RigidBody {
-    if (!this.#internal) throw new Error("attempted to access .body on a prefab object");
-    return this.#internal.body;
-  }
-
-  get collider(): RAPIER.Collider {
-    if (!this.#internal) throw new Error("attempted to access .collider on a prefab object");
-    return this.#internal.collider;
+    if (!this.#body) throw new Error("attempted to access .body on a prefab object");
+    return this.#body;
   }
 
   constructor(ctx: EntityContext) {
     super(ctx);
-
     this.defineValue(Rigidbody, "type", { type: RigidbodyTypeAdapter });
 
     this.#initializeBody();
@@ -57,7 +50,7 @@ export class Rigidbody extends Entity {
     typeValue?.onChanged(() => this.#initializeBody());
 
     this.on(EntityDestroyed, () => {
-      if (this.#internal) this.game.physics.world.removeRigidBody(this.#internal.body);
+      if (this.#body) this.game.physics.world.removeRigidBody(this.#body);
     });
   }
 
@@ -73,42 +66,43 @@ export class Rigidbody extends Entity {
 
   #preparePhysicsUpdate() {
     if (!this.game.physics.enabled) return;
-    if (!this.#internal) return;
+    if (!this.#body) return;
 
-    this.#internal.body.setTranslation(
+    this.#body.setTranslation(
       {
         x: this.globalTransform.position.x,
         y: this.globalTransform.position.y,
       },
       false,
     );
-    this.#internal.body.setRotation(this.globalTransform.rotation, false);
-    this.#internal.shape.halfExtents = {
-      x: this.globalTransform.scale.x / 2,
-      y: this.globalTransform.scale.y / 2,
-    };
+    this.#body.setRotation(this.globalTransform.rotation, false);
   }
 
   #applyPhysicsUpdate() {
     if (!this.game.physics.enabled) return;
-    if (!this.#internal) return;
+    if (!this.#body) return;
 
     // FIXME: free-for-all entities should not have transform reported from the client for benign physics transform updates
     // for now, we just don't update the transform on the client.
-    if (this.authority === undefined && this.game.isClient()) return;
+    // if (
+    //   this.authority === undefined &&
+    //   this.game.isClient() &&
+    //   !(this.root instanceof LocalRoot)
+    // )
+    //   return;
 
-    this.globalTransform.position = new Vector2(this.#internal.body.translation());
-    this.globalTransform.rotation = this.#internal.body.rotation();
-    this.globalTransform.scale = new Vector2(
-      this.#internal.shape.halfExtents.x * 2,
-      this.#internal.shape.halfExtents.y * 2,
-    );
+    if (!(this.root instanceof LocalRoot)) return;
+    
+    this.globalTransform.position = new Vector2(this.#body.translation());
+    this.globalTransform.rotation = this.#body.rotation();
   }
 
   #initializeBody() {
-    if (this.#internal) {
-      this.game.physics.world.removeRigidBody(this.#internal.body);
+    if (this.#body) {
+      this.game.physics.world.removeRigidBody(this.#body);
     }
+
+    if (this.root.constructor.name === "LocalRoot") console.log(this.name)
 
     if (!this.enabled) return;
 
@@ -126,23 +120,8 @@ export class Rigidbody extends Entity {
       .setRotation(this.globalTransform.rotation);
 
     const body = this.game.physics.world.createRigidBody(desc);
-    const cuboid = RAPIER.ColliderDesc.cuboid(
-      this.globalTransform.scale.x / 2,
-      this.globalTransform.scale.y / 2,
-    );
-
-    const collider = this.game.physics.world.createCollider(cuboid, body);
-    collider.setActiveCollisionTypes(
-      RAPIER.ActiveCollisionTypes.DEFAULT |
-        RAPIER.ActiveCollisionTypes.KINEMATIC_FIXED |
-        RAPIER.ActiveCollisionTypes.FIXED_FIXED,
-    );
-    collider.setActiveEvents(
-      RAPIER.ActiveEvents.COLLISION_EVENTS | RAPIER.ActiveEvents.CONTACT_FORCE_EVENTS,
-    );
-    const shape = collider.shape as RAPIER.Cuboid;
 
     this.game.physics.registerBody(this, body);
-    this.#internal = { body, collider, shape };
+    this.#body = body;
   }
 }
