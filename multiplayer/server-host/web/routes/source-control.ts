@@ -766,6 +766,22 @@ export const serveSourceControlAPI = (router: Router) => {
               );
             }
 
+            const resetMain = await runGitCommand(["reset", "--hard", "origin/main"]);
+            if (resetMain.code !== 0) {
+              throw new JsonAPIError(
+                Status.InternalServerError,
+                `Failed to reset to main branch: ${resetMain.stderr}`,
+              );
+            }
+
+            const checkoutMain = await runGitCommand(["checkout", "main"]);
+            if (checkoutMain.code !== 0) {
+              throw new JsonAPIError(
+                Status.InternalServerError,
+                `Failed to switch back to the main branch after resetting: ${checkoutMain.stderr}`,
+              );
+            }
+
             ctx.response.body = {
               success: false,
               conflictBranch: tempBranch,
