@@ -34,6 +34,7 @@
     "npm:@paralleldrive/cuid2@2.2.2": "2.2.2",
     "npm:@pixi/ticker@*": "7.4.2",
     "npm:@types/howler@2.2.11": "2.2.11",
+    "npm:@types/node@*": "22.5.4",
     "npm:@types/pako@2.0.3": "2.0.3",
     "npm:esbuild-plugin-d.ts@1.2.3": "1.2.3_typescript@5.4.5",
     "npm:esbuild@0.20.2": "0.20.2",
@@ -48,6 +49,7 @@
     "npm:pixi.js@8.2.6": "8.2.6",
     "npm:pixi.js@8.4.1": "8.4.1",
     "npm:pixi.js@8.5.1": "8.5.1",
+    "npm:pixi.js@8.7.1": "8.7.1",
     "npm:quad-indices@2.0.1": "2.0.1",
     "npm:type-fest@4.20.1": "4.20.1",
     "npm:type-fest@4.23.0": "4.23.0",
@@ -378,6 +380,12 @@
     "@types/howler@2.2.11": {
       "integrity": "sha512-7aBoUL6RbSIrqKnpEgfa1wSNUBK06mn08siP2QI0zYk7MXfEJAaORc4tohamQYqCqVESoDyRWSdQn2BOKWj2Qw=="
     },
+    "@types/node@22.5.4": {
+      "integrity": "sha512-FDuKUJQm/ju9fT/SeX/6+gBzoPzlVCzfzmGkwKvRHQVxi4BntVbyIwf6a4Xn62mrvndLiml6z/UBXIdEVjQLXg==",
+      "dependencies": [
+        "undici-types"
+      ]
+    },
     "@types/pako@2.0.3": {
       "integrity": "sha512-bq0hMV9opAcrmE0Byyo0fY3Ew4tgOevJmQ9grUhpXQhYfyLJ1Kqg3P33JT5fdbT2AjeAjR51zqqVjAL/HMkx7Q=="
     },
@@ -664,6 +672,20 @@
         "parse-svg-path"
       ]
     },
+    "pixi.js@8.7.1": {
+      "integrity": "sha512-JLsss/AX5Utfg5/s/5iDpTWrqQM5butPm5bs0dpUP9sKRQHV7D2+rTcPw19lNJHwZ6yU0XUFrp80xzyr3bY3FA==",
+      "dependencies": [
+        "@pixi/colord",
+        "@types/css-font-loading-module",
+        "@types/earcut",
+        "@webgpu/types",
+        "@xmldom/xmldom",
+        "earcut",
+        "eventemitter3@5.0.1",
+        "ismobilejs",
+        "parse-svg-path"
+      ]
+    },
     "punycode@1.4.1": {
       "integrity": "sha512-jmYNElW7yvO7TV33CjSmvSiE2yco3bV2czu/OzDKdMNVZQWfxCblURLhf+47syQRBntjfLdd/H0egrzIG+oaFQ=="
     },
@@ -718,6 +740,9 @@
     },
     "typescript@5.4.5": {
       "integrity": "sha512-vcI4UpRgg81oIRUFwR0WSIHKt11nJ7SAVlYNIu+QpqeyXP+gpQJy/Z4+F0aGxSE4MqwjyXvW/TzgkLAx2AGHwQ=="
+    },
+    "undici-types@6.19.8": {
+      "integrity": "sha512-ve2KP6f/JnbPBFyobGHuerC9g1FYGn/F8n1LWTwNxCEzd6IfqTwUQcNXgEtmmQ6DlRrC1hrSrBnCZPokRrDHjw=="
     },
     "url@0.11.3": {
       "integrity": "sha512-6hxOLGfZASQK/cijlZnZJTq8OXAkt/3YGfQX45vvMYXpZoo8NdWZcY73K108Jf759lS1Bv/8wXnHDTSz17dSRw==",
