@@ -1,12 +1,23 @@
-import type { Game, Input } from "@dreamlab/engine";
+import type {
+  Entity,
+  Game,
+  Input,
+  ISignalHandler,
+  Signal,
+  SignalConstructor,
+  SignalListener,
+  SignalListenerOptions,
+  SignalMatching,
+  SignalSubscription,
+} from "@dreamlab/engine";
 import {
   Action,
   ActionBound,
   ActionCreated,
   ActionDeleted,
-  BasicSignalHandler,
   Camera,
   Click,
+  DefaultSignalHandlerImpls,
   isInput,
   IVector2,
   MouseDown,
@@ -27,10 +38,9 @@ export type Cursor = {
   readonly screen: Vector2 | undefined;
 };
 
-export class Inputs extends BasicSignalHandler<Inputs> {
+export class Inputs implements ISignalHandler {
   readonly #game: Game;
   constructor(game: Game) {
-    super();
     this.#game = game;
   }
 
@@ -336,6 +346,30 @@ export class Inputs extends BasicSignalHandler<Inputs> {
 
       canvas.removeEventListener("contextmenu", this.#onContextMenu);
     };
+  }
+  // #endregion
+
+  // #region Signals
+  readonly signalSubscriptionMap = DefaultSignalHandlerImpls.map();
+
+  fire<S extends Signal, C extends SignalConstructor<S>>(
+    type: C,
+    ...params: ConstructorParameters<C>
+  ): S {
+    return DefaultSignalHandlerImpls.fire(this, type, ...params);
+  }
+
+  on<S extends Signal>(
+    type: SignalConstructor<SignalMatching<S, this & Entity>>,
+    listener: SignalListener<SignalMatching<S, this & Entity>>,
+    options?: SignalListenerOptions,
+  ): SignalSubscription<S> {
+    const subscription = DefaultSignalHandlerImpls.on(this, type, listener, options);
+    return subscription as SignalSubscription<S>;
+  }
+
+  unregister<T extends Signal>(type: SignalConstructor<T>, listener: SignalListener<T>): void {
+    DefaultSignalHandlerImpls.unregister(this, type, listener);
   }
   // #endregion
 }

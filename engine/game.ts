@@ -29,6 +29,7 @@ import {
   Signal,
   SignalConstructor,
   SignalListener,
+  SignalListenerOptions,
   SignalMatching,
   SignalSubscription,
   Time,
@@ -253,9 +254,9 @@ export abstract class BaseGame implements ISignalHandler {
   on<S extends Signal>(
     type: SignalConstructor<SignalMatching<S, this & BaseGame>>,
     listener: SignalListener<SignalMatching<S, this & BaseGame>>,
-    priority: number = 0,
+    options?: SignalListenerOptions,
   ): SignalSubscription<S> {
-    const subscription = DefaultSignalHandlerImpls.on(this, type, listener, priority);
+    const subscription = DefaultSignalHandlerImpls.on(this, type, listener, options);
     return subscription as SignalSubscription<S>;
   }
 

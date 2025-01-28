@@ -10,6 +10,7 @@ import {
   Signal,
   SignalConstructor,
   SignalListener,
+  SignalListenerOptions,
   SignalMatching,
   SignalSubscription,
 } from "@dreamlab/engine";
@@ -79,9 +80,9 @@ export class Action implements ISignalHandler {
   on<S extends Signal>(
     type: SignalConstructor<SignalMatching<S, Action>>,
     listener: SignalListener<SignalMatching<S, Action>>,
-    priority: number = 0,
+    options: SignalListenerOptions = {},
   ): SignalSubscription<S> {
-    const subscription = DefaultSignalHandlerImpls.on(this, type, listener, priority);
+    const subscription = DefaultSignalHandlerImpls.on(this, type, listener, options);
     return subscription as SignalSubscription<S>;
   }
 

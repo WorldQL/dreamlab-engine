@@ -35,6 +35,10 @@ export interface SignalSubscription<S extends Signal = Signal> {
   readonly unsubscribe: () => void;
 }
 
+export interface SignalListenerOptions {
+  priority?: number;
+}
+
 export interface ISignalHandler {
   readonly signalSubscriptionMap: Map<SignalConstructor, SignalSubscription[]>;
 
@@ -45,7 +49,7 @@ export interface ISignalHandler {
   on<S extends Signal>(
     type: SignalConstructor<SignalMatching<S, this>>,
     listener: SignalListener<SignalMatching<S, this>>,
-    priority?: number,
+    options?: SignalListenerOptions,
   ): SignalSubscription<S>;
   unregister<T extends Signal>(type: SignalConstructor<T>, listener: SignalListener<T>): void;
 }
@@ -92,8 +96,10 @@ export class DefaultSignalHandlerImpls {
     handler: ISignalHandler,
     type: SignalConstructor<S>,
     listener: SignalListener<S>,
-    priority: number = 0,
+    options: SignalListenerOptions = {},
   ): SignalSubscription<S> {
+    const { priority = 0 } = options;
+
     const subscriptions = handler.signalSubscriptionMap.get(type) ?? [];
     const subscription: SignalSubscription<S> = {
       listener,
@@ -143,9 +149,9 @@ export class BasicSignalHandler<Self> implements ISignalHandler {
   on<S extends Signal>(
     type: SignalConstructor<SignalMatching<S, this & Self>>,
     listener: SignalListener<SignalMatching<S, this & Self>>,
-    priority: number = 0,
+    options: SignalListenerOptions = {},
   ): SignalSubscription<S> {
-    const subscription = DefaultSignalHandlerImpls.on(this, type, listener, priority);
+    const subscription = DefaultSignalHandlerImpls.on(this, type, listener, options);
     return subscription as SignalSubscription<S>;
   }
 

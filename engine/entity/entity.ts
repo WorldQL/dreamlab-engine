@@ -36,6 +36,7 @@ import {
   Signal,
   SignalConstructor,
   SignalListener,
+  SignalListenerOptions,
   SignalMatching,
   SignalSubscription,
   Transform,
@@ -986,9 +987,9 @@ export abstract class Entity implements ISignalHandler {
   on<S extends Signal>(
     type: SignalConstructor<SignalMatching<S, this & Entity>>,
     listener: SignalListener<SignalMatching<S, this & Entity>>,
-    priority: number = 0,
+    options?: SignalListenerOptions,
   ): SignalSubscription<S> {
-    const subscription = DefaultSignalHandlerImpls.on(this, type, listener, priority);
+    const subscription = DefaultSignalHandlerImpls.on(this, type, listener, options);
     return subscription as SignalSubscription<S>;
   }
 

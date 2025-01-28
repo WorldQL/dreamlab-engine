@@ -16,18 +16,19 @@ import {
   GamePostTick,
   GamePreTick,
   GameRender,
+  inferValueTypeTag,
   ISignalHandler,
   JsonValue,
   Primitive,
   Signal,
   SignalConstructor,
   SignalListener,
+  SignalListenerOptions,
   SignalMatching,
   SignalSubscription,
   Value,
   ValueTypeAdapter,
   ValueTypeTag,
-  inferValueTypeTag,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 
@@ -262,9 +263,9 @@ export class Behavior implements ISignalHandler {
   on<S extends Signal>(
     type: SignalConstructor<SignalMatching<S, this & Behavior>>,
     listener: SignalListener<SignalMatching<S, this & Behavior>>,
-    priority: number = 0,
+    options?: SignalListenerOptions,
   ): SignalSubscription<S> {
-    const subscription = DefaultSignalHandlerImpls.on(this, type, listener, priority);
+    const subscription = DefaultSignalHandlerImpls.on(this, type, listener, options);
     return subscription as SignalSubscription<S>;
   }
 
