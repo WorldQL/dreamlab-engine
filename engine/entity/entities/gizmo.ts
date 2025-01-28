@@ -562,10 +562,17 @@ export class Gizmo extends Entity {
     return this.#target;
   }
   set target(value: Entity | undefined) {
+    if (this.#target) this.#target.unregister(EntityDestroyed, this.#onTargetDestroyed);
+
     this.#target = value;
     if (this.#gfx) this.#gfx.context = this.#ctx;
     this.#updateHandles();
+    if (this.#target) this.#target.on(EntityDestroyed, this.#onTargetDestroyed);
   }
+
+  #onTargetDestroyed = () => {
+    this.target = undefined;
+  };
 
   constructor(ctx: EntityContext) {
     super(ctx);

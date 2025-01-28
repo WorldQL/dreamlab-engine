@@ -119,9 +119,16 @@ export class BoxResizeGizmo extends Entity {
     return this.#target;
   }
   set target(value: Entity | undefined) {
+    if (this.#target) this.#target.unregister(EntityDestroyed, this.#onTargetDestroyed);
+
     this.#target = value;
     this.#updateHandles();
+    if (this.#target) this.#target.on(EntityDestroyed, this.#onTargetDestroyed);
   }
+
+  #onTargetDestroyed = () => {
+    this.target = undefined;
+  };
 
   // #region Handles
   #calculateGripSizes(scaled: IVector2): IVector2 {
