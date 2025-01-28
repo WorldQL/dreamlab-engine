@@ -798,15 +798,6 @@ export const serveSourceControlAPI = (router: Router) => {
           );
         }
 
-        // Unstage the applied changes (convert them back to unstaged)
-        const resetRes = await runGitCommand(["reset"]);
-        if (resetRes.code !== 0) {
-          throw new JsonAPIError(
-            Status.InternalServerError,
-            `Failed to unstage reapplied changes: ${resetRes.stderr}`,
-          );
-        }
-
         // Delete the temporary branch
         const deleteBranchRes = await runGitCommand(["branch", "-D", tempBranch]);
         if (deleteBranchRes.code !== 0) {
