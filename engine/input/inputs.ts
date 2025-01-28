@@ -319,32 +319,25 @@ export class Inputs implements ISignalHandler {
       throw new Error("registerHandlers() can only be called on the client");
     }
 
-    globalThis.addEventListener("keydown", this.#onKeyDown);
-    globalThis.addEventListener("keyup", this.#onKeyUp);
-    globalThis.addEventListener("mousedown", this.#onMouseDown);
-    globalThis.addEventListener("touchstart", this.#onTouchStart);
-    globalThis.addEventListener("mouseup", this.#onMouseUp);
-    globalThis.addEventListener("wheel", this.#onWheel, { passive: false });
-    globalThis.addEventListener("blur", this.#clearActions);
-    globalThis.addEventListener("mousemove", this.#onMouseMove);
-    globalThis.addEventListener("mouseout", this.#onMouseOut);
-    document.addEventListener("visibilitychange", this.#onVisibilityChange);
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    globalThis.addEventListener("keydown", this.#onKeyDown, { signal });
+    globalThis.addEventListener("keyup", this.#onKeyUp, { signal });
+    globalThis.addEventListener("mousedown", this.#onMouseDown, { signal });
+    globalThis.addEventListener("touchstart", this.#onTouchStart, { signal });
+    globalThis.addEventListener("mouseup", this.#onMouseUp, { signal });
+    globalThis.addEventListener("wheel", this.#onWheel, { signal, passive: false });
+    globalThis.addEventListener("blur", this.#clearActions, { signal });
+    globalThis.addEventListener("mousemove", this.#onMouseMove, { signal });
+    globalThis.addEventListener("mouseout", this.#onMouseOut, { signal });
+    document.addEventListener("visibilitychange", this.#onVisibilityChange, { signal });
 
     const canvas = this.#game.renderer.app.canvas;
-    canvas.addEventListener("contextmenu", this.#onContextMenu);
+    canvas.addEventListener("contextmenu", this.#onContextMenu, { signal });
 
     return () => {
-      globalThis.removeEventListener("keydown", this.#onKeyDown);
-      globalThis.removeEventListener("keyup", this.#onKeyUp);
-      globalThis.removeEventListener("mousedown", this.#onMouseDown);
-      globalThis.removeEventListener("mouseup", this.#onMouseUp);
-      globalThis.removeEventListener("wheel", this.#onWheel);
-      globalThis.removeEventListener("blur", this.#clearActions);
-      globalThis.removeEventListener("mousemove", this.#onMouseMove);
-      globalThis.removeEventListener("mouseout", this.#onMouseOut);
-      document.removeEventListener("visibilitychange", this.#onVisibilityChange);
-
-      canvas.removeEventListener("contextmenu", this.#onContextMenu);
+      controller.abort();
     };
   }
   // #endregion
