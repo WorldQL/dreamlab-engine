@@ -8,6 +8,7 @@ export * from "./colored-polygon.ts";
 export * from "./colored-square.ts";
 export * from "./empty.ts";
 export * from "./gizmo.ts";
+export * from "./physics-debug.ts";
 export * from "./raw-pixi.ts";
 export * from "./rich-text.ts";
 export * from "./solid-color.ts";

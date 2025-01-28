@@ -8,74 +8,7 @@ import {
 } from "../mod.ts";
 
 // #region Physics Debug
-export class PhysicsDebug extends Entity {
-  static {
-    Entity.registerType(this, "@core");
-  }
-
-  readonly bounds: undefined;
-
-  #gfx = new PIXI.Graphics();
-
-  constructor(ctx: EntityContext) {
-    super(ctx);
-
-    // TODO: rendering system that abstracts better over pixi?
-    game.renderer.scene.addChild(this.#gfx);
-
-    this.game.on(GamePostRender, () => {
-      this.#gfx.clear();
-
-      const { vertices, colors } = this.game.physics.world.debugRender();
-      const vtx = vertices;
-
-      for (let i = 0; i < vtx.length / 4; i += 1) {
-        const x1 = vtx[i * 4 + 0];
-        const y1 = vtx[i * 4 + 1];
-        const x2 = vtx[i * 4 + 2];
-        const y2 = vtx[i * 4 + 3];
-
-        if (x1 === undefined || y1 === undefined || x2 === undefined || y2 === undefined) {
-          console.warn("invalid vertex buffer");
-          continue;
-        }
-
-        const r = colors[i * 4 + 0];
-        const g = colors[i * 4 + 1];
-        const b = colors[i * 4 + 2];
-        const a = colors[i * 4 + 3];
-
-        if (r === undefined || g === undefined || b === undefined || a === undefined) {
-          console.warn("invalid colour buffer");
-          continue;
-        }
-
-        // const gfx = new Graphics();
-        const color = new PIXI.Color({
-          r: r * 255,
-          g: g * 255,
-          b: b * 255,
-          a: a * 255,
-        });
-
-        const start = { x: x1, y: -y1 };
-        const end = { x: x2, y: -y2 };
-
-        this.#gfx
-          .moveTo(start.x, start.y)
-          .lineTo(end.x, end.y)
-          .stroke({ width: 0.01, color, alpha: 1 });
-
-        // this.#graphics.push(gfx);
-        // game.app.stage.addChild(gfx);
-      }
-    });
-
-    this.on(EntityDestroyed, () => {
-      this.#gfx.destroy({ children: true });
-    });
-  }
-}
+export { PhysicsDebug } from "../mod.ts";
 // #endregion
 
 // #region Bounds Debug
