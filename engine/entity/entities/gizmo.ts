@@ -226,9 +226,9 @@ export class Gizmo extends Entity {
         if (button !== "left") return;
 
         const offset = world.sub(this.globalTransform.position);
-        const original = this.#target.pos.clone();
+        const original = this.#target[0].pos.clone();
         this.#action = { type: "translate", axis, offset, original };
-        this.fire(GizmoTranslateStart, this.#target, axis);
+        this.fire(GizmoTranslateStart, this.#target[0], axis);
       };
 
     translateX.on(MouseDown, translateOnMouseDown("x"));
@@ -241,10 +241,10 @@ export class Gizmo extends Entity {
 
       const pos = world.sub(this.globalTransform.position);
       const rot = Math.atan2(pos.x, pos.y);
-      const original = this.#target.globalTransform.rotation;
+      const original = this.#target[0].globalTransform.rotation;
 
       this.#action = { type: "rotate", offset: rot + this.globalTransform.rotation, original };
-      this.fire(GizmoRotateStart, this.#target);
+      this.fire(GizmoRotateStart, this.#target[0]);
     });
 
     const scaleOnMouseDown =
@@ -254,12 +254,12 @@ export class Gizmo extends Entity {
         if (button !== "left") return;
 
         const offset = world.sub(this.globalTransform.position);
-        const original = isCamera(this.#target)
-          ? Vector2.splat(1 / this.#target.zoom)
-          : this.#target.globalTransform.scale.clone();
+        const original = isCamera(this.#target[0])
+          ? Vector2.splat(1 / this.#target[0].zoom)
+          : this.#target[0].globalTransform.scale.clone();
 
         this.#action = { type: "scale", axis, offset, original };
-        this.fire(GizmoScaleStart, this.#target, axis);
+        this.fire(GizmoScaleStart, this.#target[0], axis);
       };
 
     scaleX.on(MouseDown, scaleOnMouseDown("x"));
@@ -290,28 +290,30 @@ export class Gizmo extends Entity {
       if (this.#action.axis === "y") local.x = 0;
       const world = pointLocalToWorld(this.globalTransform, local);
 
+      // TODO: consider disabling snapping when using multiselect
+      // because i dont want to think of the implementation issues lmao
       if (event.shiftKey) {
         const snapThreshold = 0.1;
 
         // Save original position
-        const originalPos = this.#target.globalTransform.position.clone();
+        const originalPos = this.#target[0].globalTransform.position.clone();
 
         // Temporarily move target to the tentative position
-        this.#target.globalTransform.position = world;
-        const targetBounds = this.#computeGlobalBounds(this.#target);
+        this.#target[0].globalTransform.position = world.add(this.#target[1]);
+        const targetBounds = this.#computeGlobalBounds(this.#target[0]);
 
         const targetCenterX = (targetBounds.minX + targetBounds.maxX) / 2;
         const targetCenterY = (targetBounds.minY + targetBounds.maxY) / 2;
 
         // Restore after bounds computation, since we only needed it for calculation
-        this.#target.globalTransform.position = originalPos;
+        this.#target[0].globalTransform.position = originalPos;
 
         let snapX: number | undefined;
         let snapY: number | undefined;
 
         for (const e of this.game.entities) {
-          if (e === this.#target) continue;
-          if (e.parent === this.#target) continue;
+          if (e === this.#target[0]) continue;
+          if (e.parent === this.#target[0]) continue;
           if (!(e instanceof Entity)) continue;
           if (e.id === "game.local._.Gizmo" || e.parent?.id === "game.local._.Gizmo") continue;
           if (e.id.includes("__EditorMetadata")) continue;
@@ -474,25 +476,19 @@ export class Gizmo extends Entity {
         if (snapY !== undefined) world.y = snapY;
       }
 
-      this.fire(GizmoTranslateMove, this.#target, world.clone());
-      this.#target.globalTransform.position = world;
+      this.fire(GizmoTranslateMove, this.#target[0], world.clone());
+      this.#target[0].globalTransform.position = world.add(this.#target[1]);
       for (const [entity, offset] of this.#auxTargets) {
         entity.globalTransform.position = world.add(offset);
       }
-
-      // const delta = world.sub(this.globalTransform.position);
-      // this.#target.globalTransform.position = this.#target.globalTransform.position.add(delta);
-      // for (const auxTarget of this.auxTargets) {
-      //   auxTarget.globalTransform.position = auxTarget.globalTransform.position.add(delta);
-      // }
     } else if (this.#action.type === "rotate") {
       const pos = cursor.world.sub(this.globalTransform.position);
       const rot = Math.atan2(pos.x, pos.y);
 
       const rotation = -rot + this.#action.offset;
-      this.fire(GizmoRotateMove, this.#target, rotation);
+      this.fire(GizmoRotateMove, this.#target[0], rotation);
 
-      this.#target.globalTransform.rotation = rotation;
+      this.#target[0].globalTransform.rotation = rotation;
     } else if (this.#action.type === "scale") {
       const originalDistance = this.#action.offset.magnitude();
       const offset = cursor.world.sub(this.globalTransform.position);
@@ -503,11 +499,11 @@ export class Gizmo extends Entity {
       if (this.#action.axis === "y") mul.x = 1;
       const scale = this.#action.original.mul(mul);
 
-      this.fire(GizmoScaleMove, this.#target, scale.clone());
-      if (isCamera(this.#target)) {
-        this.#target.zoom = 1 / (this.#action.axis === "y" ? scale.y : scale.x);
+      this.fire(GizmoScaleMove, this.#target[0], scale.clone());
+      if (isCamera(this.#target[0])) {
+        this.#target[0].zoom = 1 / (this.#action.axis === "y" ? scale.y : scale.x);
       } else {
-        this.#target.globalTransform.scale = scale;
+        this.#target[0].globalTransform.scale = scale;
       }
     }
   };
@@ -523,41 +519,41 @@ export class Gizmo extends Entity {
     if (this.#action.type === "translate") {
       this.fire(
         GizmoTranslateEnd,
-        this.#target,
+        this.#target[0],
         this.#action.original.clone(),
-        this.#target.pos.clone(),
+        this.#target[0].pos.clone(),
       );
       this.game.fire(
         GizmoTranslateEnd,
-        this.#target,
+        this.#target[0],
         this.#action.original.clone(),
-        this.#target.pos.clone(),
+        this.#target[0].pos.clone(),
       );
     } else if (this.#action.type === "rotate") {
       this.fire(
         GizmoRotateEnd,
-        this.#target,
+        this.#target[0],
         this.#action.original,
-        this.#target.globalTransform.rotation,
+        this.#target[0].globalTransform.rotation,
       );
       this.game.fire(
         GizmoRotateEnd,
-        this.#target,
+        this.#target[0],
         this.#action.original,
-        this.#target.globalTransform.rotation,
+        this.#target[0].globalTransform.rotation,
       );
     } else if (this.#action.type === "scale") {
       this.fire(
         GizmoScaleEnd,
-        this.#target,
+        this.#target[0],
         this.#action.original.clone(),
-        this.#target.globalTransform.scale.clone(),
+        this.#target[0].globalTransform.scale.clone(),
       );
       this.game.fire(
         GizmoScaleEnd,
-        this.#target,
+        this.#target[0],
         this.#action.original.clone(),
-        this.#target.globalTransform.scale.clone(),
+        this.#target[0].globalTransform.scale.clone(),
       );
     }
 
@@ -565,18 +561,18 @@ export class Gizmo extends Entity {
   };
   // #endregion
 
-  #target: Entity | undefined;
+  #target: [Entity, Vector2] | undefined;
   get target(): Entity | undefined {
-    return this.#target;
+    return this.#target?.[0];
   }
   set target(value: Entity | undefined) {
-    if (this.#target) this.#target.unregister(EntityDestroyed, this.#onTargetDestroyed);
+    if (this.#target) this.#target[0].unregister(EntityDestroyed, this.#onTargetDestroyed);
 
-    this.#target = value;
-    this.#updateAuxOffsets();
+    this.#target = value ? [value, Vector2.ZERO] : undefined;
+    this.#updateTargetOffsets();
     if (this.#gfx) this.#gfx.context = this.#ctx;
     this.#updateHandles();
-    if (this.#target) this.#target.on(EntityDestroyed, this.#onTargetDestroyed);
+    if (this.#target) this.#target[0].on(EntityDestroyed, this.#onTargetDestroyed);
   }
 
   #onTargetDestroyed = () => {
@@ -591,11 +587,23 @@ export class Gizmo extends Entity {
     this.#auxTargets.clear();
 
     const sorted = value.toSorted((a, b) => a.depth - b.depth);
-    for (const entity of sorted) this.#auxTargets.set(entity, new Vector2(Vector2.ZERO));
-    this.#updateAuxOffsets();
+    for (const entity of sorted) this.#auxTargets.set(entity, Vector2.ZERO);
+    this.#updateTargetOffsets();
   }
 
-  #updateAuxOffsets() {
+  #calculateAvgPosition(): Vector2 {
+    if (this.#target === undefined) throw new Error("invalid average access");
+
+    const averagePosition = new Vector2(this.#target[0].globalTransform.position);
+    for (const auxTarget of this.auxTargets) {
+      averagePosition.x = (averagePosition.x + auxTarget.globalTransform.position.x) / 2;
+      averagePosition.y = (averagePosition.y + auxTarget.globalTransform.position.y) / 2;
+    }
+
+    return averagePosition;
+  }
+
+  #updateTargetOffsets() {
     // zero the offsets when target is undefined
     if (this.#target === undefined) {
       for (const vector of this.#auxTargets.values()) {
@@ -605,9 +613,11 @@ export class Gizmo extends Entity {
       return;
     }
 
-    const targetpos = this.#target.pos;
+    const pos = this.#calculateAvgPosition();
+    this.#target[1].assign(this.#target[0].pos.sub(pos));
+
     for (const [entity, offset] of this.#auxTargets) {
-      offset.assign(entity.pos.sub(targetpos));
+      offset.assign(entity.pos.sub(pos));
     }
   }
 
@@ -623,16 +633,9 @@ export class Gizmo extends Entity {
       if (!this.#gfx) return;
 
       if (this.#target) {
-        // TODO: make average position work nicely with new offset based code
-        // const averagePosition = new Vector2(this.#target.globalTransform.position);
-        // for (const auxTarget of this.auxTargets) {
-        //   averagePosition.x = (averagePosition.x + auxTarget.globalTransform.position.x) / 2;
-        //   averagePosition.y = (averagePosition.y + auxTarget.globalTransform.position.y) / 2;
-        // }
-        // this.globalTransform.position = averagePosition;
-
-        this.globalTransform.position = this.#target.globalTransform.position;
-        this.globalTransform.rotation = this.#target.globalTransform.rotation;
+        const averagePosition = this.#calculateAvgPosition();
+        this.globalTransform.position = averagePosition;
+        this.globalTransform.rotation = this.#target[0].globalTransform.rotation;
       }
 
       const pos = this.globalTransform.position;
