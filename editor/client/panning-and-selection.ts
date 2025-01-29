@@ -127,9 +127,16 @@ export class CameraPanBehavior extends Behavior {
       }
 
       const newTarget = entities.length > 0 ? queryEntity : undefined;
-      if (gizmo) gizmo.target = newTarget;
-      if (boxresize) boxresize.target = newTarget;
-      if (this.ui) this.ui.selectedEntity.entities = newTarget ? [newTarget] : [];
+
+      if (newTarget && event.ev.shiftKey) {
+        if (gizmo) gizmo.auxTargets = [...gizmo.auxTargets, newTarget];
+        if (this.ui)
+          this.ui.selectedEntity.entities = [...this.ui.selectedEntity.entities, newTarget];
+      } else {
+        if (gizmo) gizmo.target = newTarget;
+        if (boxresize) boxresize.target = newTarget;
+        if (this.ui) this.ui.selectedEntity.entities = newTarget ? [newTarget] : [];
+      }
 
       this.#lastClickTime = currentTime;
     }
@@ -239,6 +246,22 @@ export class CameraPanBehavior extends Behavior {
         }
       }
     }
+  }
+
+  useUI(ui: InspectorUI) {
+    ui.selectedEntity.listen(selected => {
+      if (!this.game.isClient()) return;
+      const gizmo = this.game.local.children.get("Gizmo")?.cast(Gizmo);
+      if (!gizmo) return;
+
+      if (selected.length) {
+        // gizmo.target = selected[0];
+        gizmo.auxTargets = [...selected].splice(1);
+      } else {
+        // gizmo.target = undefined;
+        gizmo.auxTargets = [];
+      }
+    });
   }
 }
 

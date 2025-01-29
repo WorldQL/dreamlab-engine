@@ -284,6 +284,9 @@ export abstract class Entity implements ISignalHandler {
   // tracks how deeply nested we are in the tree.
   // since updates are recursive games should not let this get too high
   #hierarchyGeneration: number = 0;
+  get depth(): number {
+    return this.#hierarchyGeneration;
+  }
 
   /**
    * Utility for looking up child entities

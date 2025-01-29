@@ -476,6 +476,15 @@ export class Gizmo extends Entity {
 
       this.fire(GizmoTranslateMove, this.#target, world.clone());
       this.#target.globalTransform.position = world;
+      for (const [entity, offset] of this.#auxTargets) {
+        entity.globalTransform.position = world.add(offset);
+      }
+
+      // const delta = world.sub(this.globalTransform.position);
+      // this.#target.globalTransform.position = this.#target.globalTransform.position.add(delta);
+      // for (const auxTarget of this.auxTargets) {
+      //   auxTarget.globalTransform.position = auxTarget.globalTransform.position.add(delta);
+      // }
     } else if (this.#action.type === "rotate") {
       const pos = cursor.world.sub(this.globalTransform.position);
       const rot = Math.atan2(pos.x, pos.y);
@@ -564,6 +573,7 @@ export class Gizmo extends Entity {
     if (this.#target) this.#target.unregister(EntityDestroyed, this.#onTargetDestroyed);
 
     this.#target = value;
+    this.#updateAuxOffsets();
     if (this.#gfx) this.#gfx.context = this.#ctx;
     this.#updateHandles();
     if (this.#target) this.#target.on(EntityDestroyed, this.#onTargetDestroyed);
@@ -572,6 +582,34 @@ export class Gizmo extends Entity {
   #onTargetDestroyed = () => {
     this.target = undefined;
   };
+
+  #auxTargets = new Map<Entity, Vector2>();
+  get auxTargets(): Entity[] {
+    return [...this.#auxTargets.keys()];
+  }
+  set auxTargets(value) {
+    this.#auxTargets.clear();
+
+    const sorted = value.toSorted((a, b) => a.depth - b.depth);
+    for (const entity of sorted) this.#auxTargets.set(entity, new Vector2(Vector2.ZERO));
+    this.#updateAuxOffsets();
+  }
+
+  #updateAuxOffsets() {
+    // zero the offsets when target is undefined
+    if (this.#target === undefined) {
+      for (const vector of this.#auxTargets.values()) {
+        vector.assign(Vector2.ZERO);
+      }
+
+      return;
+    }
+
+    const targetpos = this.#target.pos;
+    for (const [entity, offset] of this.#auxTargets) {
+      offset.assign(entity.pos.sub(targetpos));
+    }
+  }
 
   constructor(ctx: EntityContext) {
     super(ctx);
@@ -585,6 +623,14 @@ export class Gizmo extends Entity {
       if (!this.#gfx) return;
 
       if (this.#target) {
+        // TODO: make average position work nicely with new offset based code
+        // const averagePosition = new Vector2(this.#target.globalTransform.position);
+        // for (const auxTarget of this.auxTargets) {
+        //   averagePosition.x = (averagePosition.x + auxTarget.globalTransform.position.x) / 2;
+        //   averagePosition.y = (averagePosition.y + auxTarget.globalTransform.position.y) / 2;
+        // }
+        // this.globalTransform.position = averagePosition;
+
         this.globalTransform.position = this.#target.globalTransform.position;
         this.globalTransform.rotation = this.#target.globalTransform.rotation;
       }
