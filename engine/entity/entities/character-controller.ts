@@ -1,5 +1,4 @@
-import { Collider, Entity, EntityDestroyed, Vector2 } from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
+import { Entity, Collider, Vector2, GamePostTick, EntityDestroyed } from "@dreamlab/engine";
 import { KinematicCharacterController, QueryFilterFlags } from "@dreamlab/vendor/rapier.ts";
 
 export class CharacterController extends Collider {
@@ -40,7 +39,6 @@ export class CharacterController extends Collider {
     }
 
     if (hasCollider) {
-      // setting this to 0.05 makes the jittering less severe but still happen.
       this.#controller = this.game.physics.world.createCharacterController(0.0625);
       // this.#controller.enableSnapToGround(0.1);
       // TODO: Make this and sliding configurable.
@@ -52,6 +50,8 @@ export class CharacterController extends Collider {
       if (!this.#controller) return;
       this.game.physics.world.removeCharacterController(this.#controller);
     });
+
+    this.listen(this.game, GamePostTick, () => this.#onPostUpdate());
   }
 
   #onPostUpdate() {
@@ -84,10 +84,5 @@ export class CharacterController extends Collider {
     }
 
     this.#prevPosition.assign(this.pos);
-  }
-
-  override [internal.entityApplyPhysicsUpdate]() {
-    super[internal.entityApplyPhysicsUpdate]();
-    this.#onPostUpdate();
   }
 }
