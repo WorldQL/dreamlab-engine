@@ -1229,6 +1229,9 @@ export abstract class Entity implements ISignalHandler {
   }
 
   #destroyed: boolean = false;
+  public get destroyed(): boolean {
+    return this.#destroyed;
+  }
 
   [internal.entityDestroy](opts: { from?: ConnectionId; isDescendent?: boolean } = {}) {
     if (this.#destroyed) return;
