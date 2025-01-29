@@ -49,15 +49,18 @@ export const BASE_BUILD_OPTIONS: Partial<esbuild.BuildOptions> = {
   platform: "browser",
   target: "es2022",
   minify: false,
+  footer: { js: "// built with <3 using dreamlab ^-^" },
+  sourcemap: "linked",
+  keepNames: true,
+  splitting: true,
+};
+
+export const EXTRA_ENTRYPOINT_BUILD_OPTIONS: Partial<esbuild.BuildOptions> = {
   banner: {
     js: `// deno polyfills for browser
 Symbol.dispose ??= Symbol.for("Symbol.dispose");
 Symbol.asyncDispose ??= Symbol.for("Symbol.asyncDispose");`,
   },
-  footer: { js: "// built with <3 using dreamlab ^-^" },
-  sourcemap: "linked",
-  keepNames: true,
-  splitting: true,
 };
 
 /**
@@ -109,6 +112,7 @@ export const bundleEngine = async (
 ) => {
   const buildOpts: esbuild.BuildOptions = {
     ...BASE_BUILD_OPTIONS,
+    ...EXTRA_ENTRYPOINT_BUILD_OPTIONS,
     plugins: [
       dreamlabNodeShimPlugin(),
       dreamlabVendorExternalPlugin(forDeno),
@@ -169,6 +173,7 @@ export const bundleClient = async (
 
   const buildOpts: esbuild.BuildOptions = {
     ...BASE_BUILD_OPTIONS,
+    ...EXTRA_ENTRYPOINT_BUILD_OPTIONS,
     plugins: [
       dreamlabCssPlugin(),
       dreamlabNodeShimPlugin(),
