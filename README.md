@@ -11,9 +11,10 @@
 - Graphical editor and Behavior system
 - Real-time collaboration
 - One-click deployment / bundling
+- Built-in version control
 
 ## Setup
-We recommend using Dreamlab using our cloud service. However, you can run it locally with the following:
+We recommend [using Dreamlab with our hosted service](https://app.dreamlab.gg/). However, you can run it locally with the following:
 ```bash
 git clone https://github.com/WorldQL/dreamlab-engine
 cd dreamlab-engine/multiplayer
@@ -27,7 +28,6 @@ echo "SERVER_URL="http://localhost:8002" > client/.env.local
 cd editor/
 deno task watch
 ```
-`deno task start` in /multiplayer and `deno task watch` in /editor. Proper docs coming very soon!
 
 ## Special Thanks
 Finding bugs:
