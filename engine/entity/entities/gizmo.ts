@@ -306,11 +306,10 @@ export class Gizmo extends Entity {
         // Restore after bounds computation, since we only needed it for calculation
         this.#target.globalTransform.position = originalPos;
 
-        const allEntities = Array.from(this.game.entities);
         let snapX: number | undefined;
         let snapY: number | undefined;
 
-        for (const e of allEntities) {
+        for (const e of this.game.entities) {
           if (e === this.#target) continue;
           if (e.parent === this.#target) continue;
           if (!(e instanceof Entity)) continue;
