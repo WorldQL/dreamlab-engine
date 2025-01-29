@@ -101,6 +101,15 @@ export class DefaultSignalHandlerImpls {
   ): SignalSubscription<S> {
     const { priority = 0, abort } = options;
 
+    // early return if abortsignal is already aborted
+    if (abort?.aborted) {
+      return {
+        listener,
+        priority,
+        unsubscribe: () => {},
+      };
+    }
+
     const unsubscribe = () => {
       const idx = subscriptions.indexOf(subscription as SignalSubscription);
       if (idx !== -1) subscriptions.splice(idx, 1);
