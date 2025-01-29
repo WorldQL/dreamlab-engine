@@ -13,7 +13,20 @@
 - One-click deployment / bundling
 
 ## Setup
+We recommend using Dreamlab using our cloud service. However, you can run it locally with the following:
+```bash
+git clone https://github.com/WorldQL/dreamlab-engine
+cd dreamlab-engine/multiplayer
+# start server
+deno task start
 
+# open new terminal window
+# start editor
+cd dreamlab-engine
+echo "SERVER_URL="http://localhost:8002" > client/.env.local
+cd editor/
+deno task watch
+```
 `deno task start` in /multiplayer and `deno task watch` in /editor. Proper docs coming very soon!
 
 ## Special Thanks
