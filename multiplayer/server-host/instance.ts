@@ -267,7 +267,6 @@ export const bootInstance = async (instance: GameInstance, restart: boolean = fa
 const doRebuild = Deno.env.get("DEV_REBUILD_ENGINE") === "true";
 
 export const bootPlaySession = async (instance: GameInstance) => {
-  const t = performance.now();
   if (!instance.info.editMode)
     throw new Error("Can't start a play session for an instance that isn't in edit mode!");
   if (instance.session === undefined)
@@ -341,6 +340,4 @@ export const bootPlaySession = async (instance: GameInstance) => {
   } finally {
     instance.notifyPlaySessionBoot();
   }
-
-  instance.logs.debug("boot took " + (performance.now() - t));
 };
