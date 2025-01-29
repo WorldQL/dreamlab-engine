@@ -25,10 +25,7 @@ export class PrefabViewer {
   prefabsRoot!: Entity;
   #iconPicker: IconPicker;
 
-  constructor(
-    private game: ClientGame,
-    private container: HTMLElement,
-  ) {
+  constructor(private game: ClientGame, private container: HTMLElement) {
     this.#iconPicker = new IconPicker((newIcon: string) => {
       this.changeEntityIcon(this.inspectorUI, newIcon);
     });
@@ -122,6 +119,14 @@ export class PrefabViewer {
 
       const contextMenuItems: ContextMenuItem[] = [
         [
+          "Rename",
+          () => {
+            this.triggerRename(entity, card);
+          },
+          false,
+          "F2",
+        ],
+        [
           ...createEntityMenu("Add Child Entity", type => {
             const newEntity = entity.spawn({
               type: type,
@@ -136,14 +141,6 @@ export class PrefabViewer {
 
             ui.selectedEntity.entities = [newEntity];
           }),
-        ],
-        [
-          "Rename",
-          () => {
-            this.triggerRename(entity, card);
-          },
-          false,
-          "F2",
         ],
         // [
         //   "Change Icon",
