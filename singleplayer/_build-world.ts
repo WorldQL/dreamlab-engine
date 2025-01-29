@@ -3,9 +3,6 @@ import { dirname, relative } from "jsr:@std/path@1";
 import { bundleWorld } from "../build-system/mod.ts";
 
 export async function bundleSingleplayerWorld(worldId: string) {
-  // 1. copy recursively from multiplayer/worlds
-  // 2.
-
   const sourceWorldDir = "../multiplayer/worlds/" + worldId;
   const targetWorldDir = "./web/worlds/" + worldId;
   const rel = relative(sourceWorldDir, targetWorldDir);

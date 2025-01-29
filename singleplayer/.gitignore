@@ -1,3 +1,4 @@
 /web/dist
+/web/runtime
 /web/worlds
 /.env.local

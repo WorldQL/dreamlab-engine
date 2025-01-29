@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dreamlab</title>
 
-    <link rel="stylesheet" href="./dist/client-main.css" />
+    <link rel="stylesheet" href="./runtime/client-main.css" />
   </head>
   <body>
     <div id="loading">Loading...</div>
@@ -17,12 +17,12 @@
     <script type="importmap">
       {
         "imports": {
-          "@dreamlab/vendor/": "./dist/vendor/",
-          "@dreamlab/engine": "./dist/engine.js",
-          "@dreamlab/ui": "./dist/ui.js"
+          "@dreamlab/vendor/": "./runtime/vendor/",
+          "@dreamlab/engine": "./runtime/engine.js",
+          "@dreamlab/ui": "./runtime/ui.js"
         }
       }
     </script>
-    <script type="module" src="./dist/client-main.js"></script>
+    <script type="module" src="./runtime/client-main.js"></script>
   </body>
 </html>

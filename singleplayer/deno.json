@@ -1,8 +1,8 @@
 {
   "lock": false,
   "tasks": {
-    "build": "deno run -A ../client/_build.ts",
-    "watch": "deno run -A ../client/_build.ts --watch --serve-port 5181"
+    "build": "deno run -A ../client/_build.ts --out-dir ./web/runtime",
+    "watch": "deno run -A ../client/_build.ts --out-dir ./web/runtime --watch --serve-port 5181"
   },
   "imports": {
     "@dreamlab/engine": "../engine/mod.ts",
@@ -17,7 +17,7 @@
   "compilerOptions": {
     "lib": ["deno.window", "dom"]
   },
-  "exclude": ["./web/dist/*"],
+  "exclude": ["./web/runtime/*"],
   "lint": {
     "rules": {
       "exclude": ["no-window"]
