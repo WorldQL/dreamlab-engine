@@ -6,7 +6,6 @@ import {
   EntityEnableChanged,
   GameRender,
 } from "@dreamlab/engine";
-import * as PIXI from "@dreamlab/vendor/pixi.ts";
 
 export class UIPanel extends Entity {
   static {
@@ -72,23 +71,18 @@ export class UIPanel extends Entity {
     const camera = Camera.getActive(this.game);
     if (!camera) return; // TODO: Cull when no camera exists
 
-    const pos = this.pos;
-    const screen = camera.worldToScreen(pos); // TODO: this doesnt apply smoothing to position :(
+    const screen = camera.worldToScreen(this.pos); // TODO: this doesnt apply smoothing to position :(
     // this is because adding smoothing to the worldToScreen() fn breaks other stuff
 
     element.style.zIndex = this.z.toString();
     element.style.left = screen.x.toString() + "px";
     element.style.top = screen.y.toString() + "px";
 
-    const { a, b, c, d, tx, ty } = PIXI.Matrix.shared
-      .identity()
-      .rotate(camera.smoothed.rotation - this.globalTransform.rotation)
-      .scale(
-        this.globalTransform.scale.x / camera.smoothed.scale.x,
-        this.globalTransform.scale.y / camera.smoothed.scale.y,
-      );
-
-    element.style.transform = `translateX(-50%) translateY(-50%) matrix(${a}, ${b}, ${c}, ${d}, ${tx}, ${ty})`;
+    // TODO: maybe we should interpolate this
+    element.style.transform = `translateX(-50%) translateY(-50%)
+      rotate(${camera.smoothed.rotation - this.globalTransform.rotation}rad)
+      scaleX(${this.globalTransform.scale.x / camera.smoothed.scale.x})
+      scaleY(${this.globalTransform.scale.y / camera.smoothed.scale.y})`;
   }
 
   onInitialize() {

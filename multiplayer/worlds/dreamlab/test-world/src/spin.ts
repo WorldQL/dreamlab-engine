@@ -6,6 +6,8 @@ export default class SpinBehavior extends Behavior {
   speed: number = 1.0;
 
   override onTick(): void {
+    if (!this.game.isServer()) return;
+
     const tau = 2 * Math.PI;
     this.entity.globalTransform.rotation -= this.speed * tau * (this.game.time.delta / 1000.0);
   }
