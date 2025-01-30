@@ -56,7 +56,7 @@ export async function buildScriptMap() {
 
     const url = new URL(window.location.href);
     const chatURL =
-      url.hostname === "code-editor.dreamlab.gg"
+      url.hostname === "editor.dreamlab.gg"
         ? "https://app.dreamlab.gg/api/chatbot/chat"
         : "http://localhost:3000/api/chatbot/chat";
 
@@ -221,7 +221,7 @@ function pruneEmptyObjectsAndArrays(obj: unknown): unknown {
 export async function oneOffMessage(prompt: string) {
   const url = new URL(window.location.href);
   const chatURL =
-    url.hostname === "code-editor.dreamlab.gg"
+    url.hostname === "editor.dreamlab.gg"
       ? "https://app.dreamlab.gg/api/chatbot/chat"
       : "http://localhost:3000/api/chatbot/chat";
 
