@@ -224,7 +224,12 @@ export class Gizmo extends Entity {
         entityArray.map(entity => [entity, entity.globalTransform.clone()] as const),
       );
 
-      this.#action = { type: "rotate", offset: rot + this.globalTransform.rotation, originals };
+      this.#action = {
+        type: "rotate",
+        offset: rot + this.globalTransform.rotation,
+        originals,
+        origin: this.#calculateAvgPosition(),
+      };
       this.fire(GizmoUpdateStart, "rotate", entities);
     });
 
@@ -268,7 +273,7 @@ export class Gizmo extends Entity {
         offset: Vector2;
         originals: Map<Entity, Transform>;
       }
-    | { type: "rotate"; offset: number; originals: Map<Entity, Transform> }
+    | { type: "rotate"; offset: number; originals: Map<Entity, Transform>; origin: Vector2 }
     | {
         type: "scale";
         axis: "x" | "y" | "both";
@@ -495,7 +500,24 @@ export class Gizmo extends Entity {
       const rot = Math.atan2(pos.x, pos.y);
 
       const rotation = -rot + this.#action.offset;
-      this.#target[0].globalTransform.rotation = rotation;
+
+      if (this.#auxTargets.size) {
+        const deltaRot = rotation - this.#target[0].globalTransform.rotation;
+
+        const entities = [this.#target[0], ...this.#auxTargets.keys()];
+        for (const entity of entities) {
+          entity.globalTransform.position = Vector2.rotateAbout(
+            entity.pos,
+            deltaRot,
+            this.#action.origin,
+          );
+          entity.globalTransform.rotation += deltaRot;
+        }
+
+        this.#updateTargetOffsets();
+      } else {
+        this.#target[0].globalTransform.rotation = rotation;
+      }
 
       // make sure to extend this array for multiselect
       this.fire(GizmoUpdateMove, "rotate", [
