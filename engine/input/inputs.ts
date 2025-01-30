@@ -318,6 +318,9 @@ export class Inputs implements ISignalHandler {
     if (!this.#game.isClient()) {
       throw new Error("registerHandlers() can only be called on the client");
     }
+    if (this.#game.headless) {
+      return () => {};
+    }
 
     const controller = new AbortController();
     const signal = controller.signal;

@@ -302,7 +302,7 @@ export class ClientGame extends BaseGame {
   public isServer = (): this is ServerGame => false;
 
   readonly container: HTMLDivElement;
-  readonly renderer: GameRenderer;
+  readonly renderer!: GameRenderer;
 
   readonly ui: UIManager = new UIManager(this);
 
@@ -310,11 +310,14 @@ export class ClientGame extends BaseGame {
 
   readonly kv: ClientKV;
 
-  constructor(opts: ClientGameOptions) {
+  headless = false; // used for dummygames to avoid creating tons of webgl contexts
+
+  constructor(opts: ClientGameOptions, headless = false) {
     super(opts);
 
     this.container = opts.container;
-    this.renderer = new GameRenderer(this);
+    this.headless = headless;
+    if (!this.headless) this.renderer = new GameRenderer(this);
 
     this.#cachebust = opts.cacheBuster;
     this.network = opts.network;
@@ -327,7 +330,7 @@ export class ClientGame extends BaseGame {
 
   async initialize() {
     await super.initialize();
-    await this.renderer.initialize();
+    if (!this.headless) await this.renderer.initialize();
     this[internal.inputsShutdownFn] = this.inputs[internal.inputsRegisterHandlers]();
     this.ui[internal.uiInit]();
   }
@@ -338,7 +341,7 @@ export class ClientGame extends BaseGame {
     this.local.destroy();
     super.shutdown();
     ClickableEntity[internal.clickableTeardownGame](this);
-    this.renderer.app.destroy({ removeView: true });
+    if (!this.headless) this.renderer.app.destroy({ removeView: true });
     this.network.disconnect();
   }
 

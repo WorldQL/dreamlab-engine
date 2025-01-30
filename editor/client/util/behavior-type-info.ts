@@ -106,28 +106,31 @@ export class BehaviorTypeInfoService {
   }
 
   async #createDummyGame(): Promise<ClientGame> {
-    const dummyGame = new ClientGame({
-      container: document.createElement("div"),
-      instanceId: "dummy-instance",
-      worldId: "dummy-world",
-      network: {
-        ping: 0,
-        connections: [],
-        self: createId("conn"),
-        sendCustomMessage() {},
-        broadcastCustomMessage() {},
-        onReceiveCustomMessage() {},
-        disconnect() {},
-      },
-      kv: {
-        player: {
-          get: () => Promise.resolve(undefined),
-          set: () => Promise.resolve(),
-          delete: () => Promise.resolve(),
-          clear: () => Promise.resolve(),
+    const dummyGame = new ClientGame(
+      {
+        container: document.createElement("div"),
+        instanceId: "dummy-instance",
+        worldId: "dummy-world",
+        network: {
+          ping: 0,
+          connections: [],
+          self: createId("conn"),
+          sendCustomMessage() {},
+          broadcastCustomMessage() {},
+          onReceiveCustomMessage() {},
+          disconnect() {},
         },
-      } satisfies ClientKV,
-    });
+        kv: {
+          player: {
+            get: () => Promise.resolve(undefined),
+            set: () => Promise.resolve(),
+            delete: () => Promise.resolve(),
+            clear: () => Promise.resolve(),
+          },
+        } satisfies ClientKV,
+      },
+      true /*headless*/,
+    );
     dummyGame.cloudAssetBaseURL = this.game.cloudAssetBaseURL;
     dummyGame.worldScriptBaseURL = this.game.worldScriptBaseURL;
 
