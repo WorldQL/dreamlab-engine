@@ -149,8 +149,8 @@ export class FileTree implements InspectorUIWidget {
           elem("span", { className: "name" }, [node.name]),
         ]);
 
-        // const viewButton = await addViewButton(node);
-        // if (viewButton) header.appendChild(viewButton);
+        const viewButton = await addViewButton(node);
+        if (viewButton) header.appendChild(viewButton);
 
         const element = tree.addNode([header], parent);
 
