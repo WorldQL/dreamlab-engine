@@ -92,6 +92,7 @@
     "npm:pixi.js@8.4.1": "8.4.1",
     "npm:pixi.js@8.5.1": "8.5.1",
     "npm:pixi.js@8.7.1": "8.7.1",
+    "npm:pixi.js@8.7.3": "8.7.3",
     "npm:quad-indices@2.0.1": "2.0.1",
     "npm:source-map-support@*": "0.5.21",
     "npm:source-map-support@0.5.21": "0.5.21",
@@ -979,6 +980,20 @@
     },
     "pixi.js@8.7.1": {
       "integrity": "sha512-JLsss/AX5Utfg5/s/5iDpTWrqQM5butPm5bs0dpUP9sKRQHV7D2+rTcPw19lNJHwZ6yU0XUFrp80xzyr3bY3FA==",
+      "dependencies": [
+        "@pixi/colord",
+        "@types/css-font-loading-module",
+        "@types/earcut",
+        "@webgpu/types",
+        "@xmldom/xmldom",
+        "earcut",
+        "eventemitter3",
+        "ismobilejs",
+        "parse-svg-path"
+      ]
+    },
+    "pixi.js@8.7.3": {
+      "integrity": "sha512-wfWlhJYnGx1s4f2yoouevQjaeacbJ12LTkJGa+n9AIYNIjOnmJylBtZ2mARX7iFk3mr2xv0wuo//XPe2hk5OBw==",
       "dependencies": [
         "@pixi/colord",
         "@types/css-font-loading-module",
