@@ -34,7 +34,13 @@ export abstract class PixiEntity extends Entity {
   // with 10,000 static sprites on firefox 130b9 this takes me from 50fps to 140fps
   #gameRenderListener: SignalSubscription<GameRender> | undefined;
   #updateTransformListeners() {
-    this.#gameRenderListener?.unsubscribe();
+    if (this.#gameRenderListener) {
+      const idx = this.externalListeners.indexOf(this.#gameRenderListener);
+      if (idx !== -1) this.externalListeners.splice(idx, 1);
+
+      this.#gameRenderListener.unsubscribe();
+    }
+
     this.#gameRenderListener = undefined;
 
     const shouldListen = !this.static && !this.hidden;
