@@ -1,10 +1,9 @@
+import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
 import {
   BoxResizeGizmoResizeEnd,
   ClientGame,
   Entity,
-  GizmoRotateEnd,
-  GizmoScaleEnd,
-  GizmoTranslateEnd,
+  GizmoUpdateEnd,
   type ITransform,
 } from "@dreamlab/engine";
 import {
@@ -14,12 +13,11 @@ import {
   ServerRootFacade,
   WorldRootFacade,
 } from "../../common/mod.ts";
+import { Check, Save } from "../_icons.ts";
+import { IconButton } from "../components/icon-button.ts";
 import type { UndoRedoOperation } from "../undo-redo.ts";
 import { UndoRedoManager } from "../undo-redo.ts";
 import { SelectedEntityService } from "./selected-entity.ts";
-import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
-import { IconButton } from "../components/icon-button.ts";
-import { Check, Save } from "../_icons.ts";
 
 export function isRoot(e: Entity): boolean {
   return (
@@ -130,39 +128,15 @@ export function setupKeyboardShortcuts(
 
   // TODO: do we want to move these signal listeners?
   // yes, to undo-redo.ts probably but I don't want to do it right now.
-  game.on(GizmoTranslateEnd, ({ entity, previous: prev }) => {
-    const transform = entity.globalTransform.bare();
-    const previous = { ...transform, position: prev.bare() } satisfies ITransform;
-
+  game.on(GizmoUpdateEnd, ({ entities }) => {
     UndoRedoManager._.push({
-      t: "transform-change",
-      entityRef: entity.ref,
-      transform,
-      previous,
-    });
-  });
-
-  game.on(GizmoRotateEnd, ({ entity, previous: prev }) => {
-    const transform = entity.globalTransform.bare();
-    const previous = { ...transform, rotation: prev } satisfies ITransform;
-
-    UndoRedoManager._.push({
-      t: "transform-change",
-      entityRef: entity.ref,
-      transform,
-      previous,
-    });
-  });
-
-  game.on(GizmoScaleEnd, ({ entity, previous: prev }) => {
-    const transform = entity.globalTransform.bare();
-    const previous = { ...transform, scale: prev.bare() } satisfies ITransform;
-
-    UndoRedoManager._.push({
-      t: "transform-change",
-      entityRef: entity.ref,
-      transform,
-      previous,
+      t: "compound",
+      ops: entities.map(({ entity, transform, previous }) => ({
+        t: "transform-change",
+        entityRef: entity.ref,
+        transform,
+        previous,
+      })),
     });
   });
 

@@ -1,4 +1,4 @@
-import type { EntityContext } from "@dreamlab/engine";
+import type { EntityContext, Transform } from "@dreamlab/engine";
 import {
   Camera,
   Clickable,
@@ -14,74 +14,36 @@ import * as internal from "@dreamlab/engine/internal";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 
 // #region Signals
-// #region Translate
-export class GizmoTranslateStart {
+export class GizmoUpdateStart {
   constructor(
-    public readonly entity: Entity,
-    public readonly axis: "x" | "y" | "both",
+    public readonly operation: "translate" | "rotate" | "scale",
+    public readonly entities: {
+      readonly entity: Entity;
+      readonly transform: Transform;
+    }[],
   ) {}
 }
 
-export class GizmoTranslateMove {
+export class GizmoUpdateMove {
   constructor(
-    public readonly entity: Entity,
-    public readonly position: Vector2,
+    public readonly operation: "translate" | "rotate" | "scale",
+    public readonly entities: {
+      readonly entity: Entity;
+      readonly transform: Transform;
+    }[],
   ) {}
 }
 
-export class GizmoTranslateEnd {
+export class GizmoUpdateEnd {
   constructor(
-    public readonly entity: Entity,
-    public readonly previous: Vector2,
-    public readonly position: Vector2,
+    public readonly operation: "translate" | "rotate" | "scale",
+    public readonly entities: {
+      readonly entity: Entity;
+      readonly transform: Transform;
+      readonly previous: Transform;
+    }[],
   ) {}
 }
-// #endregion
-
-// #region Rotate
-export class GizmoRotateStart {
-  constructor(public readonly entity: Entity) {}
-}
-
-export class GizmoRotateMove {
-  constructor(
-    public readonly entity: Entity,
-    public readonly rotation: number,
-  ) {}
-}
-
-export class GizmoRotateEnd {
-  constructor(
-    public readonly entity: Entity,
-    public readonly previous: number,
-    public readonly rotation: number,
-  ) {}
-}
-// #endregion
-
-// #region Scale
-export class GizmoScaleStart {
-  constructor(
-    public readonly entity: Entity,
-    public readonly axis: "x" | "y" | "both",
-  ) {}
-}
-
-export class GizmoScaleMove {
-  constructor(
-    public readonly entity: Entity,
-    public readonly scale: Vector2,
-  ) {}
-}
-
-export class GizmoScaleEnd {
-  constructor(
-    public readonly entity: Entity,
-    public readonly previous: Vector2,
-    public readonly scale: Vector2,
-  ) {}
-}
-// #endregion
 // #endregion
 
 function isCamera(entity: Entity): entity is Camera {
@@ -226,9 +188,19 @@ export class Gizmo extends Entity {
         if (button !== "left") return;
 
         const offset = world.sub(this.globalTransform.position);
-        const original = this.#target[0].pos.clone();
-        this.#action = { type: "translate", axis, offset, original };
-        this.fire(GizmoTranslateStart, this.#target[0], axis);
+
+        const entityArray = [this.#target[0], ...this.#auxTargets.keys()];
+        const entities = entityArray.map(entity => ({
+          entity,
+          transform: entity.globalTransform.clone(),
+        }));
+
+        const originals = new Map(
+          entityArray.map(entity => [entity, entity.globalTransform.clone()] as const),
+        );
+
+        this.#action = { type: "translate", axis, offset, originals };
+        this.fire(GizmoUpdateStart, "translate", entities);
       };
 
     translateX.on(MouseDown, translateOnMouseDown("x"));
@@ -241,10 +213,19 @@ export class Gizmo extends Entity {
 
       const pos = world.sub(this.globalTransform.position);
       const rot = Math.atan2(pos.x, pos.y);
-      const original = this.#target[0].globalTransform.rotation;
 
-      this.#action = { type: "rotate", offset: rot + this.globalTransform.rotation, original };
-      this.fire(GizmoRotateStart, this.#target[0]);
+      const entityArray = [this.#target[0], ...this.#auxTargets.keys()];
+      const entities = entityArray.map(entity => ({
+        entity,
+        transform: entity.globalTransform.clone(),
+      }));
+
+      const originals = new Map(
+        entityArray.map(entity => [entity, entity.globalTransform.clone()] as const),
+      );
+
+      this.#action = { type: "rotate", offset: rot + this.globalTransform.rotation, originals };
+      this.fire(GizmoUpdateStart, "rotate", entities);
     });
 
     const scaleOnMouseDown =
@@ -254,12 +235,24 @@ export class Gizmo extends Entity {
         if (button !== "left") return;
 
         const offset = world.sub(this.globalTransform.position);
-        const original = isCamera(this.#target[0])
-          ? Vector2.splat(1 / this.#target[0].zoom)
-          : this.#target[0].globalTransform.scale.clone();
 
-        this.#action = { type: "scale", axis, offset, original };
-        this.fire(GizmoScaleStart, this.#target[0], axis);
+        // TODO: uhhhh why is this referencing zoom
+        // const original = isCamera(this.#target[0])
+        //   ? Vector2.splat(1 / this.#target[0].zoom)
+        //   : this.#target[0].globalTransform.scale.clone();
+
+        const entityArray = [this.#target[0], ...this.#auxTargets.keys()];
+        const entities = entityArray.map(entity => ({
+          entity,
+          transform: entity.globalTransform.clone(),
+        }));
+
+        const originals = new Map(
+          entityArray.map(entity => [entity, entity.globalTransform.clone()] as const),
+        );
+
+        this.#action = { type: "scale", axis, offset, originals };
+        this.fire(GizmoUpdateStart, "scale", entities);
       };
 
     scaleX.on(MouseDown, scaleOnMouseDown("x"));
@@ -269,9 +262,19 @@ export class Gizmo extends Entity {
 
   // #region Action / Signals
   #action:
-    | { type: "translate"; axis: "x" | "y" | "both"; offset: Vector2; original: Vector2 }
-    | { type: "rotate"; offset: number; original: number }
-    | { type: "scale"; axis: "x" | "y" | "both"; offset: Vector2; original: Vector2 }
+    | {
+        type: "translate";
+        axis: "x" | "y" | "both";
+        offset: Vector2;
+        originals: Map<Entity, Transform>;
+      }
+    | { type: "rotate"; offset: number; originals: Map<Entity, Transform> }
+    | {
+        type: "scale";
+        axis: "x" | "y" | "both";
+        offset: Vector2;
+        originals: Map<Entity, Transform>;
+      }
     | undefined;
 
   #onMouseMove = (event: PointerEvent) => {
@@ -476,19 +479,28 @@ export class Gizmo extends Entity {
         if (snapY !== undefined) world.y = snapY;
       }
 
-      this.fire(GizmoTranslateMove, this.#target[0], world.clone());
       this.#target[0].globalTransform.position = world.add(this.#target[1]);
       for (const [entity, offset] of this.#auxTargets) {
         entity.globalTransform.position = world.add(offset);
       }
+
+      const entities = [this.#target[0], ...this.#auxTargets.keys()].map(entity => ({
+        entity,
+        transform: entity.globalTransform.clone(),
+      }));
+
+      this.fire(GizmoUpdateMove, "translate", entities);
     } else if (this.#action.type === "rotate") {
       const pos = cursor.world.sub(this.globalTransform.position);
       const rot = Math.atan2(pos.x, pos.y);
 
       const rotation = -rot + this.#action.offset;
-      this.fire(GizmoRotateMove, this.#target[0], rotation);
-
       this.#target[0].globalTransform.rotation = rotation;
+
+      // make sure to extend this array for multiselect
+      this.fire(GizmoUpdateMove, "rotate", [
+        { entity: this.#target[0], transform: this.#target[0].globalTransform.clone() },
+      ]);
     } else if (this.#action.type === "scale") {
       const originalDistance = this.#action.offset.magnitude();
       const offset = cursor.world.sub(this.globalTransform.position);
@@ -497,14 +509,17 @@ export class Gizmo extends Entity {
       const mul = Vector2.splat(offsetDistance / originalDistance);
       if (this.#action.axis === "x") mul.y = 1;
       if (this.#action.axis === "y") mul.x = 1;
-      const scale = this.#action.original.mul(mul);
-
-      this.fire(GizmoScaleMove, this.#target[0], scale.clone());
+      const scale = this.#action.originals.get(this.#target[0])!.scale.mul(mul);
       if (isCamera(this.#target[0])) {
         this.#target[0].zoom = 1 / (this.#action.axis === "y" ? scale.y : scale.x);
       } else {
         this.#target[0].globalTransform.scale = scale;
       }
+
+      // make sure to extend this array for multiselect
+      this.fire(GizmoUpdateMove, "scale", [
+        { entity: this.#target[0], transform: this.#target[0].globalTransform.clone() },
+      ]);
     }
   };
 
@@ -516,46 +531,15 @@ export class Gizmo extends Entity {
       return;
     }
 
-    if (this.#action.type === "translate") {
-      this.fire(
-        GizmoTranslateEnd,
-        this.#target[0],
-        this.#action.original.clone(),
-        this.#target[0].pos.clone(),
-      );
-      this.game.fire(
-        GizmoTranslateEnd,
-        this.#target[0],
-        this.#action.original.clone(),
-        this.#target[0].pos.clone(),
-      );
-    } else if (this.#action.type === "rotate") {
-      this.fire(
-        GizmoRotateEnd,
-        this.#target[0],
-        this.#action.original,
-        this.#target[0].globalTransform.rotation,
-      );
-      this.game.fire(
-        GizmoRotateEnd,
-        this.#target[0],
-        this.#action.original,
-        this.#target[0].globalTransform.rotation,
-      );
-    } else if (this.#action.type === "scale") {
-      this.fire(
-        GizmoScaleEnd,
-        this.#target[0],
-        this.#action.original.clone(),
-        this.#target[0].globalTransform.scale.clone(),
-      );
-      this.game.fire(
-        GizmoScaleEnd,
-        this.#target[0],
-        this.#action.original.clone(),
-        this.#target[0].globalTransform.scale.clone(),
-      );
-    }
+    const entities = [this.#target[0], ...this.#auxTargets.keys()].map(entity => ({
+      entity,
+      transform: entity.globalTransform.clone(),
+      previous: this.#action?.originals.get(entity)!,
+    }));
+
+    const signal = [GizmoUpdateEnd, this.#action.type, entities] as const;
+    this.fire(...signal);
+    this.game.fire(...signal);
 
     this.#action = undefined;
   };
