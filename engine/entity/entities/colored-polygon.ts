@@ -68,8 +68,8 @@ export class ColoredPolygon extends PixiEntity {
     }
 
     const color = this.#color;
-    const halfWidth = (this.width * this.globalTransform.scale.x) / 2;
-    const halfHeight = (this.height * this.globalTransform.scale.y) / 2;
+    const halfWidth = Math.abs((this.width * this.globalTransform.scale.x) / 2);
+    const halfHeight = Math.abs((this.height * this.globalTransform.scale.y) / 2);
 
     const points = Array.from({ length: this.sides }, (_, i) => {
       const angle = (i / this.sides) * Math.PI * 2;
