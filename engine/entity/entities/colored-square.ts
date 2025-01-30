@@ -57,8 +57,8 @@ export class ColoredSquare extends PixiEntity {
   #draw(): void {
     if (!this.#gfx) return;
 
-    const width = this.width * this.globalTransform.scale.x;
-    const height = this.height * this.globalTransform.scale.y;
+    const width = Math.abs(this.width * this.globalTransform.scale.x);
+    const height = Math.abs(this.height * this.globalTransform.scale.y);
     const color = this.#color;
     this.#gfx
       .clear()
