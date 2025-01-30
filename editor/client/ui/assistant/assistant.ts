@@ -144,7 +144,7 @@ export class Assistant {
 
     this.#chatContent.addEventListener("scroll", this.handleScroll.bind(this));
     const botMessageElement = elem("div", { className: "bot-message" }, [
-      "Hi! I'm here to help you create your game. I can write code, create reusable objects you can place using the editor, and modify your scene!",
+      "Hi! I'm here to help you create your game. I can write code and create reusable objects you can place using the editor!",
     ]);
     this.#chatContent.appendChild(botMessageElement);
 
