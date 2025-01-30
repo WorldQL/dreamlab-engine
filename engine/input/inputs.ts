@@ -187,7 +187,7 @@ export class Inputs implements ISignalHandler {
 
     // Fire MouseDown and Click events with updated cursor positions
     if (cursor.screen && cursor.world) {
-      this.fire(MouseDown, button, { screen: cursor.screen, world: cursor.world });
+      this.fire(MouseDown, button, { screen: cursor.screen, world: cursor.world }, ev);
       this.fire(Click, { screen: cursor.screen, world: cursor.world });
     }
 

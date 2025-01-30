@@ -25,17 +25,22 @@ export abstract class ClickableEntity extends Entity {
   get clicked(): boolean {
     return this.#clicked;
   }
-  [clickedSetter](value: boolean, button: "left" | "right" | "middle", cursor: Cursor) {
+  [clickedSetter](
+    value: boolean,
+    button: "left" | "right" | "middle",
+    cursor: Cursor,
+    ev: MouseDown["ev"],
+  ) {
     const prev = this.#clicked;
     this.#clicked = value;
 
     if (!prev && value) {
       const x = { screen: cursor.screen!, world: cursor.world! };
-      this.fire(MouseDown, button, x);
+      this.fire(MouseDown, button, x, ev);
       this.behaviors.forEach(b => b.onMouseDown?.(button));
       if (button === "left") this.fire(Click, x);
     } else if (prev && !value) {
-      this.fire(MouseUp, button, cursor);
+      this.fire(MouseUp, button, cursor, ev);
       this.behaviors.forEach(b => b.onMouseUp?.(button));
     }
   }
@@ -95,7 +100,7 @@ export abstract class ClickableEntity extends Entity {
       }
 
       if (!ClickableEntity.#MouseDownListeners.has(this.game)) {
-        const fn = ({ button, cursor }: MouseDown) => {
+        const fn = ({ button, cursor, ev }: MouseDown) => {
           const entities = this.game.entities
             .lookupByType(ClickableEntity)
             .filter(entity => entity.enabled)
@@ -106,7 +111,7 @@ export abstract class ClickableEntity extends Entity {
           for (const entity of entities) {
             const isInBounds = clickedCount > 0 ? false : entity.isInBounds(cursor.world);
             if (isInBounds) {
-              entity[clickedSetter](true, button, cursor);
+              entity[clickedSetter](true, button, cursor, ev);
               clickedCount++;
             }
           }
@@ -117,13 +122,13 @@ export abstract class ClickableEntity extends Entity {
       }
 
       if (!ClickableEntity.#MouseUpListeners.has(this.game)) {
-        const fn = ({ button, cursor }: MouseUp) => {
+        const fn = ({ button, cursor, ev }: MouseUp) => {
           const entities = this.game.entities
             .lookupByType(ClickableEntity)
             .filter(entity => entity.enabled)
             .filter(entity => entity.root !== this.game.prefabs);
 
-          for (const entity of entities) entity[clickedSetter](false, button, cursor);
+          for (const entity of entities) entity[clickedSetter](false, button, cursor, ev);
         };
 
         ClickableEntity.#MouseUpListeners.set(this.game, fn);
