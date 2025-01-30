@@ -519,10 +519,17 @@ export class Gizmo extends Entity {
         this.#target[0].globalTransform.rotation = rotation;
       }
 
-      // make sure to extend this array for multiselect
-      this.fire(GizmoUpdateMove, "rotate", [
-        { entity: this.#target[0], transform: this.#target[0].globalTransform.clone() },
-      ]);
+      // ugliest syntax ever award 2025
+      const entities = (
+        this.#auxTargets.size
+          ? [this.#target[0], ...this.#auxTargets.keys()]
+          : [this.#target[0]]
+      ).map(entity => ({
+        entity,
+        transform: entity.globalTransform.clone(),
+      }));
+
+      this.fire(GizmoUpdateMove, "rotate", entities);
     } else if (this.#action.type === "scale") {
       const originalDistance = this.#action.offset.magnitude();
       const offset = cursor.world.sub(this.globalTransform.position);
