@@ -1,4 +1,4 @@
-import type { EntityContext, EntityDefinition } from "@dreamlab/engine";
+import type { EntityContext, EntityDefinition, Transform } from "@dreamlab/engine";
 import {
   Camera,
   Clickable,
@@ -7,8 +7,7 @@ import {
   Entity,
   EntityDestroyed,
   GameRender,
-  GizmoRotateEnd,
-  GizmoTranslateEnd,
+  GizmoUpdateEnd,
   IVector2,
   MouseDown,
   pointLocalToWorld,
@@ -172,7 +171,7 @@ export class BoxResizeGizmo extends Entity {
         if (button !== "left") return;
 
         const offset = world.sub(this.globalTransform.position);
-        const original = this.#target.pos.clone();
+        const original = this.#target.globalTransform.clone();
         this.#action = { type: "translate", axis, offset, original };
       };
 
@@ -315,7 +314,7 @@ export class BoxResizeGizmo extends Entity {
       if (!this.#target) return;
       if (button !== "left") return;
 
-      const original = this.#target.globalTransform.rotation;
+      const original = this.#target.globalTransform.clone();
       this.#action = { type: "rotate", original };
     });
 
@@ -326,15 +325,13 @@ export class BoxResizeGizmo extends Entity {
         if (button !== "left") return;
 
         const opposite = handlePos(oppositeHandle(handle), this.#target);
-        const originalPos = this.#target.pos.clone();
-        const originalScale = this.#target.globalTransform.scale.clone();
+        const original = this.#target.globalTransform.clone();
         this.#action = {
           type: "scale",
           handle,
           handleType,
           opposite,
-          originalPos,
-          originalScale,
+          original,
         };
       };
 
@@ -441,15 +438,14 @@ export class BoxResizeGizmo extends Entity {
 
   // #region Action / Signals
   #action:
-    | { type: "translate"; axis: "x" | "y" | "both"; offset: Vector2; original: Vector2 }
-    | { type: "rotate"; original: number }
+    | { type: "translate"; axis: "x" | "y" | "both"; offset: Vector2; original: Transform }
+    | { type: "rotate"; original: Transform }
     | {
         type: "scale";
         handle: Handle;
         handleType: HandleType;
         opposite: Vector2;
-        originalPos: Vector2;
-        originalScale: Vector2;
+        original: Transform;
       }
     | undefined;
 
@@ -521,46 +517,17 @@ export class BoxResizeGizmo extends Entity {
       return;
     }
 
-    if (this.#action.type === "translate") {
-      this.fire(
-        GizmoTranslateEnd,
-        this.#target,
-        this.#action.original.clone(),
-        this.#target.pos.clone(),
-      );
-      this.game.fire(
-        GizmoTranslateEnd,
-        this.#target,
-        this.#action.original.clone(),
-        this.#target.pos.clone(),
-      );
-    } else if (this.#action.type === "rotate") {
-      this.fire(
-        GizmoRotateEnd,
-        this.#target,
-        this.#action.original,
-        this.#target.globalTransform.rotation,
-      );
-      this.game.fire(
-        GizmoRotateEnd,
-        this.#target,
-        this.#action.original,
-        this.#target.globalTransform.rotation,
-      );
-    } else if (this.#action.type === "scale") {
-      const previous = {
-        position: this.#action.originalPos.clone(),
-        scale: this.#action.originalScale.clone(),
-      };
+    const entities = [
+      {
+        entity: this.#target,
+        transform: this.#target.globalTransform.clone(),
+        previous: this.#action.original,
+      },
+    ];
 
-      const current = {
-        position: this.#target.pos.clone(),
-        scale: this.#target.globalTransform.scale.clone(),
-      };
-
-      this.fire(BoxResizeGizmoResizeEnd, this.#target, previous, current);
-      this.game.fire(BoxResizeGizmoResizeEnd, this.#target, previous, current);
-    }
+    const signal = [GizmoUpdateEnd, this.#action.type, entities] as const;
+    this.fire(...signal);
+    this.game.fire(...signal);
 
     this.#action = undefined;
   };
