@@ -824,6 +824,12 @@ export abstract class Entity implements ISignalHandler {
       child[internal.entityNotifyEnableChanged](enabled);
     }
   }
+  [internal.entitySetEnabledFromNetwork](enabled: boolean, _from?: ConnectionId) {
+    this.#enabled = enabled;
+    this.#prevEnabled = enabled; // hack to make sure we don't fire the post-tick signals
+    this.fire(EntityOwnEnableChanged, enabled);
+    this[internal.entityNotifyEnableChanged](enabled);
+  }
   get [internal.entityOwnEnabled](): boolean {
     return this.#enabled;
   }

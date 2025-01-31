@@ -310,7 +310,6 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
   const handleEntityEnableChanged = (event: EntityDescendantSpawned) => {
     const entity = event.descendant;
     entity.on(EntityOwnEnableChanged, () => {
-      if (changeIgnoreSet.has(entity.ref)) return;
       enabledDirtyEntities.add(entity);
     });
   };
@@ -321,8 +320,10 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
     for (const entity of enabledDirtyEntities) {
       const enabled = entity[internal.entityOwnEnabled];
       const prev = prevEntityEnabled.get(entity);
-      if (prev === undefined || prev !== enabled)
+      if (prev === undefined || prev !== enabled) {
         conn.send({ t: "EntityEnableChanged", entity: entity.ref, enabled });
+      }
+      prevEntityEnabled.set(entity, enabled);
     }
     enabledDirtyEntities.clear();
   });
@@ -333,9 +334,7 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
     const entity = game.entities.lookupByRef(packet.entity);
     if (!entity) return;
 
-    changeIgnoreSet.add(entity.ref);
-    entity.enabled = packet.enabled;
+    entity[internal.entitySetEnabledFromNetwork](packet.enabled, packet.from);
     prevEntityEnabled.set(entity, packet.enabled);
-    changeIgnoreSet.delete(entity.ref);
   });
 };

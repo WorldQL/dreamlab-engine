@@ -9,6 +9,9 @@ export const entityNotifyEnableChanged = Symbol.for(
 export const submitEntityTickingOrder = Symbol.for(
   "dreamlab.internal.submitEntityTickingOrder",
 );
+export const entitySetEnabledFromNetwork = Symbol.for(
+  "dreamlab.internal.entitySetEnabledFromNetwork",
+);
 export const behaviorLoader = Symbol.for("dreamlab.internal.behaviorLoader");
 export const behaviorSpawn = Symbol.for("dreamlab.internal.behaviorSpawn");
 export const vectorOnChanged = Symbol.for("dreamlab.internal.vectorOnChanged");
