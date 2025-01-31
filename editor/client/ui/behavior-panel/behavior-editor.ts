@@ -171,6 +171,7 @@ export class BehaviorEditor {
     }
 
     for (const [key, value] of Object.entries(this.values)) {
+      if (behaviorInfo && !value.typeTag) continue;
       this.#addValueField(key, value);
     }
   }

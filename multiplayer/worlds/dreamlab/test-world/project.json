@@ -33,7 +33,10 @@
           "behaviors": [
             {
               "ref": "bhv_fz6dmezge7qfkhnjejvynriz",
-              "script": "res://src/spin.ts"
+              "script": "res://src/spin.ts",
+              "values": {
+                "somethingElse": false
+              }
             }
           ],
           "children": [
