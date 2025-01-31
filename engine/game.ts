@@ -212,13 +212,14 @@ export abstract class BaseGame implements ISignalHandler {
     }
 
     this.fire(GameTick);
-    this.fire(GamePostTick);
 
-    this.fire(InternalGameTick);
+    this.fire(GamePostTick);
 
     for (const entity of this.entities) {
       entity[internal.entityFireEnabledSignals]();
     }
+
+    this.fire(InternalGameTick);
 
     // TODO stupid hack. how do I actually get this?
     if (this.#needCheckForEditMode) {
