@@ -794,6 +794,7 @@ export class SceneGraph implements InspectorUIWidget {
         if (entity && ui.selectedEntity.entities.includes(entity)) {
           entry.classList.add("selected");
           this.scrollToEntity(entry);
+          this.openParentNodes(entry);
         } else {
           entry.classList.remove("selected");
         }
