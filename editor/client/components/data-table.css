@@ -56,9 +56,10 @@ dreamlab-data-table {
         align-items: center;
 
         & > code {
-          max-width: calc(100% - 1rem);
+          max-width: calc(100% - 1.1rem);
           overflow: clip;
           text-overflow: ellipsis;
+          direction: rtl;
 
           &:has(~ button.hidden) {
             max-width: 100%;
