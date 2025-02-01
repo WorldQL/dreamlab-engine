@@ -15,6 +15,7 @@
           pkgs.rustup
           pkgs.stdenv
           pkgs.deno
+          pkgs.nodejs
         ];
       };
     });
