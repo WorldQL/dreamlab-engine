@@ -10,6 +10,7 @@ import {
   SignalSubscription,
 } from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
+import * as internal from "@dreamlab/engine/internal";
 
 export abstract class PixiEntity extends Entity {
   static USE_INTERPOLATION = true;
@@ -103,8 +104,8 @@ export abstract class PixiEntity extends Entity {
     });
 
     this.on(EntityOwnEnableChanged, () => {
-      // this[internal.interpolationStartTick]();
-      // this[internal.interpolationStartFrame](0);
+      this[internal.interpolationStartTick]();
+      this[internal.interpolationStartFrame](0);
     });
   }
 
