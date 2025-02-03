@@ -1,6 +1,6 @@
 import "npm:source-map-support@0.5.21/register.js"; // evanw clutch
 
-import { GameStatus, KvServer, ServerGame } from "@dreamlab/engine";
+import { GameStatus, KvServer, ServerGame, Time } from "@dreamlab/engine";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 import { IPCMessageBus } from "./ipc.ts";
 import { ServerNetworkManager } from "./networking/net-manager.ts";
@@ -80,7 +80,7 @@ setInterval(() => {
   const delta = now - time;
   time = now;
 
-  tickAcc += delta;
+  tickAcc += delta * Time.TIME_SCALE;
   if (tickAcc > 5000) {
     console.warn("Skipping ticks (accumulator ran over 5 seconds)");
     tickAcc = 0.0;

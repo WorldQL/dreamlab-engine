@@ -365,7 +365,7 @@ export class ClientGame extends BaseGame {
   tickClient(delta: number): void {
     if (this.status === GameStatus.Shutdown) return;
 
-    this.#tickAccumulator += delta;
+    this.#tickAccumulator += delta * Time.TIME_SCALE;
 
     while (this.#tickAccumulator >= this.physics.tickDelta) {
       if (this.#tickAccumulator > 5_000) {
@@ -380,7 +380,7 @@ export class ClientGame extends BaseGame {
 
     this.time[internal.timeSetMode]("render");
     this.time[internal.timeIncrement](
-      delta,
+      delta * Time.TIME_SCALE,
       this.paused.value ? 0 : this.#tickAccumulator / this.physics.tickDelta,
     );
     const partial = this.time.partial;

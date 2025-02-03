@@ -2,6 +2,9 @@ import { Game } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 
 export class Time {
+  // only used for engine debugging
+  static readonly TIME_SCALE = 1.0;
+
   #game: Game;
 
   readonly TPS: number = 60;
