@@ -13,6 +13,8 @@ import * as internal from "@dreamlab/engine/internal";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 
 export abstract class PixiEntity extends Entity {
+  static USE_INTERPOLATION = true;
+
   public container: PIXI.Container | undefined;
 
   static: boolean = false;
@@ -21,8 +23,10 @@ export abstract class PixiEntity extends Entity {
   #updateContainerPosition() {
     if (!this.container) return;
 
-    const pos = this.interpolated.position;
-    const rot = this.interpolated.rotation;
+    const transform = PixiEntity.USE_INTERPOLATION ? this.interpolated : this.globalTransform;
+    const pos = transform.position;
+    const rot = transform.rotation;
+
     this.container.position.set(pos.x, -pos.y);
     this.container.rotation = -rot;
     this.container.zIndex = this.z;
