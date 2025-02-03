@@ -9,7 +9,6 @@ import {
   GameRender,
   SignalSubscription,
 } from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 
 export abstract class PixiEntity extends Entity {
@@ -104,8 +103,8 @@ export abstract class PixiEntity extends Entity {
     });
 
     this.on(EntityOwnEnableChanged, () => {
-      this[internal.interpolationStartTick]();
-      this[internal.interpolationStartFrame](0);
+      // this[internal.interpolationStartTick]();
+      // this[internal.interpolationStartFrame](0);
     });
   }
 

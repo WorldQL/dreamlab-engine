@@ -1,5 +1,6 @@
 export const internalEntity = Symbol.for("dreamlab.internal.internalEntity");
-export const interpolationStartTick = Symbol.for("dreamlab.internal.interpolationStartTick");
+export const interpolationStartTick0 = Symbol.for("dreamlab.internal.interpolationStartTick0");
+export const interpolationStartTick1 = Symbol.for("dreamlab.internal.interpolationStartTick1");
 export const interpolationStartFrame = Symbol.for("dreamlab.internal.interpolationStartFrame");
 export const entityTickingOrder = Symbol.for("dreamlab.internal.entityTickingOrder");
 export const entityTickingOrderDirty = Symbol.for("dreamlab.internal.entityTickingOrderDirty");

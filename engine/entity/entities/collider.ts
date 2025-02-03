@@ -79,8 +79,8 @@ export class RectCollider extends Entity {
     }
   }
 
-  [internal.interpolationStartTick](): void {
-    super[internal.interpolationStartTick]();
+  [internal.interpolationStartTick1](): void {
+    super[internal.interpolationStartTick1]();
     this.#preparePhysicsUpdate();
   }
 
@@ -225,8 +225,8 @@ export class Collider extends Entity {
     }
   }
 
-  [internal.interpolationStartTick](): void {
-    super[internal.interpolationStartTick]();
+  [internal.interpolationStartTick1](): void {
+    super[internal.interpolationStartTick1]();
     this[internal.entityPreparePhysicsUpdate]();
   }
 
