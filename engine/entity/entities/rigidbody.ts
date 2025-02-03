@@ -61,8 +61,8 @@ export class Rigidbody extends Entity {
     });
   }
 
-  [internal.interpolationStartTick1](): void {
-    super[internal.interpolationStartTick1]();
+  [internal.applyNetworkInterpolation](): void {
+    super[internal.applyNetworkInterpolation]();
     this.#preparePhysicsUpdate();
   }
 

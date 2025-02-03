@@ -1113,7 +1113,7 @@ export abstract class Entity implements ISignalHandler {
     }
   }
 
-  [internal.interpolationStartTick0]() {
+  [internal.interpolationStartTick]() {
     const tr = this.globalTransform;
     const pos = tr.position;
     this.#prevPosition.x = pos.x;
@@ -1123,7 +1123,7 @@ export abstract class Entity implements ISignalHandler {
     this.#prevScale.x = scale.x;
     this.#prevScale.y = scale.y;
   }
-  [internal.interpolationStartTick1]() {
+  [internal.applyNetworkInterpolation]() {
     if (this.game.isEditMode) {
       // editor mode.
       this[internal.entityTeleportingThisTick] = false;

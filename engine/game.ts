@@ -204,9 +204,9 @@ export abstract class BaseGame implements ISignalHandler {
     const entityCount = entityTickingOrder.length;
 
     for (let i = 0; i < entityCount; i++)
-      entityTickingOrder[i][internal.interpolationStartTick0]();
+      entityTickingOrder[i][internal.interpolationStartTick]();
     for (let i = 0; i < entityCount; i++)
-      entityTickingOrder[i][internal.interpolationStartTick1]();
+      entityTickingOrder[i][internal.applyNetworkInterpolation]();
     this.physics.tick();
     for (let i = 0; i < entityCount; i++) {
       entityTickingOrder[i].onUpdate();
