@@ -1,4 +1,4 @@
-# Dreamlab – TypeScript Game Engine with Built-In Multiplayer
+# Dreamlab – The fastest way to ship games!
 ![ezgif-386f81fca4019](https://github.com/user-attachments/assets/a6772d27-1915-43c3-bfc3-e7040984d540)
 
 **[Try it in your browser now](https://app.dreamlab.gg/)**
@@ -12,6 +12,11 @@
 - Real-time collaboration
 - One-click deployment / bundling
 - Built-in version control
+
+## Built-in AI Assistant
+https://github.com/user-attachments/assets/587fe0e3-46be-41b8-850b-e5cebdac9a76
+
+
 
 ## Setup
 We recommend [using Dreamlab with our hosted service](https://app.dreamlab.gg/). However, you can run it locally with the following:
