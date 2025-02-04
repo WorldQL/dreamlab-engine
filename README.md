@@ -13,7 +13,7 @@
 - One-click deployment / bundling
 - Built-in version control
 
-## Built-in AI Assistant
+### Built-in AI Assistant
 https://github.com/user-attachments/assets/587fe0e3-46be-41b8-850b-e5cebdac9a76
 
 
