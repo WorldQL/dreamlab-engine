@@ -332,7 +332,7 @@ export class ClientGame extends BaseGame {
 
   async initialize() {
     await super.initialize();
-    if (!this.headless) await this.renderer.initialize();
+    if (!this.headless) await this.renderer[internal.rendererInit]();
     this[internal.inputsShutdownFn] = this.inputs[internal.inputsRegisterHandlers]();
     this.ui[internal.uiInit]();
   }
@@ -393,7 +393,7 @@ export class ClientGame extends BaseGame {
     }
 
     this.fire(GameRender);
-    this.renderer.renderFrame();
+    this.renderer[internal.rendererRender]();
     this.fire(GamePostRender);
   }
 }

@@ -1,4 +1,5 @@
 import { ClientGame } from "@dreamlab/engine";
+import * as internal from "@dreamlab/engine/internal";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 
 export class GameRenderer {
@@ -16,7 +17,7 @@ export class GameRenderer {
     this.app.stage.addChild(this.scene);
   }
 
-  async initialize() {
+  async [internal.rendererInit]() {
     if (this.#initialized) return;
     this.#initialized = true;
 
@@ -31,7 +32,7 @@ export class GameRenderer {
     this.#game.container.append(this.app.canvas);
   }
 
-  renderFrame() {
+  [internal.rendererRender]() {
     this.app.ticker.update(this.#game.time.now);
     this.app.render();
   }

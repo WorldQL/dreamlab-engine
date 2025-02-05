@@ -61,3 +61,5 @@ export const defineValuesProperties = Symbol.for("dreamlab.internal.defineValues
 export const implicitSetup = Symbol.for("dreamlab.internal.implicitBehaviorSetup");
 export const clickableTeardownGame = Symbol.for("dreamlab.internal.clickableTeardownGame");
 export const cameraMarker = Symbol.for("dreamlab.internal.cameraMarker");
+export const rendererInit = Symbol.for("dreamlab.internal.rendererInit");
+export const rendererRender = Symbol.for("dreamlab.internal.rendererRender");
