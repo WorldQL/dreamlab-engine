@@ -11,6 +11,7 @@ export * from "./gizmo.ts";
 export * from "./physics-debug.ts";
 export * from "./raw-pixi.ts";
 export * from "./rich-text.ts";
+export * from "./screen-space.ts";
 export * from "./solid-color.ts";
 export * from "./sprite.ts";
 export * from "./text.ts";

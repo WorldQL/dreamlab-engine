@@ -1,4 +1,5 @@
 import {
+  Camera,
   Entity,
   EntityConstructor,
   EntityContext,
@@ -7,10 +8,11 @@ import {
   EntityOwnEnableChanged,
   EntityReparented,
   GameRender,
+  ScreenSpace,
   SignalSubscription,
 } from "@dreamlab/engine";
-import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import * as internal from "@dreamlab/engine/internal";
+import * as PIXI from "@dreamlab/vendor/pixi.ts";
 
 export abstract class PixiEntity extends Entity {
   static USE_INTERPOLATION = true;
@@ -21,15 +23,25 @@ export abstract class PixiEntity extends Entity {
   hidden: boolean = false;
 
   #updateContainerPosition() {
+    if (!this.game.isClient()) return;
     if (!this.container) return;
 
     const transform = PixiEntity.USE_INTERPOLATION ? this.interpolated : this.globalTransform;
     const pos = transform.position;
     const rot = transform.rotation;
 
-    this.container.position.set(pos.x, -pos.y);
     this.container.rotation = -rot;
     this.container.zIndex = this.z;
+
+    if (this.#screenspace) {
+      const canvas = this.game.renderer.app.canvas;
+      const { width, height } = canvas;
+
+      const screenpos = pos.mul({ x: width, y: height }).div(Camera.METERS_TO_PIXELS);
+      this.container.position.set(screenpos.x, screenpos.y);
+    } else {
+      this.container.position.set(pos.x, -pos.y);
+    }
   }
 
   // NB(Charlotte):
@@ -55,6 +67,24 @@ export abstract class PixiEntity extends Entity {
 
       this.externalListeners.push(this.#gameRenderListener);
     }
+  }
+
+  #screenspace: boolean = false;
+  get screenspace(): boolean {
+    return this.#screenspace;
+  }
+
+  #updateScene() {
+    if (!this.game.isClient()) return;
+    if (!this.container) return;
+
+    this.container.removeFromParent();
+
+    this.#screenspace = this.ancestors.some(entity => entity instanceof ScreenSpace);
+    const scene = this.#screenspace ? this.game.renderer.screenspace : this.game.renderer.scene;
+    scene.addChild(this.container);
+
+    this.#updateContainerPosition();
   }
 
   #updateVisibility() {
@@ -92,6 +122,7 @@ export abstract class PixiEntity extends Entity {
     this.#updateTransformListeners();
 
     this.on(EntityReparented, () => {
+      this.#updateScene();
       this.#updateVisibility();
     });
 
@@ -113,8 +144,8 @@ export abstract class PixiEntity extends Entity {
     if (!this.game.isClient()) return;
 
     this.container = new PIXI.Container();
-    this.game.renderer.scene.addChild(this.container);
 
+    this.#updateScene();
     this.#updateContainerPosition();
     this.#updateVisibility();
   }
