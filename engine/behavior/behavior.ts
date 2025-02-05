@@ -228,6 +228,7 @@ export class Behavior implements ISignalHandler {
   // #endregion
 
   // #region External Listeners
+  // deno-lint-ignore no-explicit-any
   readonly externalListeners: SignalSubscription<any>[] = [];
 
   protected listen<S extends Signal, T extends ISignalHandler>(
