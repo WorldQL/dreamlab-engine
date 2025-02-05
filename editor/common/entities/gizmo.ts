@@ -8,10 +8,13 @@ import {
   MouseDown,
   pointLocalToWorld,
   pointWorldToLocal,
+  Root,
   Vector2,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
+import { EditorMetadataEntity } from "../metadata.ts";
+import { EditorFacadeCamera, EditorRootFacadeEntity } from "../mod.ts";
 
 // #region Signals
 export class GizmoUpdateStart {
@@ -322,18 +325,14 @@ export class Gizmo extends Entity {
         for (const e of this.game.entities) {
           if (e === this.#target[0]) continue;
           if (e.parent === this.#target[0]) continue;
-          if (!(e instanceof Entity)) continue;
-          if (e.id === "game.local._.Gizmo" || e.parent?.id === "game.local._.Gizmo") continue;
-          if (e.id.includes("__EditorMetadata")) continue;
-          if (!e.parent) continue;
+          if (!e.enabled) continue;
+          if (e instanceof Root) continue;
+          if (e instanceof Gizmo || e.parent instanceof Gizmo) continue;
           // constructor.name checks because imports sometimes cause circular import issues
-          if (e.constructor.name === "Camera" || e.constructor.name === "EditorFacadeCamera")
-            continue;
-          if (e.id === "game.world._.EditEntities") continue;
-          if (e.constructor.name === "WorldRootFacade") continue;
-          if (e.constructor.name === "ServerRootFacade") continue;
-          if (e.constructor.name === "LocalRootFacade") continue;
-          if (e.constructor.name === "PrefabRootFacade") continue;
+          if (e instanceof Camera || e instanceof EditorFacadeCamera) continue;
+          if (e instanceof EditorRootFacadeEntity) continue;
+          if (e instanceof EditorMetadataEntity) continue;
+          if (e.ref === "EDIT_ROOT") continue;
 
           // const distanceFromTarget = this.#target.pos.distance(e.pos);
           // console.log(distanceFromTarget, e.id, e.parent?.id);
@@ -347,7 +346,7 @@ export class Gizmo extends Entity {
             // Align target's left edge to entity's right edge
             const dxLeft = entityBounds.maxX - targetBounds.minX;
             if (Math.abs(dxLeft) < snapThreshold) {
-              snapX = snapX === undefined ? world.x + dxLeft : snapX;
+              snapX ??= world.x + dxLeft;
 
               // Compute a vertical line that covers both entity and target vertically
               const combinedMinY = Math.min(entityBounds.minY, targetBounds.minY);
@@ -361,7 +360,7 @@ export class Gizmo extends Entity {
             // Align target's right edge to entity's left edge
             const dxRight = entityBounds.minX - targetBounds.maxX;
             if (Math.abs(dxRight) < snapThreshold) {
-              snapX = snapX === undefined ? world.x + dxRight : snapX;
+              snapX ??= world.x + dxRight;
 
               const combinedMinY = Math.min(entityBounds.minY, targetBounds.minY);
               const combinedMaxY = Math.max(entityBounds.maxY, targetBounds.maxY);
@@ -374,7 +373,7 @@ export class Gizmo extends Entity {
             // Align target's left edge to entity's left edge
             const dxLeftToLeft = entityBounds.minX - targetBounds.minX;
             if (Math.abs(dxLeftToLeft) < snapThreshold) {
-              snapX = snapX === undefined ? world.x + dxLeftToLeft : snapX;
+              snapX ??= world.x + dxLeftToLeft;
 
               const combinedMinY = Math.min(entityBounds.minY, targetBounds.minY);
               const combinedMaxY = Math.max(entityBounds.maxY, targetBounds.maxY);
@@ -387,7 +386,7 @@ export class Gizmo extends Entity {
             // Align target's right edge to entity's right edge
             const dxRightToRight = entityBounds.maxX - targetBounds.maxX;
             if (Math.abs(dxRightToRight) < snapThreshold) {
-              snapX = snapX === undefined ? world.x + dxRightToRight : snapX;
+              snapX ??= world.x + dxRightToRight;
 
               const combinedMinY = Math.min(entityBounds.minY, targetBounds.minY);
               const combinedMaxY = Math.max(entityBounds.maxY, targetBounds.maxY);
@@ -400,7 +399,7 @@ export class Gizmo extends Entity {
             // Center alignment horizontally
             const dxCenter = entityCenterX - targetCenterX;
             if (Math.abs(dxCenter) < snapThreshold) {
-              snapX = snapX === undefined ? world.x + dxCenter : snapX;
+              snapX ??= world.x + dxCenter;
 
               const combinedMinY = Math.min(entityBounds.minY, targetBounds.minY);
               const combinedMaxY = Math.max(entityBounds.maxY, targetBounds.maxY);
@@ -415,7 +414,7 @@ export class Gizmo extends Entity {
             // Align target's top edge to entity's top edge
             const dyTop = entityBounds.minY - targetBounds.minY;
             if (Math.abs(dyTop) < snapThreshold) {
-              snapY = snapY === undefined ? world.y + dyTop : snapY;
+              snapY ??= world.y + dyTop;
 
               const combinedMinX = Math.min(entityBounds.minX, targetBounds.minX);
               const combinedMaxX = Math.max(entityBounds.maxX, targetBounds.maxX);
@@ -428,7 +427,7 @@ export class Gizmo extends Entity {
             // Align target's bottom edge to entity's bottom edge
             const dyBottom = entityBounds.maxY - targetBounds.maxY;
             if (Math.abs(dyBottom) < snapThreshold) {
-              snapY = snapY === undefined ? world.y + dyBottom : snapY;
+              snapY ??= world.y + dyBottom;
 
               const combinedMinX = Math.min(entityBounds.minX, targetBounds.minX);
               const combinedMaxX = Math.max(entityBounds.maxX, targetBounds.maxX);
@@ -441,7 +440,7 @@ export class Gizmo extends Entity {
             // Align target's top edge to entity's bottom edge (no vertical gap)
             const dyTopTouch = entityBounds.maxY - targetBounds.minY;
             if (Math.abs(dyTopTouch) < snapThreshold) {
-              snapY = snapY === undefined ? world.y + dyTopTouch : snapY;
+              snapY ??= world.y + dyTopTouch;
 
               const combinedMinX = Math.min(entityBounds.minX, targetBounds.minX);
               const combinedMaxX = Math.max(entityBounds.maxX, targetBounds.maxX);
@@ -454,7 +453,7 @@ export class Gizmo extends Entity {
             // Align target's bottom edge to entity's top edge (no vertical gap)
             const dyBottomTouch = entityBounds.minY - targetBounds.maxY;
             if (Math.abs(dyBottomTouch) < snapThreshold) {
-              snapY = snapY === undefined ? world.y + dyBottomTouch : snapY;
+              snapY ??= world.y + dyBottomTouch;
 
               const combinedMinX = Math.min(entityBounds.minX, targetBounds.minX);
               const combinedMaxX = Math.max(entityBounds.maxX, targetBounds.maxX);
@@ -467,7 +466,7 @@ export class Gizmo extends Entity {
             // Center alignment vertically
             const dyCenter = entityCenterY - targetCenterY;
             if (Math.abs(dyCenter) < snapThreshold) {
-              snapY = snapY === undefined ? world.y + dyCenter : snapY;
+              snapY ??= world.y + dyCenter;
 
               const combinedMinX = Math.min(entityBounds.minX, targetBounds.minX);
               const combinedMaxX = Math.max(entityBounds.maxX, targetBounds.maxX);
