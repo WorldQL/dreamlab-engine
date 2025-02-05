@@ -7,7 +7,11 @@ export class GameRenderer {
   app: PIXI.Application;
   scene: PIXI.Container;
 
-  #initialized: boolean = false;
+  #initialized: boolean | "pending" = false;
+  get initialized(): boolean {
+    // coerce pending to false
+    return this.#initialized === true;
+  }
 
   constructor(game: ClientGame) {
     this.#game = game;
@@ -18,8 +22,8 @@ export class GameRenderer {
   }
 
   async [internal.rendererInit]() {
-    if (this.#initialized) return;
-    this.#initialized = true;
+    if (this.#initialized === true || this.#initialized === "pending") return;
+    this.#initialized = "pending";
 
     await this.app.init({
       autoDensity: true,
@@ -30,6 +34,7 @@ export class GameRenderer {
     });
 
     this.#game.container.append(this.app.canvas);
+    this.#initialized = true;
   }
 
   [internal.rendererRender]() {
@@ -38,6 +43,8 @@ export class GameRenderer {
   }
 
   resize() {
+    if (this.#initialized !== true) return;
+
     this.app.resize();
     this.#game.fire(GameRenderResize);
   }
