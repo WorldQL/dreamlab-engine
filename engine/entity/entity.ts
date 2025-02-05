@@ -166,6 +166,7 @@ export abstract class Entity implements ISignalHandler {
       // sets #parent:
       parent.append(this);
       this.#recomputeId();
+      this.#recomputeAncestors();
       this.#updateTransform(true);
     } else if (this.parent) {
       this.destroy();
@@ -231,6 +232,7 @@ export abstract class Entity implements ISignalHandler {
       this.game[internal.entityTickingOrderDirty] = true;
     }
 
+    this.#recomputeAncestors();
     if (nonConflictingName) {
       const oldName = child.#name;
       child.#name = nonConflictingName;
@@ -326,6 +328,25 @@ export abstract class Entity implements ISignalHandler {
 
     if (this.#hierarchyGeneration > 255)
       console.warn(`${this.id} is very deeply nested!! You may run into issues.`);
+  }
+
+  #ancestors: Entity[] = [];
+  get ancestors(): Entity[] {
+    return [...this.#ancestors];
+  }
+
+  #recomputeAncestors() {
+    // this could be optimized maybe but im lazy
+
+    // deno-lint-ignore no-this-alias
+    let ancestor: Entity | undefined = this;
+    const ancestors: Entity[] = [];
+    while (ancestor) {
+      ancestor = ancestor.parent;
+      if (ancestor) ancestors.push(ancestor);
+    }
+
+    this.#ancestors = ancestors;
   }
 
   static #constructEntity<T extends Entity>(
