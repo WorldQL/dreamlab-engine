@@ -349,6 +349,10 @@ export abstract class Entity implements ISignalHandler {
     this.#ancestors = ancestors;
   }
 
+  findAncestor(predicate: (e: Entity) => boolean): Entity | undefined {
+    return this.#ancestors.find(predicate);
+  }
+
   static #constructEntity<T extends Entity>(
     parent: Entity,
     def: EntityDefinition<T>,
