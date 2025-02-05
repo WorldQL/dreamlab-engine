@@ -7,7 +7,6 @@ import {
   Entity,
   EntityDestroyed,
   GameRender,
-  GizmoUpdateEnd,
   IVector2,
   MouseDown,
   pointLocalToWorld,
@@ -15,6 +14,7 @@ import {
   Vector2,
 } from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
+import { GizmoUpdateEnd } from "./gizmo.ts";
 
 export class BoxResizeGizmoResizeEnd {
   constructor(

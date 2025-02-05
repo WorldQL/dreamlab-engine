@@ -1,11 +1,9 @@
 import {
   ActionChanged,
   Behavior,
-  BoxResizeGizmo,
   Camera,
   Clickable,
   Entity,
-  Gizmo,
   MouseDown,
   MouseMove,
   MouseOut,
@@ -14,6 +12,7 @@ import {
   Scroll,
   Vector2,
 } from "@dreamlab/engine";
+import { BoxResizeGizmo, Gizmo } from "../common/entities/mod.ts";
 import { EditorMetadataEntity } from "../common/mod.ts";
 import { InspectorUI } from "./ui/inspector.ts";
 

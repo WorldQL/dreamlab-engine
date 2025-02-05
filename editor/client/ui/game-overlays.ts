@@ -1,22 +1,14 @@
 import {
-  BoxResizeGizmo,
   Camera,
   ClientGame,
-  Gizmo,
   InternalGameTick,
   IVector2,
   MouseMove,
   Vector2,
 } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
-import {
-  BoxSelect,
-  icon,
-  MousePointer2,
-  Move,
-  Move3D,
-  ZoomIn,
-} from "../_icons.ts";
+import { BoxResizeGizmo, Gizmo } from "../../common/entities/mod.ts";
+import { BoxSelect, icon, MousePointer2, Move, Move3D, ZoomIn } from "../_icons.ts";
 import { stats } from "../_stats.ts";
 import { ButtonGroup, IconButton } from "../components/mod.ts";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
@@ -130,7 +122,7 @@ export class GameOverlays implements InspectorUIWidget {
       const camera = this.game.local._.Camera;
       cameraPos.textContent = this.formatVector(camera.pos);
       const zoom = camera.cast(Camera).zoom;
-      zoomLevel.textContent = `${(zoom).toFixed(2)} \u00d7`;
+      zoomLevel.textContent = `${zoom.toFixed(2)} \u00d7`;
     });
 
     this.game.inputs.on(MouseMove, ({ cursor }) => {

@@ -1,11 +1,6 @@
 import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
-import {
-  BoxResizeGizmoResizeEnd,
-  ClientGame,
-  Entity,
-  GizmoUpdateEnd,
-  type ITransform,
-} from "@dreamlab/engine";
+import { ClientGame, Entity, type ITransform } from "@dreamlab/engine";
+import { BoxResizeGizmoResizeEnd, GizmoUpdateEnd } from "../../common/entities/mod.ts";
 import {
   EditorMetadataEntity,
   LocalRootFacade,
