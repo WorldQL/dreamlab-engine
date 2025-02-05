@@ -23,17 +23,17 @@ import { setupGame } from "@dreamlab/client/game-setup.ts";
 import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
 import { Camera, ClientGame, Entity, GameStatus, GameStatusChange } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
+import { element } from "@dreamlab/ui";
 import { urlToWebSocket } from "@dreamlab/util/url.ts";
+import { TextureStyle } from "@dreamlab/vendor/pixi.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
+import { icon, Loader } from "./_icons.ts";
 import { stats } from "./_stats.ts";
 import { CameraPanBehavior } from "./panning-and-selection.ts";
 import { AppMenu } from "./ui/app-menu.ts";
 import { BottomTabs } from "./ui/bottom-tabs.ts";
 import { InspectorUI } from "./ui/inspector.ts";
 import { UndoRedoManager } from "./undo-redo.ts";
-import { TextureStyle } from "@dreamlab/vendor/pixi.ts";
-import { element } from "@dreamlab/ui";
-import { icon, Loader } from "./_icons.ts";
 
 // makes pixel graphics not blurry
 TextureStyle.defaultOptions.scaleMode = "nearest";
@@ -192,8 +192,8 @@ const games: { edit: ClientGame; play: ClientGame | undefined } = {
 };
 
 new ResizeObserver(_ => {
-  games.edit.renderer?.app?.resize?.();
-  games.play?.renderer?.app?.resize?.();
+  games.edit.renderer?.resize?.();
+  games.play?.renderer?.resize?.();
 }).observe(uiRoot.querySelector("#viewport")!);
 
 Object.defineProperties(globalThis, {

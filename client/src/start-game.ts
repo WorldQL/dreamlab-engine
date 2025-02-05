@@ -31,7 +31,7 @@ export async function startGame(
   await setupGame(game, conn, handshake.edit_mode);
 
   new ResizeObserver(_ => {
-    game.renderer.app.resize();
+    game.renderer.resize();
   }).observe(uiRoot.querySelector("#viewport")!);
 
   Object.defineProperties(globalThis, {

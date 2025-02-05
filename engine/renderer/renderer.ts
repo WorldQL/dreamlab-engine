@@ -1,4 +1,4 @@
-import { ClientGame } from "@dreamlab/engine";
+import { ClientGame, GameRenderResize } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 
@@ -35,5 +35,10 @@ export class GameRenderer {
   [internal.rendererRender]() {
     this.app.ticker.update(this.#game.time.now);
     this.app.render();
+  }
+
+  resize() {
+    this.app.resize();
+    this.#game.fire(GameRenderResize);
   }
 }

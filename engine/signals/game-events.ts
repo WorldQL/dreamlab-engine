@@ -38,3 +38,8 @@ export class InternalGameTick {
   static __singleton = new this();
   [exclusiveSignalType] = BaseGame;
 }
+
+export class GameRenderResize {
+  static __singleton = new this();
+  [exclusiveSignalType] = BaseGame;
+}
