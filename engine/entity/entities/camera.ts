@@ -10,12 +10,9 @@ import {
   Vector2,
   smoothLerp,
 } from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 
 export class Camera extends Entity {
-  [internal.cameraMarker] = true as const;
-
   static {
     Entity.registerType(this, "@core");
   }

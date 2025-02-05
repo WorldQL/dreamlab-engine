@@ -6,7 +6,6 @@ import {
   PixiEntity,
   Vector2,
 } from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
 import {
   InitSelectedEntityService,
   SelectedEntityService,
@@ -15,8 +14,6 @@ import { EnsureCompatible, EntityValueProps } from "./_compatibility.ts";
 import { DebugSquare } from "./_debug.ts";
 import { Facades } from "./manager.ts";
 export class EditorFacadeCamera extends PixiEntity {
-  [internal.cameraMarker] = true as const;
-
   static {
     Entity.registerType(this, "@editor");
     Facades.register(Camera, this);

@@ -11,7 +11,6 @@ import {
   Root,
   Vector2,
 } from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { EditorMetadataEntity } from "../metadata.ts";
 import { EditorFacadeCamera, EditorRootFacadeEntity } from "../mod.ts";
@@ -48,10 +47,6 @@ export class GizmoUpdateEnd {
   ) {}
 }
 // #endregion
-
-function isCamera(entity: Entity): entity is Camera {
-  return internal.cameraMarker in entity && entity[internal.cameraMarker] === true;
-}
 
 export class Gizmo extends Entity {
   static {
@@ -245,7 +240,7 @@ export class Gizmo extends Entity {
         const offset = world.sub(this.globalTransform.position);
 
         // TODO: uhhhh why is this referencing zoom
-        // const original = isCamera(this.#target[0])
+        // const original = (this.#target[0] instanceof Camera || this.#target[0] instanceof EditorFacadeCamera)
         //   ? Vector2.splat(1 / this.#target[0].zoom)
         //   : this.#target[0].globalTransform.scale.clone();
 
@@ -538,7 +533,7 @@ export class Gizmo extends Entity {
       if (this.#action.axis === "x") mul.y = 1;
       if (this.#action.axis === "y") mul.x = 1;
       const scale = this.#action.originals.get(this.#target[0])!.scale.mul(mul);
-      if (isCamera(this.#target[0])) {
+      if (this.#target[0] instanceof Camera || this.#target[0] instanceof EditorFacadeCamera) {
         this.#target[0].zoom = 1 / (this.#action.axis === "y" ? scale.y : scale.x);
       } else {
         this.#target[0].globalTransform.scale = scale;
