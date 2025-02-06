@@ -5,6 +5,8 @@ import { CONFIG } from "./config.ts";
 import { startInstanceCollector } from "./instance-collector.ts";
 import { createInstance, GameInstance } from "./instance.ts";
 import { setupWeb } from "./web/setup.ts";
+import { IPCWorker } from "./worker.ts";
+import { report } from "./metrics.ts";
 
 let instance: GameInstance | undefined;
 
@@ -13,8 +15,14 @@ await setupWeb(app);
 
 const webAbortController = new AbortController();
 
+// report metrics every minute
+const interval = setInterval(async () => {
+  await report(...IPCWorker.POOL.values());
+}, 1000 * 60);
+
 const shutdown = () => {
   console.log("Shutting down...");
+  clearInterval(interval);
   instance?.shutdown();
   webAbortController.abort();
 };

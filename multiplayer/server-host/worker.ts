@@ -1,6 +1,6 @@
 import type { HostIPCMessage, WorkerIPCMessage } from "../server-common/ipc.ts";
 import { WorkerInitData } from "../server-common/worker-data.ts";
-import type { WorkerMetrics } from "../server-host/metrics.ts";
+import { report, type WorkerMetrics } from "../server-host/metrics.ts";
 
 import * as colors from "@std/fmt/colors";
 import { TextLineStream } from "@std/streams";
@@ -98,6 +98,10 @@ export class IPCWorker {
         logs.log("stderr", line);
       }
     })();
+
+    this.addMessageListener("WorkerUp", () => {
+      report(this);
+    });
   }
 
   acceptConnection(socket: WebSocket) {
