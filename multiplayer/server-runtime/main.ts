@@ -2,9 +2,9 @@ import "npm:source-map-support@0.5.21/register.js"; // evanw clutch
 
 import { GameStatus, KvServer, ServerGame, Time } from "@dreamlab/engine";
 import { WorkerInitData } from "../server-common/worker-data.ts";
-import type { WorkerMetrics } from "../server-host/metrics.ts";
 import { IPCMessageBus } from "./ipc.ts";
 import { ServerNetworkManager } from "./networking/net-manager.ts";
+import { gatherMetrics } from "./metrics.ts";
 
 import { ProjectSchema, getSceneFromProject, loadSceneDefinition } from "@dreamlab/scene";
 import { z } from "@dreamlab/vendor/zod.ts";
@@ -18,10 +18,8 @@ await ipc.connected();
 
 // TODO: hook the console to do proper logging
 
-ipc.addMessageListener("MetricsRequest", ({ id }) => {
-  // TODO: report real values
-  const metrics: WorkerMetrics = { cpu: 1, memory: 2 };
-
+ipc.addMessageListener("MetricsRequest", async ({ id }) => {
+  const metrics = await gatherMetrics();
   ipc.send({ op: "MetricsResponse", id, metrics });
 });
 
