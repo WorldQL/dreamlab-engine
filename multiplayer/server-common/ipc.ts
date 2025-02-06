@@ -2,6 +2,7 @@ import { ConnectionId } from "@dreamlab/engine";
 import { ClientPacket, ServerPacket } from "@dreamlab/proto/play.ts";
 import { Scene, SceneDescEntity } from "@dreamlab/scene";
 import type { RichGameStatus } from "./rich-status.ts";
+import type { WorkerMetrics } from "../server-host/metrics.ts";
 
 interface ConnectionEstablishedMessage {
   op: "ConnectionEstablished";
@@ -40,6 +41,11 @@ interface ImportEditPrefab {
   entity: SceneDescEntity;
 }
 
+interface MetricsRequestMessage {
+  op: "MetricsRequest";
+  id: string;
+}
+
 export type HostIPCMessage =
   | ConnectionEstablishedMessage
   | ConnectionDroppedMessage
@@ -47,7 +53,8 @@ export type HostIPCMessage =
   | SceneDefinitionRequestMessage
   | ReloadEditSceneMessage
   | PlaySessionStateMessage
-  | ImportEditPrefab;
+  | ImportEditPrefab
+  | MetricsRequestMessage;
 
 interface WorkerUpMessage {
   op: "WorkerUp";
@@ -78,10 +85,17 @@ interface GameLoadedMessage {
   op: "GameLoaded";
 }
 
+interface MetricsResponseMessage {
+  op: "MetricsResponse";
+  id: string;
+  metrics: WorkerMetrics;
+}
+
 export type WorkerIPCMessage =
   | WorkerUpMessage
   | OutgoingPacketMessage
   | ReportRichStatusMessage
   | SceneDefinitionResponseMessage
   | PauseChangedMessage
-  | GameLoadedMessage;
+  | GameLoadedMessage
+  | MetricsResponseMessage;

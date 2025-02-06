@@ -1,10 +1,12 @@
-import { HostIPCMessage, WorkerIPCMessage } from "../server-common/ipc.ts";
+import type { HostIPCMessage, WorkerIPCMessage } from "../server-common/ipc.ts";
 import { WorkerInitData } from "../server-common/worker-data.ts";
+import type { WorkerMetrics } from "../server-host/metrics.ts";
 
 import * as colors from "@std/fmt/colors";
 import { TextLineStream } from "@std/streams";
 import { CONFIG } from "./config.ts";
 import { LogStore } from "./util/log-store.ts";
+import { createId } from "@dreamlab/vendor/nanoid.ts";
 
 export type IPCMessageListener = {
   op: WorkerIPCMessage["op"] | undefined;
@@ -15,6 +17,7 @@ export class IPCWorker {
   static POOL = new Map<string, IPCWorker>();
 
   workerId: string;
+  workerData: WorkerInitData;
   process: Deno.ChildProcess;
 
   #activeIPCSocket: WebSocket | undefined;
@@ -24,6 +27,7 @@ export class IPCWorker {
 
   constructor(workerData: WorkerInitData, logs: LogStore) {
     this.workerId = workerData.workerId;
+    this.workerData = workerData;
     this.logs = logs;
 
     const env: Record<string, string> = {
@@ -163,6 +167,24 @@ export class IPCWorker {
     } catch {
       // ignore
     }
+  }
+
+  metrics(): Promise<WorkerMetrics> {
+    const { promise, resolve } = Promise.withResolvers<WorkerMetrics>();
+
+    const id = createId();
+    const onMetrics = (resp: { id: string; metrics: WorkerMetrics }) => {
+      if (resp.id !== id) return;
+
+      // @ts-expect-error: typescript hates me :(
+      this.removeMessageListener(onMetrics);
+      resolve(resp.metrics);
+    };
+
+    this.addMessageListener("MetricsResponse", onMetrics);
+    this.send({ op: "MetricsRequest", id });
+
+    return promise;
   }
 
   destroy() {

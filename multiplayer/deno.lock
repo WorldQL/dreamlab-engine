@@ -73,9 +73,11 @@
     "jsr:@std/uuid@^1.0.4": "1.0.4",
     "npm:@dimforge/rapier2d-compat@0.13.1": "0.13.1",
     "npm:@dimforge/rapier2d-compat@0.14.0": "0.14.0",
+    "npm:@influxdata/influxdb-client@*": "1.33.2",
     "npm:@paralleldrive/cuid2@2.2.2": "2.2.2",
     "npm:@types/howler@2.2.11": "2.2.11",
     "npm:@types/node@*": "18.16.19",
+    "npm:@types/pako@2.0.3": "2.0.3",
     "npm:esbuild-copy-static-files@0.1.0": "0.1.0",
     "npm:esbuild-plugin-copy@2.1.1": "2.1.1_esbuild@0.20.2",
     "npm:esbuild@0.20.2": "0.20.2",
@@ -589,6 +591,9 @@
     "@esbuild/win32-x64@0.24.0": {
       "integrity": "sha512-7IAFPrjSQIJrGsK6flwg7NFmwBoSTyF3rl7If0hNUFQU4ilTsEPL6GuMuU9BfIWVVGuRnuIidkSMC+c0Otu8IA=="
     },
+    "@influxdata/influxdb-client@1.33.2": {
+      "integrity": "sha512-RT5SxH+grHAazo/YK3UTuWK/frPWRM0N7vkrCUyqVprDgQzlLP+bSK4ak2Jv3QVF/pazTnsxWjvtKZdwskV5Xw=="
+    },
     "@noble/hashes@1.4.0": {
       "integrity": "sha512-V1JJ1WTRUqHHrOSh597hURcMqVKVGL/ea3kv0gSnEdsEZ0/+VyPghM1lMNGc00z7CIQorSvbKpuJkxvuHbvdbg=="
     },
@@ -629,6 +634,9 @@
     },
     "@types/node@18.16.19": {
       "integrity": "sha512-IXl7o+R9iti9eBW4Wg2hx1xQDig183jj7YLn8F7udNceyfkbn1ZxmzZXuak20gR40D7pIkIY1kYGx5VIGbaHKA=="
+    },
+    "@types/pako@2.0.3": {
+      "integrity": "sha512-bq0hMV9opAcrmE0Byyo0fY3Ew4tgOevJmQ9grUhpXQhYfyLJ1Kqg3P33JT5fdbT2AjeAjR51zqqVjAL/HMkx7Q=="
     },
     "@webgpu/types@0.1.43": {
       "integrity": "sha512-HoP+d+m+Kuq8CsE63BZ3+BYBKAemrqbHUNrCalxrUju5XW+q/094Q3oeIa+2pTraEbO8ckJmGpibzyGT4OV4YQ=="

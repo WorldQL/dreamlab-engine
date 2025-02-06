@@ -28,6 +28,16 @@ const readConfig = () => {
   const dreamlabNextUrl = env("DREAMLAB_NEXT_URL", env.defaultsTo("https://app.dreamlab.gg"));
 
   const systemdMemLimit = BoolSchema.parse(env("USE_SYSTEMD_MEM_LIMIT", env.optional));
+  const enableMetrics = BoolSchema.parse(env("ENABLE_METRICS", env.optional));
+
+  const influxdb = enableMetrics
+    ? {
+        url: env("INFLUXDB_URL"),
+        org: env("INFLUXDB_ORG"),
+        bucket: env("INFLUXDB_BUCKET"),
+        token: env("INFLUXDB_TOKEN"),
+      }
+    : undefined;
 
   return {
     bindAddress,
@@ -40,6 +50,8 @@ const readConfig = () => {
     kvSigningKey,
     dreamlabNextUrl,
     systemdMemLimit,
+    enableMetrics,
+    influxdb,
   };
 };
 
