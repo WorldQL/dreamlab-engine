@@ -21,11 +21,17 @@
   cursor: pointer;
   border-top: 2px solid transparent;
   border-bottom: 2px solid transparent;
+  transition: background 0.2s, color 0.2s;
 
   &[data-active] {
     color: rgb(var(--color-text));
     background: rgb(var(--color-bg-2));
     border-bottom: 2px solid rgb(var(--color-primary));
+  }
+
+  &:not([data-active]):hover {
+    background: rgb(var(--color-bg-2));
+    color: rgb(var(--color-text));
   }
 }
 

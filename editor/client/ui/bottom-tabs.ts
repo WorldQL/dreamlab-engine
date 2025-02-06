@@ -2,7 +2,7 @@ import { element as elem } from "@dreamlab/ui";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 import { LogViewer } from "./log-viewer.ts";
 import { PrefabViewer } from "./prefab-viewer.ts";
-import { Terminal, Box, icon, Bot } from "../_icons.ts";
+import { Terminal, Box, icon, Bot, Wand } from "../_icons.ts";
 import { ClientGame } from "@dreamlab/engine";
 import { Assistant } from "./assistant/assistant.ts";
 
@@ -63,19 +63,25 @@ export class BottomTabs implements InspectorUIWidget {
     assistantTab.setAttribute("data-active", "");
     assistantTab.append(icon(Bot), elem("span", {}, ["Assistant"]));
 
+    const externalTab = elem("div", { className: "bottom-tab" });
+    externalTab.setAttribute("data-tab-id", "external");
+    externalTab.append(icon(Wand), elem("span", {}, ["Generate Asset"]));
+    externalTab.addEventListener("click", () => {
+      window.open("https://app.dreamlab.gg/create/asset", "_blank", "noopener,noreferrer");
+    });
+
     const tabBar = elem("div", { className: "bottom-tabs-bar" }, [
       assistantTab,
       prefabsTab,
       logsTab,
+      externalTab,
     ]);
 
     tabBar.addEventListener("click", e => {
       const tab = (e.target as HTMLElement).closest(".bottom-tab");
       if (tab && tab instanceof HTMLElement) {
         const tabId = tab.getAttribute("data-tab-id");
-        tab.style.backgroundColor = '';
-        tab.style.color = '';
-        if (tabId) switchTab(tabId);
+        if (tabId && tabId !== "external") switchTab(tabId);
       }
     });
 
