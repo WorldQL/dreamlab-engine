@@ -32,6 +32,6 @@ deno task watch
 If you need any help please open a GitHub issue and we'll respond to it ASAP!
 
 ## Special Thanks
-Finding bugs:
+Finding bugs, suggesting features, testing etc:
 - 42ultra
 - Wolfer
