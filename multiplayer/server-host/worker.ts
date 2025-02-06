@@ -173,8 +173,8 @@ export class IPCWorker {
     }
   }
 
-  metrics(): Promise<WorkerMetrics> {
-    const { promise, resolve } = Promise.withResolvers<WorkerMetrics>();
+  metrics(signal?: AbortSignal): Promise<WorkerMetrics> {
+    const { promise, resolve, reject } = Promise.withResolvers<WorkerMetrics>();
 
     const id = createId();
     const onMetrics = (resp: { id: string; metrics: WorkerMetrics }) => {
@@ -184,6 +184,12 @@ export class IPCWorker {
       this.removeMessageListener(onMetrics);
       resolve(resp.metrics);
     };
+
+    signal?.addEventListener("abort", () => {
+      // @ts-expect-error: typescript hates me :(
+      this.removeMessageListener(onMetrics);
+      reject(signal.reason);
+    });
 
     this.addMessageListener("MetricsResponse", onMetrics);
     this.send({ op: "MetricsRequest", id });

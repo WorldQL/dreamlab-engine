@@ -28,10 +28,9 @@ export type WorkerMetrics = {
 const internalReport = async (
   write: $WriteApi,
   worker: IPCWorker,
-  ts = new Date(),
+  { ts = new Date(), signal }: { ts?: Date; signal?: AbortSignal } = {},
 ): Promise<void> => {
-  const metrics = await worker.metrics();
-  console.log(metrics);
+  const metrics = await worker.metrics(signal);
 
   const { workerData } = worker;
   const point = new Point("metrics")
@@ -52,9 +51,10 @@ export const report = async (...workers: IPCWorker[]): Promise<void> => {
   const now = new Date();
   await using write = writeApi();
 
+  const signal = AbortSignal.timeout(2000);
   await Promise.allSettled(
     workers.map(async worker => {
-      await internalReport(write, worker, now);
+      await internalReport(write, worker, { ts: now, signal });
     }),
   );
 
