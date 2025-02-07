@@ -14,7 +14,7 @@
 - Built-in version control
 
 ## Setup
-We recommend [using Dreamlab in your browser with no setup required](https://app.dreamlab.gg/). **AI features are currently unavailable locally but we will include documentation on importing your own OpenAI key soon.**
+We recommend [using Dreamlab in your browser with no setup required](https://app.dreamlab.gg/). **AI features are currently unavailable locally but we will include documentation on importing your own OpenAI key very soon.**
 However, you can run it locally with the following:
 
 ```bash
