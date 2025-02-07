@@ -39,7 +39,7 @@ const internalReport = (
     .tag("instanceId", workerData.instanceId)
     .tag("worldId", workerData.worldId)
     .tag("editMode", workerData.editMode ? "true" : "false")
-    .uintField("cpu", metrics.cpu)
+    .floatField("cpu", metrics.cpu)
     .uintField("memory", metrics.memory)
     .uintField("connections", metrics.connections);
 
