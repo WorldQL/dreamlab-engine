@@ -27,6 +27,8 @@ const readConfig = () => {
   const kvSigningKey = env("KV_SIGNING_KEY");
   const dreamlabNextUrl = env("DREAMLAB_NEXT_URL", env.defaultsTo("https://app.dreamlab.gg"));
 
+  const yjsUrl = env("YJS_URL");
+
   const systemdMemLimit = BoolSchema.parse(env("USE_SYSTEMD_MEM_LIMIT", env.optional));
   const enableMetrics = BoolSchema.parse(env("ENABLE_METRICS", env.optional));
 
@@ -52,6 +54,7 @@ const readConfig = () => {
     systemdMemLimit,
     enableMetrics,
     influxdb,
+    yjsUrl,
   };
 };
 

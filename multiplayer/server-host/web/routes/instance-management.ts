@@ -9,6 +9,7 @@ import { createInstance, dumpSceneDefinition, GameInstance } from "../../instanc
 import { JsonAPIError, typedJsonHandler } from "../util/api.ts";
 import { bearerTokenAuth } from "../util/auth.ts";
 import { instanceInfo, InstanceInfoSchema } from "../util/instance-info.ts";
+import { deleteRoomsForInstance } from "../../instance-collector.ts";
 
 export const serveInstanceManagementAPI = (router: Router) => {
   router.get(
@@ -94,11 +95,11 @@ export const serveInstanceManagementAPI = (router: Router) => {
           body.nil && CONFIG.isDev
             ? "00000000-0000-0000-0000-000000000000"
             : body.edit_mode && !body.force_random_id
-              ? await generateUUIDv5(
-                  DREAMLAB_EDIT_NAMESPACE,
-                  new TextEncoder().encode(body.world_id),
-                )
-              : crypto.randomUUID();
+            ? await generateUUIDv5(
+                DREAMLAB_EDIT_NAMESPACE,
+                new TextEncoder().encode(body.world_id),
+              )
+            : crypto.randomUUID();
 
         const worldId = body.world_id;
 
@@ -164,8 +165,14 @@ export const serveInstanceManagementAPI = (router: Router) => {
         response: InstanceInfoSchema,
       },
       async (_ctx, { params }) => {
-        GameInstance.INSTANCES.delete(params.instance.info.instanceId);
+        const instanceId = params.instance.info.instanceId;
+
+        GameInstance.INSTANCES.delete(instanceId);
         params.instance.shutdown();
+
+        if (!GameInstance.INSTANCES.get(instanceId)?.info.editMode)
+          deleteRoomsForInstance(instanceId);
+
         return instanceInfo(params.instance);
       },
     ),
