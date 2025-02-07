@@ -21,8 +21,8 @@ However, you can run it locally with the following:
 git clone https://github.com/WorldQL/dreamlab-engine
 cd dreamlab-engine/multiplayer
 # start server
-deno task start --spawn tutorial
-# maps to "multiplayer/worlds/tutorial". You can edit these scripts with your favorite text exitor to modify them.
+deno task start --spawn dreamlab/tutorial
+# maps to "multiplayer/worlds/dreamlab/tutorial". You can edit these scripts with your favorite text exitor to modify them.
 
 # open new terminal window
 # start editor
