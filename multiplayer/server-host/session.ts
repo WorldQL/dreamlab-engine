@@ -83,6 +83,11 @@ export class GameSession {
           "Instance was forcefully terminated (likely ran out of memory or CPU)",
         );
       }
+
+      if (this === parent.playSession) {
+        parent.playSession = undefined;
+        parent.sendPlaySessionState();
+      }
     })();
 
     const ready = Promise.withResolvers<void>();
