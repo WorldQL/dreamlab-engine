@@ -2,6 +2,7 @@ import { Application, Router, Status } from "@oak/oak";
 import { oakCors } from "https://deno.land/x/cors@v1.2.2/mod.ts";
 import { handleJsonAPIErrors } from "./util/api.ts";
 
+import { GameInstance, GameInstanceState } from "../instance.ts";
 import { serveDiscordRoutes } from "./routes/discord.ts";
 import { serveInstanceManagementAPI } from "./routes/instance-management.ts";
 import { serveLogStreamingAPI } from "./routes/log-streaming.ts";
@@ -24,6 +25,13 @@ export const setupWeb = async (app: Application) => {
   serveScriptEditingAPI(router);
   serveSourceControlAPI(router);
   await serveDiscordRoutes(router);
+  router.get("/", ctx => {
+    const instanceCount = GameInstance.INSTANCES.values()
+      .filter(it => it.state === GameInstanceState.Running)
+      .toArray().length;
+    ctx.response.body = `dreamlab multiplayer running ${instanceCount} instances...`;
+    ctx.response.type = "text/plain";
+  });
   router.get("/:path*", ctx =>
     ctx
       .send({
