@@ -32,7 +32,7 @@ export const setupWeb = async (app: Application) => {
     ctx.response.body = `dreamlab multiplayer running ${instanceCount} instances...`;
     ctx.response.type = "text/plain";
   });
-  router.get("/:path*", ctx =>
+  /* router.get("/:path*", ctx =>
     ctx
       .send({
         root: "../client/web",
@@ -40,7 +40,7 @@ export const setupWeb = async (app: Application) => {
         path: ctx.request.url.pathname,
       })
       .catch(_e => {}),
-  );
+  ); */
 
   handleJsonAPIErrors(app);
   app.use(async (ctx, next) => {
