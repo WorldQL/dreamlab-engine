@@ -60,6 +60,10 @@ interface WorkerUpMessage {
   op: "WorkerUp";
 }
 
+interface WorkerHeartbeatMessage {
+  op: "WorkerHeartbeat";
+}
+
 interface OutgoingPacketMessage {
   op: "OutgoingPacket";
   to: string | null; // null to broadcast
@@ -93,6 +97,7 @@ interface MetricsResponseMessage {
 
 export type WorkerIPCMessage =
   | WorkerUpMessage
+  | WorkerHeartbeatMessage
   | OutgoingPacketMessage
   | ReportRichStatusMessage
   | SceneDefinitionResponseMessage

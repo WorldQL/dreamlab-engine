@@ -3,6 +3,8 @@
 import { GameInstance } from "./instance.ts";
 
 const instanceCollectorTask = () => {
+  // removes old stopped instances, run periodically
+
   for (const instance of [...GameInstance.INSTANCES.values()]) {
     if (instance.info.editMode) continue;
 
@@ -21,6 +23,28 @@ const instanceCollectorTask = () => {
   }
 };
 
+const instanceWatchdogTask = () => {
+  // kills instances which are not responding, run frequently
+
+  for (const instance of GameInstance.INSTANCES.values()) {
+    for (const session of [instance.session, instance.playSession]) {
+      if (session === undefined) continue;
+      if (session.wasShutDown) continue;
+
+      if (Date.now() - session.lastHeartbeat > 5_000) {
+        instance.logs.error("Forcefully terminating session as it was not responding");
+        try {
+          session.ipc.process.kill("SIGKILL");
+        } catch (err) {
+          // ignore
+        }
+        session.shutdown();
+      }
+    }
+  }
+};
+
 export const startInstanceCollector = () => {
   setInterval(instanceCollectorTask, 30_000);
+  setInterval(instanceWatchdogTask, 1_000);
 };

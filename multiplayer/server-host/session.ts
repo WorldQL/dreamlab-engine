@@ -80,7 +80,7 @@ export class GameSession {
       if (status.code === 137 && CONFIG.systemdMemLimit) {
         this.parent.setStatus(
           GameInstanceState.Errored,
-          "Instance was forcefully terminated (likely ran out of memory)",
+          "Instance was forcefully terminated (likely ran out of memory or CPU)",
         );
       }
     })();
@@ -138,6 +138,11 @@ export class GameSession {
     }
   }
 
+  get lastHeartbeat(): number {
+    // milliseconds (Date.now)
+    return this.ipc.lastHeartbeat;
+  }
+
   broadcastPacket(packet: ServerPacket) {
     for (const connection of this.connections.values()) {
       const packetData = connection.codec.encodePacket(packet);
@@ -171,6 +176,7 @@ export class GameSession {
   }
 
   #shuttingDown = false;
+  wasShutDown = false;
   shutdown() {
     if (this.#shuttingDown) return;
     this.#shuttingDown = true;
@@ -186,5 +192,7 @@ export class GameSession {
     this.connections.clear();
 
     if (this.#autoSaveInterval) clearInterval(this.#autoSaveInterval);
+
+    this.wasShutDown = true;
   }
 }

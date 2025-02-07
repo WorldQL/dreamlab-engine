@@ -135,7 +135,13 @@ export class IPCWorker {
     });
   }
 
+  lastHeartbeat: number = Date.now();
+
   #onReceive(message: WorkerIPCMessage) {
+    if (message.op === "WorkerHeartbeat") {
+      this.lastHeartbeat = Date.now();
+    }
+
     for (const listener of this.#ipcListeners) {
       if (listener.op === undefined || listener.op === message.op) {
         try {

@@ -71,8 +71,9 @@ game.setStatus(GameStatus.Running);
 
 ipc.send({ op: "GameLoaded" });
 
-const tickDelta = 1_000 / game.time.TPS;
+let lastHeartbeat = performance.now();
 
+const tickDelta = 1_000 / game.time.TPS;
 let tickAcc = 0.0;
 let time = performance.now();
 setInterval(() => {
@@ -89,5 +90,10 @@ setInterval(() => {
   while (tickAcc > tickDelta) {
     tickAcc -= tickDelta;
     game.tick();
+  }
+
+  if (now - lastHeartbeat > 1_000) {
+    lastHeartbeat = now;
+    ipc.send({ op: "WorkerHeartbeat" });
   }
 }, tickDelta / 2);
