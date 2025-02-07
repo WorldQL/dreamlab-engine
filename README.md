@@ -15,6 +15,9 @@
 
 ## Setup
 We recommend [using Dreamlab in your browser with no setup required](https://app.dreamlab.gg/). However, you can run it locally with the following:
+
+> **Note:** currently only supports Linux and macOS.
+
 ```bash
 git clone https://github.com/WorldQL/dreamlab-engine
 cd dreamlab-engine/multiplayer
@@ -29,7 +32,11 @@ cd editor/
 deno task watch
 ```
 
-If you need any help please open a GitHub issue and we'll respond to it ASAP!
+## **Need Help?**  
+If you need any help, feel free to:  
+- Open a **[GitHub issue](https://github.com/WorldQL/dreamlab-engine/issues)**  
+- Join our **[Discord community](https://discord.gg/nwXFvtJ92g)** and ask questions in the help channel!
+
 
 ## Special Thanks
 Finding bugs, suggesting features, testing etc:
