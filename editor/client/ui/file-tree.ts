@@ -175,6 +175,9 @@ export class FileTree implements InspectorUIWidget {
               });
 
               element.addEventListener("mouseleave", () => imagePreview.remove());
+              element.addEventListener("dragstart", () => {
+                imagePreview.remove();
+              });
             }
           });
 
