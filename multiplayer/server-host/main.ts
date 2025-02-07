@@ -72,7 +72,7 @@ await Promise.all([
       worldId: world,
       worldDirectory: `${Deno.cwd()}/worlds/${world}`,
       editMode: !(args["play-mode"] ?? false),
-      inspect: "127.0.0.1:9229",
+      // inspect: "127.0.0.1:9229",
     });
 
     await instance.waitForSessionBoot();
