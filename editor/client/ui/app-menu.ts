@@ -21,6 +21,7 @@ import {
 } from "../_icons.ts";
 import { IconButton } from "../components/mod.ts";
 import { InspectorUI } from "./inspector.ts";
+import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 
 export class AppMenu {
   #section = elem("section", { id: "app-menu" });
@@ -172,7 +173,11 @@ export class AppMenu {
     });
 
     this.#section.append(
-      elem("div", {}, Object.values(this.navigation)),
+      elem(
+        "div",
+        {},
+        this.games.edit.instanceId === NIL_UUID ? [] : Object.values(this.navigation),
+      ),
       elem("div", {}, Object.values(this.controls)),
       elem("div", {}, [this.setupStats(this.games.edit), saveButton]),
     );
@@ -199,7 +204,7 @@ export class AppMenu {
 
     const pingText = document.createTextNode("0");
     game.on(Ping, ({ ping }) => {
-      (pingText.textContent = ping.toLocaleString())
+      pingText.textContent = ping.toLocaleString();
       this.lastPingTime = Date.now();
     });
 
@@ -207,9 +212,9 @@ export class AppMenu {
     setInterval(() => {
       const diff = Date.now() - this.lastPingTime;
       if (diff > 6000) {
-        alert("Disconnected from server. Please reload this page to reconnect.")
+        alert("Disconnected from server. Please reload this page to reconnect.");
       }
-    }, 5000)
+    }, 5000);
 
     // TODO: make this look nice lol
     return elem("div", { id: "stats" }, [
