@@ -34,7 +34,7 @@ const interval = setInterval(async () => {
   }
 
   await report(...data);
-}, 1000 * 60);
+}, 1000 * 15);
 
 const shutdown = () => {
   console.log("Shutting down...");
