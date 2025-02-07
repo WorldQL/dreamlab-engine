@@ -1,0 +1,618 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "engine_revision": "2024-08.001"
+  },
+  "scenes": {
+    "main": {
+      "registration": [],
+      "world": [
+        {
+          "ref": "ent_qmm33gm5i98egxxc2w7qnm7h",
+          "type": "@core/Empty",
+          "name": "PlayersContainer",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": 9.359968183681339,
+              "y": 0.3485094536477096
+            }
+          }
+        },
+        {
+          "ref": "ent_vkea8cuayt39kloe5t2tsjut",
+          "type": "@core/Empty",
+          "name": "PlayerSpawnpoint",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": -4.748991759281353,
+              "y": -16.956826393985335
+            }
+          }
+        },
+        {
+          "ref": "ent_ymd2z1an7f3xxv2l5bqn6lcf",
+          "type": "@core/Empty",
+          "name": "Border",
+          "enabled": true,
+          "children": [
+            {
+              "ref": "ent_oqwxrn3s5u5hjw0jqn7vzpzb",
+              "type": "@core/RectCollider",
+              "name": "BottomWall",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 10.174610190319605,
+                  "y": -20.87895103682345
+                },
+                "rotation": 1.5707963267948966,
+                "scale": {
+                  "x": 1,
+                  "y": 39.789606637435384
+                }
+              },
+              "values": {
+                "isSensor": false
+              },
+              "children": [
+                {
+                  "ref": "ent_jmpy4w9jv9r38pptw86tutde",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      1,
+                      1,
+                      1,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_cenbjzrhujhv68fwi83w90xh",
+              "type": "@core/RectCollider",
+              "name": "TopWall",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 9.710595850442257,
+                  "y": 21.73056720255326
+                },
+                "rotation": 1.5707963267948966,
+                "scale": {
+                  "x": 1,
+                  "y": 40.70812150614036
+                }
+              },
+              "values": {
+                "isSensor": false
+              },
+              "children": [
+                {
+                  "ref": "ent_ai74avnir9hytmhtlsmxnv5l",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      1,
+                      1,
+                      1,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_iojgthqqqofw0sw0gq9b241g",
+              "type": "@core/RectCollider",
+              "name": "LeftWall",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -9.942572032532837,
+                  "y": 0.42511504824311075
+                },
+                "scale": {
+                  "x": 1.4665234465529204,
+                  "y": 43.609493272688155
+                }
+              },
+              "values": {
+                "isSensor": false
+              },
+              "children": [
+                {
+                  "ref": "ent_hw5j1o8f8kc1jqnykmgz3y5o",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0,
+                      "y": -0.00002841826277626864
+                    },
+                    "scale": {
+                      "x": 1,
+                      "y": 0.9999431634744474
+                    }
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      1,
+                      1,
+                      1,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_qimiy9y87724pro2zn07etsp",
+              "type": "@core/RectCollider",
+              "name": "RightWall",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 29.581642064470216,
+                  "y": 0.5737471476588532
+                },
+                "scale": {
+                  "x": 0.9718737081010822,
+                  "y": 42.84880415355877
+                }
+              },
+              "values": {
+                "isSensor": false
+              },
+              "children": [
+                {
+                  "ref": "ent_zza1kp5n9786zzbjvz1d13f7",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      1,
+                      1,
+                      1,
+                      1
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": "ent_w1ihPLjZky",
+          "type": "@core/RectCollider",
+          "name": "Platform",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": 2.7486717604217894,
+              "y": -17.308708242312
+            },
+            "rotation": 1.5707963267948966,
+            "scale": {
+              "x": 1,
+              "y": 4.234686589720738
+            }
+          },
+          "values": {
+            "clonedFromRef": "ent_wwe0q4zxbhcpnfk7yem979s4",
+            "isSensor": false
+          },
+          "children": [
+            {
+              "ref": "ent_5iiC3FmeAN",
+              "type": "@core/ColoredSquare",
+              "name": "ColoredSquare",
+              "enabled": true,
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  1,
+                  1,
+                  1,
+                  1
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "ref": "ent_ghWViiDIvS",
+          "type": "@core/RectCollider",
+          "name": "Platform.1",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": 12.367328712763364,
+              "y": -14.584348758700798
+            },
+            "rotation": 1.5707963267948966,
+            "scale": {
+              "x": 1,
+              "y": 4.234686589720738
+            }
+          },
+          "values": {
+            "clonedFromRef": "ent_wwe0q4zxbhcpnfk7yem979s4",
+            "isSensor": false
+          },
+          "children": [
+            {
+              "ref": "ent_1P6OjlNGSb",
+              "type": "@core/ColoredSquare",
+              "name": "ColoredSquare",
+              "enabled": true,
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  1,
+                  1,
+                  1,
+                  1
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "ref": "ent_mmMutvQ96C",
+          "type": "@core/RectCollider",
+          "name": "Platform.2",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": 22.319580703914472,
+              "y": -11.192799197470535
+            },
+            "rotation": 1.5707963267948966,
+            "scale": {
+              "x": 1,
+              "y": 4.234686589720738
+            }
+          },
+          "values": {
+            "clonedFromRef": "ent_wwe0q4zxbhcpnfk7yem979s4",
+            "isSensor": false
+          },
+          "children": [
+            {
+              "ref": "ent_7MXAXPrDtJ",
+              "type": "@core/ColoredSquare",
+              "name": "ColoredSquare",
+              "enabled": true,
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  1,
+                  1,
+                  1,
+                  1
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "ref": "ent_A7UsJOSanX",
+          "type": "@core/RectCollider",
+          "name": "Platform.3",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": 25.778347326551522,
+              "y": 16.89492927551217
+            },
+            "rotation": 1.5707963267948966,
+            "scale": {
+              "x": 1,
+              "y": 4.234686589720738
+            }
+          },
+          "values": {
+            "clonedFromRef": "ent_wwe0q4zxbhcpnfk7yem979s4",
+            "isSensor": false
+          },
+          "children": [
+            {
+              "ref": "ent_Z6dXvCZVZy",
+              "type": "@core/ColoredSquare",
+              "name": "ColoredSquare",
+              "enabled": true,
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  1,
+                  1,
+                  1,
+                  1
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "ref": "ent_JlqD7tZwrG",
+          "type": "@core/Collider",
+          "name": "Coin",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": 25.88017751704548,
+              "y": 18.906512364862884
+            }
+          },
+          "values": {
+            "clonedFromRef": "ent_cyg63jn2j7nesqvv6idtcq4c",
+            "isSensor": true,
+            "shape": "Circle"
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_wxoYdcEeLL",
+              "script": "res://src/coin.ts"
+            }
+          ],
+          "children": [
+            {
+              "ref": "ent_YLYzzhGjyg",
+              "type": "@core/ColoredPolygon",
+              "name": "ColoredPolygon",
+              "enabled": true,
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "sides": 15,
+                "color": [
+                  0.9764705896377563,
+                  1,
+                  0.32156863808631897,
+                  1
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "local": [
+        {
+          "ref": "ent_qmpb4kxuqhoe41c0zz3wcw3c",
+          "type": "@core/Camera",
+          "name": "Camera",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": 9.58808162338891,
+              "y": -0.29168652127499684
+            },
+            "scale": {
+              "x": 5,
+              "y": 5
+            }
+          },
+          "values": {
+            "active": true,
+            "smooth": 0,
+            "unlocked": false,
+            "zoom": 0.2
+          }
+        },
+        {
+          "ref": "ent_bmnw4axlc8kkzk3ivvnpvfsi",
+          "type": "@core/Empty",
+          "name": "PlayerSpawner",
+          "enabled": true,
+          "behaviors": [
+            {
+              "ref": "bhv_d23e7ajsbg2f7fgoeq171vly",
+              "script": "res://src/player-spawner.ts"
+            }
+          ]
+        },
+        {
+          "ref": "ent_EwILPJ6yVK",
+          "type": "@core/RichText",
+          "name": "CoinCounter",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": -8.508369257842043,
+              "y": 19.980566266868824
+            }
+          },
+          "values": {
+            "static": false,
+            "hidden": false,
+            "text": "Coins: 0",
+            "fontFamily": "Inter",
+            "fontSize": 125,
+            "fontStyle": "normal",
+            "fontWeight": "normal",
+            "align": "left",
+            "color": [
+              0.9764705896377563,
+              1,
+              0.32156863808631897,
+              1
+            ],
+            "stroke": false,
+            "strokeColor": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "strokeWidth": 3,
+            "strokeJoin": "round"
+          }
+        }
+      ],
+      "server": [],
+      "prefabs": [
+        {
+          "ref": "ent_wwe0q4zxbhcpnfk7yem979s4",
+          "type": "@core/RectCollider",
+          "name": "Platform",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": -19.091509985720986,
+              "y": -5.2983027123122515
+            },
+            "rotation": 1.5707963267948966,
+            "scale": {
+              "x": 1,
+              "y": 4.234686589720738
+            }
+          },
+          "values": {
+            "isSensor": false
+          },
+          "children": [
+            {
+              "ref": "ent_o5z90gwvm0m3xhtfgv5ekdcp",
+              "type": "@core/ColoredSquare",
+              "name": "ColoredSquare",
+              "enabled": true,
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  1,
+                  1,
+                  1,
+                  1
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "ref": "ent_cyg63jn2j7nesqvv6idtcq4c",
+          "type": "@core/Collider",
+          "name": "Coin",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": -19.215719231035653,
+              "y": -1.580979128124607
+            }
+          },
+          "values": {
+            "isSensor": true,
+            "shape": "Circle"
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_wxoYdcEeLL",
+              "script": "res://src/coin.ts"
+            }
+          ],
+          "children": [
+            {
+              "ref": "ent_CQo1H19n7b",
+              "type": "@core/ColoredPolygon",
+              "name": "ColoredPolygon",
+              "enabled": true,
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "sides": 15,
+                "color": [
+                  0.9764705896377563,
+                  1,
+                  0.32156863808631897,
+                  1
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "ref": "ent_mWVvVxDbx3",
+          "type": "@core/CharacterController",
+          "name": "Player",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": -19.20715982751301,
+              "y": 1.5372114227416382
+            }
+          },
+          "values": {
+            "isSensor": false,
+            "shape": "Rectangle"
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_O6Y6i1UdgT",
+              "script": "res://src/player-controller.ts"
+            }
+          ],
+          "children": [
+            {
+              "ref": "ent_pnm610O0ZK",
+              "type": "@core/Sprite",
+              "name": "Sprite",
+              "enabled": true,
+              "values": {
+                "static": false,
+                "hidden": false,
+                "texture": "res://assets/player.png",
+                "width": 1,
+                "height": 1,
+                "alpha": 1
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

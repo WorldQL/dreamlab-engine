@@ -1,0 +1,6 @@
+- src/coin.ts
+	- A coin behavior that detects player collisions and awards points. When any player's collider intersects with the coin's collider, it increments that player's point counter and destroys itself, implementing a basic collectible pickup mechanic that integrates with a PlayerController component.
+- src/player-controller.ts
+	- A basic platformer character controller that handles horizontal movement and variable-height jumping mechanics with configurable parameters like speed, jump force, and gravity. Implements synced values for multiplayer compatibility and includes a points system that updates a coin counter UI element. The controller processes keyboard input (A/D for movement, Space for jump) and applies physics calculations for movement and jumping, with support for extended jump duration while the jump key is held.
+- src/player-spawner.ts
+	- PlayerSpawner handles the instantiation of a local player entity when a client initializes, placing it at a designated spawn point in the world. It creates the player using a prefab, sets its network authority to the local client, and performs an initial teleport while bypassing collision checks, while also maintaining a static reference to the local player entity that can be accessed globally.
