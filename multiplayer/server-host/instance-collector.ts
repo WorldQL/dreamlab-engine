@@ -6,7 +6,7 @@ const instanceCollectorTask = () => {
   // removes old stopped instances, run periodically
 
   for (const instance of [...GameInstance.INSTANCES.values()]) {
-    if (instance.info.editMode) continue;
+    // if (instance.info.editMode) continue;
 
     // instances bump idle time whenever a session gets a ping packet,
     // so we don't need to check player count.
