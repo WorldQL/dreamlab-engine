@@ -46,10 +46,14 @@ Deno.addSignalListener("SIGINT", () => {
   shutdown();
   Deno.exit();
 });
-Deno.addSignalListener("SIGTERM", () => {
-  shutdown();
-  Deno.exit();
-});
+try {
+  Deno.addSignalListener("SIGTERM", () => {
+    shutdown();
+    Deno.exit();
+  });
+} catch (_err) {
+  // not supported on windows
+}
 
 const args = cli.parseArgs(Deno.args, { string: ["spawn"], boolean: ["play-mode"] });
 
