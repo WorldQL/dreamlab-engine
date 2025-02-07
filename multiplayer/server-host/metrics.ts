@@ -1,6 +1,6 @@
-import { InfluxDB, WriteApi as $WriteApi, Point } from "npm:@influxdata/influxdb-client";
-import { IPCWorker } from "./worker.ts";
+import { WriteApi as $WriteApi, InfluxDB, Point } from "npm:@influxdata/influxdb-client";
 import { CONFIG } from "./config.ts";
+import { IPCWorker } from "./worker.ts";
 
 const details = CONFIG.influxdb;
 const client = details ? new InfluxDB({ url: details.url, token: details.token }) : undefined;
@@ -20,26 +20,27 @@ const writeApi = (): WriteApi => {
 };
 
 export type WorkerMetrics = {
+  readonly ts?: Date;
   readonly cpu: number;
   readonly memory: number;
-  // TODO: real metrics
 };
 
 const internalReport = async (
   write: $WriteApi,
   worker: IPCWorker,
-  { ts = new Date(), signal }: { ts?: Date; signal?: AbortSignal } = {},
+  { ts = new Date() }: { ts?: Date } = {},
 ): Promise<void> => {
-  const metrics = await worker.metrics(signal);
+  const metrics = await worker.metrics();
 
   const { workerData } = worker;
   const point = new Point("metrics")
-    .timestamp(ts)
+    .timestamp(metrics.ts ?? ts)
     .tag("workerId", worker.workerId)
     .tag("instanceId", workerData.instanceId)
     .tag("worldId", workerData.worldId)
-    .tag("editMode", workerData.editMode ? "true" : "false");
-  // TODO: add real metrics
+    .tag("editMode", workerData.editMode ? "true" : "false")
+    .uintField("cpu", metrics.cpu)
+    .uintField("memory", metrics.memory);
 
   write.writePoint(point);
 };
@@ -51,12 +52,15 @@ export const report = async (...workers: IPCWorker[]): Promise<void> => {
   const now = new Date();
   await using write = writeApi();
 
-  const signal = AbortSignal.timeout(2000);
   await Promise.allSettled(
     workers.map(async worker => {
-      await internalReport(write, worker, { ts: now, signal });
+      await internalReport(write, worker, { ts: now });
     }),
   );
 
-  await write.flush();
+  try {
+    await write.flush();
+  } catch {
+    // ignore
+  }
 };

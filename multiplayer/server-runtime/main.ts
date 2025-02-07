@@ -4,7 +4,6 @@ import { GameStatus, KvServer, ServerGame, Time } from "@dreamlab/engine";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 import { IPCMessageBus } from "./ipc.ts";
 import { ServerNetworkManager } from "./networking/net-manager.ts";
-import { gatherMetrics } from "./metrics.ts";
 
 import { ProjectSchema, getSceneFromProject, loadSceneDefinition } from "@dreamlab/scene";
 import { z } from "@dreamlab/vendor/zod.ts";
@@ -17,11 +16,6 @@ const ipc = new IPCMessageBus(workerData);
 await ipc.connected();
 
 // TODO: hook the console to do proper logging
-
-ipc.addMessageListener("MetricsRequest", async ({ id }) => {
-  const metrics = await gatherMetrics();
-  ipc.send({ op: "MetricsResponse", id, metrics });
-});
 
 const net = new ServerNetworkManager(ipc);
 const game = new ServerGame({

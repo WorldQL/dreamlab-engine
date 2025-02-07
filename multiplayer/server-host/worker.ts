@@ -4,9 +4,10 @@ import { report, type WorkerMetrics } from "../server-host/metrics.ts";
 
 import * as colors from "@std/fmt/colors";
 import { TextLineStream } from "@std/streams";
+// @ts-types="npm:@types/pidusage@2.0.5"
+import pidusage from "npm:pidusage@3.0.2";
 import { CONFIG } from "./config.ts";
 import { LogStore } from "./util/log-store.ts";
-import { createId } from "@dreamlab/vendor/nanoid.ts";
 
 export type IPCMessageListener = {
   op: WorkerIPCMessage["op"] | undefined;
@@ -173,28 +174,14 @@ export class IPCWorker {
     }
   }
 
-  metrics(signal?: AbortSignal): Promise<WorkerMetrics> {
-    const { promise, resolve, reject } = Promise.withResolvers<WorkerMetrics>();
+  async metrics(): Promise<WorkerMetrics> {
+    const { timestamp, cpu, memory } = await pidusage(this.process.pid);
 
-    const id = createId();
-    const onMetrics = (resp: { id: string; metrics: WorkerMetrics }) => {
-      if (resp.id !== id) return;
-
-      // @ts-expect-error: typescript hates me :(
-      this.removeMessageListener(onMetrics);
-      resolve(resp.metrics);
+    return {
+      ts: new Date(timestamp),
+      cpu,
+      memory,
     };
-
-    signal?.addEventListener("abort", () => {
-      // @ts-expect-error: typescript hates me :(
-      this.removeMessageListener(onMetrics);
-      reject(signal.reason);
-    });
-
-    this.addMessageListener("MetricsResponse", onMetrics);
-    this.send({ op: "MetricsRequest", id });
-
-    return promise;
   }
 
   destroy() {
