@@ -14,21 +14,24 @@
 - Built-in version control
 
 ## Setup
-We recommend [using Dreamlab in your browser with no setup required](https://app.dreamlab.gg/). However, you can run it locally with the following:
+We recommend [using Dreamlab in your browser with no setup required](https://app.dreamlab.gg/). **AI features are currently unavailable locally but we will include documentation on importing your own OpenAI key soon.**
+However, you can run it locally with the following:
 
 ```bash
 git clone https://github.com/WorldQL/dreamlab-engine
 cd dreamlab-engine/multiplayer
 # start server
-deno task start
+deno task start --spawn tutorial
+# maps to "multiplayer/worlds/tutorial". You can edit these scripts with your favorite text exitor to modify them.
 
 # open new terminal window
 # start editor
 cd dreamlab-engine
-echo "SERVER_URL="http://localhost:8002" > client/.env.local
 cd editor/
 deno task watch
 ```
+
+Then open http://localhost:5173/?instance=00000000-0000-0000-0000-000000000000&server=ws%3A%2F%2Flocalhost%3A8001 and you'll see the tutorial world!
 
 ## **Need Help?**  
 If you need any help, feel free to:  
