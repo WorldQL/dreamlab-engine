@@ -4,7 +4,11 @@ import env from "./util/env.ts";
 
 const readConfig = () => {
   const BoolSchema = z
-    .union([z.enum(["false", "0"]).transform(() => false), z.string()])
+    .union([
+      z.literal(undefined).transform(() => false),
+      z.enum(["false", "0"]).transform(() => false),
+      z.string(),
+    ])
     .pipe(z.coerce.boolean());
 
   const bindAddress = env("BIND_ADDRESS", env.socketAddress("127.0.0.1:8001"));

@@ -3,7 +3,7 @@ import { PlayCodec } from "@dreamlab/proto/codecs/mod.ts";
 import { ServerPacket } from "@dreamlab/proto/play.ts";
 import { createId } from "@dreamlab/vendor/nanoid.ts";
 import { CONFIG } from "./config.ts";
-import { dumpSceneDefinition, GameInstance } from "./instance.ts";
+import { dumpSceneDefinition, GameInstance, GameInstanceState } from "./instance.ts";
 import { IPCWorker } from "./worker.ts";
 
 import * as path from "@std/path";
@@ -71,11 +71,18 @@ export class GameSession {
     this.ipc = new IPCWorker(ipcData, parent.logs);
     const ipc = this.ipc;
     void (async () => {
-      await ipc.process.status;
+      const status = await ipc.process.status;
 
       this.shutdown();
       if (!this.#loaded)
         this.#loadedPromiseReject?.(new Error("instance crashed before load completed"));
+
+      if (status.code === 137 && CONFIG.systemdMemLimit) {
+        this.parent.setStatus(
+          GameInstanceState.Errored,
+          "Instance was forcefully terminated (likely ran out of memory)",
+        );
+      }
     })();
 
     const ready = Promise.withResolvers<void>();

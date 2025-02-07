@@ -58,6 +58,8 @@ export class IPCWorker {
         "MemoryMax=512M" /* TODO: configurable */,
         "-p",
         "MemorySwapMax=0",
+        /* "-p",
+        "CPUQuota=50%", */
       );
     }
 
