@@ -26,13 +26,12 @@ export type WorkerMetrics = {
   readonly connections: number;
 };
 
-const internalReport = async (
+const internalReport = (
   write: $WriteApi,
   worker: IPCWorker,
+  metrics: WorkerMetrics,
   { ts = new Date() }: { ts?: Date } = {},
-): Promise<void> => {
-  const metrics = await worker.metrics();
-
+): void => {
   const { workerData } = worker;
   const point = new Point("metrics")
     .timestamp(metrics.ts ?? ts)
@@ -47,7 +46,9 @@ const internalReport = async (
   write.writePoint(point);
 };
 
-export const report = async (...workers: IPCWorker[]): Promise<void> => {
+export const report = async (
+  ...workers: IPCWorker[] | { worker: IPCWorker; metrics: WorkerMetrics }[]
+): Promise<void> => {
   // do nothing if metrics reporting is disabled
   if (!client) return;
 
@@ -55,8 +56,12 @@ export const report = async (...workers: IPCWorker[]): Promise<void> => {
   await using write = writeApi();
 
   await Promise.allSettled(
-    workers.map(async worker => {
-      await internalReport(write, worker, { ts: now });
+    workers.map(async input => {
+      const isObject = "worker" in input && "metrics" in input;
+      const worker = isObject ? input.worker : input;
+      const metrics = isObject ? input.metrics : await worker.metrics();
+
+      internalReport(write, worker, metrics, { ts: now });
     }),
   );
 

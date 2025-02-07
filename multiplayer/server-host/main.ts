@@ -4,9 +4,9 @@ import { NIL_UUID } from "@std/uuid/constants";
 import { CONFIG } from "./config.ts";
 import { startInstanceCollector } from "./instance-collector.ts";
 import { createInstance, GameInstance } from "./instance.ts";
+import { report } from "./metrics.ts";
 import { setupWeb } from "./web/setup.ts";
 import { IPCWorker } from "./worker.ts";
-import { report } from "./metrics.ts";
 
 let instance: GameInstance | undefined;
 
@@ -17,7 +17,23 @@ const webAbortController = new AbortController();
 
 // report metrics every minute
 const interval = setInterval(async () => {
-  await report(...IPCWorker.POOL.values());
+  const jobs = [...IPCWorker.POOL.values()].map(
+    async worker =>
+      ({
+        worker,
+        metrics: await worker.metrics(),
+      }) as const,
+  );
+
+  const data = await Promise.all(jobs);
+
+  const MEMORY_THRESHOLD = 1000; // TODO: real value
+  for (const { worker, metrics } of data) {
+    if (metrics.memory <= MEMORY_THRESHOLD) continue;
+    // TODO: gracefully terminate
+  }
+
+  await report(...data);
 }, 1000 * 60);
 
 const shutdown = () => {
