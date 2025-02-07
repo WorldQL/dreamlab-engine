@@ -3,11 +3,12 @@ import { load as dotenv } from "@std/dotenv";
 import env from "./util/env.ts";
 
 const readConfig = () => {
-  const bindAddress = env("BIND_ADDRESS", env.socketAddress("127.0.0.1:8001"));
-  const isDev = z
+  const BoolSchema = z
     .union([z.enum(["false", "0"]).transform(() => false), z.string()])
-    .pipe(z.coerce.boolean())
-    .parse(env("IS_DEV", env.optional));
+    .pipe(z.coerce.boolean());
+
+  const bindAddress = env("BIND_ADDRESS", env.socketAddress("127.0.0.1:8001"));
+  const isDev = BoolSchema.parse(env("IS_DEV", env.optional));
   const publicUrlBase = env(
     "PUBLIC_URL_BASE",
     env.defaultsTo(`http://${bindAddress.hostname}:${bindAddress.port}`),
@@ -22,6 +23,8 @@ const readConfig = () => {
   const kvSigningKey = env("KV_SIGNING_KEY");
   const dreamlabNextUrl = env("DREAMLAB_NEXT_URL", env.defaultsTo("https://app.dreamlab.gg"));
 
+  const systemdMemLimit = BoolSchema.parse(env("USE_SYSTEMD_MEM_LIMIT", env.optional));
+
   return {
     bindAddress,
     isDev,
@@ -32,6 +35,7 @@ const readConfig = () => {
     kvUrl,
     kvSigningKey,
     dreamlabNextUrl,
+    systemdMemLimit,
   };
 };
 

@@ -3,6 +3,7 @@ import { WorkerInitData } from "../server-common/worker-data.ts";
 
 import * as colors from "@std/fmt/colors";
 import { TextLineStream } from "@std/streams";
+import { CONFIG } from "./config.ts";
 import { LogStore } from "./util/log-store.ts";
 
 export type IPCMessageListener = {
@@ -25,24 +26,45 @@ export class IPCWorker {
     this.workerId = workerData.workerId;
     this.logs = logs;
 
-    const command = new Deno.Command(Deno.execPath(), {
-      args: [
-        "run",
-        "-c",
-        "./pre-exec/deno.runtime.json",
-        ...(!workerData.editMode && workerData.inspect
-          ? [`--inspect=${workerData.inspect}`]
-          : []),
-        "--unstable-sloppy-imports",
-        `--allow-net=${new URL(workerData.workerConnectUrl).host},${new URL(workerData.kvUrl).host}`,
-        `--allow-read=./pre-exec/,${workerData.worldDirectory}`,
-        `--allow-env`,
-        "./server-runtime/main.ts",
-      ],
+    const env: Record<string, string> = {
+      DREAMLAB_MP_WORKER_DATA: JSON.stringify(workerData),
+    };
+    const args = [
+      Deno.execPath(),
+      "run",
+      "-c",
+      "./pre-exec/deno.runtime.json",
+      ...(!workerData.editMode && workerData.inspect
+        ? [`--inspect=${workerData.inspect}`]
+        : []),
+      "--unstable-sloppy-imports",
+      `--allow-net=${new URL(workerData.workerConnectUrl).host},${new URL(workerData.kvUrl).host}`,
+      `--allow-read=./pre-exec/,${workerData.worldDirectory}`,
+      `--allow-env`,
+      "./server-runtime/main.ts",
+    ];
+
+    if (CONFIG.systemdMemLimit) {
+      const dbus = Deno.env.get("DBUS_SESSION_BUS_ADDRESS");
+      if (!dbus) throw new Error("We have no DBus address for systemd mem limits!");
+      env["DBUS_SESSION_BUS_ADDRESS"] = dbus;
+      args.unshift(
+        "/usr/bin/env",
+        "systemd-run",
+        "-q",
+        "--user",
+        "--scope",
+        "-p",
+        "MemoryMax=512M" /* TODO: configurable */,
+        "-p",
+        "MemorySwapMax=0",
+      );
+    }
+
+    const command = new Deno.Command(args[0], {
+      args: args.slice(1),
       clearEnv: true,
-      env: {
-        DREAMLAB_MP_WORKER_DATA: JSON.stringify(workerData),
-      },
+      env,
       cwd: Deno.cwd(),
       stdout: "piped",
       stdin: "piped",
