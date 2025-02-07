@@ -68,7 +68,7 @@ export class GameSession {
       ipcData.kvClientUrl = discordURLBase + "/.proxy/kv";
       ipcData.worldResourcesBaseUrl = discordURLBase + "/.proxy/mp/worlds";
     }
-    this.ipc = new IPCWorker(ipcData, parent.logs);
+    this.ipc = new IPCWorker(this, ipcData, parent.logs);
     const ipc = this.ipc;
     void (async () => {
       const status = await ipc.process.status;

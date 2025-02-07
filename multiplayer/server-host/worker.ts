@@ -1,6 +1,7 @@
 import type { HostIPCMessage, WorkerIPCMessage } from "../server-common/ipc.ts";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 import { report, type WorkerMetrics } from "../server-host/metrics.ts";
+import type { GameSession } from "./session.ts";
 
 import * as colors from "@std/fmt/colors";
 import { TextLineStream } from "@std/streams";
@@ -18,7 +19,6 @@ export class IPCWorker {
   static POOL = new Map<string, IPCWorker>();
 
   workerId: string;
-  workerData: WorkerInitData;
   process: Deno.ChildProcess;
 
   #activeIPCSocket: WebSocket | undefined;
@@ -26,9 +26,12 @@ export class IPCWorker {
 
   logs: LogStore;
 
-  constructor(workerData: WorkerInitData, logs: LogStore) {
+  constructor(
+    public readonly session: GameSession,
+    public readonly workerData: WorkerInitData,
+    logs: LogStore,
+  ) {
     this.workerId = workerData.workerId;
-    this.workerData = workerData;
     this.logs = logs;
 
     const env: Record<string, string> = {
@@ -181,6 +184,7 @@ export class IPCWorker {
       ts: new Date(timestamp),
       cpu,
       memory,
+      connections: this.session.connections.size,
     };
   }
 

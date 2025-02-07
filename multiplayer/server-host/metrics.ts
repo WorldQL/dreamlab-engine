@@ -23,6 +23,7 @@ export type WorkerMetrics = {
   readonly ts?: Date;
   readonly cpu: number;
   readonly memory: number;
+  readonly connections: number;
 };
 
 const internalReport = async (
@@ -40,7 +41,8 @@ const internalReport = async (
     .tag("worldId", workerData.worldId)
     .tag("editMode", workerData.editMode ? "true" : "false")
     .uintField("cpu", metrics.cpu)
-    .uintField("memory", metrics.memory);
+    .uintField("memory", metrics.memory)
+    .uintField("connections", metrics.connections);
 
   write.writePoint(point);
 };
