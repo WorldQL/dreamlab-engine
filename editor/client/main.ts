@@ -35,6 +35,9 @@ import { BottomTabs } from "./ui/bottom-tabs.ts";
 import { InspectorUI } from "./ui/inspector.ts";
 import { UndoRedoManager } from "./undo-redo.ts";
 
+// TODO: Make this autoincr from tag.
+console.log("VERSION 0.0.47")
+
 // makes pixel graphics not blurry
 TextureStyle.defaultOptions.scaleMode = "nearest";
 
