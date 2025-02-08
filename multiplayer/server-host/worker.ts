@@ -42,9 +42,9 @@ export class IPCWorker {
       "run",
       "-c",
       "./pre-exec/deno.runtime.json",
-      // ...(!workerData.editMode && workerData.inspect
-      //   ? [`--inspect=${workerData.inspect}`]
-      //   : []),
+      ...(!workerData.editMode && workerData.inspect
+        ? [`--inspect=${workerData.inspect}`]
+        : []),
       "--unstable-sloppy-imports",
       `--allow-net=${new URL(workerData.workerConnectUrl).host},${new URL(workerData.kvUrl).host}`,
       `--allow-read=./pre-exec/,${workerData.worldDirectory}`,
