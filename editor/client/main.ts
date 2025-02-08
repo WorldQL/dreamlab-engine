@@ -131,6 +131,31 @@ document.addEventListener("drop", async event => {
   }, 150);
 });
 
+async function checkClipboardForImage() {
+  try {
+    setTimeout(async () => {
+      const clipboardItems = await navigator.clipboard.read();
+      for (const item of clipboardItems) {
+          for (const type of item.types) {
+              if (type.startsWith('image/')) {
+                  console.log("Clipboard contains an image.");
+                  return true;
+              }
+          }
+      }
+      console.log("No image found in clipboard.");
+      return false;
+    }, 1000)
+
+  } catch (err) {
+      console.error("Failed to read clipboard contents: ", err);
+  }
+}
+
+window.checkClipboard = checkClipboardForImage;
+
+
+
 // #endregion
 
 const uiRoot = document.querySelector("main")! as HTMLElement;

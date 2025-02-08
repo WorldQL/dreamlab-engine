@@ -23,6 +23,7 @@ import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 // @ts-expect-error svg import bundled by esbuild
 import TypeScript from "../svg/typescript.svg";
 import { BehaviorTypeInfo } from "../util/behavior-type-info.ts";
+import { ScriptSession } from "./assistant/assistant.ts";
 
 type FileTreeNode =
   | { type: "file"; name: string; path: string }
@@ -112,6 +113,8 @@ export class FileTree implements InspectorUIWidget {
         current.children.set(finalPart, { type: "file", name: finalPart, path: file });
       }
 
+      ScriptSession.scriptMap = buildFileTreeMarkdown(fileTreeRoot);
+      
       const addViewButton = async (node: FileTreeNode): Promise<HTMLElement | null> => {
         if (node.type !== "file" || !node.name.endsWith(".ts")) {
           return null;
@@ -390,4 +393,40 @@ export class FileTree implements InspectorUIWidget {
   hide(): void {
     this.#section.remove();
   }
+}
+
+/**
+ * Recursively builds a Markdown formatted string representing the file tree.
+ * Used to provide a view of the filetree to the AI.
+ *
+ * @param node - The current FileTreeNode.
+ * @param indentLevel - The current indentation level (number of two-space indents).
+ * @returns A string representing the file tree in Markdown format.
+ */
+function buildFileTreeMarkdown(node: FileTreeNode, indentLevel: number = 0): string {
+  const indent = "  ".repeat(indentLevel);
+  let result = "";
+
+  if (node.type === "directory") {
+    // Only print the directory if it's not the root.
+    if (node.name !== "") {
+      result += `${indent}- ${node.name}/\n`;
+      indentLevel++; // Increase indent for the children
+    }
+
+    // Sort children alphabetically by name
+    const children = Array.from(node.children.values()).sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+
+    // Recursively build string for each child.
+    for (const child of children) {
+      result += buildFileTreeMarkdown(child, indentLevel);
+    }
+  } else {
+    // Files are printed without any suffix.
+    result += `${indent}- ${node.name}\n`;
+  }
+
+  return result;
 }

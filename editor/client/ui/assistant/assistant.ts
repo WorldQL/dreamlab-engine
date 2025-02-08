@@ -31,7 +31,7 @@ hljs.registerLanguage("javascript", javascript);
 export const suggestions = [
   { text: "Give the player a double jump" },
   { text: "Create a spike trap prefab that teleports the player back to PlayerSpawnpoint" },
-  { text: "Add an enemy that chases the player" },
+  { text: "Add an enemy that chases the players that are spawned" },
 ];
 
 export class Assistant {
@@ -163,24 +163,24 @@ export class Assistant {
     ScriptSession.httpServer = httpServer!;
     ScriptSession.instance = instance!;
 
-    (async () => {
-      let existingScriptMap = undefined;
-      try {
-        existingScriptMap = await getFileContent("script-map.md");
-        ScriptSession.scriptMap = existingScriptMap;
-      } catch {
-        // do nothing
-      }
+    // (async () => {
+    //   let existingScriptMap = undefined;
+    //   try {
+    //     existingScriptMap = await getFileContent("script-map.md");
+    //     ScriptSession.scriptMap = existingScriptMap;
+    //   } catch {
+    //     // do nothing
+    //   }
 
-      if (existingScriptMap !== undefined) return;
-      console.log("building script map!");
+    //   if (existingScriptMap !== undefined) return;
+    //   console.log("building script map!");
 
-      const scriptMap = await buildScriptMap();
-      ScriptSession.scriptMap = scriptMap;
+    //   const scriptMap = await buildScriptMap();
+    //   ScriptSession.scriptMap = scriptMap;
 
-      await createFile("script-map.md", scriptMap);
-      window.parent.postMessage({ action: "reloadFile", filename: "script-map.md" }, "*");
-    })();
+    //   await createFile("script-map.md", scriptMap);
+    //   window.parent.postMessage({ action: "reloadFile", filename: "script-map.md" }, "*");
+    // })();
   }
 
   async sendMessage(): Promise<void> {
@@ -564,6 +564,15 @@ export class Assistant {
           d.innerHTML = "✔ " + d.innerHTML;
         }
       }
+
+      const lastElement = this.#chatContent.querySelector(".bot-message:last-of-type");
+      lastElement?.insertAdjacentHTML(
+        "beforeend",
+        `<p>
+        <b>If new prefabs have been created, go to the prefabs tab to drag them in!</b>
+        Need help? <a href="https://discord.gg/Tbpy3kbuaW" target="_blank">Join our Discord and we'll help you ASAP!</a>
+        </p>`,
+      );
     }
     ScriptSession.chatState = "followup";
 
