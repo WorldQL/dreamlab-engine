@@ -240,10 +240,16 @@ export class Assistant {
 
     try {
       const url = new URL(window.location.href);
-      const chatURL =
+      let chatURL =
         url.hostname === "editor.dreamlab.gg"
           ? "https://app.dreamlab.gg/api/chatbot/chat"
           : "http://localhost:3000/api/chatbot/chat";
+
+      // @ts-expect-error global
+      if (window.CHAT_URL_OVERRIDE) {
+        // @ts-expect-error global
+        chatURL = window.CHAT_URL_OVERRIDE;
+      }
 
       const response = await fetch(chatURL, {
         method: "POST",
