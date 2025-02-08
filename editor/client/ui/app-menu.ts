@@ -189,7 +189,6 @@ export class AppMenu {
     this.updateButtonStates();
   }
 
-  public lastPingTime = -1;
 
   setupStats(game: ClientGame): HTMLElement {
     const countText = document.createTextNode("1");
@@ -205,16 +204,7 @@ export class AppMenu {
     const pingText = document.createTextNode("0");
     game.on(Ping, ({ ping }) => {
       pingText.textContent = ping.toLocaleString();
-      this.lastPingTime = Date.now();
     });
-
-    // automatically reload the page if we stopped getting pings (which means the server died and prevents a weird state)
-    setInterval(() => {
-      const diff = Date.now() - this.lastPingTime;
-      if (diff > 6000) {
-        alert("Disconnected from server. Please reload this page to reconnect.");
-      }
-    }, 5000);
 
     // TODO: make this look nice lol
     return elem("div", { id: "stats" }, [
