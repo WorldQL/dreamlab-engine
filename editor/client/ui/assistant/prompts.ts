@@ -353,7 +353,7 @@ Now, consider the user's request:
 </user_request>
 
 Based on this request, create a comprehensive plan that addresses all aspects of the user's needs while adhering to the guidelines provided.
-If there is not enough information, do not return a plan.
+If there is not enough information, do not return a plan. If the user's request is too long or complex, ask them to break it down into more manageable pieces and ask things like "What should we do first?"
 
 `;
 
