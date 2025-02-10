@@ -254,7 +254,13 @@ export class Gizmo extends Entity {
           entityArray.map(entity => [entity, entity.globalTransform.clone()] as const),
         );
 
-        this.#action = { type: "scale", axis, offset, originals };
+        this.#action = {
+          type: "scale",
+          axis,
+          offset,
+          originals,
+          origin: this.#calculateAvgPosition(),
+        };
         this.fire(GizmoUpdateStart, "scale", entities);
       };
 
@@ -277,6 +283,7 @@ export class Gizmo extends Entity {
         axis: "x" | "y" | "both";
         offset: Vector2;
         originals: Map<Entity, Transform>;
+        origin: Vector2;
       }
     | undefined;
 
@@ -530,11 +537,36 @@ export class Gizmo extends Entity {
       const mul = Vector2.splat(offsetDistance / originalDistance);
       if (this.#action.axis === "x") mul.y = 1;
       if (this.#action.axis === "y") mul.x = 1;
-      const scale = this.#action.originals.get(this.#target[0])!.scale.mul(mul);
-      if (this.#target[0] instanceof Camera || this.#target[0] instanceof EditorFacadeCamera) {
-        this.#target[0].zoom = 1 / (this.#action.axis === "y" ? scale.y : scale.x);
+
+      if (this.#auxTargets.size) {
+        const entities = [this.#target[0], ...this.#auxTargets.keys()];
+        for (const entity of entities) {
+          // explode out from center
+          const orig = this.#action.originals.get(entity)!;
+          const delta = orig.position.sub(this.#action.origin);
+
+          entity.globalTransform.position = this.#action.origin.add(delta.mul(mul));
+
+          const scale = orig.scale.mul(mul);
+          if (entity instanceof Camera || entity instanceof EditorFacadeCamera) {
+            entity.zoom = 1 / (this.#action.axis === "y" ? scale.y : scale.x);
+          } else {
+            entity.globalTransform.scale = scale;
+          }
+        }
+
+        this.#updateTargetOffsets();
       } else {
-        this.#target[0].globalTransform.scale = scale;
+        const scale = this.#action.originals.get(this.#target[0])!.scale.mul(mul);
+
+        if (
+          this.#target[0] instanceof Camera ||
+          this.#target[0] instanceof EditorFacadeCamera
+        ) {
+          this.#target[0].zoom = 1 / (this.#action.axis === "y" ? scale.y : scale.x);
+        } else {
+          this.#target[0].globalTransform.scale = scale;
+        }
       }
 
       // make sure to extend this array for multiselect
