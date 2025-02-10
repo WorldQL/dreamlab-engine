@@ -38,6 +38,7 @@
     "npm:pako@2.1.0": "2.1.0",
     "npm:pixi.js@8.4.1": "8.4.1",
     "npm:pixi.js@8.5.1": "8.5.1",
+    "npm:pixi.js@8.7.3": "8.7.3",
     "npm:quad-indices@2.0.1": "2.0.1",
     "npm:type-fest@4.26.1": "4.26.1",
     "npm:zod-validation-error@3.3.1": "3.3.1_zod@3.23.8"
@@ -653,6 +654,20 @@
     },
     "pixi.js@8.5.1": {
       "integrity": "sha512-yYj8tWehUfH7or/34gf17XyZGnyjiG8toMH8oy9gP+4GjLK+/WjFLlRqaP0AECB8XGF8AJxgkS5y2aMDHqx11A==",
+      "dependencies": [
+        "@pixi/colord",
+        "@types/css-font-loading-module",
+        "@types/earcut",
+        "@webgpu/types",
+        "@xmldom/xmldom",
+        "earcut",
+        "eventemitter3",
+        "ismobilejs",
+        "parse-svg-path"
+      ]
+    },
+    "pixi.js@8.7.3": {
+      "integrity": "sha512-wfWlhJYnGx1s4f2yoouevQjaeacbJ12LTkJGa+n9AIYNIjOnmJylBtZ2mARX7iFk3mr2xv0wuo//XPe2hk5OBw==",
       "dependencies": [
         "@pixi/colord",
         "@types/css-font-loading-module",
