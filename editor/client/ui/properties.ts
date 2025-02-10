@@ -289,7 +289,18 @@ export class Properties implements InspectorUIWidget {
     const valuesTable = new DataTable();
     valuesSection.addContent(valuesTable);
 
-    for (const [key, value] of entity.values.entries()) {
+    const entries = entity.values
+      .entries()
+      .toArray()
+      .toSorted(([, a], [, b]) => {
+        if (a.sortOrder === b.sortOrder) {
+          return 0;
+        }
+
+        return b.sortOrder - a.sortOrder;
+      });
+
+    for (const [key, value] of entries) {
       const [valueField, refreshValue] = createValueControl(this.game, {
         id: `${entity.ref}/${key}`,
         typeTag: value.typeTag,

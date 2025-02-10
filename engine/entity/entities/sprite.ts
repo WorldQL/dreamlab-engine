@@ -33,7 +33,7 @@ export class Sprite extends PixiEntity {
   constructor(ctx: EntityContext) {
     super(ctx);
 
-    this.defineValue(Sprite, "texture", { type: TextureAdapter });
+    this.defineValue(Sprite, "texture", { type: TextureAdapter, sortOrder: 10 });
     this.defineValues(Sprite, "width", "height", "alpha");
 
     if (this.game.isClient() && this.texture !== "") {

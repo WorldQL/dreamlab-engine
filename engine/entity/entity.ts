@@ -101,6 +101,7 @@ type EntityValueOpts<E extends Entity, P extends EntityValueProp<E>> = {
   replicated?: boolean;
   hidden?: Value["hidden"];
   persistent?: boolean;
+  sortOrder?: number;
 };
 
 export abstract class Entity implements ISignalHandler {
@@ -772,6 +773,7 @@ export abstract class Entity implements ISignalHandler {
     if (opts.replicated !== undefined) value.replicated = opts.replicated;
     if (opts.hidden !== undefined) value.hidden = opts.hidden;
     if (opts.persistent !== undefined) value.persistent = opts.persistent;
+    if (opts.sortOrder !== undefined) value.sortOrder = opts.sortOrder;
 
     value[internal.valueRelatedEntity] = this;
     if (adapter) adapter.valueObj = value;

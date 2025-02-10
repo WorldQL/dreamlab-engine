@@ -107,6 +107,7 @@ export class Value<T = unknown> {
   replicated: boolean = true;
   hidden: boolean | ((values: ReadonlyMap<string, Value>) => boolean) = false;
   persistent: boolean = true;
+  sortOrder: number = 0;
 
   constructor(
     registry: ValueRegistry,
