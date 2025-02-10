@@ -143,11 +143,11 @@ export class Assistant {
     });
 
     this.#chatContent.addEventListener("scroll", this.handleScroll.bind(this));
-    const botMessageElement = elem("div", { className: "bot-message" }, [
-      "",
-    ]);
-    botMessageElement.innerHTML += "<p>We are working on a new and improved AI!<br><br><a style='color: white; font-size: large;' target='_blank' href='https://app.dreamlab.gg/'>&rarr; Try the new Game Planner here</a> &larr;</p>"
+    const botMessageElement = elem("div", { className: "bot-message" }, [""]);
+    botMessageElement.innerHTML +=
+      "<p>We are working on a new and improved AI!<br><br><a style='color: white; font-size: large;' target='_blank' href='https://app.dreamlab.gg/'>&rarr; Try the new Game Planner here</a> &larr;</p>";
     this.#chatContent.appendChild(botMessageElement);
+    // TODO: Remove this along with refactoring this component to use lit and be easier to follow.
 
     // this.showSuggestions();
     this.container.append(this.#section);
