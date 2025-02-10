@@ -114,9 +114,9 @@ export class GameOverlays implements InspectorUIWidget {
   }
 
   drawCursorOverlay(): HTMLElement {
-    const cameraPos = elem("span", {}, [this.formatVector(Vector2.ZERO)]);
-    const cursorPos = elem("span", {}, [this.formatVector(Vector2.ZERO)]);
-    const zoomLevel = elem("span", {}, ["1.00 \u00d7"]);
+    const cameraPos = <span>{this.formatVector(Vector2.ZERO)}</span>;
+    const cursorPos = <span>{this.formatVector(Vector2.ZERO)}</span>;
+    const zoomLevel = <span>1.00 {"\u00d7"}</span>;
 
     this.game.on(InternalGameTick, () => {
       const camera = this.game.local._.Camera;
@@ -129,16 +129,17 @@ export class GameOverlays implements InspectorUIWidget {
       cursorPos.textContent = this.formatVector(cursor.world);
     });
 
-    return elem("div", { id: "cursor-overlay" }, [
-      icon(Move),
-      elem("span", {}, ["Camera"]),
-      cameraPos,
-      icon(MousePointer2),
-      elem("span", {}, ["Cursor"]),
-      cursorPos,
-      icon(ZoomIn),
-      elem("span", {}, ["Zoom"]),
-      zoomLevel,
-    ]);
+    return (
+      <div id="cursor-overlay">
+        {icon(Move)}
+        <span>Camera</span>
+        {cameraPos}
+        {icon(MousePointer2)}
+        <span>Cursor</span>
+        {icon(ZoomIn)}
+        <span>Zoom</span>
+        {zoomLevel}
+      </div>
+    ) as HTMLElement; // need to cast because JSX isn't strongly typed on tag name so it only knows that it's an Element and not an HTMLElement
   }
 }

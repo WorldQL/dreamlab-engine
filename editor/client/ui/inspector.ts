@@ -6,7 +6,7 @@ import { BehaviorTypeInfoService } from "../util/behavior-type-info.ts";
 import { BehaviorPanel } from "./behavior-panel/mod.ts";
 import { ContextMenu } from "./context-menu.ts";
 import { FileTree } from "./file-tree.ts";
-import { GameOverlays } from "./game-overlays.ts";
+import { GameOverlays } from "./game-overlays.tsx";
 import { setupKeyboardShortcuts } from "./keyboard-shortcuts.ts";
 import { Properties } from "./properties.ts";
 import { SceneGraph } from "./scene-graph.ts";
