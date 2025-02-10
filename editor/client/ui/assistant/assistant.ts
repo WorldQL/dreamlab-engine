@@ -135,7 +135,7 @@ export class Assistant {
       this.showSuggestions();
     };
 
-    // chatInputContainer.append(this.#chatInput, this.#sendButton);
+    chatInputContainer.append(this.#chatInput, this.#sendButton);
     this.#section.append(this.#chatContent, chatInputContainer);
 
     this.#chatInput.addEventListener("keydown", function (event) {
@@ -144,12 +144,12 @@ export class Assistant {
 
     this.#chatContent.addEventListener("scroll", this.handleScroll.bind(this));
     const botMessageElement = elem("div", { className: "bot-message" }, [
-      "",
+      "Hi! I'm here to help you create your game. I can write code and create reusable objects you can place using the editor!",
     ]);
-    botMessageElement.innerHTML += "<p>We are working on a new and improved AI!<br><br><a style='color: white; font-size: large;' target='_blank' href='https://app.dreamlab.gg/'>&rarr; Try the new Game Planner here</a> &larr;</p>"
+    // botMessageElement.innerHTML += "<br><br><p style='color:#c3ff00;'>We are currently upgrading the AI to support breaking down big game ideas into smaller pieces.<br><b><u>Please check back tomorrow for a more advanced chatbot! We will send you an email when it's ready.</u></b>"
     this.#chatContent.appendChild(botMessageElement);
 
-    // this.showSuggestions();
+    this.showSuggestions();
     this.container.append(this.#section);
 
     const urlParams = new URLSearchParams(window.location.search);
