@@ -337,139 +337,137 @@ export class Gizmo extends Entity {
           const entityCenterX = (entityBounds.minX + entityBounds.maxX) / 2;
           const entityCenterY = (entityBounds.minY + entityBounds.maxY) / 2;
 
-          if (this.#action.axis === "x" || this.#action.axis === "both") {
-            // Align target's left edge to entity's right edge
-            const dxLeft = entityBounds.maxX - targetBounds.minX;
-            if (Math.abs(dxLeft) < snapThreshold) {
-              snapX ??= world.x + dxLeft;
+          // TODO: theres gotta be some sort of for loop we can do here
 
-              // Compute a vertical line that covers both entity and target vertically
-              const combinedMinY = Math.min(entityBounds.minY, targetBounds.minY);
-              const combinedMaxY = Math.max(entityBounds.maxY, targetBounds.maxY);
+          // Align target's left edge to entity's right edge
+          const dxLeft = entityBounds.maxX - targetBounds.minX;
+          if (Math.abs(dxLeft) < snapThreshold && dxLeft !== 0) {
+            snapX ??= world.x + dxLeft;
 
-              this.#snapLinesGfx!.context.moveTo(entityBounds.maxX, -combinedMinY)
-                .lineTo(entityBounds.maxX, -combinedMaxY)
-                .stroke({ color: 0xabddff, width: 0.03 });
-            }
+            // Compute a vertical line that covers both entity and target vertically
+            const combinedMinY = Math.min(entityBounds.minY, targetBounds.minY);
+            const combinedMaxY = Math.max(entityBounds.maxY, targetBounds.maxY);
 
-            // Align target's right edge to entity's left edge
-            const dxRight = entityBounds.minX - targetBounds.maxX;
-            if (Math.abs(dxRight) < snapThreshold) {
-              snapX ??= world.x + dxRight;
-
-              const combinedMinY = Math.min(entityBounds.minY, targetBounds.minY);
-              const combinedMaxY = Math.max(entityBounds.maxY, targetBounds.maxY);
-
-              this.#snapLinesGfx!.context.moveTo(entityBounds.minX, -combinedMinY)
-                .lineTo(entityBounds.minX, -combinedMaxY)
-                .stroke({ color: 0xabddff, width: 0.03 });
-            }
-
-            // Align target's left edge to entity's left edge
-            const dxLeftToLeft = entityBounds.minX - targetBounds.minX;
-            if (Math.abs(dxLeftToLeft) < snapThreshold) {
-              snapX ??= world.x + dxLeftToLeft;
-
-              const combinedMinY = Math.min(entityBounds.minY, targetBounds.minY);
-              const combinedMaxY = Math.max(entityBounds.maxY, targetBounds.maxY);
-
-              this.#snapLinesGfx!.context.moveTo(entityBounds.minX, -combinedMinY)
-                .lineTo(entityBounds.minX, -combinedMaxY)
-                .stroke({ color: 0xabddff, width: 0.03 });
-            }
-
-            // Align target's right edge to entity's right edge
-            const dxRightToRight = entityBounds.maxX - targetBounds.maxX;
-            if (Math.abs(dxRightToRight) < snapThreshold) {
-              snapX ??= world.x + dxRightToRight;
-
-              const combinedMinY = Math.min(entityBounds.minY, targetBounds.minY);
-              const combinedMaxY = Math.max(entityBounds.maxY, targetBounds.maxY);
-
-              this.#snapLinesGfx!.context.moveTo(entityBounds.maxX, -combinedMinY)
-                .lineTo(entityBounds.maxX, -combinedMaxY)
-                .stroke({ color: 0xabddff, width: 0.03 });
-            }
-
-            // Center alignment horizontally
-            const dxCenter = entityCenterX - targetCenterX;
-            if (Math.abs(dxCenter) < snapThreshold) {
-              snapX ??= world.x + dxCenter;
-
-              const combinedMinY = Math.min(entityBounds.minY, targetBounds.minY);
-              const combinedMaxY = Math.max(entityBounds.maxY, targetBounds.maxY);
-
-              this.#snapLinesGfx!.context.moveTo(entityCenterX, -combinedMinY)
-                .lineTo(entityCenterX, -combinedMaxY)
-                .stroke({ color: 0xabddff, width: 0.03 });
-            }
+            this.#snapLinesGfx!.context.moveTo(entityBounds.maxX, -combinedMinY)
+              .lineTo(entityBounds.maxX, -combinedMaxY)
+              .stroke({ color: 0xabddff, width: 0.03 });
           }
 
-          if (this.#action.axis === "y" || this.#action.axis === "both") {
-            // Align target's top edge to entity's top edge
-            const dyTop = entityBounds.minY - targetBounds.minY;
-            if (Math.abs(dyTop) < snapThreshold) {
-              snapY ??= world.y + dyTop;
+          // Align target's right edge to entity's left edge
+          const dxRight = entityBounds.minX - targetBounds.maxX;
+          if (Math.abs(dxRight) < snapThreshold && dxRight !== 0) {
+            snapX ??= world.x + dxRight;
 
-              const combinedMinX = Math.min(entityBounds.minX, targetBounds.minX);
-              const combinedMaxX = Math.max(entityBounds.maxX, targetBounds.maxX);
+            const combinedMinY = Math.min(entityBounds.minY, targetBounds.minY);
+            const combinedMaxY = Math.max(entityBounds.maxY, targetBounds.maxY);
 
-              this.#snapLinesGfx!.context.moveTo(combinedMinX, -entityBounds.minY)
-                .lineTo(combinedMaxX, -entityBounds.minY)
-                .stroke({ color: 0xabddff, width: 0.03 });
-            }
+            this.#snapLinesGfx!.context.moveTo(entityBounds.minX, -combinedMinY)
+              .lineTo(entityBounds.minX, -combinedMaxY)
+              .stroke({ color: 0xabddff, width: 0.03 });
+          }
 
-            // Align target's bottom edge to entity's bottom edge
-            const dyBottom = entityBounds.maxY - targetBounds.maxY;
-            if (Math.abs(dyBottom) < snapThreshold) {
-              snapY ??= world.y + dyBottom;
+          // Align target's left edge to entity's left edge
+          const dxLeftToLeft = entityBounds.minX - targetBounds.minX;
+          if (Math.abs(dxLeftToLeft) < snapThreshold && dxLeftToLeft !== 0) {
+            snapX ??= world.x + dxLeftToLeft;
 
-              const combinedMinX = Math.min(entityBounds.minX, targetBounds.minX);
-              const combinedMaxX = Math.max(entityBounds.maxX, targetBounds.maxX);
+            const combinedMinY = Math.min(entityBounds.minY, targetBounds.minY);
+            const combinedMaxY = Math.max(entityBounds.maxY, targetBounds.maxY);
 
-              this.#snapLinesGfx!.context.moveTo(combinedMinX, -entityBounds.maxY)
-                .lineTo(combinedMaxX, -entityBounds.maxY)
-                .stroke({ color: 0xabddff, width: 0.03 });
-            }
+            this.#snapLinesGfx!.context.moveTo(entityBounds.minX, -combinedMinY)
+              .lineTo(entityBounds.minX, -combinedMaxY)
+              .stroke({ color: 0xabddff, width: 0.03 });
+          }
 
-            // Align target's top edge to entity's bottom edge (no vertical gap)
-            const dyTopTouch = entityBounds.maxY - targetBounds.minY;
-            if (Math.abs(dyTopTouch) < snapThreshold) {
-              snapY ??= world.y + dyTopTouch;
+          // Align target's right edge to entity's right edge
+          const dxRightToRight = entityBounds.maxX - targetBounds.maxX;
+          if (Math.abs(dxRightToRight) < snapThreshold && dxRightToRight !== 0) {
+            snapX ??= world.x + dxRightToRight;
 
-              const combinedMinX = Math.min(entityBounds.minX, targetBounds.minX);
-              const combinedMaxX = Math.max(entityBounds.maxX, targetBounds.maxX);
+            const combinedMinY = Math.min(entityBounds.minY, targetBounds.minY);
+            const combinedMaxY = Math.max(entityBounds.maxY, targetBounds.maxY);
 
-              this.#snapLinesGfx!.context.moveTo(combinedMinX, -entityBounds.maxY)
-                .lineTo(combinedMaxX, -entityBounds.maxY)
-                .stroke({ color: 0xabddff, width: 0.03 });
-            }
+            this.#snapLinesGfx!.context.moveTo(entityBounds.maxX, -combinedMinY)
+              .lineTo(entityBounds.maxX, -combinedMaxY)
+              .stroke({ color: 0xabddff, width: 0.03 });
+          }
 
-            // Align target's bottom edge to entity's top edge (no vertical gap)
-            const dyBottomTouch = entityBounds.minY - targetBounds.maxY;
-            if (Math.abs(dyBottomTouch) < snapThreshold) {
-              snapY ??= world.y + dyBottomTouch;
+          // Center alignment horizontally
+          const dxCenter = entityCenterX - targetCenterX;
+          if (Math.abs(dxCenter) < snapThreshold && dxCenter !== 0) {
+            snapX ??= world.x + dxCenter;
 
-              const combinedMinX = Math.min(entityBounds.minX, targetBounds.minX);
-              const combinedMaxX = Math.max(entityBounds.maxX, targetBounds.maxX);
+            const combinedMinY = Math.min(entityBounds.minY, targetBounds.minY);
+            const combinedMaxY = Math.max(entityBounds.maxY, targetBounds.maxY);
 
-              this.#snapLinesGfx!.context.moveTo(combinedMinX, -entityBounds.minY)
-                .lineTo(combinedMaxX, -entityBounds.minY)
-                .stroke({ color: 0xabddff, width: 0.03 });
-            }
+            this.#snapLinesGfx!.context.moveTo(entityCenterX, -combinedMinY)
+              .lineTo(entityCenterX, -combinedMaxY)
+              .stroke({ color: 0xabddff, width: 0.03 });
+          }
 
-            // Center alignment vertically
-            const dyCenter = entityCenterY - targetCenterY;
-            if (Math.abs(dyCenter) < snapThreshold) {
-              snapY ??= world.y + dyCenter;
+          // Align target's top edge to entity's top edge
+          const dyTop = entityBounds.minY - targetBounds.minY;
+          if (Math.abs(dyTop) < snapThreshold && dyTop !== 0) {
+            snapY ??= world.y + dyTop;
 
-              const combinedMinX = Math.min(entityBounds.minX, targetBounds.minX);
-              const combinedMaxX = Math.max(entityBounds.maxX, targetBounds.maxX);
+            const combinedMinX = Math.min(entityBounds.minX, targetBounds.minX);
+            const combinedMaxX = Math.max(entityBounds.maxX, targetBounds.maxX);
 
-              this.#snapLinesGfx!.context.moveTo(combinedMinX, -entityCenterY)
-                .lineTo(combinedMaxX, -entityCenterY)
-                .stroke({ color: 0xabddff, width: 0.03 });
-            }
+            this.#snapLinesGfx!.context.moveTo(combinedMinX, -entityBounds.minY)
+              .lineTo(combinedMaxX, -entityBounds.minY)
+              .stroke({ color: 0xabddff, width: 0.03 });
+          }
+
+          // Align target's bottom edge to entity's bottom edge
+          const dyBottom = entityBounds.maxY - targetBounds.maxY;
+          if (Math.abs(dyBottom) < snapThreshold && dyBottom !== 0) {
+            snapY ??= world.y + dyBottom;
+
+            const combinedMinX = Math.min(entityBounds.minX, targetBounds.minX);
+            const combinedMaxX = Math.max(entityBounds.maxX, targetBounds.maxX);
+
+            this.#snapLinesGfx!.context.moveTo(combinedMinX, -entityBounds.maxY)
+              .lineTo(combinedMaxX, -entityBounds.maxY)
+              .stroke({ color: 0xabddff, width: 0.03 });
+          }
+
+          // Align target's top edge to entity's bottom edge (no vertical gap)
+          const dyTopTouch = entityBounds.maxY - targetBounds.minY;
+          if (Math.abs(dyTopTouch) < snapThreshold && dyTopTouch !== 0) {
+            snapY ??= world.y + dyTopTouch;
+
+            const combinedMinX = Math.min(entityBounds.minX, targetBounds.minX);
+            const combinedMaxX = Math.max(entityBounds.maxX, targetBounds.maxX);
+
+            this.#snapLinesGfx!.context.moveTo(combinedMinX, -entityBounds.maxY)
+              .lineTo(combinedMaxX, -entityBounds.maxY)
+              .stroke({ color: 0xabddff, width: 0.03 });
+          }
+
+          // Align target's bottom edge to entity's top edge (no vertical gap)
+          const dyBottomTouch = entityBounds.minY - targetBounds.maxY;
+          if (Math.abs(dyBottomTouch) < snapThreshold && dyBottomTouch !== 0) {
+            snapY ??= world.y + dyBottomTouch;
+
+            const combinedMinX = Math.min(entityBounds.minX, targetBounds.minX);
+            const combinedMaxX = Math.max(entityBounds.maxX, targetBounds.maxX);
+
+            this.#snapLinesGfx!.context.moveTo(combinedMinX, -entityBounds.minY)
+              .lineTo(combinedMaxX, -entityBounds.minY)
+              .stroke({ color: 0xabddff, width: 0.03 });
+          }
+
+          // Center alignment vertically
+          const dyCenter = entityCenterY - targetCenterY;
+          if (Math.abs(dyCenter) < snapThreshold && dyCenter !== 0) {
+            snapY ??= world.y + dyCenter;
+
+            const combinedMinX = Math.min(entityBounds.minX, targetBounds.minX);
+            const combinedMaxX = Math.max(entityBounds.maxX, targetBounds.maxX);
+
+            this.#snapLinesGfx!.context.moveTo(combinedMinX, -entityCenterY)
+              .lineTo(combinedMaxX, -entityCenterY)
+              .stroke({ color: 0xabddff, width: 0.03 });
           }
         }
 
