@@ -384,6 +384,11 @@ Original user request: {{ORIG_REQUEST}}
 {{PLAN}}
 </plan>
 
+The code you've written in previous steps is included here.
+<previous_code>
+{{PREVIOUS_CODE}}
+</previous_code>
+
 Some additional notes:
 - You may use TypeScript's regular setTimeout()
 - Do not hardcode entity lookups, use EntityByRef on a @syncedValue which allows to user to assign entity relationships by dragging and dropping in the editor.

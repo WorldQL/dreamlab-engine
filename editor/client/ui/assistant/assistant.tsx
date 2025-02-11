@@ -9,13 +9,7 @@ import { EditorMetadataEntity } from "../../../common/mod.ts";
 import { Check, Copy, icon, RotateCcw, Send } from "../../_icons.ts";
 import { createFile } from "../../main.ts";
 import { InspectorUI } from "../inspector.ts";
-import {
-  buildPrefabMap,
-  buildScriptMap,
-  getFileContent,
-  getTagContents,
-  oneOffMessage,
-} from "./context.ts";
+import { buildPrefabMap, getFileContent, getTagContents, oneOffMessage } from "./context.ts";
 import { spawnEntity } from "./editor-world-interaction-util.ts";
 import {
   available_topics,
@@ -95,13 +89,16 @@ export class Assistant {
       }
     });
 
-    this.#sendButton = elem("button", { className: "send-button", title: "Send message" }, [
-      icon(Send),
-    ]) as HTMLButtonElement;
-    this.#newChatButton = elem(
-      "button",
-      { className: "new-chat-button", title: "Clear and start a new chat" },
-      ["New Chat"],
+    this.#sendButton = (
+      <button className="send-button" title="Send Message">
+        {icon(Send)}
+      </button>
+    ) as HTMLButtonElement;
+
+    this.#newChatButton = (
+      <button className="new-chat-bottom" title="Clear and start a new chat">
+        New Chat
+      </button>
     ) as HTMLButtonElement;
   }
 
@@ -166,25 +163,6 @@ export class Assistant {
 
     ScriptSession.httpServer = httpServer!;
     ScriptSession.instance = instance!;
-
-    // (async () => {
-    //   let existingScriptMap = undefined;
-    //   try {
-    //     existingScriptMap = await getFileContent("script-map.md");
-    //     ScriptSession.scriptMap = existingScriptMap;
-    //   } catch {
-    //     // do nothing
-    //   }
-
-    //   if (existingScriptMap !== undefined) return;
-    //   console.log("building script map!");
-
-    //   const scriptMap = await buildScriptMap();
-    //   ScriptSession.scriptMap = scriptMap;
-
-    //   await createFile("script-map.md", scriptMap);
-    //   window.parent.postMessage({ action: "reloadFile", filename: "script-map.md" }, "*");
-    // })();
   }
 
   async sendMessage(): Promise<void> {
@@ -287,6 +265,8 @@ export class Assistant {
 
   private isUserNearBottom = true;
   private observerTimeout: number | null = null;
+
+  public codeEditResponsesSoFar: { filename: string; contentsOrDiff: string }[] = [];
 
   // #region Handle Stream
   async handleStreamingResponse(
@@ -477,12 +457,22 @@ export class Assistant {
             .replaceAll("{{EXISTING_FILE}}", "")
             .replaceAll("{{FILE_INSTRUCTIONS}}", instructions)
             .replaceAll("{{PLAN}}", JSON.stringify(planArray))
-            .replaceAll("{{ORIG_REQUEST}}", prompt);
+            .replaceAll("{{ORIG_REQUEST}}", prompt)
+            .replaceAll(
+              "{{PREVIOUS_CODE}}",
+              this.codeEditResponsesSoFar
+                .map(({ filename, contentsOrDiff }) => `${filename}:\n${contentsOrDiff}`)
+                .join("\n\n"),
+            )
+            .replaceAll("{{OUTPUT_TYPE}}", fullFileInstructions);
+
+          console.log("PREPARED", prepared);
 
           const result = await oneOffMessage(prepared);
           console.log(result);
           const code = getTagContents("code", result);
           if (code) {
+            this.codeEditResponsesSoFar.push({ filename: target, contentsOrDiff: code });
             await createFile(target, code);
             window.parent.postMessage({ action: "reloadFile", filename: target }, "*");
           }
