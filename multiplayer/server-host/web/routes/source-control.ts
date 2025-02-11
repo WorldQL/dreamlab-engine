@@ -6,6 +6,8 @@ import { JsonAPIError } from "../util/api.ts";
 
 import * as fs from "@std/fs";
 import * as path from "@std/path";
+import { fileIsProbablyBehaviorScript } from "../../../../build-system/build-world.ts";
+import { buildWorld } from "../../world-build.ts";
 
 export const serveSourceControlAPI = (router: Router) => {
   // TODO: auth ??
@@ -513,6 +515,40 @@ export const serveSourceControlAPI = (router: Router) => {
         stdout: "null",
       }).spawn();
       await cleanProcess.status;
+
+      const computedPath = path.join(sourceRoot, filePath);
+      const relativePath = path.relative(sourceRoot, computedPath);
+
+      let fileExists = true;
+      try {
+        await Deno.stat(computedPath);
+      } catch (err) {
+        if (err instanceof Deno.errors.NotFound) {
+          fileExists = false;
+        } else {
+          throw err;
+        }
+      }
+
+      if (fileExists) {
+        await buildWorld(instance.info.worldId, instance.info.worldDirectory, "_dist");
+        const isBehavior = await fileIsProbablyBehaviorScript(computedPath);
+        console.log("create/modify");
+        instance.session?.broadcastPacket({
+          t: "ScriptEdited",
+          script_location: relativePath,
+          behavior_script_id: isBehavior
+            ? `res://${relativePath.replace(/\.tsx?$/, ".js")}`
+            : undefined,
+        });
+      } else {
+        console.log("delete");
+        instance.session?.broadcastPacket({
+          t: "ScriptEdited",
+          script_location: relativePath,
+          behavior_script_id: undefined,
+        });
+      }
 
       ctx.response.body = {
         success: true,
