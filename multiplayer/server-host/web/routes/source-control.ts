@@ -533,7 +533,6 @@ export const serveSourceControlAPI = (router: Router) => {
       if (fileExists) {
         await buildWorld(instance.info.worldId, instance.info.worldDirectory, "_dist");
         const isBehavior = await fileIsProbablyBehaviorScript(computedPath);
-        console.log("create/modify");
         instance.session?.broadcastPacket({
           t: "ScriptEdited",
           script_location: relativePath,
@@ -542,7 +541,6 @@ export const serveSourceControlAPI = (router: Router) => {
             : undefined,
         });
       } else {
-        console.log("delete");
         instance.session?.broadcastPacket({
           t: "ScriptEdited",
           script_location: relativePath,
