@@ -3,7 +3,6 @@ import * as internal from "@dreamlab/engine/internal";
 import { ReceivedInitialNetworkSnapshot } from "@dreamlab/proto/common/signals.ts";
 import { convertEntityDefinition, getSceneFromProject, ProjectSchema } from "@dreamlab/scene";
 import { z } from "@dreamlab/vendor/zod.ts";
-import { Gizmo } from "../../editor/common/entities/mod.ts";
 import { ClientConnection } from "./networking/net-connection.ts";
 
 export const setupGame = async (
@@ -42,6 +41,7 @@ export const setupGame = async (
   if (editMode) {
     game.physics.enabled = false;
 
+    const Gizmo = Entity.getEntityType("@editor/Gizmo");
     game.local.spawn({
       type: Gizmo,
       name: "Gizmo",
