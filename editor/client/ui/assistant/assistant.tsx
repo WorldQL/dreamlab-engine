@@ -143,9 +143,12 @@ export class Assistant {
     });
 
     this.#chatContent.addEventListener("scroll", this.handleScroll.bind(this));
-    const botMessageElement = elem("div", { className: "bot-message" }, [
-      "Hi! I'm here to help you create your game. I can write code and create reusable objects you can place using the editor!",
-    ]);
+    const botMessageElement = (
+      <div className="bot-message">
+        Hi! I'm here to help you create your game. I can write code and create reusable objects
+        you can place using the editor!
+      </div>
+    );
     // botMessageElement.innerHTML += "<br><br><p style='color:#c3ff00;'>We are currently upgrading the AI to support breaking down big game ideas into smaller pieces.<br><b><u>Please check back tomorrow for a more advanced chatbot! We will send you an email when it's ready.</u></b>"
     this.#chatContent.appendChild(botMessageElement);
 

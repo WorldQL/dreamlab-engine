@@ -4,7 +4,7 @@ import { LogViewer } from "./log-viewer.ts";
 import { PrefabViewer } from "./prefab-viewer.ts";
 import { Terminal, Box, icon, Bot, Wand } from "../_icons.ts";
 import { ClientGame } from "@dreamlab/engine";
-import { Assistant } from "./assistant/assistant.ts";
+import { Assistant } from "./assistant/assistant.tsx";
 
 export class BottomTabs implements InspectorUIWidget {
   #container: HTMLElement;

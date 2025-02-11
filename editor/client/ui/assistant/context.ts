@@ -2,7 +2,7 @@ import type { Entity, JsonArray, JsonObject, Primitive } from "@dreamlab/engine"
 import { BehaviorSchema } from "@dreamlab/scene";
 import { EditorMetadataEntity } from "../../../common/mod.ts";
 import type { InspectorUI } from "../inspector.ts";
-import { ScriptSession } from "./assistant.ts";
+import { ScriptSession } from "./assistant.tsx";
 import { summarize } from "./prompts.ts";
 
 async function handleStreamingResponse(

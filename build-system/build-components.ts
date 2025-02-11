@@ -188,6 +188,7 @@ export const bundleClient = async (
       }),
     ],
     jsx: "automatic",
+    jsxImportSource: "@dreamlab/ui",
     entryPoints: inputs,
     outdir,
   };

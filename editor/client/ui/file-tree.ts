@@ -23,7 +23,7 @@ import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 // @ts-expect-error svg import bundled by esbuild
 import TypeScript from "../svg/typescript.svg";
 import { BehaviorTypeInfo } from "../util/behavior-type-info.ts";
-import { ScriptSession } from "./assistant/assistant.ts";
+import { ScriptSession } from "./assistant/assistant.tsx";
 
 type FileTreeNode =
   | { type: "file"; name: string; path: string }

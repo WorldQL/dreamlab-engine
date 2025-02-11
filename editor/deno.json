@@ -12,11 +12,14 @@
     "@dreamlab/scene": "../scene-graph/mod.ts",
     "@dreamlab/ui": "../ui/mod.ts",
     "@dreamlab/util/": "../util/",
+    "@dreamlab/ui/jsx-runtime": "../ui/jsx.ts",
     "env": "data:application/javascript,export default {}"
   },
   "compilerOptions": {
     "lib": ["deno.window", "dom"],
-    "noImplicitOverride": false
+    "noImplicitOverride": false,
+    "jsx": "react-jsx",
+    "jsxImportSource": "@dreamlab/ui"
   },
   "exclude": ["./web/dist/*"],
   "lint": {
