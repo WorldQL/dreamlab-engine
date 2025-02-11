@@ -6,7 +6,6 @@ import { startInstanceCollector } from "./instance-collector.ts";
 import { createInstance, GameInstance } from "./instance.ts";
 import { report } from "./metrics.ts";
 import { setupWeb } from "./web/setup.ts";
-import { IPCWorker } from "./worker.ts";
 
 let instance: GameInstance | undefined;
 
@@ -17,12 +16,13 @@ const webAbortController = new AbortController();
 
 // report metrics every minute
 const interval = setInterval(async () => {
-  const jobs = [...IPCWorker.POOL.values()].map(
-    async worker =>
-      ({
-        worker,
-        metrics: await worker.metrics(),
-      }) as const,
+  const jobs = [...GameInstance.INSTANCES.values()].flatMap(instance =>
+    [instance.session, instance.playSession]
+      .filter(it => it !== undefined)
+      .map(
+        async session =>
+          ({ session, worker: session.ipc, metrics: await session.ipc.metrics() }) as const,
+      ),
   );
 
   const data = await Promise.all(jobs);
