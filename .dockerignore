@@ -1,0 +1,7 @@
+# dont pull in any env files
+**/*/.env
+**/*/.env.local
+**/*/.env.production
+
+# ignore default worlds
+/multiplayer/worlds
