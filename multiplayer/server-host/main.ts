@@ -7,6 +7,11 @@ import { createInstance, GameInstance } from "./instance.ts";
 import { report } from "./metrics.ts";
 import { setupWeb } from "./web/setup.ts";
 
+addEventListener("unhandledrejection", event => {
+  event.preventDefault();
+  if (event.reason) console.error("caught potential fatal error:", event.reason);
+});
+
 let instance: GameInstance | undefined;
 
 const app = new Application();

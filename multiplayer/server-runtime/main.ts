@@ -9,6 +9,11 @@ import { ProjectSchema, getSceneFromProject, loadSceneDefinition } from "@dreaml
 import { z } from "@dreamlab/vendor/zod.ts";
 import { handleEditMode } from "./edit-mode.ts";
 
+addEventListener("unhandledrejection", event => {
+  event.preventDefault();
+  if (event.reason) console.error("caught potential fatal error:", event.reason);
+});
+
 const workerData = JSON.parse(Deno.env.get("DREAMLAB_MP_WORKER_DATA")!) as WorkerInitData;
 Deno.env.delete("DREAMLAB_MP_WORKER_DATA");
 
