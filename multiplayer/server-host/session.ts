@@ -9,6 +9,7 @@ import { IPCWorker } from "./worker.ts";
 import * as path from "@std/path";
 import type { RichGameStatus } from "../server-common/rich-status.ts";
 import { WorkerInitData } from "../server-common/worker-data.ts";
+import { watchForEditChanges } from "./edit-watcher.ts";
 
 interface ConnectedClient {
   connectionId: string;
@@ -37,6 +38,8 @@ export class GameSession {
   #loadedPromise: Promise<void>;
   #loadedPromiseResolve: (() => void) | undefined;
   #loadedPromiseReject: ((error: Error) => void) | undefined;
+
+  editWatcher: Deno.FsWatcher | undefined;
 
   startedAt = new Date();
 
@@ -127,6 +130,8 @@ export class GameSession {
     });
 
     if (opts.editMode) {
+      watchForEditChanges(this, opts.worldSubDirectory);
+
       const save = async () => {
         try {
           const scene = await dumpSceneDefinition(parent);
@@ -185,6 +190,8 @@ export class GameSession {
   shutdown() {
     if (this.#shuttingDown) return;
     this.#shuttingDown = true;
+
+    if (this.editWatcher) this.editWatcher.close();
 
     if (this.parent.info.variant === "play") {
       this.parent.sendPlaySessionState();
