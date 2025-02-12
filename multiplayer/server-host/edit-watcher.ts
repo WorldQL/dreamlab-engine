@@ -22,6 +22,7 @@ export async function watchForEditChanges(session: GameSession, subdir: string) 
         behavior_script_id: relativePath.startsWith("src/")
           ? `res://${relativePath.replace(/\.tsx?$/, ".js")}`
           : undefined,
+        isFromFileSystem: true
       });
     }
   }, 60);

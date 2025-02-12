@@ -202,6 +202,7 @@ export const ServerScriptEditedPacket = z.object({
   t: z.literal("ScriptEdited"),
   script_location: z.string(),
   behavior_script_id: z.string().optional(),
+  isFromFileSystem: z.boolean().default(true).optional(),
 });
 
 export const ClientSpawnBehaviorPacket = z.object({

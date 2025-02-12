@@ -19,6 +19,8 @@ export interface InspectorUIWidget {
   hide(): void;
 }
 
+const lastCodeEditorUpdates: Record<string, number> = {};
+
 export class InspectorUI {
   selectedEntity: SelectedEntityService;
   behaviorTypeInfo: BehaviorTypeInfoService;
@@ -64,7 +66,46 @@ export class InspectorUI {
 
     conn.registerPacketHandler("ScriptEdited", async packet => {
       if (packet.behavior_script_id) {
-        console.log("ScriptEdited", packet.behavior_script_id, packet.script_location);
+        // console.log(
+        //   "ScriptEdited",
+        //   packet.behavior_script_id,
+        //   packet.script_location,
+        //   packet.isFromFileSystem,
+        // );
+
+        let doSendRefresh = false;
+
+        /*
+        Every time we save on the code editor it:
+        1. Generates an event from the code editor
+        2. Also generates an event from the file watcher.
+
+        Eventually we can untangle this (maybe next week)
+
+        So what happens when the AI saves is we get a nice elegant single event where packet.isFromFileSystem is true
+
+        But when the code editor saves, we get two events in quick succession. One with isFromFileSystem=false
+        and one isFromFileSystem=true. This code ignores the second one when they come within three seconds of each other.
+        */
+
+        if (!packet.isFromFileSystem) {
+          lastCodeEditorUpdates[packet.script_location] = Date.now();
+        } else {
+          if (packet.script_location in lastCodeEditorUpdates && Date.now() - lastCodeEditorUpdates[packet.script_location] > 3000) {
+            doSendRefresh = true;
+          }
+          if (!(packet.script_location in lastCodeEditorUpdates)) {
+            doSendRefresh = true;
+          }
+        }
+
+        if (doSendRefresh) {
+          // console.log("Changes detected from filesystem, updating code editor...")
+          window.parent.postMessage(
+            { action: "reloadFile", filename: packet.script_location },
+            "*",
+          );
+        }
 
         const resources = [`res://${packet.script_location}`, packet.behavior_script_id];
 
