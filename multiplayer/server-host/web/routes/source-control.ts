@@ -695,6 +695,83 @@ export const serveSourceControlAPI = (router: Router) => {
   });
   // #endregion
 
+  // #region revert
+  router.post("/api/v1/source-control/:instance_id/revert", async ctx => {
+    const BodySchema = z.object({
+      commit_hash: z.string(),
+    });
+
+    let body;
+    try {
+      body = BodySchema.parse(await ctx.request.body.json());
+    } catch (err) {
+      throw new JsonAPIError(Status.BadRequest, err.toString());
+    }
+
+    const instanceId = ctx.params.instance_id;
+    const instance = GameInstance.INSTANCES.get(instanceId);
+    if (instance === undefined) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+    if (!instance.info.editMode) {
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+
+    const sourceRoot = instance.info.worldDirectory;
+
+    const resetProc = new Deno.Command("git", {
+      args: ["reset", "--hard", body.commit_hash],
+      cwd: sourceRoot,
+      stdout: "piped",
+      stderr: "piped",
+    });
+    const resetOutput = await resetProc.output();
+    if (resetOutput.code !== 0) {
+      const errMsg = new TextDecoder().decode(resetOutput.stderr);
+      throw new JsonAPIError(
+        Status.InternalServerError,
+        `Failed to revert to commit ${body.commit_hash}: ${errMsg}`,
+      );
+    }
+
+    const cleanProc = new Deno.Command("git", {
+      args: ["clean", "-fd"],
+      cwd: sourceRoot,
+      stdout: "piped",
+      stderr: "piped",
+    });
+    const cleanOutput = await cleanProc.output();
+    if (cleanOutput.code !== 0) {
+      const errMsg = new TextDecoder().decode(cleanOutput.stderr);
+      throw new JsonAPIError(
+        Status.InternalServerError,
+        `Failed to clean untracked files: ${errMsg}`,
+      );
+    }
+
+    const pushProc = new Deno.Command("git", {
+      args: ["push", "--force"],
+      cwd: sourceRoot,
+      stdout: "piped",
+      stderr: "piped",
+    });
+    const pushOutput = await pushProc.output();
+    if (pushOutput.code !== 0) {
+      const errMsg = new TextDecoder().decode(pushOutput.stderr);
+      throw new JsonAPIError(
+        Status.InternalServerError,
+        `Failed to push changes to remote: ${errMsg}`,
+      );
+    }
+
+    ctx.response.body = {
+      success: true,
+      message: `Hard reverted to commit ${body.commit_hash} and pushed to remote.`,
+    };
+    ctx.response.type = "application/json";
+  });
+  //#endregion
+
   // #region pull
   router.post("/api/v1/source-control/:instance_id/pull", async ctx => {
     const instanceId = ctx.params.instance_id;
