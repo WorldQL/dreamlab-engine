@@ -597,19 +597,11 @@ export const serveSourceControlAPI = (router: Router) => {
     try {
       await runGitCommand(["fetch", "--all"]);
 
-      const remoteBranches = await runGitCommand(["branch", "-r", "--format=%(refname:short)"]);
-      const validRemoteBranches = remoteBranches.filter(
-        branch => !branch.startsWith("origin/HEAD"),
-      );
-
-      if (validRemoteBranches.length === 0) {
-        ctx.response.body = { commits: [] };
-        return;
-      }
+      const branches = await runGitCommand(["branch", "-a", "--format=%(refname:short)"]);
 
       const logArgs = [
         "log",
-        ...validRemoteBranches,
+        ...branches,
         "--pretty=format:%H|%P|%D|%s|%an|%ae|%ad",
         "--date=iso",
         "--abbrev-commit",
@@ -637,7 +629,10 @@ export const serveSourceControlAPI = (router: Router) => {
         };
       });
 
-      ctx.response.body = { commits };
+      const currentBranchResult = await runGitCommand(["rev-parse", "--abbrev-ref", "HEAD"]);
+      const currentBranch = currentBranchResult[0] || "unknown";
+
+      ctx.response.body = { commits, currentBranch };
     } catch (err) {
       throw new JsonAPIError(Status.InternalServerError, err.message);
     }
