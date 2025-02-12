@@ -51,6 +51,11 @@ export class Value<T = unknown> {
   [internal.valueRelatedEntity]: Entity | undefined;
 
   #changeListeners: ((newValue: this["value"]) => void)[] | undefined;
+  /* any type is required here or deno complains about stuff like:
+   Type 'unknown' is not assignable to type 'number'.
+    this.values.get("points")?.onChanged((newPoints: number) => {
+  */
+
   // deno-lint-ignore no-explicit-any
   onChanged(listener: (newValue: any) => void) {
     if (!this.#changeListeners) this.#changeListeners = [];
