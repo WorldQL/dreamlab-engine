@@ -5,7 +5,6 @@ group "default" {
 target "client" {
   context = "."
   dockerfile = "./docker/client.Dockerfile"
-  tags = ["awa"]
 }
 
 target "editor" {
