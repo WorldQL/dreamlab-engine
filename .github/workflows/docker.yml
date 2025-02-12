@@ -66,3 +66,4 @@ jobs:
             ./docker-bake.hcl
             cwd://${{ steps.meta.outputs.bake-file }}
           targets: ${{ matrix.target }}
+          push: ${{ startsWith(github.ref, 'refs/tags/') }}
