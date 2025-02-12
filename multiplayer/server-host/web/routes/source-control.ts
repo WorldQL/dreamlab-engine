@@ -802,18 +802,20 @@ export const serveSourceControlAPI = (router: Router) => {
     }
 
     try {
-      // Detect staged and unstaged changes
       const diffIndex = await runGitCommand(["diff", "--cached", "--name-only"]);
       const hasStagedChanges = diffIndex.stdout.trim().length > 0;
 
       const diffWorkspace = await runGitCommand(["diff", "--name-only"]);
       const hasUnstagedChanges = diffWorkspace.stdout.trim().length > 0;
+      const unstagedFiles = diffWorkspace.stdout
+        .split("\n")
+        .map(line => line.trim())
+        .filter(line => line !== "");
 
       let tempBranch = null;
 
-      // Handle staged changes
       if (hasStagedChanges || hasUnstagedChanges) {
-        tempBranch = `merge-conflict-${new Date() // branch will be deleted if there is no merge conflict
+        tempBranch = `merge-conflict-${new Date()
           .toISOString()
           .replace(/[^\d]/g, "-")
           .replace(/-$/, "")}`;
@@ -831,7 +833,7 @@ export const serveSourceControlAPI = (router: Router) => {
           );
         }
 
-        // Return to the main branch
+        // Return to the main branch.
         const checkoutMain = await runGitCommand(["checkout", "main"]);
         if (checkoutMain.code !== 0) {
           throw new JsonAPIError(
@@ -841,7 +843,7 @@ export const serveSourceControlAPI = (router: Router) => {
         }
       }
 
-      // Pull remote changes
+      // Pull remote changes.
       const pullRes = await runGitCommand(["pull", "--rebase"]);
       if (pullRes.code !== 0) {
         throw new JsonAPIError(
@@ -850,7 +852,7 @@ export const serveSourceControlAPI = (router: Router) => {
         );
       }
 
-      // Reapply local changes
+      // Reapply local changes (if any).
       if (tempBranch) {
         const cherryPickRes = await runGitCommand(["cherry-pick", "--no-commit", tempBranch]);
         if (cherryPickRes.code !== 0) {
@@ -860,7 +862,7 @@ export const serveSourceControlAPI = (router: Router) => {
             conflictText.includes("merge conflict") ||
             conflictText.includes("automatic merge failed")
           ) {
-            // Push conflict branch for manual resolution
+            // Push conflict branch for manual resolution.
             const pushConflictBranch = await runGitCommand([
               "push",
               "-u",
@@ -904,7 +906,18 @@ export const serveSourceControlAPI = (router: Router) => {
           );
         }
 
-        // Delete the temporary branch
+        // Unstage files that were originally unstaged.
+        if (unstagedFiles.length > 0) {
+          const resetRes = await runGitCommand(["reset", "HEAD", "--", ...unstagedFiles]);
+          if (resetRes.code !== 0) {
+            throw new JsonAPIError(
+              Status.InternalServerError,
+              `Failed to unstage files: ${resetRes.stderr}`,
+            );
+          }
+        }
+
+        // Delete the temporary branch.
         const deleteBranchRes = await runGitCommand(["branch", "-D", tempBranch]);
         if (deleteBranchRes.code !== 0) {
           console.warn(
@@ -916,7 +929,7 @@ export const serveSourceControlAPI = (router: Router) => {
       ctx.response.body = {
         success: true,
         message: tempBranch
-          ? "Pulled remote changes and reapplied local changes as unstaged."
+          ? "Pulled remote changes and reapplied local changes as unstaged where applicable."
           : "Pulled remote changes successfully. No local changes to reapply.",
       };
     } catch (error) {
