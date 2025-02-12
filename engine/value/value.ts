@@ -51,12 +51,14 @@ export class Value<T = unknown> {
   [internal.valueRelatedEntity]: Entity | undefined;
 
   #changeListeners: ((newValue: this["value"]) => void)[] | undefined;
-  onChanged(listener: (newValue: this["value"]) => void) {
+  // deno-lint-ignore no-explicit-any
+  onChanged(listener: (newValue: any) => void) {
     if (!this.#changeListeners) this.#changeListeners = [];
     this.#changeListeners.push(listener);
   }
 
-  removeChangeListener(listener: (newValue: this["value"]) => void) {
+  // deno-lint-ignore no-explicit-any
+  removeChangeListener(listener: (newValue: any) => void) {
     if (!this.#changeListeners) return;
     const index = this.#changeListeners.indexOf(listener);
     if (index !== -1) {
