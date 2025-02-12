@@ -76,7 +76,8 @@ export class AppMenu {
         }, 3000);
       } finally {
         button.disabled = false;
-        window.parent.postMessage({ action: "reloadProject" }, "*");
+        if (this.games.edit.instanceId !== NIL_UUID)
+          window.parent.postMessage({ action: "reloadProject" }, "*");
       }
     };
     saveButton.addEventListener("click", save);
@@ -188,7 +189,6 @@ export class AppMenu {
     this.setupButtonStates();
     this.updateButtonStates();
   }
-
 
   setupStats(game: ClientGame): HTMLElement {
     const countText = document.createTextNode("1");

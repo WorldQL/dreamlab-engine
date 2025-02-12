@@ -13,6 +13,7 @@ import { IconButton } from "../components/icon-button.ts";
 import type { UndoRedoOperation } from "../undo-redo.ts";
 import { UndoRedoManager } from "../undo-redo.ts";
 import { SelectedEntityService } from "./selected-entity.ts";
+import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 
 export function isRoot(e: Entity): boolean {
   return (
@@ -117,7 +118,8 @@ export function setupKeyboardShortcuts(
       }, 3000);
     } finally {
       button.disabled = false;
-      window.parent.postMessage({ action: "reloadProject" }, "*");
+      if (game.instanceId !== NIL_UUID)
+        window.parent.postMessage({ action: "reloadProject" }, "*");
     }
   };
 
@@ -242,7 +244,7 @@ export function setupKeyboardShortcuts(
             t: "create-entity",
             parentRef: x.parent!.ref,
             def: x.getDefinition(),
-          }) satisfies UndoRedoOperation,
+          } satisfies UndoRedoOperation),
       );
 
       UndoRedoManager._.push({ t: "compound", ops });
@@ -260,7 +262,7 @@ export function setupKeyboardShortcuts(
             t: "destroy-entity",
             parentRef: x.parent!.ref,
             def: x.getDefinition(),
-          }) satisfies UndoRedoOperation,
+          } satisfies UndoRedoOperation),
       );
 
       for (const entity of toDelete) {
