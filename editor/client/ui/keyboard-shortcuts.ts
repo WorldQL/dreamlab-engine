@@ -1,5 +1,11 @@
 import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
-import { ClientGame, Entity, EntityDefinition, type ITransform } from "@dreamlab/engine";
+import {
+  ClientGame,
+  Entity,
+  EntityConstructor,
+  EntityDefinition,
+  type ITransform,
+} from "@dreamlab/engine";
 import { BoxResizeGizmoResizeEnd, GizmoUpdateEnd } from "../../common/entities/mod.ts";
 import {
   EditorMetadataEntity,
@@ -137,10 +143,33 @@ export async function pasteEntitiesFromClipboard(
     return;
   }
 
-  const targetParent: Entity =
-    selectedService.entities.length === 1
-      ? selectedService.entities[0]
-      : game.world._.EditEntities._.world;
+  // Compare a definition with an entity (by name and typeName)
+  function isSameEntity(def: EntityDefinition & { typeName: string }, entity: Entity): boolean {
+    return (
+      def.name === entity.name &&
+      def.typeName === Entity.getTypeName(entity.constructor as EntityConstructor)
+    );
+  }
+
+  // Determine the target parent:
+  let targetParent: Entity;
+  if (selectedService.entities.length === 1) {
+    const selected = selectedService.entities[0];
+    // If only one definition was copied and it matches the selected entity,
+    // then paste at its parent (if available).
+    if (
+      definitions.length === 1 &&
+      isSameEntity(definitions[0] as EntityDefinition & { typeName: string }, selected) &&
+      selected.parent
+    ) {
+      targetParent = selected.parent;
+    } else {
+      targetParent = selected;
+    }
+  } else {
+    targetParent = game.world._.EditEntities._.world;
+  }
+
   const pastedEntities: Entity[] = [];
 
   // Recursively generate a mapping of old refs to new refs
