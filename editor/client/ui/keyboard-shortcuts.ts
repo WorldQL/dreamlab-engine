@@ -334,6 +334,8 @@ export function setupKeyboardShortcuts(
 
     // Up and Down Arrow Navigation
     if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+      if (selectedService.entities.length === 0) return;
+
       event.preventDefault();
       const entries = Array.from(
         document.querySelectorAll("#scene-graph-tree details[data-entity]"),
