@@ -89,7 +89,9 @@ export class FileTree implements InspectorUIWidget {
     filesURL.pathname = `/api/v1/edit/${this.game.instanceId}/files`;
     const files = fetch(filesURL)
       .then(r => r.json())
-      .then(obj => obj as { files: string[] });
+      .then(obj => ({
+        files: (obj.files || []).filter((file: string) => !file.startsWith(".aider")),
+      }));
 
     files.then(({ files }) => {
       const fileTreeRoot: FileTreeNode = { type: "directory", name: "", children: new Map() };
@@ -114,7 +116,7 @@ export class FileTree implements InspectorUIWidget {
       }
 
       ScriptSession.scriptMap = buildFileTreeMarkdown(fileTreeRoot);
-      
+
       const addViewButton = async (node: FileTreeNode): Promise<HTMLElement | null> => {
         if (node.type !== "file" || !node.name.endsWith(".ts")) {
           return null;
@@ -416,7 +418,7 @@ function buildFileTreeMarkdown(node: FileTreeNode, indentLevel: number = 0): str
 
     // Sort children alphabetically by name
     const children = Array.from(node.children.values()).sort((a, b) =>
-      a.name.localeCompare(b.name)
+      a.name.localeCompare(b.name),
     );
 
     // Recursively build string for each child.
