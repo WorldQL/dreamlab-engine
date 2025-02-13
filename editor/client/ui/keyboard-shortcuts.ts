@@ -82,18 +82,143 @@ class CooldownManager {
 }
 // #endregion
 
-export const Clipboard = {
-  copiedEntities: [] as Entity[],
-  set(entities: Entity[]): void {
-    this.copiedEntities = [...entities];
-  },
-  get(): Entity[] {
-    return [...this.copiedEntities];
-  },
-  clear(): void {
-    this.copiedEntities = [];
-  },
-};
+//#region Copy & Paste
+export async function copyEntitiesToClipboard(
+  selectedService: SelectedEntityService,
+): Promise<void> {
+  const entitiesToCopy = selectedService.entities.filter(e => !isRoot(e));
+  if (entitiesToCopy.length === 0) return;
+  const definitions = entitiesToCopy.map(e => {
+    const def = { ...e.getDefinition() } as EntityDefinition & { typeName: string };
+    delete def._ref;
+    return def;
+  });
+  const jsonData = JSON.stringify(definitions);
+  const prefix = "dreamlab clipboard";
+  const output = `${prefix}\n${jsonData}`;
+  try {
+    await navigator.clipboard.writeText(output);
+    console.log("Entities copied to clipboard!");
+  } catch (err) {
+    console.error("Failed to write to clipboard", err);
+  }
+}
+
+export async function pasteEntitiesFromClipboard(
+  game: ClientGame,
+  selectedService: SelectedEntityService,
+): Promise<void> {
+  const CLIPBOARD_PREFIX = "dreamlab clipboard";
+  let text: string;
+  try {
+    text = await navigator.clipboard.readText();
+  } catch (err) {
+    console.error("Failed to read from clipboard", err);
+    return;
+  }
+  if (!text) return;
+
+  const trimmed = text.trim();
+  // Clipboard data is not from Dreamlab. Aborting paste.
+  if (!trimmed.startsWith(CLIPBOARD_PREFIX)) {
+    return;
+  }
+
+  const jsonText = trimmed.slice(CLIPBOARD_PREFIX.length).trim();
+
+  let definitions: unknown[];
+  try {
+    definitions = JSON.parse(jsonText, entityReviver);
+    if (!Array.isArray(definitions)) {
+      console.error("Clipboard data is not in the expected array format.");
+      return;
+    }
+  } catch (err) {
+    console.error("Failed to parse clipboard data as JSON", err);
+    return;
+  }
+
+  const targetParent: Entity =
+    selectedService.entities.length === 1
+      ? selectedService.entities[0]
+      : game.world._.EditEntities._.world;
+  const pastedEntities: Entity[] = [];
+
+  // Recursively generate a mapping of old refs to new refs
+  function generateRefMap(
+    def: EntityDefinition & { typeName: string },
+    map: Record<string, string> = {},
+  ): Record<string, string> {
+    if (def._ref) {
+      map[def._ref] = Entity.createRef();
+    }
+    if (def.children && Array.isArray(def.children)) {
+      for (const child of def.children as (EntityDefinition & { typeName: string })[]) {
+        generateRefMap(child, map);
+      }
+    }
+    return map;
+  }
+
+  // Recursively replace old refs with new ones in the definition tree
+  function replaceRefsInDefinition(
+    def: EntityDefinition & { typeName: string },
+    map: Record<string, string>,
+  ): EntityDefinition & { typeName: string } {
+    const newDef = { ...def };
+    if (newDef._ref && map[newDef._ref]) {
+      newDef._ref = map[newDef._ref];
+    }
+    if (newDef.behaviors) {
+      newDef.behaviors = newDef.behaviors.map(b => {
+        const newB = { ...b };
+        if (newB.values) {
+          for (const key in newB.values) {
+            const val = newB.values[key];
+            if (typeof val === "string" && map[val]) {
+              newB.values[key] = map[val];
+            }
+          }
+        }
+        return newB;
+      });
+    }
+    if (newDef.children && Array.isArray(newDef.children)) {
+      newDef.children = (newDef.children as (EntityDefinition & { typeName: string })[]).map(
+        child => replaceRefsInDefinition(child, map),
+      );
+    }
+    return newDef;
+  }
+
+  for (const def of definitions) {
+    const definition = def as EntityDefinition & { typeName: string };
+    if ("_ref" in definition) {
+      delete definition._ref;
+    }
+    const refMap = generateRefMap(definition);
+    const newDefinition = replaceRefsInDefinition(definition, refMap);
+    if (!newDefinition.type) {
+      console.error(
+        "Entity definition missing constructor for typeName:",
+        newDefinition.typeName,
+      );
+      continue;
+    }
+    const newEntity = targetParent.spawn(newDefinition);
+    pastedEntities.push(newEntity);
+  }
+  const ops = pastedEntities.map(
+    x =>
+      ({
+        t: "create-entity",
+        parentRef: x.parent!.ref,
+        def: x.getDefinition(),
+      } as UndoRedoOperation),
+  );
+  UndoRedoManager._.push({ t: "compound", ops } as unknown as UndoRedoOperation);
+}
+//#endregion
 
 export function setupKeyboardShortcuts(
   game: ClientGame,
@@ -129,131 +254,6 @@ export function setupKeyboardShortcuts(
         window.parent.postMessage({ action: "reloadProject" }, "*");
     }
   };
-
-  // #region Copy & Paste
-  // Copy entity definitions to clipboard
-  const copyEntitiesToClipboard = async (): Promise<void> => {
-    const entitiesToCopy = selectedService.entities.filter(e => !isRoot(e));
-    if (entitiesToCopy.length === 0) return;
-    const definitions = entitiesToCopy.map(e => {
-      const def = { ...e.getDefinition() } as EntityDefinition & { typeName: string };
-      delete def._ref;
-      return def;
-    });
-    const jsonData = JSON.stringify(definitions);
-    try {
-      await navigator.clipboard.writeText(jsonData);
-      console.log("Entities copied to clipboard!");
-    } catch (err) {
-      console.error("Failed to write to clipboard", err);
-    }
-  };
-
-  // Paste entity definitions from clipboard
-  const pasteEntitiesFromClipboard = async (): Promise<void> => {
-    let text: string;
-    try {
-      text = await navigator.clipboard.readText();
-    } catch (err) {
-      console.error("Failed to read from clipboard", err);
-      return;
-    }
-    if (!text) return;
-    let definitions: unknown[];
-    try {
-      definitions = JSON.parse(text, entityReviver);
-      if (!Array.isArray(definitions)) {
-        console.error("Clipboard data is not in the expected array format.");
-        return;
-      }
-    } catch (err) {
-      console.error("Failed to parse clipboard data as JSON", err);
-      return;
-    }
-    let targetParent: Entity;
-    if (selectedService.entities.length === 1) {
-      targetParent = selectedService.entities[0];
-    } else {
-      targetParent = game.world._.EditEntities._.world;
-    }
-
-    // Recursively generate a map of old refs to new refs
-    function generateRefMap(
-      def: EntityDefinition & { typeName: string },
-      map: Record<string, string> = {},
-    ): Record<string, string> {
-      if (def._ref) {
-        map[def._ref] = Entity.createRef();
-      }
-      if (def.children && Array.isArray(def.children)) {
-        for (const child of def.children as (EntityDefinition & { typeName: string })[]) {
-          generateRefMap(child, map);
-        }
-      }
-      return map;
-    }
-
-    // Recursively replace old refs with new ones in the definition tree
-    function replaceRefsInDefinition(
-      def: EntityDefinition & { typeName: string },
-      map: Record<string, string>,
-    ): EntityDefinition & { typeName: string } {
-      const newDef = { ...def };
-      if (newDef._ref && map[newDef._ref]) {
-        newDef._ref = map[newDef._ref];
-      }
-      if (newDef.behaviors) {
-        newDef.behaviors = newDef.behaviors.map(b => {
-          const newB = { ...b };
-          if (newB.values) {
-            for (const key in newB.values) {
-              const val = newB.values[key];
-              if (typeof val === "string" && map[val]) {
-                newB.values[key] = map[val];
-              }
-            }
-          }
-          return newB;
-        });
-      }
-      if (newDef.children && Array.isArray(newDef.children)) {
-        newDef.children = (newDef.children as (EntityDefinition & { typeName: string })[]).map(
-          child => replaceRefsInDefinition(child, map),
-        );
-      }
-      return newDef;
-    }
-
-    const pasted: Entity[] = [];
-    for (const def of definitions) {
-      const definition = def as EntityDefinition & { typeName: string };
-      if ("_ref" in definition) {
-        delete definition._ref;
-      }
-      // Generate new refs for the definition tree.
-      const refMap = generateRefMap(definition);
-      const newDefinition = replaceRefsInDefinition(definition, refMap);
-      if (!newDefinition.type) {
-        console.error(
-          "Entity definition missing constructor for typeName:",
-          newDefinition.typeName,
-        );
-        continue;
-      }
-      const newEntity = targetParent.spawn(newDefinition);
-      pasted.push(newEntity);
-    }
-    const ops = pasted.map(
-      x =>
-        ({
-          t: "create-entity",
-          parentRef: x.parent!.ref,
-          def: x.getDefinition(),
-        } as UndoRedoOperation),
-    );
-    UndoRedoManager._.push({ t: "compound", ops } as unknown as UndoRedoOperation);
-  };
-  // #endregion
 
   // #region Signal Listeners
   game.on(GizmoUpdateEnd, ({ entities }) => {
@@ -302,14 +302,14 @@ export function setupKeyboardShortcuts(
     // Copy
     if (event.key === "c" && (event.ctrlKey || event.metaKey)) {
       event.preventDefault();
-      await copyEntitiesToClipboard();
+      await copyEntitiesToClipboard(selectedService);
       return;
     }
 
     // Paste
     if (event.key === "v" && (event.ctrlKey || event.metaKey)) {
       event.preventDefault();
-      await pasteEntitiesFromClipboard();
+      await pasteEntitiesFromClipboard(game, selectedService);
       return;
     }
 

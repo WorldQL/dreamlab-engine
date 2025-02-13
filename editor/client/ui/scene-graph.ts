@@ -19,7 +19,11 @@ import { getEntitiesEnabledState } from "../util/entity-utils.ts";
 import { getModifierKeySymbol } from "../util/platform.ts";
 import { ContextMenuItem } from "./context-menu.ts";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
-import { Clipboard, isRoot } from "./keyboard-shortcuts.ts";
+import {
+  copyEntitiesToClipboard,
+  isRoot,
+  pasteEntitiesFromClipboard,
+} from "./keyboard-shortcuts.ts";
 
 function eventTargetsEntry(event: Event, entryElement: HTMLElement) {
   if (!(event.target instanceof HTMLElement)) return false;
@@ -523,7 +527,8 @@ export class SceneGraph implements InspectorUIWidget {
           [
             "Copy",
             () => {
-              Clipboard.set([...ui.selectedEntity.entities]);
+              ui.selectedEntity.entities = [...ui.selectedEntity.entities];
+              copyEntitiesToClipboard(ui.selectedEntity);
             },
             false,
             `${modifierKey}+C`,
@@ -671,7 +676,8 @@ export class SceneGraph implements InspectorUIWidget {
             [
               "Copy",
               () => {
-                Clipboard.set([entity]);
+                ui.selectedEntity.entities = [entity];
+                copyEntitiesToClipboard(ui.selectedEntity);
               },
               false,
               `${modifierKey}+C`,
@@ -699,32 +705,14 @@ export class SceneGraph implements InspectorUIWidget {
           `${modifierKey}+E`,
         ]);
 
-        if (Clipboard.get().length > 0 && !lockedByEntity) {
-          contextMenuItems.push([
-            "Paste",
-            () => {
-              const copiedEntities = Clipboard.get();
-              const pastedEntities: Entity[] = [];
-
-              for (const copied of copiedEntities) {
-                pastedEntities.push(copied.cloneInto(entity));
-              }
-
-              const ops = pastedEntities.map(
-                x =>
-                  ({
-                    t: "create-entity" as const,
-                    parentRef: x.parent!.ref,
-                    def: x.getDefinition(),
-                  } satisfies UndoRedoOperation),
-              );
-
-              UndoRedoManager._.push({ t: "compound", ops });
-            },
-            false,
-            `${modifierKey}+V`,
-          ]);
-        }
+        contextMenuItems.push([
+          "Paste",
+          () => {
+            pasteEntitiesFromClipboard(this.game, ui.selectedEntity);
+          },
+          false,
+          `${modifierKey}+V`,
+        ]);
 
         if (!entity.protected && ui.editMode) {
           if (lockedByEntity) {
