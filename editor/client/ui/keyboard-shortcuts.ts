@@ -1,5 +1,5 @@
 import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
-import { ClientGame, Entity, type ITransform } from "@dreamlab/engine";
+import { ClientGame, Entity, EntityDefinition, type ITransform } from "@dreamlab/engine";
 import { BoxResizeGizmoResizeEnd, GizmoUpdateEnd } from "../../common/entities/mod.ts";
 import {
   EditorMetadataEntity,
@@ -15,6 +15,21 @@ import { UndoRedoManager } from "../undo-redo.ts";
 import { SelectedEntityService } from "./selected-entity.ts";
 import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 
+// Restores the entity constructor using its "typeName"
+function entityReviver(_key: string, value: unknown): unknown {
+  if (
+    value &&
+    typeof value === "object" &&
+    (value as Record<string, unknown>).typeName &&
+    !(value as Record<string, unknown>).type
+  ) {
+    (value as Record<string, unknown>).type = Entity.getEntityType(
+      (value as Record<string, unknown>).typeName as string,
+    );
+  }
+  return value;
+}
+
 export function isRoot(e: Entity): boolean {
   return (
     e instanceof WorldRootFacade ||
@@ -24,21 +39,16 @@ export function isRoot(e: Entity): boolean {
   );
 }
 
-function filterChildNodes(toDelete: Entity[]) {
-  // remove any entities that are children of entities scheduled for deletion
-  // we have to use a mark and sweep technique here.
-  const indicesToExcludeFromDeletion: number[] = [];
-
+// Remove child nodes that are descendants of other nodes scheduled for deletion.
+function filterChildNodes(toDelete: Entity[]): void {
+  const indicesToExclude: number[] = [];
   for (let i = 0; i < toDelete.length; i++) {
-    if (isRoot(toDelete[i].parent!)) {
-      continue;
-    }
-
+    if (isRoot(toDelete[i].parent!)) continue;
     let pointer = toDelete[i].parent!;
     while (true) {
       for (const other of toDelete) {
-        if (other == pointer) {
-          indicesToExcludeFromDeletion.push(i);
+        if (other === pointer) {
+          indicesToExclude.push(i);
           break;
         }
       }
@@ -48,13 +58,13 @@ function filterChildNodes(toDelete: Entity[]) {
   }
 
   let acc = 0;
-  for (const itd of indicesToExcludeFromDeletion) {
-    toDelete.splice(itd - acc, 1);
-    // account for the deleted element
+  for (const idx of indicesToExclude) {
+    toDelete.splice(idx - acc, 1);
     acc--;
   }
 }
 
+// #region Cooldown
 // spamming undo/redo results in loss of child entities.
 class CooldownManager {
   private cooldowns: Map<string, number> = new Map();
@@ -63,27 +73,24 @@ class CooldownManager {
   isOnCooldown(key: string): boolean {
     const now = Date.now();
     const lastUsed = this.cooldowns.get(key);
-
     if (lastUsed === undefined || now - lastUsed >= this.cooldownDuration) {
-      // Not on cooldown or cooldown has expired
       this.cooldowns.set(key, now);
       return false;
     }
-
-    // On cooldown
     return true;
   }
 }
+// #endregion
 
 export const Clipboard = {
   copiedEntities: [] as Entity[],
-  set(entities: Entity[]) {
+  set(entities: Entity[]): void {
     this.copiedEntities = [...entities];
   },
   get(): Entity[] {
     return [...this.copiedEntities];
   },
-  clear() {
+  clear(): void {
     this.copiedEntities = [];
   },
 };
@@ -92,12 +99,12 @@ export function setupKeyboardShortcuts(
   game: ClientGame,
   selectedService: SelectedEntityService,
   editMode: boolean,
-) {
-  // TODO: Make keyboard shortcuts work in play mode again.
+): void {
   if (!editMode) return;
   const cooldownManager = new CooldownManager();
 
-  const saveProject = async () => {
+  // Save project
+  const saveProject = async (): Promise<void> => {
     const url = new URL(connectionDetails.serverUrl);
     url.pathname = `/api/v1/save-edit-session/${game.instanceId}`;
 
@@ -123,8 +130,132 @@ export function setupKeyboardShortcuts(
     }
   };
 
-  // TODO: do we want to move these signal listeners?
-  // yes, to undo-redo.ts probably but I don't want to do it right now.
+  // #region Copy & Paste
+  // Copy entity definitions to clipboard
+  const copyEntitiesToClipboard = async (): Promise<void> => {
+    const entitiesToCopy = selectedService.entities.filter(e => !isRoot(e));
+    if (entitiesToCopy.length === 0) return;
+    const definitions = entitiesToCopy.map(e => {
+      const def = { ...e.getDefinition() } as EntityDefinition & { typeName: string };
+      delete def._ref;
+      return def;
+    });
+    const jsonData = JSON.stringify(definitions);
+    try {
+      await navigator.clipboard.writeText(jsonData);
+      console.log("Entities copied to clipboard!");
+    } catch (err) {
+      console.error("Failed to write to clipboard", err);
+    }
+  };
+
+  // Paste entity definitions from clipboard
+  const pasteEntitiesFromClipboard = async (): Promise<void> => {
+    let text: string;
+    try {
+      text = await navigator.clipboard.readText();
+    } catch (err) {
+      console.error("Failed to read from clipboard", err);
+      return;
+    }
+    if (!text) return;
+    let definitions: unknown[];
+    try {
+      definitions = JSON.parse(text, entityReviver);
+      if (!Array.isArray(definitions)) {
+        console.error("Clipboard data is not in the expected array format.");
+        return;
+      }
+    } catch (err) {
+      console.error("Failed to parse clipboard data as JSON", err);
+      return;
+    }
+    let targetParent: Entity;
+    if (selectedService.entities.length === 1) {
+      targetParent = selectedService.entities[0];
+    } else {
+      targetParent = game.world._.EditEntities._.world;
+    }
+
+    // Recursively generate a map of old refs to new refs
+    function generateRefMap(
+      def: EntityDefinition & { typeName: string },
+      map: Record<string, string> = {},
+    ): Record<string, string> {
+      if (def._ref) {
+        map[def._ref] = Entity.createRef();
+      }
+      if (def.children && Array.isArray(def.children)) {
+        for (const child of def.children as (EntityDefinition & { typeName: string })[]) {
+          generateRefMap(child, map);
+        }
+      }
+      return map;
+    }
+
+    // Recursively replace old refs with new ones in the definition tree
+    function replaceRefsInDefinition(
+      def: EntityDefinition & { typeName: string },
+      map: Record<string, string>,
+    ): EntityDefinition & { typeName: string } {
+      const newDef = { ...def };
+      if (newDef._ref && map[newDef._ref]) {
+        newDef._ref = map[newDef._ref];
+      }
+      if (newDef.behaviors) {
+        newDef.behaviors = newDef.behaviors.map(b => {
+          const newB = { ...b };
+          if (newB.values) {
+            for (const key in newB.values) {
+              const val = newB.values[key];
+              if (typeof val === "string" && map[val]) {
+                newB.values[key] = map[val];
+              }
+            }
+          }
+          return newB;
+        });
+      }
+      if (newDef.children && Array.isArray(newDef.children)) {
+        newDef.children = (newDef.children as (EntityDefinition & { typeName: string })[]).map(
+          child => replaceRefsInDefinition(child, map),
+        );
+      }
+      return newDef;
+    }
+
+    const pasted: Entity[] = [];
+    for (const def of definitions) {
+      const definition = def as EntityDefinition & { typeName: string };
+      if ("_ref" in definition) {
+        delete definition._ref;
+      }
+      // Generate new refs for the definition tree.
+      const refMap = generateRefMap(definition);
+      const newDefinition = replaceRefsInDefinition(definition, refMap);
+      if (!newDefinition.type) {
+        console.error(
+          "Entity definition missing constructor for typeName:",
+          newDefinition.typeName,
+        );
+        continue;
+      }
+      const newEntity = targetParent.spawn(newDefinition);
+      pasted.push(newEntity);
+    }
+    const ops = pasted.map(
+      x =>
+        ({
+          t: "create-entity",
+          parentRef: x.parent!.ref,
+          def: x.getDefinition(),
+        } as UndoRedoOperation),
+    );
+    UndoRedoManager._.push({ t: "compound", ops } as unknown as UndoRedoOperation);
+  };
+  // #endregion
+
+  // #region Signal Listeners
   game.on(GizmoUpdateEnd, ({ entities }) => {
     UndoRedoManager._.push({
       t: "compound",
@@ -134,7 +265,7 @@ export function setupKeyboardShortcuts(
         transform,
         previous,
       })),
-    });
+    } as unknown as UndoRedoOperation);
   });
 
   game.on(BoxResizeGizmoResizeEnd, ({ entity, previous: prev }) => {
@@ -144,24 +275,21 @@ export function setupKeyboardShortcuts(
       position: prev.position.bare(),
       scale: prev.scale.bare(),
     } satisfies ITransform;
-
     UndoRedoManager._.push({
       t: "transform-change",
       entityRef: entity.ref,
       transform,
       previous,
-    });
+    } as unknown as UndoRedoOperation);
   });
+  // #endregion
 
-  document.addEventListener("keydown", (event: KeyboardEvent) => {
-    if (document.activeElement instanceof HTMLInputElement) {
-      return;
-    }
-    if ((window.getSelection()?.toString().length ?? 0) > 0) {
-      return;
-    }
+  // #region Key Events
+  document.addEventListener("keydown", async (event: KeyboardEvent) => {
+    if (document.activeElement instanceof HTMLInputElement) return;
+    if ((window.getSelection()?.toString().length ?? 0) > 0) return;
 
-    // Enable/disable
+    // Toggle entity enable/disable
     if (event.key === "e" && (event.ctrlKey || event.metaKey)) {
       event.preventDefault();
       for (const e of selectedService.entities) {
@@ -170,87 +298,18 @@ export function setupKeyboardShortcuts(
       }
       return;
     }
+
     // Copy
     if (event.key === "c" && (event.ctrlKey || event.metaKey)) {
       event.preventDefault();
-      Clipboard.set([...selectedService.entities.filter(e => !isRoot(e))]);
+      await copyEntitiesToClipboard();
       return;
     }
 
     // Paste
-    /*
-    Rules:
-    - If we're selecting a single entity, we paste under that.
-    - If we're selecting the entity(ies) we copied, we paste alongside them
-    - If we're selecting multiple entities we do not paste.
-    */
     if (event.key === "v" && (event.ctrlKey || event.metaKey)) {
       event.preventDefault();
-      const copiedEntities = Clipboard.get();
-      const pastedEntities: Entity[] = [];
-
-      if (copiedEntities.length === 0) return;
-
-      if (selectedService.entities.length === 1 && copiedEntities.length === 1) {
-        const selected = selectedService.entities[0];
-        const copied = copiedEntities[0];
-
-        if (copied === selected) {
-          pastedEntities.push(copied.cloneInto(selected.parent!));
-        } else {
-          // paste alongside
-          pastedEntities.push(copied.cloneInto(selected));
-        }
-      } else {
-        let shouldPasteAlongside = true;
-        // check if we're selecting the same entities we copied so we can paste alongside if needed
-        if (selectedService.entities.length !== copiedEntities.length)
-          shouldPasteAlongside = false;
-
-        const firstParent = copiedEntities[0].parent!.ref;
-        if (shouldPasteAlongside) {
-          for (const copied of copiedEntities) {
-            let found = false;
-            for (const selected of selectedService.entities) {
-              if (selected.ref === copied.ref) found = true;
-            }
-            if (!found) {
-              shouldPasteAlongside = false;
-              break;
-            }
-            if (copied.parent!.ref !== firstParent) {
-              // only paste alongside if all entities are at the same level
-              shouldPasteAlongside = false;
-            }
-          }
-        }
-
-        if (shouldPasteAlongside) {
-          for (const copied of copiedEntities) {
-            pastedEntities.push(copied.cloneInto(copied.parent!));
-          }
-        } else if (selectedService.entities.length === 1) {
-          for (const copied of copiedEntities) {
-            pastedEntities.push(copied.cloneInto(selectedService.entities[0]));
-          }
-        } else {
-          for (const copied of copiedEntities) {
-            pastedEntities.push(copied.cloneInto(game.world._.EditEntities._.world));
-          }
-          return;
-        }
-      }
-
-      const ops = pastedEntities.map(
-        x =>
-          ({
-            t: "create-entity",
-            parentRef: x.parent!.ref,
-            def: x.getDefinition(),
-          } satisfies UndoRedoOperation),
-      );
-
-      UndoRedoManager._.push({ t: "compound", ops });
+      await pasteEntitiesFromClipboard();
       return;
     }
 
@@ -258,21 +317,19 @@ export function setupKeyboardShortcuts(
     if (event.key === "Backspace") {
       const toDelete: Entity[] = [...selectedService.entities];
       filterChildNodes(toDelete);
-
       const ops = toDelete.map(
         x =>
           ({
             t: "destroy-entity",
             parentRef: x.parent!.ref,
             def: x.getDefinition(),
-          } satisfies UndoRedoOperation),
+          } as UndoRedoOperation),
       );
 
       for (const entity of toDelete) {
         entity.destroy();
       }
-
-      UndoRedoManager._.push({ t: "compound", ops });
+      UndoRedoManager._.push({ t: "compound", ops } as unknown as UndoRedoOperation);
       selectedService.entities = [];
       return;
     }
@@ -288,6 +345,7 @@ export function setupKeyboardShortcuts(
         event.preventDefault();
         event.stopPropagation();
       }
+
       if (cooldownManager.isOnCooldown("undo")) return;
 
       const op = UndoRedoManager._.undo();
@@ -309,10 +367,10 @@ export function setupKeyboardShortcuts(
         event.preventDefault();
         event.stopPropagation();
       }
+
       if (cooldownManager.isOnCooldown("redo")) return;
 
       const op = UndoRedoManager._.redo();
-
       const selectedEntityRefs = selectedService.entities.map(e => e.ref);
       if (
         op?.t === "compound" &&
@@ -321,7 +379,6 @@ export function setupKeyboardShortcuts(
         )
       )
         selectedService.entities = [];
-
       return;
     }
 
@@ -340,42 +397,35 @@ export function setupKeyboardShortcuts(
       const entries = Array.from(
         document.querySelectorAll("#scene-graph-tree details[data-entity]"),
       ) as HTMLElement[];
-
       if (entries.length === 0) return;
 
       const currentSelected = entries.find(entry => entry.classList.contains("selected"));
-
       let newIndex = 0;
-
       if (currentSelected) {
         const currentIndex = entries.indexOf(currentSelected);
         newIndex =
           event.key === "ArrowUp"
             ? Math.max(0, currentIndex - 1)
             : Math.min(entries.length - 1, currentIndex + 1);
-
         currentSelected.classList.remove("selected");
       }
-
       const newSelected = entries[newIndex];
       newSelected.classList.add("selected");
       newSelected.scrollIntoView({ behavior: "smooth", block: "center" });
-
       const entityRef = newSelected.dataset.entity!;
       const entity = game.entities.lookupByRef(entityRef);
       if (entity) selectedService.entities = [entity];
+
       return;
     }
 
+    // Toggle locked state
     if (event.key === "L" && event.shiftKey && (event.ctrlKey || event.metaKey)) {
       event.preventDefault();
-
       const lockedEntities = selectedService.entities.filter(
         entity => EditorMetadataEntity.getInstanceFor(entity)?.locked,
       );
-
       const unlock = lockedEntities.length > 0;
-
       selectedService.entities.forEach(entity => {
         const metadata = EditorMetadataEntity.getInstanceFor(entity);
         if (!metadata) return;
@@ -389,13 +439,12 @@ export function setupKeyboardShortcuts(
           previous: prevLocked,
         });
       });
-
       return;
     }
 
-    // Exit selected
     if (event.key === "Escape") {
       selectedService.entities = [];
     }
   });
+  // #endregion
 }
