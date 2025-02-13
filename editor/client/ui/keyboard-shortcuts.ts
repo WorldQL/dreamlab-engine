@@ -234,6 +234,9 @@ export function setupKeyboardShortcuts(
             pastedEntities.push(copied.cloneInto(selectedService.entities[0]));
           }
         } else {
+          for (const copied of copiedEntities) {
+            pastedEntities.push(copied.cloneInto(game.world._.EditEntities._.world));
+          }
           return;
         }
       }
