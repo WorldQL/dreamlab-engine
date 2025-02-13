@@ -20,6 +20,7 @@ import type { UndoRedoOperation } from "../undo-redo.ts";
 import { UndoRedoManager } from "../undo-redo.ts";
 import { SelectedEntityService } from "./selected-entity.ts";
 import { NIL_UUID } from "jsr:@std/uuid@1/constants";
+import { createFile } from "../main.ts";
 
 // Restores the entity constructor using its "typeName"
 function entityReviver(_key: string, value: unknown): unknown {
@@ -109,23 +110,95 @@ export async function copyEntitiesToClipboard(
   }
 }
 
+function dataURLToBlob(dataURL: string): Blob {
+  const parts = dataURL.split(",");
+  const mimeMatch = parts[0].match(/:(.*?);/);
+  if (!mimeMatch) {
+    throw new Error("Invalid data URL");
+  }
+  const mime = mimeMatch[1];
+  const bstr = atob(parts[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new Blob([u8arr], { type: mime });
+}
+
+function blobToDataURL(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+function getImageExtension(mime: string): string {
+  switch (mime) {
+    case "image/jpeg":
+      return "jpg";
+    case "image/png":
+      return "png";
+    case "image/gif":
+      return "gif";
+    default:
+      return "png";
+  }
+}
+
+async function addImageFromClipboard(imageData: string): Promise<void> {
+  try {
+    const blob = dataURLToBlob(imageData);
+    const ext = getImageExtension(blob.type);
+    const fileName = `assets/clipboard_${Date.now()}.${ext}`;
+    const file = new File([blob], fileName, { type: blob.type, lastModified: Date.now() });
+    await createFile(fileName, file);
+  } catch (err) {
+    console.error("Error uploading image from clipboard", err);
+  }
+}
+
 export async function pasteEntitiesFromClipboard(
   game: ClientGame,
   selectedService: SelectedEntityService,
 ): Promise<void> {
   const CLIPBOARD_PREFIX = "dreamlab clipboard";
-  let text: string;
+  let text = "";
+
   try {
     text = await navigator.clipboard.readText();
   } catch (err) {
-    console.error("Failed to read from clipboard", err);
-    return;
+    console.error("Failed to read text from clipboard", err);
   }
-  if (!text) return;
+
+  if (!text) {
+    try {
+      const items = await navigator.clipboard.read();
+      for (const item of items) {
+        for (const type of item.types) {
+          if (type.startsWith("image/")) {
+            const blob = await item.getType(type);
+            text = await blobToDataURL(blob);
+            break;
+          }
+        }
+        if (text) break;
+      }
+      if (!text) return;
+    } catch (err) {
+      console.error("Failed to read clipboard items", err);
+    }
+  }
 
   const trimmed = text.trim();
   if (!trimmed.startsWith(CLIPBOARD_PREFIX)) {
-    console.log("Clipboard data is not from Dreamlab. Aborting paste.");
+    if (trimmed.startsWith("data:image/")) {
+      await addImageFromClipboard(trimmed);
+    } else {
+      console.log("Clipboard data is not from Dreamlab. Aborting paste.");
+    }
     return;
   }
 
