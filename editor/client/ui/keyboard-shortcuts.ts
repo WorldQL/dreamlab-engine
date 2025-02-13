@@ -119,8 +119,8 @@ export async function pasteEntitiesFromClipboard(
   if (!text) return;
 
   const trimmed = text.trim();
-  // Clipboard data is not from Dreamlab. Aborting paste.
   if (!trimmed.startsWith(CLIPBOARD_PREFIX)) {
+    console.log("Clipboard data is not from Dreamlab. Aborting paste.");
     return;
   }
 

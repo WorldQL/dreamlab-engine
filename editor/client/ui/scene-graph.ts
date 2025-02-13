@@ -110,7 +110,11 @@ export class SceneGraph implements InspectorUIWidget {
       if (ui.selectedEntity.entities.length === 1) {
         target = ui.selectedEntity.entities[0];
       }
-      ui.contextMenu.drawContextMenu(event.clientX, event.clientY, [
+
+      const modifierKey = getModifierKeySymbol();
+      const contextMenuItems: ContextMenuItem[] = [];
+
+      contextMenuItems.push(
         createEntityMenu(`New Entity @${target.name}`, type => {
           if (!posAtRightClick) return;
           const typeToSpawn = ui.editMode ? Facades.lookupFacadeEntityType(type) : type;
@@ -135,7 +139,18 @@ export class SceneGraph implements InspectorUIWidget {
           const newEntryElement = this.entryElementMap.get(newEntity.ref);
           if (newEntryElement) this.triggerRename(newEntity, newEntryElement);
         }),
+      );
+
+      contextMenuItems.push([
+        "Paste",
+        () => {
+          pasteEntitiesFromClipboard(this.game, ui.selectedEntity);
+        },
+        false,
+        `${modifierKey}+V`,
       ]);
+
+      ui.contextMenu.drawContextMenu(event.clientX, event.clientY, contextMenuItems);
     });
   }
 
@@ -684,35 +699,36 @@ export class SceneGraph implements InspectorUIWidget {
             ],
           );
 
-        contextMenuItems.push([
-          enabledState === "allEnabled"
-            ? "Disable"
-            : enabledState === "allDisabled"
-            ? "Enable"
-            : "Toggle Enabled",
-          () => {
-            for (const e of ui.selectedEntity.entities) {
-              if (isRoot(e)) {
-                for (const child of e.children.values()) {
-                  child.enabled = !(enabledState === "allEnabled");
+        contextMenuItems.push(
+          [
+            enabledState === "allEnabled"
+              ? "Disable"
+              : enabledState === "allDisabled"
+              ? "Enable"
+              : "Toggle Enabled",
+            () => {
+              for (const e of ui.selectedEntity.entities) {
+                if (isRoot(e)) {
+                  for (const child of e.children.values()) {
+                    child.enabled = !(enabledState === "allEnabled");
+                  }
+                } else {
+                  e.enabled = !(enabledState === "allEnabled");
                 }
-              } else {
-                e.enabled = !(enabledState === "allEnabled");
               }
-            }
-          },
-          false,
-          `${modifierKey}+E`,
-        ]);
-
-        contextMenuItems.push([
-          "Paste",
-          () => {
-            pasteEntitiesFromClipboard(this.game, ui.selectedEntity);
-          },
-          false,
-          `${modifierKey}+V`,
-        ]);
+            },
+            false,
+            `${modifierKey}+E`,
+          ],
+          [
+            "Paste",
+            () => {
+              pasteEntitiesFromClipboard(this.game, ui.selectedEntity);
+            },
+            false,
+            `${modifierKey}+V`,
+          ],
+        );
 
         if (!entity.protected && ui.editMode) {
           if (lockedByEntity) {
