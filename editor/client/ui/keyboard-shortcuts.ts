@@ -98,7 +98,6 @@ export async function copyEntitiesToClipboard(
   const output = `${prefix}\n${jsonData}`;
   try {
     await navigator.clipboard.writeText(output);
-    console.log("Entities copied to clipboard!");
   } catch (err) {
     console.error("Failed to write to clipboard", err);
   }

@@ -1,0 +1,3852 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "engine_revision": "2024-08.001"
+  },
+  "scenes": {
+    "main": {
+      "registration": [],
+      "world": [
+        {
+          "ref": "ent_qmm33gm5i98egxxc2w7qnm7h",
+          "type": "@core/Empty",
+          "name": "PlayersContainer",
+          "enabled": true
+        },
+        {
+          "ref": "ent_vkea8cuayt39kloe5t2tsjut",
+          "type": "@core/Empty",
+          "name": "PlayerSpawnpoint",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": -13.64991850436223,
+              "y": -25.10332703276708
+            }
+          }
+        },
+        {
+          "ref": "ent_oqwxrn3s5u5hjw0jqn7vzpzb",
+          "type": "@core/RectCollider",
+          "name": "Ground",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": 11.812131722859393,
+              "y": -37.65369819978016
+            },
+            "rotation": 1.57079632679,
+            "scale": {
+              "x": 19.922932886231475,
+              "y": 139.4672104895816
+            }
+          },
+          "values": {
+            "isSensor": false
+          },
+          "children": [
+            {
+              "ref": "ent_zAPONWGNZs",
+              "type": "@core/ColoredSquare",
+              "name": "ColoredSquare",
+              "enabled": true,
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  0.29019609093666077,
+                  0.16862745583057404,
+                  0,
+                  1
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "ref": "ent_mfPgEQNdCv",
+          "type": "@core/Collider",
+          "name": "MovingPlatform",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": 1.6234883155823105,
+              "y": -24.085317180203532
+            },
+            "scale": {
+              "x": 7.059099166994272,
+              "y": 1
+            }
+          },
+          "values": {
+            "clonedFromRef": "ent_mrI7Ft016S",
+            "isSensor": false,
+            "shape": "Rectangle"
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_82mr5tBeRn",
+              "script": "res://src/moving-platform.ts",
+              "values": {
+                "pathSize": 15,
+                "initialDirection": "left",
+                "moveSpeed": 0.4
+              }
+            }
+          ],
+          "children": [
+            {
+              "ref": "ent_IHSP7fn1tC",
+              "type": "@core/ColoredSquare",
+              "name": "ColoredSquare",
+              "enabled": true,
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  0.38823530077934265,
+                  0.4000000059604645,
+                  0.4313725531101227,
+                  1
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "ref": "ent_68vFnTqvd7",
+          "type": "@core/Empty",
+          "name": "Trees",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": 25.743348549728292,
+              "y": -22.95226732167678
+            }
+          },
+          "children": [
+            {
+              "ref": "ent_XYV3Tlo9jq",
+              "type": "@core/Empty",
+              "name": "Tree",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 37.83874156385863,
+                  "y": -2.8012980130344687
+                },
+                "scale": {
+                  "x": 3.5653519637505173,
+                  "y": 3.3090714214210704
+                }
+              },
+              "values": {
+                "clonedFromRef": "ent_18lPKvwtKt"
+              },
+              "children": [
+                {
+                  "ref": "ent_NE4WuIiFN9",
+                  "type": "@core/ColoredSquare",
+                  "name": "Trunk",
+                  "enabled": true,
+                  "transform": {
+                    "scale": {
+                      "x": 0.4,
+                      "y": 1.2
+                    },
+                    "z": -10
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.3960784375667572,
+                      0.26274511218070984,
+                      0.12941177189350128,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_QrOBrdbXKD",
+                  "type": "@core/ColoredSquare",
+                  "name": "CrownBase",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0,
+                      "y": 1
+                    },
+                    "scale": {
+                      "x": 1.4,
+                      "y": 1.4
+                    },
+                    "z": 2
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.18039216101169586,
+                      0.545098066329956,
+                      0.34117648005485535,
+                      1
+                    ]
+                  },
+                  "children": [
+                    {
+                      "ref": "ent_3kKV4L8z9x",
+                      "type": "@core/Collider",
+                      "name": "Collider",
+                      "enabled": true,
+                      "values": {
+                        "isSensor": false,
+                        "shape": "Rectangle"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "ref": "ent_DuPCnnzMdi",
+                  "type": "@core/ColoredSquare",
+                  "name": "CrownMiddle",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0,
+                      "y": 1.3
+                    },
+                    "scale": {
+                      "x": 1.2,
+                      "y": 1.2
+                    },
+                    "z": 3
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.23529411852359772,
+                      0.7019608020782471,
+                      0.4431372582912445,
+                      1
+                    ]
+                  },
+                  "children": [
+                    {
+                      "ref": "ent_QepDUmTdl0",
+                      "type": "@core/Collider",
+                      "name": "Collider",
+                      "enabled": true,
+                      "values": {
+                        "isSensor": false,
+                        "shape": "Rectangle"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "ref": "ent_T6hlREIdYG",
+                  "type": "@core/ColoredSquare",
+                  "name": "CrownTop",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0,
+                      "y": 1.6
+                    },
+                    "scale": {
+                      "x": 0.9,
+                      "y": 0.9
+                    },
+                    "z": 4
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.19607843458652496,
+                      0.8039215803146362,
+                      0.19607843458652496,
+                      1
+                    ]
+                  },
+                  "children": [
+                    {
+                      "ref": "ent_8fQ42SvEWl",
+                      "type": "@core/Collider",
+                      "name": "Collider",
+                      "enabled": true,
+                      "values": {
+                        "isSensor": false,
+                        "shape": "Rectangle"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "ref": "ent_edHUSlrfyZ",
+              "type": "@core/Empty",
+              "name": "Tree.1",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -82.89700721968914,
+                  "y": -2.345955709457755
+                },
+                "scale": {
+                  "x": 3.8507269297394764,
+                  "y": 3.994175474607397
+                }
+              },
+              "values": {
+                "clonedFromRef": "ent_18lPKvwtKt"
+              },
+              "children": [
+                {
+                  "ref": "ent_3Slg7SsbL3",
+                  "type": "@core/ColoredSquare",
+                  "name": "Trunk",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0,
+                      "y": 0.6772185595289448
+                    },
+                    "scale": {
+                      "x": 0.4,
+                      "y": 2.554437119057889
+                    },
+                    "z": 1
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.3960784375667572,
+                      0.26274511218070984,
+                      0.12941177189350128,
+                      1
+                    ]
+                  },
+                  "children": [
+                    {
+                      "ref": "ent_EErB52VRlm",
+                      "type": "@core/Collider",
+                      "name": "Collider",
+                      "enabled": true,
+                      "values": {
+                        "isSensor": false,
+                        "shape": "Rectangle"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "ref": "ent_BpuDHnN47d",
+                  "type": "@core/ColoredSquare",
+                  "name": "CrownBase",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0,
+                      "y": 1
+                    },
+                    "scale": {
+                      "x": 1.4,
+                      "y": 1.4
+                    },
+                    "z": 2
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.18039216101169586,
+                      0.545098066329956,
+                      0.34117648005485535,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_2SBQS4KBlq",
+                  "type": "@core/ColoredSquare",
+                  "name": "CrownMiddle",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0,
+                      "y": 1.3
+                    },
+                    "scale": {
+                      "x": 1.2,
+                      "y": 1.2
+                    },
+                    "z": 3
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.23529411852359772,
+                      0.7019608020782471,
+                      0.4431372582912445,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_KCxajOlffS",
+                  "type": "@core/ColoredSquare",
+                  "name": "CrownTop",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0,
+                      "y": 1.6
+                    },
+                    "scale": {
+                      "x": 0.9,
+                      "y": 0.9
+                    },
+                    "z": 4
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.19607843458652496,
+                      0.8039215803146362,
+                      0.19607843458652496,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_5Vd19OCDfx",
+              "type": "@core/Empty",
+              "name": "Tree.2",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 55.0281167716126,
+                  "y": -2.345955709457755
+                },
+                "scale": {
+                  "x": 3.8507269297394764,
+                  "y": 3.994175474607397
+                }
+              },
+              "values": {
+                "clonedFromRef": "ent_18lPKvwtKt"
+              },
+              "children": [
+                {
+                  "ref": "ent_sKUP4nw5OJ",
+                  "type": "@core/ColoredSquare",
+                  "name": "Trunk",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0,
+                      "y": 0.6877201183684498
+                    },
+                    "scale": {
+                      "x": 0.4,
+                      "y": 2.575440236736899
+                    },
+                    "z": 1
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.3960784375667572,
+                      0.26274511218070984,
+                      0.12941177189350128,
+                      1
+                    ]
+                  },
+                  "children": [
+                    {
+                      "ref": "ent_ypxEy7aVoc",
+                      "type": "@core/Collider",
+                      "name": "Collider",
+                      "enabled": true,
+                      "values": {
+                        "isSensor": false,
+                        "shape": "Rectangle"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "ref": "ent_Vikh1aMSMG",
+                  "type": "@core/ColoredSquare",
+                  "name": "CrownBase",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0,
+                      "y": 1
+                    },
+                    "scale": {
+                      "x": 1.4,
+                      "y": 1.4
+                    },
+                    "z": 2
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.18039216101169586,
+                      0.545098066329956,
+                      0.34117648005485535,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_sD9rXjdwWP",
+                  "type": "@core/ColoredSquare",
+                  "name": "CrownMiddle",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0,
+                      "y": 1.3
+                    },
+                    "scale": {
+                      "x": 1.2,
+                      "y": 1.2
+                    },
+                    "z": 3
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.23529411852359772,
+                      0.7019608020782471,
+                      0.4431372582912445,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_AX0UteOgtC",
+                  "type": "@core/ColoredSquare",
+                  "name": "CrownTop",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0,
+                      "y": 1.6
+                    },
+                    "scale": {
+                      "x": 0.9,
+                      "y": 0.9
+                    },
+                    "z": 4
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.19607843458652496,
+                      0.8039215803146362,
+                      0.19607843458652496,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_x66RxrVYiD",
+              "type": "@core/Empty",
+              "name": "Tree.3",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -46.09859176947555,
+                  "y": -2.8012980130344687
+                },
+                "scale": {
+                  "x": 3.5653519637505173,
+                  "y": 3.3090714214210704
+                }
+              },
+              "values": {
+                "clonedFromRef": "ent_18lPKvwtKt"
+              },
+              "children": [
+                {
+                  "ref": "ent_d3VjQhGw28",
+                  "type": "@core/ColoredSquare",
+                  "name": "Trunk",
+                  "enabled": true,
+                  "transform": {
+                    "scale": {
+                      "x": 0.4,
+                      "y": 1.2
+                    },
+                    "z": -10
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.3960784375667572,
+                      0.26274511218070984,
+                      0.12941177189350128,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_GtykLqPr78",
+                  "type": "@core/ColoredSquare",
+                  "name": "CrownBase",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0,
+                      "y": 1
+                    },
+                    "scale": {
+                      "x": 1.4,
+                      "y": 1.4
+                    },
+                    "z": 2
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.18039216101169586,
+                      0.545098066329956,
+                      0.34117648005485535,
+                      1
+                    ]
+                  },
+                  "children": [
+                    {
+                      "ref": "ent_1f5FiYbhFl",
+                      "type": "@core/Collider",
+                      "name": "Collider",
+                      "enabled": true,
+                      "values": {
+                        "isSensor": false,
+                        "shape": "Rectangle"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "ref": "ent_qavwNIRRHw",
+                  "type": "@core/ColoredSquare",
+                  "name": "CrownMiddle",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0,
+                      "y": 1.3
+                    },
+                    "scale": {
+                      "x": 1.2,
+                      "y": 1.2
+                    },
+                    "z": 3
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.23529411852359772,
+                      0.7019608020782471,
+                      0.4431372582912445,
+                      1
+                    ]
+                  },
+                  "children": [
+                    {
+                      "ref": "ent_jnbeJxDgDL",
+                      "type": "@core/Collider",
+                      "name": "Collider",
+                      "enabled": true,
+                      "values": {
+                        "isSensor": false,
+                        "shape": "Rectangle"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "ref": "ent_fMuvIsEIEE",
+                  "type": "@core/ColoredSquare",
+                  "name": "CrownTop",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0,
+                      "y": 1.6
+                    },
+                    "scale": {
+                      "x": 0.9,
+                      "y": 0.9
+                    },
+                    "z": 4
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.19607843458652496,
+                      0.8039215803146362,
+                      0.19607843458652496,
+                      1
+                    ]
+                  },
+                  "children": [
+                    {
+                      "ref": "ent_MV6onr7RIH",
+                      "type": "@core/Collider",
+                      "name": "Collider",
+                      "enabled": true,
+                      "values": {
+                        "isSensor": false,
+                        "shape": "Rectangle"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "ref": "ent_BEXQYVbaQN",
+              "type": "@core/Empty",
+              "name": "Tree.4",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -53.23722428949102,
+                  "y": -2.8012980130344687
+                },
+                "scale": {
+                  "x": 4.193421622566959,
+                  "y": 3.8800916493701183
+                }
+              },
+              "values": {
+                "clonedFromRef": "ent_18lPKvwtKt"
+              },
+              "children": [
+                {
+                  "ref": "ent_TWkvAuUDvQ",
+                  "type": "@core/ColoredSquare",
+                  "name": "Trunk",
+                  "enabled": true,
+                  "transform": {
+                    "scale": {
+                      "x": 0.4,
+                      "y": 1.2
+                    },
+                    "z": -10
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.3960784375667572,
+                      0.26274511218070984,
+                      0.12941177189350128,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_GlANLABGAx",
+                  "type": "@core/ColoredSquare",
+                  "name": "CrownBase",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0,
+                      "y": 1
+                    },
+                    "scale": {
+                      "x": 1.4,
+                      "y": 1.4
+                    },
+                    "z": 2
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.18039216101169586,
+                      0.545098066329956,
+                      0.34117648005485535,
+                      1
+                    ]
+                  },
+                  "children": [
+                    {
+                      "ref": "ent_xRbtwOGi2t",
+                      "type": "@core/Collider",
+                      "name": "Collider",
+                      "enabled": true,
+                      "values": {
+                        "isSensor": false,
+                        "shape": "Rectangle"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "ref": "ent_YLSeeQsEnX",
+                  "type": "@core/ColoredSquare",
+                  "name": "CrownMiddle",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0,
+                      "y": 1.3
+                    },
+                    "scale": {
+                      "x": 1.2,
+                      "y": 1.2
+                    },
+                    "z": 3
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.23529411852359772,
+                      0.7019608020782471,
+                      0.4431372582912445,
+                      1
+                    ]
+                  },
+                  "children": [
+                    {
+                      "ref": "ent_IKp7frq1ja",
+                      "type": "@core/Collider",
+                      "name": "Collider",
+                      "enabled": true,
+                      "values": {
+                        "isSensor": false,
+                        "shape": "Rectangle"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "ref": "ent_2YjiQvENfd",
+                  "type": "@core/ColoredSquare",
+                  "name": "CrownTop",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0,
+                      "y": 1.6
+                    },
+                    "scale": {
+                      "x": 0.9,
+                      "y": 0.9
+                    },
+                    "z": 4
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.19607843458652496,
+                      0.8039215803146362,
+                      0.19607843458652496,
+                      1
+                    ]
+                  },
+                  "children": [
+                    {
+                      "ref": "ent_4SUZSvyDGw",
+                      "type": "@core/Collider",
+                      "name": "Collider",
+                      "enabled": true,
+                      "values": {
+                        "isSensor": false,
+                        "shape": "Rectangle"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": "ent_wJidj9kaPR",
+          "type": "@core/Empty",
+          "name": "Grass",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": -14.291942271449363,
+              "y": -22.554225364397336
+            }
+          },
+          "children": [
+            {
+              "ref": "ent_UkUzIb9STd",
+              "type": "@core/Empty",
+              "name": "GrassPatch.5",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -32.960146297363735,
+                  "y": -4.537380953074159
+                },
+                "scale": {
+                  "x": 3.9221709970081653,
+                  "y": 2.372540656329308
+                },
+                "z": -6
+              },
+              "values": {
+                "clonedFromRef": "ent_A42YfmBv8k"
+              },
+              "children": [
+                {
+                  "ref": "ent_K85agzYn9v",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade1",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -0.4,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 1.2
+                    },
+                    "z": 1
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.1764705926179886,
+                      0.3529411852359772,
+                      0.15294118225574493,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_PFbIGYeqWv",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade2",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -0.2,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 0.9
+                    },
+                    "z": 2
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.21176470816135406,
+                      0.4901960790157318,
+                      0.18039216101169586,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_u7qcvBurYb",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade3",
+                  "enabled": true,
+                  "transform": {
+                    "scale": {
+                      "x": 0.15,
+                      "y": 1.4
+                    },
+                    "z": 3
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.1764705926179886,
+                      0.3529411852359772,
+                      0.15294118225574493,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_GQLOCmnNhP",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade4",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0.2,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 1.1
+                    },
+                    "z": 4
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.23529411852359772,
+                      0.5215686559677124,
+                      0.20000000298023224,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_Hji1U7wZtZ",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade5",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0.4,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 0.8
+                    },
+                    "z": 5
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.1764705926179886,
+                      0.3529411852359772,
+                      0.15294118225574493,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_p2EQegNPKY",
+              "type": "@core/Empty",
+              "name": "GrassPatch.4",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -10.320783290729361,
+                  "y": -4.537380953074159
+                },
+                "scale": {
+                  "x": 3.9221709970081653,
+                  "y": 2.372540656329308
+                },
+                "z": -6
+              },
+              "values": {
+                "clonedFromRef": "ent_A42YfmBv8k"
+              },
+              "children": [
+                {
+                  "ref": "ent_VQV4DHSE4c",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade1",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -0.4,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 1.2
+                    },
+                    "z": 1
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.1764705926179886,
+                      0.3529411852359772,
+                      0.15294118225574493,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_hhv9gBs0mR",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade2",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -0.2,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 0.9
+                    },
+                    "z": 2
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.21176470816135406,
+                      0.4901960790157318,
+                      0.18039216101169586,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_9fMdthUiOh",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade3",
+                  "enabled": true,
+                  "transform": {
+                    "scale": {
+                      "x": 0.15,
+                      "y": 1.4
+                    },
+                    "z": 3
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.1764705926179886,
+                      0.3529411852359772,
+                      0.15294118225574493,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_Dpcqrqz2l2",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade4",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0.2,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 1.1
+                    },
+                    "z": 4
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.23529411852359772,
+                      0.5215686559677124,
+                      0.20000000298023224,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_q1CUMTt8gN",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade5",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0.4,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 0.8
+                    },
+                    "z": 5
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.1764705926179886,
+                      0.3529411852359772,
+                      0.15294118225574493,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_8BCgIIu6xe",
+              "type": "@core/Empty",
+              "name": "GrassPatch.3",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -36.8719920273913,
+                  "y": -4.234350650043854
+                },
+                "scale": {
+                  "x": 3.9221709970081653,
+                  "y": 2.372540656329308
+                },
+                "z": -6
+              },
+              "values": {
+                "clonedFromRef": "ent_A42YfmBv8k"
+              },
+              "children": [
+                {
+                  "ref": "ent_3zZmi1RYcR",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade1",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -0.4,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 1.2
+                    },
+                    "z": 1
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.1764705926179886,
+                      0.3529411852359772,
+                      0.15294118225574493,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_fioNsBmkpV",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade2",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -0.2,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 0.9
+                    },
+                    "z": 2
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.21176470816135406,
+                      0.4901960790157318,
+                      0.18039216101169586,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_RWOdsNFABY",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade3",
+                  "enabled": true,
+                  "transform": {
+                    "scale": {
+                      "x": 0.15,
+                      "y": 1.4
+                    },
+                    "z": 3
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.1764705926179886,
+                      0.3529411852359772,
+                      0.15294118225574493,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_WouRpIpwnc",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade4",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0.2,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 1.1
+                    },
+                    "z": 4
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.23529411852359772,
+                      0.5215686559677124,
+                      0.20000000298023224,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_LVQNQpeFQM",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade5",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0.4,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 0.8
+                    },
+                    "z": 5
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.1764705926179886,
+                      0.3529411852359772,
+                      0.15294118225574493,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_6iW27yRQIX",
+              "type": "@core/Empty",
+              "name": "GrassPatch.2",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -40.838934176151646,
+                  "y": -4.537380953074159
+                },
+                "scale": {
+                  "x": 3.9221709970081653,
+                  "y": 2.372540656329308
+                },
+                "z": -6
+              },
+              "values": {
+                "clonedFromRef": "ent_A42YfmBv8k"
+              },
+              "children": [
+                {
+                  "ref": "ent_TBkEnrNGQz",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade1",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -0.4,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 1.2
+                    },
+                    "z": 1
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.1764705926179886,
+                      0.3529411852359772,
+                      0.15294118225574493,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_ozoyY5KvDZ",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade2",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -0.2,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 0.9
+                    },
+                    "z": 2
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.21176470816135406,
+                      0.4901960790157318,
+                      0.18039216101169586,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_OmXuwI1zKJ",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade3",
+                  "enabled": true,
+                  "transform": {
+                    "scale": {
+                      "x": 0.15,
+                      "y": 1.4
+                    },
+                    "z": 3
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.1764705926179886,
+                      0.3529411852359772,
+                      0.15294118225574493,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_Ljt210RBlF",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade4",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0.2,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 1.1
+                    },
+                    "z": 4
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.23529411852359772,
+                      0.5215686559677124,
+                      0.20000000298023224,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_YcZdXhGusl",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade5",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0.4,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 0.8
+                    },
+                    "z": 5
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.1764705926179886,
+                      0.3529411852359772,
+                      0.15294118225574493,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_u3oz50g69M",
+              "type": "@core/Empty",
+              "name": "GrassPatch.1",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -29.04830056733617,
+                  "y": -4.840411256104463
+                },
+                "scale": {
+                  "x": 3.9221709970081653,
+                  "y": 2.372540656329308
+                },
+                "z": -6
+              },
+              "values": {
+                "clonedFromRef": "ent_A42YfmBv8k"
+              },
+              "children": [
+                {
+                  "ref": "ent_1sGTesOFHP",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade1",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -0.4,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 1.2
+                    },
+                    "z": 1
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.1764705926179886,
+                      0.3529411852359772,
+                      0.15294118225574493,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_ubvadhiB12",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade2",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -0.2,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 0.9
+                    },
+                    "z": 2
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.21176470816135406,
+                      0.4901960790157318,
+                      0.18039216101169586,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_5kbnNFX440",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade3",
+                  "enabled": true,
+                  "transform": {
+                    "scale": {
+                      "x": 0.15,
+                      "y": 1.4
+                    },
+                    "z": 3
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.1764705926179886,
+                      0.3529411852359772,
+                      0.15294118225574493,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_5aho3pIwLk",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade4",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0.2,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 1.1
+                    },
+                    "z": 4
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.23529411852359772,
+                      0.5215686559677124,
+                      0.20000000298023224,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_j2tDS2mf6O",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade5",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0.4,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 0.8
+                    },
+                    "z": 5
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.1764705926179886,
+                      0.3529411852359772,
+                      0.15294118225574493,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_yWjuKkUO47",
+              "type": "@core/Empty",
+              "name": "GrassPatch.7",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 84.86927317739224,
+                  "y": -4.270424333661044
+                },
+                "scale": {
+                  "x": 3.9221709970081653,
+                  "y": 2.372540656329308
+                },
+                "z": -6
+              },
+              "values": {
+                "clonedFromRef": "ent_A42YfmBv8k"
+              },
+              "children": [
+                {
+                  "ref": "ent_EMW4mEG3Rx",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade1",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -0.4,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 1.2
+                    },
+                    "z": 1
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.1764705926179886,
+                      0.3529411852359772,
+                      0.15294118225574493,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_CSk91maycu",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade2",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -0.2,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 0.9
+                    },
+                    "z": 2
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.21176470816135406,
+                      0.4901960790157318,
+                      0.18039216101169586,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_kHKCL9YFzE",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade3",
+                  "enabled": true,
+                  "transform": {
+                    "scale": {
+                      "x": 0.15,
+                      "y": 1.4
+                    },
+                    "z": 3
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.1764705926179886,
+                      0.3529411852359772,
+                      0.15294118225574493,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_aBa8igxJEr",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade4",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0.2,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 1.1
+                    },
+                    "z": 4
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.23529411852359772,
+                      0.5215686559677124,
+                      0.20000000298023224,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_GpAWMQs0dD",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade5",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0.4,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 0.8
+                    },
+                    "z": 5
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.1764705926179886,
+                      0.3529411852359772,
+                      0.15294118225574493,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_gjLfWjG4dY",
+              "type": "@core/Empty",
+              "name": "GrassPatch.8",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 80.90233102863189,
+                  "y": -4.573454636691348
+                },
+                "scale": {
+                  "x": 3.9221709970081653,
+                  "y": 2.372540656329308
+                },
+                "z": -6
+              },
+              "values": {
+                "clonedFromRef": "ent_A42YfmBv8k"
+              },
+              "children": [
+                {
+                  "ref": "ent_y1U7Qh6TjN",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade1",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -0.4,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 1.2
+                    },
+                    "z": 1
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.1764705926179886,
+                      0.3529411852359772,
+                      0.15294118225574493,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_yHZfkaBpBv",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade2",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -0.2,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 0.9
+                    },
+                    "z": 2
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.21176470816135406,
+                      0.4901960790157318,
+                      0.18039216101169586,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_i2rZGc6wWS",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade3",
+                  "enabled": true,
+                  "transform": {
+                    "scale": {
+                      "x": 0.15,
+                      "y": 1.4
+                    },
+                    "z": 3
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.1764705926179886,
+                      0.3529411852359772,
+                      0.15294118225574493,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_wnb7PJKQMM",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade4",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0.2,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 1.1
+                    },
+                    "z": 4
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.23529411852359772,
+                      0.5215686559677124,
+                      0.20000000298023224,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_IFPLl6B7tq",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade5",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0.4,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 0.8
+                    },
+                    "z": 5
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.1764705926179886,
+                      0.3529411852359772,
+                      0.15294118225574493,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_dp4ut3oNC9",
+              "type": "@core/Empty",
+              "name": "GrassPatch.9",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 92.69296463744737,
+                  "y": -4.876484939721653
+                },
+                "scale": {
+                  "x": 3.9221709970081653,
+                  "y": 2.372540656329308
+                },
+                "z": -6
+              },
+              "values": {
+                "clonedFromRef": "ent_A42YfmBv8k"
+              },
+              "children": [
+                {
+                  "ref": "ent_BPKyBIhmnq",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade1",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -0.4,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 1.2
+                    },
+                    "z": 1
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.1764705926179886,
+                      0.3529411852359772,
+                      0.15294118225574493,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_Wusy3xVauU",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade2",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -0.2,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 0.9
+                    },
+                    "z": 2
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.21176470816135406,
+                      0.4901960790157318,
+                      0.18039216101169586,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_HltYwjHfYq",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade3",
+                  "enabled": true,
+                  "transform": {
+                    "scale": {
+                      "x": 0.15,
+                      "y": 1.4
+                    },
+                    "z": 3
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.1764705926179886,
+                      0.3529411852359772,
+                      0.15294118225574493,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_QzL06eVtct",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade4",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0.2,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 1.1
+                    },
+                    "z": 4
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.23529411852359772,
+                      0.5215686559677124,
+                      0.20000000298023224,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_j2LCG7Tg6S",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade5",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0.4,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 0.8
+                    },
+                    "z": 5
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.1764705926179886,
+                      0.3529411852359772,
+                      0.15294118225574493,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_VOaxldg8WC",
+              "type": "@core/Empty",
+              "name": "GrassPatch.10",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 88.78111890741981,
+                  "y": -4.573454636691348
+                },
+                "scale": {
+                  "x": 3.9221709970081653,
+                  "y": 2.372540656329308
+                },
+                "z": -6
+              },
+              "values": {
+                "clonedFromRef": "ent_A42YfmBv8k"
+              },
+              "children": [
+                {
+                  "ref": "ent_KRi7fIkA6p",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade1",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -0.4,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 1.2
+                    },
+                    "z": 1
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.1764705926179886,
+                      0.3529411852359772,
+                      0.15294118225574493,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_6bFEVPbquV",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade2",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -0.2,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 0.9
+                    },
+                    "z": 2
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.21176470816135406,
+                      0.4901960790157318,
+                      0.18039216101169586,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_vG0p3bbLze",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade3",
+                  "enabled": true,
+                  "transform": {
+                    "scale": {
+                      "x": 0.15,
+                      "y": 1.4
+                    },
+                    "z": 3
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.1764705926179886,
+                      0.3529411852359772,
+                      0.15294118225574493,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_4sr0PgeNb8",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade4",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0.2,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 1.1
+                    },
+                    "z": 4
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.23529411852359772,
+                      0.5215686559677124,
+                      0.20000000298023224,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_rkeJB7LW7M",
+                  "type": "@core/ColoredSquare",
+                  "name": "GrassBlade5",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0.4,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.15,
+                      "y": 0.8
+                    },
+                    "z": 5
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      0.1764705926179886,
+                      0.3529411852359772,
+                      0.15294118225574493,
+                      1
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": "ent_IMfTUoGeKI",
+          "type": "@core/Empty",
+          "name": "Cloud",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": -1.3321765054030337,
+              "y": -7.85222451978006
+            },
+            "scale": {
+              "x": 2.345740057021323,
+              "y": 3.324695335057002
+            }
+          },
+          "children": [
+            {
+              "ref": "ent_DXi8Vv0dvC",
+              "type": "@core/ColoredSquare",
+              "name": "BaseCenter",
+              "enabled": true,
+              "transform": {
+                "scale": {
+                  "x": 2,
+                  "y": 1.2
+                },
+                "z": 1
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  1,
+                  1,
+                  1,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_icTK5CIxAV",
+              "type": "@core/ColoredSquare",
+              "name": "LeftPuff",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -1.2,
+                  "y": 0.1
+                },
+                "scale": {
+                  "x": 1.3,
+                  "y": 1.3
+                },
+                "z": 2
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  0.9411764740943909,
+                  0.9411764740943909,
+                  0.9411764740943909,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_L7dFJNESQt",
+              "type": "@core/ColoredSquare",
+              "name": "RightPuff",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 1.2,
+                  "y": 0
+                },
+                "scale": {
+                  "x": 1.4,
+                  "y": 1.2
+                },
+                "z": 2
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  0.9411764740943909,
+                  0.9411764740943909,
+                  0.9411764740943909,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_NEFpjNarXM",
+              "type": "@core/ColoredSquare",
+              "name": "TopCenterPuff",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 0,
+                  "y": 0.4
+                },
+                "scale": {
+                  "x": 1.5,
+                  "y": 1.4
+                },
+                "z": 3
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  1,
+                  1,
+                  1,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_iAF2Nl4AKY",
+              "type": "@core/ColoredSquare",
+              "name": "TopLeftDetail",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -0.8,
+                  "y": 0.5
+                },
+                "z": 4
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  0.9098039269447327,
+                  0.9098039269447327,
+                  0.9098039269447327,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_JOUUNjwhn4",
+              "type": "@core/ColoredSquare",
+              "name": "TopRightDetail",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 0.7,
+                  "y": 0.4
+                },
+                "scale": {
+                  "x": 1.1,
+                  "y": 0.9
+                },
+                "z": 4
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  0.9098039269447327,
+                  0.9098039269447327,
+                  0.9098039269447327,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_MXLN5M7640",
+              "type": "@core/ColoredSquare",
+              "name": "BottomLeftDetail",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -0.6,
+                  "y": -0.3
+                },
+                "scale": {
+                  "x": 0.9,
+                  "y": 0.8
+                },
+                "z": 5
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  0.8784313797950745,
+                  0.8784313797950745,
+                  0.8784313797950745,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_uzH3UZmatP",
+              "type": "@core/ColoredSquare",
+              "name": "BottomRightDetail",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 0.5,
+                  "y": -0.2
+                },
+                "scale": {
+                  "x": 0.8,
+                  "y": 0.7
+                },
+                "z": 5
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  0.8784313797950745,
+                  0.8784313797950745,
+                  0.8784313797950745,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_vd7vh8hJBl",
+              "type": "@core/ColoredSquare",
+              "name": "TopHighlight",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 0,
+                  "y": 0.7
+                },
+                "scale": {
+                  "x": 0.8,
+                  "y": 0.7
+                },
+                "z": 6
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  1,
+                  1,
+                  1,
+                  1
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "ref": "ent_BQWDByGlDd",
+          "type": "@core/Empty",
+          "name": "Cloud.1",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": -11.373820310802564,
+              "y": -11.013019591748918
+            },
+            "scale": {
+              "x": 1.5876109337864444,
+              "y": 2.03969377498493
+            }
+          },
+          "children": [
+            {
+              "ref": "ent_z3VWjfuray",
+              "type": "@core/ColoredSquare",
+              "name": "BaseCenter",
+              "enabled": true,
+              "transform": {
+                "scale": {
+                  "x": 2,
+                  "y": 1.2
+                },
+                "z": 1
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  1,
+                  1,
+                  1,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_PPtpXgUaWu",
+              "type": "@core/ColoredSquare",
+              "name": "LeftPuff",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -1.2,
+                  "y": 0.1
+                },
+                "scale": {
+                  "x": 1.3,
+                  "y": 1.3
+                },
+                "z": 2
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  0.9411764740943909,
+                  0.9411764740943909,
+                  0.9411764740943909,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_fgNf9vYq2Z",
+              "type": "@core/ColoredSquare",
+              "name": "RightPuff",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 1.2,
+                  "y": 0
+                },
+                "scale": {
+                  "x": 1.4,
+                  "y": 1.2
+                },
+                "z": 2
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  0.9411764740943909,
+                  0.9411764740943909,
+                  0.9411764740943909,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_UZ84K0rtOr",
+              "type": "@core/ColoredSquare",
+              "name": "TopCenterPuff",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 0,
+                  "y": 0.4
+                },
+                "scale": {
+                  "x": 1.5,
+                  "y": 1.4
+                },
+                "z": 3
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  1,
+                  1,
+                  1,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_1IgMXUJVKC",
+              "type": "@core/ColoredSquare",
+              "name": "TopLeftDetail",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -0.8,
+                  "y": 0.5
+                },
+                "z": 4
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  0.9098039269447327,
+                  0.9098039269447327,
+                  0.9098039269447327,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_KWOp3oFMOh",
+              "type": "@core/ColoredSquare",
+              "name": "TopRightDetail",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 0.7,
+                  "y": 0.4
+                },
+                "scale": {
+                  "x": 1.1,
+                  "y": 0.9
+                },
+                "z": 4
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  0.9098039269447327,
+                  0.9098039269447327,
+                  0.9098039269447327,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_UtDQILau2J",
+              "type": "@core/ColoredSquare",
+              "name": "BottomLeftDetail",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -0.6,
+                  "y": -0.3
+                },
+                "scale": {
+                  "x": 0.9,
+                  "y": 0.8
+                },
+                "z": 5
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  0.8784313797950745,
+                  0.8784313797950745,
+                  0.8784313797950745,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_HwPfChwjkK",
+              "type": "@core/ColoredSquare",
+              "name": "BottomRightDetail",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 0.5,
+                  "y": -0.2
+                },
+                "scale": {
+                  "x": 0.8,
+                  "y": 0.7
+                },
+                "z": 5
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  0.8784313797950745,
+                  0.8784313797950745,
+                  0.8784313797950745,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_TojOPAsUxk",
+              "type": "@core/ColoredSquare",
+              "name": "TopHighlight",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 0,
+                  "y": 0.7
+                },
+                "scale": {
+                  "x": 0.8,
+                  "y": 0.7
+                },
+                "z": 6
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  1,
+                  1,
+                  1,
+                  1
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "local": [
+        {
+          "ref": "ent_qmpb4kxuqhoe41c0zz3wcw3c",
+          "type": "@core/Camera",
+          "name": "Camera",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": -3.99449022604594,
+              "y": -21.002860060527226
+            },
+            "scale": {
+              "x": 5,
+              "y": 5
+            }
+          },
+          "values": {
+            "active": true,
+            "smooth": 0,
+            "unlocked": false,
+            "zoom": 0.5
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_abm4P9j4tu",
+              "script": "res://src/camera-follow.ts",
+              "values": {
+                "moveThresholdX": 10,
+                "moveThresholdY": 7
+              }
+            }
+          ]
+        },
+        {
+          "ref": "ent_bmnw4axlc8kkzk3ivvnpvfsi",
+          "type": "@core/Empty",
+          "name": "PlayerSpawner",
+          "enabled": true,
+          "behaviors": [
+            {
+              "ref": "bhv_d23e7ajsbg2f7fgoeq171vly",
+              "script": "res://src/player-spawner.ts",
+              "values": {
+                "playerPrefab": "ent_5RaBmAdhKn",
+                "spawnpoint": "ent_vkea8cuayt39kloe5t2tsjut",
+                "playerContainer": "ent_qmm33gm5i98egxxc2w7qnm7h"
+              }
+            }
+          ]
+        }
+      ],
+      "server": [],
+      "prefabs": [
+        {
+          "ref": "ent_5RaBmAdhKn",
+          "type": "@core/CharacterController",
+          "name": "PlatformPlayer",
+          "enabled": true,
+          "transform": {
+            "scale": {
+              "x": 1.1290624579134536,
+              "y": 2
+            }
+          },
+          "values": {
+            "isSensor": false,
+            "shape": "Rectangle"
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_iB6j3K22lX",
+              "script": "res://src/platform-player.ts",
+              "values": {
+                "idleAnim": [
+                  "Animations",
+                  "Idle"
+                ],
+                "runAnim": [
+                  "Animations",
+                  "Run"
+                ],
+                "walkAnim": [
+                  "Animations",
+                  "Walk"
+                ],
+                "jumpAnim": [
+                  "Animations",
+                  "Jump"
+                ],
+                "fallAnim": [
+                  "Animations",
+                  "Fall"
+                ],
+                "animationsContainer": [
+                  "Animations"
+                ]
+              }
+            }
+          ],
+          "children": [
+            {
+              "ref": "ent_kFqg23rl9z",
+              "type": "@core/Empty",
+              "name": "Animations",
+              "enabled": true,
+              "transform": {
+                "scale": {
+                  "x": 2.686354934607607,
+                  "y": 1
+                }
+              },
+              "children": [
+                {
+                  "ref": "ent_eFd2UKBO3r",
+                  "type": "@core/AnimatedSprite",
+                  "name": "Fall",
+                  "enabled": false,
+                  "transform": {
+                    "position": {
+                      "x": 0,
+                      "y": 0.4945
+                    },
+                    "scale": {
+                      "x": 2,
+                      "y": 2
+                    }
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "alpha": 1,
+                    "startFrame": 332,
+                    "endFrame": 332,
+                    "speed": 0.2,
+                    "loop": true,
+                    "jsonSpritesheet": "",
+                    "spritesheet": "res://assets/PlayerSheet.png",
+                    "frameDimensions": {
+                      "x": 96,
+                      "y": 84
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_8BJqIO9xdb",
+                  "type": "@core/AnimatedSprite",
+                  "name": "Idle",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0,
+                      "y": 0.4945322042090138
+                    },
+                    "scale": {
+                      "x": 2,
+                      "y": 2
+                    }
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "alpha": 1,
+                    "startFrame": 0,
+                    "endFrame": 6,
+                    "speed": 0.1,
+                    "loop": true,
+                    "jsonSpritesheet": "",
+                    "spritesheet": "res://assets/PlayerSheet.png",
+                    "frameDimensions": {
+                      "x": 96,
+                      "y": 84
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_EDxGXb7Cr4",
+                  "type": "@core/AnimatedSprite",
+                  "name": "Jump",
+                  "enabled": false,
+                  "transform": {
+                    "position": {
+                      "x": 0,
+                      "y": 0.4945
+                    },
+                    "scale": {
+                      "x": 2,
+                      "y": 2
+                    }
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "alpha": 1,
+                    "startFrame": 129,
+                    "endFrame": 139,
+                    "speed": 0.2,
+                    "loop": false,
+                    "jsonSpritesheet": "",
+                    "spritesheet": "res://assets/PlayerSheet.png",
+                    "frameDimensions": {
+                      "x": 96,
+                      "y": 84
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_1erQTYExEJ",
+                  "type": "@core/AnimatedSprite",
+                  "name": "Run",
+                  "enabled": false,
+                  "transform": {
+                    "position": {
+                      "x": 0,
+                      "y": 0.4945
+                    },
+                    "scale": {
+                      "x": 2,
+                      "y": 2
+                    }
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "alpha": 1,
+                    "startFrame": 28,
+                    "endFrame": 35,
+                    "speed": 0.2,
+                    "loop": true,
+                    "jsonSpritesheet": "",
+                    "spritesheet": "res://assets/PlayerSheet.png",
+                    "frameDimensions": {
+                      "x": 96,
+                      "y": 84
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_otzwHfwz7f",
+                  "type": "@core/AnimatedSprite",
+                  "name": "Walk",
+                  "enabled": false,
+                  "transform": {
+                    "position": {
+                      "x": 0,
+                      "y": 0.4945
+                    },
+                    "scale": {
+                      "x": 2,
+                      "y": 2
+                    }
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "alpha": 1,
+                    "startFrame": 14,
+                    "endFrame": 21,
+                    "speed": 0.2,
+                    "loop": true,
+                    "jsonSpritesheet": "",
+                    "spritesheet": "res://assets/PlayerSheet.png",
+                    "frameDimensions": {
+                      "x": 96,
+                      "y": 84
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": "ent_A42YfmBv8k",
+          "type": "@core/Empty",
+          "name": "GrassPatch",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": -6.5405897512524245,
+              "y": 0.7864427638691378
+            },
+            "scale": {
+              "x": 3.9221709970081653,
+              "y": 2.372540656329308
+            }
+          },
+          "children": [
+            {
+              "ref": "ent_mHNrZnDKtt",
+              "type": "@core/ColoredSquare",
+              "name": "GrassBlade1",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -0.4,
+                  "y": 0
+                },
+                "scale": {
+                  "x": 0.15,
+                  "y": 1.2
+                },
+                "z": 1
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  0.1764705926179886,
+                  0.3529411852359772,
+                  0.15294118225574493,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_Z6PwtYQ9ek",
+              "type": "@core/ColoredSquare",
+              "name": "GrassBlade2",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -0.2,
+                  "y": 0
+                },
+                "scale": {
+                  "x": 0.15,
+                  "y": 0.9
+                },
+                "z": 2
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  0.21176470816135406,
+                  0.4901960790157318,
+                  0.18039216101169586,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_imbzJtJQPa",
+              "type": "@core/ColoredSquare",
+              "name": "GrassBlade3",
+              "enabled": true,
+              "transform": {
+                "scale": {
+                  "x": 0.15,
+                  "y": 1.4
+                },
+                "z": 3
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  0.1764705926179886,
+                  0.3529411852359772,
+                  0.15294118225574493,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_FUVPQvDyl8",
+              "type": "@core/ColoredSquare",
+              "name": "GrassBlade4",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 0.2,
+                  "y": 0
+                },
+                "scale": {
+                  "x": 0.15,
+                  "y": 1.1
+                },
+                "z": 4
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  0.23529411852359772,
+                  0.5215686559677124,
+                  0.20000000298023224,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_PKEtUyzNaA",
+              "type": "@core/ColoredSquare",
+              "name": "GrassBlade5",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 0.4,
+                  "y": 0
+                },
+                "scale": {
+                  "x": 0.15,
+                  "y": 0.8
+                },
+                "z": 5
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  0.1764705926179886,
+                  0.3529411852359772,
+                  0.15294118225574493,
+                  1
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "ref": "ent_mrI7Ft016S",
+          "type": "@core/Collider",
+          "name": "MovingPlatform",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": -0.8663975820287275,
+              "y": -5.197623110787666
+            },
+            "scale": {
+              "x": 7.059099166994272,
+              "y": 1
+            }
+          },
+          "values": {
+            "isSensor": false,
+            "shape": "Rectangle"
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_82mr5tBeRn",
+              "script": "res://src/moving-platform.ts"
+            }
+          ],
+          "children": [
+            {
+              "ref": "ent_g54OPAcLry",
+              "type": "@core/ColoredSquare",
+              "name": "ColoredSquare",
+              "enabled": true,
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  0.38823530077934265,
+                  0.4000000059604645,
+                  0.4313725531101227,
+                  1
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "ref": "ent_J1Q6rXJB5q",
+          "type": "@core/Empty",
+          "name": "Tree",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": 6.613031446919539,
+              "y": -1.2286294058183636
+            },
+            "scale": {
+              "x": 3.8507269297394764,
+              "y": 3.994175474607397
+            }
+          },
+          "values": {
+            "clonedFromRef": "ent_18lPKvwtKt"
+          },
+          "children": [
+            {
+              "ref": "ent_FgjHhK0aZa",
+              "type": "@core/ColoredSquare",
+              "name": "Trunk",
+              "enabled": true,
+              "transform": {
+                "scale": {
+                  "x": 0.4,
+                  "y": 1.2
+                },
+                "z": 1
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  0.3960784375667572,
+                  0.26274511218070984,
+                  0.12941177189350128,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_qwOMgBzPNG",
+              "type": "@core/ColoredSquare",
+              "name": "CrownBase",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 0,
+                  "y": 1
+                },
+                "scale": {
+                  "x": 1.4,
+                  "y": 1.4
+                },
+                "z": 2
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  0.18039216101169586,
+                  0.545098066329956,
+                  0.34117648005485535,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_84eX33s0mK",
+              "type": "@core/ColoredSquare",
+              "name": "CrownMiddle",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 0,
+                  "y": 1.3
+                },
+                "scale": {
+                  "x": 1.2,
+                  "y": 1.2
+                },
+                "z": 3
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  0.23529411852359772,
+                  0.7019608020782471,
+                  0.4431372582912445,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_w61R6h8qjz",
+              "type": "@core/ColoredSquare",
+              "name": "CrownTop",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 0,
+                  "y": 1.6
+                },
+                "scale": {
+                  "x": 0.9,
+                  "y": 0.9
+                },
+                "z": 4
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  0.19607843458652496,
+                  0.8039215803146362,
+                  0.19607843458652496,
+                  1
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "ref": "ent_7PWaejsccf",
+          "type": "@core/Empty",
+          "name": "Cloud",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": -1.9282846387357093,
+              "y": 4.496302146886809
+            }
+          },
+          "children": [
+            {
+              "ref": "ent_OVtZFpYrBs",
+              "type": "@core/ColoredSquare",
+              "name": "BaseCenter",
+              "enabled": true,
+              "transform": {
+                "scale": {
+                  "x": 2,
+                  "y": 1.2
+                },
+                "z": 1
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  1,
+                  1,
+                  1,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_YUtIJMGz6U",
+              "type": "@core/ColoredSquare",
+              "name": "LeftPuff",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -1.2,
+                  "y": 0.1
+                },
+                "scale": {
+                  "x": 1.3,
+                  "y": 1.3
+                },
+                "z": 2
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  0.9411764740943909,
+                  0.9411764740943909,
+                  0.9411764740943909,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_pnRMQuInqk",
+              "type": "@core/ColoredSquare",
+              "name": "RightPuff",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 1.2,
+                  "y": 0
+                },
+                "scale": {
+                  "x": 1.4,
+                  "y": 1.2
+                },
+                "z": 2
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  0.9411764740943909,
+                  0.9411764740943909,
+                  0.9411764740943909,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_hV0jIHyrh9",
+              "type": "@core/ColoredSquare",
+              "name": "TopCenterPuff",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 0,
+                  "y": 0.4
+                },
+                "scale": {
+                  "x": 1.5,
+                  "y": 1.4
+                },
+                "z": 3
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  1,
+                  1,
+                  1,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_cN4A2btLGV",
+              "type": "@core/ColoredSquare",
+              "name": "TopLeftDetail",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -0.8,
+                  "y": 0.5
+                },
+                "z": 4
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  0.9098039269447327,
+                  0.9098039269447327,
+                  0.9098039269447327,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_YN4f4sgNA5",
+              "type": "@core/ColoredSquare",
+              "name": "TopRightDetail",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 0.7,
+                  "y": 0.4
+                },
+                "scale": {
+                  "x": 1.1,
+                  "y": 0.9
+                },
+                "z": 4
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  0.9098039269447327,
+                  0.9098039269447327,
+                  0.9098039269447327,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_6Spej7uAmd",
+              "type": "@core/ColoredSquare",
+              "name": "BottomLeftDetail",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -0.6,
+                  "y": -0.3
+                },
+                "scale": {
+                  "x": 0.9,
+                  "y": 0.8
+                },
+                "z": 5
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  0.8784313797950745,
+                  0.8784313797950745,
+                  0.8784313797950745,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_TIQUkblk3r",
+              "type": "@core/ColoredSquare",
+              "name": "BottomRightDetail",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 0.5,
+                  "y": -0.2
+                },
+                "scale": {
+                  "x": 0.8,
+                  "y": 0.7
+                },
+                "z": 5
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  0.8784313797950745,
+                  0.8784313797950745,
+                  0.8784313797950745,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_DFn31lLAMb",
+              "type": "@core/ColoredSquare",
+              "name": "TopHighlight",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 0,
+                  "y": 0.7
+                },
+                "scale": {
+                  "x": 0.8,
+                  "y": 0.7
+                },
+                "z": 6
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  1,
+                  1,
+                  1,
+                  1
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
