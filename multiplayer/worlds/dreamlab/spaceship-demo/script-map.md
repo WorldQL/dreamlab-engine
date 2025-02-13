@@ -1,0 +1,18 @@
+- src/bullet-behavior.ts
+	- A bullet behavior component that handles projectile movement in a straight line based on initial rotation, with server-side movement calculations and automatic destruction after 5 seconds. The behavior uses vector mathematics to calculate position updates each tick, applying configurable speed and delta time, while ensuring movement logic only executes on the server side.
+- src/camera-follow.ts
+	- A camera follow behavior that updates the active camera's position to match its entity's position on each post-tick, but only for client-side authorized entities. Implements a basic third-person or top-down camera system by utilizing the game engine's Camera and network authority systems, making it suitable for multiplayer games where each client controls their own camera view.
+- src/cleanup-on-leave.ts
+	- A server-side behavior that automatically destroys its attached entity when the player who has authority over that entity leaves the game. Implements a cleanup mechanism by listening to the PlayerLeft event and checking if the disconnected player's connection ID matches the entity's authority ID, preventing orphaned entities when players disconnect.
+- src/enemy-spawner.ts
+	- Server-side enemy spawning behavior that creates new enemy entities at random positions within a 20x20 unit area every 5 seconds. Implements a time-based spawn system using the game engine's time management, and utilizes prefab cloning to instantiate enemies with unique identifiers and randomized positions through Vector2 coordinates.
+- src/enemy.ts
+	- Implements enemy AI behavior that tracks and attacks the nearest player with projectiles while maintaining a minimum distance. The enemy features a health system with visual damage feedback (knockback, scaling, opacity changes) and synchronized network state variables for damage visualization. Combat mechanics include shooting projectiles on a randomized cooldown (1-3 seconds), movement speed variation (0.5-1.0), and health values (3-5 HP), with all core logic running server-side.
+- src/health.ts
+	- null
+- src/parallax.ts
+	- Implements a parallax scrolling effect by moving background elements at a reduced speed relative to the player's movement. The behavior tracks the player's total movement from their initial position and applies a configurable parallax factor to create depth illusion, with objects moving slower than the player based on the parallaxFactor value (default 0.5). Integrates with the PlayerSpawner system to track the local player's position and automatically updates the attached entity's position each frame to create the parallax effect.
+- src/player-spawner.ts
+	- PlayerSpawner is a client-side behavior that handles the creation and initial placement of the local player entity. It instantiates a Player prefab within a designated PlayersContainer, assigns network authority based on the client's identity, positions it at the origin (0,0), and maintains a static reference to the local player entity for global access.
+- src/player.ts
+	- A spaceship player controller that handles WASD movement, mouse-aimed rotation, and bullet firing mechanics with collision detection. Implements character movement using physics-based character controller, damage handling with visual feedback (opacity/tint changes), and a sophisticated bullet spawning system that calculates precise bullet positions based on player rotation and cursor position. Integrates with a health system and network authority checks for multiplayer functionality, while providing visual feedback for player actions through sprite manipulations and scale animations.

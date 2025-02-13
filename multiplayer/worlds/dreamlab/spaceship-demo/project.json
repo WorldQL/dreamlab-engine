@@ -1,0 +1,439 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "engine_revision": "2024-08.001"
+  },
+  "scenes": {
+    "main": {
+      "registration": [],
+      "world": [
+        {
+          "ref": "ent_h1ynrwzv20xq4euy3s1kzvl3",
+          "type": "@core/Empty",
+          "name": "PlayersContainer",
+          "enabled": true
+        },
+        {
+          "ref": "ent_uv2ng361p6g7m0osoyy0las1",
+          "type": "@core/Empty",
+          "name": "EnemySpawner",
+          "enabled": true,
+          "behaviors": [
+            {
+              "ref": "bhv_vgzu3zmd67fotz4cskll94bc",
+              "script": "res://src/enemy-spawner.ts"
+            }
+          ]
+        },
+        {
+          "ref": "ent_y8apui9z626mt029t9cykljl",
+          "type": "@core/Empty",
+          "name": "Boundary",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": 12.31543054462312,
+              "y": -0.7343427222170567
+            },
+            "scale": {
+              "x": 5,
+              "y": 5
+            }
+          },
+          "children": [
+            {
+              "ref": "ent_w0m8mieiqcqp46wsc2vdfzzf",
+              "type": "@core/Collider",
+              "name": "BottomWall",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -1.994579846055533,
+                  "y": -20.144608314606394
+                },
+                "rotation": 1.5707963267948966,
+                "scale": {
+                  "x": 1,
+                  "y": 40.082087653931346
+                }
+              },
+              "values": {
+                "isSensor": false,
+                "shape": "Rectangle"
+              },
+              "children": [
+                {
+                  "ref": "ent_izvidq9dcd8iklu87l248une",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      1,
+                      1,
+                      1,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_qimiy9y87724pro2zn07etsp",
+              "type": "@core/Collider",
+              "name": "RightWall",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 17.28027466579655,
+                  "y": 1.3092142667170577
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 42.84655535987647
+                }
+              },
+              "values": {
+                "isSensor": false,
+                "shape": "Rectangle"
+              },
+              "children": [
+                {
+                  "ref": "ent_nmwgyicecp104nwluvc24saz",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      1,
+                      1,
+                      1,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_iojgthqqqofw0sw0gq9b241g",
+              "type": "@core/Collider",
+              "name": "LeftWall",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -22.258002577155956,
+                  "y": 1.1513762359625108
+                },
+                "scale": {
+                  "x": 1.4665234465529204,
+                  "y": 43.521817298407726
+                }
+              },
+              "values": {
+                "isSensor": false,
+                "shape": "Rectangle"
+              },
+              "children": [
+                {
+                  "ref": "ent_qmseyoz7xjpwgi52tcesr6wx",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      1,
+                      1,
+                      1,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_cenbjzrhujhv68fwi83w90xh",
+              "type": "@core/Collider",
+              "name": "TopWall",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -2.5643990917634163,
+                  "y": 22.464909924770318
+                },
+                "rotation": 1.5707963267948966,
+                "scale": {
+                  "x": 1,
+                  "y": 40.8790235302525
+                }
+              },
+              "values": {
+                "isSensor": false,
+                "shape": "Rectangle"
+              },
+              "children": [
+                {
+                  "ref": "ent_uq4xrogbvlew71o07zzu1odz",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      1,
+                      1,
+                      1,
+                      1
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": "ent_9YNNWDoJGz",
+          "type": "@core/Empty",
+          "name": "BulletContainer",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": -0.01139654228479614,
+              "y": -0.3074667026084734
+            }
+          }
+        }
+      ],
+      "local": [
+        {
+          "ref": "ent_p8zh7z9qgq7qj5oopfpnaqxf",
+          "type": "@core/Camera",
+          "name": "Camera",
+          "enabled": true,
+          "transform": {
+            "scale": {
+              "x": 2,
+              "y": 2
+            }
+          },
+          "values": {
+            "active": true,
+            "smooth": 0,
+            "unlocked": false,
+            "zoom": 0.75
+          }
+        },
+        {
+          "ref": "ent_tr6epldobbi539jyjg0fgxcw",
+          "type": "@core/Empty",
+          "name": "PlayerSpawnManager",
+          "enabled": true,
+          "behaviors": [
+            {
+              "ref": "bhv_dqg9eccve24e6rxphsx4y4px",
+              "script": "res://src/player-spawner.js"
+            }
+          ]
+        },
+        {
+          "ref": "ent_s8y8gkpuxydukcj3qcdeshyd",
+          "type": "@core/TilingSprite",
+          "name": "Background",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": 0.32874457212369634,
+              "y": 5.347794257627015
+            },
+            "scale": {
+              "x": 543.2965091952879,
+              "y": 622.8506408988835
+            },
+            "z": -100
+          },
+          "values": {
+            "static": false,
+            "hidden": false,
+            "width": 1,
+            "height": 1,
+            "alpha": 1,
+            "tileRotation": 0,
+            "tilePosition": {
+              "x": 0,
+              "y": 0
+            },
+            "tileScale": {
+              "x": 5,
+              "y": 5
+            },
+            "texture": "res://assets/bg.png"
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_ds82msx4sbjcy665i1pzlkwu",
+              "script": "res://src/parallax.ts",
+              "values": {
+                "parallaxFactor": 0.35
+              }
+            }
+          ]
+        }
+      ],
+      "server": [],
+      "prefabs": [
+        {
+          "ref": "ent_sooh1jrlhya5i7qi4pvwx507",
+          "type": "@core/Collider",
+          "name": "Player",
+          "enabled": true,
+          "transform": {
+            "z": 5
+          },
+          "values": {
+            "isSensor": false,
+            "shape": "Rectangle"
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_laf7zgzmekgg2nfj04519xb1",
+              "script": "res://src/camera-follow.ts"
+            },
+            {
+              "ref": "bhv_c93js7utp6mx560t7nzdsolc",
+              "script": "res://src/player.ts",
+              "values": {
+                "speed": 7
+              }
+            },
+            {
+              "ref": "bhv_muldo4spgvcefmov92g80tt9",
+              "script": "res://src/cleanup-on-leave.ts"
+            },
+            {
+              "ref": "bhv_vfd3f7u9klicrukt5flx9ldk",
+              "script": "res://src/health.ts"
+            }
+          ],
+          "children": [
+            {
+              "ref": "ent_ygfs6a5g81hoxp4zrtjfxfl7",
+              "type": "@core/Sprite",
+              "name": "Sprite",
+              "enabled": true,
+              "values": {
+                "static": false,
+                "hidden": false,
+                "texture": "res://assets/spaceship.png",
+                "width": 1,
+                "height": 1,
+                "alpha": 1
+              }
+            }
+          ]
+        },
+        {
+          "ref": "ent_ifoyksu6o3rphca3pbxroyr9",
+          "type": "@core/Collider",
+          "name": "Enemy",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": -3.300354510861901,
+              "y": 0.35097874061148815
+            },
+            "z": 5
+          },
+          "values": {
+            "isSensor": false,
+            "shape": "Rectangle"
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_jbsvnbg6buix6gkkigtxw0jb",
+              "script": "res://src/enemy.ts"
+            }
+          ],
+          "children": [
+            {
+              "ref": "ent_f4yg6t1cx4z0t9yfkku97jqq",
+              "type": "@core/Sprite",
+              "name": "Sprite",
+              "enabled": true,
+              "values": {
+                "static": false,
+                "hidden": false,
+                "texture": "res://assets/enemy.png",
+                "width": 1,
+                "height": 1,
+                "alpha": 1
+              }
+            }
+          ]
+        },
+        {
+          "ref": "ent_wo4RHSL3oE",
+          "type": "@core/Collider",
+          "name": "Bullet",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": 2.3635501206011185,
+              "y": -0.3074667026084734
+            },
+            "scale": {
+              "x": 0.25,
+              "y": 0.15
+            }
+          },
+          "values": {
+            "isSensor": true,
+            "shape": "Rectangle"
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_9jDVMcnK1v",
+              "script": "res://src/bullet-behavior.ts",
+              "values": {
+                "speed": 0.75
+              }
+            }
+          ],
+          "children": [
+            {
+              "ref": "ent_ZxwU9FEtT9",
+              "type": "@core/ColoredSquare",
+              "name": "ColoredSquare",
+              "enabled": true,
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  1,
+                  1,
+                  1,
+                  1
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
