@@ -69,6 +69,20 @@
   transform: scale(1.02);
 }
 
+.prefab-card.preselected {
+  background: rgb(var(--color-bg-2));
+  border-color: grey;
+  box-shadow: 0 0 0 1px grey;
+}
+
+.prefab-card.preselected::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(128, 128, 128, 0.1);
+  pointer-events: none;
+}
+
 .no-prefabs-message {
   grid-column: 1 / -1;
   text-align: center;

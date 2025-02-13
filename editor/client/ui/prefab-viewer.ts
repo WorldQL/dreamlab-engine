@@ -51,6 +51,15 @@ export class PrefabViewer {
       }
     }
 
+    this.#content.addEventListener("click", (event: MouseEvent) => {
+      if (!(event.target instanceof HTMLElement) || !event.target.closest(".prefab-card")) {
+        ui.selectedEntity.entities = [];
+        this.#content.querySelectorAll(".prefab-card.preselected").forEach(el => {
+          el.classList.remove("preselected");
+        });
+      }
+    });
+
     this.addContextMenu(ui);
 
     ui.selectedEntity.listen(() => {
@@ -105,7 +114,21 @@ export class PrefabViewer {
       }
     });
 
-    card.addEventListener("click", () => {
+    card.addEventListener("click", (event: MouseEvent) => {
+      event.stopPropagation();
+
+      this.#content.querySelectorAll(".prefab-card.preselected").forEach(el => {
+        if (el !== card) {
+          el.classList.remove("preselected");
+        }
+      });
+      ui.selectedEntity.entities = [];
+      card.classList.add("preselected");
+    });
+
+    card.addEventListener("dblclick", (event: MouseEvent) => {
+      event.stopPropagation();
+      card.classList.remove("preselected");
       ui.selectedEntity.entities = [entity];
     });
 
@@ -227,7 +250,12 @@ export class PrefabViewer {
         if (ui.selectedEntity.entities.length === 0) {
           parentEntity = this.game.world._.EditEntities._.world;
         } else {
-          parentEntity = getFacadeRoot(ui.selectedEntity.entities[0]);
+          const facadeRoot = getFacadeRoot(ui.selectedEntity.entities[0]);
+          if (facadeRoot.constructor.name === "PrefabRootFacade") {
+            parentEntity = this.game.world._.EditEntities._.world;
+          } else {
+            parentEntity = facadeRoot;
+          }
         }
 
         if (parentEntity && this.currentDragSource) {
@@ -237,6 +265,7 @@ export class PrefabViewer {
           this.currentDragSource.entities.forEach(e => {
             const newEntity = e.cloneInto(parentEntity, {
               transform: { position: spawnPosition },
+              enabled: true,
             });
             UndoRedoManager._.push({
               t: "create-entity",
@@ -244,6 +273,7 @@ export class PrefabViewer {
               def: newEntity.getDefinition(),
             });
             newEntities.push(newEntity);
+            ui.selectedEntity.entities = [newEntity];
           });
         }
 
