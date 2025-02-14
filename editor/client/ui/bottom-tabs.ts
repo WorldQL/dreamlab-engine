@@ -5,6 +5,7 @@ import { PrefabViewer } from "./prefab-viewer.ts";
 import { Terminal, Box, icon, Bot, Wand } from "../_icons.ts";
 import { ClientGame } from "@dreamlab/engine";
 import { Assistant } from "./assistant/assistant.tsx";
+import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 
 export class BottomTabs implements InspectorUIWidget {
   #container: HTMLElement;
@@ -67,7 +68,9 @@ export class BottomTabs implements InspectorUIWidget {
     externalTab.setAttribute("data-tab-id", "external");
     externalTab.append(icon(Wand), elem("span", {}, ["Generate Asset"]));
     externalTab.addEventListener("click", () => {
-      window.open("https://app.dreamlab.gg/create/asset", "_blank", "noopener,noreferrer");
+      if (ui.game.instanceId === NIL_UUID)
+        window.open("https://app.dreamlab.gg/create/asset", "_blank", "noopener,noreferrer");
+      else window.parent.postMessage({ type: "SHOW_ASSET_CREATOR" }, "*");
     });
 
     const tabBar = elem("div", { className: "bottom-tabs-bar" }, [
