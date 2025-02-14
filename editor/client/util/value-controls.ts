@@ -143,28 +143,23 @@ export function createValueControl(
       updateImagePreview(opts.get() ?? "");
       container.append(imgPreview, control);
 
-      const getUrl = async (): Promise<string | undefined> => {
+      const getUrl = (): string | undefined => {
         const dragTarget = document.querySelector(
           "[data-file][data-dragging]",
         ) as HTMLElement | null;
         if (!dragTarget) return;
 
         const file = `res://${dragTarget.dataset.file}`;
-        try {
-          await updateImagePreview(file);
-          return file;
-        } catch {
-          return undefined;
-        }
+        return file;
       };
 
-      control.addEventListener("dragover", async ev => {
-        const url = await getUrl();
+      container.addEventListener("dragover", ev => {
+        const url = getUrl();
         if (url !== undefined) ev.preventDefault();
       });
 
-      control.addEventListener("drop", async () => {
-        const url = await getUrl();
+      container.addEventListener("drop", async () => {
+        const url = getUrl();
         if (url) {
           opts.set(url);
           await updateImagePreview(url);
