@@ -317,14 +317,19 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
   game.prefabs.on(EntityDescendantSpawned, handleEntityEnableChanged);
 
   game.on(InternalGameTick, () => {
+    const reports: { entity: string; enabled: boolean }[] = [];
+
     for (const entity of enabledDirtyEntities) {
       const enabled = entity[internal.entityOwnEnabled];
       const prev = prevEntityEnabled.get(entity);
       if (prev === undefined || prev !== enabled) {
-        conn.send({ t: "EntityEnableChanged", entity: entity.ref, enabled });
+        reports.push({ entity: entity.ref, enabled });
       }
       prevEntityEnabled.set(entity, enabled);
     }
+
+    conn.send({ t: "EntityEnableReport", reports });
+
     enabledDirtyEntities.clear();
   });
 
@@ -336,5 +341,16 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
 
     entity[internal.entitySetEnabledFromNetwork](packet.enabled, packet.from);
     prevEntityEnabled.set(entity, packet.enabled);
+  });
+
+  conn.registerPacketHandler("EntityEnableReport", packet => {
+    if (packet.from === conn.id) return;
+
+    for (const report of packet.reports) {
+      const entity = game.entities.lookupByRef(report.entity);
+      if (!entity) continue;
+      entity[internal.entitySetEnabledFromNetwork](report.enabled, packet.from);
+      prevEntityEnabled.set(entity, report.enabled);
+    }
   });
 };

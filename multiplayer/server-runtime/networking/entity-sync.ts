@@ -276,14 +276,19 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
   game.prefabs.on(EntityDescendantSpawned, handleEntityEnableChanged);
 
   game.on(InternalGameTick, () => {
+    const reports: { entity: string; enabled: boolean }[] = [];
+
     for (const entity of enabledDirtyEntities) {
       const enabled = entity[internal.entityOwnEnabled];
       const prev = prevEntityEnabled.get(entity);
       if (prev === undefined || prev !== enabled) {
-        net.broadcast({ t: "EntityEnableChanged", entity: entity.ref, enabled });
+        reports.push({ entity: entity.ref, enabled });
       }
       prevEntityEnabled.set(entity, enabled);
     }
+
+    net.broadcast({ t: "EntityEnableReport", reports });
+
     enabledDirtyEntities.clear();
   });
 
@@ -292,6 +297,7 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
     if (!entity) return;
 
     entity[internal.entitySetEnabledFromNetwork](packet.enabled, from);
+    prevEntityEnabled.set(entity, packet.enabled);
 
     net.broadcast({
       t: "EntityEnableChanged",
@@ -299,5 +305,16 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
       enabled: packet.enabled,
       from,
     });
+  });
+
+  net.registerPacketHandler("EntityEnableReport", (from, packet) => {
+    for (const report of packet.reports) {
+      const entity = game.entities.lookupByRef(report.entity);
+      if (!entity) continue;
+      entity[internal.entitySetEnabledFromNetwork](report.enabled, from);
+      prevEntityEnabled.set(entity, report.enabled);
+    }
+
+    net.broadcast({ t: "EntityEnableReport", reports: packet.reports, from });
   });
 };

@@ -235,6 +235,20 @@ export const ServerEntityEnableChanged = ClientEntityEnableChanged.extend({
   from: ConnectionIdSchema.optional(),
 });
 
+export const ClientEntityEnableReport = z.object({
+  t: z.literal("EntityEnableReport"),
+  reports: z
+    .object({
+      entity: EntityReferenceSchema,
+      enabled: z.boolean(),
+    })
+    .array(),
+});
+
+export const ServerEntityEnableReport = ClientEntityEnableReport.extend({
+  from: ConnectionIdSchema.optional(),
+});
+
 export const ClientPacketSchema = z.discriminatedUnion("t", [
   PingPacketSchema,
   ClientLoadPhaseChangedPacket,
@@ -251,6 +265,7 @@ export const ClientPacketSchema = z.discriminatedUnion("t", [
   ClientSpawnBehaviorPacket,
   ClientDeleteBehaviorPacket,
   ClientEntityEnableChanged,
+  ClientEntityEnableReport,
 ]);
 export type ClientPacket = z.infer<typeof ClientPacketSchema>;
 
@@ -278,6 +293,7 @@ export const ServerPacketSchema = z.discriminatedUnion("t", [
   ServerSpawnBehaviorPacket,
   ServerDeleteBehaviorPacket,
   ServerEntityEnableChanged,
+  ServerEntityEnableReport,
 ]);
 export type ServerPacket = z.infer<typeof ServerPacketSchema>;
 
