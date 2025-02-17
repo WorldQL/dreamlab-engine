@@ -5,4 +5,4 @@ declare module "npm:csstype@3.1.3" {
   }
 }
 
-export * from "npm:csstype@3.1.3";
+export type * from "npm:csstype@3.1.3";

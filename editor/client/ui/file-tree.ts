@@ -7,6 +7,7 @@ import {
   Braces,
   CodeXml,
   Eye,
+  EyeOff,
   File,
   Folder,
   icon,
@@ -15,7 +16,6 @@ import {
   PlusCircle,
   Settings,
   SimpleIcon,
-  EyeOff,
 } from "../_icons.ts";
 import { DataTree } from "../components/mod.ts";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
@@ -251,7 +251,10 @@ export class FileTree implements InspectorUIWidget {
           href: "https://app.dreamlab.gg/asset-store",
           target: "_blank",
           rel: "noopener noreferrer",
-          style: "color: rgb(var(--color-primary)); text-decoration: underline;",
+          style: {
+            color: "rgb(var(--color-primary))",
+            textDecoration: "underline",
+          },
         },
         ["Open Asset Store"],
       ),
