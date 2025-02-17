@@ -10,6 +10,7 @@ import * as path from "@std/path";
 import type { RichGameStatus } from "../server-common/rich-status.ts";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 import { watchForEditChanges } from "./edit-watcher.ts";
+import { toMarkdownSceneTree } from "./util/compact-markdown-scene-tree.ts";
 
 interface ConnectedClient {
   connectionId: string;
@@ -138,6 +139,10 @@ export class GameSession {
           const projectJsonFile = path.join(parent.info.worldDirectory, "project.json");
           const projectDesc = JSON.parse(await Deno.readTextFile(projectJsonFile));
           projectDesc.scenes = { ...(projectDesc.scenes ?? {}), main: scene };
+          
+          const markdownScene = toMarkdownSceneTree(scene);
+          const markdownSceneFile = path.join(parent.info.worldDirectory, "scene-description.md");
+          await Deno.writeTextFile(markdownSceneFile, markdownScene);
           await Deno.writeTextFile(projectJsonFile, JSON.stringify(projectDesc, undefined, 2));
         } catch (_err) {
           // ignore
