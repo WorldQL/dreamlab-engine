@@ -1,34 +1,40 @@
-export type ElementProps<E extends Element> = {
+import * as CSS from "./css.ts";
+
+export type ElementProps<E extends HTMLElement | SVGElement> = {
   // deno-lint-ignore ban-types
-  [K in keyof E as E[K] extends Function ? never : K]?: K extends "style"
-    ? string | CSSStyleDeclaration
-    : E[K];
+  [K in keyof E as E[K] extends Function ? never : K]?: E[K];
 };
 
-export interface ElementExtras<E extends Element> {
+export type ElementExtras<E extends HTMLElement | SVGElement> = {
   classList?: string[];
-  styleMap?: Record<string, string>;
+  style?: CSS.Properties;
+  dataset?: Record<string, string>;
   _also?: ((element: E) => void) | ((element: E) => void)[];
-}
+};
+
+export type ElementAttrs<E extends HTMLElement | SVGElement> = ElementExtras<E> &
+  Omit<ElementProps<E>, keyof ElementExtras<E>>;
 
 export function element<K extends keyof HTMLElementTagNameMap>(
   tag: K,
-  attrs: ElementProps<HTMLElementTagNameMap[K]> | ElementProps<HTMLElementTagNameMap[K]>[] = {},
+  attrs: ElementAttrs<HTMLElementTagNameMap[K]> = {},
   children: (Element | string | Text)[] = [],
-  extras: ElementExtras<HTMLElementTagNameMap[K]> = {},
 ): HTMLElementTagNameMap[K] {
   const element = document.createElement(tag);
-  Object.assign(element, attrs);
-  if (extras.classList) extras.classList.forEach(c => element.classList.add(c));
-  if (extras.styleMap)
-    Object.entries(extras.styleMap).forEach(([k, v]) => element.style.setProperty(k, v));
+
+  const { classList, style, dataset, _also, ...rest } = attrs;
+  Object.assign(element, rest);
+
+  if (classList) classList.forEach(c => element.classList.add(c));
+  if (style) Object.entries(style).forEach(([k, v]) => element.style.setProperty(k, v));
+  if (dataset) Object.entries(dataset).forEach(([k, v]) => (element.dataset[k] = v));
 
   const nodes = children.map(e => (typeof e === "string" ? document.createTextNode(e) : e));
   element.append(...nodes);
 
-  if (extras._also) {
-    if (Array.isArray(extras._also)) extras._also.forEach(also => also(element));
-    else extras._also(element);
+  if (_also) {
+    if (Array.isArray(_also)) _also.forEach(also => also(element));
+    else _also(element);
   }
 
   return element;
