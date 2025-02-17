@@ -14,30 +14,37 @@ const readConfig = () => {
   const bindAddress = env("BIND_ADDRESS", env.socketAddress("127.0.0.1:8001"));
   const isDev = BoolSchema.parse(env("IS_DEV", env.optional));
   const publicUrlBase = env(
-    "PUBLIC_URL_BASE",
+    "DREAMLAB_MULTIPLAYER_PUBLIC_URL",
     env.defaultsTo(`http://${bindAddress.hostname}:${bindAddress.port}`),
   );
   const gitBase = env(
-    "DIST_SERVER_URL",
+    "DREAMLAB_DISTRIBUTION_PUBLIC_URL",
     env.defaultsTo("https://distribution.dreamlab.gg/v1/git"),
   );
-  const coordAuthSecret = env("COORDINATOR_AUTH_TOKEN");
-  const gameAuthSecret = env("GAME_AUTH_SECRET");
-  const kvUrl = env("KV_URL");
-  const kvSigningKey = env("KV_SIGNING_KEY");
-  const dreamlabNextUrl = env("DREAMLAB_NEXT_URL", env.defaultsTo("https://app.dreamlab.gg"));
+  const coordAuthSecret = env("DREAMLAB_MULTIPLAYER_AUTH_TOKEN");
+  const gameAuthSecret = env("DREAMLAB_NEXT_GAME_JWT_SECRET");
+  const kvUrl = env("DREAMLAB_KV_PUBLIC_URL");
+  const kvSigningKey = env("DREAMLAB_KV_SIGNING_KEY");
+  const dreamlabNextUrl = env(
+    "DREAMLAB_NEXT_PUBLIC_URL",
+    env.defaultsTo("https://app.dreamlab.gg"),
+  );
 
-  const yjsUrl = env("YJS_URL");
+  const yjsUrl = env("DREAMLAB_CODE_EDITOR_YJS_URL");
 
-  const systemdMemLimit = BoolSchema.parse(env("USE_SYSTEMD_MEM_LIMIT", env.optional));
-  const enableMetrics = BoolSchema.parse(env("ENABLE_METRICS", env.optional));
+  const systemdMemLimit = BoolSchema.parse(
+    env("DREAMLAB_MULTIPLAYER_USE_SYSTEMD_LIMITS", env.optional),
+  );
+  const enableMetrics = BoolSchema.parse(
+    env("DREAMLAB_MULTIPLAYER_ENABLE_METRICS", env.optional),
+  );
 
   const influxdb = enableMetrics
     ? {
-        url: env("INFLUXDB_URL"),
-        org: env("INFLUXDB_ORG"),
-        bucket: env("INFLUXDB_BUCKET"),
-        token: env("INFLUXDB_TOKEN"),
+        url: env("DREAMLAB_MULTIPLAYER_INFLUXDB_URL"),
+        org: env("DREAMLAB_MULTIPLAYER_INFLUXDB_ORG"),
+        bucket: env("DREAMLAB_MULTIPLAYER_INFLUXDB_BUCKET"),
+        token: env("DREAMLAB_MULTIPLAYER_INFLUXDB_TOKEN"),
       }
     : undefined;
 
