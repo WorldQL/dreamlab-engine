@@ -21,7 +21,8 @@ export const serveInstanceManagementAPI = (router: Router) => {
       },
       async (ctx, { query }) => {
         const hasAuth =
-          ctx.request.headers.get("Authorization") === `Bearer ${CONFIG.coordAuthSecret}`;
+          ctx.request.headers.get("Authorization") ===
+          `Bearer ${CONFIG.MULTIPLAYER_AUTH_TOKEN}`;
 
         let instances = [...GameInstance.INSTANCES.entries()];
 
@@ -74,7 +75,7 @@ export const serveInstanceManagementAPI = (router: Router) => {
 
   router.put(
     "/api/v1/instances",
-    bearerTokenAuth(CONFIG.coordAuthSecret),
+    bearerTokenAuth(CONFIG.MULTIPLAYER_AUTH_TOKEN),
     typedJsonHandler(
       {
         body: z.object({
@@ -92,14 +93,14 @@ export const serveInstanceManagementAPI = (router: Router) => {
         const DREAMLAB_EDIT_NAMESPACE = "b2d25565-3f12-4acd-90bb-7883eee613fe";
 
         const instanceId =
-          body.nil && CONFIG.isDev
+          body.nil && CONFIG.IS_DEV
             ? "00000000-0000-0000-0000-000000000000"
             : body.edit_mode && !body.force_random_id
-            ? await generateUUIDv5(
-                DREAMLAB_EDIT_NAMESPACE,
-                new TextEncoder().encode(body.world_id),
-              )
-            : crypto.randomUUID();
+              ? await generateUUIDv5(
+                  DREAMLAB_EDIT_NAMESPACE,
+                  new TextEncoder().encode(body.world_id),
+                )
+              : crypto.randomUUID();
 
         const worldId = body.world_id;
 
@@ -158,7 +159,7 @@ export const serveInstanceManagementAPI = (router: Router) => {
 
   router.delete(
     "/api/v1/instance/:instance",
-    bearerTokenAuth(CONFIG.coordAuthSecret),
+    bearerTokenAuth(CONFIG.MULTIPLAYER_AUTH_TOKEN),
     typedJsonHandler(
       {
         params: z.object({ instance: RunningInstanceByIdSchema }),
@@ -180,7 +181,7 @@ export const serveInstanceManagementAPI = (router: Router) => {
 
   router.post(
     "/api/v1/restart-instance/:instance",
-    bearerTokenAuth(CONFIG.coordAuthSecret),
+    bearerTokenAuth(CONFIG.MULTIPLAYER_AUTH_TOKEN),
     typedJsonHandler(
       {
         params: z.object({ instance: RunningInstanceByIdSchema }),

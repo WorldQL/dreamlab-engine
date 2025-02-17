@@ -54,7 +54,7 @@ export const serveSourceControlAPI = (router: Router) => {
     }
 
     const pushProcess = new Deno.Command("git", {
-      args: ["push", `${CONFIG.gitBase}/${instance.info.worldId}.git`, "main"],
+      args: ["push", `${CONFIG.DISTRIBUTION_PUBLIC_URL}/${instance.info.worldId}.git`, "main"],
       cwd: sourceRoot,
     }).spawn();
     const pushStatus = await pushProcess.status;
@@ -95,7 +95,12 @@ export const serveSourceControlAPI = (router: Router) => {
 
       {
         const pushBranchCmd = new Deno.Command("git", {
-          args: ["push", "-u", `${CONFIG.gitBase}/${instance.info.worldId}.git`, newBranch],
+          args: [
+            "push",
+            "-u",
+            `${CONFIG.DISTRIBUTION_PUBLIC_URL}/${instance.info.worldId}.git`,
+            newBranch,
+          ],
           cwd: sourceRoot,
         }).spawn();
         const pushBranchStatus = await pushBranchCmd.status;

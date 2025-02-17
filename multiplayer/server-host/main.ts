@@ -84,7 +84,7 @@ await Promise.all([
   })(),
   // listen web
   (async () => {
-    const addr = CONFIG.bindAddress;
+    const addr = CONFIG.BIND_ADDRESS;
     console.log(`Listening: http://${addr.hostname}:${addr.port} ...`);
     await app.listen({
       hostname: addr.hostname,

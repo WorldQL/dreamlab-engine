@@ -35,9 +35,9 @@ const userInfo = async (
     const params = new URLSearchParams();
     params.set("discordId", profile.id);
 
-    const url = `${CONFIG.dreamlabNextUrl}/api/applications/lookup-user?${params}`;
+    const url = `${CONFIG.NEXT_PUBLIC_URL}/api/applications/lookup-user?${params}`;
     const resp = await fetch(url, {
-      headers: { Authorization: `Bearer ${CONFIG.coordAuthSecret}` },
+      headers: { Authorization: `Bearer ${CONFIG.MULTIPLAYER_AUTH_TOKEN}` },
     });
 
     if (!resp.ok) {
@@ -65,7 +65,7 @@ const userInfo = async (
 };
 
 export const serveDiscordRoutes = async (router: Router) => {
-  const gameAuthSecret = await importSecretKey(CONFIG.gameAuthSecret);
+  const gameAuthSecret = await importSecretKey(CONFIG.NEXT_GAME_JWT_SECRET);
 
   router.post(
     "/api/v1/discord/auth",
@@ -84,8 +84,8 @@ export const serveDiscordRoutes = async (router: Router) => {
       },
       async (_ctx, { body }) => {
         const detailsResp = await fetch(
-          `${CONFIG.dreamlabNextUrl}/api/applications/details/${body.application_id}`,
-          { headers: { Authorization: `Bearer ${CONFIG.coordAuthSecret}` } },
+          `${CONFIG.NEXT_PUBLIC_URL}/api/applications/details/${body.application_id}`,
+          { headers: { Authorization: `Bearer ${CONFIG.MULTIPLAYER_AUTH_TOKEN}` } },
         );
         if (detailsResp.status === 404)
           throw new JsonAPIError(Status.InternalServerError, "unknown app id");

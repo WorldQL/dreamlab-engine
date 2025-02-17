@@ -31,7 +31,7 @@ export const handleJsonAPIErrors = (app: Application) => {
         return;
       }
 
-      ctx.response.body = CONFIG.isDev ? `Internal Error:\n\n${err.stack}` : "Internal Error";
+      ctx.response.body = CONFIG.IS_DEV ? `Internal Error:\n\n${err.stack}` : "Internal Error";
       ctx.response.type = "text/plain";
       ctx.response.status = Status.InternalServerError;
     }

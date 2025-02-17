@@ -52,7 +52,7 @@ export class IPCWorker {
       "./server-runtime/main.ts",
     ];
 
-    if (CONFIG.systemdMemLimit) {
+    if (CONFIG.MULTIPLAYER_USE_SYSTEMD_LIMITS) {
       const dbus = Deno.env.get("DBUS_SESSION_BUS_ADDRESS");
       if (!dbus) throw new Error("We have no DBus address for systemd mem limits!");
       env["DBUS_SESSION_BUS_ADDRESS"] = dbus;

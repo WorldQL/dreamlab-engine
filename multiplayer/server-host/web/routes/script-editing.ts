@@ -421,7 +421,11 @@ export const serveScriptEditingAPI = (router: Router) => {
         const sourceProjectDir = await Deno.makeTempDir({ prefix: "dreamlab-import" });
 
         const cloneProcess = new Deno.Command("git", {
-          args: ["clone", `${CONFIG.gitBase}/${body.sourceProject}.git`, sourceProjectDir],
+          args: [
+            "clone",
+            `${CONFIG.DISTRIBUTION_PUBLIC_URL}/${body.sourceProject}.git`,
+            sourceProjectDir,
+          ],
         }).spawn();
         const cloneStatus = await cloneProcess.status;
         if (!cloneStatus.success)

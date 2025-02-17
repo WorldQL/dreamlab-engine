@@ -2,7 +2,13 @@ import { WriteApi as $WriteApi, InfluxDB, Point } from "npm:@influxdata/influxdb
 import { CONFIG } from "./config.ts";
 import { IPCWorker } from "./worker.ts";
 
-const details = CONFIG.influxdb;
+const details = {
+  url: CONFIG.MULTIPLAYER_INFLUXDB_URL,
+  token: CONFIG.MULTIPLAYER_INFLUXDB_TOKEN,
+  bucket: CONFIG.MULTIPLAYER_INFLUXDB_BUCKET,
+  org: CONFIG.MULTIPLAYER_INFLUXDB_ORG,
+};
+
 const client = details ? new InfluxDB({ url: details.url, token: details.token }) : undefined;
 
 type WriteApi = $WriteApi & { [Symbol.asyncDispose]: () => Promise<void> };

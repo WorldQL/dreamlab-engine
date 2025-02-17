@@ -53,18 +53,18 @@ export class GameSession {
       worldSubDirectory: parent.info.variant ? `_dist_${parent.info.variant}` : "_dist",
     },
   ) {
-    const addr = CONFIG.bindAddress;
+    const addr = CONFIG.BIND_ADDRESS;
     const ipcData: WorkerInitData = {
       workerId: createId("wrk"),
       workerConnectUrl: `ws://${addr.hostname}:${addr.port}/internal/worker`,
       instanceId: parent.info.instanceId,
       worldId: parent.info.worldId,
       worldDirectory: path.join(parent.info.worldDirectory, opts.worldSubDirectory),
-      worldResourcesBaseUrl: `${CONFIG.publicUrlBase}/worlds`,
+      worldResourcesBaseUrl: `${CONFIG.MULTIPLAYER_PUBLIC_URL}/worlds`,
       worldSubdirectory: opts.worldSubDirectory,
       editMode: opts.editMode,
-      kvUrl: CONFIG.kvUrl,
-      kvSigningKey: CONFIG.kvSigningKey,
+      kvUrl: CONFIG.KV_PUBLIC_URL,
+      kvSigningKey: CONFIG.KV_SIGNING_KEY,
       inspect: parent.info.inspect,
     };
     if (parent.info.variant === "discord") {
@@ -81,7 +81,7 @@ export class GameSession {
       if (!this.#loaded)
         this.#loadedPromiseReject?.(new Error("instance crashed before load completed"));
 
-      if (status.code === 137 && CONFIG.systemdMemLimit) {
+      if (status.code === 137 && CONFIG.MULTIPLAYER_USE_SYSTEMD_LIMITS) {
         this.parent.setStatus(
           GameInstanceState.Errored,
           "Instance was forcefully terminated (likely ran out of memory or CPU)",
@@ -139,9 +139,12 @@ export class GameSession {
           const projectJsonFile = path.join(parent.info.worldDirectory, "project.json");
           const projectDesc = JSON.parse(await Deno.readTextFile(projectJsonFile));
           projectDesc.scenes = { ...(projectDesc.scenes ?? {}), main: scene };
-          
+
           const markdownScene = toMarkdownSceneTree(scene);
-          const markdownSceneFile = path.join(parent.info.worldDirectory, "scene-description.md");
+          const markdownSceneFile = path.join(
+            parent.info.worldDirectory,
+            "scene-description.md",
+          );
           await Deno.writeTextFile(markdownSceneFile, markdownScene);
           await Deno.writeTextFile(projectJsonFile, JSON.stringify(projectDesc, undefined, 2));
         } catch (_err) {

@@ -18,7 +18,7 @@ export const InstanceInfoSchema = z.object({
 
 export const instanceInfo = (instance: GameInstance): z.infer<typeof InstanceInfoSchema> => ({
   id: instance.info.instanceId,
-  server: urlToWebSocket(CONFIG.publicUrlBase).toString(),
+  server: urlToWebSocket(CONFIG.MULTIPLAYER_PUBLIC_URL).toString(),
   world: instance.info.worldId,
   edit_mode: instance.info.editMode ?? false,
   started_at: instance.session?.startedAt?.getTime(),

@@ -70,7 +70,7 @@ const handlePlayerConnectionRequest = async (
   const codecParam = ctx.request.url.searchParams.get("codec") ?? undefined;
   const codec: Codec | undefined = isCodec(codecParam) ? codecParam : undefined;
 
-  if (CONFIG.isDev) {
+  if (CONFIG.IS_DEV) {
     const playerId = ctx.request.url.searchParams.get("player_id");
     const nickname = ctx.request.url.searchParams.get("nickname");
     if (nickname && playerId) {
@@ -94,7 +94,7 @@ const handlePlayerConnectionRequest = async (
 };
 
 export const servePlayRoutes = async (router: Router) => {
-  const gameAuthSecret = await importSecretKey(CONFIG.gameAuthSecret);
+  const gameAuthSecret = await importSecretKey(CONFIG.NEXT_GAME_JWT_SECRET);
 
   router.get("/status", ctx => {
     ctx.response.body = "up ^-^";
