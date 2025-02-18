@@ -9,7 +9,8 @@ const details = {
   org: CONFIG.MULTIPLAYER_INFLUXDB_ORG,
 };
 
-const client = details ? new InfluxDB({ url: details.url, token: details.token }) : undefined;
+// rare intentional ==, want the type coersion to make sure details.url is defined and not empty.
+const client = details && !(details.url == false) ? new InfluxDB({ url: details.url, token: details.token }) : undefined;
 
 type WriteApi = $WriteApi & { [Symbol.asyncDispose]: () => Promise<void> };
 const writeApi = (): WriteApi => {
