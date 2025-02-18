@@ -10,8 +10,7 @@ const details = {
 };
 
 // rare intentional ==, want the type coersion to make sure details.url is defined and not empty.
-console.log(details)
-const client = details && !(details.url == false) ? new InfluxDB({ url: details.url, token: details.token }) : undefined;
+const client = details && details.url ? new InfluxDB({ url: details.url, token: details.token }) : undefined;
 
 type WriteApi = $WriteApi & { [Symbol.asyncDispose]: () => Promise<void> };
 const writeApi = (): WriteApi => {
