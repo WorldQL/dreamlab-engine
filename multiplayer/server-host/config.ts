@@ -53,10 +53,10 @@ const early = createEnv({
 
 const influx = createEnv({
   server: {
-    MULTIPLAYER_INFLUXDB_URL: z.string(),
-    MULTIPLAYER_INFLUXDB_ORG: z.string(),
-    MULTIPLAYER_INFLUXDB_BUCKET: z.string(),
-    MULTIPLAYER_INFLUXDB_TOKEN: z.string(),
+    MULTIPLAYER_INFLUXDB_URL: z.string().min(1).url(),
+    MULTIPLAYER_INFLUXDB_ORG: z.string().min(1),
+    MULTIPLAYER_INFLUXDB_BUCKET: z.string().min(1),
+    MULTIPLAYER_INFLUXDB_TOKEN: z.string().min(1),
   },
   runtimeEnvStrict: {
     MULTIPLAYER_INFLUXDB_URL: Deno.env.get("DREAMLAB_MULTIPLAYER_INFLUXDB_URL"),
