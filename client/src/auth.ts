@@ -17,7 +17,7 @@ export const auth = async (nickname: string): Promise<AuthToken> => {
   const passedToken = searchParams.get("token");
   if (passedToken) return decodeToken(passedToken);
 
-  const url = new URL("/api/game/auth/guest", globalThis.env.NEXT_URL);
+  const url = new URL("/api/game/auth/guest", globalThis.env.DREAMLAB_NEXT_PUBLIC_URL);
   url.searchParams.set("id", connectionDetails.instanceId);
   url.searchParams.set("nickname", nickname);
 

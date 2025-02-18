@@ -28,7 +28,8 @@ const APIInstancesSchema = z.record(InstanceInfoSchema);
 type APIInstancesResponse = z.infer<typeof APIInstancesSchema>;
 
 export const fetchInstances = async (worldId: string): Promise<APIInstancesResponse> => {
-  const url = urlWithParams(new URL("/api/v1/instances", globalThis.env.SERVER_URL), {
+  const base = globalThis.env.DREAMLAB_MULTIPLAYER_PUBLIC_URL;
+  const url = urlWithParams(new URL("/api/v1/instances", base), {
     world: worldId,
   });
   const instances = await fetch(url)
@@ -39,7 +40,8 @@ export const fetchInstances = async (worldId: string): Promise<APIInstancesRespo
 };
 
 export const spawnNewInstance = async (worldId: string): Promise<InstanceInfo> => {
-  return await fetch(new URL("/api/v1/start-play-world", globalThis.env.SERVER_URL), {
+  const base = globalThis.env.DREAMLAB_MULTIPLAYER_PUBLIC_URL;
+  return await fetch(new URL("/api/v1/start-play-world", base), {
     method: "POST",
     body: JSON.stringify({ world_id: worldId }),
     headers: {

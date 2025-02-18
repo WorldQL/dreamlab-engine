@@ -14,8 +14,9 @@ export function setConnectionDetails(details: ServerConnectionDetails) {
 const useDefaultDetails = () => {
   const searchParams = new URLSearchParams(window.location.search);
 
-  // always prefer search param, fallback to SERVER_URL if set
-  const server = searchParams.get("server") ?? globalThis.env.SERVER_URL ?? null;
+  // always prefer search param, fallback to DREAMLAB_MULTIPLAYER_PUBLIC_URL if set
+  const server =
+    searchParams.get("server") ?? globalThis.env.DREAMLAB_MULTIPLAYER_PUBLIC_URL ?? null;
   if (server) {
     const serverUrl = new URL(server);
     serverUrl.protocol = serverUrl.protocol === "wss:" ? "https:" : "http:";
