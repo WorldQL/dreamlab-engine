@@ -4,3 +4,5 @@ _dist_*
 !/dreamlab
 
 !/*.ts
+
+/dreamlab/**/scene-description.md

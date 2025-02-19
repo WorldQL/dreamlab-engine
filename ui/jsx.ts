@@ -1,14 +1,16 @@
+import type { CSSProperties, ExtendedCSSProperties } from "./css.ts";
+
 // deno-lint-ignore-file no-explicit-any
 export type ElementProps<E extends Element> = {
   // deno-lint-ignore ban-types
-  [K in keyof E as E[K] extends Function ? never : K]?: K extends "style"
-    ? string | Partial<CSSStyleDeclaration>
-    : E[K];
+  [K in keyof E as E[K] extends Function ? never : K]?: E[K];
 };
 
 export interface ElementExtras<E extends Element> {
   classList?: string[];
-  styleMap?: Record<string, string>;
+  style?: ExtendedCSSProperties;
+  onClick: () => void;
+  _also: (it: E) => void;
 }
 
 // deno-lint-ignore no-namespace
@@ -19,7 +21,7 @@ namespace JSX {
   export type IntrinsicElements = {
     [K in keyof HTMLElementTagNameMap]: Omit<
       ElementProps<HTMLElementTagNameMap[K]>,
-      "children"
+      "children" | keyof ElementExtras<HTMLElementTagNameMap[K]>
     > & {
       children?: JSX.Element | JSX.Element[] | undefined;
       // Allow data-* attributes
@@ -32,28 +34,16 @@ function Fragment(_props: Record<string, unknown>, _key?: string): never {
   throw new Error("fragments aren't supported yet :(");
 }
 
-function convertKeysToKebabCase<T extends Record<string, any>>(obj: T): Record<string, any> {
-  const result: Record<string, any> = {};
-  for (const key in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
-      // Convert camelCase to kebab-case using regex
-      const kebabKey = key.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
-      result[kebabKey] = obj[key];
-    }
-  }
-  return result;
-}
-
 function jsx<T extends keyof HTMLElementTagNameMap>(
   tag: T,
-  props: Record<string, unknown>,
+  props: JSX.IntrinsicElements[T],
   _key?: string,
 ): HTMLElementTagNameMap[T] {
   // Create the element
   const el = document.createElement(tag);
 
   // Extract known props
-  const { children = [], classList, style, _also, onClick, ...rest} = props;
+  const { children = [], classList, style, _also, onClick, ...rest } = props;
   const childrenArray = Array.isArray(children) ? children : [children];
 
   // Handle classList
@@ -63,11 +53,15 @@ function jsx<T extends keyof HTMLElementTagNameMap>(
 
   // Handle style
   if (style) {
-    // Convert camelCase to kebab-case and set styles
-    const convertedStyles = convertKeysToKebabCase(style as Record<string, unknown>);
-    Object.entries(convertedStyles).forEach(([k, v]) => {
-      el.style.setProperty(k, String(v));
-    });
+    for (const [key, value] of Object.entries(style)) {
+      if (key.startsWith("--")) {
+        el.style.setProperty(key, value);
+      } else {
+        const k = key as keyof CSSProperties;
+        if (value) el.style[k] = value;
+        else delete el.style[k];
+      }
+    }
   }
 
   // Assign the remaining props, supporting data-* attributes
@@ -76,7 +70,7 @@ function jsx<T extends keyof HTMLElementTagNameMap>(
       el.setAttribute(key, String(value));
     } else {
       // Otherwise assign property directly
-      (el as any)[key] = value;
+      el[key as keyof typeof el] = value;
     }
   }
 
@@ -89,12 +83,9 @@ function jsx<T extends keyof HTMLElementTagNameMap>(
     }
   }
 
-  if (onClick) {
-    console.log(el)
-    el.addEventListener('click', () => {
-      onClick();
-    });
-  }
+  if (onClick) el.addEventListener("click", () => onClick());
+
+  if (_also) _also(el);
 
   return el;
 }

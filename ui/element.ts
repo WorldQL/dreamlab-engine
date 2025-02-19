@@ -1,4 +1,4 @@
-import * as CSS from "./css.ts";
+import type { CSSProperties, ExtendedCSSProperties } from "./css.ts";
 
 export type ElementProps<E extends HTMLElement | SVGElement> = {
   // deno-lint-ignore ban-types
@@ -7,7 +7,7 @@ export type ElementProps<E extends HTMLElement | SVGElement> = {
 
 export type ElementExtras<E extends HTMLElement | SVGElement> = {
   classList?: string[];
-  style?: CSS.Properties;
+  style?: ExtendedCSSProperties;
   dataset?: Record<string, string>;
   _also?: ((element: E) => void) | ((element: E) => void)[];
 };
@@ -26,7 +26,17 @@ export function element<K extends keyof HTMLElementTagNameMap>(
   Object.assign(element, rest);
 
   if (classList) classList.forEach(c => element.classList.add(c));
-  if (style) Object.entries(style).forEach(([k, v]) => element.style.setProperty(k, v));
+  if (style) {
+    for (const [key, value] of Object.entries(style)) {
+      if (key.startsWith("--")) {
+        element.style.setProperty(key, value);
+      } else {
+        const k = key as keyof CSSProperties;
+        if (value) element.style[k] = value;
+        else delete element.style[k];
+      }
+    }
+  }
   if (dataset) Object.entries(dataset).forEach(([k, v]) => (element.dataset[k] = v));
 
   const nodes = children.map(e => (typeof e === "string" ? document.createTextNode(e) : e));

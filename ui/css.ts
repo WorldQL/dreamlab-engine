@@ -1,8 +1,14 @@
-declare module "npm:csstype@3.1.3" {
-  interface Properties {
-    // allow any css custom properties
-    [index: `--${string}`]: string;
-  }
-}
+import type { WritableKeysOf } from "@dreamlab/vendor/type-fest.ts";
 
-export type * from "npm:csstype@3.1.3";
+type Style = CSSStyleDeclaration;
+
+export type CSSProperties = {
+  [K in WritableKeysOf<Style> as K extends number
+    ? never
+    : // deno-lint-ignore ban-types
+      Style[K] extends Function
+      ? never
+      : K]?: CSSStyleDeclaration[K];
+};
+
+export type ExtendedCSSProperties = CSSProperties & { [custom: `--${string}`]: string };
