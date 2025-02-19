@@ -22,9 +22,9 @@ function jsx<T extends keyof HTMLElementTagNameMap>(
   props: Record<string, unknown>,
   _key?: string,
 ): HTMLElementTagNameMap[T] {
-  const { children = [], classList, styleMap, _also, ...attrs } = props;
+  const { children = [], classList, style, _also, ...attrs } = props;
   const childrenArray = Array.isArray(children) ? children : [children];
-  const extras = { classList, styleMap, _also } as ElementExtras<HTMLElementTagNameMap[T]>;
+  const extras = { classList, style, _also } as ElementExtras<HTMLElementTagNameMap[T]>;
   return element(tag, attrs as ElementProps<HTMLElementTagNameMap[T]>, childrenArray, extras);
 }
 
