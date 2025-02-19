@@ -19,6 +19,10 @@
   transition: color 0.2s ease;
   display: inline-flex;
   align-items: center;
+  text-decoration: none;
+}
+#file-tree #import-project-button svg {
+  margin-left: 5px;
 }
 
 #file-tree #import-project-button:hover {

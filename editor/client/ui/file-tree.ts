@@ -24,6 +24,7 @@ import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 import TypeScript from "../svg/typescript.svg";
 import { BehaviorTypeInfo } from "../util/behavior-type-info.ts";
 import { ScriptSession } from "./assistant/assistant.tsx";
+import { ImportPopup } from "./import-popup.tsx";
 
 type FileTreeNode =
   | { type: "file"; name: string; path: string }
@@ -77,6 +78,8 @@ export class FileTree implements InspectorUIWidget {
       JSON.stringify([...this.#openDirectories]),
     );
   }
+
+  public importPopup: ImportPopup | undefined;
 
   setup(ui: InspectorUI): void {
     const tree = new DataTree();
@@ -235,10 +238,10 @@ export class FileTree implements InspectorUIWidget {
         id: "import-project-button",
         role: "button",
         href: "javascript:void(0)",
-        title: "Import Project",
-        ariaLabel: "Import Project",
+        title: "Add Assets",
+        ariaLabel: "Add Assets",
       },
-      [icon(PlusCircle)],
+      ["Add Assets", icon(PlusCircle)],
     );
 
     const importError = elem("p", { className: "import-error" }, []);
@@ -310,6 +313,11 @@ export class FileTree implements InspectorUIWidget {
     });
 
     importProjectButton.addEventListener("click", event => {
+
+      this.importPopup?.show();
+      return;
+      // TODO: Move the import logic into the popup.
+
       event.preventDefault();
       if (importForm.hasAttribute("data-open")) {
         importForm.removeAttribute("data-open");
