@@ -10,6 +10,30 @@
   border: 1px solid #ccc;
   border-radius: 8px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+
+  & .button {
+    padding: 6px 20px;
+    border: 1px solid #ccc;
+    border-radius: 0 4px 4px 0;
+    background-color: rgb(var(--color-bg-2));
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  & .button:hover {
+    background-color: #007acc;
+  }
+
+  & .input {
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px 0 0 4px;
+    width: 70%;
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
 }
 
 .upload-box {
@@ -19,10 +43,16 @@
   cursor: pointer;
   transition: border-color 0.3s ease, background-color 0.3s ease;
   border-radius: 4px;
+  margin: 10px 0;
   line-height: 2px;
 }
 
 .upload-box:hover {
   border-color: #999;
   background-color: rgb(var(--color-bg-2));
+}
+
+.import-error {
+  color: red;
+  margin-top: 10px;
 }

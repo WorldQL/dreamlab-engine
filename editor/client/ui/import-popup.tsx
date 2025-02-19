@@ -1,3 +1,4 @@
+import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 import { DreamlabEditorUIComponent } from "./_component.tsx";
 import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
 
@@ -79,6 +80,15 @@ export class ImportPopup extends DreamlabEditorUIComponent {
     });
   }
 
+  private openAssetGenerator() {
+    console.log(this.game);
+    if (this.game.instanceId === NIL_UUID)
+      window.open("https://app.dreamlab.gg/create/asset", "_blank", "noopener,noreferrer");
+    else window.parent.postMessage({ type: "SHOW_ASSET_CREATOR" }, "*");
+
+    this.hide();
+  }
+
   async handleFileChange(event: Event) {
     const input = event.currentTarget as HTMLInputElement;
     if (input.files && input.files.length > 0) {
@@ -96,7 +106,7 @@ export class ImportPopup extends DreamlabEditorUIComponent {
 
   render() {
     return (
-      <div className="import-menu" style={{ width: "400px" }}>
+      <div className="import-menu" style={{ width: "400px", height: "375px" }}>
         <div style={{ textAlign: "right" }}>
           <span
             onClick={() => this.hide()}
@@ -133,7 +143,7 @@ export class ImportPopup extends DreamlabEditorUIComponent {
         {this.currentTab === "upload" && (
           <div>
             <p style={{ textAlign: "center" }}>
-              You can drag files anywhere onto the editor to upload, or click the below box.
+              You can drag files anywhere onto the editor to upload, or click the box below.
             </p>
             <div
               className="upload-box"
@@ -162,47 +172,68 @@ export class ImportPopup extends DreamlabEditorUIComponent {
         )}
         {this.currentTab === "asset-library" && (
           <div>
-            <p className="import-description">
+            <p style={{ textAlign: "center" }}>
               Enter a Project ID from the Asset Store or your library to import its assets into
-              this project.{" "}
-              <a
-                href="https://app.dreamlab.gg/asset-store"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  color: "rgb(var(--color-primary))",
-                  textDecoration: "underline",
-                }}
-              >
-                Open Asset Store
-              </a>
+              this project.
             </p>
             <form id="import-project-form" onSubmit={(e: Event) => this.handleImport(e)}>
-              <div id="form">
-                <input
-                  type="text"
-                  name="projectId"
-                  placeholder="Enter a Project ID"
-                  autocomplete="off"
-                  value={this.projectId}
-                  onChange={(e: Event) => {
-                    const target = e.currentTarget as HTMLInputElement;
-                    this.projectId = target.value;
-                    this.rerender();
-                  }}
-                />
-                <button type="submit">Import</button>
-              </div>
+              <input
+                type="text"
+                name="projectId"
+                placeholder="Enter a Project ID"
+                autocomplete="off"
+                value={this.projectId}
+                className="input"
+                onChange={(e: Event) => {
+                  const target = e.currentTarget as HTMLInputElement;
+                  this.projectId = target.value;
+                  this.rerender();
+                }}
+              />
+              <button type="submit" className="button">
+                Import
+              </button>
               {this.importError && <p className="import-error">{this.importError}</p>}
             </form>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                marginTop: "10px",
+              }}
+            >
+              <button
+                type="button"
+                className="button"
+                onClick={() =>
+                  window.open(
+                    "https://app.dreamlab.gg/asset-store",
+                    "_blank",
+                    "noopener,noreferrer",
+                  )
+                }
+              >
+                Open Asset Store
+              </button>
+            </div>
           </div>
         )}
         {this.currentTab === "generate" && (
-          <div>
-            <p>
-              Click the button below to open the generator (this could launch a Next.js‑powered
-              popup).
-            </p>
+          <div style={{ textAlign: "center" }}>
+            <p>Click the button below to open the generator.</p>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                marginTop: "10px",
+              }}
+            >
+              <button type="button" className="button" onClick={this.openAssetGenerator}>
+                Open Asset Generator
+              </button>
+            </div>
           </div>
         )}
       </div>
