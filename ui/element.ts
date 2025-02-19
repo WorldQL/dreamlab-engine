@@ -1,4 +1,4 @@
-import { WritableKeysOf } from "@dreamlab/vendor/type-fest.ts";
+import type { WritableKeysOf } from "./_types.ts";
 import type { CSSProperties, ExtendedCSSProperties } from "./css.ts";
 
 type BaseElem = HTMLElement | SVGElement;

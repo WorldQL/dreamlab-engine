@@ -11,7 +11,7 @@ export function __deprecated__element<K extends keyof HTMLElementTagNameMap>(
     children = [],
   }: {
     id?: string;
-    props?: ElementProps<HTMLElementTagNameMap[K]>;
+    props?: Partial<ElementProps<HTMLElementTagNameMap[K]>>;
     style?: Partial<CSSStyleDeclaration>;
     classList?: readonly string[];
     children?: (Element | string | Text)[];

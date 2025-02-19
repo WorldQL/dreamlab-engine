@@ -1,4 +1,4 @@
-import type { WritableKeysOf } from "@dreamlab/vendor/type-fest.ts";
+import type { WritableKeysOf } from "./_types.ts";
 
 type Style = CSSStyleDeclaration;
 
