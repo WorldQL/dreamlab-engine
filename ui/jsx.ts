@@ -1,15 +1,15 @@
-import { element, ElementAttrs } from "./element.ts";
+import { element, ElementExtras, ElementProps } from "./element.ts";
 
 // deno-lint-ignore no-namespace
 namespace JSX {
   export type Element = HTMLElement | SVGElement;
   export type IntrinsicElements = {
     [K in keyof HTMLElementTagNameMap]: Omit<
-      ElementAttrs<HTMLElementTagNameMap[K]>,
+      ElementProps<HTMLElementTagNameMap[K]>,
       "children"
     > & {
       children?: JSX.Element | JSX.Element[] | undefined;
-    } & Partial<ElementAttrs<HTMLElementTagNameMap[K]>>;
+    } & Partial<ElementExtras<HTMLElementTagNameMap[K]>>;
   };
 }
 
@@ -22,9 +22,10 @@ function jsx<T extends keyof HTMLElementTagNameMap>(
   props: Record<string, unknown>,
   _key?: string,
 ): HTMLElementTagNameMap[T] {
-  const { children = [] } = props;
+  const { children = [], classList, styleMap, _also, ...attrs } = props;
   const childrenArray = Array.isArray(children) ? children : [children];
-  return element(tag, props as ElementAttrs<HTMLElementTagNameMap[T]>, childrenArray);
+  const extras = { classList, styleMap, _also } as ElementExtras<HTMLElementTagNameMap[T]>;
+  return element(tag, attrs as ElementProps<HTMLElementTagNameMap[T]>, childrenArray, extras);
 }
 
 export { Fragment, jsx, jsx as jsxDEV, jsx as jsxs };
