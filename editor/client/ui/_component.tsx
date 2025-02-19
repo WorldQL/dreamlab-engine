@@ -27,13 +27,13 @@ export abstract class DreamlabEditorUIComponent {
     this.container = undefined;
   }
 
-  hide(): void {
+  hide = () => {
     if (this.container) {
       this.container.remove();
     }
   }
 
-  show() {
+  show = () => {
     if (this.container && this.uiRoot) {
       this.uiRoot.appendChild(this.container);
       this.rerender();
