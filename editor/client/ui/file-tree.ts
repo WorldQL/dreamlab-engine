@@ -16,12 +16,11 @@ import {
   PlusCircle,
   Settings,
   SimpleIcon,
+  siTypescript,
 } from "../_icons.ts";
 import { DataTree } from "../components/mod.ts";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 
-// @ts-expect-error svg import bundled by esbuild
-import TypeScript from "../svg/typescript.svg";
 import { BehaviorTypeInfo } from "../util/behavior-type-info.ts";
 import { ScriptSession } from "./assistant/assistant.tsx";
 import { ImportPopup } from "./import-popup.tsx";
@@ -45,7 +44,7 @@ export class FileTree implements InspectorUIWidget {
     this.#registerIcon(Braces, ".json", ".jsonc", ".json5", ".css");
     this.#registerIcon(CodeXml, ".html", ".xml", ".svg");
     this.#registerIcon(Settings, ".env", ".env.local");
-    this.#registerIcon(TypeScript, ".ts");
+    this.#registerIcon(siTypescript, ".ts");
     this.#registerIcon(AudioLines, ".mp3", ".ogg", ".wav", ".flac");
   }
 
@@ -313,7 +312,6 @@ export class FileTree implements InspectorUIWidget {
     });
 
     importProjectButton.addEventListener("click", event => {
-
       this.importPopup?.show();
       return;
       // TODO: Move the import logic into the popup.
