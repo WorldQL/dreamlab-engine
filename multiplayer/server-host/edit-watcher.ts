@@ -16,13 +16,14 @@ export async function watchForEditChanges(session: GameSession, subdir: string) 
 
     for (const touchedPath of touchedPaths) {
       const relativePath = path.relative(instance.info.worldDirectory, touchedPath);
+      console.log("edit-watcher.ts sent packet for ", relativePath);
       session.broadcastPacket({
         t: "ScriptEdited",
         script_location: relativePath,
         behavior_script_id: relativePath.startsWith("src/")
           ? `res://${relativePath.replace(/\.tsx?$/, ".js")}`
           : undefined,
-        isFromFileSystem: true
+        isFromFileSystem: true,
       });
     }
   }, 60);

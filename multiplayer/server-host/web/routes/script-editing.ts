@@ -192,6 +192,7 @@ export const serveScriptEditingAPI = (router: Router) => {
 
         await buildWorld(instance.info.worldId, instance.info.worldDirectory, "_dist");
         const isBehavior = await fileIsProbablyBehaviorScript(computedPath);
+        console.log("API called, sending script edit packet for: ", relativePath);
         instance.session?.broadcastPacket({
           t: "ScriptEdited",
           script_location: relativePath,

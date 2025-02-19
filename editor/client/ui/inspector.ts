@@ -104,6 +104,10 @@ export class InspectorUI {
 
         if (doSendRefresh) {
           // console.log("Changes detected from filesystem, updating code editor...")
+          console.log(
+            "sending message to code-editor to update file: ",
+            packet.script_location,
+          );
           window.parent.postMessage(
             { action: "reloadFile", filename: packet.script_location },
             "*",
