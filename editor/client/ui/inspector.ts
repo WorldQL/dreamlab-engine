@@ -12,7 +12,6 @@ import { Properties } from "./properties.ts";
 import { SceneGraph } from "./scene-graph.ts";
 import { SelectedEntityService } from "./selected-entity.ts";
 import { WelcomeMenu } from "./welcome-menu.ts";
-import { ImportPopup } from "./import-popup.tsx";
 
 export interface InspectorUIWidget {
   setup(ui: InspectorUI): void;
@@ -33,7 +32,6 @@ export class InspectorUI {
   gameOverlays: GameOverlays;
   fileTree: FileTree;
   welcomeMenu: WelcomeMenu;
-  importPopup: ImportPopup;
 
   constructor(
     public game: ClientGame,
@@ -51,9 +49,6 @@ export class InspectorUI {
     this.gameOverlays = new GameOverlays(game, gameContainer);
     this.fileTree = new FileTree(game);
     this.welcomeMenu = new WelcomeMenu();
-    this.importPopup = new ImportPopup(game);
-
-    this.fileTree.importPopup = this.importPopup;
 
     if (editMode) {
       game.local._.Camera.getBehavior(CameraPanBehavior).ui = this;
@@ -96,7 +91,10 @@ export class InspectorUI {
         if (!packet.isFromFileSystem) {
           lastCodeEditorUpdates[packet.script_location] = Date.now();
         } else {
-          if (packet.script_location in lastCodeEditorUpdates && Date.now() - lastCodeEditorUpdates[packet.script_location] > 3000) {
+          if (
+            packet.script_location in lastCodeEditorUpdates &&
+            Date.now() - lastCodeEditorUpdates[packet.script_location] > 3000
+          ) {
             doSendRefresh = true;
           }
           if (!(packet.script_location in lastCodeEditorUpdates)) {
@@ -152,8 +150,6 @@ export class InspectorUI {
     this.gameOverlays.show(uiRoot);
     this.fileTree.show(uiRoot);
     this.welcomeMenu.show(uiRoot, this.game.worldId);
-    this.importPopup.mount(uiRoot);
-    this.importPopup.hide();
   }
 
   hide() {

@@ -51,12 +51,14 @@ export class FileTree implements InspectorUIWidget {
 
   #section = elem("section", { id: "file-tree" }, [elem("h1", {}, ["Project"])]);
   #openDirectories: Set<string> = new Set();
+  #importPopup: ImportPopup;
 
   constructor(private game: ClientGame) {
     const savedState = localStorage.getItem(`${this.game.worldId}/editor/openDirectories`);
     if (savedState) {
       this.#openDirectories = new Set(JSON.parse(savedState));
     }
+    this.#importPopup = new ImportPopup(game);
   }
 
   #getIconForNode(node: FileTreeNode): Icon {
@@ -78,8 +80,6 @@ export class FileTree implements InspectorUIWidget {
       JSON.stringify([...this.#openDirectories]),
     );
   }
-
-  public importPopup: ImportPopup | undefined;
 
   setup(ui: InspectorUI): void {
     const tree = new DataTree();
@@ -245,7 +245,7 @@ export class FileTree implements InspectorUIWidget {
     );
 
     addAssetsBtn.addEventListener("click", () => {
-      this.importPopup?.show();
+      this.#importPopup?.show();
       return;
     });
 
@@ -320,6 +320,8 @@ export class FileTree implements InspectorUIWidget {
   show(uiRoot: HTMLElement): void {
     const left = uiRoot.querySelector("#left-sidebar")!;
     left.append(this.#section);
+    this.#importPopup.mount(uiRoot);
+    this.#importPopup.hide();
   }
 
   hide(): void {
