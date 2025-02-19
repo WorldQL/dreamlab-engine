@@ -1,9 +1,9 @@
 .import-menu {
-  position: fixed;       /* Keeps the popup fixed on the viewport */
-  top: 50%;              /* Vertically centers the popup */
-  left: 50%;             /* Horizontally centers the popup */
-  transform: translate(-50%, -50%); /* Adjusts for the popup's own dimensions */
-  z-index: 1000;         /* Ensures the popup appears above other content */
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
   background-color: rgb(var(--color-bg-1));
   color: rgb(var(--color-text));
   padding: 20px;
