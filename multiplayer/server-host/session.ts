@@ -59,6 +59,7 @@ export class GameSession {
       workerConnectUrl: `ws://${addr.hostname}:${addr.port}/internal/worker`,
       instanceId: parent.info.instanceId,
       worldId: parent.info.worldId,
+      worldsDirectory: `${Deno.cwd()}/worlds`,
       worldDirectory: path.join(parent.info.worldDirectory, opts.worldSubDirectory),
       worldResourcesBaseUrl: `${CONFIG.MULTIPLAYER_PUBLIC_URL}/worlds`,
       worldSubdirectory: opts.worldSubDirectory,
@@ -66,6 +67,7 @@ export class GameSession {
       kvUrl: CONFIG.KV_PUBLIC_URL,
       kvSigningKey: CONFIG.KV_SIGNING_KEY,
       inspect: parent.info.inspect,
+      rewriteStackTraces: CONFIG.MULTIPLAYER_REWRITE_STACK_TRACES,
     };
     if (parent.info.variant === "discord") {
       const discordURLBase = "https://" + parent.info.discordClientId! + ".discordsays.com";

@@ -10,6 +10,7 @@ import { GameStatus, KvServer, ServerGame, Time } from "@dreamlab/engine";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 import { IPCMessageBus } from "./ipc.ts";
 import { ServerNetworkManager } from "./networking/net-manager.ts";
+import { rewriteStackTraces } from "./stack.ts";
 
 import { ProjectSchema, getSceneFromProject, loadSceneDefinition } from "@dreamlab/scene";
 import { z } from "@dreamlab/vendor/zod.ts";
@@ -22,6 +23,8 @@ addEventListener("unhandledrejection", event => {
 
 const workerData = JSON.parse(Deno.env.get("DREAMLAB_MP_WORKER_DATA")!) as WorkerInitData;
 Deno.env.delete("DREAMLAB_MP_WORKER_DATA");
+
+rewriteStackTraces(workerData);
 
 const ipc = new IPCMessageBus(workerData);
 await ipc.connected();

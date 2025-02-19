@@ -2,6 +2,7 @@ export interface WorkerInitData {
   workerId: string;
   workerConnectUrl: string;
 
+  worldsDirectory: string;
   worldResourcesBaseUrl: string;
   worldDirectory: string;
   instanceId: string;
@@ -15,4 +16,5 @@ export interface WorkerInitData {
   kvSigningKey: string;
 
   inspect?: string;
+  rewriteStackTraces?: boolean;
 }

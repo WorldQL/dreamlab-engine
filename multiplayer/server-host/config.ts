@@ -88,6 +88,7 @@ export const CONFIG = createEnv({
     NEXT_PUBLIC_URL: z.string().url().default("https://app.dreamlab.gg"),
     CODE_EDITOR_YJS_URL: z.string().url(),
     MULTIPLAYER_USE_SYSTEMD_LIMITS: BoolSchema,
+    MULTIPLAYER_REWRITE_STACK_TRACES: BoolSchema,
   },
 
   runtimeEnvStrict: {
@@ -101,6 +102,7 @@ export const CONFIG = createEnv({
     NEXT_PUBLIC_URL: Deno.env.get("DREAMLAB_NEXT_PUBLIC_URL"),
     CODE_EDITOR_YJS_URL: Deno.env.get("DREAMLAB_CODE_EDITOR_YJS_URL"),
     MULTIPLAYER_USE_SYSTEMD_LIMITS: Deno.env.get("DREAMLAB_MULTIPLAYER_USE_SYSTEMD_LIMITS"),
+    MULTIPLAYER_REWRITE_STACK_TRACES: Deno.env.get("DREAMLAB_MULTIPLAYER_REWRITE_STACK_TRACES"),
   },
 
   emptyStringAsUndefined: true,
