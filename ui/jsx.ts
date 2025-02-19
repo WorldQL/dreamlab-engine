@@ -24,7 +24,7 @@ function jsx<T extends keyof HTMLElementTagNameMap>(
 ): HTMLElementTagNameMap[T] {
   const { children = [], classList, style, _also, ...attrs } = props;
   const childrenArray = Array.isArray(children) ? children : [children];
-  const extras = { classList, style, _also } as ElementExtras<HTMLElementTagNameMap[T]>;
+  const extras = { classList, styleMap: style, _also } as ElementExtras<HTMLElementTagNameMap[T]>;
   return element(tag, attrs as ElementProps<HTMLElementTagNameMap[T]>, childrenArray, extras);
 }
 
