@@ -33,7 +33,6 @@ export const serveScriptEditingAPI = (router: Router) => {
   router.get("/api/v1/edit/:instance_id/files/:path*", async ctx => {
     const instanceId = ctx.params.instance_id;
     const instance = instances.get(instanceId);
-    console.log({instanceId, instance})
     if (instance === undefined)
       throw new JsonAPIError(Status.NotFound, "An instance with the given ID does not exist");
 
