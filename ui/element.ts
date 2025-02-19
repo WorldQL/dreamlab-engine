@@ -1,7 +1,7 @@
 export type ElementProps<E extends Element> = {
   // deno-lint-ignore ban-types
   [K in keyof E as E[K] extends Function ? never : K]?: K extends "style"
-    ? string | CSSStyleDeclaration
+    ? string | Partial<CSSStyleDeclaration>
     : E[K];
 };
 
