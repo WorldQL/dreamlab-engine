@@ -11,3 +11,18 @@
   border-radius: 8px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
+
+.upload-box {
+  border: 2px dashed #ccc;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.3s ease, background-color 0.3s ease;
+  border-radius: 4px;
+  line-height: 2px;
+}
+
+.upload-box:hover {
+  border-color: #999;
+  background-color: rgb(var(--color-bg-2));
+}

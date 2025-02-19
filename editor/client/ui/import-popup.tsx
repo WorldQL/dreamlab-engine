@@ -46,9 +46,57 @@ export class ImportPopup extends DreamlabEditorUIComponent {
     this.rerender();
   }
 
+  async uploadFile(file: File): Promise<void> {
+    const isText = (mimeType: string): boolean => {
+      const textTypes = [
+        "text/",
+        "application/json",
+        "application/javascript",
+        "application/xml",
+        "application/x-httpd-php",
+      ];
+      return textTypes.some(type => mimeType.startsWith(type));
+    };
+
+    let content: string | ArrayBuffer;
+    if (isText(file.type)) {
+      content = await file.text();
+    } else {
+      content = await file.arrayBuffer();
+    }
+
+    const fileName = `assets/${file.name}`;
+    const url = new URL(connectionDetails.serverUrl);
+    url.pathname = `/api/v1/edit/${this.game.instanceId}/files/${fileName}`;
+    url.searchParams.set("no_restart", "false");
+
+    await fetch(url.toString(), {
+      method: "PUT",
+      body: content,
+      headers: {
+        "Content-Type": isText(file.type) ? "text/plain" : "application/octet-stream",
+      },
+    });
+  }
+
+  async handleFileChange(event: Event) {
+    const input = event.currentTarget as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      for (let i = 0; i < input.files.length; i++) {
+        const file = input.files[i];
+        try {
+          await this.uploadFile(file);
+          console.log("Uploaded file:", file.name);
+        } catch (err) {
+          console.error("Error uploading file:", err);
+        }
+      }
+    }
+  }
+
   render() {
     return (
-      <div className="import-menu">
+      <div className="import-menu" style={{ width: "400px" }}>
         <div style={{ textAlign: "right" }}>
           <span
             onClick={() => this.hide()}
@@ -84,9 +132,32 @@ export class ImportPopup extends DreamlabEditorUIComponent {
         <br />
         {this.currentTab === "upload" && (
           <div>
-            <p>
-              Drag and drop files anywhere to upload them (you can also do this at any time).
+            <p style={{ textAlign: "center" }}>
+              You can drag files anywhere onto the editor to upload, or click the below box.
             </p>
+            <div
+              className="upload-box"
+              onClick={() => {
+                const fileInput = document.getElementById(
+                  "hidden-file-input",
+                ) as HTMLInputElement;
+                if (fileInput) {
+                  fileInput.click();
+                }
+              }}
+            >
+              <p>Upload Image</p>
+              <p style={{ fontWeight: "300", color: "rgb(var(--color-text-darker))" }}>or</p>
+              <p style={{ fontWeight: "300", color: "rgb(var(--color-text-darker))" }}>
+                drag a file
+              </p>
+            </div>
+            <input
+              type="file"
+              style={{ display: "none" }}
+              id="hidden-file-input"
+              onChange={(e: Event) => this.handleFileChange(e)}
+            />
           </div>
         )}
         {this.currentTab === "asset-library" && (
@@ -134,9 +205,6 @@ export class ImportPopup extends DreamlabEditorUIComponent {
             </p>
           </div>
         )}
-        <hr />
-        <br />
-        <p>Hello! My game id is {this.game.worldId}</p>
       </div>
     );
   }
