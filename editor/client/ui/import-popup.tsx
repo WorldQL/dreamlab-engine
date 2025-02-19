@@ -10,7 +10,6 @@ export class ImportPopup extends DreamlabEditorUIComponent {
   }
 
   render() {
-    console.log(this.currentTab === "asset-library");
     return (
       <div className="import-menu">
         <div style={{ textAlign: "right" }}>
