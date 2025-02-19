@@ -9,7 +9,7 @@ export type ElementProps<E extends Element> = {
 export interface ElementExtras<E extends Element> {
   classList?: string[];
   style?: ExtendedCSSProperties;
-  onClick: () => void;
+  onClick: (ev: Event) => void;
   _also: (it: E) => void;
 }
 
@@ -83,7 +83,7 @@ function jsx<T extends keyof HTMLElementTagNameMap>(
     }
   }
 
-  if (onClick) el.addEventListener("click", () => onClick());
+  if (onClick) el.addEventListener("click", ev => onClick(ev));
 
   if (_also) _also(el);
 

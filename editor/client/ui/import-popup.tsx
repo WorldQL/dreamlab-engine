@@ -14,7 +14,7 @@ export class ImportPopup extends DreamlabEditorUIComponent {
       <div className="import-menu">
         <div style={{ textAlign: "right" }}>
           <span
-            onClick={this.hide}
+            onClick={() => this.hide()}
             style={{ textDecoration: "underline", cursor: "pointer" }}
           >
             Close
