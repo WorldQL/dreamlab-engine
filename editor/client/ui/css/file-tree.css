@@ -18,6 +18,7 @@
   color: rgb(var(--color-primary) / 1);
   transition: color 0.2s ease;
   display: inline-flex;
+  font-size: 14px;
   align-items: center;
   text-decoration: none;
 }

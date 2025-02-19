@@ -37,20 +37,20 @@ export class SceneGraph implements InspectorUIWidget {
 
   entryElementMap = new Map<string, HTMLElement>();
   currentDragSource: { entities: Entity[]; entries: HTMLElement[] } | undefined;
-  #openEntities: Set<string> = new Set();
+  #shownEntities: Set<string> = new Set();
   lastSelectedEntry: HTMLElement | null = null; // Keep track of the last selected entry
 
   constructor(private game: ClientGame) {
-    const savedState = localStorage.getItem(`${this.game.worldId}/editor/openEntities`);
+    const savedState = sessionStorage.getItem(`${this.game.worldId}/editor/scene-graph/opened`);
     if (savedState) {
-      this.#openEntities = new Set(JSON.parse(savedState));
+      this.#shownEntities = new Set(JSON.parse(savedState));
     }
   }
 
   #saveOpenEntities() {
-    localStorage.setItem(
-      `${this.game.worldId}/editor/openEntities`,
-      JSON.stringify([...this.#openEntities]),
+    sessionStorage.setItem(
+      `${this.game.worldId}/editor/scene-graph/opened`,
+      JSON.stringify([...this.#shownEntities]),
     );
   }
 
@@ -234,7 +234,7 @@ export class SceneGraph implements InspectorUIWidget {
     const entryElement = elem(
       "details",
       {
-        open: this.#openEntities.has(currentEntityRef) || entity.children.size === 0,
+        open: this.#shownEntities.has(currentEntityRef) || entity.children.size === 0,
       },
       [summary],
     );
@@ -268,8 +268,8 @@ export class SceneGraph implements InspectorUIWidget {
     toggle.addEventListener("click", () => {
       entryElement.open = !entryElement.open;
 
-      if (entryElement.open) this.#openEntities.add(currentEntityRef);
-      else this.#openEntities.delete(currentEntityRef);
+      if (entryElement.open) this.#shownEntities.add(currentEntityRef);
+      else this.#shownEntities.delete(currentEntityRef);
 
       this.#saveOpenEntities();
     });
@@ -279,8 +279,8 @@ export class SceneGraph implements InspectorUIWidget {
       if (entryElement.querySelector(":scope > summary input")) return;
       entryElement.open = !entryElement.open;
 
-      if (entryElement.open) this.#openEntities.add(currentEntityRef);
-      else this.#openEntities.delete(currentEntityRef);
+      if (entryElement.open) this.#shownEntities.add(currentEntityRef);
+      else this.#shownEntities.delete(currentEntityRef);
 
       this.#saveOpenEntities();
     });
@@ -303,12 +303,6 @@ export class SceneGraph implements InspectorUIWidget {
         entryElement.append(tooManyEntities);
       } else {
         this.renderEntry(ui, entryElement, newEntity);
-
-        if (!entryElement.open && this.game.isEditMode) {
-          entryElement.open = true;
-          this.#openEntities.add(entity.ref);
-          this.#saveOpenEntities();
-        }
       }
     });
 

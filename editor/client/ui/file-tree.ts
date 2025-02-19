@@ -54,7 +54,7 @@ export class FileTree implements InspectorUIWidget {
   #importPopup: ImportPopup;
 
   constructor(private game: ClientGame) {
-    const savedState = localStorage.getItem(`${this.game.worldId}/editor/openDirectories`);
+    const savedState = sessionStorage.getItem(`${this.game.worldId}/editor/file-tree/opened`);
     if (savedState) {
       this.#openDirectories = new Set(JSON.parse(savedState));
     }
@@ -75,8 +75,8 @@ export class FileTree implements InspectorUIWidget {
   }
 
   #saveOpenDirectories() {
-    localStorage.setItem(
-      `${this.game.worldId}/editor/openDirectories`,
+    sessionStorage.setItem(
+      `${this.game.worldId}/editor/file-tree/opened`,
       JSON.stringify([...this.#openDirectories]),
     );
   }
