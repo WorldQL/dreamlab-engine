@@ -29,10 +29,17 @@ const generate = async (options: {
   tarballName: string;
   entryPoint: string;
   outDir: string;
+  exports?: Record<string, string>;
 }) => {
+  const exports = Object.entries(options.exports ?? {});
+  const entryPoints: dnt.BuildOptions["entryPoints"] = [options.entryPoint];
+  for (const [name, path] of exports) {
+    entryPoints.push({ name, path });
+  }
+
   await dnt.build({
     ...commonOptions,
-    entryPoints: [options.entryPoint],
+    entryPoints,
     outDir: options.outDir,
     package: {
       name: options.packageName,
@@ -73,12 +80,17 @@ const generate = async (options: {
   await Deno.remove(options.outDir, { recursive: true });
 };
 
-const generatePackage = async (options: { name: string; entryPoint: string }) => {
+const generatePackage = async (options: {
+  name: string;
+  entryPoint: string;
+  exports?: Record<string, string>;
+}) => {
   const outDir = path.join(OUT_DIR, `dreamlab-${options.name}`);
   await generate({
     packageName: `@dreamlab/${options.name}`,
     tarballName: `dreamlab-${options.name}`,
     entryPoint: options.entryPoint,
+    exports: options.exports,
     outDir,
   });
 };
@@ -94,7 +106,12 @@ const generateVendor = async (options: { name: string }) => {
 };
 
 await generatePackage({ name: "engine", entryPoint: "../engine/mod.ts" });
-await generatePackage({ name: "ui", entryPoint: "../ui/mod.ts" });
+await generatePackage({
+  name: "ui",
+  entryPoint: "../ui/mod.ts",
+  exports: { "./jsx-runtime": "../ui/jsx.ts" },
+});
+
 await generateVendor({ name: "rapier" });
 await generateVendor({ name: "pixi" });
 await generateVendor({ name: "howler" });
