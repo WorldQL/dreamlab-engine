@@ -80,14 +80,13 @@ export class ImportPopup extends DreamlabEditorUIComponent {
     });
   }
 
-  private openAssetGenerator() {
-    console.log(this.game);
+  openAssetGenerator = () => {
     if (this.game.instanceId === NIL_UUID)
       window.open("https://app.dreamlab.gg/create/asset", "_blank", "noopener,noreferrer");
     else window.parent.postMessage({ type: "SHOW_ASSET_CREATOR" }, "*");
 
     this.hide();
-  }
+  };
 
   async handleFileChange(event: Event) {
     const input = event.currentTarget as HTMLInputElement;
@@ -96,7 +95,6 @@ export class ImportPopup extends DreamlabEditorUIComponent {
         const file = input.files[i];
         try {
           await this.uploadFile(file);
-          console.log("Uploaded file:", file.name);
         } catch (err) {
           console.error("Error uploading file:", err);
         }
