@@ -16,6 +16,7 @@ import {
   PlusCircle,
   Settings,
   SimpleIcon,
+  siReact,
   siTypescript,
 } from "../_icons.ts";
 import { DataTree } from "../components/mod.ts";
@@ -45,6 +46,7 @@ export class FileTree implements InspectorUIWidget {
     this.#registerIcon(CodeXml, ".html", ".xml", ".svg");
     this.#registerIcon(Settings, ".env", ".env.local");
     this.#registerIcon(siTypescript, ".ts");
+    this.#registerIcon(siReact, ".tsx");
     this.#registerIcon(AudioLines, ".mp3", ".ogg", ".wav", ".flac");
   }
 
