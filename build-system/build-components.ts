@@ -147,7 +147,10 @@ export const bundleUI = async (
         configPath: await Deno.realPath(denoJsonPath),
       }),
     ],
-    entryPoints: [{ in: path.join(engineDir, "mod.ts"), out: "ui" }],
+    entryPoints: [
+      { in: path.join(engineDir, "mod.ts"), out: "ui" },
+      { in: path.join(engineDir, "jsx.ts"), out: "ui-jsx" },
+    ],
     outdir,
   };
 

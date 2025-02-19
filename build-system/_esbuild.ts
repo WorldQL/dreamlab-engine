@@ -29,6 +29,10 @@ export const dreamlabUIExternalPlugin = (): esbuild.Plugin => ({
     build.onResolve({ filter: /^@dreamlab\/ui$/ }, args => {
       return { path: args.path, external: true };
     });
+
+    build.onResolve({ filter: /^@dreamlab\/ui\/jsx-runtime$/ }, args => {
+      return { path: args.path, external: true };
+    });
   },
 });
 

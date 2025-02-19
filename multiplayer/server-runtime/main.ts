@@ -1,5 +1,11 @@
 import "npm:source-map-support@0.5.21/register.js"; // evanw clutch
 
+// DO NOT REMOVE
+// early import the ui code so we can access it in a dynamic import context without permission checks
+// deno is cool but stupid sometimes lmaooo
+import "@dreamlab/ui";
+import "@dreamlab/ui/jsx-runtime";
+
 import { GameStatus, KvServer, ServerGame, Time } from "@dreamlab/engine";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 import { IPCMessageBus } from "./ipc.ts";

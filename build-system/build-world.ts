@@ -3,6 +3,7 @@ import * as path from "jsr:@std/path@^1";
 import {
   denoPlugins,
   dreamlabEngineExternalPlugin,
+  dreamlabUIExternalPlugin,
   dreamlabVendorExternalPlugin,
   esbuild,
 } from "./_esbuild.ts";
@@ -46,6 +47,7 @@ export const prepareBundleWorld = async (
     plugins: [
       dreamlabEngineExternalPlugin(),
       dreamlabVendorExternalPlugin(),
+      dreamlabUIExternalPlugin(),
       ...denoPlugins({
         loader: "native",
         configPath: await Deno.realPath(worldOpts.denoJsonPath),
@@ -99,6 +101,8 @@ export const prepareBundleWorld = async (
       },
     ],
     entryPoints,
+    jsx: "automatic",
+    jsxImportSource: "@dreamlab/ui",
     outbase: worldOpts.dir,
     outdir: path.join(worldOpts.dir, out),
     logOverride: { "empty-glob": "silent" },
