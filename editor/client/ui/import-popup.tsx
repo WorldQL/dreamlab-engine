@@ -46,10 +46,16 @@ export class ImportPopup extends DreamlabEditorUIComponent {
         </div>
         <br />
         {this.currentTab === "upload" && (
-          <div>Tell the user they can drag any files in. Educate them that they can actually drag files in at any time.</div>
+          <div>
+            Tell the user they can drag any files in. Educate them that they can actually drag
+            files in at any time.
+          </div>
         )}
         {this.currentTab === "asset-library" && (
-          <div>Put the import menu here to import by ID and also show some suggestions from the asset store soon.</div>
+          <div>
+            Put the import menu here to import by ID and also show some suggestions from the
+            asset store soon.
+          </div>
         )}
         {this.currentTab === "generate" && (
           <div>Show a button to open the generator as a next-js popup.</div>
