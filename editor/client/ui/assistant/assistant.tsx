@@ -87,6 +87,9 @@ export class Assistant {
 
       // Show a loading message while we work
       this.container.innerHTML = "Loading coder environment...";
+      this.container.style.cssText = `
+      background: rgb(var(--color-bg-1));
+    `;
 
       try {
         // 1. Check if a service is already running for this ID
