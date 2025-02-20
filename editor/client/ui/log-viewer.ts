@@ -123,8 +123,8 @@ export class LogViewer {
 
   private injectConsoleWrapper() {
     const log = console.log;
+    const error = console.error;
     // TODO: wrap console.warn
-    // TODO: wrap console.error
 
     console.log = (...args) => {
       const message = args.join(" ");
@@ -144,6 +144,26 @@ export class LogViewer {
       });
 
       return log(...args);
+    };
+
+    console.error = (...args) => {
+      const message = args.join(" ");
+
+      const stack = new Error().stack;
+      if (!stack?.includes("_dist_play")) {
+        console.debug(...args);
+        return;
+      }
+
+      this.appendLogEntry({
+        level: "error",
+        timestamp: Date.now(),
+        message,
+        detail: {},
+        source: "client",
+      });
+
+      return error(...args);
     };
   }
 
