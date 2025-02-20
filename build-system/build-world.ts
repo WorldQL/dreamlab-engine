@@ -21,7 +21,7 @@ export interface WorldBuildOptions {
 
 export const fileIsProbablyBehaviorScript = async (filePath: string): Promise<boolean> => {
   const text = await Deno.readTextFile(filePath);
-  return !!text.match(/export default class ([_\p{XID_Continue}]*) extends Behavior/u);
+  return !!text.match(/export default class ([_\p{XID_Continue}]*) extends/u);
 };
 
 export const prepareBundleWorld = async (
