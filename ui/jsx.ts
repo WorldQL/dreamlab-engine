@@ -2,7 +2,9 @@ import { element, type ElementAttributes } from "./element.ts";
 
 // deno-lint-ignore no-namespace
 namespace JSX {
-  export type Element = HTMLElement | SVGElement;
+  export type Element = HTMLElement;
+  // TODO: Properly narrow type, HTMLElementTagNameMap isn't working and <div> is simply an Element when the line below is uncommented. Having this be an HTMLElement is much less annoying.
+  // export type Element = HTMLElement | SVGElement;
   export type IntrinsicElements = {
     [K in keyof HTMLElementTagNameMap]: Omit<
       Partial<ElementAttributes<HTMLElementTagNameMap[K]>>,
