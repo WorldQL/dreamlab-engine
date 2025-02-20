@@ -30,7 +30,12 @@ export async function watchForEditChanges(session: GameSession, subdir: string) 
   }, 60);
 
   for await (const event of watcher) {
-    if (event.kind === "modify" || event.kind === "create") {
+    if (
+      event.kind === "modify" ||
+      event.kind === "create" ||
+      event.kind === "rename" ||
+      event.kind === "remove"
+    ) {
       event.paths.forEach(it => touchedPaths.add(it));
       rebuild();
     }
