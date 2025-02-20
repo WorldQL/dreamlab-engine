@@ -23,7 +23,7 @@ main {
     minmax(8em, var(--left-sidebar-width)) var(--drag-handle-size) /* left */
     minmax(0, 16fr) /* viewport */
     var(--drag-handle-size) minmax(8em, var(--right-sidebar-width)); /* right */
-  grid-template-rows: 3em 12fr 0 minmax(3em, var(--bottom-bar-height));
+  grid-template-rows: 3em 12fr var(--drag-handle-size) minmax(3em, var(--bottom-bar-height));
 }
 
 main > div {
@@ -83,10 +83,24 @@ main > div {
   justify-self: end;
 }
 #bottom-bar-drag {
+  --height: 4px;
+
   grid-area: drag-b;
-  height: 8px;
+  height: var(--height);
   cursor: row-resize;
   transition: background-color 0.3s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: calc(var(--drag-handle-size) - var(--height) / 2);
+
+  & > div {
+    width: 100%;
+    height: 100%;
+    max-width: 12rem;
+    background-color: #99999960;
+    border-radius: 4px;
+  }
 }
 
 #left-sidebar-drag,
