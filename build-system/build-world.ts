@@ -36,8 +36,7 @@ export const fileIsProbablyBehaviorScript = async (filePath: string): Promise<bo
     const Candidate = mod.default;
     if (typeof Candidate !== "function") return false;
     return isSubclassOf(Candidate, Behavior);
-  } catch (e) {
-    console.error("Error importing module:", filePath, e);
+  } catch {
     return false;
   }
 };
