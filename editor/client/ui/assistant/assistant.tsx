@@ -151,6 +151,10 @@ export class Assistant {
         console.error("Failed to load or spawn coder environment:", err);
         this.container.innerHTML =
           "Failed to load or spawn coder environment. See console for details.";
+        this.container.style.cssText = `
+          background: rgb(var(--color-bg-1));
+          padding: 10px
+        `;
       }
     })();
   }
