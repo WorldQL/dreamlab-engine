@@ -566,8 +566,8 @@ export class SceneGraph implements InspectorUIWidget {
             enabledState === "allEnabled"
               ? "Disable"
               : enabledState === "allDisabled"
-              ? "Enable"
-              : "Toggle Enabled",
+                ? "Enable"
+                : "Toggle Enabled",
             () => {
               for (const e of ui.selectedEntity.entities) {
                 e.enabled = !(enabledState === "allEnabled");
@@ -698,8 +698,8 @@ export class SceneGraph implements InspectorUIWidget {
             enabledState === "allEnabled"
               ? "Disable"
               : enabledState === "allDisabled"
-              ? "Enable"
-              : "Toggle Enabled",
+                ? "Enable"
+                : "Toggle Enabled",
             () => {
               for (const e of ui.selectedEntity.entities) {
                 if (isRoot(e)) {

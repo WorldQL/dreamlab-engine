@@ -47,10 +47,7 @@ function getEntitySignature(entity: SimpleEntityDefinition): string {
  * It prints the entity name and type, then any behavior scripts,
  * and then its children (using grouping).
  */
-function entityToMarkdown(
-  entity: SimpleEntityDefinition,
-  indent: string = ""
-): string {
+function entityToMarkdown(entity: SimpleEntityDefinition, indent: string = ""): string {
   let md = `${indent}- ${entity.name} (${entity.type})\n`;
   // List attached behavior scripts first.
   for (const behavior of entity.behaviors) {
@@ -69,10 +66,7 @@ function entityToMarkdown(
  * If a group has more than 2 identical entries, it prints the first two then a line like:
  *   - [N more identical entities]
  */
-function siblingsToMarkdown(
-  entities: SimpleEntityDefinition[],
-  indent: string
-): string {
+function siblingsToMarkdown(entities: SimpleEntityDefinition[], indent: string): string {
   let md = "";
   let i = 0;
   while (i < entities.length) {
@@ -104,10 +98,7 @@ function siblingsToMarkdown(
 /**
  * Builds a markdown section for a set of entities in a scene (e.g., world, local).
  */
-function buildSectionMarkdown(
-  sectionName: string,
-  entities: SceneDescEntity[]
-): string {
+function buildSectionMarkdown(sectionName: string, entities: SceneDescEntity[]): string {
   let md = `${sectionName}:\n`;
   const simpleDefs = entities.map(buildSimpleDefinitionOfNodeAndChildren);
   md += siblingsToMarkdown(simpleDefs, "");

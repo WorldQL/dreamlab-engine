@@ -7,7 +7,7 @@ export interface LogEntry {
   timestamp: number; // ms from unix epoch (Date#getTime)
   message: string;
   detail: LogDetails | undefined;
-  source?: "client" | "server"
+  source?: "client" | "server";
 }
 
 const LOG_SUBSCRIPTIONS = Symbol();

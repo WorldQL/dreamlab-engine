@@ -31,7 +31,7 @@ export abstract class DreamlabEditorUIComponent {
     if (this.container) {
       this.container.remove();
     }
-  }
+  };
 
   show = () => {
     if (this.container && this.uiRoot) {
@@ -40,5 +40,5 @@ export abstract class DreamlabEditorUIComponent {
     } else {
       console.warn("Attempted to show DreamlabEditorUIComponent that has not been mounted.");
     }
-  }
+  };
 }

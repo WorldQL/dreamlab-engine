@@ -53,14 +53,15 @@ export class WelcomeMenu {
     navSection.className = "welcome-card-section";
 
     const leadpara = document.createElement("p");
-    leadpara.innerHTML = "This is the tutorial project. Click the button below to open the guide in a new tab.<br><br>";
+    leadpara.innerHTML =
+      "This is the tutorial project. Click the button below to open the guide in a new tab.<br><br>";
 
     const openTutorialLink = document.createElement("a");
     openTutorialLink.textContent = "Open tutorial!";
     openTutorialLink.target = "_blank";
     openTutorialLink.href = "https://docs.dreamlab.gg/";
     openTutorialLink.className = "open-tutorial-button";
-   
+
     navSection.appendChild(leadpara);
     navSection.appendChild(openTutorialLink);
 

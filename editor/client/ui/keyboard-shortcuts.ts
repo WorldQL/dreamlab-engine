@@ -315,7 +315,7 @@ export async function pasteEntitiesFromClipboard(
         t: "create-entity",
         parentRef: x.parent!.ref,
         def: x.getDefinition(),
-      } as UndoRedoOperation),
+      }) as UndoRedoOperation,
   );
   UndoRedoManager._.push({ t: "compound", ops } as unknown as UndoRedoOperation);
 }
@@ -424,7 +424,7 @@ export function setupKeyboardShortcuts(
             t: "destroy-entity",
             parentRef: x.parent!.ref,
             def: x.getDefinition(),
-          } as UndoRedoOperation),
+          }) as UndoRedoOperation,
       );
 
       for (const entity of toDelete) {

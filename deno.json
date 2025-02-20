@@ -1,5 +1,10 @@
 {
   "lock": false,
+  "tasks": {
+    "format:base": "deno run -A npm:prettier@3 --config .prettierrc --ignore-unknown",
+    "format:install": "cd .git/hooks && ln -s ../../_pre-commit.sh pre-commit",
+    "format": "deno task format:base --write ."
+  },
   "imports": {
     "@dreamlab/engine": "./engine/mod.ts",
     "@dreamlab/engine/internal": "./engine/internal.ts",

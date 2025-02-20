@@ -1,1 +1,11 @@
-**/*.json
+*.json
+*.jsonc
+*.md
+
+multiplayer/worlds
+multiplayer/pre-exec
+singleplayer/web/runtime
+singleplayer/web/worlds
+editor/web/dist
+
+typedef-gen/dnt

@@ -25,7 +25,10 @@ export class PrefabViewer {
   prefabsRoot!: Entity;
   #iconPicker: IconPicker;
 
-  constructor(private game: ClientGame, private container: HTMLElement) {
+  constructor(
+    private game: ClientGame,
+    private container: HTMLElement,
+  ) {
     this.#iconPicker = new IconPicker((newIcon: string) => {
       this.changeEntityIcon(this.inspectorUI, newIcon);
     });

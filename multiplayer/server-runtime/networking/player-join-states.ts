@@ -40,7 +40,9 @@ export const handlePlayerJoinExchange: ServerNetworkSetupRoutine = (net, game) =
     if (connectionState === "initialized" && packet.phase === "loaded") {
       const valueReports: PlayPacket<"RichReportValues", "server">["reports"] = [];
       for (const value of game.values.values) {
-        const _value = value.adapter ? value.adapter.convertToPrimitive(value.value) : value.value;
+        const _value = value.adapter
+          ? value.adapter.convertToPrimitive(value.value)
+          : value.value;
         if (value[internal.valueRelatedEntity]?.root instanceof ServerRoot) continue;
         valueReports.push({
           identifier: value.identifier,
