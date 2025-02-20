@@ -1,4 +1,4 @@
-import { element as elem, ElementAttrs } from "@dreamlab/ui";
+import { element as elem, ElementAttributes } from "@dreamlab/ui";
 
 export class Button extends HTMLElement {
   static {
@@ -6,7 +6,7 @@ export class Button extends HTMLElement {
   }
 
   constructor(
-    attrs: ElementAttrs<HTMLElementTagNameMap["button"]> = {},
+    attrs: Partial<ElementAttributes<HTMLElementTagNameMap["button"]>> = {},
     children: (Element | string | Text)[] = [],
   ) {
     super();

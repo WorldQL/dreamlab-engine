@@ -63,7 +63,7 @@ export function element<K extends keyof HTMLElementTagNameMap>(
 
     if (key.startsWith("on") && typeof value === "function") {
       const f = value.bind(el);
-      el.addEventListener(key.substring(2).toLowerCase(), ev => f(ev));
+      (el as BaseElem).addEventListener(key.substring(2).toLowerCase(), ev => f(ev));
     } else if (key.startsWith("data-") && value) {
       if (typeof value === "string") el.setAttribute(key, value);
 
