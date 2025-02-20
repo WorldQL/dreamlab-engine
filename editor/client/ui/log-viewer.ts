@@ -1,7 +1,7 @@
 import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
 import { ClientGame } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
-import type * as CSS from "@dreamlab/ui/css";
+import { CSSProperties } from "@dreamlab/ui/css";
 import { urlToWebSocket } from "@dreamlab/util/url.ts";
 // @deno-types="npm:@types/object-inspect@1.13.0"
 import inspect from "npm:object-inspect@1.13.2";
@@ -116,7 +116,7 @@ export class LogViewer {
 
     this.container.append(this.#section);
 
-    if (!(window.location.hostname === "localhost")) {
+    if (!globalThis.env.DREAMLAB_EDITOR_DISABLE_CONSOLE_HOOK) {
       this.injectConsoleWrapper();
     }
   }
@@ -172,7 +172,7 @@ export class LogViewer {
     let level = log.level.toUpperCase().padEnd(5, " ");
     let className = "log-entry";
 
-    const style: CSS.Properties = {};
+    const style: CSSProperties = {};
     if (log.source === "client") {
       level = "CLIENT".padEnd(5, " ");
       style.backgroundColor = "rgba(253, 255, 112, 0.2)";

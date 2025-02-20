@@ -8,8 +8,8 @@ export class ScriptSession {
   public static chatContext: ChatbotContext = [];
   public static chatState: "plan" | "step1" | "step2" | "followup" = "plan";
   public static chatDocumentation: string = "";
-  public static httpServer: string;   // e.g. "https://example.com/"
-  public static instance: string;     // e.g. "alpha"
+  public static httpServer: string; // e.g. "https://example.com/"
+  public static instance: string; // e.g. "alpha"
   public static scriptMap: string;
 }
 
@@ -81,7 +81,9 @@ export class Assistant {
       const serviceId = encodeURIComponent(this.game.worldId);
 
       // Base URL for our coder-manager endpoints
-      const baseUrl = `${ScriptSession.httpServer}coder-manager`;
+      const baseUrl =
+        globalThis.env.DREAMLAB_CODE_EDITOR_CODER_MANAGER_BASE ||
+        new URL("coder-manager", ScriptSession.httpServer).toString();
 
       // Show a loading message while we work
       this.container.innerHTML = "Loading coder environment...";
@@ -100,7 +102,7 @@ export class Assistant {
           // Use instance as the cwd if available, else fallback to "."
           const spawnBody = {
             cwd: this.game.worldId,
-            id: decodeURIComponent(serviceId) // decode back for the server
+            id: decodeURIComponent(serviceId), // decode back for the server
           };
           const spawnResp = await fetch(`${baseUrl}/spawn`, {
             method: "POST",
@@ -115,7 +117,12 @@ export class Assistant {
         }
 
         // 3. Build the iframe URL
-        const iframeUrl = `${ScriptSession.httpServer}coder/${port}/${decodeURIComponent(serviceId)}`;
+
+        const coderBaseUrl =
+          globalThis.env.DREAMLAB_CODE_EDITOR_CODER_BASE ||
+          new URL("coder", ScriptSession.httpServer).toString();
+
+        const iframeUrl = `${coderBaseUrl}/${port}/${decodeURIComponent(serviceId)}`;
 
         // 4. Wait 500ms and then poll until the service is ready (i.e., not returning 502)
         await this.waitForServiceReady(iframeUrl);
@@ -142,7 +149,8 @@ export class Assistant {
         this.startHeartbeat(decodeURIComponent(serviceId));
       } catch (err) {
         console.error("Failed to load or spawn coder environment:", err);
-        this.container.innerHTML = "Failed to load or spawn coder environment. See console for details.";
+        this.container.innerHTML =
+          "Failed to load or spawn coder environment. See console for details.";
       }
     })();
   }
@@ -179,7 +187,9 @@ export class Assistant {
     if (this.heartbeatIntervalId) {
       clearInterval(this.heartbeatIntervalId);
     }
-    const baseUrl = `${ScriptSession.httpServer}coder-manager`;
+    const baseUrl =
+      globalThis.env.DREAMLAB_CODE_EDITOR_CODER_MANAGER_BASE ||
+      new URL("coder-manager", ScriptSession.httpServer);
 
     this.heartbeatIntervalId = globalThis.setInterval(async () => {
       try {
