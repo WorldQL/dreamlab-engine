@@ -10,7 +10,7 @@ namespace JSX {
       Partial<ElementAttributes<HTMLElementTagNameMap[K]>>,
       "children"
     > & {
-      children?: JSX.Element | JSX.Element[] | undefined;
+      children?: JSX.Element | JSX.Element[] | string | undefined;
     } & {
       // did you know JSX just disables typechecking for any attribute with a hyphen??
       // see TypeScript src/compiler/checker.ts, `isHyphenatedJsxName`
