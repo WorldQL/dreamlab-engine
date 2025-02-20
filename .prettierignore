@@ -6,6 +6,8 @@ multiplayer/worlds
 multiplayer/pre-exec
 singleplayer/web/runtime
 singleplayer/web/worlds
+client/web/dist
 editor/web/dist
+engine/_web/www
 
 typedef-gen/dnt
