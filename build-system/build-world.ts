@@ -19,16 +19,6 @@ export interface WorldBuildOptions {
   outDirName?: string;
 }
 
-// deno-lint-ignore no-explicit-any
-function isSubclassOf(child: any, parent: any): boolean {
-  let current = child;
-  while (current && current !== Function.prototype) {
-    if (current.name === parent.name) return true;
-    current = Object.getPrototypeOf(current);
-  }
-  return false;
-}
-
 export const fileIsProbablyBehaviorScript = async (filePath: string): Promise<boolean> => {
   const text = await Deno.readTextFile(filePath);
   return (
