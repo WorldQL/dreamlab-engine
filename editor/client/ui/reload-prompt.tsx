@@ -59,6 +59,7 @@ export class ReloadPrompt implements InspectorUIWidget {
       } else {
         // we've recieved more packets, reset trigger
         this.#triggered = false;
+        this.#dialog.close();
       }
     }, 1000);
   }
