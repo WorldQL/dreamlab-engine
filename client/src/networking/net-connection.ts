@@ -73,8 +73,14 @@ export class ClientConnection {
     public codec: PlayCodec,
   ) {}
 
+  #lastPacketTime = -1;
+  get lastPacketTime() {
+    return this.#lastPacketTime;
+  }
+
   handle(packet: ServerPacket) {
     this.#queue.packets.push(packet);
+    this.#lastPacketTime = Date.now();
     void this.#flushPacketQueue();
   }
 

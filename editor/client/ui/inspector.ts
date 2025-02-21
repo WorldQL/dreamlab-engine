@@ -9,6 +9,7 @@ import { FileTree } from "./file-tree.ts";
 import { GameOverlays } from "./game-overlays.ts";
 import { setupKeyboardShortcuts } from "./keyboard-shortcuts.ts";
 import { Properties } from "./properties.ts";
+import { ReloadPrompt } from "./reload-prompt.tsx";
 import { SceneGraph } from "./scene-graph.ts";
 import { SelectedEntityService } from "./selected-entity.ts";
 import { WelcomeMenu } from "./welcome-menu.ts";
@@ -32,10 +33,11 @@ export class InspectorUI {
   gameOverlays: GameOverlays;
   fileTree: FileTree;
   welcomeMenu: WelcomeMenu;
+  reloadPrompt: ReloadPrompt;
 
   constructor(
     public game: ClientGame,
-    conn: ClientConnection,
+    public conn: ClientConnection,
     public editMode: boolean,
     public gameContainer: HTMLDivElement,
   ) {
@@ -49,6 +51,7 @@ export class InspectorUI {
     this.gameOverlays = new GameOverlays(game, gameContainer);
     this.fileTree = new FileTree(game);
     this.welcomeMenu = new WelcomeMenu(game);
+    this.reloadPrompt = new ReloadPrompt(game);
 
     if (editMode) {
       game.local._.Camera.getBehavior(CameraPanBehavior).ui = this;
@@ -61,6 +64,7 @@ export class InspectorUI {
     this.behaviorPanel.setup(this);
     this.contextMenu.setup(this);
     this.fileTree.setup(this);
+    this.reloadPrompt.setup(this);
 
     setupKeyboardShortcuts(this.game, this.selectedEntity, editMode);
 
@@ -154,6 +158,7 @@ export class InspectorUI {
     this.gameOverlays.show(uiRoot);
     this.fileTree.show(uiRoot);
     this.welcomeMenu.show(uiRoot);
+    this.reloadPrompt.show(uiRoot);
   }
 
   hide() {
@@ -164,5 +169,6 @@ export class InspectorUI {
     this.gameOverlays.hide();
     this.fileTree.hide();
     this.welcomeMenu.hide();
+    this.reloadPrompt.hide();
   }
 }
