@@ -34,7 +34,7 @@ export const fileIsProbablyBehaviorScript = async (filePath: string): Promise<bo
   return (
     filePath.includes("src/") &&
     text.includes("export default") &&
-    !!text.match(/class ([_\p{XID_Continue}]*) extends/u)
+    !!text.match(/class\s+([_\p{XID_Continue}]*)\s+extends/u)
   );
 };
 
