@@ -16,10 +16,10 @@ export class ReloadPrompt implements InspectorUIWidget {
   // TODO: less programmer wording
   #dialog = (
     <dialog id="reload-prompt">
-      <h1>Disconnected from server</h1>
+      <h1>Connecting...</h1>
       <div>
-        <p>The connection with Dreamlab has been lost.</p>
-        <p>Reload to reconnect or dismiss to keep your local state.</p>
+        <p>The connection with your edit session has been interrupted.</p>
+        <p>Press "Reload Page" to reconnect.</p>
       </div>
 
       <div className="buttons">
