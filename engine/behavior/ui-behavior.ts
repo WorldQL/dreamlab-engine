@@ -5,9 +5,17 @@ export abstract class UIBehavior extends Behavior {
   private container: HTMLElement | undefined;
 
   #ui: UILayer | UIPanel | undefined;
+  #enablePointerEvents = true;
+  set enablePointerEvents(val: boolean) {
+    this.#enablePointerEvents = val;
+    this.rerender();
+  }
 
   rerender() {
-    this.container?.replaceChildren(this.render());
+    if (this.container) {
+      this.container.replaceChildren(this.render());
+      this.container.style.pointerEvents = this.#enablePointerEvents ? "auto" : "none";
+    }
   }
 
   onInitialize(): void {
