@@ -70,10 +70,6 @@ export class UILayer extends Entity {
   height: 100%;
   pointer-events: none;
 }
-
-#root > * {
-  pointer-events: auto;
-}
 `;
 
     style.appendChild(document.createTextNode(css));
