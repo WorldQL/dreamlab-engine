@@ -7,7 +7,6 @@ import {
   dreamlabVendorExternalPlugin,
   esbuild,
 } from "./_esbuild.ts";
-import { Behavior } from "../engine/behavior/mod.ts";
 import { BASE_BUILD_OPTIONS, bundle, BundleOptions } from "./build-components.ts";
 
 import { copy as esbuildCopy } from "npm:esbuild-plugin-copy@2.1.1";
@@ -31,14 +30,12 @@ function isSubclassOf(child: any, parent: any): boolean {
 }
 
 export const fileIsProbablyBehaviorScript = async (filePath: string): Promise<boolean> => {
-  try {
-    const mod = await import(filePath);
-    const Candidate = mod.default;
-    if (typeof Candidate !== "function") return false;
-    return isSubclassOf(Candidate, Behavior);
-  } catch {
-    return false;
-  }
+  const text = await Deno.readTextFile(filePath);
+  return (
+    filePath.includes("src/") &&
+    text.includes("export default") &&
+    !!text.match(/class ([_\p{XID_Continue}]*) extends/u)
+  );
 };
 
 export const prepareBundleWorld = async (
