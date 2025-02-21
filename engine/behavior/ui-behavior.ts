@@ -13,21 +13,17 @@ export abstract class UIBehavior extends Behavior {
   onInitialize(): void {
     if (!this.game.isClient()) return;
 
-    if (!(this.entity instanceof UILayer || this.entity instanceof UIPanel)) {
+    if (this.entity instanceof UILayer) {
+      this.#ui = this.entity.cast(UILayer);
+    } else if (this.entity instanceof UIPanel) {
+      this.#ui = this.entity.cast(UIPanel);
+    } else {
       throw new Error("UIBehaviors must be attached to UILayer or UIPanel");
     }
 
-    if (this.entity instanceof UILayer) {
-      this.#ui = this.entity.cast(UILayer);
-    }
-
-    if (this.entity instanceof UIPanel) {
-      this.#ui = this.entity.cast(UIPanel);
-    }
-
     this.container = document.createElement("div");
-    this.uiRoot = this.#ui?.dom;
-    this.uiRoot?.appendChild(this.container);
+    this.uiRoot = this.#ui.dom;
+    this.uiRoot.appendChild(this.container);
     this.rerender();
   }
 
