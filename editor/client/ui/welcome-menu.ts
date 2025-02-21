@@ -1,18 +1,17 @@
-import {
-  Box,
-  GitCompareArrows,
-  ScrollText,
-  Folder,
-  Sliders,
-  Terminal,
-  icon,
-} from "../_icons.ts";
+import type { ClientGame } from "@dreamlab/engine";
+import { icon } from "../_icons.ts";
+import type { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 
-export class WelcomeMenu {
+export class WelcomeMenu implements InspectorUIWidget {
   private welcomeCard: HTMLElement | null = null;
 
-  show(uiRoot: HTMLElement, worldId: string): void {
+  constructor(private game: ClientGame) {}
+  setup(_ui: InspectorUI): void {}
+
+  show(uiRoot: HTMLElement): void {
+    const worldId = this.game.worldId;
     if (!worldId.includes("Dreamlab_Tutorial")) return;
+
     const storageKey = `@dreamlab_welcomeCardDismissed_${worldId}`;
     const isDismissed = localStorage.getItem(storageKey);
     if (isDismissed) {
@@ -158,7 +157,7 @@ export class WelcomeMenu {
     uiRoot.appendChild(this.welcomeCard);
   }
 
-  private createSidebarInfo(iconSvg: string, titleText: string, items: string[]): HTMLElement {
+  #createSidebarInfo(iconSvg: string, titleText: string, items: string[]): HTMLElement {
     const sidebar = document.createElement("div");
     sidebar.className = "sidebar-info";
 

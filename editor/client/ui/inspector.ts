@@ -48,7 +48,7 @@ export class InspectorUI {
     this.contextMenu = new ContextMenu(game);
     this.gameOverlays = new GameOverlays(game, gameContainer);
     this.fileTree = new FileTree(game);
-    this.welcomeMenu = new WelcomeMenu();
+    this.welcomeMenu = new WelcomeMenu(game);
 
     if (editMode) {
       game.local._.Camera.getBehavior(CameraPanBehavior).ui = this;
@@ -153,7 +153,7 @@ export class InspectorUI {
     this.contextMenu.show(uiRoot);
     this.gameOverlays.show(uiRoot);
     this.fileTree.show(uiRoot);
-    this.welcomeMenu.show(uiRoot, this.game.worldId);
+    this.welcomeMenu.show(uiRoot);
   }
 
   hide() {
