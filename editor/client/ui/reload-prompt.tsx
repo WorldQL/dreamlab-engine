@@ -10,7 +10,11 @@ export class ReloadPrompt implements InspectorUIWidget {
   #added = false;
   #triggered = false;
 
-  #dismiss = new Button({ id: "dismiss", type: "button" }, ["Dismiss"]);
+  // Doesn't make sense to let the user dismiss this. Any "local state" should have already been synced to the server and autosaved every 5 seconds.
+  // Also if they do dismiss there is no way to save that work because the server is probably dead.
+  #dismiss = new Button({ id: "dismiss", type: "button", style: { display: "none" } }, [
+    "Dismiss",
+  ]);
   #reload = new Button({ id: "reload", type: "button" }, ["Reload Page"]);
 
   // TODO: less programmer wording
