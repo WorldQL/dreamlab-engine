@@ -198,7 +198,7 @@ export const serveScriptEditingAPI = (router: Router) => {
           behavior_script_id: isBehavior
             ? `res://${relativePath.replace(/\.tsx?$/, ".js")}`
             : undefined,
-          isFromFileSystem: false
+          isFromFileSystem: false,
         });
 
         if (params.path === "project.json") {
