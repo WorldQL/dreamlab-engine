@@ -287,7 +287,9 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
       prevEntityEnabled.set(entity, enabled);
     }
 
-    net.broadcast({ t: "EntityEnableReport", reports });
+    if (reports.length > 0) {
+      net.broadcast({ t: "EntityEnableReport", reports });
+    }
 
     enabledDirtyEntities.clear();
   });

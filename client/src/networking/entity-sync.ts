@@ -328,7 +328,9 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
       prevEntityEnabled.set(entity, enabled);
     }
 
-    conn.send({ t: "EntityEnableReport", reports });
+    if (reports.length > 0) {
+      conn.send({ t: "EntityEnableReport", reports });
+    }
 
     enabledDirtyEntities.clear();
   });
