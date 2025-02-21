@@ -42,7 +42,12 @@ export class ReloadPrompt implements InspectorUIWidget {
     });
 
     this.#reload.addEventListener("click", () => {
-      window.location.reload();
+      // needed because the code which starts an instance if not running exists in the next.js parent.
+      window.parent.postMessage({ action: "reloadEntirePage" }, "*");
+      setTimeout(() => {
+        // do a normal reload if the postmessage fails.
+        window.location.reload();
+      }, 500);
     });
 
     setInterval(() => {
