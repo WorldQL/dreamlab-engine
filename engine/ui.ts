@@ -17,7 +17,7 @@ export class UIManager {
     this.#game.container.style.position = "relative";
 
     this.#container = document.createElement("div");
-    this.#container.style.pointerEvents = "auto";
+    this.#container.style.pointerEvents = "none";
     this.#container.style.position = "absolute";
     this.#container.style.inset = "0";
     this.#container.style.overflow = "hidden";
