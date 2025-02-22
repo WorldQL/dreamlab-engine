@@ -80,10 +80,10 @@ export class BottomTabs implements InspectorUIWidget {
       externalTab,
     ]);
 
-    logsTab.addEventListener('click', () => {
-      logsTab.style.removeProperty('background-color')
-      logsTab.style.removeProperty('color');
-    })
+    logsTab.addEventListener("click", () => {
+      logsTab.style.removeProperty("background-color");
+      logsTab.style.removeProperty("color");
+    });
 
     tabBar.addEventListener("click", e => {
       const tab = (e.target as HTMLElement).closest(".bottom-tab");
