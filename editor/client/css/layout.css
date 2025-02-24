@@ -23,7 +23,10 @@ main {
     minmax(8em, var(--left-sidebar-width)) var(--drag-handle-size) /* left */
     minmax(0, 16fr) /* viewport */
     var(--drag-handle-size) minmax(8em, var(--right-sidebar-width)); /* right */
-  grid-template-rows: 3em 12fr var(--drag-handle-size) minmax(3em, var(--bottom-bar-height));
+  grid-template-rows: 3em 12fr calc(var(--drag-handle-size) * 1.5) minmax(
+      3em,
+      var(--bottom-bar-height)
+    );
 }
 
 main > div {
@@ -62,7 +65,6 @@ main > div {
 #bottom-bar {
   grid-area: bottom;
   overflow: auto;
-  margin-top: 0.5em;
 }
 
 #left-sidebar,
@@ -83,20 +85,33 @@ main > div {
   justify-self: end;
 }
 #bottom-bar-drag {
-  --height: 4px;
+  --handle-height: 4px;
 
   grid-area: drag-b;
-  height: var(--height);
   cursor: row-resize;
-  transition: background-color 0.3s;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-top: calc(var(--drag-handle-size) - var(--height) / 2);
+  position: relative;
+
+  &::after {
+    position: absolute;
+    content: " ";
+    width: 100%;
+    height: var(--handle-height);
+    border-radius: 4px;
+    background-color: transparent;
+    pointer-events: none;
+    transition: background-color 0.3s;
+  }
+
+  &:hover::after {
+    background-color: #999;
+  }
 
   & > div {
     width: 100%;
-    height: 100%;
+    height: var(--handle-height);
     max-width: 12rem;
     background-color: #99999960;
     border-radius: 4px;
@@ -112,7 +127,6 @@ main > div {
 
 #left-sidebar-drag,
 #right-sidebar-drag,
-#bottom-bar-drag,
 #left-center-drag,
 #right-center-drag {
   transition: background-color 0.3s;
