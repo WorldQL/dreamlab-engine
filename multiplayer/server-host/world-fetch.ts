@@ -15,9 +15,14 @@ export const fetchWorld = async (instance: GameInstance) => {
     instance.logs.debug("Fetching world", { world, revision });
     await fs.ensureDir(path.dirname(dir));
 
+    const distributionUrl = CONFIG.DISTRIBUTION_PUBLIC_URL.endsWith("/git")
+      ? CONFIG.DISTRIBUTION_PUBLIC_URL
+      : `${CONFIG.DISTRIBUTION_PUBLIC_URL}/git`;
+
     const cloneProcess = new Deno.Command("git", {
-      args: ["clone", `${CONFIG.DISTRIBUTION_PUBLIC_URL}/${world}.git`, dir],
+      args: ["clone", `${distributionUrl}/${world}.git`, dir],
     }).spawn();
+
     await cloneProcess.status;
 
     const checkoutProcess = new Deno.Command("git", {
