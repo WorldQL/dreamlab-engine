@@ -1,486 +1,231 @@
 import { z } from "@dreamlab/vendor/zod.ts";
 import { Router, Status } from "@oak/oak";
-import { JsonAPIError } from "../../../common-host/web-util/api.ts";
-import { CONFIG } from "../../config.ts";
-import { GameInstance } from "../../instance.ts";
-
-import * as fs from "@std/fs";
 import * as path from "@std/path";
-import { fileIsProbablyBehaviorScript } from "../../../../build-system/build-world.ts";
 import { buildWorld } from "../../../server-common/world-build.ts";
+import { fileIsProbablyBehaviorScript } from "../../../../build-system/build-world.ts";
+import { GameInstance } from "../../instance.ts";
+import { JsonAPIError } from "../../../common-host/web-util/api.ts";
 
 export const serveSourceControlAPI = (router: Router) => {
-  // TODO: auth ??
-  // #region commit
+  async function broadcastWorldUpdate(filePath?: string) {
+    await buildWorld("default", Deno.cwd(), "_dist");
+
+    if (filePath) {
+      const absolutePath = path.join(Deno.cwd(), filePath);
+      const isBehavior = await fileIsProbablyBehaviorScript(absolutePath);
+      const packet = {
+        t: "ScriptEdited",
+        script_location: filePath,
+        behavior_script_id: isBehavior
+          ? `res://${filePath.replace(/\.tsx?$/, ".js")}`
+          : undefined,
+      };
+      console.log("Broadcasting packet:", packet);
+    } else {
+      const packet = {
+        t: "WorldUpdated",
+        message: "Working branch code has been updated.",
+      };
+      console.log("Broadcasting packet:", packet);
+    }
+  }
+
+  // #region commit changes
   router.post("/api/v1/source-control/:instance_id/commit", async ctx => {
     const BodySchema = z.object({
       commit_message: z.string(),
-      author_name: z.string(),
-      author_email: z.string(),
+      author_name: z.string().optional(),
+      author_email: z.string().optional(),
     });
-
     let body;
     try {
       body = BodySchema.parse(await ctx.request.body.json());
     } catch (err) {
-      throw new JsonAPIError(Status.BadRequest, err.toString());
+      ctx.response.status = Status.BadRequest;
+      ctx.response.body = { error: err.toString() };
+      return;
     }
-
     const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
     const instance = GameInstance.INSTANCES.get(instanceId);
-    if (instance === undefined) {
+    if (!instance) {
       throw new JsonAPIError(Status.NotFound, "Instance not found.");
     }
-
     if (!instance.info.editMode) {
       throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
     }
-
     const sourceRoot = instance.info.worldDirectory;
-
-    const commitProcess = new Deno.Command("git", {
-      args: [
-        "commit",
-        "-m",
-        body.commit_message,
-        "--author",
-        `${body.author_name} <${body.author_email}>`,
-      ],
-      cwd: sourceRoot,
-    }).spawn();
+    const args = ["commit", "-m", body.commit_message];
+    if (body.author_name && body.author_email) {
+      args.push("--author", `${body.author_name} <${body.author_email}>`);
+    }
+    const commitProcess = new Deno.Command("git", { args, cwd: sourceRoot }).spawn();
     const commitStatus = await commitProcess.status;
     if (!commitStatus.success) {
-      throw new JsonAPIError(Status.InternalServerError, "Failed to commit to repository");
+      ctx.response.status = Status.InternalServerError;
+      ctx.response.body = { error: "Failed to commit" };
+      return;
     }
+    ctx.response.body = { success: true };
+  });
+  // #endregion
 
+  // #region push changes
+  router.post("/api/v1/source-control/:instance_id/push", async ctx => {
+    const BodySchema = z.object({
+      remote: z.string().optional().default("origin"),
+      branch: z.string().optional().default("main"),
+    });
+    let body;
+    try {
+      body = BodySchema.parse(await ctx.request.body.json());
+    } catch (err) {
+      ctx.response.status = Status.BadRequest;
+      ctx.response.body = { error: err.toString() };
+      return;
+    }
+    const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
+    const instance = GameInstance.INSTANCES.get(instanceId);
+    if (!instance) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+    if (!instance.info.editMode) {
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+    const sourceRoot = instance.info.worldDirectory;
     const pushProcess = new Deno.Command("git", {
-      args: ["push", `${CONFIG.DISTRIBUTION_PUBLIC_URL}/${instance.info.worldId}.git`, "main"],
+      args: ["push", body.remote, body.branch],
       cwd: sourceRoot,
     }).spawn();
     const pushStatus = await pushProcess.status;
-
     if (!pushStatus.success) {
-      // If we failed to push to main, fallback to pushing a new branch
-      {
-        const fetchCmd = new Deno.Command("git", {
-          args: ["fetch", "origin", "main"],
-          cwd: sourceRoot,
-        }).spawn();
-        const fetchStatus = await fetchCmd.status;
-        if (!fetchStatus.success) {
-          throw new JsonAPIError(Status.InternalServerError, "Failed to fetch origin main");
-        }
-      }
-
-      const timestamp = new Date()
-        .toISOString()
-        .replace("T", "-")
-        .replace("Z", "")
-        .replace(/[:.]/g, "-");
-      const newBranch = `edit-${timestamp}`;
-
-      {
-        const branchCmd = new Deno.Command("git", {
-          args: ["checkout", "-b", newBranch],
-          cwd: sourceRoot,
-        }).spawn();
-        const branchStatus = await branchCmd.status;
-        if (!branchStatus.success) {
-          throw new JsonAPIError(
-            Status.InternalServerError,
-            "Failed to create new branch locally",
-          );
-        }
-      }
-
-      {
-        const pushBranchCmd = new Deno.Command("git", {
-          args: [
-            "push",
-            "-u",
-            `${CONFIG.DISTRIBUTION_PUBLIC_URL}/${instance.info.worldId}.git`,
-            newBranch,
-          ],
-          cwd: sourceRoot,
-        }).spawn();
-        const pushBranchStatus = await pushBranchCmd.status;
-        if (!pushBranchStatus.success) {
-          throw new JsonAPIError(
-            Status.InternalServerError,
-            `Failed to push to new branch '${newBranch}'`,
-          );
-        }
-      }
-
-      ctx.response.body = {
-        success: true,
-        fallbackBranch: newBranch,
-        message: `Pushed to new branch '${newBranch}' since pushing 'main' was rejected.`,
-      };
+      ctx.response.status = Status.InternalServerError;
+      ctx.response.body = { error: "Failed to push" };
       return;
     }
-
     ctx.response.body = { success: true };
-    ctx.response.type = "application/json";
   });
   // #endregion
 
-  router.get("/api/v1/source-control/:instance_id/file/:path*", async ctx => {
-    const instanceId = ctx.params.instance_id;
-    const instance = GameInstance.INSTANCES.get(instanceId);
-    if (instance === undefined) {
-      throw new JsonAPIError(Status.NotFound, "An instance with the given ID does not exist");
-    }
-    if (!instance.info.editMode) {
-      throw new JsonAPIError(Status.Forbidden, "The instance is not in edit mode");
-    }
-
-    const sourceRoot = instance.info.worldDirectory;
-
-    const filePath = ctx.params.path;
-    if (filePath === undefined || filePath.length === 0) {
-      const files: string[] = [];
-      for await (const entry of fs.expandGlob("**/*", {
-        root: path.dirname(sourceRoot),
-        exclude: ["node_modules", ".git"],
-      })) {
-        if (entry.isFile) {
-          files.push(path.relative(sourceRoot, entry.path));
-        }
-      }
-
-      ctx.response.body = { files };
+  // #region pull changes
+  router.post("/api/v1/source-control/:instance_id/pull", async ctx => {
+    const BodySchema = z.object({
+      remote: z.string().optional().default("origin"),
+      branch: z.string().optional().default("main"),
+    });
+    let body;
+    try {
+      body = BodySchema.parse(await ctx.request.body.json());
+    } catch (err) {
+      ctx.response.status = Status.BadRequest;
+      ctx.response.body = { error: err.toString() };
       return;
     }
-
-    const computedPath = path.join(sourceRoot, filePath);
-    const relativePath = path.relative(sourceRoot, computedPath);
-    if (relativePath.startsWith("..")) {
-      throw new JsonAPIError(Status.BadRequest, "An invalid path was provided!");
-    }
-
-    try {
-      // kludge to make image display instead of downloading
-      // TODO: always send the proper mime type.
-      const extension = relativePath.split(".").pop();
-      if (extension === "png") {
-        ctx.response.type = "image/png";
-      } else if (extension === "jpg" || extension === "jpeg") {
-        ctx.response.type = "image/png";
-      } else {
-        ctx.response.type = "application/octet-stream";
-      }
-      await ctx.send({ root: sourceRoot, path: relativePath, hidden: true });
-    } catch {
-      ctx.response.type = "text/plain";
-      ctx.response.status = Status.NotFound;
-      ctx.response.body = "Not Found";
-    }
-  });
-
-  router.get("/api/v1/source-control/:instance_id/files", async ctx => {
     const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
     const instance = GameInstance.INSTANCES.get(instanceId);
-    if (instance === undefined) {
-      throw new JsonAPIError(Status.NotFound, "An instance with the given ID does not exist");
+    if (!instance) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
     }
     if (!instance.info.editMode) {
-      throw new JsonAPIError(Status.Forbidden, "The instance is not in edit mode");
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
     }
-
     const sourceRoot = instance.info.worldDirectory;
-
-    const statusProcess = new Deno.Command("git", {
-      args: ["status", "--porcelain"],
+    const pullProcess = new Deno.Command("git", {
+      args: ["pull", body.remote, body.branch],
       cwd: sourceRoot,
-      stdout: "piped",
-      stderr: "piped",
-    });
-
-    try {
-      const outputResult = await statusProcess.output();
-      const output = new TextDecoder().decode(outputResult.stdout);
-      const files = await Promise.all(
-        output
-          .split("\n")
-          .filter(line => line.trim() !== "")
-          .map(async line => {
-            const changeType = line.slice(0, 2).trim();
-            let filePath = line.slice(3);
-            let fileContent = "";
-
-            if (changeType === "R") {
-              const [_oldPath, newPath] = filePath.split(" -> ");
-              filePath = newPath;
-            }
-
-            if (changeType !== "D") {
-              const diffProcess = new Deno.Command("git", {
-                args: ["diff", "--", filePath],
-                cwd: sourceRoot,
-                stdout: "piped",
-                stderr: "piped",
-              });
-              const diffOutputResult = await diffProcess.output();
-              fileContent = new TextDecoder().decode(diffOutputResult.stdout);
-            }
-
-            // if the path has a space in it, for some reason it's wrapped in quotes which we need to remove
-            if (filePath[0] === '"' && filePath[filePath.length - 1] === '"') {
-              filePath = filePath.slice(1, -1);
-            }
-
-            return {
-              path: filePath,
-              changeType:
-                changeType === "??" ? "created" : changeType === "M" ? "modified" : "deleted",
-              content: fileContent,
-            };
-          }),
-      );
-
-      const filteredFiles = files.filter(file => {
-        const fileName = path.basename(file.path);
-        return !fileName.includes("bundled.js") && !fileName.includes("bundled.js.map");
-      });
-
-      ctx.response.body = { files: filteredFiles };
-    } catch (error) {
-      console.error(error);
-      throw new JsonAPIError(Status.InternalServerError, error.message);
+    }).spawn();
+    const pullStatus = await pullProcess.status;
+    if (!pullStatus.success) {
+      ctx.response.status = Status.InternalServerError;
+      ctx.response.body = { error: "Failed to pull" };
+      return;
     }
+    await broadcastWorldUpdate();
+    ctx.response.body = { success: true };
   });
+  // #endregion
 
-  router.get("/api/v1/source-control/:instance_id/stages", async ctx => {
-    const instanceId = ctx.params.instance_id;
-    const instance = GameInstance.INSTANCES.get(instanceId);
-
-    if (instance === undefined) {
-      throw new JsonAPIError(Status.NotFound, "An instance with the given ID does not exist");
-    }
-
-    if (!instance.info.editMode) {
-      throw new JsonAPIError(Status.Forbidden, "The instance is not in edit mode");
-    }
-
-    const sourceRoot = instance.info.worldDirectory;
-
-    const statusProcess = new Deno.Command("git", {
-      args: ["diff", "--cached", "--name-status"],
-      cwd: sourceRoot,
-      stdout: "piped",
-      stderr: "piped",
-    });
-
-    try {
-      const outputResult = await statusProcess.output();
-      const output = new TextDecoder().decode(outputResult.stdout);
-      const files = await Promise.all(
-        output
-          .split("\n")
-          .filter(line => line.trim() !== "")
-          .map(async line => {
-            const [changeType, filePath] = line.split("\t");
-            let fileContent = "";
-
-            if (changeType !== "D") {
-              const diffProcess = new Deno.Command("git", {
-                args: ["diff", "--cached", "--", filePath],
-                cwd: sourceRoot,
-                stdout: "piped",
-                stderr: "piped",
-              });
-              const diffOutputResult = await diffProcess.output();
-              fileContent = new TextDecoder().decode(diffOutputResult.stdout);
-            }
-
-            return {
-              path: filePath,
-              changeType:
-                changeType === "A" ? "created" : changeType === "M" ? "modified" : "deleted",
-              content: fileContent,
-            };
-          }),
-      );
-
-      ctx.response.body = { files };
-    } catch (error) {
-      console.error(error);
-      throw new JsonAPIError(Status.InternalServerError, error.message);
-    }
-  });
-
-  // #region stage
+  // #region stage a file
   router.put("/api/v1/source-control/:instance_id/stage", async ctx => {
-    const instanceId = ctx.params.instance_id;
-    const instance = GameInstance.INSTANCES.get(instanceId);
-
-    if (instance === undefined) {
-      throw new JsonAPIError(Status.NotFound, "An instance with the given ID does not exist");
-    }
-
-    if (!instance.info.editMode) {
-      throw new JsonAPIError(Status.Forbidden, "The instance is not in edit mode");
-    }
-
-    const requestBody = await ctx.request.body.json();
-    const filePath = requestBody.path;
-
-    if (!filePath) {
-      throw new JsonAPIError(Status.BadRequest, "File path is required");
-    }
-
-    const sourceRoot = instance.info.worldDirectory;
-
-    const fullPath = path.join(sourceRoot, filePath);
-
+    const BodySchema = z.object({ file: z.string() });
+    let body;
     try {
-      const fileExists = await fs.exists(fullPath);
-      if (fileExists) {
-        const addProcess = new Deno.Command("git", {
-          args: ["add", filePath],
-          cwd: sourceRoot,
-          stderr: "piped",
-          stdout: "null",
-        }).spawn();
-        await addProcess.status;
-      } else {
-        const lsFilesProcess = new Deno.Command("git", {
-          args: ["ls-files", "--deleted", "--full-name", filePath],
-          cwd: sourceRoot,
-          stdout: "piped",
-          stderr: "piped",
-        });
-        const outputResult = await lsFilesProcess.output();
-        const output = new TextDecoder().decode(outputResult.stdout).trim();
-
-        if (output === filePath) {
-          const rmProcess = new Deno.Command("git", {
-            args: ["rm", "--cached", filePath],
-            cwd: sourceRoot,
-            stderr: "piped",
-            stdout: "null",
-          }).spawn();
-          await rmProcess.status;
-        } else {
-          throw new JsonAPIError(Status.NotFound, "File does not exist");
-        }
-      }
-
-      ctx.response.body = {
-        success: true,
-        message: "File staged successfully.",
-      };
-    } catch (error) {
-      throw new JsonAPIError(Status.InternalServerError, error.message);
+      body = BodySchema.parse(await ctx.request.body.json());
+    } catch (err) {
+      ctx.response.status = Status.BadRequest;
+      ctx.response.body = { error: err.toString() };
+      return;
     }
-  });
-  // #endregion
-
-  // #region unstage
-  router.delete("/api/v1/source-control/:instance_id/unstage", async ctx => {
     const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
     const instance = GameInstance.INSTANCES.get(instanceId);
-
-    if (instance === undefined) {
-      throw new JsonAPIError(Status.NotFound, "An instance with the given ID does not exist");
+    if (!instance) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
     }
-
     if (!instance.info.editMode) {
-      throw new JsonAPIError(Status.Forbidden, "The instance is not in edit mode");
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
     }
-
-    const requestBody = await ctx.request.body.json();
-    const filePath = requestBody.path;
-
-    if (!filePath) {
-      throw new JsonAPIError(Status.BadRequest, "File path is required");
-    }
-
     const sourceRoot = instance.info.worldDirectory;
-
-    try {
-      const lsFilesProcess = new Deno.Command("git", {
-        args: ["ls-files", "--deleted", "--cached", "--full-name", filePath],
-        cwd: sourceRoot,
-        stdout: "piped",
-        stderr: "piped",
-      });
-      const outputResult = await lsFilesProcess.output();
-      const output = new TextDecoder().decode(outputResult.stdout).trim();
-
-      if (output === filePath) {
-        const rmProcess = new Deno.Command("git", {
-          args: ["rm", "--cached", filePath],
-          cwd: sourceRoot,
-          stderr: "piped",
-          stdout: "null",
-        }).spawn();
-        await rmProcess.status;
-        const resetProcess = new Deno.Command("git", {
-          args: ["reset", "HEAD", filePath],
-          cwd: sourceRoot,
-          stderr: "piped",
-          stdout: "null",
-        }).spawn();
-        await resetProcess.status;
-      } else {
-        const resetProcess = new Deno.Command("git", {
-          args: ["reset", "HEAD", filePath],
-          cwd: sourceRoot,
-          stderr: "piped",
-          stdout: "null",
-        }).spawn();
-        await resetProcess.status;
-      }
-
-      ctx.response.body = {
-        success: true,
-        message: "File unstaged successfully.",
-      };
-    } catch (error) {
-      throw new JsonAPIError(Status.InternalServerError, error.message);
+    const addProcess = new Deno.Command("git", {
+      args: ["add", body.file],
+      cwd: sourceRoot,
+    }).spawn();
+    const addStatus = await addProcess.status;
+    if (!addStatus.success) {
+      ctx.response.status = Status.InternalServerError;
+      ctx.response.body = { error: "Failed to stage file" };
+      return;
     }
-  });
-  // #endregion
-
-  router.put("/api/v1/source-control/:instance_id/files/:path*", async ctx => {
-    const instanceId = ctx.params.instance_id;
-    const instance = GameInstance.INSTANCES.get(instanceId);
-    if (instance === undefined) {
-      throw new JsonAPIError(Status.NotFound, "An instance with the given ID does not exist");
-    }
-
-    if (!instance.info.editMode) {
-      throw new JsonAPIError(Status.Forbidden, "The instance is not in edit mode");
-    }
-
-    const sourceRoot = instance.info.worldDirectory;
-
-    const filePath = ctx.params.path;
-    if (filePath === undefined) {
-      throw new JsonAPIError(Status.BadRequest, "An invalid path was provided!");
-    }
-
-    const computedPath = path.join(sourceRoot, filePath);
-    const relativePath = path.relative(sourceRoot, computedPath);
-    if (relativePath.startsWith("..")) {
-      throw new JsonAPIError(Status.BadRequest, "An invalid path was provided!");
-    }
-
-    await fs.ensureDir(path.dirname(computedPath));
-
-    const file = await Deno.open(computedPath, {
-      write: true,
-      truncate: true,
-      create: true,
-      createNew: false,
-      append: false,
-    });
-    await ctx.request.body.stream?.pipeTo(file.writable);
-
     ctx.response.body = { success: true };
   });
+  // #endregion
+
+  // #region unstage a file
+  router.delete("/api/v1/source-control/:instance_id/unstage", async ctx => {
+    const BodySchema = z.object({ file: z.string() });
+    let body;
+    try {
+      body = BodySchema.parse(await ctx.request.body.json());
+    } catch (err) {
+      ctx.response.status = Status.BadRequest;
+      ctx.response.body = { error: err.toString() };
+      return;
+    }
+    const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
+    const instance = GameInstance.INSTANCES.get(instanceId);
+    if (!instance) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+    if (!instance.info.editMode) {
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+    const sourceRoot = instance.info.worldDirectory;
+    const resetProcess = new Deno.Command("git", {
+      args: ["reset", "HEAD", body.file],
+      cwd: sourceRoot,
+    }).spawn();
+    const resetStatus = await resetProcess.status;
+    if (!resetStatus.success) {
+      ctx.response.status = Status.InternalServerError;
+      ctx.response.body = { error: "Failed to unstage file" };
+      return;
+    }
+    ctx.response.body = { success: true };
+  });
+  // #endregion
 
   // #region discard
   router.post("/api/v1/source-control/:instance_id/discard", async ctx => {
@@ -567,6 +312,366 @@ export const serveSourceControlAPI = (router: Router) => {
   });
   // #endregion
 
+  // #region checkout branch
+  router.post("/api/v1/source-control/:instance_id/checkout/branch", async ctx => {
+    const BodySchema = z.object({ branch: z.string() });
+    let body;
+    try {
+      body = BodySchema.parse(await ctx.request.body.json());
+    } catch (err) {
+      ctx.response.status = Status.BadRequest;
+      ctx.response.body = { error: err.toString() };
+      return;
+    }
+
+    const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
+
+    const instance = GameInstance.INSTANCES.get(instanceId);
+    if (!instance) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+
+    if (!instance.info.editMode) {
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+
+    const sourceRoot = instance.info.worldDirectory;
+    const branch = body.branch;
+
+    const fetchProcess = new Deno.Command("git", {
+      args: ["fetch", "origin"],
+      cwd: sourceRoot,
+      stdout: "piped",
+      stderr: "piped",
+    });
+    const fetchStatus = await fetchProcess.output();
+    if (fetchStatus.code !== 0) {
+      ctx.response.status = Status.InternalServerError;
+      ctx.response.body = { error: "Failed to fetch updates from remote." };
+      return;
+    }
+
+    const branchCheckProcess = new Deno.Command("git", {
+      args: ["branch", "--list", branch],
+      cwd: sourceRoot,
+      stdout: "piped",
+      stderr: "piped",
+    });
+    const { stdout: branchCheckStdout } = await branchCheckProcess.output();
+    const existingBranch = new TextDecoder().decode(branchCheckStdout).trim();
+
+    let checkoutArgs: string[];
+
+    if (existingBranch) {
+      checkoutArgs = ["checkout", branch];
+    } else {
+      checkoutArgs = ["checkout", "-t", `origin/${branch}`];
+    }
+
+    console.log(`Switching to branch: ${branch}`);
+
+    const checkoutProcess = new Deno.Command("git", {
+      args: checkoutArgs,
+      cwd: sourceRoot,
+      stdout: "piped",
+      stderr: "piped",
+    });
+
+    const { code, stderr } = await checkoutProcess.output();
+
+    if (code !== 0) {
+      const errorMsg = new TextDecoder().decode(stderr);
+      console.log(`Failed to checkout branch: ${branch} - ${errorMsg}`);
+      ctx.response.status = Status.InternalServerError;
+      ctx.response.body = { error: errorMsg.trim() };
+      return;
+    }
+
+    await broadcastWorldUpdate();
+    ctx.response.body = { success: true, message: `Checked out branch ${branch}` };
+  });
+  // #endregion
+
+  // #region checkout commit
+  router.post("/api/v1/source-control/:instance_id/checkout/commit", async ctx => {
+    const BodySchema = z.object({ commit_hash: z.string() });
+    let body;
+    try {
+      body = BodySchema.parse(await ctx.request.body.json());
+    } catch (err) {
+      ctx.response.status = Status.BadRequest;
+      ctx.response.body = { error: err.toString() };
+      return;
+    }
+    const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
+    const instance = GameInstance.INSTANCES.get(instanceId);
+    if (!instance) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+    if (!instance.info.editMode) {
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+    const sourceRoot = instance.info.worldDirectory;
+    const checkoutProcess = new Deno.Command("git", {
+      args: ["checkout", body.commit_hash],
+      cwd: sourceRoot,
+    }).spawn();
+    const checkoutStatus = await checkoutProcess.status;
+    if (!checkoutStatus.success) {
+      ctx.response.status = Status.InternalServerError;
+      ctx.response.body = { error: `Failed to checkout commit ${body.commit_hash}` };
+      return;
+    }
+    await broadcastWorldUpdate();
+    ctx.response.body = { success: true };
+  });
+  // #endregion
+
+  // #region revert a commit
+  router.post("/api/v1/source-control/:instance_id/revert", async ctx => {
+    const BodySchema = z.object({ commit_hash: z.string() });
+    let body;
+    try {
+      body = BodySchema.parse(await ctx.request.body.json());
+    } catch (err) {
+      ctx.response.status = Status.BadRequest;
+      ctx.response.body = { error: err.toString() };
+      return;
+    }
+    const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
+    const instance = GameInstance.INSTANCES.get(instanceId);
+    if (!instance) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+    if (!instance.info.editMode) {
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+    const sourceRoot = instance.info.worldDirectory;
+    const revertProcess = new Deno.Command("git", {
+      args: ["revert", body.commit_hash],
+      cwd: sourceRoot,
+    }).spawn();
+    const revertStatus = await revertProcess.status;
+    if (!revertStatus.success) {
+      ctx.response.status = Status.InternalServerError;
+      ctx.response.body = { error: `Failed to revert commit ${body.commit_hash}` };
+      return;
+    }
+    await broadcastWorldUpdate();
+    ctx.response.body = { success: true };
+  });
+  // #endregion
+
+  // #region merge branches
+  router.post("/api/v1/source-control/:instance_id/merge", async ctx => {
+    const BodySchema = z.object({ source: z.string(), target: z.string() });
+    let body;
+    try {
+      body = BodySchema.parse(await ctx.request.body.json());
+    } catch (err) {
+      ctx.response.status = Status.BadRequest;
+      ctx.response.body = { error: err.toString() };
+      return;
+    }
+    const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
+    const instance = GameInstance.INSTANCES.get(instanceId);
+    if (!instance) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+    if (!instance.info.editMode) {
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+    const sourceRoot = instance.info.worldDirectory;
+    const checkoutProcess = new Deno.Command("git", {
+      args: ["checkout", body.target],
+      cwd: sourceRoot,
+    }).spawn();
+    const checkoutStatus = await checkoutProcess.status;
+    if (!checkoutStatus.success) {
+      ctx.response.status = Status.InternalServerError;
+      ctx.response.body = { error: `Failed to checkout branch ${body.target}` };
+      return;
+    }
+    const mergeProcess = new Deno.Command("git", {
+      args: ["merge", body.source],
+      cwd: sourceRoot,
+    }).spawn();
+    const mergeStatus = await mergeProcess.status;
+    if (!mergeStatus.success) {
+      const conflictProcess = new Deno.Command("git", {
+        args: ["diff", "--name-only", "--diff-filter=U"],
+        cwd: sourceRoot,
+        stdout: "piped",
+        stderr: "piped",
+      }).spawn();
+      const conflictOutput = await conflictProcess.output();
+      const conflictStdout = new TextDecoder().decode(conflictOutput.stdout);
+      const conflictFiles = conflictStdout.split("\n").filter(Boolean);
+      const conflicts = [];
+      for (const file of conflictFiles) {
+        try {
+          const fileContent = await Deno.readTextFile(path.join(sourceRoot, file));
+          conflicts.push({ filePath: file, content: fileContent });
+        } catch (_err) {
+          // Skip
+        }
+      }
+      ctx.response.status = Status.InternalServerError;
+      ctx.response.body = {
+        error: `Merge conflicts detected when merging branch ${body.source} into ${body.target}`,
+        conflicts,
+      };
+      return;
+    }
+    await broadcastWorldUpdate();
+    ctx.response.body = { success: true };
+  });
+  // #endregion
+
+  // #region rebase
+  router.post("/api/v1/source-control/:instance_id/rebase", async ctx => {
+    const BodySchema = z.object({
+      baseBranch: z.string(),
+      remote: z.string().optional().default("origin"),
+    });
+    let body;
+    try {
+      body = BodySchema.parse(await ctx.request.body.json());
+    } catch (err) {
+      ctx.response.status = Status.BadRequest;
+      ctx.response.body = { error: err.toString() };
+      return;
+    }
+
+    const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
+    const instance = GameInstance.INSTANCES.get(instanceId);
+    if (!instance) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+    if (!instance.info.editMode) {
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+    const sourceRoot = instance.info.worldDirectory;
+    const branchToRebaseOnto = `${body.remote}/${body.baseBranch}`;
+
+    const rebaseProcess = new Deno.Command("git", {
+      args: ["rebase", branchToRebaseOnto],
+      cwd: sourceRoot,
+    }).spawn();
+
+    const rebaseStatus = await rebaseProcess.status;
+    if (!rebaseStatus.success) {
+      const conflictProcess = new Deno.Command("git", {
+        args: ["diff", "--name-only", "--diff-filter=U"],
+        cwd: sourceRoot,
+        stdout: "piped",
+        stderr: "piped",
+      }).spawn();
+      const conflictOutput = await conflictProcess.output();
+      const conflictStdout = new TextDecoder().decode(conflictOutput.stdout);
+      const conflictFiles = conflictStdout.split("\n").filter(Boolean);
+      const conflicts = [];
+      for (const file of conflictFiles) {
+        try {
+          const fileContent = await Deno.readTextFile(path.join(sourceRoot, file));
+          conflicts.push({ filePath: file, content: fileContent });
+        } catch (_err) {
+          // Skip
+        }
+      }
+      ctx.response.status = Status.InternalServerError;
+      ctx.response.body = {
+        error: `Rebase conflicts detected when rebasing onto ${branchToRebaseOnto}`,
+        conflicts,
+      };
+      return;
+    }
+    await buildWorld("default", Deno.cwd(), "_dist");
+    ctx.response.body = { success: true };
+  });
+  // #endregion
+
+  // #region resolve merge conflict
+  router.post("/api/v1/source-control/:instance_id/resolve-conflict", async ctx => {
+    const BodySchema = z.object({
+      file: z.string(),
+      content: z.string(),
+    });
+
+    let body;
+    try {
+      body = BodySchema.parse(await ctx.request.body.json());
+    } catch (err) {
+      ctx.response.status = Status.BadRequest;
+      ctx.response.body = { error: err.toString() };
+      return;
+    }
+
+    const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
+
+    const instance = GameInstance.INSTANCES.get(instanceId);
+    if (!instance) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+
+    if (!instance.info.editMode) {
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+
+    const sourceRoot = instance.info.worldDirectory;
+    const filePath = path.join(sourceRoot, body.file);
+
+    try {
+      await Deno.writeTextFile(filePath, body.content);
+
+      const addProcess = new Deno.Command("git", {
+        args: ["add", body.file],
+        cwd: sourceRoot,
+      }).spawn();
+      const addStatus = await addProcess.status;
+      if (!addStatus.success) {
+        throw new Error("Failed to mark file as resolved.");
+      }
+
+      const continueProcess = new Deno.Command("git", {
+        args: ["merge", "--continue"],
+        cwd: sourceRoot,
+      }).spawn();
+      const continueStatus = await continueProcess.status;
+      if (!continueStatus.success) {
+        throw new Error("Failed to complete the merge after resolving conflict.");
+      }
+
+      await broadcastWorldUpdate(body.file);
+
+      ctx.response.body = { success: true, message: `Conflict resolved for ${body.file}` };
+    } catch (error) {
+      throw new JsonAPIError(
+        Status.InternalServerError,
+        `Error resolving conflict: ${error.message}`,
+      );
+    }
+  });
+  // #endregion
+
   // #region history
   router.get("/api/v1/source-control/:instance_id/history", async ctx => {
     const instanceId = ctx.params.instance_id;
@@ -644,303 +749,470 @@ export const serveSourceControlAPI = (router: Router) => {
   });
   // #endregion
 
-  // #region checkout
-  router.post("/api/v1/source-control/:instance_id/checkout", async ctx => {
-    const BodySchema = z.object({
-      branch_name: z.string(),
-    });
-
-    let body;
-    try {
-      body = BodySchema.parse(await ctx.request.body.json());
-    } catch (err) {
-      throw new JsonAPIError(Status.BadRequest, err.toString());
-    }
-
+  // #region status
+  router.get("/api/v1/source-control/:instance_id/status", async ctx => {
     const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
     const instance = GameInstance.INSTANCES.get(instanceId);
-
-    if (instance === undefined) {
-      throw new JsonAPIError(Status.NotFound, "Instance not found.");
-    }
-
-    if (!instance.info.editMode) {
-      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
-    }
-
-    const sourceRoot = instance.info.worldDirectory;
-    const branchName = body.branch_name;
-
-    try {
-      const checkoutProcess = new Deno.Command("git", {
-        args: ["checkout", branchName],
-        cwd: sourceRoot,
-        stdout: "piped",
-        stderr: "piped",
-      });
-      const checkoutResult = await checkoutProcess.output();
-
-      if (checkoutResult.code !== 0) {
-        const errorOutput = new TextDecoder().decode(checkoutResult.stderr);
-        throw new JsonAPIError(
-          Status.InternalServerError,
-          `Failed to checkout branch: ${errorOutput}`,
-        );
-      }
-
-      ctx.response.body = {
-        success: true,
-        message: `Successfully checked out branch '${branchName}'`,
-      };
-      ctx.response.type = "application/json";
-    } catch (error) {
-      console.error(error);
-      throw new JsonAPIError(Status.InternalServerError, error.message);
-    }
-  });
-  // #endregion
-
-  // #region revert
-  router.post("/api/v1/source-control/:instance_id/revert", async ctx => {
-    const BodySchema = z.object({
-      commit_hash: z.string(),
-    });
-
-    let body;
-    try {
-      body = BodySchema.parse(await ctx.request.body.json());
-    } catch (err) {
-      throw new JsonAPIError(Status.BadRequest, err.toString());
-    }
-
-    const instanceId = ctx.params.instance_id;
-    const instance = GameInstance.INSTANCES.get(instanceId);
-    if (instance === undefined) {
-      throw new JsonAPIError(Status.NotFound, "Instance not found.");
-    }
-    if (!instance.info.editMode) {
-      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
-    }
-
-    const sourceRoot = instance.info.worldDirectory;
-
-    const resetProc = new Deno.Command("git", {
-      args: ["reset", "--hard", body.commit_hash],
-      cwd: sourceRoot,
-      stdout: "piped",
-      stderr: "piped",
-    });
-    const resetOutput = await resetProc.output();
-    if (resetOutput.code !== 0) {
-      const errMsg = new TextDecoder().decode(resetOutput.stderr);
-      throw new JsonAPIError(
-        Status.InternalServerError,
-        `Failed to revert to commit ${body.commit_hash}: ${errMsg}`,
-      );
-    }
-
-    const cleanProc = new Deno.Command("git", {
-      args: ["clean", "-fd"],
-      cwd: sourceRoot,
-      stdout: "piped",
-      stderr: "piped",
-    });
-    const cleanOutput = await cleanProc.output();
-    if (cleanOutput.code !== 0) {
-      const errMsg = new TextDecoder().decode(cleanOutput.stderr);
-      throw new JsonAPIError(
-        Status.InternalServerError,
-        `Failed to clean untracked files: ${errMsg}`,
-      );
-    }
-
-    const pushProc = new Deno.Command("git", {
-      args: ["push", "--force"],
-      cwd: sourceRoot,
-      stdout: "piped",
-      stderr: "piped",
-    });
-    const pushOutput = await pushProc.output();
-    if (pushOutput.code !== 0) {
-      const errMsg = new TextDecoder().decode(pushOutput.stderr);
-      throw new JsonAPIError(
-        Status.InternalServerError,
-        `Failed to push changes to remote: ${errMsg}`,
-      );
-    }
-
-    ctx.response.body = {
-      success: true,
-      message: `Hard reverted to commit ${body.commit_hash} and pushed to remote.`,
-    };
-    ctx.response.type = "application/json";
-  });
-  //#endregion
-
-  // #region pull
-  router.post("/api/v1/source-control/:instance_id/pull", async ctx => {
-    const instanceId = ctx.params.instance_id;
-    const instance = GameInstance.INSTANCES.get(instanceId);
-
     if (!instance) {
       throw new JsonAPIError(Status.NotFound, "Instance not found.");
     }
     if (!instance.info.editMode) {
       throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
     }
-
     const sourceRoot = instance.info.worldDirectory;
-
-    async function runGitCommand(args: string[]) {
-      const proc = new Deno.Command("git", {
-        args,
-        cwd: sourceRoot,
-        stdout: "piped",
-        stderr: "piped",
-      });
-      const output = await proc.output();
-      return {
-        code: output.code,
-        stdout: new TextDecoder().decode(output.stdout),
-        stderr: new TextDecoder().decode(output.stderr),
-      };
-    }
-
-    try {
-      const diffIndex = await runGitCommand(["diff", "--cached", "--name-only"]);
-      const hasStagedChanges = diffIndex.stdout.trim().length > 0;
-
-      const diffWorkspace = await runGitCommand(["diff", "--name-only"]);
-      const hasUnstagedChanges = diffWorkspace.stdout.trim().length > 0;
-      const unstagedFiles = diffWorkspace.stdout
-        .split("\n")
-        .map(line => line.trim())
-        .filter(line => line !== "");
-
-      let tempBranch = null;
-
-      if (hasStagedChanges || hasUnstagedChanges) {
-        tempBranch = `merge-conflict-${new Date()
-          .toISOString()
-          .replace(/[^\d]/g, "-")
-          .replace(/-$/, "")}`;
-        await runGitCommand(["checkout", "-b", tempBranch]);
-        await runGitCommand(["add", "--all"]);
-        const commitRes = await runGitCommand([
-          "commit",
-          "-m",
-          `Saved local changes in branch '${tempBranch}'`,
-        ]);
-        if (commitRes.code !== 0) {
-          throw new JsonAPIError(
-            Status.InternalServerError,
-            `Failed to commit local changes: ${commitRes.stderr}`,
-          );
-        }
-
-        // Return to the main branch.
-        const checkoutMain = await runGitCommand(["checkout", "main"]);
-        if (checkoutMain.code !== 0) {
-          throw new JsonAPIError(
-            Status.InternalServerError,
-            `Failed to switch back to main branch: ${checkoutMain.stderr}`,
-          );
-        }
-      }
-
-      // Pull remote changes.
-      const pullRes = await runGitCommand(["pull", "--rebase"]);
-      if (pullRes.code !== 0) {
-        throw new JsonAPIError(
-          Status.InternalServerError,
-          `Failed to pull remote changes: ${pullRes.stderr}`,
-        );
-      }
-
-      // Reapply local changes (if any).
-      if (tempBranch) {
-        const cherryPickRes = await runGitCommand(["cherry-pick", "--no-commit", tempBranch]);
-        if (cherryPickRes.code !== 0) {
-          const conflictText = cherryPickRes.stderr.toLowerCase();
-          if (
-            conflictText.includes("conflict") ||
-            conflictText.includes("merge conflict") ||
-            conflictText.includes("automatic merge failed")
-          ) {
-            // Push conflict branch for manual resolution.
-            const pushConflictBranch = await runGitCommand([
-              "push",
-              "-u",
-              "origin",
-              tempBranch,
-            ]);
-            if (pushConflictBranch.code !== 0) {
-              throw new JsonAPIError(
-                Status.InternalServerError,
-                `Failed to push conflict branch '${tempBranch}': ${pushConflictBranch.stderr}`,
-              );
-            }
-
-            const resetMain = await runGitCommand(["reset", "--hard", "origin/main"]);
-            if (resetMain.code !== 0) {
-              throw new JsonAPIError(
-                Status.InternalServerError,
-                `Failed to reset to main branch: ${resetMain.stderr}`,
-              );
-            }
-
-            const checkoutMain = await runGitCommand(["checkout", "main"]);
-            if (checkoutMain.code !== 0) {
-              throw new JsonAPIError(
-                Status.InternalServerError,
-                `Failed to switch back to the main branch after resetting: ${checkoutMain.stderr}`,
-              );
-            }
-
-            ctx.response.body = {
-              success: false,
-              conflictBranch: tempBranch,
-              message: `Conflicts detected while reapplying local changes. Changes pushed to conflict branch '${tempBranch}'. Please resolve manually.`,
-            };
-            return;
-          }
-
-          throw new JsonAPIError(
-            Status.InternalServerError,
-            `Failed to reapply local changes: ${cherryPickRes.stderr}`,
-          );
-        }
-
-        // Unstage files that were originally unstaged.
-        if (unstagedFiles.length > 0) {
-          const resetRes = await runGitCommand(["reset", "HEAD", "--", ...unstagedFiles]);
-          if (resetRes.code !== 0) {
-            throw new JsonAPIError(
-              Status.InternalServerError,
-              `Failed to unstage files: ${resetRes.stderr}`,
-            );
-          }
-        }
-
-        // Delete the temporary branch.
-        const deleteBranchRes = await runGitCommand(["branch", "-D", tempBranch]);
-        if (deleteBranchRes.code !== 0) {
-          console.warn(
-            `Failed to delete temporary branch '${tempBranch}': ${deleteBranchRes.stderr}`,
-          );
-        }
-      }
-
+    const statusProcess = new Deno.Command("git", {
+      args: ["status", "--porcelain"],
+      cwd: sourceRoot,
+      stdout: "piped",
+      stderr: "piped",
+    });
+    const { code, stdout, stderr } = await statusProcess.output();
+    if (code !== 0) {
+      ctx.response.status = Status.InternalServerError;
       ctx.response.body = {
-        success: true,
-        message: tempBranch
-          ? "Pulled remote changes and reapplied local changes as unstaged where applicable."
-          : "Pulled remote changes successfully. No local changes to reapply.",
+        error: `Failed to fetch status: ${new TextDecoder().decode(stderr)}`,
       };
-    } catch (error) {
-      console.error("=== Caught error in pull handler:", error);
-      throw new JsonAPIError(Status.InternalServerError, error.message);
+      return;
     }
+    const statusOutput = new TextDecoder().decode(stdout);
+    const statusLines = statusOutput.split("\n").filter(Boolean);
+    ctx.response.body = { status: statusLines };
+  });
+  // #endregion
+
+  // #region diff
+  router.get("/api/v1/source-control/:instance_id/diff", async ctx => {
+    const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
+    const instance = GameInstance.INSTANCES.get(instanceId);
+    if (!instance) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+    if (!instance.info.editMode) {
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+    const sourceRoot = instance.info.worldDirectory;
+    const commitHash = ctx.request.url.searchParams.get("commit_hash");
+    const args = commitHash ? ["diff", `${commitHash}^!`] : ["diff", "HEAD"];
+
+    const diffProcess = new Deno.Command("git", {
+      args,
+      cwd: sourceRoot,
+      stdout: "piped",
+      stderr: "piped",
+    }).spawn();
+    const { code, stdout, stderr } = await diffProcess.output();
+    if (code !== 0) {
+      ctx.response.status = Status.InternalServerError;
+      ctx.response.body = {
+        error: `Failed to fetch diff: ${new TextDecoder().decode(stderr)}`,
+      };
+      return;
+    }
+    const diffOutput = new TextDecoder().decode(stdout);
+
+    const diffs: Record<string, string> = {};
+    const diffSections = diffOutput.split(/^diff --git /gm).filter(Boolean);
+    for (const section of diffSections) {
+      const fullSection = "diff --git " + section;
+      const headerLine = fullSection.split("\n")[0];
+      const match = headerLine.match(/a\/(\S+)\s+b\/\S+/);
+      if (match) {
+        const filePath = match[1];
+        diffs[filePath] = fullSection;
+      }
+    }
+    ctx.response.body = { diffs };
+  });
+  // #endregion
+
+  // #region list branches
+  router.get("/api/v1/source-control/:instance_id/branches", async ctx => {
+    const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
+    const instance = GameInstance.INSTANCES.get(instanceId);
+    if (!instance) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+    if (!instance.info.editMode) {
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+    const sourceRoot = instance.info.worldDirectory;
+    const branchProcess = new Deno.Command("git", {
+      args: ["branch", "-a", "--format=%(refname:short)"],
+      cwd: sourceRoot,
+      stdout: "piped",
+      stderr: "piped",
+    });
+    const { code, stdout, stderr } = await branchProcess.output();
+    if (code !== 0) {
+      ctx.response.status = Status.InternalServerError;
+      ctx.response.body = {
+        error: `Failed to list branches: ${new TextDecoder().decode(stderr)}`,
+      };
+      return;
+    }
+    const branchOutput = new TextDecoder().decode(stdout);
+    const branches = branchOutput
+      .split("\n")
+      .filter(Boolean)
+      .map(line => line.trim())
+      .filter(branch => branch !== "origin/HEAD" && !branch.includes("->"));
+    ctx.response.body = { branches };
+  });
+  // #endregion
+
+  // #region create branch
+  router.post("/api/v1/source-control/:instance_id/branch/create", async ctx => {
+    const BodySchema = z.object({
+      branch: z.string(),
+      start_point: z.string().optional(),
+    });
+    let body;
+    try {
+      body = BodySchema.parse(await ctx.request.body.json());
+    } catch (err) {
+      ctx.response.status = Status.BadRequest;
+      ctx.response.body = { error: err.toString() };
+      return;
+    }
+    const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
+    const instance = GameInstance.INSTANCES.get(instanceId);
+    if (!instance) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+    if (!instance.info.editMode) {
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+    const sourceRoot = instance.info.worldDirectory;
+    const args = ["branch", body.branch];
+    if (body.start_point) {
+      args.push(body.start_point);
+    }
+    const branchProcess = new Deno.Command("git", { args, cwd: sourceRoot }).spawn();
+    const branchStatus = await branchProcess.status;
+    if (!branchStatus.success) {
+      ctx.response.status = Status.InternalServerError;
+      ctx.response.body = { error: `Failed to create branch ${body.branch}` };
+      return;
+    }
+    ctx.response.body = { success: true };
+  });
+  // #endregion
+
+  // #region delete branch
+  router.delete("/api/v1/source-control/:instance_id/branch", async ctx => {
+    const BodySchema = z.object({
+      branch: z.string(),
+      force: z.boolean().optional().default(false),
+    });
+    let body;
+    try {
+      body = BodySchema.parse(await ctx.request.body.json());
+    } catch (err) {
+      ctx.response.status = Status.BadRequest;
+      ctx.response.body = { error: err.toString() };
+      return;
+    }
+    const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
+    const instance = GameInstance.INSTANCES.get(instanceId);
+    if (!instance) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+    if (!instance.info.editMode) {
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+    const sourceRoot = instance.info.worldDirectory;
+    const args = ["branch", body.force ? "-D" : "-d", body.branch];
+    const branchProcess = new Deno.Command("git", { args, cwd: sourceRoot }).spawn();
+    const branchStatus = await branchProcess.status;
+    if (!branchStatus.success) {
+      ctx.response.status = Status.InternalServerError;
+      ctx.response.body = { error: `Failed to delete branch ${body.branch}` };
+      return;
+    }
+    ctx.response.body = { success: true };
+  });
+  // #endregion
+
+  // #region list tags
+  router.get("/api/v1/source-control/:instance_id/tags", async ctx => {
+    const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
+    const instance = GameInstance.INSTANCES.get(instanceId);
+    if (!instance) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+    if (!instance.info.editMode) {
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+    const sourceRoot = instance.info.worldDirectory;
+    const tagProcess = new Deno.Command("git", {
+      args: ["tag"],
+      cwd: sourceRoot,
+      stdout: "piped",
+      stderr: "piped",
+    });
+    const { code, stdout, stderr } = await tagProcess.output();
+    if (code !== 0) {
+      ctx.response.status = Status.InternalServerError;
+      ctx.response.body = { error: `Failed to list tags: ${new TextDecoder().decode(stderr)}` };
+      return;
+    }
+    const tagOutput = new TextDecoder().decode(stdout);
+    const tags = tagOutput.split("\n").filter(Boolean);
+    ctx.response.body = { tags };
+  });
+  // #endregion
+
+  // #region create tag
+  router.post("/api/v1/source-control/:instance_id/tag/create", async ctx => {
+    const BodySchema = z.object({
+      tag: z.string(),
+      message: z.string().optional(),
+      commit: z.string().optional(),
+    });
+    let body;
+    try {
+      body = BodySchema.parse(await ctx.request.body.json());
+    } catch (err) {
+      ctx.response.status = Status.BadRequest;
+      ctx.response.body = { error: err.toString() };
+      return;
+    }
+    const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
+    const instance = GameInstance.INSTANCES.get(instanceId);
+    if (!instance) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+    if (!instance.info.editMode) {
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+    const sourceRoot = instance.info.worldDirectory;
+    const args = ["tag"];
+    if (body.message) {
+      args.push("-a", body.tag, "-m", body.message);
+    } else {
+      args.push(body.tag);
+    }
+    if (body.commit) {
+      args.push(body.commit);
+    }
+    const tagProcess = new Deno.Command("git", { args, cwd: sourceRoot }).spawn();
+    const tagStatus = await tagProcess.status;
+    if (!tagStatus.success) {
+      ctx.response.status = Status.InternalServerError;
+      ctx.response.body = { error: `Failed to create tag ${body.tag}` };
+      return;
+    }
+    ctx.response.body = { success: true };
+  });
+  // #endregion
+
+  // #region delete tag
+  router.delete("/api/v1/source-control/:instance_id/tag", async ctx => {
+    const BodySchema = z.object({ tag: z.string() });
+    let body;
+    try {
+      body = BodySchema.parse(await ctx.request.body.json());
+    } catch (err) {
+      ctx.response.status = Status.BadRequest;
+      ctx.response.body = { error: err.toString() };
+      return;
+    }
+    const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
+    const instance = GameInstance.INSTANCES.get(instanceId);
+    if (!instance) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+    if (!instance.info.editMode) {
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+    const sourceRoot = instance.info.worldDirectory;
+    const tagProcess = new Deno.Command("git", {
+      args: ["tag", "-d", body.tag],
+      cwd: sourceRoot,
+    }).spawn();
+    const tagStatus = await tagProcess.status;
+    if (!tagStatus.success) {
+      ctx.response.status = Status.InternalServerError;
+      ctx.response.body = { error: `Failed to delete tag ${body.tag}` };
+      return;
+    }
+    ctx.response.body = { success: true };
+  });
+  // #endregion
+
+  // #region stash save
+  router.post("/api/v1/source-control/:instance_id/stash/save", async ctx => {
+    const BodySchema = z.object({ message: z.string().optional() });
+    let body;
+    try {
+      body = BodySchema.parse(await ctx.request.body.json());
+    } catch (err) {
+      ctx.response.status = Status.BadRequest;
+      ctx.response.body = { error: err.toString() };
+      return;
+    }
+    const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
+    const instance = GameInstance.INSTANCES.get(instanceId);
+    if (!instance) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+    if (!instance.info.editMode) {
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+    const sourceRoot = instance.info.worldDirectory;
+    const args = ["stash", "save"];
+    if (body.message) {
+      args.push(body.message);
+    }
+    const stashProcess = new Deno.Command("git", { args, cwd: sourceRoot }).spawn();
+    const stashStatus = await stashProcess.status;
+    if (!stashStatus.success) {
+      ctx.response.status = Status.InternalServerError;
+      ctx.response.body = { error: "Failed to stash changes" };
+      return;
+    }
+    ctx.response.body = { success: true };
+  });
+  // #endregion
+
+  // #region list stashes
+  router.get("/api/v1/source-control/:instance_id/stash", async ctx => {
+    const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
+    const instance = GameInstance.INSTANCES.get(instanceId);
+    if (!instance) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+    if (!instance.info.editMode) {
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+    const sourceRoot = instance.info.worldDirectory;
+    const stashProcess = new Deno.Command("git", {
+      args: ["stash", "list"],
+      cwd: sourceRoot,
+      stdout: "piped",
+      stderr: "piped",
+    });
+    const { code, stdout, stderr } = await stashProcess.output();
+    if (code !== 0) {
+      ctx.response.status = Status.InternalServerError;
+      ctx.response.body = {
+        error: `Failed to list stashes: ${new TextDecoder().decode(stderr)}`,
+      };
+      return;
+    }
+    const stashOutput = new TextDecoder().decode(stdout);
+    const stashes = stashOutput.split("\n").filter(Boolean);
+    ctx.response.body = { stashes };
+  });
+  // #endregion
+
+  // #region stash pop
+  router.post("/api/v1/source-control/:instance_id/stash/pop", async ctx => {
+    const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
+    const instance = GameInstance.INSTANCES.get(instanceId);
+    if (!instance) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+    if (!instance.info.editMode) {
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+    const sourceRoot = instance.info.worldDirectory;
+    const stashProcess = new Deno.Command("git", {
+      args: ["stash", "pop"],
+      cwd: sourceRoot,
+      stdout: "piped",
+      stderr: "piped",
+    });
+    const { code, stdout, stderr } = await stashProcess.output();
+    if (code !== 0) {
+      ctx.response.status = Status.InternalServerError;
+      ctx.response.body = { error: `Failed to pop stash: ${new TextDecoder().decode(stderr)}` };
+      return;
+    }
+    ctx.response.body = { success: true, output: new TextDecoder().decode(stdout) };
+  });
+  // #endregion
+
+  // #region reset
+  router.post("/api/v1/source-control/:instance_id/reset", async ctx => {
+    console.log("recieved reset");
+    const BodySchema = z.object({
+      mode: z.enum(["soft", "mixed", "hard"]).default("mixed"),
+      commit: z.string(),
+    });
+    let body;
+    try {
+      body = BodySchema.parse(await ctx.request.body.json());
+    } catch (err) {
+      ctx.response.status = Status.BadRequest;
+      ctx.response.body = { error: err.toString() };
+      return;
+    }
+    const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      console.log("no id");
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
+    const instance = GameInstance.INSTANCES.get(instanceId);
+    if (!instance) {
+      console.log("no found");
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+    if (!instance.info.editMode) {
+      console.log("no edit mode");
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+    const sourceRoot = instance.info.worldDirectory;
+    const args = ["reset", `--${body.mode}`, body.commit];
+    const resetProcess = new Deno.Command("git", {
+      args,
+      cwd: sourceRoot,
+      stdout: "piped",
+      stderr: "piped",
+    });
+    console.log("build cmd");
+    const { code, stdout, stderr } = await resetProcess.output();
+    if (code !== 0) {
+      console.log("failed ", stdout, stderr);
+      ctx.response.status = Status.InternalServerError;
+      ctx.response.body = { error: `Failed to reset: ${new TextDecoder().decode(stderr)}` };
+      return;
+    }
+    await broadcastWorldUpdate();
+    ctx.response.body = { success: true, output: new TextDecoder().decode(stdout) };
   });
   // #endregion
 };
