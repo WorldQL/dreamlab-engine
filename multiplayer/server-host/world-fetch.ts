@@ -17,7 +17,7 @@ export const fetchWorld = async (instance: GameInstance) => {
 
     const distributionUrl = CONFIG.DISTRIBUTION_PUBLIC_URL.endsWith("/git")
       ? CONFIG.DISTRIBUTION_PUBLIC_URL
-      : `${CONFIG.DISTRIBUTION_PUBLIC_URL}/git`;
+      : `${CONFIG.DISTRIBUTION_PUBLIC_URL}git`;
 
     const cloneProcess = new Deno.Command("git", {
       args: ["clone", `${distributionUrl}/${world}.git`, dir],
