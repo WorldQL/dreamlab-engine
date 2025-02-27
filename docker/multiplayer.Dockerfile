@@ -7,7 +7,7 @@ COPY --chown=deno ./scene-graph /app/scene-graph
 COPY --chown=deno ./ui /app/ui
 COPY --chown=deno ./build-system /app/build-system
 COPY --chown=deno ./proto /app/proto
-COPY --chown=deno ./editor/common /app/editor/common
+COPY --chown=deno ./editor /app/editor
 COPY --chown=deno ./engine /app/engine
 COPY --chown=deno ./multiplayer /app/multiplayer
 RUN sh -c "rm /app/**/deno.lock"
