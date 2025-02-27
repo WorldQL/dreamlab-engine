@@ -1,9 +1,6 @@
 # syntax=docker/dockerfile:1
 FROM denoland/deno:alpine AS repo
 
-# Install git in the build stage
-RUN apk add --no-cache git
-
 WORKDIR /app
 COPY --chown=deno ./util /app/util
 COPY --chown=deno ./scene-graph /app/scene-graph
@@ -16,6 +13,14 @@ RUN sh -c "rm /app/**/deno.lock"
 
 FROM denoland/deno:alpine
 WORKDIR /app
+
+# Switch to root to install git in the final stage
+USER root
+RUN apk add --no-cache git
+
+# Switch back to the non-root deno user
+USER deno
+
 USER deno
 
 COPY --from=repo --chown=deno /app/ /app/
