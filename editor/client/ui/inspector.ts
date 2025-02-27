@@ -21,12 +21,8 @@ export interface InspectorUIWidget {
 }
 
 const lastCodeEditorUpdates: Record<string, number> = {};
-export interface NewRecommendedActions {
-  path: string;
-}
-function sendNewRecommendedAction(payload: NewRecommendedActions) {
-  const event = new CustomEvent("newRecommendedActions", { detail: payload });
-  document.dispatchEvent(event);
+export class NewRecommendedActions {
+  constructor(public readonly path: string) {}
 }
 
 export class InspectorUI {
@@ -76,8 +72,9 @@ export class InspectorUI {
     setupKeyboardShortcuts(this.game, this.selectedEntity, editMode);
 
     conn.registerPacketHandler("ScriptEdited", async packet => {
-      if (packet.script_location.startsWith("instructions/") && packet.isFromFileSystem) {
-        sendNewRecommendedAction({ path: packet.script_location });
+
+      if (packet.script_location.startsWith('instructions/') && packet.isFromFileSystem) {
+        game.fire(NewRecommendedActions, packet.script_location)
       }
 
       if (packet.behavior_script_id) {

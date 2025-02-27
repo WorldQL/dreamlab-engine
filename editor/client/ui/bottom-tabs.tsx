@@ -83,12 +83,11 @@ export class BottomTabs implements InspectorUIWidget {
       </div>
     );
 
-    document.addEventListener("newRecommendedActions", ((
-      e: CustomEvent<NewRecommendedActions>,
-    ) => {
-      console.log("Received:", e.detail.path);
-      recommendedActionsTag.classList.remove('hidden');
-    }) as EventListener);
+    // @ts-expect-error "game" Element implicitly has an 'any' type because type 'typeof globalThis' has no index signature.
+    (globalThis.game as ClientGame).on(NewRecommendedActions, e => {
+      console.log("Received:", e.path);
+      recommendedActionsTag.classList.remove("hidden");
+    });
 
     const tabBar = elem("div", { className: "bottom-tabs-bar" }, [
       assistantTab,
