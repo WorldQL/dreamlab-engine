@@ -656,6 +656,111 @@ export const serveSourceControlAPI = (router: Router) => {
   });
   // #endregion
 
+  // #region rebase continue
+  router.post("/api/v1/source-control/:instance_id/rebase/continue", async ctx => {
+    const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
+    const instance = GameInstance.INSTANCES.get(instanceId);
+    if (!instance) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+    if (!instance.info.editMode) {
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+    const sourceRoot = instance.info.worldDirectory;
+
+    const continueProcess = new Deno.Command("git", {
+      args: ["rebase", "--continue"],
+      cwd: sourceRoot,
+      stdout: "piped",
+      stderr: "piped",
+    }).spawn();
+
+    const { code, stderr } = await continueProcess.output();
+    if (code !== 0) {
+      const errorMsg = new TextDecoder().decode(stderr).trim();
+      ctx.response.status = Status.InternalServerError;
+      ctx.response.body = { error: `Failed to continue rebase: ${errorMsg}` };
+      return;
+    }
+
+    await broadcastWorldUpdate();
+    ctx.response.body = { success: true, message: "Rebase continued successfully." };
+  });
+  // #endregion
+
+  // #region rebase abort
+  router.post("/api/v1/source-control/:instance_id/rebase/abort", async ctx => {
+    const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
+    const instance = GameInstance.INSTANCES.get(instanceId);
+    if (!instance) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+    if (!instance.info.editMode) {
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+    const sourceRoot = instance.info.worldDirectory;
+
+    const abortProcess = new Deno.Command("git", {
+      args: ["rebase", "--abort"],
+      cwd: sourceRoot,
+      stdout: "piped",
+      stderr: "piped",
+    }).spawn();
+
+    const { code, stderr } = await abortProcess.output();
+    if (code !== 0) {
+      const errorMsg = new TextDecoder().decode(stderr).trim();
+      ctx.response.status = Status.InternalServerError;
+      ctx.response.body = { error: `Failed to abort rebase: ${errorMsg}` };
+      return;
+    }
+
+    await broadcastWorldUpdate();
+    ctx.response.body = { success: true, message: "Rebase aborted successfully." };
+  });
+  // #endregion
+
+  // #region rebase skip
+  router.post("/api/v1/source-control/:instance_id/rebase/skip", async ctx => {
+    const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
+    const instance = GameInstance.INSTANCES.get(instanceId);
+    if (!instance) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+    if (!instance.info.editMode) {
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+    const sourceRoot = instance.info.worldDirectory;
+
+    const skipProcess = new Deno.Command("git", {
+      args: ["rebase", "--skip"],
+      cwd: sourceRoot,
+      stdout: "piped",
+      stderr: "piped",
+    }).spawn();
+
+    const { code, stderr } = await skipProcess.output();
+    if (code !== 0) {
+      const errorMsg = new TextDecoder().decode(stderr).trim();
+      ctx.response.status = Status.InternalServerError;
+      ctx.response.body = { error: `Failed to skip rebase commit: ${errorMsg}` };
+      return;
+    }
+
+    await broadcastWorldUpdate();
+    ctx.response.body = { success: true, message: "Rebase commit skipped successfully." };
+  });
+  // #endregion
+
   // #region conflicts
   router.get("/api/v1/source-control/:instance_id/conflicts", async ctx => {
     const instanceId = ctx.params.instance_id;
@@ -670,6 +775,32 @@ export const serveSourceControlAPI = (router: Router) => {
       throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
     }
     const sourceRoot = instance.info.worldDirectory;
+
+    let rebaseStatus = null;
+    try {
+      const rebaseApplyPath = path.join(sourceRoot, ".git", "rebase-apply");
+      await Deno.stat(rebaseApplyPath);
+      rebaseStatus = {
+        inProgress: true,
+        type: "rebase-apply",
+        message:
+          "A rebase is in progress. Please use 'rebase/continue', 'rebase/abort', or 'rebase/skip'.",
+      };
+    } catch (_err) {
+      // Not found, check for rebase-merge
+      try {
+        const rebaseMergePath = path.join(sourceRoot, ".git", "rebase-merge");
+        await Deno.stat(rebaseMergePath);
+        rebaseStatus = {
+          inProgress: true,
+          type: "rebase-merge",
+          message:
+            "A rebase is in progress. Please use 'rebase/continue', 'rebase/abort', or 'rebase/skip'.",
+        };
+      } catch (_err2) {
+        // No rebase directory exists, so no active rebase.
+      }
+    }
 
     const conflictProcess = new Deno.Command("git", {
       args: ["diff", "--name-only", "--diff-filter=U"],
@@ -694,6 +825,7 @@ export const serveSourceControlAPI = (router: Router) => {
     ctx.response.body = {
       conflicted: conflictFiles.length > 0,
       conflicts,
+      rebaseStatus,
     };
   });
   // #endregion
@@ -740,21 +872,15 @@ export const serveSourceControlAPI = (router: Router) => {
       }).spawn();
       const addStatus = await addProcess.status;
       if (!addStatus.success) {
-        throw new Error("Failed to mark file as resolved.");
+        throw new Error("Failed to stage file as resolved.");
       }
 
-      const continueProcess = new Deno.Command("git", {
-        args: ["merge", "--continue"],
-        cwd: sourceRoot,
-      }).spawn();
-      const continueStatus = await continueProcess.status;
-      if (!continueStatus.success) {
-        throw new Error("Failed to complete the merge after resolving conflict.");
-      }
+      await broadcastWorldUpdate();
 
-      await broadcastWorldUpdate(body.file);
-
-      ctx.response.body = { success: true, message: `Conflict resolved for ${body.file}` };
+      ctx.response.body = {
+        success: true,
+        message: `Conflict resolved for ${body.file}. Please use the merge/continue endpoint to finalize the merge.`,
+      };
     } catch (error) {
       throw new JsonAPIError(
         Status.InternalServerError,
@@ -1350,7 +1476,6 @@ export const serveSourceControlAPI = (router: Router) => {
 
   // #region reset
   router.post("/api/v1/source-control/:instance_id/reset", async ctx => {
-    console.log("recieved reset");
     const BodySchema = z.object({
       mode: z.enum(["soft", "mixed", "hard"]).default("mixed"),
       commit: z.string(),
@@ -1365,16 +1490,13 @@ export const serveSourceControlAPI = (router: Router) => {
     }
     const instanceId = ctx.params.instance_id;
     if (!instanceId) {
-      console.log("no id");
       throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
     }
     const instance = GameInstance.INSTANCES.get(instanceId);
     if (!instance) {
-      console.log("no found");
       throw new JsonAPIError(Status.NotFound, "Instance not found.");
     }
     if (!instance.info.editMode) {
-      console.log("no edit mode");
       throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
     }
     const sourceRoot = instance.info.worldDirectory;
@@ -1385,10 +1507,8 @@ export const serveSourceControlAPI = (router: Router) => {
       stdout: "piped",
       stderr: "piped",
     });
-    console.log("build cmd");
     const { code, stdout, stderr } = await resetProcess.output();
     if (code !== 0) {
-      console.log("failed ", stdout, stderr);
       ctx.response.status = Status.InternalServerError;
       ctx.response.body = { error: `Failed to reset: ${new TextDecoder().decode(stderr)}` };
       return;
