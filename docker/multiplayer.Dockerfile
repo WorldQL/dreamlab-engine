@@ -14,12 +14,16 @@ RUN sh -c "rm /app/**/deno.lock"
 FROM denoland/deno:debian
 WORKDIR /app
 
-# Switch to root to install git in the final stage
+# Switch to root to install git and set up directories
 USER root
 RUN apt-get update && apt-get install -y git && apt-get clean && rm -rf /var/lib/apt/lists/*
+# Ensure the Deno cache directory is created and writable
+RUN mkdir -p /home/deno/.cache/deno && chown -R deno:deno /home/deno/.cache
 
 # Switch back to the non-root deno user
 USER deno
+# Configure Git to trust all directories to bypass the dubious ownership check
+RUN git config --global --add safe.directory '*'
 
 COPY --from=repo --chown=deno /app/ /app/
 WORKDIR /app/multiplayer
