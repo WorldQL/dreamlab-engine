@@ -50,7 +50,7 @@ const connectUrl = urlToWebSocket(connectionDetails.serverUrl);
 connectUrl.pathname = `/api/v1/connect/${connectionDetails.instanceId}`;
 connectUrl.searchParams.set("token", info.token);
 connectUrl.searchParams.set("player_id", info.playerId);
-connectUrl.searchParams.set("nickname", info.nickname);
+connectUrl.searchParams.set("nickname", info.nickname === "" ? nickname : info.nickname);
 
 // #region Handle dropping files to upload directly into /assets
 export async function createFile(fileName: string, file: File | string, no_restart = false) {
