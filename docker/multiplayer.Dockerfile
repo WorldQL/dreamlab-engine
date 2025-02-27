@@ -1,5 +1,9 @@
 # syntax=docker/dockerfile:1
 FROM denoland/deno:alpine AS repo
+
+# Install git in the build stage
+RUN apk add --no-cache git
+
 WORKDIR /app
 COPY --chown=deno ./util /app/util
 COPY --chown=deno ./scene-graph /app/scene-graph
