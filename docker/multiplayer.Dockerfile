@@ -19,13 +19,11 @@ USER root
 RUN apt-get update && apt-get install -y git && apt-get clean && rm -rf /var/lib/apt/lists/*
 # Ensure the Deno cache directory is created and writable
 RUN mkdir -p /home/deno/.cache/deno && chown -R deno:deno /home/deno/.cache
-# Ensure the Git config file is created and writable by deno
-RUN touch /home/deno/.gitconfig && chown deno:deno /home/deno/.gitconfig
+# Configure Git to trust all directories to bypass the dubious ownership check
+RUN git config --global --add safe.directory '*'
 
 # Switch back to the non-root deno user
 USER deno
-# Configure Git to trust all directories to bypass the dubious ownership check
-RUN git config --global --add safe.directory '*'
 
 COPY --from=repo --chown=deno /app/ /app/
 WORKDIR /app/multiplayer
