@@ -16,7 +16,7 @@ WORKDIR /app
 
 # Switch to root to install git in the final stage
 USER root
-RUN apt-get update && apt-get install -y git
+RUN apt-get update && apt-get install -y git && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Switch back to the non-root deno user
 USER deno
