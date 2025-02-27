@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM denoland/deno:alpine AS repo
+FROM denoland/deno:debian AS repo
 
 WORKDIR /app
 COPY --chown=deno ./util /app/util
@@ -11,12 +11,12 @@ COPY --chown=deno ./engine /app/engine
 COPY --chown=deno ./multiplayer /app/multiplayer
 RUN sh -c "rm /app/**/deno.lock"
 
-FROM denoland/deno:alpine
+FROM denoland/deno:debian
 WORKDIR /app
 
 # Switch to root to install git in the final stage
 USER root
-RUN apk add --no-cache git
+RUN apt-get update && apt-get install -y git && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Switch back to the non-root deno user
 USER deno
