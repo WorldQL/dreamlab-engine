@@ -21,8 +21,6 @@ RUN apk add --no-cache git
 # Switch back to the non-root deno user
 USER deno
 
-USER deno
-
 COPY --from=repo --chown=deno /app/ /app/
 WORKDIR /app/multiplayer
 RUN deno install --entrypoint server-host/main.ts && deno install --entrypoint server-runtime/main.ts
