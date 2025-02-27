@@ -83,8 +83,8 @@ export class BottomTabs implements InspectorUIWidget {
       </div>
     );
 
-    // @ts-expect-error "game" Element implicitly has an 'any' type because type 'typeof globalThis' has no index signature.
-    (globalThis.game as ClientGame).on(NewRecommendedActions, e => {
+    // @ts-expect-error Global
+    (game as ClientGame).on(NewRecommendedActions, e => {
       console.log("Received:", e.path);
       recommendedActionsTag.classList.remove("hidden");
     });
