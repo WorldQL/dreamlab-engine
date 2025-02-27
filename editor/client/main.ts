@@ -31,7 +31,7 @@ import { icon, Loader } from "./_icons.ts";
 import { stats } from "./_stats.ts";
 import { CameraPanBehavior } from "./panning-and-selection.ts";
 import { AppMenu } from "./ui/app-menu.ts";
-import { BottomTabs } from "./ui/bottom-tabs.ts";
+import { BottomTabs } from "./ui/bottom-tabs.tsx";
 import { InspectorUI } from "./ui/inspector.ts";
 import { UndoRedoManager } from "./undo-redo.ts";
 

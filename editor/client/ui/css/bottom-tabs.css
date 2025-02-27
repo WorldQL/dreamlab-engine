@@ -48,3 +48,32 @@
     min-height: 0;
   }
 }
+
+.pulse-tab {
+  /* Base styles for your tab */
+  background-color: rgb(37, 42, 54);
+  color: #fff;
+  
+  /* The magic happens here */
+  animation: pulseAnimation 1.5s infinite ease-in-out;
+}
+
+@keyframes pulseAnimation {
+  0% {
+    background-color: rgb(37, 42, 54);
+    transform: scale(1);
+  }
+  50% {
+    background-color: rgb(42, 107, 145); /* A bright blue */
+    transform: scale(1.03);
+  }
+  100% {
+    background-color: rgb(37, 42, 54);
+    transform: scale(1);
+  }
+}
+
+
+.hidden {
+  display: none;
+}

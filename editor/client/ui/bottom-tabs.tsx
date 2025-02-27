@@ -1,5 +1,5 @@
 import { element as elem } from "@dreamlab/ui";
-import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
+import { InspectorUI, InspectorUIWidget, NewRecommendedActions } from "./inspector.ts";
 import { LogViewer } from "./log-viewer.ts";
 import { PrefabViewer } from "./prefab-viewer.ts";
 import { Terminal, Box, icon, Bot, Wand } from "../_icons.ts";
@@ -64,20 +64,37 @@ export class BottomTabs implements InspectorUIWidget {
     assistantTab.setAttribute("data-active", "");
     assistantTab.append(icon(Bot), elem("span", {}, ["Assistant"]));
 
-    const externalTab = elem("div", { className: "bottom-tab" });
-    externalTab.setAttribute("data-tab-id", "external");
-    externalTab.append(icon(Wand), elem("span", {}, ["Generate Asset"]));
-    externalTab.addEventListener("click", () => {
-      if (ui.game.instanceId === NIL_UUID)
-        window.open("https://app.dreamlab.gg/create/asset", "_blank", "noopener,noreferrer");
-      else window.parent.postMessage({ type: "SHOW_ASSET_CREATOR" }, "*");
-    });
+    // const externalTab = elem("div", { className: "bottom-tab" });
+    // externalTab.setAttribute("data-tab-id", "external");
+    // externalTab.append(icon(Wand), elem("span", {}, ["Generate Asset"]));
+    // externalTab.addEventListener("click", () => {
+    //   if (ui.game.instanceId === NIL_UUID)
+    //     window.open("https://app.dreamlab.gg/create/asset", "_blank", "noopener,noreferrer");
+    //   else window.parent.postMessage({ type: "SHOW_ASSET_CREATOR" }, "*");
+    // });
+
+    const recommendedActionsTag = (
+      <div
+        className="bottom-tab pulse-tab hidden"
+        id="recommendedActionsTab"
+        data-tab-id="recommendedActions"
+      >
+        {icon(Wand)} Recommended Actions from AI
+      </div>
+    );
+
+    document.addEventListener("newRecommendedActions", ((
+      e: CustomEvent<NewRecommendedActions>,
+    ) => {
+      console.log("Received:", e.detail.path);
+      recommendedActionsTag.classList.remove('hidden');
+    }) as EventListener);
 
     const tabBar = elem("div", { className: "bottom-tabs-bar" }, [
       assistantTab,
       prefabsTab,
       logsTab,
-      externalTab,
+      recommendedActionsTag,
     ]);
 
     logsTab.addEventListener("click", () => {

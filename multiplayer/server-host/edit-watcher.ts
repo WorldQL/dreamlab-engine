@@ -6,7 +6,14 @@ import { buildWorld } from "./world-build.ts";
 export async function watchForEditChanges(session: GameSession, subdir: string) {
   const instance = session.parent;
 
-  const watcher = Deno.watchFs([`${instance.info.worldDirectory}/src`], { recursive: true });
+  ["src", "instructions"].forEach(dir =>
+    Deno.mkdirSync(`${instance.info.worldDirectory}/${dir}`, { recursive: true }),
+  );
+
+  const watcher = Deno.watchFs(
+    [`${instance.info.worldDirectory}/src`, `${instance.info.worldDirectory}/instructions`],
+    { recursive: true },
+  );
   session.editWatcher = watcher;
 
   const touchedPaths = new Set<string>();
