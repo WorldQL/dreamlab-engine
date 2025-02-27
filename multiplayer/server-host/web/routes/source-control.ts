@@ -494,6 +494,7 @@ export const serveSourceControlAPI = (router: Router) => {
       throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
     }
     const sourceRoot = instance.info.worldDirectory;
+
     const checkoutProcess = new Deno.Command("git", {
       args: ["checkout", body.target],
       cwd: sourceRoot,
@@ -504,11 +505,13 @@ export const serveSourceControlAPI = (router: Router) => {
       ctx.response.body = { error: `Failed to checkout branch ${body.target}` };
       return;
     }
+
     const mergeProcess = new Deno.Command("git", {
       args: ["merge", body.source],
       cwd: sourceRoot,
     }).spawn();
     const mergeStatus = await mergeProcess.status;
+
     if (!mergeStatus.success) {
       const conflictProcess = new Deno.Command("git", {
         args: ["diff", "--name-only", "--diff-filter=U"],
@@ -517,27 +520,74 @@ export const serveSourceControlAPI = (router: Router) => {
         stderr: "piped",
       }).spawn();
       const conflictOutput = await conflictProcess.output();
-      const conflictStdout = new TextDecoder().decode(conflictOutput.stdout);
+      const conflictStdout = new TextDecoder().decode(conflictOutput.stdout).trim();
       const conflictFiles = conflictStdout.split("\n").filter(Boolean);
-      const conflicts = [];
+      const conflicts: { filePath: string; content: string }[] = [];
       for (const file of conflictFiles) {
         try {
-          const fileContent = await Deno.readTextFile(path.join(sourceRoot, file));
-          conflicts.push({ filePath: file, content: fileContent });
-        } catch (_err) {
+          const content = await Deno.readTextFile(path.join(sourceRoot, file));
+          conflicts.push({ filePath: file, content });
+        } catch {
           // Skip
         }
       }
-      ctx.response.status = Status.InternalServerError;
+      ctx.response.status = Status.Conflict;
       ctx.response.body = {
-        error: `Merge conflicts detected when merging branch ${body.source} into ${body.target}`,
+        error: `Merge conflicts detected when merging branch ${body.source} into ${body.target}.`,
         conflicts,
       };
       return;
     }
+
     await broadcastWorldUpdate();
     ctx.response.body = { success: true };
   });
+
+  router.post("/api/v1/source-control/:instance_id/merge/continue", async ctx => {
+    const BodySchema = z.object({
+      commit_message: z.string().optional(),
+    });
+    let body;
+    try {
+      body = BodySchema.parse(await ctx.request.body.json());
+    } catch (err) {
+      ctx.response.status = Status.BadRequest;
+      ctx.response.body = { error: err.toString() };
+      return;
+    }
+    const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
+    const instance = GameInstance.INSTANCES.get(instanceId);
+    if (!instance) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+    if (!instance.info.editMode) {
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+    const sourceRoot = instance.info.worldDirectory;
+    const commitMsg = body.commit_message || "Merge Conflict Fixed";
+    const args = ["commit", "-m", commitMsg];
+
+    const continueProcess = new Deno.Command("git", {
+      args,
+      cwd: sourceRoot,
+      stdout: "piped",
+      stderr: "piped",
+    }).spawn();
+    const { code, stderr } = await continueProcess.output();
+    if (code !== 0) {
+      const errorMsg = new TextDecoder().decode(stderr).trim();
+      ctx.response.status = Status.InternalServerError;
+      ctx.response.body = { error: `Failed to finalize merge: ${errorMsg}` };
+      return;
+    }
+
+    await broadcastWorldUpdate();
+    ctx.response.body = { success: true, message: "Merge finalized successfully." };
+  });
+
   // #endregion
 
   // #region rebase
@@ -606,6 +656,48 @@ export const serveSourceControlAPI = (router: Router) => {
   });
   // #endregion
 
+  // #region conflicts
+  router.get("/api/v1/source-control/:instance_id/conflicts", async ctx => {
+    const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
+    const instance = GameInstance.INSTANCES.get(instanceId);
+    if (!instance) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+    if (!instance.info.editMode) {
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+    const sourceRoot = instance.info.worldDirectory;
+
+    const conflictProcess = new Deno.Command("git", {
+      args: ["diff", "--name-only", "--diff-filter=U"],
+      cwd: sourceRoot,
+      stdout: "piped",
+      stderr: "piped",
+    }).spawn();
+    const conflictOutput = await conflictProcess.output();
+    const conflictStdout = new TextDecoder().decode(conflictOutput.stdout).trim();
+    const conflictFiles = conflictStdout ? conflictStdout.split("\n").filter(Boolean) : [];
+
+    const conflicts = [];
+    for (const file of conflictFiles) {
+      try {
+        const content = await Deno.readTextFile(path.join(sourceRoot, file));
+        conflicts.push({ filePath: file, content });
+      } catch (err) {
+        console.error(`Could not read conflict file ${file}:`, err);
+      }
+    }
+
+    ctx.response.body = {
+      conflicted: conflictFiles.length > 0,
+      conflicts,
+    };
+  });
+  // #endregion
+
   // #region resolve merge conflict
   router.post("/api/v1/source-control/:instance_id/resolve-conflict", async ctx => {
     const BodySchema = z.object({
@@ -669,6 +761,96 @@ export const serveSourceControlAPI = (router: Router) => {
         `Error resolving conflict: ${error.message}`,
       );
     }
+  });
+  // #endregion
+
+  // #region resolve accept
+  router.post("/api/v1/source-control/:instance_id/resolve-conflict/accept", async ctx => {
+    const BodySchema = z.object({
+      file: z.string(),
+      strategy: z.enum(["ours", "theirs"]),
+    });
+    let body;
+    try {
+      body = BodySchema.parse(await ctx.request.body.json());
+    } catch (err) {
+      ctx.response.status = Status.BadRequest;
+      ctx.response.body = { error: err.toString() };
+      return;
+    }
+
+    const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
+
+    const instance = GameInstance.INSTANCES.get(instanceId);
+    if (!instance) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+    if (!instance.info.editMode) {
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+
+    const sourceRoot = instance.info.worldDirectory;
+    const checkoutProcess = new Deno.Command("git", {
+      args: ["checkout", `--${body.strategy}`, "--", body.file],
+      cwd: sourceRoot,
+    }).spawn();
+    const checkoutStatus = await checkoutProcess.status;
+    if (!checkoutStatus.success) {
+      ctx.response.status = Status.InternalServerError;
+      ctx.response.body = { error: `Failed to accept ${body.strategy} for ${body.file}` };
+      return;
+    }
+
+    const addProcess = new Deno.Command("git", {
+      args: ["add", body.file],
+      cwd: sourceRoot,
+    }).spawn();
+    const addStatus = await addProcess.status;
+    if (!addStatus.success) {
+      ctx.response.status = Status.InternalServerError;
+      ctx.response.body = { error: "Failed to stage the file after accepting resolution" };
+      return;
+    }
+    await broadcastWorldUpdate();
+
+    ctx.response.body = {
+      success: true,
+      message: `Accepted ${body.strategy} for ${body.file}`,
+    };
+  });
+  // #endregion
+
+  // #region merge abort
+  router.post("/api/v1/source-control/:instance_id/merge/abort", async ctx => {
+    const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
+    const instance = GameInstance.INSTANCES.get(instanceId);
+    if (!instance) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+    if (!instance.info.editMode) {
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+    const sourceRoot = instance.info.worldDirectory;
+
+    const abortProcess = new Deno.Command("git", {
+      args: ["merge", "--abort"],
+      cwd: sourceRoot,
+    }).spawn();
+    const abortStatus = await abortProcess.status;
+    if (!abortStatus.success) {
+      ctx.response.status = Status.InternalServerError;
+      ctx.response.body = { error: "Failed to abort merge" };
+      return;
+    }
+
+    await broadcastWorldUpdate();
+    ctx.response.body = { success: true, message: "Merge aborted successfully." };
   });
   // #endregion
 
