@@ -7,7 +7,7 @@ import { createInstance, GameInstance } from "./instance.ts";
 import { report } from "./metrics.ts";
 import { setupWeb } from "./web/setup.ts";
 
-console.log("Booting dreamlab-engine/multiplayer, version after 2025-02-26")
+console.log("Booting dreamlab-engine/multiplayer, version after 2025-02-26");
 
 addEventListener("unhandledrejection", event => {
   event.preventDefault();
