@@ -77,7 +77,7 @@ export class InspectorUI {
       console.log(packet);
 
       if (packet.script_location.startsWith('instructions/') && packet.isFromFileSystem) {
-        console.log('hi')
+        game.fire(NewRecommendedActions, packet.script_location, undefined)
         const instructions = await getFileContent(packet.script_location);
         const plan = await textToPlan(instructions);
         game.fire(NewRecommendedActions, packet.script_location, JSON.parse(plan))
