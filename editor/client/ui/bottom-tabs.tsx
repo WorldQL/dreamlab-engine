@@ -6,6 +6,7 @@ import { Terminal, Box, icon, Bot, Wand } from "../_icons.ts";
 import { ClientGame } from "@dreamlab/engine";
 import { Assistant } from "./assistant/assistant.tsx";
 import { NIL_UUID } from "jsr:@std/uuid@1/constants";
+import { AISuggestionsPopup } from "./ai-suggestions-popup.tsx";
 
 export class BottomTabs implements InspectorUIWidget {
   #container: HTMLElement;
@@ -51,6 +52,9 @@ export class BottomTabs implements InspectorUIWidget {
       this.#assistantContent.style.display = tabId === "assistant" ? "flex" : "none";
     };
 
+    const aiSuggestionsPopup = new AISuggestionsPopup();
+    aiSuggestionsPopup.mount(this.#container, false);
+
     const logsTab = elem("div", { className: "bottom-tab" });
     logsTab.setAttribute("data-tab-id", "logs");
     logsTab.append(icon(Terminal), elem("span", {}, ["Logs"]));
@@ -73,7 +77,7 @@ export class BottomTabs implements InspectorUIWidget {
     //   else window.parent.postMessage({ type: "SHOW_ASSET_CREATOR" }, "*");
     // });
 
-    const recommendedActionsTag = (
+    const recommendedActionsTab = (
       <div
         className="bottom-tab pulse-tab hidden"
         id="recommendedActionsTab"
@@ -83,17 +87,26 @@ export class BottomTabs implements InspectorUIWidget {
       </div>
     );
 
+    recommendedActionsTab.addEventListener("click", e => {
+      console.log("hi");
+
+      aiSuggestionsPopup.show();
+      e.preventDefault();
+      e.stopPropagation();
+    });
+
     // @ts-expect-error Global
     (game as ClientGame).on(NewRecommendedActions, e => {
       console.log("Received:", e.path);
-      recommendedActionsTag.classList.remove("hidden");
+      aiSuggestionsPopup.setPlan(e.plan)
+      recommendedActionsTab.classList.remove("hidden");
     });
 
     const tabBar = elem("div", { className: "bottom-tabs-bar" }, [
       assistantTab,
       prefabsTab,
       logsTab,
-      recommendedActionsTag,
+      recommendedActionsTab,
     ]);
 
     logsTab.addEventListener("click", () => {

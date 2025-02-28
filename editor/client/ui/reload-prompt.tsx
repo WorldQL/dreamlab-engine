@@ -17,7 +17,6 @@ export class ReloadPrompt implements InspectorUIWidget {
   ]);
   #reload = new Button({ id: "reload", type: "button" }, ["Reload Page"]);
 
-  // TODO: less programmer wording
   #dialog = (
     <dialog id="reload-prompt">
       <h1>Connecting...</h1>

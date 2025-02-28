@@ -218,6 +218,44 @@ function pruneEmptyObjectsAndArrays(obj: unknown): unknown {
   return obj;
 }
 
+export async function textToPlan(prompt: string) {
+  const url = new URL(window.location.href);
+  let chatURL =
+    url.hostname === "editor.dreamlab.gg"
+      ? "https://app.dreamlab.gg/api/chatbot/chat-editor-makeplan"
+      : "http://localhost:3000/api/chatbot/chat-editor-makeplan";
+
+  // @ts-expect-error global
+  if (window.CHAT_URL_OVERRIDE) {
+    // @ts-expect-error global
+    chatURL = window.CHAT_URL_OVERRIDE;
+  }
+
+  const response = await fetch(chatURL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      request: prompt,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(`HTTP error! status: ${response.status} - ${errorData.error.message}`);
+  }
+
+  const reader = response.body?.getReader();
+  if (!reader) {
+    //Toast.error("Chatbot failed! Try again later.");
+    throw new Error("Unable to read response body");
+  }
+
+  const result = await handleStreamingResponse(reader);
+  return result;
+}
+
 export async function oneOffMessage(prompt: string) {
   const url = new URL(window.location.href);
   let chatURL =

@@ -13,6 +13,7 @@ import { ReloadPrompt } from "./reload-prompt.tsx";
 import { SceneGraph } from "./scene-graph.ts";
 import { SelectedEntityService } from "./selected-entity.ts";
 import { WelcomeMenu } from "./welcome-menu.ts";
+import { getFileContent, textToPlan } from "./assistant/context.ts";
 
 export interface InspectorUIWidget {
   setup(ui: InspectorUI): void;
@@ -22,7 +23,8 @@ export interface InspectorUIWidget {
 
 const lastCodeEditorUpdates: Record<string, number> = {};
 export class NewRecommendedActions {
-  constructor(public readonly path: string) {}
+  // deno-lint-ignore no-explicit-any
+  constructor(public readonly path: string, public readonly plan: any) {}
 }
 
 export class InspectorUI {
@@ -72,9 +74,13 @@ export class InspectorUI {
     setupKeyboardShortcuts(this.game, this.selectedEntity, editMode);
 
     conn.registerPacketHandler("ScriptEdited", async packet => {
+      console.log(packet);
 
       if (packet.script_location.startsWith('instructions/') && packet.isFromFileSystem) {
-        game.fire(NewRecommendedActions, packet.script_location)
+        console.log('hi')
+        const instructions = await getFileContent(packet.script_location);
+        const plan = await textToPlan(instructions);
+        game.fire(NewRecommendedActions, packet.script_location, JSON.parse(plan))
       }
 
       if (packet.behavior_script_id) {

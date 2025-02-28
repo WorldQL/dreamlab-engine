@@ -58,7 +58,7 @@ export class FileTree implements InspectorUIWidget {
     if (savedState) {
       this.#openDirectories = new Set(JSON.parse(savedState));
     }
-    this.#importPopup = new ImportPopup(game);
+    this.#importPopup = new ImportPopup();
   }
 
   #getIconForNode(node: FileTreeNode): Icon {

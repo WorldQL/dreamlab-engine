@@ -1,0 +1,113 @@
+// deno-lint-ignore-file no-explicit-any
+import { DreamlabEditorUIComponent } from "./_component.tsx";
+
+type Action = {
+  id: number;
+  text: string;
+  applied: boolean;
+};
+
+export class AISuggestionsPopup extends DreamlabEditorUIComponent {
+  // Initialize local state with visibility and an empty list of actions.
+  state = {
+    visible: true,
+    actions: [] as Action[],
+  };
+
+  /**
+   * Public variable setPlan: accepts an array of plan objects.
+   * Each plan object can have additional properties, but only "desc" is used to display text.
+   */
+  public setPlan = (plan: any[]) => {
+    this.state.actions = plan.map((planItem, index) => ({
+      id: index + 1,
+      text: planItem.desc,
+      applied: false,
+    }));
+    this.rerender();
+  };
+
+  // Handler for applying an action.
+  handleApply = (id: number) => {
+    this.state.actions = this.state.actions.map((action) =>
+      action.id === id ? { ...action, applied: true } : action
+    );
+    this.rerender();
+  };
+
+  // Handler for closing the popup.
+  handleClose = () => {
+    this.hide();
+  };
+
+  render() {
+    return (
+      <div className="import-menu" style={{ width: "450px", height: "400px" }}>
+        {/* Close button */}
+        <button
+          onClick={this.handleClose}
+          style={{
+            position: "absolute",
+            top: "10px",
+            right: "10px",
+            background: "transparent",
+            border: "none",
+            fontSize: "18px",
+            cursor: "pointer",
+          }}
+        >
+          ✕
+        </button>
+
+        <h2 style={{ marginBottom: "20px" }}>Actions</h2>
+
+        <ul style={{ listStyle: "none", padding: "0" }}>
+          {this.state.actions.map((action) => (
+            <li
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "12px 16px",
+                margin: "8px 0",
+                borderRadius: "4px",
+                backgroundColor: "#cfcfcf",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+              }}
+            >
+              <span
+                style={{
+                  textDecoration: action.applied ? "line-through" : "none",
+                  color: action.applied ? "#777" : "#000",
+                  marginRight: "12px",
+                  flex: "1",
+                }}
+              >
+                {action.text}
+              </span>
+
+              <button
+                onClick={() => !action.applied && this.handleApply(action.id)}
+                style={{
+                  padding: "6px 14px",
+                  background: action.applied ? "#cccccc" : "#28a745",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: action.applied ? "default" : "pointer",
+                  transition: "all 0.2s ease",
+                  fontWeight: "500",
+                  boxShadow: action.applied ? "none" : "0 2px 4px rgba(0,0,0,0.1)",
+                  opacity: action.applied ? "0.8" : "1",
+                  minWidth: "80px",
+                }}
+              >
+                {action.applied ? "Applied" : "Apply"}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  }
+}

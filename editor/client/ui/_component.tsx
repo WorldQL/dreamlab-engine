@@ -1,11 +1,10 @@
 import { JSX } from "@dreamlab/ui/jsx-runtime";
-import { ClientGame } from "../../../engine/game.ts";
 
 export abstract class DreamlabEditorUIComponent {
   private uiRoot: HTMLElement | undefined;
   private container: HTMLElement | undefined;
 
-  constructor(protected game: ClientGame) {}
+  constructor() {}
 
   protected abstract render(): JSX.Element;
 
@@ -13,12 +12,14 @@ export abstract class DreamlabEditorUIComponent {
     this.container?.replaceChildren(this.render());
   }
 
-  mount(uiRoot: HTMLElement): void {
+  mount(uiRoot: HTMLElement, showInitially: boolean = true): void {
     this.uiRoot = uiRoot;
     this.container = (<div></div>) as HTMLElement; // should be a fragment but they're not supported yet
 
-    this.uiRoot.appendChild(this.container);
-    this.rerender();
+    if (showInitially) {
+      this.uiRoot.appendChild(this.container);
+      this.rerender();
+    }
   }
 
   unmount() {
