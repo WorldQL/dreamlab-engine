@@ -2,7 +2,7 @@ import { Behavior, UILayer, UIPanel } from "@dreamlab/engine";
 
 export abstract class UIBehavior extends Behavior {
   private uiRoot: HTMLElement | undefined;
-  private uiElement: HTMLElement | undefined;
+  public uiElement: HTMLElement | undefined;
 
   #ui: UILayer | UIPanel | undefined;
   #enablePointerEvents = true;
