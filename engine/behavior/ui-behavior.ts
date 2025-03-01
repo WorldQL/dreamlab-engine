@@ -2,19 +2,31 @@ import { Behavior, UILayer, UIPanel } from "@dreamlab/engine";
 
 export abstract class UIBehavior extends Behavior {
   private uiRoot: HTMLElement | undefined;
-  private container: HTMLElement | undefined;
+  private uiElement: HTMLElement | undefined;
 
   #ui: UILayer | UIPanel | undefined;
   #enablePointerEvents = true;
   set enablePointerEvents(val: boolean) {
     this.#enablePointerEvents = val;
-    this.rerender();
+    this.updatePointerEvents();
+  }
+
+  private updatePointerEvents() {
+    if (this.uiElement instanceof HTMLElement) {
+      this.uiElement.style.pointerEvents = this.#enablePointerEvents ? "auto" : "none";
+    }
   }
 
   rerender() {
-    if (this.container) {
-      this.container.replaceChildren(this.render());
-      this.container.style.pointerEvents = this.#enablePointerEvents ? "auto" : "none";
+    if (this.uiRoot) {
+      const newUI = this.render();
+      if (this.uiElement && this.uiElement.parentNode === this.uiRoot) {
+        this.uiRoot.replaceChild(newUI, this.uiElement);
+      } else {
+        this.uiRoot.appendChild(newUI);
+      }
+      this.uiElement = newUI;
+      this.updatePointerEvents();
     }
   }
 
@@ -29,24 +41,28 @@ export abstract class UIBehavior extends Behavior {
       throw new Error("UIBehaviors must be attached to UILayer or UIPanel");
     }
 
-    this.container = document.createElement("div");
     this.uiRoot = this.#ui.element;
-    this.uiRoot.appendChild(this.container);
     this.rerender();
   }
 
-  protected abstract render(): Node;
+  protected abstract render(): HTMLElement;
 
   hide = () => {
-    if (this.container) {
-      this.container.remove();
+    if (this.uiElement && this.uiElement.parentNode) {
+      this.uiElement.remove();
     }
   };
 
   show = () => {
-    if (this.container && this.uiRoot) {
-      this.uiRoot.appendChild(this.container);
-      this.rerender();
+    if (this.uiRoot) {
+      if (this.uiElement && this.uiElement.parentNode !== this.uiRoot) {
+        this.uiRoot.appendChild(this.uiElement);
+      }
+      if (this.uiElement) {
+        this.updatePointerEvents();
+      } else {
+        this.rerender();
+      }
     }
   };
 }
