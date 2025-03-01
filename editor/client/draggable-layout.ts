@@ -18,13 +18,27 @@ let animationFrame: number | null = null;
 const minHeightPx = 3 * parseFloat(getComputedStyle(document.documentElement).fontSize);
 const minWidthPx = 8 * parseFloat(getComputedStyle(document.documentElement).fontSize);
 
-document.addEventListener("pointerup", () => {
+document.addEventListener("pointerup", e => {
   leftDragging = false;
   rightDragging = false;
   bottomDragging = false;
   leftCenterDragging = false;
   rightCenterDragging = false;
   document.body.classList.remove("col-resize", "row-resize");
+  
+  // Release pointer capture
+  if (e.pointerId !== undefined) {
+    try {
+      dragL.releasePointerCapture(e.pointerId);
+      dragR.releasePointerCapture(e.pointerId);
+      dragB.releasePointerCapture(e.pointerId);
+      dragLC.releasePointerCapture(e.pointerId);
+      dragRC.releasePointerCapture(e.pointerId);
+    } catch {
+      // Ignore errors if the element didn't have capture
+    }
+  }
+  
   if (animationFrame) {
     cancelAnimationFrame(animationFrame);
     animationFrame = null;
@@ -108,24 +122,29 @@ document.addEventListener("pointermove", e => {
 dragL.addEventListener("pointerdown", e => {
   e.preventDefault();
   leftDragging = true;
+  dragL.setPointerCapture(e.pointerId);
 });
 
 dragR.addEventListener("pointerdown", e => {
   e.preventDefault();
   rightDragging = true;
+  dragR.setPointerCapture(e.pointerId);
 });
 
 dragB.addEventListener("pointerdown", e => {
   e.preventDefault();
   bottomDragging = true;
+  dragB.setPointerCapture(e.pointerId);
 });
 
 dragLC.addEventListener("pointerdown", e => {
   e.preventDefault();
   leftCenterDragging = true;
+  dragLC.setPointerCapture(e.pointerId);
 });
 
 dragRC.addEventListener("pointerdown", e => {
   e.preventDefault();
   rightCenterDragging = true;
+  dragRC.setPointerCapture(e.pointerId);
 });
