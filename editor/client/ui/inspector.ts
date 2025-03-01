@@ -24,7 +24,10 @@ export interface InspectorUIWidget {
 const lastCodeEditorUpdates: Record<string, number> = {};
 export class NewRecommendedActions {
   // deno-lint-ignore no-explicit-any
-  constructor(public readonly path: string, public readonly plan: any) {}
+  constructor(
+    public readonly path: string,
+    public readonly plan: any,
+  ) {}
 }
 
 export class InspectorUI {
@@ -76,11 +79,16 @@ export class InspectorUI {
     conn.registerPacketHandler("ScriptEdited", async packet => {
       console.log(packet);
 
-      if (packet.script_location.startsWith('instructions/') && packet.isFromFileSystem) {
-        game.fire(NewRecommendedActions, packet.script_location, undefined)
-        const instructions = await getFileContent(packet.script_location);
-        const plan = await textToPlan(instructions);
-        game.fire(NewRecommendedActions, packet.script_location, JSON.parse(plan))
+      if (packet.script_location.startsWith("instructions/") && packet.isFromFileSystem) {
+        try {
+          game.fire(NewRecommendedActions, packet.script_location, undefined);
+          const instructions = await getFileContent(packet.script_location);
+          const plan = await textToPlan(instructions);
+          game.fire(NewRecommendedActions, packet.script_location, JSON.parse(plan));
+        } catch {
+          // hide loading indicator.
+          game.fire(NewRecommendedActions, packet.script_location, "fail");
+        }
       }
 
       if (packet.behavior_script_id) {

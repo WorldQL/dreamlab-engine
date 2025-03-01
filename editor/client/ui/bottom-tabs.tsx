@@ -110,10 +110,16 @@ export class BottomTabs implements InspectorUIWidget {
     (game as ClientGame).on(NewRecommendedActions, e => {
       console.log("Received:", e.path);
       if (e.plan) {
+        // success
         aiSuggestionsPopup.setPlan(e.plan);
         recommendedActionsTab.classList.remove("hidden");
         loadingActionsTab.classList.add("hidden");
+      } else if (e.plan === "fail") {
+        // failed to make plan, hide both,
+        recommendedActionsTab.classList.add("hidden");
+        loadingActionsTab.classList.add("hidden");
       } else {
+        // undefined plan, set loading
         loadingActionsTab.classList.remove("hidden");
       }
     });
