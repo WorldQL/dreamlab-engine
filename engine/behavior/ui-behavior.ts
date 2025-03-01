@@ -55,6 +55,7 @@ export abstract class UIBehavior extends Behavior {
 
   show = () => {
     if (this.uiRoot) {
+      // uiElement still exists in memory after remove(), so we just re-append it.
       if (this.uiElement && this.uiElement.parentNode !== this.uiRoot) {
         this.uiRoot.appendChild(this.uiElement);
       }
