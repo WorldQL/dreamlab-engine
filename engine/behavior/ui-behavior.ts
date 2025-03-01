@@ -1,7 +1,7 @@
 import { Behavior, UILayer, UIPanel } from "@dreamlab/engine";
 
 export abstract class UIBehavior extends Behavior {
-  private uiRoot: ShadowRoot | undefined;
+  private uiRoot: HTMLElement | undefined;
   private container: HTMLElement | undefined;
 
   #ui: UILayer | UIPanel | undefined;
@@ -30,7 +30,7 @@ export abstract class UIBehavior extends Behavior {
     }
 
     this.container = document.createElement("div");
-    this.uiRoot = this.#ui.dom;
+    this.uiRoot = this.#ui.element;
     this.uiRoot.appendChild(this.container);
     this.rerender();
   }
