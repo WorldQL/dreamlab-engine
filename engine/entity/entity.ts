@@ -384,6 +384,10 @@ export abstract class Entity implements ISignalHandler {
       if (def._ref === opts.cloneFrom) delete def._ref;
     }
     const entity = Entity.#constructEntity(this, def, clonedFrom);
+    // automatically take authority on local entities
+    if (entity.root === this.game.local && this.game.network.self) {
+      entity.#exclusiveAuthority = this.game.network.self;
+    }
     const spawnOrder: { entity: Entity; def: EntityDefinition }[] = [{ entity, def }];
     const addChild = (parent: Entity, childDef: EntityDefinition) => {
       let clonedFrom: string | undefined;
