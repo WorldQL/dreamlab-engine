@@ -70,10 +70,28 @@ export class PhysicsEngine {
       const entity2 = this.#lookupEntity(collider2);
       if (!entity1 || !entity2) return;
 
-      // TODO: lookup contact pairs figure out contact point and normal
+      const normal1 = Vector2.ZERO;
+      const normal2 = Vector2.ZERO;
+      const contact1 = Vector2.ZERO;
+      const contact2 = Vector2.ZERO;
 
-      entity1.fire(EntityCollision, started, entity2, Vector2.ZERO, Vector2.ZERO); // TODO
-      entity2.fire(EntityCollision, started, entity1, Vector2.ZERO, Vector2.ZERO); // TODO
+      this.world.narrowPhase.contactPair(handle1, handle2, (manifold, flipped) => {
+        const localNormal1 = manifold.localNormal1();
+        const localNormal2 = manifold.localNormal2();
+
+        if (flipped) {
+          normal1.assign(localNormal2);
+          normal2.assign(localNormal1);
+        } else {
+          normal1.assign(localNormal1);
+          normal2.assign(localNormal2);
+        }
+
+        // TODO: contact points
+      });
+
+      entity1.fire(EntityCollision, started, entity2, contact1, normal1);
+      entity2.fire(EntityCollision, started, entity1, contact2, normal2);
     });
   }
 
