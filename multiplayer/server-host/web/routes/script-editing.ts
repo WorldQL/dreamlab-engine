@@ -9,11 +9,11 @@ import { Entity } from "@dreamlab/engine";
 import { PlayPacket } from "@dreamlab/proto/play.ts";
 import { ProjectSchema, SceneDescEntity } from "@dreamlab/scene";
 import { fileIsProbablyBehaviorScript } from "../../../../build-system/build-world.ts";
+import { JsonAPIError, typedJsonHandler } from "../../../common-host/web-util/api.ts";
+import { buildWorld } from "../../../server-common/world-build.ts";
 import { CONFIG } from "../../config.ts";
 import { GameInstance } from "../../instance.ts";
 import { sortPaths } from "../../util/sort-paths.ts";
-import { buildWorld } from "../../world-build.ts";
-import { JsonAPIError, typedJsonHandler } from "../util/api.ts";
 
 export const serveScriptEditingAPI = (router: Router) => {
   const instances = GameInstance.INSTANCES;

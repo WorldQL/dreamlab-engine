@@ -20,13 +20,17 @@ export class IPCMessageBus {
     const socket = new WebSocket(connectUrl);
 
     this.#connected = false;
-    this.#connectedPromise = new Promise(resolve =>
+    this.#connectedPromise = new Promise((resolve, reject) => {
       socket.addEventListener("open", () => {
         this.send({ op: "WorkerUp" });
         this.#connected = true;
         resolve();
-      }),
-    );
+      });
+
+      socket.addEventListener("error", ev => {
+        reject(ev);
+      });
+    });
 
     socket.addEventListener("message", event => {
       const data = event.data;

@@ -2,14 +2,16 @@ import { ConnectionId } from "@dreamlab/engine";
 import { PlayCodec } from "@dreamlab/proto/codecs/mod.ts";
 import { ServerPacket } from "@dreamlab/proto/play.ts";
 import { createId } from "@dreamlab/vendor/nanoid.ts";
+import { IPCWorker } from "../common-host/worker.ts";
 import { CONFIG } from "./config.ts";
 import { dumpSceneDefinition, GameInstance, GameInstanceState } from "./instance.ts";
-import { IPCWorker } from "./worker.ts";
 
 import * as path from "@std/path";
+import pidusage from "npm:pidusage@3.0.2";
 import type { RichGameStatus } from "../server-common/rich-status.ts";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 import { watchForEditChanges } from "./edit-watcher.ts";
+import { report, WorkerMetrics } from "./metrics.ts";
 import { toMarkdownSceneTree } from "./util/compact-markdown-scene-tree.ts";
 
 interface ConnectedClient {
@@ -74,7 +76,7 @@ export class GameSession {
       ipcData.kvClientUrl = discordURLBase + "/.proxy/kv";
       ipcData.worldResourcesBaseUrl = discordURLBase + "/.proxy/mp/worlds";
     }
-    this.ipc = new IPCWorker(this, ipcData, parent.logs);
+    this.ipc = new IPCWorker(ipcData, parent.logs, CONFIG.MULTIPLAYER_USE_SYSTEMD_LIMITS);
     const ipc = this.ipc;
     void (async () => {
       const status = await ipc.process.status;
@@ -108,6 +110,7 @@ export class GameSession {
     this.ipc.addMessageListener("WorkerUp", _message => {
       this.#readyPromiseResolve?.();
       this.#readied = true;
+      report(this);
     });
 
     this.ipc.addMessageListener("GameLoaded", _message => {
@@ -216,5 +219,16 @@ export class GameSession {
     if (this.#autoSaveInterval) clearInterval(this.#autoSaveInterval);
 
     this.wasShutDown = true;
+  }
+
+  async metrics(): Promise<WorkerMetrics> {
+    const { timestamp, cpu, memory } = await pidusage(this.ipc.process.pid);
+
+    return {
+      ts: new Date(timestamp),
+      cpu,
+      memory,
+      connections: this.connections.size,
+    };
   }
 }

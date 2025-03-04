@@ -1,14 +1,14 @@
 import { Scene } from "@dreamlab/scene";
 
+import { LogStore } from "../common-host/log-store.ts";
+import { IPCMessageListener } from "../common-host/worker.ts";
 import { WorkerIPCMessage } from "../server-common/ipc.ts";
+import { buildWorld } from "../server-common/world-build.ts";
 import { GameSession } from "./session.ts";
-import { LogStore } from "./util/log-store.ts";
-import { IPCMessageListener } from "./worker.ts";
-import { buildWorld } from "./world-build.ts";
 import { fetchWorld } from "./world-fetch.ts";
 
-import * as colors from "@std/fmt/colors";
 import * as path from "@std/path";
+import { printLogs } from "../common-host/print-logs.ts";
 
 export enum GameInstanceState {
   Idle,
@@ -55,39 +55,9 @@ export class GameInstance {
 
   // #region Logs
   logs = new LogStore();
-
   #printLogs() {
     const shortId = this.info.instanceId.substring(this.info.instanceId.length - 8);
-    this.logs.subscribe().on(entry => {
-      if (entry.level === "stdout" || entry.level === "stderr") return; // already handled by worker stdio forwarding code
-
-      const separator = colors.black("|");
-      const workerTag = colors.dim(`[worker …${shortId}]`);
-      const levelColor = {
-        debug: colors.gray,
-        info: colors.green,
-        warn: colors.yellow,
-        error: colors.red,
-      }[entry.level];
-      const levelTag = levelColor(`${entry.level}`);
-
-      let logMessage = `${workerTag} ${levelTag} ${separator} ${colors.brightWhite(
-        entry.message,
-      )}`;
-      if (entry.detail !== undefined) {
-        logMessage += ` ${separator}`;
-        for (const [key, value] of Object.entries(entry.detail)) {
-          logMessage += colors.dim(colors.italic(` ${key}`) + "=");
-          logMessage += Deno.inspect(value, {
-            colors: true,
-            compact: true,
-            breakLength: Infinity,
-            strAbbreviateSize: Infinity,
-          });
-        }
-      }
-      console.log(logMessage);
-    });
+    printLogs(`[worker …${shortId}]`, this.logs.subscribe());
   }
   // #endregion
 

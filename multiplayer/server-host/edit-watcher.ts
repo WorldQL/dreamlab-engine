@@ -1,7 +1,7 @@
 import * as path from "@std/path";
 import { debounce } from "jsr:@std/async/debounce";
+import { buildWorld } from "../server-common/world-build.ts";
 import { GameSession } from "./session.ts";
-import { buildWorld } from "./world-build.ts";
 
 export async function watchForEditChanges(session: GameSession, subdir: string) {
   const instance = session.parent;

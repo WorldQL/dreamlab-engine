@@ -28,14 +28,14 @@ const interval = setInterval(async () => {
       .filter(it => it !== undefined)
       .map(
         async session =>
-          ({ session, worker: session.ipc, metrics: await session.ipc.metrics() }) as const,
+          ({ session, worker: session.ipc, metrics: await session.metrics() }) as const,
       ),
   );
 
   const data = await Promise.all(jobs);
 
   const MEMORY_THRESHOLD = 1000; // TODO: real value
-  for (const { worker, metrics } of data) {
+  for (const { session, metrics } of data) {
     if (metrics.memory <= MEMORY_THRESHOLD) continue;
     // TODO: gracefully terminate
   }

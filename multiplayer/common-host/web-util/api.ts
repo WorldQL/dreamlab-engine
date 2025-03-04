@@ -7,7 +7,6 @@ import {
   RouterMiddleware,
   Status,
 } from "@oak/oak";
-import { CONFIG } from "../../config.ts";
 
 export class JsonAPIError extends Error {
   constructor(
@@ -19,7 +18,7 @@ export class JsonAPIError extends Error {
   }
 }
 
-export const handleJsonAPIErrors = (app: Application) => {
+export const handleJsonAPIErrors = (app: Application, isDev: boolean) => {
   app.use(async (ctx, next) => {
     try {
       await next();
@@ -31,7 +30,7 @@ export const handleJsonAPIErrors = (app: Application) => {
         return;
       }
 
-      ctx.response.body = CONFIG.IS_DEV ? `Internal Error:\n\n${err.stack}` : "Internal Error";
+      ctx.response.body = isDev ? `Internal Error:\n\n${err.stack}` : "Internal Error";
       ctx.response.type = "text/plain";
       ctx.response.status = Status.InternalServerError;
     }

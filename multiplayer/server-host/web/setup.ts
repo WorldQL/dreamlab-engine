@@ -1,7 +1,10 @@
 import { Application, Router, Status } from "@oak/oak";
 import { oakCors } from "https://deno.land/x/cors@v1.2.2/mod.ts";
-import { handleJsonAPIErrors } from "./util/api.ts";
+import { handleJsonAPIErrors } from "../../common-host/web-util/api.ts";
 
+import { serveWorlds } from "../../common-host/routes/worlds.ts";
+import { workerConnectHandler } from "../../common-host/worker.ts";
+import { CONFIG } from "../config.ts";
 import { GameInstance, GameInstanceState } from "../instance.ts";
 import { serveDiscordRoutes } from "./routes/discord.ts";
 import { serveInstanceManagementAPI } from "./routes/instance-management.ts";
@@ -10,13 +13,11 @@ import { servePlayRoutes } from "./routes/play.ts";
 import { serveSchemas } from "./routes/schemas.ts";
 import { serveScriptEditingAPI } from "./routes/script-editing.ts";
 import { serveSourceControlAPI } from "./routes/source-control.ts";
-import { serveWorlds } from "./routes/worlds.ts";
-import { workerInternalRoute } from "./worker.ts";
 
 export const setupWeb = async (app: Application) => {
   const router = new Router();
 
-  router.get("/internal/worker", workerInternalRoute);
+  router.get("/internal/worker", workerConnectHandler);
   await servePlayRoutes(router);
   serveWorlds(router);
   serveSchemas(router);
@@ -42,7 +43,7 @@ export const setupWeb = async (app: Application) => {
       .catch(_e => {}),
   ); */
 
-  handleJsonAPIErrors(app);
+  handleJsonAPIErrors(app, CONFIG.IS_DEV);
   app.use(async (ctx, next) => {
     await next();
     if (ctx.response.status === undefined) {

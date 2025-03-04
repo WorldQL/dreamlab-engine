@@ -1,6 +1,6 @@
 import { Router, Status } from "@oak/oak";
+import { JsonAPIError } from "../../../common-host/web-util/api.ts";
 import { GameInstance } from "../../instance.ts";
-import { JsonAPIError } from "../util/api.ts";
 
 import * as colors from "@std/fmt/colors";
 

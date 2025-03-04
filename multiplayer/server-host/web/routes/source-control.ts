@@ -1,13 +1,13 @@
 import { z } from "@dreamlab/vendor/zod.ts";
 import { Router, Status } from "@oak/oak";
+import { JsonAPIError } from "../../../common-host/web-util/api.ts";
 import { CONFIG } from "../../config.ts";
 import { GameInstance } from "../../instance.ts";
-import { JsonAPIError } from "../util/api.ts";
 
 import * as fs from "@std/fs";
 import * as path from "@std/path";
 import { fileIsProbablyBehaviorScript } from "../../../../build-system/build-world.ts";
-import { buildWorld } from "../../world-build.ts";
+import { buildWorld } from "../../../server-common/world-build.ts";
 
 export const serveSourceControlAPI = (router: Router) => {
   // TODO: auth ??

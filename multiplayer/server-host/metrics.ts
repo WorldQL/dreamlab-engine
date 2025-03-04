@@ -1,6 +1,6 @@
 import { WriteApi as $WriteApi, InfluxDB, Point } from "npm:@influxdata/influxdb-client";
 import { CONFIG } from "./config.ts";
-import { IPCWorker } from "./worker.ts";
+import { GameSession } from "./session.ts";
 
 const details = CONFIG.MULTIPLAYER_ENABLE_METRICS
   ? {
@@ -36,14 +36,14 @@ export type WorkerMetrics = {
 
 const internalReport = (
   write: $WriteApi,
-  worker: IPCWorker,
+  session: GameSession,
   metrics: WorkerMetrics,
   { ts = new Date() }: { ts?: Date } = {},
 ): void => {
-  const { workerData } = worker;
+  const { workerData } = session.ipc;
   const point = new Point("metrics")
     .timestamp(metrics.ts ?? ts)
-    .tag("workerId", worker.workerId)
+    .tag("workerId", session.ipc.workerId)
     .tag("instanceId", workerData.instanceId)
     .tag("worldId", workerData.worldId)
     .tag("editMode", workerData.editMode ? "true" : "false")
@@ -55,7 +55,7 @@ const internalReport = (
 };
 
 export const report = async (
-  ...workers: IPCWorker[] | { worker: IPCWorker; metrics: WorkerMetrics }[]
+  ...sessions: GameSession[] | { session: GameSession; metrics: WorkerMetrics }[]
 ): Promise<void> => {
   // do nothing if metrics reporting is disabled
   if (!client) return;
@@ -64,12 +64,12 @@ export const report = async (
   await using write = writeApi();
 
   await Promise.allSettled(
-    workers.map(async input => {
-      const isObject = "worker" in input && "metrics" in input;
-      const worker = isObject ? input.worker : input;
-      const metrics = isObject ? input.metrics : await worker.metrics();
+    sessions.map(async input => {
+      const isObject = "session" in input && "metrics" in input;
+      const session = isObject ? input.session : input;
+      const metrics = isObject ? input.metrics : await session.metrics();
 
-      internalReport(write, worker, metrics, { ts: now });
+      internalReport(write, session, metrics, { ts: now });
     }),
   );
 

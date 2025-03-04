@@ -2,7 +2,6 @@ import { Router, Status } from "@oak/oak";
 import * as path from "@std/path";
 
 export const serveWorlds = (router: Router) => {
-  // TODO: world variants?
   router.get("/worlds/:user/:world/:resource*", async ctx => {
     const { user, world, resource } = ctx.params;
     try {

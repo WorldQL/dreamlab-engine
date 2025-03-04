@@ -3,11 +3,11 @@ import { ClientPacketSchema } from "@dreamlab/proto/play.ts";
 import { Context, Router, Status } from "@oak/oak";
 
 import { createId } from "@dreamlab/vendor/nanoid.ts";
+import { JsonAPIError } from "../../../common-host/web-util/api.ts";
 import { CONFIG } from "../../config.ts";
 import { bootPlaySession, GameInstance } from "../../instance.ts";
 import { GameSession } from "../../session.ts";
 import { importSecretKey, validateAuthToken } from "../../util/game-auth.ts";
-import { JsonAPIError } from "../util/api.ts";
 
 const handleConnection = (
   socket: WebSocket,

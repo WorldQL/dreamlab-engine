@@ -4,12 +4,12 @@ import * as path from "@std/path";
 import { generate as generateUUIDv5 } from "@std/uuid/v5";
 
 import { SceneSchema } from "@dreamlab/scene";
+import { JsonAPIError, typedJsonHandler } from "../../../common-host/web-util/api.ts";
 import { CONFIG } from "../../config.ts";
+import { deleteRoomsForInstance } from "../../instance-collector.ts";
 import { createInstance, dumpSceneDefinition, GameInstance } from "../../instance.ts";
-import { JsonAPIError, typedJsonHandler } from "../util/api.ts";
 import { bearerTokenAuth } from "../util/auth.ts";
 import { instanceInfo, InstanceInfoSchema } from "../util/instance-info.ts";
-import { deleteRoomsForInstance } from "../../instance-collector.ts";
 
 export const serveInstanceManagementAPI = (router: Router) => {
   router.get(

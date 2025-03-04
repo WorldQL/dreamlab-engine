@@ -1,5 +1,5 @@
 import { Context, State as OakState, RouteParams, RouterMiddleware, Status } from "@oak/oak";
-import { JsonAPIError } from "./api.ts";
+import { JsonAPIError } from "../../../common-host/web-util/api.ts";
 
 export function bearerTokenAuth<
   R extends string,

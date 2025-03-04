@@ -1,14 +1,11 @@
 import type { HostIPCMessage, WorkerIPCMessage } from "../server-common/ipc.ts";
 import { WorkerInitData } from "../server-common/worker-data.ts";
-import { report, type WorkerMetrics } from "../server-host/metrics.ts";
-import type { GameSession } from "./session.ts";
 
+import { Context, Status } from "@oak/oak";
 import * as colors from "@std/fmt/colors";
 import { TextLineStream } from "@std/streams";
-// @ts-types="npm:@types/pidusage@2.0.5"
-import pidusage from "npm:pidusage@3.0.2";
-import { CONFIG } from "./config.ts";
-import { LogStore } from "./util/log-store.ts";
+import { LogStore } from "./log-store.ts";
+import { JsonAPIError } from "./web-util/api.ts";
 
 export type IPCMessageListener = {
   op: WorkerIPCMessage["op"] | undefined;
@@ -27,9 +24,9 @@ export class IPCWorker {
   logs: LogStore;
 
   constructor(
-    public readonly session: GameSession,
     public readonly workerData: WorkerInitData,
     logs: LogStore,
+    useSystemdLimits: boolean = false,
   ) {
     this.workerId = workerData.workerId;
     this.logs = logs;
@@ -52,7 +49,7 @@ export class IPCWorker {
       "./server-runtime/main.ts",
     ];
 
-    if (CONFIG.MULTIPLAYER_USE_SYSTEMD_LIMITS) {
+    if (useSystemdLimits) {
       const dbus = Deno.env.get("DBUS_SESSION_BUS_ADDRESS");
       if (!dbus) throw new Error("We have no DBus address for systemd mem limits!");
       env["DBUS_SESSION_BUS_ADDRESS"] = dbus;
@@ -102,10 +99,6 @@ export class IPCWorker {
         logs.log("stderr", line);
       }
     })();
-
-    this.addMessageListener("WorkerUp", () => {
-      report(this);
-    });
   }
 
   acceptConnection(socket: WebSocket) {
@@ -183,17 +176,6 @@ export class IPCWorker {
     }
   }
 
-  async metrics(): Promise<WorkerMetrics> {
-    const { timestamp, cpu, memory } = await pidusage(this.process.pid);
-
-    return {
-      ts: new Date(timestamp),
-      cpu,
-      memory,
-      connections: this.session.connections.size,
-    };
-  }
-
   destroy() {
     try {
       this.process.kill("SIGINT");
@@ -204,3 +186,19 @@ export class IPCWorker {
     IPCWorker.POOL.delete(this.workerId);
   }
 }
+
+export const workerConnectHandler = (ctx: Context) => {
+  const token = ctx.request.url.searchParams.get("token");
+  if (token === null)
+    throw new JsonAPIError(Status.Unauthorized, "No bearer token present in query string.");
+
+  if (!ctx.isUpgradable)
+    throw new JsonAPIError(Status.BadRequest, "Worker connection must be a WebSocket request!");
+
+  const worker = IPCWorker.POOL.get(token);
+  if (worker === undefined)
+    throw new JsonAPIError(Status.NotFound, "No matching worker is running.");
+
+  const socket = ctx.upgrade();
+  worker.acceptConnection(socket);
+};
