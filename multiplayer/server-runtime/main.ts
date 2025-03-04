@@ -7,6 +7,7 @@ import "@dreamlab/ui";
 import "@dreamlab/ui/jsx-runtime";
 
 import { GameStatus, KvServer, ServerGame, Time } from "@dreamlab/engine";
+import * as internal from "@dreamlab/engine/internal";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 import { IPCMessageBus } from "./ipc.ts";
 import { ServerNetworkManager } from "./networking/net-manager.ts";
@@ -54,18 +55,19 @@ game.paused.onChanged(paused => {
 
 await game.initialize();
 
-const behaviors = await game
+const behaviorPreloadInfo = await game
   .fetch("res://_dreamlab_behaviors.json")
   .then(r => r.json())
-  .then(z.record(z.string()).parse);
-const preloadResults = await Promise.allSettled(
-  Object.values(behaviors).map(s => game.loadBehavior(s)),
+  .then(z.record(z.object({ uri: z.string(), name: z.string().optional() })).parse);
+game[internal.behaviorLoader].submitPreloadInfo([...Object.values(behaviorPreloadInfo)]);
+/* const preloadResults = await Promise.allSettled(
+  Object.values(behaviors).map(b => game.loadBehavior(b.uri)),
 );
 for (const result of preloadResults) {
   if (result.status === "rejected") {
     console.warn(result.reason);
   }
-}
+} */
 
 const projectDesc = await game
   .fetch("res://project.json")

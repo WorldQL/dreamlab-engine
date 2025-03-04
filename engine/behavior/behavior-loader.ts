@@ -9,6 +9,8 @@ export class BehaviorLoader {
   #initializedBehaviors = new Set<BehaviorConstructor>();
   #resourceLocationLookup = new Map<BehaviorConstructor, string>();
 
+  #preloadInfo: { uri: string; name?: string }[] = [];
+
   constructor(game: Game) {
     this.#game = game;
   }
@@ -19,8 +21,20 @@ export class BehaviorLoader {
     if (behaviorType.onLoaded) behaviorType.onLoaded(this.#game);
   }
 
+  submitPreloadInfo(info: { uri: string; name?: string }[]) {
+    this.#preloadInfo = info;
+  }
+
   lookup(type: BehaviorConstructor): string | undefined {
-    return this.#resourceLocationLookup.get(type);
+    const resourceLocation = this.#resourceLocationLookup.get(type);
+    if (resourceLocation) return resourceLocation;
+
+    for (const entry of this.#preloadInfo) {
+      if (entry.name !== type.name) continue;
+      return entry.uri;
+    }
+
+    return undefined;
   }
 
   registerInternalBehavior(type: BehaviorConstructor, namespace: string) {

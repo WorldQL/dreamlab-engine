@@ -89,11 +89,23 @@ export const prepareBundleWorld = async (
               }
             }
 
-            const behaviorFiles: Record<string, string> = {};
+            const behaviorFiles: Record<string, unknown> = {};
             for (const behaviorInputLocation of behaviors) {
               const sourceFile = path.relative(worldOpts.dir, behaviorInputLocation);
               const outputFile = sourceFile.replace(/\.tsx?$/, ".js");
-              behaviorFiles[`${sourceFile}`] = `res://${outputFile}`;
+              let behaviorName: string | undefined;
+              try {
+                const source = await Deno.readTextFile(behaviorInputLocation);
+                behaviorName = source.match(
+                  /export\s+default\s+class\s+([_\p{XID_Continue}]*)\s+/u,
+                )?.[1];
+              } catch {
+                // ignore
+              }
+              behaviorFiles[`${sourceFile}`] = {
+                uri: `res://${outputFile}`,
+                name: behaviorName,
+              };
             }
 
             await Deno.writeTextFile(

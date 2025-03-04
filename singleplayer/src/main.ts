@@ -6,6 +6,7 @@ import "../../build-system/live-reload.js";
 import "../../client/src/_env.ts";
 
 import { ClientGame, GameStatus, GameStatusChange } from "@dreamlab/engine";
+import * as internal from "@dreamlab/engine/internal";
 import { getSceneFromProject, loadSceneDefinition, ProjectSchema } from "@dreamlab/scene";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { SingleplayerKv } from "./singleplayer-kv.ts";
@@ -46,11 +47,14 @@ await game.initialize();
 
 game.setStatus(GameStatus.Loading);
 
-const behaviors = await game
+const behaviorPreloadInfo = await game
   .fetch("res://_dreamlab_behaviors.json")
   .then(r => r.json())
-  .then(z.record(z.string()).parse);
-const behaviorPreload = Object.values(behaviors).map(s => game.loadBehavior(s));
+  .then(z.record(z.object({ uri: z.string(), name: z.string().optional() })).parse);
+game[internal.behaviorLoader].submitPreloadInfo([...Object.values(behaviorPreloadInfo)]);
+/* await Promise.allSettled(
+  Object.values(behaviorPreloadInfo).map(b => game.loadBehavior(b.uri)),
+); */
 
 game.setStatus(GameStatus.Loading, "Fetching project");
 const project = await game
@@ -59,8 +63,8 @@ const project = await game
   .then(JSON.parse)
   .then(ProjectSchema.parse);
 
-game.setStatus(GameStatus.Loading, "Preloading behaviors");
-await Promise.allSettled(behaviorPreload);
+// game.setStatus(GameStatus.Loading, "Preloading behaviors");
+// await Promise.allSettled(behaviorPreload);
 game.setStatus(GameStatus.Loading, "Fetching scene");
 const scene = await getSceneFromProject(game, project, "main");
 game.setStatus(GameStatus.Loading, "Loading scene (1/2)");

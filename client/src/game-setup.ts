@@ -21,11 +21,14 @@ export const setupGame = async (
   const scene = await getSceneFromProject(game, projectDesc, "main");
   await Promise.all(scene.registration.map(script => import(game.resolveResource(script))));
 
-  const behaviors = await game
+  const behaviorPreloadInfo = await game
     .fetch("res://_dreamlab_behaviors.json")
     .then(r => r.json())
-    .then(z.record(z.string()).parse);
-  await Promise.allSettled(Object.values(behaviors).map(s => game.loadBehavior(s)));
+    .then(z.record(z.object({ uri: z.string(), name: z.string().optional() })).parse);
+  game[internal.behaviorLoader].submitPreloadInfo([...Object.values(behaviorPreloadInfo)]);
+  /* await Promise.allSettled(
+    Object.values(behaviorPreloadInfo).map(b => game.loadBehavior(b.uri)),
+  ); */
 
   const networkSnapshotPromise = new Promise<void>((resolve, _reject) => {
     game.on(ReceivedInitialNetworkSnapshot, () => {
