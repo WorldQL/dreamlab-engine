@@ -25,7 +25,7 @@ document.addEventListener("pointerup", e => {
   leftCenterDragging = false;
   rightCenterDragging = false;
   document.body.classList.remove("col-resize", "row-resize");
-  
+
   // Release pointer capture
   if (e.pointerId !== undefined) {
     try {
@@ -38,7 +38,7 @@ document.addEventListener("pointerup", e => {
       // Ignore errors if the element didn't have capture
     }
   }
-  
+
   if (animationFrame) {
     cancelAnimationFrame(animationFrame);
     animationFrame = null;

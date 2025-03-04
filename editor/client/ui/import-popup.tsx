@@ -10,7 +10,7 @@ export class ImportPopup extends DreamlabEditorUIComponent {
   private projectId: string = "";
 
   // @ts-expect-error global;
-  private game: ClientGame = globalThis.game
+  private game: ClientGame = globalThis.game;
 
   switchTab(tab: Tab) {
     this.currentTab = tab;
