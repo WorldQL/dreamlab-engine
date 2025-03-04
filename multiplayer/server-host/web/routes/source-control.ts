@@ -72,7 +72,7 @@ export const serveSourceControlAPI = (router: Router) => {
   });
   // #endregion
 
-  // #region push changes
+  // #region push
   router.post("/api/v1/source-control/:instance_id/push", async ctx => {
     const BodySchema = z.object({
       remote: z.string().optional().default("origin"),
@@ -105,14 +105,17 @@ export const serveSourceControlAPI = (router: Router) => {
     const pushStatus = await pushProcess.status;
     if (!pushStatus.success) {
       ctx.response.status = Status.InternalServerError;
-      ctx.response.body = { error: "Failed to push" };
+      ctx.response.body = {
+        error:
+          "Push failed: The remote repository appears to have conflicting changes. Please pull the latest changes, resolve any merge conflicts, and try pushing again.",
+      };
       return;
     }
     ctx.response.body = { success: true };
   });
   // #endregion
 
-  // #region pull changes
+  // #region pull
   router.post("/api/v1/source-control/:instance_id/pull", async ctx => {
     const BodySchema = z.object({
       remote: z.string().optional().default("origin"),
@@ -144,8 +147,37 @@ export const serveSourceControlAPI = (router: Router) => {
     }).spawn();
     const pullStatus = await pullProcess.status;
     if (!pullStatus.success) {
+      const conflictProcess = new Deno.Command("git", {
+        args: ["diff", "--name-only", "--diff-filter=U"],
+        cwd: sourceRoot,
+        stdout: "piped",
+        stderr: "piped",
+      }).spawn();
+      const conflictOutput = await conflictProcess.output();
+      const conflictStdout = new TextDecoder().decode(conflictOutput.stdout).trim();
+      const conflictFiles = conflictStdout.split("\n").filter(Boolean);
+      if (conflictFiles.length > 0) {
+        // Abort the merge if conflicts exist
+        const abortProcess = new Deno.Command("git", {
+          args: ["merge", "--abort"],
+          cwd: sourceRoot,
+        }).spawn();
+        await abortProcess.status;
+        ctx.response.status = Status.Conflict;
+        ctx.response.body = {
+          error: `Pull aborted: Merge conflicts detected between your local branch and ${
+            body.remote
+          }/${
+            body.branch
+          }. Please resolve the conflicts in the following files before trying again: ${conflictFiles.join(
+            ", ",
+          )}.`,
+          conflicts: conflictFiles,
+        };
+        return;
+      }
       ctx.response.status = Status.InternalServerError;
-      ctx.response.body = { error: "Failed to pull" };
+      ctx.response.body = { error: "Pull failed due to an unexpected error." };
       return;
     }
     await broadcastWorldUpdate();
@@ -371,8 +403,6 @@ export const serveSourceControlAPI = (router: Router) => {
       checkoutArgs = ["checkout", "-t", `origin/${branch}`];
     }
 
-    console.log(`Switching to branch: ${branch}`);
-
     const checkoutProcess = new Deno.Command("git", {
       args: checkoutArgs,
       cwd: sourceRoot,
@@ -384,7 +414,6 @@ export const serveSourceControlAPI = (router: Router) => {
 
     if (code !== 0) {
       const errorMsg = new TextDecoder().decode(stderr);
-      console.log(`Failed to checkout branch: ${branch} - ${errorMsg}`);
       ctx.response.status = Status.InternalServerError;
       ctx.response.body = { error: errorMsg.trim() };
       return;
@@ -543,6 +572,7 @@ export const serveSourceControlAPI = (router: Router) => {
     ctx.response.body = { success: true };
   });
 
+  // #region merge continue
   router.post("/api/v1/source-control/:instance_id/merge/continue", async ctx => {
     const BodySchema = z.object({
       commit_message: z.string().optional(),
@@ -587,7 +617,6 @@ export const serveSourceControlAPI = (router: Router) => {
     await broadcastWorldUpdate();
     ctx.response.body = { success: true, message: "Merge finalized successfully." };
   });
-
   // #endregion
 
   // #region rebase
@@ -607,87 +636,68 @@ export const serveSourceControlAPI = (router: Router) => {
 
     const instanceId = ctx.params.instance_id;
     if (!instanceId) {
-      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
-    }
-    const instance = GameInstance.INSTANCES.get(instanceId);
-    if (!instance) {
-      throw new JsonAPIError(Status.NotFound, "Instance not found.");
-    }
-    if (!instance.info.editMode) {
-      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
-    }
-    const sourceRoot = instance.info.worldDirectory;
-    const branchToRebaseOnto = `${body.remote}/${body.baseBranch}`;
-
-    const rebaseProcess = new Deno.Command("git", {
-      args: ["rebase", branchToRebaseOnto],
-      cwd: sourceRoot,
-    }).spawn();
-
-    const rebaseStatus = await rebaseProcess.status;
-    if (!rebaseStatus.success) {
-      const conflictProcess = new Deno.Command("git", {
-        args: ["diff", "--name-only", "--diff-filter=U"],
-        cwd: sourceRoot,
-        stdout: "piped",
-        stderr: "piped",
-      }).spawn();
-      const conflictOutput = await conflictProcess.output();
-      const conflictStdout = new TextDecoder().decode(conflictOutput.stdout);
-      const conflictFiles = conflictStdout.split("\n").filter(Boolean);
-      const conflicts = [];
-      for (const file of conflictFiles) {
-        try {
-          const fileContent = await Deno.readTextFile(path.join(sourceRoot, file));
-          conflicts.push({ filePath: file, content: fileContent });
-        } catch (_err) {
-          // Skip
-        }
-      }
-      ctx.response.status = Status.InternalServerError;
-      ctx.response.body = {
-        error: `Rebase conflicts detected when rebasing onto ${branchToRebaseOnto}`,
-        conflicts,
-      };
+      ctx.response.status = Status.BadRequest;
+      ctx.response.body = { error: "Instance ID is required." };
       return;
     }
-    await buildWorld("default", Deno.cwd(), "_dist");
-    ctx.response.body = { success: true };
-  });
-  // #endregion
-
-  // #region rebase continue
-  router.post("/api/v1/source-control/:instance_id/rebase/continue", async ctx => {
-    const instanceId = ctx.params.instance_id;
-    if (!instanceId) {
-      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
-    }
     const instance = GameInstance.INSTANCES.get(instanceId);
     if (!instance) {
-      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+      ctx.response.status = Status.NotFound;
+      ctx.response.body = { error: "Instance not found." };
+      return;
     }
     if (!instance.info.editMode) {
-      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+      ctx.response.status = Status.Forbidden;
+      ctx.response.body = { error: "Not in edit mode." };
+      return;
     }
     const sourceRoot = instance.info.worldDirectory;
 
-    const continueProcess = new Deno.Command("git", {
-      args: ["rebase", "--continue"],
+    let branchToRebaseOnto = body.baseBranch;
+    if (!branchToRebaseOnto.startsWith(`${body.remote}/`)) {
+      branchToRebaseOnto = `${body.remote}/${branchToRebaseOnto}`;
+    }
+
+    // Run the rebase command with piped stdout/stderr
+    const rebaseProcess = new Deno.Command("git", {
+      args: ["rebase", branchToRebaseOnto],
       cwd: sourceRoot,
       stdout: "piped",
       stderr: "piped",
     }).spawn();
 
-    const { code, stderr } = await continueProcess.output();
+    const { code, stdout, stderr } = await rebaseProcess.output();
+    const decoder = new TextDecoder();
+    decoder
+      .decode(stdout)
+      .split("\n")
+      .forEach(line => line.trim() && console.log("Git rebase stdout:", line));
+    decoder
+      .decode(stderr)
+      .split("\n")
+      .forEach(line => line.trim() && console.log("Git rebase stderr:", line));
+
     if (code !== 0) {
-      const errorMsg = new TextDecoder().decode(stderr).trim();
-      ctx.response.status = Status.InternalServerError;
-      ctx.response.body = { error: `Failed to continue rebase: ${errorMsg}` };
+      // Abort rebase if conflict occurs
+      const abortProcess = new Deno.Command("git", {
+        args: ["rebase", "--abort"],
+        cwd: sourceRoot,
+        stdout: "piped",
+        stderr: "piped",
+      }).spawn();
+      const { stdout: abortStdout, stderr: abortStderr } = await abortProcess.output();
+      console.log("Git rebase abort stdout:", decoder.decode(abortStdout));
+      console.log("Git rebase abort stderr:", decoder.decode(abortStderr));
+
+      ctx.response.status = Status.Conflict;
+      ctx.response.body = {
+        error: `Rebase failed due to conflicts when rebasing onto ${branchToRebaseOnto}. Rebase aborted.`,
+      };
       return;
     }
 
-    await broadcastWorldUpdate();
-    ctx.response.body = { success: true, message: "Rebase continued successfully." };
+    await buildWorld("default", Deno.cwd(), "_dist");
+    ctx.response.body = { success: true };
   });
   // #endregion
 
@@ -723,41 +733,6 @@ export const serveSourceControlAPI = (router: Router) => {
 
     await broadcastWorldUpdate();
     ctx.response.body = { success: true, message: "Rebase aborted successfully." };
-  });
-  // #endregion
-
-  // #region rebase skip
-  router.post("/api/v1/source-control/:instance_id/rebase/skip", async ctx => {
-    const instanceId = ctx.params.instance_id;
-    if (!instanceId) {
-      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
-    }
-    const instance = GameInstance.INSTANCES.get(instanceId);
-    if (!instance) {
-      throw new JsonAPIError(Status.NotFound, "Instance not found.");
-    }
-    if (!instance.info.editMode) {
-      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
-    }
-    const sourceRoot = instance.info.worldDirectory;
-
-    const skipProcess = new Deno.Command("git", {
-      args: ["rebase", "--skip"],
-      cwd: sourceRoot,
-      stdout: "piped",
-      stderr: "piped",
-    }).spawn();
-
-    const { code, stderr } = await skipProcess.output();
-    if (code !== 0) {
-      const errorMsg = new TextDecoder().decode(stderr).trim();
-      ctx.response.status = Status.InternalServerError;
-      ctx.response.body = { error: `Failed to skip rebase commit: ${errorMsg}` };
-      return;
-    }
-
-    await broadcastWorldUpdate();
-    ctx.response.body = { success: true, message: "Rebase commit skipped successfully." };
   });
   // #endregion
 
