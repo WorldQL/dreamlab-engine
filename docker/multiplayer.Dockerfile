@@ -32,4 +32,4 @@ RUN deno install --entrypoint server-host/main.ts && deno install --entrypoint s
 EXPOSE 8001
 VOLUME ["/app/multiplayer/worlds"]
 
-CMD ["sh", "-c", "umask 000 && chmod -R 777 /app/multiplayer/worlds && task start"]
+CMD ["task", "start"]
