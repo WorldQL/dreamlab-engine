@@ -428,8 +428,9 @@ export const serveSourceControlAPI = (router: Router) => {
       throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
     }
     const sourceRoot = instance.info.worldDirectory;
+    const newBranchName = `branch-from-${body.commit_hash.slice(0, 7)}`;
     const checkoutProcess = new Deno.Command("git", {
-      args: ["checkout", body.commit_hash],
+      args: ["checkout", "-b", newBranchName, body.commit_hash],
       cwd: sourceRoot,
     }).spawn();
     const checkoutStatus = await checkoutProcess.status;
@@ -466,7 +467,7 @@ export const serveSourceControlAPI = (router: Router) => {
     }
     const sourceRoot = instance.info.worldDirectory;
     const revertProcess = new Deno.Command("git", {
-      args: ["revert", body.commit_hash],
+      args: ["revert", body.commit_hash, "--no-edit"],
       cwd: sourceRoot,
     }).spawn();
     const revertStatus = await revertProcess.status;
