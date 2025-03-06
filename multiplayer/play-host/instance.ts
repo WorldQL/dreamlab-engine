@@ -41,7 +41,7 @@ export class PlayInstance {
   async boot() {
     this.setStatus(InstanceState.Starting, "Starting instance");
 
-    const worldsDirectory = `${Deno.cwd()}/worlds`;
+    const worldsDirectory = CONFIG.WORLDS_DIRECTORY;
     const worldDirectory = path.join(worldsDirectory, this.worldId);
     if (!(await fs.exists(worldDirectory)))
       throw new Error("world does not exist: " + worldDirectory);

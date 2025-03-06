@@ -53,6 +53,7 @@ export const CONFIG = createEnv({
 
     KV_PUBLIC_URL: z.string().url(),
     KV_SIGNING_KEY: z.string().min(1),
+    WORLDS_DIRECTORY: z.string().default(`${Deno.cwd()}/worlds`),
 
     INSTANCE_ID: z.string().min(1),
     WORLD_ID: z.string().min(1),
@@ -62,6 +63,7 @@ export const CONFIG = createEnv({
     MULTIPLAYER_PUBLIC_URL: Deno.env.get("DREAMLAB_MULTIPLAYER_PUBLIC_URL"),
     KV_PUBLIC_URL: Deno.env.get("DREAMLAB_KV_PUBLIC_URL"),
     KV_SIGNING_KEY: Deno.env.get("DREAMLAB_KV_SIGNING_KEY"),
+    WORLDS_DIRECTORY: Deno.env.get("DREAMLAB_MULTIPLAYER_WORLDS_DIRECTORY"),
     INSTANCE_ID: cli["instance-id"] ?? Deno.env.get("DREAMLAB_MULTIPLAYER_INSTANCE_ID"),
     WORLD_ID: cli["world-id"] ?? Deno.env.get("DREAMLAB_MULTIPLAYER_WORLD_ID"),
   },

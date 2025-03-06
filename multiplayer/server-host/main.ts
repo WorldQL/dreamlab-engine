@@ -77,7 +77,7 @@ await Promise.all([
     instance = createInstance({
       instanceId: NIL_UUID,
       worldId: world,
-      worldDirectory: `${Deno.cwd()}/worlds/${world}`,
+      worldDirectory: `${CONFIG.WORLDS_DIRECTORY}/${world}`,
       editMode: !(args["play-mode"] ?? false),
       inspect: "127.0.0.1:9229",
     });

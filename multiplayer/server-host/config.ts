@@ -89,6 +89,7 @@ export const CONFIG = createEnv({
     CODE_EDITOR_YJS_URL: z.string().url(),
     MULTIPLAYER_USE_SYSTEMD_LIMITS: BoolSchema,
     MULTIPLAYER_REWRITE_STACK_TRACES: BoolSchema,
+    WORLDS_DIRECTORY: z.string().default(`${Deno.cwd()}/worlds`),
   },
 
   runtimeEnvStrict: {
@@ -103,6 +104,7 @@ export const CONFIG = createEnv({
     CODE_EDITOR_YJS_URL: Deno.env.get("DREAMLAB_CODE_EDITOR_YJS_URL"),
     MULTIPLAYER_USE_SYSTEMD_LIMITS: Deno.env.get("DREAMLAB_MULTIPLAYER_USE_SYSTEMD_LIMITS"),
     MULTIPLAYER_REWRITE_STACK_TRACES: Deno.env.get("DREAMLAB_MULTIPLAYER_REWRITE_STACK_TRACES"),
+    WORLDS_DIRECTORY: Deno.env.get("DREAMLAB_MULTIPLAYER_WORLDS_DIRECTORY"),
   },
 
   emptyStringAsUndefined: true,

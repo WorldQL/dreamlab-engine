@@ -61,7 +61,7 @@ export class GameSession {
       workerConnectUrl: `ws://${addr.hostname}:${addr.port}/internal/worker`,
       instanceId: parent.info.instanceId,
       worldId: parent.info.worldId,
-      worldsDirectory: `${Deno.cwd()}/worlds`,
+      worldsDirectory: CONFIG.WORLDS_DIRECTORY,
       worldDirectory: path.join(parent.info.worldDirectory, opts.worldSubDirectory),
       worldResourcesBaseUrl: `${CONFIG.MULTIPLAYER_PUBLIC_URL}/worlds`,
       worldSubdirectory: opts.worldSubDirectory,
