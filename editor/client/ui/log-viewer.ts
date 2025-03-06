@@ -7,7 +7,7 @@ import { urlToWebSocket } from "@dreamlab/util/url.ts";
 import inspect from "npm:object-inspect@1.13.2";
 import { WebSocket } from "npm:partysocket@1.0.2";
 import stripAnsi from "npm:strip-ansi@7.1.0";
-import type { LogEntry } from "../../../multiplayer/server-host/util/log-store.ts";
+import type { LogEntry } from "../../../multiplayer/common-host/log-store.ts";
 import { Activity, CaseSensitive, Grid2X2, icon, Trash2 as Trash, Unplug } from "../_icons.ts";
 import { InspectorUI } from "./inspector.ts";
 
@@ -93,7 +93,10 @@ export class LogViewer {
       status,
     ]);
 
-    this.#section.append(toolbar, this.#logcontent);
+    this.#section.append(
+      toolbar,
+      elem("div", { id: "log-content-wrapper" }, [this.#logcontent]),
+    );
 
     this.#ws.addEventListener("open", () => {
       this.clearLogs();
@@ -189,7 +192,7 @@ export class LogViewer {
     ]);
 
     this.#logs.push(entry);
-    this.#logcontent.prepend(entry);
+    this.#logcontent.append(entry);
 
     // Remove old logs if we exceed the maximum
     if (this.#logs.length > this.maxLogs) {

@@ -107,12 +107,18 @@
     }
   }
 
+  & #log-content-wrapper {
+    display: flex;
+    overflow-y: scroll;
+    flex-direction: column-reverse;
+    flex: 1;
+  }
+
   & #log-content {
     --gap: 0.25rem;
     flex: 1;
-    overflow-y: overlay;
     display: flex;
-    flex-direction: column-reverse;
+    flex-direction: column;
     gap: var(--gap);
 
     & > .log-entry {
