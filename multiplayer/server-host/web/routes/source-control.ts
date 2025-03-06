@@ -1171,7 +1171,7 @@ export const serveSourceControlAPI = (router: Router) => {
   router.delete("/api/v1/source-control/:instance_id/branch", async ctx => {
     const BodySchema = z.object({
       branch: z.string(),
-      force: z.boolean().optional().default(false),
+      force: z.boolean().optional().default(true), // always force (for now)
     });
     let body;
     try {
