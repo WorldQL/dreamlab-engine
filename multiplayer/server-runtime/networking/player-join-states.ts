@@ -3,6 +3,8 @@ import * as internal from "@dreamlab/engine/internal";
 import { serializeEntityDefinition } from "@dreamlab/proto/common/entity-sync.ts";
 import { PlayerConnectionDropped } from "@dreamlab/proto/common/signals.ts";
 import { PlayPacket } from "@dreamlab/proto/play.ts";
+import { EntitySchema, getSceneFromProject, ProjectSchema } from "@dreamlab/scene";
+import { z } from "@dreamlab/vendor/zod.ts";
 import { ServerNetworkSetupRoutine } from "./net-manager.ts";
 
 export const handlePlayerJoinExchange: ServerNetworkSetupRoutine = (net, game) => {
@@ -14,6 +16,16 @@ export const handlePlayerJoinExchange: ServerNetworkSetupRoutine = (net, game) =
     if (connectionState === undefined && packet.phase === "initialized") {
       connectionStates.set(from, packet.phase);
 
+      // TODO: remove hack
+      // BEGIN HACK: load scene def for use below
+      const projectDesc = await game
+        .fetch("res://project.json")
+        .then(r => r.text())
+        .then(JSON.parse)
+        .then(ProjectSchema.parse);
+      const scene = await getSceneFromProject(game, projectDesc, "main");
+      // END HACK
+
       const worldEntities = [];
       for (const child of game.world.children.values()) {
         worldEntities.push(
@@ -23,9 +35,48 @@ export const handlePlayerJoinExchange: ServerNetworkSetupRoutine = (net, game) =
 
       const prefabEntities = [];
       for (const child of game.prefabs.children.values()) {
-        prefabEntities.push(
-          serializeEntityDefinition(game, child.getDefinition(), game.prefabs.ref),
+        const serialized = serializeEntityDefinition(
+          game,
+          child.getDefinition(),
+          game.prefabs.ref,
         );
+
+        // BEGIN HACK: load values from scene def
+        const overwriteValues = (
+          serialized: ReturnType<typeof serializeEntityDefinition>,
+          sceneDef: z.infer<typeof EntitySchema>,
+        ) => {
+          for (const value in serialized.values) {
+            if (serialized.values[value] === undefined) {
+              serialized.values[value] = sceneDef.values[value];
+            }
+          }
+
+          const behaviors = serialized.behaviors ?? [];
+          for (const behavior of behaviors) {
+            const behaviorDef = sceneDef.behaviors.find(x => x.ref === behavior.ref);
+            if (!behaviorDef) continue;
+
+            for (const value in behavior.values) {
+              if (behavior.values[value] === undefined) {
+                behavior.values[value] = behaviorDef.values[value];
+              }
+            }
+          }
+
+          const children = serialized.children ?? [];
+          for (const child of children) {
+            const childSceneDef = sceneDef.children.find(x => x.ref === child.ref);
+            if (!childSceneDef) continue;
+            overwriteValues(child, childSceneDef);
+          }
+        };
+
+        const sceneDef = scene.prefabs.find(x => x.ref === serialized.ref);
+        if (sceneDef) overwriteValues(serialized, sceneDef);
+        // END HACK
+
+        prefabEntities.push(serialized);
       }
 
       net.send(from, {
