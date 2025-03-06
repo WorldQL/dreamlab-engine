@@ -7,26 +7,39 @@ import { GameInstance } from "../../instance.ts";
 import { JsonAPIError } from "../../../common-host/web-util/api.ts";
 
 export const serveSourceControlAPI = (router: Router) => {
-  async function broadcastWorldUpdate(filePath?: string) {
-    await buildWorld("default", Deno.cwd(), "_dist");
+  async function broadcastWorldUpdate(instance: GameInstance, filePath: string) {
+    const sourceRoot = instance.info.worldDirectory;
 
-    if (filePath) {
-      const absolutePath = path.join(Deno.cwd(), filePath);
-      const isBehavior = await fileIsProbablyBehaviorScript(absolutePath);
-      const packet = {
+    const computedPath = path.join(sourceRoot, filePath);
+    const relativePath = path.relative(sourceRoot, computedPath);
+
+    let fileExists = true;
+    try {
+      await Deno.stat(computedPath);
+    } catch (err) {
+      if (err instanceof Deno.errors.NotFound) {
+        fileExists = false;
+      } else {
+        throw err;
+      }
+    }
+
+    if (fileExists) {
+      await buildWorld(instance.info.worldId, sourceRoot, "_dist");
+      const isBehavior = await fileIsProbablyBehaviorScript(computedPath);
+      instance.session?.broadcastPacket({
         t: "ScriptEdited",
-        script_location: filePath,
+        script_location: relativePath,
         behavior_script_id: isBehavior
-          ? `res://${filePath.replace(/\.tsx?$/, ".js")}`
+          ? `res://${relativePath.replace(/\.tsx?$/, ".js")}`
           : undefined,
-      };
-      console.log("Broadcasting packet:", packet);
+      });
     } else {
-      const packet = {
-        t: "WorldUpdated",
-        message: "Working branch code has been updated.",
-      };
-      console.log("Broadcasting packet:", packet);
+      instance.session?.broadcastPacket({
+        t: "ScriptEdited",
+        script_location: relativePath,
+        behavior_script_id: undefined,
+      });
     }
   }
 
@@ -180,7 +193,6 @@ export const serveSourceControlAPI = (router: Router) => {
       ctx.response.body = { error: "Pull failed due to an unexpected error." };
       return;
     }
-    await broadcastWorldUpdate();
     ctx.response.body = { success: true };
   });
   // #endregion
@@ -298,37 +310,7 @@ export const serveSourceControlAPI = (router: Router) => {
       }).spawn();
       await cleanProcess.status;
 
-      const computedPath = path.join(sourceRoot, filePath);
-      const relativePath = path.relative(sourceRoot, computedPath);
-
-      let fileExists = true;
-      try {
-        await Deno.stat(computedPath);
-      } catch (err) {
-        if (err instanceof Deno.errors.NotFound) {
-          fileExists = false;
-        } else {
-          throw err;
-        }
-      }
-
-      if (fileExists) {
-        await buildWorld(instance.info.worldId, instance.info.worldDirectory, "_dist");
-        const isBehavior = await fileIsProbablyBehaviorScript(computedPath);
-        instance.session?.broadcastPacket({
-          t: "ScriptEdited",
-          script_location: relativePath,
-          behavior_script_id: isBehavior
-            ? `res://${relativePath.replace(/\.tsx?$/, ".js")}`
-            : undefined,
-        });
-      } else {
-        instance.session?.broadcastPacket({
-          t: "ScriptEdited",
-          script_location: relativePath,
-          behavior_script_id: undefined,
-        });
-      }
+      await broadcastWorldUpdate(instance, filePath);
 
       ctx.response.body = {
         success: true,
@@ -419,7 +401,6 @@ export const serveSourceControlAPI = (router: Router) => {
       return;
     }
 
-    await broadcastWorldUpdate();
     ctx.response.body = { success: true, message: `Checked out branch ${branch}` };
   });
   // #endregion
@@ -457,7 +438,6 @@ export const serveSourceControlAPI = (router: Router) => {
       ctx.response.body = { error: `Failed to checkout commit ${body.commit_hash}` };
       return;
     }
-    await broadcastWorldUpdate();
     ctx.response.body = { success: true };
   });
   // #endregion
@@ -495,12 +475,12 @@ export const serveSourceControlAPI = (router: Router) => {
       ctx.response.body = { error: `Failed to revert commit ${body.commit_hash}` };
       return;
     }
-    await broadcastWorldUpdate();
+
     ctx.response.body = { success: true };
   });
   // #endregion
 
-  // #region merge branches
+  // #region merge
   router.post("/api/v1/source-control/:instance_id/merge", async ctx => {
     const BodySchema = z.object({ source: z.string(), target: z.string() });
     let body;
@@ -568,7 +548,6 @@ export const serveSourceControlAPI = (router: Router) => {
       return;
     }
 
-    await broadcastWorldUpdate();
     ctx.response.body = { success: true };
   });
 
@@ -614,7 +593,6 @@ export const serveSourceControlAPI = (router: Router) => {
       return;
     }
 
-    await broadcastWorldUpdate();
     ctx.response.body = { success: true, message: "Merge finalized successfully." };
   });
   // #endregion
@@ -731,7 +709,6 @@ export const serveSourceControlAPI = (router: Router) => {
       return;
     }
 
-    await broadcastWorldUpdate();
     ctx.response.body = { success: true, message: "Rebase aborted successfully." };
   });
   // #endregion
@@ -850,8 +827,6 @@ export const serveSourceControlAPI = (router: Router) => {
         throw new Error("Failed to stage file as resolved.");
       }
 
-      await broadcastWorldUpdate();
-
       ctx.response.body = {
         success: true,
         message: `Conflict resolved for ${body.file}. Please use the merge/continue endpoint to finalize the merge.`,
@@ -915,7 +890,6 @@ export const serveSourceControlAPI = (router: Router) => {
       ctx.response.body = { error: "Failed to stage the file after accepting resolution" };
       return;
     }
-    await broadcastWorldUpdate();
 
     ctx.response.body = {
       success: true,
@@ -950,7 +924,6 @@ export const serveSourceControlAPI = (router: Router) => {
       return;
     }
 
-    await broadcastWorldUpdate();
     ctx.response.body = { success: true, message: "Merge aborted successfully." };
   });
   // #endregion
@@ -1488,7 +1461,6 @@ export const serveSourceControlAPI = (router: Router) => {
       ctx.response.body = { error: `Failed to reset: ${new TextDecoder().decode(stderr)}` };
       return;
     }
-    await broadcastWorldUpdate();
     ctx.response.body = { success: true, output: new TextDecoder().decode(stdout) };
   });
   // #endregion
