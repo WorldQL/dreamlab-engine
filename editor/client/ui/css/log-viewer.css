@@ -109,7 +109,7 @@
 
   & #log-content-wrapper {
     display: flex;
-    overflow-y: scroll;
+    overflow-y: auto;
     scrollbar-gutter: stable;
     flex-direction: column-reverse;
     flex: 1;
