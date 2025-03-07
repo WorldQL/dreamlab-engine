@@ -132,7 +132,7 @@ export const bundleEngine = async (
  *
  */
 export const bundleUI = async (
-  engineDir: string,
+  uiDir: string,
   outdir: string,
   denoJsonPath: string = "./deno.json",
   opts?: BundleOptions,
@@ -148,8 +148,8 @@ export const bundleUI = async (
       }),
     ],
     entryPoints: [
-      { in: path.join(engineDir, "mod.ts"), out: "ui" },
-      { in: path.join(engineDir, "jsx.ts"), out: "ui-jsx" },
+      { in: path.join(uiDir, "mod.ts"), out: "ui" },
+      { in: path.join(uiDir, "jsx.ts"), out: "ui-jsx" },
     ],
     outdir,
   };
