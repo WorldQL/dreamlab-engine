@@ -49,14 +49,16 @@ export const startInstanceCollector = () => {
  * Deletes all Yjs rooms associated with the given instanceId.
  */
 export async function deleteRoomsForInstance(instanceId: string): Promise<void> {
-  try {
-    const res = await fetch(
-      `${CONFIG.CODE_EDITOR_YJS_URL}/rooms/instance/${encodeURIComponent(instanceId)}`,
-      { method: "DELETE" },
-    );
+  if (CONFIG.CODE_EDITOR_YJS_URL) {
+    try {
+      const res = await fetch(
+        `${CONFIG.CODE_EDITOR_YJS_URL}/rooms/instance/${encodeURIComponent(instanceId)}`,
+        { method: "DELETE" },
+      );
 
-    if (!res.ok) throw new Error(res.statusText);
-  } catch (err) {
-    console.error(`Failed to delete Yjs rooms for instance ${instanceId}:`, err);
+      if (!res.ok) throw new Error(res.statusText);
+    } catch (err) {
+      console.error(`Failed to delete Yjs rooms for instance ${instanceId}:`, err);
+    }
   }
 }

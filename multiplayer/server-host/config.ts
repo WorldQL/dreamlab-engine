@@ -86,7 +86,7 @@ export const CONFIG = createEnv({
     KV_PUBLIC_URL: z.string().url(),
     KV_SIGNING_KEY: z.string().min(1),
     NEXT_PUBLIC_URL: z.string().url().default("https://app.dreamlab.gg"),
-    CODE_EDITOR_YJS_URL: z.string().url(),
+    CODE_EDITOR_YJS_URL: z.string().url().optional(),
     MULTIPLAYER_USE_SYSTEMD_LIMITS: BoolSchema,
     MULTIPLAYER_REWRITE_STACK_TRACES: BoolSchema,
     WORLDS_DIRECTORY: z.string().default(`${Deno.cwd()}/worlds`),
