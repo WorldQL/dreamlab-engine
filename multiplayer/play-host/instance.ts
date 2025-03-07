@@ -46,20 +46,22 @@ export class PlayInstance {
     if (!(await fs.exists(worldDirectory)))
       throw new Error("world does not exist: " + worldDirectory);
 
-    this.setStatus(InstanceState.Starting, "Building engine");
-    await new Deno.Command(Deno.execPath(), {
-      args: ["run", "-A", "./pre-exec/prepare-play.ts"],
-      stdout: "null",
-    }).spawn().status;
+    if (!CONFIG.STANDALONE) {
+      this.setStatus(InstanceState.Starting, "Building engine");
+      await new Deno.Command(Deno.execPath(), {
+        args: ["run", "-A", "./pre-exec/prepare-play.ts"],
+        stdout: "null",
+      }).spawn().status;
 
-    try {
-      this.setStatus(InstanceState.Starting, "Building world scripts");
-      await buildWorld(this.worldId, worldDirectory, "_dist_play");
-    } catch (err) {
-      this.logs.error("Failed to build world bundle", { err: err.stack });
-      this.setStatus(InstanceState.Errored, "World script build failed", err.toString());
-      this.#readyPromise.reject();
-      return;
+      try {
+        this.setStatus(InstanceState.Starting, "Building world scripts");
+        await buildWorld(this.worldId, worldDirectory, "_dist_play");
+      } catch (err) {
+        this.logs.error("Failed to build world bundle", { err: err.stack });
+        this.setStatus(InstanceState.Errored, "World script build failed", err.toString());
+        this.#readyPromise.reject();
+        return;
+      }
     }
 
     this.setStatus(InstanceState.Starting, "Starting runtime process");
@@ -87,6 +89,9 @@ export class PlayInstance {
         rewriteStackTraces: true,
       },
       this.logs,
+      false,
+      CONFIG.RUNTIME_SCRIPT,
+      CONFIG.STANDALONE ? "deno.json" : undefined,
     );
 
     this.ipc.addMessageListener("WorkerUp", () => {

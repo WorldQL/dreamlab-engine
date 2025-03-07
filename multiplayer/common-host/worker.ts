@@ -27,7 +27,12 @@ export class IPCWorker {
     public readonly workerData: WorkerInitData,
     logs: LogStore,
     useSystemdLimits: boolean = false,
+    serverRuntimeScript?: string,
+    denoConfigJson?: string,
   ) {
+    serverRuntimeScript ??= "./server-runtime/main.ts";
+    denoConfigJson ??= "./pre-exec/deno.runtime.json";
+
     this.workerId = workerData.workerId;
     this.logs = logs;
 
@@ -38,7 +43,7 @@ export class IPCWorker {
       Deno.execPath(),
       "run",
       "-c",
-      "./pre-exec/deno.runtime.json",
+      denoConfigJson,
       ...(!workerData.editMode && workerData.inspect
         ? [`--inspect=${workerData.inspect}`]
         : []),
@@ -47,7 +52,7 @@ export class IPCWorker {
         (workerData.kv ? `,${new URL(workerData.kv.url).host}` : ""),
       `--allow-read=./pre-exec/,${workerData.worldDirectory}`,
       `--allow-env`,
-      "./server-runtime/main.ts",
+      serverRuntimeScript,
     ];
 
     if (useSystemdLimits) {
