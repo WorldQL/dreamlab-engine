@@ -968,7 +968,7 @@ export const serveSourceControlAPI = (router: Router) => {
 
       const logArgs = [
         "log",
-        ...branches,
+        ...branches.filter(b => !b.toLowerCase().includes("stash")),
         "--pretty=format:%H|%P|%D|%s|%an|%ae|%ad",
         "--date=iso",
         "--abbrev-commit",
@@ -996,10 +996,28 @@ export const serveSourceControlAPI = (router: Router) => {
         };
       });
 
+      const stashOutput = await runGitCommand(["stash", "list"]);
+      const stashCommits = stashOutput.map(line => {
+        const parts = line.split(": ");
+        const stashRef = parts[0].trim();
+        const message = parts.slice(1).join(": ").trim();
+        return {
+          hash: stashRef,
+          parents: [],
+          refs: [stashRef],
+          message,
+          author: { name: "", email: "" },
+          date: new Date().toISOString(),
+        };
+      });
+
+      const allCommits = [...commits, ...stashCommits];
+      allCommits.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
       const currentBranchResult = await runGitCommand(["rev-parse", "--abbrev-ref", "HEAD"]);
       const currentBranch = currentBranchResult[0] || "unknown";
 
-      ctx.response.body = { commits, currentBranch };
+      ctx.response.body = { commits: allCommits, currentBranch };
     } catch (err) {
       throw new JsonAPIError(Status.InternalServerError, err.message);
     }
@@ -1395,6 +1413,18 @@ export const serveSourceControlAPI = (router: Router) => {
 
   // #region stash pop
   router.post("/api/v1/source-control/:instance_id/stash/pop", async ctx => {
+    const BodySchema = z.object({
+      stash_ref: z.string().optional(),
+    });
+    let body;
+    try {
+      body = BodySchema.parse(await ctx.request.body.json());
+    } catch (err) {
+      ctx.response.status = Status.BadRequest;
+      ctx.response.body = { error: err.toString() };
+      return;
+    }
+
     const instanceId = ctx.params.instance_id;
     if (!instanceId) {
       throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
@@ -1407,16 +1437,77 @@ export const serveSourceControlAPI = (router: Router) => {
       throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
     }
     const sourceRoot = instance.info.worldDirectory;
+
+    const stashReference =
+      body.stash_ref === "stash" || body.stash_ref === "refs/stash"
+        ? "stash@{0}"
+        : body.stash_ref;
+
+    const args = stashReference ? ["stash", "pop", stashReference] : ["stash", "pop"];
+
     const stashProcess = new Deno.Command("git", {
-      args: ["stash", "pop"],
+      args,
       cwd: sourceRoot,
       stdout: "piped",
       stderr: "piped",
-    });
+    }).spawn();
     const { code, stdout, stderr } = await stashProcess.output();
     if (code !== 0) {
       ctx.response.status = Status.InternalServerError;
       ctx.response.body = { error: `Failed to pop stash: ${new TextDecoder().decode(stderr)}` };
+      return;
+    }
+    ctx.response.body = { success: true, output: new TextDecoder().decode(stdout) };
+  });
+  // #endregion
+
+  // #region stash drop
+  router.post("/api/v1/source-control/:instance_id/stash/drop", async ctx => {
+    const BodySchema = z.object({
+      stash_ref: z.string().optional(),
+    });
+    let body;
+    try {
+      body = BodySchema.parse(await ctx.request.body.json());
+    } catch (err) {
+      ctx.response.status = Status.BadRequest;
+      ctx.response.body = { error: err.toString() };
+      return;
+    }
+
+    const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
+    const instance = GameInstance.INSTANCES.get(instanceId);
+    if (!instance) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+    if (!instance.info.editMode) {
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+    const sourceRoot = instance.info.worldDirectory;
+
+    const stashReference =
+      body.stash_ref === "stash" || body.stash_ref === "refs/stash"
+        ? "stash@{0}"
+        : body.stash_ref;
+
+    const args = stashReference ? ["stash", "drop", stashReference] : ["stash", "drop"];
+
+    const stashProcess = new Deno.Command("git", {
+      args,
+      cwd: sourceRoot,
+      stdout: "piped",
+      stderr: "piped",
+    }).spawn();
+
+    const { code, stdout, stderr } = await stashProcess.output();
+    if (code !== 0) {
+      ctx.response.status = Status.InternalServerError;
+      ctx.response.body = {
+        error: `Failed to drop stash: ${new TextDecoder().decode(stderr)}`,
+      };
       return;
     }
     ctx.response.body = { success: true, output: new TextDecoder().decode(stdout) };
