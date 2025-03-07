@@ -1189,7 +1189,6 @@ export const serveSourceControlAPI = (router: Router) => {
   router.delete("/api/v1/source-control/:instance_id/branch", async ctx => {
     const BodySchema = z.object({
       branch: z.string(),
-      force: z.boolean().optional().default(true), // always force (for now)
     });
     let body;
     try {
@@ -1211,7 +1210,7 @@ export const serveSourceControlAPI = (router: Router) => {
       throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
     }
     const sourceRoot = instance.info.worldDirectory;
-    const args = ["branch", body.force ? "-D" : "-d", body.branch];
+    const args = ["branch", "-D", body.branch];
     const branchProcess = new Deno.Command("git", { args, cwd: sourceRoot }).spawn();
     const branchStatus = await branchProcess.status;
     if (!branchStatus.success) {
