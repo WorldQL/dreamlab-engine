@@ -9,5 +9,6 @@ singleplayer/web/worlds
 client/web/dist
 editor/web/dist
 engine/_web/www
+standalone/out
 
 typedef-gen/dnt

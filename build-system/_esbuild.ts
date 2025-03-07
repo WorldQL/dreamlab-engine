@@ -5,33 +5,32 @@ export { denoPlugins, esbuild };
 import * as dotenv from "jsr:@std/dotenv@0.225.2";
 import * as path from "jsr:@std/path@^1";
 
-export const dreamlabEngineExternalPlugin = (): esbuild.Plugin => ({
-  name: "dreamlab-engine-external",
+export const dreamlabExternalPlugin = (name: string, ...filters: RegExp[]): esbuild.Plugin => ({
+  name,
   setup: (build: esbuild.PluginBuild) => {
-    build.onResolve({ filter: /^@dreamlab\/engine$/ }, args => {
-      return { path: args.path, external: true };
-    });
+    for (const filter of filters) {
+      build.onResolve({ filter }, args => {
+        return { path: args.path, external: true };
+      });
+    }
   },
 });
+
+export const dreamlabEngineExternalPlugin = () =>
+  dreamlabExternalPlugin("dreamlab-engine-external", /^@dreamlab\/engine$/);
+
+export const dreamlabUIExternalPlugin = () =>
+  dreamlabExternalPlugin(
+    "dreamlab-ui-external",
+    /^@dreamlab\/ui$/,
+    /^@dreamlab\/ui\/jsx-runtime$/,
+  );
 
 export const dreamlabVendorExternalPlugin = (forDeno?: boolean): esbuild.Plugin => ({
   name: "dreamlab-vendor-external",
   setup: (build: esbuild.PluginBuild) => {
     build.onResolve({ filter: /^@dreamlab\/vendor/ }, args => {
       return { path: forDeno ? args.path : args.path.replace(/\.ts$/, ".js"), external: true };
-    });
-  },
-});
-
-export const dreamlabUIExternalPlugin = (): esbuild.Plugin => ({
-  name: "dreamlab-ui-external",
-  setup: (build: esbuild.PluginBuild) => {
-    build.onResolve({ filter: /^@dreamlab\/ui$/ }, args => {
-      return { path: args.path, external: true };
-    });
-
-    build.onResolve({ filter: /^@dreamlab\/ui\/jsx-runtime$/ }, args => {
-      return { path: args.path, external: true };
     });
   },
 });

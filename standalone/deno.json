@@ -1,0 +1,14 @@
+{
+  "lock": false,
+  "tasks": {
+  },
+  "imports": {
+    "@dreamlab/engine": "../engine/mod.ts",
+    "@dreamlab/engine/internal": "../engine/internal.ts",
+    "@dreamlab/vendor/": "../engine/_deps/",
+    "@dreamlab/proto/": "../proto/",
+    "@dreamlab/scene": "../scene-graph/mod.ts",
+    "@dreamlab/ui": "../ui/mod.ts",
+    "@dreamlab/util/": "../util/"
+  }
+}
