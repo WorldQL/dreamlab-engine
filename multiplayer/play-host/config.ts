@@ -45,14 +45,14 @@ const cli = parseArgs(Deno.args, { string: ["instance-id", "world-id"] });
 export const CONFIG = createEnv({
   extends: [early],
   server: {
-    NEXT_GAME_JWT_SECRET: z.string().min(1),
+    NEXT_GAME_JWT_SECRET: z.string().min(1).optional(),
     MULTIPLAYER_PUBLIC_URL: z
       .string()
       .url()
       .default(`http://${early.BIND_ADDRESS.hostname}:${early.BIND_ADDRESS.port}`),
 
-    KV_PUBLIC_URL: z.string().url(),
-    KV_SIGNING_KEY: z.string().min(1),
+    KV_PUBLIC_URL: z.string().url().optional(),
+    KV_SIGNING_KEY: z.string().min(1).optional(),
     WORLDS_DIRECTORY: z.string().default(`${Deno.cwd()}/worlds`),
 
     INSTANCE_ID: z.string().min(1),

@@ -76,8 +76,13 @@ export class PlayInstance {
         worldResourcesBaseUrl: `${CONFIG.MULTIPLAYER_PUBLIC_URL}/worlds`,
         worldSubdirectory: "_dist_play",
 
-        kvUrl: CONFIG.KV_PUBLIC_URL,
-        kvSigningKey: CONFIG.KV_SIGNING_KEY,
+        kv:
+          CONFIG.KV_PUBLIC_URL && CONFIG.KV_SIGNING_KEY
+            ? {
+                url: CONFIG.KV_PUBLIC_URL,
+                signingKey: CONFIG.KV_SIGNING_KEY,
+              }
+            : undefined,
 
         rewriteStackTraces: true,
       },

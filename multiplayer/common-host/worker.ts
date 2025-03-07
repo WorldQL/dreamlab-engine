@@ -43,7 +43,8 @@ export class IPCWorker {
         ? [`--inspect=${workerData.inspect}`]
         : []),
       "--unstable-sloppy-imports",
-      `--allow-net=${new URL(workerData.workerConnectUrl).host},${new URL(workerData.kvUrl).host}`,
+      `--allow-net=${new URL(workerData.workerConnectUrl).host}` +
+        (workerData.kv ? `,${new URL(workerData.kv.url).host}` : ""),
       `--allow-read=./pre-exec/,${workerData.worldDirectory}`,
       `--allow-env`,
       "./server-runtime/main.ts",

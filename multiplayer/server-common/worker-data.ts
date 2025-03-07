@@ -11,9 +11,11 @@ export interface WorkerInitData {
 
   editMode: boolean;
 
-  kvUrl: string;
-  kvClientUrl?: string;
-  kvSigningKey: string;
+  kv?: {
+    url: string;
+    clientUrl?: string;
+    signingKey: string;
+  };
 
   inspect?: string;
   rewriteStackTraces?: boolean;

@@ -16,6 +16,7 @@ import { rewriteStackTraces } from "./stack.ts";
 import { ProjectSchema, getSceneFromProject, loadSceneDefinition } from "@dreamlab/scene";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { handleEditMode } from "./edit-mode.ts";
+import { KvServerStub } from "./kv-server-stub.ts";
 
 addEventListener("unhandledrejection", event => {
   event.preventDefault();
@@ -38,12 +39,14 @@ const game = new ServerGame({
   worldId: workerData.worldId,
   network: net.createNetworking(),
   kv: game =>
-    new KvServer({
-      game,
-      url: workerData.kvUrl,
-      signingKey: workerData.kvSigningKey,
-      clientUrl: workerData.kvClientUrl,
-    }),
+    workerData.kv
+      ? new KvServer({
+          game,
+          url: workerData.kv.url,
+          signingKey: workerData.kv.signingKey,
+          clientUrl: workerData.kv.clientUrl,
+        })
+      : new KvServerStub({ game }),
 });
 game.worldScriptBaseURL = `file://${workerData.worldDirectory}/`;
 Object.defineProperties(globalThis, { net: { value: net }, game: { value: game } });
