@@ -1073,10 +1073,10 @@ export const serveSourceControlAPI = (router: Router) => {
     }
     const sourceRoot = instance.info.worldDirectory;
     const commitHash = ctx.request.url.searchParams.get("commit_hash");
-    const args = commitHash ? ["diff", `${commitHash}^!`] : ["diff", "HEAD"];
+    const diffArgs = commitHash ? ["diff", `${commitHash}^!`] : ["diff", "HEAD"];
 
     const diffProcess = new Deno.Command("git", {
-      args,
+      args: diffArgs,
       cwd: sourceRoot,
       stdout: "piped",
       stderr: "piped",
@@ -1090,7 +1090,6 @@ export const serveSourceControlAPI = (router: Router) => {
       return;
     }
     const diffOutput = new TextDecoder().decode(stdout);
-
     const diffs: Record<string, string> = {};
     const diffSections = diffOutput.split(/^diff --git /gm).filter(Boolean);
     for (const section of diffSections) {
@@ -1100,6 +1099,35 @@ export const serveSourceControlAPI = (router: Router) => {
       if (match) {
         const filePath = match[1];
         diffs[filePath] = fullSection;
+      }
+    }
+
+    const untrackedProcess = new Deno.Command("git", {
+      args: ["ls-files", "--others", "--exclude-standard"],
+      cwd: sourceRoot,
+      stdout: "piped",
+      stderr: "piped",
+    }).spawn();
+    const { code: untrackedCode, stdout: untrackedStdout } = await untrackedProcess.output();
+    if (untrackedCode === 0) {
+      const untrackedOutput = new TextDecoder().decode(untrackedStdout).trim();
+      const untrackedFiles = untrackedOutput ? untrackedOutput.split("\n").filter(Boolean) : [];
+      for (const filePath of untrackedFiles) {
+        if (!diffs[filePath]) {
+          try {
+            const fileContent = await Deno.readTextFile(path.join(sourceRoot, filePath));
+            let newDiff = `diff --git a/${filePath} b/${filePath}\n`;
+            newDiff += `+++ b/${filePath}\n`;
+            const contentDiff = fileContent
+              .split("\n")
+              .map(line => `+${line}`)
+              .join("\n");
+            newDiff += contentDiff;
+            diffs[filePath] = newDiff;
+          } catch (err) {
+            console.error(`Failed to read new file ${filePath}:`, err);
+          }
+        }
       }
     }
     ctx.response.body = { diffs };
