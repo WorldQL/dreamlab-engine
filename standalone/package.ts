@@ -27,12 +27,6 @@ if (!Deno.args.includes("--keep")) {
   await fs.emptyDir("./out");
 }
 
-await bundleEngineDependencies("../engine", "./out/engine");
-await bundleEngine("../engine", "./out/engine");
-
-await bundleEngine("../engine", "./out/engine/.server", undefined, { silent: true }, true);
-await fs.copy("../engine/_deps", "./out/engine/.server/vendor");
-
 console.log("Copying world...");
 await fs.ensureDir("./out/worlds");
 const sourceWorldDir = path.join(Deno.cwd(), "../multiplayer/worlds/", world);
@@ -60,6 +54,9 @@ await bundleWorld(world, {
   outDirName: "_dist_play",
   denoJsonPath: "./deno.json",
 });
+
+await bundleEngine("../engine", "./out/engine/", undefined, { silent: true }, true);
+await fs.copy("../engine/_deps", "./out/engine/vendor");
 
 await bundle("server", {
   ...BASE_BUILD_OPTIONS,
@@ -89,11 +86,19 @@ await bundle("server", {
 });
 
 await fs.ensureDir("out/client");
+
+await bundleEngineDependencies("../engine", "./out/client/dist");
+await bundleEngine("../engine", "./out/client/dist");
 await fs.copy("../client/web/index.html", "out/client/index.html");
 await fs.copy("../client/web/text", "out/client/text");
-await bundleClient("../client", "out/client/dist", undefined, [
-  { in: "../client/src/main-slim.ts", out: "client-main" },
-]);
+await bundleClient(
+  "../client",
+  "out/client/dist",
+  undefined,
+  [{ in: "../client/src/main-slim.ts", out: "client-main" }],
+  undefined,
+  { DREAMLAB_MULTIPLAYER_STANDALONE: "1" },
+);
 await bundleUI("../ui/", "./out/client/dist");
 
 await Deno.writeTextFile(
@@ -101,8 +106,8 @@ await Deno.writeTextFile(
   JSON.stringify(
     {
       imports: {
-        "@dreamlab/engine": "./engine/.server/engine.js",
-        "@dreamlab/vendor/": "./engine/.server/vendor/",
+        "@dreamlab/engine": "./engine/engine.js",
+        "@dreamlab/vendor/": "./engine/vendor/",
         "@dreamlab/ui": "./client/dist/ui.js",
         "@dreamlab/ui/jsx-runtime": "./client/dist/ui-jsx.js",
       },

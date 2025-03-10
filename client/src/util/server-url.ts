@@ -12,6 +12,14 @@ export function setConnectionDetails(details: ServerConnectionDetails) {
 }
 
 const useDefaultDetails = () => {
+  if (globalThis.env.DREAMLAB_MULTIPLAYER_STANDALONE) {
+    connectionDetails.serverUrl = new URL(
+      window.location.protocol + window.location.host,
+    ).toString();
+    connectionDetails.instanceId = "standalone";
+    return;
+  }
+
   const searchParams = new URLSearchParams(window.location.search);
 
   // always prefer search param, fallback to DREAMLAB_MULTIPLAYER_PUBLIC_URL if set

@@ -165,6 +165,7 @@ export const unwasmRapierPlugin = (): esbuild.Plugin => ({
 
 export const dreamlabEnvironmentPlugin = (
   files: string[] = [".env", ".env.production", ".env.local"],
+  overrides: Record<string, string> = {},
 ): esbuild.Plugin => ({
   name: "dreamlab-environment",
   setup: build => {
@@ -186,6 +187,8 @@ export const dreamlabEnvironmentPlugin = (
           // pass
         }
       }
+
+      Object.assign(env, overrides);
 
       return {
         contents: JSON.stringify(env),

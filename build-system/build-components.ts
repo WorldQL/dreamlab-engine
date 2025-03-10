@@ -168,6 +168,7 @@ export const bundleClient = async (
     { in: path.join(clientDir, "src", "main.ts"), out: "client-main" },
   ],
   opts?: BundleOptions,
+  env?: Record<string, string>,
 ) => {
   // only load `.env.production` on non-watch builds
   const envStack = opts?.watch
@@ -181,7 +182,10 @@ export const bundleClient = async (
       dreamlabCssPlugin(),
       dreamlabNodeShimPlugin(),
       dreamlabTextImportPlugin(".svg"),
-      dreamlabEnvironmentPlugin(envStack),
+      dreamlabEnvironmentPlugin(
+        envStack.map(it => path.join(clientDir, it)),
+        env,
+      ),
       dreamlabVendorExternalPlugin(),
       dreamlabEngineExternalPlugin(),
       dreamlabUIExternalPlugin(),

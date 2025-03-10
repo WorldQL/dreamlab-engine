@@ -14,11 +14,6 @@ const instance = new PlayInstance(CONFIG.INSTANCE_ID, CONFIG.WORLD_ID);
 const app = new Application();
 const router = new Router();
 
-router.get("/", ctx => {
-  ctx.response.body = { ...instance.richStatus, status: "dreamlab play-host running..." };
-  ctx.response.type = "application/json";
-});
-
 router.get("/internal/worker", workerConnectHandler);
 
 router.get("/api/v1/connect/:instance", async ctx => {
@@ -45,6 +40,23 @@ router.get("/api/v1/connect/:instance", async ctx => {
 // TODO: instance info route
 
 serveWorlds(router);
+
+if (CONFIG.STANDALONE) {
+  router.get("/:path*", async ctx => {
+    try {
+      await ctx.send({ root: "./client", index: "index.html" });
+    } catch (_err) {
+      ctx.response.body = "Not Found";
+      ctx.response.type = "text/plain";
+      ctx.response.status = Status.NotFound;
+    }
+  });
+} else {
+  router.get("/", ctx => {
+    ctx.response.body = { ...instance.richStatus, status: "dreamlab play-host running..." };
+    ctx.response.type = "application/json";
+  });
+}
 
 handleJsonAPIErrors(app, true);
 app.use(async (ctx, next) => {
