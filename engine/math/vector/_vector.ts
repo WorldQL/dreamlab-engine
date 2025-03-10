@@ -49,6 +49,8 @@ export interface Vector<I, T extends I> {
   rotate(this: T, angle: number): T;
   rotateAbout(this: T, angle: number, point: I): T;
 
+  reflect(this: T, normal: I): T;
+
   /**
    * @ignore
    */

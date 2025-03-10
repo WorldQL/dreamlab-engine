@@ -405,6 +405,16 @@ export class Vector2 implements IVector2, Vector<IVector2, Vector2> {
   }
   // #endregion
 
+  // #region Reflect
+  public static reflect(vector: IVector2, normal: IVector2): Vector2 {
+    const factor = -2 * Vector2.dot(normal, vector);
+    return new Vector2(factor * normal.x + vector.x, factor * normal.y + vector.y);
+  }
+
+  public reflect(this: Vector2, normal: IVector2): Vector2 {
+    return Vector2.reflect(this, normal);
+  }
+  // #endregion
   // #endregion
 
   /**
