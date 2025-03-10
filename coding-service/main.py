@@ -304,11 +304,8 @@ async def spawn_service(request: Request) -> JSONResponse:
     cmd = [
         "aider",
         "--model",
-        "sonnet",
-        "--cache-prompts",
+        "openai/bedrock-sonnet-3.7",
         "--browser",
-        "--anthropic-api-key",
-        AI_PROVIDER_API_KEY
         # "--edit-format",
         # "diff"
     ]
@@ -325,9 +322,9 @@ async def spawn_service(request: Request) -> JSONResponse:
     env["BASE_URL_PATH"] = service_id
     env["CODER_PORT"] = str(assigned_port)
 
-    # env["OPENAI_API_BASE"] = "https://ai-proxy.dreamlab.gg"
+    env["OPENAI_API_BASE"] = "https://ai-proxy.dreamlab.gg"
     # TODO: Load dynamically for a given user. This is a key managed by the ai proxy and is not a real openai key.
-    # env["OPENAI_API_KEY"] = "..."
+    env["OPENAI_API_KEY"] = AI_PROVIDER_API_KEY
     # TODO: For now use anthropic key directly because aws is having trouble with sonnet 3.7
 
     env["AIDER_READ"] = os.environ["DOCS_PATH"]
