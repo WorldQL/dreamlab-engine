@@ -91,7 +91,7 @@ export class InspectorUI {
         }
       }
 
-      if (packet.behavior_script_id) {
+      if (packet.script_location) {
         // console.log(
         //   "ScriptEdited",
         //   packet.behavior_script_id,
@@ -106,12 +106,12 @@ export class InspectorUI {
         1. Generates an event from the code editor
         2. Also generates an event from the file watcher.
 
-        Eventually we can untangle this (maybe next week)
-
         So what happens when the AI saves is we get a nice elegant single event where packet.isFromFileSystem is true
 
         But when the code editor saves, we get two events in quick succession. One with isFromFileSystem=false
         and one isFromFileSystem=true. This code ignores the second one when they come within three seconds of each other.
+        
+        Eventually we might want to untangle this but it works well for now.
         */
 
         if (!packet.isFromFileSystem) {
@@ -140,14 +140,16 @@ export class InspectorUI {
           );
         }
 
-        const resources = [`res://${packet.script_location}`, packet.behavior_script_id];
+        if (packet.behavior_script_id) {
+          const resources = [`res://${packet.script_location}`, packet.behavior_script_id];
 
-        for (const res of resources) await this.behaviorTypeInfo.reload(res).catch(() => {});
-        for (const behaviorList of this.behaviorPanel.behaviorLists.values()) {
-          for (const behaviorEditor of behaviorList.editors.values()) {
-            if (!resources.includes(behaviorEditor.behavior.script)) continue;
+          for (const res of resources) await this.behaviorTypeInfo.reload(res!).catch(() => {});
+          for (const behaviorList of this.behaviorPanel.behaviorLists.values()) {
+            for (const behaviorEditor of behaviorList.editors.values()) {
+              if (!resources.includes(behaviorEditor.behavior.script)) continue;
 
-            behaviorEditor.updateTypeInfo(this);
+              behaviorEditor.updateTypeInfo(this);
+            }
           }
         }
         // TODO: we need to make sure this propagates to every guy whose rendering depends on one of those

@@ -2,6 +2,7 @@ import * as path from "@std/path";
 import { debounce } from "jsr:@std/async/debounce";
 import { buildWorld } from "../server-common/world-build.ts";
 import { GameSession } from "./session.ts";
+import { fileIsProbablyBehaviorScript } from "../../build-system/build-world.ts";
 
 export async function watchForEditChanges(session: GameSession, subdir: string) {
   const instance = session.parent;
@@ -23,10 +24,11 @@ export async function watchForEditChanges(session: GameSession, subdir: string) 
 
     for (const touchedPath of touchedPaths) {
       const relativePath = path.relative(instance.info.worldDirectory, touchedPath);
+      const isBehavior = await fileIsProbablyBehaviorScript(touchedPath);
       session.broadcastPacket({
         t: "ScriptEdited",
         script_location: relativePath,
-        behavior_script_id: relativePath.startsWith("src/")
+        behavior_script_id: isBehavior
           ? `res://${relativePath.replace(/\.tsx?$/, ".js")}`
           : undefined,
         isFromFileSystem: true,
