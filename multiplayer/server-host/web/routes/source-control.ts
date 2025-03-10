@@ -1094,16 +1094,7 @@ export const serveSourceControlAPI = (router: Router) => {
       const match = headerLine.match(/a\/(\S+)\s+b\/\S+/);
       if (match) {
         const filePath = match[1];
-        const filteredSection = fullSection
-          .split("\n")
-          .filter(line => {
-            if (line.startsWith("new file mode")) return false;
-            if (line.trim() === "--- /dev/null") return false;
-            if (/^@@\s*-?\d+(?:,\d+)?\s*\+?\d+(?:,\d+)?\s*@@/.test(line)) return false;
-            return true;
-          })
-          .join("\n");
-        diffs[filePath] = filteredSection;
+        diffs[filePath] = fullSection;
       }
     }
 
@@ -1122,6 +1113,8 @@ export const serveSourceControlAPI = (router: Router) => {
           try {
             const fileContent = await Deno.readTextFile(path.join(sourceRoot, filePath));
             let newDiff = `diff --git a/${filePath} b/${filePath}\n`;
+            newDiff += `new file mode 100644\n`;
+            newDiff += `--- /dev/null\n`;
             newDiff += `+++ b/${filePath}\n`;
             const lines = fileContent.split("\n");
             if (lines[lines.length - 1] === "") {
