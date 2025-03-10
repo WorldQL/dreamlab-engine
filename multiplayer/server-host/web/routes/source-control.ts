@@ -637,7 +637,6 @@ export const serveSourceControlAPI = (router: Router) => {
       branchToRebaseOnto = `${body.remote}/${branchToRebaseOnto}`;
     }
 
-    // Run the rebase command with piped stdout/stderr
     const rebaseProcess = new Deno.Command("git", {
       args: ["rebase", branchToRebaseOnto],
       cwd: sourceRoot,
@@ -650,11 +649,11 @@ export const serveSourceControlAPI = (router: Router) => {
     decoder
       .decode(stdout)
       .split("\n")
-      .forEach(line => line.trim() && console.log("Git rebase stdout:", line));
+      .forEach(line => line.trim());
     decoder
       .decode(stderr)
       .split("\n")
-      .forEach(line => line.trim() && console.log("Git rebase stderr:", line));
+      .forEach(line => line.trim());
 
     if (code !== 0) {
       // Abort rebase if conflict occurs
@@ -664,10 +663,7 @@ export const serveSourceControlAPI = (router: Router) => {
         stdout: "piped",
         stderr: "piped",
       }).spawn();
-      const { stdout: abortStdout, stderr: abortStderr } = await abortProcess.output();
-      console.log("Git rebase abort stdout:", decoder.decode(abortStdout));
-      console.log("Git rebase abort stderr:", decoder.decode(abortStderr));
-
+      await abortProcess.output();
       ctx.response.status = Status.Conflict;
       ctx.response.body = {
         error: `Rebase failed due to conflicts when rebasing onto ${branchToRebaseOnto}. Rebase aborted.`,
