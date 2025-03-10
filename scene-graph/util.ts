@@ -1,4 +1,5 @@
 import {
+  Behavior,
   BehaviorDefinition,
   ClientGame,
   Entity,
@@ -134,7 +135,15 @@ export const convertEntityDefinition = async (
       definition.behaviors.map(behavior => convertBehaviorDefinition(game, behavior)),
     )
   )
-    .filter(it => it.status === "fulfilled")
+    // hopefully one day the type inference can get this
+    .filter((it): it is PromiseFulfilledResult<BehaviorDefinition<Behavior>> => {
+      if (it.status === "rejected") {
+        console.warn("failed to initialize behavior", it.reason);
+        return false;
+      }
+      if (it.status !== "fulfilled") throw "unreachable";
+      return true;
+    })
     .map(it => it.value);
 
   return {
