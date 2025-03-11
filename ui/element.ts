@@ -1,21 +1,22 @@
 import type { WritableKeysOf } from "./_types.ts";
 import type { CSSProperties, ExtendedCSSProperties } from "./css.ts";
+import { TagNames, TagType } from "./tags.ts";
 
-type BaseElem = HTMLElement | SVGElement;
+export type BaseElement = HTMLElement | SVGElement;
 
-export type ElementProps<E extends BaseElem> = {
+export type ElementProps<E extends BaseElement> = {
   // deno-lint-ignore ban-types
   [K in WritableKeysOf<E> as NonNullable<E[K]> extends Function ? never : K]: E[K];
 };
 
-export interface ElementExtraProps<E extends BaseElem> {
+export interface ElementExtraProps<E extends BaseElement> {
   classList: string[];
   style: ExtendedCSSProperties;
   dataset: Record<string, string>;
   _also: (it: E) => void | ((it: E) => void)[];
 }
 
-export type ElementEventListeners<E extends BaseElem> = {
+export type ElementEventListeners<E extends BaseElement> = {
   [K in keyof HTMLElementEventMap as K extends string ? `on${Capitalize<K>}` : never]: (
     this: E,
     ev: HTMLElementEventMap[K],
@@ -26,18 +27,19 @@ export type ElementDataAttributes = {
   [dataAttribute: `data-${string}`]: unknown;
 };
 
-export type ElementExtras<E extends BaseElem> = ElementExtraProps<E> & ElementEventListeners<E>; //  &
+export type ElementExtras<E extends BaseElement> = ElementExtraProps<E> &
+  ElementEventListeners<E>; //  &
 // ElementDataAttributes;
 
-export type ElementAttributes<E extends BaseElem> = ElementExtras<E> &
+export type ElementAttributes<E extends BaseElement> = ElementExtras<E> &
   Omit<ElementProps<E>, keyof ElementExtras<E>>;
 
-export function element<K extends keyof HTMLElementTagNameMap>(
+export function element<K extends TagNames>(
   tag: K,
-  attrs: Partial<ElementAttributes<HTMLElementTagNameMap[K]>> = {},
+  attrs: Partial<ElementAttributes<TagType<K>>> = {},
   children: (Element | string | Text)[] = [],
-): HTMLElementTagNameMap[K] {
-  const el = document.createElement(tag);
+): TagType<K> {
+  const el = document.createElement(tag) as TagType<K>;
   const { classList, style, _also, dataset, ...rest } = attrs;
 
   if (classList) classList.forEach(c => el.classList.add(c));
@@ -63,7 +65,7 @@ export function element<K extends keyof HTMLElementTagNameMap>(
 
     if (key.startsWith("on") && typeof value === "function") {
       const f = value.bind(el);
-      (el as BaseElem).addEventListener(key.substring(2).toLowerCase(), ev => f(ev));
+      (el as BaseElement).addEventListener(key.substring(2).toLowerCase(), ev => f(ev));
     } else if (key.startsWith("data-") && value) {
       if (typeof value === "string") el.setAttribute(key, value);
 
@@ -72,7 +74,8 @@ export function element<K extends keyof HTMLElementTagNameMap>(
         else el.removeAttribute(key);
       }
     } else {
-      el[key as keyof typeof el] = value;
+      // @ts-expect-error blind assignment
+      el[key] = value;
     }
   }
 
