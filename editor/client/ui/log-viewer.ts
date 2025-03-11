@@ -187,7 +187,9 @@ export class LogViewer {
 
     const entry = elem("div", { className, style }, [
       elem("code", {}, [ts]),
+      " ",
       elem("code", {}, [level]),
+      " ",
       ...this.logMessage(log),
     ]);
 

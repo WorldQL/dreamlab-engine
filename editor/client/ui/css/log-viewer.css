@@ -124,7 +124,7 @@
 
     & > .log-entry {
       font-size: 0.875rem;
-      display: flex;
+      /* display: flex; */
       gap: 1ch;
       white-space: pre-wrap;
 
@@ -140,6 +140,10 @@
 
       &[data-filtered] {
         display: none;
+      }
+
+      & > .no-select {
+        user-select: none;
       }
     }
 
