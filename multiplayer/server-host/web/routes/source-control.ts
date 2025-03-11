@@ -481,6 +481,39 @@ export const serveSourceControlAPI = (router: Router) => {
   });
   // #endregion
 
+  // #region revert abort
+  router.post("/api/v1/source-control/:instance_id/revert/abort", async ctx => {
+    const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
+    const instance = GameInstance.INSTANCES.get(instanceId);
+    if (!instance) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+    if (!instance.info.editMode) {
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+    const sourceRoot = instance.info.worldDirectory;
+
+    const abortProcess = new Deno.Command("git", {
+      args: ["revert", "--abort"],
+      cwd: sourceRoot,
+      stdout: "piped",
+      stderr: "piped",
+    }).spawn();
+
+    const { code, stderr } = await abortProcess.output();
+    if (code !== 0) {
+      const errorMsg = new TextDecoder().decode(stderr).trim();
+      ctx.response.status = Status.InternalServerError;
+      ctx.response.body = { error: `Failed to abort revert: ${errorMsg}` };
+      return;
+    }
+    ctx.response.body = { success: true, message: "Revert aborted successfully." };
+  });
+  // #endregion
+
   // #region merge
   router.post("/api/v1/source-control/:instance_id/merge", async ctx => {
     const BodySchema = z.object({ source: z.string(), target: z.string() });
@@ -517,7 +550,7 @@ export const serveSourceControlAPI = (router: Router) => {
     }
 
     const mergeProcess = new Deno.Command("git", {
-      args: ["merge", body.source],
+      args: ["merge", "--no-edit", body.source],
       cwd: sourceRoot,
     }).spawn();
     const mergeStatus = await mergeProcess.status;
@@ -551,6 +584,7 @@ export const serveSourceControlAPI = (router: Router) => {
 
     ctx.response.body = { success: true };
   });
+  // #endregion
 
   // #region merge continue
   router.post("/api/v1/source-control/:instance_id/merge/continue", async ctx => {
@@ -736,7 +770,6 @@ export const serveSourceControlAPI = (router: Router) => {
           "A rebase is in progress. Please use 'rebase/continue', 'rebase/abort', or 'rebase/skip'.",
       };
     } catch (_err) {
-      // Not found, check for rebase-merge
       try {
         const rebaseMergePath = path.join(sourceRoot, ".git", "rebase-merge");
         await Deno.stat(rebaseMergePath);
@@ -746,9 +779,23 @@ export const serveSourceControlAPI = (router: Router) => {
           message:
             "A rebase is in progress. Please use 'rebase/continue', 'rebase/abort', or 'rebase/skip'.",
         };
-      } catch (_err2) {
-        // No rebase directory exists, so no active rebase.
+      } catch (_err) {
+        // No rebase directory exists.
       }
+    }
+
+    let revertConflict = null;
+    try {
+      const revertHeadPath = path.join(sourceRoot, ".git", "REVERT_HEAD");
+      await Deno.stat(revertHeadPath);
+      revertConflict = {
+        inProgress: true,
+        type: "revert",
+        message:
+          "A revert is in progress. Please resolve conflicts in the working tree and finalize the revert.",
+      };
+    } catch (_err) {
+      // No revert conflict.
     }
 
     const conflictProcess = new Deno.Command("git", {
@@ -766,8 +813,8 @@ export const serveSourceControlAPI = (router: Router) => {
       try {
         const content = await Deno.readTextFile(path.join(sourceRoot, file));
         conflicts.push({ filePath: file, content });
-      } catch (err) {
-        console.error(`Could not read conflict file ${file}:`, err);
+      } catch (_err) {
+        // console.error(`Could not read conflict file ${file}:`, err);
       }
     }
 
@@ -775,6 +822,7 @@ export const serveSourceControlAPI = (router: Router) => {
       conflicted: conflictFiles.length > 0,
       conflicts,
       rebaseStatus,
+      revertConflict,
     };
   });
   // #endregion
