@@ -62,3 +62,4 @@ export const implicitSetup = Symbol.for("dreamlab.internal.implicitBehaviorSetup
 export const clickableTeardownGame = Symbol.for("dreamlab.internal.clickableTeardownGame");
 export const rendererInit = Symbol.for("dreamlab.internal.rendererInit");
 export const rendererRender = Symbol.for("dreamlab.internal.rendererRender");
+export const randomBoxMuller = Symbol.for("dreamlab.internal.randomBoxMuller");

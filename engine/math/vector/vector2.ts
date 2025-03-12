@@ -1,5 +1,6 @@
 import { EPSILON, lerp, smoothLerp } from "@dreamlab/engine";
-import { vectorOnChanged } from "@dreamlab/engine/internal";
+import * as internal from "@dreamlab/engine/internal";
+import { Prng, RandomDistribution, Rng, StandardNormal, StandardUniform } from "../random.ts";
 import type { Vector } from "./_vector.ts";
 
 export interface IVector2 {
@@ -8,7 +9,7 @@ export interface IVector2 {
 }
 
 export class Vector2 implements IVector2, Vector<IVector2, Vector2> {
-  [vectorOnChanged]: () => void = () => {};
+  [internal.vectorOnChanged]: () => void = () => {};
 
   // #region Constants
   /** All zeroes. */
@@ -53,7 +54,7 @@ export class Vector2 implements IVector2, Vector<IVector2, Vector2> {
     if (value === this.#x) return;
 
     this.#x = value;
-    this[vectorOnChanged]();
+    this[internal.vectorOnChanged]();
   }
 
   public get y(): number {
@@ -64,7 +65,7 @@ export class Vector2 implements IVector2, Vector<IVector2, Vector2> {
     if (value === this.#y) return;
 
     this.#y = value;
-    this[vectorOnChanged]();
+    this[internal.vectorOnChanged]();
   }
   // #endregion
 
@@ -111,9 +112,40 @@ export class Vector2 implements IVector2, Vector<IVector2, Vector2> {
       this.#y = value.y;
     }
 
-    this[vectorOnChanged]();
+    this[internal.vectorOnChanged]();
     return true;
   }
+
+  // #region Random
+  static random(
+    min = 0,
+    max = 1,
+    options?: { prng?: Prng; distribution?: RandomDistribution },
+  ): Vector2 {
+    const distribution = options?.distribution ?? StandardUniform;
+    const x = distribution.randomBetween(min, max, options);
+    const y = distribution.randomBetween(min, max, options);
+
+    return new Vector2(x, y);
+  }
+
+  static randomUnitCircle(options?: { prng?: Prng }): Vector2 {
+    const prng = options?.prng ?? Rng.Fast;
+    const [x, y] = StandardNormal[internal.randomBoxMuller](prng, false);
+
+    return Vector2.normalize({ x, y });
+  }
+
+  static randomUnitDisc(options?: { prng?: Prng }): Vector2 {
+    while (true) {
+      const x = StandardUniform.randomBetween(-1, 1, options);
+      const y = StandardUniform.randomBetween(-1, 1, options);
+
+      const vec = new Vector2(x, y);
+      if (vec.magnitudeSquared() <= 1) return vec;
+    }
+  }
+  // #endregion
 
   // #region Methods
   // #region Equals

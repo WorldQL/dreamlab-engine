@@ -27,6 +27,7 @@
     "jsr:@std/path@0.223": "0.223.0",
     "jsr:@std/path@^1.0.6": "1.0.6",
     "jsr:@std/path@~0.218.2": "0.218.2",
+    "jsr:@std/random@0.1.0": "0.1.0",
     "jsr:@std/ulid@0.224": "0.224.1",
     "npm:@dimforge/rapier2d-compat@0.12.0": "0.12.0",
     "npm:@dimforge/rapier2d-compat@0.13.1": "0.13.1",
@@ -164,6 +165,9 @@
     },
     "@std/path@1.0.6": {
       "integrity": "ab2c55f902b380cf28e0eec501b4906e4c1960d13f00e11cfbcd21de15f18fed"
+    },
+    "@std/random@0.1.0": {
+      "integrity": "70a006be0ffb77d036bab54aa8ae6bd0119ba77ace0f2f56f63273d4262a5667"
     },
     "@std/ulid@0.224.1": {
       "integrity": "4de06fdb030ff3990b1b0344e330373c11ce6051ac449fc435667a485a6723fa"
