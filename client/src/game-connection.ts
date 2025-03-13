@@ -1,5 +1,5 @@
 import { ClientGame, KvClient } from "@dreamlab/engine";
-import { PlayCodec, Codec, isCodec, getCodec } from "@dreamlab/proto/codecs/mod.ts";
+import { Codec, getCodec, isCodec, PlayCodec } from "@dreamlab/proto/codecs/mod.ts";
 import { PlayPacket, ServerPacket } from "@dreamlab/proto/play.ts";
 import { createId } from "@dreamlab/vendor/nanoid.ts";
 import { ClientConnection } from "./networking/net-connection.ts";
@@ -40,7 +40,10 @@ export const connectToGame = (
           cacheBuster: cacheBust ? createId("cch", { secure: false }) : undefined,
           kv: game => new KvClient({ game }),
         });
-        game.worldScriptBaseURL = packet.world_script_base_url;
+        game.worldScriptBaseURL = new URL(
+          packet.world_script_base_url,
+          window.location.href,
+        ).toString();
         conn.setup(game);
         resolve([game, conn, packet]);
       } else if (conn !== undefined) {
