@@ -1,0 +1,19 @@
+#multiplayer-cursors {
+  position: absolute;
+
+  .multiplayer-cursor {
+    position: absolute;
+    pointer-events: none;
+
+    left: var(--pos-x);
+    top: var(--pos-y);
+
+    transition: all 50ms linear;
+    transition-property: top left;
+
+    & > svg {
+      margin-left: -16px;
+      margin-top: -8px;
+    }
+  }
+}

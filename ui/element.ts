@@ -1,6 +1,6 @@
 import type { WritableKeysOf } from "./_types.ts";
 import type { CSSProperties, ExtendedCSSProperties } from "./css.ts";
-import { TagNames, TagType } from "./tags.ts";
+import { SVG_NAMESPACE, SVG_TAG_NAMES, TagNames, TagType } from "./tags.ts";
 
 export type BaseElement = HTMLElement | SVGElement;
 
@@ -32,14 +32,21 @@ export type ElementExtras<E extends BaseElement> = ElementExtraProps<E> &
 // ElementDataAttributes;
 
 export type ElementAttributes<E extends BaseElement> = ElementExtras<E> &
-  Omit<ElementProps<E>, keyof ElementExtras<E>>;
+  Omit<
+    E extends SVGElement ? Record<string, unknown> : ElementProps<E>,
+    keyof ElementExtras<E>
+  >;
 
 export function element<K extends TagNames>(
   tag: K,
   attrs: Partial<ElementAttributes<TagType<K>>> = {},
   children: (Element | string | Text)[] = [],
 ): TagType<K> {
-  const el = document.createElement(tag) as TagType<K>;
+  const el = (
+    SVG_TAG_NAMES.includes(tag)
+      ? document.createElementNS(SVG_NAMESPACE, tag)
+      : document.createElement(tag)
+  ) as TagType<K>;
   const { classList, style, _also, dataset, ...rest } = attrs;
 
   if (classList) classList.forEach(c => el.classList.add(c));
@@ -74,8 +81,12 @@ export function element<K extends TagNames>(
         else el.removeAttribute(key);
       }
     } else {
-      // @ts-expect-error blind assignment
-      el[key] = value;
+      if (SVG_TAG_NAMES.includes(tag)) {
+        el.setAttribute(key, value);
+      } else {
+        // @ts-expect-error blind assignment
+        el[key] = value;
+      }
     }
   }
 
