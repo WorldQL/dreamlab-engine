@@ -75,7 +75,9 @@ export class PlayInstance {
         worldId: this.worldId,
         worldsDirectory,
         worldDirectory: path.join(worldDirectory, "_dist_play"),
-        worldResourcesBaseUrl: `${CONFIG.MULTIPLAYER_PUBLIC_URL}/worlds`,
+        worldResourcesBaseUrl: CONFIG.STANDALONE
+          ? "/worlds"
+          : `${CONFIG.MULTIPLAYER_PUBLIC_URL}/worlds`,
         worldSubdirectory: "_dist_play",
 
         kv:
