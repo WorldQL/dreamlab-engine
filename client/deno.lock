@@ -21,6 +21,7 @@
     "jsr:@std/path@^1.0.4": "1.0.6",
     "jsr:@std/path@^1.0.6": "1.0.8",
     "jsr:@std/path@^1.0.8": "1.0.8",
+    "jsr:@std/random@0.1.0": "0.1.0",
     "jsr:@std/uuid@1": "1.0.0",
     "npm:@dimforge/rapier2d-compat@0.14.0": "0.14.0",
     "npm:@discord/embedded-app-sdk@*": "1.7.1",
@@ -130,6 +131,9 @@
     },
     "@std/path@1.0.8": {
       "integrity": "548fa456bb6a04d3c1a1e7477986b6cffbce95102d0bb447c67c4ee70e0364be"
+    },
+    "@std/random@0.1.0": {
+      "integrity": "70a006be0ffb77d036bab54aa8ae6bd0119ba77ace0f2f56f63273d4262a5667"
     },
     "@std/uuid@1.0.0": {
       "integrity": "32595ccd31756728c9110cb98e25000e72b8d63151b7211034ea081761ed2104"
