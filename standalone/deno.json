@@ -1,6 +1,7 @@
 {
   "lock": false,
   "tasks": {
+    "package": "deno run -A package.ts"
   },
   "imports": {
     "@dreamlab/engine": "../engine/mod.ts",
