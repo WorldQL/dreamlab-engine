@@ -186,10 +186,8 @@ export class LogViewer {
     }
 
     const entry = elem("div", { className, style }, [
-      elem("code", {}, [ts]),
-      " ",
-      elem("code", {}, [level]),
-      " ",
+      elem("code", { className: "no-select" }, [ts]),
+      elem("code", { className: "no-select" }, [level]),
       ...this.logMessage(log),
     ]);
 
