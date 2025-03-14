@@ -63,6 +63,7 @@ export class UIPanel extends Entity {
   }
 
   #updateDiv() {
+    if (!this.game.isClient()) return;
     if (!this.#ui) return;
     const { element } = this.#ui;
 
@@ -78,11 +79,20 @@ export class UIPanel extends Entity {
     element.style.left = screen.x.toString() + "px";
     element.style.top = screen.y.toString() + "px";
 
+    let scale = 1;
+    if (!camera.unlocked) {
+      const canvas = this.game.renderer.app.canvas;
+      const w = canvas.width / Camera.METERS_TO_PIXELS;
+      const h = canvas.height / Camera.METERS_TO_PIXELS;
+      const axis = Math.min(w, h);
+      scale = axis / Camera.TARGET_VIEWPORT_SIZE;
+    }
+
     // TODO: maybe we should interpolate this
     element.style.transform = `translateX(-50%) translateY(-50%)
       rotate(${camera.smoothed.rotation - this.globalTransform.rotation}rad)
-      scaleX(${this.globalTransform.scale.x / camera.smoothed.scale.x})
-      scaleY(${this.globalTransform.scale.y / camera.smoothed.scale.y})`;
+      scaleX(${(this.globalTransform.scale.x / camera.smoothed.scale.x) * scale})
+      scaleY(${(this.globalTransform.scale.y / camera.smoothed.scale.y) * scale})`;
   }
 
   onInitialize() {
