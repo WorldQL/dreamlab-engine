@@ -1,6 +1,6 @@
 import type { WritableKeysOf } from "./_types.ts";
 import type { CSSProperties, ExtendedCSSProperties } from "./css.ts";
-import { SVG_NAMESPACE, SVG_TAG_NAMES, TagNames, TagType } from "./tags.ts";
+import { SVG_NAMESPACE, SVG_TAG_NAMES, TagNames, TagType, VOID_TAG_NAMES } from "./tags.ts";
 
 export type BaseElement = HTMLElement | SVGElement;
 
@@ -90,7 +90,8 @@ export function element<K extends TagNames>(
     }
   }
 
-  el.append(...children);
+  // void tags cannot have children
+  if (!VOID_TAG_NAMES.includes(tag)) el.append(...children);
 
   if (_also) {
     if (Array.isArray(_also)) _also.forEach(also => also(el));
