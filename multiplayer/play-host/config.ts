@@ -43,12 +43,23 @@ const early = createEnv({
     BIND_ADDRESS: z.string().default("127.0.0.1:8001").pipe(SocketAddressSchema),
   },
   runtimeEnvStrict: {
-    BIND_ADDRESS: Deno.env.get("BIND_ADDRESS"),
+    BIND_ADDRESS: (() => {
+      // Support for Rivet.gg actors. We don't know our port ahead-of-time so we have to get it here.
+      // PORT_HTTP is set by the Rivet environment.
+      const rivet_port_http = Deno.env.get("PORT_HTTP");
+      if (rivet_port_http) {
+        return "0.0.0.0:" + rivet_port_http;
+      }
+
+      return Deno.env.get("BIND_ADDRESS");
+    })(),
   },
   emptyStringAsUndefined: true,
 });
 
 const cli = parseArgs(Deno.args, { string: ["instance-id", "world-id"] });
+
+console.log(early.BIND_ADDRESS);
 
 export const CONFIG = createEnv({
   extends: [early],
