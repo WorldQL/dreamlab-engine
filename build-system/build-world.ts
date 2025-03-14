@@ -20,6 +20,9 @@ export interface WorldBuildOptions {
 }
 
 export const fileIsProbablyBehaviorScript = async (filePath: string): Promise<boolean> => {
+  const stat = await Deno.stat(filePath);
+  if (!stat.isFile) return false;
+
   const text = await Deno.readTextFile(filePath);
   return (
     filePath.includes("src/") &&
