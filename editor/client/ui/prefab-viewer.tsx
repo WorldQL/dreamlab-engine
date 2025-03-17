@@ -6,7 +6,6 @@ import {
   EntityRenamed,
   getFacadeRoot,
 } from "@dreamlab/engine";
-import { element as elem } from "@dreamlab/ui";
 import { EditorMetadataEntity } from "../../common/mod.ts";
 import { UndoRedoManager } from "../undo-redo.ts";
 import { createEntityMenu } from "../util/entity-types.ts";
@@ -15,11 +14,14 @@ import { IconPicker } from "./icon-picker.ts";
 import { InspectorUI } from "./inspector.ts";
 
 export class PrefabViewer {
-  #section = elem("section", { id: "prefab-viewer" });
-  #content = elem("div", { id: "prefab-grid" });
-  #noPrefabsMessage = elem("div", { className: "no-prefabs-message" }, [
-    "No prefabs created. Create a new prefab to get started!",
-  ]);
+  #section = (<section id="prefab-viewer" />);
+  #content = (<div id="prefab-grid" />) as HTMLElement;
+  #noPrefabsMessage = (
+    <div className="no-prefabs-message">
+      No prefabs created. Create a new prefab to get started!
+    </div>
+  );
+
   entryElementMap = new Map<string, HTMLElement>();
   currentDragSource: { entities: Entity[]; entries: HTMLElement[] } | undefined;
   prefabsRoot!: Entity;
@@ -99,25 +101,9 @@ export class PrefabViewer {
   renderPrefabCard(ui: InspectorUI, entity: Entity) {
     if (this.entryElementMap.has(entity.ref)) return;
 
-    const card = elem("div", { className: "prefab-card" }, [
-      elem("div", { className: "prefab-icon" }, [entity.icon ?? "🌟"]),
-      elem("div", { className: "prefab-name" }, [entity.name]),
-    ]);
+    let card: HTMLDivElement;
 
-    entity.on(EntityDestroyed, () => {
-      card.remove();
-      this.entryElementMap.delete(entity.ref);
-      this.checkForNoPrefabs();
-    });
-
-    entity.on(EntityRenamed, () => {
-      const nameElement = card.querySelector(".prefab-name");
-      if (nameElement) {
-        nameElement.textContent = entity.name;
-      }
-    });
-
-    card.addEventListener("click", (event: MouseEvent) => {
+    const click = (event: MouseEvent) => {
       event.stopPropagation();
 
       this.#content.querySelectorAll(".prefab-card.preselected").forEach(el => {
@@ -127,15 +113,15 @@ export class PrefabViewer {
       });
       ui.selectedEntity.entities = [];
       card.classList.add("preselected");
-    });
+    };
 
-    card.addEventListener("dblclick", (event: MouseEvent) => {
+    const dblclick = (event: MouseEvent) => {
       event.stopPropagation();
       card.classList.remove("preselected");
       ui.selectedEntity.entities = [entity];
-    });
+    };
 
-    card.addEventListener("contextmenu", (event: MouseEvent) => {
+    const contextmenu = (event: MouseEvent) => {
       event.preventDefault();
       event.stopPropagation();
 
@@ -195,12 +181,9 @@ export class PrefabViewer {
       ];
 
       ui.contextMenu.drawContextMenu(event.clientX, event.clientY, contextMenuItems);
-    });
+    };
 
-    card.draggable = true;
-    card.dataset.entity = entity.ref;
-
-    card.addEventListener("dragstart", () => {
+    const dragstart = () => {
       const selectedEntities = ui.selectedEntity.entities;
       const selectedCards = selectedEntities
         .map(e => this.entryElementMap.get(e.ref))
@@ -221,9 +204,9 @@ export class PrefabViewer {
         };
         card.dataset.dragging = "";
       }
-    });
+    };
 
-    card.addEventListener("dragend", () => {
+    const dragend = () => {
       setTimeout(() => {
         if (this.currentDragSource) {
           for (const entry of this.currentDragSource.entries) {
@@ -282,10 +265,39 @@ export class PrefabViewer {
 
         this.currentDragSource = undefined;
       }, 20);
-    });
+    };
+
+    card = (
+      <div
+        className="prefab-card"
+        draggable
+        data-entity={entity.ref}
+        onClick={click}
+        onDblclick={dblclick}
+        onContextmenu={contextmenu}
+        onDragstart={dragstart}
+        onDragend={dragend}
+      >
+        <div className="prefab-icon">{entity.icon ?? "🌟"}</div>
+        <div className="prefab-name">{entity.name}</div>
+      </div>
+    ) as HTMLDivElement;
 
     this.entryElementMap.set(entity.ref, card);
     this.#content.append(card);
+
+    entity.on(EntityDestroyed, () => {
+      card.remove();
+      this.entryElementMap.delete(entity.ref);
+      this.checkForNoPrefabs();
+    });
+
+    entity.on(EntityRenamed, () => {
+      const nameElement = card.querySelector(".prefab-name");
+      if (nameElement) {
+        nameElement.textContent = entity.name;
+      }
+    });
   }
 
   private addContextMenu(ui: InspectorUI) {
@@ -357,14 +369,18 @@ export class PrefabViewer {
     const previousName = entity.name;
 
     nameElement.style.display = "none";
-    const input = elem("input", {
-      type: "text",
-      value: entity.name,
-      className: "rename-input",
-    }) as HTMLInputElement;
-    card.appendChild(input);
-    input.focus();
-    input.select();
+    const input = (
+      <input
+        type="text"
+        className="rename-input"
+        value={entity.name}
+        _also={it => {
+          card.appendChild(it);
+          it.focus();
+          it.select();
+        }}
+      />
+    ) as HTMLInputElement;
 
     const reset = () => {
       nameElement.style.display = "inherit";
