@@ -1,4 +1,5 @@
-import { Entity, EntityStore, Game } from "@dreamlab/engine";
+import type { Game } from "@dreamlab/engine";
+import { Entity, EntityStore } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 
 export abstract class Root extends Entity {

@@ -1,4 +1,4 @@
-import { ClientGame, GameRenderResize } from "@dreamlab/engine";
+import { type ClientGame, GameRenderResize } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 
@@ -21,7 +21,7 @@ export class GameRenderer {
     this.app.stage.addChild(this.scene);
   }
 
-  async [internal.rendererInit]() {
+  async [internal.rendererInit](): Promise<void> {
     if (this.#initialized === true || this.#initialized === "pending") return;
     this.#initialized = "pending";
 
@@ -37,12 +37,12 @@ export class GameRenderer {
     this.#initialized = true;
   }
 
-  [internal.rendererRender]() {
+  [internal.rendererRender](): void {
     this.app.ticker.update(this.#game.time.now);
     this.app.render();
   }
 
-  resize() {
+  resize(): void {
     if (this.#initialized !== true) return;
 
     this.app.resize();

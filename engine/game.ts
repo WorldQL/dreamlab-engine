@@ -1,13 +1,24 @@
 import { initRapier } from "@dreamlab/vendor/rapier.ts";
 
-import {
+import type {
   BehaviorConstructor,
-  BehaviorLoader,
-  ClickableEntity,
   ClientKV,
   ClientNetworking,
-  DefaultSignalHandlerImpls,
   Entity,
+  ISignalHandler,
+  ServerKV,
+  ServerNetworking,
+  Signal,
+  SignalConstructor,
+  SignalListener,
+  SignalListenerOptions,
+  SignalMatching,
+  SignalSubscription,
+} from "@dreamlab/engine";
+import {
+  BehaviorLoader,
+  ClickableEntity,
+  DefaultSignalHandlerImpls,
   EntityStore,
   GamePostRender,
   GamePostTick,
@@ -19,19 +30,10 @@ import {
   GameTick,
   Inputs,
   InternalGameTick,
-  ISignalHandler,
   LocalRoot,
   PhysicsEngine,
   PrefabsRoot,
-  ServerKV,
-  ServerNetworking,
   ServerRoot,
-  Signal,
-  SignalConstructor,
-  SignalListener,
-  SignalListenerOptions,
-  SignalMatching,
-  SignalSubscription,
   Time,
   UIManager,
   Value,
@@ -81,15 +83,15 @@ export abstract class BaseGame implements ISignalHandler {
     // now that we know we are ServerGame | ClientGame, we can safely cast to Game
   }
 
-  readonly values = new ValueRegistry(this as unknown as Game);
+  readonly values: ValueRegistry = new ValueRegistry(this as unknown as Game);
 
-  readonly entities = new EntityStore();
+  readonly entities: EntityStore = new EntityStore();
 
-  readonly world = new WorldRoot(this as unknown as Game);
-  readonly prefabs = new PrefabsRoot(this as unknown as Game);
+  readonly world: WorldRoot = new WorldRoot(this as unknown as Game);
+  readonly prefabs: PrefabsRoot = new PrefabsRoot(this as unknown as Game);
 
-  readonly time = new Time(this as unknown as Game);
-  readonly inputs = new Inputs(this as unknown as Game);
+  readonly time: Time = new Time(this as unknown as Game);
+  readonly inputs: Inputs = new Inputs(this as unknown as Game);
 
   [internal.behaviorLoader] = new BehaviorLoader(this as unknown as Game);
   loadBehavior(scriptUri: string): Promise<BehaviorConstructor> {
@@ -170,7 +172,7 @@ export abstract class BaseGame implements ISignalHandler {
     this.world[internal.submitEntityTickingOrder](entities);
   }
 
-  paused = new Value<boolean>(this.values, "paused", false, Boolean, "paused");
+  paused: Value<boolean> = new Value<boolean>(this.values, "paused", false, Boolean, "paused");
 
   #needCheckForEditMode = true;
   isEditMode = false;

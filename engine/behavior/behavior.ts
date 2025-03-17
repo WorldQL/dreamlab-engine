@@ -1,22 +1,11 @@
 import { createId } from "@dreamlab/vendor/nanoid.ts";
 import type { ConditionalExcept, Except } from "@dreamlab/vendor/type-fest.ts";
 
-import {
+import type {
   AdapterTypeTag,
-  BehaviorDescendantDestroyed,
-  BehaviorDescendantSpawned,
-  BehaviorDestroyed,
-  BehaviorSpawned,
-  Collider,
-  DefaultSignalHandlerImpls,
   Entity,
-  EntityCollision,
-  EntityEnableChanged,
   Game,
-  GamePostTick,
-  GamePreTick,
-  GameRender,
-  inferValueTypeTag,
+  Inputs,
   ISignalHandler,
   JsonValue,
   Primitive,
@@ -26,9 +15,24 @@ import {
   SignalListenerOptions,
   SignalMatching,
   SignalSubscription,
+  Time,
+  ValueTypeTag,
+} from "@dreamlab/engine";
+import {
+  BehaviorDescendantDestroyed,
+  BehaviorDescendantSpawned,
+  BehaviorDestroyed,
+  BehaviorSpawned,
+  Collider,
+  DefaultSignalHandlerImpls,
+  EntityCollision,
+  EntityEnableChanged,
+  GamePostTick,
+  GamePreTick,
+  GameRender,
+  inferValueTypeTag,
   Value,
   ValueTypeAdapter,
-  ValueTypeTag,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 
@@ -82,8 +86,8 @@ export function syncedValue<B extends Behavior, T>(
   opts?: Except<BehaviorValueOpts<T>, "type" | "hidden"> & {
     hidden?: boolean;
   },
-) {
-  return function (_: undefined, ctx: ClassFieldDecoratorContext<B, T>) {
+): (_: undefined, ctx: ClassFieldDecoratorContext<B, T>) => void {
+  return function (_, ctx): void {
     if (typeof ctx.name !== "string") return;
     if (ctx.static) return;
 
@@ -120,10 +124,10 @@ export class Behavior implements ISignalHandler {
   readonly game: Game;
   readonly entity: Entity;
 
-  protected get time() {
+  protected get time(): Time {
     return this.game.time;
   }
-  protected get inputs() {
+  protected get inputs(): Inputs {
     return this.game.inputs;
   }
 
@@ -343,7 +347,7 @@ export class Behavior implements ISignalHandler {
   /**
    * Returns true if the current client has authority over the entity this behavior is attached to.
    */
-  hasAuthority() {
+  hasAuthority(): boolean {
     return (
       this.game.network.self === this.entity.authority || this.entity.authority === undefined
     );
@@ -352,7 +356,7 @@ export class Behavior implements ISignalHandler {
   /**
    * Registers a collision listener
    */
-  registerCollisions(handler: (e: EntityCollision) => void) {
+  registerCollisions(handler: (e: EntityCollision) => void): void {
     if (this.entity instanceof Collider) {
       this.listen(this.entity, EntityCollision, handler);
     } else {

@@ -1,4 +1,5 @@
-import { Action, exclusiveSignalType, Input, Inputs } from "@dreamlab/engine";
+import type { Input } from "@dreamlab/engine";
+import { Action, exclusiveSignalType, Inputs } from "@dreamlab/engine";
 
 export class ActionCreated {
   constructor(public readonly action: Action) {}

@@ -1,9 +1,4 @@
-import {
-  ActionBound,
-  ActionChanged,
-  ActionPressed,
-  ActionReleased,
-  DefaultSignalHandlerImpls,
+import type {
   Game,
   Input,
   ISignalHandler,
@@ -13,6 +8,13 @@ import {
   SignalListenerOptions,
   SignalMatching,
   SignalSubscription,
+} from "@dreamlab/engine";
+import {
+  ActionBound,
+  ActionChanged,
+  ActionPressed,
+  ActionReleased,
+  DefaultSignalHandlerImpls,
 } from "@dreamlab/engine";
 import { actionSetHeld } from "@dreamlab/engine/internal";
 

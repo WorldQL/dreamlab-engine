@@ -1,4 +1,4 @@
-import { ClientGame, JsonValue } from "@dreamlab/engine";
+import type { ClientGame, JsonValue } from "@dreamlab/engine";
 import { createId } from "@dreamlab/vendor/nanoid.ts";
 import * as common from "./_common.ts";
 import type { PresignRequest, PresignResponse } from "./_rpc.ts";

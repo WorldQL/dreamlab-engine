@@ -1,4 +1,5 @@
-import { ClientGame, Entity, EntityReparented } from "@dreamlab/engine";
+import type { ClientGame, Entity } from "@dreamlab/engine";
+import { EntityReparented } from "@dreamlab/engine";
 import { uiDestroy, uiInit } from "@dreamlab/engine/internal";
 
 export class UIManager {
@@ -10,7 +11,7 @@ export class UIManager {
     this.#game = game;
   }
 
-  [uiInit]() {
+  [uiInit](): void {
     if (this.#container) return;
 
     // Make sure parent div is relative
@@ -25,7 +26,7 @@ export class UIManager {
     this.#game.container.appendChild(this.#container);
   }
 
-  [uiDestroy]() {
+  [uiDestroy](): void {
     this.#container?.remove();
     this.#container = undefined;
   }

@@ -1,4 +1,4 @@
-import { Game } from "@dreamlab/engine";
+import type { Game } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 
 export class Time {

@@ -1,13 +1,30 @@
 import { createId } from "@dreamlab/vendor/nanoid.ts";
 import type { ConditionalExcept } from "@dreamlab/vendor/type-fest.ts";
 
-import type { Root } from "@dreamlab/engine";
-import {
+import type {
   AdapterTypeTag,
   Behavior,
   BehaviorConstructor,
   BehaviorDefinition,
   ConnectionId,
+  Game,
+  IBounds,
+  ISignalHandler,
+  IVector2,
+  Inputs,
+  JsonValue,
+  Root,
+  Signal,
+  SignalConstructor,
+  SignalListener,
+  SignalListenerOptions,
+  SignalMatching,
+  SignalSubscription,
+  Time,
+  TransformOptions,
+  ValueTypeTag,
+} from "@dreamlab/engine";
+import {
   DefaultSignalHandlerImpls,
   Empty,
   EntityChildDestroyed,
@@ -28,22 +45,9 @@ import {
   EntitySpawnOperation,
   EntitySpawned,
   EntityTransformUpdate,
-  Game,
-  IBounds,
-  ISignalHandler,
-  IVector2,
-  JsonValue,
-  Signal,
-  SignalConstructor,
-  SignalListener,
-  SignalListenerOptions,
-  SignalMatching,
-  SignalSubscription,
   Transform,
-  TransformOptions,
   Value,
   ValueTypeAdapter,
-  ValueTypeTag,
   Vector2,
   inferValueTypeTag,
   lerpAngle,
@@ -113,10 +117,10 @@ export abstract class Entity implements ISignalHandler {
   }
 
   readonly game: Game;
-  protected get time() {
+  protected get time(): Time {
     return this.game.time;
   }
-  protected get inputs() {
+  protected get inputs(): Inputs {
     return this.game.inputs;
   }
 
@@ -150,7 +154,6 @@ export abstract class Entity implements ISignalHandler {
   get icon(): string {
     return this.#icon ?? (this.constructor as typeof Entity).icon;
   }
-
   set icon(newIcon: string) {
     this.#icon = newIcon;
   }
@@ -178,7 +181,7 @@ export abstract class Entity implements ISignalHandler {
   get children(): ReadonlyMap<string, Entity> {
     return this.#children;
   }
-  append(child: Entity) {
+  append(child: Entity): void {
     let nonConflictingName: string | undefined;
     if (this.#children.has(child.name))
       nonConflictingName = this.#findNonConflictingName(child);
@@ -241,7 +244,7 @@ export abstract class Entity implements ISignalHandler {
       child.fire(EntityRenamed, oldName);
     }
   }
-  removeChild(child: Entity, name?: string) {
+  removeChild(child: Entity, name?: string): void {
     if (child.parent !== this) return;
     this.#children.delete(name ?? child.name);
     child.#parent = undefined;
@@ -311,7 +314,7 @@ export abstract class Entity implements ISignalHandler {
   /**
    * Utility for safely hardcasting an entity to a type
    */
-  cast<T extends Entity>(type: EntityConstructor<T, true>) {
+  cast<T extends Entity>(type: EntityConstructor<T, true>): this & T {
     if (this instanceof type) return this;
     throw new Error(`Failed to cast ${this} to '${type.name}'`);
   }
@@ -607,16 +610,16 @@ export abstract class Entity implements ISignalHandler {
   // #region Transform
   readonly transform: Transform;
   readonly globalTransform: Transform;
-  get pos() {
+  get pos(): Vector2 {
     return this.globalTransform.position;
   }
-  set pos(value) {
+  set pos(value: Vector2) {
     this.globalTransform.position = value;
   }
-  get z() {
+  get z(): number {
     return this.globalTransform.z;
   }
-  set z(value) {
+  set z(value: number) {
     this.globalTransform.z = value;
   }
 
@@ -818,7 +821,7 @@ export abstract class Entity implements ISignalHandler {
   get [internal.entityAuthorityClock]() {
     return this.#exclusiveAuthorityClock;
   }
-  get authority() {
+  get authority(): ConnectionId | undefined {
     return this.#exclusiveAuthority;
   }
   set authority(newAuthority: ConnectionId | undefined) {
@@ -843,7 +846,7 @@ export abstract class Entity implements ISignalHandler {
     if (this.parent && !this.parent.enabled) return false;
     return true;
   }
-  set enabled(value) {
+  set enabled(value: boolean) {
     if (this.#enabled === value) return; // do nothing if already set to that value.
     this.#enabled = value;
     this.game[internal.entityTickingOrderDirty] = true;
@@ -1215,7 +1218,7 @@ export abstract class Entity implements ISignalHandler {
     return this.#destroyed;
   }
 
-  [internal.entityDestroy](opts: { from?: ConnectionId; isDescendent?: boolean } = {}) {
+  [internal.entityDestroy](opts: { from?: ConnectionId; isDescendent?: boolean } = {}): void {
     if (this.#destroyed) return;
     this.#destroyed = true;
 
@@ -1258,12 +1261,12 @@ export abstract class Entity implements ISignalHandler {
     this.game[internal.entityTickingOrderDirty] = true;
   }
 
-  destroy() {
+  destroy(): void {
     this[internal.entityDestroy]();
   }
   // #endregion
 
-  set(values: Partial<Omit<this, keyof Entity>>) {
+  set(values: Partial<Omit<this, keyof Entity>>): void {
     for (const [name, _val] of Object.entries(values)) {
       if (!(name in this)) {
         throw new Error("property name passed to Entity.set(..) does not exist!");
@@ -1278,15 +1281,15 @@ export abstract class Entity implements ISignalHandler {
     }
   }
 
-  teleportTo(position: Vector2) {
+  teleportTo(position: Vector2): void {
     this.setGlobalTransform({ position });
   }
 
-  [Symbol.for("Deno.customInspect")]() {
+  [Symbol.for("Deno.customInspect")](): string {
     return this.toString();
   }
 
-  toString() {
+  toString(): string {
     return `${this.id} (${this.constructor.name})`;
   }
 
@@ -1329,9 +1332,9 @@ export abstract class Entity implements ISignalHandler {
 }
 
 const ID_REGEX = /^\p{ID_Start}\p{ID_Continue}*$/v;
-export const isValidPlainIdentifier = (s: string) => ID_REGEX.test(s);
+export const isValidPlainIdentifier = (s: string): boolean => ID_REGEX.test(s);
 // prettier-ignore
-export const serializeIdentifier = (parent: string | undefined, child: string) =>
+export const serializeIdentifier = (parent: string | undefined, child: string): string =>
   isValidPlainIdentifier(child)
     ? parent ? `${parent}._.${child}` : `${child}`
     : parent ? `${parent}._[${JSON.stringify(child)}]` : `[${JSON.stringify(child)}]`;

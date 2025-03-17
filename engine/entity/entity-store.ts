@@ -1,12 +1,11 @@
-import {
+import type {
   Behavior,
   BehaviorConstructor,
   Entity,
   EntityConstructor,
   IVector2,
-  pointWorldToLocal,
-  Vector2,
 } from "@dreamlab/engine";
+import { pointWorldToLocal, Vector2 } from "@dreamlab/engine";
 import {
   entityStoreRegister,
   entityStoreRegisterRoot,
@@ -80,7 +79,7 @@ export class EntityStore {
   }
 
   // #region Internal methods
-  [entityStoreRegister](entity: Entity, oldId?: string) {
+  [entityStoreRegister](entity: Entity, oldId?: string): void {
     if (oldId && this.#entitiesById.get(oldId) === entity) this.#entitiesById.delete(oldId);
 
     const existingEntity = this.#entitiesByRef.get(entity.ref);
@@ -101,7 +100,7 @@ export class EntityStore {
     }
   }
 
-  [entityStoreUnregister](entity: Entity) {
+  [entityStoreUnregister](entity: Entity): void {
     this.#entitiesById.delete(entity.id);
     this.#entitiesByRef.delete(entity.ref);
 
@@ -115,7 +114,7 @@ export class EntityStore {
   }
 
   #roots = new Map<string, EntityStore>();
-  [entityStoreRegisterRoot](root: string, store: EntityStore) {
+  [entityStoreRegisterRoot](root: string, store: EntityStore): void {
     this.#roots.set(root, store);
   }
   // #endregion

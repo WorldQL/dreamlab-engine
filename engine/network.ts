@@ -1,4 +1,4 @@
-import { JsonValue } from "@dreamlab/engine";
+import type { JsonValue } from "@dreamlab/engine";
 
 export type ConnectionId = "server" | (string & Record<never, never>); // LiteralUnion<'server', string>
 export type CustomMessageData = JsonValue;

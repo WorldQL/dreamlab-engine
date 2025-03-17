@@ -1,4 +1,5 @@
-import { Entity, exclusiveSignalType, Vector2 } from "@dreamlab/engine";
+import type { Vector2 } from "@dreamlab/engine";
+import { Entity, exclusiveSignalType } from "@dreamlab/engine";
 
 export class EntityCollision {
   constructor(

@@ -1,4 +1,5 @@
-import { IVector2, Vector2 } from "@dreamlab/engine";
+import type { IVector2 } from "@dreamlab/engine";
+import { Vector2 } from "@dreamlab/engine";
 import {
   transformForceUpdate,
   transformOnChanged,

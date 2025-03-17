@@ -1,4 +1,4 @@
-import { Entity, Game, Value } from "@dreamlab/engine";
+import type { Entity, Game, Value } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 
 export type Primitive = string | number | boolean | undefined | null;

@@ -1,12 +1,11 @@
-import {
+import type {
   AdapterTypeTag,
   ConnectionId,
   Entity,
   JsonObject,
-  ObjectAdapter,
   ValueRegistry,
-  ValueTypeAdapter,
 } from "@dreamlab/engine";
+import { ObjectAdapter, ValueTypeAdapter } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import type { ReadonlyDeep } from "@dreamlab/vendor/type-fest.ts";
 
@@ -57,13 +56,13 @@ export class Value<T = unknown> {
   */
 
   // deno-lint-ignore no-explicit-any
-  onChanged(listener: (newValue: any) => void) {
+  onChanged(listener: (newValue: any) => void): void {
     if (!this.#changeListeners) this.#changeListeners = [];
     this.#changeListeners.push(listener);
   }
 
   // deno-lint-ignore no-explicit-any
-  removeChangeListener(listener: (newValue: any) => void) {
+  removeChangeListener(listener: (newValue: any) => void): void {
     if (!this.#changeListeners) return;
     const index = this.#changeListeners.indexOf(listener);
     if (index !== -1) {
@@ -71,10 +70,10 @@ export class Value<T = unknown> {
     }
   }
 
-  get value() {
+  get value(): ReadonlyIfObject<T> {
     return this.#value;
   }
-  set value(newValue) {
+  set value(newValue: ReadonlyIfObject<T>) {
     // ignore if equal
     // TODO: deep equality check?
     if (this.#value === newValue) return;
@@ -157,15 +156,15 @@ export class Value<T = unknown> {
     this.#registry.register(this as Value<unknown>);
   }
 
-  destroy() {
+  destroy(): void {
     this.#registry.remove(this as Value<unknown>);
   }
 
-  [Symbol.dispose]() {
+  [Symbol.dispose](): void {
     this.destroy();
   }
 
-  forceSync() {
+  forceSync(): void {
     this.#registry.applyValueUpdate(
       this as Value<unknown>,
       this.#value,
@@ -178,7 +177,7 @@ export class Value<T = unknown> {
     incomingValue: Value<T>["value"],
     incomingClock: number,
     incomingSource: ConnectionId,
-  ) {
+  ): void {
     if (incomingClock < this.clock) return;
     if (incomingClock === this.clock) {
       if (incomingSource !== "server") {
