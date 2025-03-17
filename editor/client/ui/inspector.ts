@@ -13,7 +13,7 @@ import { Properties } from "./properties.tsx";
 import { ReloadPrompt } from "./reload-prompt.tsx";
 import { SceneGraph } from "./scene-graph.ts";
 import { SelectedEntityService } from "./selected-entity.ts";
-import { WelcomeMenu } from "./welcome-menu.ts";
+import { WelcomeMenu } from "./welcome-menu.tsx";
 
 export interface InspectorUIWidget {
   setup(ui: InspectorUI): void;
@@ -110,7 +110,7 @@ export class InspectorUI {
 
         But when the code editor saves, we get two events in quick succession. One with isFromFileSystem=false
         and one isFromFileSystem=true. This code ignores the second one when they come within three seconds of each other.
-        
+
         Eventually we might want to untangle this but it works well for now.
         */
 
