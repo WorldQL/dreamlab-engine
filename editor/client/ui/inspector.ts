@@ -3,17 +3,17 @@ import { ClientGame } from "@dreamlab/engine";
 import { PrefabRootFacade } from "../../common/mod.ts";
 import { CameraPanBehavior } from "../panning-and-selection.ts";
 import { BehaviorTypeInfoService } from "../util/behavior-type-info.ts";
+import { getFileContent, textToPlan } from "./assistant/context.ts";
 import { BehaviorPanel } from "./behavior-panel/mod.ts";
 import { ContextMenu } from "./context-menu.ts";
 import { FileTree } from "./file-tree.ts";
 import { GameOverlays } from "./game-overlays.ts";
 import { setupKeyboardShortcuts } from "./keyboard-shortcuts.ts";
-import { Properties } from "./properties.ts";
+import { Properties } from "./properties.tsx";
 import { ReloadPrompt } from "./reload-prompt.tsx";
 import { SceneGraph } from "./scene-graph.ts";
 import { SelectedEntityService } from "./selected-entity.ts";
 import { WelcomeMenu } from "./welcome-menu.ts";
-import { getFileContent, textToPlan } from "./assistant/context.ts";
 
 export interface InspectorUIWidget {
   setup(ui: InspectorUI): void;

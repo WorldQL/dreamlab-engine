@@ -10,7 +10,7 @@ import {
   Vector2,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
-import { element as elem } from "@dreamlab/ui";
+import { BaseElement, element as elem } from "@dreamlab/ui";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { EditorMetadataEntity, Facades, PrefabRootFacade } from "../../common/mod.ts";
 import { icon, X } from "../_icons.ts";
@@ -21,19 +21,21 @@ import { createValueControl } from "../util/value-controls.ts";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 
 export class Properties implements InspectorUIWidget {
-  #section = elem("section", { id: "properties" }, [elem("h1", {}, ["Properties"])]);
+  #section = (
+    <section id="properties">
+      <h1>Properties</h1>
+    </section>
+  );
 
   constructor(private game: ClientGame) {}
 
   setup(ui: InspectorUI): void {
-    const container = elem("div", { id: "properties-display" });
-    container.style.display = "none";
-
+    const container = <div id="properties-display" style={{ display: "none" }} />;
     this.#section.append(container);
 
-    const selectSomethingNotification = elem("p", { id: "select-something-notification" }, [
-      "Select an entity to view its properties.",
-    ]);
+    const selectSomethingNotification = (
+      <p id="select-something-notification">Select an entity to view its properties.</p>
+    );
 
     this.#section.append(selectSomethingNotification);
 
@@ -60,7 +62,7 @@ export class Properties implements InspectorUIWidget {
     this.#section.remove();
   }
 
-  drawEntityProperties(container: HTMLElement, entity: Entity) {
+  drawEntityProperties(container: BaseElement, entity: Entity) {
     container.innerHTML = "";
 
     // TODO: clean up old listeners instead of leaking them
