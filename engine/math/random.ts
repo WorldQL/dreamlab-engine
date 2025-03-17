@@ -104,16 +104,16 @@ export abstract class RandomDistribution {
 }
 
 // #region Uniform
+class _StandardUniform extends RandomDistribution {
+  nextValue(prng: Prng): number {
+    return prng();
+  }
+}
+
 /**
  * Uniform distribution
  */
-export const StandardUniform = Object.freeze(
-  new (class extends RandomDistribution {
-    protected nextValue(prng: Prng): number {
-      return prng();
-    }
-  })(),
-);
+export const StandardUniform = Object.freeze(new _StandardUniform());
 // #endregion
 
 // #region Normal
