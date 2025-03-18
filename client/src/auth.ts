@@ -9,15 +9,18 @@ type AuthToken = {
   token: string;
 };
 
-export const auth = async (nickname: string): Promise<AuthToken> => {
-  // TODO: way to bypass?
-  if (globalThis.env.IS_DEV || globalThis.env.DREAMLAB_MULTIPLAYER_STANDALONE)
-    return devAuth(nickname);
+const authToken = async (): Promise<AuthToken> => {
+  const url = new URL("/api/game/auth/token", globalThis.env.DREAMLAB_NEXT_PUBLIC_URL);
+  url.searchParams.set("id", connectionDetails.instanceId);
 
-  const searchParams = new URLSearchParams(window.location.search);
-  const passedToken = searchParams.get("token");
-  if (passedToken) return decodeToken(passedToken);
+  const resp = await fetch(url, { credentials: "include" });
+  if (!resp.ok) throw new Error("failed to issue auth token");
 
+  const jwt = await resp.text();
+  return decodeToken(jwt);
+};
+
+const authGuest = async (nickname: string): Promise<AuthToken> => {
   const url = new URL("/api/game/auth/guest", globalThis.env.DREAMLAB_NEXT_PUBLIC_URL);
   url.searchParams.set("id", connectionDetails.instanceId);
   url.searchParams.set("nickname", nickname);
@@ -27,6 +30,22 @@ export const auth = async (nickname: string): Promise<AuthToken> => {
 
   const jwt = await resp.text();
   return decodeToken(jwt);
+};
+
+export const auth = async (nickname: string): Promise<AuthToken> => {
+  // TODO: way to bypass?
+  if (globalThis.env.IS_DEV || globalThis.env.DREAMLAB_MULTIPLAYER_STANDALONE)
+    return devAuth(nickname);
+
+  const searchParams = new URLSearchParams(window.location.search);
+  const passedToken = searchParams.get("token");
+  if (passedToken) return decodeToken(passedToken);
+
+  const [token, guest] = await Promise.allSettled([authToken(), authGuest(nickname)]);
+  if (token.status === "fulfilled") return token.value;
+  if (guest.status === "fulfilled") return guest.value;
+
+  throw new Error("failed to issue auth token");
 };
 
 const TokenSchema = z.object({
