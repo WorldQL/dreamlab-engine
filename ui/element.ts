@@ -1,12 +1,14 @@
-import type { WritableKeysOf } from "./_types.ts";
+import { WritableKeysOf } from "./_types.ts";
 import type { CSSProperties, ExtendedCSSProperties } from "./css.ts";
 import { SVG_NAMESPACE, SVG_TAG_NAMES, TagNames, TagType, VOID_TAG_NAMES } from "./tags.ts";
 
 export type BaseElement = HTMLElement | SVGElement;
 
-export type ElementProps<E extends BaseElement> = {
+export type ElementProps<T extends TagNames> = {
   // deno-lint-ignore ban-types
-  [K in WritableKeysOf<E> as NonNullable<E[K]> extends Function ? never : K]: E[K];
+  [K in WritableKeysOf<TagType<T>> as NonNullable<TagType<T>[K]> extends Function
+    ? never
+    : K]: TagType<T>[K];
 };
 
 export interface ElementExtraProps<E extends BaseElement> {
@@ -31,15 +33,15 @@ export type ElementExtras<E extends BaseElement> = ElementExtraProps<E> &
   ElementEventListeners<E>; //  &
 // ElementDataAttributes;
 
-export type ElementAttributes<E extends BaseElement> = ElementExtras<E> &
+export type ElementAttributes<T extends TagNames> = ElementExtras<TagType<T>> &
   Omit<
-    E extends SVGElement ? Record<string, unknown> : ElementProps<E>,
-    keyof ElementExtras<E>
+    TagType<T> extends SVGElement ? Record<string, unknown> : ElementProps<T>,
+    keyof ElementExtras<TagType<T>>
   >;
 
 export function element<K extends TagNames>(
   tag: K,
-  attrs: Partial<ElementAttributes<TagType<K>>> = {},
+  attrs: Partial<ElementAttributes<K>> = {},
   children: (Element | string | Text)[] = [],
 ): TagType<K> {
   const el = (

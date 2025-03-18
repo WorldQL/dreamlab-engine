@@ -6,7 +6,7 @@ export class IconButton extends HTMLElement {
     customElements.define("dreamlab-icon-button", this);
   }
 
-  constructor(svg: string, attrs?: Partial<ElementAttributes<HTMLButtonElement>>) {
+  constructor(svg: string, attrs?: Partial<ElementAttributes<"button">>) {
     super();
 
     const id = attrs?.id;
@@ -24,7 +24,7 @@ export class IconButton extends HTMLElement {
     button.append(icon(svg));
   }
 
-  setAttrs(attrs: Partial<ElementProps<HTMLButtonElement>>) {
+  setAttrs(attrs: Partial<ElementProps<"button">>) {
     const button = this.querySelector("button");
     if (!button) return;
     Object.assign(button, attrs);

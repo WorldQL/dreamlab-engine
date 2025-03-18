@@ -6,7 +6,7 @@ export class Button extends HTMLElement {
   }
 
   constructor(
-    attrs: Partial<ElementAttributes<HTMLElementTagNameMap["button"]>> = {},
+    attrs: Partial<ElementAttributes<"button">> = {},
     children: (Element | string | Text)[] = [],
   ) {
     super();
