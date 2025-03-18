@@ -1,0 +1,9 @@
+{
+  "lock": false,
+  "tasks": {
+    "generate": "deno run -A ./main.ts > ./element-property-map.generated.ts"
+  },
+  "compilerOptions": {
+    "lib": ["deno.window", "dom"]
+  }
+}
