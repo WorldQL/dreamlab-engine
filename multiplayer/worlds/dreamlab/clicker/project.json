@@ -1,0 +1,124 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "engine_revision": "2024-08.001"
+  },
+  "scenes": {
+    "main": {
+      "registration": [],
+      "world": [
+        {
+          "type": "@core/ClickableRect",
+          "name": "ClickableRect",
+          "enabled": true,
+          "values": {
+            "width": 1,
+            "height": 1
+          },
+          "transform": {
+            "scale": {
+              "x": 2,
+              "y": 2
+            }
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_jc33exd6trzn60xdqlmbb9nc",
+              "script": "res://src/cookie.ts",
+              "values": {}
+            }
+          ],
+          "children": [
+            {
+              "type": "@core/Sprite",
+              "name": "Sprite",
+              "enabled": true,
+              "values": {
+                "static": false,
+                "hidden": false,
+                "texture": "res://assets/cookie.png",
+                "width": 1,
+                "height": 1,
+                "alpha": 1
+              },
+              "transform": {},
+              "ref": "ent_tf3alidk6n63dbbffgedpjmd"
+            }
+          ],
+          "ref": "ent_ezmt7gcystk8zh6jp34itv0c"
+        },
+        {
+          "type": "@core/Empty",
+          "name": "Global Stats",
+          "enabled": true,
+          "values": {},
+          "transform": {},
+          "behaviors": [
+            {
+              "ref": "bhv_w80xykk4mxh8dieylra57bvh",
+              "script": "res://src/global-stats.ts",
+              "values": {}
+            }
+          ],
+          "ref": "ent_wvc13l33gbejqjbaej3wues4"
+        }
+      ],
+      "local": [
+        {
+          "type": "@core/Camera",
+          "name": "Camera",
+          "enabled": true,
+          "values": {
+            "active": true,
+            "smooth": 0.1,
+            "unlocked": false,
+            "zoom": 1
+          },
+          "transform": {},
+          "ref": "ent_jojreate4508y5fgez7exuma"
+        },
+        {
+          "type": "@core/UILayer",
+          "name": "Leaderboard",
+          "enabled": true,
+          "values": {},
+          "transform": {
+            "position": {
+              "x": -3.8900810299999993,
+              "y": 1.547742460000002
+            }
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_bt5xe8r5o1ojzqhci3mzop18",
+              "script": "res://src/leaderboard-ui.ts",
+              "values": {
+                "globalStats": "ent_wvc13l33gbejqjbaej3wues4"
+              }
+            }
+          ],
+          "ref": "ent_vrvqmr8jk57tsk9ijzcc0r9e"
+        },
+        {
+          "type": "@core/UILayer",
+          "name": "TotalClicks",
+          "enabled": true,
+          "values": {},
+          "transform": {},
+          "behaviors": [
+            {
+              "ref": "bhv_yge6f8gjojxexvv6627iu1gf",
+              "script": "res://src/total-clicks-ui.ts",
+              "values": {
+                "globalStats": "ent_wvc13l33gbejqjbaej3wues4"
+              }
+            }
+          ],
+          "ref": "ent_gc9e4f2i7hzydxmqn6rfyffq"
+        }
+      ],
+      "server": [],
+      "prefabs": []
+    }
+  }
+}
