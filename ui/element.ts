@@ -1,15 +1,12 @@
-import { WritableKeysOf } from "./_types.ts";
+import type { ElementPropertyMap } from "./_jsx_codegen/element-property-map.generated.ts";
 import type { CSSProperties, ExtendedCSSProperties } from "./css.ts";
 import { SVG_NAMESPACE, SVG_TAG_NAMES, TagNames, TagType, VOID_TAG_NAMES } from "./tags.ts";
 
 export type BaseElement = HTMLElement | SVGElement;
 
-export type ElementProps<T extends TagNames> = {
-  // deno-lint-ignore ban-types
-  [K in WritableKeysOf<TagType<T>> as NonNullable<TagType<T>[K]> extends Function
-    ? never
-    : K]: TagType<T>[K];
-};
+export type ElementProps<T extends TagNames> = T extends keyof ElementPropertyMap
+  ? ElementPropertyMap[T]
+  : { [K in keyof TagType<T>]: TagType<T>[K] };
 
 export interface ElementExtraProps<E extends BaseElement> {
   classList: string[];
