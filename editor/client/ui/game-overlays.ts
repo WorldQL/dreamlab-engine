@@ -15,6 +15,8 @@ import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 
 export class GameOverlays implements InspectorUIWidget {
   #editMode: boolean = false;
+  #statsVisible: boolean = false;
+  #keydownListener: ((event: KeyboardEvent) => void) | null = null;
 
   #overlay: HTMLElement;
   #editOverlays: HTMLElement[] = [];
@@ -37,10 +39,24 @@ export class GameOverlays implements InspectorUIWidget {
     if (this.#editMode) {
       this.#overlay.append(...this.#editOverlays);
     } else {
-      this.#overlay.append(stats.dom);
-      stats.dom.style.position = "absolute";
-      stats.dom.style.right = "0px";
-      stats.dom.style.left = "";
+      // Set up keyboard shortcut (Control+Shift+F) to toggle stats visibility
+      this.#keydownListener = (event: KeyboardEvent) => {
+        if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === "f") {
+          event.preventDefault(); // Prevent browser's find dialog
+          this.#statsVisible = !this.#statsVisible;
+
+          if (this.#statsVisible) {
+            this.#overlay.append(stats.dom);
+            stats.dom.style.position = "absolute";
+            stats.dom.style.right = "0px";
+            stats.dom.style.left = "";
+          } else {
+            stats.dom.remove();
+          }
+        }
+      };
+
+      document.addEventListener("keydown", this.#keydownListener);
     }
 
     this.gameContainer.append(this.#overlay);
@@ -48,8 +64,16 @@ export class GameOverlays implements InspectorUIWidget {
 
   hide(): void {
     stats.dom.remove();
+    this.#statsVisible = false;
+
     for (const element of this.#editOverlays) {
       element.remove();
+    }
+
+    // Clean up the event listener
+    if (this.#keydownListener) {
+      document.removeEventListener("keydown", this.#keydownListener);
+      this.#keydownListener = null;
     }
 
     this.#overlay.remove();
