@@ -8,28 +8,29 @@
       "registration": [],
       "world": [
         {
+          "ref": "ent_ezmt7gcystk8zh6jp34itv0c",
           "type": "@core/ClickableRect",
           "name": "ClickableRect",
           "enabled": true,
-          "values": {
-            "width": 1,
-            "height": 1
-          },
           "transform": {
             "scale": {
               "x": 2,
               "y": 2
             }
           },
+          "values": {
+            "width": 1,
+            "height": 1
+          },
           "behaviors": [
             {
               "ref": "bhv_jc33exd6trzn60xdqlmbb9nc",
-              "script": "res://src/cookie.ts",
-              "values": {}
+              "script": "res://src/cookie.ts"
             }
           ],
           "children": [
             {
+              "ref": "ent_tf3alidk6n63dbbffgedpjmd",
               "type": "@core/Sprite",
               "name": "Sprite",
               "enabled": true,
@@ -39,32 +40,28 @@
                 "texture": "res://assets/cookie.png",
                 "width": 1,
                 "height": 1,
-                "alpha": 1
-              },
-              "transform": {},
-              "ref": "ent_tf3alidk6n63dbbffgedpjmd"
+                "alpha": 1,
+                "preserveAspectRatio": false
+              }
             }
-          ],
-          "ref": "ent_ezmt7gcystk8zh6jp34itv0c"
+          ]
         },
         {
+          "ref": "ent_wvc13l33gbejqjbaej3wues4",
           "type": "@core/Empty",
           "name": "Global Stats",
           "enabled": true,
-          "values": {},
-          "transform": {},
           "behaviors": [
             {
               "ref": "bhv_w80xykk4mxh8dieylra57bvh",
-              "script": "res://src/global-stats.ts",
-              "values": {}
+              "script": "res://src/global-stats.ts"
             }
-          ],
-          "ref": "ent_wvc13l33gbejqjbaej3wues4"
+          ]
         }
       ],
       "local": [
         {
+          "ref": "ent_jojreate4508y5fgez7exuma",
           "type": "@core/Camera",
           "name": "Camera",
           "enabled": true,
@@ -73,15 +70,28 @@
             "smooth": 0.1,
             "unlocked": false,
             "zoom": 1
-          },
-          "transform": {},
-          "ref": "ent_jojreate4508y5fgez7exuma"
+          }
         },
         {
+          "ref": "ent_gc9e4f2i7hzydxmqn6rfyffq",
+          "type": "@core/UILayer",
+          "name": "TotalClicks",
+          "enabled": true,
+          "behaviors": [
+            {
+              "ref": "bhv_yge6f8gjojxexvv6627iu1gf",
+              "script": "res://src/total-clicks-ui.tsx",
+              "values": {
+                "globalStats": "ent_wvc13l33gbejqjbaej3wues4"
+              }
+            }
+          ]
+        },
+        {
+          "ref": "ent_vrvqmr8jk57tsk9ijzcc0r9e",
           "type": "@core/UILayer",
           "name": "Leaderboard",
           "enabled": true,
-          "values": {},
           "transform": {
             "position": {
               "x": -3.8900810299999993,
@@ -90,31 +100,13 @@
           },
           "behaviors": [
             {
-              "ref": "bhv_bt5xe8r5o1ojzqhci3mzop18",
-              "script": "res://src/leaderboard-ui.ts",
+              "ref": "bhv_vpn2l66Tbx",
+              "script": "res://src/leaderboard-ui.tsx",
               "values": {
                 "globalStats": "ent_wvc13l33gbejqjbaej3wues4"
               }
             }
-          ],
-          "ref": "ent_vrvqmr8jk57tsk9ijzcc0r9e"
-        },
-        {
-          "type": "@core/UILayer",
-          "name": "TotalClicks",
-          "enabled": true,
-          "values": {},
-          "transform": {},
-          "behaviors": [
-            {
-              "ref": "bhv_yge6f8gjojxexvv6627iu1gf",
-              "script": "res://src/total-clicks-ui.ts",
-              "values": {
-                "globalStats": "ent_wvc13l33gbejqjbaej3wues4"
-              }
-            }
-          ],
-          "ref": "ent_gc9e4f2i7hzydxmqn6rfyffq"
+          ]
         }
       ],
       "server": [],
