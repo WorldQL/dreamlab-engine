@@ -1146,37 +1146,42 @@ export const serveSourceControlAPI = (router: Router) => {
       }
     }
 
-    const untrackedProcess = new Deno.Command("git", {
-      args: ["ls-files", "--others", "--exclude-standard"],
-      cwd: sourceRoot,
-      stdout: "piped",
-      stderr: "piped",
-    }).spawn();
-    const { code: untrackedCode, stdout: untrackedStdout } = await untrackedProcess.output();
-    if (untrackedCode === 0) {
-      const untrackedOutput = new TextDecoder().decode(untrackedStdout).trim();
-      const untrackedFiles = untrackedOutput ? untrackedOutput.split("\n").filter(Boolean) : [];
-      for (const filePath of untrackedFiles) {
-        if (!diffs[filePath]) {
-          try {
-            const fileContent = await Deno.readTextFile(path.join(sourceRoot, filePath));
-            let newDiff = `diff --git a/${filePath} b/${filePath}\n`;
-            newDiff += `new file mode 100644\n`;
-            newDiff += `--- /dev/null\n`;
-            newDiff += `+++ b/${filePath}\n`;
-            const lines = fileContent.split("\n");
-            if (lines[lines.length - 1] === "") {
-              lines.pop();
+    if (!commitHash) {
+      const untrackedProcess = new Deno.Command("git", {
+        args: ["ls-files", "--others", "--exclude-standard"],
+        cwd: sourceRoot,
+        stdout: "piped",
+        stderr: "piped",
+      }).spawn();
+      const { code: untrackedCode, stdout: untrackedStdout } = await untrackedProcess.output();
+      if (untrackedCode === 0) {
+        const untrackedOutput = new TextDecoder().decode(untrackedStdout).trim();
+        const untrackedFiles = untrackedOutput
+          ? untrackedOutput.split("\n").filter(Boolean)
+          : [];
+        for (const filePath of untrackedFiles) {
+          if (!diffs[filePath]) {
+            try {
+              const fileContent = await Deno.readTextFile(path.join(sourceRoot, filePath));
+              let newDiff = `diff --git a/${filePath} b/${filePath}\n`;
+              newDiff += `new file mode 100644\n`;
+              newDiff += `--- /dev/null\n`;
+              newDiff += `+++ b/${filePath}\n`;
+              const lines = fileContent.split("\n");
+              if (lines[lines.length - 1] === "") {
+                lines.pop();
+              }
+              const contentDiff = lines.map(line => `+${line}`).join("\n");
+              newDiff += contentDiff;
+              diffs[filePath] = newDiff;
+            } catch (err) {
+              console.error(`Failed to read new file ${filePath}:`, err);
             }
-            const contentDiff = lines.map(line => `+${line}`).join("\n");
-            newDiff += contentDiff;
-            diffs[filePath] = newDiff;
-          } catch (err) {
-            console.error(`Failed to read new file ${filePath}:`, err);
           }
         }
       }
     }
+
     ctx.response.body = { diffs };
   });
   // #endregion
