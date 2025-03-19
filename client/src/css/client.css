@@ -8,13 +8,22 @@ body {
 
 #viewport {
   width: 100vw;
-  height: 100dvh;
+  height: calc(100dvh - 20px);
 
   & > * {
     width: 100%;
     height: 100%;
     overflow: hidden;
   }
+}
+#topbar {
+  width: 100vw;
+  height: 20px;
+  box-sizing: border-box;
+  background-color: black;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: row;
 }
 
 dreamlab-connect-form {
