@@ -23,6 +23,16 @@ const getTypeName = (ty: ts.Type) => {
   return checker.typeToString(ty);
 };
 
+const isReadonly = (symbol: ts.Symbol) => {
+  for (const decl of symbol.declarations ?? []) {
+    if (ts.isPropertyDeclaration(decl) || ts.isPropertySignature(decl)) {
+      const flags = ts.getCombinedModifierFlags(decl);
+      if ((flags & ts.ModifierFlags.Readonly) !== 0) return true;
+    }
+  }
+  return false;
+};
+
 console.log("export type ElementPropertyMap = {");
 
 for (const [key, htmlElem] of htmlMap.members!.entries()) {
@@ -31,17 +41,10 @@ for (const [key, htmlElem] of htmlMap.members!.entries()) {
   console.log(" ", `[${JSON.stringify(key)}]:`, "{");
 
   for (const propSymbol of htmlElemType.getProperties()) {
-    // skip readonly props
-    let isReadonly = false;
-    for (const decl of propSymbol.declarations ?? []) {
-      if (ts.isPropertyDeclaration(decl) || ts.isPropertySignature(decl)) {
-        const flags = ts.getCombinedModifierFlags(decl);
-        if ((flags & ts.ModifierFlags.Readonly) !== 0) isReadonly = true;
-      }
-    }
-    if (isReadonly) continue;
+    // we only want writable props
+    if (isReadonly(propSymbol)) continue;
 
-    // skip functions
+    // skip functions (ie event listeners)
     const propType = checker.getTypeOfSymbol(propSymbol);
     if (propType.getCallSignatures().length > 0) continue;
 
