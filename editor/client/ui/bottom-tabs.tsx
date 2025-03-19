@@ -36,17 +36,15 @@ export class BottomTabs implements InspectorUIWidget {
         if (!(tab instanceof HTMLElement)) continue;
 
         const isActive = tab.getAttribute("data-tab-id") === tabId;
-        if (isActive) tab.setAttribute("data-active", "");
-        else tab.removeAttribute("data-active");
+        if (isActive) {
+          tab.setAttribute("data-active", "");
+          if (tab.getAttribute("data-tab-id") === "logs") {
+            tab.classList.remove("has-new");
+          }
+        } else {
+          tab.removeAttribute("data-active");
+        }
       }
-      // tabs.forEach(tab => {
-      //   i
-      //   if (tab instanceof HTMLElement) {
-      //     tab
-      //     // tab.classList.toggle("active", tab.getAttribute("data-tab-id") === tabId);
-      //   }
-      // });
-
       this.#logContent.style.display = tabId === "logs" ? "flex" : "none";
       this.#prefabContent.style.display = tabId === "prefabs" ? "flex" : "none";
       this.#assistantContent.style.display = tabId === "assistant" ? "flex" : "none";
@@ -133,8 +131,7 @@ export class BottomTabs implements InspectorUIWidget {
     ]);
 
     logsTab.addEventListener("click", () => {
-      logsTab.style.removeProperty("background-color");
-      logsTab.style.removeProperty("color");
+      logsTab.classList.remove("has-new");
     });
 
     tabBar.addEventListener("click", e => {

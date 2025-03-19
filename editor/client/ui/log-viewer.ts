@@ -202,11 +202,9 @@ export class LogViewer {
       }
     }
 
-    // color logs tab yellow if it's not in view.
     const logsTab = document.querySelector('[data-tab-id="logs"]') as HTMLDivElement;
-    if (logsTab.dataset.active === undefined) {
-      logsTab.style.backgroundColor = "#c3c32f";
-      logsTab.style.color = "black";
+    if (logsTab && !logsTab.hasAttribute("data-active")) {
+      logsTab.classList.add("has-new");
     }
   }
 

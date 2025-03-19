@@ -80,6 +80,11 @@
   animation: spin 1s linear infinite;
 }
 
+[data-tab-id="logs"].has-new:not([data-active]) {
+  background-color: rgb(var(--color-yellow));
+  color: black;
+}
+
 @keyframes spin {
   from {
     transform: rotate(0deg);
