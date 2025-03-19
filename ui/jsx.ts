@@ -8,7 +8,7 @@ namespace JSX {
   // export type Element = HTMLElement | SVGElement;
   export type IntrinsicElements = {
     [K in TagNames]: Omit<Partial<ElementAttributes<K>>, "children"> & {
-      children?: JSX.Element | JSX.Element[] | string | undefined;
+      children?: JSX.Element | JSX.Element[] | string | number | boolean | undefined;
     } & {
       // did you know JSX just disables typechecking for any attribute with a hyphen??
       // see TypeScript src/compiler/checker.ts, `isHyphenatedJsxName`
@@ -28,11 +28,16 @@ function jsx<K extends TagNames>(
 ): TagType<K> {
   const { children = [], ...attrs } = props;
   // if there's a singleton child, make an array
-  let childrenArray = Array.isArray(children) ? children : [children];
-  // filter out things that aren't text or elements
-  childrenArray = childrenArray.filter(it => it instanceof Node || typeof it === "string");
+  const childrenArray = Array.isArray(children) ? children : [children];
+  const childrenArray2 = childrenArray
+    .flat()
+    .filter(it => it !== false)
+    .map(it => {
+      if (it instanceof Element) return it;
+      return String(it);
+    });
 
-  return element(tag, attrs as Partial<ElementAttributes<K>>, childrenArray);
+  return element(tag, attrs as Partial<ElementAttributes<K>>, childrenArray2);
 }
 
 export { Fragment, jsx, jsx as jsxDEV, jsx as jsxs };
