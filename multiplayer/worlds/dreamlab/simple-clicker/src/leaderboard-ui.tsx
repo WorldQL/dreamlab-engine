@@ -35,7 +35,6 @@ export default class LeaderboardUI extends UIBehavior {
   }
 
   override render() {
-    this.leaderboard.map(({ nickname, clicks }, _index) => console.log(nickname, clicks));
     return (
       <div
         style={{
