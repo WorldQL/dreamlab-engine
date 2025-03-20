@@ -90,6 +90,7 @@ export const serveSourceControlAPI = (router: Router) => {
     const BodySchema = z.object({
       remote: z.string().optional().default("origin"),
       branch: z.string().optional().default("main"),
+      force: z.boolean().optional().default(false),
     });
     let body;
     try {
@@ -111,8 +112,13 @@ export const serveSourceControlAPI = (router: Router) => {
       throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
     }
     const sourceRoot = instance.info.worldDirectory;
+    const args = ["push"];
+    if (body.force) {
+      args.push("--force");
+    }
+    args.push(body.remote, body.branch);
     const pushProcess = new Deno.Command("git", {
-      args: ["push", body.remote, body.branch],
+      args,
       cwd: sourceRoot,
     }).spawn();
     const pushStatus = await pushProcess.status;
@@ -133,6 +139,7 @@ export const serveSourceControlAPI = (router: Router) => {
     const BodySchema = z.object({
       remote: z.string().optional().default("origin"),
       branch: z.string().optional().default("main"),
+      force: z.boolean().optional().default(false),
     });
     let body;
     try {
@@ -154,46 +161,70 @@ export const serveSourceControlAPI = (router: Router) => {
       throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
     }
     const sourceRoot = instance.info.worldDirectory;
-    const pullProcess = new Deno.Command("git", {
-      args: ["pull", body.remote, body.branch],
-      cwd: sourceRoot,
-    }).spawn();
-    const pullStatus = await pullProcess.status;
-    if (!pullStatus.success) {
-      const conflictProcess = new Deno.Command("git", {
-        args: ["diff", "--name-only", "--diff-filter=U"],
+
+    if (body.force) {
+      const fetchProcess = new Deno.Command("git", {
+        args: ["fetch", body.remote],
         cwd: sourceRoot,
-        stdout: "piped",
-        stderr: "piped",
       }).spawn();
-      const conflictOutput = await conflictProcess.output();
-      const conflictStdout = new TextDecoder().decode(conflictOutput.stdout).trim();
-      const conflictFiles = conflictStdout.split("\n").filter(Boolean);
-      if (conflictFiles.length > 0) {
-        // Abort the merge if conflicts exist
-        const abortProcess = new Deno.Command("git", {
-          args: ["merge", "--abort"],
-          cwd: sourceRoot,
-        }).spawn();
-        await abortProcess.status;
-        ctx.response.status = Status.Conflict;
-        ctx.response.body = {
-          error: `Pull aborted: Merge conflicts detected between your local branch and ${
-            body.remote
-          }/${
-            body.branch
-          }. Please resolve the conflicts in the following files before trying again: ${conflictFiles.join(
-            ", ",
-          )}.`,
-          conflicts: conflictFiles,
-        };
+      const fetchStatus = await fetchProcess.status;
+      if (!fetchStatus.success) {
+        ctx.response.status = Status.InternalServerError;
+        ctx.response.body = { error: "Fetch failed during force pull." };
         return;
       }
-      ctx.response.status = Status.InternalServerError;
-      ctx.response.body = { error: "Pull failed due to an unexpected error." };
-      return;
+      const resetProcess = new Deno.Command("git", {
+        args: ["reset", "--hard", `${body.remote}/${body.branch}`],
+        cwd: sourceRoot,
+      }).spawn();
+      const resetStatus = await resetProcess.status;
+      if (!resetStatus.success) {
+        ctx.response.status = Status.InternalServerError;
+        ctx.response.body = { error: "Reset failed during force pull." };
+        return;
+      }
+      ctx.response.body = { success: true };
+    } else {
+      const pullProcess = new Deno.Command("git", {
+        args: ["pull", body.remote, body.branch],
+        cwd: sourceRoot,
+      }).spawn();
+      const pullStatus = await pullProcess.status;
+      if (!pullStatus.success) {
+        const conflictProcess = new Deno.Command("git", {
+          args: ["diff", "--name-only", "--diff-filter=U"],
+          cwd: sourceRoot,
+          stdout: "piped",
+          stderr: "piped",
+        }).spawn();
+        const conflictOutput = await conflictProcess.output();
+        const conflictStdout = new TextDecoder().decode(conflictOutput.stdout).trim();
+        const conflictFiles = conflictStdout.split("\n").filter(Boolean);
+        if (conflictFiles.length > 0) {
+          const abortProcess = new Deno.Command("git", {
+            args: ["merge", "--abort"],
+            cwd: sourceRoot,
+          }).spawn();
+          await abortProcess.status;
+          ctx.response.status = Status.Conflict;
+          ctx.response.body = {
+            error: `Pull aborted: Merge conflicts detected between your local branch and ${
+              body.remote
+            }/${
+              body.branch
+            }. Please resolve the conflicts in the following files before trying again: ${conflictFiles.join(
+              ", ",
+            )}.`,
+            conflicts: conflictFiles,
+          };
+          return;
+        }
+        ctx.response.status = Status.InternalServerError;
+        ctx.response.body = { error: "Pull failed due to an unexpected error." };
+        return;
+      }
+      ctx.response.body = { success: true };
     }
-    ctx.response.body = { success: true };
   });
   // #endregion
 
