@@ -1,4 +1,5 @@
 import { Behavior, UILayer, UIPanel } from "@dreamlab/engine";
+import { BaseElement } from "@dreamlab/ui";
 
 export abstract class UIBehavior extends Behavior {
   private uiRoot: HTMLElement | undefined;
@@ -93,7 +94,7 @@ export abstract class UIBehavior extends Behavior {
     this.rerender();
   }
 
-  protected abstract render(): HTMLElement;
+  protected abstract render(): BaseElement;
 
   hide = () => {
     if (this.uiElement && this.uiElement.parentNode) {
