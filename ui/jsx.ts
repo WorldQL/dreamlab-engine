@@ -4,17 +4,22 @@ import { TagNames, TagType } from "./tags.ts";
 // deno-lint-ignore no-namespace
 namespace JSX {
   export type Element = BaseElement;
+  export type Children = JSX.Element | string | number | boolean | undefined | JSX.Children[];
   // TODO: Properly narrow type, HTMLElementTagNameMap isn't working and <div> is simply an Element when the line below is uncommented. Having this be an HTMLElement is much less annoying.
   // export type Element = HTMLElement | SVGElement;
   export type IntrinsicElements = {
     [K in TagNames]: Omit<Partial<ElementAttributes<K>>, "children"> & {
-      children?: JSX.Element | JSX.Element[] | string | number | boolean | undefined;
+      children?: JSX.Children;
     } & {
       // did you know JSX just disables typechecking for any attribute with a hyphen??
       // see TypeScript src/compiler/checker.ts, `isHyphenatedJsxName`
       [hyphenatedAttribute: `${string}-${string}`]: unknown;
     };
   };
+
+  export interface IntrinsicAttributes {
+    children?: JSX.Children;
+  }
 }
 
 function Fragment(_props: Record<string, unknown>, _key?: string): never {
