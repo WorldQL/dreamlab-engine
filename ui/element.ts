@@ -52,10 +52,10 @@ export function element<K extends TagNames>(
   if (style) {
     for (const [key, value] of Object.entries(style)) {
       if (key.startsWith("--")) {
-        el.style.setProperty(key, value);
+        el.style.setProperty(key, value as string | null);
       } else {
         const k = key as keyof CSSProperties;
-        if (value) el.style[k] = value;
+        if (value) el.style[k] = value as string;
         else delete el.style[k];
       }
     }
