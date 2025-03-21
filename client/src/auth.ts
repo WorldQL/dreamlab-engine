@@ -7,6 +7,7 @@ type AuthToken = {
   nickname: string;
   playerId: string;
   token: string;
+  guest?: boolean;
 };
 
 const authToken = async (): Promise<AuthToken> => {
@@ -29,7 +30,10 @@ const authGuest = async (nickname: string): Promise<AuthToken> => {
   if (!resp.ok) throw new Error("failed to issue guest token");
 
   const jwt = await resp.text();
-  return decodeToken(jwt);
+  const token = decodeToken(jwt);
+  token.guest = true;
+
+  return token;
 };
 
 export const auth = async (nickname: string): Promise<AuthToken> => {
@@ -73,4 +77,16 @@ const devAuth = (nickname: string): AuthToken => {
   window.localStorage.setItem(PLAYER_ID, playerId);
 
   return { nickname, playerId, token: "" } satisfies AuthToken;
+};
+
+export const generateMigrateUrl = (guestPlayerId: string): string => {
+  const migrateParams = new URLSearchParams();
+  migrateParams.set("from", guestPlayerId);
+  migrateParams.set("after", window.location.href);
+  const migrateUrl = `/api/migrate-kv?${migrateParams}`;
+
+  const signInUrl = new URL("/signIn", globalThis.env.DREAMLAB_NEXT_PUBLIC_URL);
+  signInUrl.searchParams.set("callbackUrl", migrateUrl);
+
+  return signInUrl.toString();
 };

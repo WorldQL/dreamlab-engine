@@ -10,6 +10,13 @@ export const getClientId = () => {
 };
 
 const showLoading = (): HTMLElement => {
+  // disable top bar
+  const topbar = document.querySelector<HTMLDivElement>("div#topbar");
+  if (topbar) {
+    topbar.style.display = "none";
+    document.body.style.setProperty("--top-bar", "0px");
+  }
+
   // TODO: make this look nicer
   const span = elem("span", {}, ["Loading..."]);
   span.style.fontSize = "4rem";

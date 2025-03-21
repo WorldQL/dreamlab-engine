@@ -1,5 +1,5 @@
 import { urlToHTTP, urlToWebSocket } from "@dreamlab/util/url.ts";
-import { auth } from "./auth.ts";
+import { auth, generateMigrateUrl } from "./auth.ts";
 import { createConnectForm, fetchInstances, spawnNewInstance } from "./connect-form.ts";
 import { startGame } from "./start-game.ts";
 import { connectionDetails, setConnectionDetails } from "./util/server-url.ts";
@@ -36,7 +36,26 @@ if (connectionDetails.instanceId === "") {
   }
 }
 
+const topbar = document.querySelector<HTMLDivElement>("div#topbar")!;
+const emojistatus = topbar.querySelector<HTMLSpanElement>("span#emoji-status")!;
+const textstatus = topbar.querySelector<HTMLSpanElement>("span#text-status")!;
+const signin = topbar.querySelector<HTMLDivElement>("div#sign-in")!;
+
 const info = await auth(nickname);
+if (info.guest) {
+  const span = document.createElement("span");
+  span.textContent = "Guest User ";
+
+  const a = document.createElement("a");
+  a.href = generateMigrateUrl(info.playerId);
+  a.textContent = "[Sign In]";
+
+  signin.append(span, a);
+} else {
+  const span = document.createElement("span");
+  span.textContent = info.nickname;
+  signin.append(span);
+}
 
 const connectUrl = urlToWebSocket(connectionDetails.serverUrl);
 connectUrl.pathname = `/api/v1/connect/${connectionDetails.instanceId}`;
@@ -45,4 +64,17 @@ connectUrl.searchParams.set("token", info.token);
 connectUrl.searchParams.set("player_id", info.playerId);
 connectUrl.searchParams.set("nickname", info.nickname);
 
-startGame(connectUrl, connectionDetails.instanceId);
+startGame(
+  connectUrl,
+  connectionDetails.instanceId,
+  () => {
+    // success
+    emojistatus.textContent = "🟢";
+    textstatus.textContent = "Connected";
+  },
+  () => {
+    emojistatus.textContent = "🔴";
+    textstatus.textContent = "Connection Failed";
+    // error
+  },
+);

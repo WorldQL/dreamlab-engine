@@ -1,5 +1,9 @@
 @import url(./base.css);
 
+:root {
+  --top-bar: 24px;
+}
+
 html,
 body {
   color: rgb(var(--color-text));
@@ -8,7 +12,7 @@ body {
 
 #viewport {
   width: 100vw;
-  height: calc(100dvh - 20px);
+  height: calc(100dvh - var(--top-bar));
 
   & > * {
     width: 100%;
@@ -16,14 +20,17 @@ body {
     overflow: hidden;
   }
 }
+
 #topbar {
   width: 100vw;
-  height: 20px;
-  box-sizing: border-box;
+  height: var(--top-bar);
   background-color: black;
   display: flex;
   justify-content: space-between;
   flex-direction: row;
+  align-items: center;
+  padding: 2px;
+  font-size: 0.95rem;
 }
 
 dreamlab-connect-form {

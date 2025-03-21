@@ -13,6 +13,7 @@ export async function startGame(
   connectUrl: string | URL,
   instanceId: string,
   gameCallback: (game: ClientGame) => void = () => {},
+  errorCallback: () => void = () => {},
 ) {
   const uiRoot = document.querySelector("main")! as HTMLElement;
   const container = document.createElement("div");
@@ -23,6 +24,9 @@ export async function startGame(
 
   const socket = new WebSocket(url);
   socket.binaryType = "arraybuffer";
+  socket.addEventListener("error", () => {
+    errorCallback();
+  });
 
   const [game, conn, handshake] = await connectToGame(instanceId, container, socket, codec);
   gameCallback(game);
