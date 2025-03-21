@@ -105,7 +105,7 @@ export abstract class RandomDistribution {
 
 // #region Uniform
 class _StandardUniform extends RandomDistribution {
-  nextValue(prng: Prng): number {
+  protected nextValue(prng: Prng): number {
     return prng();
   }
 }
