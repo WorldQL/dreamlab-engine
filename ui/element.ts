@@ -15,11 +15,122 @@ export interface ElementExtraProps<E extends BaseElement> {
   _also: (it: E) => void | ((it: E) => void)[];
 }
 
+// export type ElementEventListeners<E extends BaseElement> = {
+//   [K in keyof HTMLElementEventMap as K extends string ? `on${Capitalize<K>}` : never]: (
+//     this: E,
+//     ev: HTMLElementEventMap[K],
+//   ) => void;
+// };
+// ☝️ produces onMousedown instead of onMouseDown
+// let's just hardcode it:
 export type ElementEventListeners<E extends BaseElement> = {
-  [K in keyof HTMLElementEventMap as K extends string ? `on${Capitalize<K>}` : never]: (
+  onAbort: (this: E, ev: HTMLElementEventMap["abort"]) => void;
+  onAnimationCancel: (this: E, ev: HTMLElementEventMap["animationcancel"]) => void;
+  onAnimationEnd: (this: E, ev: HTMLElementEventMap["animationend"]) => void;
+  onAnimationIteration: (this: E, ev: HTMLElementEventMap["animationiteration"]) => void;
+  onAnimationStart: (this: E, ev: HTMLElementEventMap["animationstart"]) => void;
+  onAuxClick: (this: E, ev: HTMLElementEventMap["auxclick"]) => void;
+  onBeforeInput: (this: E, ev: HTMLElementEventMap["beforeinput"]) => void;
+  onBlur: (this: E, ev: HTMLElementEventMap["blur"]) => void;
+  onCancel: (this: E, ev: HTMLElementEventMap["cancel"]) => void;
+  onCanPlay: (this: E, ev: HTMLElementEventMap["canplay"]) => void;
+  onCanPlayThrough: (this: E, ev: HTMLElementEventMap["canplaythrough"]) => void;
+  onChange: (this: E, ev: HTMLElementEventMap["change"]) => void;
+  onClick: (this: E, ev: HTMLElementEventMap["click"]) => void;
+  onClose: (this: E, ev: HTMLElementEventMap["close"]) => void;
+  onCompositionEnd: (this: E, ev: HTMLElementEventMap["compositionend"]) => void;
+  onCompositionStart: (this: E, ev: HTMLElementEventMap["compositionstart"]) => void;
+  onCompositionUpdate: (this: E, ev: HTMLElementEventMap["compositionupdate"]) => void;
+  onContextMenu: (this: E, ev: HTMLElementEventMap["contextmenu"]) => void;
+  onCopy: (this: E, ev: HTMLElementEventMap["copy"]) => void;
+  onCueChange: (this: E, ev: HTMLElementEventMap["cuechange"]) => void;
+  onCut: (this: E, ev: HTMLElementEventMap["cut"]) => void;
+  onDblClick: (this: E, ev: HTMLElementEventMap["dblclick"]) => void;
+  onDrag: (this: E, ev: HTMLElementEventMap["drag"]) => void;
+  onDragEnd: (this: E, ev: HTMLElementEventMap["dragend"]) => void;
+  onDragEnter: (this: E, ev: HTMLElementEventMap["dragenter"]) => void;
+  onDragLeave: (this: E, ev: HTMLElementEventMap["dragleave"]) => void;
+  onDragOver: (this: E, ev: HTMLElementEventMap["dragover"]) => void;
+  onDragStart: (this: E, ev: HTMLElementEventMap["dragstart"]) => void;
+  onDrop: (this: E, ev: HTMLElementEventMap["drop"]) => void;
+  onDurationChange: (this: E, ev: HTMLElementEventMap["durationchange"]) => void;
+  onEmptied: (this: E, ev: HTMLElementEventMap["emptied"]) => void;
+  onEnded: (this: E, ev: HTMLElementEventMap["ended"]) => void;
+  onError: (this: E, ev: HTMLElementEventMap["error"]) => void;
+  onFocus: (this: E, ev: HTMLElementEventMap["focus"]) => void;
+  onFocusIn: (this: E, ev: HTMLElementEventMap["focusin"]) => void;
+  onFocusOut: (this: E, ev: HTMLElementEventMap["focusout"]) => void;
+  onFormData: (this: E, ev: HTMLElementEventMap["formdata"]) => void;
+  onFullscreenChange: (this: E, ev: HTMLElementEventMap["fullscreenchange"]) => void;
+  onFullscreenError: (this: E, ev: HTMLElementEventMap["fullscreenerror"]) => void;
+  onGotPointerCapture: (this: E, ev: HTMLElementEventMap["gotpointercapture"]) => void;
+  onInput: (this: E, ev: HTMLElementEventMap["input"]) => void;
+  onInvalid: (this: E, ev: HTMLElementEventMap["invalid"]) => void;
+  onKeyDown: (this: E, ev: HTMLElementEventMap["keydown"]) => void;
+  onKeyPress: (this: E, ev: HTMLElementEventMap["keypress"]) => void;
+  onKeyUp: (this: E, ev: HTMLElementEventMap["keyup"]) => void;
+  onLoad: (this: E, ev: HTMLElementEventMap["load"]) => void;
+  onLoadedData: (this: E, ev: HTMLElementEventMap["loadeddata"]) => void;
+  onLoadedMetadata: (this: E, ev: HTMLElementEventMap["loadedmetadata"]) => void;
+  onLoadStart: (this: E, ev: HTMLElementEventMap["loadstart"]) => void;
+  onLostPointerCapture: (this: E, ev: HTMLElementEventMap["lostpointercapture"]) => void;
+  onMouseDown: (this: E, ev: HTMLElementEventMap["mousedown"]) => void;
+  onMouseEnter: (this: E, ev: HTMLElementEventMap["mouseenter"]) => void;
+  onMouseLeave: (this: E, ev: HTMLElementEventMap["mouseleave"]) => void;
+  onMouseMove: (this: E, ev: HTMLElementEventMap["mousemove"]) => void;
+  onMouseOut: (this: E, ev: HTMLElementEventMap["mouseout"]) => void;
+  onMouseOver: (this: E, ev: HTMLElementEventMap["mouseover"]) => void;
+  onMouseUp: (this: E, ev: HTMLElementEventMap["mouseup"]) => void;
+  onPaste: (this: E, ev: HTMLElementEventMap["paste"]) => void;
+  onPause: (this: E, ev: HTMLElementEventMap["pause"]) => void;
+  onPlay: (this: E, ev: HTMLElementEventMap["play"]) => void;
+  onPlaying: (this: E, ev: HTMLElementEventMap["playing"]) => void;
+  onPointerCancel: (this: E, ev: HTMLElementEventMap["pointercancel"]) => void;
+  onPointerDown: (this: E, ev: HTMLElementEventMap["pointerdown"]) => void;
+  onPointerEnter: (this: E, ev: HTMLElementEventMap["pointerenter"]) => void;
+  onPointerLeave: (this: E, ev: HTMLElementEventMap["pointerleave"]) => void;
+  onPointerMove: (this: E, ev: HTMLElementEventMap["pointermove"]) => void;
+  onPointerOut: (this: E, ev: HTMLElementEventMap["pointerout"]) => void;
+  onPointerOver: (this: E, ev: HTMLElementEventMap["pointerover"]) => void;
+  onPointerUp: (this: E, ev: HTMLElementEventMap["pointerup"]) => void;
+  onProgress: (this: E, ev: HTMLElementEventMap["progress"]) => void;
+  onRateChange: (this: E, ev: HTMLElementEventMap["ratechange"]) => void;
+  onReset: (this: E, ev: HTMLElementEventMap["reset"]) => void;
+  onResize: (this: E, ev: HTMLElementEventMap["resize"]) => void;
+  onScroll: (this: E, ev: HTMLElementEventMap["scroll"]) => void;
+  onSecurityPolicyViolation: (
     this: E,
-    ev: HTMLElementEventMap[K],
+    ev: HTMLElementEventMap["securitypolicyviolation"],
   ) => void;
+  onSeeked: (this: E, ev: HTMLElementEventMap["seeked"]) => void;
+  onSeeking: (this: E, ev: HTMLElementEventMap["seeking"]) => void;
+  onSelect: (this: E, ev: HTMLElementEventMap["select"]) => void;
+  onSelectionChange: (this: E, ev: HTMLElementEventMap["selectionchange"]) => void;
+  onSelectStart: (this: E, ev: HTMLElementEventMap["selectstart"]) => void;
+  onSlotChange: (this: E, ev: HTMLElementEventMap["slotchange"]) => void;
+  onStalled: (this: E, ev: HTMLElementEventMap["stalled"]) => void;
+  onSubmit: (this: E, ev: HTMLElementEventMap["submit"]) => void;
+  onSuspend: (this: E, ev: HTMLElementEventMap["suspend"]) => void;
+  onTimeUpdate: (this: E, ev: HTMLElementEventMap["timeupdate"]) => void;
+  onToggle: (this: E, ev: HTMLElementEventMap["toggle"]) => void;
+  onTouchCancel: (this: E, ev: HTMLElementEventMap["touchcancel"]) => void;
+  onTouchEnd: (this: E, ev: HTMLElementEventMap["touchend"]) => void;
+  onTouchMove: (this: E, ev: HTMLElementEventMap["touchmove"]) => void;
+  onTouchStart: (this: E, ev: HTMLElementEventMap["touchstart"]) => void;
+  onTransitionCancel: (this: E, ev: HTMLElementEventMap["transitioncancel"]) => void;
+  onTransitionEnd: (this: E, ev: HTMLElementEventMap["transitionend"]) => void;
+  onTransitionRun: (this: E, ev: HTMLElementEventMap["transitionrun"]) => void;
+  onTransitionStart: (this: E, ev: HTMLElementEventMap["transitionstart"]) => void;
+  onVolumeChange: (this: E, ev: HTMLElementEventMap["volumechange"]) => void;
+  onWaiting: (this: E, ev: HTMLElementEventMap["waiting"]) => void;
+  onWebkitAnimationEnd: (this: E, ev: HTMLElementEventMap["webkitanimationend"]) => void;
+  onWebkitAnimationIteration: (
+    this: E,
+    ev: HTMLElementEventMap["webkitanimationiteration"],
+  ) => void;
+  onWebkitAnimationStart: (this: E, ev: HTMLElementEventMap["webkitanimationstart"]) => void;
+  onWebkitTransitionEnd: (this: E, ev: HTMLElementEventMap["webkittransitionend"]) => void;
+  onWheel: (this: E, ev: HTMLElementEventMap["wheel"]) => void;
 };
 
 export type ElementDataAttributes = {
