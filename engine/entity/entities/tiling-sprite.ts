@@ -42,7 +42,7 @@ export class TilingSprite extends PixiEntity {
     this.defineValues(TilingSprite, "width", "height", "alpha", "tileRotation");
     this.defineValue(TilingSprite, "tilePosition", { type: Vector2Adapter });
     this.defineValue(TilingSprite, "tileScale", { type: Vector2Adapter });
-    this.defineValue(TilingSprite, "texture", { type: TextureAdapter });
+    this.defineValue(TilingSprite, "texture", { type: TextureAdapter, sortOrder: 10 });
 
     if (this.game.isClient() && this.texture !== "") {
       PIXI.Assets.backgroundLoad(this.game.resolveResource(this.texture));

@@ -145,19 +145,22 @@ export class AnimatedSprite extends PixiEntity {
       "loop",
     );
 
-    this.defineValue(AnimatedSprite, "jsonSpritesheet", {
-      type: SpritesheetAdapter,
-      hidden: values => values.get("spritesheet")?.value !== "",
-    });
-
     this.defineValue(AnimatedSprite, "spritesheet", {
       type: TextureAdapter,
       hidden: values => values.get("jsonSpritesheet")?.value !== "",
+      sortOrder: 10,
+    });
+
+    this.defineValue(AnimatedSprite, "jsonSpritesheet", {
+      type: SpritesheetAdapter,
+      hidden: values => values.get("spritesheet")?.value !== "",
+      sortOrder: 9,
     });
 
     this.defineValue(AnimatedSprite, "frameDimensions", {
       type: Vector2Adapter,
       hidden: values => values.get("jsonSpritesheet")?.value !== "",
+      sortOrder: 8,
     });
 
     // why was this disabled?
