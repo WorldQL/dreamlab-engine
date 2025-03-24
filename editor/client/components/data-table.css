@@ -37,6 +37,10 @@ dreamlab-data-table {
         align-items: center;
       }
 
+      &:has(input[type="text"]) {
+        padding: 0;
+      }
+
       & .vector2-inputs {
         display: flex;
         align-items: baseline;
