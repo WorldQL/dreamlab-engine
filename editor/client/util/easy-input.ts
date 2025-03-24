@@ -59,16 +59,19 @@ export function createInputFieldWithDefault<T>({
   set,
   convert,
   convertBack = String,
+  title,
 }: {
   default: T | undefined;
   get: () => T | undefined;
   set: (v: T | undefined) => void;
   convert: (s: string) => T | Promise<T>;
   convertBack?: (v: T) => string;
+  title?: string;
 }): [input: HTMLInputElement, refresh: () => void] {
   const input = elem("input", {
     type: "text",
     placeholder: defaultValue !== undefined ? convertBack(defaultValue) : "undefined",
+    title,
   });
 
   input.addEventListener("input", async () => {
@@ -90,7 +93,6 @@ export function createInputFieldWithDefault<T>({
         input.setCustomValidity("Unknown error");
       }
     }
-
     input.reportValidity();
   });
 

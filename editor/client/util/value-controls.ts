@@ -128,6 +128,8 @@ export function createValueControl(
 
       const [control, refreshInput] = createInputFieldWithDefault({
         default: opts.default,
+        title:
+          "Drag & drop an asset here, or enter a valid resource path (e.g., res://image.png)",
         get: opts.get,
         set: async v => {
           opts.set(v ?? "");
