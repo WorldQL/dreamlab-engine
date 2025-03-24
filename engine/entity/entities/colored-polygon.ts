@@ -62,8 +62,8 @@ export class ColoredPolygon extends PixiEntity {
   #draw(): void {
     if (!this.#gfx) return;
 
-    if (this.sides < 3) {
-      console.warn("Invalid number of sides. Must be 3 or more.");
+    if (this.sides < 3 || this.sides > 1000) {
+      console.warn("Invalid number of sides. Must be between 3 and 1000.");
       return;
     }
 
