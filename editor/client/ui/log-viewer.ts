@@ -133,7 +133,7 @@ export class LogViewer {
       this.appendLogEntry({
         level: "error",
         timestamp: Date.now(),
-        message: `Uncaught error: ${ev.error}`,
+        message: `Uncaught ${ev.error}`,
         detail: {},
         source: "client",
       });
