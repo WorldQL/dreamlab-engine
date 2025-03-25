@@ -107,3 +107,9 @@
     opacity: 0.7;
   }
 }
+
+.context-menu-separator {
+  margin: 0;
+  border: none;
+  border-top: 1px solid grey;
+}

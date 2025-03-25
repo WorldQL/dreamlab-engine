@@ -3,8 +3,22 @@ import { element as elem } from "@dreamlab/ui";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 
 export type ContextMenuItem =
-  | [label: string, action: () => void, disabled?: boolean, hint?: string]
-  | [label: string, children: ContextMenuItem[], disabled?: boolean, hint?: string];
+  | [
+      label: string,
+      action: () => void,
+      disabled?: boolean,
+      hint?: string,
+      group?: string,
+      order?: number,
+    ]
+  | [
+      label: string,
+      children: ContextMenuItem[],
+      disabled?: boolean,
+      hint?: string,
+      group?: string,
+      order?: number,
+    ];
 
 export class ContextMenu implements InspectorUIWidget {
   #menu: HTMLElement = elem("div", { id: "context-menu" }, []);
@@ -32,13 +46,40 @@ export class ContextMenu implements InspectorUIWidget {
   }
 
   drawContextMenu(cursorX: number, cursorY: number, items: ContextMenuItem[]) {
+    const sortedItems = [...items].sort((a, b) => {
+      const groupA = a[4] || "";
+      const groupB = b[4] || "";
+      if (groupA === groupB) {
+        return (a[5] || 0) - (b[5] || 0);
+      }
+      return groupA.localeCompare(groupB);
+    });
+
+    const groupedItems: (ContextMenuItem | "separator")[] = [];
+    let lastGroup = "";
+    for (const item of sortedItems) {
+      const currentGroup = item[4] || "";
+      if (lastGroup && currentGroup !== lastGroup) {
+        groupedItems.push("separator");
+      }
+      groupedItems.push(item);
+      lastGroup = currentGroup;
+    }
+
     this.#menu.innerHTML = "";
 
     const renderItem = (
       section: HTMLElement,
-      [label, actionOrChildren, disabled = false, hint]: ContextMenuItem,
+      item: ContextMenuItem | "separator",
       index: number,
     ) => {
+      if (item === "separator") {
+        const separator = elem("hr", { className: "context-menu-separator" });
+        section.append(separator);
+        return;
+      }
+
+      const [label, actionOrChildren, disabled = false, hint] = item;
       const button: HTMLAnchorElement = elem(
         "a",
         { role: "button", href: "javascript:void(0)" },
@@ -139,7 +180,7 @@ export class ContextMenu implements InspectorUIWidget {
     };
 
     const section = elem("section");
-    for (let i = 0; i < items.length; i++) renderItem(section, items[i], i);
+    groupedItems.forEach((item, i) => renderItem(section, item, i));
     this.#menu.append(section);
 
     document.body.append(this.#container);

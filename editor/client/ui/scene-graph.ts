@@ -541,6 +541,8 @@ export class SceneGraph implements InspectorUIWidget {
             },
             false,
             `${modifierKey}+C`,
+            "multi",
+            1,
           ],
           [
             "Delete",
@@ -558,6 +560,8 @@ export class SceneGraph implements InspectorUIWidget {
             },
             false,
             "Backspace",
+            "multi",
+            2,
           ],
         );
 
@@ -575,13 +579,15 @@ export class SceneGraph implements InspectorUIWidget {
             },
             false,
             `${modifierKey}+E`,
+            "toggle",
+            1,
           ]);
+
           if (lockedByEntity) {
             contextMenuItems.push([
               "Unlock",
               () => {
-                const undoOps = [];
-
+                const undoOps: (UndoRedoOperation & { t: "compound" })["ops"] = [];
                 const lockRoots = new Set<Entity>();
                 ui.selectedEntity.entities.forEach(e => {
                   const lockedBy = EditorMetadataEntity.getLockedBy(e);
@@ -599,53 +605,45 @@ export class SceneGraph implements InspectorUIWidget {
                     previous: prevLocked,
                   } as const);
                 }
-
-                UndoRedoManager._.push({
-                  t: "compound" as const,
-                  ops: undoOps,
-                });
+                UndoRedoManager._.push({ t: "compound", ops: undoOps });
               },
               false,
               `${modifierKey}+Shift+L`,
+              "lock",
+              1,
             ]);
           } else {
             contextMenuItems.push([
               "Lock",
               () => {
-                const lockRoots = new Set<Entity>();
-                ui.selectedEntity.entities.forEach(e => lockRoots.add(e));
-                const toRemove = ui.selectedEntity.entities.filter(
-                  e => e.parent && lockRoots.has(e.parent),
-                );
-                toRemove.forEach(e => lockRoots.delete(e));
-
-                const undoOps = [];
-
-                for (const lockRoot of lockRoots) {
-                  const metadata = EditorMetadataEntity.getInstanceFor(lockRoot);
-                  const prevLocked = metadata.locked;
-                  metadata.locked = true;
-                  undoOps.push({
-                    t: "modify-entity-locked",
-                    entityRef: lockRoot.ref,
-                    locked: true,
-                    previous: prevLocked,
-                  } as const);
-                }
+                const metadata = EditorMetadataEntity.getInstanceFor(entity);
+                const prevLocked = metadata.locked;
+                metadata.locked = true;
                 UndoRedoManager._.push({
-                  t: "compound" as const,
-                  ops: undoOps,
+                  t: "modify-entity-locked",
+                  entityRef: entity.ref,
+                  locked: true,
+                  previous: prevLocked,
                 });
               },
               false,
               `${modifierKey}+Shift+L`,
+              "lock",
+              1,
             ]);
           }
         }
       } else {
-        contextMenuItems.push(["Focus", () => this.game.local._.Camera.pos.assign(entity.pos)]);
+        contextMenuItems.push([
+          "Focus",
+          () => this.game.local._.Camera.pos.assign(entity.pos),
+          false,
+          undefined,
+          "general",
+          1,
+        ]);
 
-        if (!lockedByEntity)
+        if (!lockedByEntity) {
           contextMenuItems.push(
             createEntityMenu("New Entity", type => {
               let pos = new Vector2(0, 0);
@@ -671,8 +669,9 @@ export class SceneGraph implements InspectorUIWidget {
               if (newEntryElement) this.triggerRename(newEntity, newEntryElement);
             }),
           );
+        }
 
-        if (!entity.protected && !lockedByEntity)
+        if (!entity.protected && !lockedByEntity) {
           contextMenuItems.push(
             [
               "Rename",
@@ -681,6 +680,8 @@ export class SceneGraph implements InspectorUIWidget {
               },
               false,
               "F2",
+              "edit",
+              1,
             ],
             [
               "Copy",
@@ -690,50 +691,33 @@ export class SceneGraph implements InspectorUIWidget {
               },
               false,
               `${modifierKey}+C`,
+              "edit",
+              2,
+            ],
+            [
+              "Paste",
+              () => {
+                pasteEntitiesFromClipboard(this.game, ui.selectedEntity);
+              },
+              false,
+              `${modifierKey}+V`,
+              "edit",
+              3,
             ],
           );
+        }
 
-        contextMenuItems.push(
-          [
-            enabledState === "allEnabled"
-              ? "Disable"
-              : enabledState === "allDisabled"
-                ? "Enable"
-                : "Toggle Enabled",
-            () => {
-              for (const e of ui.selectedEntity.entities) {
-                if (isRoot(e)) {
-                  for (const child of e.children.values()) {
-                    child.enabled = !(enabledState === "allEnabled");
-                  }
-                } else {
-                  e.enabled = !(enabledState === "allEnabled");
-                }
-              }
-            },
-            false,
-            `${modifierKey}+E`,
-          ],
-          [
-            "Paste",
-            () => {
-              pasteEntitiesFromClipboard(this.game, ui.selectedEntity);
-            },
-            false,
-            `${modifierKey}+V`,
-          ],
-        );
-
+        const bottomItems: ContextMenuItem[] = [];
         if (!entity.protected && ui.editMode) {
           if (lockedByEntity) {
-            contextMenuItems.push([
+            bottomItems.push([
               "Unlock",
               () => {
                 const metadata = EditorMetadataEntity.getInstanceFor(lockedByEntity);
                 const prevLocked = metadata.locked;
                 metadata.locked = false;
                 UndoRedoManager._.push({
-                  t: "modify-entity-locked" as const,
+                  t: "modify-entity-locked",
                   entityRef: lockedByEntity.ref,
                   locked: false,
                   previous: prevLocked,
@@ -741,16 +725,18 @@ export class SceneGraph implements InspectorUIWidget {
               },
               false,
               `${modifierKey}+Shift+L`,
+              "zzz-bottomA",
+              1,
             ]);
           } else {
-            contextMenuItems.push([
+            bottomItems.push([
               "Lock",
               () => {
                 const metadata = EditorMetadataEntity.getInstanceFor(entity);
                 const prevLocked = metadata.locked;
                 metadata.locked = true;
                 UndoRedoManager._.push({
-                  t: "modify-entity-locked" as const,
+                  t: "modify-entity-locked",
                   entityRef: entity.ref,
                   locked: true,
                   previous: prevLocked,
@@ -758,12 +744,35 @@ export class SceneGraph implements InspectorUIWidget {
               },
               false,
               `${modifierKey}+Shift+L`,
+              "zzz-bottomA",
+              1,
             ]);
           }
         }
-
-        if (!entity.protected && !lockedByEntity)
-          contextMenuItems.push([
+        bottomItems.push([
+          enabledState === "allEnabled"
+            ? "Disable"
+            : enabledState === "allDisabled"
+              ? "Enable"
+              : "Toggle Enabled",
+          () => {
+            for (const e of ui.selectedEntity.entities) {
+              if (isRoot(e)) {
+                for (const child of e.children.values()) {
+                  child.enabled = !(enabledState === "allEnabled");
+                }
+              } else {
+                e.enabled = !(enabledState === "allEnabled");
+              }
+            }
+          },
+          false,
+          `${modifierKey}+E`,
+          "zzz-bottomA",
+          2,
+        ]);
+        if (!entity.protected && !lockedByEntity) {
+          bottomItems.push([
             "Delete",
             () => {
               const parent = entity.parent;
@@ -778,7 +787,11 @@ export class SceneGraph implements InspectorUIWidget {
             },
             false,
             "Backspace",
+            "zzz-bottomB",
+            1,
           ]);
+        }
+        contextMenuItems.push(...bottomItems);
       }
 
       ui.contextMenu.drawContextMenu(event.clientX, event.clientY, contextMenuItems);
