@@ -24,7 +24,8 @@ body {
 #topbar {
   width: 100vw;
   height: var(--top-bar);
-  background-color: black;
+  background-color: rgb(var(--color-bg-0) / 1);
+  border-bottom: 1px solid rgb(var(--color-bg-2) / 1);
   display: flex;
   justify-content: space-between;
   flex-direction: row;
@@ -34,10 +35,9 @@ body {
 }
 
 dreamlab-connect-form {
-  display: block;
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 1em;
+  & > dialog[open] {
+    border: none;
+  }
 
   section {
     display: flex;
@@ -60,10 +60,10 @@ dreamlab-connect-form {
     --color-hover: rgb(var(--color-primary-lighter) / 1);
     --color-active: rgb(var(--color-primary-lighter) / 1);
 
-    &.green {
-      --color: rgb(var(--color-green) / 1);
-      --color-hover: rgb(var(--color-green-lighter) / 1);
-      --color-active: rgb(var(--color-green-lighter) / 1);
+    &.accent {
+      --color: rgb(var(--color-accent) / 1);
+      --color-hover: rgb(var(--color-accent-lighter) / 1);
+      --color-active: rgb(var(--color-accent-lighter) / 1);
     }
 
     appearance: none;

@@ -1,0 +1,167 @@
+import { urlWithParams } from "@dreamlab/util/url.ts";
+import { z } from "@dreamlab/vendor/zod.ts";
+
+type ConnectDetails = {
+  readonly nickname: string;
+  readonly serverUrl: string;
+  readonly instanceId: string;
+};
+
+export type DreamlabConnectForm = {
+  readonly element: DreamlabConnectFormElement;
+  readonly onConnect: Promise<ConnectDetails>;
+};
+
+export class DreamlabConnectFormElement extends HTMLElement {
+  static {
+    customElements.define("dreamlab-connect-form", this);
+  }
+
+  static create(worldId: string, instances: APIInstancesResponse): DreamlabConnectForm {
+    const nicknameInput = (
+      <input
+        type="text"
+        id="nickname"
+        name="nickname"
+        placeholder="MyEpicUsername123"
+        required
+        maxLength={250}
+        autocomplete="off"
+      />
+    ) as HTMLInputElement;
+
+    const savedNickname = window.localStorage.getItem("dreamlab/nickname");
+    if (savedNickname) {
+      nicknameInput.value = savedNickname;
+    }
+
+    const instancePicker = this.#createInstancePicker(instances);
+    const form = (
+      <form>
+        <section className="nickname-input">
+          <label htmlFor={nicknameInput.id}>Nickname</label>
+          {nicknameInput}
+        </section>
+        {instancePicker}
+        <section>
+          <button type="submit" id="new-instance" className="accent">
+            New Instance
+          </button>
+        </section>
+      </form>
+    ) as HTMLFormElement;
+
+    const onConnect = Promise.withResolvers<ConnectDetails>();
+
+    const dialog = document.createElement("dialog");
+    dialog.append(form);
+    const connectForm = new DreamlabConnectFormElement(dialog);
+
+    form.addEventListener("submit", e => {
+      e.preventDefault();
+      if (form.checkValidity()) {
+        const nickname = nicknameInput.value;
+        window.localStorage.setItem("dreamlab/nickname", nickname);
+
+        const instanceSection = e.submitter?.closest("[data-instance]") as
+          | HTMLElement
+          | undefined;
+
+        if (instanceSection) {
+          const instance = instanceSection.dataset.instance!;
+          const server = instanceSection.dataset.server!;
+          connectForm.remove();
+          onConnect.resolve({
+            nickname,
+            serverUrl: server,
+            instanceId: instance,
+          });
+        } else {
+          const instancePromise = spawnNewInstance(worldId);
+
+          instancePromise.then(instance => {
+            connectForm.remove();
+            onConnect.resolve({
+              nickname,
+              serverUrl: instance.server,
+              instanceId: instance.id,
+            });
+          });
+        }
+      }
+    });
+
+    // TODO: support custom element constructors in elem(..)
+    return { element: connectForm, onConnect: onConnect.promise };
+  }
+
+  static #createInstancePicker(instances: APIInstancesResponse): HTMLElement {
+    // TODO: periodic refresh of instance listings
+    return (
+      <section className="instances">
+        {Object.values(instances).map(instance => (
+          <article data-instance={instance.id} data-server={instance.server}>
+            <span>
+              <strong>Players:</strong> <data>{instance.rich_status?.player_count ?? 0}</data>
+            </span>
+            <small>{instance.id}</small>
+            <button type="submit">Connect</button>
+          </article>
+        ))}
+      </section>
+    ) as HTMLElement;
+  }
+
+  #dialog: HTMLDialogElement;
+  constructor(dialog: HTMLDialogElement) {
+    super();
+    this.#dialog = dialog;
+    this.append(dialog);
+  }
+
+  connectedCallback(): void {
+    this.#dialog.showModal();
+  }
+}
+
+type InstanceInfo = z.infer<typeof InstanceInfoSchema>;
+export const InstanceInfoSchema = z.object({
+  id: z.string().uuid(),
+  server: z.string(),
+  world: z.string(),
+  status: z.string(),
+  status_detail: z.string().nullable().optional(),
+  started_by: z.string().nullable().optional(),
+  edit_mode: z.boolean(),
+  uptime_secs: z.number(),
+  started_at: z.number().optional(),
+  rich_status: z.any().optional(),
+});
+
+type APIInstancesResponse = z.infer<typeof APIInstancesSchema>;
+const APIInstancesSchema = z.record(InstanceInfoSchema);
+
+export const fetchInstances = async (worldId: string): Promise<APIInstancesResponse> => {
+  const base = globalThis.env.DREAMLAB_MULTIPLAYER_PUBLIC_URL;
+  const url = urlWithParams(new URL("/api/v1/instances", base), {
+    world: worldId,
+  });
+  const instances = await fetch(url)
+    .then(r => r.json())
+    .then(APIInstancesSchema.parse);
+
+  return instances;
+};
+
+export const spawnNewInstance = async (worldId: string): Promise<InstanceInfo> => {
+  const base = globalThis.env.DREAMLAB_MULTIPLAYER_PUBLIC_URL;
+  return await fetch(new URL("/api/v1/start-play-world", base), {
+    method: "POST",
+    body: JSON.stringify({ world_id: worldId }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+    .then(r => r.json())
+    .then(InstanceInfoSchema.parse);
+};

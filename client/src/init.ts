@@ -1,6 +1,10 @@
 import { urlToHTTP, urlToWebSocket } from "@dreamlab/util/url.ts";
 import { auth, generateMigrateUrl } from "./auth.ts";
-import { createConnectForm, fetchInstances, spawnNewInstance } from "./connect-form.ts";
+import {
+  DreamlabConnectFormElement,
+  fetchInstances,
+  spawnNewInstance,
+} from "./connect-form.tsx";
 import { startGame } from "./start-game.ts";
 import { connectionDetails, setConnectionDetails } from "./util/server-url.ts";
 
@@ -17,7 +21,7 @@ if (connectionDetails.instanceId === "") {
   }
 
   const instances = await fetchInstances(worldId);
-  const connectForm = createConnectForm(worldId, instances);
+  const connectForm = DreamlabConnectFormElement.create(worldId, instances);
   const instanceCount = Object.values(instances).length;
   if (instanceCount === 0) {
     const instance = await spawnNewInstance(worldId);
@@ -29,7 +33,7 @@ if (connectionDetails.instanceId === "") {
     const instance = Object.values(instances)[0];
     setConnectionDetails({ instanceId: instance.id, serverUrl: instance.server });
   } else {
-    document.body.prepend(connectForm.form);
+    document.body.prepend(connectForm.element);
     const { serverUrl, instanceId, nickname: nickname_ } = await connectForm.onConnect;
     setConnectionDetails({ instanceId, serverUrl: urlToHTTP(serverUrl).toString() });
     nickname = nickname_;

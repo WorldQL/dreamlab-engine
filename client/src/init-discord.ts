@@ -46,7 +46,7 @@ const init = async () => {
   const main = import("./start-game.ts");
   const { z } = await import("@dreamlab/vendor/zod.ts");
   const { DiscordSDK } = await import("npm:@discord/embedded-app-sdk");
-  const { InstanceInfoSchema } = await import("./connect-form.ts");
+  const { InstanceInfoSchema } = await import("./connect-form.tsx");
 
   const clientId = getClientId();
 
