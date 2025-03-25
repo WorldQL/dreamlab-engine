@@ -129,6 +129,16 @@ export class LogViewer {
     const error = console.error;
     // TODO: wrap console.warn
 
+    globalThis.addEventListener("error", ev => {
+      this.appendLogEntry({
+        level: "error",
+        timestamp: Date.now(),
+        message: `Uncaught error: ${ev.error}`,
+        detail: {},
+        source: "client",
+      });
+    });
+
     console.log = (...args) => {
       const message = args.join(" ");
 
