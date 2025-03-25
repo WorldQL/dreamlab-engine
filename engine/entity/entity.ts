@@ -596,10 +596,33 @@ export abstract class Entity implements ISignalHandler {
       z: overrides.transform?.z ?? this.transform.z,
     };
 
+    const { ...rest } = overrides;
+    const { behaviors = [], ...richDef } = this.#generateRichDefinition(true);
+    for (const def of overrides.behaviors ?? []) {
+      const matches = behaviors.filter(x => x.type === def.type);
+
+      // if no behaviors of type exist, add to cloned entity
+      if (matches.length === 0) {
+        behaviors.push(def);
+        continue;
+      }
+
+      // if one match exists, merge values
+      if (matches.length === 1) {
+        const matched = matches[0];
+        matched.values = { ...matched.values, ...def.values };
+        continue;
+      }
+
+      // if more than one match exists, warn and do nothing
+      console.warn(`Ambiguous Behavior merge detected for: ${def.type.name}, skipping`);
+    }
+
     return other[internal.entitySpawn](
       {
-        ...this.#generateRichDefinition(true),
-        ...overrides,
+        ...richDef,
+        ...rest,
+        behaviors,
         transform,
       },
       { cloneFrom: this.ref },
