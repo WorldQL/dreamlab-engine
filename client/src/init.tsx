@@ -7,6 +7,7 @@ import {
 } from "./connect-form.tsx";
 import { startGame } from "./start-game.ts";
 import { connectionDetails, setConnectionDetails } from "./util/server-url.ts";
+import { icon, Server } from "../../editor/client/_icons.ts";
 
 let nickname =
   window.localStorage.getItem("dreamlab/nickname") ??
@@ -71,10 +72,24 @@ connectUrl.searchParams.set("nickname", info.nickname);
 startGame(
   connectUrl,
   connectionDetails.instanceId,
-  () => {
+  game => {
     // success
     emojistatus.textContent = "🟢";
     textstatus.textContent = "Connected";
+
+    const serverButton = (
+      <button type="button" id="server-selector">
+        {icon(Server)}
+      </button>
+    );
+
+    const gameName = (
+      <div id="game-info">
+        <code data-instance={game.instanceId}>{game.worldId}</code> {serverButton}
+      </div>
+    );
+
+    signin.before(gameName);
   },
   () => {
     emojistatus.textContent = "🔴";

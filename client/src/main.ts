@@ -12,5 +12,5 @@ if (USE_DISCORD) {
 
   void import("./init-discord.ts");
 } else {
-  void import("./init.ts");
+  void import("./init.tsx");
 }
