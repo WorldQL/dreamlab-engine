@@ -66,13 +66,18 @@ export class DreamlabConnectFormElement extends HTMLElement {
     const connectForm = new DreamlabConnectFormElement(dialog);
 
     form.addEventListener("submit", e => {
+      const { submitter } = e;
+      if (submitter instanceof HTMLButtonElement && submitter.formMethod === "dialog") {
+        return;
+      }
+
       e.preventDefault();
       const valid = current === undefined ? form.checkValidity() : true;
       if (valid) {
         const nickname = current?.auth.nickname ?? nicknameInput.value;
         window.localStorage.setItem("dreamlab/nickname", nickname);
 
-        const instanceSection = e.submitter?.closest("[data-instance]") as
+        const instanceSection = submitter?.closest("[data-instance]") as
           | HTMLElement
           | undefined;
 
