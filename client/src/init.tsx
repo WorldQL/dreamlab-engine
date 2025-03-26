@@ -89,6 +89,27 @@ startGame(
       </div>
     );
 
+    serverButton.addEventListener("click", async () => {
+      const instances = await fetchInstances(game.worldId);
+      const form = DreamlabConnectFormElement.create(game.worldId, instances, {
+        auth: info,
+        instance: game.instanceId,
+      });
+
+      document.body.append(form.element);
+      const details = await form.onConnect;
+
+      const url = new URL(window.location.href);
+      for (const key of url.searchParams.keys()) {
+        url.searchParams.delete(key);
+      }
+
+      url.searchParams.set("server", details.serverUrl);
+      url.searchParams.set("instance", details.instanceId);
+
+      window.location.href = url.toString();
+    });
+
     signin.before(gameName);
   },
   () => {

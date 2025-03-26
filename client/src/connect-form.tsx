@@ -1,5 +1,6 @@
 import { urlWithParams } from "@dreamlab/util/url.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
+import type { AuthToken } from "./auth.ts";
 
 type ConnectDetails = {
   readonly nickname: string;
@@ -17,7 +18,11 @@ export class DreamlabConnectFormElement extends HTMLElement {
     customElements.define("dreamlab-connect-form", this);
   }
 
-  static create(worldId: string, instances: APIInstancesResponse): DreamlabConnectForm {
+  static create(
+    worldId: string,
+    instances: APIInstancesResponse,
+    current?: { auth: AuthToken; instance: string },
+  ): DreamlabConnectForm {
     const nicknameInput = (
       <input
         type="text"
@@ -38,10 +43,13 @@ export class DreamlabConnectFormElement extends HTMLElement {
     const instancePicker = this.#createInstancePicker(instances);
     const form = (
       <form>
-        <section className="nickname-input">
-          <label htmlFor={nicknameInput.id}>Nickname</label>
-          {nicknameInput}
-        </section>
+        {current === undefined && (
+          <section className="nickname-input">
+            <label htmlFor={nicknameInput.id}>Nickname</label>
+            {nicknameInput}
+          </section>
+        )}
+
         {instancePicker}
         <section>
           <button type="submit" id="new-instance" className="accent">
@@ -59,8 +67,9 @@ export class DreamlabConnectFormElement extends HTMLElement {
 
     form.addEventListener("submit", e => {
       e.preventDefault();
-      if (form.checkValidity()) {
-        const nickname = nicknameInput.value;
+      const valid = current === undefined ? form.checkValidity() : true;
+      if (valid) {
+        const nickname = current?.auth.nickname ?? nicknameInput.value;
         window.localStorage.setItem("dreamlab/nickname", nickname);
 
         const instanceSection = e.submitter?.closest("[data-instance]") as
