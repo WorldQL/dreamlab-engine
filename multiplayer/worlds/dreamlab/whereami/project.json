@@ -1,0 +1,56 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "engine_revision": "2024-08.001"
+  },
+  "scenes": {
+    "main": {
+      "registration": [],
+      "world": [],
+      "local": [
+        {
+          "ref": "ent_mlnDuBBZC7",
+          "type": "@core/Camera",
+          "name": "Camera",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": -0.153152407762557,
+              "y": 0.6882434335213752
+            }
+          },
+          "values": {
+            "active": true,
+            "smooth": 0.1,
+            "unlocked": false,
+            "zoom": 1
+          }
+        },
+        {
+          "ref": "ent_17Os6LKBib",
+          "type": "@core/UIPanel",
+          "name": "UIPanel",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": -0.153152407762557,
+              "y": 0.6882434335213752
+            },
+            "scale": {
+              "x": 2,
+              "y": 2
+            }
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_My4lYuYOmD",
+              "script": "res://src/whereami.tsx"
+            }
+          ]
+        }
+      ],
+      "server": [],
+      "prefabs": []
+    }
+  }
+}
