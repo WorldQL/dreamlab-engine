@@ -3,7 +3,7 @@ import { z } from "@dreamlab/vendor/zod.ts";
 import { jwtDecode } from "npm:jwt-decode";
 import { connectionDetails } from "./util/server-url.ts";
 
-type AuthToken = {
+export type AuthToken = {
   nickname: string;
   playerId: string;
   token: string;

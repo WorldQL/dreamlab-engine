@@ -156,9 +156,9 @@ type APIInstancesResponse = z.infer<typeof APIInstancesSchema>;
 const APIInstancesSchema = z.record(InstanceInfoSchema);
 
 export const fetchInstances = async (worldId: string): Promise<APIInstancesResponse> => {
-  const base = globalThis.env.DREAMLAB_MULTIPLAYER_PUBLIC_URL;
-  const url = urlWithParams(new URL("/api/v1/instances", base), {
-    world: worldId,
+  const base = globalThis.env.DREAMLAB_NEXT_PUBLIC_URL;
+  const url = urlWithParams(new URL("/api/instances", base), {
+    project: worldId,
   });
   const instances = await fetch(url)
     .then(r => r.json())
