@@ -39,6 +39,10 @@ export class IPCWorker {
     const env: Record<string, string> = {
       DREAMLAB_MP_WORKER_DATA: JSON.stringify(workerData),
     };
+
+    const DENO_DIR = Deno.env.get("DENO_DIR");
+    if (DENO_DIR) env["DENO_DIR"] = DENO_DIR;
+
     const args = [
       Deno.execPath(),
       "run",
