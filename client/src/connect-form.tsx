@@ -40,7 +40,7 @@ export class DreamlabConnectFormElement extends HTMLElement {
       nicknameInput.value = savedNickname;
     }
 
-    const instancePicker = this.#createInstancePicker(instances);
+    const instancePicker = this.#createInstancePicker(instances, current?.instance);
     const form = (
       <form>
         {current === undefined && (
@@ -104,19 +104,24 @@ export class DreamlabConnectFormElement extends HTMLElement {
     return { element: connectForm, onConnect: onConnect.promise };
   }
 
-  static #createInstancePicker(instances: APIInstancesResponse): HTMLElement {
+  static #createInstancePicker(instances: APIInstancesResponse, current?: string): HTMLElement {
     // TODO: periodic refresh of instance listings
     return (
       <section className="instances">
-        {Object.values(instances).map(instance => (
-          <article data-instance={instance.id} data-server={instance.server}>
-            <span>
-              <strong>Players:</strong> <data>{instance.rich_status?.player_count ?? 0}</data>
-            </span>
-            <small>{instance.id}</small>
-            <button type="submit">Connect</button>
-          </article>
-        ))}
+        {Object.values(instances).map(instance => {
+          const currentInstance = instance.id === current;
+          return (
+            <article data-instance={instance.id} data-server={instance.server}>
+              <span>
+                <strong>Players:</strong> <data>{instance.rich_status?.player_count ?? 0}</data>
+              </span>
+              <small>{instance.id}</small>
+              <button type="submit" disabled={currentInstance}>
+                {currentInstance ? "Connected" : "Connect"}
+              </button>
+            </article>
+          );
+        })}
       </section>
     ) as HTMLElement;
   }
