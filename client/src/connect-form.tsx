@@ -1,6 +1,7 @@
 import { urlWithParams } from "@dreamlab/util/url.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
 import type { AuthToken } from "./auth.ts";
+import { icon, X } from "../../editor/client/_icons.ts";
 
 type ConnectDetails = {
   readonly nickname: string;
@@ -43,6 +44,15 @@ export class DreamlabConnectFormElement extends HTMLElement {
     const instancePicker = this.#createInstancePicker(instances, current?.instance);
     const form = (
       <form>
+        <section id="title">
+          <h1>Select Server</h1>
+          {current !== undefined && (
+          <button formMethod="dialog" type="submit">
+            {icon(X)}
+          </button>
+          )}
+        </section>
+
         {current === undefined && (
           <section className="nickname-input">
             <label htmlFor={nicknameInput.id}>Nickname</label>
