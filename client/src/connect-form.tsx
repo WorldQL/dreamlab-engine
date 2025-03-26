@@ -72,6 +72,19 @@ export class DreamlabConnectFormElement extends HTMLElement {
     const onConnect = Promise.withResolvers<ConnectDetails>();
 
     const dialog = document.createElement("dialog");
+    // prevent dialog from being closed with ESC if not already connected to a game
+    if (current === undefined) {
+      document.addEventListener("keydown", ev => {
+        if (!dialog.open) return;
+        if (ev.key !== "Escape") return;
+        ev.preventDefault();
+      });
+
+      dialog.addEventListener("cancel", ev => {
+        ev.preventDefault();
+      });
+    }
+
     dialog.append(form);
     const connectForm = new DreamlabConnectFormElement(dialog);
 
