@@ -136,6 +136,7 @@
         margin-left: 1ch;
         content: "|";
         opacity: 50%;
+        color: white;
       }
 
       & > *:last-child::after {
