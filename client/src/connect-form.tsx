@@ -192,7 +192,14 @@ export const fetchInstances = async (worldId: string): Promise<APIInstancesRespo
     .then(r => r.json())
     .then(APIInstancesSchema.parse);
 
-  return instances;
+  const entries = Object.entries(instances);
+  entries.sort((a, b) => {
+    const playersA = a[1].rich_status?.player_count ?? 0;
+    const playersB = b[1].rich_status?.player_count ?? 0;
+    return playersB - playersA;
+  });
+
+  return Object.fromEntries(entries);
 };
 
 export const spawnNewInstance = async (worldId: string): Promise<InstanceInfo> => {
