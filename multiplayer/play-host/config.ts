@@ -59,8 +59,6 @@ const early = createEnv({
 
 const cli = parseArgs(Deno.args, { string: ["instance-id", "world-id"] });
 
-console.log(early.BIND_ADDRESS);
-
 export const CONFIG = createEnv({
   extends: [early],
   server: {
