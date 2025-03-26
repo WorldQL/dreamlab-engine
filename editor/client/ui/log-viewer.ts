@@ -143,7 +143,7 @@ export class LogViewer {
       const message = args.join(" ");
 
       const stack = new Error().stack;
-      if (!stack?.includes("_dist_play")) {
+      if (!(stack?.includes("_dist_play") || stack?.includes("engine.js"))) {
         console.debug(...args);
         return;
       }
@@ -163,7 +163,7 @@ export class LogViewer {
       const message = args.join(" ");
 
       const stack = new Error().stack;
-      if (!stack?.includes("_dist_play")) {
+      if (!(stack?.includes("_dist_play") || stack?.includes("engine.js"))) {
         console.debug(...args);
         return;
       }
