@@ -234,6 +234,8 @@ export abstract class BaseGame implements ISignalHandler {
   }
 
   shutdown() {
+    if (this.status === GameStatus.Shutdown) return;
+
     this.world.destroy();
     this.setStatus(GameStatus.Shutdown);
     this.fire(GameShutdown);

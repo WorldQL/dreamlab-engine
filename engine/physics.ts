@@ -184,7 +184,7 @@ export class PhysicsEngine {
   }
 
   shutdown() {
-    this.world.free();
-    this.#events.free();
+    this.world?.free();
+    this.#events?.free();
   }
 }
