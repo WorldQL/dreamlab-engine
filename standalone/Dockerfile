@@ -1,16 +1,21 @@
-FROM denoland/deno:2.2.2 AS builder
+# syntax=docker/dockerfile:1
+FROM denoland/deno:2.2.5
 WORKDIR /app
-COPY ./out .
 
-# Create non-root user
-RUN adduser --disabled-password --gecos "" rivet
+RUN \
+  # create deno cache directory
+  mkdir -p /deno-dir && chown -R deno:deno /deno-dir && \
+  # chown app directory
+  chown -R deno:deno /app
 
-RUN mkdir -p /deno-dir && chown -R rivet:rivet /deno-dir
-RUN chown -R rivet:rivet /app
-# Set DENO_DIR environment variable to use our custom cache directory
+# set DENO_DIR environment variable to use our custom cache directory
+USER deno
 ENV DENO_DIR=/deno-dir
 
-USER rivet
+COPY ./out .
+RUN \
+  deno install --entrypoint ./server.js && \
+  deno install --entrypoint ./.server-runtime.js && \
+  deno install --entrypoint ./engine/engine.js
 
-RUN deno cache ./server.js
 CMD ["deno", "run", "-A", "/app/server.js"]
