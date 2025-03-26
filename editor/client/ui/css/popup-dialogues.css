@@ -23,7 +23,7 @@
   }
 
   & .button:hover {
-    background-color: #007acc;
+    background-color: rgb(var(--color-primary));
   }
 
   & .input {
@@ -55,6 +55,6 @@
 }
 
 .import-error {
-  color: red;
+  color: rbg(var(--color-danger));
   margin-top: 10px;
 }

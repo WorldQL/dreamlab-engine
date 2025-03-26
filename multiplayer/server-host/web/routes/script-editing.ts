@@ -292,7 +292,16 @@ export const serveScriptEditingAPI = (router: Router) => {
     await fs.ensureDir(path.dirname(newComputedPath));
     await Deno.rename(oldComputedPath, newComputedPath);
 
-    // TODO: rebuild world and send scriptedited packet
+    await buildWorld(instance.info.worldId, instance.info.worldDirectory, "_dist");
+    const isBehavior = await fileIsProbablyBehaviorScript(newComputedPath);
+    instance.session?.broadcastPacket({
+      t: "ScriptEdited",
+      script_location: newRelativePath,
+      behavior_script_id: isBehavior
+        ? `res://${newRelativePath.replace(/\.tsx?$/, ".js")}`
+        : undefined,
+      isFromFileSystem: false,
+    });
 
     ctx.response.body = { success: true };
   });
