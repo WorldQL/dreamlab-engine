@@ -47,9 +47,9 @@ export class DreamlabConnectFormElement extends HTMLElement {
         <section id="title">
           <h1>Select Server</h1>
           {current !== undefined && (
-          <button formMethod="dialog" type="submit">
-            {icon(X)}
-          </button>
+            <button formMethod="dialog" type="submit">
+              {icon(X)}
+            </button>
           )}
         </section>
 
