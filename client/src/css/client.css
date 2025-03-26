@@ -33,6 +33,15 @@ body {
   padding: 2px 4px;
   font-size: 0.95rem;
 
+  & > div:first-child,
+  & > div:last-child {
+    min-width: 200px;
+  }
+
+  & > div:last-child {
+    text-align: right;
+  }
+
   & div#game-info {
     height: var(--top-bar);
     display: flex;
