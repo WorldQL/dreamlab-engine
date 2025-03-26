@@ -155,6 +155,7 @@ dreamlab-connect-form {
 
     &:disabled {
       cursor: not-allowed;
+      opacity: 0.75;
     }
 
     &:not([disabled]) {
