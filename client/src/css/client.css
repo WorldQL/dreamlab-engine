@@ -66,13 +66,18 @@ body {
 
 dreamlab-connect-form {
   & > dialog[open] {
-    border: none;
+    background: rgb(var(--color-bg-0) / 1);
+    border: 1px solid rgb(var(--color-bg-2) / 1);
+    border-radius: 4px;
   }
 
   section {
     display: flex;
     flex-direction: column;
-    margin-top: 1em;
+
+    &:not(:first-child) {
+      margin-top: 1em;
+    }
   }
 
   & .instances article {
@@ -111,11 +116,17 @@ dreamlab-connect-form {
     cursor: pointer;
     transition: background-color 0.1s ease;
 
-    &:hover {
-      background-color: var(--color-hover);
+    &:disabled {
+      cursor: not-allowed;
     }
-    &:active {
-      background-color: var(--color-active);
+
+    &:not([disabled]) {
+      &:hover {
+        background-color: var(--color-hover);
+      }
+      &:active {
+        background-color: var(--color-active);
+      }
     }
   }
 }
