@@ -1,269 +1,125 @@
-.welcome-card {
+@keyframes fadeUp {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 15px));
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.simple-welcome-card {
   position: fixed;
-  width: 90%;
-  max-width: 400px;
-  max-height: 90%;
-  background: rgba(30, 30, 30, 0.95);
-  color: rgb(var(--color-text));
-  padding: 20px;
-  border-radius: var(--border-radius);
-  backdrop-filter: blur(8px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
-  font-size: 14px;
-  line-height: 1.5;
-  z-index: 1000;
-  overflow: hidden;
-  top: 30%;
+  top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  box-sizing: border-box;
-  text-align: center;
-}
-
-.welcome-card-content {
+  width: 420px;
+  max-width: 90%;
+  border-radius: 8px;
+  padding: 0;
   overflow: hidden;
+  z-index: 1000;
+  font-family: sans-serif;
+  background: linear-gradient(145deg, rgb(var(--color-bg-2)) 0%, rgb(var(--color-bg-1)) 100%);
+  border: 1px solid rgba(var(--color-primary), 0.3);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  animation: fadeUp 0.35s ease forwards;
 }
 
-.welcome-card-content-wrapper {
-  overflow-y: auto;
-  overflow-x: hidden;
-  max-height: calc(100vh - 150px);
-  padding-right: 10px;
+.simple-welcome-card-header {
+  position: relative;
+  padding: 20px;
+  text-align: center;
+  background-color: transparent;
+  border-bottom: 1px solid rgba(var(--color-primary), 0.2);
 }
 
-.welcome-card-close-button {
+.simple-welcome-card-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  color: rgb(var(--color-text));
+}
+
+.simple-welcome-card-close-button {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 14px;
+  right: 16px;
   background: none;
   border: none;
-  color: rgb(var(--color-text));
   font-size: 24px;
-  cursor: pointer;
-  padding: 0;
-}
-
-.welcome-card-close-button:hover {
-  color: rgb(var(--color-accent));
-}
-
-.welcome-card-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 8px;
-}
-
-.welcome-card-title {
-  font-size: 22px;
-  font-weight: 700;
   color: rgb(var(--color-text));
-  margin-top: 1rem;
-  margin-bottom: 0rem;
+  cursor: pointer;
+  transition:
+    transform 0.3s ease,
+    color 0.3s ease;
+}
+
+.simple-welcome-card-close-button:hover {
+  color: color-mix(in srgb, rgb(var(--color-primary)), white 60%);
+  background: rgba(var(--color-primary) / 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(var(--color-primary) / 0.2);
+}
+
+.simple-welcome-card-content {
+  padding: 10px;
+  color: rgb(var(--color-text));
+  font-size: 16px;
+  line-height: 1.4;
   text-align: center;
 }
 
-.welcome-card-section {
+.simple-welcome-card-content p {
   margin-bottom: 16px;
 }
 
-.welcome-card-section.small-text {
-  font-size: 13px;
-}
-
-.welcome-card-section-header {
+.simple-open-tutorial-button {
+  color: color-mix(in srgb, rgb(var(--color-primary)), white 50%);
+  display: inline-flex;
   font-size: 16px;
-  font-weight: bold;
-  margin-bottom: 8px;
-  color: rgb(var(--color-text));
-  text-align: center;
-}
-
-.welcome-buttons-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  justify-content: center;
-  margin-top: 12px;
-}
-
-.welcome-button {
-  position: relative;
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  width: 70px;
-  text-align: center;
-  cursor: pointer;
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: rgba(var(--color-primary) / 0.1);
+  font-weight: 500;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(var(--color-primary) / 0.2);
 }
 
-.welcome-button-icon {
-  width: 36px;
-  height: 36px;
-  margin-bottom: 4px;
-}
-
-.welcome-button-icon svg {
+.simple-open-tutorial-button:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
   width: 100%;
   height: 100%;
-  fill: rgb(var(--color-primary));
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(var(--color-primary) / 0.2),
+    transparent
+  );
+  transition: left 0.7s ease;
 }
 
-.welcome-button-label {
-  font-size: 11px;
-  color: rgb(var(--color-text));
-  font-weight: 600;
-  white-space: nowrap;
+.simple-open-tutorial-button:hover {
+  color: color-mix(in srgb, rgb(var(--color-primary)), white 60%);
+  background: rgba(var(--color-primary) / 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(var(--color-primary) / 0.2);
 }
 
-.welcome-button-tooltip {
-  visibility: hidden;
-  background-color: rgba(50, 50, 50, 1);
-  color: #fff;
-  text-align: center;
-  border-radius: var(--border-radius);
-  padding: 6px;
-  position: absolute;
-  z-index: 1;
-  bottom: 110%;
-  width: 160px;
-  left: 50%;
-  margin-left: -80px;
-  opacity: 0;
-  transition: opacity 0.3s;
-  font-size: 11px;
+.simple-open-tutorial-button:hover:before {
+  left: 100%;
 }
 
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-.open-tutorial-button {
-  background-color: rgb(25, 25, 255);
-  color: white;
-  padding: 1rem;
-  border-radius: 5px;
-  text-decoration: none;
-  display: inline-block; /* Ensure it's treated as a button */
-  transition: transform 0.3s ease; /* Smooth interaction effects */
-  animation: pulse 1.5s infinite; /* Apply the pulsing animation */
-}
-
-.welcome-button:hover .welcome-button-tooltip {
-  visibility: visible;
-  opacity: 1;
-}
-
-.sidebar-info {
-  display: flex;
-  align-items: flex-start;
-  margin-bottom: 12px;
-}
-
-.sidebar-icon {
-  margin-right: 10px;
-  flex-shrink: 0;
-}
-
-.sidebar-icon svg {
-  width: 24px;
-  height: 24px;
-  fill: rgb(var(--color-primary));
-}
-
-.sidebar-content h4 {
-  font-size: 13px;
-  font-weight: 600;
-  color: rgb(var(--color-text));
-  margin: 0 0 4px 0;
-}
-
-.sidebar-content ul {
-  list-style-type: disc;
-  margin: 0;
-  padding-left: 16px;
-}
-
-.sidebar-content ul li {
-  margin-bottom: 4px;
-  font-size: 12px;
-}
-
-.sidebar-content ul li::marker {
-  color: rgb(var(--color-accent));
-}
-
-.welcome-card-content p {
-  margin: 8px 8px;
-  text-align: center;
-  font-size: 13px;
-}
-
-@media (max-height: 600px) {
-  .welcome-card {
-    max-height: 80%;
-  }
-
-  .welcome-card-content-wrapper {
-    max-height: calc(80vh - 130px);
-  }
-}
-
-@media (max-width: 480px) {
-  .welcome-card {
-    width: 95%;
-    padding: 16px;
-  }
-
-  .welcome-card-title {
-    font-size: 18px;
-  }
-
-  .welcome-card-section-header {
-    font-size: 14px;
-  }
-
-  .welcome-button {
-    width: 60px;
-  }
-
-  .welcome-button-icon {
-    width: 28px;
-    height: 28px;
-  }
-
-  .welcome-button-label {
-    font-size: 10px;
-  }
-
-  .welcome-button-tooltip {
-    font-size: 10px;
-    width: 140px;
-    margin-left: -70px;
-  }
-
-  .sidebar-icon svg {
-    width: 20px;
-    height: 20px;
-  }
-
-  .sidebar-content h4 {
-    font-size: 12px;
-  }
-
-  .sidebar-content ul li {
-    font-size: 11px;
-  }
-
-  .welcome-card-content-wrapper {
-    max-height: calc(100vh - 140px);
-  }
+.simple-open-tutorial-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(var(--color-primary) / 0.1);
 }
