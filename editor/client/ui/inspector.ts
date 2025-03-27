@@ -6,7 +6,7 @@ import { BehaviorTypeInfoService } from "../util/behavior-type-info.ts";
 import { getFileContent, textToPlan } from "./assistant/context.ts";
 import { BehaviorPanel } from "./behavior-panel/mod.ts";
 import { ContextMenu } from "./context-menu.ts";
-import { FileTree } from "./file-tree.ts";
+import { FileTree } from "./file-tree.tsx";
 import { GameOverlays } from "./game-overlays.ts";
 import { setupKeyboardShortcuts } from "./keyboard-shortcuts.ts";
 import { Properties } from "./properties.tsx";

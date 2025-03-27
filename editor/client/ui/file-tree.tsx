@@ -232,16 +232,15 @@ export class FileTree implements InspectorUIWidget {
       }
     });
 
-    const addAssetsBtn = elem(
-      "a",
-      {
-        id: "import-project-button",
-        role: "button",
-        href: "javascript:void(0)",
-        title: "Add Assets",
-        ariaLabel: "Add Assets",
-      },
-      ["Add Assets", icon(PlusCircle)],
+    const addAssetsBtn = (
+      <a
+        id="import-project-button"
+        title="Add or Create Assets"
+        ariaLabel="Add or Create Assets"
+        style={{ cursor: "pointer" }}
+      >
+        <div>Add or Create Assets</div>
+      </a>
     );
 
     addAssetsBtn.addEventListener("click", () => {
