@@ -2,10 +2,10 @@ import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 import { DreamlabEditorUIComponent } from "./_component.tsx";
 import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
 
-type Tab = "upload" | "asset-library" | "generate";
+type Tab = "upload-or-create" | "asset-library";
 
 export class ImportPopup extends DreamlabEditorUIComponent {
-  private currentTab: Tab = "upload";
+  private currentTab: Tab = "upload-or-create";
   private importError: string = "";
   private projectId: string = "";
 
@@ -107,44 +107,40 @@ export class ImportPopup extends DreamlabEditorUIComponent {
 
   render() {
     return (
-      <div className="import-menu" style={{ width: "400px", height: "375px" }}>
-        <div style={{ textAlign: "right" }}>
-          <span
+      <div className="import-menu" style={{ width: "400px", height: "400px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <h1 style={{ fontSize: "20px" }}>Add Assets</h1>
+          <button
             onClick={() => this.hide()}
-            style={{ textDecoration: "underline", cursor: "pointer" }}
+            className="button"
+            style={{ fontSize: "small", padding: "0px 5px" }}
           >
             Close
-          </span>
+          </button>
         </div>
-        <h1 style={{ fontSize: "20px" }}>Add Assets</h1>
+
         <div className="bottom-tabs-bar">
           <div
             className="bottom-tab"
-            onClick={() => this.switchTab("upload")}
-            data-active={this.currentTab === "upload"}
+            onClick={() => this.switchTab("upload-or-create")}
+            data-active={this.currentTab === "upload-or-create"}
           >
-            Upload
+            Create or Upload
           </div>
           <div
             className="bottom-tab"
             onClick={() => this.switchTab("asset-library")}
             data-active={this.currentTab === "asset-library"}
           >
-            Asset Library
-          </div>
-          <div
-            className="bottom-tab"
-            onClick={() => this.switchTab("generate")}
-            data-active={this.currentTab === "generate"}
-          >
-            Generate
+            Import Assets
           </div>
         </div>
         <br />
-        {this.currentTab === "upload" && (
+        {this.currentTab === "upload-or-create" && (
           <div>
-            <p style={{ textAlign: "center" }}>
-              You can drag files anywhere onto the editor to upload, or click the box below.
+            <p style={{ textAlign: "center", marginTop: "0px", fontSize: "small" }}>
+              Drag files anywhere onto the editor to upload (even when this window is closed),
+              or click the box below to choose files
             </p>
             <div
               className="upload-box"
@@ -169,6 +165,19 @@ export class ImportPopup extends DreamlabEditorUIComponent {
               id="hidden-file-input"
               onChange={(e: Event) => this.handleFileChange(e)}
             />
+            <p style={{ textAlign: "center" }}>or</p>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                marginTop: "10px",
+              }}
+            >
+              <button type="button" className="button" onClick={this.openAssetGenerator}>
+                Open Asset Generator
+              </button>
+            </div>
           </div>
         )}
         {this.currentTab === "asset-library" && (
@@ -216,23 +225,6 @@ export class ImportPopup extends DreamlabEditorUIComponent {
                 }
               >
                 Open Asset Store
-              </button>
-            </div>
-          </div>
-        )}
-        {this.currentTab === "generate" && (
-          <div style={{ textAlign: "center" }}>
-            <p>Click the button below to open the generator.</p>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                marginTop: "10px",
-              }}
-            >
-              <button type="button" className="button" onClick={this.openAssetGenerator}>
-                Open Asset Generator
               </button>
             </div>
           </div>

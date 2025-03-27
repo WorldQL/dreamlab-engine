@@ -14,7 +14,7 @@
   & .button {
     padding: 6px 20px;
     border: 1px solid #ccc;
-    border-radius: 0 4px 4px 0;
+    border-radius: 4px;
     background-color: rgb(var(--color-bg-2));
     color: #fff;
     font-size: 16px;
