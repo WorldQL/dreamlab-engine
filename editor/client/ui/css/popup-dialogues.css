@@ -93,7 +93,7 @@
 .upload-box {
   border: 2px dashed rgb(var(--color-text-darker));
   border-radius: var(--border-radius);
-  padding: 30px;
+  padding: 20px;
   text-align: center;
   cursor: pointer;
   transition:
@@ -142,4 +142,19 @@
   color: rgb(var(--color-danger));
   text-align: center;
   font-size: 13px;
+}
+
+hr.groove {
+  width: 100%;
+  height: 1px;
+  height: 1px;
+  background-image: linear-gradient(
+    to right,
+    rgba(122, 122, 122, 0.2),
+    rgba(122, 122, 122, 0.75),
+    rgba(122, 122, 122, 0.2)
+  );
+  border: 0;
+  border: none;
+  margin: 10px 0;
 }
