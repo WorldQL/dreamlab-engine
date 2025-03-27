@@ -2,10 +2,10 @@ import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 import { DreamlabEditorUIComponent } from "./_component.tsx";
 import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
 
-type Tab = "upload-or-create" | "asset-library";
+type Tab = "generate" | "upload-import";
 
 export class ImportPopup extends DreamlabEditorUIComponent {
-  private currentTab: Tab = "upload-or-create";
+  private currentTab: Tab = "generate";
   private importError: string = "";
   private projectId: string = "";
 
@@ -107,128 +107,85 @@ export class ImportPopup extends DreamlabEditorUIComponent {
 
   render() {
     return (
-      <div className="import-menu" style={{ width: "400px", height: "400px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <h1 style={{ fontSize: "20px" }}>Add Assets</h1>
-          <button
-            onClick={() => this.hide()}
-            className="button"
-            style={{ fontSize: "small", padding: "0px 5px" }}
-          >
-            Close
+      <div className="import-popup">
+        <div className="popup-header">
+          <h1>Add Assets</h1>
+          <button onClick={() => this.hide()} className="close-button">
+            ×
           </button>
         </div>
-
-        <div className="bottom-tabs-bar">
+        <div className="tabs">
           <div
-            className="bottom-tab"
-            onClick={() => this.switchTab("upload-or-create")}
-            data-active={this.currentTab === "upload-or-create"}
+            className={`tab ${this.currentTab === "generate" ? "active" : ""}`}
+            onClick={() => this.switchTab("generate")}
           >
-            Create or Upload
+            Generate
           </div>
           <div
-            className="bottom-tab"
-            onClick={() => this.switchTab("asset-library")}
-            data-active={this.currentTab === "asset-library"}
+            className={`tab ${this.currentTab === "upload-import" ? "active" : ""}`}
+            onClick={() => this.switchTab("upload-import")}
           >
-            Import Assets
+            Upload/Import
           </div>
         </div>
-        <br />
-        {this.currentTab === "upload-or-create" && (
-          <div>
-            <p style={{ textAlign: "center", marginTop: "0px", fontSize: "small" }}>
-              Drag files anywhere onto the editor to upload (even when this window is closed),
-              or click the box below to choose files
-            </p>
-            <div
-              className="upload-box"
-              onClick={() => {
-                const fileInput = document.getElementById(
-                  "hidden-file-input",
-                ) as HTMLInputElement;
-                if (fileInput) {
-                  fileInput.click();
-                }
-              }}
-            >
-              <p>Upload Image</p>
-              <p style={{ fontWeight: "300", color: "rgb(var(--color-text-darker))" }}>or</p>
-              <p style={{ fontWeight: "300", color: "rgb(var(--color-text-darker))" }}>
-                drag a file
-              </p>
-            </div>
-            <input
-              type="file"
-              style={{ display: "none" }}
-              id="hidden-file-input"
-              onChange={(e: Event) => this.handleFileChange(e)}
-            />
-            <p style={{ textAlign: "center" }}>or</p>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                marginTop: "10px",
-              }}
-            >
-              <button type="button" className="button" onClick={this.openAssetGenerator}>
-                Open Asset Generator
+        <div className="popup-content">
+          {this.currentTab === "generate" && (
+            <div className="generate-tab">
+              <p className="info-text">Use the asset generator to quickly create new assets.</p>
+              <button className="generator-button" onClick={this.openAssetGenerator}>
+                Generate Assets
               </button>
             </div>
-          </div>
-        )}
-        {this.currentTab === "asset-library" && (
-          <div>
-            <p style={{ textAlign: "center" }}>
-              Enter a Project ID from the Asset Store or your library to import its assets into
-              this project.
-            </p>
-            <form id="import-project-form" onSubmit={(e: Event) => this.handleImport(e)}>
-              <input
-                type="text"
-                name="projectId"
-                placeholder="Enter a Project ID"
-                autocomplete="off"
-                value={this.projectId}
-                className="input"
-                onChange={(e: Event) => {
-                  const target = e.currentTarget as HTMLInputElement;
-                  this.projectId = target.value;
-                  this.rerender();
-                }}
-              />
-              <button type="submit" className="button">
-                Import
-              </button>
-              {this.importError && <p className="import-error">{this.importError}</p>}
-            </form>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                marginTop: "10px",
-              }}
-            >
-              <button
-                type="button"
-                className="button"
-                onClick={() =>
-                  window.open(
-                    "https://app.dreamlab.gg/asset-store",
-                    "_blank",
-                    "noopener,noreferrer",
-                  )
-                }
-              >
-                Open Asset Store
-              </button>
+          )}
+          {this.currentTab === "upload-import" && (
+            <div className="upload-import-tab">
+              <div className="upload-section">
+                <p className="info-text">
+                  Drag files onto the editor or click below to choose files.
+                </p>
+                <div
+                  className="upload-box"
+                  onClick={() => {
+                    const fileInput = document.getElementById(
+                      "hidden-file-input",
+                    ) as HTMLInputElement;
+                    if (fileInput) fileInput.click();
+                  }}
+                >
+                  <p>Upload File</p>
+                </div>
+                <input
+                  type="file"
+                  id="hidden-file-input"
+                  style={{ display: "none" }}
+                  onChange={(e: Event) => this.handleFileChange(e)}
+                />
+              </div>
+              <div className="import-section">
+                <p className="info-text">Or enter a Project ID to import assets.</p>
+                <form onSubmit={(e: Event) => this.handleImport(e)} className="import-form">
+                  <input
+                    type="text"
+                    name="projectId"
+                    placeholder="Enter Project ID"
+                    autocomplete="off"
+                    value={this.projectId}
+                    className="text-input"
+                    onChange={(e: Event) => {
+                      const target = e.currentTarget as HTMLInputElement;
+                      this.projectId = target.value;
+                      this.rerender();
+                    }}
+                  />
+                  <button type="submit" className="submit-button">
+                    Import
+                  </button>
+                </form>
+                {this.importError && <p className="error-text">{this.importError}</p>}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     );
   }
