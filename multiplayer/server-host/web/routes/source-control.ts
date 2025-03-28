@@ -252,7 +252,8 @@ export const serveSourceControlAPI = (router: Router) => {
     }
     const sourceRoot = instance.info.worldDirectory;
     const addProcess = new Deno.Command("git", {
-      args: ["add", body.file],
+      // sometimes the file name is wrapped in double quotes, which is wrong. We need to strip them.
+      args: ["add", stripDoubleQuotes(body.file)],
       cwd: sourceRoot,
     }).spawn();
     const addStatus = await addProcess.status;
@@ -289,7 +290,7 @@ export const serveSourceControlAPI = (router: Router) => {
     }
     const sourceRoot = instance.info.worldDirectory;
     const resetProcess = new Deno.Command("git", {
-      args: ["reset", "HEAD", body.file],
+      args: ["reset", "HEAD", stripDoubleQuotes(body.file)],
       cwd: sourceRoot,
     }).spawn();
     const resetStatus = await resetProcess.status;
@@ -895,7 +896,7 @@ export const serveSourceControlAPI = (router: Router) => {
       await Deno.writeTextFile(filePath, body.content);
 
       const addProcess = new Deno.Command("git", {
-        args: ["add", body.file],
+        args: ["add", stripDoubleQuotes(body.file)],
         cwd: sourceRoot,
       }).spawn();
       const addStatus = await addProcess.status;
@@ -946,7 +947,7 @@ export const serveSourceControlAPI = (router: Router) => {
 
     const sourceRoot = instance.info.worldDirectory;
     const checkoutProcess = new Deno.Command("git", {
-      args: ["checkout", `--${body.strategy}`, "--", body.file],
+      args: ["checkout", `--${body.strategy}`, "--", stripDoubleQuotes(body.file)],
       cwd: sourceRoot,
     }).spawn();
     const checkoutStatus = await checkoutProcess.status;
@@ -957,7 +958,7 @@ export const serveSourceControlAPI = (router: Router) => {
     }
 
     const addProcess = new Deno.Command("git", {
-      args: ["add", body.file],
+      args: ["add", stripDoubleQuotes(body.file)],
       cwd: sourceRoot,
     }).spawn();
     const addStatus = await addProcess.status;
@@ -1667,3 +1668,10 @@ export const serveSourceControlAPI = (router: Router) => {
   });
   // #endregion
 };
+
+function stripDoubleQuotes(filePath: string): string {
+  if (filePath[0] === '"' && filePath.at(-1) === '"') {
+    filePath = filePath.slice(1).slice(0, -1);
+  }
+  return filePath;
+}
