@@ -1,6 +1,5 @@
 import { Behavior, syncedValue, ObjectAdapter, JsonObject } from "@dreamlab/engine";
 import GlobalStats from "./global-stats.ts";
-import { CookieClickEvent } from "./cookie.ts";
 
 export interface UpgradeData extends JsonObject {
   id: string;
@@ -16,46 +15,76 @@ export interface UpgradeData extends JsonObject {
 export default class UpgradesManager extends Behavior {
   @syncedValue(ObjectAdapter)
   upgrades: Record<string, UpgradeData> = {
-    autoClicker: {
-      id: "autoClicker",
-      name: "Auto Clicker",
-      description: "Automatically clicks every few seconds.",
-      baseCost: 100,
-      currentLevel: 0,
-      costMultiplier: 2.5, // Becomes really expensive quickly
-      effect: 1, // Each level increases auto clicks per interval
-      minClicksRequired: 100,
-    },
     clickMultiplier: {
       id: "clickMultiplier",
-      name: "Click Multiplier",
+      name: "Clicker Multiplier",
       description: "Increases the value of each click.",
-      baseCost: 50,
+      baseCost: 20,
       currentLevel: 0,
-      costMultiplier: 2.2,
-      effect: 0.9,
-      minClicksRequired: 250,
+      costMultiplier: 10,
+      effect: 1,
+      minClicksRequired: 0,
     },
-    fasterAutoClicker: {
-      id: "fasterAutoClicker",
-      name: "Faster Auto Clicker",
-      description: "Reduces time between auto-clicks.",
-      baseCost: 500,
+    tent: {
+      id: "tent",
+      name: "Tent",
+      description: "Auto clicks 1⚡ per second.",
+      baseCost: 100,
       currentLevel: 0,
-      costMultiplier: 3.0, // Scales very aggressively
-      effect: 0.85, // Each level makes the interval smaller
-      minClicksRequired: 500,
+      costMultiplier: 1.15,
+      effect: 1,
+      minClicksRequired: 0,
+    },
+    farm: {
+      id: "farm",
+      name: "Farm",
+      description: "Auto clicks 10⚡ per second.",
+      baseCost: 800,
+      currentLevel: 0,
+      costMultiplier: 1.15,
+      effect: 10,
+      minClicksRequired: 0,
+    },
+    smallVillage: {
+      id: "smallVillage",
+      name: "Small Village",
+      description: "Auto clicks 120⚡ per second.",
+      baseCost: 10000,
+      currentLevel: 0,
+      costMultiplier: 1.15,
+      effect: 120,
+      minClicksRequired: 0,
+    },
+    town: {
+      id: "town",
+      name: "Town",
+      description: "Auto clicks 1000⚡ per second.",
+      baseCost: 75000,
+      currentLevel: 0,
+      costMultiplier: 1.15,
+      effect: 1000,
+      minClicksRequired: 0,
+    },
+    city: {
+      id: "city",
+      name: "City",
+      description: "Auto clicks 5000⚡ per second.",
+      baseCost: 250000,
+      currentLevel: 0,
+      costMultiplier: 1.15,
+      effect: 5000,
+      minClicksRequired: 0,
     },
   };
 
   @syncedValue()
-  totalAutoClicks = 0; // Total auto-clicks per interval
+  totalAutoClicks = 0;
 
   @syncedValue()
   clickMultiplierValue = 1;
 
   @syncedValue()
-  autoClickInterval = 10000; // Start at 10 seconds (10,000ms)
+  autoClickInterval = 1000;
 
   private lastAutoClickTime = 0;
 
@@ -66,7 +95,6 @@ export default class UpgradesManager extends Behavior {
 
   onTickClient(): void {
     const now = Date.now();
-
     if (this.totalAutoClicks > 0 && now - this.lastAutoClickTime >= this.autoClickInterval) {
       this.lastAutoClickTime = now;
       this.performAutoClick();
@@ -99,7 +127,6 @@ export default class UpgradesManager extends Behavior {
     const playerData = globalStats.leaderboard[playerId];
     if (!playerData || playerData.clicks < cost) return false;
 
-    // Deduct cost
     playerData.clicks -= cost;
     globalStats.leaderboard[playerId] = playerData;
     upgrade.currentLevel += 1;
@@ -113,35 +140,37 @@ export default class UpgradesManager extends Behavior {
   }
 
   private recalculateEffects(): void {
-    const autoClicker = this.upgrades.autoClicker;
-    const fasterAutoClicker = this.upgrades.fasterAutoClicker;
-
-    // Auto clicks per interval
-    this.totalAutoClicks = autoClicker.currentLevel * autoClicker.effect;
-
-    // Click Multiplier
     const clickMultiplier = this.upgrades.clickMultiplier;
     this.clickMultiplierValue = 1 + clickMultiplier.currentLevel * clickMultiplier.effect;
 
-    // Reduce interval as fasterAutoClicker levels up
-    let speedMultiplier = 1;
-    if (fasterAutoClicker.currentLevel > 0) {
-      speedMultiplier = Math.pow(fasterAutoClicker.effect, fasterAutoClicker.currentLevel);
+    this.totalAutoClicks = 0;
+    for (const key of ["tent", "farm", "smallVillage", "town", "city"]) {
+      const upgrade = this.upgrades[key];
+      if (upgrade) {
+        this.totalAutoClicks += upgrade.currentLevel * upgrade.effect;
+      }
     }
-    this.autoClickInterval = Math.max(500, 10000 * speedMultiplier); // Prevents it from going below 500ms
+    this.autoClickInterval = 1000;
   }
 
   private performAutoClick(): void {
     if (!this.game.isClient()) return;
+    const player = this.game.network.connections.find(
+      (conn) => conn.id === this.game.network.self,
+    );
+    if (!player) return;
+
+    this.game.network.sendCustomMessage("server", "@clicker/click", {
+      playerId: player.playerId,
+      nickname: player.nickname || "Unknown",
+      multiplier: 1,
+      totalClickCount: this.totalAutoClicks,
+    });
+
     const globalStats = this.entity.game.world._.GlobalStats?.getBehavior(GlobalStats);
-    if (!globalStats) return;
-
-    // Fire auto clicks
-    for (let i = 0; i < this.totalAutoClicks; i++) {
-      this.game.fire(CookieClickEvent, true);
+    if (globalStats) {
+      globalStats.updateLeaderboard();
     }
-
-    globalStats.updateLeaderboard();
   }
 
   getNextUpgradeCost(upgradeId: string): number {

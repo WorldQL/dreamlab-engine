@@ -9,7 +9,6 @@ export default class StatsUI extends UIBehavior {
   @syncedValue(EntityByRefAdapter)
   upgradesManager: Entity | undefined;
 
-  private globalClicks: number = 0;
   private playerId: string = "";
 
   onInitialize(): void {
@@ -26,22 +25,11 @@ export default class StatsUI extends UIBehavior {
 
     // Listen for changes in global total clicks.
     const globalStatsBehavior = this.globalStats.getBehavior(GlobalStats);
-    const globalClicksValue = globalStatsBehavior.values.get("globalClicks");
-    if (globalClicksValue) {
-      globalClicksValue.onChanged(this.updateGlobalClicks.bind(this, globalClicksValue));
-      this.updateGlobalClicks(globalClicksValue);
-    }
-
     // Also listen for changes in the leaderboard to update the player's clicks.
     const leaderboardValue = globalStatsBehavior.values.get("leaderboard");
     if (leaderboardValue) {
       leaderboardValue.onChanged(() => this.rerender());
     }
-  }
-
-  private updateGlobalClicks(globalClicksValue: any) {
-    this.globalClicks = globalClicksValue.value as number;
-    this.rerender();
   }
 
   override render() {
@@ -76,13 +64,12 @@ export default class StatsUI extends UIBehavior {
         }}
       >
         <div style={{ flex: "0 0 auto", textAlign: "left" }}>
-          <div style={{ fontSize: "10px", color: "#bd93f9" }}>Global Score</div>
-          <div style={{ fontSize: "12px" }}>{this.globalClicks.toFixed(0)}</div>
+          <div style={{ fontSize: "10px", color: "#bd93f9" }}>Dreamlab Clicker</div>
         </div>
 
         <div style={{ flex: "1", textAlign: "center" }}>
           <div style={{ fontSize: "36px", fontWeight: "bold" }}>
-            🚀 {Math.floor(playerClicks)}
+            ⚡ {Math.floor(playerClicks)}
           </div>
         </div>
 

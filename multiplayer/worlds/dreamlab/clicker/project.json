@@ -8,6 +8,24 @@
       "registration": [],
       "world": [
         {
+          "ref": "ent_jdWgvMMFRW",
+          "type": "@core/Empty",
+          "name": "UpgradesManager",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": -0.010675534824768438,
+              "y": -0.10408688002074146
+            }
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_ma8VqBTVmB",
+              "script": "res://src/upgrades.ts"
+            }
+          ]
+        },
+        {
           "ref": "ent_wvc13l33gbejqjbaej3wues4",
           "type": "@core/Empty",
           "name": "GlobalStats",
@@ -17,307 +35,10 @@
               "ref": "bhv_w80xykk4mxh8dieylra57bvh",
               "script": "res://src/global-stats.ts",
               "values": {
-                "powerupsManager": "ent_K61x5L0JtT",
-                "upgradesManager": "ent_K61x5L0JtT"
+                "upgradesManager": "ent_jdWgvMMFRW"
               }
             }
           ]
-        },
-        {
-          "ref": "ent_QgQKZRpRFO",
-          "type": "@core/Empty",
-          "name": "Cosmetics",
-          "enabled": true,
-          "transform": {
-            "position": {
-              "x": -0.03643293185936884,
-              "y": -0.11039560792010882
-            }
-          },
-          "children": [
-            {
-              "ref": "ent_2zuH2QJuOZ",
-              "type": "@core/Sprite",
-              "name": "GF",
-              "enabled": false,
-              "transform": {
-                "position": {
-                  "x": -4.963567068140631,
-                  "y": -0.6396043920798912
-                },
-                "scale": {
-                  "x": 2.5,
-                  "y": 2.5
-                }
-              },
-              "values": {
-                "static": false,
-                "hidden": false,
-                "texture": "res://assets/cookie-5.png",
-                "width": 1,
-                "height": 1,
-                "alpha": 1,
-                "preserveAspectRatio": false
-              },
-              "children": [
-                {
-                  "ref": "ent_fNCScpFhkp",
-                  "type": "@core/Sprite",
-                  "name": "Sprite",
-                  "enabled": true,
-                  "transform": {
-                    "position": {
-                      "x": 0,
-                      "y": 0.4
-                    },
-                    "scale": {
-                      "x": 0.5,
-                      "y": 0.5
-                    }
-                  },
-                  "values": {
-                    "static": false,
-                    "hidden": false,
-                    "texture": "res://assets/bow.png",
-                    "width": 1,
-                    "height": 1,
-                    "alpha": 1,
-                    "preserveAspectRatio": false
-                  }
-                }
-              ]
-            },
-            {
-              "ref": "ent_33pwuWuPxP",
-              "type": "@core/Sprite",
-              "name": "Car",
-              "enabled": false,
-              "transform": {
-                "position": {
-                  "x": 5.935030031218272,
-                  "y": 0
-                },
-                "scale": {
-                  "x": 6,
-                  "y": 4
-                }
-              },
-              "values": {
-                "static": false,
-                "hidden": false,
-                "texture": "res://assets/car.png",
-                "width": 1,
-                "height": 1,
-                "alpha": 1,
-                "preserveAspectRatio": false
-              }
-            },
-            {
-              "ref": "ent_A4Ltd5w3PA",
-              "type": "@core/TilingSprite",
-              "name": "Background",
-              "enabled": false,
-              "transform": {
-                "scale": {
-                  "x": 100,
-                  "y": 100
-                },
-                "z": -100
-              },
-              "values": {
-                "static": false,
-                "hidden": false,
-                "width": 1,
-                "height": 1,
-                "alpha": 1,
-                "tileRotation": 0,
-                "tilePosition": {
-                  "x": 0,
-                  "y": 0
-                },
-                "tileScale": {
-                  "x": 5,
-                  "y": 5
-                },
-                "texture": "res://assets/background.jpg"
-              }
-            }
-          ]
-        },
-        {
-          "ref": "ent_ezmt7gcystk8zh6jp34itv0c",
-          "type": "@core/ClickableRect",
-          "name": "ClickableEntity",
-          "enabled": true,
-          "transform": {
-            "scale": {
-              "x": 2.5,
-              "y": 2.5
-            }
-          },
-          "values": {
-            "width": 1,
-            "height": 1
-          },
-          "behaviors": [
-            {
-              "ref": "bhv_jc33exd6trzn60xdqlmbb9nc",
-              "script": "res://src/cookie.ts",
-              "values": {
-                "powerupsManager": "ent_K61x5L0JtT",
-                "upgradesManager": "ent_K61x5L0JtT"
-              }
-            }
-          ],
-          "children": [
-            {
-              "ref": "ent_R93kOD4L2Y",
-              "type": "@core/Sprite",
-              "name": "Sprite",
-              "enabled": true,
-              "values": {
-                "static": false,
-                "hidden": false,
-                "texture": "res://assets/cookie-1.png",
-                "width": 1,
-                "height": 1,
-                "alpha": 1,
-                "preserveAspectRatio": false
-              },
-              "children": [
-                {
-                  "ref": "ent_G3QjBlyUgv",
-                  "type": "@core/Sprite",
-                  "name": "Hat",
-                  "enabled": false,
-                  "transform": {
-                    "position": {
-                      "x": 0,
-                      "y": 0.6
-                    }
-                  },
-                  "values": {
-                    "static": false,
-                    "hidden": false,
-                    "texture": "res://assets/hat.png",
-                    "width": 1,
-                    "height": 1,
-                    "alpha": 1,
-                    "preserveAspectRatio": false
-                  }
-                },
-                {
-                  "ref": "ent_Srl1A3v1yz",
-                  "type": "@core/Sprite",
-                  "name": "Legs",
-                  "enabled": false,
-                  "transform": {
-                    "position": {
-                      "x": -0.1,
-                      "y": -0.6
-                    },
-                    "scale": {
-                      "x": 2,
-                      "y": 0.75
-                    },
-                    "z": -1
-                  },
-                  "values": {
-                    "static": false,
-                    "hidden": false,
-                    "texture": "res://assets/legs.png",
-                    "width": 1,
-                    "height": 1,
-                    "alpha": 1,
-                    "preserveAspectRatio": false
-                  }
-                },
-                {
-                  "ref": "ent_vLlBlbmT48",
-                  "type": "@core/Sprite",
-                  "name": "LeftArm",
-                  "enabled": false,
-                  "transform": {
-                    "position": {
-                      "x": -0.5,
-                      "y": 0.2
-                    },
-                    "rotation": 3.500460764878148,
-                    "z": -1
-                  },
-                  "values": {
-                    "static": false,
-                    "hidden": false,
-                    "texture": "res://assets/arm.png",
-                    "width": 1,
-                    "height": 1,
-                    "alpha": 1,
-                    "preserveAspectRatio": false
-                  }
-                },
-                {
-                  "ref": "ent_PmhbyXg4zX",
-                  "type": "@core/Sprite",
-                  "name": "RightArm",
-                  "enabled": false,
-                  "transform": {
-                    "position": {
-                      "x": 0.4,
-                      "y": -0.2
-                    },
-                    "rotation": 7.16507250780869,
-                    "z": -1
-                  },
-                  "values": {
-                    "static": false,
-                    "hidden": false,
-                    "texture": "res://assets/arm.png",
-                    "width": 1,
-                    "height": 1,
-                    "alpha": 1,
-                    "preserveAspectRatio": false
-                  }
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "ref": "ent_K61x5L0JtT",
-          "type": "@core/Empty",
-          "name": "UpgradesManager",
-          "enabled": true,
-          "behaviors": [
-            {
-              "ref": "bhv_ELVqY7HpRa",
-              "script": "res://src/upgrades.ts"
-            }
-          ]
-        },
-        {
-          "ref": "ent_PVcd1AE21j",
-          "type": "@core/ColoredSquare",
-          "name": "BackgroundFade",
-          "enabled": true,
-          "transform": {
-            "scale": {
-              "x": 5,
-              "y": 5
-            },
-            "z": -10
-          },
-          "values": {
-            "static": false,
-            "hidden": false,
-            "width": 1,
-            "height": 1,
-            "color": [
-              0,
-              0,
-              0,
-              0.23000000417232513
-            ]
-          }
         }
       ],
       "local": [
@@ -334,17 +55,36 @@
           }
         },
         {
-          "ref": "ent_U7uz72KSh8",
+          "ref": "ent_nBfqKGkKeF",
           "type": "@core/Empty",
           "name": "UI",
           "enabled": true,
           "transform": {
             "position": {
-              "x": -0.03643293185936884,
-              "y": -0.11039560792010882
+              "x": -0.010675534824768438,
+              "y": -0.10408688002074146
             }
           },
           "children": [
+            {
+              "ref": "ent_iaIc2I1NJY",
+              "type": "@core/UILayer",
+              "name": "UpgradesUI",
+              "enabled": true,
+              "transform": {
+                "z": 10
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_CAJrzU9gKg",
+                  "script": "res://src/ui/upgrades-ui.tsx",
+                  "values": {
+                    "upgradesManager": "ent_jdWgvMMFRW",
+                    "globalStats": "ent_wvc13l33gbejqjbaej3wues4"
+                  }
+                }
+              ]
+            },
             {
               "ref": "ent_vrvqmr8jk57tsk9ijzcc0r9e",
               "type": "@core/UILayer",
@@ -352,9 +92,10 @@
               "enabled": true,
               "transform": {
                 "position": {
-                  "x": -3.8536480981406305,
-                  "y": 1.6581380679201108
-                }
+                  "x": -3.879405495175231,
+                  "y": 1.6518293400207436
+                },
+                "z": 20
               },
               "behaviors": [
                 {
@@ -367,117 +108,156 @@
               ]
             },
             {
-              "ref": "ent_gc9e4f2i7hzydxmqn6rfyffq",
+              "ref": "ent_HbwOnyaNtn",
               "type": "@core/UILayer",
               "name": "StatsUI",
               "enabled": true,
               "transform": {
-                "position": {
-                  "x": 0.03643293185936884,
-                  "y": 0.11039560792010882
-                }
+                "z": 10
               },
               "behaviors": [
                 {
-                  "ref": "bhv_yge6f8gjojxexvv6627iu1gf",
+                  "ref": "bhv_BZfPRo45JD",
                   "script": "res://src/ui/stats-ui.tsx",
                   "values": {
                     "globalStats": "ent_wvc13l33gbejqjbaej3wues4",
-                    "powerupsManager": "ent_K61x5L0JtT",
-                    "upgradesManager": "ent_K61x5L0JtT"
+                    "upgradesManager": "ent_jdWgvMMFRW"
                   }
                 }
               ]
             },
             {
-              "ref": "ent_oUEegd6EH0",
+              "ref": "ent_QPi4xYMRlO",
               "type": "@core/UILayer",
-              "name": "CosmeticsUI",
+              "name": "ClickerUI",
               "enabled": true,
-              "transform": {
-                "position": {
-                  "x": 0.03643293185936884,
-                  "y": 0.11039560792010882
-                }
-              },
               "behaviors": [
                 {
-                  "ref": "bhv_dvidsDQm1G",
-                  "script": "res://src/ui/cosmetics-ui.tsx",
+                  "ref": "bhv_ZJhE2EIqh2",
+                  "script": "res://src/ui/clicker-ui.tsx",
                   "values": {
-                    "globalStats": "ent_wvc13l33gbejqjbaej3wues4"
+                    "upgradesManager": "ent_jdWgvMMFRW"
                   }
                 }
               ]
-            },
-            {
-              "ref": "ent_XQG01CeNxQ",
-              "type": "@core/UILayer",
-              "name": "UpgradesUI",
-              "enabled": true,
-              "transform": {
-                "position": {
-                  "x": 0.03643293185936884,
-                  "y": 0.11039560792010882
-                }
-              },
-              "behaviors": [
-                {
-                  "ref": "bhv_ZlVYzyX0e7",
-                  "script": "res://src/ui/upgrades-ui.tsx",
-                  "values": {
-                    "powerupsManager": "ent_K61x5L0JtT",
-                    "globalStats": "ent_wvc13l33gbejqjbaej3wues4",
-                    "upgradesManager": "ent_K61x5L0JtT"
-                  }
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "ref": "ent_PS0riyJRgl",
-          "type": "@core/UILayer",
-          "name": "UIController",
-          "enabled": true,
-          "behaviors": [
-            {
-              "ref": "bhv_lFpGpzivDM",
-              "script": "res://src/ui.tsx",
-              "values": {
-                "leaderboardUI": "ent_vrvqmr8jk57tsk9ijzcc0r9e",
-                "powerupsUI": "ent_XQG01CeNxQ",
-                "settingsUI": "ent_oUEegd6EH0",
-                "cosmeticsUI": "ent_oUEegd6EH0",
-                "upgradesUI": "ent_XQG01CeNxQ"
-              }
-            }
-          ]
-        },
-        {
-          "ref": "ent_uJDcfNsMeF",
-          "type": "@core/Empty",
-          "name": "CookieParticles",
-          "enabled": true,
-          "transform": {
-            "position": {
-              "x": 0.6450480953942526,
-              "y": -0.061202887987407806
-            }
-          },
-          "behaviors": [
-            {
-              "ref": "bhv_lgcFJQcitv",
-              "script": "res://src/cookie-particles.ts",
-              "values": {
-                "cookieEntity": "ent_ezmt7gcystk8zh6jp34itv0c"
-              }
             }
           ]
         }
       ],
       "server": [],
-      "prefabs": []
+      "prefabs": [
+        {
+          "ref": "ent_atBWRSjU11",
+          "type": "@core/RichText",
+          "name": "HelpText",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": -0.010675534824768438,
+              "y": -0.10408688002074146
+            }
+          },
+          "values": {
+            "static": false,
+            "hidden": false,
+            "text": "Welcome To Dreamlab!",
+            "fontFamily": "Inter",
+            "fontSize": 36,
+            "fontStyle": "normal",
+            "fontWeight": "normal",
+            "align": "center",
+            "color": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "stroke": false,
+            "strokeColor": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "strokeWidth": 3,
+            "strokeJoin": "round"
+          }
+        },
+        {
+          "ref": "ent_mMGFnaJFEX",
+          "type": "@core/RichText",
+          "name": "HelpText.1",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": -0.010675534824768438,
+              "y": -0.7086127939036115
+            }
+          },
+          "values": {
+            "static": false,
+            "hidden": false,
+            "text": "This clicker template is completely made with UILayers.",
+            "fontFamily": "Inter",
+            "fontSize": 36,
+            "fontStyle": "normal",
+            "fontWeight": "normal",
+            "align": "center",
+            "color": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "stroke": false,
+            "strokeColor": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "strokeWidth": 3,
+            "strokeJoin": "round"
+          }
+        },
+        {
+          "ref": "ent_q23J8t9hiC",
+          "type": "@core/RichText",
+          "name": "HelpText.2",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": -0.010675534824768438,
+              "y": -1.137276243187238
+            }
+          },
+          "values": {
+            "static": false,
+            "hidden": false,
+            "text": "Try it for yourself by clicking the 'play' button at the top!",
+            "fontFamily": "Inter",
+            "fontSize": 36,
+            "fontStyle": "normal",
+            "fontWeight": "normal",
+            "align": "center",
+            "color": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "stroke": false,
+            "strokeColor": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "strokeWidth": 3,
+            "strokeJoin": "round"
+          }
+        }
+      ]
     }
   }
 }

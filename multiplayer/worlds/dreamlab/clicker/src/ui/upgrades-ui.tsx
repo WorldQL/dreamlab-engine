@@ -80,21 +80,36 @@ export default class UpgradesUI extends UIBehavior {
   }
 
   override render() {
-    // Use mobile styling only.
-    const containerStyle = {
-      position: "absolute",
-      bottom: "75px",
-      left: "50%",
-      transform: "translateX(-50%)",
-      background: "#1e1e2e",
-      color: "#f8f8f2",
-      padding: "10px",
-      borderRadius: "5px",
-      width: "90%",
-      fontSize: "14px",
-    };
+    if (!this.upgrades || Object.keys(this.upgrades).length === 0) {
+      return (
+        <div
+          style={{
+            position: "absolute",
+            top: "80px",
+            left: "10px",
+            width: "300px",
+            background: "#1e1e2e",
+            color: "#f8f8f2",
+            padding: "15px",
+            borderRadius: "5px",
+            fontSize: "14px",
+            zIndex: "999",
+          }}
+        >
+          <h2
+            style={{
+              margin: "0 0 15px 0",
+              fontSize: "18px",
+              textAlign: "left",
+            }}
+          >
+            SHOP
+          </h2>
+          <p>Loading upgrades...</p>
+        </div>
+      );
+    }
 
-    // Retrieve overall stats from the upgrades manager, if available.
     const manager = this.upgradesManager?.getBehavior(UpgradeManager);
     let effectiveAutoClickRate = 0;
     let effectiveClickMultiplier = 1;
@@ -103,85 +118,72 @@ export default class UpgradesUI extends UIBehavior {
       effectiveClickMultiplier = manager.clickMultiplierValue;
     }
 
-    if (!this.upgrades || Object.keys(this.upgrades).length === 0) {
-      return (
-        <div style={containerStyle}>
-          <h2 style={{ margin: "0 0 10px 0", textAlign: "center" }}>Upgrades</h2>
-          <p style={{ textAlign: "center" }}>Loading upgrades...</p>
-        </div>
-      );
-    }
-
     return (
-      <div style={containerStyle}>
-        <h2 style={{ margin: "0 0 10px 0", textAlign: "center" }}>Upgrades</h2>
-        <div style={{ marginBottom: "10px", textAlign: "center" }}>
-          Your Clicks: {Math.floor(this.playerClicks)}
+      <div
+        style={{
+          position: "absolute",
+          top: "80px",
+          left: "10px",
+          width: "300px",
+          background: "#1e1e2e",
+          color: "#f8f8f2",
+          padding: "15px",
+          borderRadius: "5px",
+          fontSize: "14px",
+          zIndex: "999",
+        }}
+      >
+        <h2
+          style={{
+            margin: "0 0 15px 0",
+            fontSize: "18px",
+            textAlign: "left",
+          }}
+        >
+          SHOP
+        </h2>
+        <div style={{ marginBottom: "10px" }}>
+          <div>Your Clicks: {Math.floor(this.playerClicks)}</div>
+          <div style={{ fontSize: "0.9em", marginTop: "5px" }}>
+            Auto Click Rate: {effectiveAutoClickRate.toFixed(2)} cps <br />
+            Click Multiplier: {effectiveClickMultiplier.toFixed(2)}x
+          </div>
         </div>
-
-        {/* Overall stats */}
-        <div style={{ marginBottom: "10px", textAlign: "center", fontSize: "0.9em" }}>
-          <div>Auto Click Rate: {effectiveAutoClickRate.toFixed(2)} cps</div>
-          <div>Click Multiplier: {effectiveClickMultiplier.toFixed(2)}x</div>
-        </div>
-
         {Object.values(this.upgrades).map((upgrade) => {
           const cost = this.getNextUpgradeCost(upgrade.id);
-          const canAfford = this.canAfford(cost);
-
-          let additionalInfo = "";
-          if (upgrade.id === "autoClicker") {
-            additionalInfo = `Adds ${(upgrade.currentLevel * upgrade.effect).toFixed(2)} auto clicks per interval`;
-          } else if (upgrade.id === "fasterAutoClicker" && manager) {
-            additionalInfo = `Interval: ${(manager.autoClickInterval / 1000).toFixed(2)} sec`;
-          } else if (upgrade.id === "clickMultiplier") {
-            additionalInfo = `Multiplier: ${(1 + upgrade.currentLevel * upgrade.effect).toFixed(2)}x`;
-          }
-
+          const canBuy = this.canAfford(cost);
           return (
             <div
-              key={upgrade.id}
               style={{
-                marginBottom: "15px",
-                padding: "8px",
-                borderRadius: "4px",
-                background: "#2d2d3f",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                padding: "10px 0",
+                borderBottom: "1px solid #333",
               }}
             >
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <div style={{ fontWeight: "bold" }}>{upgrade.name}</div>
-                <div>Level: {upgrade.currentLevel}</div>
-              </div>
-              <div style={{ fontSize: "0.8em", marginBottom: "5px" }}>
-                {upgrade.description}
-              </div>
-              {additionalInfo ? (
-                <div style={{ fontSize: "0.75em", marginBottom: "5px", color: "#bd93f9" }}>
-                  {additionalInfo}
+              <div style={{ marginRight: "10px" }}>
+                <div style={{ fontWeight: "bold", marginBottom: "4px" }}>{upgrade.name}</div>
+                <div style={{ fontSize: "0.9em", color: "#bbb", lineHeight: "1.2" }}>
+                  {upgrade.description} <br />
+                  Level: {upgrade.currentLevel}
                 </div>
-              ) : null}
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <div style={{ color: canAfford ? "#50fa7b" : "#ff5555" }}>
-                  Cost: {cost} clicks
-                </div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ color: canBuy ? "#50fa7b" : "#ff5555" }}>{cost} ⚡</div>
                 <button
+                  disabled={!canBuy}
+                  onClick={() => this.handlePurchase(upgrade.id)}
                   style={{
+                    marginTop: "5px",
                     padding: "4px 8px",
-                    background: canAfford ? "#50fa7b" : "#6272a4",
+                    background: canBuy ? "#50fa7b" : "#6272a4",
                     color: "#282a36",
                     border: "none",
                     borderRadius: "4px",
-                    cursor: canAfford ? "pointer" : "not-allowed",
-                    opacity: canAfford ? "1" : "0.7",
+                    cursor: canBuy ? "pointer" : "not-allowed",
+                    opacity: canBuy ? "1" : "0.7",
                   }}
-                  disabled={!canAfford}
-                  onClick={() => this.handlePurchase(upgrade.id)}
                 >
                   Upgrade
                 </button>
