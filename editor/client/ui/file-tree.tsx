@@ -238,9 +238,8 @@ export class FileTree implements InspectorUIWidget {
         ariaLabel="Add or Create Assets"
         style={{
           cursor: "pointer",
-          flexShrink: 0, // Prevents the button from shrinking
-          whiteSpace: "nowrap", // Keeps the button text on one line
-          minWidth: "167px",
+          flexShrink: 0,
+          whiteSpace: "nowrap",
         }}
       >
         <div>Add Assets</div>
