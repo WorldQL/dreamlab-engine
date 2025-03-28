@@ -12,7 +12,6 @@ import {
   Folder,
   icon,
   Image,
-  PlusCircle,
   Settings,
   SimpleIcon,
   siReact,
@@ -244,7 +243,7 @@ export class FileTree implements InspectorUIWidget {
           minWidth: "167px",
         }}
       >
-        <div>Add or Create Assets</div>
+        <div>Add Assets</div>
       </a>
     );
 
