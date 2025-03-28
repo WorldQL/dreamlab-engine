@@ -63,7 +63,7 @@ function entityToMarkdown(entity: SimpleEntityDefinition, indent: string = ""): 
 /**
  * Converts an array of sibling entities into markdown, grouping identical consecutive ones.
  *
- * If a group has more than 2 identical entries, it prints the first two then a line like:
+ * If a group has more than 25 identical entries, it prints the first two then a line like:
  *   - [N more identical entities]
  */
 function siblingsToMarkdown(entities: SimpleEntityDefinition[], indent: string): string {
@@ -79,8 +79,8 @@ function siblingsToMarkdown(entities: SimpleEntityDefinition[], indent: string):
     ) {
       count++;
     }
-    if (count > 2) {
-      // Print first two fully...
+    if (count > 25) {
+      // Print first 25 fully...
       md += entityToMarkdown(entities[i], indent);
       md += entityToMarkdown(entities[i + 1], indent);
       // ...and then a collapsed entry.
