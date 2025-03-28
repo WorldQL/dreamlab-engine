@@ -237,7 +237,12 @@ export class FileTree implements InspectorUIWidget {
         id="import-project-button"
         title="Add or Create Assets"
         ariaLabel="Add or Create Assets"
-        style={{ cursor: "pointer" }}
+        style={{
+          cursor: "pointer",
+          flexShrink: 0, // Prevents the button from shrinking
+          whiteSpace: "nowrap", // Keeps the button text on one line
+          minWidth: "167px",
+        }}
       >
         <div>Add or Create Assets</div>
       </a>
@@ -249,7 +254,28 @@ export class FileTree implements InspectorUIWidget {
     });
 
     this.#section.replaceChildren(tree);
-    const titleElement = elem("h1", {}, ["Project", addAssetsBtn]);
+    const titleElement = (
+      <h1
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          minWidth: 0, // Allows the container to shrink below children's content size
+        }}
+      >
+        <div
+          style={{
+            flexShrink: 1, // Allows this element to shrink
+            overflow: "hidden", // Hides overflow content
+            textOverflow: "ellipsis", // Shows ellipsis (...) when text is cut off
+            whiteSpace: "nowrap", // Prevents text from wrapping to next line
+          }}
+        >
+          Project
+        </div>
+        {addAssetsBtn}
+      </h1>
+    );
     this.#section.replaceChildren(titleElement, tree);
   }
 

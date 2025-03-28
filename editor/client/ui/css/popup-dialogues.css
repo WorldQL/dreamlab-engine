@@ -158,3 +158,41 @@ hr.groove {
   border: none;
   margin: 10px 0;
 }
+
+.ai-actions-menu {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  background-color: rgb(var(--color-bg-1));
+  color: rgb(var(--color-text));
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+
+  & .button {
+    padding: 6px 20px;
+    border: 1px solid #ccc;
+    border-radius: 0 4px 4px 0;
+    background-color: rgb(var(--color-bg-2));
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  & .button:hover {
+    background-color: #007acc;
+  }
+
+  & .input {
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px 0 0 4px;
+    width: 70%;
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+}
