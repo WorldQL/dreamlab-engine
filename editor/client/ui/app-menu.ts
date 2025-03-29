@@ -2,8 +2,9 @@ import { connectToGame, pickCodec } from "@dreamlab/client/game-connection.ts";
 import { setupGame } from "@dreamlab/client/game-setup.ts";
 import { Ping } from "@dreamlab/client/networking/ping.ts";
 import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
-import { ClientGame, PlayerJoined, PlayerLeft } from "@dreamlab/engine";
+import { ClientGame, PhysicsDebug, PlayerJoined, PlayerLeft } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
+import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 import {
   ArrowUpDown,
   Box,
@@ -21,7 +22,6 @@ import {
 } from "../_icons.ts";
 import { IconButton } from "../components/mod.ts";
 import { InspectorUI } from "./inspector.ts";
-import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 
 export class AppMenu {
   #section = elem("section", { id: "app-menu" });
@@ -283,6 +283,12 @@ export class AppMenu {
 
     await setupGame(playGame, conn, false);
     this.playInspector = new InspectorUI(playGame, conn, false, container);
+
+    // spawn physics debug if exists in parent
+    if (this.games.edit.local.entities.lookupByType(PhysicsDebug).length > 0) {
+      playGame.local.spawn({ type: PhysicsDebug, name: PhysicsDebug.name });
+    }
+
     this.games.play = playGame;
   }
 
