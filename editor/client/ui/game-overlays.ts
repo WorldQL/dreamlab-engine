@@ -8,7 +8,7 @@ import {
 } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 import { BoxResizeGizmo, Gizmo } from "../../common/entities/mod.ts";
-import { BoxSelect, icon, MousePointer2, Move, Move3D, ZoomIn } from "../_icons.ts";
+import { Box, BoxSelect, icon, MousePointer2, Move, Move3D, ZoomIn } from "../_icons.ts";
 import { stats } from "../_stats.ts";
 import { ButtonGroup, IconButton } from "../components/mod.ts";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
@@ -31,7 +31,10 @@ export class GameOverlays implements InspectorUIWidget {
   setup(ui: InspectorUI): void {
     this.#editMode = ui.editMode;
     if (this.#editMode) {
-      this.#editOverlays.push(this.drawGizmoButtons(), this.drawCursorOverlay());
+      this.#editOverlays.push(
+        elem("div", { id: "left-buttons" }, [this.drawGizmoButtons(), this.drawLayerButtons()]),
+        this.drawCursorOverlay(),
+      );
     }
   }
 
@@ -131,6 +134,14 @@ export class GameOverlays implements InspectorUIWidget {
 
     buttons.append(combined, boxSelect);
     return elem("div", { id: "gizmo-buttons" }, [buttons]);
+  }
+
+  drawLayerButtons(): HTMLElement {
+    const buttons = new ButtonGroup("column");
+    const physicsDebug = new IconButton(Box, { title: "Physics Debug" });
+
+    buttons.append(physicsDebug);
+    return elem("div", { id: "layer-buttons" }, [buttons]);
   }
 
   formatVector(vector: IVector2, fixed = 2): string {

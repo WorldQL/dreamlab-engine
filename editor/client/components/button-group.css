@@ -17,6 +17,10 @@ dreamlab-button-group {
       &:last-child {
         --rounded: 0 var(--border-radius) var(--border-radius) 0;
       }
+
+      &:first-child:last-child {
+        --rounded: var(--border-radius);
+      }
     }
   }
 
@@ -30,6 +34,10 @@ dreamlab-button-group {
 
       &:last-child {
         --rounded: 0 0 var(--border-radius) var(--border-radius);
+      }
+
+      &:first-child:last-child {
+        --rounded: var(--border-radius);
       }
     }
   }
@@ -45,6 +53,10 @@ dreamlab-button-group {
       &:last-child {
         --rounded: var(--border-radius) 0 0 var(--border-radius);
       }
+
+      &:first-child:last-child {
+        --rounded: var(--border-radius);
+      }
     }
   }
 
@@ -58,6 +70,10 @@ dreamlab-button-group {
 
       &:last-child {
         --rounded: var(--border-radius) var(--border-radius) 0 0;
+      }
+
+      &:first-child:last-child {
+        --rounded: var(--border-radius);
       }
     }
   }
