@@ -4,6 +4,7 @@ import {
   InternalGameTick,
   IVector2,
   MouseMove,
+  PhysicsDebug,
   Vector2,
 } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
@@ -139,6 +140,23 @@ export class GameOverlays implements InspectorUIWidget {
   drawLayerButtons(): HTMLElement {
     const buttons = new ButtonGroup("column");
     const physicsDebug = new IconButton(Box, { title: "Physics Debug" });
+
+    const updateState = () => {
+      const entities = this.game.local.entities.lookupByType(PhysicsDebug);
+      if (entities.length > 0) physicsDebug.dataset.active = "";
+      else delete physicsDebug.dataset.active;
+    };
+
+    physicsDebug.addEventListener("click", () => {
+      const entities = this.game.local.entities.lookupByType(PhysicsDebug);
+      if (entities.length > 0) {
+        entities.forEach(e => e.destroy());
+      } else {
+        this.game.local.spawn({ type: PhysicsDebug, name: PhysicsDebug.name });
+      }
+
+      updateState();
+    });
 
     buttons.append(physicsDebug);
     return elem("div", { id: "layer-buttons" }, [buttons]);
