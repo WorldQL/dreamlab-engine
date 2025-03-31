@@ -39,6 +39,51 @@
               }
             }
           ]
+        },
+        {
+          "ref": "ent_qaCMlDDrnA",
+          "type": "@core/Clickable",
+          "name": "Clickable",
+          "enabled": true,
+          "transform": {
+            "scale": {
+              "x": 5,
+              "y": 5
+            }
+          },
+          "values": {
+            "shape": "Rectangle",
+            "width": 1,
+            "height": 1,
+            "radius": 1,
+            "innerRadius": 0
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_ydYUQEIRaq",
+              "script": "res://src/clicker.ts",
+              "values": {
+                "upgradesManager": "ent_jdWgvMMFRW"
+              }
+            }
+          ],
+          "children": [
+            {
+              "ref": "ent_4hivarThw6",
+              "type": "@core/Sprite",
+              "name": "Sprite",
+              "enabled": true,
+              "values": {
+                "static": false,
+                "hidden": false,
+                "texture": "res://assets/planet.png",
+                "width": 1,
+                "height": 1,
+                "alpha": 1,
+                "preserveAspectRatio": false
+              }
+            }
+          ]
         }
       ],
       "local": [
@@ -125,21 +170,28 @@
                   }
                 }
               ]
+            }
+          ]
+        },
+        {
+          "ref": "ent_WLQjjlk5OX",
+          "type": "@core/Empty",
+          "name": "Particles",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": 1.9084033069033832,
+              "y": 0.1983911686077955
             },
+            "rotation": -0.0017094069911792742
+          },
+          "behaviors": [
             {
-              "ref": "ent_QPi4xYMRlO",
-              "type": "@core/UILayer",
-              "name": "ClickerUI",
-              "enabled": true,
-              "behaviors": [
-                {
-                  "ref": "bhv_ZJhE2EIqh2",
-                  "script": "res://src/ui/clicker-ui.tsx",
-                  "values": {
-                    "upgradesManager": "ent_jdWgvMMFRW"
-                  }
-                }
-              ]
+              "ref": "bhv_NwFsbWcr8g",
+              "script": "res://src/particles.ts",
+              "values": {
+                "cookieEntity": "ent_qaCMlDDrnA"
+              }
             }
           ]
         }

@@ -1,22 +1,19 @@
 import {
   Behavior,
   Clickable,
-  ColoredSquare,
   Entity,
   EntityByRefAdapter,
   MouseDown,
+  Sprite,
   syncedValue,
 } from "@dreamlab/engine";
 import UpgradesManager from "./upgrades.ts";
-
-export class ClickEvent {
-  constructor(public auto: boolean) {}
-}
+import { ParticleEmitEvent } from "./particles.ts";
 
 export default class ClickableBehavior extends Behavior {
   #clickable: Clickable;
-  private isClicked: boolean = false;
-  private effectTimer: number = 0;
+  private isClicked = false;
+  private effectTimer = 0;
   private originalScale = { x: 1, y: 1 };
 
   @syncedValue(EntityByRefAdapter)
@@ -24,62 +21,56 @@ export default class ClickableBehavior extends Behavior {
 
   onInitialize(): void {
     this.#clickable = this.entity.cast(Clickable);
-
-    const click = (autoClicked = false) => {
+    this.listen(this.#clickable, MouseDown, ({ button }) => {
+      if (button !== "left") return;
       const player = this.game.network.connections.find(
         (conn) => conn.id === this.game.network.self,
       );
-
       if (!player) return;
-
-      // Apply click multiplier if available
       const manager = this.upgradesManager?.getBehavior(UpgradesManager);
       const multiplier = manager?.clickMultiplierValue || 1;
-
       this.game.network.sendCustomMessage("server", "@clicker/click", {
         playerId: player.playerId,
         nickname: player.nickname || "Unknown",
-        multiplier: multiplier,
+        multiplier,
       });
-
-      if (!this.isClicked && !autoClicked) this.startClickEffect();
-    };
-
-    this.listen(this.#clickable, MouseDown, ({ button }) => {
-      if (button !== "left") return;
-
-      click();
-    });
-
-    this.game.on(ClickEvent, (event: ClickEvent) => {
-      click(event.auto);
+      if (!this.isClicked) {
+        this.startClickEffect();
+        const position = this.entity.transform.position.clone();
+        this.game.fire(
+          ParticleEmitEvent,
+          position,
+          5 + Math.floor(Math.random() * 5),
+          `+${multiplier}⚡`,
+        );
+      }
     });
   }
 
   private startClickEffect(): void {
-    const coloredSquare = this.entity._.Border.cast(ColoredSquare);
-    if (!coloredSquare) return;
-
+    const sprite = this.entity._.Sprite.cast(Sprite);
+    if (!sprite) return;
     this.isClicked = true;
     this.effectTimer = 150;
-
     this.originalScale = this.entity.transform.scale;
-
+    sprite.alpha = 0.5;
     this.entity.transform.scale = {
       x: this.originalScale.x * 0.8,
       y: this.originalScale.y * 0.8,
     };
   }
 
-  onTick(): void {
-    if (this.isClicked) {
-      const coloredSquare = this.entity._.Border.cast(ColoredSquare);
-      if (!coloredSquare) return;
+  onTickClient(): void {
+    const rotationSpeed = 0.15;
+    this.entity.transform.rotation += rotationSpeed * -(this.time.delta / 1000);
 
+    if (this.isClicked) {
+      const sprite = this.entity._.Sprite.cast(Sprite);
+      if (!sprite) return;
       this.effectTimer -= this.time.delta;
       if (this.effectTimer <= 0) {
+        sprite.alpha = 1;
         this.entity.transform.scale = this.originalScale;
-
         this.isClicked = false;
       }
     }
