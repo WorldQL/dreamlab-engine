@@ -39,7 +39,7 @@ export const prepareBundleWorld = async (
 
   await fs.ensureDir(path.join(worldOpts.dir, "src"));
   await fs.ensureDir(path.join(worldOpts.dir, "assets"));
-  await fs.emptyDir(path.join(worldOpts.dir, out));
+  await fs.ensureDir(path.join(worldOpts.dir, out));
 
   const src = path.join(worldOpts.dir, "src");
   const entryPoints: esbuild.BuildOptions["entryPoints"] = [
