@@ -1106,7 +1106,7 @@ export abstract class Entity implements ISignalHandler {
       try {
         behavior[internal.behaviorSpawn]();
       } catch (err) {
-        console.warn(
+        console.error(
           `Encountered error while initializing behavior: ${this.id} ${behaviorType.name}`,
           err,
         );
