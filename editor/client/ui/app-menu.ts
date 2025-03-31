@@ -276,6 +276,8 @@ export class AppMenu {
         if (this.games.play === playGame) this.games.play = undefined;
         playGame.container.remove();
         playGame.shutdown();
+      } catch {
+        // ignore
       } finally {
         container.remove();
       }
