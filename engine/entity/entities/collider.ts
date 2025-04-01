@@ -4,6 +4,7 @@ import {
   EntityContext,
   EntityDestroyed,
   EntityEnableChanged,
+  EntityReparented,
   EntityTransformUpdate,
   enumAdapter,
   IBounds,
@@ -166,6 +167,16 @@ export class Collider extends Entity {
       }
     });
 
+    this.on(EntityReparented, () => {
+      if (this.#internal) {
+        this.game.physics.world.removeCollider(this.#internal.collider, false);
+        this.#internal = undefined;
+      }
+
+      this.#rigidbody = this.parent instanceof Rigidbody ? this.parent : undefined;
+      this.#setupCollider(this.#rigidbody?.body);
+    });
+
     this.on(EntityEnableChanged, ({ enabled }) => {
       this.#setupCollider();
       this.#internal?.collider.setEnabled(enabled);
@@ -174,18 +185,6 @@ export class Collider extends Entity {
     this.on(EntityTransformUpdate, ({ source }) => {
       if (source !== this) this[internal.entityPreparePhysicsUpdate]();
     });
-  }
-
-  /**
-   * Destroys and re-creates this collider as a member of a rigidbody.
-   * @param body The rigidbody you want to attach this collider to.
-   */
-  attachColliderToRigidbody(body: RigidBody) {
-    if (this.#internal) {
-      this.game.physics.world.removeCollider(this.#internal.collider, false);
-      this.#internal = undefined;
-    }
-    this.#setupCollider(body);
   }
 
   #setupCollider(body?: RigidBody) {
