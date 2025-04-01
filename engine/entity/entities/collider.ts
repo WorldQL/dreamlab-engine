@@ -207,7 +207,8 @@ export class Collider extends Entity {
         .setRotation(this.globalTransform.rotation);
 
       if (body) {
-        desc.setTranslation(this.transform.position.x, this.transform.position.y)
+        desc.setTranslation(this.transform.position.x, this.transform.position.y);
+        desc.setRotation(this.transform.rotation);
       }
 
       const collider = body
