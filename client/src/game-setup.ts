@@ -32,7 +32,6 @@ export const setupGame = async (
 
   const networkSnapshotPromise = new Promise<void>((resolve, _reject) => {
     game.on(ReceivedInitialNetworkSnapshot, () => {
-      console.log("initial network snapshot");
       resolve();
     });
   });
