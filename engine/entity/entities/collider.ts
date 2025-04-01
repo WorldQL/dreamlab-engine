@@ -7,7 +7,6 @@ import {
   EntityTransformUpdate,
   enumAdapter,
   IBounds,
-  LocalRoot,
   Rigidbody,
   Vector2,
 } from "@dreamlab/engine";
@@ -137,8 +136,7 @@ export class Collider extends Entity {
   shape: ColliderShape = "Rectangle";
   isSensor: boolean = false;
 
-  parentRigidbody: Rigidbody | undefined;
-
+  #rigidbody: Rigidbody | undefined;
   #internal:
     | { collider: RAPIER.Collider; shape: RAPIER.Cuboid | RAPIER.Ball | RAPIER.Capsule }
     | undefined;
@@ -158,14 +156,8 @@ export class Collider extends Entity {
   }
 
   onInitialize(): void {
-    if (this.root.constructor.name === "LocalRoot") console.log(this.name);
-
-    this.parentRigidbody = this.parent instanceof Rigidbody ? this.parent : undefined;
-    this.#setupCollider(this.parentRigidbody?.body);
-
-    if (this.parentRigidbody) {
-      console.log(this.name, "HAS RB PARENT")
-    }
+    this.#rigidbody = this.parent instanceof Rigidbody ? this.parent : undefined;
+    this.#setupCollider(this.#rigidbody?.body);
 
     this.on(EntityDestroyed, () => {
       if (this.#internal) {
@@ -251,7 +243,7 @@ export class Collider extends Entity {
   }
 
   [internal.entityPreparePhysicsUpdate]() {
-    if (!this.game.physics.enabled || !this.#internal || this.parentRigidbody) return;
+    if (!this.game.physics.enabled || !this.#internal || this.#rigidbody) return;
 
     this.#internal.collider.setTranslation({
       x: this.globalTransform.position.x,
@@ -274,7 +266,7 @@ export class Collider extends Entity {
   }
 
   [internal.entityApplyPhysicsUpdate]() {
-    if (!this.game.physics.enabled || !this.#internal) return;
+    if (!this.game.physics.enabled || !this.#internal || this.#rigidbody) return;
 
     if (this.authority === undefined && this.game.isClient()) return;
 
