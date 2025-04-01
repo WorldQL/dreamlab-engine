@@ -136,6 +136,7 @@ export class Collider extends Entity {
   static readonly icon: string = "🧱";
   shape: ColliderShape = "Rectangle";
   isSensor: boolean = false;
+  mass: number = 1;
 
   #rigidbody: Rigidbody | undefined;
   #internal:
@@ -154,6 +155,7 @@ export class Collider extends Entity {
     this.shape = shape;
     this.defineValue(Collider, "isSensor");
     this.defineValue(Collider, "shape", { type: ColliderShapeAdapter });
+    this.defineValue(Collider, "mass");
   }
 
   onInitialize(): void {
@@ -204,7 +206,8 @@ export class Collider extends Entity {
 
       desc
         .setTranslation(this.globalTransform.position.x, this.globalTransform.position.y)
-        .setRotation(this.globalTransform.rotation);
+        .setRotation(this.globalTransform.rotation)
+        .setMass(this.mass);
 
       if (body) {
         desc.setTranslation(this.transform.position.x, this.transform.position.y);

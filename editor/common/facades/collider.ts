@@ -26,6 +26,7 @@ export class EditorFacadeCollider extends PixiEntity {
 
   isSensor: boolean = false;
   shape: ColliderShape = "Rectangle";
+  mass: number = 1;
 
   static readonly icon = Collider.icon;
   readonly bounds = Bounds.ONE;
@@ -34,6 +35,7 @@ export class EditorFacadeCollider extends PixiEntity {
     super(ctx, false);
     this.defineValue(EditorFacadeCollider, "isSensor");
     this.defineValue(EditorFacadeCollider, "shape", { type: ColliderShapeAdapter });
+    this.defineValue(EditorFacadeCollider, "mass");
 
     if (this.game.isClient()) {
       const svc = SelectedEntityService.serviceForGame(this.game);
