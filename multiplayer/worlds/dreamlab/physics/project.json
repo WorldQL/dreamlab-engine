@@ -47,20 +47,6 @@
               }
             }
           ]
-        }
-      ],
-      "local": [
-        {
-          "ref": "ent_UCHizsdGDp",
-          "type": "@core/Camera",
-          "name": "Camera",
-          "enabled": true,
-          "values": {
-            "active": true,
-            "smooth": 0.1,
-            "unlocked": false,
-            "zoom": 1
-          }
         },
         {
           "ref": "ent_sL2E8SWdZm",
@@ -197,6 +183,20 @@
               ]
             }
           ]
+        }
+      ],
+      "local": [
+        {
+          "ref": "ent_UCHizsdGDp",
+          "type": "@core/Camera",
+          "name": "Camera",
+          "enabled": true,
+          "values": {
+            "active": true,
+            "smooth": 0.1,
+            "unlocked": false,
+            "zoom": 1
+          }
         }
       ],
       "server": [],

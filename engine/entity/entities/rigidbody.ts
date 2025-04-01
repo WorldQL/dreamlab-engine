@@ -1,11 +1,4 @@
-import {
-  Entity,
-  EntityContext,
-  EntityDestroyed,
-  enumAdapter,
-  LocalRoot,
-  Vector2,
-} from "@dreamlab/engine";
+import { Entity, EntityContext, EntityDestroyed, enumAdapter, Vector2 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import RAPIER from "@dreamlab/vendor/rapier.ts";
 
@@ -52,15 +45,15 @@ export class Rigidbody extends Entity {
 
   [internal.applyNetworkInterpolation](): void {
     super[internal.applyNetworkInterpolation]();
-    this.#preparePhysicsUpdate();
+    this[internal.entityPreparePhysicsUpdate]();
   }
 
   onUpdate(): void {
-    this.#applyPhysicsUpdate();
+    this[internal.entityApplyPhysicsUpdate]();
     super.onUpdate();
   }
 
-  #preparePhysicsUpdate() {
+  [internal.entityPreparePhysicsUpdate]() {
     if (!this.game.physics.enabled) return;
     if (!this.#body) return;
 
@@ -74,20 +67,10 @@ export class Rigidbody extends Entity {
     this.#body.setRotation(this.globalTransform.rotation, false);
   }
 
-  #applyPhysicsUpdate() {
-    if (!this.game.physics.enabled) return;
-    if (!this.#body) return;
+  [internal.entityApplyPhysicsUpdate]() {
+    if (!this.game.physics.enabled || !this.#body) return;
 
-    // FIXME: free-for-all entities should not have transform reported from the client for benign physics transform updates
-    // for now, we just don't update the transform on the client.
-    // if (
-    //   this.authority === undefined &&
-    //   this.game.isClient() &&
-    //   !(this.root instanceof LocalRoot)
-    // )
-    //   return;
-
-    if (!(this.root instanceof LocalRoot)) return;
+    if (this.authority === undefined && this.game.isClient()) return;
 
     this.globalTransform.position = new Vector2(this.#body.translation());
     this.globalTransform.rotation = this.#body.rotation();
