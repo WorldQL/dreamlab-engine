@@ -1,11 +1,8 @@
 import {
-  Bounds,
-  Collider,
   Entity,
   EntityContext,
   EntityDestroyed,
   enumAdapter,
-  IBounds,
   LocalRoot,
   Vector2,
 } from "@dreamlab/engine";
@@ -34,7 +31,6 @@ export class Rigidbody extends Entity {
   type: RigidBodyType = "dynamic";
 
   #body: RAPIER.RigidBody | undefined;
-
   get body(): RAPIER.RigidBody {
     if (!this.#body) throw new Error("attempted to access .body on a prefab object");
     return this.#body;
@@ -92,7 +88,7 @@ export class Rigidbody extends Entity {
     //   return;
 
     if (!(this.root instanceof LocalRoot)) return;
-    
+
     this.globalTransform.position = new Vector2(this.#body.translation());
     this.globalTransform.rotation = this.#body.rotation();
   }
@@ -101,8 +97,6 @@ export class Rigidbody extends Entity {
     if (this.#body) {
       this.game.physics.world.removeRigidBody(this.#body);
     }
-
-    if (this.root.constructor.name === "LocalRoot") console.log(this.name)
 
     if (!this.enabled) return;
 
