@@ -1,0 +1,233 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "engine_revision": "2024-08.001"
+  },
+  "scenes": {
+    "main": {
+      "registration": [],
+      "world": [
+        {
+          "ref": "ent_Mu0UyDgtg8",
+          "type": "@core/Collider",
+          "name": "Floor",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": 0,
+              "y": -0.5
+            },
+            "scale": {
+              "x": 10,
+              "y": 1
+            }
+          },
+          "values": {
+            "isSensor": false,
+            "shape": "Rectangle",
+            "mass": 1
+          },
+          "children": [
+            {
+              "ref": "ent_PPkdn9fMDV",
+              "type": "@core/ColoredSquare",
+              "name": "ColoredSquare",
+              "enabled": true,
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  1,
+                  1,
+                  1,
+                  1
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "local": [
+        {
+          "ref": "ent_UCHizsdGDp",
+          "type": "@core/Camera",
+          "name": "Camera",
+          "enabled": true,
+          "values": {
+            "active": true,
+            "smooth": 0.1,
+            "unlocked": false,
+            "zoom": 1
+          }
+        },
+        {
+          "ref": "ent_sL2E8SWdZm",
+          "type": "@core/Rigidbody",
+          "name": "Rigidbody",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": -0.2518023058728991,
+              "y": 3.642710281170819
+            },
+            "rotation": 2.883196805884581
+          },
+          "values": {
+            "type": "dynamic"
+          },
+          "children": [
+            {
+              "ref": "ent_huu6OvPMgt",
+              "type": "@core/Collider",
+              "name": "Collider",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -0.19652380762582053,
+                  "y": -0.6632184952818132
+                }
+              },
+              "values": {
+                "isSensor": false,
+                "shape": "Rectangle",
+                "mass": 10
+              },
+              "children": [
+                {
+                  "ref": "ent_kQC5mDYc9C",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "color": [
+                      1,
+                      0.29019609093666077,
+                      0.29019609093666077,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_RYUZHsuDcf",
+              "type": "@core/Collider",
+              "name": "Collider.1",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 0,
+                  "y": 1
+                }
+              },
+              "values": {
+                "isSensor": false,
+                "shape": "Circle",
+                "mass": 1
+              },
+              "children": [
+                {
+                  "ref": "ent_rAvHu83xcE",
+                  "type": "@core/ColoredPolygon",
+                  "name": "ColoredPolygon",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "sides": 40,
+                    "color": [
+                      0,
+                      1,
+                      0.45098039507865906,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_ZjLUEGQU8U",
+              "type": "@core/Collider",
+              "name": "Collider.2",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -0.48927597383296817,
+                  "y": 0.4525637918395458
+                },
+                "scale": {
+                  "x": 1.5,
+                  "y": 1.5
+                },
+                "z": -10
+              },
+              "values": {
+                "isSensor": false,
+                "shape": "Circle",
+                "mass": 5
+              },
+              "children": [
+                {
+                  "ref": "ent_L2VwFSVANr",
+                  "type": "@core/ColoredPolygon",
+                  "name": "ColoredPolygon",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "sides": 40,
+                    "color": [
+                      0.37254902720451355,
+                      0.3921568691730499,
+                      1,
+                      1
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "server": [],
+      "prefabs": [
+        {
+          "ref": "ent_c7bzjbw2llnz2fe6os74q1uz",
+          "type": "@core/Empty",
+          "name": "Enemy",
+          "enabled": true,
+          "children": [
+            {
+              "ref": "ent_jqbr60z7k3vgoufe4u1zwj2l",
+              "type": "@core/ColoredSquare",
+              "name": "ColoredSquare",
+              "enabled": true,
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "color": [
+                  1,
+                  0,
+                  0,
+                  1
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
