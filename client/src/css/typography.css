@@ -13,12 +13,6 @@
     "calt" 1; /* fix for Chrome */
 }
 
-@supports (font-variation-settings: normal) {
-  :root {
-    --font-sans: InterVariable, sans-serif;
-  }
-}
-
 code,
 kbd,
 samp,
