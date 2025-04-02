@@ -90,7 +90,6 @@ await fs.ensureDir("out/client");
 await bundleEngineDependencies("../engine", "./out/client/dist");
 await bundleEngine("../engine", "./out/client/dist");
 await fs.copy("../client/web/index.html", "out/client/index.html");
-await fs.copy("../client/web/text", "out/client/text");
 await bundleClient(
   "../client",
   "out/client/dist",
