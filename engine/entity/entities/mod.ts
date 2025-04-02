@@ -11,7 +11,6 @@ export * from "./raw-pixi.ts";
 export * from "./rich-text.ts";
 export * from "./solid-color.ts";
 export * from "./sprite.ts";
-export * from "./text.ts";
 export * from "./tiling-sprite.ts";
 export * from "./ui-layer.ts";
 export * from "./ui-panel.ts";
