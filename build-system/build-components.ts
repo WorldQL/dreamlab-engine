@@ -48,7 +48,7 @@ export const BASE_BUILD_OPTIONS: Partial<esbuild.BuildOptions> = {
   format: "esm",
   platform: "browser",
   target: "es2022",
-  minify: false,
+  minify: true,
   footer: { js: "// built with <3 using dreamlab ^-^" },
   sourcemap: "linked",
   keepNames: true,
