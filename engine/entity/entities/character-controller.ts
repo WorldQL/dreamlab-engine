@@ -1,4 +1,5 @@
-import { Entity, Collider, Vector2, GamePostTick, EntityDestroyed } from "@dreamlab/engine";
+import type { EntityContext } from "@dreamlab/engine";
+import { Collider, Entity, EntityDestroyed, GamePostTick, Vector2 } from "@dreamlab/engine";
 import { KinematicCharacterController, QueryFilterFlags } from "@dreamlab/vendor/rapier.ts";
 
 export class CharacterController extends Collider {
@@ -7,6 +8,8 @@ export class CharacterController extends Collider {
   }
 
   public static override readonly icon = "🚶‍♀️";
+
+  public offset: number = 0.0625;
 
   #controller: KinematicCharacterController | undefined;
   #prevPosition = this.pos.clone();
@@ -26,6 +29,11 @@ export class CharacterController extends Collider {
     return this.#prevPosition.add(corrected);
   }
 
+  constructor(ctx: EntityContext) {
+    super(ctx);
+    this.defineValue(CharacterController, "offset");
+  }
+
   override onInitialize(): void {
     super.onInitialize();
 
@@ -39,7 +47,7 @@ export class CharacterController extends Collider {
     }
 
     if (hasCollider) {
-      this.#controller = this.game.physics.world.createCharacterController(0.0625);
+      this.#controller = this.game.physics.world.createCharacterController(this.offset);
       // this.#controller.enableSnapToGround(0.1);
       // TODO: Make this and sliding configurable.
       // sliding is super buggy especially with the rect collider.
