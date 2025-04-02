@@ -230,7 +230,9 @@ export const serveSourceControlAPI = (router: Router) => {
 
   // #region stage a file
   router.put("/api/v1/source-control/:instance_id/stage", async ctx => {
-    const BodySchema = z.object({ file: z.string() });
+    const BodySchema = z.object({
+      file: z.union([z.string(), z.boolean()]).optional().default(true),
+    });
     let body;
     try {
       body = BodySchema.parse(await ctx.request.body.json());
@@ -251,9 +253,12 @@ export const serveSourceControlAPI = (router: Router) => {
       throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
     }
     const sourceRoot = instance.info.worldDirectory;
+
+    const args =
+      body.file === true ? ["add", "."] : ["add", stripDoubleQuotes(body.file as string)];
+
     const addProcess = new Deno.Command("git", {
-      // sometimes the file name is wrapped in double quotes, which is wrong. We need to strip them.
-      args: ["add", stripDoubleQuotes(body.file)],
+      args,
       cwd: sourceRoot,
     }).spawn();
     const addStatus = await addProcess.status;
@@ -268,7 +273,9 @@ export const serveSourceControlAPI = (router: Router) => {
 
   // #region unstage a file
   router.delete("/api/v1/source-control/:instance_id/unstage", async ctx => {
-    const BodySchema = z.object({ file: z.string() });
+    const BodySchema = z.object({
+      file: z.union([z.string(), z.boolean()]).optional().default(true),
+    });
     let body;
     try {
       body = BodySchema.parse(await ctx.request.body.json());
@@ -289,8 +296,14 @@ export const serveSourceControlAPI = (router: Router) => {
       throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
     }
     const sourceRoot = instance.info.worldDirectory;
+
+    const args =
+      body.file === true
+        ? ["reset", "HEAD", "."]
+        : ["reset", "HEAD", stripDoubleQuotes(body.file as string)];
+
     const resetProcess = new Deno.Command("git", {
-      args: ["reset", "HEAD", stripDoubleQuotes(body.file)],
+      args,
       cwd: sourceRoot,
     }).spawn();
     const resetStatus = await resetProcess.status;
