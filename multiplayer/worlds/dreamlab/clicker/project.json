@@ -173,6 +173,22 @@
                   "script": "res://src/ui/planet-ui.tsx"
                 }
               ]
+            },
+            {
+              "ref": "ent_i7QIpOM0cH",
+              "type": "@core/UILayer",
+              "name": "ToggleUI",
+              "enabled": true,
+              "behaviors": [
+                {
+                  "ref": "bhv_GYLt001nNq",
+                  "script": "res://src/ui/toggle-ui.tsx",
+                  "values": {
+                    "upgradesUI": "ent_iaIc2I1NJY",
+                    "leaderboardUI": "ent_vrvqmr8jk57tsk9ijzcc0r9e"
+                  }
+                }
+              ]
             }
           ]
         },

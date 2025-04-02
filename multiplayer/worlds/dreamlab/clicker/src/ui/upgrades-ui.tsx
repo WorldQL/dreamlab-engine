@@ -4,9 +4,10 @@ import GlobalStats from "../global-stats.ts";
 
 export default class PlanetUpgradesUI extends UIBehavior {
   @syncedValue(EntityByRefAdapter)
-  upgradesManager: Entity | undefined;
+  upgradesManager: Entity;
+
   @syncedValue(EntityByRefAdapter)
-  globalStats: Entity | undefined;
+  globalStats: Entity;
 
   private upgrades: Record<string, UpgradeData> = {};
   private globalClicks = 0;
@@ -16,6 +17,7 @@ export default class PlanetUpgradesUI extends UIBehavior {
   onInitialize(): void {
     super.onInitialize();
     if (!this.game.isClient()) return;
+
     const player = this.game.network.connections.find(
       (conn) => conn.id === this.game.network.self,
     );
@@ -23,28 +25,26 @@ export default class PlanetUpgradesUI extends UIBehavior {
       this.playerId = player.playerId;
     }
 
-    const globalStatsBehavior = this.globalStats!.getBehavior(GlobalStats);
+    const statsBehavior = this.globalStats.getBehavior(GlobalStats);
 
-    // Subscribe to currentPlanet changes.
-    const currentPlanetValue = globalStatsBehavior.values.get("currentPlanet");
+    // Subscribe to current planet changes.
+    const currentPlanetValue = statsBehavior.values.get("currentPlanet");
     if (currentPlanetValue) {
       currentPlanetValue.onChanged(() => {
-        this.currentPlanet = globalStatsBehavior.currentPlanet;
+        this.currentPlanet = statsBehavior.currentPlanet;
         this.updateUpgrades();
         this.updateGlobalClicks();
       });
     }
 
-    // Subscribe to purchasedPlanets changes to update unlock status.
-    const purchasedPlanetsValue = globalStatsBehavior.values.get("purchasedPlanets");
+    // Subscribe to purchased planets changes.
+    const purchasedPlanetsValue = statsBehavior.values.get("purchasedPlanets");
     if (purchasedPlanetsValue) {
-      purchasedPlanetsValue.onChanged(() => {
-        this.rerender();
-      });
+      purchasedPlanetsValue.onChanged(() => this.rerender());
     }
 
-    // Subscribe to upgrades updates.
-    const manager = this.upgradesManager?.getBehavior(UpgradesManager);
+    // Subscribe to planet upgrades changes.
+    const manager = this.upgradesManager.getBehavior(UpgradesManager);
     if (manager) {
       const upgradesValue = manager.values.get("planetUpgrades");
       if (upgradesValue) {
@@ -53,8 +53,8 @@ export default class PlanetUpgradesUI extends UIBehavior {
       }
     }
 
-    // Subscribe to leaderboard changes.
-    const leaderboardValue = globalStatsBehavior.values.get("leaderboard");
+    // Subscribe to leaderboard changes for player clicks.
+    const leaderboardValue = statsBehavior.values.get("leaderboard");
     if (leaderboardValue) {
       leaderboardValue.onChanged(() => this.updateGlobalClicks());
       this.updateGlobalClicks();
@@ -62,7 +62,7 @@ export default class PlanetUpgradesUI extends UIBehavior {
   }
 
   private updateUpgrades(): void {
-    const manager = this.upgradesManager?.getBehavior(UpgradesManager);
+    const manager = this.upgradesManager.getBehavior(UpgradesManager);
     if (
       manager &&
       manager.planetUpgrades[this.playerId] &&
@@ -76,33 +76,31 @@ export default class PlanetUpgradesUI extends UIBehavior {
   }
 
   private updateGlobalClicks(): void {
-    const globalStatsBehavior = this.globalStats?.getBehavior(GlobalStats);
-    if (globalStatsBehavior) {
-      this.globalClicks = globalStatsBehavior.getPlayerClicks(this.playerId);
-      this.rerender();
+    const statsBehavior = this.globalStats.getBehavior(GlobalStats);
+    if (statsBehavior) {
+      this.globalClicks = statsBehavior.getPlayerClicks(this.playerId);
     }
   }
 
   private handlePurchase(upgradeId: string): void {
-    const manager = this.upgradesManager?.getBehavior(UpgradesManager);
+    const manager = this.upgradesManager.getBehavior(UpgradesManager);
     if (manager) {
       manager.purchaseUpgrade(upgradeId, this.playerId, this.currentPlanet);
     }
   }
 
   override render() {
-    const globalStatsBehavior = this.globalStats!.getBehavior(GlobalStats);
-    const isPlanetUnlocked =
-      (globalStatsBehavior.purchasedPlanets[this.playerId] &&
-        globalStatsBehavior.purchasedPlanets[this.playerId][this.currentPlanet]) ||
-      globalStatsBehavior.currentPlanet === "Earth";
+    const statsBehavior = this.globalStats.getBehavior(GlobalStats);
+    const isUnlocked =
+      (statsBehavior.purchasedPlanets[this.playerId] &&
+        statsBehavior.purchasedPlanets[this.playerId][this.currentPlanet]) ||
+      statsBehavior.currentPlanet === "Earth";
 
-    const containerStyle = {
+    const panelStyle = {
       position: "absolute",
-      top: "90px",
-      left: "10px",
+      top: "10%",
       width: "300px",
-      background: isPlanetUnlocked
+      background: isUnlocked
         ? "radial-gradient(circle at top left, #1b2735, #090a0f)"
         : "radial-gradient(circle at top left, #555, #333)",
       color: "#f8f8f2",
@@ -110,51 +108,42 @@ export default class PlanetUpgradesUI extends UIBehavior {
       fontFamily: "'Press Start 2P', cursive",
       fontSize: "12px",
       textShadow: "1px 1px 0 #000",
-      zIndex: "999",
-      border: isPlanetUnlocked ? "" : "3px solid #ff5555",
+      border: isUnlocked ? "" : "3px solid #ff5555",
     };
 
-    const headingStyle = {
+    const headerStyle = {
       margin: "0 0 15px 0",
       fontSize: "18px",
       textAlign: "left",
       color: "#50fa7b",
     };
 
-    if (!this.upgrades || Object.keys(this.upgrades).length === 0) {
-      return (
-        <div style={containerStyle}>
-          <h2 style={headingStyle}>SHOP</h2>
-          <p>Loading upgrades...</p>
-        </div>
-      );
-    }
-
-    let effectiveAutoClickRate = 0;
-    let effectiveClickMultiplier = 1;
-    const manager = this.upgradesManager?.getBehavior(UpgradesManager);
-    if (manager) {
-      const stats = manager.getAggregatedStats(this.playerId, this.currentPlanet);
-      effectiveAutoClickRate = stats.totalAutoClicks;
-      effectiveClickMultiplier = stats.clickMultiplier;
-    }
-
     return (
-      <div style={containerStyle}>
-        <h2 style={headingStyle}>SHOP</h2>
-        {!isPlanetUnlocked && (
+      <div style={panelStyle}>
+        <h2 style={headerStyle}>SHOP</h2>
+        {!isUnlocked && (
           <div style={{ color: "#ff5555", marginBottom: "10px", fontWeight: "bold" }}>
             Planet locked! Purchase to unlock upgrades.
           </div>
         )}
         <div style={{ marginBottom: "10px" }}>
-          <div>Your ⚡: {Math.floor(this.globalClicks)}</div>
           <div style={{ fontSize: "0.9em", marginTop: "5px" }}>
-            Auto Click Rate: {effectiveAutoClickRate.toFixed(2)} cps <br />
-            Click Multiplier: {effectiveClickMultiplier.toFixed(2)}x
+            Auto Click Rate:{" "}
+            {this.upgradesManager
+              .getBehavior(UpgradesManager)
+              .getAggregatedStats(this.playerId, this.currentPlanet)
+              .totalAutoClicks.toFixed(2)}{" "}
+            cps <br />
+            Click Multiplier:{" "}
+            {this.upgradesManager
+              .getBehavior(UpgradesManager)
+              .getAggregatedStats(this.playerId, this.currentPlanet)
+              .clickMultiplier.toFixed(2)}{" "}
+            x
           </div>
         </div>
         {Object.values(this.upgrades).map((upgrade) => {
+          const manager = this.upgradesManager.getBehavior(UpgradesManager);
           const cost = manager
             ? manager.getNextUpgradeCost(upgrade.id, this.playerId, this.currentPlanet)
             : 0;
@@ -181,10 +170,10 @@ export default class PlanetUpgradesUI extends UIBehavior {
                   {cost.toLocaleString()} ⚡
                 </div>
                 <button
-                  disabled={!canBuy || !isPlanetUnlocked}
+                  disabled={!canBuy || !isUnlocked}
                   onClick={() => this.handlePurchase(upgrade.id)}
                   style={
-                    canBuy && isPlanetUnlocked
+                    canBuy && isUnlocked
                       ? {
                           marginTop: "5px",
                           padding: "4px 8px",
