@@ -1,10 +1,4 @@
-import {
-  Entity,
-  EntityContext,
-  enumAdapter,
-  PixiEntity,
-  Rigidbody,
-} from "@dreamlab/engine";
+import { Entity, EntityContext, enumAdapter, PixiEntity, Rigidbody } from "@dreamlab/engine";
 import { EnsureCompatible, EntityValueProps } from "./_compatibility.ts";
 import { Facades } from "./manager.ts";
 
