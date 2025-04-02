@@ -9,7 +9,7 @@ export class BehaviorLoader {
   #initializedBehaviors = new Set<BehaviorConstructor>();
   #resourceLocationLookup = new Map<BehaviorConstructor, string>();
 
-  #preloadInfo: { uri: string; name?: string }[] = [];
+  #preloadInfo: { uri: string; name?: string; hash?: string }[] = [];
 
   constructor(game: Game) {
     this.#game = game;
@@ -21,7 +21,7 @@ export class BehaviorLoader {
     if (behaviorType.onLoaded) behaviorType.onLoaded(this.#game);
   }
 
-  submitPreloadInfo(info: { uri: string; name?: string }[]) {
+  submitPreloadInfo(info: { uri: string; name?: string; hash?: string }[]) {
     this.#preloadInfo = info;
   }
 
@@ -78,7 +78,9 @@ export class BehaviorLoader {
   }
 
   async loadScriptFromSource(script: string, sourceURI: string): Promise<BehaviorConstructor> {
-    const url = urlWithParams(sourceURI, { cache: createId("cch", { secure: false }) });
+    const hash = this.#preloadInfo.find(x => x.uri === script)?.hash;
+    const cache = hash ?? createId("cch", { secure: false });
+    const url = urlWithParams(sourceURI, { cache });
 
     try {
       const module = await import(url.toString());

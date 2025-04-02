@@ -1,3 +1,4 @@
+import * as encoding from "jsr:@std/encoding@^1";
 import * as fs from "jsr:@std/fs@1";
 import * as path from "jsr:@std/path@^1";
 import {
@@ -95,17 +96,27 @@ export const prepareBundleWorld = async (
               const sourceFile = path.relative(worldOpts.dir, behaviorInputLocation);
               const outputFile = sourceFile.replace(/\.tsx?$/, ".js");
               let behaviorName: string | undefined;
+              let behaviorHash: string | undefined;
               try {
                 const source = await Deno.readTextFile(behaviorInputLocation);
                 behaviorName = source.match(
                   /export\s+default\s+class\s+([_\p{XID_Continue}]*)\s+/u,
                 )?.[1];
+
+                const digest = await crypto.subtle.digest(
+                  "sha-256",
+                  new TextEncoder().encode(source),
+                );
+
+                const encoded = encoding.encodeBase58(digest);
+                behaviorHash = encoded.substring(0, 10);
               } catch {
                 // ignore
               }
               behaviorFiles[`${sourceFile}`] = {
                 uri: `res://${outputFile}`,
                 name: behaviorName,
+                hash: behaviorHash,
               };
             }
 

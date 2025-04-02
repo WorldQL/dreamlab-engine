@@ -20,10 +20,14 @@ export const setupGame = async (
   const scene = await getSceneFromProject(game, projectDesc, "main");
   await Promise.all(scene.registration.map(script => import(game.resolveResource(script))));
 
+  const BehaviorSchema = z.record(
+    z.object({ uri: z.string(), name: z.string().optional(), hash: z.string().optional() }),
+  );
+
   const behaviorPreloadInfo = await game
     .fetch("res://_dreamlab_behaviors.json")
     .then(r => r.json())
-    .then(z.record(z.object({ uri: z.string(), name: z.string().optional() })).parse);
+    .then(BehaviorSchema.parse);
   game[internal.behaviorLoader].submitPreloadInfo([...Object.values(behaviorPreloadInfo)]);
   /* await Promise.allSettled(
     Object.values(behaviorPreloadInfo).map(b => game.loadBehavior(b.uri)),
