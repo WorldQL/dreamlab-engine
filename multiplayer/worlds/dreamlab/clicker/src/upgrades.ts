@@ -1,4 +1,10 @@
-import { Behavior, syncedValue, ObjectAdapter, JsonObject } from "@dreamlab/engine";
+import {
+  Behavior,
+  syncedValue,
+  ObjectAdapter,
+  JsonObject,
+  PlayerJoined,
+} from "@dreamlab/engine";
 import GlobalStats from "./global-stats.ts";
 
 export interface UpgradeData extends JsonObject {
@@ -14,7 +20,12 @@ export interface UpgradeData extends JsonObject {
 
 export default class UpgradesManager extends Behavior {
   @syncedValue(ObjectAdapter)
-  upgrades: Record<string, UpgradeData> = {
+  planetUpgrades: Record<string, Record<string, Record<string, UpgradeData>>> = {};
+
+  planetOrder = ["Earth", "Kepler", "Teegarden"];
+  private autoClickAccumulators: Record<string, number> = {};
+
+  private defaultUpgrades: Record<string, UpgradeData> = {
     clickMultiplier: {
       id: "clickMultiplier",
       name: "Clicker Multiplier",
@@ -77,107 +88,200 @@ export default class UpgradesManager extends Behavior {
     },
   };
 
-  @syncedValue()
-  totalAutoClicks = 0;
+  // ─── INITIALIZATION & DATA LOADING ────────────────────────────────
 
-  @syncedValue()
-  clickMultiplierValue = 1;
-
-  @syncedValue()
-  autoClickInterval = 1000;
-
-  private lastAutoClickTime = 0;
-
-  onInitialize(): void {
-    if (!this.game.isServer()) return;
-    this.loadUpgradeData();
-  }
-
-  onTickClient(): void {
-    const now = Date.now();
-    if (this.totalAutoClicks > 0 && now - this.lastAutoClickTime >= this.autoClickInterval) {
-      this.lastAutoClickTime = now;
-      this.performAutoClick();
+  // Ensures upgrades exist for a given player and planet. For non-Earth planets,
+  // scale baseCost and effect (but leave clickMultiplier unchanged) and update the description.
+  private initializePlanetUpgrades(
+    playerId: string,
+    planetName: string,
+  ): Record<string, UpgradeData> {
+    if (!this.planetUpgrades[playerId]) {
+      this.planetUpgrades[playerId] = {};
     }
-  }
-
-  private async loadUpgradeData(): Promise<void> {
-    if (!this.game.isServer()) return;
-    const savedUpgrades = await this.game.kv.server.get("upgrades");
-    if (savedUpgrades && typeof savedUpgrades === "object") {
-      this.upgrades = savedUpgrades as Record<string, UpgradeData>;
-      this.recalculateEffects();
+    if (!this.planetUpgrades[playerId][planetName]) {
+      let upgradesClone = JSON.parse(JSON.stringify(this.defaultUpgrades));
+      const planetIndex = this.planetOrder.indexOf(planetName);
+      if (planetIndex > 0) {
+        const scaleFactor = planetIndex * 5000;
+        for (const key in upgradesClone) {
+          if (key === "clickMultiplier") continue;
+          upgradesClone[key].baseCost *= scaleFactor;
+          upgradesClone[key].effect *= scaleFactor;
+          upgradesClone[key].description =
+            `Auto clicks ${upgradesClone[key].effect.toLocaleString()}⚡ per second.`;
+        }
+      }
+      this.planetUpgrades[playerId][planetName] = upgradesClone;
+      // Trigger reactivity.
+      this.planetUpgrades = { ...this.planetUpgrades };
     }
+    return this.planetUpgrades[playerId][planetName];
   }
 
-  private async saveUpgradeData(): Promise<void> {
+  // Loads upgrade data for a given player and planet from KV or initializes defaults.
+  async loadPlanetUpgrades(playerId: string, planetName: string): Promise<void> {
     if (!this.game.isServer()) return;
-    await this.game.kv.server.set("upgrades", this.upgrades);
+    const storedData = await this.game.kv.server.get(
+      `planetUpgrades:${playerId}:${planetName}`,
+    );
+    if (storedData && typeof storedData === "object") {
+      this.planetUpgrades[playerId] = this.planetUpgrades[playerId] || {};
+      this.planetUpgrades[playerId][planetName] = storedData as Record<string, UpgradeData>;
+    } else {
+      this.initializePlanetUpgrades(playerId, planetName);
+    }
+    this.planetUpgrades = { ...this.planetUpgrades };
   }
 
-  purchaseUpgrade(upgradeId: string, playerId: string): boolean {
-    if (!this.game.isServer()) return false;
-    const upgrade = this.upgrades[upgradeId];
+  // Persists a player's planet upgrade data to KV.
+  private async persistPlanetUpgrades(playerId: string, planetName: string): Promise<void> {
+    if (!this.game.isServer()) return;
+    const data = this.planetUpgrades[playerId][planetName];
+    await this.game.kv.server.set(`planetUpgrades:${playerId}:${planetName}`, data);
+  }
+
+  // ─── UPGRADE PURCHASE LOGIC ─────────────────────────────────────────
+
+  // Purchase an upgrade for a given player on a given planet.
+  purchaseUpgrade(upgradeId: string, playerId: string, planetName: string): boolean {
+    const upgradesForPlanet = this.initializePlanetUpgrades(playerId, planetName);
+    const upgrade = upgradesForPlanet[upgradeId];
     if (!upgrade) return false;
+
     const cost = Math.floor(
       upgrade.baseCost * Math.pow(upgrade.costMultiplier, upgrade.currentLevel),
     );
+
     const globalStats = this.entity.game.world._.GlobalStats?.getBehavior(GlobalStats);
     if (!globalStats) return false;
-    const playerData = globalStats.leaderboard[playerId];
-    if (!playerData || playerData.clicks < cost) return false;
+    const playerClicks = globalStats.getPlayerClicks(playerId);
+    if (playerClicks < cost) return false;
 
+    const playerData = globalStats.getPlayerData(playerId);
+    if (!playerData) return false;
     playerData.clicks -= cost;
-    globalStats.leaderboard[playerId] = playerData;
-    upgrade.currentLevel += 1;
-    this.upgrades[upgradeId] = upgrade;
-    this.upgrades = { ...this.upgrades };
+    globalStats.setPlayerData(playerId, playerData);
 
-    this.recalculateEffects();
-    this.saveUpgradeData();
+    this.game.network.sendCustomMessage("server", "@upgrades/purchase", {
+      upgradeId,
+      playerId,
+      planet: planetName,
+    });
+
+    upgrade.currentLevel += 1;
+    upgradesForPlanet[upgradeId] = upgrade;
+    this.planetUpgrades[playerId][planetName] = { ...upgradesForPlanet };
+
+    this.persistPlanetUpgrades(playerId, planetName);
     globalStats.updateLeaderboard();
+
+    // If clickMultiplier was purchased, sync its level across all planets.
+    if (upgradeId === "clickMultiplier") {
+      for (const planet of this.planetOrder) {
+        if (planet !== planetName) {
+          const otherUpgrades = this.initializePlanetUpgrades(playerId, planet);
+          if (otherUpgrades["clickMultiplier"]) {
+            otherUpgrades["clickMultiplier"].currentLevel = upgrade.currentLevel;
+          }
+          this.persistPlanetUpgrades(playerId, planet);
+        }
+      }
+    }
+
     return true;
   }
 
-  private recalculateEffects(): void {
-    const clickMultiplier = this.upgrades.clickMultiplier;
-    this.clickMultiplierValue = 1 + clickMultiplier.currentLevel * clickMultiplier.effect;
+  // ─── COST CALCULATION & AGGREGATED STATS ───────────────────────────
 
-    this.totalAutoClicks = 0;
-    for (const key of ["tent", "farm", "smallVillage", "town", "city"]) {
-      const upgrade = this.upgrades[key];
-      if (upgrade) {
-        this.totalAutoClicks += upgrade.currentLevel * upgrade.effect;
-      }
-    }
-    this.autoClickInterval = 1000;
-  }
-
-  private performAutoClick(): void {
-    if (!this.game.isClient()) return;
-    const player = this.game.network.connections.find(
-      (conn) => conn.id === this.game.network.self,
-    );
-    if (!player) return;
-
-    this.game.network.sendCustomMessage("server", "@clicker/click", {
-      playerId: player.playerId,
-      nickname: player.nickname || "Unknown",
-      multiplier: 1,
-      totalClickCount: this.totalAutoClicks,
-    });
-
-    const globalStats = this.entity.game.world._.GlobalStats?.getBehavior(GlobalStats);
-    if (globalStats) {
-      globalStats.updateLeaderboard();
-    }
-  }
-
-  getNextUpgradeCost(upgradeId: string): number {
-    const upgrade = this.upgrades[upgradeId];
+  // Returns the next cost for an upgrade.
+  getNextUpgradeCost(upgradeId: string, playerId: string, planetName: string): number {
+    const upgradesForPlanet =
+      this.planetUpgrades[playerId] && this.planetUpgrades[playerId][planetName]
+        ? this.planetUpgrades[playerId][planetName]
+        : this.defaultUpgrades;
+    const upgrade = upgradesForPlanet[upgradeId];
     if (!upgrade) return 0;
     return Math.floor(
       upgrade.baseCost * Math.pow(upgrade.costMultiplier, upgrade.currentLevel),
     );
+  }
+
+  // Aggregates stats from auto click upgrades across all planets,
+  // using the click multiplier from the specified (current) planet.
+  getAggregatedStats(
+    playerId: string,
+    currentPlanet: string,
+  ): { totalAutoClicks: number; clickMultiplier: number } {
+    let totalAutoClicks = 0;
+    let clickMultiplier = 1;
+
+    for (const planet of this.planetOrder) {
+      const upgradesForPlanet =
+        this.planetUpgrades[playerId] && this.planetUpgrades[playerId][planet]
+          ? this.planetUpgrades[playerId][planet]
+          : this.defaultUpgrades;
+      for (const key of ["tent", "farm", "smallVillage", "town", "city"]) {
+        const upg = upgradesForPlanet[key];
+        if (upg) {
+          totalAutoClicks += upg.currentLevel * upg.effect;
+        }
+      }
+    }
+
+    const currentUpgrades =
+      this.planetUpgrades[playerId] && this.planetUpgrades[playerId][currentPlanet]
+        ? this.planetUpgrades[playerId][currentPlanet]
+        : this.defaultUpgrades;
+    const clickUpgrade = currentUpgrades["clickMultiplier"];
+    if (clickUpgrade) {
+      clickMultiplier = 1 + clickUpgrade.currentLevel * clickUpgrade.effect;
+    }
+
+    return { totalAutoClicks, clickMultiplier };
+  }
+
+  // ─── AUTO CLICK HANDLING ────────────────────────────────────────────
+
+  // onTick is called on the server.
+  onTick(): void {
+    if (this.game.isClient()) return;
+    const deltaSeconds = this.time.delta / 1000;
+    const globalStats = this.entity.game.world._.GlobalStats?.getBehavior(GlobalStats);
+    if (!globalStats) return;
+
+    for (const playerId in globalStats.leaderboard) {
+      const stats = this.getAggregatedStats(playerId, "Earth");
+      if (stats.totalAutoClicks > 0) {
+        const clicksThisTick = stats.totalAutoClicks * deltaSeconds;
+        if (!this.autoClickAccumulators[playerId]) {
+          this.autoClickAccumulators[playerId] = 0;
+        }
+        this.autoClickAccumulators[playerId] += clicksThisTick;
+        const wholeClicks = Math.floor(this.autoClickAccumulators[playerId]);
+        if (wholeClicks > 0) {
+          const playerData = globalStats.getPlayerData(playerId);
+          if (playerData) {
+            playerData.clicks += wholeClicks;
+            globalStats.setPlayerData(playerId, playerData);
+            this.game.kv.server.set(`playerClicks:${playerId}`, playerData.clicks);
+          }
+          this.autoClickAccumulators[playerId] -= wholeClicks;
+        }
+      }
+    }
+  }
+
+  // ─── INITIALIZATION (NEW PLAYERS) ───────────────────────────────────
+
+  async onInitialize(): Promise<void> {
+    if (!this.game.isServer()) return;
+    this.listen(this.game, PlayerJoined, async (player: any) => {
+      const playerId = player.connection.playerId;
+      const planets = ["Earth", "Kepler", "Teegarden"];
+      for (const planet of planets) {
+        await this.loadPlanetUpgrades(playerId, planet);
+      }
+    });
   }
 }

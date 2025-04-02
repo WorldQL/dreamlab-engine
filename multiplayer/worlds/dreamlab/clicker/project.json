@@ -41,49 +41,37 @@
           ]
         },
         {
-          "ref": "ent_qaCMlDDrnA",
-          "type": "@core/Clickable",
-          "name": "Clickable",
+          "ref": "ent_3zu9k2Nyxx",
+          "type": "@core/TilingSprite",
+          "name": "Background",
           "enabled": true,
           "transform": {
+            "position": {
+              "x": 125,
+              "y": 0
+            },
             "scale": {
-              "x": 5,
+              "x": 100,
               "y": 5
             }
           },
           "values": {
-            "shape": "Rectangle",
-            "width": 1,
-            "height": 1,
-            "radius": 1,
-            "innerRadius": 0
-          },
-          "behaviors": [
-            {
-              "ref": "bhv_ydYUQEIRaq",
-              "script": "res://src/clicker.ts",
-              "values": {
-                "upgradesManager": "ent_jdWgvMMFRW"
-              }
-            }
-          ],
-          "children": [
-            {
-              "ref": "ent_4hivarThw6",
-              "type": "@core/Sprite",
-              "name": "Sprite",
-              "enabled": true,
-              "values": {
-                "static": false,
-                "hidden": false,
-                "texture": "res://assets/planet.png",
-                "width": 1,
-                "height": 1,
-                "alpha": 1,
-                "preserveAspectRatio": false
-              }
-            }
-          ]
+            "static": false,
+            "hidden": false,
+            "width": 3,
+            "height": 3,
+            "alpha": 1,
+            "tileRotation": 0,
+            "tilePosition": {
+              "x": 0,
+              "y": 0
+            },
+            "tileScale": {
+              "x": 1,
+              "y": 1
+            },
+            "texture": "res://assets/background.png"
+          }
         }
       ],
       "local": [
@@ -170,6 +158,21 @@
                   }
                 }
               ]
+            },
+            {
+              "ref": "ent_LqTrp6MPJC",
+              "type": "@core/UILayer",
+              "name": "PlanetUI",
+              "enabled": true,
+              "transform": {
+                "z": 10
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_CRcMEb1UL3",
+                  "script": "res://src/ui/planet-ui.tsx"
+                }
+              ]
             }
           ]
         },
@@ -179,11 +182,8 @@
           "name": "Particles",
           "enabled": true,
           "transform": {
-            "position": {
-              "x": 1.9084033069033832,
-              "y": 0.1983911686077955
-            },
-            "rotation": -0.0017094069911792742
+            "rotation": -0.0017094069911792742,
+            "z": 100
           },
           "behaviors": [
             {
@@ -194,120 +194,326 @@
               }
             }
           ]
+        },
+        {
+          "ref": "ent_gldj7SNonA",
+          "type": "@core/Empty",
+          "name": "RocketSpawner",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": -2.2209655543601965,
+              "y": -3.6530492296761494
+            }
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_cMyZzWs1Kt",
+              "script": "res://src/rocket-manager.ts"
+            }
+          ]
+        },
+        {
+          "ref": "ent_o9aMXZTcZv",
+          "type": "@core/Empty",
+          "name": "Planets",
+          "enabled": true,
+          "children": [
+            {
+              "ref": "ent_qaCMlDDrnA",
+              "type": "@core/Clickable",
+              "name": "Earth",
+              "enabled": true,
+              "transform": {
+                "scale": {
+                  "x": 5,
+                  "y": 5
+                },
+                "z": 5
+              },
+              "values": {
+                "shape": "Rectangle",
+                "width": 1,
+                "height": 1,
+                "radius": 1,
+                "innerRadius": 0
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_ydYUQEIRaq",
+                  "script": "res://src/clicker.ts",
+                  "values": {
+                    "upgradesManager": "ent_jdWgvMMFRW"
+                  }
+                }
+              ],
+              "children": [
+                {
+                  "ref": "ent_4hivarThw6",
+                  "type": "@core/Sprite",
+                  "name": "Sprite",
+                  "enabled": true,
+                  "transform": {
+                    "z": 5
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "texture": "res://assets/earth.png",
+                    "width": 1,
+                    "height": 1,
+                    "alpha": 1,
+                    "preserveAspectRatio": false
+                  }
+                },
+                {
+                  "ref": "ent_u3rt0zWVsi",
+                  "type": "@core/ColoredPolygon",
+                  "name": "PlanetBackground",
+                  "enabled": true,
+                  "transform": {
+                    "scale": {
+                      "x": 0.7,
+                      "y": 0.7
+                    }
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "sides": 100,
+                    "color": [
+                      0,
+                      0,
+                      0,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_6P1SP4wzhy",
+              "type": "@core/Clickable",
+              "name": "Kepler",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 100,
+                  "y": 0
+                },
+                "scale": {
+                  "x": 5,
+                  "y": 5
+                },
+                "z": 5
+              },
+              "values": {
+                "shape": "Rectangle",
+                "width": 1,
+                "height": 1,
+                "radius": 1,
+                "innerRadius": 0
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_ydYUQEIRaq",
+                  "script": "res://src/clicker.ts",
+                  "values": {
+                    "upgradesManager": "ent_jdWgvMMFRW"
+                  }
+                }
+              ],
+              "children": [
+                {
+                  "ref": "ent_oiblQqrMit",
+                  "type": "@core/Sprite",
+                  "name": "Sprite",
+                  "enabled": true,
+                  "transform": {
+                    "scale": {
+                      "x": 1,
+                      "y": 0.85
+                    },
+                    "z": 5
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "texture": "res://assets/kepler.png",
+                    "width": 1,
+                    "height": 1,
+                    "alpha": 0.5,
+                    "preserveAspectRatio": false
+                  }
+                },
+                {
+                  "ref": "ent_TDXQQgR8vI",
+                  "type": "@core/ColoredPolygon",
+                  "name": "PlanetBackground",
+                  "enabled": true,
+                  "transform": {
+                    "scale": {
+                      "x": 0.75,
+                      "y": 0.75
+                    }
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "sides": 100,
+                    "color": [
+                      0,
+                      0,
+                      0,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_cWj9M24KY4",
+              "type": "@core/Clickable",
+              "name": "Teegarden",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 200,
+                  "y": 0
+                },
+                "scale": {
+                  "x": 5,
+                  "y": 5
+                },
+                "z": 5
+              },
+              "values": {
+                "shape": "Rectangle",
+                "width": 1,
+                "height": 1,
+                "radius": 1,
+                "innerRadius": 0
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_ydYUQEIRaq",
+                  "script": "res://src/clicker.ts",
+                  "values": {
+                    "upgradesManager": "ent_jdWgvMMFRW"
+                  }
+                }
+              ],
+              "children": [
+                {
+                  "ref": "ent_twj06wDNFS",
+                  "type": "@core/Sprite",
+                  "name": "Sprite",
+                  "enabled": true,
+                  "transform": {
+                    "z": 5
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "texture": "res://assets/teegarden.png",
+                    "width": 1,
+                    "height": 1,
+                    "alpha": 0.5,
+                    "preserveAspectRatio": false
+                  }
+                },
+                {
+                  "ref": "ent_2GsAIPp8Un",
+                  "type": "@core/ColoredPolygon",
+                  "name": "PlanetBackground",
+                  "enabled": true,
+                  "transform": {
+                    "scale": {
+                      "x": 0.75,
+                      "y": 0.75
+                    }
+                  },
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 1,
+                    "height": 1,
+                    "sides": 100,
+                    "color": [
+                      0,
+                      0,
+                      0,
+                      1
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
         }
       ],
       "server": [],
       "prefabs": [
         {
-          "ref": "ent_atBWRSjU11",
-          "type": "@core/RichText",
-          "name": "HelpText",
+          "ref": "ent_HSkvdjwHBQ",
+          "type": "@core/Clickable",
+          "name": "RocketShip",
           "enabled": true,
           "transform": {
             "position": {
-              "x": -0.010675534824768438,
-              "y": -0.10408688002074146
-            }
+              "x": -8.848897755015663,
+              "y": -0.30387694998972536
+            },
+            "z": 1000
           },
           "values": {
-            "static": false,
-            "hidden": false,
-            "text": "Welcome To Dreamlab!",
-            "fontFamily": "Inter",
-            "fontSize": 36,
-            "fontStyle": "normal",
-            "fontWeight": "normal",
-            "align": "center",
-            "color": [
-              1,
-              1,
-              1,
-              1
-            ],
-            "stroke": false,
-            "strokeColor": [
-              0,
-              0,
-              0,
-              1
-            ],
-            "strokeWidth": 3,
-            "strokeJoin": "round"
-          }
-        },
-        {
-          "ref": "ent_mMGFnaJFEX",
-          "type": "@core/RichText",
-          "name": "HelpText.1",
-          "enabled": true,
-          "transform": {
-            "position": {
-              "x": -0.010675534824768438,
-              "y": -0.7086127939036115
-            }
+            "shape": "Rectangle",
+            "width": 1,
+            "height": 1,
+            "radius": 1,
+            "innerRadius": 0
           },
-          "values": {
-            "static": false,
-            "hidden": false,
-            "text": "This clicker template is completely made with UILayers.",
-            "fontFamily": "Inter",
-            "fontSize": 36,
-            "fontStyle": "normal",
-            "fontWeight": "normal",
-            "align": "center",
-            "color": [
-              1,
-              1,
-              1,
-              1
-            ],
-            "stroke": false,
-            "strokeColor": [
-              0,
-              0,
-              0,
-              1
-            ],
-            "strokeWidth": 3,
-            "strokeJoin": "round"
-          }
-        },
-        {
-          "ref": "ent_q23J8t9hiC",
-          "type": "@core/RichText",
-          "name": "HelpText.2",
-          "enabled": true,
-          "transform": {
-            "position": {
-              "x": -0.010675534824768438,
-              "y": -1.137276243187238
+          "behaviors": [
+            {
+              "ref": "bhv_qbIOpR9uQU",
+              "script": "res://src/rocket-ship.ts",
+              "values": {
+                "upgradesManager": "ent_jdWgvMMFRW"
+              }
             }
-          },
-          "values": {
-            "static": false,
-            "hidden": false,
-            "text": "Try it for yourself by clicking the 'play' button at the top!",
-            "fontFamily": "Inter",
-            "fontSize": 36,
-            "fontStyle": "normal",
-            "fontWeight": "normal",
-            "align": "center",
-            "color": [
-              1,
-              1,
-              1,
-              1
-            ],
-            "stroke": false,
-            "strokeColor": [
-              0,
-              0,
-              0,
-              1
-            ],
-            "strokeWidth": 3,
-            "strokeJoin": "round"
-          }
+          ],
+          "children": [
+            {
+              "ref": "ent_7nU3y1qDET",
+              "type": "@core/AnimatedSprite",
+              "name": "AnimatedSprite",
+              "enabled": true,
+              "transform": {
+                "rotation": 3.839724354387525
+              },
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 1,
+                "height": 1,
+                "alpha": 1,
+                "startFrame": 0,
+                "endFrame": -1,
+                "speed": 0.1,
+                "loop": true,
+                "spritesheet": "res://assets/rocket-ship.png",
+                "jsonSpritesheet": "",
+                "frameDimensions": {
+                  "x": 50,
+                  "y": 50
+                }
+              }
+            }
+          ]
         }
       ]
     }

@@ -5,9 +5,11 @@ import {
   EntityByRefAdapter,
   MouseDown,
   Sprite,
+  Vector2,
   syncedValue,
 } from "@dreamlab/engine";
 import UpgradesManager from "./upgrades.ts";
+import GlobalStats from "./global-stats.ts";
 import { ParticleEmitEvent } from "./particles.ts";
 
 export default class ClickableBehavior extends Behavior {
@@ -19,7 +21,7 @@ export default class ClickableBehavior extends Behavior {
   @syncedValue(EntityByRefAdapter)
   upgradesManager: Entity | undefined;
 
-  onInitialize(): void {
+  onInitializeClient(): void {
     this.#clickable = this.entity.cast(Clickable);
     this.listen(this.#clickable, MouseDown, ({ button }) => {
       if (button !== "left") return;
@@ -27,19 +29,43 @@ export default class ClickableBehavior extends Behavior {
         (conn) => conn.id === this.game.network.self,
       );
       if (!player) return;
+
+      const globalStatsEntity = this.game.world._.GlobalStats;
+      const globalStatsBehavior = globalStatsEntity.getBehavior(GlobalStats);
+      const currentPlanet = globalStatsBehavior.currentPlanet || "Earth";
+
+      // Check if the planet is unlocked for this player.
+      if (
+        !globalStatsBehavior.purchasedPlanets[player.playerId] ||
+        !globalStatsBehavior.purchasedPlanets[player.playerId][currentPlanet]
+      ) {
+        console.log("Planet locked! Purchase it first.");
+        return;
+      }
+
       const manager = this.upgradesManager?.getBehavior(UpgradesManager);
-      const multiplier = manager?.clickMultiplierValue || 1;
+      const multiplier = manager
+        ? manager.getAggregatedStats(player.playerId, currentPlanet).clickMultiplier
+        : 1;
+
       this.game.network.sendCustomMessage("server", "@clicker/click", {
         playerId: player.playerId,
         nickname: player.nickname || "Unknown",
         multiplier,
+        planet: currentPlanet,
       });
+
       if (!this.isClicked) {
         this.startClickEffect();
-        const position = this.entity.transform.position.clone();
+        const offsetRange = 3;
+        const offset = new Vector2(
+          (Math.random() - 0.5) * offsetRange,
+          (Math.random() - 0.5) * offsetRange,
+        );
+        const spawnPosition = this.entity.transform.position.clone().add(offset);
         this.game.fire(
           ParticleEmitEvent,
-          position,
+          spawnPosition,
           5 + Math.floor(Math.random() * 5),
           `+${multiplier}⚡`,
         );

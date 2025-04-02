@@ -18,7 +18,7 @@ export default class Particles extends Behavior {
     isRichText?: boolean;
   }> = [];
 
-  onInitialize(): void {
+  onInitializeClient(): void {
     if (!this.game.isClient()) return;
     this.game.on(ParticleEmitEvent, (event) => {
       this.emitParticles(event.position, event.count);
@@ -67,6 +67,7 @@ export default class Particles extends Behavior {
           position: position.clone(),
           scale: { x: scale, y: scale },
           rotation: Math.random() * Math.PI * 2,
+          z: 1000,
         },
         values: {
           color: randomColor,
@@ -84,26 +85,23 @@ export default class Particles extends Behavior {
 
   emitRichTextParticle(position: Vector2, text: string): void {
     if (!this.game.isClient()) return;
-    const offsetRange = 3;
-    const offset = new Vector2(
-      (Math.random() - 0.5) * offsetRange,
-      (Math.random() - 0.5) * offsetRange,
-    );
-    const spawnPosition = position.clone().add(offset);
     const particleEntity = this.game.local.spawn({
       type: RichText,
       name: "RichTextParticle",
       transform: {
-        position: spawnPosition,
+        position: position,
         scale: { x: 1, y: 1 },
         rotation: 0,
+        z: 1000,
       },
       values: {
         text,
-        fontSize: 48,
-        color: "#FFD700",
-        fontFamily: "Impact",
+        fontSize: 32,
+        color: "#50fa7b",
+        fontFamily: "Arial Black",
         align: "center",
+        stroke: true,
+        strokeColor: "#282a36",
       },
     });
     this.particles.push({
