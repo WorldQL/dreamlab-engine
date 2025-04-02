@@ -68,14 +68,30 @@ export const prepareBundleWorld = async (
         },
         watch: opts?.watch ?? false,
       }),
-      esbuildCopy({
-        resolveFrom: "cwd",
-        assets: {
-          from: path.join(worldOpts.dir, "project.json"),
-          to: path.join(worldOpts.dir, out, "project.json"),
+      {
+        name: "bundle-project-json",
+        setup: async (_build: esbuild.PluginBuild) => {
+          const from = path.join(worldOpts.dir, "project.json");
+          const to = path.join(worldOpts.dir, out, "project.json");
+
+          const dir = path.dirname(to);
+          await Deno.mkdir(dir, { recursive: true });
+
+          const write = async (): Promise<void> => {
+            const content = await Deno.readTextFile(from);
+            await Deno.writeTextFile(to, JSON.stringify(JSON.parse(content)));
+          };
+
+          if (!opts?.watch) {
+            await write();
+            return;
+          }
+
+          // const watcher = Deno.watchFs(from);
+          // TODO: implement watch mode
+          throw new Error("cannot watch project.json");
         },
-        watch: opts?.watch ?? false,
-      }),
+      },
       {
         name: "preload-behaviors",
         setup: (build: esbuild.PluginBuild) => {
@@ -122,7 +138,7 @@ export const prepareBundleWorld = async (
 
             await Deno.writeTextFile(
               path.join(worldOpts.dir, out, "_dreamlab_behaviors.json"),
-              JSON.stringify(behaviorFiles, undefined, 2),
+              JSON.stringify(behaviorFiles),
             );
           });
         },
