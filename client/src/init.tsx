@@ -80,7 +80,7 @@ startGame(
     emojistatus.textContent = "🟢";
     textstatus.textContent = "Connected";
 
-    const serverButton = (
+    const serverButton = globalThis.env.DREAMLAB_MULTIPLAYER_STANDALONE ? undefined : (
       <button type="button" id="server-selector">
         {icon(Server)}
       </button>
@@ -92,7 +92,7 @@ startGame(
       </div>
     );
 
-    serverButton.addEventListener("click", async () => {
+    serverButton?.addEventListener("click", async () => {
       const instances = await fetchInstances(game.worldId);
       const form = DreamlabConnectFormElement.create(game.worldId, instances, {
         auth: info,
