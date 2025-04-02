@@ -14,6 +14,10 @@ export default class PlanetUpgradesUI extends UIBehavior {
   private playerId: string = "";
   private currentPlanet: string = "Earth";
 
+  // Throttling properties for player clicks
+  private clicksThrottled = false;
+  private pendingClicksUpdate = false;
+
   onInitialize(): void {
     super.onInitialize();
     if (!this.game.isClient()) return;
@@ -76,6 +80,22 @@ export default class PlanetUpgradesUI extends UIBehavior {
   }
 
   private updateGlobalClicks(): void {
+    if (this.clicksThrottled) {
+      this.pendingClicksUpdate = true;
+      return;
+    }
+    this.doUpdateGlobalClicks();
+    this.clicksThrottled = true;
+    setTimeout(() => {
+      this.clicksThrottled = false;
+      if (this.pendingClicksUpdate) {
+        this.pendingClicksUpdate = false;
+        this.updateGlobalClicks();
+      }
+    }, 500);
+  }
+
+  private doUpdateGlobalClicks(): void {
     const statsBehavior = this.globalStats.getBehavior(GlobalStats);
     if (statsBehavior) {
       this.globalClicks = statsBehavior.getPlayerClicks(this.playerId);
