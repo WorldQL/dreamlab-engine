@@ -1,5 +1,5 @@
 import { Behavior, Vector2 } from "@dreamlab/engine";
-import RocketShipBehavior from "./rocket-ship.ts";
+import RocketShipBehavior from "./rocket.ts";
 
 export default class RocketshipSpawner extends Behavior {
   private nextSpawnTime: number;

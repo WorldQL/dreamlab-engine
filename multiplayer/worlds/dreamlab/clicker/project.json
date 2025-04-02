@@ -496,7 +496,7 @@
           "behaviors": [
             {
               "ref": "bhv_qbIOpR9uQU",
-              "script": "res://src/rocket-ship.ts",
+              "script": "res://src/rocket.ts",
               "values": {
                 "upgradesManager": "ent_jdWgvMMFRW"
               }

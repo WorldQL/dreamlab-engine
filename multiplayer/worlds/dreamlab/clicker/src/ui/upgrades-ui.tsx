@@ -79,6 +79,7 @@ export default class PlanetUpgradesUI extends UIBehavior {
     const statsBehavior = this.globalStats.getBehavior(GlobalStats);
     if (statsBehavior) {
       this.globalClicks = statsBehavior.getPlayerClicks(this.playerId);
+      this.rerender();
     }
   }
 

@@ -1,6 +1,8 @@
 import { Sprite, UIBehavior } from "@dreamlab/engine";
 import GlobalStats from "../global-stats.ts";
 
+export const planetCosts: Record<string, number> = { Kepler: 1000000, Teegarden: 100000000 };
+
 export default class PlanetUI extends UIBehavior {
   private planetNames: string[] = ["Earth", "Kepler", "Teegarden"];
   private selectedPlanetIndex: number = 0;
@@ -63,15 +65,24 @@ export default class PlanetUI extends UIBehavior {
     const currentPlanet = this.planetNames[this.selectedPlanetIndex];
     if (currentPlanet !== "Earth") {
       const globalStats = this.game.world._.GlobalStats.getBehavior(GlobalStats);
-      if (globalStats && globalStats.purchasedPlanets[player.playerId]) {
-        globalStats.purchasedPlanets[player.playerId][currentPlanet] = true;
+      const cost = planetCosts[currentPlanet] || 0;
+
+      const playerData = globalStats.getPlayerData(player.playerId);
+      if (playerData && playerData.clicks >= cost) {
+        playerData.clicks -= cost;
+        globalStats.setPlayerData(player.playerId, playerData);
+        if (globalStats.purchasedPlanets[player.playerId]) {
+          globalStats.purchasedPlanets[player.playerId][currentPlanet] = true;
+        }
+
+        this.game.network.sendCustomMessage("server", "@planet/purchase", {
+          playerId: player.playerId,
+          planet: currentPlanet,
+        });
       }
     }
-    this.game.network.sendCustomMessage("server", "@planet/purchase", {
-      playerId: player.playerId,
-      planet: currentPlanet,
-    });
     this.updatePlanetVisibility();
+    this.rerender();
   }
 
   override render() {
@@ -106,7 +117,6 @@ export default class PlanetUI extends UIBehavior {
       color: "#282a36",
       border: "2px solid #282a36",
       padding: "10px 15px",
-      cursor: "pointer",
       fontFamily: "'Press Start 2P', cursive",
       fontSize: "20px",
       textShadow: "1px 1px 0px #000",
@@ -129,14 +139,28 @@ export default class PlanetUI extends UIBehavior {
         globalStats.purchasedPlanets[player.playerId] &&
         globalStats.purchasedPlanets[player.playerId][currentPlanet]);
 
-    const planetCosts: Record<string, number> = { Kepler: 1000000, Teegarden: 100000000 };
+    // Define planet costs. Note: make sure these match the server values.
     const planetCost = planetCosts[currentPlanet] || 0;
+
+    // Check if the player can afford the planet.
+    const playerData = player ? globalStats.getPlayerData(player.playerId) : undefined;
+    const canAfford = playerData ? playerData.clicks >= planetCost : false;
+
+    const purchaseButtonStyle = {
+      ...buttonStyle,
+      opacity: canAfford ? "1" : "0.5",
+      cursor: canAfford ? "pointer" : "not-allowed",
+    };
 
     return (
       <div>
         <div style={buyButtonContainerStyle}>
           {!isUnlocked && currentPlanet !== "Earth" && (
-            <button onClick={() => this.handlePurchasePlanet()} style={buttonStyle}>
+            <button
+              onClick={() => canAfford && this.handlePurchasePlanet()}
+              style={purchaseButtonStyle}
+              disabled={!canAfford}
+            >
               Buy for {planetCost.toLocaleString()} ⚡
             </button>
           )}

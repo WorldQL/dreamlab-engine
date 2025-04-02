@@ -7,6 +7,7 @@ import {
   syncedValue,
 } from "@dreamlab/engine";
 import UpgradesManager from "./upgrades.ts";
+import { planetCosts } from "./ui/planet-ui.tsx";
 
 export default class GlobalStats extends Behavior {
   @syncedValue(ObjectAdapter)
@@ -123,7 +124,6 @@ export default class GlobalStats extends Behavior {
       // Planet already purchased.
       return false;
     }
-    const planetCosts: Record<string, number> = { Kepler: 1000000, Teegarden: 1000000000 };
     const cost = planetCosts[planet] || 0;
 
     const playerData = this.getPlayerData(playerId);
