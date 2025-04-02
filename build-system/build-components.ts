@@ -16,6 +16,7 @@ export interface BundleOptions {
   watch?: boolean;
   serve?: esbuild.ServeOptions;
   silent?: boolean;
+  metafile?: boolean;
 }
 
 export const bundle = async (
@@ -23,6 +24,7 @@ export const bundle = async (
   esbuildOpts: esbuild.BuildOptions,
   opts: BundleOptions = {},
 ) => {
+  if (opts.metafile) esbuildOpts.metafile = true;
   if (opts.watch) {
     const ctx = await esbuild.context(
       opts.serve
@@ -39,7 +41,12 @@ export const bundle = async (
     }
   } else {
     if (!opts.silent) console.log(`Building ${target}...`);
-    await esbuild.build(esbuildOpts);
+    const result = await esbuild.build(esbuildOpts);
+
+    if (esbuildOpts.outdir && result.metafile) {
+      const out = path.join(esbuildOpts.outdir, `${target}.meta.json`);
+      await Deno.writeFile(out, new TextEncoder().encode(JSON.stringify(result.metafile)));
+    }
   }
 };
 
@@ -53,6 +60,7 @@ export const BASE_BUILD_OPTIONS: Partial<esbuild.BuildOptions> = {
   sourcemap: "linked",
   keepNames: true,
   splitting: true,
+  metafile: false,
 };
 
 export const EXTRA_ENTRYPOINT_BUILD_OPTIONS: Partial<esbuild.BuildOptions> = {
