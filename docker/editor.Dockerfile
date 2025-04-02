@@ -31,7 +31,6 @@ RUN deno install --entrypoint mod.ts
 COPY --chown=deno ./client /app/client
 COPY --chown=deno ./editor /app/editor
 WORKDIR /app/editor
-RUN unlink ./web/text && cp -r /app/client/web/text /app/editor/web/text
 RUN deno task build
 
 FROM nginx:alpine
