@@ -36,7 +36,7 @@ function jsx<K extends TagNames>(
   const childrenArray = Array.isArray(children) ? children : [children];
   const childrenArray2 = childrenArray
     .flat()
-    .filter(it => it !== false)
+    .filter(it => it !== false && it !== undefined && it !== null)
     .map(it => {
       if (it instanceof Element) return it;
       return String(it);
