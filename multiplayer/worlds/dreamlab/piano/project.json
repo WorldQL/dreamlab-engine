@@ -1,0 +1,56 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "engine_revision": "2024-08.001"
+  },
+  "scenes": {
+    "main": {
+      "registration": [],
+      "world": [
+        {
+          "ref": "ent_pgRuvBU8gu",
+          "type": "@core/Empty",
+          "name": "PianoSounds",
+          "enabled": true,
+          "behaviors": [
+            {
+              "ref": "bhv_QTb4b2SZnI",
+              "script": "res://src/piano-sounds.ts"
+            }
+          ]
+        },
+        {
+          "ref": "ent_0JeaVZP2jL",
+          "type": "@core/UIPanel",
+          "name": "UIPanel",
+          "enabled": true,
+          "behaviors": [
+            {
+              "ref": "bhv_9r8N9POZD8",
+              "script": "res://src/piano-ui.tsx",
+              "values": {
+                "piano": "ent_pgRuvBU8gu"
+              }
+            }
+          ]
+        }
+      ],
+      "local": [
+        {
+          "ref": "ent_Cub67WMrMc",
+          "type": "@core/Camera",
+          "name": "Camera",
+          "enabled": true,
+          "values": {
+            "active": true,
+            "smooth": 0.1,
+            "unlocked": false,
+            "zoom": 1
+          }
+        }
+      ],
+      "server": [],
+      "prefabs": []
+    }
+  }
+}
