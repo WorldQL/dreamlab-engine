@@ -208,5 +208,10 @@ export const dreamlabNodeShimPlugin = (): esbuild.Plugin => ({
 
       return undefined;
     });
+
+    build.onResolve({ filter: /^events$/ }, () => ({
+      path: "//esm.sh/events@3.3.0?pin=v135",
+      namespace: "https",
+    }));
   },
 });

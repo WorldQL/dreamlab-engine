@@ -4,6 +4,7 @@ import * as path from "jsr:@std/path@^1";
 import {
   denoPlugins,
   dreamlabEngineExternalPlugin,
+  dreamlabNodeShimPlugin,
   dreamlabUIExternalPlugin,
   dreamlabVendorExternalPlugin,
   esbuild,
@@ -56,6 +57,7 @@ export const prepareBundleWorld = async (
       dreamlabEngineExternalPlugin(),
       dreamlabVendorExternalPlugin(),
       dreamlabUIExternalPlugin(),
+      dreamlabNodeShimPlugin(),
       ...denoPlugins({
         loader: "native",
         configPath: await Deno.realPath(worldOpts.denoJsonPath),
