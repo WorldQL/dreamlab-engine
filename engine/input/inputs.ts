@@ -201,7 +201,7 @@ export class Inputs implements ISignalHandler {
 
   #onMouse = (ev: MouseEvent, pressed: boolean) => {
     // @ts-expect-error: we know its a client game
-    if (ev.target !== this.#game.renderer.app.canvas) {
+    if (!ev.composedPath().includes(this.#game.container)) {
       return;
     }
 
