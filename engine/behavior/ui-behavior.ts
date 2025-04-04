@@ -1,5 +1,5 @@
 import { Behavior, UILayer, UIPanel } from "@dreamlab/engine";
-import { BaseElement } from "../../ui/element.ts";
+import type { BaseElement } from "../../ui/element.ts";
 
 export abstract class UIBehavior extends Behavior {
   private uiRoot: HTMLElement | undefined;
