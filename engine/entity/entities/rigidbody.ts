@@ -1,4 +1,11 @@
-import { Entity, EntityContext, EntityDestroyed, enumAdapter, Vector2 } from "@dreamlab/engine";
+import {
+  Collider,
+  Entity,
+  EntityContext,
+  EntityDestroyed,
+  enumAdapter,
+  Vector2,
+} from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import RAPIER from "@dreamlab/vendor/rapier.ts";
 
@@ -101,5 +108,9 @@ export class Rigidbody extends Entity {
 
     this.game.physics.registerBody(this, body);
     this.#body = body;
+
+    [...this.children.values()]
+      .filter(child => child instanceof Collider)
+      .forEach(child => child[internal.colliderReparentBody]());
   }
 }
