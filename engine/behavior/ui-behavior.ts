@@ -8,6 +8,11 @@ export abstract class UIBehavior extends Behavior {
   private cssContent: string = "";
 
   #ui: UILayer | UIPanel | undefined;
+  get ui(): UILayer | UIPanel {
+    if (!this.#ui) throw new Error("UIBehaviors must be attached to UILayer or UIPanel");
+    return this.#ui;
+  }
+
   #enablePointerEvents = true;
   set enablePointerEvents(val: boolean) {
     this.#enablePointerEvents = val;
