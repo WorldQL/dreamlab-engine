@@ -85,6 +85,9 @@ export class Rigidbody extends Entity {
   }
 
   #initializeBody() {
+    const linvel = this.#body?.linvel();
+    const angvel = this.#body?.angvel();
+
     if (this.#body) {
       this.game.physics.world.removeRigidBody(this.#body);
     }
@@ -103,6 +106,9 @@ export class Rigidbody extends Entity {
     desc = desc
       .setTranslation(this.globalTransform.position.x, this.globalTransform.position.y)
       .setRotation(this.globalTransform.rotation);
+
+    if (linvel) desc.setLinvel(linvel.x, linvel.y);
+    if (angvel) desc.setAngvel(angvel);
 
     const body = this.game.physics.world.createRigidBody(desc);
 
