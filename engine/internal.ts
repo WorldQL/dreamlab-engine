@@ -63,3 +63,4 @@ export const clickableTeardownGame = Symbol.for("dreamlab.internal.clickableTear
 export const rendererInit = Symbol.for("dreamlab.internal.rendererInit");
 export const rendererRender = Symbol.for("dreamlab.internal.rendererRender");
 export const randomBoxMuller = Symbol.for("dreamlab.internal.randomBoxMuller");
+export const colliderReparentBody = Symbol.for("dreamlab.internal.colliderReparentBody");

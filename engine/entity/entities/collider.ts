@@ -170,13 +170,7 @@ export class Collider extends Entity {
     });
 
     this.on(EntityReparented, () => {
-      if (this.#internal) {
-        this.game.physics.world.removeCollider(this.#internal.collider, false);
-        this.#internal = undefined;
-      }
-
-      this.#rigidbody = this.parent instanceof Rigidbody ? this.parent : undefined;
-      this.#setupCollider(this.#rigidbody?.body);
+      this[internal.colliderReparentBody]();
     });
 
     this.on(EntityEnableChanged, ({ enabled }) => {
@@ -187,6 +181,16 @@ export class Collider extends Entity {
     this.on(EntityTransformUpdate, ({ source }) => {
       if (source !== this) this[internal.entityPreparePhysicsUpdate]();
     });
+  }
+
+  [internal.colliderReparentBody]() {
+    if (this.#internal) {
+      this.game.physics.world.removeCollider(this.#internal.collider, false);
+      this.#internal = undefined;
+    }
+
+    this.#rigidbody = this.parent instanceof Rigidbody ? this.parent : undefined;
+    this.#setupCollider(this.#rigidbody?.body);
   }
 
   #setupCollider(body?: RigidBody) {
