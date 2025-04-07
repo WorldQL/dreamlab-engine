@@ -70,7 +70,8 @@ export class Rigidbody extends Entity {
   [internal.entityApplyPhysicsUpdate]() {
     if (!this.game.physics.enabled || !this.#body) return;
 
-    if (this.authority === undefined && this.game.isClient()) return;
+    const authority = this.authority ?? "server";
+    if (authority !== this.game.network.self) return;
 
     this.globalTransform.position = new Vector2(this.#body.translation());
     this.globalTransform.rotation = this.#body.rotation();

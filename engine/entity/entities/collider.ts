@@ -271,7 +271,8 @@ export class Collider extends Entity {
   [internal.entityApplyPhysicsUpdate]() {
     if (!this.game.physics.enabled || !this.#internal || this.#rigidbody) return;
 
-    if (this.authority === undefined && this.game.isClient()) return;
+    const authority = this.authority ?? "server";
+    if (authority !== this.game.network.self) return;
 
     this.globalTransform.position = new Vector2(this.#internal.collider.translation());
     this.globalTransform.rotation = this.#internal.collider.rotation();
