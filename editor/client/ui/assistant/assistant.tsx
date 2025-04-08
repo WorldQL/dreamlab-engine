@@ -92,43 +92,13 @@ export class Assistant {
     `;
 
       try {
-        // 1. Check if a service is already running for this ID
-        const checkResp = await fetch(`${baseUrl}/service/${serviceId}`);
-        if (!checkResp.ok) {
-          throw new Error(`Service check failed with status ${checkResp.status}`);
-        }
-        const checkData = await checkResp.json();
-        let port = checkData.port;
-
-        if (!checkData.exists) {
-          // 2. If service doesn't exist, spawn it
-          // Use instance as the cwd if available, else fallback to "."
-          const spawnBody = {
-            cwd: this.game.worldId,
-            id: decodeURIComponent(serviceId), // decode back for the server
-          };
-          const spawnResp = await fetch(`${baseUrl}/spawn`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(spawnBody),
-          });
-          if (!spawnResp.ok) {
-            throw new Error(`Spawn failed with status ${spawnResp.status}`);
-          }
-          const spawnData = await spawnResp.json();
-          port = spawnData.port;
-        }
-
-        // 3. Build the iframe URL
-
         const coderBaseUrl =
           globalThis.env.DREAMLAB_CODE_EDITOR_CODER_BASE ||
           new URL("coder", ScriptSession.httpServer).toString();
 
-        const iframeUrl = `${coderBaseUrl}/${port}/${decodeURIComponent(serviceId)}`;
-
-        // 4. Wait 500ms and then poll until the service is ready (i.e., not returning 502)
-        await this.waitForServiceReady(iframeUrl);
+        // TODO: Fixme and proxy like the old one. Just doing this cuz it's 3:27 am and I gotta go to bed.
+        const iframeUrl = `http://localhost:5177/?directory=${decodeURIComponent(serviceId)}`;
+        console.log(iframeUrl);
 
         // 5. Create an iframe to show that coder instance
         const iframe = document.createElement("iframe");
@@ -149,16 +119,8 @@ export class Assistant {
         // }, 5000);
 
         // 6. Start sending heartbeats every 30 seconds
-        this.startHeartbeat(decodeURIComponent(serviceId));
-      } catch (err) {
-        console.error("Failed to load or spawn coder environment:", err);
-        this.container.innerHTML =
-          "Failed to load or spawn coder environment. See console for details.";
-        this.container.style.cssText = `
-          background: rgb(var(--color-bg-1));
-          padding: 10px
-        `;
-      }
+        // this.startHeartbeat(decodeURIComponent(serviceId));
+      } catch {}
     })();
   }
 
