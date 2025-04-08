@@ -199,14 +199,7 @@ export class Properties implements InspectorUIWidget {
 
     const transformSection = new DataDetails();
     container.append(transformSection);
-
-    const position = elem("code");
-    const updatePosition = () => {
-      position.textContent = `(Global: ${entity.pos.x.toFixed(2)}, ${entity.pos.y.toFixed(2)})`;
-    };
-    updatePosition();
-    entity.on(EntityTransformUpdate, updatePosition);
-    transformSection.setHeaderContent(elem("h2", {}, ["Transform", " ", position]));
+    transformSection.setHeaderContent(elem("h2", {}, ["Transform"]));
 
     const txfmTable = new DataTable();
     transformSection.addContent(txfmTable);
@@ -282,6 +275,60 @@ export class Properties implements InspectorUIWidget {
       refreshScaleX();
       refreshScaleY();
       refreshZIndex();
+    });
+
+    const toggleGlobalTransformButton = elem("button", { type: "button" }, [
+      "Show Global Transform",
+    ]);
+    container.append(toggleGlobalTransformButton);
+
+    const globalTransformSection = elem(
+      "section",
+      { id: "global-transform", style: { display: "none" } },
+      [],
+    );
+    container.append(globalTransformSection);
+
+    globalTransformSection.append(elem("h2", {}, ["Global Transform"]));
+
+    const globalTransformTable = new DataTable();
+    globalTransformSection.append(globalTransformTable);
+
+    const globalPosXField = elem("code", {}, [entity.pos.x.toFixed(2)]);
+    globalTransformTable.addEntry("global-pos-x", "Position X", globalPosXField);
+
+    const globalPosYField = elem("code", {}, [entity.pos.y.toFixed(2)]);
+    globalTransformTable.addEntry("global-pos-y", "Position Y", globalPosYField);
+
+    const globalRotationField = elem("code", {}, [entity.globalTransform.rotation.toFixed(2)]);
+    globalTransformTable.addEntry("global-rot", "Rotation", globalRotationField);
+
+    const globalScaleXField = elem("code", {}, [entity.globalTransform.scale.x.toFixed(2)]);
+    globalTransformTable.addEntry("global-scale-x", "Scale X", globalScaleXField);
+
+    const globalScaleYField = elem("code", {}, [entity.globalTransform.scale.y.toFixed(2)]);
+    globalTransformTable.addEntry("global-scale-y", "Scale Y", globalScaleYField);
+
+    const globalZField = elem("code", {}, [entity.z.toFixed(0)]);
+    globalTransformTable.addEntry("global-z", "Z Index", globalZField);
+
+    entity.on(EntityTransformUpdate, () => {
+      globalPosXField.textContent = entity.pos.x.toFixed(2);
+      globalPosYField.textContent = entity.pos.y.toFixed(2);
+      globalRotationField.textContent = entity.globalTransform.rotation.toFixed(2);
+      globalScaleXField.textContent = entity.globalTransform.scale.x.toFixed(2);
+      globalScaleYField.textContent = entity.globalTransform.scale.y.toFixed(2);
+      globalZField.textContent = entity.z.toFixed(0);
+    });
+
+    toggleGlobalTransformButton.addEventListener("click", () => {
+      if (globalTransformSection.style.display === "none") {
+        globalTransformSection.style.display = "block";
+        toggleGlobalTransformButton.textContent = "Hide Global Transform";
+      } else {
+        globalTransformSection.style.display = "none";
+        toggleGlobalTransformButton.textContent = "Show Global Transform";
+      }
     });
 
     const valuesSection = new DataDetails();
