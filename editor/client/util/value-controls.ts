@@ -352,11 +352,13 @@ export function createValueControl(
       ]);
 
       colorBox.addEventListener("click", e => {
+        const tr = colorBox.closest("tr");
+        if (!tr) return; // should always exist
+
         if (popup.style.display === "block") {
           popup.style.display = "none";
         } else {
-          const rect =
-            colorBox.parentElement!.parentElement!.parentElement!.getBoundingClientRect();
+          const rect = tr.getBoundingClientRect();
           popup.style.top = rect.bottom - 30 + "px";
           popup.style.left = rect.left - 175 + "px";
           popup.style.display = "block";
