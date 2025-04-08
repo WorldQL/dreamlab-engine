@@ -139,4 +139,12 @@ export class AudioSource extends Entity {
 
     this.#howl.play();
   }
+
+  stop(): void {
+    if (this.clip === "") return;
+    if (!this.game.isClient()) return;
+    if (!this.#howl) throw new Error("AudioSource is not initialized yet");
+
+    this.#howl.stop();
+  }
 }
