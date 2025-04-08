@@ -1,5 +1,6 @@
 import {
   Bounds,
+  ColorAdapter,
   Entity,
   EntityContext,
   EntityTransformUpdate,
@@ -24,6 +25,7 @@ export class Sprite extends PixiEntity {
   height: number = 1;
   texture: string = "";
   alpha: number = 1;
+  tint: string = "white";
   preserveAspectRatio: boolean = false;
 
   #sprite: PIXI.Sprite | undefined;
@@ -36,6 +38,7 @@ export class Sprite extends PixiEntity {
 
     this.defineValue(Sprite, "texture", { type: TextureAdapter, sortOrder: 10 });
     this.defineValues(Sprite, "width", "height", "alpha");
+    this.defineValue(Sprite, "tint", { type: ColorAdapter });
     this.defineValue(Sprite, "preserveAspectRatio");
 
     if (this.game.isClient() && this.texture !== "") {
@@ -101,6 +104,12 @@ export class Sprite extends PixiEntity {
       if (!this.#sprite) return;
       this.#sprite.alpha = this.alpha;
     });
+
+    const tintValue = this.values.get("tint");
+    tintValue?.onChanged(() => {
+      if (!this.#sprite) return;
+      this.#sprite.tint = this.tint;
+    });
   }
 
   async #getTexture(): Promise<PIXI.Texture> {
@@ -125,6 +134,7 @@ export class Sprite extends PixiEntity {
       height: this.height * this.globalTransform.scale.y,
       anchor: 0.5,
       alpha: this.alpha,
+      tint: this.tint,
     });
 
     this.container.addChild(this.#sprite);

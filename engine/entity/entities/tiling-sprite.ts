@@ -1,5 +1,6 @@
 import {
   Bounds,
+  ColorAdapter,
   Entity,
   EntityContext,
   EntityDestroyed,
@@ -27,6 +28,7 @@ export class TilingSprite extends PixiEntity {
   height: number = 1;
   texture: string = "";
   alpha: number = 1;
+  tint: string = "white";
   tilePosition: Vector2 = Vector2.ZERO;
   tileRotation: number = 0;
   tileScale: Vector2 = Vector2.ONE;
@@ -40,6 +42,7 @@ export class TilingSprite extends PixiEntity {
     super(ctx);
 
     this.defineValues(TilingSprite, "width", "height", "alpha", "tileRotation");
+    this.defineValue(TilingSprite, "tint", { type: ColorAdapter });
     this.defineValue(TilingSprite, "tilePosition", { type: Vector2Adapter });
     this.defineValue(TilingSprite, "tileScale", { type: Vector2Adapter });
     this.defineValue(TilingSprite, "texture", { type: TextureAdapter, sortOrder: 10 });
@@ -54,6 +57,7 @@ export class TilingSprite extends PixiEntity {
       this.#sprite.width = this.width * this.globalTransform.scale.x;
       this.#sprite.height = this.height * this.globalTransform.scale.y;
       this.#sprite.alpha = this.alpha;
+      this.#sprite.tint = this.tint;
       this.#sprite.tilePosition = this.tilePosition;
       this.#sprite.tileRotation = this.tileRotation;
 
@@ -100,6 +104,7 @@ export class TilingSprite extends PixiEntity {
     this.#sprite.height = this.height * this.globalTransform.scale.y;
     this.#sprite.anchor.set(0.5);
     this.#sprite.alpha = this.alpha;
+    this.#sprite.tint = this.tint;
     this.#sprite.tilePosition = this.tilePosition;
     this.#sprite.tileRotation = this.tileRotation;
     this.#sprite.tileScale = this.tileScale.div({

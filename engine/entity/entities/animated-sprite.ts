@@ -1,5 +1,6 @@
 import {
   Bounds,
+  ColorAdapter,
   Entity,
   EntityContext,
   EntityEnableChanged,
@@ -40,6 +41,7 @@ export class AnimatedSprite extends PixiEntity {
   frameDimensions: Vector2 = new Vector2(128, 128);
 
   alpha: number = 1;
+  tint: string = "white";
   speed: number = 0.1;
   loop: boolean = true;
   startFrame: number = 0;
@@ -134,34 +136,32 @@ export class AnimatedSprite extends PixiEntity {
   constructor(ctx: EntityContext) {
     super(ctx);
 
-    this.defineValues(
-      AnimatedSprite,
-      "width",
-      "height",
-      "alpha",
-      "startFrame",
-      "endFrame",
-      "speed",
-      "loop",
-    );
-
     this.defineValue(AnimatedSprite, "spritesheet", {
       type: TextureAdapter,
       hidden: values => values.get("jsonSpritesheet")?.value !== "",
-      sortOrder: 10,
+      sortOrder: 100,
     });
 
     this.defineValue(AnimatedSprite, "jsonSpritesheet", {
       type: SpritesheetAdapter,
       hidden: values => values.get("spritesheet")?.value !== "",
-      sortOrder: 9,
+      sortOrder: 90,
     });
 
     this.defineValue(AnimatedSprite, "frameDimensions", {
       type: Vector2Adapter,
       hidden: values => values.get("jsonSpritesheet")?.value !== "",
-      sortOrder: 8,
+      sortOrder: 80,
     });
+
+    this.defineValue(AnimatedSprite, "startFrame", { sortOrder: 70 });
+    this.defineValue(AnimatedSprite, "endFrame", { sortOrder: 60 });
+    this.defineValue(AnimatedSprite, "speed", { sortOrder: 50 });
+    this.defineValue(AnimatedSprite, "loop", { sortOrder: 40 });
+    this.defineValue(AnimatedSprite, "width", { sortOrder: 30 });
+    this.defineValue(AnimatedSprite, "height", { sortOrder: 20 });
+    this.defineValue(AnimatedSprite, "alpha", { sortOrder: 10 });
+    this.defineValue(AnimatedSprite, "tint", { type: ColorAdapter, sortOrder: 9 });
 
     // why was this disabled?
     // if (this.game.isClient() && this.spritesheet !== "") {
@@ -213,6 +213,12 @@ export class AnimatedSprite extends PixiEntity {
       this.#sprite.alpha = this.alpha;
     });
 
+    const tintValue = this.values.get("tint");
+    tintValue?.onChanged(() => {
+      if (!this.#sprite) return;
+      this.#sprite.tint = this.tint;
+    });
+
     this.values.get("speed")?.onChanged(() => {
       if (!this.#sprite) return;
       this.#sprite.animationSpeed = this.speed;
@@ -250,6 +256,7 @@ export class AnimatedSprite extends PixiEntity {
       height: this.height * this.globalTransform.scale.y,
       anchor: 0.5,
       alpha: this.alpha,
+      tint: this.tint,
     });
 
     this.#sprite.animationSpeed = this.speed;
