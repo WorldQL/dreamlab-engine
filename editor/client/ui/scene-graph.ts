@@ -560,8 +560,8 @@ export class SceneGraph implements InspectorUIWidget {
             },
             false,
             "Backspace",
-            "multi",
-            2,
+            "z-delete",
+            1,
           ],
         );
 
@@ -579,7 +579,7 @@ export class SceneGraph implements InspectorUIWidget {
             },
             false,
             `${modifierKey}+E`,
-            "toggle",
+            "multi",
             1,
           ]);
 
