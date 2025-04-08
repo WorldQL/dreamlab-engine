@@ -324,30 +324,63 @@ export function createValueControl(
     case ColorAdapter: {
       const opts = _opts as ValueControlOptions<string | undefined>;
 
-      const picker = elem("hex-alpha-color-picker");
-      picker.style.width = "150px";
-      picker.style.height = "150px";
-
+      const colorBox = elem("div", { className: "color-box" });
       const inputContainer = elem("div", { className: "color-input-container" });
       const hashLabel = elem("span", { className: "color-hash-label" }, ["#"]);
-
       const input = elem("input", {
         type: "text",
         className: "color-input",
         placeholder: "e.g., FF0000",
       });
-
       inputContainer.append(hashLabel, input);
 
-      const container = elem("div", { className: "color-picker-container" }, [
-        picker,
-        inputContainer,
+      const header = elem("div", { className: "color-picker-header" }, [
+        elem("span", { className: "color-picker-title" }, ["Color Picker"]),
+        elem("button", { className: "color-picker-close" }, [icon(X)]),
       ]);
+
+      const picker = elem("hex-alpha-color-picker");
+      picker.style.width = "150px";
+      picker.style.height = "150px";
+
+      const popup = elem("div", { className: "color-picker-popup" }, [header, picker]);
+
+      const container = elem("div", { className: "color-picker-container" }, [
+        colorBox,
+        inputContainer,
+        popup,
+      ]);
+
+      colorBox.addEventListener("click", e => {
+        if (popup.style.display === "block") {
+          popup.style.display = "none";
+        } else {
+          const rect =
+            colorBox.parentElement!.parentElement!.parentElement!.getBoundingClientRect();
+          popup.style.top = rect.bottom - 30 + "px";
+          popup.style.left = rect.left - 175 + "px";
+          popup.style.display = "block";
+        }
+        e.stopPropagation();
+      });
+
+      document.addEventListener("pointerdown", e => {
+        if (!popup.contains(e.target as Node) && e.target !== colorBox) {
+          popup.style.display = "none";
+        }
+      });
+
+      const closeButton = header.querySelector(".color-picker-close") as HTMLButtonElement;
+      closeButton.addEventListener("click", e => {
+        popup.style.display = "none";
+        e.stopPropagation();
+      });
 
       picker.addEventListener("color-changed", () => {
         const color = picker.color;
         opts.set(color);
         input.value = color.slice(1);
+        colorBox.style.backgroundColor = color;
       });
 
       input.addEventListener("input", () => {
@@ -357,6 +390,7 @@ export function createValueControl(
         if (/^([0-9A-Fa-f]{3}|[0-9A-Fa-f]{4}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/.test(value)) {
           picker.color = fullValue;
           opts.set(fullValue);
+          colorBox.style.backgroundColor = fullValue;
           input.classList.remove("invalid");
         } else {
           input.classList.add("invalid");
@@ -368,7 +402,7 @@ export function createValueControl(
         const color = new PIXI.Color(colorValue);
         const hexa = color.toHexa();
         picker.color = hexa;
-
+        colorBox.style.backgroundColor = hexa;
         if (document.activeElement !== input) {
           input.value = hexa.slice(1);
         }
