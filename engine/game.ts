@@ -42,6 +42,7 @@ import {
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { urlWithParams } from "@dreamlab/util/url.ts";
+import { SyncedObjectRegistry } from "./synced-objects/registry.ts";
 
 export interface GameOptions {
   instanceId: string;
@@ -84,6 +85,7 @@ export abstract class BaseGame implements ISignalHandler {
   }
 
   readonly values: ValueRegistry = new ValueRegistry(this as unknown as Game);
+  readonly objects: SyncedObjectRegistry = new SyncedObjectRegistry();
 
   readonly entities: EntityStore = new EntityStore();
 

@@ -1,17 +1,9 @@
 // TODO: everything
 
-import { Behavior, ConnectionId, Entity } from "@dreamlab/engine";
+import type { Behavior, Entity } from "@dreamlab/engine";
+import type { SyncedObjectContainer } from "./registry.ts";
 
-type SyncedObjectTarget = string[];
-
-type SyncedObject<Container> = {
-  name: string;
-  description?: string;
-
-  accessor: ClassFieldDecoratorContext<Container, unknown>["access"];
-  clock: number;
-  lastWriter: ConnectionId;
-};
+type SyncedObjectTarget = string[]; // TODO
 
 export function sync<Container extends Entity | Behavior, Field extends SyncedObjectTarget>(
   opts: {
@@ -21,9 +13,17 @@ export function sync<Container extends Entity | Behavior, Field extends SyncedOb
   } = {},
 ): (_: undefined, ctx: ClassFieldDecoratorContext<Container, Field>) => void {
   return (_, ctx) => {
+    if (typeof ctx.name !== "string") return;
     if (ctx.static) return;
     if (ctx.private) throw new Error("can't sync a private field!");
 
-    // TODO
+    const field = ctx.name;
+    ctx.addInitializer(function () {
+      // TODO
+    });
   };
+}
+
+export function setupSyncedObjects(container: SyncedObjectContainer): void {
+  // TODO
 }

@@ -3,6 +3,7 @@ import type { ConditionalExcept } from "@dreamlab/vendor/type-fest.ts";
 
 import type {
   AdapterTypeTag,
+  AnySyncedObject,
   Behavior,
   BehaviorConstructor,
   BehaviorDefinition,
@@ -123,6 +124,8 @@ export abstract class Entity implements ISignalHandler {
   protected get inputs(): Inputs {
     return this.game.inputs;
   }
+
+  readonly [internal.syncedObjectContainerObjectsField] = new Map<string, AnySyncedObject>();
 
   // #region Name / ID / Hierarchy
   #name: string;

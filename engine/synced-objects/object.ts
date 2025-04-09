@@ -1,7 +1,7 @@
-import { JsonValue } from "@dreamlab/engine";
-import { ConnectionId } from "../network.ts";
+import type { ConnectionId, JsonValue } from "@dreamlab/engine";
+import { syncedObjectContainerObjectsField as objects } from "@dreamlab/engine/internal";
 import { SyncedObjectOperation } from "./operation.ts";
-import { objects, SyncedObjectContainer, SyncedObjectRegistry } from "./registry.ts";
+import { SyncedObjectContainer, SyncedObjectRegistry } from "./registry.ts";
 
 // deno-lint-ignore no-explicit-any
 export type AnySyncedObject = SyncedObject<any>;
@@ -36,4 +36,7 @@ export abstract class SyncedObject<T> {
 
   abstract setup(initial?: JsonValue): void;
   abstract receive(from: ConnectionId, clock: number, op: SyncedObjectOperation): void;
+
+  abstract serialize(value: T): JsonValue;
+  abstract deserialize(value: JsonValue): T;
 }
