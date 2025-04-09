@@ -7,12 +7,12 @@ import { getFileContent, textToPlan } from "./assistant/context.ts";
 import { BehaviorPanel } from "./behavior-panel/mod.ts";
 import { ContextMenu } from "./context-menu.ts";
 import { FileTree } from "./file-tree.tsx";
-import { GameOverlays } from "./game-overlays.ts";
 import { setupKeyboardShortcuts } from "./keyboard-shortcuts.ts";
 import { Properties } from "./properties.tsx";
 import { ReloadPrompt } from "./reload-prompt.tsx";
 import { SceneGraph } from "./scene-graph.ts";
 import { SelectedEntityService } from "./selected-entity.ts";
+import { GameOverlays } from "./toolbar.tsx";
 import { WelcomeMenu } from "./welcome-menu.tsx";
 
 export interface InspectorUIWidget {
