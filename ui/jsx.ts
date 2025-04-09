@@ -31,6 +31,9 @@ function jsx<K extends TagNames>(
   props: JSX.IntrinsicElements[K],
   _key?: string,
 ): TagType<K> {
+  // @ts-expect-error: this works but the types are annoying so i didnt bother
+  if (typeof tag === "function") return tag(props);
+
   const { children = [], ...attrs } = props;
   // if there's a singleton child, make an array
   const childrenArray = Array.isArray(children) ? children : [children];
