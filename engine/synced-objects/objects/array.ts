@@ -1,14 +1,18 @@
 import { ConnectionId, JsonValue, Primitive } from "@dreamlab/engine";
 import { SyncedObject } from "../object.ts";
 import { SyncedObjectOperation } from "../operation.ts";
+import { SyncedObjectRegistry } from "../registry.ts";
 
 /** don't use this!!! it doesn't sync consistently */
 export class SyncedArray<T extends Primitive> extends SyncedObject<T[]> {
-  static kind = "array";
+  static readonly kind = "array";
+  static {
+    SyncedObjectRegistry.registerHandler(this);
+  }
 
   #inner: T[] | undefined = undefined;
 
-  makeProxy(): T[] {
+  #makeProxy(): T[] {
     const syncedObject = this;
     return new Proxy(this.#inner!, {
       get(target, prop, receiver) {
@@ -57,7 +61,7 @@ export class SyncedArray<T extends Primitive> extends SyncedObject<T[]> {
     }
     this.#inner = value;
 
-    value = this.makeProxy();
+    value = this.#makeProxy();
     this.set(value);
   }
 
@@ -79,5 +83,14 @@ export class SyncedArray<T extends Primitive> extends SyncedObject<T[]> {
     if (op.t === "array-set-at") {
       inner[op.index] = op.value as T;
     }
+  }
+
+  serialize(value: T[]): JsonValue {
+    return value;
+  }
+
+  deserialize(value: JsonValue): T[] {
+    if (!Array.isArray(value)) throw new Error("not an array");
+    return value;
   }
 }

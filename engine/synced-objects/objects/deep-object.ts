@@ -1,24 +1,22 @@
 import { ConnectionId, JsonObject, JsonValue } from "@dreamlab/engine";
+import { syncedObjectContainerObjectsField as objects } from "@dreamlab/engine/internal";
 import { Accessor, AnySyncedObject, SyncedObject } from "../object.ts";
 import { SyncedObjectOperation } from "../operation.ts";
-import {
-  isContainer,
-  objects,
-  SyncedObjectContainer,
-  SyncedObjectRegistry,
-} from "../registry.ts";
+import { isContainer, SyncedObjectContainer, SyncedObjectRegistry } from "../registry.ts";
 
 export class SyncedDeepObject<T extends JsonObject>
   extends SyncedObject<T>
   implements SyncedObjectContainer
 {
-  static kind = "object";
+  static readonly kind = "object";
+  static {
+    SyncedObjectRegistry.registerHandler(this);
+  }
 
-  ref: string;
-  [objects]: Map<string, AnySyncedObject>;
+  readonly ref: string;
+  readonly [objects]: Map<string, AnySyncedObject>;
 
-  // TODO: needs to be multi-lww
-  writers = new Map<keyof T, [conn: ConnectionId, clock: number]>();
+  #writers = new Map<keyof T, [conn: ConnectionId, clock: number]>();
 
   constructor(
     registry: SyncedObjectRegistry,
@@ -36,7 +34,7 @@ export class SyncedDeepObject<T extends JsonObject>
 
   #inner: T | undefined;
 
-  makeProxy(): T {
+  #makeProxy(): T {
     const obj = this;
 
     return new Proxy(this.#inner!, {
@@ -48,14 +46,14 @@ export class SyncedDeepObject<T extends JsonObject>
         if (ret)
           obj.registry.emit(obj, ++obj.clock, { t: "deep-object-set", key: prop, value });
 
-        if (typeof value === "object" && value !== null) obj.syncChild(target, prop, value);
+        if (typeof value === "object" && value !== null) obj.#syncChild(target, prop, value);
 
         return ret;
       },
     });
   }
 
-  syncChild(parent: T, key: string, child: unknown & object) {
+  #syncChild(parent: T, key: string, child: unknown & object) {
     const existing = this[objects].get(key);
     if (existing) {
       this[objects].delete(key); // TODO: object needs a
@@ -84,10 +82,10 @@ export class SyncedDeepObject<T extends JsonObject>
 
     for (const [key, child] of Object.entries(value)) {
       if (typeof child !== "object" || child === null) continue;
-      this.syncChild(value, key, child);
+      this.#syncChild(value, key, child);
     }
 
-    const proxy = this.makeProxy();
+    const proxy = this.#makeProxy();
     this.set(proxy);
   }
 
@@ -99,7 +97,7 @@ export class SyncedDeepObject<T extends JsonObject>
       const key = op.key as keyof T;
       const value = op.value as T[typeof key];
 
-      const writer = this.writers.get(key);
+      const writer = this.#writers.get(key);
       if (writer) {
         const [lastFrom, lastClock] = writer;
         if (clock < lastClock) return;
@@ -109,7 +107,16 @@ export class SyncedDeepObject<T extends JsonObject>
       inner[key] = value;
 
       this.clock = Math.max(this.clock, clock);
-      this.writers.set(key, [from, clock]);
+      this.#writers.set(key, [from, clock]);
     }
+  }
+
+  serialize(value: T): JsonValue {
+    return value;
+  }
+
+  deserialize(value: JsonValue): T {
+    if (typeof value !== "object" || value === null) throw new Error("not an object");
+    return value as T;
   }
 }
