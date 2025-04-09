@@ -47,10 +47,24 @@ main > div {
   }
 }
 
-#viewport {
+#gameview {
   grid-area: viewport;
   overflow: hidden;
   margin-top: 0.5em;
+  display: flex;
+  flex-direction: column;
+}
+
+#viewport {
+  width: 100%;
+
+  &:first-child {
+    height: 100%;
+  }
+
+  &:not(:first-child) {
+    height: calc(100% - var(--toolbar-height));
+  }
 }
 
 #right-sidebar {

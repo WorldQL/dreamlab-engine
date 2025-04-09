@@ -12,7 +12,7 @@ import { Properties } from "./properties.tsx";
 import { ReloadPrompt } from "./reload-prompt.tsx";
 import { SceneGraph } from "./scene-graph.ts";
 import { SelectedEntityService } from "./selected-entity.ts";
-import { GameOverlays } from "./toolbar.tsx";
+import { Toolbar } from "./toolbar.tsx";
 import { WelcomeMenu } from "./welcome-menu.tsx";
 
 export interface InspectorUIWidget {
@@ -23,9 +23,9 @@ export interface InspectorUIWidget {
 
 const lastCodeEditorUpdates: Record<string, number> = {};
 export class NewRecommendedActions {
-  // deno-lint-ignore no-explicit-any
   constructor(
     public readonly path: string,
+    // deno-lint-ignore no-explicit-any
     public readonly plan: any,
   ) {}
 }
@@ -38,7 +38,7 @@ export class InspectorUI {
   properties: Properties;
   behaviorPanel: BehaviorPanel;
   contextMenu: ContextMenu;
-  gameOverlays: GameOverlays;
+  toolbar: Toolbar;
   fileTree: FileTree;
   welcomeMenu: WelcomeMenu;
   reloadPrompt: ReloadPrompt;
@@ -56,7 +56,7 @@ export class InspectorUI {
     this.properties = new Properties(game);
     this.behaviorPanel = new BehaviorPanel(game);
     this.contextMenu = new ContextMenu(game);
-    this.gameOverlays = new GameOverlays(game, gameContainer);
+    this.toolbar = new Toolbar(game, gameContainer);
     this.fileTree = new FileTree(game);
     this.welcomeMenu = new WelcomeMenu(game);
     this.reloadPrompt = new ReloadPrompt(game);
@@ -66,7 +66,7 @@ export class InspectorUI {
       game.local._.Camera.getBehavior(CameraPanBehavior).useUI(this);
     }
 
-    this.gameOverlays.setup(this);
+    this.toolbar.setup(this);
     this.sceneGraph.setup(this);
     this.properties.setup(this);
     this.behaviorPanel.setup(this);
@@ -179,7 +179,7 @@ export class InspectorUI {
     this.properties.show(uiRoot);
     this.behaviorPanel.show(uiRoot);
     this.contextMenu.show(uiRoot);
-    this.gameOverlays.show(uiRoot);
+    this.toolbar.show(uiRoot);
     this.fileTree.show(uiRoot);
     this.welcomeMenu.show(uiRoot);
     this.reloadPrompt.show(uiRoot);
@@ -190,7 +190,7 @@ export class InspectorUI {
     this.properties.hide();
     this.behaviorPanel.hide();
     this.contextMenu.hide();
-    this.gameOverlays.hide();
+    this.toolbar.hide();
     this.fileTree.hide();
     this.welcomeMenu.hide();
     this.reloadPrompt.hide();

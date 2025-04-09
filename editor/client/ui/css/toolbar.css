@@ -1,10 +1,74 @@
-#game-overlays {
+#gameview {
+  --toolbar-height: 26px;
+}
+
+#toolbar {
+  width: 100%;
+  height: var(--toolbar-height);
+  background-color: rgb(var(--color-bg-1) / 1);
+
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+
+  /* &[data-mode="play"] {
+  } */
+
+  & > div {
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+  }
+}
+
+#toolbar button {
+  all: unset;
+  display: flex;
+  align-items: center;
+  height: calc(100% - 4px);
+  gap: 0.25rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1rem;
+  padding: 0 0.5rem;
+  cursor: pointer;
+
+  color: rgb(var(--color-text-darker));
+  border-top: 2px solid transparent;
+  border-bottom: 2px solid transparent;
+  transition:
+    background 0.2s,
+    color 0.2s;
+
+  &[data-active] {
+    color: rgb(var(--color-text));
+    background: rgb(var(--color-bg-2));
+    border-bottom: 2px solid rgb(var(--color-primary) / 1);
+  }
+
+  & > svg {
+    width: auto;
+    height: calc(var(--toolbar-height) * 0.7);
+  }
+
+  &:hover {
+    color: rgb(var(--color-text));
+    background-color: rgb(var(--color-bg-2) / 1);
+  }
+}
+
+#toolbar #gizmo-buttons {
+  display: flex;
+  height: 100%;
+}
+
+#overlays {
   position: absolute;
   inset: 0;
   pointer-events: none;
 }
 
-#game-overlays #cursor-overlay {
+#overlays #cursor-overlay {
   position: absolute;
   bottom: 0em;
   left: 0em;
@@ -36,25 +100,5 @@
   }
   & > :nth-child(6) {
     margin-right: 0.5rem;
-  }
-}
-
-#game-overlays > #left-buttons {
-  position: absolute;
-  top: 1em;
-  left: 1em;
-
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-
-  & > * {
-    pointer-events: all;
-
-    dreamlab-icon-button[data-active] {
-      --color: rgb(var(--color-accent) / 1);
-      --color-hover: rgb(var(--color-accent) / 1);
-      --color-active: rgb(var(--color-accent) / 1);
-    }
   }
 }
