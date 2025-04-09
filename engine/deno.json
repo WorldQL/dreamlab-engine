@@ -12,6 +12,11 @@
     "@dreamlab/ui": "../ui/mod.ts",
     "@dreamlab/util/": "../util/"
   },
+  "lint": {
+    "rules": {
+      "exclude": ["no-this-alias"]
+    }
+  },
   "compilerOptions": {
     "lib": ["deno.window", "dom"],
     "noImplicitOverride": false
