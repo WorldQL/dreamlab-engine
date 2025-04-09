@@ -6,6 +6,7 @@ import {
   EntityDefinition,
   type ITransform,
 } from "@dreamlab/engine";
+import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 import { BoxResizeGizmoResizeEnd, GizmoUpdateEnd } from "../../common/entities/mod.ts";
 import {
   EditorMetadataEntity,
@@ -14,13 +15,12 @@ import {
   ServerRootFacade,
   WorldRootFacade,
 } from "../../common/mod.ts";
-import { Check, Save } from "../_icons.ts";
+import { Check, Save } from "../_icons.tsx";
 import { IconButton } from "../components/icon-button.ts";
+import { createFile } from "../main.ts";
 import type { UndoRedoOperation } from "../undo-redo.ts";
 import { UndoRedoManager } from "../undo-redo.ts";
 import { SelectedEntityService } from "./selected-entity.ts";
-import { NIL_UUID } from "jsr:@std/uuid@1/constants";
-import { createFile } from "../main.ts";
 
 // Restores the entity constructor using its "typeName"
 function entityReviver(_key: string, value: unknown): unknown {

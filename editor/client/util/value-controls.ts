@@ -19,7 +19,7 @@ import { element as elem } from "@dreamlab/ui";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
 import "npm:vanilla-colorful/hex-alpha-color-picker.js";
-import { icon, X } from "../_icons.ts";
+import { icon, X } from "../_icons.tsx";
 import { createBooleanField, createInputFieldWithDefault } from "./easy-input.ts";
 
 interface ValueControlOptions<T> {

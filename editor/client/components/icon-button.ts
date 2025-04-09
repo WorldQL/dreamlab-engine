@@ -1,5 +1,5 @@
 import { element as elem, ElementAttributes, ElementProps } from "@dreamlab/ui";
-import { icon } from "../_icons.ts";
+import { icon } from "../_icons.tsx";
 
 export class IconButton extends HTMLElement {
   static {

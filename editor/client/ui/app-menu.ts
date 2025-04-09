@@ -19,7 +19,7 @@ import {
   Save,
   ScrollText,
   User,
-} from "../_icons.ts";
+} from "../_icons.tsx";
 import { IconButton } from "../components/mod.ts";
 import { InspectorUI } from "./inspector.ts";
 

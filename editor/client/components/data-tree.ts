@@ -1,5 +1,5 @@
 import { element as elem } from "@dreamlab/ui";
-import { ChevronDown, icon } from "../_icons.ts";
+import { ChevronDown, icon } from "../_icons.tsx";
 
 declare global {
   interface HTMLElementEventMap {

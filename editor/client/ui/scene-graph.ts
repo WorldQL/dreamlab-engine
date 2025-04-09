@@ -12,7 +12,7 @@ import {
 } from "@dreamlab/engine";
 import { element as elem, element } from "@dreamlab/ui";
 import { EditorMetadataEntity, EditorRootFacadeEntity, Facades } from "../../common/mod.ts";
-import { ChevronDown, icon } from "../_icons.ts";
+import { ChevronDown, icon } from "../_icons.tsx";
 import { UndoRedoManager, type UndoRedoOperation } from "../undo-redo.ts";
 import { createEntityMenu } from "../util/entity-types.ts";
 import { getEntitiesEnabledState } from "../util/entity-utils.ts";

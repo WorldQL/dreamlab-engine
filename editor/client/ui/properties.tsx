@@ -13,7 +13,7 @@ import * as internal from "@dreamlab/engine/internal";
 import { BaseElement, element as elem } from "@dreamlab/ui";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { EditorMetadataEntity, Facades, PrefabRootFacade } from "../../common/mod.ts";
-import { icon, X } from "../_icons.ts";
+import { icon, X } from "../_icons.tsx";
 import { DataDetails, DataTable } from "../components/mod.ts";
 import { UndoRedoManager } from "../undo-redo.ts";
 import { createBooleanField, createInputField } from "../util/easy-input.ts";

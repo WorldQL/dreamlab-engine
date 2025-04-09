@@ -8,7 +8,7 @@ import inspect from "npm:object-inspect@1.13.2";
 import { WebSocket } from "npm:partysocket@1.0.2";
 import stripAnsi from "npm:strip-ansi@7.1.0";
 import type { LogEntry } from "../../../multiplayer/common-host/log-store.ts";
-import { Activity, CaseSensitive, Grid2X2, icon, Trash2 as Trash, Unplug } from "../_icons.ts";
+import { Activity, CaseSensitive, Grid2X2, icon, Trash2 as Trash, Unplug } from "../_icons.tsx";
 import { InspectorUI } from "./inspector.ts";
 
 type LogMessage = { t: "New"; entry: LogEntry };

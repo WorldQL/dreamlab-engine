@@ -9,7 +9,7 @@ import {
 } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 import { BoxResizeGizmo, Gizmo } from "../../common/entities/mod.ts";
-import { Box, BoxSelect, icon, MousePointer2, Move, Move3D, ZoomIn } from "../_icons.ts";
+import { Box, BoxSelect, icon, MousePointer2, Move, Move3D, ZoomIn } from "../_icons.tsx";
 import { stats } from "../_stats.ts";
 import { ButtonGroup, IconButton } from "../components/mod.ts";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";

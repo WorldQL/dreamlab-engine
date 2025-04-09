@@ -7,7 +7,7 @@ import {
 } from "./connect-form.tsx";
 import { startGame } from "./start-game.ts";
 import { connectionDetails, setConnectionDetails } from "./util/server-url.ts";
-import { icon, Server } from "../../editor/client/_icons.ts";
+import { icon, Server } from "../../editor/client/_icons.tsx";
 import { TextureStyle } from "@dreamlab/vendor/pixi.ts";
 
 TextureStyle.defaultOptions.scaleMode = "nearest";

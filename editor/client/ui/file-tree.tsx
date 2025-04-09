@@ -16,7 +16,7 @@ import {
   SimpleIcon,
   siReact,
   siTypescript,
-} from "../_icons.ts";
+} from "../_icons.tsx";
 import { DataTree } from "../components/mod.ts";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 

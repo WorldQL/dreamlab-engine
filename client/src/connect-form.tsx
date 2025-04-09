@@ -1,7 +1,7 @@
 import { urlWithParams } from "@dreamlab/util/url.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
 import type { AuthToken } from "./auth.ts";
-import { icon, X } from "../../editor/client/_icons.ts";
+import { icon, X } from "../../editor/client/_icons.tsx";
 
 type ConnectDetails = {
   readonly nickname: string;

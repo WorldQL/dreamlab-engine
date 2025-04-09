@@ -2,7 +2,7 @@ import { Behavior, ClientGame, Entity, EntityDestroyed, Root } from "@dreamlab/e
 import { SceneDescBehavior } from "@dreamlab/scene";
 import { element as elem } from "@dreamlab/ui";
 import { EditorMetadataEntity, EditorRootFacadeEntity } from "../../../common/mod.ts";
-import { icon, MinusCircle, PlusCircle } from "../../_icons.ts";
+import { icon, MinusCircle, PlusCircle } from "../../_icons.tsx";
 import { InspectorUI, InspectorUIWidget } from "../inspector.ts";
 import { BehaviorList } from "./behavior-list.ts";
 

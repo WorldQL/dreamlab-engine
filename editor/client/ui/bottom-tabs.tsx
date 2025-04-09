@@ -2,7 +2,7 @@ import { element as elem } from "@dreamlab/ui";
 import { InspectorUI, InspectorUIWidget, NewRecommendedActions } from "./inspector.ts";
 import { LogViewer } from "./log-viewer.ts";
 import { PrefabViewer } from "./prefab-viewer.tsx";
-import { Terminal, Box, icon, Bot, Wand, LoaderCircle } from "../_icons.ts";
+import { Terminal, Box, icon, Bot, Wand, LoaderCircle } from "../_icons.tsx";
 import { ClientGame } from "@dreamlab/engine";
 import { Assistant } from "./assistant/assistant.tsx";
 import { NIL_UUID } from "jsr:@std/uuid@1/constants";

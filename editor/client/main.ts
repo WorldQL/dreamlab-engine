@@ -27,7 +27,7 @@ import { element } from "@dreamlab/ui";
 import { urlToWebSocket } from "@dreamlab/util/url.ts";
 import { TextureStyle } from "@dreamlab/vendor/pixi.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
-import { icon, Loader } from "./_icons.ts";
+import { icon, Loader } from "./_icons.tsx";
 import { stats } from "./_stats.ts";
 import { MultiplayerCursors } from "./multiplayer-cursors.tsx";
 import { CameraPanBehavior } from "./panning-and-selection.ts";
