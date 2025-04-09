@@ -132,19 +132,24 @@ export class AudioSource extends Entity {
     this.#loadClip();
   }
 
-  play(): void {
+  #assertInitialized(): void {
     if (this.clip === "") return;
     if (!this.game.isClient()) return;
     if (!this.#howl) throw new Error("AudioSource is not initialized yet");
+  }
 
-    this.#howl.play();
+  play(): void {
+    this.#assertInitialized();
+    this.#howl!.play();
   }
 
   stop(): void {
-    if (this.clip === "") return;
-    if (!this.game.isClient()) return;
-    if (!this.#howl) throw new Error("AudioSource is not initialized yet");
+    this.#assertInitialized();
+    this.#howl!.stop();
+  }
 
-    this.#howl.stop();
+  pause(): void {
+    this.#assertInitialized();
+    this.#howl!.pause();
   }
 }
