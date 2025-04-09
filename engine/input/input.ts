@@ -40,25 +40,51 @@ export const inputs = [
   "Digit8",
   "Digit9",
 
-  // Special
+  // Arrows & Basic Controls
   "ArrowDown",
   "ArrowLeft",
   "ArrowRight",
   "ArrowUp",
   "Enter",
-  "Semicolon",
+  "Escape",
+  "Tab",
+  "Space",
+  "Backspace",
+  "Delete",
+
+  // Modifiers
   "ShiftLeft",
   "ShiftRight",
   "ControlLeft",
   "ControlRight",
-  "Space",
-  "Tab",
-  "Backspace",
+  "AltLeft",
+  "AltRight",
+  "MetaLeft",
+  "MetaRight",
+  "CapsLock",
+
+  // Symbols / Punctuation
+  "Semicolon",
   "BracketLeft",
   "BracketRight",
   "Backslash",
   "Backquote",
-  "Delete",
+  "Minus",
+  "Equal",
+  "Comma",
+  "Period",
+  "Slash",
+  "Quote",
+
+  // Misc
+  "Insert",
+  "Home",
+  "End",
+  "PageUp",
+  "PageDown",
+  "NumLock",
+  "ScrollLock",
+  "Pause",
 
   // Mouse
   "MouseLeft",
