@@ -5,8 +5,7 @@ export * from "npm:simple-icons@13.6.0";
 
 const parser = new DOMParser();
 
-export type Icon = SimpleIcon | string;
-export function icon(icon: Icon): SVGElement {
+export function icon(icon: SimpleIcon | string): SVGElement {
   const svg = typeof icon === "string" ? icon : icon.svg;
   const doc = parser.parseFromString(svg, "image/svg+xml");
 
@@ -17,3 +16,6 @@ export function icon(icon: Icon): SVGElement {
 
   return el;
 }
+
+export const Icon = (props: { readonly icon: SimpleIcon | string }): SVGElement =>
+  icon(props.icon);
