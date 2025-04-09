@@ -14,5 +14,6 @@ export * from "./network.ts";
 export * from "./physics.ts";
 export * from "./renderer/mod.ts";
 export * from "./signals/mod.ts";
+export * from "./synced-objects/mod.ts";
 export * from "./time.ts";
 export * from "./ui.ts";

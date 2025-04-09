@@ -1,18 +1,30 @@
-import { AnySyncedObject } from "./object.ts";
-import { SyncedObjectOperation } from "./operation.ts";
-
-export const objects = Symbol.for("dreamlab.internal.syncedObjectContainerObjectField");
+import { syncedObjectContainerObjectsField as objects } from "@dreamlab/engine/internal";
+import type { Accessor, AnySyncedObject } from "./object.ts";
+import type { SyncedObjectOperation } from "./operation.ts";
 
 export interface SyncedObjectContainer {
-  ref: string;
-  [objects]: Map<string, AnySyncedObject>;
+  readonly ref: string;
+  readonly [objects]: Map<string, AnySyncedObject>;
 }
 export function isContainer(o: unknown): o is SyncedObjectContainer {
   return typeof o === "object" && o !== null && objects in o;
 }
 
 type EmissionListener = (...params: Parameters<SyncedObjectRegistry["emit"]>) => void;
+type SyncedObjectConstructor = new (
+  registry: SyncedObjectRegistry,
+  name: string,
+  container: SyncedObjectContainer,
+  // deno-lint-ignore no-explicit-any
+  access: Accessor<SyncedObjectContainer, any>,
+) => AnySyncedObject;
+
 export class SyncedObjectRegistry {
+  static readonly handlers = new Map<string, SyncedObjectConstructor>();
+  static registerHandler(handler: SyncedObjectConstructor & { readonly kind: string }): void {
+    this.handlers.set(handler.kind, handler);
+  }
+
   #containers = new Map<string, WeakRef<SyncedObjectContainer>>();
   #listeners: EmissionListener[] = [];
 
