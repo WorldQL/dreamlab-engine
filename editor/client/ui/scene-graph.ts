@@ -215,9 +215,7 @@ export class SceneGraph implements InspectorUIWidget {
     const toggle = elem("div", { className: "arrow" }, [icon(ChevronDown)]);
     const entityIcon =
       !this.game.isEditMode &&
-      (entity.id === "game.prefabs" ||
-        entity.id === "game.world" ||
-        entity.id === "game.local") &&
+      (entity.id === "prefabs" || entity.id === "world" || entity.id === "local") &&
       entity.root.icon
         ? entity.root.icon
         : (entity.constructor as typeof Entity).icon;
@@ -472,7 +470,7 @@ export class SceneGraph implements InspectorUIWidget {
       }
     });
 
-    if (entity.parent?.id === "game.world._.EditEntities") return;
+    if (entity.parent?.id === "world/EditEntities") return;
 
     entryElement.draggable = true;
 

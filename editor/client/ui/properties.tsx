@@ -111,8 +111,7 @@ export class Properties implements InspectorUIWidget {
     }
 
     table.addEntry("name", "Name", nameField);
-
-    const entityId = () => entity.id.replace("game.world._.EditEntities._.", "game.");
+    const entityId = () => entity.id.replace("world/EditEntities/", "");
     const idField = elem("code", {}, [entityId()]);
     entity.on(EntityRenamed, () => (idField.textContent = entityId()));
     entity.on(EntityReparented, () => (idField.textContent = entityId()));
@@ -188,7 +187,7 @@ export class Properties implements InspectorUIWidget {
         clear,
       ]);
 
-      valueDisplay.textContent = clonedFrom.id.replace("game.world._.EditEntities._.", "game.");
+      valueDisplay.textContent = clonedFrom.id.replace("world/EditEntities/", "");
       clear.addEventListener("click", () => {
         entity.clonedFromRef = "";
         table.removeEntry("prefab-instance");

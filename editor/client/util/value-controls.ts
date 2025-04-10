@@ -494,8 +494,7 @@ export function createValueControl(
         }
 
         valueDisplay.style.opacity = entity === undefined ? "0.65" : "";
-        const id =
-          entity?.id.replace("game.world._.EditEntities._.", "game.") ?? "[No Entity Selected]";
+        const id = entity?.id.replace("world/EditEntities/", "") ?? "[No Entity Selected]";
 
         valueDisplay.title = id;
         valueDisplay.textContent = id;

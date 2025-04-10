@@ -15,9 +15,9 @@ export abstract class Root extends Entity {
     game.entities[internal.entityStoreRegisterRoot](`game.${name}`, this.entities);
     game.entities[internal.entityStoreUnregister](this);
 
-    this.name = `game.${name}`;
+    this.name = `${name}`;
     // @ts-expect-error assign readonly id
-    this.id = `game.${name}`;
+    this.id = `${name}`;
     // @ts-expect-error assign readonly id
     this.root = this;
 

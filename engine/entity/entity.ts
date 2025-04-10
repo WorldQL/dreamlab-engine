@@ -1354,13 +1354,16 @@ export abstract class Entity implements ISignalHandler {
   abstract get bounds(): IBounds | undefined;
 }
 
-const ID_REGEX = /^\p{ID_Start}\p{ID_Continue}*$/v;
-export const isValidPlainIdentifier = (s: string): boolean => ID_REGEX.test(s);
-// prettier-ignore
+const isValidPlainIdentifier = (s: string): boolean => !s.includes("/");
+
 export const serializeIdentifier = (parent: string | undefined, child: string): string =>
   isValidPlainIdentifier(child)
-    ? parent ? `${parent}._.${child}` : `${child}`
-    : parent ? `${parent}._[${JSON.stringify(child)}]` : `[${JSON.stringify(child)}]`;
+    ? parent
+      ? `${parent}/${child}`
+      : `${child}`
+    : parent
+      ? `${parent}/"${child}"`
+      : `"${child}"`;
 
 // unused. leaving for reference.
 // get the facade root of an entity since in edit mode root is always "world"

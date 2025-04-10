@@ -167,7 +167,7 @@ export class InspectorUI {
         if (entities.length === 0) return;
 
         const hasPrefabSelected = entities.some(
-          it => it === prefabRoot || it.id.startsWith(prefabRoot.id + "."),
+          it => it === prefabRoot || it.id.startsWith(prefabRoot.id + "/"),
         );
         prefabRoot.localHidden = !hasPrefabSelected;
       });
