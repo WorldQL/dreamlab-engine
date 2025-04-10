@@ -38,6 +38,7 @@ export const serializeBehaviorDefinition = (
     ref,
     script,
     values: def.values,
+    sync: def.sync,
   };
 
   if (desc.values && Object.keys(desc.values).length === 0) delete desc.values;
@@ -118,6 +119,7 @@ export const convertBehaviorDefinition = async (
     _ref: def.ref,
     type,
     values: def.values,
+    sync: def.sync,
   };
 };
 
