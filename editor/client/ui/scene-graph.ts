@@ -520,7 +520,6 @@ export class SceneGraph implements InspectorUIWidget {
       const lockedByEntity = ui.editMode ? EditorMetadataEntity.getLockedBy(entity) : undefined;
 
       const isEntitySelected = ui.selectedEntity.entities.includes(entity);
-
       if (!isEntitySelected && !lockedByEntity) {
         ui.selectedEntity.entities = [entity];
       }
@@ -539,7 +538,7 @@ export class SceneGraph implements InspectorUIWidget {
             },
             false,
             `${modifierKey}+C`,
-            "multi",
+            10,
             1,
           ],
           [
@@ -558,7 +557,7 @@ export class SceneGraph implements InspectorUIWidget {
             },
             false,
             "Backspace",
-            "z-delete",
+            20,
             1,
           ],
         );
@@ -577,7 +576,7 @@ export class SceneGraph implements InspectorUIWidget {
             },
             false,
             `${modifierKey}+E`,
-            "multi",
+            10,
             1,
           ]);
 
@@ -607,7 +606,7 @@ export class SceneGraph implements InspectorUIWidget {
               },
               false,
               `${modifierKey}+Shift+L`,
-              "lock",
+              30,
               1,
             ]);
           } else {
@@ -626,7 +625,7 @@ export class SceneGraph implements InspectorUIWidget {
               },
               false,
               `${modifierKey}+Shift+L`,
-              "lock",
+              30,
               1,
             ]);
           }
@@ -637,7 +636,7 @@ export class SceneGraph implements InspectorUIWidget {
           () => this.game.local._.Camera.pos.assign(entity.pos),
           false,
           undefined,
-          "general",
+          0,
           1,
         ]);
 
@@ -678,7 +677,7 @@ export class SceneGraph implements InspectorUIWidget {
               },
               false,
               "F2",
-              "edit",
+              1,
               1,
             ],
             [
@@ -689,7 +688,7 @@ export class SceneGraph implements InspectorUIWidget {
               },
               false,
               `${modifierKey}+C`,
-              "edit",
+              1,
               2,
             ],
             [
@@ -699,7 +698,7 @@ export class SceneGraph implements InspectorUIWidget {
               },
               false,
               `${modifierKey}+V`,
-              "edit",
+              1,
               3,
             ],
           );
@@ -723,7 +722,7 @@ export class SceneGraph implements InspectorUIWidget {
               },
               false,
               `${modifierKey}+Shift+L`,
-              "zzz-bottomA",
+              50,
               1,
             ]);
           } else {
@@ -742,7 +741,7 @@ export class SceneGraph implements InspectorUIWidget {
               },
               false,
               `${modifierKey}+Shift+L`,
-              "zzz-bottomA",
+              50,
               1,
             ]);
           }
@@ -766,7 +765,7 @@ export class SceneGraph implements InspectorUIWidget {
           },
           false,
           `${modifierKey}+E`,
-          "zzz-bottomA",
+          50,
           2,
         ]);
         if (!entity.protected && !lockedByEntity) {
@@ -785,7 +784,7 @@ export class SceneGraph implements InspectorUIWidget {
             },
             false,
             "Backspace",
-            "zzz-bottomB",
+            51,
             1,
           ]);
         }

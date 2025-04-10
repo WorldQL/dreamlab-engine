@@ -8,7 +8,7 @@ export type ContextMenuItem =
       action: () => void,
       disabled?: boolean,
       hint?: string,
-      group?: string,
+      group?: number,
       order?: number,
     ]
   | [
@@ -16,7 +16,7 @@ export type ContextMenuItem =
       children: ContextMenuItem[],
       disabled?: boolean,
       hint?: string,
-      group?: string,
+      group?: number,
       order?: number,
     ];
 
@@ -47,19 +47,19 @@ export class ContextMenu implements InspectorUIWidget {
 
   drawContextMenu(cursorX: number, cursorY: number, items: ContextMenuItem[]) {
     const sortedItems = [...items].sort((a, b) => {
-      const groupA = a[4] || "";
-      const groupB = b[4] || "";
+      const groupA = a[4] ?? 0;
+      const groupB = b[4] ?? 0;
       if (groupA === groupB) {
-        return (a[5] || 0) - (b[5] || 0);
+        return (a[5] ?? 0) - (b[5] ?? 0);
       }
-      return groupA.localeCompare(groupB);
+      return groupA - groupB;
     });
 
     const groupedItems: (ContextMenuItem | "separator")[] = [];
-    let lastGroup = "";
+    let lastGroup = 0;
     for (const item of sortedItems) {
-      const currentGroup = item[4] || "";
-      if (lastGroup && currentGroup !== lastGroup) {
+      const currentGroup = item[4] ?? 0;
+      if (groupedItems.length && currentGroup !== lastGroup) {
         groupedItems.push("separator");
       }
       groupedItems.push(item);
