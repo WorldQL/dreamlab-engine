@@ -8,7 +8,7 @@ export const handleObjectSync: ClientNetworkSetupRoutine = (net, game) => {
       t: "SyncedObjectOperation",
       clock,
       containerId: object.containerId,
-      objectRef: object.field,
+      field: object.field,
       op,
     });
   });
@@ -18,10 +18,9 @@ export const handleObjectSync: ClientNetworkSetupRoutine = (net, game) => {
 
     const container = game.sync.get(packet.containerId);
     if (!container) return;
-    const object = container[internal.syncedObjectContainerObjectsField];
-    if (!object) return;
-
-    const synced = object.get(packet.objectRef);
-    if (synced) synced.receive(packet.from ?? "server", packet.clock, op);
+    const objects = container[internal.syncedObjectContainerObjectsField];
+    if (!objects) return;
+    const object = objects.get(packet.field);
+    if (object) object.receive(packet.from ?? "server", packet.clock, op);
   });
 };

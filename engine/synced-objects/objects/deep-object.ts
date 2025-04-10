@@ -27,13 +27,13 @@ export class SyncedDeepObject<T extends JsonObject>
 
   constructor(
     registry: SyncedObjectRegistry,
-    name: string,
+    field: string,
     container: SyncedObjectContainer,
     access: Accessor<SyncedObjectContainer, T>,
   ) {
-    super(registry, name, container, access);
+    super(registry, field, container, access);
 
-    this.ref = container.ref + "/" + name;
+    this.ref = container.ref + "/" + field;
     this[objects] = new Map(); // TODO: make non-enumerable
 
     registry.register(this);

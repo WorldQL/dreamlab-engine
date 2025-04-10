@@ -120,7 +120,7 @@ export const ClientSyncedObjectOperation = z.object({
   t: z.literal("SyncedObjectOperation"),
   clock: z.number(),
   containerId: z.string(),
-  objectRef: z.string(),
+  field: z.string(),
   op: z.unknown(),
 });
 
