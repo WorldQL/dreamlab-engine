@@ -273,10 +273,10 @@ export class PrefabViewer {
         draggable
         data-entity={entity.ref}
         onClick={click}
-        onDblclick={dblclick}
-        onContextmenu={contextmenu}
-        onDragstart={dragstart}
-        onDragend={dragend}
+        onDblClick={dblclick}
+        onContextMenu={contextmenu}
+        onDragStart={dragstart}
+        onDragEnd={dragend}
       >
         <div className="prefab-icon">{entity.icon ?? "🌟"}</div>
         <div className="prefab-name">{entity.name}</div>
