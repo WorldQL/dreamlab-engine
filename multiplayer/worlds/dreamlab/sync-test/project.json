@@ -1,0 +1,35 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "engine_revision": "2024-08.001"
+  },
+  "scenes": {
+    "main": {
+      "registration": [],
+      "world": [
+        {
+          "ref": "ent_zrjW0F988I",
+          "type": "@core/Empty",
+          "name": "Empty",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": 0,
+              "y": -36
+            }
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_HohF5wYRwO",
+              "script": "res://src/my-behavior.ts",
+              "sync": {}
+            }
+          ]
+        }
+      ],
+      "local": [],
+      "server": [],
+      "prefabs": []
+    }
+  }
+}

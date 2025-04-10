@@ -46,6 +46,7 @@ export interface BehaviorContext {
   entity: Entity;
   ref?: string;
   values?: Record<string, Primitive>;
+  sync?: Record<string, { kind: string; value: JsonValue }>;
 }
 
 export type BehaviorConstructor<B extends Behavior = Behavior> = (new (
@@ -59,6 +60,7 @@ export type BehaviorConstructor<B extends Behavior = Behavior> = (new (
 export interface BehaviorDefinition<B extends Behavior = Behavior> {
   type: BehaviorConstructor<B>;
   values?: Partial<Omit<B, keyof Behavior>>;
+  sync?: Record<Exclude<keyof B, keyof Behavior>, { kind: string; value: JsonValue }>;
   _ref?: string;
 }
 
@@ -142,6 +144,7 @@ export class Behavior implements ISignalHandler {
   readonly ref: string = Behavior.createRef();
 
   // #region Values
+  #syncOverrides: NonNullable<BehaviorContext["sync"]> = {};
   #defaultValues: Record<string, unknown> = {};
   #values = new Map<string, Value>();
   get values(): ReadonlyMap<string, Value> {
@@ -290,6 +293,7 @@ export class Behavior implements ISignalHandler {
 
     if (ctx.ref) this.ref = ctx.ref;
     if (ctx.values) this.#defaultValues = ctx.values;
+    if (ctx.sync) this.#syncOverrides = ctx.sync;
 
     this.game.sync.register(this);
   }
@@ -404,7 +408,7 @@ export class Behavior implements ISignalHandler {
       }
     }
 
-    setupSyncedObjects(this.game.sync, this, {}); // TODO: overrides from scene def
+    setupSyncedObjects(this.game.sync, this, this.#syncOverrides); // TODO: overrides from scene def
   }
 
   setup(): void {}

@@ -56,6 +56,7 @@ import {
   transformWorldToLocal,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
+import { SyncedObjectConstructor } from "../synced-objects/registry.ts";
 
 export interface EntityContext {
   game: Game;
@@ -428,6 +429,7 @@ export abstract class Entity implements ISignalHandler {
           entity: targetEnt,
           ref: b._ref,
           values: b.values,
+          sync: b.sync,
         });
         targetEnt.behaviors.push(behavior);
         if (!opts.inert) {
@@ -485,6 +487,7 @@ export abstract class Entity implements ISignalHandler {
       ref: behavior._ref,
       // @ts-expect-error: generic constraints
       values: behavior.values,
+      sync: behavior.sync,
     });
     this.behaviors.push(b);
 
@@ -563,6 +566,14 @@ export abstract class Entity implements ISignalHandler {
       behaviorValues[key] = serializableValue;
     }
 
+    const syncOverrides: Partial<Record<string, { kind: string; value: JsonValue }>> = {};
+    for (const syncedObject of behavior[internal.syncedObjectContainerObjectsField].values()) {
+      syncOverrides[syncedObject.field] = {
+        kind: (syncedObject.constructor as SyncedObjectConstructor).kind,
+        value: syncedObject.serialize(syncedObject.get()),
+      };
+    }
+
     const uri = this.game[internal.behaviorLoader].lookup(
       behavior.constructor as BehaviorConstructor,
     );
@@ -572,6 +583,7 @@ export abstract class Entity implements ISignalHandler {
       _ref: withRefs ? behavior.ref : undefined,
       type: behavior.constructor as BehaviorConstructor,
       values: behaviorValues,
+      sync: syncOverrides,
       uri,
     };
   }

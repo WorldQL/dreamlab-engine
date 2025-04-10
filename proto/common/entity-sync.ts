@@ -22,6 +22,7 @@ export const convertBehaviorDefinition = async (
     _ref: def.ref,
     type,
     values: def.values,
+    sync: def.sync,
   };
 };
 
@@ -81,6 +82,7 @@ export const serializeBehaviorDefinition = (
     ref,
     script,
     values: def.values ?? {},
+    sync: def.sync ?? {},
   };
 };
 
