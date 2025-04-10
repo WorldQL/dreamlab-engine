@@ -31,17 +31,17 @@ function inferType(value: SyncedObjectTarget): SyncedObjectConstructor {
 
 export function sync<Container extends Entity | Behavior, Field extends SyncedObjectTarget>(
   opts: {
-    name?: string;
     type?: SyncedObjectConstructor; // TODO: type markers (registry lookup)
     description?: string;
   } = {},
 ): (_: undefined, ctx: ClassFieldDecoratorContext<Container, Field>) => void {
   return (_, ctx) => {
-    if (typeof ctx.name !== "string") return;
+    const field = ctx.name;
+    if (typeof field !== "string") return;
+
     if (ctx.static) return;
     if (ctx.private) throw new Error("can't sync a private field!");
 
-    const field = ctx.name;
     ctx.addInitializer(function () {
       const value = ctx.access.get(this);
 
