@@ -1,6 +1,6 @@
 // TODO: selectively export
 
-// export * from "./decorator.ts";
+export { sync } from "./decorator.ts";
 export type { AnySyncedObject, SyncedObject } from "./object.ts";
 export * from "./operation.ts";
 

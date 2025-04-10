@@ -15,7 +15,7 @@ export abstract class SyncedObject<T> {
     throw new Error("no kind for SyncedObjectHandler subtype: " + String(this));
   }
 
-  containerId: string;
+  readonly containerId: string;
 
   clock: number = 0;
   lastWriter: ConnectionId | undefined;
@@ -25,7 +25,7 @@ export abstract class SyncedObject<T> {
 
   constructor(
     protected registry: SyncedObjectRegistry,
-    public name: string,
+    public field: string,
     container: SyncedObjectContainer,
     access: Accessor<SyncedObjectContainer, T>,
   ) {
@@ -33,7 +33,7 @@ export abstract class SyncedObject<T> {
     this.get = () => access.get(container);
     this.set = v => access.set(container, v);
 
-    container[objects].set(this.name, this);
+    container[objects].set(this.field, this);
   }
 
   abstract setup(initial?: JsonValue): void;
