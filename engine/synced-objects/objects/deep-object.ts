@@ -96,7 +96,7 @@ export class SyncedDeepObject<T extends JsonObject>
     this.set(proxy);
   }
 
-  receive(from: ConnectionId, clock: number, op: SyncedObjectOperation): void {
+  receive(from: ConnectionId, clock: number, op: SyncedObjectOperation): boolean {
     const inner = this.#inner;
     if (!inner) throw new Error("SyncedDeepObject was not setup!");
 
@@ -107,15 +107,19 @@ export class SyncedDeepObject<T extends JsonObject>
       const writer = this.#writers.get(key);
       if (writer) {
         const [lastFrom, lastClock] = writer;
-        if (clock < lastClock) return;
-        if (clock === lastClock && from < lastFrom) return;
+        if (clock < lastClock) return false;
+        if (clock === lastClock && from < lastFrom) return false;
       }
 
       inner[key] = value;
 
       this.clock = Math.max(this.clock, clock);
       this.#writers.set(key, [from, clock]);
+
+      return true;
     }
+
+    return false;
   }
 
   serialize(value: T): JsonValue {

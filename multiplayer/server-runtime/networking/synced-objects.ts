@@ -18,11 +18,14 @@ export const handleObjectSync: ServerNetworkSetupRoutine = (net, game) => {
 
     const container = game.sync.get(packet.containerId);
     if (!container) return;
-    const object = container[internal.syncedObjectContainerObjectsField];
+    const objects = container[internal.syncedObjectContainerObjectsField];
+    if (!objects) return;
+    const object = objects.get(packet.objectRef);
     if (!object) return;
 
-    const synced = object.get(packet.objectRef);
-    if (synced) synced.receive(from, packet.clock, op);
+    if (!object.receive(from, packet.clock, op)) {
+      // TODO: net.send(from, 'update denied' packet that tells you the real state)
+    }
 
     net.broadcast({ ...packet, from });
   });
