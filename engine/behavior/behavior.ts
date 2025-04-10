@@ -36,6 +36,7 @@ import {
   ValueTypeAdapter,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
+import { setupSyncedObjects } from "../synced-objects/decorator.ts";
 
 // deno-lint-ignore no-unused-vars
 import type { Clickable } from "@dreamlab/engine"; // this is used in jsdoc
@@ -289,6 +290,8 @@ export class Behavior implements ISignalHandler {
 
     if (ctx.ref) this.ref = ctx.ref;
     if (ctx.values) this.#defaultValues = ctx.values;
+
+    this.game.sync.register(this);
   }
 
   destroy() {
@@ -393,15 +396,15 @@ export class Behavior implements ISignalHandler {
 
   [internal.implicitSetup]() {
     const ctor = this.constructor as BehaviorConstructor<this>;
-    if (!(internal.defineValuesProperties in this)) return;
-
-    const toDefine = this[internal.defineValuesProperties] as ValuesToDefine;
-    if (toDefine.size === 0) return;
-
-    for (const [name, opts] of toDefine) {
-      // @ts-expect-error: props are never on base behavior
-      this.defineValue(ctor, name, opts);
+    if (internal.defineValuesProperties in this) {
+      const valuesToDefine = this[internal.defineValuesProperties] as ValuesToDefine;
+      for (const [name, opts] of valuesToDefine) {
+        // @ts-expect-error: props are never on base behavior
+        this.defineValue(ctor, name, opts);
+      }
     }
+
+    setupSyncedObjects(this.game.sync, this, {}); // TODO: overrides from scene def
   }
 
   setup(): void {}
