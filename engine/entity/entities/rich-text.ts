@@ -149,4 +149,12 @@ export class RichText extends PixiEntity {
 
     this.#reflow();
   }
+
+  rerender(): void {
+    this.#text?.destroy();
+    this.#text = undefined;
+    this.#style = undefined;
+
+    this.#reflow();
+  }
 }

@@ -21,7 +21,14 @@ import { auth } from "@dreamlab/client/auth.ts";
 import { connectToGame, pickCodec } from "@dreamlab/client/game-connection.ts";
 import { setupGame } from "@dreamlab/client/game-setup.ts";
 import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
-import { Camera, ClientGame, Entity, GameStatus, GameStatusChange } from "@dreamlab/engine";
+import {
+  Camera,
+  ClientGame,
+  Entity,
+  GameStatus,
+  GameStatusChange,
+  RichText,
+} from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { element } from "@dreamlab/ui";
 import { urlToWebSocket } from "@dreamlab/util/url.ts";
@@ -203,8 +210,10 @@ Object.defineProperties(globalThis, {
 });
 
 // setupMultiplayerCursors(game);
-await fonts;
 await setupGame(game, conn, handshake.edit_mode);
+fonts.then(() => {
+  game.entities.lookupByType(RichText).forEach(text => text.rerender());
+});
 
 const registry = Entity[internal.entityTypeRegistry];
 for (const [type, namespace] of registry) {

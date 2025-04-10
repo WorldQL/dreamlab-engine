@@ -1,4 +1,4 @@
-import type { ClientGame } from "@dreamlab/engine";
+import { RichText, type ClientGame } from "@dreamlab/engine";
 import { preloadFonts } from "./fonts.ts";
 import { connectToGame, pickCodec } from "./game-connection.ts";
 import { setupGame } from "./game-setup.ts";
@@ -31,8 +31,10 @@ export async function startGame(
   const [game, conn, handshake] = await connectToGame(instanceId, container, socket, codec);
   gameCallback(game);
 
-  await fonts;
   await setupGame(game, conn, handshake.edit_mode);
+  fonts.then(() => {
+    game.entities.lookupByType(RichText).forEach(text => text.rerender());
+  });
 
   new ResizeObserver(_ => {
     game.renderer.resize();
