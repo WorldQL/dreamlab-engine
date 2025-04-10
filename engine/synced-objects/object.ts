@@ -37,7 +37,7 @@ export abstract class SyncedObject<T> {
   }
 
   abstract setup(initial?: JsonValue): void;
-  abstract receive(from: ConnectionId, clock: number, op: SyncedObjectOperation): void;
+  abstract receive(from: ConnectionId, clock: number, op: SyncedObjectOperation): boolean;
 
   abstract serialize(value: T): JsonValue;
   abstract deserialize(value: JsonValue): T;

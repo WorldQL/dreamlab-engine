@@ -76,24 +76,26 @@ export class SyncedArray<T extends Primitive> extends SyncedObject<T[]> {
     this.set(value);
   }
 
-  receive(from: ConnectionId, clock: number, op: SyncedObjectOperation): void {
+  receive(from: ConnectionId, clock: number, op: SyncedObjectOperation): boolean {
     const inner = this.#inner;
     if (!inner) throw new Error("synced array was not setup()!");
 
-    console.log({ from, clock, op });
-
-    if (clock < this.clock) return;
-    if (clock === this.clock && from < (this.lastWriter ?? "")) return;
+    if (clock < this.clock) return false;
+    if (clock === this.clock && from < (this.lastWriter ?? "")) return false;
 
     this.clock = clock;
     this.lastWriter = from;
 
     if (op.t === "array-push") {
       inner.push(...(op.items as T[]));
+      return true;
     }
     if (op.t === "array-set-at") {
       inner[op.index] = op.value as T;
+      return true;
     }
+
+    return false;
   }
 
   serialize(value: T[]): JsonValue {
