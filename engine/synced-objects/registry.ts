@@ -12,7 +12,7 @@ export function isContainer(o: unknown): o is SyncedObjectContainer {
 
 export type SyncedObjectConstructor = (new (
   registry: SyncedObjectRegistry,
-  name: string,
+  field: string,
   container: SyncedObjectContainer,
   // deno-lint-ignore no-explicit-any
   access: Accessor<SyncedObjectContainer, any>,
