@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dreamlab</title>
 
+    <script type="importmap">
+      {
+        "imports": {
+          "@dreamlab/vendor/": "./dist/vendor/",
+          "@dreamlab/engine": "./dist/engine.js",
+          "@dreamlab/ui": "./dist/ui.js",
+          "@dreamlab/ui/jsx-runtime": "./dist/ui-jsx.js"
+        }
+      }
+    </script>
+
     <link rel="modulepreload" href="./dist/engine.js" as="script" />
     <link rel="modulepreload" href="./dist/client-main.js" as="script" />
     <link rel="modulepreload" href="./dist/vendor/rapier.js" as="script" />
@@ -29,16 +40,6 @@
       <div id="bottom-bar"></div>
     </main>
 
-    <script type="importmap">
-      {
-        "imports": {
-          "@dreamlab/vendor/": "./dist/vendor/",
-          "@dreamlab/engine": "./dist/engine.js",
-          "@dreamlab/ui": "./dist/ui.js",
-          "@dreamlab/ui/jsx-runtime": "./dist/ui-jsx.js"
-        }
-      }
-    </script>
     <script type="module" src="./dist/client-main.js"></script>
   </body>
 </html>
