@@ -3,10 +3,12 @@ import { syncedObjectContainerObjectsField as objects } from "@dreamlab/engine/i
 import { SyncedObjectOperation } from "./operation.ts";
 import { SyncedObjectContainer, SyncedObjectRegistry } from "./registry.ts";
 
+export type Accessor<Container, T> = ClassFieldDecoratorContext<Container, T>["access"];
+
 // deno-lint-ignore no-explicit-any
 export type AnySyncedObject = SyncedObject<any>;
-
-export type Accessor<Container, T> = ClassFieldDecoratorContext<Container, T>["access"];
+// deno-lint-ignore no-explicit-any
+export type AnyAccessor = Accessor<SyncedObjectContainer, any>;
 
 export abstract class SyncedObject<T> {
   static get kind(): string {

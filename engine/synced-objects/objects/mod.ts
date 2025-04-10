@@ -1,3 +1,4 @@
 // TODO: array when it's a proper sequence CRDT
 
-export * from "./deep-object.ts";
+export { SyncedArray } from "./array.ts";
+export { SyncedDeepObject } from "./deep-object.ts";
