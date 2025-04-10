@@ -1,8 +1,15 @@
 import { ConnectionId, JsonObject, JsonValue } from "@dreamlab/engine";
 import { syncedObjectContainerObjectsField as objects } from "@dreamlab/engine/internal";
+import { z } from "@dreamlab/vendor/zod.ts";
 import { Accessor, AnySyncedObject, SyncedObject } from "../object.ts";
 import { SyncedObjectOperation } from "../operation.ts";
 import { isContainer, SyncedObjectContainer, SyncedObjectRegistry } from "../registry.ts";
+
+export const DeepObjectOperationSet = z.object({
+  t: z.literal("deep-object-set"),
+  key: z.string(),
+  value: z.unknown(),
+});
 
 export class SyncedDeepObject<T extends JsonObject>
   extends SyncedObject<T>

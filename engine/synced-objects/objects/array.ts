@@ -1,7 +1,18 @@
 import { ConnectionId, JsonValue, Primitive } from "@dreamlab/engine";
+import { z } from "@dreamlab/vendor/zod.ts";
 import { SyncedObject } from "../object.ts";
 import { SyncedObjectOperation } from "../operation.ts";
 import { SyncedObjectRegistry } from "../registry.ts";
+
+export const ArrayOperationSetAt = z.object({
+  t: z.literal("array-set-at"),
+  index: z.number(),
+  value: z.unknown(),
+});
+export const ArrayOperationPush = z.object({
+  t: z.literal("array-push"),
+  items: z.array(z.unknown()),
+});
 
 /** don't use this!!! it doesn't sync consistently */
 export class SyncedArray<T extends Primitive> extends SyncedObject<T[]> {

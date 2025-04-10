@@ -10,18 +10,19 @@ export function isContainer(o: unknown): o is SyncedObjectContainer {
   return typeof o === "object" && o !== null && objects in o;
 }
 
-type EmissionListener = (...params: Parameters<SyncedObjectRegistry["emit"]>) => void;
-type SyncedObjectConstructor = new (
+export type SyncedObjectConstructor = (new (
   registry: SyncedObjectRegistry,
   name: string,
   container: SyncedObjectContainer,
   // deno-lint-ignore no-explicit-any
   access: Accessor<SyncedObjectContainer, any>,
-) => AnySyncedObject;
+) => AnySyncedObject) & { readonly kind: string };
+
+type EmissionListener = (...params: Parameters<SyncedObjectRegistry["emit"]>) => void;
 
 export class SyncedObjectRegistry {
   static readonly handlers = new Map<string, SyncedObjectConstructor>();
-  static registerHandler(handler: SyncedObjectConstructor & { readonly kind: string }): void {
+  static registerHandler(handler: SyncedObjectConstructor): void {
     this.handlers.set(handler.kind, handler);
   }
 
