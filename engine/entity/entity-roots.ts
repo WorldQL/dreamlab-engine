@@ -12,7 +12,7 @@ export abstract class Root extends Entity {
     super({ game, name, ref: name.toUpperCase() });
 
     this.entities = new EntityStore();
-    game.entities[internal.entityStoreRegisterRoot](`game.${name}`, this.entities);
+    game.entities[internal.entityStoreRegisterRoot](`${name}`, this.entities);
     game.entities[internal.entityStoreUnregister](this);
 
     this.name = `${name}`;
