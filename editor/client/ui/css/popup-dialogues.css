@@ -72,8 +72,8 @@
 
 .generator-button {
   display: block;
-  width: 100%;
   padding: 15px;
+  text-align: center;
   border: 1px solid rgba(var(--color-text-darker), 0.5);
   border-radius: var(--border-radius);
   background-color: rgb(var(--color-bg-2));
