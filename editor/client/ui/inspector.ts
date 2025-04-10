@@ -71,7 +71,7 @@ export class InspectorUI {
     this.properties.setup(this);
     this.behaviorPanel.setup(this);
     this.contextMenu.setup(this);
-    this.fileTree.setup(this);
+    this.fileTree.setup();
     this.reloadPrompt.setup(this);
 
     setupKeyboardShortcuts(this.game, this.selectedEntity, editMode);
@@ -155,7 +155,7 @@ export class InspectorUI {
         // TODO: we need to make sure this propagates to every guy whose rendering depends on one of those
       }
 
-      this.fileTree.setup(this);
+      this.fileTree.setup();
     });
 
     if (this.editMode) {

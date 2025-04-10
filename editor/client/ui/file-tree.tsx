@@ -6,8 +6,6 @@ import {
   AudioLines,
   Braces,
   CodeXml,
-  Eye,
-  EyeOff,
   File,
   Folder,
   icon,
@@ -18,9 +16,8 @@ import {
   siTypescript,
 } from "../_icons.tsx";
 import { DataTree } from "../components/mod.ts";
-import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
+import { InspectorUIWidget } from "./inspector.ts";
 
-import { BehaviorTypeInfo } from "../util/behavior-type-info.ts";
 import { ScriptSession } from "./assistant/assistant.tsx";
 import { ImportPopup } from "./import-popup.tsx";
 
@@ -80,7 +77,7 @@ export class FileTree implements InspectorUIWidget {
     );
   }
 
-  setup(ui: InspectorUI): void {
+  setup(): void {
     const tree = new DataTree();
     tree.style.setProperty("--tree-indent-amount", "0.5em");
 
@@ -119,45 +116,12 @@ export class FileTree implements InspectorUIWidget {
 
       ScriptSession.scriptMap = buildFileTreeMarkdown(fileTreeRoot);
 
-      const addViewButton = async (node: FileTreeNode): Promise<HTMLElement | null> => {
-        if (node.type !== "file" || !node.name.endsWith(".ts")) {
-          return null;
-        }
-
-        const scriptPath = `res://${node.path}`;
-        const hasBehavior = await ui.behaviorTypeInfo.hasBehavior(scriptPath);
-
-        if (!hasBehavior) return null;
-
-        const button = elem(
-          "button",
-          { className: "view-behaviors-btn", title: "View Behaviors" },
-          [icon(Eye)],
-        );
-
-        button.addEventListener("click", async event => {
-          event.stopPropagation();
-          const parentNode = button.parentElement!.parentElement!;
-          try {
-            const behaviorInfo = await ui.behaviorTypeInfo.get(scriptPath);
-            this.#displayBehaviorValues(behaviorInfo, parentNode, button);
-          } catch (_error) {
-            this.#displayBehaviorValues(null, parentNode, button);
-          }
-        });
-
-        return button;
-      };
-
-      const addNode = async (node: FileTreeNode, parent?: HTMLElement, path = "") => {
+      const addNode = (node: FileTreeNode, parent?: HTMLElement, path = "") => {
         const currentPath = path ? `${path}/${node.name}` : node.name;
         const header = elem("span", {}, [
           elem("span", { className: "icon" }, [icon(this.#getIconForNode(node))]),
           elem("span", { className: "name" }, [node.name]),
         ]);
-
-        const viewButton = await addViewButton(node);
-        if (viewButton) header.appendChild(viewButton);
 
         const element = tree.addNode([header], parent);
 
@@ -258,15 +222,15 @@ export class FileTree implements InspectorUIWidget {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          minWidth: 0, // Allows the container to shrink below children's content size
+          minWidth: 0,
         }}
       >
         <div
           style={{
-            flexShrink: 1, // Allows this element to shrink
-            overflow: "hidden", // Hides overflow content
-            textOverflow: "ellipsis", // Shows ellipsis (...) when text is cut off
-            whiteSpace: "nowrap", // Prevents text from wrapping to next line
+            flexShrink: 1,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
           }}
         >
           Project
@@ -295,49 +259,6 @@ export class FileTree implements InspectorUIWidget {
     };
 
     return imagePreview;
-  }
-
-  #displayBehaviorValues(
-    behaviorInfo: BehaviorTypeInfo | null,
-    parentNode: HTMLElement,
-    button: HTMLElement,
-  ) {
-    let detailsContainer = parentNode.parentElement?.querySelector(
-      ".behavior-view-details",
-    ) as HTMLElement;
-
-    if (detailsContainer) {
-      detailsContainer.remove();
-      button.replaceChildren(icon(Eye));
-      return;
-    }
-
-    if (!behaviorInfo) return;
-
-    detailsContainer = document.createElement("div");
-    detailsContainer.className = "behavior-view-details";
-
-    const content = document.createElement("div");
-    content.className = "behavior-view-content";
-
-    for (const value of behaviorInfo.values) {
-      const valueRow = document.createElement("div");
-      valueRow.className = "behavior-value-row";
-
-      const keyElement = document.createElement("span");
-      keyElement.textContent = value.key;
-
-      const valueElement = document.createElement("span");
-      valueElement.textContent = value.default != null ? value.default.toString() : "N/A";
-
-      valueRow.appendChild(keyElement);
-      valueRow.appendChild(valueElement);
-      content.appendChild(valueRow);
-    }
-
-    detailsContainer.appendChild(content);
-    parentNode.parentElement?.appendChild(detailsContainer);
-    button.replaceChildren(icon(EyeOff));
   }
 
   show(uiRoot: HTMLElement): void {
