@@ -17,6 +17,7 @@ import { ClientPacket, PlayPacket, ServerPacket } from "@dreamlab/proto/play.ts"
 import { handleCustomMessages } from "./custom-messages.ts";
 import { handleEntitySync } from "./entity-sync.ts";
 import { handlePing } from "./ping.ts";
+import { handleObjectSync } from "./synced-objects.ts";
 import { handleTransformSync } from "./transform-sync.ts";
 import { handleValueChanges } from "./value-changes.ts";
 
@@ -127,6 +128,7 @@ export class ClientConnection {
     handleCustomMessages(this, game);
     handleEntitySync(this, game);
     handleTransformSync(this, game);
+    handleObjectSync(this, game);
 
     // get an initial ping
     setTimeout(() => {

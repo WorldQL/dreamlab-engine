@@ -85,7 +85,7 @@ export abstract class BaseGame implements ISignalHandler {
   }
 
   readonly values: ValueRegistry = new ValueRegistry(this as unknown as Game);
-  readonly objects: SyncedObjectRegistry = new SyncedObjectRegistry();
+  readonly sync: SyncedObjectRegistry = new SyncedObjectRegistry();
 
   readonly entities: EntityStore = new EntityStore();
 

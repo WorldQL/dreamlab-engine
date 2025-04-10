@@ -21,6 +21,7 @@ import { handleCustomMessages } from "./custom-messages.ts";
 import { handleEntitySync } from "./entity-sync.ts";
 import { handlePing } from "./ping.ts";
 import { handlePlayerJoinExchange } from "./player-join-states.ts";
+import { handleObjectSync } from "./synced-objects.ts";
 import { handleTransformSync } from "./transform-sync.ts";
 import { handleValueChanges } from "./value-changes.ts";
 
@@ -187,6 +188,7 @@ export class ServerNetworkManager {
     handleCustomMessages(this, game);
     handleEntitySync(this, game);
     handleTransformSync(this, game);
+    handleObjectSync(this, game);
   }
 
   updateRichStatus() {

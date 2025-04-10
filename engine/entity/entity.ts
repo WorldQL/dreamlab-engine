@@ -384,6 +384,8 @@ export abstract class Entity implements ISignalHandler {
     def: EntityDefinition<T, C, B>,
     opts: { inert?: boolean; from?: ConnectionId; cloneFrom?: string } = {},
   ) {
+    // TODO: sync decorator setup
+
     let clonedFrom: string | undefined;
     if (opts.cloneFrom) {
       clonedFrom = opts.cloneFrom;
@@ -978,6 +980,8 @@ export abstract class Entity implements ISignalHandler {
     this.#exclusiveAuthority = ctx.authority;
 
     if (ctx.values) this.#defaultValues = ctx.values;
+
+    this.game.sync.register(this);
 
     this.transform[internal.transformOnChanged] = () => {
       this.#updateTransform(false);
