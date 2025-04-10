@@ -26,6 +26,10 @@ export class AudioSource extends Entity {
   stream: boolean = false;
 
   #howl: Howl | undefined;
+  get howl(): Howl {
+    if (!this.#howl) throw new Error("AudioSource is not initialized yet");
+    return this.#howl;
+  }
 
   constructor(ctx: EntityContext) {
     super(ctx);
