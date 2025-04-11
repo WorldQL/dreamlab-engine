@@ -34,48 +34,56 @@ const UINT8ARRAY_FNS = [
   "subarray",
 ] as const;
 
+const SyncedUint8ArrayInnerPrototype = class SyncedUint8ArrayInner {}.prototype;
+
+interface Uint8ArrayWrapper {
+  _inner: Uint8Array;
+  // also has all of the stuff on the guy
+}
+
 export class SyncedUint8Array extends SyncedObject<Uint8Array> {
   static readonly kind = "uint8array";
   static {
     SyncedObjectRegistry.registerHandler(this);
   }
 
-  #inner: Uint8Array | undefined = undefined;
-
-  #makeProxy(): Uint8Array {
+  #makeWrapper(delegate: Uint8Array): Uint8ArrayWrapper & Uint8Array {
     const syncedObject = this;
 
-    const proxy: Record<string, unknown> = {};
-    for (const prop of UINT8ARRAY_PROPS_RO) {
-      Object.defineProperty(proxy, prop, { get: () => syncedObject.#inner![prop] });
-    }
+    const wrapper = Object.create(SyncedUint8ArrayInnerPrototype) as Uint8ArrayWrapper;
+    wrapper._inner = delegate;
 
+    for (const prop of UINT8ARRAY_PROPS_RO) {
+      Object.defineProperty(wrapper, prop, {
+        get: () => wrapper._inner![prop],
+        enumerable: false,
+      });
+    }
     for (const fn of UINT8ARRAY_FNS) {
-      Object.defineProperty(proxy, fn, {
+      Object.defineProperty(wrapper, fn, {
         // @ts-expect-error the worst types ever
-        value: (...args: unknown[]) => syncedObject.#inner![fn](...args),
+        value: (...args: unknown[]) => wrapper._inner![fn](...args),
         enumerable: false,
       });
     }
 
-    // this is horrible but you cannot proxy a typedarray so whatever
-    return new Proxy(proxy as unknown as Uint8Array, {
+    const proxy = new Proxy(wrapper, {
       get(target, prop, receiver) {
+        if (prop === "_inner") return delegate;
         if (typeof prop === "string") {
           const index = +prop;
           if (!Number.isNaN(index)) {
-            return syncedObject.#inner![index];
+            return wrapper._inner[index];
           }
         }
 
         return Reflect.get(target, prop, receiver);
       },
-
       set(target, prop, value, receiver) {
         if (typeof prop === "string") {
           const index = +prop;
           if (!Number.isNaN(index)) {
-            syncedObject.#inner![index] = value;
+            wrapper._inner[index] = value;
             syncedObject.registry.emit(syncedObject, ++syncedObject.clock, {
               t: "array-set-at",
               index,
@@ -89,19 +97,19 @@ export class SyncedUint8Array extends SyncedObject<Uint8Array> {
         return Reflect.set(target, prop, value, receiver);
       },
     });
+
+    return proxy as Uint8ArrayWrapper & Uint8Array;
   }
 
   setup(initial?: JsonValue): void {
-    let value = initial ? this.deserialize(initial) : this.get();
-    this.#inner = value;
-
-    value = this.#makeProxy();
-    this.set(value);
+    const value = initial ? this.deserialize(initial) : this.get();
+    const wrapper = this.#makeWrapper(value);
+    this.set(wrapper);
   }
 
   receive(from: ConnectionId, clock: number, op: SyncedObjectOperation): boolean {
-    const inner = this.#inner;
-    if (!inner) throw new Error("synced array was not setup()!");
+    const wrapper = this.get() as Uint8Array & Uint8ArrayWrapper;
+    if (!wrapper) throw new Error("synced array was not setup()!");
 
     if (clock < this.clock) return false;
     if (clock === this.clock && from < (this.lastWriter ?? "")) return false;
@@ -110,7 +118,7 @@ export class SyncedUint8Array extends SyncedObject<Uint8Array> {
     this.lastWriter = from;
 
     if (op.t === "array-set-at") {
-      inner[op.index] = Number(op.value);
+      wrapper._inner[op.index] = Number(op.value);
       return true;
     }
 
