@@ -1331,7 +1331,6 @@ export abstract class Entity implements ISignalHandler {
       !Entity.#entityTypeRegistry.has(target) &&
       !Reflect.get(target, internal.internalEntity)
     ) {
-      console.log(Entity.#entityTypeRegistry);
       throw new Error(`Entity type registry is missing ${target.name}!`);
     }
   };
