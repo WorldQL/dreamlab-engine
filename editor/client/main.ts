@@ -36,7 +36,6 @@ import { TextureStyle } from "@dreamlab/vendor/pixi.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { icon, Loader } from "./_icons.tsx";
 import { stats } from "./_stats.ts";
-import { MultiplayerCursors } from "./multiplayer-cursors.tsx";
 import { CameraPanBehavior } from "./panning-and-selection.ts";
 import { AppMenu } from "./ui/app-menu.ts";
 import { BottomTabs } from "./ui/bottom-tabs.tsx";
@@ -232,9 +231,8 @@ uiRoot.style.display = "";
 const inspector = new InspectorUI(game, conn, handshake.edit_mode, container);
 inspector.show(uiRoot);
 
-const cursors = new MultiplayerCursors(game, uiRoot);
-
-Reflect.defineProperty(globalThis, "cursors", { value: cursors });
+// const cursors = new MultiplayerCursors(game, uiRoot);
+// Reflect.defineProperty(globalThis, "cursors", { value: cursors });
 
 if (handshake.edit_mode) {
   game.network.onReceiveCustomMessage((_from, channel, data) => {
