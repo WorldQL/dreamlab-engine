@@ -10,6 +10,8 @@ export type AnySyncedObject = SyncedObject<any>;
 // deno-lint-ignore no-explicit-any
 export type AnyAccessor = Accessor<SyncedObjectContainer, any>;
 
+export type SyncedObjectInfo = { kind: string; clock: number; value: JsonValue };
+
 export abstract class SyncedObject<T> {
   static get kind(): string {
     throw new Error("no kind for SyncedObjectHandler subtype: " + String(this));
