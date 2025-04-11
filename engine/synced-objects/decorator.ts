@@ -2,7 +2,7 @@
 
 import type { Behavior, Entity } from "@dreamlab/engine";
 import { AnyAccessor, SyncedObjectInfo } from "./object.ts";
-import { SyncedArray, SyncedDeepObject } from "./objects/mod.ts";
+import { SyncedArray, SyncedDeepObject, SyncedUint8Array } from "./objects/mod.ts";
 import type {
   SyncedObjectConstructor,
   SyncedObjectContainer,
@@ -10,7 +10,7 @@ import type {
 } from "./registry.ts";
 
 // deno-lint-ignore no-explicit-any
-type SyncedObjectTarget = any[] | object;
+type SyncedObjectTarget = Uint8Array | any[] | object;
 
 interface DecoratedSyncedObjectDescriptor {
   field: string;
@@ -23,6 +23,7 @@ interface DecoratedSyncedObjectDescriptor {
 const decoratedSyncedObjectsField = Symbol();
 
 function inferType(value: SyncedObjectTarget): SyncedObjectConstructor {
+  if (value instanceof Uint8Array) return SyncedUint8Array;
   if (Array.isArray(value)) return SyncedArray;
   if (typeof value === "object") return SyncedDeepObject;
 
