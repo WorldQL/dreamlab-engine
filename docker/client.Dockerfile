@@ -28,7 +28,7 @@ COPY --chown=deno ./engine /app/engine
 WORKDIR /app/engine
 RUN deno install --entrypoint mod.ts
 
-COPY --chown=deno ./editor/client/_icons.ts /app/editor/client/_icons.ts
+COPY --chown=deno ./editor/client/_icons.tsx /app/editor/client/_icons.tsx
 COPY --chown=deno ./client /app/client
 WORKDIR /app/client
 RUN deno task build
