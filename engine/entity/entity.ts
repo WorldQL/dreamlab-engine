@@ -561,10 +561,13 @@ export abstract class Entity implements ISignalHandler {
       behaviorValues[key] = serializableValue;
     }
 
-    const syncOverrides: Partial<Record<string, { kind: string; value: JsonValue }>> = {};
+    const syncOverrides: Partial<
+      Record<string, { kind: string; clock: number; value: JsonValue }>
+    > = {};
     for (const syncedObject of behavior[internal.syncedObjectContainerObjectsField].values()) {
       syncOverrides[syncedObject.field] = {
         kind: (syncedObject.constructor as SyncedObjectConstructor).kind,
+        clock: syncedObject.clock,
         value: syncedObject.serialize(syncedObject.get()),
       };
     }

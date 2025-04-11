@@ -46,7 +46,7 @@ export interface BehaviorContext {
   entity: Entity;
   ref?: string;
   values?: Record<string, Primitive>;
-  sync?: Record<string, { kind: string; value: JsonValue }>;
+  sync?: Record<string, { kind: string; clock: number; value: JsonValue }>;
 }
 
 export type BehaviorConstructor<B extends Behavior = Behavior> = (new (
@@ -60,7 +60,7 @@ export type BehaviorConstructor<B extends Behavior = Behavior> = (new (
 export interface BehaviorDefinition<B extends Behavior = Behavior> {
   type: BehaviorConstructor<B>;
   values?: Partial<Omit<B, keyof Behavior>>;
-  sync?: Record<Exclude<keyof B, keyof Behavior>, { kind: string; value: JsonValue }>;
+  sync?: Record<Exclude<keyof B, keyof Behavior>, { kind: string; clock: number; value: JsonValue }>;
   _ref?: string;
 }
 
