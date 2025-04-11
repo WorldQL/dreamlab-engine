@@ -10,10 +10,10 @@ export default class MyBehavior extends Behavior {
   override onInitialize(): void {
     if (!this.game.isClient()) return;
 
-    console.log([...this.myBuffer]);
+    console.log(this.myBuffer);
     const idx = Math.floor(Math.random() * 32);
     this.myBuffer[idx] = 255;
-    console.log([...this.myBuffer]);
+    console.log(this.myBuffer);
     // this.myObject[this.game.network.self] = true;
     // console.log(this.myObject);
   }
