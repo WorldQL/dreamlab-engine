@@ -5,12 +5,14 @@ import {
   ArrayOperationSetAt,
 } from "./objects/array.ts";
 import { DeepObjectOperationSet } from "./objects/deep-object.ts";
+import { PrimitiveOperationWrite } from "./objects/primitive.ts";
 
 export const SyncedObjectOperationSchema = z.discriminatedUnion("t", [
   ArrayOperationPush,
   ArrayOperationSetAt,
   ArrayOperationResize,
   DeepObjectOperationSet,
+  PrimitiveOperationWrite,
   z.object({
     t: z.literal("user-defined"),
     data: z.unknown(),
