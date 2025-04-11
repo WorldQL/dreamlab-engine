@@ -13,6 +13,10 @@ export const ArrayOperationPush = z.object({
   t: z.literal("array-push"),
   items: z.array(z.unknown()),
 });
+export const ArrayOperationResize = z.object({
+  t: z.literal("array-resize"),
+  newLength: z.number(),
+});
 
 /** don't use this!!! it doesn't sync consistently */
 export class SyncedArray<T extends Primitive> extends SyncedObject<T[]> {
@@ -45,6 +49,14 @@ export class SyncedArray<T extends Primitive> extends SyncedObject<T[]> {
         const ret = Reflect.set(target, prop, value, receiver);
 
         if (typeof prop !== "string") {
+          return ret;
+        }
+
+        if (prop === "length") {
+          syncedObject.registry.emit(syncedObject, ++syncedObject.clock, {
+            t: "array-resize",
+            newLength: +value,
+          });
           return ret;
         }
 
@@ -92,6 +104,10 @@ export class SyncedArray<T extends Primitive> extends SyncedObject<T[]> {
     }
     if (op.t === "array-set-at") {
       inner[op.index] = op.value as T;
+      return true;
+    }
+    if (op.t === "array-resize") {
+      inner.length = op.newLength;
       return true;
     }
 
