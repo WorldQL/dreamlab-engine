@@ -5,13 +5,12 @@ import { SyncedObjectOperation } from "../operation.ts";
 import { SyncedObjectRegistry } from "../registry.ts";
 
 const UINT8ARRAY_PROPS_RO = ["byteLength", "buffer", "byteOffset", "length"] as const;
-const UINT8ARRAY_FNS = [
+const UINT8ARRAY_FNS_RO = [
   Symbol.iterator,
   "at",
   "copyWithin",
   "entries",
   "every",
-  "fill",
   "filter",
   "find",
   "findIndex",
@@ -27,18 +26,19 @@ const UINT8ARRAY_FNS = [
   "reduce",
   "reduceRight",
   "reverse",
-  "set",
   "slice",
   "some",
-  "sort",
   "subarray",
 ] as const;
-
-const SyncedUint8ArrayInnerPrototype = class SyncedUint8ArrayInner {}.prototype;
+const UINT8ARRAY_FNS_RW = ["fill", "set", "sort"] as const;
 
 interface Uint8ArrayWrapper {
   _inner: Uint8Array;
   // also has all of the stuff on the guy
+}
+
+class SyncedUint8ArrayInner implements Uint8ArrayWrapper {
+  constructor(public _inner: Uint8Array) {}
 }
 
 export class SyncedUint8Array extends SyncedObject<Uint8Array> {
@@ -50,8 +50,7 @@ export class SyncedUint8Array extends SyncedObject<Uint8Array> {
   #makeWrapper(delegate: Uint8Array): Uint8ArrayWrapper & Uint8Array {
     const syncedObject = this;
 
-    const wrapper = Object.create(SyncedUint8ArrayInnerPrototype) as Uint8ArrayWrapper;
-    wrapper._inner = delegate;
+    const wrapper = new SyncedUint8ArrayInner(delegate);
 
     for (const prop of UINT8ARRAY_PROPS_RO) {
       Object.defineProperty(wrapper, prop, {
@@ -59,10 +58,19 @@ export class SyncedUint8Array extends SyncedObject<Uint8Array> {
         enumerable: false,
       });
     }
-    for (const fn of UINT8ARRAY_FNS) {
+    for (const fn of UINT8ARRAY_FNS_RO) {
       Object.defineProperty(wrapper, fn, {
-        // @ts-expect-error the worst types ever
-        value: (...args: unknown[]) => wrapper._inner![fn](...args),
+        // @ts-expect-error: untypable wrapper func
+        value: (...args) => wrapper._inner![fn](...args),
+        enumerable: false,
+      });
+    }
+    for (const fn of UINT8ARRAY_FNS_RW) {
+      // TODO: the read-write methods should get ops emitted when they're called
+
+      Object.defineProperty(wrapper, fn, {
+        // @ts-expect-error: untypable wrapper func
+        value: (...args) => wrapper._inner![fn](...args),
         enumerable: false,
       });
     }
