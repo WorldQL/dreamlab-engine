@@ -51,6 +51,7 @@ export class SyncedObjectRegistry {
   }
 
   emit(object: AnySyncedObject, clock: number, op: SyncedObjectOperation) {
+    // TODO: batch packets and send every tick?
     for (const listener of this.#listeners) {
       listener(object, clock, op);
     }
