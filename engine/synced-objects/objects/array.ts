@@ -9,16 +9,18 @@ export const ArrayOperationSetAt = z.object({
   index: z.number(),
   value: z.unknown(),
 });
-export const ArrayOperationPush = z.object({
-  t: z.literal("array-push"),
-  items: z.array(z.unknown()),
-});
 export const ArrayOperationResize = z.object({
   t: z.literal("array-resize"),
   newLength: z.number(),
 });
+// FIXME: this is provided as an example, but it does not provide the correct sync
+// semantics when there are clock conflicts. (clients will witness the array out-of-order)
+// we need to express every array operation in terms of splice() and order the operations as a causal tree
+export const ArrayOperationPush = z.object({
+  t: z.literal("array-push"),
+  items: z.array(z.unknown()),
+});
 
-/** don't use this!!! it doesn't sync consistently */
 export class SyncedArray<T extends Primitive> extends SyncedObject<T[]> {
   static readonly kind = "array";
   static {
