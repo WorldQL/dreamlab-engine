@@ -12,12 +12,12 @@ export abstract class Root extends Entity {
     super({ game, name, ref: name.toUpperCase() });
 
     this.entities = new EntityStore();
-    game.entities[internal.entityStoreRegisterRoot](`${name}`, this.entities);
+    game.entities[internal.entityStoreRegisterRoot](name, this.entities);
     game.entities[internal.entityStoreUnregister](this);
 
-    this.name = `${name}`;
+    this.name = name;
     // @ts-expect-error assign readonly id
-    this.id = `${name}`;
+    this.id = name;
     // @ts-expect-error assign readonly id
     this.root = this;
 
