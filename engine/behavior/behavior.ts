@@ -16,6 +16,7 @@ import type {
   SignalListenerOptions,
   SignalMatching,
   SignalSubscription,
+  SyncedObjectInfo,
   Time,
   ValueTypeTag,
 } from "@dreamlab/engine";
@@ -46,7 +47,7 @@ export interface BehaviorContext {
   entity: Entity;
   ref?: string;
   values?: Record<string, Primitive>;
-  sync?: Record<string, { kind: string; clock: number; value: JsonValue }>;
+  sync?: Record<string, SyncedObjectInfo>;
 }
 
 export type BehaviorConstructor<B extends Behavior = Behavior> = (new (
@@ -60,7 +61,7 @@ export type BehaviorConstructor<B extends Behavior = Behavior> = (new (
 export interface BehaviorDefinition<B extends Behavior = Behavior> {
   type: BehaviorConstructor<B>;
   values?: Partial<Omit<B, keyof Behavior>>;
-  sync?: Record<Exclude<keyof B, keyof Behavior>, { kind: string; clock: number; value: JsonValue }>;
+  sync?: Record<Exclude<keyof B, keyof Behavior> | (string & Record<never, never>), SyncedObjectInfo>;
   _ref?: string;
 }
 

@@ -7,7 +7,9 @@ import {
   Game,
   GameStatus,
   GameStatusChange,
+  JsonValue,
   ServerGame,
+  SyncedObjectInfo,
   TransformOptions,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
@@ -18,6 +20,7 @@ import {
   Scene,
   SceneDescBehavior,
   SceneDescEntity,
+  SceneDescSyncedObject,
   SceneDescTransform,
   SceneSchema,
 } from "./schema.ts";
@@ -34,14 +37,20 @@ export const serializeBehaviorDefinition = (
   if (script === undefined)
     throw new Error("attempted to serialize BehaviorDefinition with unknown script location");
 
+  const sync: Record<string, SceneDescSyncedObject> = {};
+  for (const [k, v] of Object.entries(def.sync ?? {})) {
+    sync[k] = { kind: v.kind, value: v.value };
+  }
+
   const desc: SceneDescBehavior = {
     ref,
     script,
     values: def.values,
-    sync: def.sync,
+    sync,
   };
 
   if (desc.values && Object.keys(desc.values).length === 0) delete desc.values;
+  if (desc.sync && Object.keys(desc.sync).length === 0) delete desc.sync;
 
   return desc;
 };
@@ -115,11 +124,17 @@ export const convertBehaviorDefinition = async (
   def: SceneDescBehavior,
 ): Promise<BehaviorDefinition> => {
   const type = await game[internal.behaviorLoader].loadScript(def.script);
+
+  const sync: Record<string, SyncedObjectInfo> = {};
+  for (const [k, v] of Object.entries(def.sync ?? {})) {
+    sync[k] = { kind: v.kind, clock: 0, value: v.value as JsonValue };
+  }
+
   return {
     _ref: def.ref,
     type,
     values: def.values,
-    sync: def.sync,
+    sync,
   };
 };
 
