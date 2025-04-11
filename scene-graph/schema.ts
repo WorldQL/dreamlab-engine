@@ -48,11 +48,14 @@ export const TransformSchema = z.object({
 });
 export type SceneDescTransform = z.input<typeof TransformSchema>;
 
+export const SyncedObjectSchema = z.object({ kind: z.string(), value: z.unknown() });
+export type SceneDescSyncedObject = z.input<typeof SyncedObjectSchema>;
+
 export const BehaviorSchema = z.object({
   ref: BehaviorReferenceSchema,
   script: ResourceLocationSchema,
   values: z.record(ValueSchema).default({}),
-  sync: z.record(z.object({ kind: z.string(), value: z.unknown() })).default({}),
+  sync: z.record(SyncedObjectSchema).default({}),
 });
 export type SceneDescBehavior = z.input<typeof BehaviorSchema>;
 

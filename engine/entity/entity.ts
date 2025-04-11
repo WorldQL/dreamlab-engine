@@ -21,6 +21,7 @@ import type {
   SignalListenerOptions,
   SignalMatching,
   SignalSubscription,
+  SyncedObjectInfo,
   Time,
   TransformOptions,
   ValueTypeTag,
@@ -566,9 +567,7 @@ export abstract class Entity implements ISignalHandler {
       behaviorValues[key] = serializableValue;
     }
 
-    const syncOverrides: Partial<
-      Record<string, { kind: string; clock: number; value: JsonValue }>
-    > = {};
+    const syncOverrides: Record<string, SyncedObjectInfo> = {};
     for (const syncedObject of behavior[internal.syncedObjectContainerObjectsField].values()) {
       syncOverrides[syncedObject.field] = {
         kind: (syncedObject.constructor as SyncedObjectConstructor).kind,
