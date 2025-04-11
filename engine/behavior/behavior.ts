@@ -145,7 +145,7 @@ export class Behavior implements ISignalHandler {
   readonly ref: string = Behavior.createRef();
 
   // #region Values
-  #syncOverrides: NonNullable<BehaviorContext["sync"]> = {};
+  #syncOverrides: Record<string, SyncedObjectInfo> = {};
   #defaultValues: Record<string, unknown> = {};
   #values = new Map<string, Value>();
   get values(): ReadonlyMap<string, Value> {

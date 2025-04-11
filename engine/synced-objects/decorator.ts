@@ -1,7 +1,7 @@
 // TODO: everything
 
-import type { Behavior, Entity, JsonValue } from "@dreamlab/engine";
-import { AnyAccessor } from "./object.ts";
+import type { Behavior, Entity } from "@dreamlab/engine";
+import { AnyAccessor, SyncedObjectInfo } from "./object.ts";
 import { SyncedArray, SyncedDeepObject } from "./objects/mod.ts";
 import type {
   SyncedObjectConstructor,
@@ -77,9 +77,7 @@ export function sync<Container extends Entity | Behavior, Field extends SyncedOb
 export function setupSyncedObjects(
   registry: SyncedObjectRegistry,
   container: SyncedObjectContainer,
-  overrides: Partial<
-    Record<string, { kind: SyncedObjectConstructor["kind"]; value: JsonValue }>
-  >,
+  overrides: Partial<Record<string, SyncedObjectInfo>>,
 ): void {
   if (!(decoratedSyncedObjectsField in container)) return;
 
@@ -96,11 +94,11 @@ export function setupSyncedObjects(
     );
 
     const override = overrides[descriptor.field];
-    const value =
-      override && override.kind === descriptor.type.kind
-        ? override.value
-        : syncedObject.serialize(descriptor.default);
-
-    syncedObject.setup(value);
+    if (override && override.kind === descriptor.type.kind) {
+      syncedObject.clock = override.clock;
+      syncedObject.setup(override.value);
+    } else {
+      syncedObject.setup(syncedObject.serialize(descriptor.default));
+    }
   }
 }
