@@ -1,10 +1,10 @@
-import { Behavior, sync, SyncedUint8Array } from "@dreamlab/engine";
+import { Behavior, sync } from "@dreamlab/engine";
 
 export default class MyBehavior extends Behavior {
   // @sync()
   // myObject: Partial<Record<string, boolean>> = {}
 
-  @sync({ type: SyncedUint8Array })
+  @sync()
   myBuffer = new Uint8Array(32);
 
   override onInitialize(): void {
