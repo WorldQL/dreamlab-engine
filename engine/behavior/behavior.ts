@@ -1,5 +1,5 @@
 import { createId } from "@dreamlab/vendor/nanoid.ts";
-import type { ConditionalExcept, Except } from "@dreamlab/vendor/type-fest.ts";
+import type { ConditionalExcept } from "@dreamlab/vendor/type-fest.ts";
 
 import type {
   AdapterTypeTag,
@@ -38,6 +38,7 @@ import {
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { setupSyncedObjects } from "../synced-objects/decorator.ts";
+import { setupSyncedValues } from "../value/decorator.ts";
 
 // deno-lint-ignore no-unused-vars
 import type { Clickable } from "@dreamlab/engine"; // this is used in jsdoc
@@ -70,60 +71,13 @@ type BehaviorValueProp<B extends Behavior> = Exclude<
   keyof ConditionalExcept<B, Function>,
   keyof Behavior
 >;
-type BehaviorValueOpts<T> = {
+export type BehaviorValueOpts<T> = {
   type?: ValueTypeTag<T>;
   description?: string;
   replicated?: boolean;
   hidden?: Value["hidden"];
   persistent?: boolean;
 };
-
-type ValuesToDefine = Map<string, BehaviorValueOpts<unknown>>;
-
-/**
- * Makes the following class property visible in the inspector and synced over the network.
- *
- * Accepts an adapter such as `EntityByRef`, `Vector2Adapter`, etc. https://docs.dreamlab.gg/guide/Synced-Values-and-Adapters
- *
- */
-export function syncedValue<B extends Behavior, T>(
-  adapterType?: ValueTypeTag<T>,
-  opts?: Except<BehaviorValueOpts<T>, "type" | "hidden"> & {
-    hidden?: boolean;
-  },
-): (_: undefined, ctx: ClassFieldDecoratorContext<B, T>) => void {
-  return function (_, ctx): void {
-    if (typeof ctx.name !== "string") return;
-    if (ctx.static) return;
-
-    const name = ctx.name;
-    ctx.addInitializer(function () {
-      // const ctor = this.constructor as BehaviorConstructor<B>;
-      const _opts = { type: adapterType, ...opts };
-      if (_opts.type === undefined) delete _opts.type;
-
-      // we could just do this but initializers run before the constructor and idk about the ramifications
-      // this.defineValue(ctor, name, _opts);
-
-      if (!(internal.defineValuesProperties in this)) {
-        Object.defineProperty(this, internal.defineValuesProperties, {
-          value: new Map() as ValuesToDefine,
-          writable: true,
-          configurable: false,
-          enumerable: false,
-        });
-      }
-
-      // somewhat redundant check to make the TS compiler happy lol
-      if (internal.defineValuesProperties in this) {
-        const toDefine = this[internal.defineValuesProperties] as ValuesToDefine;
-        toDefine.set(name, _opts);
-      } else {
-        throw new Error("oh no");
-      }
-    });
-  };
-}
 
 export class Behavior implements ISignalHandler {
   readonly game: Game;
@@ -400,15 +354,7 @@ export class Behavior implements ISignalHandler {
   }
 
   [internal.implicitSetup]() {
-    const ctor = this.constructor as BehaviorConstructor<this>;
-    if (internal.defineValuesProperties in this) {
-      const valuesToDefine = this[internal.defineValuesProperties] as ValuesToDefine;
-      for (const [name, opts] of valuesToDefine) {
-        // @ts-expect-error: props are never on base behavior
-        this.defineValue(ctor, name, opts);
-      }
-    }
-
+    setupSyncedValues(this);
     setupSyncedObjects(this.game.sync, this, this.#syncOverrides); // TODO: overrides from scene def
   }
 

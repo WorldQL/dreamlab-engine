@@ -1,4 +1,5 @@
 export * from "./data.ts";
+export { syncedValue, value } from "./decorator.ts";
 export * from "./registry.ts";
 export * from "./value.ts";
 
