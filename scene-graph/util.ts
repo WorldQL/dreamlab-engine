@@ -7,7 +7,6 @@ import {
   Game,
   GameStatus,
   GameStatusChange,
-  JsonValue,
   ServerGame,
   SyncedObjectInfo,
   TransformOptions,
@@ -127,7 +126,7 @@ export const convertBehaviorDefinition = async (
 
   const sync: Record<string, SyncedObjectInfo> = {};
   for (const [k, v] of Object.entries(def.sync ?? {})) {
-    sync[k] = { kind: v.kind, clock: 0, value: v.value as JsonValue };
+    sync[k] = { kind: v.kind, clock: 0, value: v.value };
   }
 
   return {

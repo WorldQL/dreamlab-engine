@@ -1,6 +1,6 @@
 // TODO: everything
 
-import type { Behavior, Entity } from "@dreamlab/engine";
+import type { Behavior, Entity, JsonValue } from "@dreamlab/engine";
 import { AnyAccessor, SyncedObjectInfo } from "./object.ts";
 import { SyncedArray, SyncedDeepObject, SyncedUint8Array } from "./objects/mod.ts";
 import type {
@@ -97,9 +97,12 @@ export function setupSyncedObjects(
     const override = overrides[descriptor.field];
     if (override && override.kind === descriptor.type.kind) {
       syncedObject.clock = override.clock;
-      syncedObject.setup(override.value);
+      const value = override.net
+        ? syncedObject.deserializeForNetwork(override.value)
+        : syncedObject.deserialize(override.value as JsonValue);
+      syncedObject.setup(value);
     } else {
-      syncedObject.setup(syncedObject.serialize(descriptor.default));
+      syncedObject.setup(descriptor.default);
     }
   }
 }

@@ -8,7 +8,15 @@ export const ConnectionIdSchema = z.literal("server").or(z.string()).describe("C
 export const BehaviorDefinitionSchema = z.object({
   script: z.string(),
   values: z.record(z.string(), z.any()),
-  sync: z.record(z.string(), z.object({ kind: z.string(), clock: z.number(), value: z.any() })),
+  sync: z.record(
+    z.string(),
+    z.object({
+      kind: z.string(),
+      clock: z.number(),
+      net: z.boolean().default(false),
+      value: z.unknown(),
+    }),
+  ),
   ref: z.string(),
 });
 

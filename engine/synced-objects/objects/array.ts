@@ -76,18 +76,11 @@ export class SyncedArray<T extends Primitive> extends SyncedObject<T[]> {
     });
   }
 
-  setup(initial?: JsonValue): void {
-    let value: T[];
-    if (initial) {
-      if (!Array.isArray(initial)) throw new Error("not an array!");
-      value = initial as T[];
-    } else {
-      value = [];
-    }
+  setup(initial?: T[]): void {
+    const value: T[] = initial ?? [];
     this.#inner = value;
-
-    value = this.#makeProxy();
-    this.set(value);
+    const proxy = this.#makeProxy();
+    this.set(proxy);
   }
 
   receive(from: ConnectionId, clock: number, op: SyncedObjectOperation): boolean {

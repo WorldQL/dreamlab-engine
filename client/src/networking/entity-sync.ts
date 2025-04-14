@@ -68,7 +68,7 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
 
     const definition = serializeEntityDefinition(
       game,
-      entity.getDefinition(), // TODO: event.definition might not have refs filled in -- we should populate these manually instead of generating a whole def from the entity
+      entity[internal.entityGenerateDefinition]({ withRefs: true, forNetwork: true }),
       event.entity.parent!.ref,
     );
 
