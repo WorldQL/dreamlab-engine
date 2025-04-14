@@ -55,6 +55,9 @@ export const entityPreparePhysicsUpdate = Symbol.for(
 export const entityFireEnabledSignals = Symbol.for(
   "dreamlab.internal.entityFireEnabledSignals",
 );
+export const entityGenerateDefinition = Symbol.for(
+  "dreamlab.internal.entityGenerateDefinition",
+);
 export const valueRelatedEntity = Symbol.for("dreamlab.internal.valueRelatedEntity");
 export const valueApplyUpdate = Symbol.for("dreamlab.internal.valueApplyUpdate");
 export const defineValuesProperties = Symbol.for("dreamlab.internal.defineValuesProperties");

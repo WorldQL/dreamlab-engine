@@ -117,8 +117,8 @@ export class SyncedUint8Array extends SyncedObject<Uint8Array> {
     return proxy as ArrayWrapper<Uint8Array> & Uint8Array;
   }
 
-  setup(initial?: JsonValue): void {
-    const value = initial ? this.deserialize(initial) : this.get();
+  setup(initial?: Uint8Array): void {
+    const value = initial ?? this.get();
     const wrapper = this.#makeWrapper(value);
     this.set(wrapper);
   }
@@ -149,5 +149,12 @@ export class SyncedUint8Array extends SyncedObject<Uint8Array> {
     if (typeof value === "string") return decodeBase64(value);
     if (value instanceof Uint8Array) return value;
     throw new TypeError("serialized Uint8Array must be a base64 string");
+  }
+
+  override serializeForNetwork(value: Uint8Array): unknown {
+    return value;
+  }
+  override deserializeForNetwork(value: unknown): Uint8Array {
+    return value as Uint8Array;
   }
 }

@@ -552,6 +552,7 @@ export abstract class Entity implements ISignalHandler {
   #generateBehaviorDefinition(
     behavior: Behavior,
     withRefs: boolean,
+    forNetwork: boolean,
   ): BehaviorDefinition & { uri: string } {
     const behaviorValues: Partial<Record<string, unknown>> = {};
     for (const [key, value] of behavior.values.entries()) {
@@ -564,11 +565,16 @@ export abstract class Entity implements ISignalHandler {
 
     const syncOverrides: Record<string, SyncedObjectInfo> = {};
     for (const syncedObject of behavior[internal.syncedObjectContainerObjectsField].values()) {
-      syncOverrides[syncedObject.field] = {
+      const info: SyncedObjectInfo = {
         kind: (syncedObject.constructor as SyncedObjectConstructor).kind,
         clock: syncedObject.clock,
-        value: syncedObject.serialize(syncedObject.get()),
+        net: forNetwork,
+        value: forNetwork
+          ? syncedObject.serializeForNetwork(syncedObject.get())
+          : syncedObject.serialize(syncedObject.get()),
       };
+      if (!info.net) delete info.net;
+      syncOverrides[syncedObject.field] = info;
     }
 
     const uri = this.game[internal.behaviorLoader].lookup(
@@ -585,12 +591,12 @@ export abstract class Entity implements ISignalHandler {
     };
   }
 
-  #generateRichDefinition(withRefs: boolean): EntityDefinition<this> {
+  #generateRichDefinition(withRefs: boolean, forNetwork: boolean): EntityDefinition<this> {
     const definition = this.#generatePlainDefinition(withRefs);
     definition.behaviors =
       this.behaviors.length === 0
         ? undefined
-        : this.behaviors.map(b => this.#generateBehaviorDefinition(b, withRefs));
+        : this.behaviors.map(b => this.#generateBehaviorDefinition(b, withRefs, forNetwork));
     definition.children =
       this.children.size === 0
         ? undefined
@@ -603,8 +609,15 @@ export abstract class Entity implements ISignalHandler {
     return definition;
   }
 
+  [internal.entityGenerateDefinition](opts: {
+    withRefs?: boolean;
+    forNetwork?: boolean;
+  }): EntityDefinition<this> {
+    return this.#generateRichDefinition(opts.withRefs ?? false, opts.forNetwork ?? false);
+  }
+
   getDefinition(): EntityDefinition<this> {
-    return this.#generateRichDefinition(true);
+    return this.#generateRichDefinition(true, false);
   }
 
   cloneInto(other: Entity, overrides: Partial<EntityDefinition<this>> = {}): this {
@@ -616,7 +629,7 @@ export abstract class Entity implements ISignalHandler {
     };
 
     const { ...rest } = overrides;
-    const { behaviors = [], ...richDef } = this.#generateRichDefinition(true);
+    const { behaviors = [], ...richDef } = this.#generateRichDefinition(true, false);
     for (const def of overrides.behaviors ?? []) {
       const matches = behaviors.filter(x => x.type === def.type);
 
