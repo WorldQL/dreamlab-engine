@@ -83,8 +83,10 @@ export class SyncedDeepObject<T extends JsonObject>
     childObj.setup(child);
   }
 
-  setup(initial?: JsonValue): void {
-    const value = initial! as T;
+  setup(initial?: T): void {
+    const value = initial ?? this.get();
+
+    if (!value) throw new Error("SyncedDeepObject requires value to be defined");
     this.#inner = value;
 
     for (const [key, child] of Object.entries(value)) {

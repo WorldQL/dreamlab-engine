@@ -10,7 +10,7 @@ export type AnySyncedObject = SyncedObject<any>;
 // deno-lint-ignore no-explicit-any
 export type AnyAccessor = Accessor<SyncedObjectContainer, any>;
 
-export type SyncedObjectInfo = { kind: string; clock: number; value: JsonValue };
+export type SyncedObjectInfo = { kind: string; clock: number; net?: boolean; value?: unknown };
 
 export abstract class SyncedObject<T> {
   static get kind(): string {
@@ -38,9 +38,16 @@ export abstract class SyncedObject<T> {
     container[objects].set(this.field, this);
   }
 
-  abstract setup(initial?: JsonValue): void;
+  abstract setup(initial?: T): void;
   abstract receive(from: ConnectionId, clock: number, op: SyncedObjectOperation): boolean;
 
   abstract serialize(value: T): JsonValue;
   abstract deserialize(value: JsonValue): T;
+
+  serializeForNetwork(value: T): unknown {
+    return this.serialize(value);
+  }
+  deserializeForNetwork(value: unknown): T {
+    return this.deserialize(value as JsonValue);
+  }
 }

@@ -41,7 +41,7 @@ export class SyncedPrimitive<T extends Primitive> extends SyncedObject<T> {
     });
   }
 
-  setup(initial?: JsonValue): void {
+  setup(initial?: T): void {
     const value = (initial ?? this.get()) as T;
     this.#inner = value;
   }
