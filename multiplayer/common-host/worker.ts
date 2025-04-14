@@ -1,6 +1,7 @@
 import type { HostIPCMessage, WorkerIPCMessage } from "../server-common/ipc.ts";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 
+import { Decoder as CBORDecoder, Encoder as CBOREncoder } from "@dreamlab/vendor/cbor-x.ts";
 import { Context, Status } from "@oak/oak";
 import * as colors from "@std/fmt/colors";
 import { TextLineStream } from "@std/streams";
@@ -22,6 +23,9 @@ export class IPCWorker {
   #ipcListeners: IPCMessageListener[] = [];
 
   logs: LogStore;
+
+  cborEnc = new CBOREncoder();
+  cborDec = new CBORDecoder();
 
   constructor(
     public readonly workerData: WorkerInitData,
@@ -128,6 +132,14 @@ export class IPCWorker {
           // skip message
         }
       }
+      if (data instanceof ArrayBuffer) {
+        try {
+          const message = this.cborDec.decode(new Uint8Array(data));
+          this.#onReceive(message);
+        } catch {
+          // skip message
+        }
+      }
     });
     socket.addEventListener("error", event => {
       if ((event as ErrorEvent).message === "Frame too large") {
@@ -180,7 +192,8 @@ export class IPCWorker {
 
   send(message: HostIPCMessage) {
     try {
-      this.#activeIPCSocket?.send(JSON.stringify(message));
+      // this.#activeIPCSocket?.send(JSON.stringify(message));
+      this.#activeIPCSocket?.send(this.cborEnc.encode(message) as Uint8Array);
     } catch {
       // ignore
     }

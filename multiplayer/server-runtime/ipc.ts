@@ -1,4 +1,5 @@
 import { urlWithParams } from "@dreamlab/util/url.ts";
+import { Decoder as CBORDecoder, Encoder as CBOREncoder } from "@dreamlab/vendor/cbor-x.ts";
 import { HostIPCMessage, WorkerIPCMessage } from "../server-common/ipc.ts";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 
@@ -13,11 +14,15 @@ export class IPCMessageBus {
   #connectedPromise: Promise<void>;
   #connected: boolean;
 
+  cborEnc = new CBOREncoder();
+  cborDec = new CBORDecoder();
+
   constructor(public workerData: WorkerInitData) {
     const connectUrl = urlWithParams(workerData.workerConnectUrl, {
       token: workerData.workerId,
     });
     const socket = new WebSocket(connectUrl);
+    socket.binaryType = "arraybuffer";
 
     this.#connected = false;
     this.#connectedPromise = new Promise((resolve, reject) => {
@@ -43,6 +48,14 @@ export class IPCMessageBus {
           // skip message
         }
       }
+      if (data instanceof ArrayBuffer) {
+        try {
+          const message = this.cborDec.decode(new Uint8Array(data));
+          this.#onReceiveMessage(message);
+        } catch (err) {
+          console.error(err);
+        }
+      }
     });
 
     this.#socket = socket;
@@ -56,7 +69,8 @@ export class IPCMessageBus {
   }
 
   send(message: WorkerIPCMessage) {
-    this.#socket.send(JSON.stringify(message));
+    // this.#socket.send(JSON.stringify(message));
+    this.#socket.send(this.cborEnc.encode(message) as Uint8Array);
   }
 
   addMessageListener<const Op extends HostIPCMessage["op"]>(
