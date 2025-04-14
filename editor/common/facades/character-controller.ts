@@ -1,4 +1,4 @@
-import { CharacterController, Entity } from "@dreamlab/engine";
+import { CharacterController, Entity, EntityContext } from "@dreamlab/engine";
 import { EnsureCompatible, EntityValueProps } from "./_compatibility.ts";
 import { EditorFacadeCollider } from "./collider.ts";
 import { Facades } from "./manager.ts";
@@ -10,6 +10,12 @@ export class EditorFacadeCharacterController extends EditorFacadeCollider {
   }
 
   public static override readonly icon = CharacterController.icon;
+
+  public offset: number = 0.0625;
+  constructor(ctx: EntityContext) {
+    super(ctx);
+    this.defineValue(EditorFacadeCharacterController, "offset");
+  }
 }
 
 type _HasAllValues = EnsureCompatible<
