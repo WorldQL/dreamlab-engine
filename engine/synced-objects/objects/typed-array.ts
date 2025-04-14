@@ -4,8 +4,8 @@ import { SyncedObject } from "../object.ts";
 import { SyncedObjectOperation } from "../operation.ts";
 import { SyncedObjectRegistry } from "../registry.ts";
 
-const UINT8ARRAY_PROPS_RO = ["byteLength", "buffer", "byteOffset", "length"] as const;
-const UINT8ARRAY_FNS_RO = [
+const TYPED_ARRAY_PROPS_RO = ["byteLength", "buffer", "byteOffset", "length"] as const;
+const TYPED_ARRAY_FNS_RO = [
   Symbol.iterator,
   "at",
   "copyWithin",
@@ -30,15 +30,23 @@ const UINT8ARRAY_FNS_RO = [
   "some",
   "subarray",
 ] as const;
-const UINT8ARRAY_FNS_RW = ["fill", "set", "sort"] as const;
+const TYPED_ARRAY_FNS_RW = ["fill", "set", "sort"] as const;
 
-interface Uint8ArrayWrapper {
+type TypedArray =
+  | Uint8Array
+  | Int8Array
+  | Uint16Array
+  | Int16Array
+  | Uint32Array
+  | Int32Array
+  | Float32Array
+  | Float64Array
+  | BigInt64Array
+  | BigUint64Array;
+
+interface ArrayWrapper<T extends TypedArray> {
   _inner: Uint8Array;
   // also has all of the stuff on the guy
-}
-
-class SyncedUint8ArrayInner implements Uint8ArrayWrapper {
-  constructor(public _inner: Uint8Array) {}
 }
 
 export class SyncedUint8Array extends SyncedObject<Uint8Array> {
@@ -47,25 +55,25 @@ export class SyncedUint8Array extends SyncedObject<Uint8Array> {
     SyncedObjectRegistry.registerHandler(this);
   }
 
-  #makeWrapper(delegate: Uint8Array): Uint8ArrayWrapper & Uint8Array {
+  #makeWrapper(delegate: Uint8Array): ArrayWrapper<Uint8Array> & Uint8Array {
     const syncedObject = this;
 
-    const wrapper = new SyncedUint8ArrayInner(delegate);
+    const wrapper: ArrayWrapper<Uint8Array> = { _inner: delegate };
 
-    for (const prop of UINT8ARRAY_PROPS_RO) {
+    for (const prop of TYPED_ARRAY_PROPS_RO) {
       Object.defineProperty(wrapper, prop, {
         get: () => wrapper._inner![prop],
         enumerable: false,
       });
     }
-    for (const fn of UINT8ARRAY_FNS_RO) {
+    for (const fn of TYPED_ARRAY_FNS_RO) {
       Object.defineProperty(wrapper, fn, {
         // @ts-expect-error: untypable wrapper func
         value: (...args) => wrapper._inner![fn](...args),
         enumerable: false,
       });
     }
-    for (const fn of UINT8ARRAY_FNS_RW) {
+    for (const fn of TYPED_ARRAY_FNS_RW) {
       // TODO: the read-write methods should get ops emitted when they're called
 
       Object.defineProperty(wrapper, fn, {
@@ -106,7 +114,7 @@ export class SyncedUint8Array extends SyncedObject<Uint8Array> {
       },
     });
 
-    return proxy as Uint8ArrayWrapper & Uint8Array;
+    return proxy as ArrayWrapper<Uint8Array> & Uint8Array;
   }
 
   setup(initial?: JsonValue): void {
@@ -116,7 +124,7 @@ export class SyncedUint8Array extends SyncedObject<Uint8Array> {
   }
 
   receive(from: ConnectionId, clock: number, op: SyncedObjectOperation): boolean {
-    const wrapper = this.get() as Uint8Array & Uint8ArrayWrapper;
+    const wrapper = this.get() as Uint8Array & ArrayWrapper<Uint8Array>;
     if (!wrapper) throw new Error("synced array was not setup()!");
 
     if (clock < this.clock) return false;
@@ -134,13 +142,12 @@ export class SyncedUint8Array extends SyncedObject<Uint8Array> {
   }
 
   serialize(value: Uint8Array): JsonValue {
-    return encodeBase64(new Uint8Array(value));
+    return encodeBase64(value);
   }
 
   deserialize(value: JsonValue): Uint8Array {
-    if (typeof value !== "string")
-      throw new TypeError("serialized Uint8Array must be a base64 string");
-
-    return decodeBase64(value);
+    if (typeof value === "string") return decodeBase64(value);
+    if (value instanceof Uint8Array) return value;
+    throw new TypeError("serialized Uint8Array must be a base64 string");
   }
 }
