@@ -55,20 +55,24 @@ export class SyncedArray<T extends Primitive> extends SyncedObject<T[]> {
         }
 
         if (prop === "length") {
-          syncedObject.registry.emit(syncedObject, ++syncedObject.clock, {
+          const op = {
             t: "array-resize",
             newLength: +value,
-          });
+          } as const;
+          syncedObject.registry.emit(syncedObject, ++syncedObject.clock, op);
+          syncedObject.notifyChange(syncedObject.registry.game.network.self, op);
           return ret;
         }
 
         const index = +prop;
         if (!Number.isNaN(index)) {
-          syncedObject.registry.emit(syncedObject, ++syncedObject.clock, {
+          const op = {
             t: "array-set-at",
             index,
             value,
-          });
+          } as const;
+          syncedObject.registry.emit(syncedObject, ++syncedObject.clock, op);
+          syncedObject.notifyChange(syncedObject.registry.game.network.self, op);
         }
 
         return ret;
@@ -95,14 +99,17 @@ export class SyncedArray<T extends Primitive> extends SyncedObject<T[]> {
 
     if (op.t === "array-push") {
       inner.push(...(op.items as T[]));
+      this.notifyChange(from, op);
       return true;
     }
     if (op.t === "array-set-at") {
       inner[op.index] = op.value as T;
+      this.notifyChange(from, op);
       return true;
     }
     if (op.t === "array-resize") {
       inner.length = op.newLength;
+      this.notifyChange(from, op);
       return true;
     }
 

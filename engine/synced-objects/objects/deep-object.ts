@@ -50,8 +50,11 @@ export class SyncedDeepObject<T extends JsonObject>
 
         if (typeof prop !== "string") return ret;
 
-        if (ret)
-          obj.registry.emit(obj, ++obj.clock, { t: "deep-object-set", key: prop, value });
+        if (ret) {
+          const op = { t: "deep-object-set", key: prop, value } as const;
+          obj.registry.emit(obj, ++obj.clock, op);
+          obj.notifyChange(obj.registry.game.network.self, op);
+        }
 
         if (typeof value === "object" && value !== null) obj.#syncChild(target, prop, value);
 
@@ -81,6 +84,7 @@ export class SyncedDeepObject<T extends JsonObject>
     };
     const childObj = new SyncedDeepObject(this.registry, key, this, access);
     childObj.setup(child);
+    childObj.onChanged((_, from, op) => this.notifyChange(from, op));
   }
 
   setup(initial?: T): void {
@@ -117,6 +121,7 @@ export class SyncedDeepObject<T extends JsonObject>
 
       this.clock = Math.max(this.clock, clock);
       this.#writers.set(key, [from, clock]);
+      this.notifyChange(from, op);
 
       return true;
     }
