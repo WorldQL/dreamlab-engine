@@ -42,6 +42,7 @@ import { setupSyncedValues } from "../value/decorator.ts";
 
 // deno-lint-ignore no-unused-vars
 import type { Clickable } from "@dreamlab/engine"; // this is used in jsdoc
+import { InferSyncedObjectType } from "../synced-objects/inference.ts";
 
 export interface BehaviorContext {
   game: Game;
@@ -100,6 +101,21 @@ export class Behavior implements ISignalHandler {
 
   // #region Values
   #syncOverrides: Record<string, SyncedObjectInfo> = {};
+
+  getSyncedObject<
+    P extends string &
+      keyof {
+        [K in keyof B as K extends keyof Behavior ? never : K]: B[K];
+      },
+    B extends Behavior = this,
+    T extends AnySyncedObject = InferSyncedObjectType<B[P]>,
+  >(name: P, _type?: T): T {
+    const object = this[internal.syncedObjectContainerObjectsField].get(name);
+    if (!object)
+      throw new Error(`SyncedObject '${name}' was not found on ${this.constructor.name}!`);
+    return object as T;
+  }
+
   #defaultValues: Record<string, unknown> = {};
   #values = new Map<string, Value>();
   get values(): ReadonlyMap<string, Value> {

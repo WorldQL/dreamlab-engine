@@ -12,6 +12,12 @@ export type AnyAccessor = Accessor<SyncedObjectContainer, any>;
 
 export type SyncedObjectInfo = { kind: string; clock: number; net?: boolean; value?: unknown };
 
+type SyncedObjectChangeListener<T> = (
+  value: T,
+  from: ConnectionId,
+  op?: SyncedObjectOperation,
+) => void;
+
 export abstract class SyncedObject<T> {
   static get kind(): string {
     throw new Error("no kind for SyncedObjectHandler subtype: " + String(this));
@@ -36,6 +42,26 @@ export abstract class SyncedObject<T> {
     this.set = v => access.set(container, v);
 
     container[objects].set(this.field, this);
+  }
+
+  #changeListeners: SyncedObjectChangeListener<T>[] = [];
+
+  protected notifyChange(from: ConnectionId, op?: SyncedObjectOperation): void {
+    const value = this.get();
+    for (const f of this.#changeListeners) {
+      f(value, from, op);
+    }
+  }
+
+  onChanged(listener: SyncedObjectChangeListener<T>): { unsubscribe: () => void } {
+    this.#changeListeners.push(listener);
+    return {
+      unsubscribe: () => {
+        const idx = this.#changeListeners.indexOf(listener);
+        if (idx === -1) return;
+        this.#changeListeners.splice(idx, 1);
+      },
+    };
   }
 
   abstract setup(initial?: T): void;

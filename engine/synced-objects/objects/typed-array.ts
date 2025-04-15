@@ -100,11 +100,13 @@ export class SyncedUint8Array extends SyncedObject<Uint8Array> {
           const index = +prop;
           if (!Number.isNaN(index)) {
             wrapper._inner[index] = value;
-            syncedObject.registry.emit(syncedObject, ++syncedObject.clock, {
+            const op = {
               t: "array-set-at",
               index,
               value: Number(value),
-            });
+            } as const;
+            syncedObject.registry.emit(syncedObject, ++syncedObject.clock, op);
+            syncedObject.notifyChange(syncedObject.registry.game.network.self, op);
 
             return true;
           }
@@ -135,6 +137,7 @@ export class SyncedUint8Array extends SyncedObject<Uint8Array> {
 
     if (op.t === "array-set-at") {
       wrapper._inner[op.index] = Number(op.value);
+      this.notifyChange(from, op);
       return true;
     }
 
@@ -142,7 +145,7 @@ export class SyncedUint8Array extends SyncedObject<Uint8Array> {
   }
 
   serialize(value: Uint8Array): JsonValue {
-    return encodeBase64(value);
+    return encodeBase64(new Uint8Array(value));
   }
 
   deserialize(value: JsonValue): Uint8Array {

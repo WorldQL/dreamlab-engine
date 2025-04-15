@@ -1,3 +1,4 @@
+import type { Game } from "@dreamlab/engine";
 import { syncedObjectContainerObjectsField as objects } from "@dreamlab/engine/internal";
 import type { Accessor, AnySyncedObject } from "./object.ts";
 import type { SyncedObjectOperation } from "./operation.ts";
@@ -25,6 +26,8 @@ export class SyncedObjectRegistry {
   static registerHandler(handler: SyncedObjectConstructor): void {
     this.handlers.set(handler.kind, handler);
   }
+
+  constructor(public game: Game) {}
 
   #containers = new Map<string, WeakRef<SyncedObjectContainer>>();
   #listeners: EmissionListener[] = [];
