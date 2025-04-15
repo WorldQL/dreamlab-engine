@@ -55,6 +55,8 @@ export class SyncedUint8Array extends SyncedObject<Uint8Array> {
     SyncedObjectRegistry.registerHandler(this);
   }
 
+  #inner: Uint8Array | undefined;
+
   #makeWrapper(delegate: Uint8Array): ArrayWrapper<Uint8Array> & Uint8Array {
     const syncedObject = this;
 
@@ -121,6 +123,7 @@ export class SyncedUint8Array extends SyncedObject<Uint8Array> {
 
   setup(initial?: Uint8Array): void {
     const value = initial ?? this.get();
+    this.#inner = value;
     const wrapper = this.#makeWrapper(value);
     this.set(wrapper);
   }
@@ -145,6 +148,7 @@ export class SyncedUint8Array extends SyncedObject<Uint8Array> {
   }
 
   serialize(value: Uint8Array): JsonValue {
+    if (value === this.get() && this.#inner) return encodeBase64(this.#inner);
     return encodeBase64(new Uint8Array(value));
   }
 
@@ -155,6 +159,7 @@ export class SyncedUint8Array extends SyncedObject<Uint8Array> {
   }
 
   override serializeForNetwork(value: Uint8Array): unknown {
+    if (value === this.get() && this.#inner) return this.#inner;
     return value;
   }
   override deserializeForNetwork(value: unknown): Uint8Array {
