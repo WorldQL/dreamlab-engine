@@ -14,6 +14,8 @@ export const handleObjectSync: ClientNetworkSetupRoutine = (net, game) => {
   });
 
   net.registerPacketHandler("SyncedObjectOperation", packet => {
+    if (packet.from === net.id) return;
+
     const op = SyncedObjectOperationSchema.parse(packet.op);
 
     const container = game.sync.get(packet.containerId);
