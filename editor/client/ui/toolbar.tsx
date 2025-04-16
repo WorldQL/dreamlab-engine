@@ -19,6 +19,7 @@ import {
   Move3D,
   ZoomIn,
   ChartLine,
+  ChevronDown,
 } from "../_icons.tsx";
 import { stats } from "../_stats.ts";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
@@ -55,7 +56,7 @@ export class Toolbar implements InspectorUIWidget {
       this.#overlays.append(this.#drawCursorOverlay());
       this.#toolbar.right.append(this.#drawRatioDropdown());
     } else {
-      this.#toolbar.right.append(this.#drawStatsButton());
+      this.#toolbar.right.append(this.#drawStatsButton(), this.#drawRatioDropdown());
     }
   }
 
@@ -271,7 +272,7 @@ export class Toolbar implements InspectorUIWidget {
 
       return (
         <option selected={selected} value={value}>
-          {label}
+          Aspect Ratio: {label}
         </option>
       );
     };
@@ -297,6 +298,16 @@ export class Toolbar implements InspectorUIWidget {
 
     const STORAGE_KEY = "@dreamlab/editor/resolution";
 
+    const setRatio = (ratio: AspectRatio) => {
+      setAspectRatio(ratio);
+
+      const select = document.querySelector<HTMLDivElement>("div#aspect-ratio-dropdown");
+      if (!select) return;
+
+      if (ratio === "unlocked") delete select.dataset.active;
+      else select.dataset.active = "";
+    };
+
     const onChange = (ev: Event) => {
       const target = ev.target as HTMLSelectElement;
       const value = parseValue(target.value);
@@ -305,18 +316,25 @@ export class Toolbar implements InspectorUIWidget {
       if (value === "unlocked") localStorage.removeItem(STORAGE_KEY);
       else localStorage.setItem(STORAGE_KEY, serialize(value));
 
-      setAspectRatio(value);
+      setRatio(value);
     };
 
     const initial = parseValue(localStorage.getItem(STORAGE_KEY) ?? "") ?? "unlocked";
-    setAspectRatio(initial);
+    setRatio(initial);
 
     return (
-      <select onChange={onChange}>
-        {ASPECT_RATIOS.map(ratio => (
-          <Ratio initial={initial} ratio={ratio} />
-        ))}
-      </select>
+      <div
+        id="aspect-ratio-dropdown"
+        className="toolbar-select"
+        data-active={initial !== "unlocked"}
+      >
+        <select autocomplete="off" onChange={onChange}>
+          {ASPECT_RATIOS.map(ratio => (
+            <Ratio initial={initial} ratio={ratio} />
+          ))}
+        </select>
+        <Icon icon={ChevronDown} />
+      </div>
     );
   }
 

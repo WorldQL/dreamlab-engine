@@ -57,6 +57,57 @@
   }
 }
 
+#toolbar div.toolbar-select {
+  all: unset;
+  display: flex;
+  align-items: center;
+  height: calc(100% - 4px);
+  gap: 0.25rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1rem;
+  padding: 0 0.5rem;
+  cursor: pointer;
+
+  color: rgb(var(--color-text-darker));
+  border-top: 2px solid transparent;
+  border-bottom: 2px solid transparent;
+  transition:
+    background 0.2s,
+    color 0.2s;
+
+  &[data-active] {
+    color: rgb(var(--color-text));
+    background: rgb(var(--color-bg-2));
+    border-bottom: 2px solid rgb(var(--color-primary) / 1);
+  }
+
+  &:hover,
+  &:has(> select:open) {
+    color: rgb(var(--color-text));
+    background-color: rgb(var(--color-bg-2) / 1);
+  }
+
+  & > select {
+    height: 100%;
+    all: unset;
+
+    &:open {
+      color: rgb(var(--color-text));
+      background-color: rgb(var(--color-bg-2) / 1);
+    }
+  }
+
+  & > svg {
+    width: auto;
+    height: calc(var(--toolbar-height) * 0.7);
+  }
+
+  &:has(> svg) {
+    padding-right: 0.25rem;
+  }
+}
+
 #toolbar #gizmo-buttons {
   display: flex;
   height: 100%;
