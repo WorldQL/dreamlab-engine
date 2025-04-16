@@ -42,8 +42,15 @@ export class GameRenderer {
     this.app.render();
   }
 
-  resize(): void {
+  resize(force: boolean = false): void {
     if (this.#initialized !== true) return;
+
+    if (force) {
+      this.app.canvas.style.width = "0";
+      this.app.canvas.style.height = "0";
+      this.app.canvas.width = 0;
+      this.app.canvas.height = 0;
+    }
 
     this.app.resize();
     this.#game.fire(GameRenderResize);

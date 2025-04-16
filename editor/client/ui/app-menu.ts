@@ -221,7 +221,7 @@ export class AppMenu {
 
   async #connectToPlayGame(editUI: InspectorUI) {
     const container = document.createElement("div");
-    this.uiRoot.querySelector("#viewport")!.append(container);
+    this.uiRoot.querySelector<HTMLDivElement>("div#viewport > div#games")!.append(container);
 
     const connectURL = new URL(connectionDetails.serverUrl);
     connectURL.pathname = `/api/v1/connect/${this.games.edit.instanceId}`;

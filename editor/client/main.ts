@@ -36,6 +36,7 @@ import { TextureStyle } from "@dreamlab/vendor/pixi.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { icon, Loader } from "./_icons.tsx";
 import { stats } from "./_stats.ts";
+import { updateAspectRatio } from "./aspect-ratio.ts";
 import { CameraPanBehavior } from "./panning-and-selection.ts";
 import { AppMenu } from "./ui/app-menu.ts";
 import { BottomTabs } from "./ui/bottom-tabs.tsx";
@@ -141,7 +142,7 @@ document.addEventListener("drop", async event => {
 
 const uiRoot = document.querySelector("main")! as HTMLElement;
 const container = document.createElement("div");
-uiRoot.querySelector("#viewport")!.append(container);
+uiRoot.querySelector<HTMLDivElement>("div#viewport > div#games")!.append(container);
 uiRoot.style.display = "none";
 
 const codec = pickCodec(connectUrl, undefined);
@@ -197,10 +198,13 @@ const games: { edit: ClientGame; play: ClientGame | undefined } = {
   play: undefined,
 };
 
+const viewport = uiRoot.querySelector<HTMLDivElement>("div#viewport")!;
 new ResizeObserver(_ => {
+  updateAspectRatio();
+
   games.edit.renderer?.resize?.();
   games.play?.renderer?.resize?.();
-}).observe(uiRoot.querySelector("#viewport")!);
+}).observe(viewport);
 
 Object.defineProperties(globalThis, {
   game: { value: game },

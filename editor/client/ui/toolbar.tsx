@@ -22,6 +22,8 @@ import {
 } from "../_icons.tsx";
 import { stats } from "../_stats.ts";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
+import type { AspectRatio } from "../aspect-ratio.ts";
+import { ASPECT_RATIOS, setAspectRatio } from "../aspect-ratio.ts";
 
 export class Toolbar implements InspectorUIWidget {
   #editMode: boolean = false;
@@ -51,6 +53,7 @@ export class Toolbar implements InspectorUIWidget {
       this.#toolbar.left.append(this.#drawGizmoButtons());
       this.#toolbar.right.append(this.#drawPhysicsDebugButton());
       this.#overlays.append(this.#drawCursorOverlay());
+      this.#toolbar.right.append(this.#drawRatioDropdown());
     } else {
       this.#toolbar.right.append(this.#drawStatsButton());
     }
@@ -254,6 +257,67 @@ export class Toolbar implements InspectorUIWidget {
     });
 
     return button;
+  }
+
+  #drawRatioDropdown(): BaseElement {
+    const Ratio = (props: {
+      readonly ratio: AspectRatio;
+      readonly initial: AspectRatio | undefined;
+    }): BaseElement => {
+      const ratio = props.ratio;
+      const label = ratio === "unlocked" ? "Unlocked" : `${ratio[0]}:${ratio[1]}`;
+      const value = serialize(ratio);
+      const selected = props.initial !== undefined && serialize(props.initial) === value;
+
+      return (
+        <option selected={selected} value={value}>
+          {label}
+        </option>
+      );
+    };
+
+    const serialize = (ratio: AspectRatio): string => {
+      if (ratio === "unlocked") return "unlocked";
+
+      const [w, h] = ratio;
+      return `${w}:${h}`;
+    };
+
+    const parseValue = (value: string): AspectRatio | undefined => {
+      if (value === "unlocked") return "unlocked";
+
+      const [w, h] = value.split(":");
+      if (!w || !h) return undefined;
+
+      const width = Number.parseInt(w, 10);
+      const height = Number.parseInt(h, 10);
+      if (Number.isNaN(width) || Number.isNaN(height)) return undefined;
+      return [width, height];
+    };
+
+    const STORAGE_KEY = "@dreamlab/editor/resolution";
+
+    const onChange = (ev: Event) => {
+      const target = ev.target as HTMLSelectElement;
+      const value = parseValue(target.value);
+      if (value === undefined) return;
+
+      if (value === "unlocked") localStorage.removeItem(STORAGE_KEY);
+      else localStorage.setItem(STORAGE_KEY, serialize(value));
+
+      setAspectRatio(value);
+    };
+
+    const initial = parseValue(localStorage.getItem(STORAGE_KEY) ?? "") ?? "unlocked";
+    setAspectRatio(initial);
+
+    return (
+      <select onChange={onChange}>
+        {ASPECT_RATIOS.map(ratio => (
+          <Ratio initial={initial} ratio={ratio} />
+        ))}
+      </select>
+    );
   }
 
   #formatVector(vector: IVector2, fixed = 2): string {
