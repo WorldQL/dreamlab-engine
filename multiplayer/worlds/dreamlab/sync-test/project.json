@@ -8,26 +8,37 @@
       "registration": [],
       "world": [
         {
-          "ref": "ent_zrjW0F988I",
-          "type": "@core/Empty",
-          "name": "Empty",
+          "ref": "ent_4Er35AMN3h",
+          "type": "@core/RawPixi",
+          "name": "RawPixi",
           "enabled": true,
-          "transform": {
-            "position": {
-              "x": 0,
-              "y": -36
-            }
+          "values": {
+            "static": false,
+            "hidden": false
           },
           "behaviors": [
             {
-              "ref": "bhv_HohF5wYRwO",
-              "script": "res://src/my-behavior.ts",
+              "ref": "bhv_zpsR35vEgu",
+              "script": "res://src/tile-map.ts",
               "sync": {}
             }
           ]
         }
       ],
-      "local": [],
+      "local": [
+        {
+          "ref": "ent_BnPFszK6nj",
+          "type": "@core/Camera",
+          "name": "Camera",
+          "enabled": true,
+          "values": {
+            "active": true,
+            "smooth": 0.1,
+            "unlocked": false,
+            "zoom": 5
+          }
+        }
+      ],
       "server": [],
       "prefabs": []
     }
