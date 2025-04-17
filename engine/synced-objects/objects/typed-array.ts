@@ -159,10 +159,22 @@ export class SyncedUint8Array extends SyncedObject<Uint8Array> {
   }
 
   override serializeForNetwork(value: Uint8Array): unknown {
+    if (value.every(it => it === 0)) return { zeroed: true, length: value.length };
     if (value === this.get() && this.#inner) return this.#inner;
     return value;
   }
   override deserializeForNetwork(value: unknown): Uint8Array {
+    if (
+      typeof value === "object" &&
+      value !== null &&
+      "zeroed" in value &&
+      value.zeroed &&
+      "length" in value &&
+      typeof value.length === "number"
+    ) {
+      return new Uint8Array(value.length);
+    }
+
     return value as Uint8Array;
   }
 }
