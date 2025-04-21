@@ -159,7 +159,7 @@ export class Inputs implements ISignalHandler {
   #onTouchStart = (ev: TouchEvent) => {
     // Ensure the touch event is on the game canvas
     // @ts-expect-error: we know it's a client game
-    if (ev.target !== this.#game.renderer.app?.canvas) {
+    if (!ev.composedPath().includes(this.#game.container)) {
       return;
     }
 
