@@ -206,6 +206,14 @@ new ResizeObserver(_ => {
   games.play?.renderer?.resize?.();
 }).observe(viewport);
 
+new ResizeObserver(_ => {
+  if (window.innerWidth < 600) {
+    document.getElementById('layout')?.classList.add('topbar‑plus‑viewport')
+  } else {
+    document.getElementById('layout')?.classList.remove('topbar‑plus‑viewport')
+  }
+}).observe(uiRoot);
+
 Object.defineProperties(globalThis, {
   game: { value: game },
   conn: { value: conn },
