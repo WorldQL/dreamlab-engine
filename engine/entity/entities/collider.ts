@@ -259,16 +259,16 @@ export class Collider extends Entity {
     this.#internal.collider.setRotation(this.globalTransform.rotation);
 
     if (this.shape === "Rectangle" && this.#internal.shape instanceof RAPIER.Cuboid) {
-      this.#internal.shape.halfExtents = {
+      this.#internal.collider.setHalfExtents({
         x: this.globalTransform.scale.x / 2,
         y: this.globalTransform.scale.y / 2,
-      };
+      });
     } else if (this.shape === "Circle" && this.#internal.shape instanceof RAPIER.Ball) {
-      this.#internal.shape.radius = this.globalTransform.scale.x / 2;
+      this.#internal.collider.setRadius(this.globalTransform.scale.x / 2);
     }
     // else if (this.shape === "Capsule" && this.#internal.shape instanceof RAPIER.Capsule) {
-    //   this.#internal.shape.radius = this.globalTransform.scale.x / 2;
-    //   this.#internal.shape.halfHeight = this.globalTransform.scale.y / 2;
+    //   this.#internal.collider.setRadius(this.globalTransform.scale.x / 2);
+    //   this.#internal.collider.setHalfHeight(this.globalTransform.scale.y / 2);
     // }
   }
 
