@@ -26,7 +26,7 @@ export const CODECS = {
 } satisfies Record<Codec, PlayCodec>;
 
 export function getCodec(codec: Codec | undefined): PlayCodec {
-  if (codec === undefined) return CODECS.JSON;
+  if (codec === undefined) return CODECS.CBOR_COMPRESSED;
 
   if (!isCodec(codec)) throw new Error(`invalid codec: ${codec}`);
   return CODECS[codec];
