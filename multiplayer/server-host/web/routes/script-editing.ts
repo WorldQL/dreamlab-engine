@@ -528,4 +528,34 @@ export const serveScriptEditingAPI = (router: Router) => {
       },
     ),
   );
+
+  router.post(
+    "/api/v1/edit/:instance/check",
+    typedJsonHandler(
+      {
+        params: z.object({
+          instance: EditModeInstanceSchema,
+        }),
+        response: z.string(),
+      },
+      async (_ctx, { params: { instance } }) => {
+        const worldDirectory = instance.info.worldDirectory;
+        const entries = [];
+        for await (const entry of fs.expandGlob(`${worldDirectory}/src/**/*.ts`)) {
+          entries.push(entry.path);
+        }
+        const appURL = path.toFileUrl(path.join(Deno.cwd(), "..")).toString();
+        const process = new Deno.Command(Deno.execPath(), {
+          args: ["check", ...entries],
+          cwd: path.join(Deno.cwd(), "worlds"),
+          stdout: "piped",
+          stdin: "null",
+          stderr: "piped",
+        }).spawn();
+        const output = await process.output();
+        const stdoutString = new TextDecoder().decode(output.stderr);
+        return stdoutString.replaceAll(appURL, "file:///app/");
+      },
+    ),
+  );
 };
