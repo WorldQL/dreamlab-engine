@@ -52,7 +52,17 @@ export class GameRenderer {
       this.app.canvas.height = 0;
     }
 
-    this.app.resize();
+    const resizeTo = this.app.resizeTo;
+    if (resizeTo instanceof HTMLElement) {
+      const { clientWidth: width, clientHeight: height } = resizeTo;
+
+      this.app.canvas.style.width = `${width}px`;
+      this.app.canvas.style.height = `${height}px`;
+      this.app.canvas.width = width;
+      this.app.canvas.height = height;
+    } else {
+      this.app.resize();
+    }
     this.#game.fire(GameRenderResize);
   }
 }

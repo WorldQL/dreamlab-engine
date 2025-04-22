@@ -317,7 +317,7 @@ export class AppMenu {
 
       if (this.games.play) {
         this.games.play.container.style.display = "block";
-        this.games.play.renderer.app.resize();
+        this.games.play.renderer.resize();
       }
       this.games.edit.container.style.display = "none";
     } else {
@@ -328,7 +328,7 @@ export class AppMenu {
         this.games.play.container.style.display = "none";
       }
       this.games.edit.container.style.display = "block";
-      this.games.edit.renderer.app.resize();
+      this.games.edit.renderer.resize();
     }
   }
 
