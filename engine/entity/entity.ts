@@ -596,8 +596,8 @@ export abstract class Entity implements ISignalHandler {
       z: overrides.transform?.z ?? this.transform.z,
     };
 
-    const { ...rest } = overrides;
-    const { behaviors = [], ...richDef } = this.#generateRichDefinition(true);
+    const { values: _, ...rest } = overrides;
+    const { behaviors = [], values = {}, ...richDef } = this.#generateRichDefinition(true);
     for (const def of overrides.behaviors ?? []) {
       const matches = behaviors.filter(x => x.type === def.type);
 
@@ -622,6 +622,7 @@ export abstract class Entity implements ISignalHandler {
       {
         ...richDef,
         ...rest,
+        values: { ...values, ...overrides.values },
         behaviors,
         transform,
       },
