@@ -208,9 +208,9 @@ new ResizeObserver(_ => {
 
 new ResizeObserver(_ => {
   if (window.innerWidth < 600) {
-    document.getElementById('layout')?.classList.add('topbar‑plus‑viewport')
+    document.getElementById("layout")?.classList.add("topbar‑plus‑viewport");
   } else {
-    document.getElementById('layout')?.classList.remove('topbar‑plus‑viewport')
+    document.getElementById("layout")?.classList.remove("topbar‑plus‑viewport");
   }
 }).observe(uiRoot);
 
