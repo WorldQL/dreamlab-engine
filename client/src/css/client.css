@@ -126,14 +126,51 @@ dreamlab-connect-form {
     }
   }
 
-  & .instances article {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25em;
+  & .instances {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1em;
+    max-height: 360px;
+    overflow-y: auto;
+    padding-right: 0.5em;
+  }
 
-    & + article {
-      margin-top: 1em;
-    }
+  & .instances article {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    grid-template-areas:
+      "players button"
+      "id      button";
+    gap: 0.25em 1em;
+    padding: 1em;
+    background: rgb(var(--color-bg-1) / 1);
+    border: 1px solid rgb(var(--color-bg-2) / 1);
+    border-radius: 6px;
+  }
+
+  & .instances article > span {
+    grid-area: players;
+    font-size: 0.95rem;
+  }
+
+  & .instances article > span data {
+    font-size: 1.25em;
+    font-weight: 600;
+    margin-left: 0.3em;
+  }
+
+  & .instances article > small {
+    grid-area: id;
+    font-family: monospace;
+    font-size: 0.85em;
+    color: rgb(var(--color-text-secondary) / 1);
+    overflow-wrap: anywhere;
+  }
+
+  & .instances article > button {
+    grid-area: button;
+    align-self: center;
   }
 
   button {

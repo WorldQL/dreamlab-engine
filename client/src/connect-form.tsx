@@ -62,7 +62,7 @@ export class DreamlabConnectFormElement extends HTMLElement {
 
         {instancePicker}
         <section>
-          <button type="submit" id="new-instance" className="accent">
+          <button type="submit" id="new-instance">
             New Instance
           </button>
         </section>
