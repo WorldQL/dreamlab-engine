@@ -118,10 +118,20 @@ export const ServerRenameEntityPacket = BaseRenameEntityPacket.extend({
 
 export const ClientSyncedObjectOperation = z.object({
   t: z.literal("SyncedObjectOperation"),
-  clock: z.number(),
   containerId: z.string(),
   field: z.string(),
+  clock: z.number(),
   op: z.unknown(),
+});
+export const ServerSyncedObjectOperation = ClientSyncedObjectOperation.extend({
+  from: ConnectionIdSchema.optional(),
+});
+export const ServerDenySyncedObjectOp = z.object({
+  t: z.literal("DenySyncedObjectOp"),
+  containerId: z.string(),
+  field: z.string(),
+  clock: z.number(),
+  value: z.unknown(),
 });
 
 const BaseReparentEntityPacket = z.object({
@@ -257,10 +267,6 @@ export const ServerEntityEnableReport = ClientEntityEnableReport.extend({
   from: ConnectionIdSchema.optional(),
 });
 
-export const ServerSyncedObjectOperation = ClientSyncedObjectOperation.extend({
-  from: ConnectionIdSchema.optional(),
-});
-
 export const ClientPacketSchema = z.discriminatedUnion("t", [
   PingPacketSchema,
   ClientLoadPhaseChangedPacket,
@@ -308,6 +314,7 @@ export const ServerPacketSchema = z.discriminatedUnion("t", [
   ServerEntityEnableChanged,
   ServerEntityEnableReport,
   ServerSyncedObjectOperation,
+  ServerDenySyncedObjectOp,
 ]);
 export type ServerPacket = z.infer<typeof ServerPacketSchema>;
 
