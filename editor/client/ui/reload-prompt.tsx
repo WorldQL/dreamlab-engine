@@ -74,8 +74,10 @@ export class ReloadPrompt implements InspectorUIWidget {
     globalThis.addEventListener("visibilitychange", () => {
       // prevent false positives on the popup due to the document being in the background.
       if (document.visibilityState === "visible") {
-        this.#triggered = false;
-        this.#dialog.close();
+        setTimeout(() => {
+          this.#triggered = false;
+          this.#dialog.close();
+        }, 50);
       }
     });
   }
