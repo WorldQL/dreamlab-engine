@@ -23,10 +23,19 @@ export class ColoredSquare extends PixiEntity {
   width: number = 1;
   height: number = 1;
   color: string = "white";
+  tint: string = "white";
 
   get #color(): PIXI.Color {
     try {
       return new PIXI.Color(this.color);
+    } catch {
+      return new PIXI.Color("white");
+    }
+  }
+
+  get #tint(): PIXI.Color {
+    try {
+      return new PIXI.Color(this.tint);
     } catch {
       return new PIXI.Color("white");
     }
@@ -39,6 +48,7 @@ export class ColoredSquare extends PixiEntity {
 
     this.defineValues(ColoredSquare, "width", "height");
     this.defineValue(ColoredSquare, "color", { type: ColorAdapter });
+    this.defineValue(ColoredSquare, "tint", { type: ColorAdapter });
 
     const updateGfx = () => {
       this.#draw();
@@ -52,6 +62,9 @@ export class ColoredSquare extends PixiEntity {
 
     const colorValue = this.values.get("color");
     colorValue?.onChanged(updateGfx);
+
+    const tintValue = this.values.get("tint");
+    tintValue?.onChanged(updateGfx);
   }
 
   #draw(): void {
@@ -64,6 +77,8 @@ export class ColoredSquare extends PixiEntity {
       .clear()
       .rect(-width / 2, -height / 2, width, height)
       .fill({ color: color, alpha: color.alpha });
+
+    this.#gfx.tint = this.#tint;
   }
 
   onInitialize() {

@@ -19,10 +19,19 @@ export class ColoredPolygon extends PixiEntity {
   width: number = 1;
   height: number = 1;
   color: string = "white";
+  tint: string = "white";
 
   get #color(): PIXI.Color {
     try {
       return new PIXI.Color(this.color);
+    } catch {
+      return new PIXI.Color("white");
+    }
+  }
+
+  get #tint(): PIXI.Color {
+    try {
+      return new PIXI.Color(this.tint);
     } catch {
       return new PIXI.Color("white");
     }
@@ -40,6 +49,7 @@ export class ColoredPolygon extends PixiEntity {
 
     this.defineValues(ColoredPolygon, "width", "height", "sides");
     this.defineValue(ColoredPolygon, "color", { type: ColorAdapter });
+    this.defineValue(ColoredPolygon, "tint", { type: ColorAdapter });
 
     const updateGfx = () => {
       this.#draw();
@@ -57,6 +67,9 @@ export class ColoredPolygon extends PixiEntity {
 
     const colorValue = this.values.get("color");
     colorValue?.onChanged(updateGfx);
+
+    const tintValue = this.values.get("tint");
+    tintValue?.onChanged(updateGfx);
   }
 
   #draw(): void {
@@ -77,6 +90,7 @@ export class ColoredPolygon extends PixiEntity {
     });
 
     this.#gfx.clear().poly(points, true).fill({ color: color, alpha: color.alpha });
+    this.#gfx.tint = this.#tint;
   }
 
   onInitialize() {
