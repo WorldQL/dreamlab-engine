@@ -25,4 +25,17 @@ export const handleObjectSync: ClientNetworkSetupRoutine = (net, game) => {
     const object = objects.get(packet.field);
     if (object) object.receive(packet.from ?? "server", packet.clock, op);
   });
+
+  net.registerPacketHandler("DenySyncedObjectOp", packet => {
+    const container = game.sync.get(packet.containerId);
+    if (!container) return;
+    const objects = container[internal.syncedObjectContainerObjectsField];
+    if (!objects) return;
+    const object = objects.get(packet.field);
+    if (!object) return;
+
+    object.clock = packet.clock;
+    object.lastWriter = undefined;
+    object.setup(packet.value);
+  });
 };
