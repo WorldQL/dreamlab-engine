@@ -18,17 +18,17 @@ let nickname =
 
 if (connectionDetails.instanceId === "") {
   const searchParams = new URLSearchParams(window.location.search);
-  const worldId = searchParams.get("worldId");
-  if (worldId === null) {
-    alert("Missing a worldId or a connect URL");
+  const projectId = searchParams.get("projectId");
+  if (projectId === null) {
+    alert("Missing a projectId or a connect URL");
     throw new Error();
   }
 
-  const instances = await fetchInstances(worldId);
-  const connectForm = DreamlabConnectFormElement.create(worldId, instances);
+  const instances = await fetchInstances(projectId);
+  const connectForm = DreamlabConnectFormElement.create(projectId, instances);
   const instanceCount = Object.values(instances).length;
   if (instanceCount === 0) {
-    const instance = await spawnNewInstance(worldId);
+    const instance = await spawnNewInstance(projectId);
     setConnectionDetails({ instanceId: instance.id, serverUrl: instance.server });
   } else if (
     instanceCount === 1 ||
