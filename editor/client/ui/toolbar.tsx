@@ -52,10 +52,10 @@ export class Toolbar implements InspectorUIWidget {
 
     if (this.#editMode) {
       this.#toolbar.left.append(this.#drawGizmoButtons());
-      this.#toolbar.right.append(this.#drawPhysicsDebugButton());
       this.#overlays.append(this.#drawCursorOverlay());
       this.#toolbar.right.append(this.#drawRatioDropdown());
     } else {
+      this.#toolbar.left.append(this.#drawPhysicsDebugButton());
       this.#toolbar.right.append(this.#drawStatsButton(), this.#drawRatioDropdown());
     }
   }
