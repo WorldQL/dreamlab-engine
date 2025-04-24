@@ -160,9 +160,13 @@ async function addImageFromClipboard(imageData: string): Promise<void> {
   }
 }
 
+// so when repeatedly pasting we don't paste under the newly pasted result
+let lastAutoselectedAfterPasteEntityRef: string | undefined = undefined;
+
 export async function pasteEntitiesFromClipboard(
   game: ClientGame,
   selectedService: SelectedEntityService,
+  pasteAtCursor = false,
 ): Promise<void> {
   const CLIPBOARD_PREFIX = "dreamlab clipboard";
   let text = "";
@@ -231,9 +235,10 @@ export async function pasteEntitiesFromClipboard(
     // If only one definition was copied and it matches the selected entity,
     // then paste at its parent (if available).
     if (
-      definitions.length === 1 &&
-      isSameEntity(definitions[0] as EntityDefinition & { typeName: string }, selected) &&
-      selected.parent
+      selected.parent &&
+      ((definitions.length === 1 &&
+        isSameEntity(definitions[0] as EntityDefinition & { typeName: string }, selected)) ||
+        lastAutoselectedAfterPasteEntityRef === selected.ref)
     ) {
       targetParent = selected.parent;
     } else {
@@ -317,6 +322,15 @@ export async function pasteEntitiesFromClipboard(
         def: x.getDefinition(),
       }) as UndoRedoOperation,
   );
+
+  if (pastedEntities.length === 1) {
+    selectedService.entities = [pastedEntities[0]];
+    lastAutoselectedAfterPasteEntityRef = pastedEntities[0].ref;
+
+    if (pasteAtCursor && game.inputs.cursor.world) {
+      pastedEntities[0].pos = game.inputs.cursor.world;
+    }
+  }
   UndoRedoManager._.push({ t: "compound", ops } as unknown as UndoRedoOperation);
 }
 //#endregion
@@ -408,9 +422,9 @@ export function setupKeyboardShortcuts(
     }
 
     // Paste
-    if (event.key === "v" && (event.ctrlKey || event.metaKey)) {
+    if (event.key.toLowerCase() === "v" && (event.ctrlKey || event.metaKey)) {
       event.preventDefault();
-      await pasteEntitiesFromClipboard(game, selectedService);
+      await pasteEntitiesFromClipboard(game, selectedService, event.shiftKey);
       return;
     }
 
