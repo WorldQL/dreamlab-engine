@@ -68,6 +68,12 @@ export class EditorFacadeComplexCollider extends PixiEntity {
         .map(child => [child.transform.position.x, child.transform.position.y] as const);
     };
 
+    this.on(EntityDestroyed, () => {
+      for (const child of this.children.values()) {
+        child.unregister(EntityTransformUpdate, this.#redraw);
+      }
+    });
+
     this.#debug = new DebugPolygon({ entity: this, getPoints });
 
     for (const child of this.children.values()) {
