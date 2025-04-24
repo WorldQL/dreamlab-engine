@@ -416,8 +416,6 @@ export class DebugPolygon extends DebugShape {
     const points = this.getPoints().map(([x, y]) => ({ x, y: -y }));
     const [first] = points;
 
-    console.log(points);
-
     this.gfx.moveTo(first.x, first.y);
     this.gfx.poly(points);
     this.gfx.stroke();
