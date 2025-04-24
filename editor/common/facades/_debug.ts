@@ -390,3 +390,36 @@ export class DebugCapsule extends DebugShape {
       .stroke();
   }
 }
+
+export class DebugPolygon extends DebugShape {
+  private readonly getPoints: () => [number, number][];
+
+  constructor({
+    getPoints,
+    ...opts
+  }: DebugShapeOptions & { readonly getPoints: () => [number, number][] }) {
+    super(opts);
+    this.getPoints = getPoints;
+  }
+
+  redraw(): void {
+    if (!this.getPoints) return;
+
+    this.gfx.alpha = this.alpha;
+    this.gfx.clear();
+    this.gfx.setStrokeStyle({
+      width: this.scaledWidth,
+      color: this.color,
+      alignment: this.alignment,
+    });
+
+    const points = this.getPoints().map(([x, y]) => ({ x, y: -y }));
+    const [first] = points;
+
+    console.log(points);
+
+    this.gfx.moveTo(first.x, first.y);
+    this.gfx.poly(points);
+    this.gfx.stroke();
+  }
+}
