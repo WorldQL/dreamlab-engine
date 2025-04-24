@@ -5,6 +5,7 @@ export * from "./clickable.ts";
 export * from "./collider.ts";
 export * from "./colored-polygon.ts";
 export * from "./colored-square.ts";
+export * from "./complex-collider.ts";
 export * from "./empty.ts";
 export * from "./physics-debug.ts";
 export * from "./raw-pixi.ts";
