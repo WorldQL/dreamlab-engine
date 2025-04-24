@@ -10,7 +10,7 @@ import {
   Rigidbody,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
-import { decomp, makeCCW } from "@dreamlab/vendor/poly-decomp-es.ts";
+import { quickDecomp as decomp, makeCCW } from "@dreamlab/vendor/poly-decomp-es.ts";
 import RAPIER, { RigidBody } from "@dreamlab/vendor/rapier.ts";
 
 export class ComplexCollider extends Entity {
