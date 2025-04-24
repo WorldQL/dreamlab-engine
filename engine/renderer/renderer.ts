@@ -60,6 +60,9 @@ export class GameRenderer {
       this.app.canvas.style.height = `${height}px`;
       this.app.canvas.width = width;
       this.app.canvas.height = height;
+
+      this.app.renderer.resize(width, height);
+      this.app.render();
     } else {
       this.app.resize();
     }
