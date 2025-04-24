@@ -1,0 +1,2713 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "engine_revision": "2024-08.001"
+  },
+  "scenes": {
+    "main": {
+      "registration": [],
+      "world": [
+        {
+          "ref": "ent_BlkQdj3V30",
+          "type": "@core/Sprite",
+          "name": "Maze",
+          "enabled": true,
+          "transform": {
+            "scale": {
+              "x": 5,
+              "y": 5
+            }
+          },
+          "values": {
+            "static": false,
+            "hidden": false,
+            "texture": "res://assets/vomitmaze.png",
+            "width": 8,
+            "height": 6,
+            "alpha": 1,
+            "tint": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "preserveAspectRatio": false
+          }
+        },
+        {
+          "ref": "ent_9c2zNfnR7m",
+          "type": "@core/Empty",
+          "name": "Collision",
+          "enabled": true,
+          "children": [
+            {
+              "ref": "ent_5LoRXLMLuo",
+              "type": "@core/Collider",
+              "name": "Collider",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -4.549072074199753,
+                  "y": -1.1916819891750174
+                },
+                "scale": {
+                  "x": 1.7021196150834395,
+                  "y": 8.87000936998406
+                }
+              },
+              "values": {
+                "isSensor": false,
+                "shape": "Rectangle",
+                "mass": 1
+              }
+            },
+            {
+              "ref": "ent_MziGDjZ92M",
+              "type": "@core/Collider",
+              "name": "Collider.1",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -7.598750964752651,
+                  "y": -9.780593866793133
+                },
+                "scale": {
+                  "x": 5.195999999999936,
+                  "y": 0.35900000000000176
+                }
+              },
+              "values": {
+                "isSensor": false,
+                "shape": "Rectangle",
+                "mass": 1
+              }
+            },
+            {
+              "ref": "ent_nFdpwRPh6z",
+              "type": "@core/Collider",
+              "name": "Collider.2",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 4.550360934705683,
+                  "y": 5.4532354485050885
+                },
+                "scale": {
+                  "x": 0.29240737185909627,
+                  "y": 3.4671159806149965
+                }
+              },
+              "values": {
+                "isSensor": false,
+                "shape": "Rectangle",
+                "mass": 1
+              }
+            },
+            {
+              "ref": "ent_CefWlUeHx4",
+              "type": "@core/Collider",
+              "name": "Collider.3",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -12.715100421877512,
+                  "y": -1.5034860356084234
+                },
+                "scale": {
+                  "x": 15.240606862720554,
+                  "y": 3.4779492647481005
+                }
+              },
+              "values": {
+                "isSensor": false,
+                "shape": "Rectangle",
+                "mass": 1
+              }
+            },
+            {
+              "ref": "ent_Haibw2jiv4",
+              "type": "@core/Collider",
+              "name": "Collider.6",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 16.884121916048883,
+                  "y": -10.079617325720374
+                },
+                "rotation": -0.6562746603812135,
+                "scale": {
+                  "x": 5,
+                  "y": 15.12531955984667
+                }
+              },
+              "values": {
+                "isSensor": false,
+                "shape": "Rectangle",
+                "mass": 1
+              }
+            },
+            {
+              "ref": "ent_VW1VyYg4LY",
+              "type": "@core/Collider",
+              "name": "Collider.7",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 20.82034456646595,
+                  "y": -0.9680936639917777
+                },
+                "scale": {
+                  "x": 2.903787821098202,
+                  "y": 5
+                }
+              },
+              "values": {
+                "isSensor": false,
+                "shape": "Rectangle",
+                "mass": 1
+              }
+            },
+            {
+              "ref": "ent_9xWMUGqglu",
+              "type": "@core/Collider",
+              "name": "Collider.8",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": 18.791224829325508,
+                  "y": 7.27485572179709
+                },
+                "rotation": 0.43742500765808146,
+                "scale": {
+                  "x": 5,
+                  "y": 14.148849630017995
+                }
+              },
+              "values": {
+                "isSensor": false,
+                "shape": "Rectangle",
+                "mass": 1
+              }
+            },
+            {
+              "ref": "ent_Inhoihmoox",
+              "type": "@core/ComplexCollider",
+              "name": "ComplexCollider",
+              "enabled": true,
+              "values": {
+                "isSensor": false,
+                "mass": 1
+              },
+              "children": [
+                {
+                  "ref": "ent_6q8MjdCuRZ",
+                  "type": "@core/Empty",
+                  "name": "Empty",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -3.6954703758251957,
+                      "y": -6.007762988320535
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_jF6BfbNf22",
+                  "type": "@core/Empty",
+                  "name": "Empty.1",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -6.106311063209499,
+                      "y": -5.563504973725365
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_f5BoMT68VP",
+                  "type": "@core/Empty",
+                  "name": "Empty.2",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -7.555781506836938,
+                      "y": -5.50234588327695
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_N1b5vcCu1t",
+                  "type": "@core/Empty",
+                  "name": "Empty.3",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -9.017483768554149,
+                      "y": -5.624664064173783
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_YjjGcHDoQb",
+                  "type": "@core/Empty",
+                  "name": "Empty.4",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -10.087767851401415,
+                      "y": -5.636895882263466
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_nlD8dikYlx",
+                  "type": "@core/Empty",
+                  "name": "Empty.5",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -10.632083756392309,
+                      "y": -4.80513225216502
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_2YKeyUHCJO",
+                  "type": "@core/Empty",
+                  "name": "Empty.6",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -11.677904203060303,
+                      "y": -3.8204708959455407
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_hysz8xXskf",
+                  "type": "@core/Empty",
+                  "name": "Empty.7",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -13.115142828598058,
+                      "y": -3.208879991461389
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_EGlbgbNCIl",
+                  "type": "@core/Empty",
+                  "name": "Empty.8",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -14.20128757768461,
+                      "y": -2.380195638343782
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_Kvk942V3Tz",
+                  "type": "@core/Empty",
+                  "name": "Empty.9",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -3.6965315657812488,
+                      "y": -5.449050978854221
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_KkJTQNih5b",
+              "type": "@core/ComplexCollider",
+              "name": "ComplexCollider.1",
+              "enabled": true,
+              "values": {
+                "isSensor": false,
+                "mass": 1
+              },
+              "children": [
+                {
+                  "ref": "ent_H45UJeSgGE",
+                  "type": "@core/Empty",
+                  "name": "Empty",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -14.898912557504044,
+                      "y": 0.23453902940473847
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_GQ1jiOo2cp",
+                  "type": "@core/Empty",
+                  "name": "Empty.1",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -15.196510113007234,
+                      "y": 1.3245213766459298
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_rt2OwvGmHF",
+                  "type": "@core/Empty",
+                  "name": "Empty.2",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -15.921653267784187,
+                      "y": 2.1315044908128664
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_0hcvnNCW03",
+                  "type": "@core/Empty",
+                  "name": "Empty.3",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -16.801131097372973,
+                      "y": 3.0160367906866274
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_KYnPriEctH",
+                  "type": "@core/Empty",
+                  "name": "Empty.4",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -17.159998487607478,
+                      "y": 4.0471487288252
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_FwpCsSZPMv",
+                  "type": "@core/Empty",
+                  "name": "Empty.5",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -17.296469185302296,
+                      "y": 9.126891365243115
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_j1WbqcwnyK",
+                  "type": "@core/Empty",
+                  "name": "Empty.6",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -16.44731817742353,
+                      "y": 10.208548006231608
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_yaLMd1pjRo",
+                  "type": "@core/Empty",
+                  "name": "Empty.7",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -15.992415851774158,
+                      "y": 11.13857053867032
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_0J51g1lqaB",
+                  "type": "@core/Empty",
+                  "name": "Empty.8",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -14.809669805085797,
+                      "y": 11.734998032299496
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_aMsiuyJ6y9",
+                  "type": "@core/Empty",
+                  "name": "Empty.9",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -8.552235592264523,
+                      "y": 12.007939427689072
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_ePjSaDjZDx",
+                  "type": "@core/Empty",
+                  "name": "Empty.10",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -7.354326134721276,
+                      "y": 12.012993897974141
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_VQh7PFdujj",
+                  "type": "@core/Empty",
+                  "name": "Empty.11",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -7.379598486146192,
+                      "y": 13.4686813400521
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_MYrdiNWegu",
+                  "type": "@core/Empty",
+                  "name": "Empty.12",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -19.20705895302981,
+                      "y": 13.873038962851568
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_1wZZ9Jxniy",
+                  "type": "@core/Empty",
+                  "name": "Empty.13",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -18.513899656602177,
+                      "y": -0.0019788287426134588
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_VOBNIWqFh8",
+              "type": "@core/ComplexCollider",
+              "name": "ComplexCollider.2",
+              "enabled": true,
+              "values": {
+                "isSensor": false,
+                "mass": 1
+              },
+              "children": [
+                {
+                  "ref": "ent_xzbVeXOEId",
+                  "type": "@core/Empty",
+                  "name": "Empty",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 8.205356135633465,
+                      "y": 7.34437120386238
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_jzM6dbCB5n",
+                  "type": "@core/Empty",
+                  "name": "Empty.1",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 8.673581824608926,
+                      "y": 7.085951688417784
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_Y2l4BuSDcz",
+                  "type": "@core/Empty",
+                  "name": "Empty.2",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 9.58844094619266,
+                      "y": 6.499633135358596
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_3pysHL7y7z",
+                  "type": "@core/Empty",
+                  "name": "Empty.3",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 10.073670093551874,
+                      "y": 5.741462592609679
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_BE0PTTrAH0",
+                  "type": "@core/Empty",
+                  "name": "Empty.4",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 10.508354538061273,
+                      "y": 4.7507864167510485
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_pEUWreuYYR",
+                  "type": "@core/Empty",
+                  "name": "Empty.5",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 10.877330868865737,
+                      "y": 3.0069941684284687
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_RmZv5bhANi",
+                  "type": "@core/Empty",
+                  "name": "Empty.6",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 10.917766631145682,
+                      "y": 2.415621145084286
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_xP6FdiLQv5",
+                  "type": "@core/Empty",
+                  "name": "Empty.7",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 10.750969111740915,
+                      "y": 1.4704352017906297
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_oUTaqA4AoL",
+                  "type": "@core/Empty",
+                  "name": "Empty.8",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 10.498245597491263,
+                      "y": 0.9296068812963774
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_sm5H4lBNb4",
+                  "type": "@core/Empty",
+                  "name": "Empty.9",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 10.37693831065143,
+                      "y": 0.985206054431301
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_TvAqXfRaFL",
+                  "type": "@core/Empty",
+                  "name": "Empty.10",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 10.599335003191122,
+                      "y": 1.6827229537603365
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_V79BFI0eFm",
+                  "type": "@core/Empty",
+                  "name": "Empty.11",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 10.791404874020856,
+                      "y": 2.491438199359218
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_e3tVtfrgaA",
+                  "type": "@core/Empty",
+                  "name": "Empty.12",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 10.498245597491282,
+                      "y": 4.189740215116839
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_pskCy0t4B7",
+                  "type": "@core/Empty",
+                  "name": "Empty.13",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 10.093887974691885,
+                      "y": 5.36743179152019
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_ULBgRDinId",
+                  "type": "@core/Empty",
+                  "name": "Empty.14",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 9.492406010777717,
+                      "y": 6.312617734813882
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_jVQgYMvMNN",
+                  "type": "@core/Empty",
+                  "name": "Empty.15",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 8.931359809143558,
+                      "y": 6.727084298183268
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_FfjCeeFevq",
+                  "type": "@core/Empty",
+                  "name": "Empty.16",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 8.289442082949446,
+                      "y": 7.156714272407674
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_rFKuSBvh18",
+                  "type": "@core/Empty",
+                  "name": "Empty.17",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 7.758722703025179,
+                      "y": 7.202204504972611
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_5opR0i1vZv",
+                  "type": "@core/Empty",
+                  "name": "Empty.18",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 7.778940584165151,
+                      "y": 7.308348380957464
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_69WfRmDvxl",
+              "type": "@core/ComplexCollider",
+              "name": "ComplexCollider.3",
+              "enabled": true,
+              "values": {
+                "isSensor": false,
+                "mass": 1
+              },
+              "children": [
+                {
+                  "ref": "ent_jsgNn6v402",
+                  "type": "@core/Empty",
+                  "name": "Empty",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -7.440834065314702,
+                      "y": 12.000362726271241
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_cpyxGkLHhq",
+                  "type": "@core/Empty",
+                  "name": "Empty.1",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -6.557127877560765,
+                      "y": 11.301311562824097
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_pxtSD4EmHg",
+                  "type": "@core/Empty",
+                  "name": "Empty.2",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -5.897645647893648,
+                      "y": 10.219760706170025
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_RyNFf6hvxt",
+                  "type": "@core/Empty",
+                  "name": "Empty.3",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -2.679372367118118,
+                      "y": 10.206571061576682
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_qoasOFhdBk",
+                  "type": "@core/Empty",
+                  "name": "Empty.4",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -1.716528311804126,
+                      "y": 9.942778169709836
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_TqrQrZNlve",
+                  "type": "@core/Empty",
+                  "name": "Empty.5",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -0.33583631577304907,
+                      "y": 10.327388206051697
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_6Nv3OHGjwA",
+                  "type": "@core/Empty",
+                  "name": "Empty.6",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0.5555198658450244,
+                      "y": 11.311071899823169
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_gfr4eZwdiK",
+                  "type": "@core/Empty",
+                  "name": "Empty.7",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0.8158834501176031,
+                      "y": 12.250965973544744
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_NivyUSiGUn",
+                  "type": "@core/Empty",
+                  "name": "Empty.8",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 1.791917150024931,
+                      "y": 12.59389673297167
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_jTRtAGdbpj",
+                  "type": "@core/Empty",
+                  "name": "Empty.9",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 2.781140494525606,
+                      "y": 12.25096597354477
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_Q5yD0VVPAF",
+                  "type": "@core/Empty",
+                  "name": "Empty.10",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 3.6120881039061734,
+                      "y": 12.804931046465146
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_G8uWilxhqK",
+                  "type": "@core/Empty",
+                  "name": "Empty.11",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 4.469415002473425,
+                      "y": 13.319327185605498
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_7aWiKVIokm",
+                  "type": "@core/Empty",
+                  "name": "Empty.12",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 8.399929091289442,
+                      "y": 13.464413276132252
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_jFKCMpLJyK",
+                  "type": "@core/Empty",
+                  "name": "Empty.13",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 10.523461870817558,
+                      "y": 13.147861805892035
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_2DOeJXi4eH",
+                  "type": "@core/Empty",
+                  "name": "Empty.14",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 11.288461257231415,
+                      "y": 12.712603534311738
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_2WxaBFzCrJ",
+                  "type": "@core/Empty",
+                  "name": "Empty.15",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 12.251305312545405,
+                      "y": 12.21139703976473
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_JApAGwO6dK",
+                  "type": "@core/Empty",
+                  "name": "Empty.16",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 13.834062663746485,
+                      "y": 12.145448816798018
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_evkc1SebxQ",
+                  "type": "@core/Empty",
+                  "name": "Empty.17",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 14.08466591101999,
+                      "y": 14.691050223313088
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_xfdm2c9obQ",
+                  "type": "@core/Empty",
+                  "name": "Empty.18",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -7.40126513153467,
+                      "y": 14.677860578719752
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_1228gmGcup",
+              "type": "@core/ComplexCollider",
+              "name": "ComplexCollider.4",
+              "enabled": true,
+              "values": {
+                "isSensor": false,
+                "mass": 1
+              },
+              "children": [
+                {
+                  "ref": "ent_gMY254iLM9",
+                  "type": "@core/Empty",
+                  "name": "Empty",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -13.773517533746507,
+                      "y": -3.210193860926321
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_Fc2cA09auf",
+                  "type": "@core/Empty",
+                  "name": "Empty.1",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -15.4925359808906,
+                      "y": -3.7182726972150673
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_daHZHBeuLb",
+                  "type": "@core/Empty",
+                  "name": "Empty.2",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -16.691594580285365,
+                      "y": -4.828145119795348
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_6pzSK8My17",
+                  "type": "@core/Empty",
+                  "name": "Empty.3",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -17.46454144601092,
+                      "y": -6.195666497617478
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_tqOyEpxlMB",
+                  "type": "@core/Empty",
+                  "name": "Empty.4",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -17.811376578067268,
+                      "y": -8.13794323713297
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_0Nys5I8lME",
+                  "type": "@core/Empty",
+                  "name": "Empty.5",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -17.920381905284977,
+                      "y": -9.971214649430753
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_ODeS9lI8wV",
+                  "type": "@core/Empty",
+                  "name": "Empty.6",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -17.791557427664053,
+                      "y": -10.744161515156303
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_BmM2sejJbc",
+                  "type": "@core/Empty",
+                  "name": "Empty.7",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -17.920381905284977,
+                      "y": -11.318916876849663
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_Q1mC1sj84n",
+                  "type": "@core/Empty",
+                  "name": "Empty.8",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -17.414993570002885,
+                      "y": -12.309874397010628
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_Vd0Yp5Nqvf",
+                  "type": "@core/Empty",
+                  "name": "Empty.9",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -16.433945625043528,
+                      "y": -12.844991457897548
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_8pRu2KyOUT",
+                  "type": "@core/Empty",
+                  "name": "Empty.10",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -14.848413592785986,
+                      "y": -13.518842571607003
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_g595jIU2xb",
+                  "type": "@core/Empty",
+                  "name": "Empty.11",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -13.223243259721997,
+                      "y": -13.816129827655296
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_VFo5qF5mZM",
+                  "type": "@core/Empty",
+                  "name": "Empty.12",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -9.962993018392426,
+                      "y": -14.073778782897145
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_w8eVq7fCGI",
+                  "type": "@core/Empty",
+                  "name": "Empty.13",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -5.939705486538912,
+                      "y": -13.69721492523598
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_OemPDCAYR5",
+                  "type": "@core/Empty",
+                  "name": "Empty.14",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -4.114766028029262,
+                      "y": -13.299535896995852
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_SIEP3nyBXn",
+                  "type": "@core/Empty",
+                  "name": "Empty.15",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -2.4388407088547694,
+                      "y": -13.206411042262491
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_qKTG7VWjz0",
+                  "type": "@core/Empty",
+                  "name": "Empty.16",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -1.638942057986874,
+                      "y": -13.341778506255519
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_iKvOX6drY2",
+                  "type": "@core/Empty",
+                  "name": "Empty.17",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 1.2653053513180978,
+                      "y": -12.954135313911847
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_IDNYRjZqE1",
+                  "type": "@core/Empty",
+                  "name": "Empty.18",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 2.4836125272553504,
+                      "y": -13.42792143788744
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_vHRXhdbG6i",
+                  "type": "@core/Empty",
+                  "name": "Empty.19",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 4.00341996390435,
+                      "y": -13.834023829866524
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_lyvYK51rKl",
+                  "type": "@core/Empty",
+                  "name": "Empty.20",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 4.797165548227107,
+                      "y": -13.704809432418635
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_Fxc0SJH7la",
+                  "type": "@core/Empty",
+                  "name": "Empty.21",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 5.184808740570779,
+                      "y": -13.446380637522854
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_s8fYiAkkSz",
+                  "type": "@core/Empty",
+                  "name": "Empty.22",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 6.267748452515006,
+                      "y": -13.969391293859553
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_sXEYgxKt64",
+                  "type": "@core/Empty",
+                  "name": "Empty.23",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 8.009066284788961,
+                      "y": -14.295503820751849
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_YrL7pmjHnx",
+                  "type": "@core/Empty",
+                  "name": "Empty.24",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 10.039578244684387,
+                      "y": -14.049381158946343
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_1g41gaxYUH",
+                  "type": "@core/Empty",
+                  "name": "Empty.25",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 10.993303559180722,
+                      "y": -14.073993425126893
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_3CpR7LVbLL",
+                  "type": "@core/Empty",
+                  "name": "Empty.26",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 10.827170762462005,
+                      "y": -15.643025394136995
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_eisc4gvmIS",
+                  "type": "@core/Empty",
+                  "name": "Empty.27",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 1.1299378873250667,
+                      "y": -15.784545924675161
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_o1oSR1qQ2T",
+                  "type": "@core/Empty",
+                  "name": "Empty.28",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -18.739335333561385,
+                      "y": -15.500728872548711
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_sONkBzYvcX",
+                  "type": "@core/Empty",
+                  "name": "Empty.29",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -18.782937464448473,
+                      "y": -2.605398662694087
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_dK9EUBNzOi",
+                  "type": "@core/Empty",
+                  "name": "Empty.30",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -13.975802534147636,
+                      "y": -2.518194400919922
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_U82xqXxq3I",
+              "type": "@core/ComplexCollider",
+              "name": "ComplexCollider.5",
+              "enabled": true,
+              "values": {
+                "isSensor": false,
+                "mass": 1
+              },
+              "children": [
+                {
+                  "ref": "ent_VD8G5ooil7",
+                  "type": "@core/Empty",
+                  "name": "Empty",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 7.44910093841519,
+                      "y": -9.715689783437927
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_qwkgvh9C7i",
+                  "type": "@core/Empty",
+                  "name": "Empty.1",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 7.838295675955781,
+                      "y": -10.067254474669106
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_idY2eK7rPU",
+                  "type": "@core/Empty",
+                  "name": "Empty.2",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 8.25855840016435,
+                      "y": -10.437085671972646
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_q9ihcxwwxE",
+                  "type": "@core/Empty",
+                  "name": "Empty.3",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 8.586363325047033,
+                      "y": -10.924590432054586
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_HEqUkEVyHC",
+                  "type": "@core/Empty",
+                  "name": "Empty.4",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 8.951991895108488,
+                      "y": -11.504552991462411
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_LDnbBIpFn9",
+                  "type": "@core/Empty",
+                  "name": "Empty.5",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 9.359646737590808,
+                      "y": -12.12233919604901
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_TuNviorsP3",
+                  "type": "@core/Empty",
+                  "name": "Empty.6",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 9.712667425926005,
+                      "y": -12.672883364762235
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_ro0REBlFMY",
+                  "type": "@core/Empty",
+                  "name": "Empty.7",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 9.729477934894348,
+                      "y": -12.836785827203578
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_x3dGG6iEMl",
+                  "type": "@core/Empty",
+                  "name": "Empty.8",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 9.89338039733569,
+                      "y": -12.929243626529463
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_VwOwcyMZDE",
+                  "type": "@core/Empty",
+                  "name": "Empty.9",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 10.044674978050775,
+                      "y": -13.215022278991288
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_0qoT5ylooN",
+                  "type": "@core/Empty",
+                  "name": "Empty.10",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 10.200172186007945,
+                      "y": -13.3873299959168
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_Sviwi5bPBt",
+                  "type": "@core/Empty",
+                  "name": "Empty.11",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 10.032067096324518,
+                      "y": -13.433558895579743
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_hLIzltg15Y",
+                  "type": "@core/Empty",
+                  "name": "Empty.12",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 9.813530479736063,
+                      "y": -13.265453805896318
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_0uzzKq5Mod",
+                  "type": "@core/Empty",
+                  "name": "Empty.13",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 9.700059544199748,
+                      "y": -12.94185150825572
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_Hvy8rsS4Dg",
+                  "type": "@core/Empty",
+                  "name": "Empty.14",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 9.489928182095465,
+                      "y": -12.622451837857206
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_OzuJBB37hn",
+                  "type": "@core/Empty",
+                  "name": "Empty.15",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 9.258783683780752,
+                      "y": -12.134947077775267
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_EiCF6QmM3Q",
+                  "type": "@core/Empty",
+                  "name": "Empty.16",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 8.998220794771438,
+                      "y": -11.857573679797612
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_7P9Oe59GaC",
+                  "type": "@core/Empty",
+                  "name": "Empty.17",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 8.855331468540525,
+                      "y": -11.525566127672842
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_QLRIaunG9S",
+                  "type": "@core/Empty",
+                  "name": "Empty.18",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 8.68302375161501,
+                      "y": -11.252395356937273
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_n6LIvZ9rrV",
+                  "type": "@core/Empty",
+                  "name": "Empty.19",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 8.468689762268642,
+                      "y": -10.937198313780847
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_F8z3nUgwdi",
+                  "type": "@core/Empty",
+                  "name": "Empty.20",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 8.271166281890615,
+                      "y": -10.693445933739877
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_fT1E913DB2",
+                  "type": "@core/Empty",
+                  "name": "Empty.21",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 7.997995511155045,
+                      "y": -10.395059399551792
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_EuZRdJ51LD",
+                  "type": "@core/Empty",
+                  "name": "Empty.22",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 7.699608976966961,
+                      "y": -10.19333329193168
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_Z4tTu2Tj8P",
+                  "type": "@core/Empty",
+                  "name": "Empty.23",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 7.552587966403703,
+                      "y": -9.995078459800888
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_tcFKnYJCIa",
+                  "type": "@core/Empty",
+                  "name": "Empty.24",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 7.296856881390634,
+                      "y": -9.82546090341467
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_1GU5tzshhu",
+                  "type": "@core/Empty",
+                  "name": "Empty.25",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 7.304685383993075,
+                      "y": -9.741956875655303
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_Mr6JKy1IFP",
+              "type": "@core/ComplexCollider",
+              "name": "ComplexCollider.6",
+              "enabled": true,
+              "values": {
+                "isSensor": false,
+                "mass": 1
+              },
+              "children": [
+                {
+                  "ref": "ent_o9eq88StSC",
+                  "type": "@core/Empty",
+                  "name": "Empty",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -0.5065416054232976,
+                      "y": -2.2746322957313274
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_D02RiLpS7e",
+                  "type": "@core/Empty",
+                  "name": "Empty.1",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -0.2711944798664985,
+                      "y": -2.4091163674780693
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_uYP2UfgiBp",
+                  "type": "@core/Empty",
+                  "name": "Empty.2",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0.006178918111157117,
+                      "y": -2.640260865792783
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_OMBF2MlSKS",
+                  "type": "@core/Empty",
+                  "name": "Empty.3",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0.2583365526362993,
+                      "y": -2.858797482381239
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_mpmzgn5cJV",
+                  "type": "@core/Empty",
+                  "name": "Empty.4",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0.5861414775189835,
+                      "y": -3.077334098969695
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_cA316EnnDP",
+                  "type": "@core/Empty",
+                  "name": "Empty.5",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0.9643779293066959,
+                      "y": -3.337896987979008
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_prl371fnZp",
+                  "type": "@core/Empty",
+                  "name": "Empty.6",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 1.5023142162936645,
+                      "y": -3.6236756404408355
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_L4V7znfBBl",
+                  "type": "@core/Empty",
+                  "name": "Empty.7",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 1.9057664315338916,
+                      "y": -3.9514805653235205
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_P7MokX9xYi",
+                  "type": "@core/Empty",
+                  "name": "Empty.8",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 2.4268922095525176,
+                      "y": -4.216246081574919
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_eb6WAUuRfi",
+                  "type": "@core/Empty",
+                  "name": "Empty.9",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 2.8849785789398585,
+                      "y": -4.459998461615889
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_pDs7bYku18",
+                  "type": "@core/Empty",
+                  "name": "Empty.10",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 3.2253913855487997,
+                      "y": -4.565064142668032
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_p5sVGQocdw",
+                  "type": "@core/Empty",
+                  "name": "Empty.11",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 3.939838016703368,
+                      "y": -4.674332450962259
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_NVLIiUDuzF",
+                  "type": "@core/Empty",
+                  "name": "Empty.12",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 4.6752977840683645,
+                      "y": -4.796208640982745
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_cKhD3Um25C",
+                  "type": "@core/Empty",
+                  "name": "Empty.13",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 5.692333576653104,
+                      "y": -4.686940332688517
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_ka5nq4IbdU",
+                  "type": "@core/Empty",
+                  "name": "Empty.14",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 6.5790879247331855,
+                      "y": -4.52724049748926
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_ave8s6louf",
+                  "type": "@core/Empty",
+                  "name": "Empty.15",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 6.927905985826296,
+                      "y": -4.430580070921289
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_a1Y5AektPD",
+                  "type": "@core/Empty",
+                  "name": "Empty.16",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 7.2473056562248095,
+                      "y": -4.317109135384975
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_CSLwAi4dly",
+                  "type": "@core/Empty",
+                  "name": "Empty.17",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 7.385992355213637,
+                      "y": -4.384351171258346
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_rxRaY6Ys2f",
+                  "type": "@core/Empty",
+                  "name": "Empty.18",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 7.276724046919409,
+                      "y": -4.531443124731346
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_uh7kWkNcvQ",
+                  "type": "@core/Empty",
+                  "name": "Empty.19",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 6.658937842332812,
+                      "y": -4.628103551299317
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_62qFNed9iW",
+                  "type": "@core/Empty",
+                  "name": "Empty.20",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 5.915072820483644,
+                      "y": -4.733169232351459
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_NkOfgrhzUh",
+                  "type": "@core/Empty",
+                  "name": "Empty.21",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 5.398149669707104,
+                      "y": -4.913882203761144
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_0vV6XM0ekx",
+                  "type": "@core/Empty",
+                  "name": "Empty.22",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 4.187793023986424,
+                      "y": -4.939097967213658
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_SD0KTYJzYR",
+                  "type": "@core/Empty",
+                  "name": "Empty.23",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 3.4397253748951697,
+                      "y": -4.775195504772316
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_llcaW9sih9",
+                  "type": "@core/Empty",
+                  "name": "Empty.24",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 2.548768399573,
+                      "y": -4.430580070921289
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_5dJTb4WHQy",
+                  "type": "@core/Empty",
+                  "name": "Empty.25",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 1.5779615066512047,
+                      "y": -3.896846411176406
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_RCSaM3cgKJ",
+                  "type": "@core/Empty",
+                  "name": "Empty.26",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0.8677175027387222,
+                      "y": -3.417746905578637
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_HBc73llzOq",
+                  "type": "@core/Empty",
+                  "name": "Empty.27",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": 0.19529714400501108,
+                      "y": -2.9974841813700674
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_47FSTTDmbM",
+                  "type": "@core/Empty",
+                  "name": "Empty.28",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -0.3048154978031866,
+                      "y": -2.589829338887755
+                    }
+                  }
+                },
+                {
+                  "ref": "ent_jL8brkVgvO",
+                  "type": "@core/Empty",
+                  "name": "Empty.29",
+                  "enabled": true,
+                  "transform": {
+                    "position": {
+                      "x": -0.5947967775070996,
+                      "y": -2.3586848405730416
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": "ent_eUcRAorMBY",
+          "type": "@core/Collider",
+          "name": "Goal",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": -13.784030753448686,
+              "y": -5.357980545487406
+            }
+          },
+          "values": {
+            "clonedFromRef": "ent_5n2PrP2gGl",
+            "isSensor": false,
+            "shape": "Rectangle",
+            "mass": 1
+          },
+          "children": [
+            {
+              "ref": "ent_n2c8tzxXkh",
+              "type": "@core/Sprite",
+              "name": "Sprite",
+              "enabled": true,
+              "values": {
+                "static": false,
+                "hidden": false,
+                "texture": "",
+                "width": 1,
+                "height": 1,
+                "alpha": 1,
+                "tint": [
+                  1,
+                  0.37254902720451355,
+                  0,
+                  1
+                ],
+                "preserveAspectRatio": false
+              }
+            }
+          ]
+        },
+        {
+          "ref": "ent_1AuSzgLBmk",
+          "type": "@core/Collider",
+          "name": "Gate",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": -4.525238884437309,
+              "y": 6.693588446784974
+            },
+            "scale": {
+              "x": 1,
+              "y": 7.478607622292683
+            }
+          },
+          "values": {
+            "isSensor": false,
+            "shape": "Rectangle",
+            "mass": 1
+          },
+          "children": [
+            {
+              "ref": "ent_6yRjLNJ6Ox",
+              "type": "@core/Sprite",
+              "name": "Sprite",
+              "enabled": true,
+              "values": {
+                "static": false,
+                "hidden": false,
+                "texture": "",
+                "width": 1,
+                "height": 1,
+                "alpha": 1,
+                "tint": [
+                  1,
+                  1,
+                  1,
+                  1
+                ],
+                "preserveAspectRatio": false
+              }
+            }
+          ]
+        }
+      ],
+      "local": [
+        {
+          "ref": "ent_YNhjXTEyJm",
+          "type": "@core/Camera",
+          "name": "Camera",
+          "enabled": true,
+          "values": {
+            "active": true,
+            "smooth": 0.1,
+            "unlocked": false,
+            "zoom": 0.25
+          }
+        }
+      ],
+      "server": [
+        {
+          "ref": "ent_5nrONUwCGf",
+          "type": "@core/Empty",
+          "name": "RaceManager",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": 0.7030504251155616,
+              "y": 1.429917974468908
+            }
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_bOa9j6AMQv",
+              "script": "res://src/horse-manager.ts",
+              "values": {
+                "prefab": "ent_OYpYZn6ChD"
+              }
+            },
+            {
+              "ref": "bhv_CDFvTAIbvU",
+              "script": "res://src/race-manager.ts",
+              "values": {
+                "horsePrefab": "ent_OYpYZn6ChD",
+                "gate": "ent_1AuSzgLBmk"
+              }
+            }
+          ],
+          "children": [
+            {
+              "ref": "ent_BcR5VfxcOG",
+              "type": "@core/Empty",
+              "name": "Spawnpoint",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -14.533813698495102,
+                  "y": 7.605717618746229
+                }
+              },
+              "values": {
+                "clonedFromRef": "ent_PhoOVNqQSL"
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_NXwcWoqQV3",
+                  "script": "res://src/spawnpoint.ts"
+                }
+              ],
+              "children": [
+                {
+                  "ref": "ent_fzoHCTpmYS",
+                  "type": "@core/ColoredPolygon",
+                  "name": "ColoredPolygon",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 0.5,
+                    "height": 0.5,
+                    "sides": 4,
+                    "color": [
+                      1,
+                      1,
+                      1,
+                      1
+                    ],
+                    "tint": [
+                      1,
+                      1,
+                      1,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_j96N21Iliz",
+              "type": "@core/Empty",
+              "name": "Spawnpoint.1",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -10.701747064165206,
+                  "y": 7.5823513587808025
+                }
+              },
+              "values": {
+                "clonedFromRef": "ent_PhoOVNqQSL"
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_NXwcWoqQV3",
+                  "script": "res://src/spawnpoint.ts"
+                }
+              ],
+              "children": [
+                {
+                  "ref": "ent_JLbRgpu63L",
+                  "type": "@core/ColoredPolygon",
+                  "name": "ColoredPolygon",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 0.5,
+                    "height": 0.5,
+                    "sides": 4,
+                    "color": [
+                      1,
+                      1,
+                      1,
+                      1
+                    ],
+                    "tint": [
+                      1,
+                      1,
+                      1,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_afWijR7GfM",
+              "type": "@core/Empty",
+              "name": "Spawnpoint.2",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -16.19281815604037,
+                  "y": 5.549486741788721
+                }
+              },
+              "values": {
+                "clonedFromRef": "ent_PhoOVNqQSL"
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_NXwcWoqQV3",
+                  "script": "res://src/spawnpoint.ts"
+                }
+              ],
+              "children": [
+                {
+                  "ref": "ent_Tn7itUfhCV",
+                  "type": "@core/ColoredPolygon",
+                  "name": "ColoredPolygon",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 0.5,
+                    "height": 0.5,
+                    "sides": 4,
+                    "color": [
+                      1,
+                      1,
+                      1,
+                      1
+                    ],
+                    "tint": [
+                      1,
+                      1,
+                      1,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_YIW0fx7dSt",
+              "type": "@core/Empty",
+              "name": "Spawnpoint.3",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -12.898175500915272,
+                  "y": 5.993445681131819
+                }
+              },
+              "values": {
+                "clonedFromRef": "ent_PhoOVNqQSL"
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_NXwcWoqQV3",
+                  "script": "res://src/spawnpoint.ts"
+                }
+              ],
+              "children": [
+                {
+                  "ref": "ent_L2aeBQwqAe",
+                  "type": "@core/ColoredPolygon",
+                  "name": "ColoredPolygon",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 0.5,
+                    "height": 0.5,
+                    "sides": 4,
+                    "color": [
+                      1,
+                      1,
+                      1,
+                      1
+                    ],
+                    "tint": [
+                      1,
+                      1,
+                      1,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_1sTnRC382Y",
+              "type": "@core/Empty",
+              "name": "Spawnpoint.4",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -8.668882447173129,
+                  "y": 4.708301383033378
+                }
+              },
+              "values": {
+                "clonedFromRef": "ent_PhoOVNqQSL"
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_NXwcWoqQV3",
+                  "script": "res://src/spawnpoint.ts"
+                }
+              ],
+              "children": [
+                {
+                  "ref": "ent_T0Oh7S5K6f",
+                  "type": "@core/ColoredPolygon",
+                  "name": "ColoredPolygon",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 0.5,
+                    "height": 0.5,
+                    "sides": 4,
+                    "color": [
+                      1,
+                      1,
+                      1,
+                      1
+                    ],
+                    "tint": [
+                      1,
+                      1,
+                      1,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_Hu6omcwoPH",
+              "type": "@core/Empty",
+              "name": "Spawnpoint.5",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -15.07123767769991,
+                  "y": 2.862366845764706
+                }
+              },
+              "values": {
+                "clonedFromRef": "ent_PhoOVNqQSL"
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_NXwcWoqQV3",
+                  "script": "res://src/spawnpoint.ts"
+                }
+              ],
+              "children": [
+                {
+                  "ref": "ent_0cXzotQi5V",
+                  "type": "@core/ColoredPolygon",
+                  "name": "ColoredPolygon",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 0.5,
+                    "height": 0.5,
+                    "sides": 4,
+                    "color": [
+                      1,
+                      1,
+                      1,
+                      1
+                    ],
+                    "tint": [
+                      1,
+                      1,
+                      1,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_kAhm3aB5fy",
+              "type": "@core/Empty",
+              "name": "Spawnpoint.6",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -10.74847958409606,
+                  "y": 3.2128607452461004
+                }
+              },
+              "values": {
+                "clonedFromRef": "ent_PhoOVNqQSL"
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_NXwcWoqQV3",
+                  "script": "res://src/spawnpoint.ts"
+                }
+              ],
+              "children": [
+                {
+                  "ref": "ent_gVd0DosiCS",
+                  "type": "@core/ColoredPolygon",
+                  "name": "ColoredPolygon",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 0.5,
+                    "height": 0.5,
+                    "sides": 4,
+                    "color": [
+                      1,
+                      1,
+                      1,
+                      1
+                    ],
+                    "tint": [
+                      1,
+                      1,
+                      1,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_g4pHfnuF2s",
+              "type": "@core/Empty",
+              "name": "Spawnpoint.7",
+              "enabled": true,
+              "transform": {
+                "position": {
+                  "x": -13.715994599705185,
+                  "y": 1.5538562877008406
+                }
+              },
+              "values": {
+                "clonedFromRef": "ent_PhoOVNqQSL"
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_NXwcWoqQV3",
+                  "script": "res://src/spawnpoint.ts"
+                }
+              ],
+              "children": [
+                {
+                  "ref": "ent_XEsVfR1mdy",
+                  "type": "@core/ColoredPolygon",
+                  "name": "ColoredPolygon",
+                  "enabled": true,
+                  "values": {
+                    "static": false,
+                    "hidden": false,
+                    "width": 0.5,
+                    "height": 0.5,
+                    "sides": 4,
+                    "color": [
+                      1,
+                      1,
+                      1,
+                      1
+                    ],
+                    "tint": [
+                      1,
+                      1,
+                      1,
+                      1
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "prefabs": [
+        {
+          "ref": "ent_OYpYZn6ChD",
+          "type": "@core/CharacterController",
+          "name": "Horse",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": 5.464145429650591,
+              "y": 2.4695300571851284
+            }
+          },
+          "values": {
+            "isSensor": false,
+            "shape": "Circle",
+            "mass": 1,
+            "offset": 0.0625
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_LEtoj4kMr7",
+              "script": "res://src/horse.ts"
+            }
+          ],
+          "children": [
+            {
+              "ref": "ent_HT7gm2nL3w",
+              "type": "@core/Sprite",
+              "name": "Sprite",
+              "enabled": true,
+              "values": {
+                "static": false,
+                "hidden": false,
+                "texture": "",
+                "width": 1,
+                "height": 1,
+                "alpha": 1,
+                "tint": [
+                  1,
+                  1,
+                  1,
+                  1
+                ],
+                "preserveAspectRatio": false
+              }
+            }
+          ]
+        },
+        {
+          "ref": "ent_5n2PrP2gGl",
+          "type": "@core/Collider",
+          "name": "Goal",
+          "enabled": true,
+          "values": {
+            "isSensor": false,
+            "shape": "Rectangle",
+            "mass": 1
+          },
+          "children": [
+            {
+              "ref": "ent_PsxKPWmxCQ",
+              "type": "@core/Sprite",
+              "name": "Sprite",
+              "enabled": true,
+              "values": {
+                "static": false,
+                "hidden": false,
+                "texture": "",
+                "width": 1,
+                "height": 1,
+                "alpha": 1,
+                "tint": [
+                  1,
+                  0.37254902720451355,
+                  0,
+                  1
+                ],
+                "preserveAspectRatio": false
+              }
+            }
+          ]
+        },
+        {
+          "ref": "ent_PhoOVNqQSL",
+          "type": "@core/Empty",
+          "name": "Spawnpoint",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": 0.7030504251155616,
+              "y": 1.429917974468908
+            }
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_NXwcWoqQV3",
+              "script": "res://src/spawnpoint.ts"
+            }
+          ],
+          "children": [
+            {
+              "ref": "ent_qgU0DvKTWm",
+              "type": "@core/ColoredPolygon",
+              "name": "ColoredPolygon",
+              "enabled": true,
+              "values": {
+                "static": false,
+                "hidden": false,
+                "width": 0.5,
+                "height": 0.5,
+                "sides": 4,
+                "color": [
+                  1,
+                  1,
+                  1,
+                  1
+                ],
+                "tint": [
+                  1,
+                  1,
+                  1,
+                  1
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
