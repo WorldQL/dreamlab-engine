@@ -56,6 +56,7 @@
     "npm:pixi.js@8.5.1": "8.5.1",
     "npm:pixi.js@8.7.1": "8.7.1",
     "npm:pixi.js@8.7.3": "8.7.3",
+    "npm:poly-decomp-es@0.4.2": "0.4.2",
     "npm:prettier@*": "3.4.2",
     "npm:quad-indices@2.0.1": "2.0.1",
     "npm:simple-icons@*": "13.6.0",
@@ -494,15 +495,15 @@
       "integrity": "sha512-WdOOppmUNU+IbZ0PaDiTst80zjnrOkyJNHoKupIcVyU8Lvla3Ugx94VzkQ32Ijqd7UhHJy75gNWDMUekcrSJ6g==",
       "dependencies": [
         "@esbuild/aix-ppc64@0.20.2",
-        "@esbuild/android-arm@0.20.2",
         "@esbuild/android-arm64@0.20.2",
+        "@esbuild/android-arm@0.20.2",
         "@esbuild/android-x64@0.20.2",
         "@esbuild/darwin-arm64@0.20.2",
         "@esbuild/darwin-x64@0.20.2",
         "@esbuild/freebsd-arm64@0.20.2",
         "@esbuild/freebsd-x64@0.20.2",
-        "@esbuild/linux-arm@0.20.2",
         "@esbuild/linux-arm64@0.20.2",
+        "@esbuild/linux-arm@0.20.2",
         "@esbuild/linux-ia32@0.20.2",
         "@esbuild/linux-loong64@0.20.2",
         "@esbuild/linux-mips64el@0.20.2",
@@ -522,15 +523,15 @@
       "integrity": "sha512-FuLPevChGDshgSicjisSooU0cemp/sGXR841D5LHMB7mTVOmsEHcAxaH3irL53+8YDIeVNQEySh4DaYU/iuPqQ==",
       "dependencies": [
         "@esbuild/aix-ppc64@0.24.0",
-        "@esbuild/android-arm@0.24.0",
         "@esbuild/android-arm64@0.24.0",
+        "@esbuild/android-arm@0.24.0",
         "@esbuild/android-x64@0.24.0",
         "@esbuild/darwin-arm64@0.24.0",
         "@esbuild/darwin-x64@0.24.0",
         "@esbuild/freebsd-arm64@0.24.0",
         "@esbuild/freebsd-x64@0.24.0",
-        "@esbuild/linux-arm@0.24.0",
         "@esbuild/linux-arm64@0.24.0",
+        "@esbuild/linux-arm@0.24.0",
         "@esbuild/linux-ia32@0.24.0",
         "@esbuild/linux-loong64@0.24.0",
         "@esbuild/linux-mips64el@0.24.0",
@@ -815,6 +816,9 @@
         "ismobilejs",
         "parse-svg-path"
       ]
+    },
+    "poly-decomp-es@0.4.2": {
+      "integrity": "sha512-akjZkaTeyfECMNkMqv0g9gFiU2HjpZ5ubJA/aczw1ILdgWQbv1OPwCi05/9JbY2GnGpjm9k85Jdbd/j/p/lg/g=="
     },
     "prettier@3.4.2": {
       "integrity": "sha512-e9MewbtFo+Fevyuxn/4rrcDAaq0IYxPGLvObpQjiZBMAzB9IGmzlnG9RZy3FFas+eBMu2vA0CszMeduow5dIuQ=="
