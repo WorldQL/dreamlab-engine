@@ -90,6 +90,7 @@ export class Rigidbody extends Entity {
 
     if (this.#body) {
       this.game.physics.world.removeRigidBody(this.#body);
+      this.#body = undefined;
     }
 
     if (!this.enabled) return;
