@@ -41,6 +41,7 @@
     "npm:pixi.js@8.4.1": "8.4.1",
     "npm:pixi.js@8.5.1": "8.5.1",
     "npm:pixi.js@8.7.3": "8.7.3",
+    "npm:poly-decomp-es@0.4.2": "0.4.2",
     "npm:quad-indices@2.0.1": "2.0.1",
     "npm:simple-icons@*": "14.7.0",
     "npm:simple-icons@13.6.0": "13.6.0",
@@ -689,6 +690,9 @@
         "ismobilejs",
         "parse-svg-path"
       ]
+    },
+    "poly-decomp-es@0.4.2": {
+      "integrity": "sha512-akjZkaTeyfECMNkMqv0g9gFiU2HjpZ5ubJA/aczw1ILdgWQbv1OPwCi05/9JbY2GnGpjm9k85Jdbd/j/p/lg/g=="
     },
     "quad-indices@2.0.1": {
       "integrity": "sha512-6jtmCsEbGAh5npThXrBaubbTjPcF0rMbn57XCJVI7LkW8PUT56V+uIrRCCWCn85PSgJC9v8Pm5tnJDwmOBewvA==",
