@@ -1,9 +1,6 @@
-import { Decoder, Encoder } from "@dreamlab/vendor/cbor-x.ts";
+import { decoder, encoder } from "../_cbor.ts";
 import { PlayPacket } from "../play.ts";
 import { PlayCodec } from "./mod.ts";
-
-const encoder = new Encoder();
-const decoder = new Decoder();
 
 export const CBOR_CODEC: PlayCodec = {
   encodePacket(packet: PlayPacket): Uint8Array {

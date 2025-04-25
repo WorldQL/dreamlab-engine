@@ -1,12 +1,19 @@
 import type { HostIPCMessage, WorkerIPCMessage } from "../server-common/ipc.ts";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 
-import { Decoder as CBORDecoder, Encoder as CBOREncoder } from "@dreamlab/vendor/cbor-x.ts";
+import { Vector2 } from "@dreamlab/engine";
+import {
+  Decoder as CBORDecoder,
+  Encoder as CBOREncoder,
+  registerCborExtensions,
+} from "@dreamlab/vendor/cbor-x.ts";
 import { Context, Status } from "@oak/oak";
 import * as colors from "@std/fmt/colors";
 import { TextLineStream } from "@std/streams";
 import { LogStore } from "./log-store.ts";
 import { JsonAPIError } from "./web-util/api.ts";
+
+registerCborExtensions({ Vector2 });
 
 export type IPCMessageListener = {
   op: WorkerIPCMessage["op"] | undefined;

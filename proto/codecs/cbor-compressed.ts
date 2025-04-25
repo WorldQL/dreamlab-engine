@@ -1,10 +1,7 @@
-import { Decoder, Encoder } from "@dreamlab/vendor/cbor-x.ts";
 import { gzip, ungzip } from "@dreamlab/vendor/pako.ts";
+import { decoder, encoder } from "../_cbor.ts";
 import { PlayPacket } from "../play.ts";
 import { PlayCodec } from "./mod.ts";
-
-const encoder = new Encoder();
-const decoder = new Decoder();
 
 const COMPRESSION_THRESHOLD = 384; // bytes
 

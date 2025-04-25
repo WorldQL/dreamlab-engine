@@ -1,7 +1,14 @@
+import { Vector2 } from "@dreamlab/engine";
 import { urlWithParams } from "@dreamlab/util/url.ts";
-import { Decoder as CBORDecoder, Encoder as CBOREncoder } from "@dreamlab/vendor/cbor-x.ts";
+import {
+  Decoder as CBORDecoder,
+  Encoder as CBOREncoder,
+  registerCborExtensions,
+} from "@dreamlab/vendor/cbor-x.ts";
 import { HostIPCMessage, WorkerIPCMessage } from "../server-common/ipc.ts";
 import { WorkerInitData } from "../server-common/worker-data.ts";
+
+registerCborExtensions({ Vector2 });
 
 export type HostMessageListener = {
   op: HostIPCMessage["op"] | undefined;
