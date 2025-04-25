@@ -5,6 +5,7 @@ import {
   Vector2,
   syncedValue,
 } from "@dreamlab/engine";
+import Powerup from "./powerup.ts";
 
 export default class Horse extends Behavior {
   @syncedValue()
@@ -19,25 +20,36 @@ export default class Horse extends Behavior {
   // initialize random direction
   #direction = Vector2.randomUnitCircle();
 
-  onInitialize() {
+  onInitialize(): void {
     // TODO: visualize points
     // this.values.get("points")?.onChanged((newPoints: number) => {
     //   this.game.local!._.CoinCounter.cast(RichText).text = "Coins: " + newPoints;
     // });
 
-    this.listen(this.entity, EntityCollision, ({ normal }) => {
+    this.listen(this.entity, EntityCollision, ({ other, normal }) => {
       const authority = this.entity.authority ?? "server";
       if (authority !== this.game.network.self) return;
 
-      const variance = StandardNormal.random() * 2 - 1;
-      const angle = this.angleVariance * (Math.PI / 180);
+      // powerup colliders are a child of the entity
+      const powerup = other.parent?.getBehaviorIfExists(Powerup);
+      if (powerup) {
+        const triggered = powerup.trigger(this);
+        if (triggered) return;
+      }
 
-      const v = this.#direction.clone();
-      const n = normal.normalize().rotate(variance * angle);
-      const r = v.sub(n.mul(2 * v.dot(n)));
-
-      this.#direction = r;
+      this.#changeDirection(normal);
     });
+  }
+
+  #changeDirection(normal: Vector2): void {
+    const variance = StandardNormal.random() * 2 - 1;
+    const angle = this.angleVariance * (Math.PI / 180);
+
+    const v = this.#direction.clone();
+    const n = normal.normalize().rotate(variance * angle);
+    const r = v.sub(n.mul(2 * v.dot(n)));
+
+    this.#direction = r;
   }
 
   onTick(): void {

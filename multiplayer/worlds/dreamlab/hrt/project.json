@@ -2586,12 +2586,6 @@
           "type": "@core/CharacterController",
           "name": "Horse",
           "enabled": true,
-          "transform": {
-            "position": {
-              "x": 5.464145429650591,
-              "y": 2.4695300571851284
-            }
-          },
           "values": {
             "isSensor": false,
             "shape": "Circle",
@@ -2667,12 +2661,6 @@
           "type": "@core/Empty",
           "name": "Spawnpoint",
           "enabled": true,
-          "transform": {
-            "position": {
-              "x": 0.7030504251155616,
-              "y": 1.429917974468908
-            }
-          },
           "behaviors": [
             {
               "ref": "bhv_NXwcWoqQV3",
@@ -2703,6 +2691,60 @@
                   1,
                   1
                 ]
+              }
+            }
+          ]
+        },
+        {
+          "ref": "ent_6RFCXOoxpH",
+          "type": "@core/Empty",
+          "name": "Powerup",
+          "enabled": true,
+          "behaviors": [
+            {
+              "ref": "bhv_UWUyanReAJ",
+              "script": "res://src/powerup.ts",
+              "values": {
+                "collider": [
+                  "Collider"
+                ],
+                "sprite": [
+                  "Sprite"
+                ]
+              }
+            }
+          ],
+          "children": [
+            {
+              "ref": "ent_sncRLYIDzn",
+              "type": "@core/Collider",
+              "name": "Collider",
+              "enabled": true,
+              "values": {
+                "isSensor": false,
+                "shape": "Rectangle",
+                "mass": 1
+              }
+            },
+            {
+              "ref": "ent_Oyb8kb9UXk",
+              "type": "@core/Sprite",
+              "name": "Sprite",
+              "enabled": true,
+              "values": {
+                "static": false,
+                "hidden": false,
+                "texture": "",
+                "width": 1,
+                "height": 1,
+                "alpha": 1,
+                "tint": [
+                  1,
+                  1,
+                  1,
+                  1
+                ],
+                "preserveAspectRatio": false
               }
             }
           ]

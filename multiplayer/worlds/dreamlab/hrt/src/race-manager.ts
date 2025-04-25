@@ -29,7 +29,7 @@ export default class RaceManager extends Behavior {
     if (this.#elapsed >= this.countdown) this.#startRace();
   }
 
-  #startRace() {
+  #startRace(): void {
     if (!this.gate) throw new Error("missing gate reference");
     this.gate.enabled = false;
 
@@ -51,15 +51,20 @@ export default class RaceManager extends Behavior {
     return StandardUniform.sample(spawnpoints);
   }
 
-  #spawnHorses() {
+  #spawnHorses(): Entity[] {
+    const horses: Entity[] = [];
     while (true) {
       const spawnpoint = this.#spawnpoint;
       if (!spawnpoint) break;
 
       spawnpoint.spawned = true;
       const position = spawnpoint.entity.pos.clone();
-      this.#spawnHorse(position);
+      const horse = this.#spawnHorse(position);
+
+      horses.push(horse);
     }
+
+    return horses;
   }
 
   #spawnHorse(position: Vector2): Entity {
