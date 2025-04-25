@@ -116,13 +116,20 @@ await Deno.writeTextFile(
   ),
 );
 
-await Deno.writeTextFile(
-  "./out/.env",
-  [
-    "DREAMLAB_MULTIPLAYER_WORLD_ID=" + world,
-    "DREAMLAB_MULTIPLAYER_INSTANCE_ID=standalone",
-    "DREAMLAB_MULTIPLAYER_STANDALONE=1",
-    "DREAMLAB_MULTIPLAYER_RUNTIME_SCRIPT=./.server-runtime.js",
-    "DREAMLAB_MULTIPLAYER_CLIENT_DIRECTORY=./client/web/",
-  ].join("\n"),
-);
+const envOutput = [
+  "DREAMLAB_MULTIPLAYER_WORLD_ID=" + world,
+  "DREAMLAB_MULTIPLAYER_INSTANCE_ID=standalone",
+  "DREAMLAB_MULTIPLAYER_STANDALONE=1",
+  "DREAMLAB_MULTIPLAYER_RUNTIME_SCRIPT=./.server-runtime.js",
+  "DREAMLAB_MULTIPLAYER_CLIENT_DIRECTORY=./client/web/",
+];
+
+const kvPublicUrl = Deno.env.get("DREAMLAB_KV_PUBLIC_URL");
+const kvSigningKey = Deno.env.get("DREAMLAB_KV_SIGNING_KEY");
+
+if (kvPublicUrl && kvSigningKey) {
+  envOutput.push("DREAMLAB_KV_PUBLIC_URL=" + kvPublicUrl);
+  envOutput.push("DREAMLAB_KV_SIGNING_KEY" + kvSigningKey);
+}
+
+await Deno.writeTextFile("./out/.env", envOutput.join("\n"));
