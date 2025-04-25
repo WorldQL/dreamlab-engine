@@ -46,6 +46,7 @@ export class AnimatedSprite extends PixiEntity {
   loop: boolean = true;
   startFrame: number = 0;
   endFrame: number = -1;
+  totalFrames: number = 0;
 
   #sprite: PIXI.AnimatedSprite | undefined;
   get sprite(): PIXI.AnimatedSprite | undefined {
@@ -123,6 +124,7 @@ export class AnimatedSprite extends PixiEntity {
     }
     if (textures.length === 0) throw new Error("failed to load textures");
 
+    this.totalFrames = textures.length;
     const frames = textures.length;
     const start = Math.max(0, Math.min(this.startFrame, frames - 1));
     let end = Math.max(start, Math.min(this.endFrame, frames - 1));
@@ -141,21 +143,23 @@ export class AnimatedSprite extends PixiEntity {
       hidden: values => values.get("jsonSpritesheet")?.value !== "",
       sortOrder: 100,
     });
-
     this.defineValue(AnimatedSprite, "jsonSpritesheet", {
       type: SpritesheetAdapter,
       hidden: values => values.get("spritesheet")?.value !== "",
       sortOrder: 90,
     });
-
     this.defineValue(AnimatedSprite, "frameDimensions", {
       type: Vector2Adapter,
       hidden: values => values.get("jsonSpritesheet")?.value !== "",
       sortOrder: 80,
     });
-
     this.defineValue(AnimatedSprite, "startFrame", { sortOrder: 70 });
     this.defineValue(AnimatedSprite, "endFrame", { sortOrder: 60 });
+    this.defineValue(AnimatedSprite, "totalFrames", {
+      sortOrder: 65,
+      hidden: () => true,
+    });
+
     this.defineValue(AnimatedSprite, "speed", { sortOrder: 50 });
     this.defineValue(AnimatedSprite, "loop", { sortOrder: 40 });
     this.defineValue(AnimatedSprite, "width", { sortOrder: 30 });
