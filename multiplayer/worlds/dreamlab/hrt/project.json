@@ -2147,6 +2147,21 @@
               }
             }
           ]
+        },
+        {
+          "ref": "ent_ZfzCCYPNI6",
+          "type": "@core/Empty",
+          "name": "PowerupManager",
+          "enabled": true,
+          "behaviors": [
+            {
+              "ref": "bhv_fzWJELiDor",
+              "script": "res://src/powerup-manager.ts",
+              "values": {
+                "prefab": "ent_6RFCXOoxpH"
+              }
+            }
+          ]
         }
       ],
       "local": [
@@ -2161,6 +2176,21 @@
             "unlocked": false,
             "zoom": 0.25
           }
+        },
+        {
+          "ref": "ent_cgG8kLfPsr",
+          "type": "@core/UILayer",
+          "name": "PowerupUI",
+          "enabled": true,
+          "behaviors": [
+            {
+              "ref": "bhv_t4v0JFOYMY",
+              "script": "res://src/powerup-ui.tsx",
+              "values": {
+                "manager": "ent_ZfzCCYPNI6"
+              }
+            }
+          ]
         }
       ],
       "server": [

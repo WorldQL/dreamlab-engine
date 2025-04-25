@@ -11,7 +11,8 @@ import {
 import type Horse from "./horse.ts";
 
 export type PowerupType = optionsAdapter.Union<typeof PowerupTypeAdapter>;
-export const PowerupTypeAdapter = optionsAdapter(["speed-boost", "stun", "obstacle"]);
+export const PowerupTypes = ["speed-boost", "stun", "obstacle"] as const;
+export const PowerupTypeAdapter = optionsAdapter(PowerupTypes);
 
 export default class Powerup extends Behavior {
   @syncedValue(PowerupTypeAdapter)
