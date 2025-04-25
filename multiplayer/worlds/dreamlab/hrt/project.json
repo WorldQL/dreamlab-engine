@@ -2207,13 +2207,6 @@
           },
           "behaviors": [
             {
-              "ref": "bhv_bOa9j6AMQv",
-              "script": "res://src/horse-manager.ts",
-              "values": {
-                "prefab": "ent_OYpYZn6ChD"
-              }
-            },
-            {
               "ref": "bhv_CDFvTAIbvU",
               "script": "res://src/race-manager.ts",
               "values": {
