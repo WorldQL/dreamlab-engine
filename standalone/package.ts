@@ -129,7 +129,7 @@ const kvSigningKey = Deno.env.get("DREAMLAB_KV_SIGNING_KEY");
 
 if (kvPublicUrl && kvSigningKey) {
   envOutput.push("DREAMLAB_KV_PUBLIC_URL=" + kvPublicUrl);
-  envOutput.push("DREAMLAB_KV_SIGNING_KEY" + kvSigningKey);
+  envOutput.push("DREAMLAB_KV_SIGNING_KEY=" + kvSigningKey);
 }
 
 await Deno.writeTextFile("./out/.env", envOutput.join("\n"));
