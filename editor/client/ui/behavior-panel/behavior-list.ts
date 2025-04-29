@@ -53,6 +53,10 @@ export class BehaviorList {
       const file = dragTarget.dataset.file as string;
       const scriptPath = `res://${file}`;
 
+      // quick hack to exclude anything that cannot be a behavior
+      // TODO: solve this better
+      if (!scriptPath.startsWith("res://src/")) return;
+
       try {
         const info = await ui.behaviorTypeInfo.get(scriptPath);
         const values = Object.fromEntries(
