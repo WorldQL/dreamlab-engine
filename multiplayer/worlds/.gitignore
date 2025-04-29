@@ -6,3 +6,5 @@ _dist_*
 !/*.ts
 
 /dreamlab/**/scene-description.md
+
+!/deno.json
