@@ -50,4 +50,30 @@ export class Bounds implements IBounds {
   static fromVector(vector: IVector2): Bounds {
     return new Bounds(vector.x, vector.y);
   }
+
+  static fromPoints(points: readonly IVector2[]): Bounds;
+  static fromPoints(points: readonly (readonly [x: number, y: number])[]): Bounds;
+  static fromPoints(points: readonly (readonly [x: number, y: number] | IVector2)[]): Bounds {
+    const mapped = points.map(p => ("x" in p && "y" in p ? ([p.x, p.y] as const) : p));
+
+    let minX = Number.POSITIVE_INFINITY;
+    let maxX = Number.NEGATIVE_INFINITY;
+    let minY = Number.POSITIVE_INFINITY;
+    let maxY = Number.NEGATIVE_INFINITY;
+
+    for (const [x, y] of mapped) {
+      if (x > maxX) maxX = x;
+      if (y > maxY) maxY = y;
+      if (x < minX) minX = x;
+      if (y < minY) minY = y;
+    }
+
+    const width = maxX - minX;
+    const height = maxY - minY;
+
+    const cx = (minX + maxX) / 2;
+    const cy = (minY + maxY) / 2;
+
+    return new Bounds({ width, height, offset: { x: cx, y: cy } });
+  }
 }
