@@ -10,7 +10,7 @@ import { PlayPacket } from "@dreamlab/proto/play.ts";
 import { ProjectSchema, SceneDescEntity } from "@dreamlab/scene";
 import { fileIsProbablyBehaviorScript } from "../../../../build-system/build-world.ts";
 import { JsonAPIError, typedJsonHandler } from "../../../common-host/web-util/api.ts";
-import { buildWorld } from "../../../server-common/world-build.ts";
+import { buildWorld } from "../../../common-host/world-build.ts";
 import { CONFIG } from "../../config.ts";
 import { GameInstance } from "../../instance.ts";
 import { sortPaths } from "../../util/sort-paths.ts";
@@ -146,7 +146,12 @@ export const serveScriptEditingAPI = (router: Router) => {
           }
         }
 
-        await buildWorld(instance.info.worldId, instance.info.worldDirectory, "_dist");
+        await buildWorld(
+          instance.info.worldId,
+          instance.info.worldDirectory,
+          "_dist",
+          instance.logs,
+        );
         for (const packet of packets) instance.session?.broadcastPacket(packet);
 
         return { success: true };
@@ -190,7 +195,12 @@ export const serveScriptEditingAPI = (router: Router) => {
         });
         await ctx.request.body.stream?.pipeTo(file.writable);
 
-        await buildWorld(instance.info.worldId, instance.info.worldDirectory, "_dist");
+        await buildWorld(
+          instance.info.worldId,
+          instance.info.worldDirectory,
+          "_dist",
+          instance.logs,
+        );
         const isBehavior = await fileIsProbablyBehaviorScript(computedPath);
         instance.session?.broadcastPacket({
           t: "ScriptEdited",
@@ -292,7 +302,12 @@ export const serveScriptEditingAPI = (router: Router) => {
     await fs.ensureDir(path.dirname(newComputedPath));
     await Deno.rename(oldComputedPath, newComputedPath);
 
-    await buildWorld(instance.info.worldId, instance.info.worldDirectory, "_dist");
+    await buildWorld(
+      instance.info.worldId,
+      instance.info.worldDirectory,
+      "_dist",
+      instance.logs,
+    );
     const isBehavior = await fileIsProbablyBehaviorScript(newComputedPath);
     instance.session?.broadcastPacket({
       t: "ScriptEdited",
@@ -469,7 +484,12 @@ export const serveScriptEditingAPI = (router: Router) => {
           throw new Error("Can't import from externalized scene JSON!");
         }
 
-        await buildWorld(instance.info.worldId, instance.info.worldDirectory, "_dist");
+        await buildWorld(
+          instance.info.worldId,
+          instance.info.worldDirectory,
+          "_dist",
+          instance.logs,
+        );
 
         const importedScripts = fs.expandGlob(path.join(importedDir, "src/**/*.ts"));
         const scriptEditPackets: PlayPacket<"ScriptEdited", "server">[] = [];

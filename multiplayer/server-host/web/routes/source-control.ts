@@ -1,10 +1,10 @@
 import { z } from "@dreamlab/vendor/zod.ts";
 import { Router, Status } from "@oak/oak";
 import * as path from "@std/path";
-import { buildWorld } from "../../../server-common/world-build.ts";
 import { fileIsProbablyBehaviorScript } from "../../../../build-system/build-world.ts";
-import { GameInstance } from "../../instance.ts";
 import { JsonAPIError } from "../../../common-host/web-util/api.ts";
+import { buildWorld } from "../../../common-host/world-build.ts";
+import { GameInstance } from "../../instance.ts";
 
 export const serveSourceControlAPI = (router: Router) => {
   async function broadcastWorldUpdate(instance: GameInstance, filePath: string) {
@@ -25,7 +25,7 @@ export const serveSourceControlAPI = (router: Router) => {
     }
 
     if (fileExists) {
-      await buildWorld(instance.info.worldId, sourceRoot, "_dist");
+      await buildWorld(instance.info.worldId, sourceRoot, "_dist", instance.logs);
       const isBehavior = await fileIsProbablyBehaviorScript(computedPath);
       instance.session?.broadcastPacket({
         t: "ScriptEdited",
@@ -750,7 +750,7 @@ export const serveSourceControlAPI = (router: Router) => {
       return;
     }
 
-    await buildWorld("default", Deno.cwd(), "_dist");
+    await buildWorld("default", Deno.cwd(), "_dist", instance.logs);
     ctx.response.body = { success: true };
   });
   // #endregion

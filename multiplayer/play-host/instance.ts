@@ -7,8 +7,8 @@ import * as path from "@std/path";
 import { LogStore } from "../common-host/log-store.ts";
 import { printLogs } from "../common-host/print-logs.ts";
 import { IPCWorker } from "../common-host/worker.ts";
+import { buildWorld } from "../common-host/world-build.ts";
 import { RichGameStatus } from "../server-common/rich-status.ts";
-import { buildWorld } from "../server-common/world-build.ts";
 import { CONFIG } from "./config.ts";
 
 enum InstanceState {
@@ -55,7 +55,7 @@ export class PlayInstance {
 
       try {
         this.setStatus(InstanceState.Starting, "Building world scripts");
-        await buildWorld(this.worldId, worldDirectory, "_dist_play");
+        await buildWorld(this.worldId, worldDirectory, "_dist_play", this.logs);
       } catch (err) {
         this.logs.error("Failed to build world bundle", { err: err.stack });
         this.setStatus(InstanceState.Errored, "World script build failed", err.toString());

@@ -1,8 +1,8 @@
 import * as path from "@std/path";
 import { debounce } from "jsr:@std/async/debounce";
-import { buildWorld } from "../server-common/world-build.ts";
-import { GameSession } from "./session.ts";
 import { fileIsProbablyBehaviorScript } from "../../build-system/build-world.ts";
+import { buildWorld } from "../common-host/world-build.ts";
+import { GameSession } from "./session.ts";
 
 export async function watchForEditChanges(session: GameSession, subdir: string) {
   const instance = session.parent;
@@ -20,7 +20,12 @@ export async function watchForEditChanges(session: GameSession, subdir: string) 
   const touchedPaths = new Set<string>();
 
   const rebuild = debounce(async () => {
-    await buildWorld(instance.info.worldId, instance.info.worldDirectory, subdir);
+    await buildWorld(
+      instance.info.worldId,
+      instance.info.worldDirectory,
+      subdir,
+      instance.logs,
+    );
 
     for (const touchedPath of touchedPaths) {
       const relativePath = path.relative(instance.info.worldDirectory, touchedPath);

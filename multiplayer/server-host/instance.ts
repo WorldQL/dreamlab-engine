@@ -2,8 +2,8 @@ import { Scene } from "@dreamlab/scene";
 
 import { LogStore } from "../common-host/log-store.ts";
 import { IPCMessageListener } from "../common-host/worker.ts";
+import { buildWorld } from "../common-host/world-build.ts";
 import { WorkerIPCMessage } from "../server-common/ipc.ts";
-import { buildWorld } from "../server-common/world-build.ts";
 import { GameSession } from "./session.ts";
 import { fetchWorld } from "./world-fetch.ts";
 
@@ -256,7 +256,12 @@ export const bootPlaySession = async (instance: GameInstance) => {
 
   try {
     instance.logs.debug("play: Bundling world...");
-    await buildWorld(instance.info.worldId, instance.info.worldDirectory, "_dist_play");
+    await buildWorld(
+      instance.info.worldId,
+      instance.info.worldDirectory,
+      "_dist_play",
+      instance.logs,
+    );
   } catch (err) {
     instance.logs.error("Failed to build world bundle for play session", { err: err.stack });
     instance.notifyPlaySessionBootFail(
