@@ -392,12 +392,12 @@ export class DebugCapsule extends DebugShape {
 }
 
 export class DebugPolygon extends DebugShape {
-  private readonly getPoints: () => [number, number][];
+  private readonly getPoints: () => readonly (readonly [number, number])[];
 
   constructor({
     getPoints,
     ...opts
-  }: DebugShapeOptions & { readonly getPoints: () => [number, number][] }) {
+  }: DebugShapeOptions & { readonly getPoints: () => readonly (readonly [number, number])[] }) {
     super(opts);
     this.getPoints = getPoints;
   }

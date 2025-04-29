@@ -1,4 +1,5 @@
 import {
+  Bounds,
   ComplexCollider,
   Entity,
   EntityChildDestroyed,
@@ -27,7 +28,11 @@ export class EditorFacadeComplexCollider extends PixiEntity {
   mass: number = 1;
 
   static readonly icon = ComplexCollider.icon;
-  readonly bounds = undefined;
+
+  #bounds: Bounds | undefined;
+  get bounds(): Bounds | undefined {
+    return this.#bounds;
+  }
 
   constructor(ctx: EntityContext) {
     super(ctx, false);
@@ -54,41 +59,53 @@ export class EditorFacadeComplexCollider extends PixiEntity {
   #debug: DebugPolygon | undefined;
   #debugListener: { unsubscribe: () => void } | undefined;
 
-  #redraw = () => {
+  #getPoints = () =>
+    [...this.children.values()]
+      .filter(child => child.name !== "__EditorMetadata")
+      .map(child => [child.transform.position.x, child.transform.position.y] as const);
+
+  #update = () => {
     this.#debug?.redraw();
+    this.#updateBounds();
   };
 
   onInitialize(): void {
     super.onInitialize();
     if (!this.container) return;
 
-    const getPoints = (): [number, number][] => {
-      return [...this.children.values()]
-        .filter(child => child.name !== "__EditorMetadata")
-        .map(child => [child.transform.position.x, child.transform.position.y] as const);
-    };
-
     this.on(EntityDestroyed, () => {
       for (const child of this.children.values()) {
-        child.unregister(EntityTransformUpdate, this.#redraw);
+        child.unregister(EntityTransformUpdate, this.#update);
       }
     });
 
-    this.#debug = new DebugPolygon({ entity: this, getPoints });
+    this.#debug = new DebugPolygon({ entity: this, getPoints: this.#getPoints });
 
     for (const child of this.children.values()) {
-      child.on(EntityTransformUpdate, this.#redraw);
+      child.on(EntityTransformUpdate, this.#update);
     }
 
     this.on(EntityChildSpawned, ({ child }) => {
-      child.on(EntityTransformUpdate, this.#redraw);
+      child.on(EntityTransformUpdate, this.#update);
     });
 
-    this.on(EntityChildDestroyed, this.#redraw);
+    this.on(EntityChildDestroyed, this.#update);
 
     this.on(EntityChildReparented, ({ child, oldParent }) => {
-      if (oldParent === this) child.unregister(EntityTransformUpdate, this.#redraw);
+      if (oldParent === this) child.unregister(EntityTransformUpdate, this.#update);
     });
+
+    this.#update();
+  }
+
+  #updateBounds() {
+    const points = this.#getPoints();
+    if (points.length < 3) {
+      this.#bounds = undefined;
+      return;
+    }
+
+    this.#bounds = Bounds.fromPoints(points);
   }
 
   #onSelectedSvc(svc: SelectedEntityService) {
