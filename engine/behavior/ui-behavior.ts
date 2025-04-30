@@ -62,6 +62,9 @@ export abstract class UIBehavior extends Behavior {
         this.uiRoot.appendChild(newUI);
       }
       this.uiElement = newUI;
+      if (this.uiElement.style.pointerEvents === "") {
+        this.uiElement.style.pointerEvents = "auto";
+      }
     }
   }
 
