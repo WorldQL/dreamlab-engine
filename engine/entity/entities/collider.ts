@@ -159,8 +159,10 @@ export class Collider extends Entity {
   }
 
   onInitialize(): void {
-    this.#rigidbody = this.parent instanceof Rigidbody ? this.parent : undefined;
-    this.#setupCollider(this.#rigidbody?.body);
+    if (this.root !== this.game.prefabs) {
+      this.#rigidbody = this.parent instanceof Rigidbody ? this.parent : undefined;
+      this.#setupCollider(this.#rigidbody?.body);
+    }
 
     this.on(EntityDestroyed, () => {
       if (this.#internal) {
@@ -188,6 +190,8 @@ export class Collider extends Entity {
       this.game.physics.world.removeCollider(this.#internal.collider, false);
       this.#internal = undefined;
     }
+
+    if (this.root === this.game.prefabs) return;
 
     this.#rigidbody = this.parent instanceof Rigidbody ? this.parent : undefined;
     this.#setupCollider(this.#rigidbody?.body);
