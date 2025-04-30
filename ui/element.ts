@@ -166,8 +166,12 @@ export function element<K extends TagNames>(
         el.style.setProperty(key, value as string | null);
       } else {
         const k = key as keyof CSSProperties;
-        if (value) el.style[k] = value as string;
-        else delete el.style[k];
+        if (value != undefined) {
+          const v = (typeof value === "number" ? value + "px" : value) as string;
+          el.style[k] = v;
+        } else {
+          delete el.style[k];
+        }
       }
     }
   }
