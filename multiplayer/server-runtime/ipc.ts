@@ -1,14 +1,7 @@
-import { Vector2 } from "@dreamlab/engine";
 import { urlWithParams } from "@dreamlab/util/url.ts";
-import {
-  Decoder as CBORDecoder,
-  Encoder as CBOREncoder,
-  registerCborExtensions,
-} from "@dreamlab/vendor/cbor-x.ts";
+import * as cbor from "@dreamlab/vendor/cbor2.ts";
 import { HostIPCMessage, WorkerIPCMessage } from "../server-common/ipc.ts";
 import { WorkerInitData } from "../server-common/worker-data.ts";
-
-registerCborExtensions({ Vector2 });
 
 export type HostMessageListener = {
   op: HostIPCMessage["op"] | undefined;
@@ -20,9 +13,6 @@ export class IPCMessageBus {
   #listeners: HostMessageListener[] = [];
   #connectedPromise: Promise<void>;
   #connected: boolean;
-
-  cborEnc = new CBOREncoder();
-  cborDec = new CBORDecoder();
 
   constructor(public workerData: WorkerInitData) {
     const connectUrl = urlWithParams(workerData.workerConnectUrl, {
@@ -57,8 +47,8 @@ export class IPCMessageBus {
       }
       if (data instanceof ArrayBuffer) {
         try {
-          const message = this.cborDec.decode(new Uint8Array(data));
-          this.#onReceiveMessage(message);
+          const message = cbor.decode(new Uint8Array(data));
+          this.#onReceiveMessage(message as HostIPCMessage);
         } catch (err) {
           console.error(err);
         }
@@ -77,7 +67,7 @@ export class IPCMessageBus {
 
   send(message: WorkerIPCMessage) {
     // this.#socket.send(JSON.stringify(message));
-    this.#socket.send(this.cborEnc.encode(message) as Uint8Array);
+    this.#socket.send(cbor.encode(message));
   }
 
   addMessageListener<const Op extends HostIPCMessage["op"]>(

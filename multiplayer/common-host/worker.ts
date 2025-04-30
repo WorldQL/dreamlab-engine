@@ -1,19 +1,12 @@
 import type { HostIPCMessage, WorkerIPCMessage } from "../server-common/ipc.ts";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 
-import { Vector2 } from "@dreamlab/engine";
-import {
-  Decoder as CBORDecoder,
-  Encoder as CBOREncoder,
-  registerCborExtensions,
-} from "@dreamlab/vendor/cbor-x.ts";
+import * as cbor from "@dreamlab/vendor/cbor2.ts";
 import { Context, Status } from "@oak/oak";
 import * as colors from "@std/fmt/colors";
 import { TextLineStream } from "@std/streams";
 import { LogStore } from "./log-store.ts";
 import { JsonAPIError } from "./web-util/api.ts";
-
-registerCborExtensions({ Vector2 });
 
 export type IPCMessageListener = {
   op: WorkerIPCMessage["op"] | undefined;
@@ -30,9 +23,6 @@ export class IPCWorker {
   #ipcListeners: IPCMessageListener[] = [];
 
   logs: LogStore;
-
-  cborEnc = new CBOREncoder();
-  cborDec = new CBORDecoder();
 
   constructor(
     public readonly workerData: WorkerInitData,
@@ -141,8 +131,8 @@ export class IPCWorker {
       }
       if (data instanceof ArrayBuffer) {
         try {
-          const message = this.cborDec.decode(new Uint8Array(data));
-          this.#onReceive(message);
+          const message = cbor.decode(new Uint8Array(data));
+          this.#onReceive(message as WorkerIPCMessage);
         } catch {
           // skip message
         }
@@ -200,7 +190,7 @@ export class IPCWorker {
   send(message: HostIPCMessage) {
     try {
       // this.#activeIPCSocket?.send(JSON.stringify(message));
-      this.#activeIPCSocket?.send(this.cborEnc.encode(message) as Uint8Array);
+      this.#activeIPCSocket?.send(cbor.encode(message));
     } catch {
       // ignore
     }
