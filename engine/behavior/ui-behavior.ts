@@ -13,18 +13,6 @@ export abstract class UIBehavior extends Behavior {
     return this.#ui;
   }
 
-  #enablePointerEvents = true;
-  set enablePointerEvents(val: boolean) {
-    this.#enablePointerEvents = val;
-    this.updatePointerEvents();
-  }
-
-  private updatePointerEvents() {
-    if (this.uiElement instanceof HTMLElement) {
-      this.uiElement.style.pointerEvents = this.#enablePointerEvents ? "auto" : "none";
-    }
-  }
-
   /**
    * Adds a CSS stylesheet that will be applied to the UI root element.
    * This allows styling elements with class names used in your render method.
@@ -74,7 +62,6 @@ export abstract class UIBehavior extends Behavior {
         this.uiRoot.appendChild(newUI);
       }
       this.uiElement = newUI;
-      this.updatePointerEvents();
     }
   }
 
@@ -115,11 +102,7 @@ export abstract class UIBehavior extends Behavior {
         this.ensureStyleElement();
         this.uiRoot.appendChild(this.uiElement);
       }
-      if (this.uiElement) {
-        this.updatePointerEvents();
-      } else {
-        this.rerender();
-      }
+      this.rerender();
     }
   };
 }
