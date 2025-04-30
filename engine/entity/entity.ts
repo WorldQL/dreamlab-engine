@@ -166,6 +166,8 @@ export abstract class Entity implements ISignalHandler {
     return this.#parent;
   }
   set parent(parent: Entity | undefined) {
+    if (parent === this.#parent) return;
+
     if (parent) {
       // sets #parent:
       parent.append(this);
@@ -183,7 +185,8 @@ export abstract class Entity implements ISignalHandler {
   }
   append(child: Entity): void {
     let nonConflictingName: string | undefined;
-    if (this.#children.has(child.name))
+    const existingChild = this.#children.get(child.name);
+    if (existingChild !== undefined && existingChild !== child)
       nonConflictingName = this.#findNonConflictingName(child);
 
     const oldParent = child.#parent;
@@ -258,7 +261,9 @@ export abstract class Entity implements ISignalHandler {
     for (let n = matches?.n ? +matches.n : 1; n <= 999; n++) {
       const suffix = n;
       const potentialName = baseName + "." + suffix;
-      if (!this.#children.has(potentialName)) {
+
+      const existingChild = this.#children.get(potentialName);
+      if (existingChild === undefined || existingChild === child) {
         return potentialName;
       }
     }
