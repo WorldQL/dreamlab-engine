@@ -403,9 +403,11 @@ export class DebugPolygon extends DebugShape {
   }
 
   redraw(): void {
+    if (this.entity.destroyed) return;
     if (!this.getPoints) return;
-    const raw = this.getPoints();
-    if (!raw || raw.length < 2) {
+
+    const _points = this.getPoints();
+    if (!_points || _points.length < 2) {
       this.gfx.clear();
       return;
     }
@@ -418,7 +420,7 @@ export class DebugPolygon extends DebugShape {
       alignment: this.alignment,
     });
 
-    const points = this.getPoints().map(([x, y]) => ({ x, y: -y }));
+    const points = _points.map(([x, y]) => ({ x, y: -y }));
     const [first] = points;
 
     this.gfx.moveTo(first.x, first.y);
