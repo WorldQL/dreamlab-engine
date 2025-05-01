@@ -404,6 +404,11 @@ export class DebugPolygon extends DebugShape {
 
   redraw(): void {
     if (!this.getPoints) return;
+    const raw = this.getPoints();
+    if (!raw || raw.length < 2) {
+      this.gfx.clear();
+      return;
+    }
 
     this.gfx.alpha = this.alpha;
     this.gfx.clear();
