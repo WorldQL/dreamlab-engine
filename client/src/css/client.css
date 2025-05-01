@@ -35,7 +35,7 @@ body {
 
   & > div:first-child,
   & > div:last-child {
-    min-width: 200px;
+    /* min-width: 200px; */
   }
 
   & > div:last-child {
@@ -70,6 +70,12 @@ body {
         height: 100%;
       }
     }
+  }
+}
+
+@media (max-width: 600px) {
+  #topbar div#game-info {
+    display: none; /* remove the middle chunk */
   }
 }
 
