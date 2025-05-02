@@ -85,6 +85,32 @@ export class CameraPanBehavior extends Behavior {
 
   #lastClickTime = 0;
 
+  #isPointInComplexCollider(entity: Entity, point: Vector2): boolean {
+    const children = [...entity.children.values()]
+      .filter(child => child.name !== "__EditorMetadata")
+      .map(child => child.pos);
+
+    if (children.length < 3) return false;
+
+    // Point-in-polygon algorithm (ray casting)
+    // thank you claude
+    let inside = false;
+    for (let i = 0, j = children.length - 1; i < children.length; j = i++) {
+      const xi = children[i].x,
+        yi = children[i].y;
+      const xj = children[j].x,
+        yj = children[j].y;
+
+      const intersect =
+        yi > point.y !== yj > point.y &&
+        point.x < ((xj - xi) * (point.y - yi)) / (yj - yi) + xi;
+
+      if (intersect) inside = !inside;
+    }
+
+    return inside;
+  }
+
   #onMouseUp(event: MouseUp) {
     if (!this.game.isClient()) return;
 
@@ -100,6 +126,13 @@ export class CameraPanBehavior extends Behavior {
         .filter(entity => entity.enabled)
         .filter(entity => this.ui?.sceneGraph?.entryElementMap?.has(entity.ref) ?? true)
         .filter(entity => EditorMetadataEntity.getLockedBy(entity) === undefined)
+        .filter(entity => {
+          // Special case for ComplexCollider
+          if (entity.constructor.name === "EditorFacadeComplexCollider" && event.cursor.world) {
+            return this.#isPointInComplexCollider(entity, event.cursor.world);
+          }
+          return true;
+        })
         .toSorted((a, b) => {
           const depthA = getDepth(a);
           const depthB = getDepth(b);
