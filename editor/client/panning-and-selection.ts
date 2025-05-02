@@ -3,7 +3,6 @@ import {
   Behavior,
   Camera,
   Clickable,
-  Entity,
   MouseDown,
   MouseMove,
   MouseOut,
@@ -134,8 +133,8 @@ export class CameraPanBehavior extends Behavior {
           return true;
         })
         .toSorted((a, b) => {
-          const depthA = getDepth(a);
-          const depthB = getDepth(b);
+          const depthA = a.depth;
+          const depthB = b.depth;
           if (depthA !== depthB) return depthA - depthB;
           return b.z - a.z;
         })
@@ -309,24 +308,4 @@ export class CameraPanBehavior extends Behavior {
       }
     });
   }
-}
-
-function getDepth(e: Entity): number {
-  let depth = 1;
-  let pointer = e?.parent;
-
-  // We can't do "instanceof EditorRootFacadeEntity" here because it's a descendant of this class
-  // so we have to do this string check for facade roots instead
-  while (
-    pointer?.parent &&
-    pointer.constructor.name !== "WorldRootFacade" &&
-    pointer.constructor.name !== "LocalRootFacade" &&
-    pointer.constructor.name !== "ServerRootFacade" &&
-    pointer.constructor.name !== "PrefabRootFacade"
-  ) {
-    pointer = pointer?.parent;
-    depth++;
-  }
-
-  return depth;
 }
