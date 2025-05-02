@@ -1,7 +1,6 @@
-import type { JsonValue } from "@dreamlab/engine";
-
 export type ConnectionId = "server" | (string & Record<never, never>); // LiteralUnion<'server', string>
-export type CustomMessageData = JsonValue;
+// deno-lint-ignore no-explicit-any
+export type CustomMessageData = any;
 
 export type CustomMessageListener = (
   from: ConnectionId,
