@@ -15,6 +15,7 @@ import {
 import { BoxResizeGizmo, Gizmo } from "../common/entities/mod.ts";
 import { EditorMetadataEntity } from "../common/mod.ts";
 import { InspectorUI } from "./ui/inspector.ts";
+import { EmptyFacade } from "../common/facades/empty.ts";
 
 let TOUCHPAD_DETECTED = false;
 export class CameraPanBehavior extends Behavior {
@@ -104,12 +105,25 @@ export class CameraPanBehavior extends Behavior {
           const depthB = getDepth(b);
           if (depthA !== depthB) return depthA - depthB;
           return b.z - a.z;
+        })
+        .toSorted((a, b) => {
+          // special case: prioritize complex collider verticies if they're visible
+          if (a instanceof EmptyFacade && a.isColliderChildAndSelected) {
+            return -1;
+          }
+          if (b instanceof EmptyFacade && b.isColliderChildAndSelected) {
+            return 1;
+          }
+          return 0;
         });
 
       const currentTime = Date.now();
       const target = gizmo?.target ?? boxresize?.target;
 
       let currentIdx = target ? entities.indexOf(target) : 0;
+      if (entities[0] instanceof EmptyFacade && entities[0].isColliderChildAndSelected) {
+        currentIdx = 0; // special case: prioritize complex collider verticies if they're visible
+      }
       let queryEntity = entities[currentIdx];
 
       const timeDiff = currentTime - this.#lastClickTime;

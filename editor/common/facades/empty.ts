@@ -1,5 +1,6 @@
 import {
   Camera,
+  ClientGame,
   Empty,
   Entity,
   EntityContext,
@@ -12,6 +13,7 @@ import {
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { EditorFacadeComplexCollider } from "./complex-collider.ts";
 import { Facades } from "./manager.ts";
+import { SelectedEntityService } from "../../client/ui/selected-entity.ts";
 
 const SIZE = 0.2;
 
@@ -23,12 +25,18 @@ export class EmptyFacade extends PixiEntity {
     Facades.register(Empty, this);
   }
 
-  get #isColliderChild(): boolean {
-    return this.parent instanceof EditorFacadeComplexCollider;
+  get isColliderChildAndSelected(): boolean {
+    const selectedService = SelectedEntityService.serviceForGame(this.game as ClientGame);
+    if (!selectedService) return false;
+    return (
+      this.parent instanceof EditorFacadeComplexCollider &&
+      (selectedService.entities.includes(this.parent) ||
+        selectedService.entities.some(e => e.parent === this.parent)) // sibling or self selected
+    );
   }
 
   get bounds(): IBounds | undefined {
-    if (this.#isColliderChild) {
+    if (this.isColliderChildAndSelected) {
       if (!this.#zoomFn) return undefined;
       const [zoom] = this.#zoomFn;
 
@@ -77,6 +85,13 @@ export class EmptyFacade extends PixiEntity {
     this.container.addChild(this.#gfx);
 
     this.#redraw();
+
+    setTimeout(() => {
+      const selectedService = SelectedEntityService.serviceForGame(this.game as ClientGame);
+      selectedService?.listen(() => {
+        this.#redraw();
+      });
+    });
   }
 
   #gfx: PIXI.Graphics | undefined;
@@ -85,13 +100,20 @@ export class EmptyFacade extends PixiEntity {
     this.#gfx.clear();
 
     if (!this.enabled) return;
-    if (!this.#isColliderChild) return;
+    if (!this.isColliderChildAndSelected) return;
 
     if (!this.#zoomFn) return;
     const [zoom] = this.#zoomFn;
 
     const size = SIZE / zoom.value;
     this.#gfx.alpha = 0.8;
-    this.#gfx.regularPoly(0, 0, size / 2, 4).fill("white");
+    this.#gfx
+      .regularPoly(0, 0, size / 2, 4)
+      .fill("#ffcf36")
+      .stroke({
+        color: 0x000000,
+        width: 0.1 * size,
+        alignment: 0,
+      });
   }
 }
