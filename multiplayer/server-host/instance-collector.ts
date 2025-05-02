@@ -5,7 +5,7 @@ import { GameInstance } from "./instance.ts";
 
 const instanceCollectorTask = () => {
   for (const instance of [...GameInstance.INSTANCES.values()]) {
-    const threshold = instance.info.editMode ? 10 * 60 * 1000 : 10 * 60 * 1000; // 10 minutes for non-edit mode
+    const threshold = instance.info.editMode ? 30 * 60 * 1000 : 10 * 60 * 1000;
 
     const idleTime = Date.now() - instance.idleSince.getTime();
     if (idleTime > threshold) {
