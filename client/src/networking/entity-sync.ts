@@ -208,7 +208,8 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
     if (packet.from === conn.id) return;
     const entity = game.entities.lookupByRef(packet.entity);
     if (!entity) {
-      throw new Error(`entity sync: Tried to delete a non-existent entity! (${packet.entity})`);
+      // throw new Error(`entity sync: Tried to delete a non-existent entity! (${packet.entity})`);
+      return;
     }
 
     entity[internal.entityDestroy]({ from: packet.from ?? "server" });
