@@ -70,12 +70,22 @@ export class EmptyFacade extends PixiEntity {
 
         this.#zoomFn = undefined;
       }
+
+      if (this.#selectionListener) {
+        this.#selectionListener.unsubscribe();
+      }
     });
 
     this.on(EntityReparented, () => {
       this.#redraw();
     });
   }
+
+  #selectionListener:
+    | {
+        unsubscribe: () => void;
+      }
+    | undefined = undefined;
 
   onInitialize(): void {
     super.onInitialize();
@@ -88,7 +98,7 @@ export class EmptyFacade extends PixiEntity {
 
     setTimeout(() => {
       const selectedService = SelectedEntityService.serviceForGame(this.game as ClientGame);
-      selectedService?.listen(() => {
+      this.#selectionListener = selectedService?.listen(() => {
         this.#redraw();
       });
     });
