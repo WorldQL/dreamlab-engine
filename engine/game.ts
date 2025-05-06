@@ -189,13 +189,6 @@ export abstract class BaseGame implements ISignalHandler {
       this.fire(InternalGameTick);
       return;
     }
-    this.time[internal.timeTick]();
-
-    // run the pre tick phase, then a physics update, then the tick phase
-    // so e.g. in Rigidbody2D we can move the body to the entity's transform,
-    // have the physics world update, and then move the transform to the new position of the body.
-
-    this.fire(GamePreTick);
 
     const entityTickingOrder = this[internal.entityTickingOrder];
     if (this[internal.entityTickingOrderDirty]) {
@@ -204,6 +197,14 @@ export abstract class BaseGame implements ISignalHandler {
       this[internal.entityTickingOrderDirty] = false;
     }
     const entityCount = entityTickingOrder.length;
+
+    this.time[internal.timeTick]();
+
+    // run the pre tick phase, then a physics update, then the tick phase
+    // so e.g. in Rigidbody2D we can move the body to the entity's transform,
+    // have the physics world update, and then move the transform to the new position of the body.
+
+    this.fire(GamePreTick);
 
     for (let i = 0; i < entityCount; i++)
       entityTickingOrder[i][internal.interpolationStartTick]();

@@ -878,9 +878,9 @@ export abstract class Entity implements ISignalHandler {
   set enabled(value: boolean) {
     if (this.#enabled === value) return; // do nothing if already set to that value.
     this.#enabled = value;
-    this.game[internal.entityTickingOrderDirty] = true;
   }
   [internal.entityNotifyEnableChanged](enabled_: boolean) {
+    this.game[internal.entityTickingOrderDirty] = true;
     const enabled = enabled_ && this.#enabled;
     this.fire(EntityEnableChanged, enabled);
     for (const child of this.children.values()) {
