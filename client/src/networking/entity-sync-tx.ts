@@ -1,0 +1,223 @@
+import {
+  Entity,
+  EntityDescendantRenamed,
+  EntityDescendantReparented,
+  EntityDescendantSpawned,
+  EntityDestroyOperation,
+  EntitySpawnOperation,
+  EntityTransformUpdate,
+  GameStatus,
+  InternalGameTick,
+} from "@dreamlab/engine";
+import * as internal from "@dreamlab/engine/internal";
+import { serializeEntityDefinition } from "@dreamlab/proto/common/entity-sync.ts";
+import { EntityDefinitionSchema } from "@dreamlab/proto/datamodel.ts";
+import { EntityTransformReport } from "@dreamlab/proto/play.ts";
+import { z } from "@dreamlab/vendor/zod.ts";
+import { ClientNetworkSetupRoutine } from "./net-connection.ts";
+
+type LargeEntityData =
+  | { t: "initial" }
+  | { t: "send-objects"; i: number } // TODO: what stuff do we need here
+  | { t: "finalize" };
+
+export const handleOutgoingEntityUpdates: ClientNetworkSetupRoutine = (conn, game) => {
+  // we send a subset of queued spawns (to keep packet size per tick limited) before sending any other updates.
+  // all subsequent updates can only be applied to entities that we have actually transmitted over
+  // i.e. if you spawn an entity and it goes to queue, we have to queue all other related updates as well
+
+  const isEntityInReplicableRoot = (e: Entity) =>
+    e.root === game.world || e.root === game.prefabs;
+  const isEntityLarge = (e: Entity) => false; // TODO: check for big synced objects
+
+  const entitySpawnQueue = new Set<Entity>();
+  const largeEntities = new Map<Entity, LargeEntityData>();
+  game.on(EntitySpawnOperation, event => {
+    if (game.status !== GameStatus.Running) return;
+    if (event.from !== game.network.self) return;
+    if (!isEntityInReplicableRoot(event.entity)) return;
+    entitySpawnQueue.add(event.entity);
+  });
+
+  const entityDeleteQueue = new Set<string>();
+  game.on(EntityDestroyOperation, event => {
+    if (game.status !== GameStatus.Running) return;
+    if (event.from !== game.network.self) return;
+    if (!isEntityInReplicableRoot(event.entity)) return;
+    if (conn.deleteIgnoreSet.has(event.entity.ref)) return;
+    entityDeleteQueue.add(event.entity.ref);
+  });
+
+  const reparentQueue = new Set<Entity>();
+  const handleEntityReparent = (e: EntityDescendantReparented) => {
+    if (game.status !== GameStatus.Running) return;
+
+    const entity = e.descendant;
+    if (conn.reparentIgnoreSet.has(entity.ref)) return;
+
+    reparentQueue.add(entity);
+  };
+  game.world.on(EntityDescendantReparented, handleEntityReparent);
+  game.prefabs.on(EntityDescendantReparented, handleEntityReparent);
+
+  const renameQueue = new Set<Entity>();
+  const handleEntityRename = (e: EntityDescendantRenamed) => {
+    if (game.status !== GameStatus.Running) return;
+
+    const entity = e.descendant;
+    if (conn.renameIgnoreSet.has(entity.ref)) return;
+
+    renameQueue.add(entity);
+  };
+  game.world.on(EntityDescendantRenamed, handleEntityRename);
+  game.prefabs.on(EntityDescendantRenamed, handleEntityRename);
+
+  const transformQueue = new Set<Entity>();
+  const handleAllEntityTransforms = (event: EntityDescendantSpawned) => {
+    const entity = event.descendant;
+    entity.on(EntityTransformUpdate, event => {
+      if (event.source !== entity) return;
+      if (event.fromNetwork !== undefined) return;
+      if (
+        conn.transformIgnoreSet.has(event.source.ref) ||
+        conn.transformIgnoreSet.has(entity.ref)
+      )
+        return;
+
+      transformQueue.add(entity);
+    });
+  };
+  game.world.on(EntityDescendantSpawned, handleAllEntityTransforms);
+  game.prefabs.on(EntityDescendantSpawned, handleAllEntityTransforms);
+
+  game.on(InternalGameTick, () => {
+    if (game.status !== GameStatus.Running) return;
+
+    const entitiesToSpawn: z.infer<typeof EntityDefinitionSchema>[] = [];
+    {
+      let i = 0;
+      for (const entity of entitySpawnQueue) {
+        const parentRef = entity.parent?.ref;
+        if (!parentRef) continue;
+
+        if (i++ >= 200) break;
+        entitySpawnQueue.delete(entity);
+
+        if (isEntityLarge(entity)) {
+          largeEntities.set(entity, { t: "initial" });
+          continue;
+        }
+
+        const definition = serializeEntityDefinition(game, entity.getDefinition(), parentRef);
+        entitiesToSpawn.push(definition);
+      }
+    }
+    if (entitiesToSpawn.length) {
+      conn.send({ t: "SpawnEntities", definitions: entitiesToSpawn });
+    }
+
+    const entitiesToDelete: string[] = [];
+    {
+      let i = 0;
+      for (const ref of entityDeleteQueue) {
+        if (i++ >= 5_000) break;
+        entityDeleteQueue.delete(ref);
+        entitiesToDelete.push(ref);
+      }
+    }
+    if (entitiesToDelete.length) {
+      conn.send({ t: "DeleteEntities", entities: entitiesToDelete });
+    }
+
+    // the entity spawn queue now contains only entities that have been withheld,
+    // so we should skip any operations that refer to an entity in this queue.
+
+    const entitiesToReparentSources: string[] = [];
+    const entitiesToReparentTargets: string[] = [];
+    {
+      let i = 0;
+      for (const entity of reparentQueue) {
+        const parent = entity.parent;
+        if (!parent) continue;
+
+        if (entitySpawnQueue.has(entity)) continue;
+        if (entitySpawnQueue.has(parent)) continue;
+        if (largeEntities.has(entity)) continue;
+        if (largeEntities.has(parent)) continue;
+        if (!isEntityInReplicableRoot(entity)) continue;
+        if (!isEntityInReplicableRoot(parent)) continue;
+
+        if (i++ >= 2_500) break;
+        reparentQueue.delete(entity);
+
+        entitiesToReparentSources.push(entity.ref);
+        entitiesToReparentTargets.push(parent.ref);
+      }
+    }
+    if (entitiesToReparentSources.length) {
+      conn.send({
+        t: "ReparentEntities",
+        sources: entitiesToReparentSources,
+        targets: entitiesToReparentTargets,
+      });
+    }
+
+    const entitiesToRenameRefs: string[] = [];
+    const entitiesToRenameNames: string[] = [];
+    {
+      let i = 0;
+      for (const entity of renameQueue) {
+        if (entitySpawnQueue.has(entity)) continue;
+        if (largeEntities.has(entity)) continue;
+
+        if (i++ >= 5_000) break;
+        renameQueue.delete(entity);
+
+        entitiesToRenameRefs.push(entity.ref);
+        entitiesToRenameNames.push(entity.name);
+      }
+    }
+    if (entitiesToRenameRefs.length) {
+      conn.send({
+        t: "RenameEntities",
+        entities: entitiesToRenameRefs,
+        names: entitiesToRenameNames,
+      });
+    }
+
+    const entityTransformReports: EntityTransformReport[] = [];
+    {
+      let i = 0;
+      for (const entity of transformQueue) {
+        if (entitySpawnQueue.has(entity)) continue;
+        if (largeEntities.has(entity)) continue;
+
+        if (i++ >= 2_500) break;
+        transformQueue.delete(entity);
+
+        entityTransformReports.push({
+          entity: entity.ref,
+          position: entity.transform.position.bare(),
+          rotation: entity.transform.rotation,
+          scale: entity.transform.scale.bare(),
+          z: entity.transform.z,
+          teleport: entity[internal.entityTeleportingThisTick],
+          parent: entity.parent?.ref,
+        });
+      }
+    }
+    if (entityTransformReports.length) {
+      conn.send({ t: "ReportEntityTransforms", reports: entityTransformReports });
+    }
+
+    // TODO:
+    // 5. entity synced values
+    // 6. behavior add/remove
+    // 7. behavior synced values / objects
+    // 8. entity authority
+
+    // for batching:
+    // spawn up to N entities, rest go to queue
+    // delete up to N entities
+  });
+};

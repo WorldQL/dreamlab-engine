@@ -18,20 +18,14 @@ import {
 } from "@dreamlab/proto/play.ts";
 import { IPCMessageBus } from "../ipc.ts";
 import { handleCustomMessages } from "./custom-messages.ts";
-import { handleEntitySync } from "./entity-sync.ts";
+import { handleIncomingEntityUpdates } from "./entity-sync-rx.ts";
 import { handlePing } from "./ping.ts";
-import { handlePlayerJoinExchange } from "./player-join-states.ts";
-import { handleObjectSync } from "./synced-objects.ts";
-import { handleTransformSync } from "./transform-sync.ts";
-import { handleValueChanges } from "./value-changes.ts";
 
 export type ServerPacketHandler<T extends ClientPacket["t"] = ClientPacket["t"]> = (
   from: ConnectionId,
   packet: PlayPacket<T, "client">,
-) => Promise<void> | void;
+) => void;
 export type ServerNetworkSetupRoutine = (net: ServerNetworkManager, game: ServerGame) => void;
-
-type ClientPacketQueue = { packets: ClientPacket[]; processing: boolean };
 
 const LOG_PACKETS = false;
 const LOG_EXCLUDE_PACKETS: PlayPacket["t"][] = [
@@ -57,51 +51,31 @@ export class ServerNetworkManager {
     return handlers as ServerPacketHandler<T>[];
   }
 
-  #packetQueues = new Map<ConnectionId, ClientPacketQueue>();
-  #getPacketQueue(connection: ConnectionId) {
-    let packetQueue = this.#packetQueues.get(connection);
-    if (!packetQueue) {
-      packetQueue = { packets: [], processing: false };
-      this.#packetQueues.set(connection, packetQueue);
-    }
-    return packetQueue;
-  }
-  async #flushPacketQueue(connection: ConnectionId, queue: ClientPacketQueue) {
-    while (true) {
-      const packets = queue.packets;
-      queue.packets = [];
-      if (packets.length === 0) break;
-      for (const packet of packets) {
-        const handlers = this.getPacketHandlers(packet.t);
-        for (const handler of handlers) {
-          try {
-            await handler(connection, packet);
-          } catch (err) {
-            console.warn(`Uncaught error while handling packet of type '${packet.t}'`);
-            console.warn(err.stack);
-          }
-        }
-
-        if (LOG_PACKETS && !LOG_EXCLUDE_PACKETS.includes(packet.t))
-          console.log("[<-] " + packet.t);
-      }
-    }
-    queue.processing = false;
-  }
-
   #playSessionState: { running: boolean; paused: boolean } | undefined;
+
+  deleteIgnoreSet = new Set<string>();
+  reparentIgnoreSet = new Set<string>();
+  renameIgnoreSet = new Set<string>();
+  transformIgnoreSet = new Set<string>();
 
   constructor(private ipc: IPCMessageBus) {}
 
   setup(game: ServerGame) {
     this.ipc.addMessageListener("IncomingPacket", message => {
       const sender = message.from;
-      const packetQueue = this.#getPacketQueue(sender);
-      packetQueue.packets.push(message.packet);
-      if (!packetQueue.processing) {
-        packetQueue.processing = true;
-        void this.#flushPacketQueue(sender, packetQueue);
+      const packet = message.packet;
+      const handlers = this.getPacketHandlers(packet.t);
+      for (const handler of handlers) {
+        try {
+          handler(sender, packet);
+        } catch (err) {
+          console.warn(`Uncaught error while handling packet of type '${packet.t}'`);
+          console.warn(err.stack);
+        }
       }
+
+      if (LOG_PACKETS && !LOG_EXCLUDE_PACKETS.includes(packet.t))
+        console.log("[<-] " + packet.t);
     });
 
     const editMode = this.ipc.workerData.editMode;
@@ -182,13 +156,10 @@ export class ServerNetworkManager {
       this.updateRichStatus();
     });
 
-    handlePing(this, game);
-    handlePlayerJoinExchange(this, game);
-    handleValueChanges(this, game);
+    // TODO: handle a bunch of packets
     handleCustomMessages(this, game);
-    handleEntitySync(this, game);
-    handleTransformSync(this, game);
-    handleObjectSync(this, game);
+    handlePing(this, game);
+    handleIncomingEntityUpdates(this, game);
   }
 
   updateRichStatus() {

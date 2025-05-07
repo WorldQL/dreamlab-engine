@@ -1,13 +1,12 @@
 import { z } from "@dreamlab/vendor/zod.ts";
 import {
-  BehaviorDefinitionSchema,
   ConnectionIdSchema,
   EntityDefinitionSchema,
   EntityReferenceSchema,
   Vector2Schema,
 } from "./datamodel.ts";
 
-export const PLAY_PROTO_VERSION = 1;
+export const PLAY_PROTO_VERSION = 2;
 
 export const HandshakePacketSchema = z.object({
   t: z.literal("Handshake"),
@@ -19,12 +18,36 @@ export const HandshakePacketSchema = z.object({
   edit_mode: z.boolean(),
 });
 
+export const ClientLoadPhaseChangedPacket = z.object({
+  t: z.literal("LoadPhaseChanged"),
+  phase: z.enum(["initialized", "loaded"]),
+});
+
+export const ServerInitialLoadCompletePacket = z.object({
+  t: z.literal("InitialLoadComplete"),
+});
+
 export const PingPacketSchema = z.object({
   t: z.literal("Ping"),
   type: z.enum(["ping", "pong"]),
   timestamp: z.number().int(),
 });
 
+// #region custom messages
+const BaseCustomMessagePacket = z.object({
+  t: z.literal("CustomMessage"),
+  channel: z.string(),
+  data: z.any(),
+});
+export const ClientCustomMessagePacket = BaseCustomMessagePacket.extend({
+  to: ConnectionIdSchema.or(z.literal("*")).optional(),
+});
+export const ServerCustomMessagePacket = BaseCustomMessagePacket.extend({
+  from: ConnectionIdSchema.optional(),
+});
+// #endregion
+
+// #region peer list packets
 export const ServerPeerConnectedPacket = z.object({
   t: z.literal("PeerConnected"),
   connection_id: ConnectionIdSchema,
@@ -54,125 +77,69 @@ export const ServerPlayerJoinedPacket = z.object({
   t: z.literal("PlayerJoined"),
   connection_id: ConnectionIdSchema,
 });
+// #endregion
 
-export const ClientChatMessagePacket = z.object({
-  t: z.literal("ChatMessage"),
-  message: z.string(),
+// #region entity sync packets
+export const SpawnEntitiesPacketSchema = z.object({
+  t: z.literal("SpawnEntities"),
+  definitions: EntityDefinitionSchema.array(),
 });
-
-export const ServerChatMessagePacket = ClientChatMessagePacket.extend({
-  from_player_id: z.string(),
-  from_connection_id: z.string(),
-  from_nickname: z.string(),
-});
-
-const ValueReportSchema = z.object({
-  identifier: z.string(),
-  value: z.any(),
-  clock: z.number(),
-});
-export const ClientReportValuesPacket = z.object({
-  t: z.literal("ReportValues"),
-  reports: ValueReportSchema.array(),
-});
-
-export const ServerReportValuesPacketSchema = ClientReportValuesPacket.extend({
+export const ServerSpawnEntitiesPacketSchema = SpawnEntitiesPacketSchema.extend({
   from: ConnectionIdSchema.optional(),
 });
 
-export const ServerRichReportValuesPacketSchema = z.object({
-  t: z.literal("RichReportValues"),
-  reports: ValueReportSchema.extend({ source: ConnectionIdSchema.optional() }).array(),
+export const DeleteEntitiesPacketSchema = z.object({
+  t: z.literal("DeleteEntities"),
+  entities: EntityReferenceSchema.array(),
 });
-
-export const ClientSpawnEntityPacket = z.object({
-  t: z.literal("SpawnEntity"),
-  definition: EntityDefinitionSchema,
-});
-
-export const ServerSpawnEntityPacket = ClientSpawnEntityPacket.extend({
+export const ServerDeleteEntitiesPacketSchema = DeleteEntitiesPacketSchema.extend({
   from: ConnectionIdSchema.optional(),
 });
 
-export const ClientDeleteEntityPacket = z.object({
-  t: z.literal("DeleteEntity"),
-  entity: EntityReferenceSchema,
+export const ReparentEntitiesPacketSchema = z.object({
+  t: z.literal("ReparentEntities"),
+  sources: EntityReferenceSchema.array(),
+  targets: EntityReferenceSchema.array(),
+});
+export const ServerReparentEntitiesPacketSchema = ReparentEntitiesPacketSchema.extend({
+  from: ConnectionIdSchema,
 });
 
-export const ServerDeleteEntityPacket = ClientDeleteEntityPacket.extend({
+export const RenameEntitiesPacketSchema = z.object({
+  t: z.literal("RenameEntities"),
+  entities: EntityReferenceSchema.array(),
+  names: z.string().array(),
+});
+export const ServerRenameEntitiesPacketSchema = RenameEntitiesPacketSchema.extend({
+  from: ConnectionIdSchema,
+});
+
+// large spawn operations
+export const StartSpawnOperationPacketSchema = z.object({
+  t: z.literal("StartSpawnOperation"),
+  op: z.string(),
+  definitions: EntityDefinitionSchema.array(),
+});
+export const ServerStartSpawnOperationPacketSchema = StartSpawnOperationPacketSchema.extend({
   from: ConnectionIdSchema.optional(),
 });
-
-const BaseRenameEntityPacket = z.object({
-  t: z.literal("RenameEntity"),
-  entity: EntityReferenceSchema,
-  name: z.string(),
+export const AddEntitiesToSpawnOperationPacketSchema = z.object({
+  t: z.literal("AddEntitiesToSpawnOperation"),
+  op: z.string(),
+  definitions: EntityDefinitionSchema.array(),
 });
-export const ClientRenameEntityPacket = BaseRenameEntityPacket.extend({
-  // the server will drop your request if the current server-side name does not match old_name
-  old_name: z.string(),
+export const ServerAddEntitiesToSpawnOperationPacketSchema =
+  AddEntitiesToSpawnOperationPacketSchema.extend({ from: ConnectionIdSchema.optional() });
+export const FinishSpawnOperationPacketSchema = z.object({
+  t: z.literal("FinishSpawnOperation"),
+  op: z.string(),
 });
-export const ServerRenameEntityPacket = BaseRenameEntityPacket.extend({
+export const ServerFinishSpawnOperationPacketSchema = FinishSpawnOperationPacketSchema.extend({
   from: ConnectionIdSchema.optional(),
 });
+// #endregion
 
-export const ClientSyncedObjectOperation = z.object({
-  t: z.literal("SyncedObjectOperation"),
-  containerId: z.string(),
-  field: z.string(),
-  clock: z.number(),
-  op: z.unknown(),
-});
-export const ServerSyncedObjectOperation = ClientSyncedObjectOperation.extend({
-  from: ConnectionIdSchema.optional(),
-});
-export const ServerDenySyncedObjectOp = z.object({
-  t: z.literal("DenySyncedObjectOp"),
-  containerId: z.string(),
-  field: z.string(),
-  clock: z.number(),
-  value: z.unknown(),
-});
-
-const BaseReparentEntityPacket = z.object({
-  t: z.literal("ReparentEntity"),
-  entity: EntityReferenceSchema,
-  parent: EntityReferenceSchema,
-});
-export const ClientReparentEntityPacket = BaseReparentEntityPacket.extend({
-  old_parent: EntityReferenceSchema.optional(),
-});
-export const ServerReparentEntityPacket = BaseReparentEntityPacket.extend({
-  from: ConnectionIdSchema.optional(),
-});
-
-export const ClientRequestExclusiveAuthorityPacket = z.object({
-  t: z.literal("RequestExclusiveAuthority"),
-  entity: EntityReferenceSchema,
-  clock: z.number(),
-});
-
-export const ClientRelinquishExclusiveAuthorityPacket = z.object({
-  t: z.literal("RelinquishExclusiveAuthority"),
-  entity: EntityReferenceSchema,
-});
-
-export const ServerAnnounceExclusiveAuthorityPacket = z.object({
-  t: z.literal("AnnounceExclusiveAuthority"),
-  entity: EntityReferenceSchema,
-  to: ConnectionIdSchema.optional(),
-  clock: z.number(),
-});
-
-// sent to the requester to let them know the correct clock value
-export const ServerDenyExclusiveAuthorityPacket = z.object({
-  t: z.literal("DenyExclusiveAuthority"),
-  entity: EntityReferenceSchema,
-  clock: z.number(),
-  current_authority: ConnectionIdSchema.optional(),
-});
-
-// clients can only report transform for entities over which they have exclusive authority
+// #region transform report packets
 export type EntityTransformReport = z.infer<typeof EntityTransformReportSchema>;
 export const EntityTransformReportSchema = z.object({
   entity: EntityReferenceSchema,
@@ -184,137 +151,48 @@ export const EntityTransformReportSchema = z.object({
   parent: EntityReferenceSchema.optional(),
 });
 
-export const ClientReportEntityTransformsPacket = z.object({
+export const ReportEntityTransformsPacketSchema = z.object({
   t: z.literal("ReportEntityTransforms"),
   reports: EntityTransformReportSchema.array(),
 });
+export const ServerReportEntityTransformsPacketSchema =
+  ReportEntityTransformsPacketSchema.extend({
+    from: ConnectionIdSchema.optional(),
+  });
+// #endregion
 
-export const ServerReportEntityTransformsPacket = ClientReportEntityTransformsPacket.extend({
-  from: ConnectionIdSchema.optional(),
-});
-
-const BaseCustomMessagePacket = z.object({
-  t: z.literal("CustomMessage"),
-  channel: z.string(),
-  data: z.any(),
-});
-export const ClientCustomMessagePacket = BaseCustomMessagePacket.extend({
-  to: ConnectionIdSchema.or(z.literal("*")).optional(),
-});
-export const ServerCustomMessagePacket = BaseCustomMessagePacket.extend({
-  from: ConnectionIdSchema.optional(),
-});
-
-export const ClientLoadPhaseChangedPacket = z.object({
-  t: z.literal("LoadPhaseChanged"),
-  phase: z.enum(["initialized", "loaded"]),
-});
-
-export const ServerInitialNetworkSnapshotPacket = z.object({
-  t: z.literal("InitialNetworkSnapshot"),
-  worldEntities: EntityDefinitionSchema.array(),
-  prefabEntities: EntityDefinitionSchema.array(),
-});
-
-export const ServerScriptEditedPacket = z.object({
-  t: z.literal("ScriptEdited"),
-  script_location: z.string(),
-  behavior_script_id: z.string().optional(),
-  isFromFileSystem: z.boolean().default(true).optional(),
-});
-
-export const ClientSpawnBehaviorPacket = z.object({
-  t: z.literal("SpawnBehavior"),
-  entity: EntityReferenceSchema,
-  definition: BehaviorDefinitionSchema,
-});
-
-export const ServerSpawnBehaviorPacket = ClientSpawnBehaviorPacket.extend({
-  from: ConnectionIdSchema.optional(),
-});
-
-export const ClientDeleteBehaviorPacket = z.object({
-  t: z.literal("DeleteBehavior"),
-  entity: EntityReferenceSchema,
-  behavior: z.string(),
-});
-
-export const ServerDeleteBehaviorPacket = ClientDeleteBehaviorPacket.extend({
-  from: ConnectionIdSchema.optional(),
-});
-
-export const ClientEntityEnableChanged = z.object({
-  t: z.literal("EntityEnableChanged"),
-  entity: EntityReferenceSchema,
-  enabled: z.boolean(),
-});
-
-export const ServerEntityEnableChanged = ClientEntityEnableChanged.extend({
-  from: ConnectionIdSchema.optional(),
-});
-
-export const ClientEntityEnableReport = z.object({
-  t: z.literal("EntityEnableReport"),
-  reports: z
-    .object({
-      entity: EntityReferenceSchema,
-      enabled: z.boolean(),
-    })
-    .array(),
-});
-
-export const ServerEntityEnableReport = ClientEntityEnableReport.extend({
-  from: ConnectionIdSchema.optional(),
-});
-
+// packets that originate from the client
 export const ClientPacketSchema = z.discriminatedUnion("t", [
-  PingPacketSchema,
   ClientLoadPhaseChangedPacket,
-  ClientChatMessagePacket,
-  ClientSpawnEntityPacket,
-  ClientDeleteEntityPacket,
-  ClientRenameEntityPacket,
-  ClientReparentEntityPacket,
+  PingPacketSchema,
   ClientCustomMessagePacket,
-  ClientRequestExclusiveAuthorityPacket,
-  ClientRelinquishExclusiveAuthorityPacket,
-  ClientReportEntityTransformsPacket,
-  ClientReportValuesPacket,
-  ClientSpawnBehaviorPacket,
-  ClientDeleteBehaviorPacket,
-  ClientEntityEnableChanged,
-  ClientEntityEnableReport,
-  ClientSyncedObjectOperation,
+  SpawnEntitiesPacketSchema,
+  DeleteEntitiesPacketSchema,
+  ReparentEntitiesPacketSchema,
+  RenameEntitiesPacketSchema,
+  ReportEntityTransformsPacketSchema,
 ]);
 export type ClientPacket = z.infer<typeof ClientPacketSchema>;
 
+// packets that originate from the server
 export const ServerPacketSchema = z.discriminatedUnion("t", [
   HandshakePacketSchema,
+  ServerInitialLoadCompletePacket,
   PingPacketSchema,
-  ServerInitialNetworkSnapshotPacket,
+  ServerCustomMessagePacket,
   ServerPeerConnectedPacket,
   ServerPeerDisconnectedPacket,
   ServerPeerChangedNicknamePacket,
   ServerPeerListSnapshotPacket,
   ServerPlayerJoinedPacket,
-  ServerChatMessagePacket,
-  ServerSpawnEntityPacket,
-  ServerDeleteEntityPacket,
-  ServerRenameEntityPacket,
-  ServerReparentEntityPacket,
-  ServerCustomMessagePacket,
-  ServerAnnounceExclusiveAuthorityPacket,
-  ServerDenyExclusiveAuthorityPacket,
-  ServerReportEntityTransformsPacket,
-  ServerReportValuesPacketSchema,
-  ServerRichReportValuesPacketSchema,
-  ServerScriptEditedPacket,
-  ServerSpawnBehaviorPacket,
-  ServerDeleteBehaviorPacket,
-  ServerEntityEnableChanged,
-  ServerEntityEnableReport,
-  ServerSyncedObjectOperation,
-  ServerDenySyncedObjectOp,
+  ServerSpawnEntitiesPacketSchema,
+  ServerDeleteEntitiesPacketSchema,
+  ServerReparentEntitiesPacketSchema,
+  ServerRenameEntitiesPacketSchema,
+  ServerReportEntityTransformsPacketSchema,
+  ServerStartSpawnOperationPacketSchema,
+  ServerAddEntitiesToSpawnOperationPacketSchema,
+  ServerFinishSpawnOperationPacketSchema,
 ]);
 export type ServerPacket = z.infer<typeof ServerPacketSchema>;
 

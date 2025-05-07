@@ -5,25 +5,18 @@ import {
   ConnectionInfo,
   CustomMessageData,
   CustomMessageListener,
-  PlayerJoined,
-  PlayerLeft,
 } from "@dreamlab/engine";
 import { PlayCodec } from "@dreamlab/proto/codecs/mod.ts";
-import {
-  PlayerConnectionDropped,
-  PlayerConnectionEstablished,
-} from "@dreamlab/proto/common/signals.ts";
 import { ClientPacket, PlayPacket, ServerPacket } from "@dreamlab/proto/play.ts";
 import { handleCustomMessages } from "./custom-messages.ts";
-import { handleEntitySync } from "./entity-sync.ts";
-import { handlePing } from "./ping.ts";
-import { handleObjectSync } from "./synced-objects.ts";
-import { handleTransformSync } from "./transform-sync.ts";
-import { handleValueChanges } from "./value-changes.ts";
+import { handleProtractedEntitySpawnOperations } from "./entity-spawn-op-rx.ts";
+import { handleIncomingEntityUpdates } from "./entity-sync-rx.ts";
+import { handleOutgoingEntityUpdates } from "./entity-sync-tx.ts";
+import { handlePlayerJoins } from "./player-joins.ts";
 
 export type ClientPacketHandler<T extends ServerPacket["t"] = ServerPacket["t"]> = (
   packet: PlayPacket<T, "server">,
-) => Promise<void> | void;
+) => void;
 export type ClientNetworkSetupRoutine = (conn: ClientConnection, game: ClientGame) => void;
 
 export class ClientConnection {
@@ -41,32 +34,16 @@ export class ClientConnection {
     return handlers as ClientPacketHandler<T>[];
   }
 
-  #queue: { packets: ServerPacket[]; processing: boolean } = { packets: [], processing: false };
-  async #flushPacketQueue() {
-    if (this.#queue.processing) return;
-    this.#queue.processing = true;
-    while (true) {
-      const packets = this.#queue.packets;
-      this.#queue.packets = [];
-      if (packets.length === 0) break;
-      for (const packet of packets) {
-        const handlers = this.getPacketHandlers(packet.t);
-        for (const handler of handlers) {
-          try {
-            await handler(packet);
-          } catch (err) {
-            console.warn(`Uncaught error while handling packet of type '${packet.t}': ${err}`);
-          }
-        }
-      }
-    }
-    this.#queue.processing = false;
-  }
-
   peers = new Map<ConnectionId, ConnectionInfo>();
 
   ping: number = 0;
   pingInterval: number | undefined;
+
+  // entity ref ignore sets (need to share between entity sync tx and rx)
+  deleteIgnoreSet = new Set<string>();
+  reparentIgnoreSet = new Set<string>();
+  renameIgnoreSet = new Set<string>();
+  transformIgnoreSet = new Set<string>();
 
   constructor(
     public id: ConnectionId,
@@ -80,64 +57,24 @@ export class ClientConnection {
   }
 
   handle(packet: ServerPacket) {
-    this.#queue.packets.push(packet);
     this.#lastPacketTime = Date.now();
-    void this.#flushPacketQueue();
+    const handlers = this.getPacketHandlers(packet.t);
+    for (const handler of handlers) {
+      try {
+        handler(packet);
+      } catch (err) {
+        console.warn(`Uncaught error while handling packet of type '${packet.t}': ${err}`);
+      }
+    }
   }
 
   setup(game: ClientGame) {
-    this.registerPacketHandler("PeerListSnapshot", packet => {
-      this.peers.clear();
-      for (const peer of packet.peers) {
-        this.peers.set(peer.connection_id, {
-          id: peer.connection_id,
-          nickname: peer.nickname,
-          playerId: peer.player_id,
-        });
-      }
-    });
-    this.registerPacketHandler("PeerConnected", packet => {
-      const peerInfo = {
-        id: packet.connection_id,
-        nickname: packet.nickname,
-        playerId: packet.player_id,
-      };
-      this.peers.set(packet.connection_id, peerInfo);
-      game.fire(PlayerConnectionEstablished, peerInfo);
-    });
-    this.registerPacketHandler("PeerDisconnected", packet => {
-      const peerInfo = this.peers.get(packet.connection_id);
-      this.peers.delete(packet.connection_id);
-      if (peerInfo) {
-        game.fire(PlayerConnectionDropped, peerInfo);
-        game.fire(PlayerLeft, peerInfo);
-      }
-    });
-    this.registerPacketHandler("PlayerJoined", packet => {
-      const peerInfo = this.peers.get(packet.connection_id);
-      if (peerInfo) game.fire(PlayerJoined, peerInfo);
-    });
-    this.registerPacketHandler("PeerChangedNickname", packet => {
-      const peer = this.peers.get(packet.connection_id);
-      if (!peer) return;
-      peer.nickname = packet.new_nickname;
-    });
-
-    handlePing(this, game);
-    handleValueChanges(this, game);
+    handlePlayerJoins(this, game);
     handleCustomMessages(this, game);
-    handleEntitySync(this, game);
-    handleTransformSync(this, game);
-    handleObjectSync(this, game);
-
-    // get an initial ping
-    setTimeout(() => {
-      this.send({ t: "Ping", type: "ping", timestamp: Date.now() });
-    }, 1000);
-    // send pings every second
-    this.pingInterval = setInterval(() => {
-      this.send({ t: "Ping", type: "ping", timestamp: Date.now() });
-    }, 1000);
+    handleIncomingEntityUpdates(this, game);
+    handleOutgoingEntityUpdates(this, game);
+    handleProtractedEntitySpawnOperations(this, game);
+    // TODO: handle a bunch of packets
   }
 
   send(packet: ClientPacket) {
