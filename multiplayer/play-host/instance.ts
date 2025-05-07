@@ -79,7 +79,7 @@ export class PlayInstance {
         ...(CONFIG.SCRIPTS_PUBLIC_BASE_URL
           ? {
               worldResourcesBaseUrl: CONFIG.SCRIPTS_PUBLIC_BASE_URL,
-              worldResourcesUseSubdirectory: false,
+              worldResourcesUseSubdirectory: true,
             }
           : {
               worldResourcesBaseUrl: CONFIG.STANDALONE
