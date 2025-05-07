@@ -140,7 +140,9 @@ export class ServerNetworkManager {
         version: PLAY_PROTO_VERSION,
         world_id: this.ipc.workerData.worldId,
         player_id: message.playerId,
-        world_script_base_url: `${this.ipc.workerData.worldResourcesBaseUrl}/${game.worldId}/${this.ipc.workerData.worldSubdirectory}/`,
+        world_script_base_url: this.ipc.workerData.worldResourcesUseSubdirectory
+          ? `${this.ipc.workerData.worldResourcesBaseUrl}/${game.worldId}/${this.ipc.workerData.worldSubdirectory}/`
+          : `${this.ipc.workerData.worldResourcesBaseUrl}/${game.worldId}/`,
         edit_mode: this.ipc.workerData.editMode,
       });
 

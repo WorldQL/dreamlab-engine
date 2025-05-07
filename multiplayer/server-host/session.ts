@@ -64,6 +64,7 @@ export class GameSession {
       worldsDirectory: CONFIG.WORLDS_DIRECTORY,
       worldDirectory: path.join(parent.info.worldDirectory, opts.worldSubDirectory),
       worldResourcesBaseUrl: `${CONFIG.MULTIPLAYER_PUBLIC_URL}/worlds`,
+      worldResourcesUseSubdirectory: true,
       worldSubdirectory: opts.worldSubDirectory,
       editMode: opts.editMode,
       kv: {

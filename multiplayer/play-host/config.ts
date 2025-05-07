@@ -77,6 +77,8 @@ export const CONFIG = createEnv({
     CLIENT_DIRECTORY: z.string().optional(),
     INSTANCE_ID: z.string().min(1),
     WORLD_ID: z.string().min(1),
+
+    SCRIPTS_PUBLIC_BASE_URL: z.string().optional(),
   },
   runtimeEnvStrict: {
     NEXT_GAME_JWT_SECRET: Deno.env.get("DREAMLAB_NEXT_GAME_JWT_SECRET"),
@@ -89,6 +91,7 @@ export const CONFIG = createEnv({
     CLIENT_DIRECTORY: Deno.env.get("DREAMLAB_MULTIPLAYER_CLIENT_DIRECTORY"),
     INSTANCE_ID: cli["instance-id"] ?? Deno.env.get("DREAMLAB_MULTIPLAYER_INSTANCE_ID"),
     WORLD_ID: cli["world-id"] ?? Deno.env.get("DREAMLAB_MULTIPLAYER_WORLD_ID"),
+    SCRIPTS_PUBLIC_BASE_URL: Deno.env.get("DREAMLAB_MULTIPLAYER_SCRIPTS_PUBLIC_BASE_URL"),
   },
   emptyStringAsUndefined: true,
 });

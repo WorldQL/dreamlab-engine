@@ -4,6 +4,7 @@ export interface WorkerInitData {
 
   worldsDirectory: string;
   worldResourcesBaseUrl: string;
+  worldResourcesUseSubdirectory: boolean;
   worldDirectory: string;
   instanceId: string;
   worldId: string;
