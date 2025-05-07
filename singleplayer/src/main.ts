@@ -11,6 +11,7 @@ import { getSceneFromProject, loadSceneDefinition, ProjectSchema } from "@dreaml
 import { z } from "@dreamlab/vendor/zod.ts";
 import { SingleplayerKv } from "./singleplayer-kv.ts";
 import { SingleplayerNetworking } from "./singleplayer-networking.ts";
+import { TextureStyle } from "@dreamlab/vendor/pixi.ts";
 
 const worldId =
   new URLSearchParams(window.location.search).get("worldId") ??
@@ -23,6 +24,7 @@ if (worldId === undefined) {
 }
 
 const network = new SingleplayerNetworking();
+TextureStyle.defaultOptions.scaleMode = "nearest";
 
 const game = new ClientGame({
   container: document.querySelector("#viewport")! as HTMLDivElement,
