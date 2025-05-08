@@ -132,4 +132,9 @@ if (kvPublicUrl && kvSigningKey) {
   envOutput.push("DREAMLAB_KV_SIGNING_KEY=" + kvSigningKey);
 }
 
+const multiplayerScriptsBaseUrl = Deno.env.get("DREAMLAB_MULTIPLAYER_SCRIPTS_PUBLIC_BASE_URL");
+if (multiplayerScriptsBaseUrl) {
+  envOutput.push("DREAMLAB_MULTIPLAYER_SCRIPTS_PUBLIC_BASE_URL=" + multiplayerScriptsBaseUrl);
+}
+
 await Deno.writeTextFile("./out/.env", envOutput.join("\n"));
