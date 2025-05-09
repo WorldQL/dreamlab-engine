@@ -12,6 +12,16 @@ import { TextureStyle } from "@dreamlab/vendor/pixi.ts";
 
 TextureStyle.defaultOptions.scaleMode = "nearest";
 
+const topbar = document.querySelector<HTMLDivElement>("div#topbar")!;
+const emojistatus = topbar.querySelector<HTMLSpanElement>("span#emoji-status")!;
+const textstatus = topbar.querySelector<HTMLSpanElement>("span#text-status")!;
+const signin = topbar.querySelector<HTMLDivElement>("div#sign-in")!;
+
+if (globalThis.env.DREAMLAB_CLIENT_DISABLE_TOP_BAR) {
+  topbar.style.display = "none";
+  topbar.parentElement!.style.setProperty("--top-bar", "0px");
+}
+
 let nickname =
   window.localStorage.getItem("dreamlab/nickname") ??
   "Player" + Math.floor(Math.random() * 999) + 1;
@@ -44,11 +54,6 @@ if (connectionDetails.instanceId === "") {
   }
 }
 
-const topbar = document.querySelector<HTMLDivElement>("div#topbar")!;
-const emojistatus = topbar.querySelector<HTMLSpanElement>("span#emoji-status")!;
-const textstatus = topbar.querySelector<HTMLSpanElement>("span#text-status")!;
-const signin = topbar.querySelector<HTMLDivElement>("div#sign-in")!;
-
 const info = await auth(nickname);
 if (info.guest) {
   const span = document.createElement("span");
@@ -80,11 +85,15 @@ startGame(
     emojistatus.textContent = "🟢";
     textstatus.textContent = "Connected";
 
-    const serverButton = globalThis.env.DREAMLAB_MULTIPLAYER_STANDALONE ? undefined : (
-      <button type="button" id="server-selector">
-        {icon(Server)}
-      </button>
-    );
+    const standalone = !!globalThis.env.DREAMLAB_MULTIPLAYER_STANDALONE;
+    const disablePicker = !!globalThis.env.DREAMLAB_CLIENT_DISABLE_SERVER_PICKER;
+
+    const serverButton =
+      disablePicker || standalone ? undefined : (
+        <button type="button" id="server-selector">
+          {icon(Server)}
+        </button>
+      );
 
     const gameName = (
       <div id="game-info">
