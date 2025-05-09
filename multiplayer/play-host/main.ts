@@ -44,7 +44,11 @@ serveWorlds(router);
 if (CONFIG.STANDALONE) {
   router.get("/:path*", async ctx => {
     try {
-      await ctx.send({ root: "./client", index: "index.html" });
+      await ctx.send({
+        root: "./client",
+        index: "index.html",
+        immutable: ctx.request.url.pathname.startsWith("/dist/"),
+      });
     } catch (_err) {
       ctx.response.body = "Not Found";
       ctx.response.type = "text/plain";
