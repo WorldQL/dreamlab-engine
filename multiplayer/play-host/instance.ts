@@ -9,6 +9,7 @@ import { printLogs } from "../common-host/print-logs.ts";
 import { IPCWorker } from "../common-host/worker.ts";
 import { buildWorld } from "../common-host/world-build.ts";
 import { RichGameStatus } from "../server-common/rich-status.ts";
+import { reportPlayerCount } from "./actor-reporting.ts";
 import { CONFIG } from "./config.ts";
 
 enum InstanceState {
@@ -146,6 +147,7 @@ export class PlayInstance {
     socket.addEventListener("close", () => {
       ipc.send({ op: "ConnectionDropped", connectionId });
       this.connections.delete(connectionId);
+      reportPlayerCount(this);
     });
     socket.addEventListener("message", e => {
       try {
@@ -157,10 +159,12 @@ export class PlayInstance {
     });
     if (socket.readyState === WebSocket.OPEN) {
       ipc.send({ op: "ConnectionEstablished", nickname, playerId, connectionId });
+      reportPlayerCount(this);
     } else {
-      socket.addEventListener("open", () =>
-        ipc.send({ op: "ConnectionEstablished", nickname, playerId, connectionId }),
-      );
+      socket.addEventListener("open", () => {
+        ipc.send({ op: "ConnectionEstablished", nickname, playerId, connectionId });
+        reportPlayerCount(this);
+      });
     }
   }
 

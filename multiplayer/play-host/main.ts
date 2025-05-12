@@ -6,6 +6,7 @@ import { oakCors } from "https://deno.land/x/cors@v1.2.2/mod.ts";
 import { serveWorlds } from "../common-host/routes/worlds.ts";
 import { handleJsonAPIErrors, JsonAPIError } from "../common-host/web-util/api.ts";
 import { workerConnectHandler } from "../common-host/worker.ts";
+import { reportPlayerCount, teardownActor } from "./actor-reporting.ts";
 import { CONFIG } from "./config.ts";
 import { PlayInstance } from "./instance.ts";
 
@@ -75,9 +76,12 @@ app.use(oakCors({ allowedHeaders: "Content-Type,Authorization" }));
 app.use(router.routes());
 app.use(router.allowedMethods());
 
+const webAbort = new AbortController();
+
 await Promise.all([
   (async () => {
     await instance.boot();
+    await reportPlayerCount(instance);
   })(),
   (async () => {
     const addr = CONFIG.BIND_ADDRESS;
@@ -85,6 +89,25 @@ await Promise.all([
     await app.listen({
       hostname: addr.hostname,
       port: addr.port,
+      signal: webAbort.signal,
     });
   })(),
 ]);
+
+const shutdown = async () => {
+  console.log("Shutting down.");
+  await teardownActor(instance);
+  webAbort.abort();
+  instance.ipc?.destroy();
+};
+
+Deno.addSignalListener("SIGINT", () => {
+  void shutdown();
+});
+try {
+  Deno.addSignalListener("SIGTERM", () => {
+    void shutdown();
+  });
+} catch (_err) {
+  // ignore: we can't addSignalListener these on Windows
+}
