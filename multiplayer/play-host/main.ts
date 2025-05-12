@@ -78,27 +78,30 @@ app.use(router.allowedMethods());
 
 const webAbort = new AbortController();
 
-await Promise.all([
-  (async () => {
-    await instance.boot();
-    await reportPlayerCount(instance);
-  })(),
-  (async () => {
-    const addr = CONFIG.BIND_ADDRESS;
-    console.log(`Listening: http://${addr.hostname}:${addr.port} ...`);
-    await app.listen({
-      hostname: addr.hostname,
-      port: addr.port,
-      signal: webAbort.signal,
-    });
-  })(),
-]);
+const main = async () => {
+  await Promise.all([
+    (async () => {
+      await instance.boot();
+      await reportPlayerCount(instance);
+    })(),
+    (async () => {
+      const addr = CONFIG.BIND_ADDRESS;
+      console.log(`Listening: http://${addr.hostname}:${addr.port} ...`);
+      await app.listen({
+        hostname: addr.hostname,
+        port: addr.port,
+        signal: webAbort.signal,
+      });
+    })(),
+  ]);
+};
 
 const shutdown = async () => {
   console.log("Shutting down.");
   await teardownActor(instance);
   webAbort.abort();
   instance.ipc?.destroy();
+  Deno.exit(0);
 };
 
 Deno.addSignalListener("SIGINT", () => {
@@ -113,6 +116,7 @@ try {
 }
 
 const cleanupSecs = CONFIG.AUTO_CLEANUP_IDLE_SECS;
+console.log({ cleanupSecs });
 if (cleanupSecs) {
   let lastActive = Date.now();
 
@@ -126,3 +130,5 @@ if (cleanupSecs) {
     shutdown();
   }, 1_000);
 }
+
+await main();
