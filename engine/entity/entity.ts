@@ -591,20 +591,25 @@ export abstract class Entity implements ISignalHandler {
     };
   }
 
-  #generateRichDefinition(withRefs: boolean, forNetwork: boolean): EntityDefinition<this> {
+  #generateRichDefinition(
+    withRefs: boolean,
+    forNetwork: boolean,
+    withChildren: boolean,
+  ): EntityDefinition<this> {
     const definition = this.#generatePlainDefinition(withRefs);
     definition.behaviors =
       this.behaviors.length === 0
         ? undefined
         : this.behaviors.map(b => this.#generateBehaviorDefinition(b, withRefs, forNetwork));
-    definition.children =
-      this.children.size === 0
-        ? undefined
-        : this.children
-            .values()
-            // @ts-ignore This breaks in typedef-gen. something wrong with shim?
-            .map(entity => entity.#generateRichDefinition(withRefs))
-            .toArray();
+
+    if (withChildren)
+      definition.children =
+        this.children.size === 0
+          ? undefined
+          : this.children
+              .values()
+              .map(entity => entity.#generateRichDefinition(withRefs, forNetwork, withChildren))
+              .toArray();
 
     return definition;
   }
@@ -612,12 +617,17 @@ export abstract class Entity implements ISignalHandler {
   [internal.entityGenerateDefinition](opts: {
     withRefs?: boolean;
     forNetwork?: boolean;
+    withChildren?: boolean;
   }): EntityDefinition<this> {
-    return this.#generateRichDefinition(opts.withRefs ?? false, opts.forNetwork ?? false);
+    return this.#generateRichDefinition(
+      opts.withRefs ?? false,
+      opts.forNetwork ?? false,
+      opts.withChildren ?? true,
+    );
   }
 
   getDefinition(): EntityDefinition<this> {
-    return this.#generateRichDefinition(true, false);
+    return this.#generateRichDefinition(true, false, true);
   }
 
   cloneInto(other: Entity, overrides: Partial<EntityDefinition<this>> = {}): this {
@@ -629,7 +639,7 @@ export abstract class Entity implements ISignalHandler {
     };
 
     const { ...rest } = overrides;
-    const { behaviors = [], ...richDef } = this.#generateRichDefinition(true, false);
+    const { behaviors = [], ...richDef } = this.#generateRichDefinition(true, false, true);
     for (const def of overrides.behaviors ?? []) {
       const matches = behaviors.filter(x => x.type === def.type);
 

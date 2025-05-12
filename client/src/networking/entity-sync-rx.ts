@@ -26,6 +26,8 @@ export const handleIncomingEntityUpdates: ClientNetworkSetupRoutine = (conn, gam
 
         const definition = await convertEntityDefinition(game, def);
         parent[internal.entitySpawn](definition, { from: packet.from ?? "server" });
+
+        // TODO: we want to set value clocks and stuff from a definition as well
       })();
 
       inFlightEntities.set(def.ref, promise);

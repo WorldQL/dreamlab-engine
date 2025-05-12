@@ -1,4 +1,8 @@
-import { ConnectionId, Entity } from "@dreamlab/engine";
+import { ConnectionId, Entity, PlayerJoined } from "@dreamlab/engine";
+import * as internal from "@dreamlab/engine/internal";
+import { serializeEntityDefinition } from "@dreamlab/proto/common/entity-sync.ts";
+import { EntityDefinitionSchemaType } from "@dreamlab/proto/datamodel.ts";
+import { createId } from "@dreamlab/vendor/nanoid.ts";
 import { ServerNetworkSetupRoutine } from "./net-manager.ts";
 
 export const handlePlayerJoinExchange: ServerNetworkSetupRoutine = (net, game) => {
@@ -11,9 +15,62 @@ export const handlePlayerJoinExchange: ServerNetworkSetupRoutine = (net, game) =
     }
     connectionStates.set(from, "initialized");
 
-    // TODO: load all the world state onto this client
     (async () => {
+      const spawnOpId = createId("spwn");
+
+      let hasSentFirst = false;
+      let definitions: EntityDefinitionSchemaType[] = [];
+      const send = () => {
+        if (definitions.length === 0) return;
+        if (!hasSentFirst) {
+          net.send(from, { t: "StartSpawnOperation", op: spawnOpId, definitions });
+          hasSentFirst = true;
+        } else {
+          net.send(from, { t: "AddEntitiesToSpawnOperation", op: spawnOpId, definitions });
+        }
+
+        definitions = [];
+      };
+
       const entityQueue = new Set<Entity>();
+      for (const entity of game.world.entities) entityQueue.add(entity);
+      for (const entity of game.prefabs.entities) entityQueue.add(entity);
+
+      for (const entity of entityQueue) {
+        const parentRef = entity.parent?.ref;
+        if (!parentRef) continue;
+
+        if (definitions.length >= 5_000) {
+          send();
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        const definition = entity[internal.entityGenerateDefinition]({
+          withRefs: true,
+          forNetwork: true,
+          withChildren: false,
+        });
+        const def = serializeEntityDefinition(game, definition, parentRef);
+        definitions.push(def);
+      }
+      send();
+
+      net.send(from, { t: "FinishSpawnOperation", op: spawnOpId });
+      net.send(from, { t: "InitialLoadComplete" });
     })();
+  });
+
+  net.registerPacketHandler("LoadPhaseChanged", (from, packet) => {
+    const connectionState = connectionStates.get(from);
+    if (connectionState !== "initialized") return;
+    if (packet.phase !== "loaded") return;
+    connectionStates.set(from, "loaded");
+
+    // TODO: send something like RichReportValues
+
+    const connection = net.clients.get(from);
+    if (!connection) return;
+
+    game.fire(PlayerJoined, connection);
+    net.broadcast({ t: "PlayerJoined", connection_id: connection.id });
   });
 };
