@@ -84,6 +84,7 @@ export const CONFIG = createEnv({
     ACTOR_ID: z.string().optional(),
     SERVER_TRACKER: z.string().url().optional(),
     MULTIPLAYER_AUTH_TOKEN: z.string().min(1).optional(),
+    AUTO_CLEANUP_IDLE_SECS: z.coerce.number().optional(),
   },
   runtimeEnvStrict: {
     NEXT_GAME_JWT_SECRET: Deno.env.get("DREAMLAB_NEXT_GAME_JWT_SECRET"),
@@ -100,6 +101,7 @@ export const CONFIG = createEnv({
     SERVER_TRACKER: Deno.env.get("DREAMLAB_NEXT_PUBLIC_URL"),
     MULTIPLAYER_AUTH_TOKEN: Deno.env.get("DREAMLAB_MULTIPLAYER_AUTH_TOKEN"),
     ACTOR_ID: Deno.env.get("DREAMLAB_ACTOR_ID"),
+    AUTO_CLEANUP_IDLE_SECS: Deno.env.get("DREAMLAB_MULTIPLAYER_AUTO_CLEANUP_IDLE_SECS"),
   },
   emptyStringAsUndefined: true,
 });

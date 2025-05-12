@@ -111,3 +111,18 @@ try {
 } catch (_err) {
   // ignore: we can't addSignalListener these on Windows
 }
+
+const cleanupSecs = CONFIG.AUTO_CLEANUP_IDLE_SECS;
+if (cleanupSecs) {
+  let lastActive = Date.now();
+
+  setInterval(() => {
+    if (instance.connections.size > 0) lastActive = Date.now();
+
+    const idleSecs = (Date.now() - lastActive) / 1000;
+    if (idleSecs < cleanupSecs) return;
+
+    console.log(`Shutting down because we've been idle for ${idleSecs.toFixed(0)} seconds.`);
+    shutdown();
+  }, 1_000);
+}
