@@ -4,7 +4,7 @@ import { PlayInstance } from "./instance.ts";
 export const reportPlayerCount = async (instance: PlayInstance) => {
   if (!CONFIG.SERVER_TRACKER || !CONFIG.MULTIPLAYER_AUTH_TOKEN || !CONFIG.ACTOR_ID) return;
 
-  await fetch(`${CONFIG.SERVER_TRACKER}/rivet-server-admin/update-player-count`, {
+  await fetch(`${CONFIG.SERVER_TRACKER}/api/project/rivet-server-admin/update-player-count`, {
     method: "POST",
     body: JSON.stringify({
       authToken: CONFIG.MULTIPLAYER_AUTH_TOKEN,
@@ -18,7 +18,7 @@ export const reportPlayerCount = async (instance: PlayInstance) => {
 export const teardownActor = async (_instance: PlayInstance) => {
   if (!CONFIG.SERVER_TRACKER || !CONFIG.MULTIPLAYER_AUTH_TOKEN || !CONFIG.ACTOR_ID) return;
 
-  await fetch(`${CONFIG.SERVER_TRACKER}/rivet-server-admin/delete-rivet-server`, {
+  await fetch(`${CONFIG.SERVER_TRACKER}/api/project/rivet-server-admin/delete-rivet-server`, {
     method: "DELETE",
     body: JSON.stringify({
       authToken: CONFIG.MULTIPLAYER_AUTH_TOKEN,
