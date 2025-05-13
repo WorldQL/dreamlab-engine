@@ -8,6 +8,7 @@ import {
 } from "@dreamlab/engine";
 import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 import { BoxResizeGizmoResizeEnd, GizmoUpdateEnd } from "../../common/entities/mod.ts";
+import { EditorFacadeComplexCollider } from "../../common/facades/complex-collider.ts";
 import {
   EditorMetadataEntity,
   LocalRootFacade,
@@ -311,6 +312,37 @@ export async function pasteEntitiesFromClipboard(
       );
       continue;
     }
+
+    // #region special case: complex collider
+    const alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+    if (targetParent instanceof EditorFacadeComplexCollider) {
+      const names = EditorFacadeComplexCollider.childrenSorted(targetParent).map(e => e.name);
+
+      // only do special renaming if existing entity name is last child
+      if (names.indexOf(newDefinition.name) !== names.length - 1) {
+        const set = new Set<string>(names);
+
+        const sourceName = newDefinition.name;
+        let idx = 0;
+        while (true) {
+          if (idx >= alphabet.length) {
+            // fall back to original logic if we run out of letters
+            break;
+          }
+
+          const targetName = sourceName + alphabet[idx];
+          if (set.has(targetName)) {
+            idx++;
+            continue;
+          }
+
+          newDefinition.name = targetName;
+          break;
+        }
+      }
+    }
+    // #endregion
+
     const newEntity = targetParent.spawn(newDefinition);
     pastedEntities.push(newEntity);
   }

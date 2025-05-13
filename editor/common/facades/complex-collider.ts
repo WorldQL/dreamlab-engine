@@ -19,6 +19,12 @@ import { DebugPolygon } from "./_debug.ts";
 import { Facades } from "./manager.ts";
 
 export class EditorFacadeComplexCollider extends PixiEntity {
+  static childrenSorted(
+    ...args: Parameters<typeof ComplexCollider.childrenSorted>
+  ): ReturnType<typeof ComplexCollider.childrenSorted> {
+    return ComplexCollider.childrenSorted(...args);
+  }
+
   static {
     Entity.registerType(this, "@editor");
     Facades.register(ComplexCollider, this);
