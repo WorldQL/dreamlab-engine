@@ -60,7 +60,7 @@ export class EditorFacadeComplexCollider extends PixiEntity {
   #debugListener: { unsubscribe: () => void } | undefined;
 
   #getPoints = () =>
-    [...this.children.values()]
+    ComplexCollider.childrenSorted(this)
       .filter(child => child.name !== "__EditorMetadata")
       .map(child => [child.transform.position.x, child.transform.position.y] as const);
 

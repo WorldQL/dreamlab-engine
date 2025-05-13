@@ -13,6 +13,14 @@ import * as internal from "@dreamlab/engine/internal";
 import { quickDecomp as decomp, makeCCW } from "@dreamlab/vendor/poly-decomp-es.ts";
 import RAPIER, { RigidBody } from "@dreamlab/vendor/rapier.ts";
 
+const isStringParseableToInt = (s: string | undefined): s is string => {
+  if (s === undefined) {
+    return false;
+  }
+
+  return !Number.isNaN(Number.parseInt(s, 10));
+};
+
 export class ComplexCollider extends Entity {
   static {
     Entity.registerType(this, "@core");
@@ -26,6 +34,30 @@ export class ComplexCollider extends Entity {
   #internal: { colliders: RAPIER.Collider[] } | undefined;
 
   readonly bounds: IBounds = Bounds.ONE;
+
+  static childrenSorted(parent: Entity): Entity[] {
+    // same as editor sorting
+    const children = [...parent.children.values()].sort((a, b) => {
+      const aSplit = a.name.split(".");
+      const bSplit = b.name.split(".");
+
+      if (aSplit.shift() === bSplit.shift()) {
+        const ap = aSplit.pop();
+        const bp = bSplit.pop();
+
+        if (isStringParseableToInt(ap) && isStringParseableToInt(bp)) {
+          // sort by trailing number after dot
+          const partA = Number.parseInt(ap, 10);
+          const partB = Number.parseInt(bp, 10);
+          return partA - partB;
+        }
+      }
+
+      return a.name.localeCompare(b.name);
+    });
+
+    return children;
+  }
 
   get colliders(): RAPIER.Collider[] {
     if (!this.#internal) throw new Error("attempted to access .colliders on a prefab object");
@@ -85,7 +117,7 @@ export class ComplexCollider extends Entity {
     const enabled = this.enabled && !this.#internal;
     if (!enabled) return;
 
-    const points = [...this.children.values()].map((child): [number, number] => [
+    const points = ComplexCollider.childrenSorted(this).map((child): [number, number] => [
       child.transform.position.x,
       child.transform.position.y,
     ]);

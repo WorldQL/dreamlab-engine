@@ -13,6 +13,7 @@ import {
 import { element as elem, element } from "@dreamlab/ui";
 import { EditorMetadataEntity, EditorRootFacadeEntity, Facades } from "../../common/mod.ts";
 import { ChevronDown, icon } from "../_icons.tsx";
+import { entityNameSort } from "../entity-sort.ts";
 import { UndoRedoManager, type UndoRedoOperation } from "../undo-redo.ts";
 import { createEntityMenu } from "../util/entity-types.ts";
 import { getEntitiesEnabledState } from "../util/entity-utils.ts";
@@ -174,31 +175,7 @@ export class SceneGraph implements InspectorUIWidget {
       },
     );
 
-    const isStringParseableToInt = (s: string | undefined): s is string => {
-      if (s === undefined) {
-        return false;
-      }
-      return !isNaN(parseInt(s));
-    };
-
-    entries.sort(([_aEntry, a], [_bEntry, b]) => {
-      const aSplit = a.name.split(".");
-      const bSplit = b.name.split(".");
-
-      if (aSplit.shift() === bSplit.shift()) {
-        const ap = aSplit.pop();
-        const bp = bSplit.pop();
-
-        if (isStringParseableToInt(ap) && isStringParseableToInt(bp)) {
-          // sort by trailing number after dot
-          const partA = parseInt(ap);
-          const partB = parseInt(bp);
-          return partA - partB;
-        }
-      }
-
-      return a.name.localeCompare(b.name);
-    });
+    entries.sort(([, a], [, b]) => entityNameSort(a, b));
 
     for (const [entry, _] of entries) {
       parent.removeChild(entry);
