@@ -137,4 +137,14 @@ if (multiplayerScriptsBaseUrl) {
   envOutput.push("DREAMLAB_MULTIPLAYER_SCRIPTS_PUBLIC_BASE_URL=" + multiplayerScriptsBaseUrl);
 }
 
+const multiplayerAuthToken = Deno.env.get("DREAMLAB_MULTIPLAYER_AUTH_TOKEN");
+if (multiplayerAuthToken) {
+  envOutput.push("DREAMLAB_MULTIPLAYER_AUTH_TOKEN=" + multiplayerAuthToken);
+}
+
+const disableTopbar = Deno.env.get("DREAMLAB_CLIENT_DISABLE_TOP_BAR");
+if (disableTopbar) {
+  envOutput.push("DREAMLAB_CLIENT_DISABLE_TOP_BAR=" + disableTopbar);
+}
+
 await Deno.writeTextFile("./out/.env", envOutput.join("\n"));
