@@ -8,7 +8,7 @@ import {
 
 if (import.meta.main) {
   const args = cli.parseArgs(Deno.args, {
-    boolean: ["watch", "clean"],
+    boolean: ["watch", "clean", "wasm-b64"],
     string: ["serve-port", "out-dir", "serve-dir"],
     default: { "serve-port": "5179", "out-dir": "./web/dist", "serve-dir": "./web" },
   });
@@ -25,7 +25,7 @@ if (import.meta.main) {
     }
   }
 
-  await bundleEngineDependencies("../engine/", out);
+  await bundleEngineDependencies("../engine/", out, undefined, { unwasm: !args["wasm-b64"] });
   await bundleEngine("../engine/", out, undefined, { watch: args.watch });
   await bundleUI("../ui/", out);
   await bundleClient(".", out, "./deno.json", [{ in: "./src/main.ts", out: "client-main" }], {

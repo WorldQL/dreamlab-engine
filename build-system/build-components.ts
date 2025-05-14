@@ -78,7 +78,7 @@ export const bundleEngineDependencies = async (
   engineDir: string,
   outdir: string,
   denoJsonPath: string = path.join(engineDir, "deno.json"),
-  opts?: BundleOptions,
+  opts?: BundleOptions & { unwasm?: boolean },
 ) => {
   const vendorDir = path.join(engineDir, "_deps");
   const entryPoints: string[] = [];
@@ -87,6 +87,7 @@ export const bundleEngineDependencies = async (
     entryPoints.push(`${vendorDir}/${entry.name}`);
   }
 
+  const unwasm = opts?.unwasm ?? true;
   const buildOpts: esbuild.BuildOptions = {
     ...BASE_BUILD_OPTIONS,
     minify: true,
@@ -96,7 +97,7 @@ export const bundleEngineDependencies = async (
         configPath: await Deno.realPath(denoJsonPath),
       }),
       // FIXME: disable this if doing discord stuff
-      unwasmRapierPlugin(),
+      ...(unwasm ? [unwasmRapierPlugin()] : []),
     ],
     entryPoints,
     outdir: path.join(outdir, "vendor"),
