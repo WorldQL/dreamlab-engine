@@ -96,7 +96,7 @@ await bundleClient(
   undefined,
   [{ in: "../client/src/main-slim.ts", out: "client-main" }],
   undefined,
-  { DREAMLAB_MULTIPLAYER_STANDALONE: "1" },
+  { DREAMLAB_MULTIPLAYER_STANDALONE: "1", DREAMLAB_CLIENT_DISABLE_TOP_BAR: "1" },
 );
 await bundleUI("../ui/", "./out/client/dist");
 
@@ -140,11 +140,6 @@ if (multiplayerScriptsBaseUrl) {
 const multiplayerAuthToken = Deno.env.get("DREAMLAB_MULTIPLAYER_AUTH_TOKEN");
 if (multiplayerAuthToken) {
   envOutput.push("DREAMLAB_MULTIPLAYER_AUTH_TOKEN=" + multiplayerAuthToken);
-}
-
-const disableTopbar = Deno.env.get("DREAMLAB_CLIENT_DISABLE_TOP_BAR");
-if (disableTopbar) {
-  envOutput.push("DREAMLAB_CLIENT_DISABLE_TOP_BAR=" + disableTopbar);
 }
 
 await Deno.writeTextFile("./out/.env", envOutput.join("\n"));
