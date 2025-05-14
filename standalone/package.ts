@@ -96,7 +96,7 @@ await bundleClient(
   undefined,
   [{ in: "../client/src/main-slim.ts", out: "client-main" }],
   undefined,
-  { DREAMLAB_MULTIPLAYER_STANDALONE: "1" },
+  { DREAMLAB_MULTIPLAYER_STANDALONE: "1", DREAMLAB_CLIENT_DISABLE_TOP_BAR: "1" },
 );
 await bundleUI("../ui/", "./out/client/dist");
 
@@ -135,6 +135,11 @@ if (kvPublicUrl && kvSigningKey) {
 const multiplayerScriptsBaseUrl = Deno.env.get("DREAMLAB_MULTIPLAYER_SCRIPTS_PUBLIC_BASE_URL");
 if (multiplayerScriptsBaseUrl) {
   envOutput.push("DREAMLAB_MULTIPLAYER_SCRIPTS_PUBLIC_BASE_URL=" + multiplayerScriptsBaseUrl);
+}
+
+const multiplayerAuthToken = Deno.env.get("DREAMLAB_MULTIPLAYER_AUTH_TOKEN");
+if (multiplayerAuthToken) {
+  envOutput.push("DREAMLAB_MULTIPLAYER_AUTH_TOKEN=" + multiplayerAuthToken);
 }
 
 await Deno.writeTextFile("./out/.env", envOutput.join("\n"));
