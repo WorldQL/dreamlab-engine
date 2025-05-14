@@ -803,13 +803,13 @@ export class SceneGraph implements InspectorUIWidget {
       );
       if (!entity) return;
 
-      const allEntries = Array.from(
-        treeRoot.querySelectorAll(
-          ":is(#scene-graph-tree, details[open]) > details[data-entity]",
-        ),
-      ) as HTMLElement[];
-
       if (rangeSelect && this.lastSelectedEntry) {
+        const allEntries = Array.from(
+          treeRoot.querySelectorAll(
+            ":is(#scene-graph-tree, details[open]) > details[data-entity]",
+          ),
+        ) as HTMLElement[];
+
         // Perform range selection
         const startIndex = allEntries.indexOf(this.lastSelectedEntry);
         const endIndex = allEntries.indexOf(entryElement as HTMLElement);
