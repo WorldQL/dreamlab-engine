@@ -17,8 +17,6 @@ const emojistatus = topbar.querySelector<HTMLSpanElement>("span#emoji-status")!;
 const textstatus = topbar.querySelector<HTMLSpanElement>("span#text-status")!;
 const signin = topbar.querySelector<HTMLDivElement>("div#sign-in")!;
 
-console.log(globalThis.env);
-
 if (globalThis.env.DREAMLAB_CLIENT_DISABLE_TOP_BAR) {
   topbar.style.display = "none";
   topbar.parentElement!.style.setProperty("--top-bar", "0px");
