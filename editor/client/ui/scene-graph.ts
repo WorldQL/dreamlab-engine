@@ -804,7 +804,9 @@ export class SceneGraph implements InspectorUIWidget {
       if (!entity) return;
 
       const allEntries = Array.from(
-        treeRoot.querySelectorAll("details[data-entity]"),
+        treeRoot.querySelectorAll(
+          ":is(#scene-graph-tree, details[open]) > details[data-entity]",
+        ),
       ) as HTMLElement[];
 
       if (rangeSelect && this.lastSelectedEntry) {
