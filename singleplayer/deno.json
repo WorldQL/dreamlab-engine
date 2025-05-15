@@ -3,7 +3,8 @@
   "tasks": {
     "build": "deno run -A ../client/_build.ts --out-dir ./web/runtime",
     "watch": "deno run -A ../client/_build.ts --out-dir ./web/runtime --watch --serve-port 5181",
-    "build-world": "deno run -A ./_build-world.ts"
+    "build-world": "deno run -A ./_build-world.ts",
+    "bundle-single-file": "deno run -A ./_build-bundled.ts"
   },
   "imports": {
     "@dreamlab/engine": "../engine/mod.ts",

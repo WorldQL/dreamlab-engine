@@ -1,92 +1,142 @@
+import * as html from "npm:html-to-ast";
 import { esbuild } from "../build-system/mod.ts";
 
-const result = await esbuild.build({
-  entryPoints: ["./web/runtime/client-main.js"],
-  outfile: "./web/bundled.js",
-  bundle: true,
-  write: false,
-  format: "esm",
-  keepNames: true,
-  minify: true,
-  plugins: [
-    {
-      name: "pseudo-import-map",
-      setup: build => {
-        // TODO: read import map from HTML file
-        // TODO: actually use import map instead of hardcoding
+// #region Import Maps
+type ImportMap = Record<string, string>;
+async function readImportMap(source = "./web/index.html"): Promise<ImportMap> {
+  const ast = html.parse(await Deno.readTextFile(source));
 
-        build.onResolve({ filter: /^@dreamlab\/.*/ }, args => {
-          if (args.path === "@dreamlab/engine") {
-            return build.resolve("./web/runtime/engine.js", {
-              kind: args.kind,
-              resolveDir: ".",
-            });
-          }
+  const traverse = (node: (typeof ast)[number]): ImportMap | undefined => {
+    if (node.type !== "tag") return undefined;
+    if (node.name === "script" && node.attrs?.type === "importmap") {
+      const text = node.children?.[0];
+      if (!text || text.type !== "text" || !text.content) return undefined;
 
-          if (args.path === "@dreamlab/ui") {
-            return build.resolve("./web/runtime/ui.js", {
-              kind: args.kind,
-              resolveDir: ".",
-            });
-          }
+      return JSON.parse(text.content).imports;
+    }
 
-          if (args.path === "@dreamlab/ui/jsx-runtime") {
-            return build.resolve("./web/runtime/ui-jsx.js", {
-              kind: args.kind,
-              resolveDir: ".",
-            });
-          }
+    if (!node.children || node.children.length === 0) return undefined;
+    for (const child of node.children) {
+      const result = traverse(child);
+      if (result !== undefined) return result;
+    }
 
-          if (args.path.startsWith("@dreamlab/vendor/")) {
-            const mod = args.path.replace("@dreamlab/vendor/", "");
-            return build.resolve(`./web/runtime/vendor/${mod}`, {
-              kind: args.kind,
-              resolveDir: ".",
-            });
-          }
-        });
+    return undefined;
+  };
+
+  const result = traverse(ast[0]);
+  if (!result) throw new Error("failed to find import map");
+
+  return result;
+}
+
+function generateImportMapFn(imports: ImportMap): (mod: string) => string | undefined {
+  const fixed = new Map<string, string>();
+  const dynamic: [string, string][] = [];
+
+  for (const [from, to] of Object.entries(imports)) {
+    if (from.endsWith("/") && to.endsWith("/")) dynamic.push([from, to]);
+    else fixed.set(from, to);
+  }
+
+  return (mod: string): string | undefined => {
+    const tryFixed = fixed.get(mod);
+    if (tryFixed) return tryFixed;
+
+    for (const [from, to] of dynamic) {
+      if (!mod.startsWith(from)) continue;
+
+      const replacement = mod.slice(from.length);
+      return to + replacement;
+    }
+
+    return undefined;
+  };
+}
+// #endregion
+
+async function bundleSingleFile(world: string) {
+  const result = await esbuild.build({
+    entryPoints: ["./web/runtime/client-main.js"],
+    outfile: "./web/bundled.js",
+    bundle: true,
+    write: false,
+    format: "esm",
+    keepNames: true,
+    minify: true,
+    plugins: [
+      {
+        name: "pseudo-import-map",
+        setup: async build => {
+          const imports = await readImportMap();
+          const importmap = generateImportMapFn(imports);
+
+          build.onResolve({ filter: /^@dreamlab\/.*/ }, args => {
+            const path = importmap(args.path);
+            if (!path) return undefined;
+
+            return build.resolve(path, { kind: args.kind, resolveDir: "./web" });
+          });
+        },
       },
-    },
-  ],
-});
+    ],
+  });
 
-if (result.errors.length > 0) {
-  console.log(result.errors);
-  Deno.exit(1);
+  if (result.errors.length > 0) {
+    console.log(result.errors);
+    Deno.exit(1);
+  }
+
+  if (result.outputFiles.length !== 1) {
+    throw new Error("incorrect number of output files");
+  }
+
+  const [file] = result.outputFiles;
+  const js = file.text;
+  const css = await Deno.readTextFile("./web/runtime/client-main.css");
+
+  const html = `
+  <!doctype html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Dreamlab</title>
+
+      <style>
+  ${css}
+      </style>
+    </head>
+    <body>
+      <div id="loading">Loading...</div>
+
+      <main id="layout">
+        <div id="viewport"></div>
+      </main>
+
+      <script type="module">
+  ${js}
+      </script>
+    </body>
+  </html>
+  `.trim();
+
+  await Deno.writeTextFile("./web/pkg.html", html + "\n");
 }
 
-if (result.outputFiles.length !== 1) {
-  throw new Error("incorrect number of output files");
+if (import.meta.main) {
+  const world = Deno.args.at(0) ?? "dreamlab/test-world";
+
+  // build client with clean dir
+  console.log("building client");
+  await new Deno.Command("deno", { args: ["task", "build", "--clean", "--wasm-b64"] }).output();
+
+  // TODO: clean built world dir
+  // build world
+  console.log(`building world: ${world}`);
+  await new Deno.Command("deno", { args: ["task", "build-world", world] }).output();
+
+  // bundle everything
+  console.log("packaging to single html file");
+  await bundleSingleFile(world);
 }
-
-const [file] = result.outputFiles;
-const js = file.text;
-const css = await Deno.readTextFile("./web/runtime/client-main.css");
-
-const html = `
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dreamlab</title>
-
-    <style>
-${css}
-    </style>
-  </head>
-  <body>
-    <div id="loading">Loading...</div>
-
-    <main id="layout">
-      <div id="viewport"></div>
-    </main>
-
-    <script type="module">
-${js}
-    </script>
-  </body>
-</html>
-`.trim();
-
-await Deno.writeTextFile("./web/pkg.html", html + "\n");
