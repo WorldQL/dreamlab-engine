@@ -138,7 +138,6 @@ export const rapierWasmPlugin = (opts: RapierWasmPluginOpts = {}): esbuild.Plugi
   setup: build => {
     // this is the worst code i have ever written but it works lol
     const { external = true, compress = false } = opts;
-    console.log({ external, compress });
 
     build.onLoad({ filter: /rapier.es.js/ }, async args => {
       if (external === false && compress === false) return;
@@ -174,11 +173,6 @@ const wasm = new Uint8Array(buf);
         const stream = new Blob([wasm]).stream().pipeThrough(new CompressionStream("gzip"));
         const compressed = await new Blob(await Array.fromAsync(stream)).arrayBuffer();
         const b64c = encoding.encodeBase64(compressed);
-        console.log(
-          wasm.byteLength,
-          compressed.byteLength,
-          compressed.byteLength / wasm.byteLength,
-        );
 
         const replaced = contents.replace(`${ident}.toByteArray("${b64}")`, "wasm");
         const inject = `
