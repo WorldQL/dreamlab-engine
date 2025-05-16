@@ -3,6 +3,7 @@ import * as esbuild from "npm:esbuild@0.24.0";
 export { denoPlugins, esbuild };
 
 import * as dotenv from "jsr:@std/dotenv@0.225.2";
+import * as encoding from "jsr:@std/encoding@^1";
 import * as path from "jsr:@std/path@^1";
 
 export const dreamlabExternalPlugin = (name: string, ...filters: RegExp[]): esbuild.Plugin => ({
@@ -131,12 +132,17 @@ export const dreamlabTextImportPlugin = (...exts: `.${string}`[]): esbuild.Plugi
   },
 });
 
-export const unwasmRapierPlugin = (): esbuild.Plugin => ({
+export type RapierWasmPluginOpts = { external?: boolean; compress?: boolean };
+export const rapierWasmPlugin = (opts: RapierWasmPluginOpts = {}): esbuild.Plugin => ({
   name: "unwasm-rapier",
   setup: build => {
     // this is the worst code i have ever written but it works lol
+    const { external = true, compress = false } = opts;
+    console.log({ external, compress });
 
     build.onLoad({ filter: /rapier.es.js/ }, async args => {
+      if (external === false && compress === false) return;
+
       const bytes = await Deno.readFile(args.path);
       const contents = new TextDecoder().decode(bytes);
 
@@ -149,16 +155,42 @@ export const unwasmRapierPlugin = (): esbuild.Plugin => ({
       const ident = match.groups.ident;
       const b64 = match.groups.bytes;
 
-      const replaced = contents.replace(`${ident}.toByteArray("${b64}")`, "wasm");
-      const inject = `
-      import wasmURL from "./rapier_wasm2d_bg.wasm";
-      const needsDiscordProxy = globalThis.location.search.includes("frame_id");
-      const wasmURLObj = new URL(wasmURL, import.meta.url)
-      const resp = await fetch(needsDiscordProxy ? '/.proxy' + wasmURLObj.pathname : wasmURLObj);
-      const buf = await resp.arrayBuffer();
-      const wasm = new Uint8Array(buf);
-      `.trim();
-      return { contents: inject + "\n" + replaced };
+      if (external) {
+        const replaced = contents.replace(`${ident}.toByteArray("${b64}")`, "wasm");
+        const inject = `
+import wasmURL from "./rapier_wasm2d_bg.wasm";
+const needsDiscordProxy = globalThis.location.search.includes("frame_id");
+const wasmURLObj = new URL(wasmURL, import.meta.url)
+const resp = await fetch(needsDiscordProxy ? '/.proxy' + wasmURLObj.pathname : wasmURLObj);
+const buf = await resp.arrayBuffer();
+const wasm = new Uint8Array(buf);
+`.trim();
+
+        return { contents: inject + "\n" + replaced };
+      }
+
+      if (compress) {
+        const wasm = encoding.decodeBase64(b64);
+        const stream = new Blob([wasm]).stream().pipeThrough(new CompressionStream("gzip"));
+        const compressed = await new Blob(await Array.fromAsync(stream)).arrayBuffer();
+        const b64c = encoding.encodeBase64(compressed);
+        console.log(
+          wasm.byteLength,
+          compressed.byteLength,
+          compressed.byteLength / wasm.byteLength,
+        );
+
+        const replaced = contents.replace(`${ident}.toByteArray("${b64}")`, "wasm");
+        const inject = `
+const wasmUrl = "data:application/octet-binary;base64,${b64c}";
+const resp = await fetch(wasmUrl);
+const stream = await resp.body.pipeThrough(new DecompressionStream("gzip"));
+const buf = await new Blob(await Array.fromAsync(stream)).arrayBuffer();
+const wasm = new Uint8Array(buf);
+`.trim();
+
+        return { contents: inject + "\n" + replaced };
+      }
     });
   },
 });

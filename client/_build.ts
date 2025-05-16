@@ -30,7 +30,9 @@ if (import.meta.main) {
     args.define.map(x => x.split("=")).filter(x => x.length === 2),
   );
 
-  await bundleEngineDependencies("../engine/", out, undefined, { unwasm: !args["wasm-b64"] });
+  await bundleEngineDependencies("../engine/", out, undefined, {
+    wasm: { external: !args["wasm-b64"], compress: true },
+  });
   await bundleEngine("../engine/", out, undefined, { watch: args.watch });
   await bundleUI("../ui/", out);
   await bundleClient(
