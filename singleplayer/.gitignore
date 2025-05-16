@@ -1,4 +1,5 @@
 /web/dist
 /web/runtime
 /web/worlds
+/web/bundled
 /.env.local

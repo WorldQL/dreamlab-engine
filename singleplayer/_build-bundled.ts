@@ -1,3 +1,5 @@
+import * as fs from "jsr:@std/fs@^1";
+import * as path from "jsr:@std/path@^1";
 import * as html from "npm:html-to-ast";
 import { esbuild } from "../build-system/mod.ts";
 
@@ -156,7 +158,10 @@ async function bundleSingleFile(world: string) {
   </html>
   `.trim();
 
-  await Deno.writeTextFile("./web/pkg.html", html + "\n");
+  const outDir = await Deno.realPath(path.join("./web/bundled", world));
+  await fs.ensureDir(outDir);
+  const outPath = path.join(outDir, "index.html");
+  await Deno.writeTextFile(outPath, html + "\n");
 }
 
 if (import.meta.main) {
@@ -168,7 +173,10 @@ if (import.meta.main) {
     args: ["task", "build", "--clean", "--wasm-b64", "--define", "DREAMLAB_SINGLE_FILE=true"],
   }).output();
 
-  // TODO: clean built world dir
+  // clean world dir
+  const worldDir = path.join("./web/worlds", world);
+  await fs.emptyDir(worldDir);
+
   // build world
   console.log(`building world: ${world}`);
   await new Deno.Command("deno", { args: ["task", "build-world", world] }).output();
