@@ -158,7 +158,7 @@ async function bundleSingleFile(world: string) {
   </html>
   `.trim();
 
-  const outDir = await Deno.realPath(path.join("./web/bundled", world));
+  const outDir = path.join("./web/bundled", world);
   await fs.ensureDir(outDir);
   const outPath = path.join(outDir, "index.html");
   await Deno.writeTextFile(outPath, html + "\n");
