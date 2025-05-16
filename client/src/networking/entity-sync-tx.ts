@@ -10,7 +10,7 @@ import {
   InternalGameTick,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
-import { serializeEntityDefinition } from "@dreamlab/proto/common/entity-sync.ts";
+import { createFullEntityDefinition } from "@dreamlab/proto/common/entity-sync.ts";
 import { EntityDefinitionSchema } from "@dreamlab/proto/datamodel.ts";
 import { EntityTransformReport } from "@dreamlab/proto/play.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
@@ -97,8 +97,7 @@ export const handleOutgoingEntityUpdates: ClientNetworkSetupRoutine = (conn, gam
     {
       let i = 0;
       for (const entity of entitySpawnQueue) {
-        const parentRef = entity.parent?.ref;
-        if (!parentRef) continue;
+        if (!entity.parent) continue;
 
         if (i++ >= 200) break;
         entitySpawnQueue.delete(entity);
@@ -108,7 +107,7 @@ export const handleOutgoingEntityUpdates: ClientNetworkSetupRoutine = (conn, gam
           continue;
         }
 
-        const definition = serializeEntityDefinition(game, entity.getDefinition(), parentRef);
+        const definition = createFullEntityDefinition(entity);
         entitiesToSpawn.push(definition);
       }
     }

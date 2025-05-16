@@ -1,6 +1,9 @@
 import {
+  Behavior,
+  BehaviorConstructor,
   BehaviorDefinition,
   Entity,
+  EntityConstructor,
   EntityDefinition,
   Game,
   TransformOptions,
@@ -9,8 +12,11 @@ import * as internal from "@dreamlab/engine/internal";
 import type { z } from "@dreamlab/vendor/zod.ts";
 import {
   BehaviorDefinitionSchema,
+  BehaviorDefinitionSchemaType,
   EntityDefinitionSchema,
+  EntityDefinitionSchemaType,
   TransformSchema,
+  ValuesSchemaType,
 } from "../datamodel.ts";
 
 export const convertBehaviorDefinition = async (
@@ -82,7 +88,7 @@ export const serializeBehaviorDefinition = (
     ref,
     script,
     values: def.values ?? {},
-    sync: def.sync ?? {},
+    sync: {}, // TODO
   };
 };
 
@@ -125,4 +131,57 @@ export const getAllEntityRefs = (def: EntityDefinition, refs?: Set<string>): Set
   if (def._ref) refSet.add(def._ref);
   def.children?.forEach(c => getAllEntityRefs(c, refSet));
   return refSet;
+};
+
+export const createValuesDefinition = (container: Entity | Behavior): ValuesSchemaType => {
+  const values: ValuesSchemaType = {};
+
+  for (const [name, syncedValue] of container.values.entries()) {
+    values[name] = {
+      clock: syncedValue.clock,
+      source: syncedValue.lastSource,
+      value: syncedValue.adapter
+        ? syncedValue.adapter.convertToPrimitive(syncedValue.value)
+        : syncedValue.value,
+    };
+  }
+
+  return values;
+};
+
+export const createBehaviorDefinition = (behavior: Behavior): BehaviorDefinitionSchemaType => {
+  const script = behavior.game[internal.behaviorLoader].lookup(
+    behavior.constructor as BehaviorConstructor,
+  );
+  if (!script) throw new Error("entity sync: behavior has unknown script source");
+
+  return {
+    ref: behavior.ref,
+    script,
+    sync: {}, // TODO: sync the guy
+    values: createValuesDefinition(behavior),
+  };
+};
+
+export const createEntityDefinition = (entity: Entity): EntityDefinitionSchemaType => {
+  const parent = entity.parent?.ref;
+  if (!parent) throw new Error("entity sync: entity has no parent!");
+
+  return {
+    parent,
+    type: Entity.getTypeName(entity.constructor as EntityConstructor),
+    ref: entity.ref,
+    name: entity.name,
+    authority: entity.authority,
+    enabled: entity.enabled,
+    transform: serializeTransform(entity.transform),
+    behaviors: entity.behaviors.map(createBehaviorDefinition),
+    values: createValuesDefinition(entity),
+  };
+};
+
+export const createFullEntityDefinition = (entity: Entity): EntityDefinitionSchemaType => {
+  const definition = createEntityDefinition(entity);
+  definition.children = [...entity.children.values()].map(createFullEntityDefinition);
+  return definition;
 };

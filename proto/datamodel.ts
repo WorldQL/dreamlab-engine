@@ -5,9 +5,15 @@ export const EntityTypeSchema = z.string().describe("Entity Type");
 
 export const ConnectionIdSchema = z.literal("server").or(z.string()).describe("Connection ID");
 
+export const ValuesSchema = z.record(
+  z.string(),
+  z.object({ value: z.any(), clock: z.number(), source: ConnectionIdSchema.optional() }),
+);
+export type ValuesSchemaType = z.infer<typeof ValuesSchema>;
+
 export const BehaviorDefinitionSchema = z.object({
   script: z.string(),
-  values: z.record(z.string(), z.any()),
+  values: ValuesSchema,
   sync: z.record(
     z.string(),
     z.object({
@@ -19,6 +25,7 @@ export const BehaviorDefinitionSchema = z.object({
   ),
   ref: z.string(),
 });
+export type BehaviorDefinitionSchemaType = z.infer<typeof BehaviorDefinitionSchema>;
 
 export const Vector2Schema = z
   .object({
@@ -40,7 +47,7 @@ const BaseEntityDefinitionSchema = z.object({
   parent: EntityReferenceSchema,
   name: z.string(),
   enabled: z.boolean().optional(),
-  values: z.record(z.string(), z.any()).optional(),
+  values: ValuesSchema.optional(),
   behaviors: BehaviorDefinitionSchema.array().optional(),
   transform: TransformSchema.optional(),
   ref: EntityReferenceSchema,

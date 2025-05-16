@@ -1,6 +1,6 @@
 import { Transform } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
-import { convertEntityDefinition } from "@dreamlab/scene";
+import { convertEntityDefinition } from "@dreamlab/proto/common/entity-sync.ts";
 import { ClientNetworkSetupRoutine } from "./net-connection.ts";
 
 export const handleIncomingEntityUpdates: ClientNetworkSetupRoutine = (conn, game) => {

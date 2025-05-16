@@ -1,6 +1,5 @@
 import { ConnectionId, Entity, PlayerJoined } from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
-import { serializeEntityDefinition } from "@dreamlab/proto/common/entity-sync.ts";
+import { createEntityDefinition } from "@dreamlab/proto/common/entity-sync.ts";
 import { EntityDefinitionSchemaType } from "@dreamlab/proto/datamodel.ts";
 import { createId } from "@dreamlab/vendor/nanoid.ts";
 import { ServerNetworkSetupRoutine } from "./net-manager.ts";
@@ -37,20 +36,15 @@ export const handlePlayerJoinExchange: ServerNetworkSetupRoutine = (net, game) =
       for (const entity of game.prefabs.entities) entityQueue.add(entity);
 
       for (const entity of entityQueue) {
-        const parentRef = entity.parent?.ref;
-        if (!parentRef) continue;
+        if (!entity.parent) continue;
 
         if (definitions.length >= 5_000) {
           send();
           await new Promise(resolve => setTimeout(resolve, 100));
         }
-        const definition = entity[internal.entityGenerateDefinition]({
-          withRefs: true,
-          forNetwork: true,
-          withChildren: false,
-        });
-        const def = serializeEntityDefinition(game, definition, parentRef);
-        definitions.push(def);
+
+        const definition = createEntityDefinition(entity);
+        definitions.push(definition);
       }
       send();
 
