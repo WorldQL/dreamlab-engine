@@ -1,4 +1,10 @@
-import type { BehaviorConstructor, GameOptions } from "@dreamlab/engine";
+import type {
+  BehaviorConstructor,
+  BehaviorLoader,
+  ClientGame,
+  GameOptions,
+} from "@dreamlab/engine";
+import * as internal from "@dreamlab/engine/internal";
 
 // @ts-expect-error: injected by esbuild
 const single = (DREAMLAB_SINGLE_FILE as boolean | undefined) ?? false;
@@ -29,9 +35,27 @@ export const createFetch = (): FetchFn | undefined => {
       return Promise.resolve(resp);
     }
 
-    console.log("fetch", { uri, resolved, init });
+    // TODO: hook asset loading
+
     return fetch(resolved, init);
   };
 
   return fn;
+};
+
+export const patchBehaviorLoader = (game: ClientGame) => {
+  if (!single) return;
+
+  const loader = game[internal.behaviorLoader];
+  const loadScriptFromSource = loader.loadScriptFromSource.bind(loader);
+
+  const patched: BehaviorLoader["loadScriptFromSource"] = (script, sourceURI) => {
+    const ctor = behaviors.get(script);
+    if (ctor) return Promise.resolve(ctor);
+
+    // fallback to original impl
+    return loadScriptFromSource(script, sourceURI);
+  };
+
+  loader.loadScriptFromSource = patched.bind(loader);
 };

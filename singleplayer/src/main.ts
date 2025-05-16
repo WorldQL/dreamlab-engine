@@ -10,7 +10,7 @@ import * as internal from "@dreamlab/engine/internal";
 import { getSceneFromProject, loadSceneDefinition, ProjectSchema } from "@dreamlab/scene";
 import { TextureStyle } from "@dreamlab/vendor/pixi.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
-import { createFetch } from "./single-file.ts";
+import { createFetch, patchBehaviorLoader } from "./single-file.ts";
 import { SingleplayerKv } from "./singleplayer-kv.ts";
 import { SingleplayerNetworking } from "./singleplayer-networking.ts";
 
@@ -35,6 +35,7 @@ const game = new ClientGame({
   kv: game => new SingleplayerKv({ game }),
   fetch: createFetch(),
 });
+patchBehaviorLoader(game);
 game.worldScriptBaseURL = new URL(`./worlds/${worldId}/`, window.location.href).toString();
 Object.defineProperty(globalThis, "game", { value: game });
 
