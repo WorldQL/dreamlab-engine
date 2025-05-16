@@ -56,8 +56,10 @@ function generateImportMapFn(imports: ImportMap): (mod: string) => string | unde
 // #endregion
 
 async function bundleSingleFile(world: string) {
+  const worldDir = path.join("./web/worlds", world);
+
   const result = await esbuild.build({
-    entryPoints: ["./web/runtime/client-main.js"],
+    entryPoints: ["meta:entrypoint"],
     outfile: "./web/bundled.js",
     bundle: true,
     write: false,
@@ -65,6 +67,39 @@ async function bundleSingleFile(world: string) {
     keepNames: true,
     minify: true,
     plugins: [
+      {
+        name: "psuedo-entrypoint",
+        setup: build => {
+          build.onResolve({ filter: /^meta:entrypoint$/ }, args => {
+            if (args.kind !== "entry-point") return undefined;
+            return { namespace: "meta", path: "entrypoint" };
+          });
+
+          build.onLoad({ namespace: "meta", filter: /^entrypoint$/ }, async () => {
+            let contents = "globalThis.__dreamlab_behavior_map = new Map()\n";
+
+            const project = await Deno.readTextFile(path.join(worldDir, "project.json"));
+            contents += `globalThis.__dreamlab_project = ${project};`;
+
+            type Behaviors = Record<string, { uri: string; name: string; hash: string }>;
+            const behaviors: Behaviors = JSON.parse(
+              await Deno.readTextFile(path.join(worldDir, "_dreamlab_behaviors.json")),
+            );
+
+            for (const [srcPath, data] of Object.entries(behaviors)) {
+              const jsPath = srcPath.replace(/\.tsx?$/, ".js");
+              const importPath = path.join("./worlds", world, jsPath);
+
+              contents += `import ${data.name} from "./${importPath}";\n`;
+              contents += `globalThis.__dreamlab_behavior_map.set("${data.uri}", ${data.name});\n`;
+            }
+
+            contents += `\nawait import("./runtime/client-main.js");\n`;
+
+            return { loader: "ts", contents, resolveDir: "./web" };
+          });
+        },
+      },
       {
         name: "pseudo-import-map",
         setup: async build => {
