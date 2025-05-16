@@ -178,6 +178,7 @@ export const bundleClient = async (
   ],
   opts?: BundleOptions,
   env?: Record<string, string>,
+  define?: Record<string, string>,
 ) => {
   // only load `.env.production` on non-watch builds
   const envStack = opts?.watch
@@ -187,6 +188,7 @@ export const bundleClient = async (
   const buildOpts: esbuild.BuildOptions = {
     ...BASE_BUILD_OPTIONS,
     ...EXTRA_ENTRYPOINT_BUILD_OPTIONS,
+    define: define ?? {},
     plugins: [
       dreamlabCssPlugin(),
       dreamlabNodeShimPlugin(),
