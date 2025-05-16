@@ -49,6 +49,7 @@
     "npm:howler@2.2.4": "2.2.4",
     "npm:iterator-helpers-polyfill@3.0.1": "3.0.1",
     "npm:layout-bmfont-text@1.3.4": "1.3.4",
+    "npm:morphdom@*": "2.7.5",
     "npm:nanoid@5.0.9": "5.0.9",
     "npm:pako@2.1.0": "2.1.0",
     "npm:pixi.js@8.1.5": "8.1.5",
@@ -733,6 +734,9 @@
     },
     "lodash.merge@4.6.2": {
       "integrity": "sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ=="
+    },
+    "morphdom@2.7.5": {
+      "integrity": "sha512-z6bfWFMra7kBqDjQGHud1LSXtq5JJC060viEkQFMBX6baIecpkNr2Ywrn2OQfWP3rXiNFQRPoFjD8/TvJcWcDg=="
     },
     "nanoid@5.0.9": {
       "integrity": "sha512-Aooyr6MXU6HpvvWXKoVoXwKMs/KyVakWwg7xQfv5/S/RIgJMy0Ifa45H9qqYy7pTCszrHzP21Uk4PZq2HpEM8Q==",

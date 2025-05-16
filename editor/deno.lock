@@ -48,6 +48,7 @@
     "npm:lucide-static@0.429.0": "0.429.0",
     "npm:markdown-it@*": "14.1.0",
     "npm:markdown-it@14.1.0": "14.1.0",
+    "npm:morphdom@*": "2.7.5",
     "npm:nanoid@5.0.9": "5.0.9",
     "npm:object-inspect@1.13.2": "1.13.2",
     "npm:pako@2.1.0": "2.1.0",
@@ -828,6 +829,9 @@
       "dependencies": [
         "mime-db"
       ]
+    },
+    "morphdom@2.7.5": {
+      "integrity": "sha512-z6bfWFMra7kBqDjQGHud1LSXtq5JJC060viEkQFMBX6baIecpkNr2Ywrn2OQfWP3rXiNFQRPoFjD8/TvJcWcDg=="
     },
     "nanoid@5.0.9": {
       "integrity": "sha512-Aooyr6MXU6HpvvWXKoVoXwKMs/KyVakWwg7xQfv5/S/RIgJMy0Ifa45H9qqYy7pTCszrHzP21Uk4PZq2HpEM8Q==",

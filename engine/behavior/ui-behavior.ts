@@ -1,5 +1,6 @@
 import { Behavior, UILayer, UIPanel } from "@dreamlab/engine";
 import type { BaseElement } from "../../ui/element.ts";
+import morphdom from "npm:morphdom";
 
 export abstract class UIBehavior extends Behavior {
   private uiRoot: HTMLElement | undefined;
@@ -51,22 +52,29 @@ export abstract class UIBehavior extends Behavior {
   }
 
   rerender() {
-    if (this.uiRoot) {
-      // Ensure style element exists before rendering
-      this.ensureStyleElement();
-
-      const newUI = this.render();
-      if (this.uiElement && this.uiElement.parentNode === this.uiRoot) {
-        this.uiRoot.replaceChild(newUI, this.uiElement);
-      } else {
-        this.uiRoot.appendChild(newUI);
-      }
-      this.uiElement = newUI;
-      if (this.uiElement.style.pointerEvents === "") {
-        this.uiElement.style.pointerEvents = "auto";
-      }
+    if (!this.uiRoot) return;
+  
+    this.ensureStyleElement();
+  
+    const newTree = this.render();        // fresh virtual subtree
+  
+    /* ---- first time: just mount ---- */
+    if (!this.uiElement) {
+      this.uiRoot.appendChild(newTree);   // place it *after* <style>
+      this.uiElement = newTree;  
+      if (this.uiElement.style.pointerEvents === "")
+        this.uiElement.style.pointerEvents = "auto";         // keep reference to this div
+      return;
     }
+  
+    /* ---- subsequent renders: diff-and-patch ---- */
+    morphdom(this.uiElement, newTree, {
+    });
+
+    if (this.uiElement.style.pointerEvents === "")
+      this.uiElement.style.pointerEvents = "auto";
   }
+  
 
   onInitialize(): void {
     if (!this.game.isClient()) return;
