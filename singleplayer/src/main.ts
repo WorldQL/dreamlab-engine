@@ -8,10 +8,11 @@ import "../../client/src/_env.ts";
 import { ClientGame, GameStatus, GameStatusChange } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { getSceneFromProject, loadSceneDefinition, ProjectSchema } from "@dreamlab/scene";
+import { TextureStyle } from "@dreamlab/vendor/pixi.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
+import { createFetch } from "./single-file.ts";
 import { SingleplayerKv } from "./singleplayer-kv.ts";
 import { SingleplayerNetworking } from "./singleplayer-networking.ts";
-import { TextureStyle } from "@dreamlab/vendor/pixi.ts";
 
 const worldId =
   new URLSearchParams(window.location.search).get("worldId") ??
@@ -32,6 +33,7 @@ const game = new ClientGame({
   worldId,
   network: network.createNetworking(),
   kv: game => new SingleplayerKv({ game }),
+  fetch: createFetch(),
 });
 game.worldScriptBaseURL = new URL(`./worlds/${worldId}/`, window.location.href).toString();
 Object.defineProperty(globalThis, "game", { value: game });

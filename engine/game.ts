@@ -46,6 +46,8 @@ import { urlWithParams } from "@dreamlab/util/url.ts";
 export interface GameOptions {
   instanceId: string;
   worldId: string;
+
+  fetch?: (opts: { uri: string; resolved: string; init?: RequestInit }) => Promise<Response>;
 }
 
 export interface ClientGameOptions extends GameOptions {
@@ -79,6 +81,8 @@ export abstract class BaseGame implements ISignalHandler {
 
     this.instanceId = opts.instanceId;
     this.worldId = opts.worldId;
+
+    this.#fetch = opts.fetch;
 
     // now that we know we are ServerGame | ClientGame, we can safely cast to Game
   }
@@ -150,8 +154,14 @@ export abstract class BaseGame implements ISignalHandler {
     return this.resolveResourceURL(uri).toString();
   }
 
+  readonly #fetch: GameOptions["fetch"] | undefined;
+
   /** Fetches a resource (supports res:// and cloud:// URIs) */
   fetch(uri: string, init?: RequestInit): Promise<Response> {
+    if (this.#fetch) {
+      return this.#fetch({ uri, init, resolved: this.resolveResource(uri) });
+    }
+
     return fetch(this.resolveResource(uri), init);
   }
 
