@@ -53,28 +53,51 @@ export abstract class UIBehavior extends Behavior {
 
   rerender() {
     if (!this.uiRoot) return;
-  
+
     this.ensureStyleElement();
-  
-    const newTree = this.render();        // fresh virtual subtree
-  
+
+    const newTree = this.render(); // fresh virtual subtree
+
     /* ---- first time: just mount ---- */
     if (!this.uiElement) {
-      this.uiRoot.appendChild(newTree);   // place it *after* <style>
-      this.uiElement = newTree;  
+      this.uiRoot.appendChild(newTree); // place it *after* <style>
+      this.uiElement = newTree;
       if (this.uiElement.style.pointerEvents === "")
-        this.uiElement.style.pointerEvents = "auto";         // keep reference to this div
+        this.uiElement.style.pointerEvents = "auto"; // keep reference to this div
       return;
     }
-  
+
     /* ---- subsequent renders: diff-and-patch ---- */
     morphdom(this.uiElement, newTree, {
+      onBeforeElUpdated(fromEl, toEl) {
+        if (fromEl.matches("input, textarea, select")) {
+          const from = fromEl as HTMLInputElement & HTMLOptionElement;
+          const to = toEl as HTMLInputElement & HTMLOptionElement;
+
+          // allow controlled input components but also keep value if uncontrolled
+          // basically if the new dom defines value we throw away user's input.
+          if (to.value) return true;
+          if (to.checked) return true;
+          if (to.selected) return true;
+
+          to.value = from.value;
+
+          // Checkbox / radio “checked”
+          if ("checked" in fromEl) {
+            to.checked = from.checked;
+          }
+
+          // <option>/<select> “selected”
+          if ("selected" in fromEl) {
+            to.selected = from.selected;
+          }
+        }
+        return true; // keep patching the rest of the element
+      },
     });
 
-    if (this.uiElement.style.pointerEvents === "")
-      this.uiElement.style.pointerEvents = "auto";
+    if (this.uiElement.style.pointerEvents === "") this.uiElement.style.pointerEvents = "auto";
   }
-  
 
   onInitialize(): void {
     if (!this.game.isClient()) return;
