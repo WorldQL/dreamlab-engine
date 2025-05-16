@@ -129,7 +129,9 @@ if (import.meta.main) {
 
   // build client with clean dir
   console.log("building client");
-  await new Deno.Command("deno", { args: ["task", "build", "--clean", "--wasm-b64"] }).output();
+  await new Deno.Command("deno", {
+    args: ["task", "build", "--clean", "--wasm-b64", "--define", "DREAMLAB_SINGLE_FILE=true"],
+  }).output();
 
   // TODO: clean built world dir
   // build world
