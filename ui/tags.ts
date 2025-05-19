@@ -16,7 +16,14 @@ const _VOID_TAG_NAMES = [
 export const VOID_TAG_NAMES = _VOID_TAG_NAMES as readonly string[];
 
 export const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
-const _SVG_TAG_NAMES = ["svg", "path", "g"] as const satisfies (keyof SVGElementTagNameMap)[];
+const _SVG_TAG_NAMES = [
+  "svg",
+  "path",
+  "g",
+  "circle",
+  "rect",
+  "line",
+] as const satisfies (keyof SVGElementTagNameMap)[];
 export const SVG_TAG_NAMES = _SVG_TAG_NAMES as readonly string[];
 
 type HTMLMap = HTMLElementTagNameMap;
