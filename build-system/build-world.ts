@@ -65,7 +65,7 @@ export const prepareBundleWorld = async (
       esbuildCopy({
         resolveFrom: "cwd",
         assets: {
-          from: path.join(worldOpts.dir, "assets") + "/*",
+          from: path.join(worldOpts.dir, "assets") + "/**/*",
           to: path.join(worldOpts.dir, out, "assets"),
         },
         watch: opts?.watch ?? false,
