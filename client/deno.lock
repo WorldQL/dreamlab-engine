@@ -27,6 +27,7 @@
     "npm:@discord/embedded-app-sdk@*": "1.7.1",
     "npm:@paralleldrive/cuid2@2.2.2": "2.2.2",
     "npm:@types/howler@2.2.11": "2.2.11",
+    "npm:@types/object-inspect@1.13.0": "1.13.0",
     "npm:@types/pako@2.0.3": "2.0.3",
     "npm:cbor2@*": "1.12.0",
     "npm:esbuild-plugin-copy@2.1.1": "2.1.1_esbuild@0.20.2",
@@ -37,8 +38,11 @@
     "npm:jwt-decode@*": "4.0.0",
     "npm:layout-bmfont-text@1.3.4": "1.3.4",
     "npm:lucide-static@0.429.0": "0.429.0",
+    "npm:morphdom@*": "2.7.5",
     "npm:nanoid@5.0.9": "5.0.9",
+    "npm:object-inspect@1.13.2": "1.13.2",
     "npm:pako@2.1.0": "2.1.0",
+    "npm:partysocket@1.0.2": "1.0.2",
     "npm:pixi.js@8.4.1": "8.4.1",
     "npm:pixi.js@8.5.1": "8.5.1",
     "npm:pixi.js@8.7.3": "8.7.3",
@@ -46,6 +50,7 @@
     "npm:quad-indices@2.0.1": "2.0.1",
     "npm:simple-icons@*": "14.7.0",
     "npm:simple-icons@13.6.0": "13.6.0",
+    "npm:strip-ansi@7.1.0": "7.1.0",
     "npm:type-fest@4.26.1": "4.26.1",
     "npm:zod-validation-error@3.3.1": "3.3.1_zod@3.23.8"
   },
@@ -443,6 +448,9 @@
     "@types/lodash@4.17.13": {
       "integrity": "sha512-lfx+dftrEZcdBPczf9d0Qv0x+j/rfNCMuC6OcfXmO8gkfeNAY88PgKUbvG56whcN23gc27yenwF6oJZXGFpYxg=="
     },
+    "@types/object-inspect@1.13.0": {
+      "integrity": "sha512-lwGTVESDDV+XsQ1pH4UifpJ1f7OtXzQ6QBOX2Afq2bM/T3oOt8hF6exJMjjIjtEWeAN2YAo25J7HxWh97CCz9w=="
+    },
     "@types/pako@2.0.3": {
       "integrity": "sha512-bq0hMV9opAcrmE0Byyo0fY3Ew4tgOevJmQ9grUhpXQhYfyLJ1Kqg3P33JT5fdbT2AjeAjR51zqqVjAL/HMkx7Q=="
     },
@@ -457,6 +465,9 @@
     },
     "an-array@1.0.0": {
       "integrity": "sha512-M175GYI7RmsYu24Ok383yZQa3eveDfNnmhTe3OQ3bm70bEovz2gWenH+ST/n32M8lrwLWk74hcPds5CDRPe2wg=="
+    },
+    "ansi-regex@6.1.0": {
+      "integrity": "sha512-7HSX4QQb4CspciLpVFwyRe79O3xsIZDDLER21kERQ71oaPodF8jL725AgJMFAYbooIqolJoRLuM81SpeUkpkvA=="
     },
     "ansi-styles@4.3.0": {
       "integrity": "sha512-zbB9rCJAT1rbjiVDb2hqKFHNYLxgtk8NURxZ3IZwD3F6NtxbXZQCnnSi1Lkx+IDohdPlFp222wVALIheZJQSEg==",
@@ -609,6 +620,9 @@
       "scripts": true,
       "bin": true
     },
+    "event-target-shim@6.0.2": {
+      "integrity": "sha512-8q3LsZjRezbFZ2PN+uP+Q7pnHUMmAOziU2vA2OwoFaKIXxlxl38IylhSSgUorWu/rf4er67w0ikBqjBFk/pomA=="
+    },
     "eventemitter3@5.0.1": {
       "integrity": "sha512-GWkBvjiSZK87ELrYOSESUYeVIc9mvLLf/nXalMOS5dYrgZq9o5OVkbZAVM06CVxYsCwH9BDZFPlQTlPA1j4ahA=="
     },
@@ -739,6 +753,9 @@
         "picomatch"
       ]
     },
+    "morphdom@2.7.5": {
+      "integrity": "sha512-z6bfWFMra7kBqDjQGHud1LSXtq5JJC060viEkQFMBX6baIecpkNr2Ywrn2OQfWP3rXiNFQRPoFjD8/TvJcWcDg=="
+    },
     "nanoid@5.0.9": {
       "integrity": "sha512-Aooyr6MXU6HpvvWXKoVoXwKMs/KyVakWwg7xQfv5/S/RIgJMy0Ifa45H9qqYy7pTCszrHzP21Uk4PZq2HpEM8Q==",
       "bin": true
@@ -746,11 +763,20 @@
     "normalize-path@3.0.0": {
       "integrity": "sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA=="
     },
+    "object-inspect@1.13.2": {
+      "integrity": "sha512-IRZSRuzJiynemAXPYtPe5BoI/RESNYR7TYm50MC5Mqbd3Jmw5y790sErYw3V6SryFJD64b74qQQs9wn5Bg/k3g=="
+    },
     "pako@2.1.0": {
       "integrity": "sha512-w+eufiZ1WuJYgPXbV/PO3NCMEc3xqylkKHzp8bxp1uW4qaSNQUkwmLLEc3kKsfz8lpV1F8Ht3U1Cm+9Srog2ug=="
     },
     "parse-svg-path@0.1.2": {
       "integrity": "sha512-JyPSBnkTJ0AI8GGJLfMXvKq42cj5c006fnLz6fXy6zfoVjJizi8BNTpu8on8ziI1cKy9d9DGNuY17Ce7wuejpQ=="
+    },
+    "partysocket@1.0.2": {
+      "integrity": "sha512-rAFOUKImaq+VBk2B+2RTBsWEvlnarEP53nchoUHzpVs8V6fG2/estihOTslTQUWHVuHEKDL5k8htG8K3TngyFA==",
+      "dependencies": [
+        "event-target-shim"
+      ]
     },
     "path-type@4.0.0": {
       "integrity": "sha512-gDKb8aZMDeD/tZWs9P6+q0J9Mwkdl6xMV8TjnGP3qJVJ06bdMgkbBlLU8IdfOsIsFz2BW1rNVT3XuNEl8zPAvw=="
@@ -837,6 +863,12 @@
     },
     "slash@3.0.0": {
       "integrity": "sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q=="
+    },
+    "strip-ansi@7.1.0": {
+      "integrity": "sha512-iq6eVVI64nQQTRYq2KtEg2d2uU7LElhTJwsH4YzIHZshxlgZms/wIc4VoDQTlG/IvVIrBKG06CrZnp0qv7hkcQ==",
+      "dependencies": [
+        "ansi-regex"
+      ]
     },
     "supports-color@7.2.0": {
       "integrity": "sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==",
