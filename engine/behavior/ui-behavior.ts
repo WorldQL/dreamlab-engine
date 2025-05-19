@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-explicit-any
 import { Behavior, UILayer, UIPanel } from "@dreamlab/engine";
 import type { BaseElement } from "../../ui/element.ts";
 import morphdom from "npm:morphdom";
@@ -70,6 +71,21 @@ export abstract class UIBehavior extends Behavior {
     /* ---- subsequent renders: diff-and-patch ---- */
     morphdom(this.uiElement, newTree, {
       onBeforeElUpdated(fromEl, toEl) {
+        // please see key.startsWith("on") in element.ts
+        for (const prop of Object.keys(toEl)) {
+          if (!prop.startsWith("on")) continue;
+          const newFn = (toEl as any)[prop];
+          if (typeof newFn !== "function") continue;
+
+          const oldFn = (fromEl as any)[prop];
+          if (oldFn !== newFn) {
+            // overwrite the DOM-property (onclick, onmousedown, etc)
+            (fromEl as any)[prop.toLowerCase()] = newFn;
+            // update our stash too
+            (fromEl as any)[prop] = newFn;
+          }
+        }
+
         if (fromEl.matches("input, textarea, select")) {
           const from = fromEl as HTMLInputElement & HTMLOptionElement;
           const to = toEl as HTMLInputElement & HTMLOptionElement;

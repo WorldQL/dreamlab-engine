@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-explicit-any
 import type { ElementPropertyMap } from "./_jsx_codegen/element-property-map.generated.ts";
 import type { CSSProperties, ExtendedCSSProperties } from "./css.ts";
 import { SVG_NAMESPACE, SVG_TAG_NAMES, TagNames, TagType, VOID_TAG_NAMES } from "./tags.ts";
@@ -179,14 +180,21 @@ export function element<K extends TagNames>(
   if (dataset) Object.entries(dataset).forEach(([k, v]) => (el.dataset[k] = v));
 
   for (const [key, value_] of Object.entries(rest)) {
-    // deno-lint-ignore no-explicit-any
     const value = value_ as any;
 
     if (value === undefined || value === null) continue;
 
     if (key.startsWith("on") && typeof value === "function") {
-      const f = value.bind(el);
-      (el as BaseElement).addEventListener(key.substring(2).toLowerCase(), ev => f(ev));
+      // bind once
+      const handler = value.bind(el as any);
+
+      // 1) install it on the DOM-property so it replaces cleanly:
+      //    e.g. el.onclick, el.onmousedown, etc.
+      (el as any)[key.toLowerCase()] = handler;
+
+      // 2) stash the bound function itself so we can diff later:
+      // confused about the duplicate map? https://chatgpt.com/share/682ba2d5-eee4-8011-866b-91408eb6772c
+      (el as any)[key] = handler;
     } else if (key.startsWith("data-") && value) {
       if (typeof value === "string") el.setAttribute(key, value);
 
