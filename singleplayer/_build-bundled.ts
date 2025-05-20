@@ -1,3 +1,4 @@
+import * as encoding from "jsr:@std/encoding@^1";
 import * as fs from "jsr:@std/fs@^1";
 import * as path from "jsr:@std/path@^1";
 import * as html from "npm:html-to-ast";
@@ -94,6 +95,29 @@ async function bundleSingleFile(world: string) {
 
               contents += `import ${data.name} from "./${importPath}";\n`;
               contents += `globalThis.__dreamlab_behavior_map.set("${data.uri}", ${data.name});\n`;
+            }
+
+            const assetsDir = path.join(worldDir, "assets");
+            const assets = fs.walk(assetsDir, {
+              includeDirs: false,
+              followSymlinks: false,
+              includeSymlinks: false,
+            });
+
+            contents += "globalThis.__dreamlab_assets_map = new Map()\n";
+            for await (const assetEntry of assets) {
+              if (!assetEntry.isFile) continue;
+
+              const file = await Deno.open(assetEntry.path);
+              const compressed = await new Blob(
+                await Array.fromAsync<Uint8Array>(
+                  file.readable.pipeThrough(new CompressionStream("gzip")),
+                ),
+              ).arrayBuffer();
+
+              const resourcePath = "res://" + path.relative(worldDir, assetEntry.path);
+              const encoded = encoding.encodeBase64(compressed);
+              contents += `globalThis.__dreamlab_assets_map.set("${resourcePath}", "${encoded}");\n`;
             }
 
             contents += `\nawait import("./runtime/client-main.js");\n`;
