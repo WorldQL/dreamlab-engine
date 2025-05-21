@@ -1,4 +1,5 @@
 import * as encoding from "jsr:@std/encoding@^1";
+import { format as formatBytes } from "jsr:@std/fmt@^1/bytes";
 import * as fs from "jsr:@std/fs@^1";
 import * as path from "jsr:@std/path@^1";
 import * as html from "npm:html-to-ast";
@@ -156,7 +157,8 @@ async function bundleSingleFile(world: string) {
   const js = file.text;
   const css = await Deno.readTextFile("./web/runtime/client-main.css");
 
-  const html = `
+  const html =
+    `
   <!doctype html>
   <html lang="en">
     <head>
@@ -180,12 +182,16 @@ async function bundleSingleFile(world: string) {
       </script>
     </body>
   </html>
-  `.trim();
+  `.trim() + "\n";
+
+  const bytes = new TextEncoder().encode(html);
 
   const outDir = path.join("./web/bundled", world);
   await fs.ensureDir(outDir);
   const outPath = path.join(outDir, "index.html");
-  await Deno.writeTextFile(outPath, html + "\n");
+  await Deno.writeFile(outPath, bytes);
+
+  return { path: outPath, size: bytes.byteLength };
 }
 
 if (import.meta.main) {
@@ -207,5 +213,6 @@ if (import.meta.main) {
 
   // bundle everything
   console.log("packaging to single html file");
-  await bundleSingleFile(world);
+  const out = await bundleSingleFile(world);
+  console.log(`written to ./${out.path} (${formatBytes(out.size)})`);
 }
