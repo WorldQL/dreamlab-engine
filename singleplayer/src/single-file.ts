@@ -5,6 +5,7 @@ import type {
   GameOptions,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
+import { Assets } from "@dreamlab/vendor/pixi.ts";
 
 // @ts-expect-error: injected by esbuild
 const single = (DREAMLAB_SINGLE_FILE as boolean | undefined) ?? false;
@@ -13,18 +14,36 @@ const single = (DREAMLAB_SINGLE_FILE as boolean | undefined) ?? false;
 const project = globalThis.__dreamlab_project as unknown;
 // @ts-expect-error: injected by esbuild
 const behaviors = globalThis.__dreamlab_behavior_map as Map<string, BehaviorConstructor>;
+// @ts-expect-error: injected by esbuild
+const assets = globalThis.__dreamlab_assets_map as Map<string, string>;
 
 type FetchFn = NonNullable<GameOptions["fetch"]>;
 export const createFetch = (): FetchFn | undefined => {
   if (!single) return undefined;
 
-  const fn: FetchFn = ({ uri, resolved, init }): Promise<Response> => {
+  // we need to disable pixi worker decoding to hook the fetch call
+  // this has a perf hit but afaik its unavoidable without patching the worker code
+  Assets.setPreferences({ preferWorkers: false });
+
+  // patch globalThis.fetch to use the one on game (which we are about to override) instead
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = (url, init): Promise<Response> => {
+    // @ts-expect-error: global
+    const game: ClientGame = globalThis.game;
+    return game.fetch(url.toString(), init);
+  };
+
+  const fn: FetchFn = async ({ resolved, init, game }): Promise<Response> => {
+    // unresolve the uri
+    const root = game.resolveResource("res://");
+    const uri = resolved.startsWith(root) ? `res://${resolved.slice(root.length)}` : resolved;
+
     if (uri === "res://project.json") {
       const resp = new Response(JSON.stringify(project), {
         headers: { "content-type": "application/json" },
       });
 
-      return Promise.resolve(resp);
+      return resp;
     }
 
     if (uri === "res://_dreamlab_behaviors.json") {
@@ -32,12 +51,21 @@ export const createFetch = (): FetchFn | undefined => {
         headers: { "content-type": "application/json" },
       });
 
-      return Promise.resolve(resp);
+      return resp;
     }
 
-    // TODO: hook asset loading
+    if (uri.startsWith("res://assets/") && assets.has(uri)) {
+      const b64c = assets.get(uri)!;
+      const datauri = `data:application/octet-binary;base64,${b64c}`;
 
-    return fetch(resolved, init);
+      const resp = await fetch(datauri);
+      const stream = resp.body!.pipeThrough(new DecompressionStream("gzip"));
+
+      // TODO: determine mime type
+      return new Response(stream);
+    }
+
+    return originalFetch(resolved, init);
   };
 
   return fn;

@@ -48,7 +48,12 @@ export interface GameOptions {
   instanceId: string;
   worldId: string;
 
-  fetch?: (opts: { uri: string; resolved: string; init?: RequestInit }) => Promise<Response>;
+  fetch?: (opts: {
+    game: Game;
+    uri: string;
+    resolved: string;
+    init?: RequestInit;
+  }) => Promise<Response>;
 }
 
 export interface ClientGameOptions extends GameOptions {
@@ -161,7 +166,12 @@ export abstract class BaseGame implements ISignalHandler {
   /** Fetches a resource (supports res:// and cloud:// URIs) */
   fetch(uri: string, init?: RequestInit): Promise<Response> {
     if (this.#fetch) {
-      return this.#fetch({ uri, init, resolved: this.resolveResource(uri) });
+      return this.#fetch({
+        uri,
+        init,
+        resolved: this.resolveResource(uri),
+        game: this as unknown as Game,
+      });
     }
 
     return fetch(this.resolveResource(uri), init);
