@@ -34,7 +34,7 @@ export abstract class SyncedObject<T> {
   constructor(
     protected registry: SyncedObjectRegistry,
     public field: string,
-    container: SyncedObjectContainer,
+    protected container: SyncedObjectContainer,
     access: Accessor<SyncedObjectContainer, T>,
   ) {
     this.containerId = container.ref;
