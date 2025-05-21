@@ -179,7 +179,9 @@ const wasm = new Uint8Array(buf);
 const wasmUrl = "data:application/octet-binary;base64,${b64c}";
 const resp = await fetch(wasmUrl);
 const stream = resp.body.pipeThrough(new DecompressionStream("gzip"));
-const buf = await new Blob(await Array.fromAsync(stream)).arrayBuffer();
+const chunks = [];
+for await (const chunk of stream) { chunks.push(chunk); }
+const buf = await new Blob(chunks).arrayBuffer();
 const wasm = new Uint8Array(buf);
 `.trim();
 
