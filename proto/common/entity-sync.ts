@@ -2,6 +2,7 @@ import {
   Behavior,
   BehaviorConstructor,
   BehaviorDefinition,
+  ConnectionId,
   Entity,
   EntityConstructor,
   EntityDefinition,
@@ -15,7 +16,7 @@ import {
   BehaviorDefinitionSchemaType,
   EntityDefinitionSchema,
   EntityDefinitionSchemaType,
-  TransformSchema,
+  TransformSchemaType,
   ValuesSchemaType,
 } from "../datamodel.ts";
 
@@ -57,9 +58,72 @@ export const convertEntityDefinition = async (
   };
 };
 
-export const serializeTransform = (
-  transform: TransformOptions,
-): z.infer<typeof TransformSchema> => {
+const netSpawnEntityInert = (
+  parent: Entity,
+  from: ConnectionId,
+  def: EntityDefinitionSchemaType,
+  convertedBehaviors: BehaviorDefinition[],
+): Entity => {
+  const entity = parent[internal.entitySpawn](
+    {
+      type: Entity.getEntityType(def.type),
+      name: def.name,
+      enabled: def.enabled,
+      values: def.values,
+      transform: def.transform,
+      authority: def.authority,
+    },
+    { inert: true, from },
+  );
+
+  for (const b of convertedBehaviors) {
+    entity.behaviors.push(
+      new b.type({
+        game: entity.game,
+        entity,
+        ref: b._ref,
+        sync: b.sync,
+        values: b.values,
+      }),
+    );
+    // no need to run implicitSetup or setup() because we're inert here
+  }
+
+  return entity;
+};
+
+export const netSpawnEntity = async (
+  game: Game,
+  from: ConnectionId,
+  def: EntityDefinitionSchemaType,
+): Promise<Entity> => {
+  const inner = async (def: EntityDefinitionSchemaType, parent: Entity): Promise<Entity[]> => {
+    const behaviors = await Promise.all(
+      def.behaviors?.map(b => convertBehaviorDefinition(game, b)) ?? [],
+    );
+    const entity = netSpawnEntityInert(parent, from, def, behaviors);
+
+    const entities = [entity];
+    for (const child of def.children ?? []) {
+      const childEntities = await inner(child, entity);
+      entities.push(...childEntities);
+    }
+
+    return entities;
+  };
+
+  const parent = game.entities.lookupByRef(def.parent);
+  if (!parent)
+    throw new Error("entity sync: tried to spawn entity underneath non-existent parent");
+
+  const entities = await inner(def, parent);
+  entities.forEach(e => e[internal.entitySpawnFinalize1]());
+  entities.forEach(e => e[internal.entitySpawnFinalize2]());
+
+  return entities[0]!;
+};
+
+export const serializeTransform = (transform: TransformOptions): TransformSchemaType => {
   return {
     position: transform.position
       ? { x: transform.position.x ?? 0, y: transform.position.y ?? 0 }
@@ -73,64 +137,18 @@ export const serializeTransform = (
 };
 
 export const serializeBehaviorDefinition = (
-  game: Game,
-  def: BehaviorDefinition,
+  _game: Game,
+  _def: BehaviorDefinition,
 ): z.infer<typeof BehaviorDefinitionSchema> => {
-  const ref = def._ref;
-  if (ref === undefined)
-    throw new Error("attempted to serialize BehaviorDefinition with undefined ref");
-
-  const script = game[internal.behaviorLoader].lookup(def.type);
-  if (script === undefined)
-    throw new Error("attempted to serialize BehaviorDefinition with unknown script location");
-
-  return {
-    ref,
-    script,
-    values: def.values ?? {},
-    sync: {}, // TODO
-  };
+  throw new Error("used legacy behavior def netcode");
 };
 
 export const serializeEntityDefinition = (
-  game: Game,
-  def: EntityDefinition,
-  parentRef: string,
+  _game: Game,
+  _def: EntityDefinition,
+  _parentRef: string,
 ): z.infer<typeof EntityDefinitionSchema> => {
-  const ref = def._ref;
-  if (ref === undefined)
-    throw new Error("Attempted to serialize EntityDefinition with undefined ref");
-
-  const children = def.children
-    ? def.children
-        .values()
-        .map(child => serializeEntityDefinition(game, child, ref))
-        .toArray()
-    : undefined;
-
-  const behaviors = def.behaviors
-    ? def.behaviors.map(behavior => serializeBehaviorDefinition(game, behavior))
-    : undefined;
-
-  return {
-    type: Entity.getTypeName(def.type),
-    name: def.name,
-    enabled: def.enabled,
-    values: def.values,
-    transform: def.transform ? serializeTransform(def.transform) : undefined,
-    authority: def.authority,
-    behaviors,
-    children,
-    ref,
-    parent: parentRef,
-  };
-};
-
-export const getAllEntityRefs = (def: EntityDefinition, refs?: Set<string>): Set<string> => {
-  const refSet = refs ?? new Set<string>();
-  if (def._ref) refSet.add(def._ref);
-  def.children?.forEach(c => getAllEntityRefs(c, refSet));
-  return refSet;
+  throw new Error("used legacy entity def netcode");
 };
 
 export const createValuesDefinition = (container: Entity | Behavior): ValuesSchemaType => {

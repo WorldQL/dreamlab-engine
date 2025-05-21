@@ -40,6 +40,7 @@ export const TransformSchema = z.object({
   scale: Vector2Schema.default({ x: 1, y: 1 }),
   z: z.number().default(0),
 });
+export type TransformSchemaType = z.infer<typeof TransformSchema>;
 
 // we need to do a little ceremony since EntityDefinitionSchema is recursively defined
 const BaseEntityDefinitionSchema = z.object({
