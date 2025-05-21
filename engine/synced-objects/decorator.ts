@@ -1,8 +1,8 @@
 // TODO: everything
 
 import type { Behavior, Entity, JsonValue } from "@dreamlab/engine";
+import { inferSyncedObjectType } from "./inference.ts";
 import { AnyAccessor, SyncedObjectInfo } from "./object.ts";
-import { SyncedArray, SyncedDeepObject, SyncedUint8Array } from "./objects/mod.ts";
 import type {
   SyncedObjectConstructor,
   SyncedObjectContainer,
@@ -22,14 +22,6 @@ interface DecoratedSyncedObjectDescriptor {
 
 const decoratedSyncedObjectsField = Symbol();
 
-function inferType(value: SyncedObjectTarget): SyncedObjectConstructor {
-  if (value instanceof Uint8Array) return SyncedUint8Array;
-  if (Array.isArray(value)) return SyncedArray;
-  if (typeof value === "object") return SyncedDeepObject;
-
-  throw new Error("unknown type for value! " + JSON.stringify(value));
-}
-
 export function sync<Container extends Entity | Behavior, Field extends SyncedObjectTarget>(
   opts: {
     type?: SyncedObjectConstructor; // TODO: type markers (registry lookup)
@@ -48,7 +40,7 @@ export function sync<Container extends Entity | Behavior, Field extends SyncedOb
 
       let type = opts.type;
       if (!type) {
-        type = inferType(value);
+        type = inferSyncedObjectType(value);
       }
 
       let decoratedObjects: DecoratedSyncedObjectDescriptor[];

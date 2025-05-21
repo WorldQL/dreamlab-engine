@@ -100,6 +100,15 @@ export class SyncedDeepObject<T extends JsonObject>
 
     const proxy = this.#makeProxy();
     this.set(proxy);
+
+    Object.defineProperty(this.container, this.field, {
+      get: () => proxy,
+      set: _v => {
+        throw new Error(
+          "@sync objects are not overwritable! You can only mutate the contents.",
+        );
+      },
+    });
   }
 
   receive(from: ConnectionId, clock: number, op: SyncedObjectOperation): boolean {
