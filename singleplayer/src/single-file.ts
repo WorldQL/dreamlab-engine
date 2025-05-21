@@ -75,9 +75,12 @@ export const patchBehaviorLoader = (game: ClientGame) => {
   if (!single) return;
 
   const loader = game[internal.behaviorLoader];
-  const loadScriptFromSource = loader.loadScriptFromSource.bind(loader);
 
-  const patched: BehaviorLoader["loadScriptFromSource"] = (script, sourceURI) => {
+  const loadScriptFromSource = loader.loadScriptFromSource.bind(loader);
+  const patchedLoadScriptFromSource: BehaviorLoader["loadScriptFromSource"] = (
+    script,
+    sourceURI,
+  ) => {
     const ctor = behaviors.get(script);
     if (ctor) return Promise.resolve(ctor);
 
@@ -85,5 +88,21 @@ export const patchBehaviorLoader = (game: ClientGame) => {
     return loadScriptFromSource(script, sourceURI);
   };
 
-  loader.loadScriptFromSource = patched.bind(loader);
+  loader.loadScriptFromSource = patchedLoadScriptFromSource.bind(loader);
+
+  const lookupMap = new Map<BehaviorConstructor, string>();
+  for (const [uri, behavior] of behaviors) {
+    lookupMap.set(behavior, uri);
+  }
+
+  const lookup = loader.lookup.bind(loader);
+  const patchedLookup: BehaviorLoader["lookup"] = type => {
+    const res = lookupMap.get(type);
+    if (res) return res;
+
+    // fallback to original impl
+    return lookup(type);
+  };
+
+  loader.lookup = patchedLookup.bind(loader);
 };
