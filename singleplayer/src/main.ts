@@ -36,9 +36,11 @@ const game = new ClientGame({
   fetch: createFetch(),
 });
 patchBehaviorLoader(game);
-if (!IS_SINGLE_FILE) {
+if (IS_SINGLE_FILE) {
   // window.location.href is incorrect in playable ad contexts
   // its only used for resolving res:// URLs which we hook anyway
+  game.worldScriptBaseURL = "res:/";
+} else {
   game.worldScriptBaseURL = new URL(`./worlds/${worldId}/`, window.location.href).toString();
 }
 Object.defineProperty(globalThis, "game", { value: game });
