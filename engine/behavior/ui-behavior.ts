@@ -71,6 +71,7 @@ export abstract class UIBehavior extends Behavior {
     /* ---- subsequent renders: diff-and-patch ---- */
     morphdom(this.uiElement, newTree, {
       onBeforeElUpdated(fromEl, toEl) {
+        // #region listener handling
         // please see key.startsWith("on") in element.ts
         for (const prop of Object.keys(toEl)) {
           if (!prop.startsWith("on")) continue;
@@ -85,29 +86,46 @@ export abstract class UIBehavior extends Behavior {
             (fromEl as any)[prop] = newFn;
           }
         }
+        // #endregion
 
+        // #region input handling
         if (fromEl.matches("input, textarea, select")) {
-          const from = fromEl as HTMLInputElement & HTMLOptionElement;
-          const to = toEl as HTMLInputElement & HTMLOptionElement;
+          const from = fromEl as HTMLInputElement;
+          const to = toEl as HTMLInputElement;
+
+          // if you want an uncontrolled checkbox or radio or other input.
+          if (to.dataset.uncontrolled) {
+            to.value = from.value;
+            to.checked = from.checked;
+            return true;
+          }
+
+          // required to make select boxes not get reset on rerender.
+          // also allows for controlling selected option with data-value
+          if (to instanceof HTMLSelectElement) {
+            // to.value is always the first <option> child because it's getting reinitialized and setting
+            // the "value" attribute in html doesn't actually work for <select>. So we must use data-value instead.
+            const dataValue = to.dataset.value;
+            to.value = from.value; // required because the old dom node has the actual user select.
+
+            // select element manually if data-value is passed.
+            const dataSelected = to.querySelector(`option[value="${dataValue}"]`);
+            if (dataSelected instanceof HTMLOptionElement) {
+              dataSelected.selected = true;
+              return true;
+            }
+          }
 
           // allow controlled input components but also keep value if uncontrolled
           // basically if the new dom defines value we throw away user's input.
-          if (to.value) return true;
-          if (to.checked) return true;
-          if (to.selected) return true;
+          if (to.value) {
+            return true;
+          }
 
           to.value = from.value;
-
-          // Checkbox / radio “checked”
-          if ("checked" in fromEl) {
-            to.checked = from.checked;
-          }
-
-          // <option>/<select> “selected”
-          if ("selected" in fromEl) {
-            to.selected = from.selected;
-          }
         }
+        // #endregion
+
         return true; // keep patching the rest of the element
       },
     });
