@@ -9,6 +9,7 @@ import { Assets } from "@dreamlab/vendor/pixi.ts";
 
 // @ts-expect-error: injected by esbuild
 const single = (DREAMLAB_SINGLE_FILE as boolean | undefined) ?? false;
+export { single as IS_SINGLE_FILE };
 
 // @ts-expect-error: injected by esbuild
 const project = globalThis.__dreamlab_project as unknown;

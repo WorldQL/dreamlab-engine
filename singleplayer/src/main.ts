@@ -10,7 +10,7 @@ import * as internal from "@dreamlab/engine/internal";
 import { getSceneFromProject, loadSceneDefinition, ProjectSchema } from "@dreamlab/scene";
 import { TextureStyle } from "@dreamlab/vendor/pixi.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
-import { createFetch, patchBehaviorLoader } from "./single-file.ts";
+import { createFetch, IS_SINGLE_FILE, patchBehaviorLoader } from "./single-file.ts";
 import { SingleplayerKv } from "./singleplayer-kv.ts";
 import { SingleplayerNetworking } from "./singleplayer-networking.ts";
 
@@ -36,7 +36,11 @@ const game = new ClientGame({
   fetch: createFetch(),
 });
 patchBehaviorLoader(game);
-game.worldScriptBaseURL = new URL(`./worlds/${worldId}/`, window.location.href).toString();
+if (!IS_SINGLE_FILE) {
+  // window.location.href is incorrect in playable ad contexts
+  // its only used for resolving res:// URLs which we hook anyway
+  game.worldScriptBaseURL = new URL(`./worlds/${worldId}/`, window.location.href).toString();
+}
 Object.defineProperty(globalThis, "game", { value: game });
 
 const loadingElem = document.querySelector("#loading")! as HTMLElement;
