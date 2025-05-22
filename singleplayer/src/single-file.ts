@@ -7,8 +7,13 @@ import type {
 import * as internal from "@dreamlab/engine/internal";
 import { Assets } from "@dreamlab/vendor/pixi.ts";
 
-// @ts-expect-error: injected by esbuild
-const single = (DREAMLAB_SINGLE_FILE as boolean | undefined) ?? false;
+let single = false;
+try {
+  // @ts-expect-error: injected by esbuild
+   single = (DREAMLAB_SINGLE_FILE as boolean | undefined) ?? false;
+} catch {
+  // ignore;
+}
 export { single as IS_SINGLE_FILE };
 
 // @ts-expect-error: injected by esbuild
