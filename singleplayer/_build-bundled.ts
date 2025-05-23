@@ -159,30 +159,21 @@ async function bundleSingleFile(world: string) {
 
   const html =
     `
-  <!doctype html>
-  <html lang="en">
-    <head>
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>Dreamlab</title>
-
-      <style>
-  ${css}
-      </style>
-    </head>
-    <body>
-      <div id="loading">Loading...</div>
-
-      <main id="layout">
-        <div id="viewport"></div>
-      </main>
-
-      <script type="module">
-  ${js}
-      </script>
-    </body>
-  </html>
-  `.trim() + "\n";
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dreamlab</title>
+    <style>${css}</style>
+  </head>
+  <body>
+    <div id="loading">Loading...</div>
+    <main id="layout"><div id="viewport"></div></main>
+    <script type="module">${js}</script>
+  </body>
+</html>
+`.trim() + "\n";
 
   const bytes = new TextEncoder().encode(html);
 
