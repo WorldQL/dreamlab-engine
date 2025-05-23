@@ -29,7 +29,13 @@ export async function watchForEditChanges(session: GameSession, subdir: string) 
 
     for (const touchedPath of touchedPaths) {
       const relativePath = path.relative(instance.info.worldDirectory, touchedPath);
-      const isBehavior = await fileIsProbablyBehaviorScript(touchedPath);
+      let isBehavior = false;
+      try {
+        isBehavior = await fileIsProbablyBehaviorScript(touchedPath);
+      } catch {
+        // File might have been deleted, so it's not a behavior script
+        isBehavior = false;
+      }
       session.broadcastPacket({
         t: "ScriptEdited",
         script_location: relativePath,
