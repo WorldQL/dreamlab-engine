@@ -1,5 +1,6 @@
 import { createId } from "@dreamlab/vendor/nanoid.ts";
 import type { ConditionalExcept } from "@dreamlab/vendor/type-fest.ts";
+import deepEqual from "npm:fast-deep-equal";
 
 import type {
   AdapterTypeTag,
@@ -533,6 +534,12 @@ export abstract class Entity implements ISignalHandler {
       const serializableValue = value.adapter
         ? value.adapter.convertToPrimitive(value.value)
         : structuredClone(value.value);
+
+      // elide default values
+      // TODO: deep equality check
+      const isDefault = deepEqual(serializableValue, value.originalValue);
+      if (isDefault) continue;
+
       // @ts-expect-error can't prove that key is keyof this because the value map is keyed by string
       entityValues[key] = serializableValue;
     }
@@ -837,6 +844,9 @@ export abstract class Entity implements ISignalHandler {
       this.game.values,
       identifier,
       defaultValue,
+      adapter
+        ? adapter.convertToPrimitive(adapter.convertFromPrimitive(originalValue))
+        : originalValue,
       opts.type ?? (inferValueTypeTag(defaultValue) as ValueTypeTag<E[typeof prop]>),
       opts.description ?? prop, // TODO: autogenerate description (fix casing & spacing)
       adapter,
