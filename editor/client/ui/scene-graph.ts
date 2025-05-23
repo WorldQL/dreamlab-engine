@@ -59,6 +59,20 @@ export class SceneGraph implements InspectorUIWidget {
     const treeRoot = elem("div", { id: "scene-graph-tree" });
     this.#section.append(treeRoot);
 
+    this.#section.setAttribute("tabindex", "0");
+    this.#section.addEventListener("keydown", ev => {
+      if (ev.key === "F2") {
+        if (document.activeElement instanceof HTMLInputElement) return;
+
+        ev.preventDefault();
+        const [ent] = ui.selectedEntity.entities;
+        if (!ent) return;
+        if (ent instanceof EditorRootFacadeEntity || ent instanceof Root) return;
+        const entryEl = this.entryElementMap.get(ent.ref);
+        if (entryEl) this.triggerRename(ent, entryEl);
+      }
+    });
+
     this.handleEntitySelection(ui, treeRoot);
 
     if (ui.editMode) {
@@ -302,7 +316,6 @@ export class SceneGraph implements InspectorUIWidget {
     });
 
     this.handleEntryDragAndDrop(ui, entity, entryElement);
-    this.handleEntryRename(entity, entryElement);
     this.handleEntryContextMenu(ui, entity, entryElement);
 
     parent.append(entryElement);
@@ -314,19 +327,6 @@ export class SceneGraph implements InspectorUIWidget {
       }
       this.sortEntries(entryElement);
     }
-  }
-
-  handleEntryRename(entity: Entity, entryElement: HTMLElement) {
-    if (entity instanceof EditorRootFacadeEntity || entity instanceof Root) return;
-
-    entryElement.addEventListener("keydown", event => {
-      if (event.key === "F2") {
-        if (!eventTargetsEntry(event, entryElement)) return;
-        if (entryElement.querySelector(":scope > summary input")) return;
-        event.preventDefault();
-        this.triggerRename(entity, entryElement);
-      }
-    });
   }
 
   triggerRename(entity: Entity, entryElement: HTMLElement) {

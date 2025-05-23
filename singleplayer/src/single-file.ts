@@ -10,7 +10,7 @@ import { Assets } from "@dreamlab/vendor/pixi.ts";
 let single = false;
 try {
   // @ts-expect-error: injected by esbuild
-   single = (DREAMLAB_SINGLE_FILE as boolean | undefined) ?? false;
+  single = (DREAMLAB_SINGLE_FILE as boolean | undefined) ?? false;
 } catch {
   // ignore;
 }
