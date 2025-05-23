@@ -209,6 +209,10 @@ if (import.meta.main) {
 
   // build world
   console.log(`building world: ${world}`);
+  await new Deno.Command("deno", {
+    args: ["task", "clone", world],
+    cwd: "../multiplayer",
+  }).output();
   await new Deno.Command("deno", { args: ["task", "build-world", world] }).output();
 
   // bundle everything
