@@ -6,6 +6,7 @@ import { startInstanceCollector } from "./instance-collector.ts";
 import { createInstance, GameInstance } from "./instance.ts";
 import { report } from "./metrics.ts";
 import { setupWeb } from "./web/setup.ts";
+import { fetchWorld } from "./world-fetch.ts";
 
 addEventListener("unhandledrejection", event => {
   event.preventDefault();
@@ -60,7 +61,23 @@ try {
   // not supported on windows
 }
 
-const args = cli.parseArgs(Deno.args, { string: ["spawn"], boolean: ["play-mode"] });
+const args = cli.parseArgs(Deno.args, { string: ["spawn", "clone"], boolean: ["play-mode"] });
+console.log(args);
+
+if (args.clone !== undefined) {
+  const world = args.clone;
+
+  instance = createInstance({
+    instanceId: NIL_UUID,
+    worldId: world,
+    worldDirectory: `${CONFIG.WORLDS_DIRECTORY}/${world}`,
+    editMode: false,
+  });
+
+  await fetchWorld(instance);
+
+  Deno.exit(0);
+}
 
 startInstanceCollector();
 

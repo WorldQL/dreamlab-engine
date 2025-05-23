@@ -4,6 +4,7 @@
     "edit-host:start": "deno run -c ./pre-exec/deno.host.json -A ./server-host/main.ts",
     "play-host:start": "deno run -c ./pre-exec/deno.host.json -A ./play-host/main.ts",
     "start": "deno task prepare-pre-exec && deno task edit-host:start",
+    "clone": "deno task prepare-pre-exec && deno task edit-host:start --clone",
   },
   // NOTE: any imports not in the "@dreamlab/" namespace are not present
   // in server-common or server-runtime environments.
