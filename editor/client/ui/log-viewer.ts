@@ -119,7 +119,7 @@ export class LogViewer {
 
     this.container.append(this.#section);
 
-    if (!globalThis.env.DREAMLAB_EDITOR_DISABLE_CONSOLE_HOOK) {
+    if (!localStorage.getItem('dreamlab_disable_console_hook')) {
       this.injectConsoleWrapper();
     }
   }
