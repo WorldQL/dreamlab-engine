@@ -77,7 +77,7 @@ export class InspectorUI {
     setupKeyboardShortcuts(this.game, this.selectedEntity, editMode);
 
     conn.registerPacketHandler("ScriptEdited", async packet => {
-      console.log(packet);
+      // console.log(packet);
 
       if (packet.script_location.startsWith("instructions/") && packet.isFromFileSystem) {
         try {
@@ -130,10 +130,10 @@ export class InspectorUI {
 
         if (doSendRefresh) {
           // console.log("Changes detected from filesystem, updating code editor...")
-          console.log(
-            "sending message to code-editor to update file: ",
-            packet.script_location,
-          );
+          // console.log(
+          //   "sending message to code-editor to update file: ",
+          //   packet.script_location,
+          // );
           window.parent.postMessage(
             { action: "reloadFile", filename: packet.script_location },
             "*",
