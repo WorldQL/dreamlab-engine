@@ -71,8 +71,21 @@ export class AudioSource extends Entity {
       this.#updatePosition();
     });
 
+    let playingBeforePause = false;
+    const pauseListener = (paused: boolean) => {
+      if (paused) {
+        playingBeforePause =
+          (this.#howl?.playing() && this.#howl.seek() < this.#howl.duration()) ?? false;
+        this.#howl?.pause();
+      } else if (playingBeforePause) {
+        this.#howl?.play();
+      }
+    };
+    this.game.paused.onChanged(pauseListener);
+
     this.on(EntityDestroyed, () => {
       this.#howl?.unload();
+      this.game.paused.removeChangeListener(pauseListener);
     });
   }
 
