@@ -5,7 +5,7 @@ import "./css/singleplayer.css";
 import "../../build-system/live-reload.js";
 import "../../client/src/_env.ts";
 
-import { ClientGame, GameStatus, GameStatusChange } from "@dreamlab/engine";
+import { ClientGame, GameShutdown, GameStatus, GameStatusChange } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { getSceneFromProject, loadSceneDefinition, ProjectSchema } from "@dreamlab/scene";
 import { TextureStyle } from "@dreamlab/vendor/pixi.ts";
@@ -70,6 +70,21 @@ game[internal.behaviorLoader].submitPreloadInfo([...Object.values(behaviorPreloa
 /* await Promise.allSettled(
   Object.values(behaviorPreloadInfo).map(b => game.loadBehavior(b.uri)),
 ); */
+
+try {
+  const resp = await game.fetch("res://custom.css");
+  if (resp.ok) {
+    const style = document.createElement("style");
+    style.id = "dreamlab-custom-css";
+    style.append(document.createTextNode(await resp.text()));
+    document.head.append(style);
+
+    game.on(GameShutdown, () => style.remove());
+  }
+} catch (e) {
+  console.error(new Error("failed to load custom css", { cause: e }));
+  // ignore
+}
 
 game.setStatus(GameStatus.Loading, "Fetching project");
 const project = await game

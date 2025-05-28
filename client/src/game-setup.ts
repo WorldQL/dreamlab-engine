@@ -1,4 +1,4 @@
-import { Camera, ClientGame, Entity, GameStatus } from "@dreamlab/engine";
+import { Camera, ClientGame, Entity, GameShutdown, GameStatus } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { ReceivedInitialNetworkSnapshot } from "@dreamlab/proto/common/signals.ts";
 import { convertEntityDefinition, getSceneFromProject, ProjectSchema } from "@dreamlab/scene";
@@ -32,6 +32,22 @@ export const setupGame = async (
   /* await Promise.allSettled(
     Object.values(behaviorPreloadInfo).map(b => game.loadBehavior(b.uri)),
   ); */
+
+  try {
+    const resp = await game.fetch("res://custom.css");
+    if (resp.ok) {
+      const style = document.createElement("style");
+      style.id = "dreamlab-custom-css";
+      style.dataset.mode = editMode ? "edit" : "play";
+      style.append(document.createTextNode(await resp.text()));
+      document.head.append(style);
+
+      game.on(GameShutdown, () => style.remove());
+    }
+  } catch (e) {
+    console.error(new Error("failed to load custom css", { cause: e }));
+    // ignore
+  }
 
   const networkSnapshotPromise = new Promise<void>((resolve, _reject) => {
     game.on(ReceivedInitialNetworkSnapshot, () => {
