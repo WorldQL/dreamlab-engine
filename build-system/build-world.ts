@@ -70,6 +70,14 @@ export const prepareBundleWorld = async (
         },
         watch: opts?.watch ?? false,
       }),
+      esbuildCopy({
+        resolveFrom: "cwd",
+        assets: {
+          from: path.join(worldOpts.dir, "custom.css"),
+          to: path.join(worldOpts.dir, out, "custom.css"),
+        },
+        watch: opts?.watch ?? false,
+      }),
       {
         name: "bundle-project-json",
         setup: async (_build: esbuild.PluginBuild) => {
