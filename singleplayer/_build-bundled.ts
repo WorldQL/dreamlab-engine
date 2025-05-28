@@ -101,27 +101,33 @@ async function bundleSingleFile(world: string) {
 
             const assetsDir = path.join(worldDir, "assets");
             if (await fs.exists(assetsDir)) {
-            const assets = fs.walk(assetsDir, {
-              includeDirs: false,
-              followSymlinks: false,
-              includeSymlinks: false,
-            });
+              const assets = fs.walk(assetsDir, {
+                includeDirs: false,
+                followSymlinks: false,
+                includeSymlinks: false,
+              });
 
-            contents += "globalThis.__dreamlab_assets_map = new Map()\n";
-            for await (const assetEntry of assets) {
-              if (!assetEntry.isFile) continue;
+              contents += "globalThis.__dreamlab_assets_map = new Map()\n";
+              for await (const assetEntry of assets) {
+                if (!assetEntry.isFile) continue;
 
-              const file = await Deno.open(assetEntry.path);
-              const compressed = await new Blob(
-                await Array.fromAsync<Uint8Array>(
-                  file.readable.pipeThrough(new CompressionStream("gzip")),
-                ),
-              ).arrayBuffer();
+                const file = await Deno.open(assetEntry.path);
+                const compressed = await new Blob(
+                  await Array.fromAsync<Uint8Array>(
+                    file.readable.pipeThrough(new CompressionStream("gzip")),
+                  ),
+                ).arrayBuffer();
 
-              const resourcePath = "res://" + path.relative(worldDir, assetEntry.path);
-              const encoded = encoding.encodeBase64(compressed);
-              contents += `globalThis.__dreamlab_assets_map.set("${resourcePath}", "${encoded}");\n`;
+                const resourcePath = "res://" + path.relative(worldDir, assetEntry.path);
+                const encoded = encoding.encodeBase64(compressed);
+                contents += `globalThis.__dreamlab_assets_map.set("${resourcePath}", "${encoded}");\n`;
               }
+            }
+
+            const customCss = path.join(worldDir, "custom.css");
+            if (await fs.exists(customCss)) {
+              const content = await Deno.readTextFile(customCss);
+              contents += `globalThis.__dreamlab_custom_css = ${JSON.stringify(content)};\n`;
             }
 
             contents += `\nawait import("./runtime/client-main.js");\n`;

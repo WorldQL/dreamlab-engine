@@ -22,6 +22,8 @@ const project = globalThis.__dreamlab_project as unknown;
 const behaviors = globalThis.__dreamlab_behavior_map as Map<string, BehaviorConstructor>;
 // @ts-expect-error: injected by esbuild
 const assets = globalThis.__dreamlab_assets_map as Map<string, string>;
+// @ts-expect-error: injected by esbuild
+const css = globalThis.__dreamlab_custom_css as string | undefined;
 
 type FetchFn = NonNullable<GameOptions["fetch"]>;
 export const createFetch = (): FetchFn | undefined => {
@@ -55,6 +57,14 @@ export const createFetch = (): FetchFn | undefined => {
     if (uri === "res://_dreamlab_behaviors.json") {
       const resp = new Response(JSON.stringify(behaviors), {
         headers: { "content-type": "application/json" },
+      });
+
+      return resp;
+    }
+
+    if (uri === "res://custom.css") {
+      const resp = new Response(css, {
+        headers: { "content-type": "text/css" },
       });
 
       return resp;
