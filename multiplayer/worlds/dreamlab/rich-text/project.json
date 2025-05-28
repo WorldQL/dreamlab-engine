@@ -1,0 +1,42 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "engine_revision": "2024-08.001"
+  },
+  "scenes": {
+    "main": {
+      "registration": [],
+      "world": [
+        {
+          "ref": "ent_CG9NMWZjjp",
+          "type": "@core/RichText",
+          "name": "RichText",
+          "enabled": true,
+          "transform": {
+            "scale": {
+              "x": 0.8,
+              "y": 0.8
+            }
+          },
+          "values": {
+            "fontFamily": "Space Mono",
+            "fontSize": 180
+          }
+        }
+      ],
+      "local": [
+        {
+          "ref": "ent_nNdF4PuYYG",
+          "type": "@core/Camera",
+          "name": "Camera",
+          "enabled": true,
+          "values": {
+            "active": true
+          }
+        }
+      ],
+      "server": [],
+      "prefabs": []
+    }
+  }
+}
