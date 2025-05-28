@@ -12,6 +12,7 @@ import { handleCustomMessages } from "./custom-messages.ts";
 import { handleProtractedEntitySpawnOperations } from "./entity-spawn-op-rx.ts";
 import { handleIncomingEntityUpdates } from "./entity-sync-rx.ts";
 import { handleOutgoingEntityUpdates } from "./entity-sync-tx.ts";
+import { handlePing } from "./ping.ts";
 import { handlePlayerJoins } from "./player-joins.ts";
 
 export type ClientPacketHandler<T extends ServerPacket["t"] = ServerPacket["t"]> = (
@@ -74,6 +75,7 @@ export class ClientConnection {
     handleIncomingEntityUpdates(this, game);
     handleOutgoingEntityUpdates(this, game);
     handleProtractedEntitySpawnOperations(this, game);
+    handlePing(this, game);
     // TODO: handle a bunch of packets
   }
 

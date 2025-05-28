@@ -1,6 +1,6 @@
 import { Transform } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
-import { convertEntityDefinition } from "@dreamlab/proto/common/entity-sync.ts";
+import { netSpawnEntity } from "@dreamlab/proto/common/entity-sync.ts";
 import { ClientNetworkSetupRoutine } from "./net-connection.ts";
 
 export const handleIncomingEntityUpdates: ClientNetworkSetupRoutine = (conn, game) => {
@@ -8,6 +8,8 @@ export const handleIncomingEntityUpdates: ClientNetworkSetupRoutine = (conn, gam
 
   conn.registerPacketHandler("SpawnEntities", packet => {
     if (packet.from === game.network.self) return;
+
+    const promises = [];
 
     for (const def of packet.definitions) {
       if (inFlightEntities.has(def.ref))
@@ -24,14 +26,22 @@ export const handleIncomingEntityUpdates: ClientNetworkSetupRoutine = (conn, gam
             `entity sync: tried to spawn underneath a non-existent entity! (${parentRef})`,
           );
 
-        const definition = await convertEntityDefinition(game, def);
-        parent[internal.entitySpawn](definition, { from: packet.from ?? "server" });
+        // FIXME: we should finalize in a second pass because we are gonna break some behaviors that rely on sibling presence
+        await netSpawnEntity(game, packet.from ?? "server", def);
 
         // TODO: we want to set value clocks and stuff from a definition as well
       })();
 
       inFlightEntities.set(def.ref, promise);
       promise.then(() => inFlightEntities.delete(def.ref));
+      promises.push(promise);
+    }
+
+    if ("finishCallback" in packet && typeof packet.finishCallback === "function") {
+      const cb = packet.finishCallback;
+      Promise.allSettled(promises).then(() => {
+        cb();
+      });
     }
   });
 
@@ -131,6 +141,7 @@ export const handleIncomingEntityUpdates: ClientNetworkSetupRoutine = (conn, gam
 
   conn.registerPacketHandler("ReportEntityTransforms", packet => {
     if (packet.from === conn.id) return;
+
     for (const report of packet.reports) {
       const entity = game.entities.lookupByRef(report.entity);
       if (entity === undefined) continue;

@@ -36,7 +36,8 @@
               "script": "res://src/spin.ts",
               "values": {
                 "somethingElse": false
-              }
+              },
+              "sync": {}
             }
           ],
           "children": [
@@ -48,7 +49,8 @@
               "behaviors": [
                 {
                   "ref": "bhv_kae9tshiuxw6witkvjpgmbn7",
-                  "script": "res://src/brat.ts"
+                  "script": "res://src/brat.ts",
+                  "sync": {}
                 }
               ]
             }
@@ -61,8 +63,8 @@
           "enabled": true,
           "transform": {
             "position": {
-              "x": -2.298004079244391,
-              "y": -2.5876684589810797
+              "x": 3.257550119974354,
+              "y": 2.5234429912142327
             }
           },
           "values": {
@@ -196,11 +198,8 @@
           "behaviors": [
             {
               "ref": "bhv_dqg9eccve24e6rxphsx4y4px",
-              "script": "res://src/player-spawner.js"
-            },
-            {
-              "ref": "bhv_g4lx3mjh7raeo1p23hsd9980",
-              "script": "res://src/my-library.ts"
+              "script": "res://src/player-spawner.js",
+              "sync": {}
             }
           ]
         }

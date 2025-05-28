@@ -48,8 +48,7 @@ export const handlePlayerJoinExchange: ServerNetworkSetupRoutine = (net, game) =
       }
       send();
 
-      net.send(from, { t: "FinishSpawnOperation", op: spawnOpId });
-      net.send(from, { t: "InitialLoadComplete" });
+      net.send(from, { t: "FinishSpawnOperation", op: spawnOpId, isInitialLoad: true });
     })();
   });
 

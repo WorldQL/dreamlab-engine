@@ -23,10 +23,6 @@ export const ClientLoadPhaseChangedPacket = z.object({
   phase: z.enum(["initialized", "loaded"]),
 });
 
-export const ServerInitialLoadCompletePacket = z.object({
-  t: z.literal("InitialLoadComplete"),
-});
-
 export const PingPacketSchema = z.object({
   t: z.literal("Ping"),
   type: z.enum(["ping", "pong"]),
@@ -136,6 +132,7 @@ export const FinishSpawnOperationPacketSchema = z.object({
 });
 export const ServerFinishSpawnOperationPacketSchema = FinishSpawnOperationPacketSchema.extend({
   from: ConnectionIdSchema.optional(),
+  isInitialLoad: z.boolean().optional(),
 });
 // #endregion
 
@@ -177,7 +174,6 @@ export type ClientPacket = z.infer<typeof ClientPacketSchema>;
 // packets that originate from the server
 export const ServerPacketSchema = z.discriminatedUnion("t", [
   HandshakePacketSchema,
-  ServerInitialLoadCompletePacket,
   PingPacketSchema,
   ServerCustomMessagePacket,
   ServerPeerConnectedPacket,

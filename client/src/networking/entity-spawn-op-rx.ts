@@ -1,5 +1,7 @@
 import { ClientGame } from "@dreamlab/engine";
+import { ReceivedInitialNetworkSnapshot } from "@dreamlab/proto/common/signals.ts";
 import { EntityDefinitionSchemaType } from "@dreamlab/proto/datamodel.ts";
+import { PlayPacket } from "@dreamlab/proto/play.ts";
 import { ClientConnection, ClientNetworkSetupRoutine } from "./net-connection.ts";
 
 interface LargeSpawnOperation {
@@ -27,7 +29,7 @@ const addEntityToLargeSpawnOperation = (
 
 export const handleProtractedEntitySpawnOperations: ClientNetworkSetupRoutine = (
   conn: ClientConnection,
-  _game: ClientGame,
+  game: ClientGame,
 ) => {
   const inFlightSpawnOperations = new Map<string, LargeSpawnOperation>();
 
@@ -63,6 +65,17 @@ export const handleProtractedEntitySpawnOperations: ClientNetworkSetupRoutine = 
 
     inFlightSpawnOperations.delete(packet.op);
 
-    conn.handle({ t: "SpawnEntities", from: op.from, definitions: op.definitions });
+    if (packet.isInitialLoad) {
+      conn.handle({
+        t: "SpawnEntities",
+        from: op.from,
+        definitions: op.definitions,
+        finishCallback: () => {
+          game.fire(ReceivedInitialNetworkSnapshot);
+        },
+      } as PlayPacket<"SpawnEntities", "server">);
+    } else {
+      conn.handle({ t: "SpawnEntities", from: op.from, definitions: op.definitions });
+    }
   });
 };

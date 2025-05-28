@@ -20,6 +20,7 @@ import { IPCMessageBus } from "../ipc.ts";
 import { handleCustomMessages } from "./custom-messages.ts";
 import { handleIncomingEntityUpdates } from "./entity-sync-rx.ts";
 import { handlePing } from "./ping.ts";
+import { handlePlayerJoinExchange } from "./player-join.ts";
 
 export type ServerPacketHandler<T extends ClientPacket["t"] = ClientPacket["t"]> = (
   from: ConnectionId,
@@ -27,7 +28,7 @@ export type ServerPacketHandler<T extends ClientPacket["t"] = ClientPacket["t"]>
 ) => void;
 export type ServerNetworkSetupRoutine = (net: ServerNetworkManager, game: ServerGame) => void;
 
-const LOG_PACKETS = false;
+const LOG_PACKETS = true;
 const LOG_EXCLUDE_PACKETS: PlayPacket["t"][] = [
   "ReportEntityTransforms",
   "Ping",
@@ -160,6 +161,7 @@ export class ServerNetworkManager {
     handleCustomMessages(this, game);
     handlePing(this, game);
     handleIncomingEntityUpdates(this, game);
+    handlePlayerJoinExchange(this, game);
   }
 
   updateRichStatus() {

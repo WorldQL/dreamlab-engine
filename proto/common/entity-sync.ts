@@ -66,10 +66,12 @@ const netSpawnEntityInert = (
 ): Entity => {
   const entity = parent[internal.entitySpawn](
     {
+      _ref: def.ref,
       type: Entity.getEntityType(def.type),
       name: def.name,
       enabled: def.enabled,
-      values: def.values,
+      // TODO: convert values
+      // values: def.values,
       transform: def.transform,
       authority: def.authority,
     },
@@ -83,7 +85,8 @@ const netSpawnEntityInert = (
         entity,
         ref: b._ref,
         sync: b.sync,
-        values: b.values,
+        // TODO: convert values
+        // values: b.values,
       }),
     );
     // no need to run implicitSetup or setup() because we're inert here
