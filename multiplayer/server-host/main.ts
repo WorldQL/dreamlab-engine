@@ -62,7 +62,6 @@ try {
 }
 
 const args = cli.parseArgs(Deno.args, { string: ["spawn", "clone"], boolean: ["play-mode"] });
-console.log(args);
 
 if (args.clone !== undefined) {
   const world = args.clone;
