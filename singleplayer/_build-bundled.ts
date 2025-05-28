@@ -80,16 +80,17 @@ async function bundleSingleFile(world: string) {
           });
 
           build.onLoad({ namespace: "meta", filter: /^entrypoint$/ }, async () => {
-            let contents = "globalThis.__dreamlab_behavior_map = new Map()\n";
+            let contents = "";
 
             const project = await Deno.readTextFile(path.join(worldDir, "project.json"));
-            contents += `globalThis.__dreamlab_project = ${project};`;
+            contents += `globalThis.__dreamlab_project = ${project};\n`;
 
             type Behaviors = Record<string, { uri: string; name: string; hash: string }>;
             const behaviors: Behaviors = JSON.parse(
               await Deno.readTextFile(path.join(worldDir, "_dreamlab_behaviors.json")),
             );
 
+            contents += `globalThis.__dreamlab_behavior_map = new Map();\n`;
             for (const [srcPath, data] of Object.entries(behaviors)) {
               const jsPath = srcPath.replace(/\.tsx?$/, ".js");
               const importPath = path.join("./worlds", world, jsPath);
@@ -99,6 +100,7 @@ async function bundleSingleFile(world: string) {
             }
 
             const assetsDir = path.join(worldDir, "assets");
+            if (await fs.exists(assetsDir)) {
             const assets = fs.walk(assetsDir, {
               includeDirs: false,
               followSymlinks: false,
@@ -119,6 +121,7 @@ async function bundleSingleFile(world: string) {
               const resourcePath = "res://" + path.relative(worldDir, assetEntry.path);
               const encoded = encoding.encodeBase64(compressed);
               contents += `globalThis.__dreamlab_assets_map.set("${resourcePath}", "${encoded}");\n`;
+              }
             }
 
             contents += `\nawait import("./runtime/client-main.js");\n`;
