@@ -18,8 +18,6 @@ type FontWeight = enumAdapter.Union<typeof FontWeightAdapter>;
 const FontWeightAdapter = enumAdapter([
   "normal",
   "bold",
-  "bolder",
-  "lighter",
   "100",
   "200",
   "300",
@@ -84,11 +82,20 @@ export class RichText extends PixiEntity {
     this.defineValue(RichText, "strokeWidth", { hidden: hidden });
     this.defineValue(RichText, "strokeJoin", { type: StrokeJoinAdapter, hidden: hidden });
 
-    const ignored = new Set(["clonedFromRef", "static", "hidden"]);
+    const fonts = new Set(["fontFamily", "fontStyle", "fontWeight"]);
+    const ignored = new Set(["clonedFromRef", "static", "hidden", ...fonts]);
     for (const [key, value] of this.values) {
       if (ignored.has(key)) continue;
       value.onChanged(() => {
         this.#reflow();
+      });
+    }
+
+    for (const [key, value] of this.values) {
+      if (!fonts.has(key)) continue;
+
+      value.onChanged(() => {
+        void this.#loadFont();
       });
     }
 
@@ -143,10 +150,29 @@ export class RichText extends PixiEntity {
     this.#bounds = { width, height, offset: { x, y } };
   }
 
-  onInitialize(): void {
+  async #loadFont(): Promise<void> {
+    if (!this.container) return;
+    await document.fonts.ready;
+
+    const family = this.fontFamily;
+    const style = this.fontStyle;
+    const weight = this.fontWeight;
+    const fontSpecifier = `${weight} ${style} 16px "${family}"`;
+
+    try {
+      await document.fonts.load(fontSpecifier);
+    } catch {
+      // ignore
+    } finally {
+      this.rerender();
+    }
+  }
+
+  async onInitialize(): Promise<void> {
     super.onInitialize();
     if (!this.container) return;
 
+    await this.#loadFont();
     this.#reflow();
   }
 
@@ -156,5 +182,20 @@ export class RichText extends PixiEntity {
     this.#style = undefined;
 
     this.#reflow();
+  }
+
+  #knownFonts = 0;
+  onUpdate(): void {
+    super.onUpdate();
+    if (!this.container) return;
+
+    // this is dumb but as far as i can see there is no event for
+    // when a font is registered but not loading/loaded yet
+    // @ts-expect-error: for some reason this has a bad type
+    const fonts: number = document.fonts.size;
+    if (fonts > this.#knownFonts) {
+      this.#knownFonts = fonts;
+      void this.#loadFont();
+    }
   }
 }
