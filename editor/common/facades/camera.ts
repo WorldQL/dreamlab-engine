@@ -88,7 +88,22 @@ export class EditorFacadeCamera extends PixiEntity {
       suffix: this.active ? " (active)" : "",
       getBounds: () => {
         const vec = Vector2.splat(Camera.TARGET_VIEWPORT_SIZE).div(this.zoom);
-        return { width: vec.x, height: vec.y };
+        const [w, h] = this.aspectRatio;
+        const r = w / h;
+
+        if (!this.lockAspectRatio || (w === 1 && h === 1) || r === 1) {
+          return { width: vec.x, height: vec.y };
+        }
+
+        if (w / h > 1) {
+          // wide
+          vec.x *= w / h;
+          return { width: vec.x, height: vec.y };
+        } else {
+          // tall
+          vec.y /= w / h;
+          return { width: vec.x, height: vec.y };
+        }
       },
     });
     this.#debug.alwaysOnTop = true;
@@ -100,6 +115,16 @@ export class EditorFacadeCamera extends PixiEntity {
 
     const zoom = this.values.get("zoom");
     zoom?.onChanged(() => {
+      this.#debug?.redraw();
+    });
+
+    const lockAspectRatio = this.values.get("lockAspectRatio");
+    lockAspectRatio?.onChanged(() => {
+      this.#debug?.redraw();
+    });
+
+    const aspectRatio = this.values.get("aspectRatio");
+    aspectRatio?.onChanged(() => {
       this.#debug?.redraw();
     });
 
