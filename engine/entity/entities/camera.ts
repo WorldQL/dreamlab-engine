@@ -209,6 +209,11 @@ export class Camera extends Entity {
     this.#scale = Vector2.splat(1 / this.zoom);
   }
 
+  onInitialize(): void {
+    super.onInitialize();
+    if (this.#active) this.game.fire(CameraAspectChanged, this);
+  }
+
   public worldToScreen(position: IVector2): Vector2 {
     const game = this.game as ClientGame;
 

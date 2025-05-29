@@ -1,4 +1,5 @@
-import { RichText, type ClientGame } from "@dreamlab/engine";
+import { CameraAspectChanged, RichText, type ClientGame } from "@dreamlab/engine";
+import { setAspectRatio, updateAspectRatio } from "./aspect-ratio.ts";
 import { preloadFonts } from "./fonts.ts";
 import { connectToGame, pickCodec } from "./game-connection.ts";
 import { setupGame } from "./game-setup.ts";
@@ -17,7 +18,7 @@ export async function startGame(
 ) {
   const uiRoot = document.querySelector("main")! as HTMLElement;
   const container = document.createElement("div");
-  uiRoot.querySelector("#viewport")!.append(container);
+  uiRoot.querySelector("#game")!.append(container);
 
   const url = new URL(connectUrl);
   const codec = pickCodec(url, undefined);
@@ -31,13 +32,18 @@ export async function startGame(
   const [game, conn, handshake] = await connectToGame(instanceId, container, socket, codec);
   gameCallback(game);
 
+  game.on(CameraAspectChanged, ({ camera }) => {
+    setAspectRatio(camera.lockAspectRatio, camera.aspectRatio);
+  });
+
   await setupGame(game, conn, handshake.edit_mode);
   fonts.then(() => {
     game.entities.lookupByType(RichText).forEach(text => text.rerender());
   });
 
   new ResizeObserver(_ => {
-    game.renderer.resize();
+    updateAspectRatio();
+    game.renderer.resize(true);
   }).observe(uiRoot.querySelector("#viewport")!);
 
   Object.defineProperties(globalThis, {
