@@ -1,4 +1,5 @@
 import {
+  AspectRatioAdapter,
   AudioAdapter,
   calculateRelativeEntitySelector,
   ClientGame,
@@ -504,6 +505,45 @@ export function createValueControl(
       };
 
       refresh();
+      return [control, refresh];
+    }
+
+    case AspectRatioAdapter: {
+      const opts = _opts as ValueControlOptions<[number, number] | undefined>;
+
+      const [wControl, refreshW] = createInputFieldWithDefault({
+        default: opts.default?.[0],
+        get: () => opts.get()?.[0],
+        set: w => {
+          const r = opts.get() || opts.default || [1, 1];
+          if (w !== undefined) r[0] = w;
+          opts.set([...r]);
+        },
+        convert: NumericSchema.parse,
+      });
+      const [hControl, refreshH] = createInputFieldWithDefault({
+        default: opts.default?.[1],
+        get: () => opts.get()?.[1],
+        set: h => {
+          const r = opts.get() || opts.default || [1, 1];
+          if (h !== undefined) r[1] = h;
+          opts.set([...r]);
+        },
+        convert: NumericSchema.parse,
+      });
+
+      // TODO: better layout (label x and y?)
+      const control = elem("div", { className: "vector2-inputs" }, [
+        elem("label", {}, ["W:"]),
+        wControl,
+        elem("label", {}, ["H:"]),
+        hControl,
+      ]);
+      const refresh = () => {
+        refreshW();
+        refreshH();
+      };
+
       return [control, refresh];
     }
 

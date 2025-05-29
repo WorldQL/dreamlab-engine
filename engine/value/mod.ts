@@ -3,6 +3,7 @@ export { syncedValue, value } from "./decorator.ts";
 export * from "./registry.ts";
 export * from "./value.ts";
 
+export * from "./adapters/aspect-ratio-adapter.ts";
 export * from "./adapters/audio-adapter.ts";
 export * from "./adapters/color-adapter.ts";
 export * from "./adapters/entity-by-ref-adapter.ts";
