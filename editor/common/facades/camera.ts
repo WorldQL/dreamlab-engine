@@ -1,4 +1,5 @@
 import {
+  AspectRatioAdapter,
   Camera,
   Entity,
   EntityContext,
@@ -27,6 +28,8 @@ export class EditorFacadeCamera extends PixiEntity {
   public active: boolean = false;
   public zoom: number = 1;
   public showBounds: boolean = false;
+  public lockAspectRatio: boolean = false;
+  public aspectRatio: [number, number] = [1, 1];
 
   #selected: boolean = false;
   #updateShowBounds() {
@@ -44,7 +47,18 @@ export class EditorFacadeCamera extends PixiEntity {
       persistent: false,
     });
 
-    this.defineValues(EditorFacadeCamera, "active", "smooth", "unlocked", "zoom");
+    this.defineValues(
+      EditorFacadeCamera,
+      "active",
+      "smooth",
+      "unlocked",
+      "zoom",
+      "lockAspectRatio",
+    );
+    this.defineValue(EditorFacadeCamera, "aspectRatio", {
+      type: AspectRatioAdapter,
+      hidden: values => values.get("lockAspectRatio")?.value === false,
+    });
 
     if (this.game.isClient()) {
       const svc = SelectedEntityService.serviceForGame(this.game);

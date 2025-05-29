@@ -1,5 +1,6 @@
 import {
   ActiveCameraChanged,
+  AspectRatioAdapter,
   ClientGame,
   Entity,
   EntityContext,
@@ -36,6 +37,9 @@ export class Camera extends Entity {
   }
 
   public zoom: number = 1;
+
+  public lockAspectRatio: boolean = false;
+  public aspectRatio: [number, number] = [1, 1];
 
   #position: Vector2 = new Vector2(this.interpolated.position);
   #rotation: number = this.interpolated.rotation;
@@ -178,6 +182,12 @@ export class Camera extends Entity {
     this.defineValue(Camera, "smooth", { replicated: false });
     this.defineValue(Camera, "unlocked", { replicated: false });
     this.defineValue(Camera, "zoom", { replicated: false });
+    this.defineValue(Camera, "lockAspectRatio", { replicated: false });
+    this.defineValue(Camera, "aspectRatio", {
+      replicated: false,
+      type: AspectRatioAdapter,
+      hidden: values => values.get("lockAspectRatio")?.value === false,
+    });
 
     // apply new scale from incoming synced value
     this.#scale = Vector2.splat(1 / this.zoom);
