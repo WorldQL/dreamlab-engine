@@ -29,7 +29,7 @@ export class EditorFacadeCamera extends PixiEntity {
   public zoom: number = 1;
   public showBounds: boolean = false;
   public lockAspectRatio: boolean = false;
-  public aspectRatio: [number, number] = [1, 1];
+  public aspectRatio: readonly [number, number] = [1, 1];
 
   #selected: boolean = false;
   #updateShowBounds() {

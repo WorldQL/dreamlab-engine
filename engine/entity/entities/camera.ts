@@ -39,7 +39,7 @@ export class Camera extends Entity {
   public zoom: number = 1;
 
   public lockAspectRatio: boolean = false;
-  public aspectRatio: [number, number] = [1, 1];
+  public aspectRatio: readonly [number, number] = [1, 1];
 
   #position: Vector2 = new Vector2(this.interpolated.position);
   #rotation: number = this.interpolated.rotation;
