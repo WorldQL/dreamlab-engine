@@ -82,8 +82,10 @@ export class Camera extends Entity {
     return this.#active && this.enabled;
   }
   set active(value: boolean) {
-    // Early return if we are already active
+    // Early return if activating when we are already active
     if (value && this.#active) return;
+    // Early return if deactivating when we are already deactivated
+    if (!value && !this.#active) return;
 
     const previous = Camera.getActive(this.game);
     if (!value) {
@@ -96,7 +98,11 @@ export class Camera extends Entity {
     }
 
     const cameras = this.game.entities.lookupByType(Camera);
-    for (const camera of cameras) camera.active = false;
+    for (const camera of cameras) {
+      if (camera === this) continue;
+      camera.active = false;
+    }
+
     this.#active = true;
 
     // Instantly set smoothed values
