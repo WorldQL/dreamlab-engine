@@ -1,6 +1,7 @@
 import {
   ActiveCameraChanged,
   AspectRatioAdapter,
+  CameraAspectChanged,
   ClientGame,
   Entity,
   EntityContext,
@@ -91,6 +92,7 @@ export class Camera extends Entity {
     if (!value) {
       if (this.#active === true) {
         this.game.fire(ActiveCameraChanged, undefined, this);
+        this.game.fire(CameraAspectChanged, this);
       }
 
       this.#active = false;
@@ -116,6 +118,7 @@ export class Camera extends Entity {
 
     // Emit event
     this.game.fire(ActiveCameraChanged, this, previous);
+    this.game.fire(CameraAspectChanged, this);
   }
 
   // TODO: Look into improving this API maybe?
@@ -188,12 +191,19 @@ export class Camera extends Entity {
     this.defineValue(Camera, "smooth", { replicated: false });
     this.defineValue(Camera, "unlocked", { replicated: false });
     this.defineValue(Camera, "zoom", { replicated: false });
-    this.defineValue(Camera, "lockAspectRatio", { replicated: false });
-    this.defineValue(Camera, "aspectRatio", {
+    const lockAspectRatio = this.defineValue(Camera, "lockAspectRatio", { replicated: false });
+    const aspectRatio = this.defineValue(Camera, "aspectRatio", {
       replicated: false,
       type: AspectRatioAdapter,
       hidden: values => values.get("lockAspectRatio")?.value === false,
     });
+
+    const onAspectChanged = () => {
+      this.game.fire(CameraAspectChanged, this);
+    };
+
+    lockAspectRatio.onChanged(onAspectChanged);
+    aspectRatio.onChanged(onAspectChanged);
 
     // apply new scale from incoming synced value
     this.#scale = Vector2.splat(1 / this.zoom);
