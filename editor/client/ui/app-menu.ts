@@ -2,7 +2,15 @@ import { connectToGame, pickCodec } from "@dreamlab/client/game-connection.ts";
 import { setupGame } from "@dreamlab/client/game-setup.ts";
 import { Ping } from "@dreamlab/client/networking/ping.ts";
 import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
-import { ClientGame, PhysicsDebug, PlayerJoined, PlayerLeft } from "@dreamlab/engine";
+import {
+  CameraAspectChanged,
+  ClientGame,
+  GameShutdown,
+  GameStatus,
+  PhysicsDebug,
+  PlayerJoined,
+  PlayerLeft,
+} from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 import {
@@ -20,6 +28,7 @@ import {
   ScrollText,
   User,
 } from "../_icons.tsx";
+import { AspectRatio, getAspectRatio, setAspectRatio } from "../aspect-ratio.ts";
 import { IconButton } from "../components/mod.ts";
 import { InspectorUI } from "./inspector.ts";
 
@@ -280,6 +289,34 @@ export class AppMenu {
         // ignore
       } finally {
         container.remove();
+      }
+    });
+
+    let originalAspect: AspectRatio | undefined = undefined;
+    playGame.on(CameraAspectChanged, ({ camera }) => {
+      if (playGame.status === GameStatus.Shutdown) return;
+
+      if (originalAspect === undefined) {
+        // save original aspect ratio
+        originalAspect = getAspectRatio();
+
+        // disable dropdown
+        const gamesDiv = document.querySelector<HTMLDivElement>("div#gameview")!;
+        gamesDiv.dataset.aspectDisabled = "";
+      }
+
+      const aspect: AspectRatio = camera.lockAspectRatio ? camera.aspectRatio : "unlocked";
+      setAspectRatio(aspect, true);
+    });
+
+    // restore aspect ratio
+    playGame.on(GameShutdown, () => {
+      if (originalAspect !== undefined) {
+        // re-enable dropdown
+        const gamesDiv = document.querySelector<HTMLDivElement>("div#gameview")!;
+        delete gamesDiv.dataset.aspectDisabled;
+
+        setAspectRatio(originalAspect);
       }
     });
 

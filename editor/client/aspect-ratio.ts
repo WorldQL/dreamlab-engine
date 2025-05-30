@@ -7,9 +7,12 @@ export const ASPECT_RATIOS = [
   [1, 1],
 ] as const satisfies AspectRatio[];
 
-export const setAspectRatio = (ratio: AspectRatio): void => {
+export const setAspectRatio = (ratio: AspectRatio, force = false): void => {
   const viewport = document.querySelector<HTMLDivElement>("div#viewport")!;
   const gamesDiv = viewport.querySelector<HTMLDivElement>("div#games")!;
+  const gameviewDiv = document.querySelector<HTMLDivElement>("div#gameview")!;
+
+  if (gameviewDiv.dataset.aspectDisabled === "" && !force) return;
 
   if (ratio === "unlocked") {
     gamesDiv.style.removeProperty("--aspect-ratio");
@@ -19,6 +22,20 @@ export const setAspectRatio = (ratio: AspectRatio): void => {
   }
 
   updateAspectRatio(true);
+};
+
+export const getAspectRatio = (): AspectRatio => {
+  const viewport = document.querySelector<HTMLDivElement>("div#viewport")!;
+  const gamesDiv = viewport.querySelector<HTMLDivElement>("div#games")!;
+
+  const aspect = gamesDiv.style.getPropertyValue("--aspect-ratio");
+  if (!aspect) return "unlocked";
+
+  const [wStr, hStr] = aspect.split(" / ");
+  const w = Number.parseFloat(wStr);
+  const h = Number.parseFloat(hStr);
+
+  return [w, h] as const;
 };
 
 export const updateAspectRatio = (resize = false): void => {

@@ -106,6 +106,12 @@
   &:has(> svg) {
     padding-right: 0.25rem;
   }
+
+  div#gameview[data-aspect-disabled] & {
+    pointer-events: none;
+    opacity: 0.7;
+    font-style: italic;
+  }
 }
 
 #toolbar #gizmo-buttons {
