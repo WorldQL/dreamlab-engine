@@ -54,7 +54,7 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
   game.on(InternalGameTick, () => {
     const entityTransformReports: EntityTransformReport[] = [];
     for (const entity of transformDirtyEntities.values()) {
-      if (entity.authority !== undefined && entity.authority !== game.network.self) continue;
+      // if (entity.authority !== undefined && entity.authority !== game.network.self) continue;
 
       const currTransform = transformFor(entity);
       const lastTransform = lastTransforms.get(entity);
