@@ -3,14 +3,43 @@ import { DreamlabEditorUIComponent } from "./_component.tsx";
 import { ClientGame } from "@dreamlab/engine";
 import { BehaviorSchema } from "@dreamlab/scene";
 import { EditorMetadataEntity } from "../../common/mod.ts";
-import { spawnEntity } from "./assistant/editor-world-interaction-util.ts";
+import {
+  lookupEntityInEditMode,
+  spawnEntity,
+} from "./assistant/editor-world-interaction-util.ts";
 
 type Action = {
   id: number;
   text: string;
   applied: boolean;
-  planItem: any; // Store the full plan item
+  code: any; // Store the full plan item
 };
+
+const code = `
+const prefabRoot = lookupById("prefabs");
+
+// Create Enemy prefab - a CharacterController with ColoredSquare child and enemy behavior
+spawnEntity(prefabRoot, {
+  name: "Enemy",
+  type: "CharacterController",
+  behaviors: [{script: "res://src/enemy.ts"}],
+  transform: { scale: { x: 0.8, y: 0.8 } },
+  children: [{
+    type: "ColoredSquare",
+    name: "ColoredSquare",
+    transform: { scale: { x: 1, y: 1 } }
+  }]
+});
+
+// Create Enemy Spawner in the world
+const worldRoot = lookupById("world");
+spawnEntity(worldRoot, {
+  name: "EnemySpawner",
+  type: "Empty",
+  behaviors: [{script: "res://src/enemy-spawner.ts"}],
+  transform: { position: { x: 10, y: 5 } }
+});
+`;
 
 export class AISuggestionsPopup extends DreamlabEditorUIComponent {
   state = {
@@ -25,6 +54,14 @@ export class AISuggestionsPopup extends DreamlabEditorUIComponent {
     super();
     // @ts-expect-error global
     this.game = globalThis.game as ClientGame;
+
+    globalThis.addEventListener("message", message => {
+      console.log(message);
+      this.setPlan(message.data.payload);
+      console.log("showing");
+      this.show();
+      // this contains array of {editDescription: "title", editCode: "code to be run"}
+    });
   }
 
   /**
@@ -33,9 +70,9 @@ export class AISuggestionsPopup extends DreamlabEditorUIComponent {
   public setPlan = (plan: any[]) => {
     this.state.actions = plan.map((planItem, index) => ({
       id: index + 1,
-      text: planItem.desc,
+      text: planItem.editDescription,
       applied: false,
-      planItem: planItem, // Store the full plan item for execution
+      code: planItem.editCode, // Store the full plan item for execution
     }));
     this.rerender();
   };
@@ -48,7 +85,10 @@ export class AISuggestionsPopup extends DreamlabEditorUIComponent {
     if (!action || action.applied) return;
 
     try {
-      await this.executeAction(action.planItem);
+      new Function("spawnEntity", "lookupById", action.code)(
+        spawnEntity,
+        lookupEntityInEditMode,
+      );
 
       // Mark the action as applied
       this.state.actions = this.state.actions.map(action =>

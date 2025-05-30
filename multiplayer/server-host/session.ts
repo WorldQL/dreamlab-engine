@@ -148,7 +148,9 @@ export class GameSession {
           const projectDesc = JSON.parse(await Deno.readTextFile(projectJsonFile));
           projectDesc.scenes = { ...(projectDesc.scenes ?? {}), main: scene };
 
-          const markdownScene = toMarkdownSceneTree(scene);
+          const markdownScene =
+            "The following is a description of the current scene in a compact format: \n\n" +
+            toMarkdownSceneTree(scene);
           const markdownSceneFile = path.join(
             parent.info.worldDirectory,
             "scene-description.md",

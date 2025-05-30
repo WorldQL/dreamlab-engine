@@ -2,6 +2,7 @@
 import { Behavior, Entity, type EntityDefinition } from "@dreamlab/engine";
 import type { SceneDescBehavior } from "@dreamlab/scene";
 import { EditorMetadataEntity, Facades } from "../../../common/mod.ts";
+import type { ClientGame } from "@dreamlab/engine";
 
 /**
  * Designed to be a more convenient way to spawn an entity and process AI-generated commands.
@@ -18,6 +19,16 @@ export interface SimplifiedEntityDefinition<
     values: Record<string, any>;
   }[];
   children?: { [I in keyof Children]: SimplifiedEntityDefinition<Children[I]> };
+}
+
+/**
+ * Adds "world/EditEntities" and returns
+ */
+export function lookupEntityInEditMode(path: string): Entity | undefined {
+  const games: { edit: ClientGame; play?: ClientGame } = globalThis.games;
+  const game = games.edit;
+
+  return game.entities.lookupById("world/EditEntities/" + path)
 }
 
 export function spawnEntity(
@@ -65,4 +76,6 @@ export function spawnEntity(
   for (const child of toSpawn.children ?? []) {
     spawnEntity(newEntity, child);
   }
+
+  return newEntity;
 }
