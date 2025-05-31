@@ -9,7 +9,6 @@ import type {
   Inputs,
   ISignalHandler,
   JsonValue,
-  Primitive,
   Signal,
   SignalConstructor,
   SignalListener,
@@ -18,6 +17,7 @@ import type {
   SignalSubscription,
   SyncedObjectInfo,
   Time,
+  ValueDescription,
   ValueTypeTag,
 } from "@dreamlab/engine";
 import {
@@ -48,7 +48,7 @@ export interface BehaviorContext {
   game: Game;
   entity: Entity;
   ref?: string;
-  values?: Record<string, Primitive>;
+  values?: Record<string, ValueDescription>;
   sync?: Record<string, SyncedObjectInfo>;
 }
 
@@ -116,7 +116,7 @@ export class Behavior implements ISignalHandler {
     return object as T;
   }
 
-  #defaultValues: Record<string, unknown> = {};
+  #prefilledValues: Record<string, ValueDescription> = {};
   #values = new Map<string, Value>();
   get values(): ReadonlyMap<string, Value> {
     return this.#values;
@@ -156,15 +156,15 @@ export class Behavior implements ISignalHandler {
       adapter[internal.valueRelatedEntity] = this.entity;
     }
 
-    if (this.#defaultValues[prop] !== undefined) {
+    if (this.#prefilledValues[prop] !== undefined) {
       if (adapter) {
         defaultValue = (
-          adapter.isValue(this.#defaultValues[prop])
-            ? this.#defaultValues[prop]
-            : adapter.convertFromPrimitive(this.#defaultValues[prop] as JsonValue)
+          adapter.isValue(this.#prefilledValues[prop].value)
+            ? this.#prefilledValues[prop].value
+            : adapter.convertFromPrimitive(this.#prefilledValues[prop].value as JsonValue)
         ) as T_;
       } else {
-        defaultValue = this.#defaultValues[prop] as T_;
+        defaultValue = this.#prefilledValues[prop].value as T_;
       }
     }
 
@@ -183,6 +183,11 @@ export class Behavior implements ISignalHandler {
       opts.description ?? prop, // TODO: autogenerate description (fix casing & spacing)
       adapter,
     );
+
+    if (this.#prefilledValues[prop] !== undefined) {
+      value.clock = this.#prefilledValues[prop].clock;
+      value.lastSource = this.#prefilledValues[prop].source ?? "server";
+    }
 
     if (opts.replicated !== undefined) value.replicated = opts.replicated;
     if (opts.hidden !== undefined) value.hidden = opts.hidden;
@@ -263,7 +268,7 @@ export class Behavior implements ISignalHandler {
     this.entity = ctx.entity;
 
     if (ctx.ref) this.ref = ctx.ref;
-    if (ctx.values) this.#defaultValues = ctx.values;
+    if (ctx.values) this.#prefilledValues = ctx.values;
     if (ctx.sync) this.#syncOverrides = ctx.sync;
 
     this.game.sync.register(this);

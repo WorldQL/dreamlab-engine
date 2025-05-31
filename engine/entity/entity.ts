@@ -24,6 +24,7 @@ import type {
   SyncedObjectInfo,
   Time,
   TransformOptions,
+  ValueDescription,
   ValueTypeTag,
 } from "@dreamlab/engine";
 import {
@@ -66,7 +67,7 @@ export interface EntityContext {
   transform?: TransformOptions;
   authority?: ConnectionId;
   ref?: string;
-  values?: Record<string, unknown>;
+  values?: Record<string, ValueDescription>;
   clonedFrom?: string;
 }
 
@@ -95,6 +96,7 @@ export interface EntityDefinition<
   children?: { [I in keyof Children]: EntityDefinition<Children[I]> };
   behaviors?: { [I in keyof Behaviors]: BehaviorDefinition<Behaviors[I]> };
   _ref?: string;
+  _richValues?: Record<string, ValueDescription>;
 }
 
 type EntityValueProp<E extends Entity> = Exclude<
@@ -374,7 +376,13 @@ export abstract class Entity implements ISignalHandler {
       transform: def.transform,
       authority: def.authority ?? parent.authority,
       ref: def._ref,
-      values: def.values ? Object.fromEntries(Object.entries(def.values)) : undefined,
+      values: def._richValues
+        ? def._richValues
+        : def.values
+          ? Object.fromEntries(
+              Object.entries(def.values).map(([k, v]) => [k, { value: v, clock: 0 }]),
+            )
+          : undefined,
       clonedFrom,
     });
     if (def.enabled !== undefined) entity.enabled = def.enabled;
@@ -424,7 +432,12 @@ export abstract class Entity implements ISignalHandler {
           game: this.game,
           entity: targetEnt,
           ref: b._ref,
-          values: b.values,
+          // TODO: support b.richValues
+          values: b.values
+            ? Object.fromEntries(
+                Object.entries(b.values).map(([k, v]) => [k, { value: v, clock: 0 }]),
+              )
+            : undefined,
           sync: b.sync,
         });
         targetEnt.behaviors.push(behavior);
@@ -481,8 +494,11 @@ export abstract class Entity implements ISignalHandler {
       game: this.game,
       entity: this,
       ref: behavior._ref,
-      // @ts-expect-error: generic constraints
-      values: behavior.values,
+      values: behavior.values
+        ? Object.fromEntries(
+            Object.entries(behavior.values).map(([k, v]) => [k, { value: v, clock: 0 }]),
+          )
+        : undefined,
       sync: behavior.sync,
     });
     this.behaviors.push(b);
@@ -770,7 +786,7 @@ export abstract class Entity implements ISignalHandler {
   // #endregion
 
   // #region Values
-  #defaultValues: Record<string, unknown> = {};
+  #prefilledValues: Record<string, ValueDescription> = {};
   #values = new Map<string, Value>();
   get values(): ReadonlyMap<string, Value> {
     return this.#values;
@@ -814,15 +830,15 @@ export abstract class Entity implements ISignalHandler {
       adapter[internal.valueRelatedEntity] = this;
     }
 
-    if (this.#defaultValues[prop] !== undefined) {
+    if (this.#prefilledValues[prop] !== undefined) {
       if (adapter) {
         defaultValue = (
-          adapter.isValue(this.#defaultValues[prop])
-            ? this.#defaultValues[prop]
-            : adapter.convertFromPrimitive(this.#defaultValues[prop] as JsonValue)
+          adapter.isValue(this.#prefilledValues[prop].value)
+            ? this.#prefilledValues[prop].value
+            : adapter.convertFromPrimitive(this.#prefilledValues[prop].value as JsonValue)
         ) as T_;
       } else {
-        defaultValue = this.#defaultValues[prop] as T_;
+        defaultValue = this.#prefilledValues[prop].value as T_;
       }
     }
 
@@ -841,6 +857,11 @@ export abstract class Entity implements ISignalHandler {
       opts.description ?? prop, // TODO: autogenerate description (fix casing & spacing)
       adapter,
     );
+
+    if (this.#prefilledValues[prop] !== undefined) {
+      value.clock = this.#prefilledValues[prop].clock;
+      value.lastSource = this.#prefilledValues[prop].source ?? "server";
+    }
 
     if (opts.replicated !== undefined) value.replicated = opts.replicated;
     if (opts.hidden !== undefined) value.hidden = opts.hidden;
@@ -1016,7 +1037,7 @@ export abstract class Entity implements ISignalHandler {
     this.globalTransform = new Transform();
     this.#exclusiveAuthority = ctx.authority;
 
-    if (ctx.values) this.#defaultValues = ctx.values;
+    if (ctx.values) this.#prefilledValues = ctx.values;
 
     this.game.sync.register(this);
 

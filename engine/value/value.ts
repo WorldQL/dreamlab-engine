@@ -33,6 +33,12 @@ export function inferValueTypeTag<T>(value: T): ValueTypeTag<T> {
 
 type ReadonlyIfObject<T> = T extends object ? ReadonlyDeep<T> : T;
 
+export interface ValueDescription<T = unknown> {
+  value: T;
+  clock: number;
+  source?: ConnectionId;
+}
+
 export class Value<T = unknown> {
   #registry: ValueRegistry;
 

@@ -8,6 +8,7 @@ import {
   EntityDefinition,
   Game,
   TransformOptions,
+  ValueDescription,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import type { z } from "@dreamlab/vendor/zod.ts";
@@ -70,8 +71,7 @@ const netSpawnEntityInert = (
       type: Entity.getEntityType(def.type),
       name: def.name,
       enabled: def.enabled,
-      // TODO: convert values
-      // values: def.values,
+      _richValues: def.values as Record<string, ValueDescription>,
       transform: def.transform,
       authority: def.authority,
     },
@@ -86,7 +86,7 @@ const netSpawnEntityInert = (
         ref: b._ref,
         sync: b.sync,
         // TODO: convert values
-        // values: b.values,
+        values: b.values,
       }),
     );
     // no need to run implicitSetup or setup() because we're inert here
