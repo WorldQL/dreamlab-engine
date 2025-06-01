@@ -25,10 +25,11 @@ export interface SimplifiedEntityDefinition<
  * Adds "world/EditEntities" and returns
  */
 export function lookupEntityInEditMode(path: string): Entity | undefined {
+  // @ts-expect-error: global
   const games: { edit: ClientGame; play?: ClientGame } = globalThis.games;
   const game = games.edit;
 
-  return game.entities.lookupById("world/EditEntities/" + path)
+  return game.entities.lookupById("world/EditEntities/" + path);
 }
 
 export function spawnEntity(
@@ -78,4 +79,42 @@ export function spawnEntity(
   }
 
   return newEntity;
+}
+
+export function addBehavior(
+  entity: Entity,
+  behaviorScript: string,
+  behaviorValues: Record<string, any> = {},
+) {
+  const metadataEntity = EditorMetadataEntity.getInstanceFor(entity);
+
+  if (!metadataEntity) {
+    throw new Error("Entity does not have editor metadata. Cannot add behavior.");
+  }
+
+  // remove leading /
+  const _script = behaviorScript.startsWith("/") ? behaviorScript.slice(1) : behaviorScript;
+  // automatically add res:// if it's not there
+  const scriptPath = _script.startsWith("res://") ? _script : "res://" + _script;
+
+  const newBehavior: SceneDescBehavior = {
+    script: scriptPath,
+    values: behaviorValues,
+    ref: Behavior.createRef(),
+  };
+
+  const behaviorsJson = metadataEntity.values.get("behaviorsJson");
+
+  if (!behaviorsJson) throw new Error("no behaviorsJson in this entity!!");
+
+  // Get existing behaviors
+  const behaviorsJsonValue = JSON.parse(behaviorsJson.value as string);
+  console.log(behaviorsJsonValue);
+  const existingBehaviors: SceneDescBehavior[] = behaviorsJsonValue;
+
+  // Add new behavior
+  existingBehaviors.push(newBehavior);
+
+  // Update the metadata
+  behaviorsJson.value = JSON.stringify(existingBehaviors);
 }
