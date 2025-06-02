@@ -354,16 +354,39 @@ export function createValueControl(
 
       colorBox.addEventListener("click", e => {
         const tr = colorBox.closest("tr");
-        if (!tr) return; // should always exist
+        if (!tr) return;
 
         if (popup.style.display === "block") {
           popup.style.display = "none";
-        } else {
-          const rect = tr.getBoundingClientRect();
-          popup.style.top = rect.bottom - 30 + "px";
-          popup.style.left = rect.left - 175 + "px";
-          popup.style.display = "block";
+          return;
         }
+
+        popup.style.visibility = "hidden";
+        popup.style.display = "block";
+
+        const popupRect = popup.getBoundingClientRect();
+        const popupH = popupRect.height;
+
+        const rowRect = tr.getBoundingClientRect();
+        const spaceBelow = window.innerHeight - rowRect.bottom;
+        const spaceAbove = rowRect.top;
+
+        let finalTop: number;
+        if (spaceBelow < popupH && spaceAbove >= popupH) {
+          finalTop = rowRect.top - popupH - 4;
+        } else if (spaceBelow < popupH && spaceAbove < popupH) {
+          finalTop = Math.max(10, window.innerHeight - popupH - 10);
+        } else {
+          finalTop = rowRect.bottom - 30;
+        }
+
+        const finalLeft = rowRect.left - 175;
+
+        popup.style.top = finalTop + "px";
+        popup.style.left = finalLeft + "px";
+        popup.style.visibility = "";
+        popup.style.display = "block";
+
         e.stopPropagation();
       });
 
