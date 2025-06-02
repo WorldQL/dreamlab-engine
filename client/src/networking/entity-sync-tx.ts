@@ -4,6 +4,7 @@ import {
   EntityDescendantReparented,
   EntityDescendantSpawned,
   EntityDestroyOperation,
+  EntityExclusiveAuthorityChanged,
   EntitySpawnOperation,
   EntityTransformUpdate,
   GameStatus,
@@ -95,6 +96,12 @@ export const handleOutgoingEntityUpdates: ClientNetworkSetupRoutine = (conn, gam
   game.values.onValueChanged((v, _newValue, _clock, source) => {
     if (source !== game.network.self) return;
     valueQueue.add(v);
+  });
+
+  const authorityChangeQueue = new Set<Entity>();
+  game.on(EntityExclusiveAuthorityChanged, event => {
+    if (conn.authorityChangeIgnoreSet.has(event.entity.ref)) return;
+    authorityChangeQueue.add(event.entity);
   });
 
   game.on(InternalGameTick, () => {
@@ -240,11 +247,25 @@ export const handleOutgoingEntityUpdates: ClientNetworkSetupRoutine = (conn, gam
 
     // TODO:
     // 6. behavior add/remove
-    // 7. behavior synced values / objects
-    // 8. entity authority
+    // 7. behavior synced objects
 
-    // for batching:
-    // spawn up to N entities, rest go to queue
-    // delete up to N entities
+    for (const entity of authorityChangeQueue) {
+      if (entitySpawnQueue.has(entity)) continue;
+      if (largeEntities.has(entity)) continue;
+
+      authorityChangeQueue.delete(entity);
+      if (entity.authority === game.network.self) {
+        conn.send({
+          t: "RequestExclusiveAuthority",
+          entity: entity.ref,
+          clock: entity[internal.entityAuthorityClock],
+        });
+      } else if (entity.authority === undefined) {
+        conn.send({
+          t: "RelinquishExclusiveAuthority",
+          entity: entity.ref,
+        });
+      }
+    }
   });
 };

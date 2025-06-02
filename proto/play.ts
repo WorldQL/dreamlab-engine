@@ -175,6 +175,34 @@ export const ServerReportValuesPacketSchema = ReportValuesPacketSchema.extend({
 });
 // #endregion
 
+// #region entity authority
+export const ClientRequestExclusiveAuthorityPacket = z.object({
+  t: z.literal("RequestExclusiveAuthority"),
+  entity: EntityReferenceSchema,
+  clock: z.number(),
+});
+
+export const ClientRelinquishExclusiveAuthorityPacket = z.object({
+  t: z.literal("RelinquishExclusiveAuthority"),
+  entity: EntityReferenceSchema,
+});
+
+export const ServerAnnounceExclusiveAuthorityPacket = z.object({
+  t: z.literal("AnnounceExclusiveAuthority"),
+  entity: EntityReferenceSchema,
+  to: ConnectionIdSchema.optional(),
+  clock: z.number(),
+});
+
+// sent to the requester to let them know the correct clock value
+export const ServerDenyExclusiveAuthorityPacket = z.object({
+  t: z.literal("DenyExclusiveAuthority"),
+  entity: EntityReferenceSchema,
+  clock: z.number(),
+  current_authority: ConnectionIdSchema.optional(),
+});
+// #endregion
+
 // packets that originate from the client
 export const ClientPacketSchema = z.discriminatedUnion("t", [
   ClientLoadPhaseChangedPacket,
@@ -186,6 +214,8 @@ export const ClientPacketSchema = z.discriminatedUnion("t", [
   RenameEntitiesPacketSchema,
   ReportEntityTransformsPacketSchema,
   ReportValuesPacketSchema,
+  ClientRequestExclusiveAuthorityPacket,
+  ClientRelinquishExclusiveAuthorityPacket,
 ]);
 export type ClientPacket = z.infer<typeof ClientPacketSchema>;
 
@@ -208,6 +238,8 @@ export const ServerPacketSchema = z.discriminatedUnion("t", [
   ServerAddEntitiesToSpawnOperationPacketSchema,
   ServerFinishSpawnOperationPacketSchema,
   ServerReportValuesPacketSchema,
+  ServerAnnounceExclusiveAuthorityPacket,
+  ServerDenyExclusiveAuthorityPacket,
 ]);
 export type ServerPacket = z.infer<typeof ServerPacketSchema>;
 

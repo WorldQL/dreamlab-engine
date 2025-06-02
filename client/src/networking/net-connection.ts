@@ -45,6 +45,7 @@ export class ClientConnection {
   reparentIgnoreSet = new Set<string>();
   renameIgnoreSet = new Set<string>();
   transformIgnoreSet = new Set<string>();
+  authorityChangeIgnoreSet = new Set<string>();
 
   constructor(
     public id: ConnectionId,
