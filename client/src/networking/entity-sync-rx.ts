@@ -161,4 +161,42 @@ export const handleIncomingEntityUpdates: ClientNetworkSetupRoutine = (conn, gam
       conn.transformIgnoreSet.delete(entity.ref);
     }
   });
+
+  conn.registerPacketHandler("ReportValues", packet => {
+    if (packet.from === conn.id) return;
+
+    for (const report of packet.reports) {
+      const value = game.values.lookup(report.identifier);
+      if (!value || !value.replicated) continue;
+
+      if (
+        report.entity === undefined ||
+        game.entities.lookupByRef(report.entity) !== undefined
+      ) {
+        game.values.applyValueUpdateFromPrimitive(
+          value,
+          report.value,
+          report.clock,
+          packet.from ?? "server",
+        );
+        continue;
+      }
+
+      void (async () => {
+        await inFlightEntities.get(report.entity!);
+        const entity = game.entities.lookupByRef(report.entity!);
+        if (!entity) {
+          console.warn(
+            `entity sync: tried to update value on entity that does not exist (${report.entity})`,
+          );
+        }
+        game.values.applyValueUpdateFromPrimitive(
+          value,
+          report.value,
+          report.clock,
+          packet.from ?? "server",
+        );
+      })();
+    }
+  });
 };

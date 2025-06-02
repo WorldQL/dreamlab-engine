@@ -158,6 +158,23 @@ export const ServerReportEntityTransformsPacketSchema =
   });
 // #endregion
 
+// #region synced values
+export type ValueReport = z.infer<typeof ValueReportSchema>;
+export const ValueReportSchema = z.object({
+  entity: EntityReferenceSchema.optional(),
+  identifier: z.string(),
+  value: z.any(),
+  clock: z.number(),
+});
+export const ReportValuesPacketSchema = z.object({
+  t: z.literal("ReportValues"),
+  reports: ValueReportSchema.array(),
+});
+export const ServerReportValuesPacketSchema = ReportValuesPacketSchema.extend({
+  from: ConnectionIdSchema.optional(),
+});
+// #endregion
+
 // packets that originate from the client
 export const ClientPacketSchema = z.discriminatedUnion("t", [
   ClientLoadPhaseChangedPacket,
@@ -168,6 +185,7 @@ export const ClientPacketSchema = z.discriminatedUnion("t", [
   ReparentEntitiesPacketSchema,
   RenameEntitiesPacketSchema,
   ReportEntityTransformsPacketSchema,
+  ReportValuesPacketSchema,
 ]);
 export type ClientPacket = z.infer<typeof ClientPacketSchema>;
 
@@ -189,6 +207,7 @@ export const ServerPacketSchema = z.discriminatedUnion("t", [
   ServerStartSpawnOperationPacketSchema,
   ServerAddEntitiesToSpawnOperationPacketSchema,
   ServerFinishSpawnOperationPacketSchema,
+  ServerReportValuesPacketSchema,
 ]);
 export type ServerPacket = z.infer<typeof ServerPacketSchema>;
 

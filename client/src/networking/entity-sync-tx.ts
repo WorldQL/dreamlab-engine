@@ -8,11 +8,12 @@ import {
   EntityTransformUpdate,
   GameStatus,
   InternalGameTick,
+  Value,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { createFullEntityDefinition } from "@dreamlab/proto/common/entity-sync.ts";
 import { EntityDefinitionSchema } from "@dreamlab/proto/datamodel.ts";
-import { EntityTransformReport } from "@dreamlab/proto/play.ts";
+import { EntityTransformReport, ValueReport } from "@dreamlab/proto/play.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { ClientNetworkSetupRoutine } from "./net-connection.ts";
 
@@ -89,6 +90,12 @@ export const handleOutgoingEntityUpdates: ClientNetworkSetupRoutine = (conn, gam
   };
   game.world.on(EntityDescendantSpawned, handleAllEntityTransforms);
   game.prefabs.on(EntityDescendantSpawned, handleAllEntityTransforms);
+
+  const valueQueue = new Set<Value>();
+  game.values.onValueChanged((v, _newValue, _clock, source) => {
+    if (source !== game.network.self) return;
+    valueQueue.add(v);
+  });
 
   game.on(InternalGameTick, () => {
     if (game.status !== GameStatus.Running) return;
@@ -209,8 +216,29 @@ export const handleOutgoingEntityUpdates: ClientNetworkSetupRoutine = (conn, gam
       conn.send({ t: "ReportEntityTransforms", reports: entityTransformReports });
     }
 
+    const valueReports: ValueReport[] = [];
+    for (const value of valueQueue) {
+      const entity = value[internal.valueRelatedEntity];
+      if (entity !== undefined) {
+        if (entitySpawnQueue.has(entity)) continue;
+        if (largeEntities.has(entity)) continue;
+      }
+
+      valueQueue.delete(value);
+      if (value.lastSource === undefined || value.lastSource === game.network.self) {
+        valueReports.push({
+          entity: value[internal.valueRelatedEntity]?.ref,
+          identifier: value.identifier,
+          clock: value.clock,
+          value: value.adapter ? value.adapter.convertToPrimitive(value.value) : value.value,
+        });
+      }
+    }
+    if (valueReports.length) {
+      conn.send({ t: "ReportValues", reports: valueReports });
+    }
+
     // TODO:
-    // 5. entity synced values
     // 6. behavior add/remove
     // 7. behavior synced values / objects
     // 8. entity authority
