@@ -329,6 +329,7 @@ export class AppMenu {
     }
 
     this.games.play = playGame;
+    setTimeout(() => playGame.renderer.resize(true), 1);
   }
 
   #disconnectPlayGame() {

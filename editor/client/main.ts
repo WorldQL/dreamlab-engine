@@ -202,8 +202,8 @@ const viewport = uiRoot.querySelector<HTMLDivElement>("div#viewport")!;
 new ResizeObserver(_ => {
   updateAspectRatio();
 
-  games.edit.renderer?.resize?.();
-  games.play?.renderer?.resize?.();
+  games.edit.renderer?.resize?.(true);
+  games.play?.renderer?.resize?.(true);
 }).observe(viewport);
 
 new ResizeObserver(_ => {
