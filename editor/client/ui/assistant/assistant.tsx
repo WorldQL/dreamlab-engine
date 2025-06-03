@@ -1,7 +1,7 @@
+import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
 import { ClientGame } from "@dreamlab/engine";
+import { urlToHTTP } from "@dreamlab/util/url.ts";
 import { InspectorUI } from "../inspector.ts";
-
-let httpServer: string | undefined = undefined;
 
 export class Assistant {
   game: ClientGame;
@@ -16,20 +16,7 @@ export class Assistant {
   setup(ui: InspectorUI) {
     this.ui = ui;
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const websocketServer = urlParams.get("server");
-
-    // Convert wss:// / ws:// to https:// / http:// for REST endpoints
-    httpServer = websocketServer
-      ? websocketServer.replace(/^wss:/, "https:").replace(/^ws:/, "http:")
-      : undefined;
-
-    if (!httpServer) {
-      throw new Error(
-        "could not infer http server from websocketServer. This should never throw.",
-      );
-    }
-
+    const httpServer = urlToHTTP(connectionDetails.serverUrl);
     const serviceId = encodeURIComponent(this.game.worldId);
 
     try {
