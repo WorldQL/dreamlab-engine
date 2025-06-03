@@ -4,6 +4,7 @@ import { ClientGame } from "@dreamlab/engine";
 import { BehaviorSchema } from "@dreamlab/scene";
 import { EditorMetadataEntity } from "../../common/mod.ts";
 import {
+  addBehavior,
   lookupEntityInEditMode,
   spawnEntity,
 } from "./assistant/editor-world-interaction-util.ts";
@@ -33,12 +34,15 @@ spawnEntity(prefabRoot, {
 
 // Create Enemy Spawner in the world
 const worldRoot = lookupById("world");
-spawnEntity(worldRoot, {
+const newE = spawnEntity(worldRoot, {
   name: "EnemySpawner",
   type: "Empty",
-  behaviors: [{script: "res://src/enemy-spawner.ts"}],
+  // behaviors: [{script: "res://src/enemy-spawner.ts"}],
   transform: { position: { x: 10, y: 5 } }
 });
+
+addBehavior(newE, "src/enemy-spawner.ts");
+addBehavior(newE, "src/camera-follow.ts", {smoothFactor: 69});
 `;
 
 export class AISuggestionsPopup extends DreamlabEditorUIComponent {
@@ -57,11 +61,20 @@ export class AISuggestionsPopup extends DreamlabEditorUIComponent {
 
     globalThis.addEventListener("message", message => {
       console.log(message);
-      this.setPlan(message.data.payload);
-      console.log("showing");
-      this.show();
+      console.log(message.data.payload.length);
+      if (message.data.payload.length > 0) {
+        this.setPlan(message.data.payload);
+        console.log("showing");
+        this.show();
+      }
       // this contains array of {editDescription: "title", editCode: "code to be run"}
     });
+
+    // new Function("spawnEntity", "lookupById", "addBehavior", code)(
+    //   spawnEntity,
+    //   lookupEntityInEditMode,
+    //   addBehavior,
+    // );
   }
 
   /**
@@ -85,9 +98,10 @@ export class AISuggestionsPopup extends DreamlabEditorUIComponent {
     if (!action || action.applied) return;
 
     try {
-      new Function("spawnEntity", "lookupById", action.code)(
+      new Function("spawnEntity", "lookupById", "addBehavior", action.code)(
         spawnEntity,
         lookupEntityInEditMode,
+        addBehavior,
       );
 
       // Mark the action as applied
@@ -126,7 +140,7 @@ export class AISuggestionsPopup extends DreamlabEditorUIComponent {
           ✕
         </button>
 
-        <h2 style={{ marginBottom: "20px" }}>Actions</h2>
+        <h2 style={{ marginBottom: "20px" }}>Recommended Actions from Assistant</h2>
 
         <ul style={{ listStyle: "none", padding: "0" }}>
           {this.state.actions.map(action => (

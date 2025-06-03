@@ -66,7 +66,7 @@ export class BottomTabs implements InspectorUIWidget {
     assistantTab.append(icon(Bot), elem("span", {}, ["Assistant"]));
 
     setTimeout(() => {
-      switchTab("prefabs");
+      switchTab("assistant");
     });
 
     // const externalTab = elem("div", { className: "bottom-tab" });
