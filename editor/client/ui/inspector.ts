@@ -3,7 +3,6 @@ import { ClientGame } from "@dreamlab/engine";
 import { PrefabRootFacade } from "../../common/mod.ts";
 import { CameraPanBehavior } from "../panning-and-selection.ts";
 import { BehaviorTypeInfoService } from "../util/behavior-type-info.ts";
-import { getFileContent, textToPlan } from "./assistant/context.ts";
 import { BehaviorPanel } from "./behavior-panel/mod.ts";
 import { ContextMenu } from "./context-menu.ts";
 import { FileTree } from "./file-tree.tsx";
@@ -78,18 +77,6 @@ export class InspectorUI {
 
     conn.registerPacketHandler("ScriptEdited", async packet => {
       // console.log(packet);
-
-      if (packet.script_location.startsWith("instructions/") && packet.isFromFileSystem) {
-        try {
-          game.fire(NewRecommendedActions, packet.script_location, undefined);
-          const instructions = await getFileContent(packet.script_location);
-          const plan = await textToPlan(instructions);
-          game.fire(NewRecommendedActions, packet.script_location, JSON.parse(plan));
-        } catch {
-          // hide loading indicator.
-          game.fire(NewRecommendedActions, packet.script_location, "fail");
-        }
-      }
 
       if (packet.script_location) {
         // console.log(
