@@ -18,7 +18,6 @@ import {
 import { DataTree } from "../components/mod.ts";
 import { InspectorUIWidget } from "./inspector.ts";
 
-import { ScriptSession } from "./assistant/assistant.tsx";
 import { ImportPopup } from "./import-popup.tsx";
 
 type FileTreeNode =
@@ -113,8 +112,6 @@ export class FileTree implements InspectorUIWidget {
         }
         current.children.set(finalPart, { type: "file", name: finalPart, path: file });
       }
-
-      ScriptSession.scriptMap = buildFileTreeMarkdown(fileTreeRoot);
 
       const addNode = (node: FileTreeNode, parent?: HTMLElement, path = "") => {
         const currentPath = path ? `${path}/${node.name}` : node.name;
