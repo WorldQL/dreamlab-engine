@@ -2,11 +2,12 @@ import { element as elem } from "@dreamlab/ui";
 import { InspectorUI, InspectorUIWidget, NewRecommendedActions } from "./inspector.ts";
 import { LogViewer } from "./log-viewer.ts";
 import { PrefabViewer } from "./prefab-viewer.tsx";
-import { Terminal, Box, icon, Bot, Wand, LoaderCircle } from "../_icons.tsx";
+import { Terminal, Box, icon, Bot, Wand, LoaderCircle, Grid3x3 } from "../_icons.tsx";
 import { ClientGame } from "@dreamlab/engine";
 import { Assistant } from "./assistant/assistant.tsx";
 import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 import { AISuggestionsPopup } from "./ai-suggestions-popup.tsx";
+import { TilePicker } from "./tilepicker.tsx";
 
 export class BottomTabs implements InspectorUIWidget {
   #container: HTMLElement;
@@ -16,6 +17,8 @@ export class BottomTabs implements InspectorUIWidget {
   #logContent: HTMLElement;
   #prefabContent: HTMLElement;
   #assistantContent: HTMLElement;
+  #tilemapContent: HTMLElement;
+  #tilepicker: TilePicker;
 
   constructor(games: { edit: ClientGame; play?: ClientGame }) {
     this.#container = elem("div", { className: "bottom-tabs" });
@@ -23,10 +26,12 @@ export class BottomTabs implements InspectorUIWidget {
     this.#logContent = elem("div", { id: "log-viewer-content" });
     this.#prefabContent = elem("div", { id: "prefab-viewer-content" });
     this.#assistantContent = elem("div", { id: "assistant-viewer-content" });
+    this.#tilemapContent = elem("div", { id: "tilemap-content" });
 
     this.#logViewer = new LogViewer(this.#logContent, games);
     this.#prefabViewer = new PrefabViewer(games.edit, this.#prefabContent);
     this.#assistant = new Assistant(games.edit, this.#assistantContent);
+    this.#tilepicker = new TilePicker();
   }
 
   setup(ui: InspectorUI): void {
@@ -48,10 +53,13 @@ export class BottomTabs implements InspectorUIWidget {
       this.#logContent.style.display = tabId === "logs" ? "flex" : "none";
       this.#prefabContent.style.display = tabId === "prefabs" ? "flex" : "none";
       this.#assistantContent.style.display = tabId === "assistant" ? "flex" : "none";
+      this.#tilemapContent.style.display = tabId === "tilemap" ? "flex" : "none";
     };
 
     const aiSuggestionsPopup = new AISuggestionsPopup();
     aiSuggestionsPopup.mount(this.#container, false);
+
+    this.#tilepicker.mount(this.#tilemapContent);
 
     const logsTab = elem("div", { className: "bottom-tab" });
     logsTab.setAttribute("data-tab-id", "logs");
@@ -64,6 +72,10 @@ export class BottomTabs implements InspectorUIWidget {
     const assistantTab = elem("div", { className: "bottom-tab" });
     assistantTab.setAttribute("data-tab-id", "assistant");
     assistantTab.append(icon(Bot), elem("span", {}, ["Assistant"]));
+
+    const tilemapTab = elem("div", { className: "bottom-tab" });
+    tilemapTab.setAttribute("data-tab-id", "tilemap");
+    tilemapTab.append(icon(Grid3x3), elem("span", {}, ["Tilemap"]));
 
     setTimeout(() => {
       switchTab("prefabs");
@@ -131,6 +143,7 @@ export class BottomTabs implements InspectorUIWidget {
       logsTab,
       recommendedActionsTab,
       loadingActionsTab,
+      tilemapTab,
     ]);
 
     logsTab.addEventListener("click", () => {
@@ -149,6 +162,7 @@ export class BottomTabs implements InspectorUIWidget {
       this.#logContent,
       this.#prefabContent,
       this.#assistantContent,
+      this.#tilemapContent
     ]);
 
     this.#prefabContent.style.display = "none";

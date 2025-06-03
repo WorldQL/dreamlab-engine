@@ -2,7 +2,7 @@ import { JSX } from "@dreamlab/ui/jsx-runtime";
 
 export abstract class DreamlabEditorUIComponent {
   private uiRoot: HTMLElement | undefined;
-  private container: HTMLElement | undefined;
+  public container: HTMLElement | undefined;
 
   constructor() {}
 
