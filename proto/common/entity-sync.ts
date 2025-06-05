@@ -100,6 +100,8 @@ export const netSpawnEntity = async (
   from: ConnectionId,
   def: EntityDefinitionSchemaType,
 ): Promise<Entity> => {
+  // TODO: apply authority clock
+
   const inner = async (def: EntityDefinitionSchemaType, parent: Entity): Promise<Entity[]> => {
     const behaviors = await Promise.all(
       def.behaviors?.map(b => convertBehaviorDefinition(game, b)) ?? [],

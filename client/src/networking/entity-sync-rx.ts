@@ -144,7 +144,7 @@ export const handleIncomingEntityUpdates: ClientNetworkSetupRoutine = (conn, gam
 
     for (const report of packet.reports) {
       const entity = game.entities.lookupByRef(report.entity);
-      if (entity === undefined) continue;
+      if (!entity) continue;
       if (entity.authority === conn.id && packet.from !== undefined) continue;
 
       conn.transformIgnoreSet.add(entity.ref);
@@ -169,10 +169,7 @@ export const handleIncomingEntityUpdates: ClientNetworkSetupRoutine = (conn, gam
       const value = game.values.lookup(report.identifier);
       if (!value || !value.replicated) continue;
 
-      if (
-        report.entity === undefined ||
-        game.entities.lookupByRef(report.entity) !== undefined
-      ) {
+      if (!report.entity || game.entities.lookupByRef(report.entity) !== undefined) {
         game.values.applyValueUpdateFromPrimitive(
           value,
           report.value,
@@ -198,5 +195,17 @@ export const handleIncomingEntityUpdates: ClientNetworkSetupRoutine = (conn, gam
         );
       })();
     }
+  });
+
+  conn.registerPacketHandler("AnnounceExclusiveAuthority", packet => {
+    const entity = game.entities.lookupByRef(packet.entity);
+    if (!entity) return;
+    entity[internal.entityForceAuthorityValues](packet.to, packet.clock);
+  });
+
+  conn.registerPacketHandler("DenyExclusiveAuthority", packet => {
+    const entity = game.entities.lookupByRef(packet.entity);
+    if (!entity) return;
+    entity[internal.entityForceAuthorityValues](packet.current_authority, packet.clock);
   });
 };

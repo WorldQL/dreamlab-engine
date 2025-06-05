@@ -1,4 +1,4 @@
-import { Transform } from "@dreamlab/engine";
+import { Entity, Transform } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { convertEntityDefinition } from "@dreamlab/proto/common/entity-sync.ts";
 import { ServerNetworkSetupRoutine } from "./net-manager.ts";
@@ -130,7 +130,7 @@ export const handleIncomingEntityUpdates: ServerNetworkSetupRoutine = (net, game
   net.registerPacketHandler("ReportEntityTransforms", (from, packet) => {
     for (const report of packet.reports) {
       const entity = game.entities.lookupByRef(report.entity);
-      if (entity === undefined) continue;
+      if (!entity) continue;
       if (entity.authority !== undefined && entity.authority !== from) continue;
 
       net.transformIgnoreSet.add(entity.ref);
@@ -148,5 +148,56 @@ export const handleIncomingEntityUpdates: ServerNetworkSetupRoutine = (net, game
     }
 
     net.broadcast({ ...packet, from });
+  });
+
+  net.registerPacketHandler("RequestExclusiveAuthority", (from, packet) => {
+    const entity = game.entities.lookupByRef(packet.entity);
+    if (!entity) return;
+    const currentClock = entity[internal.entityAuthorityClock];
+
+    if (
+      packet.clock > currentClock ||
+      (packet.clock === currentClock &&
+        (entity.authority === undefined || from < entity.authority))
+    ) {
+      const applyAuthority = (e: Entity) => {
+        e[internal.entityForceAuthorityValues](from, packet.clock);
+        for (const child of e.children.values()) applyAuthority(child);
+      };
+      applyAuthority(entity);
+
+      net.broadcast({
+        t: "AnnounceExclusiveAuthority",
+        entity: entity.ref,
+        clock: packet.clock,
+        to: from,
+      });
+    } else {
+      net.send(from, {
+        t: "DenyExclusiveAuthority",
+        entity: entity.ref,
+        clock: currentClock,
+        current_authority: entity.authority,
+      });
+    }
+  });
+
+  net.registerPacketHandler("RelinquishExclusiveAuthority", (from, packet) => {
+    const entity = game.entities.lookupByRef(packet.entity);
+    if (!entity) return;
+    if (entity.authority !== from) return;
+
+    const applyAuthority = (e: Entity) => {
+      e[internal.entityForceAuthorityValues](undefined, e[internal.entityAuthorityClock] + 1);
+      for (const child of e.children.values()) applyAuthority(child);
+    };
+    applyAuthority(entity);
+
+    net.broadcast({
+      t: "AnnounceExclusiveAuthority",
+      entity: entity.ref,
+      clock: entity[internal.entityAuthorityClock],
+      to: undefined,
+    });
   });
 };
