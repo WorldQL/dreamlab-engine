@@ -57,6 +57,7 @@ import {
   transformLocalToWorld,
   transformWorldToLocal,
 } from "@dreamlab/engine";
+
 import * as internal from "@dreamlab/engine/internal";
 import { SyncedObjectConstructor } from "../synced-objects/registry.ts";
 
@@ -67,6 +68,7 @@ export interface EntityContext {
   transform?: TransformOptions;
   authority?: ConnectionId;
   ref?: string;
+  data?: JsonValue;
   values?: Record<string, unknown>;
   clonedFrom?: string;
 }
@@ -95,6 +97,7 @@ export interface EntityDefinition<
   values?: Partial<Omit<T, keyof Entity>>;
   children?: { [I in keyof Children]: EntityDefinition<Children[I]> };
   behaviors?: { [I in keyof Behaviors]: BehaviorDefinition<Behaviors[I]> };
+  data?: JsonValue;
   _ref?: string;
 }
 
@@ -380,6 +383,7 @@ export abstract class Entity implements ISignalHandler {
       transform: def.transform,
       authority: def.authority ?? parent.authority,
       ref: def._ref,
+      data: def.data,
       values: def.values ? Object.fromEntries(Object.entries(def.values)) : undefined,
       clonedFrom,
     });
@@ -526,6 +530,12 @@ export abstract class Entity implements ISignalHandler {
   }
   // #endregion
 
+  // #region Scene Data
+  [internal.entitySerializedData]?: JsonValue;
+  protected saveDataForScene?(): JsonValue | undefined;
+  protected loadDataForScene?(value: JsonValue | undefined): void;
+  // #endregion
+
   // #region Cloning
   #generatePlainDefinition(withRefs: boolean): EntityDefinition<this> & { typeName: string } {
     const entityValues: Partial<Omit<this, keyof Entity>> = {};
@@ -558,6 +568,7 @@ export abstract class Entity implements ISignalHandler {
         z: this.transform.z,
       },
       values: entityValues,
+      data: this.saveDataForScene?.(),
     };
   }
 
@@ -1025,6 +1036,7 @@ export abstract class Entity implements ISignalHandler {
     this.transform = new Transform(ctx.transform);
     this.globalTransform = new Transform();
     this.#exclusiveAuthority = ctx.authority;
+    this[internal.entitySerializedData] = ctx.data;
 
     if (ctx.values) this.#defaultValues = ctx.values;
 
@@ -1142,6 +1154,9 @@ export abstract class Entity implements ISignalHandler {
     if (this.#spawned) return;
 
     this.#spawned = true;
+
+    this.loadDataForScene?.(this[internal.entitySerializedData]);
+    delete this[internal.entitySerializedData];
 
     this.onInitialize();
 

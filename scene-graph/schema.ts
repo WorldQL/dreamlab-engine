@@ -67,6 +67,7 @@ const EntitySchemaNoChildren = z.object({
   transform: TransformSchema.default(TransformSchema.parse({})),
   values: z.record(ValueSchema).default({}),
   behaviors: z.array(BehaviorSchema).default([]),
+  data: JsonValueSchema.optional(),
   locked: z.boolean().default(false),
 });
 type SceneDescEntityTypeIn = z.input<typeof EntitySchemaNoChildren> & {

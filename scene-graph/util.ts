@@ -106,6 +106,7 @@ export const serializeEntityDefinition = (
     name: def.name,
     enabled: def.enabled,
     transform: def.transform ? serializeTransform(def.transform) : undefined,
+    data: def.data,
     values,
     behaviors,
     children,
@@ -114,6 +115,7 @@ export const serializeEntityDefinition = (
   if (desc.values && Object.keys(desc.values).length === 0) delete desc.values;
   if (desc.transform && Object.keys(desc.transform).length === 0) delete desc.transform;
   if (desc.children && desc.children.length === 0) delete desc.children;
+  if (desc.data === undefined) delete desc.data;
 
   return desc;
 };
@@ -171,6 +173,7 @@ export const convertEntityDefinition = async (
     children,
     behaviors,
     values: definition.values,
+    data: definition.data,
   };
 };
 
