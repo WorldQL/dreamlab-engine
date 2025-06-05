@@ -59,6 +59,7 @@ import {
 } from "@dreamlab/engine";
 
 import * as internal from "@dreamlab/engine/internal";
+import { setupSyncedObjects } from "../synced-objects/decorator.ts";
 import { SyncedObjectConstructor } from "../synced-objects/registry.ts";
 
 export interface EntityContext {
@@ -70,6 +71,7 @@ export interface EntityContext {
   ref?: string;
   data?: JsonValue;
   values?: Record<string, unknown>;
+  sync?: Record<string, SyncedObjectInfo>;
   clonedFrom?: string;
 }
 
@@ -95,6 +97,7 @@ export interface EntityDefinition<
   transform?: TransformOptions;
   authority?: ConnectionId;
   values?: Partial<Omit<T, keyof Entity>>;
+  sync?: Record<Exclude<keyof T, keyof Entity> | (string & Record<never, never>), SyncedObjectInfo>;
   children?: { [I in keyof Children]: EntityDefinition<Children[I]> };
   behaviors?: { [I in keyof Behaviors]: BehaviorDefinition<Behaviors[I]> };
   data?: JsonValue;
@@ -132,6 +135,7 @@ export abstract class Entity implements ISignalHandler {
   }
 
   readonly [internal.syncedObjectContainerObjectsField] = new Map<string, AnySyncedObject>();
+  #syncOverrides: Record<string, SyncedObjectInfo> = {};
 
   // #region Name / ID / Hierarchy
   #name: string;
@@ -385,6 +389,7 @@ export abstract class Entity implements ISignalHandler {
       ref: def._ref,
       data: def.data,
       values: def.values ? Object.fromEntries(Object.entries(def.values)) : undefined,
+      sync: def.sync,
       clonedFrom,
     });
     if (def.enabled !== undefined) entity.enabled = def.enabled;
@@ -537,7 +542,10 @@ export abstract class Entity implements ISignalHandler {
   // #endregion
 
   // #region Cloning
-  #generatePlainDefinition(withRefs: boolean): EntityDefinition<this> & { typeName: string } {
+  #generatePlainDefinition(
+    withRefs: boolean,
+    forNetwork: boolean,
+  ): EntityDefinition<this> & { typeName: string } {
     const entityValues: Partial<Omit<this, keyof Entity>> = {};
     for (const [key, value] of this.values.entries()) {
       if (!value.persistent) continue;
@@ -554,6 +562,20 @@ export abstract class Entity implements ISignalHandler {
       entityValues[key] = serializableValue;
     }
 
+    const syncOverrides: Record<string, SyncedObjectInfo> = {};
+    for (const syncedObject of this[internal.syncedObjectContainerObjectsField].values()) {
+      const info: SyncedObjectInfo = {
+        kind: (syncedObject.constructor as SyncedObjectConstructor).kind,
+        clock: syncedObject.clock,
+        net: forNetwork,
+        value: forNetwork
+          ? syncedObject.serializeForNetwork(syncedObject.get())
+          : syncedObject.serialize(syncedObject.get()),
+      };
+      if (!info.net) delete info.net;
+      syncOverrides[syncedObject.field] = info;
+    }
+
     return {
       _ref: withRefs ? this.ref : undefined,
       name: this.name,
@@ -568,6 +590,7 @@ export abstract class Entity implements ISignalHandler {
         z: this.transform.z,
       },
       values: entityValues,
+      sync: syncOverrides,
       data: this.saveDataForScene?.(),
     };
   }
@@ -615,7 +638,7 @@ export abstract class Entity implements ISignalHandler {
   }
 
   #generateRichDefinition(withRefs: boolean, forNetwork: boolean): EntityDefinition<this> {
-    const definition = this.#generatePlainDefinition(withRefs);
+    const definition = this.#generatePlainDefinition(withRefs, forNetwork);
     definition.behaviors =
       this.behaviors.length === 0
         ? undefined
@@ -626,7 +649,7 @@ export abstract class Entity implements ISignalHandler {
         : this.children
             .values()
             // @ts-ignore This breaks in typedef-gen. something wrong with shim?
-            .map(entity => entity.#generateRichDefinition(withRefs))
+            .map(entity => entity.#generateRichDefinition(withRefs, forNetwork))
             .toArray();
 
     return definition;
@@ -1039,6 +1062,7 @@ export abstract class Entity implements ISignalHandler {
     this[internal.entitySerializedData] = ctx.data;
 
     if (ctx.values) this.#defaultValues = ctx.values;
+    if (ctx.sync) this.#syncOverrides = ctx.sync;
 
     this.game.sync.register(this);
 
@@ -1155,6 +1179,7 @@ export abstract class Entity implements ISignalHandler {
 
     this.#spawned = true;
 
+    setupSyncedObjects(this.game.sync, this, this.#syncOverrides); // TODO: overrides from scene def
     this.loadDataForScene?.(this[internal.entitySerializedData]);
     delete this[internal.entitySerializedData];
 
