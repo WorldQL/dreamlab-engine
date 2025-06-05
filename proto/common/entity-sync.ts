@@ -139,21 +139,6 @@ export const serializeTransform = (transform: TransformOptions): TransformSchema
   };
 };
 
-export const serializeBehaviorDefinition = (
-  _game: Game,
-  _def: BehaviorDefinition,
-): z.infer<typeof BehaviorDefinitionSchema> => {
-  throw new Error("used legacy behavior def netcode");
-};
-
-export const serializeEntityDefinition = (
-  _game: Game,
-  _def: EntityDefinition,
-  _parentRef: string,
-): z.infer<typeof EntityDefinitionSchema> => {
-  throw new Error("used legacy entity def netcode");
-};
-
 export const createValuesDefinition = (container: Entity | Behavior): ValuesSchemaType => {
   const values: ValuesSchemaType = {};
 
