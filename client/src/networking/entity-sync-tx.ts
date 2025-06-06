@@ -1,4 +1,6 @@
 import {
+  Behavior,
+  BehaviorDescendantSpawned,
   Entity,
   EntityDescendantRenamed,
   EntityDescendantReparented,
@@ -12,7 +14,10 @@ import {
   Value,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
-import { createFullEntityDefinition } from "@dreamlab/proto/common/entity-sync.ts";
+import {
+  createBehaviorDefinition,
+  createFullEntityDefinition,
+} from "@dreamlab/proto/common/entity-sync.ts";
 import { EntityDefinitionSchema } from "@dreamlab/proto/datamodel.ts";
 import { EntityTransformReport, ValueReport } from "@dreamlab/proto/play.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
@@ -103,6 +108,17 @@ export const handleOutgoingEntityUpdates: ClientNetworkSetupRoutine = (conn, gam
     if (conn.authorityChangeIgnoreSet.has(event.entity.ref)) return;
     authorityChangeQueue.add(event.entity);
   });
+
+  const behaviorSpawnQueue = new Set<Behavior>();
+  const handleBehaviorDescendantSpawned = (event: BehaviorDescendantSpawned) => {
+    const { behavior } = event;
+    if (!behavior.entity[internal.entityDoneSpawning]) return;
+    behaviorSpawnQueue.add(behavior);
+  };
+  game.world.on(BehaviorDescendantSpawned, handleBehaviorDescendantSpawned);
+  game.prefabs.on(BehaviorDescendantSpawned, handleBehaviorDescendantSpawned);
+
+  // TODO: behavior despawn
 
   game.on(InternalGameTick, () => {
     if (game.status !== GameStatus.Running) return;
@@ -245,8 +261,24 @@ export const handleOutgoingEntityUpdates: ClientNetworkSetupRoutine = (conn, gam
       conn.send({ t: "ReportValues", reports: valueReports });
     }
 
-    // TODO:
-    // 6. behavior add/remove
+    for (const behavior of behaviorSpawnQueue) {
+      if (behavior.entity === undefined) {
+        behaviorSpawnQueue.delete(behavior);
+        continue;
+      }
+
+      if (entitySpawnQueue.has(behavior.entity)) continue;
+      if (largeEntities.has(behavior.entity)) continue;
+
+      behaviorSpawnQueue.delete(behavior);
+
+      conn.send({
+        t: "AddBehavior",
+        entity: behavior.entity.ref,
+        behavior: createBehaviorDefinition(behavior),
+      });
+    }
+
     // 7. behavior synced objects
 
     for (const entity of authorityChangeQueue) {

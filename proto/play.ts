@@ -1,5 +1,6 @@
 import { z } from "@dreamlab/vendor/zod.ts";
 import {
+  BehaviorDefinitionSchema,
   ConnectionIdSchema,
   EntityDefinitionSchema,
   EntityReferenceSchema,
@@ -203,6 +204,20 @@ export const ServerDenyExclusiveAuthorityPacket = z.object({
 });
 // #endregion
 
+// #region Behavior Editing
+export const AddBehaviorPacketSchema = z.object({
+  t: z.literal("AddBehavior"),
+  entity: EntityReferenceSchema,
+  behavior: BehaviorDefinitionSchema,
+});
+
+export const RemoveBehaviorPacketSchema = z.object({
+  t: z.literal("RemoveBehavior"),
+  entity: EntityReferenceSchema,
+  behavior: z.string().describe("behavior ref"),
+});
+// #endregion
+
 // packets that originate from the client
 export const ClientPacketSchema = z.discriminatedUnion("t", [
   ClientLoadPhaseChangedPacket,
@@ -216,6 +231,8 @@ export const ClientPacketSchema = z.discriminatedUnion("t", [
   ReportValuesPacketSchema,
   ClientRequestExclusiveAuthorityPacket,
   ClientRelinquishExclusiveAuthorityPacket,
+  AddBehaviorPacketSchema,
+  RemoveBehaviorPacketSchema,
 ]);
 export type ClientPacket = z.infer<typeof ClientPacketSchema>;
 
