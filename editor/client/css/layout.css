@@ -27,6 +27,10 @@ main {
       3em,
       var(--bottom-bar-height)
     );
+
+  @media (max-width: 600px) {
+    padding: 0;
+  }
 }
 
 main.topbar-plus-viewport {
