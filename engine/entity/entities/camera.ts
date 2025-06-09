@@ -20,7 +20,9 @@ export class Camera extends Entity {
   }
 
   static readonly icon = "🎥";
-  public static readonly METERS_TO_PIXELS = 100;
+  public static get METERS_TO_PIXELS(): number {
+    return 100 / globalThis.devicePixelRatio;
+  }
   public static readonly TARGET_VIEWPORT_SIZE = 10;
   public readonly bounds: undefined;
 
