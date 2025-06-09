@@ -1,6 +1,7 @@
 import { Entity, Transform } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { convertEntityDefinition } from "@dreamlab/proto/common/entity-sync.ts";
+import { PlayPacket } from "@dreamlab/proto/play.ts";
 import { ServerNetworkSetupRoutine } from "./net-manager.ts";
 
 export const handleIncomingEntityUpdates: ServerNetworkSetupRoutine = (net, game) => {
@@ -199,5 +200,40 @@ export const handleIncomingEntityUpdates: ServerNetworkSetupRoutine = (net, game
       clock: entity[internal.entityAuthorityClock],
       to: undefined,
     });
+  });
+
+  net.registerPacketHandler("ReportValues", (from, packet) => {
+    const validReports: PlayPacket<"ReportValues", "client">["reports"] = [];
+    const promises: Promise<void>[] = [];
+
+    for (const report of packet.reports) {
+      const value = game.values.lookup(report.identifier);
+      if (!value || !value.replicated) continue;
+
+      if (!report.entity || game.entities.lookupByRef(report.entity) !== undefined) {
+        game.values.applyValueUpdateFromPrimitive(value, report.value, report.clock, from);
+        validReports.push(report);
+        continue;
+      }
+
+      promises.push(
+        (async () => {
+          await inFlightEntities.get(report.entity!);
+          const entity = game.entities.lookupByRef(report.entity!);
+          if (!entity) {
+            console.warn(
+              `entity sync: tried to update value on entity that does not exist (${report.entity})`,
+            );
+          }
+          game.values.applyValueUpdateFromPrimitive(value, report.value, report.clock, from);
+          validReports.push(report);
+        })(),
+      );
+    }
+
+    void (async () => {
+      await Promise.allSettled(promises);
+      net.broadcast({ t: "ReportValues", from, reports: validReports });
+    })();
   });
 };
