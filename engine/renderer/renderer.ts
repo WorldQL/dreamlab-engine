@@ -56,11 +56,12 @@ export class GameRenderer {
     const resizeTo = this.app.resizeTo;
     if (resizeTo instanceof HTMLElement) {
       const { clientWidth: width, clientHeight: height } = resizeTo;
+      const res = globalThis.devicePixelRatio;
 
       this.app.canvas.style.width = `${width}px`;
       this.app.canvas.style.height = `${height}px`;
-      this.app.canvas.width = width;
-      this.app.canvas.height = height;
+      this.app.canvas.width = width * res;
+      this.app.canvas.height = height * res;
 
       this.app.renderer.resize(width, height);
       this.app.render();

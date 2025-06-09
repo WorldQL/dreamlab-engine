@@ -102,7 +102,7 @@ export class RichText extends PixiEntity {
     this.on(EntityTransformUpdate, () => {
       if (!this.#text) return;
 
-      const scale = this.globalTransform.scale.div(Camera.METERS_TO_PIXELS);
+      const scale = this.globalTransform.scale.div(Camera.METERS_TO_PIXELS_UNSCALED);
       this.#text.scale.set(scale.x, scale.y);
     });
   }
@@ -135,7 +135,7 @@ export class RichText extends PixiEntity {
     this.#text.style = this.#style;
     this.#text.text = this.text;
 
-    const scale = this.globalTransform.scale.div(Camera.METERS_TO_PIXELS);
+    const scale = this.globalTransform.scale.div(Camera.METERS_TO_PIXELS_UNSCALED);
     this.#text.scale.set(scale.x, scale.y);
 
     const anchor = this.align === "center" ? 0.5 : this.align === "left" ? 0 : 1;

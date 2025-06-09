@@ -20,8 +20,9 @@ export class Camera extends Entity {
   }
 
   static readonly icon = "🎥";
+  public static readonly METERS_TO_PIXELS_UNSCALED = 100;
   public static get METERS_TO_PIXELS(): number {
-    return 100 / globalThis.devicePixelRatio;
+    return this.METERS_TO_PIXELS_UNSCALED / globalThis.devicePixelRatio;
   }
   public static readonly TARGET_VIEWPORT_SIZE = 10;
   public readonly bounds: undefined;
@@ -50,6 +51,7 @@ export class Camera extends Entity {
 
   #matrix() {
     const game = this.game as ClientGame;
+    const resolution = globalThis.devicePixelRatio;
 
     let scale = 1;
     if (!this.unlocked) {
@@ -65,7 +67,10 @@ export class Camera extends Entity {
       .rotate(this.#rotation)
       .scale(Camera.METERS_TO_PIXELS, Camera.METERS_TO_PIXELS)
       .scale(1 / (this.#scale.x / scale), 1 / (this.#scale.y / scale))
-      .translate(game.renderer.app.canvas.width / 2, game.renderer.app.canvas.height / 2);
+      .translate(
+        game.renderer.app.canvas.width / 2 / resolution,
+        game.renderer.app.canvas.height / 2 / resolution,
+      );
   }
 
   get smoothed(): {
@@ -218,6 +223,7 @@ export class Camera extends Entity {
 
   public worldToScreen(position: IVector2): Vector2 {
     const game = this.game as ClientGame;
+    const resolution = globalThis.devicePixelRatio;
 
     let scale = 1;
     if (!this.unlocked) {
@@ -233,7 +239,10 @@ export class Camera extends Entity {
       .rotate(this.#rotation)
       .scale(Camera.METERS_TO_PIXELS, Camera.METERS_TO_PIXELS)
       .scale(1 / (this.#scale.x / scale), 1 / (this.#scale.y / scale))
-      .translate(game.renderer.app.canvas.width / 2, game.renderer.app.canvas.height / 2);
+      .translate(
+        game.renderer.app.canvas.width / 2 / resolution,
+        game.renderer.app.canvas.height / 2 / resolution,
+      );
 
     const { x, y } = matrix.apply({ x: position.x, y: -position.y });
     return new Vector2(x, y);
@@ -241,6 +250,7 @@ export class Camera extends Entity {
 
   public screenToWorld(position: IVector2): Vector2 {
     const game = this.game as ClientGame;
+    const resolution = globalThis.devicePixelRatio;
 
     let scale = 1;
     if (!this.unlocked) {
@@ -256,7 +266,10 @@ export class Camera extends Entity {
       .rotate(this.#rotation)
       .scale(Camera.METERS_TO_PIXELS, Camera.METERS_TO_PIXELS)
       .scale(1 / (this.#scale.x / scale), 1 / (this.#scale.y / scale))
-      .translate(game.renderer.app.canvas.width / 2, game.renderer.app.canvas.height / 2);
+      .translate(
+        game.renderer.app.canvas.width / 2 / resolution,
+        game.renderer.app.canvas.height / 2 / resolution,
+      );
 
     const { x, y } = matrix.applyInverse(position);
     return new Vector2(x, -y);
