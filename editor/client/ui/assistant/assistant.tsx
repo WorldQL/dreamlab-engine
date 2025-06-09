@@ -23,10 +23,12 @@ export class Assistant {
       const coderBaseUrl = new URL("coder-manager", httpServer).toString();
 
       const chatbotUIUrl = coderBaseUrl.includes("localhost")
-        ? "http://localhost:5177/"
+        ? "http://localhost:5177"
         : "https://ai-chatbot.dreamlab.gg/";
 
-      const iframeUrl = `${chatbotUIUrl}/?directory=${decodeURIComponent(serviceId)}&baseUrl=${coderBaseUrl}`;
+      const iframeUrl = `${chatbotUIUrl}/?directory=${decodeURIComponent(
+        serviceId,
+      )}&baseUrl=${coderBaseUrl}`;
       console.log(iframeUrl);
 
       // 5. Create an iframe to show that coder instance
