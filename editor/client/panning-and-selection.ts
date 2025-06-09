@@ -3,6 +3,7 @@ import {
   Behavior,
   Camera,
   Clickable,
+  Entity,
   MouseDown,
   MouseMove,
   MouseOut,
