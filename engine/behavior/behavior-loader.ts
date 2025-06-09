@@ -88,6 +88,7 @@ export class BehaviorLoader {
         // ugly hack because WebKit resolves module to { default: undefined } for 1 JS runtime tick,
         // so if we setTimeout(…, 0) we wait for the next tick's microtasks to finish before
         // resolving the promise. what the hell man
+        // potentially related: https://bugs.webkit.org/show_bug.cgi?id=242740
         module => new Promise(resolve => setTimeout(() => resolve(module), 0)),
       );
 
