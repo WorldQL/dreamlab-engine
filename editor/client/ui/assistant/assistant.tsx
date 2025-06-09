@@ -29,7 +29,6 @@ export class Assistant {
       const iframeUrl = `${chatbotUIUrl}/?directory=${decodeURIComponent(
         serviceId,
       )}&baseUrl=${coderBaseUrl}`;
-      console.log(iframeUrl);
 
       // 5. Create an iframe to show that coder instance
       const iframe = document.createElement("iframe");

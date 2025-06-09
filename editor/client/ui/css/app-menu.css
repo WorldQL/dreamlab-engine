@@ -8,6 +8,19 @@
   padding-left: 1em;
   align-content: center;
 
+  @media (max-width: 600px) {
+    > div:not(:nth-child(2)) {
+      display: none;
+    }
+
+    > div:nth-child(2) {
+      flex: 1;
+      justify-content: center;
+    }
+
+    justify-content: center;
+  }
+
   & > * {
     flex: calc(1 / 3);
     display: flex;
