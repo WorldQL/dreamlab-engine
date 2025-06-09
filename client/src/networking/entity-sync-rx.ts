@@ -1,6 +1,6 @@
-import { Transform } from "@dreamlab/engine";
+import { Entity, Transform } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
-import { netSpawnEntity } from "@dreamlab/proto/common/entity-sync.ts";
+import { netSpawnEntityInert } from "@dreamlab/proto/common/entity-sync.ts";
 import { ClientNetworkSetupRoutine } from "./net-connection.ts";
 
 export const handleIncomingEntityUpdates: ClientNetworkSetupRoutine = (conn, game) => {
@@ -10,6 +10,7 @@ export const handleIncomingEntityUpdates: ClientNetworkSetupRoutine = (conn, gam
     if (packet.from === game.network.self) return;
 
     const promises = [];
+    const spawnedEntities: Entity[] = [];
 
     for (const def of packet.definitions) {
       if (inFlightEntities.has(def.ref))
@@ -26,8 +27,8 @@ export const handleIncomingEntityUpdates: ClientNetworkSetupRoutine = (conn, gam
             `entity sync: tried to spawn underneath a non-existent entity! (${parentRef})`,
           );
 
-        // FIXME: we should finalize in a second pass because we are gonna break some behaviors that rely on sibling presence
-        await netSpawnEntity(game, packet.from ?? "server", def);
+        const entities = await netSpawnEntityInert(game, packet.from ?? "server", def);
+        spawnedEntities.push(...entities);
 
         // TODO: we want to set value clocks and stuff from a definition as well
       })();
@@ -37,12 +38,25 @@ export const handleIncomingEntityUpdates: ClientNetworkSetupRoutine = (conn, gam
       promises.push(promise);
     }
 
-    if ("finishCallback" in packet && typeof packet.finishCallback === "function") {
-      const cb = packet.finishCallback;
-      Promise.allSettled(promises).then(() => {
+    Promise.allSettled(promises).then(() => {
+      const doOrWarn = (f: () => void, message: string) => {
+        try {
+          f();
+        } catch (err) {
+          console.warn(`${message}: ${err}`);
+        }
+      };
+
+      for (const entity of spawnedEntities)
+        doOrWarn(() => entity[internal.entitySpawnFinalize1](), "spawning " + entity.id);
+      for (const entity of spawnedEntities)
+        doOrWarn(() => entity[internal.entitySpawnFinalize2](), "spawning " + entity.id);
+
+      if ("finishCallback" in packet && typeof packet.finishCallback === "function") {
+        const cb = packet.finishCallback;
         cb();
-      });
-    }
+      }
+    });
   });
 
   conn.registerPacketHandler("DeleteEntities", packet => {

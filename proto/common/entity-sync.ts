@@ -59,7 +59,7 @@ export const convertEntityDefinition = async (
   };
 };
 
-const netSpawnEntityInert = (
+const netSpawnEntityInertSingle = (
   parent: Entity,
   from: ConnectionId,
   def: EntityDefinitionSchemaType,
@@ -95,18 +95,18 @@ const netSpawnEntityInert = (
   return entity;
 };
 
-export const netSpawnEntity = async (
+export const netSpawnEntityInert = async (
   game: Game,
   from: ConnectionId,
   def: EntityDefinitionSchemaType,
-): Promise<Entity> => {
+): Promise<Entity[]> => {
   // TODO: apply authority clock
 
   const inner = async (def: EntityDefinitionSchemaType, parent: Entity): Promise<Entity[]> => {
     const behaviors = await Promise.all(
       def.behaviors?.map(b => convertBehaviorDefinition(game, b)) ?? [],
     );
-    const entity = netSpawnEntityInert(parent, from, def, behaviors);
+    const entity = netSpawnEntityInertSingle(parent, from, def, behaviors);
 
     const entities = [entity];
     for (const child of def.children ?? []) {
@@ -122,10 +122,8 @@ export const netSpawnEntity = async (
     throw new Error("entity sync: tried to spawn entity underneath non-existent parent");
 
   const entities = await inner(def, parent);
-  entities.forEach(e => e[internal.entitySpawnFinalize1]());
-  entities.forEach(e => e[internal.entitySpawnFinalize2]());
 
-  return entities[0]!;
+  return entities;
 };
 
 export const serializeTransform = (transform: TransformOptions): TransformSchemaType => {
