@@ -1,5 +1,6 @@
 import {
   Behavior,
+  BehaviorDescendantDestroyed,
   BehaviorDescendantSpawned,
   Entity,
   EntityDescendantRenamed,
@@ -118,7 +119,14 @@ export const handleOutgoingEntityUpdates: ClientNetworkSetupRoutine = (conn, gam
   game.world.on(BehaviorDescendantSpawned, handleBehaviorDescendantSpawned);
   game.prefabs.on(BehaviorDescendantSpawned, handleBehaviorDescendantSpawned);
 
-  // TODO: behavior despawn
+  const behaviorDespawnQueue = new Set<Behavior>();
+  const handleBehaviorDescendantDestroyed = (event: BehaviorDescendantDestroyed) => {
+    const { behavior } = event;
+    if (!behavior.entity[internal.entityDoneSpawning]) return;
+    behaviorDespawnQueue.add(behavior);
+  };
+  game.world.on(BehaviorDescendantSpawned, handleBehaviorDescendantDestroyed);
+  game.prefabs.on(BehaviorDescendantSpawned, handleBehaviorDescendantDestroyed);
 
   game.on(InternalGameTick, () => {
     if (game.status !== GameStatus.Running) return;
@@ -276,6 +284,24 @@ export const handleOutgoingEntityUpdates: ClientNetworkSetupRoutine = (conn, gam
         t: "AddBehavior",
         entity: behavior.entity.ref,
         behavior: createBehaviorDefinition(behavior),
+      });
+    }
+
+    for (const behavior of behaviorDespawnQueue) {
+      if (behavior.entity === undefined) {
+        behaviorDespawnQueue.delete(behavior);
+        continue;
+      }
+
+      if (entitySpawnQueue.has(behavior.entity)) continue;
+      if (largeEntities.has(behavior.entity)) continue;
+
+      behaviorDespawnQueue.delete(behavior);
+
+      conn.send({
+        t: "RemoveBehavior",
+        entity: behavior.entity.ref,
+        behavior: behavior.ref,
       });
     }
 
