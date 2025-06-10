@@ -1,4 +1,5 @@
 import {
+  AnySyncedObject,
   Behavior,
   BehaviorDescendantDestroyed,
   BehaviorDescendantSpawned,
@@ -12,6 +13,7 @@ import {
   EntityTransformUpdate,
   GameStatus,
   InternalGameTick,
+  SyncedObjectOperation,
   Value,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
@@ -20,7 +22,11 @@ import {
   createFullEntityDefinition,
 } from "@dreamlab/proto/common/entity-sync.ts";
 import { EntityDefinitionSchema } from "@dreamlab/proto/datamodel.ts";
-import { EntityTransformReport, ValueReport } from "@dreamlab/proto/play.ts";
+import {
+  EntityTransformReport,
+  SyncedObjectReport,
+  ValueReport,
+} from "@dreamlab/proto/play.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { ClientNetworkSetupRoutine } from "./net-connection.ts";
 
@@ -127,6 +133,16 @@ export const handleOutgoingEntityUpdates: ClientNetworkSetupRoutine = (conn, gam
   };
   game.world.on(BehaviorDescendantSpawned, handleBehaviorDescendantDestroyed);
   game.prefabs.on(BehaviorDescendantSpawned, handleBehaviorDescendantDestroyed);
+
+  type SyncedObjectOpInfo = {
+    object: AnySyncedObject;
+    clock: number;
+    op: SyncedObjectOperation;
+  };
+  const syncedObjectOpQueue = new Set<SyncedObjectOpInfo>();
+  game.sync.listen((object, clock, op) => {
+    syncedObjectOpQueue.add({ object, clock, op });
+  });
 
   game.on(InternalGameTick, () => {
     if (game.status !== GameStatus.Running) return;
@@ -305,7 +321,35 @@ export const handleOutgoingEntityUpdates: ClientNetworkSetupRoutine = (conn, gam
       });
     }
 
-    // 7. behavior synced objects
+    const syncedObjectReports: SyncedObjectReport[] = [];
+    for (const op of syncedObjectOpQueue) {
+      const container = game.sync.get(op.object.containerId);
+      if (!container) {
+        syncedObjectOpQueue.delete(op);
+        continue;
+      }
+
+      let entity: Entity | undefined;
+      if (container instanceof Entity) entity = container;
+      if (container instanceof Behavior) entity = container.entity;
+
+      if (entity) {
+        if (entitySpawnQueue.has(entity)) continue;
+        if (largeEntities.has(entity)) continue;
+      }
+
+      syncedObjectOpQueue.delete(op);
+
+      syncedObjectReports.push({
+        containerId: op.object.containerId,
+        field: op.object.field,
+        clock: op.clock,
+        op: op.op,
+      });
+    }
+    if (syncedObjectReports.length) {
+      conn.send({ t: "ReportSyncedObjectOps", reports: syncedObjectReports });
+    }
 
     for (const entity of authorityChangeQueue) {
       if (entitySpawnQueue.has(entity)) continue;

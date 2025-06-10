@@ -204,7 +204,7 @@ export const ServerDenyExclusiveAuthorityPacket = z.object({
 });
 // #endregion
 
-// #region Behavior Editing
+// #region behavior editing
 export const AddBehaviorPacketSchema = z.object({
   t: z.literal("AddBehavior"),
   entity: EntityReferenceSchema,
@@ -216,6 +216,25 @@ export const RemoveBehaviorPacketSchema = z.object({
   entity: EntityReferenceSchema,
   behavior: z.string().describe("behavior ref"),
 });
+// #endregion
+
+// #region synced objects
+export type SyncedObjectReport = z.infer<typeof SyncedObjectReportSchema>;
+export const SyncedObjectReportSchema = z.object({
+  containerId: z.string(),
+  field: z.string(),
+  clock: z.number(),
+  op: z.unknown(),
+});
+export const ReportSyncedObjectOpsPacketSchema = z.object({
+  t: z.literal("ReportSyncedObjectOps"),
+  reports: SyncedObjectReportSchema.array(),
+});
+export const ServerReportSyncedObjectOpsPacketSchema = ReportSyncedObjectOpsPacketSchema.extend(
+  {
+    from: ConnectionIdSchema.optional(),
+  },
+);
 // #endregion
 
 // packets that originate from the client
@@ -233,6 +252,7 @@ export const ClientPacketSchema = z.discriminatedUnion("t", [
   ClientRelinquishExclusiveAuthorityPacket,
   AddBehaviorPacketSchema,
   RemoveBehaviorPacketSchema,
+  ReportSyncedObjectOpsPacketSchema,
 ]);
 export type ClientPacket = z.infer<typeof ClientPacketSchema>;
 
@@ -257,6 +277,7 @@ export const ServerPacketSchema = z.discriminatedUnion("t", [
   ServerReportValuesPacketSchema,
   ServerAnnounceExclusiveAuthorityPacket,
   ServerDenyExclusiveAuthorityPacket,
+  ServerReportSyncedObjectOpsPacketSchema,
 ]);
 export type ServerPacket = z.infer<typeof ServerPacketSchema>;
 
