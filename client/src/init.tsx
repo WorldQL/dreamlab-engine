@@ -8,9 +8,6 @@ import {
 import { startGame } from "./start-game.ts";
 import { connectionDetails, setConnectionDetails } from "./util/server-url.ts";
 import { icon, Server } from "../../editor/client/_icons.tsx";
-import { TextureStyle } from "@dreamlab/vendor/pixi.ts";
-
-TextureStyle.defaultOptions.scaleMode = "nearest";
 
 const topbar = document.querySelector<HTMLDivElement>("div#topbar")!;
 const emojistatus = topbar.querySelector<HTMLSpanElement>("span#emoji-status")!;

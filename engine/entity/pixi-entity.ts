@@ -9,8 +9,8 @@ import {
   GameRender,
   SignalSubscription,
 } from "@dreamlab/engine";
-import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import * as internal from "@dreamlab/engine/internal";
+import * as PIXI from "@dreamlab/vendor/pixi.ts";
 
 export abstract class PixiEntity extends Entity {
   static USE_INTERPOLATION = true;

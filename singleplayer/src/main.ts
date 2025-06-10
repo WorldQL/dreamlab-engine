@@ -8,7 +8,6 @@ import "../../client/src/_env.ts";
 import { ClientGame, GameShutdown, GameStatus, GameStatusChange } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { getSceneFromProject, loadSceneDefinition, ProjectSchema } from "@dreamlab/scene";
-import { TextureStyle } from "@dreamlab/vendor/pixi.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { createFetch, IS_SINGLE_FILE, patchBehaviorLoader } from "./single-file.ts";
 import { SingleplayerKv } from "./singleplayer-kv.ts";
@@ -25,7 +24,6 @@ if (worldId === undefined) {
 }
 
 const network = new SingleplayerNetworking();
-TextureStyle.defaultOptions.scaleMode = "nearest";
 
 const game = new ClientGame({
   container: document.querySelector("#viewport")! as HTMLDivElement,

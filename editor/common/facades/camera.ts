@@ -4,6 +4,7 @@ import {
   Entity,
   EntityContext,
   EntityDestroyed,
+  enumAdapter,
   PixiEntity,
   Vector2,
 } from "@dreamlab/engine";
@@ -14,6 +15,10 @@ import {
 import { EnsureCompatible, EntityValueProps } from "./_compatibility.ts";
 import { DebugSquare } from "./_debug.ts";
 import { Facades } from "./manager.ts";
+
+type ScaleFilterMode = enumAdapter.Union<typeof ScaleFilterModeAdapter>;
+const ScaleFilterModeAdapter = enumAdapter(["linear", "nearest"]);
+
 export class EditorFacadeCamera extends PixiEntity {
   static {
     Entity.registerType(this, "@editor");
@@ -30,6 +35,7 @@ export class EditorFacadeCamera extends PixiEntity {
   public showBounds: boolean = false;
   public lockAspectRatio: boolean = false;
   public aspectRatio: readonly [number, number] = [1, 1];
+  public scaleFilterMode: ScaleFilterMode = "nearest";
 
   #selected: boolean = false;
   #updateShowBounds() {
@@ -59,6 +65,7 @@ export class EditorFacadeCamera extends PixiEntity {
       type: AspectRatioAdapter,
       hidden: values => values.get("lockAspectRatio")?.value === false,
     });
+    this.defineValue(EditorFacadeCamera, "scaleFilterMode", { type: ScaleFilterModeAdapter });
 
     if (this.game.isClient()) {
       const svc = SelectedEntityService.serviceForGame(this.game);

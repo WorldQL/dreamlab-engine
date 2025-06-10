@@ -35,6 +35,9 @@ const AlignAdapter = enumAdapter(["left", "center", "right"]);
 type StrokeJoin = enumAdapter.Union<typeof StrokeJoinAdapter>;
 const StrokeJoinAdapter = enumAdapter(["round", "bevel", "miter"]);
 
+type ScaleFilterMode = enumAdapter.Union<typeof ScaleFilterModeAdapter>;
+const ScaleFilterModeAdapter = enumAdapter(["default", "linear", "nearest"]);
+
 export class RichText extends PixiEntity {
   static {
     Entity.registerType(this, "@core");
@@ -58,6 +61,7 @@ export class RichText extends PixiEntity {
   strokeColor: string = "black";
   strokeWidth: number = 3;
   strokeJoin: StrokeJoin = "round";
+  scaleFilterMode: ScaleFilterMode = "default";
 
   #text: PIXI.Text | undefined;
   #style: PIXI.TextStyle | undefined;
@@ -81,6 +85,18 @@ export class RichText extends PixiEntity {
     this.defineValue(RichText, "strokeColor", { type: ColorAdapter, hidden: hidden });
     this.defineValue(RichText, "strokeWidth", { hidden: hidden });
     this.defineValue(RichText, "strokeJoin", { type: StrokeJoinAdapter, hidden: hidden });
+    this.defineValue(RichText, "scaleFilterMode", { type: ScaleFilterModeAdapter });
+
+    // const scaleFilterModeValue = this.values.get("scaleFilterMode");
+    // scaleFilterModeValue?.onChanged(() => {
+    //   const sprite = this.#sprite;
+    //   if (!sprite) return;
+
+    //   void this.#getTexture().then(texture => {
+    //     sprite.texture = texture;
+    //     updateSize();
+    //   });
+    // });
 
     const fonts = new Set(["fontFamily", "fontStyle", "fontWeight"]);
     const ignored = new Set(["clonedFromRef", "static", "hidden", ...fonts]);
@@ -122,6 +138,15 @@ export class RichText extends PixiEntity {
     this.#style.fontWeight = this.fontWeight;
     this.#style.fill = this.color;
 
+    const camera = Camera.getActive(this.game);
+    const scaleMode: Exclude<ScaleFilterMode, "default"> =
+      this.scaleFilterMode === "default"
+        ? (camera?.scaleFilterMode ?? "nearest")
+        : this.scaleFilterMode;
+
+    this.#text.textureStyle ??= new PIXI.TextureStyle();
+    this.#text.textureStyle.scaleMode = scaleMode;
+
     if (this.stroke) {
       this.#style.stroke = {
         color: this.strokeColor,
@@ -148,6 +173,7 @@ export class RichText extends PixiEntity {
     const y = localBounds.y + height / 2;
 
     this.#bounds = { width, height, offset: { x, y } };
+    this.#text.onViewUpdate();
   }
 
   async #loadFont(): Promise<void> {

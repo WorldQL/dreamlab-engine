@@ -10,9 +10,13 @@ import {
   GameRender,
   IVector2,
   Vector2,
+  enumAdapter,
   smoothLerp,
 } from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
+
+type ScaleFilterMode = enumAdapter.Union<typeof ScaleFilterModeAdapter>;
+const ScaleFilterModeAdapter = enumAdapter(["linear", "nearest"]);
 
 export class Camera extends Entity {
   static {
@@ -41,6 +45,7 @@ export class Camera extends Entity {
   }
 
   public zoom: number = 1;
+  public scaleFilterMode: ScaleFilterMode = "nearest";
 
   public lockAspectRatio: boolean = false;
   public aspectRatio: readonly [number, number] = [1, 1];
@@ -204,6 +209,8 @@ export class Camera extends Entity {
       type: AspectRatioAdapter,
       hidden: values => values.get("lockAspectRatio")?.value === false,
     });
+
+    this.defineValue(Camera, "scaleFilterMode", { replicated: false });
 
     const onAspectChanged = () => {
       this.game.fire(CameraAspectChanged, this);

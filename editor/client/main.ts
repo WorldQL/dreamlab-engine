@@ -32,7 +32,6 @@ import {
 import * as internal from "@dreamlab/engine/internal";
 import { element } from "@dreamlab/ui";
 import { urlToWebSocket } from "@dreamlab/util/url.ts";
-import { TextureStyle } from "@dreamlab/vendor/pixi.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { icon, Loader } from "./_icons.tsx";
 import { stats } from "./_stats.ts";
@@ -42,9 +41,6 @@ import { AppMenu } from "./ui/app-menu.ts";
 import { BottomTabs } from "./ui/bottom-tabs.tsx";
 import { InspectorUI } from "./ui/inspector.ts";
 import { UndoRedoManager } from "./undo-redo.ts";
-
-// makes pixel graphics not blurry
-TextureStyle.defaultOptions.scaleMode = "nearest";
 
 // TODO: loading screen ?
 
