@@ -84,16 +84,17 @@ export class BehaviorLoader {
 
     try {
       // deno-lint-ignore no-explicit-any
-      const module: any = await import(url.toString()).then(
-        // ugly hack because WebKit resolves module to { default: undefined } for 1 JS runtime tick,
-        // so if we setTimeout(…, 0) we wait for the next tick's microtasks to finish before
-        // resolving the promise. what the hell man
-        // potentially related: https://bugs.webkit.org/show_bug.cgi?id=242740
-        module => new Promise(resolve => setTimeout(() => resolve(module), 0)),
-      );
+      const module: any = await import(url.toString());
 
       if (!("default" in module)) {
         throw new Error(`Module '${script}' must have a Behavior as its default export!`);
+      }
+
+      if (module.default === undefined) {
+        // ugly hack because JavaScriptCore resolves the module to { default: undefined } for 1 tick,
+        // so if we setTimeout(…, 0) we wait for the next JS runtime tick and proceed. what the hell man
+        // potentially related: https://bugs.webkit.org/show_bug.cgi?id=242740
+        await new Promise(resolve => setTimeout(resolve, 0));
       }
 
       const behaviorType = module.default;
