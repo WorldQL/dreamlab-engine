@@ -83,8 +83,7 @@ export class BehaviorLoader {
     const url = urlWithParams(sourceURI, { cache });
 
     try {
-      // deno-lint-ignore no-explicit-any
-      const module: any = await import(url.toString());
+      const module = await import(url.toString());
 
       if (!("default" in module)) {
         throw new Error(`Module '${script}' must have a Behavior as its default export!`);
