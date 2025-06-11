@@ -3,6 +3,7 @@ import {
   ColorAdapter,
   Entity,
   EntityContext,
+  EntityEnableChanged,
   EntityTransformUpdate,
   IBounds,
   PixiEntity,
@@ -87,6 +88,22 @@ export class Sprite extends PixiEntity {
     const textureValue = this.values.get("texture");
     let lastTexture: string = "";
     textureValue?.onChanged(() => {
+      if (this.texture === lastTexture) return;
+      lastTexture = this.texture;
+
+      const sprite = this.#sprite;
+      if (!sprite) return;
+
+      void this.#getTexture().then(texture => {
+        sprite.texture = texture;
+        updateSize(); // Update size after texture changes to handle aspect ratio correctly
+      });
+    });
+
+    // force update texture when enabled
+    this.on(EntityEnableChanged, ({ enabled }) => {
+      if (!enabled) return;
+
       if (this.texture === lastTexture) return;
       lastTexture = this.texture;
 
