@@ -166,6 +166,7 @@ export class Clickable extends ClickableEntity {
     }
   }
 
+  active: boolean = true;
   shape: ClickableShape = "Rectangle";
   width: number = 1;
   height: number = 1;
@@ -174,6 +175,8 @@ export class Clickable extends ClickableEntity {
 
   constructor(ctx: EntityContext) {
     super(ctx);
+
+    this.defineValue(Clickable, "active");
     this.defineValue(Clickable, "shape", { type: ClickableShapeAdapter });
 
     const isRect: Value["hidden"] = values => values.get("shape")?.value !== "Rectangle";
@@ -186,6 +189,7 @@ export class Clickable extends ClickableEntity {
   }
 
   public isInBounds(worldPosition: Vector2): boolean {
+    if (!this.active) return false;
     const localPosition = pointWorldToLocal(this.globalTransform, worldPosition);
 
     if (this.shape === "Rectangle") {

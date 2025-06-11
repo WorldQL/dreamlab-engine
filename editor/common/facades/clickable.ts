@@ -35,6 +35,7 @@ export class EditorFacadeClickable extends PixiEntity {
     }
   }
 
+  active: boolean = true;
   shape: ClickableShape = "Rectangle";
   width: number = 1;
   height: number = 1;
@@ -45,6 +46,7 @@ export class EditorFacadeClickable extends PixiEntity {
 
   constructor(ctx: EntityContext) {
     super(ctx, false);
+    this.defineValue(EditorFacadeClickable, "active");
     this.defineValue(EditorFacadeClickable, "shape", { type: ClickableShapeAdapter });
 
     const isRect: Value["hidden"] = values => values.get("shape")?.value !== "Rectangle";
