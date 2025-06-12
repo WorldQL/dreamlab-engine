@@ -95,42 +95,85 @@ export async function createFile(fileName: string, file: File | string, no_resta
   });
 }
 
-// Add event listeners for drag-and-drop functionality
-document.addEventListener("dragover", event => {
-  event.preventDefault();
-  // Optional: Add visual feedback for dragging over the page
+document.addEventListener("dragover", e => {
+  e.preventDefault();
+  // TODO: add file upload hover visual
 });
 
-document.addEventListener("drop", async event => {
-  event.preventDefault();
-  const files = event.dataTransfer?.files;
+document.addEventListener("drop", async e => {
+  e.preventDefault();
+
+  const items = e.dataTransfer?.items;
+  if (!items) return;
+
+  const mediaExts = new Set([
+    "png",
+    "jpg",
+    "jpeg",
+    "gif",
+    "svg",
+    "mp4",
+    "webm",
+    "mov",
+    "mp3",
+    "wav",
+    "ogg",
+  ]);
+
   const toHighlight: string[] = [];
+  const uploadTasks: Promise<void>[] = [];
 
-  if (files && files.length > 0) {
-    const uploadPromises: Promise<void>[] = [];
+  async function traverseEntry(entry: FileSystemEntry): Promise<void> {
+    if (entry.isFile) {
+      const fileEntry = entry as FileSystemFileEntry;
+      const file: File = await new Promise((res, rej) => fileEntry.file(res, rej));
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const fileName = `assets/${file.name}`;
+      const ext = file.name.split(".").pop()?.toLowerCase() || "";
+      const topFolder = mediaExts.has(ext) ? "assets" : "src";
 
-      // Upload the file using createFile
-      uploadPromises.push(createFile(fileName, file));
-      toHighlight.push(fileName);
-    }
+      const relative = entry.fullPath.replace(/^\/+/, "");
+      const destPath = relative.startsWith(`${topFolder}/`)
+        ? relative
+        : `${topFolder}/${relative}`;
 
-    try {
-      await Promise.all(uploadPromises);
-    } catch (error) {
-      console.error("Error uploading files:", error);
+      uploadTasks.push(
+        createFile(destPath, file).then(() => {
+          toHighlight.push(destPath);
+          return;
+        }),
+      );
+    } else if (entry.isDirectory) {
+      const dir = entry as FileSystemDirectoryEntry;
+      const reader = dir.createReader();
+      let batch: FileSystemEntry[];
+
+      do {
+        batch = await new Promise<FileSystemEntry[]>(res => reader.readEntries(res));
+        for (const ent of batch) {
+          await traverseEntry(ent);
+        }
+      } while (batch.length > 0);
     }
   }
 
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    const entry = item.webkitGetAsEntry?.();
+    if (entry) {
+      await traverseEntry(entry);
+    }
+  }
+
+  try {
+    await Promise.all(uploadTasks);
+  } catch (err) {
+    console.error("upload error", err);
+  }
+
   setTimeout(() => {
-    for (const fileName of toHighlight) {
-      const element = document.querySelector(`[data-file="${fileName}"]`);
-      if (element) {
-        element.setAttribute("data-selected", "true");
-      }
+    for (const fp of toHighlight) {
+      const el = document.querySelector(`[data-file="${fp}"]`);
+      if (el) el.setAttribute("data-selected", "true");
     }
   }, 150);
 });
