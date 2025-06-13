@@ -10,3 +10,7 @@ export class ActiveCameraChanged {
 export class CameraAspectChanged {
   public constructor(public readonly camera: Camera) {}
 }
+
+export class CameraFilterModeChanged {
+  public constructor(public readonly camera: Camera) {}
+}

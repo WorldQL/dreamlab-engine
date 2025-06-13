@@ -1,5 +1,7 @@
 import {
   Bounds,
+  Camera,
+  CameraFilterModeChanged,
   ColorAdapter,
   Entity,
   EntityContext,
@@ -54,6 +56,9 @@ export class AnimatedSprite extends PixiEntity {
   }
 
   async #loadTextures(): Promise<PIXI.Texture[]> {
+    const camera = Camera.getActive(this.game);
+    const scaleMode = camera?.scaleFilterMode ?? "nearest";
+
     if (this.jsonSpritesheet !== "") {
       const resource = this.game.resolveResource(this.jsonSpritesheet);
       const spritesheet = await PIXI.Assets.load(resource);
@@ -61,7 +66,14 @@ export class AnimatedSprite extends PixiEntity {
         throw new TypeError(`${this.id}.spritesheet is not a pixi spritesheet`);
       }
 
-      return Object.values(spritesheet.textures);
+      const textures = Object.values(spritesheet.textures);
+      for (const texture of textures) {
+        texture.source.scaleMode = scaleMode;
+        texture.source.update();
+        texture.update();
+      }
+
+      return textures;
     }
 
     if (
@@ -70,10 +82,15 @@ export class AnimatedSprite extends PixiEntity {
       this.frameDimensions.y !== 1
     ) {
       const resource = this.game.resolveResource(this.spritesheet);
-      const spritesheetTexture = await PIXI.Assets.load(resource);
-      if (!(spritesheetTexture instanceof PIXI.Texture)) {
+      const _spritesheetTexture = await PIXI.Assets.load(resource);
+      if (!(_spritesheetTexture instanceof PIXI.Texture)) {
         throw new TypeError(`${this.id}.spritesheet is not a pixi texture`);
       }
+
+      const spritesheetTexture: PIXI.Texture<PIXI.TextureSource> = _spritesheetTexture;
+      spritesheetTexture.source.scaleMode = scaleMode;
+      spritesheetTexture.source.update();
+      spritesheetTexture.update();
 
       const frameWidth = this.frameDimensions.x;
       const frameHeight = this.frameDimensions.y;
@@ -245,6 +262,10 @@ export class AnimatedSprite extends PixiEntity {
 
     const frameDimensionsValue = this.values.get("frameDimensions");
     frameDimensionsValue?.onChanged(() => {
+      updateTextures();
+    });
+
+    this.listen(this.game, CameraFilterModeChanged, () => {
       updateTextures();
     });
   }

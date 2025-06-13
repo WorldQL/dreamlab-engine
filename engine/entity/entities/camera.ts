@@ -2,6 +2,7 @@ import {
   ActiveCameraChanged,
   AspectRatioAdapter,
   CameraAspectChanged,
+  CameraFilterModeChanged,
   ClientGame,
   Entity,
   EntityContext,
@@ -95,6 +96,8 @@ export class Camera extends Entity {
     return this.#active && this.enabled;
   }
   set active(value: boolean) {
+    // Early return if destroyed
+    if (this.destroyed) return;
     // Early return if activating when we are already active
     if (value && this.#active) return;
     // Early return if deactivating when we are already deactivated
@@ -105,6 +108,7 @@ export class Camera extends Entity {
       if (this.#active === true) {
         this.game.fire(ActiveCameraChanged, undefined, this);
         this.game.fire(CameraAspectChanged, this);
+        this.game.fire(CameraFilterModeChanged, this);
       }
 
       this.#active = false;
@@ -131,6 +135,7 @@ export class Camera extends Entity {
     // Emit event
     this.game.fire(ActiveCameraChanged, this, previous);
     this.game.fire(CameraAspectChanged, this);
+    this.game.fire(CameraFilterModeChanged, this);
   }
 
   // TODO: Look into improving this API maybe?
@@ -210,7 +215,10 @@ export class Camera extends Entity {
       hidden: values => values.get("lockAspectRatio")?.value === false,
     });
 
-    this.defineValue(Camera, "scaleFilterMode", { replicated: false });
+    const scaleFilterMode = this.defineValue(Camera, "scaleFilterMode", { replicated: false });
+    scaleFilterMode.onChanged(() => {
+      this.game.fire(CameraFilterModeChanged, this);
+    });
 
     const onAspectChanged = () => {
       this.game.fire(CameraAspectChanged, this);
@@ -225,7 +233,10 @@ export class Camera extends Entity {
 
   onInitialize(): void {
     super.onInitialize();
-    if (this.#active) this.game.fire(CameraAspectChanged, this);
+    if (this.#active) {
+      this.game.fire(CameraAspectChanged, this);
+      this.game.fire(CameraFilterModeChanged, this);
+    }
   }
 
   public worldToScreen(position: IVector2): Vector2 {

@@ -1,5 +1,7 @@
 import {
   Bounds,
+  Camera,
+  CameraFilterModeChanged,
   ColorAdapter,
   Entity,
   EntityContext,
@@ -127,15 +129,33 @@ export class Sprite extends PixiEntity {
       if (!this.#sprite) return;
       this.#sprite.tint = this.tint;
     });
+
+    this.listen(this.game, CameraFilterModeChanged, () => {
+      const sprite = this.#sprite;
+      if (!sprite) return;
+
+      void this.#getTexture().then(texture => {
+        sprite.texture = texture;
+        updateSize(); // Update size after texture changes to handle aspect ratio correctly
+      });
+    });
   }
 
   async #getTexture(): Promise<PIXI.Texture> {
     if (this.texture === "") return PIXI.Texture.WHITE;
 
-    const texture = await PIXI.Assets.load(this.game.resolveResource(this.texture));
-    if (!(texture instanceof PIXI.Texture)) {
+    const _texture = await PIXI.Assets.load(this.game.resolveResource(this.texture));
+    if (!(_texture instanceof PIXI.Texture)) {
       throw new TypeError("texture is not a pixi texture");
     }
+
+    const texture: PIXI.Texture<PIXI.TextureSource> = _texture;
+    const camera = Camera.getActive(this.game);
+    const scaleMode = camera?.scaleFilterMode ?? "nearest";
+
+    texture.source.scaleMode = scaleMode;
+    texture.source.update();
+    texture.update();
 
     return texture;
   }

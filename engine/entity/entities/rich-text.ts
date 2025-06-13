@@ -1,5 +1,6 @@
 import {
   Camera,
+  CameraFilterModeChanged,
   ColorAdapter,
   Entity,
   EntityContext,
@@ -120,6 +121,10 @@ export class RichText extends PixiEntity {
 
       const scale = this.globalTransform.scale.div(Camera.METERS_TO_PIXELS_UNSCALED);
       this.#text.scale.set(scale.x, scale.y);
+    });
+
+    this.listen(this.game, CameraFilterModeChanged, () => {
+      this.#reflow();
     });
   }
 
