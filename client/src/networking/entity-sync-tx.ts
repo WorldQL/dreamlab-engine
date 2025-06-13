@@ -151,10 +151,10 @@ export const handleOutgoingEntityUpdates: ClientNetworkSetupRoutine = (conn, gam
     {
       let i = 0;
       for (const entity of entitySpawnQueue) {
-        if (!entity.parent) continue;
-
         if (i++ >= 200) break;
+
         entitySpawnQueue.delete(entity);
+        if (!entity.parent) continue;
 
         if (isEntityLarge(entity)) {
           largeEntities.set(entity, { t: "initial" });
