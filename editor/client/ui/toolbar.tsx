@@ -31,6 +31,7 @@ export class Toolbar implements InspectorUIWidget {
 
   #toolbar: { main: HTMLElement; left: HTMLElement; right: HTMLElement };
   #overlays: HTMLElement;
+  #cursorOverlayEl: BaseElement;
 
   constructor(
     private game: ClientGame,
@@ -42,6 +43,7 @@ export class Toolbar implements InspectorUIWidget {
 
     this.#toolbar = { main, left, right };
     this.#overlays = elem("div", { id: "overlays" });
+    this.#cursorOverlayEl = this.#drawCursorOverlay();
   }
 
   setup(ui: InspectorUI): void {
@@ -160,6 +162,7 @@ export class Toolbar implements InspectorUIWidget {
       if (enabled) return;
 
       this.game.local.spawn({ type: PhysicsDebug, name: PhysicsDebug.name });
+      this.#overlays.append(this.#cursorOverlayEl);
       setState(true);
       refresh();
     };
@@ -170,6 +173,10 @@ export class Toolbar implements InspectorUIWidget {
 
       const entities = this.game.local.entities.lookupByType(PhysicsDebug);
       entities.forEach(e => e.destroy());
+
+      if (this.#cursorOverlayEl.parentElement === this.#overlays) {
+        this.#overlays.removeChild(this.#cursorOverlayEl);
+      }
 
       setState(false);
       refresh();
