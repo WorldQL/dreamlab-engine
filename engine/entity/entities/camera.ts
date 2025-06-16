@@ -53,7 +53,7 @@ export class Camera extends Entity {
 
   #position: Vector2 = new Vector2(this.interpolated.position);
   #rotation: number = this.interpolated.rotation;
-  #scale: Vector2 = Vector2.splat(1 / this.zoom); // TODO: optimize this to remove the reciprocal
+  #scale: Vector2 = Vector2.splat(this.zoom === 0 ? 1 : 1 / this.zoom); // TODO: optimize this to remove the reciprocal
 
   #matrix() {
     const game = this.game as ClientGame;
@@ -126,7 +126,7 @@ export class Camera extends Entity {
     // Instantly set smoothed values
     this.#position = new Vector2(this.interpolated.position);
     this.#rotation = this.interpolated.rotation;
-    this.#scale = Vector2.splat(1 / this.zoom);
+    this.#scale = Vector2.splat(this.zoom === 0 ? 1 : 1 / this.zoom);
 
     // Reparent scene container
     const game = this.game as ClientGame;
@@ -164,7 +164,7 @@ export class Camera extends Entity {
         this.#position.y = this.interpolated.position.y;
         this.#rotation = this.interpolated.rotation;
 
-        const scale = 1 / this.zoom;
+        const scale = this.zoom === 0 ? 1 : 1 / this.zoom;
         this.#scale.x = scale;
         this.#scale.y = scale;
 
@@ -186,7 +186,7 @@ export class Camera extends Entity {
         delta,
       );
 
-      const scale = Vector2.splat(1 / this.zoom);
+      const scale = Vector2.splat(this.zoom === 0 ? 1 : 1 / this.zoom);
       this.#scale = Vector2.smoothLerp(this.#scale, scale, this.#lnsmooth, delta);
 
       this.container.setFromMatrix(this.#matrix());
@@ -228,7 +228,7 @@ export class Camera extends Entity {
     aspectRatio.onChanged(onAspectChanged);
 
     // apply new scale from incoming synced value
-    this.#scale = Vector2.splat(1 / this.zoom);
+    this.#scale = Vector2.splat(this.zoom === 0 ? 1 : 1 / this.zoom);
   }
 
   onInitialize(): void {
