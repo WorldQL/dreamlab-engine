@@ -115,23 +115,16 @@ export class Value<T = unknown> {
   persistent: boolean = true;
   sortOrder: number = 0;
 
-  #originalValue: Value<T>["value"];
-  get originalValue() {
-    return this.#originalValue;
-  }
-
   constructor(
     registry: ValueRegistry,
     identifier: string,
     defaultValue: Value<T>["value"],
-    originalValue: Value<T>["value"],
     typeTag: ValueTypeTag<T>,
     description: string,
     adapter?: ValueTypeAdapter<T>,
   ) {
     this.#registry = registry;
     this.identifier = identifier;
-    this.#originalValue = structuredClone(originalValue);
     this.#value = defaultValue;
     this.typeTag = typeTag;
     this.clock = 0;
