@@ -146,8 +146,15 @@ export class Collider extends Entity {
   readonly bounds: IBounds = Bounds.ONE;
 
   get collider(): RAPIER.Collider {
-    if (!this.#internal) throw new Error("attempted to access .collider on a prefab object");
-    return this.#internal.collider;
+    if (this.root === this.game.prefabs) {
+      throw new Error("attempted to access .collider on a prefab object");
+    }
+
+    if (this.#internal) return this.#internal.collider;
+
+    this.#rigidbody = this.parent instanceof Rigidbody ? this.parent : undefined;
+    this.#setupCollider(this.#rigidbody?.body);
+    return this.#internal!.collider;
   }
 
   constructor(ctx: EntityContext, shape: ColliderShape = "Rectangle") {
