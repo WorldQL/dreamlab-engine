@@ -583,6 +583,7 @@ export abstract class Entity implements ISignalHandler {
         z: this.transform.z,
       },
       values: entityValues,
+      // @ts-expect-error TODO: Fix this type mismatch
       sync: syncOverrides,
       data: this.saveDataForScene?.(),
     };

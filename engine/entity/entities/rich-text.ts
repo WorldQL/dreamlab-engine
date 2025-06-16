@@ -222,7 +222,8 @@ export class RichText extends PixiEntity {
 
     // this is dumb but as far as i can see there is no event for
     // when a font is registered but not loading/loaded yet
-    // @ts-expect-error: for some reason this has a bad type
+    // ignore vs expect-error: Typechecker claims expect-error is unused.
+    // @ts-ignore: for some reason this has a bad type
     const fonts: number = document.fonts.size;
     if (fonts > this.#knownFonts) {
       this.#knownFonts = fonts;

@@ -12,10 +12,10 @@ export class ColorAdapter extends ValueTypeAdapter<string> {
   }
   convertToPrimitive(value: string): JsonValue {
     try {
-      return new PIXI.Color(value).toArray();
+      return new PIXI.Color(value).toArray() as number[];
     } catch {
       console.warn(`invalid color: ${value}`);
-      return new PIXI.Color(ColorAdapter.DEFAULT_COLOR).toArray();
+      return new PIXI.Color(ColorAdapter.DEFAULT_COLOR).toArray() as number[];
     }
   }
   convertFromPrimitive(value: JsonValue): string {
