@@ -55,7 +55,7 @@ export function value<B extends Behavior, T>(
   };
 }
 
-/** @deprecated Use {@link value|@value} instead */
+/** Use {@link value|@value} instead. This is alternative syntax that allows you to pass the type as the first argument. */
 export function syncedValue<B extends Behavior, T>(
   adapterType?: ValueTypeTag<T>,
   opts?: Except<BehaviorValueOpts<T>, "type" | "hidden"> & {
