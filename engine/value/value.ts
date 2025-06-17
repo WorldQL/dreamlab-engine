@@ -8,6 +8,7 @@ import type {
 import { ObjectAdapter, ValueTypeAdapter } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import type { ReadonlyDeep } from "@dreamlab/vendor/type-fest.ts";
+import { JsonValue } from "./data.ts";
 
 // prettier-ignore
 type BasicTypeTag<T> =
@@ -115,10 +116,16 @@ export class Value<T = unknown> {
   persistent: boolean = true;
   sortOrder: number = 0;
 
+  #serializableOriginalValue: JsonValue;
+  get serializableOriginalValue() {
+    return this.#serializableOriginalValue;
+  }
+
   constructor(
     registry: ValueRegistry,
     identifier: string,
     defaultValue: Value<T>["value"],
+    serializableOriginalValue: JsonValue,
     typeTag: ValueTypeTag<T>,
     description: string,
     adapter?: ValueTypeAdapter<T>,
@@ -126,6 +133,7 @@ export class Value<T = unknown> {
     this.#registry = registry;
     this.identifier = identifier;
     this.#value = defaultValue;
+    this.#serializableOriginalValue = serializableOriginalValue;
     this.typeTag = typeTag;
     this.clock = 0;
     this.lastSource = this.#registry.game.network?.self ?? "server";

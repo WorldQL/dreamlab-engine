@@ -194,7 +194,14 @@ export abstract class BaseGame implements ISignalHandler {
     this.world[internal.submitEntityTickingOrder](entities);
   }
 
-  paused: Value<boolean> = new Value<boolean>(this.values, "paused", false, Boolean, "paused");
+  paused: Value<boolean> = new Value<boolean>(
+    this.values,
+    "paused",
+    false,
+    false,
+    Boolean,
+    "paused",
+  );
 
   #needCheckForEditMode = true;
   isEditMode = false;

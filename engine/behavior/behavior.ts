@@ -179,6 +179,7 @@ export class Behavior implements ISignalHandler {
       this.game.values,
       identifier,
       defaultValue,
+      adapter ? adapter.convertToPrimitive(originalValue as T) : (originalValue as JsonValue),
       opts.type ?? (inferValueTypeTag(defaultValue) as ValueTypeTag<B[typeof prop]>),
       opts.description ?? prop, // TODO: autogenerate description (fix casing & spacing)
       adapter,
