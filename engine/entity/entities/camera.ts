@@ -140,69 +140,78 @@ export class Camera extends Entity {
 
   // TODO: Look into improving this API maybe?
   public static getActive(game: Game): Camera | undefined {
-    return game.entities.lookupByType(Camera).find(camera => camera.active);
+    const activeCameras = game.entities.lookupByType(Camera).filter(camera => camera.active);
+    if (activeCameras.length > 1) {
+      console.warn(
+        "Multiple active cameras! Returning the first created one. Only set one camera as active at a time.",
+      );
+    }
+    return activeCameras[0];
   }
 
   constructor(ctx: EntityContext) {
     super(ctx);
 
+    let cameraUnderLocal = true;
     // Must be a local entity
     if (ctx.parent?.root !== this.game.local || !this.game.isClient()) {
-      throw new Error(`${this.constructor.name} must be spawned as a local client entity`);
+      cameraUnderLocal = false;
     }
 
-    this.container = new PIXI.Container();
-    this.game.renderer.app.stage.addChild(this.container);
+    if (cameraUnderLocal && this.game.isClient()) {
+      this.container = new PIXI.Container();
+      this.game.renderer.app.stage.addChild(this.container);
 
-    this.listen(this.game, GameRender, () => {
-      if (!this.#active) return;
-      const delta = this.game.time.delta;
+      this.listen(this.game, GameRender, () => {
+        if (!this.#active) return;
+        const delta = this.game.time.delta;
 
-      // No smoothing
-      if (this.#lnsmooth === 0) {
-        this.#position.x = this.interpolated.position.x;
-        this.#position.y = this.interpolated.position.y;
-        this.#rotation = this.interpolated.rotation;
+        // No smoothing
+        if (this.#lnsmooth === 0) {
+          this.#position.x = this.interpolated.position.x;
+          this.#position.y = this.interpolated.position.y;
+          this.#rotation = this.interpolated.rotation;
 
-        const scale = this.zoom === 0 ? 1 : 1 / this.zoom;
-        this.#scale.x = scale;
-        this.#scale.y = scale;
+          const scale = this.zoom === 0 ? 1 : 1 / this.zoom;
+          this.#scale.x = scale;
+          this.#scale.y = scale;
+
+          this.container.setFromMatrix(this.#matrix());
+          return;
+        }
+
+        this.#position = Vector2.smoothLerp(
+          this.#position,
+          this.interpolated.position,
+          this.#lnsmooth,
+          delta,
+        );
+
+        this.#rotation = smoothLerp(
+          this.#rotation,
+          this.interpolated.rotation,
+          this.#lnsmooth,
+          delta,
+        );
+
+        const scale = Vector2.splat(this.zoom === 0 ? 1 : 1 / this.zoom);
+        this.#scale = Vector2.smoothLerp(this.#scale, scale, this.#lnsmooth, delta);
 
         this.container.setFromMatrix(this.#matrix());
-        return;
-      }
+      });
 
-      this.#position = Vector2.smoothLerp(
-        this.#position,
-        this.interpolated.position,
-        this.#lnsmooth,
-        delta,
-      );
+      this.on(EntityDestroyed, () => {
+        const game = this.game as ClientGame;
 
-      this.#rotation = smoothLerp(
-        this.#rotation,
-        this.interpolated.rotation,
-        this.#lnsmooth,
-        delta,
-      );
+        // Deactivate camera
+        this.active = false;
 
-      const scale = Vector2.splat(this.zoom === 0 ? 1 : 1 / this.zoom);
-      this.#scale = Vector2.smoothLerp(this.#scale, scale, this.#lnsmooth, delta);
-
-      this.container.setFromMatrix(this.#matrix());
-    });
-
-    this.on(EntityDestroyed, () => {
-      const game = this.game as ClientGame;
-
-      // Deactivate camera
-      this.active = false;
-
-      // Reparent to pixi root
-      game.renderer.app.stage.addChild(game.renderer.scene);
-      // Destroy container after
-      this.container.destroy();
-    });
+        // Reparent to pixi root
+        game.renderer.app.stage.addChild(game.renderer.scene);
+        // Destroy container after
+        this.container.destroy();
+      });
+    }
 
     this.defineValue(Camera, "active", { replicated: false });
     this.defineValue(Camera, "smooth", { replicated: false });
