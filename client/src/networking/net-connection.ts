@@ -157,6 +157,12 @@ export class ClientConnection {
       get self() {
         return conn.id;
       },
+      get selfInfo() {
+        const info = this.connections.find(conn => conn.id === this.self);
+        if (!info) throw new Error("no self connection");
+
+        return info;
+      },
       get connections(): ConnectionInfo[] {
         return conn.peers.values().toArray();
       },

@@ -25,5 +25,6 @@ export interface BaseNetworking {
 
 export interface ClientNetworking extends BaseNetworking {
   readonly ping: number;
+  get selfInfo(): ConnectionInfo;
 }
 export interface ServerNetworking extends BaseNetworking {}

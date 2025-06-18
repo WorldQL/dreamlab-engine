@@ -27,6 +27,13 @@ export class SingleplayerNetworking {
       get self() {
         return SINGLEPLAYER_CONNECTION_ID;
       },
+      get selfInfo() {
+        return {
+          id: SINGLEPLAYER_CONNECTION_ID,
+          nickname: SINGLEPLAYER_NICKNAME,
+          playerId: SINGLEPLAYER_PLAYER_ID,
+        };
+      },
       get connections(): ConnectionInfo[] {
         return [
           {
