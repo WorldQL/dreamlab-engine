@@ -203,13 +203,15 @@ export class Camera extends Entity {
       this.on(EntityDestroyed, () => {
         const game = this.game as ClientGame;
 
-        // Deactivate camera
-        this.active = false;
+        if (this.active) {
+          // Deactivate camera
+          this.active = false;
 
-        // Reparent to pixi root
-        game.renderer.app.stage.addChild(game.renderer.scene);
-        // Destroy container after
-        this.container.destroy();
+          // Reparent to pixi root
+          game.renderer.app.stage.addChild(game.renderer.scene);
+          // Destroy container after
+          this.container.destroy();
+        }
       });
     }
 
