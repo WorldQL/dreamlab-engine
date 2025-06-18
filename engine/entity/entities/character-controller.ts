@@ -66,26 +66,32 @@ export class CharacterController extends Collider {
     if (!this.#controller) return;
 
     if (!this.teleport) {
-      const delta = this.pos.sub(this.#prevPosition);
-      this.#controller.computeColliderMovement(
-        this.collider,
-        delta,
-        QueryFilterFlags["EXCLUDE_SENSORS"],
-      );
-      this.#isGrounded = this.#controller.computedGrounded();
+      try {
+        const delta = this.pos.sub(this.#prevPosition);
+        this.#controller.computeColliderMovement(
+          this.collider,
+          delta,
+          QueryFilterFlags["EXCLUDE_SENSORS"],
+        );
+        this.#isGrounded = this.#controller.computedGrounded();
 
-      this.game.physics.emitCharacterControllerCollisions(this.collider, this.#controller);
+        this.game.physics.emitCharacterControllerCollisions(this.collider, this.#controller);
 
-      const authority = this.authority ?? "server";
-      const hasAuthority = authority === this.game.network.self;
-      // const hasAuthority = true;
-      // TODO: someone who knows more about authority determine if we should
-      // only correct movement on the owning client
+        const authority = this.authority ?? "server";
+        const hasAuthority = authority === this.game.network.self;
+        // const hasAuthority = true;
+        // TODO: someone who knows more about authority determine if we should
+        // only correct movement on the owning client
 
-      if (hasAuthority) {
-        const corrected = this.#controller.computedMovement();
-        const newPosition = this.#prevPosition.add(corrected);
-        this.pos.assign(newPosition);
+        if (hasAuthority) {
+          const corrected = this.#controller.computedMovement();
+          const newPosition = this.#prevPosition.add(corrected);
+          this.pos.assign(newPosition);
+        }
+      } catch (_) {
+        // this throws for exactly one tick after destroying the entity. catch and ignore
+        // TODO: ELEGANT_DESTROY Figure out why this happens
+        // this.destroyed is false at the top of this function but true in this catch block??
       }
     } else {
       this.teleport = false;
