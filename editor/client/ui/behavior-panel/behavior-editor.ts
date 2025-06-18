@@ -86,6 +86,9 @@ export class BehaviorEditor {
   async updateTypeInfo(ui: InspectorUI) {
     try {
       const info = await ui.behaviorTypeInfo.get(this.behavior.script);
+      const h2 = this.details.querySelector("h2");
+      if (h2) h2.textContent = info.typeName;
+
       for (const value of info.values) {
         // check if incoming value has a different type tag
         const existingValue = this.values[value.key];
