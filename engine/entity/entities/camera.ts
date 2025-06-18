@@ -32,7 +32,7 @@ export class Camera extends Entity {
   public static readonly TARGET_VIEWPORT_SIZE = 10;
   public readonly bounds: undefined;
 
-  public readonly container: PIXI.Container;
+  public readonly container: PIXI.Container | undefined;
   public unlocked: boolean = false;
 
   #smooth: number = 0.1;
@@ -96,6 +96,10 @@ export class Camera extends Entity {
     return this.#active && this.enabled;
   }
   set active(value: boolean) {
+    const game = this.game as ClientGame;
+
+    // Ignore prefabs
+    if (this.root === this.game.prefabs || !this.container) return;
     // Early return if destroyed
     if (this.destroyed) return;
     // Early return if activating when we are already active
@@ -105,13 +109,13 @@ export class Camera extends Entity {
 
     const previous = Camera.getActive(this.game);
     if (!value) {
-      if (this.#active === true) {
-        this.game.fire(ActiveCameraChanged, undefined, this);
-        this.game.fire(CameraAspectChanged, this);
-        this.game.fire(CameraFilterModeChanged, this);
-      }
-
       this.#active = false;
+      game.renderer.app.stage.addChild(game.renderer.scene);
+
+      this.game.fire(ActiveCameraChanged, undefined, this);
+      this.game.fire(CameraAspectChanged, this);
+      this.game.fire(CameraFilterModeChanged, this);
+
       return;
     }
 
@@ -129,7 +133,6 @@ export class Camera extends Entity {
     this.#scale = Vector2.splat(this.zoom === 0 ? 1 : 1 / this.zoom);
 
     // Reparent scene container
-    const game = this.game as ClientGame;
     this.container.addChild(game.renderer.scene);
 
     // Emit event
@@ -140,29 +143,23 @@ export class Camera extends Entity {
 
   // TODO: Look into improving this API maybe?
   public static getActive(game: Game): Camera | undefined {
-    const activeCameras = game.entities.lookupByType(Camera).filter(camera => camera.active);
-    if (activeCameras.length > 1) {
-      console.warn(
-        "Multiple active cameras! Returning the first created one. Only set one camera as active at a time.",
-      );
-    }
-    return activeCameras[0];
+    return game.local?.entities.lookupByType(Camera).find(camera => camera.active);
   }
 
   constructor(ctx: EntityContext) {
     super(ctx);
 
-    let cameraUnderLocal = true;
-    // Must be a local entity
-    if (ctx.parent?.root !== this.game.local || !this.game.isClient()) {
-      cameraUnderLocal = false;
+    // throw error if in world or remote
+    if (this.root === this.game.world || this.root === this.game.remote) {
+      throw new Error(`${this.constructor.name} must be spawned as a local client entity`);
     }
 
-    if (cameraUnderLocal && this.game.isClient()) {
+    if (this.root === this.game.local && this.game.isClient()) {
       this.container = new PIXI.Container();
       this.game.renderer.app.stage.addChild(this.container);
 
       this.listen(this.game, GameRender, () => {
+        if (!this.container) return;
         if (!this.#active) return;
         const delta = this.game.time.delta;
 
@@ -201,17 +198,13 @@ export class Camera extends Entity {
       });
 
       this.on(EntityDestroyed, () => {
-        const game = this.game as ClientGame;
-
         if (this.active) {
           // Deactivate camera
           this.active = false;
-
-          // Reparent to pixi root
-          game.renderer.app.stage.addChild(game.renderer.scene);
-          // Destroy container after
-          this.container.destroy();
         }
+
+        // Destroy container after
+        this.container?.destroy();
       });
     }
 
