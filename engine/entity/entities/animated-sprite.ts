@@ -194,13 +194,9 @@ export class AnimatedSprite extends PixiEntity {
       if (!sprite) return;
 
       void this.#textures().then(textures => {
+        if (this.destroyed) return;
         if (textures.length > 0) {
-          try {
-            sprite.textures = textures;
-          } catch (_) {
-            // this throws after an entity is destroyed.
-            // TODO: ELEGANT_DESTROY
-          }
+          sprite.textures = textures;
           sprite.play();
         }
       });

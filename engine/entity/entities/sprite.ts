@@ -97,6 +97,7 @@ export class Sprite extends PixiEntity {
       if (!sprite) return;
 
       void this.#getTexture().then(texture => {
+        if (this.destroyed) return;
         sprite.texture = texture;
         updateSize(); // Update size after texture changes to handle aspect ratio correctly
       });
@@ -113,6 +114,7 @@ export class Sprite extends PixiEntity {
       if (!sprite) return;
 
       void this.#getTexture().then(texture => {
+        if (this.destroyed) return;
         sprite.texture = texture;
         updateSize(); // Update size after texture changes to handle aspect ratio correctly
       });
@@ -135,6 +137,7 @@ export class Sprite extends PixiEntity {
       if (!sprite) return;
 
       void this.#getTexture().then(texture => {
+        if (this.destroyed) return;
         sprite.texture = texture;
         updateSize(); // Update size after texture changes to handle aspect ratio correctly
       });

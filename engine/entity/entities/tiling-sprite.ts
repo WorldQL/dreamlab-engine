@@ -75,6 +75,7 @@ export class TilingSprite extends PixiEntity {
       const sprite = this.#sprite;
       if (!sprite) return;
       this.#getTexture().then(texture => {
+        if (this.destroyed) return;
         sprite.texture = texture;
       });
     });
@@ -87,6 +88,7 @@ export class TilingSprite extends PixiEntity {
       const sprite = this.#sprite;
       if (!sprite) return;
       this.#getTexture().then(texture => {
+        if (this.destroyed) return;
         sprite.texture = texture;
       });
     });
