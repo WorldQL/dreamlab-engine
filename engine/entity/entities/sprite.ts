@@ -167,15 +167,16 @@ export class Sprite extends PixiEntity {
     super.onInitialize();
     if (!this.container) return;
 
-    const texture = await this.#getTexture();
     this.#sprite = new PIXI.Sprite({
-      texture,
       width: this.width * this.globalTransform.scale.x,
       height: this.height * this.globalTransform.scale.y,
       anchor: 0.5,
       alpha: this.alpha,
       tint: this.tint,
     });
+
+    const texture = await this.#getTexture();
+    this.#sprite.texture = texture;
 
     this.container.addChild(this.#sprite);
 
