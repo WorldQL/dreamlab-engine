@@ -117,8 +117,9 @@ export class TilingSprite extends PixiEntity {
     super.onInitialize();
     if (!this.container) return;
 
+    this.#sprite = new PIXI.TilingSprite();
     const texture = await this.#getTexture();
-    this.#sprite = new PIXI.TilingSprite(texture);
+    this.#sprite.texture = texture;
 
     this.#sprite.width = this.width * this.globalTransform.scale.x;
     this.#sprite.height = this.height * this.globalTransform.scale.y;

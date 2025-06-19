@@ -277,13 +277,16 @@ export class AnimatedSprite extends PixiEntity {
 
     this.#sprite = new PIXI.AnimatedSprite({
       autoUpdate: false,
-      textures: await this.#textures(),
+      textures: [PIXI.Texture.EMPTY],
       width: this.width * this.globalTransform.scale.x,
       height: this.height * this.globalTransform.scale.y,
       anchor: 0.5,
       alpha: this.alpha,
       tint: this.tint,
     });
+
+    const textures = await this.#textures();
+    if (textures.length > 0) this.#sprite.textures = textures;
 
     this.#sprite.animationSpeed = this.speed;
     this.#sprite.loop = this.loop;
