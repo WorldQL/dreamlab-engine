@@ -253,6 +253,20 @@ new ResizeObserver(_ => {
   }
 }).observe(uiRoot);
 
+const detectPixelRatioChange = () => {
+  globalThis.matchMedia(`(resolution: ${globalThis.devicePixelRatio}dppx)`).addEventListener(
+    "change",
+    () => {
+      updateAspectRatio();
+      games.edit.renderer?.resize?.(true);
+      games.play?.renderer?.resize?.(true);
+      detectPixelRatioChange();
+    },
+    { once: true },
+  );
+};
+detectPixelRatioChange();
+
 Object.defineProperties(globalThis, {
   game: { value: game },
   conn: { value: conn },

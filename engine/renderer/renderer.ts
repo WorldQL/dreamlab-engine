@@ -63,6 +63,7 @@ export class GameRenderer {
       this.app.canvas.width = width * res;
       this.app.canvas.height = height * res;
 
+      this.app.renderer.resolution = res;
       this.app.renderer.resize(width, height);
       this.app.render();
     } else {

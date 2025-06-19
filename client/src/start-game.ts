@@ -46,6 +46,19 @@ export async function startGame(
     game.renderer.resize(true);
   }).observe(uiRoot.querySelector("#viewport")!);
 
+  const detectPixelRatioChange = () => {
+    globalThis.matchMedia(`(resolution: ${globalThis.devicePixelRatio}dppx)`).addEventListener(
+      "change",
+      () => {
+        updateAspectRatio();
+        game.renderer.resize(true);
+        detectPixelRatioChange();
+      },
+      { once: true },
+    );
+  };
+  detectPixelRatioChange();
+
   Object.defineProperties(globalThis, {
     game: { value: game },
     conn: { value: conn },
