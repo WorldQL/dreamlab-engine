@@ -96,7 +96,8 @@ export class Camera extends Entity {
     return this.#active && this.enabled;
   }
   set active(value: boolean) {
-    const game = this.game as ClientGame;
+    if (!this.game.isClient()) return;
+    const game = this.game;
 
     // Ignore prefabs
     if (this.root === this.game.prefabs || !this.container) return;
