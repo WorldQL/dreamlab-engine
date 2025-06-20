@@ -322,7 +322,9 @@ export class SceneGraph implements InspectorUIWidget {
     if (entity.children.size > 2500) {
       entryElement.append(tooManyEntities);
     } else {
-      for (const child of entity.children.values()) {
+      const children = [...entity.children.values()];
+      children.sort(entityNameSort);
+      for (const child of children) {
         this.renderEntry(ui, entryElement, child);
       }
       this.sortEntries(entryElement);
@@ -363,6 +365,8 @@ export class SceneGraph implements InspectorUIWidget {
       });
 
       reset();
+
+      this.sortEntries(entryElement);
     });
   }
 
