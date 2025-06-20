@@ -549,7 +549,7 @@ export const serveScriptEditingAPI = (router: Router) => {
     ),
   );
 
-  router.post(
+  router.get(
     "/api/v1/edit/:instance/check",
     typedJsonHandler(
       {
@@ -566,15 +566,31 @@ export const serveScriptEditingAPI = (router: Router) => {
         }
         const appURL = path.toFileUrl(path.join(Deno.cwd(), "..")).toString();
         const process = new Deno.Command(Deno.execPath(), {
-          args: ["check", ...entries],
+          args: ["check", "--config", "../../client/deno.json", ...entries],
           cwd: path.join(Deno.cwd(), "worlds"),
           stdout: "piped",
           stdin: "null",
           stderr: "piped",
+          env: { NO_COLOR: "1" },
         }).spawn();
         const output = await process.output();
         const stdoutString = new TextDecoder().decode(output.stderr);
-        return stdoutString.replaceAll(appURL, "file:///app/");
+
+        const ignoredErrors = ["TS7053", "TS7006", "TS2564"];
+        // group output into the original errors and filter out the ignored errors
+        const errors = stdoutString
+          .split("\n")
+          .filter(e => !e.startsWith("Check"))
+          .join("\n")
+          .split("\n\n")
+          .filter(e => e.startsWith("T"))
+          .filter(e => !ignoredErrors.some(error => e.startsWith(error)));
+
+        const returned = `Typecheck found ${errors.length} errors:\n\n${errors.join("\n\n")}`;
+
+        return returned
+          .replaceAll(appURL, "file:///app/")
+          .replaceAll("file:///app//multiplayer/worlds/" + instance.info.worldId, "");
       },
     ),
   );
