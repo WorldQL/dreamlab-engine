@@ -25,7 +25,7 @@ export const serveScriptEditingAPI = (router: Router) => {
       message: "An instance with the given ID does not exist",
       params: { status: Status.NotFound, throwEarly: true },
     })
-    .refine(instance => instance.info.editMode, {
+    .refine(instance => instance && instance.info.editMode, {
       message: "The instance is not in edit mode",
       params: { status: Status.Forbidden, throwEarly: true },
     });
