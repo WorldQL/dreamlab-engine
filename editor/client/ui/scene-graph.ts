@@ -292,6 +292,7 @@ export class SceneGraph implements InspectorUIWidget {
         entryElement.append(tooManyEntities);
       } else {
         this.renderEntry(ui, entryElement, newEntity);
+        this.sortEntries(entryElement);
       }
     });
 
