@@ -19,8 +19,6 @@
             }
           },
           "values": {
-            "static": false,
-            "hidden": false,
             "width": 2,
             "height": 2,
             "color": [
@@ -64,18 +62,6 @@
               "x": -2.298004079244391,
               "y": -2.5876684589810797
             }
-          },
-          "values": {
-            "static": false,
-            "hidden": false,
-            "width": 1,
-            "height": 1,
-            "color": [
-              1,
-              1,
-              1,
-              1
-            ]
           }
         },
         {
@@ -88,18 +74,6 @@
               "x": 0.01931095864911292,
               "y": -2.3173150378935032
             }
-          },
-          "values": {
-            "static": false,
-            "hidden": false,
-            "width": 1,
-            "height": 1,
-            "color": [
-              1,
-              1,
-              1,
-              1
-            ]
           }
         },
         {
@@ -112,18 +86,6 @@
               "x": 1.6028095678763403,
               "y": -3.147686259805342
             }
-          },
-          "values": {
-            "static": false,
-            "hidden": false,
-            "width": 1,
-            "height": 1,
-            "color": [
-              1,
-              1,
-              1,
-              1
-            ]
           }
         },
         {
@@ -136,18 +98,6 @@
               "x": 2.0276506581568157,
               "y": -0.6565725940698259
             }
-          },
-          "values": {
-            "static": false,
-            "hidden": false,
-            "width": 1,
-            "height": 1,
-            "color": [
-              1,
-              1,
-              1,
-              1
-            ]
           }
         },
         {
@@ -160,18 +110,6 @@
               "x": 4.711873910383458,
               "y": -1.158657518946752
             }
-          },
-          "values": {
-            "static": false,
-            "hidden": false,
-            "width": 1,
-            "height": 1,
-            "color": [
-              1,
-              1,
-              1,
-              1
-            ]
           }
         }
       ],
@@ -182,10 +120,7 @@
           "name": "Camera",
           "enabled": true,
           "values": {
-            "active": true,
-            "smooth": 0.1,
-            "unlocked": false,
-            "zoom": 1
+            "active": true
           }
         },
         {
@@ -215,10 +150,6 @@
               "name": "ColoredSquare",
               "enabled": true,
               "values": {
-                "static": false,
-                "hidden": false,
-                "width": 1,
-                "height": 1,
                 "color": [
                   1,
                   0,

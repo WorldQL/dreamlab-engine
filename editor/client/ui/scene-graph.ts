@@ -314,6 +314,12 @@ export class SceneGraph implements InspectorUIWidget {
     entity.on(EntityRenamed, () => {
       const name = entryElement.querySelector(":scope > summary .name")!;
       name.textContent = entity.name;
+
+      const parent = entity.parent;
+      if (parent === undefined) return;
+      const parentElement = this.entryElementMap.get(parent.ref);
+      if (parentElement === undefined) return;
+      this.sortEntries(parentElement);
     });
 
     this.handleEntryDragAndDrop(ui, entity, entryElement);
