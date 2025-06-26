@@ -460,22 +460,48 @@ export const serveScriptEditingAPI = (router: Router) => {
           body.sourceProject.lastIndexOf("/") + 1,
         );
 
-        const importedDir = path.join(targetProjectDir, "src", "imported", sourceProjectName);
-        await fs.ensureDir(path.dirname(importedDir));
-        try {
-          await Deno.remove(importedDir, { recursive: true });
-        } catch (err) {
-          if (err instanceof Deno.errors.NotFound) {
-            // ignore
-          } else {
-            throw err;
+        const importedSrcDir = path.join(
+          targetProjectDir,
+          "src",
+          "imported",
+          sourceProjectName,
+        );
+        if (await fs.exists(path.join(sourceProjectDir, "src"))) {
+          await fs.ensureDir(path.dirname(importedSrcDir));
+          try {
+            await Deno.remove(importedSrcDir, { recursive: true });
+          } catch (err) {
+            if (err instanceof Deno.errors.NotFound) {
+              // ignore
+            } else {
+              throw err;
+            }
           }
+          await fs.copy(path.join(sourceProjectDir, "src"), importedSrcDir);
         }
-        await fs.copy(sourceProjectDir, importedDir);
-        await Deno.remove(path.join(importedDir, ".git"), { recursive: true });
+
+        const importedAssetsDir = path.join(
+          targetProjectDir,
+          "assets",
+          "imported",
+          sourceProjectName,
+        );
+        if (await fs.exists(path.join(sourceProjectDir, "assets"))) {
+          await fs.ensureDir(path.dirname(importedAssetsDir));
+          try {
+            await Deno.remove(importedAssetsDir, { recursive: true });
+          } catch (err) {
+            if (err instanceof Deno.errors.NotFound) {
+              // ignore
+            } else {
+              throw err;
+            }
+          }
+          await fs.copy(path.join(sourceProjectDir, "assets"), importedAssetsDir);
+        }
 
         const importedProjectJson = await Deno.readTextFile(
-          path.join(importedDir, "project.json"),
+          path.join(importedSrcDir, "project.json"),
         );
         const importedProject = ProjectSchema.parse(JSON.parse(importedProjectJson));
         const importedScene = importedProject.scenes.main;
@@ -491,7 +517,7 @@ export const serveScriptEditingAPI = (router: Router) => {
           instance.logs,
         );
 
-        const importedScripts = fs.expandGlob(path.join(importedDir, "src/**/*.ts"));
+        const importedScripts = fs.expandGlob(path.join(importedSrcDir, "**/*.ts"));
         const scriptEditPackets: PlayPacket<"ScriptEdited", "server">[] = [];
         for await (const script of importedScripts) {
           scriptEditPackets.push({
@@ -506,11 +532,33 @@ export const serveScriptEditingAPI = (router: Router) => {
         const importedScriptLocation = `res://src/imported/${sourceProjectName}/`;
         const rewriteScriptLocations = (e: SceneDescEntity): void => {
           for (const behavior of e.behaviors ?? []) {
-            behavior.script = behavior.script.replace(/^res:\/\//, importedScriptLocation);
+            behavior.script = behavior.script.replace(/^res:\/\/src\//, importedScriptLocation);
           }
           e.children?.forEach(rewriteScriptLocations);
         };
         importedScene.prefabs.forEach(rewriteScriptLocations);
+
+        const importedAssetLocation = `res://assets/imported/${sourceProjectName}/`;
+        const rewriteAssetLocations = (e: SceneDescEntity): void => {
+          const values = e.values ?? {};
+          for (const k of Object.keys(values)) {
+            const v = values[k];
+            if (typeof v === "string")
+              values[k] = v.replace(/^res:\/\/assets\//, importedAssetLocation);
+          }
+
+          for (const behavior of e.behaviors ?? []) {
+            const values = behavior.values ?? {};
+            for (const k of Object.keys(values)) {
+              const v = values[k];
+              if (typeof v === "string")
+                values[k] = v.replace(/^res:\/\/assets\//, importedAssetLocation);
+            }
+          }
+
+          e.children?.forEach(rewriteAssetLocations);
+        };
+        importedScene.prefabs.forEach(rewriteAssetLocations);
 
         const refMap: Record<string, string> = {};
         const generateNewRef = (e: SceneDescEntity): void => {
@@ -542,7 +590,7 @@ export const serveScriptEditingAPI = (router: Router) => {
           instance.session?.ipc.send({ op: "ImportEditPrefab", entity });
         });
 
-        await Deno.remove(path.join(importedDir, "project.json"));
+        await Deno.remove(path.join(importedSrcDir, "project.json"));
 
         return { success: true };
       },
