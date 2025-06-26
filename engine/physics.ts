@@ -64,6 +64,17 @@ export class PhysicsEngine {
 
   tick() {
     if (this.enabled) this.world.step(this.#events);
+
+    const collisionEventQueue: {
+      started: boolean;
+      entity1: Entity;
+      entity2: Entity;
+      contact1: Vector2;
+      contact2: Vector2;
+      normal1: Vector2;
+      normal2: Vector2;
+    }[] = [];
+
     this.#events.drainCollisionEvents((handle1, handle2, started) => {
       const collider1 = this.world.getCollider(handle1);
       const collider2 = this.world.getCollider(handle2);
@@ -92,9 +103,29 @@ export class PhysicsEngine {
         // TODO: contact points
       });
 
+      collisionEventQueue.push({
+        started,
+        entity1,
+        entity2,
+        contact1,
+        contact2,
+        normal1,
+        normal2,
+      });
+    });
+
+    for (const {
+      started,
+      entity1,
+      entity2,
+      contact1,
+      contact2,
+      normal1,
+      normal2,
+    } of collisionEventQueue) {
       entity1.fire(EntityCollision, started, entity2, contact1, normal1);
       entity2.fire(EntityCollision, started, entity1, contact2, normal2);
-    });
+    }
   }
 
   #activeCollisions = new Map<string, number>(); // key -> missing ticks counter
