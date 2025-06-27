@@ -5,10 +5,17 @@ import "./css/singleplayer.css";
 import "../../build-system/live-reload.js";
 import "../../client/src/_env.ts";
 
-import { ClientGame, GameShutdown, GameStatus, GameStatusChange } from "@dreamlab/engine";
+import {
+  CameraAspectChanged,
+  ClientGame,
+  GameShutdown,
+  GameStatus,
+  GameStatusChange,
+} from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { getSceneFromProject, loadSceneDefinition, ProjectSchema } from "@dreamlab/scene";
 import { z } from "@dreamlab/vendor/zod.ts";
+import { setAspectRatio } from "../../client/src/aspect-ratio.ts";
 import { createFetch, IS_SINGLE_FILE, patchBehaviorLoader } from "./single-file.ts";
 import { SingleplayerKv } from "./singleplayer-kv.ts";
 import { SingleplayerNetworking } from "./singleplayer-networking.ts";
@@ -26,7 +33,7 @@ if (worldId === undefined) {
 const network = new SingleplayerNetworking();
 
 const game = new ClientGame({
-  container: document.querySelector("#viewport")! as HTMLDivElement,
+  container: document.querySelector("#game")! as HTMLDivElement,
   instanceId: "singleplayer",
   worldId,
   network: network.createNetworking(),
@@ -41,6 +48,11 @@ if (IS_SINGLE_FILE) {
 } else {
   game.worldScriptBaseURL = new URL(`./worlds/${worldId}/`, window.location.href).toString();
 }
+
+game.on(CameraAspectChanged, ({ camera }) => {
+  setAspectRatio(camera.lockAspectRatio, camera.aspectRatio);
+});
+
 Object.defineProperty(globalThis, "game", { value: game });
 
 const loadingElem = document.querySelector("#loading")! as HTMLElement;
