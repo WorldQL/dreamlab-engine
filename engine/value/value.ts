@@ -75,6 +75,8 @@ export class Value<T = unknown> {
     return this.#value;
   }
   set value(newValue: ReadonlyIfObject<T>) {
+    if (this.#destroyed) return;
+
     // ignore if equal
     // TODO: deep equality check?
     if (this.#value === newValue) return;
@@ -164,7 +166,16 @@ export class Value<T = unknown> {
     this.#registry.register(this as Value<unknown>);
   }
 
+  #destroyed = false;
+  get destroyed(): boolean {
+    return this.#destroyed;
+  }
+
   destroy(): void {
+    // console.log(`destroy value: ${this.identifier}`);
+
+    this.#destroyed = true;
+    this.#changeListeners = undefined;
     this.#registry.remove(this as Value<unknown>);
   }
 
@@ -173,6 +184,8 @@ export class Value<T = unknown> {
   }
 
   forceSync(): void {
+    if (this.#destroyed) return;
+
     this.#registry.applyValueUpdate(
       this as Value<unknown>,
       this.#value,
@@ -186,6 +199,8 @@ export class Value<T = unknown> {
     incomingClock: number,
     incomingSource: ConnectionId,
   ): void {
+    if (this.#destroyed) return;
+
     if (incomingClock < this.clock) return;
     if (incomingClock === this.clock) {
       if (incomingSource !== "server") {
