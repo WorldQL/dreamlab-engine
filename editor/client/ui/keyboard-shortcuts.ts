@@ -460,6 +460,14 @@ export function setupKeyboardShortcuts(
       return;
     }
 
+    // Cut
+    if (event.key.toLowerCase() === "x" && (event.ctrlKey || event.metaKey)) {
+      event.preventDefault();
+      await copyEntitiesToClipboard(selectedService);
+      for (const entity of selectedService.entities) entity.destroy();
+      return;
+    }
+
     // Delete
     if (event.key === "Backspace") {
       const toDelete: Entity[] = [...selectedService.entities];

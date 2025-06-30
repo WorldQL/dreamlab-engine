@@ -530,6 +530,20 @@ export class SceneGraph implements InspectorUIWidget {
             1,
           ],
           [
+            "Cut",
+            () => {
+              ui.selectedEntity.entities = [...ui.selectedEntity.entities];
+              copyEntitiesToClipboard(ui.selectedEntity);
+              for (const entity of ui.selectedEntity.entities) {
+                entity.destroy();
+              }
+            },
+            false,
+            `${modifierKey}+X`,
+            10,
+            2,
+          ],
+          [
             "Delete",
             () => {
               const toDelete = [...ui.selectedEntity.entities];
@@ -688,6 +702,20 @@ export class SceneGraph implements InspectorUIWidget {
               `${modifierKey}+V`,
               1,
               3,
+            ],
+            [
+              "Cut",
+              () => {
+                ui.selectedEntity.entities = [entity];
+                copyEntitiesToClipboard(ui.selectedEntity);
+                for (const entity of ui.selectedEntity.entities) {
+                  entity.destroy();
+                }
+              },
+              false,
+              `${modifierKey}+X`,
+              1,
+              4,
             ],
           );
         }
