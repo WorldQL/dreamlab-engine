@@ -104,7 +104,7 @@ export interface EntityDefinition<
   _ref?: string;
 }
 
-type EntityValueProp<E extends Entity> = Exclude<
+export type EntityValueProp<E extends Entity> = Exclude<
   // deno-lint-ignore ban-types
   keyof ConditionalExcept<E, Function>,
   keyof Entity

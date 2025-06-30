@@ -22,11 +22,13 @@ interface DecoratedSyncedObjectDescriptor {
 
 const decoratedSyncedObjectsField = Symbol();
 
+export type SyncDecoratorOpts = {
+  type?: SyncedObjectConstructor; // TODO: type markers (registry lookup)
+  description?: string;
+};
+
 export function sync<Container extends Entity | Behavior, Field extends SyncedObjectTarget>(
-  opts: {
-    type?: SyncedObjectConstructor; // TODO: type markers (registry lookup)
-    description?: string;
-  } = {},
+  opts: SyncDecoratorOpts = {},
 ): (_: undefined, ctx: ClassFieldDecoratorContext<Container, Field>) => void {
   return (_, ctx) => {
     const field = ctx.name;

@@ -1,4 +1,5 @@
 export { sync } from "./decorator.ts";
+export { defineSyncedObject } from "./define.ts";
 export type { AnySyncedObject, SyncedObject, SyncedObjectInfo } from "./object.ts";
 export * from "./operation.ts";
 
