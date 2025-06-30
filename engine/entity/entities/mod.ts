@@ -21,3 +21,5 @@ export * from "./vector-sprite.ts";
 export * from "./character-controller.ts";
 
 export * from "./rigidbody.ts";
+
+export * from "./persisted.ts";

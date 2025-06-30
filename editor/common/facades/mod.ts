@@ -8,4 +8,6 @@ import "./empty.ts";
 import "./rect-collider.ts";
 import "./rigidbody.ts";
 
+import "./persisted.ts"
+
 export * from "./manager.ts";
