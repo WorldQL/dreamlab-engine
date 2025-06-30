@@ -469,7 +469,7 @@ export function setupKeyboardShortcuts(
     }
 
     // Delete
-    if (event.key === "Backspace") {
+    if (event.key === "Backspace" || event.key === "Delete") {
       const toDelete: Entity[] = [...selectedService.entities];
       filterChildNodes(toDelete);
       const ops = toDelete.map(
