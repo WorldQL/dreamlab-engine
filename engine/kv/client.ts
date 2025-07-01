@@ -65,6 +65,24 @@ export class KvClient extends KvClientBase implements ClientKV {
       const queue = [...this.#getQueue];
       this.#getQueue.length = 0;
 
+      if (queue.length === 1) {
+        const [entry] = queue;
+        const { url } = await this.#presign({
+          action: "get",
+          key: entry.key,
+          scope: entry.scope,
+        });
+
+        try {
+          const value = await common.get(url);
+          entry.resolve(value);
+        } catch (error) {
+          entry.reject(error);
+        }
+
+        return;
+      }
+
       let urlBase: string | undefined;
       const jobs = queue.map(async ({ _id, scope, key }) => {
         const { payload, sig, url } = await this.#sign({ action: "get", scope, key });

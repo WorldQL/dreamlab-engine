@@ -100,6 +100,21 @@ export class KvServer extends KvServerBase implements ServerKV {
       const queue = [...this.#getQueue];
       this.#getQueue.length = 0;
 
+      if (queue.length === 1) {
+        const [entry] = queue;
+        const payload = createPayload("get", entry.scope, entry.key, 10);
+        const url = await presign(this.#url, this.#signingKey, payload);
+
+        try {
+          const value = await common.get(url);
+          entry.resolve(value);
+        } catch (error) {
+          entry.reject(error);
+        }
+
+        return;
+      }
+
       const jobs = queue.map(async ({ _id, scope, key }) => {
         const payload = createPayload("get", scope, key, 10);
         const { payload: serialized, sig } = await sign(this.#signingKey, payload);
