@@ -1,4 +1,5 @@
 #app-menu {
+  overflow: visible;
   width: 100%;
   height: 100%;
   display: flex;
@@ -101,6 +102,58 @@
       & > svg {
         width: 1.333em;
         height: 1.333em;
+      }
+    }
+
+    > #users {
+      position: relative;
+      cursor: default;
+      overflow: visible;
+
+      &[data-tooltip] {
+        &::after {
+          content: attr(data-tooltip);
+          position: absolute;
+          top: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          white-space: pre;
+          background: rgba(0, 0, 0, 0.8);
+          color: #fff;
+          padding: 0.5em 0.75em;
+          font-size: 0.85em;
+          border-radius: 0.25em;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+          margin-top: 0.5em;
+          z-index: 9999;
+          opacity: 0;
+          transition: opacity 0.15s ease-in-out;
+          pointer-events: none;
+        }
+
+        &:hover::after {
+          opacity: 1;
+        }
+
+        &::before {
+          content: "";
+          position: absolute;
+          top: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          border-width: 0.375em;
+          border-style: solid;
+          border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
+          margin-top: 0.2em;
+          z-index: 9999;
+          opacity: 0;
+          transition: opacity 0.15s ease-in-out;
+          pointer-events: none;
+        }
+
+        &:hover::before {
+          opacity: 1;
+        }
       }
     }
   }

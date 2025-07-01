@@ -200,32 +200,36 @@ export class AppMenu {
   }
 
   setupStats(game: ClientGame): HTMLElement {
-    const countText = document.createTextNode("1");
-    const updateCount = () => {
-      const count = game.network.connections.length;
-      countText.textContent = count.toLocaleString();
-    };
-
-    game.on(PlayerJoined, () => updateCount());
-    game.on(PlayerLeft, () => updateCount());
-    updateCount();
+    const countText = document.createTextNode("0");
+    const usersDiv = elem("div", { id: "users", title: "" }, [
+      elem("span", {}, [countText]),
+      icon(User),
+    ]);
 
     const pingText = document.createTextNode("0");
+    const pingDiv = elem("div", { id: "ping", title: "Ping" }, [
+      elem("span", {}, [pingText, "ms"]),
+      icon(ArrowUpDown),
+    ]);
+
+    const updateUsers = () => {
+      const conns = game.network.connections;
+      countText.textContent = conns.length.toLocaleString();
+
+      const list = conns.map(c => c.nickname).join("\n");
+      usersDiv.removeAttribute("title");
+      usersDiv.setAttribute("data-tooltip", list.length > 0 ? list : "No connected users");
+    };
+
+    game.on(PlayerJoined, updateUsers);
+    game.on(PlayerLeft, updateUsers);
+    updateUsers();
+
     game.on(Ping, ({ ping }) => {
       pingText.textContent = ping.toLocaleString();
     });
 
-    // TODO: make this look nice lol
-    return elem("div", { id: "stats" }, [
-      elem("div", { id: "users", title: "Connected Users" }, [
-        elem("span", {}, [countText]),
-        icon(User),
-      ]),
-      elem("div", { id: "ping", title: "Ping" }, [
-        elem("span", {}, [pingText, "ms"]),
-        icon(ArrowUpDown),
-      ]),
-    ]);
+    return elem("div", { id: "stats" }, [usersDiv, pingDiv]);
   }
 
   async #connectToPlayGame(editUI: InspectorUI) {
