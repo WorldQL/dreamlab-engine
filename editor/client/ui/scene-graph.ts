@@ -534,9 +534,19 @@ export class SceneGraph implements InspectorUIWidget {
             () => {
               ui.selectedEntity.entities = [...ui.selectedEntity.entities];
               copyEntitiesToClipboard(ui.selectedEntity);
-              for (const entity of ui.selectedEntity.entities) {
-                entity.destroy();
-              }
+
+              UndoRedoManager._.push({
+                t: "compound",
+                ops: ui.selectedEntity.entities
+                  .filter(it => !it.protected)
+                  .map(e => ({
+                    t: "destroy-entity",
+                    def: e.getDefinition(),
+                    parentRef: e.parent?.ref!,
+                  })),
+              });
+              for (const entity of ui.selectedEntity.entities) entity.destroy();
+              ui.selectedEntity.entities = [];
             },
             false,
             `${modifierKey}+X`,
@@ -703,20 +713,6 @@ export class SceneGraph implements InspectorUIWidget {
               1,
               3,
             ],
-            [
-              "Cut",
-              () => {
-                ui.selectedEntity.entities = [entity];
-                copyEntitiesToClipboard(ui.selectedEntity);
-                for (const entity of ui.selectedEntity.entities) {
-                  entity.destroy();
-                }
-              },
-              false,
-              `${modifierKey}+X`,
-              1,
-              4,
-            ],
           );
         }
 
@@ -785,24 +781,43 @@ export class SceneGraph implements InspectorUIWidget {
           2,
         ]);
         if (!entity.protected && !lockedByEntity) {
-          bottomItems.push([
-            "Delete",
-            () => {
-              const parent = entity.parent;
-              if (parent) {
+          bottomItems.push(
+            [
+              "Delete",
+              () => {
+                const parent = entity.parent;
+                if (parent) {
+                  UndoRedoManager._.push({
+                    t: "destroy-entity",
+                    def: entity.getDefinition(),
+                    parentRef: parent.ref,
+                  });
+                }
+                entity.destroy();
+              },
+              false,
+              "Backspace",
+              51,
+              1,
+            ],
+            [
+              "Cut",
+              () => {
+                ui.selectedEntity.entities = [entity];
+                copyEntitiesToClipboard(ui.selectedEntity);
                 UndoRedoManager._.push({
                   t: "destroy-entity",
                   def: entity.getDefinition(),
-                  parentRef: parent.ref,
+                  parentRef: entity.parent?.ref!,
                 });
-              }
-              entity.destroy();
-            },
-            false,
-            "Backspace",
-            51,
-            1,
-          ]);
+                entity.destroy();
+              },
+              false,
+              `${modifierKey}+X`,
+              1,
+              4,
+            ],
+          );
         }
         contextMenuItems.push(...bottomItems);
       }

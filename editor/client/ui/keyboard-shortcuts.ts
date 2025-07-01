@@ -463,8 +463,18 @@ export function setupKeyboardShortcuts(
     // Cut
     if (event.key.toLowerCase() === "x" && (event.ctrlKey || event.metaKey)) {
       event.preventDefault();
+      const toCut = [...selectedService.entities].filter(it => !it.protected);
+      filterChildNodes(toCut);
       await copyEntitiesToClipboard(selectedService);
-      for (const entity of selectedService.entities) entity.destroy();
+      UndoRedoManager._.push({
+        t: "compound",
+        ops: toCut.map(e => ({
+          t: "destroy-entity",
+          def: e.getDefinition(),
+          parentRef: e.parent?.ref!,
+        })),
+      });
+      for (const entity of toCut) entity.destroy();
       return;
     }
 
