@@ -1,7 +1,8 @@
-import type { JsonValue, ServerGame } from "@dreamlab/engine";
+import { GameTick, type JsonValue, type ServerGame } from "@dreamlab/engine";
+import { createId } from "@dreamlab/vendor/nanoid.ts";
 import { decodeBase64Url } from "jsr:@std/encoding@^1/base64url";
 import * as common from "./_common.ts";
-import { createPayload, presign } from "./_crypto.ts";
+import { createPayload, presign, sign } from "./_crypto.ts";
 import type { PresignRequest, PresignResponse } from "./_rpc.ts";
 import { KvBase } from "./base.ts";
 import type { ServerKV } from "./mod.ts";
@@ -75,12 +76,98 @@ export class KvServer extends KvServerBase implements ServerKV {
       const response = { _id: request._id, url } satisfies PresignResponse;
       this.game.network.sendCustomMessage(from, channel, response);
     });
+
+    this.game.on(GameTick, async () => {
+      if (this.#getQueue.length === 0) return;
+
+      // TODO: clear only N items from queue at a time
+      const queue = [...this.#getQueue];
+      this.#getQueue.length = 0;
+
+      const jobs = queue.map(async ({ _id, scope, key }) => {
+        const payload = createPayload("get", scope, key, 10);
+        const { payload: serialized, sig } = await sign(this.#signingKey, payload);
+
+        return { _id, scope, key, payload: serialized, sig };
+      });
+
+      const mapped = await Promise.all(jobs);
+      const url = new URL("/batch", this.#url);
+
+      const body = JSON.stringify(mapped);
+      try {
+        const resp = await fetch(url, {
+          method: "POST",
+          body,
+          headers: {
+            "content-type": "application/json",
+            "content-length": body.length.toString(),
+          },
+        });
+
+        if (!resp.ok) {
+          const error = new Error("request failed");
+          for (const entry of queue) entry.reject(error);
+          return;
+        }
+
+        type Item = { _id: string; scope: string; key: string } & (
+          | { type: "ok"; value: JsonValue }
+          | { type: "unauthorized" }
+          | { type: "not-found" }
+        );
+
+        const items: Item[] = await resp.json();
+        for (const item of items) {
+          const entry = queue.find(entry => entry._id === item._id);
+          if (!entry) {
+            console.warn("missing id:", item._id);
+            continue;
+          }
+
+          const idx = queue.indexOf(entry);
+          queue.splice(idx, 1);
+
+          switch (item.type) {
+            case "ok": {
+              entry.resolve(item.value);
+              break;
+            }
+            case "not-found": {
+              entry.resolve(undefined);
+              break;
+            }
+            case "unauthorized": {
+              entry.reject(new Error("unauthorized"));
+              break;
+            }
+          }
+        }
+
+        const error = new Error("failed to fetch");
+        for (const entry of queue) entry.reject(error);
+      } catch (error) {
+        for (const entry of queue) entry.reject(error);
+      }
+    });
   }
 
+  #getQueue: {
+    _id: string;
+    scope: string;
+    key: string;
+    resolve: (value: JsonValue | undefined) => void;
+    reject: (reason?: unknown) => void;
+  }[] = [];
+
   protected async get(scope: string, key: string): Promise<JsonValue | undefined> {
-    const data = createPayload("get", scope, key, 10);
-    const url = await presign(this.#url, this.#signingKey, data);
-    return common.get(url);
+    const _id = createId();
+
+    const { resolve, reject, promise } = Promise.withResolvers<JsonValue | undefined>();
+    this.#getQueue.push({ _id, scope, key, resolve, reject });
+
+    const value = await promise;
+    return value;
   }
 
   protected async set(scope: string, key: string, value: JsonValue): Promise<void> {
