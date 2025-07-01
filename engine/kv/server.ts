@@ -3,7 +3,7 @@ import { createId } from "@dreamlab/vendor/nanoid.ts";
 import { decodeBase64Url } from "jsr:@std/encoding@^1/base64url";
 import * as common from "./_common.ts";
 import { createPayload, presign, sign } from "./_crypto.ts";
-import type { PresignRequest, PresignResponse } from "./_rpc.ts";
+import type { PresignRequest, PresignResponse, SignRequest, SignResponse } from "./_rpc.ts";
 import { KvBase } from "./base.ts";
 import type { ServerKV } from "./mod.ts";
 
@@ -74,6 +74,22 @@ export class KvServer extends KvServerBase implements ServerKV {
       const url = await presign(this.#clientUrl ?? this.#url, this.#signingKey, payload);
 
       const response = { _id: request._id, url } satisfies PresignResponse;
+      this.game.network.sendCustomMessage(from, channel, response);
+    });
+
+    this.game.network.onReceiveCustomMessage(async (from, channel, data) => {
+      if (channel !== "@kv/sign") return;
+      const request = data as SignRequest;
+      const payload = createPayload(request.action, request.scope, request.key, 10);
+      const { payload: encoded, sig } = await sign(this.#signingKey, payload);
+
+      const response = {
+        _id: request._id,
+        url: this.#clientUrl ?? this.#url,
+        payload: encoded,
+        sig,
+      } satisfies SignResponse;
+
       this.game.network.sendCustomMessage(from, channel, response);
     });
 
