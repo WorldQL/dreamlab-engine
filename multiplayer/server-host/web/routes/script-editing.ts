@@ -501,7 +501,7 @@ export const serveScriptEditingAPI = (router: Router) => {
         }
 
         const importedProjectJson = await Deno.readTextFile(
-          path.join(importedSrcDir, "project.json"),
+          path.join(sourceProjectDir, "project.json"),
         );
         const importedProject = ProjectSchema.parse(JSON.parse(importedProjectJson));
         const importedScene = importedProject.scenes.main;
@@ -589,8 +589,6 @@ export const serveScriptEditingAPI = (router: Router) => {
         importedScene.prefabs.forEach(entity => {
           instance.session?.ipc.send({ op: "ImportEditPrefab", entity });
         });
-
-        await Deno.remove(path.join(importedSrcDir, "project.json"));
 
         return { success: true };
       },
