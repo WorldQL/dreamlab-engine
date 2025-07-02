@@ -223,6 +223,14 @@ export const serveSourceControlAPI = (router: Router) => {
         ctx.response.body = { error: "Pull failed due to an unexpected error." };
         return;
       }
+      
+      // Clean up deleted remote branches
+      const pruneProcess = new Deno.Command("git", {
+        args: ["remote", "prune", body.remote],
+        cwd: sourceRoot,
+      }).spawn();
+      await pruneProcess.status;
+      
       ctx.response.body = { success: true };
     }
   });
