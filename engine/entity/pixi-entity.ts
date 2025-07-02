@@ -22,12 +22,13 @@ export abstract class PixiEntity extends Entity {
 
   #updateContainerPosition() {
     if (!this.container) return;
+    if (!this.container.position) return;
 
     const transform = PixiEntity.USE_INTERPOLATION ? this.interpolated : this.globalTransform;
     const pos = transform.position;
     const rot = transform.rotation;
 
-    if (this.container.position) this.container.position.set(pos.x, -pos.y);
+    this.container.position.set(pos.x, -pos.y);
     this.container.rotation = -rot;
     this.container.zIndex = this.z;
   }

@@ -204,6 +204,7 @@ export class AnimatedSprite extends PixiEntity {
 
     const updateSize = () => {
       if (!this.#sprite) return;
+      if (!this.#sprite.scale) return;
       this.#sprite.scale.set(0);
       this.#sprite.width = this.width * this.globalTransform.scale.x;
       this.#sprite.height = this.height * this.globalTransform.scale.y;
