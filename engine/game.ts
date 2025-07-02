@@ -93,6 +93,8 @@ export abstract class BaseGame implements ISignalHandler {
     // now that we know we are ServerGame | ClientGame, we can safely cast to Game
   }
 
+  readonly signalSubscriptionMap = DefaultSignalHandlerImpls.map();
+
   readonly values: ValueRegistry = new ValueRegistry(this as unknown as Game);
   readonly sync: SyncedObjectRegistry = new SyncedObjectRegistry(this as unknown as Game);
 
@@ -278,8 +280,6 @@ export abstract class BaseGame implements ISignalHandler {
   // #endregion
 
   // #region SignalHandler impl
-  readonly signalSubscriptionMap = DefaultSignalHandlerImpls.map();
-
   fire<S extends Signal, C extends SignalConstructor<S>>(
     type: C,
     ...params: ConstructorParameters<C>
