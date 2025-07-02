@@ -27,7 +27,7 @@ export abstract class PixiEntity extends Entity {
     const pos = transform.position;
     const rot = transform.rotation;
 
-    this.container.position.set(pos.x, -pos.y);
+    if (this.container.position) this.container.position.set(pos.x, -pos.y);
     this.container.rotation = -rot;
     this.container.zIndex = this.z;
   }
