@@ -1,5 +1,4 @@
-import type { ClientGame, ServerGame } from "@dreamlab/engine";
-import type { JsonValue } from "@dreamlab/engine";
+import type { ClientGame, JsonValue, ServerGame } from "@dreamlab/engine";
 
 export function scope(game: ClientGame | ServerGame, playerId?: string): string {
   const world = game.worldId.replaceAll("/", ":");
@@ -10,11 +9,11 @@ export function scope(game: ClientGame | ServerGame, playerId?: string): string 
 
 export async function get(presigned: string): Promise<JsonValue | undefined> {
   const resp = await fetch(presigned);
-  if (resp.status === 404) return undefined;
+  if (!resp.ok) throw new Error("failed to get kv");
 
   const json = await resp.json();
   if (!("value" in json)) {
-    throw new TypeError("invalid kv response");
+    return undefined;
   }
 
   return json.value as JsonValue;
