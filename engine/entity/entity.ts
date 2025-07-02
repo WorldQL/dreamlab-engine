@@ -1085,6 +1085,21 @@ export abstract class Entity implements ISignalHandler {
 
     this.game.entities[internal.entityStoreRegister](this);
 
+    // remove clonedFromRef if the thing it's cloned from no longer exists.
+    if (ctx.values && ctx.values.clonedFromRef) {
+      const CFR: string = ctx.values.clonedFromRef as string;
+      const clonedFromExists = this.game.entities.lookupByRef(CFR) !== undefined;
+      if (!clonedFromExists) {
+        delete ctx.values.clonedFromRef
+        this.globalTransform.rotation = 0;
+        this.clonedFromRef = "";
+      }
+
+      // why doesn't this work? and also why does this run so late???
+
+      console.log(ctx.name, clonedFromExists);
+    }
+
     // @ts-expect-error we dont expect base Entity to have values rn
     this.defineValue(Entity, "clonedFromRef", { type: String, hidden: true });
     if (ctx.clonedFrom) {
