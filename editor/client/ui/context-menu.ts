@@ -4,7 +4,7 @@ import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 
 export type ContextMenuItem =
   | [
-      label: string,
+      label: string | HTMLSpanElement,
       action: () => void,
       disabled?: boolean,
       hint?: string,
@@ -12,7 +12,7 @@ export type ContextMenuItem =
       order?: number,
     ]
   | [
-      label: string,
+      label: string | HTMLSpanElement,
       children: ContextMenuItem[],
       disabled?: boolean,
       hint?: string,

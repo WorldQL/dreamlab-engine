@@ -1,5 +1,6 @@
 import { Entity, EntityConstructor } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
+import { element as elem } from "@dreamlab/ui";
 import { ContextMenuItem } from "../ui/context-menu.ts";
 
 // deduplicates the entity registry
@@ -41,8 +42,13 @@ export function createEntityMenu(
     .filter(([_type, namespace]) => namespace !== "@editor")
     .filter(([type, namespace]) => !hiddenEntities.has(`${namespace}/${type.name}`));
 
-  const entityLabel = (type: EntityConstructor): string => {
-    if ("icon" in type && typeof type.icon === "string") return `${type.icon} ${type.name}`;
+  const entityLabel = (type: EntityConstructor): string | HTMLSpanElement => {
+    if ("icon" in type && typeof type.icon === "string") {
+      return elem("span", {}, [
+        elem("span", { className: "emoji" }, [type.icon]),
+        ` ${type.name}`,
+      ]);
+    }
     return type.name;
   };
 

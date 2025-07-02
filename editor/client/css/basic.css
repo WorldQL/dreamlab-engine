@@ -4,8 +4,10 @@ body {
   background: rgb(var(--color-bg-0) / 1);
 }
 
-:root {
-  font-family: "Noto Color Emoji", var(--font-sans);
+.emoji {
+  font-family: "Noto Color Emoji";
+  font-weight: 400;
+  font-style: normal;
 }
 
 body > main > div {

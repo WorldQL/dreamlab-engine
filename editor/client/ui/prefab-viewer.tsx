@@ -278,7 +278,7 @@ export class PrefabViewer {
         onDragStart={dragstart}
         onDragEnd={dragend}
       >
-        <div className="prefab-icon">{entity.icon ?? "🌟"}</div>
+        <div className="prefab-icon emoji">{entity.icon ?? "🌟"}</div>
         <div className="prefab-name">{entity.name}</div>
       </div>
     ) as HTMLDivElement;
