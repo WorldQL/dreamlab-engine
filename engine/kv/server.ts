@@ -79,17 +79,21 @@ export class KvServer extends KvServerBase implements ServerKV {
 
     this.game.network.onReceiveCustomMessage(async (from, channel, data) => {
       if (channel !== "@kv/sign") return;
-      const request = data as SignRequest;
-      const payload = createPayload(request.action, request.scope, request.key, 10);
-      const { payload: encoded, sig } = await sign(this.#signingKey, payload);
+      const requests = data as SignRequest;
 
-      const response = {
-        _id: request._id,
-        url: this.#clientUrl ?? this.#url,
-        payload: encoded,
-        sig,
-      } satisfies SignResponse;
+      const jobs = requests.map(async (request): Promise<SignResponse[number]> => {
+        const payload = createPayload(request.action, request.scope, request.key, 10);
+        const { payload: encoded, sig } = await sign(this.#signingKey, payload);
 
+        return {
+          _id: request._id,
+          url: this.#clientUrl ?? this.#url,
+          payload: encoded,
+          sig,
+        } satisfies SignResponse[number];
+      });
+
+      const response = await Promise.all(jobs);
       this.game.network.sendCustomMessage(from, channel, response);
     });
 

@@ -53,9 +53,11 @@ export class KvClient extends KvClientBase implements ClientKV {
       if (from !== "server") return;
       if (channel !== "@kv/sign") return;
 
-      const response = data as SignResponse;
-      this.#signResolvers.get(response._id)?.(response);
-      this.#signResolvers.delete(response._id);
+      const responses = data as SignResponse;
+      for (const response of responses) {
+        this.#signResolvers.get(response._id)?.(response);
+        this.#signResolvers.delete(response._id);
+      }
     });
 
     this.game.on(GameTick, async () => {
@@ -83,13 +85,22 @@ export class KvClient extends KvClientBase implements ClientKV {
         return;
       }
 
+      const signRequests: SignRequest = [];
+
       let urlBase: string | undefined;
       const jobs = queue.map(async ({ _id, scope, key }) => {
-        const { payload, sig, url } = await this.#sign({ action: "get", scope, key });
+        const signId = createId();
+        const sign = Promise.withResolvers<SignResponse[number]>();
+        this.#signResolvers.set(signId, sign.resolve);
+        signRequests.push({ _id: signId, action: "get", scope, key });
+
+        const { payload, sig, url } = await sign.promise;
 
         urlBase = url;
         return { _id, scope, key, payload, sig };
       });
+
+      this.game.network.sendCustomMessage("server", "@kv/sign", signRequests);
 
       const mapped = await Promise.all(jobs);
       if (!urlBase) throw new Error("missing base url");
@@ -165,17 +176,7 @@ export class KvClient extends KvClientBase implements ClientKV {
     return promise;
   }
 
-  #signResolvers = new Map<string, (resp: SignResponse) => void>();
-  #sign(request: Omit<SignRequest, "_id">): Promise<SignResponse> {
-    const _id = createId();
-    const { promise, resolve } = Promise.withResolvers<SignResponse>();
-    this.#signResolvers.set(_id, resolve);
-
-    const req = { ...request, _id } satisfies SignRequest;
-    this.game.network.sendCustomMessage("server", "@kv/sign", req);
-
-    return promise;
-  }
+  #signResolvers = new Map<string, (resp: SignResponse[number]) => void>();
 
   #getQueue: {
     _id: string;
