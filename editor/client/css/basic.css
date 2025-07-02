@@ -4,6 +4,10 @@ body {
   background: rgb(var(--color-bg-0) / 1);
 }
 
+:root {
+  font-family: "Noto Color Emoji", var(--font-sans);
+}
+
 body > main > div {
   border-radius: var(--border-radius);
 }
