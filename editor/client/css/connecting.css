@@ -4,7 +4,6 @@ body {
   background: rgb(var(--color-bg-0) / 1);
   margin: 0;
   padding: 0;
-  height: 100%;
 }
 
 #connecting-container {

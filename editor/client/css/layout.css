@@ -9,7 +9,7 @@ main {
   padding: 0 0.5em 0.5em 0.5em;
 
   width: 100vw;
-  height: 100vh;
+  height: 100dvh;
 
   display: grid;
 
@@ -89,6 +89,9 @@ main > div {
 
   &:not(:first-child) {
     height: calc(100% - var(--toolbar-height));
+    @media (max-width: 600px) {
+      height: 100%;
+    }
   }
 
   & > div#games {
