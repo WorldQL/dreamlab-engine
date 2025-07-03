@@ -65,7 +65,7 @@ export class Camera extends Entity {
       const w = canvas.width / Camera.METERS_TO_PIXELS;
       const h = canvas.height / Camera.METERS_TO_PIXELS;
       const axis = Math.min(w, h);
-      scale = axis / Camera.TARGET_VIEWPORT_SIZE;
+      scale = axis / Camera.TARGET_VIEWPORT_SIZE / resolution;
     }
 
     return PIXI.Matrix.shared
