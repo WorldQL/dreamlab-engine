@@ -11,6 +11,11 @@ export const DeepObjectOperationSet = z.object({
   value: z.unknown(),
 });
 
+export const DeepObjectOperationDelete = z.object({
+  t: z.literal("deep-object-delete"),
+  key: z.string(),
+});
+
 export class SyncedDeepObject<T extends JsonObject>
   extends SyncedObject<T>
   implements SyncedObjectContainer
@@ -57,6 +62,21 @@ export class SyncedDeepObject<T extends JsonObject>
         }
 
         if (typeof value === "object" && value !== null) obj.#syncChild(target, prop, value);
+
+        return ret;
+      },
+      deleteProperty(target, prop) {
+        const ret = Reflect.deleteProperty(target, prop);
+
+        if (typeof prop !== "string") return ret;
+
+        if (ret) {
+          const op = { t: "deep-object-delete", key: prop } as const;
+          obj.registry.emit(obj, ++obj.clock, op);
+          obj.notifyChange(obj.registry.game.network.self, op);
+        }
+
+        // TODO: delete child if was object
 
         return ret;
       },
@@ -131,6 +151,25 @@ export class SyncedDeepObject<T extends JsonObject>
       }
 
       inner[key] = value;
+
+      this.clock = Math.max(this.clock, clock);
+      this.#writers.set(key, [from, clock]);
+      this.notifyChange(from, op);
+
+      return true;
+    } else if (op.t === "deep-object-delete") {
+      const key = op.key as keyof T;
+
+      const writer = this.#writers.get(key);
+      if (writer) {
+        const [lastFrom, lastClock] = writer;
+        if (clock < lastClock) return false;
+        if (clock === lastClock && from < lastFrom) return false;
+      }
+
+      // TODO: delete child if was object
+
+      delete inner[key];
 
       this.clock = Math.max(this.clock, clock);
       this.#writers.set(key, [from, clock]);

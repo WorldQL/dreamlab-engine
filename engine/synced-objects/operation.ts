@@ -4,7 +4,7 @@ import {
   ArrayOperationResize,
   ArrayOperationSetAt,
 } from "./objects/array.ts";
-import { DeepObjectOperationSet } from "./objects/deep-object.ts";
+import { DeepObjectOperationDelete, DeepObjectOperationSet } from "./objects/deep-object.ts";
 import { PrimitiveOperationWrite } from "./objects/primitive.ts";
 
 export const SyncedObjectOperationSchema = z.discriminatedUnion("t", [
@@ -12,6 +12,7 @@ export const SyncedObjectOperationSchema = z.discriminatedUnion("t", [
   ArrayOperationSetAt,
   ArrayOperationResize,
   DeepObjectOperationSet,
+  DeepObjectOperationDelete,
   PrimitiveOperationWrite,
   z.object({
     t: z.literal("user-defined"),
