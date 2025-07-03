@@ -126,6 +126,10 @@ export class SyncedDeepObject<T extends JsonObject>
         if (clock === lastClock && from < lastFrom) return false;
       }
 
+      if (typeof value === "object" && value !== null) {
+        this.#syncChild(inner, key as string, value);
+      }
+
       inner[key] = value;
 
       this.clock = Math.max(this.clock, clock);
