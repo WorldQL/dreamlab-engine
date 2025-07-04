@@ -63,7 +63,12 @@ export class BehaviorEditor {
 
     this.scriptElement.addEventListener("dblclick", () => {
       window.parent.postMessage(
-        { action: "goToTab", tab: "scripts", fileName: behavior.script.replace("res://", "") },
+        {
+          action: "goToTab",
+          tab: "scripts",
+          // TODO: how do we tell if we need .js or .tsx here?
+          fileName: behavior.script.replace("res://", "").replace(/\.js$/, ".ts"),
+        },
         "*",
       );
     });
