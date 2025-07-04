@@ -252,6 +252,12 @@ export const bootPlaySession = async (instance: GameInstance) => {
     }).spawn().status;
   }
 
+  try {
+    instance.session.saveScene();
+  } catch (err) {
+    instance.logs.warn("play: failed to auto-save edit session", err);
+  }
+
   instance.logs.debug("play: Fetching scene definition from edit session...");
 
   try {

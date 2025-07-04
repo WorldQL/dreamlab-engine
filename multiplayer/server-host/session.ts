@@ -47,6 +47,7 @@ export class GameSession {
   startedAt = new Date();
 
   #autoSaveInterval: ReturnType<typeof setInterval> | undefined;
+  #editMode: boolean;
 
   constructor(
     public parent: GameInstance,
@@ -138,32 +139,39 @@ export class GameSession {
       this.paused = message.paused;
     });
 
+    this.#editMode = opts.editMode;
     if (opts.editMode) {
       watchForEditChanges(this, opts.worldSubDirectory);
 
       const save = async () => {
         try {
-          const scene = await dumpSceneDefinition(parent);
-          const projectJsonFile = path.join(parent.info.worldDirectory, "project.json");
-          const projectDesc = JSON.parse(await Deno.readTextFile(projectJsonFile));
-          projectDesc.scenes = { ...(projectDesc.scenes ?? {}), main: scene };
-
-          const markdownScene =
-            "The following is a description of the current scene in a compact format: \n\n" +
-            toMarkdownSceneTree(scene);
-          const markdownSceneFile = path.join(
-            parent.info.worldDirectory,
-            "scene-description.md",
-          );
-          await Deno.writeTextFile(markdownSceneFile, markdownScene);
-          await Deno.writeTextFile(projectJsonFile, JSON.stringify(projectDesc, undefined, 2));
+          this.saveScene();
         } catch (_err) {
           // ignore
         }
       };
 
-      this.#autoSaveInterval = setInterval(save, 5000);
+      this.#autoSaveInterval = setInterval(save, 10 * 60 * 1000);
     }
+  }
+
+  async saveScene() {
+    if (!this.#editMode) return;
+
+    const scene = await dumpSceneDefinition(this.parent);
+    const projectJsonFile = path.join(this.parent.info.worldDirectory, "project.json");
+    const projectDesc = JSON.parse(await Deno.readTextFile(projectJsonFile));
+    projectDesc.scenes = { ...(projectDesc.scenes ?? {}), main: scene };
+
+    const markdownScene =
+      "The following is a description of the current scene in a compact format: \n\n" +
+      toMarkdownSceneTree(scene);
+    const markdownSceneFile = path.join(
+      this.parent.info.worldDirectory,
+      "scene-description.md",
+    );
+    await Deno.writeTextFile(markdownSceneFile, markdownScene);
+    await Deno.writeTextFile(projectJsonFile, JSON.stringify(projectDesc, undefined, 2));
   }
 
   get lastHeartbeat(): number {
