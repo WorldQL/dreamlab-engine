@@ -189,6 +189,13 @@ export class Properties implements InspectorUIWidget {
 
       valueDisplay.textContent = clonedFrom.id.replace("world/EditEntities/", "");
       clear.addEventListener("click", () => {
+        UndoRedoManager._.push({
+          t: "modify-entity-value",
+          entityRef: entity.ref,
+          key: "clonedFromRef",
+          previous: entity.clonedFromRef,
+          value: "",
+        });
         entity.clonedFromRef = "";
         table.removeEntry("prefab-instance");
       });
