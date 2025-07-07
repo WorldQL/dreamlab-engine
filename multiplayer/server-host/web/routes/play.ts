@@ -85,6 +85,8 @@ const handlePlayerConnectionRequest = async (
 
   try {
     const auth = await validateAuthToken(gameAuthSecret, token);
+    if (auth.instance_id !== session.parent.info.instanceId) throw new Error("invalid session");
+
     handleConnection(ctx.upgrade(), session, auth.player_id, auth.nickname, getCodec(codec));
   } catch (err) {
     throw new JsonAPIError(Status.Forbidden, "The auth token provided was invalid.", {
