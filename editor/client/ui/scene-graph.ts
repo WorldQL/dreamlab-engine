@@ -283,6 +283,8 @@ export class SceneGraph implements InspectorUIWidget {
       `[${entity.children.size} entities not shown]`,
     ]);
 
+    let needsSorting: (() => void) | undefined;
+
     entity.on(EntityChildSpawned, event => {
       const newEntity = event.child;
       if (entity.children.size > 2500) {
@@ -292,7 +294,13 @@ export class SceneGraph implements InspectorUIWidget {
         entryElement.append(tooManyEntities);
       } else {
         this.renderEntry(ui, entryElement, newEntity);
-        this.sortEntries(entryElement);
+        if (!needsSorting) {
+          needsSorting = () => {
+            this.sortEntries(entryElement);
+            needsSorting = undefined;
+          };
+          queueMicrotask(needsSorting);
+        }
       }
     });
 
