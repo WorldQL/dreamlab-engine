@@ -325,7 +325,9 @@ export class AppMenu {
     });
 
     await setupGame(playGame, conn, false);
-    this.playInspector = new InspectorUI(playGame, conn, false, container);
+    if (!globalThis.matchMedia("(max-width: 600px)").matches) {
+      this.playInspector = new InspectorUI(playGame, conn, false, container);
+    }
 
     // spawn physics debug if exists in parent
     if (this.games.edit.local.entities.lookupByType(PhysicsDebug).length > 0) {
