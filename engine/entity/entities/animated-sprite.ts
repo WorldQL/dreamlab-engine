@@ -24,6 +24,8 @@ PIXI.AbstractRenderer.defaultOptions.roundPixels = true;
 const SpriteSliceModes = ["Width and Height", "Rows and Columns"] as const;
 type SpriteSliceModes = (typeof SpriteSliceModes)[number];
 
+const texturesCache = new Map<string, PIXI.Texture[]>();
+
 export class AnimatedSprite extends PixiEntity {
   static {
     Entity.registerType(this, "@core");
@@ -60,6 +62,9 @@ export class AnimatedSprite extends PixiEntity {
     const scaleMode = camera?.scaleFilterMode ?? "nearest";
 
     if (this.jsonSpritesheet !== "") {
+      const cached = texturesCache.get(this.jsonSpritesheet);
+      if (cached) return cached;
+
       const resource = this.game.resolveResource(this.jsonSpritesheet);
       const spritesheet = await PIXI.Assets.load(resource);
       if (!(spritesheet instanceof PIXI.Spritesheet)) {
@@ -73,6 +78,7 @@ export class AnimatedSprite extends PixiEntity {
         texture.update();
       }
 
+      texturesCache.set(this.jsonSpritesheet, textures);
       return textures;
     }
 
@@ -81,6 +87,9 @@ export class AnimatedSprite extends PixiEntity {
       this.frameDimensions.x !== 1 &&
       this.frameDimensions.y !== 1
     ) {
+      const cached = texturesCache.get(this.spritesheet);
+      if (cached) return cached;
+
       const resource = this.game.resolveResource(this.spritesheet);
       const _spritesheetTexture = await PIXI.Assets.load(resource);
       if (!(_spritesheetTexture instanceof PIXI.Texture)) {
@@ -122,7 +131,10 @@ export class AnimatedSprite extends PixiEntity {
       await spritesheet.parse();
 
       const textures = Object.values(spritesheet.textures);
-      if (textures.length > 0) return textures;
+      if (textures.length > 0) {
+        texturesCache.set(this.spritesheet, textures);
+        return textures;
+      }
 
       console.error(`${this.id}: spritesheet config had no textures`);
     }

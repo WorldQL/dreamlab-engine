@@ -31,6 +31,8 @@ function eventTargetsEntry(event: Event, entryElement: HTMLElement) {
   return event.target.closest("details[data-entity]") === entryElement;
 }
 
+const chevronDownIcon = icon(ChevronDown);
+
 export class SceneGraph implements InspectorUIWidget {
   #section: HTMLElement = elem("section", { id: "scene-graph" }, [
     elem("h1", {}, ["Scene Graph"]),
@@ -203,7 +205,9 @@ export class SceneGraph implements InspectorUIWidget {
 
     if (this.entryElementMap.has(currentEntityRef)) return;
 
-    const toggle = elem("div", { className: "arrow" }, [icon(ChevronDown)]);
+    const toggle = elem("div", { className: "arrow" }, [
+      chevronDownIcon.cloneNode(true) as Element,
+    ]);
     const entityIcon =
       !this.game.isEditMode &&
       (entity.id === "prefabs" || entity.id === "world" || entity.id === "local") &&
