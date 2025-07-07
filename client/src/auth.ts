@@ -40,8 +40,7 @@ export const auth = async (nickname: string): Promise<AuthToken> => {
   const searchParams = new URLSearchParams(window.location.search);
   const passedToken = searchParams.get("token");
 
-  if ((globalThis.env.IS_DEV || globalThis.env.DREAMLAB_MULTIPLAYER_STANDALONE) && !passedToken)
-    return devAuth(nickname);
+  if (globalThis.env.IS_DEV && !passedToken) return devAuth(nickname);
 
   if (passedToken) return decodeToken(passedToken);
 
