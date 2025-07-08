@@ -7,5 +7,6 @@ import "./edit-roots.ts";
 import "./empty.ts";
 import "./rect-collider.ts";
 import "./rigidbody.ts";
+import "./tilemap.ts";
 
 export * from "./manager.ts";
