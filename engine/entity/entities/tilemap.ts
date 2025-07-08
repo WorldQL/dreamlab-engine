@@ -1,9 +1,12 @@
 import {
+  Camera,
+  CameraFilterModeChanged,
   defineSyncedObject,
   Entity,
   EntityConstructor,
   EntityContext,
   EntityTransformUpdate,
+  enumAdapter,
   GameRender,
   GameTick,
   IBounds,
@@ -16,6 +19,9 @@ import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import type { Simplify } from "@dreamlab/vendor/type-fest.ts";
 import { Integer } from "@dreamlab/vendor/type-fest.ts";
 import { decodeBase64Url, encodeBase64Url } from "jsr:@std/encoding@^1/base64url";
+
+type ScaleFilterMode = enumAdapter.Union<typeof ScaleFilterModeAdapter>;
+const ScaleFilterModeAdapter = enumAdapter(["default", "linear", "nearest"]);
 
 // #region data and types
 const TILE_TYPES = {
@@ -65,6 +71,7 @@ export abstract class BaseTilemap extends PixiEntity {
 
   chunkSize: number = 64;
   resolution: number = 64;
+  scaleFilterMode: ScaleFilterMode = "default";
 
   palette: Record<number, TileData> = {};
   data: Record<number, Record<number, number>> = {};
@@ -107,11 +114,13 @@ export abstract class BaseTilemap extends PixiEntity {
 
     const chunkSize = this.defineValue(ctor, "chunkSize");
     const resolution = this.defineValue(ctor, "resolution");
+    const scale = this.defineValue(ctor, "scaleFilterMode", { type: ScaleFilterModeAdapter });
     const palette = defineSyncedObject(this, "palette", ctx.sync ?? {});
     const data = defineSyncedObject(this, "data", ctx.sync ?? {});
 
     chunkSize.onChanged(markDirty);
     resolution.onChanged(markDirty);
+    scale.onChanged(markDirty);
     palette.onChanged(markDirty);
     data.onChanged(markDirty); // TODO: only change relevant tile on data changed
 
@@ -128,6 +137,8 @@ export abstract class BaseTilemap extends PixiEntity {
     this.listen(this.game, GameTick, () => {
       this.#checkChunkQueue();
     });
+
+    this.listen(this.game, CameraFilterModeChanged, markDirty);
   }
 
   // #region (de)serialize methods
@@ -434,12 +445,19 @@ export abstract class BaseTilemap extends PixiEntity {
     const sprite = this.#getChunkSprite(data);
     const oldTexture = sprite.texture;
 
+    const camera = Camera.getActive(this.game);
+    const scaleMode: Exclude<ScaleFilterMode, "default"> =
+      this.scaleFilterMode === "default"
+        ? (camera?.scaleFilterMode ?? "nearest")
+        : this.scaleFilterMode;
+
     const texture = renderer.textureGenerator.generateTexture({
       target: chunk,
       resolution: this.resolution,
       width: this.chunkSize,
       height: this.chunkSize,
       frame: new PIXI.Rectangle(-0.5, -this.chunkSize + 0.5, this.chunkSize, this.chunkSize),
+      textureSourceOptions: { scaleMode },
     });
 
     sprite.texture = texture;
