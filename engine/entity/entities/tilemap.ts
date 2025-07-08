@@ -9,10 +9,12 @@ import {
   PixiEntity,
 } from "@dreamlab/engine";
 import * as cbor from "@dreamlab/vendor/cbor2.ts";
+import { gzip, ungzip } from "@dreamlab/vendor/pako.ts";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { Integer } from "@dreamlab/vendor/type-fest.ts";
 import { decodeBase64Url, encodeBase64Url } from "jsr:@std/encoding@^1/base64url";
 
+// #region data and types
 const TILE_TYPES = {
   color: 0,
   texture: 1,
@@ -37,6 +39,7 @@ export type TileData =
       type: "texture";
       texture: string;
     };
+// #endregion
 
 export abstract class BaseTilemap extends PixiEntity {
   static readonly icon = "🗺️";
@@ -100,6 +103,8 @@ export abstract class BaseTilemap extends PixiEntity {
   }
 
   // #region (de)serialize methods
+  static readonly #COMPRESSION_THRESHOLD = 384;
+
   static #serialize(opts: TilemapData): string {
     const palette = Object.entries(opts.palette).map(([k, entry]) => {
       const id = Number.parseInt(k, 10);
@@ -141,11 +146,23 @@ export abstract class BaseTilemap extends PixiEntity {
     }
 
     const encoded = cbor.encode([palette, data]);
-    return encodeBase64Url(encoded);
+    const compressed = encoded.byteLength > BaseTilemap.#COMPRESSION_THRESHOLD;
+    const buffer = compressed ? gzip(encoded) : encoded;
+
+    const final = new Uint8Array(buffer.length + 1);
+    final.set(compressed ? [1] : [0]);
+    final.set(buffer, 1);
+
+    return encodeBase64Url(final);
   }
 
   static #deserialize(value: string): TilemapData {
-    const decoded = cbor.decode(decodeBase64Url(value));
+    const buffer = decodeBase64Url(value);
+    const compressed = buffer[0] === 1;
+    const payload = buffer.slice(1);
+    const bytes = compressed ? ungzip(payload) : payload;
+
+    const decoded = cbor.decode(bytes);
     if (!Array.isArray(decoded)) throw new Error("invalid data");
 
     const _palette = decoded[0] as [number, number, ...unknown[]][];
