@@ -3,13 +3,14 @@ import { createId } from "@dreamlab/vendor/nanoid.ts";
 import { Application, HttpServerNative, Router, Status } from "@oak/oak";
 import { oakCors } from "https://deno.land/x/cors@v1.2.2/mod.ts";
 
+import * as uuid from "jsr:@std/uuid@1.0.9";
 import { serveWorlds } from "../common-host/routes/worlds.ts";
 import { handleJsonAPIErrors, JsonAPIError } from "../common-host/web-util/api.ts";
 import { workerConnectHandler } from "../common-host/worker.ts";
+import { importSecretKey, validateAuthToken } from "../server-common/game-auth.ts";
 import { reportPlayerCount, teardownActor } from "./actor-reporting.ts";
 import { CONFIG } from "./config.ts";
 import { PlayInstance } from "./instance.ts";
-import * as uuid from "jsr:@std/uuid@1.0.9";
 
 const instance = new PlayInstance(CONFIG.INSTANCE_ID, CONFIG.WORLD_ID);
 
@@ -18,38 +19,48 @@ const router = new Router();
 
 router.get("/internal/worker", workerConnectHandler);
 
+const gameAuthSecret = CONFIG.NEXT_GAME_JWT_SECRET
+  ? await importSecretKey(CONFIG.NEXT_GAME_JWT_SECRET)
+  : undefined;
+
 router.get("/api/v1/connect/:instance", async ctx => {
   if (ctx.params.instance !== instance.instanceId)
     throw new JsonAPIError(Status.MisdirectedRequest, "not running this instance");
 
   await instance.ready();
 
-  console.log("project id:", CONFIG.WORLD_ID);
-  if (CONFIG.INSTANCE_ID === "standalone") {
-    const standaloneInstanceId = await uuid.v5.generate(
-      "dfd8e476-f776-475c-ac09-d2baf1a43a4a", // random namespace
-      new TextEncoder().encode(CONFIG.WORLD_ID),
-    );
-    console.log(standaloneInstanceId);
-    // TODO: Add a check to make sure the player's token matches the fakeInstanceId
-    // and also get the token into this scope??
-
-    // with this setup all standaloneInstances "share" an ID, but it still achieves the primary purpose of limiting scope of tokens to prevent devs from stealing one token and impersonating a user across the platform.
-  }
-
-  const connectionId = createId("conn");
-  const playerId = ctx.request.url.searchParams.get("player_id");
-  const nickname = ctx.request.url.searchParams.get("nickname") ?? "Player";
-  if (!(playerId && nickname))
-    throw new JsonAPIError(Status.BadRequest, "missing player_id / nickname");
-
   const codecParam = ctx.request.url.searchParams.get("codec") ?? undefined;
   const codecName: Codec | undefined = isCodec(codecParam) ? codecParam : undefined;
   const codec = getCodec(codecName);
 
-  const socket = ctx.upgrade();
+  const connectionId = createId("conn");
+  if (!gameAuthSecret) {
+    const playerId = ctx.request.url.searchParams.get("player_id");
+    const nickname = ctx.request.url.searchParams.get("nickname") ?? "Player";
+    if (!(playerId && nickname))
+      throw new JsonAPIError(Status.BadRequest, "missing player_id / nickname");
 
-  instance.handleConnection(connectionId, socket, codec, playerId, nickname);
+    const socket = ctx.upgrade();
+    instance.handleConnection(connectionId, socket, codec, playerId, nickname);
+  } else {
+    const token = ctx.request.url.searchParams.get("token");
+    if (token === null)
+      throw new JsonAPIError(Status.Unauthorized, "auth token was not provided");
+    const auth = await validateAuthToken(gameAuthSecret, token);
+
+    const expectedInstanceId =
+      instance.instanceId === "standalone"
+        ? await uuid.v5.generate(
+            "dfd8e476-f776-475c-ac09-d2baf1a43a4a", // random namespace
+            new TextEncoder().encode(CONFIG.WORLD_ID),
+          )
+        : instance.instanceId;
+    if (auth.instance_id !== expectedInstanceId)
+      throw new JsonAPIError(Status.Unauthorized, "invalid session for given instance");
+
+    const socket = ctx.upgrade();
+    instance.handleConnection(connectionId, socket, codec, auth.player_id, auth.nickname);
+  }
 });
 
 // TODO: instance info route

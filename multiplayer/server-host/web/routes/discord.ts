@@ -2,9 +2,9 @@ import { z } from "@dreamlab/vendor/zod.ts";
 import { Router, Status } from "@oak/oak";
 import { create } from "https://deno.land/x/djwt@v3.0.1/mod.ts";
 import { JsonAPIError, typedJsonHandler } from "../../../common-host/web-util/api.ts";
+import { AuthToken, importSecretKey } from "../../../server-common/game-auth.ts";
 import { CONFIG } from "../../config.ts";
 import { createInstance, GameInstance } from "../../instance.ts";
-import { AuthToken, importSecretKey } from "../../util/game-auth.ts";
 import { instanceInfo } from "../util/instance-info.ts";
 
 const DetailsResponseSchema = z.object({
