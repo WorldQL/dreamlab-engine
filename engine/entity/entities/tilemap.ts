@@ -5,6 +5,7 @@ import {
   EntityContext,
   EntityTransformUpdate,
   GameRender,
+  GameTick,
   IBounds,
   JsonValue,
   PixiEntity,
@@ -12,6 +13,7 @@ import {
 import * as cbor from "@dreamlab/vendor/cbor2.ts";
 import { gzip, ungzip } from "@dreamlab/vendor/pako.ts";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
+import type { Simplify } from "@dreamlab/vendor/type-fest.ts";
 import { Integer } from "@dreamlab/vendor/type-fest.ts";
 import { decodeBase64Url, encodeBase64Url } from "jsr:@std/encoding@^1/base64url";
 
@@ -29,6 +31,17 @@ type TilemapData = {
   readonly palette: BaseTilemap["palette"];
   readonly data: BaseTilemap["data"];
 };
+
+type TileDrawData = {
+  readonly x: number;
+  readonly y: number;
+  readonly tile: TileData;
+  readonly chunkX: number;
+  readonly chunkY: number;
+  readonly chunkId: string;
+};
+
+type ChunkData = Simplify<Pick<TileDrawData, "chunkX" | "chunkY" | "chunkId">>;
 
 export type TileData =
   | {
@@ -100,7 +113,7 @@ export abstract class BaseTilemap extends PixiEntity {
     chunkSize.onChanged(markDirty);
     resolution.onChanged(markDirty);
     palette.onChanged(markDirty);
-    data.onChanged(markDirty);
+    data.onChanged(markDirty); // TODO: only change relevant tile on data changed
 
     this.on(EntityTransformUpdate, () => this.#updateSize());
 
@@ -110,6 +123,10 @@ export abstract class BaseTilemap extends PixiEntity {
 
       void this.#populateTextureCache().then(() => this.#redraw());
       this.#recalculateBounds();
+    });
+
+    this.listen(this.game, GameTick, () => {
+      this.#checkChunkQueue();
     });
   }
 
@@ -248,25 +265,15 @@ export abstract class BaseTilemap extends PixiEntity {
   // #endregion
 
   // #region private methods
-  #region(x: number, y: number): readonly [x: number, y: number, id: string] {
-    const rx = Math.floor(x / this.chunkSize);
-    const ry = Math.floor(y / this.chunkSize);
+  #chunkInfo(x: number, y: number): ChunkData {
+    const chunkX = Math.floor(x / this.chunkSize);
+    const chunkY = Math.floor(y / this.chunkSize);
+    const chunkId = `${chunkX}:${chunkY}`;
 
-    return [rx, ry, `${rx}:${ry}`];
+    return { chunkX, chunkY, chunkId } as const;
   }
 
-  *#tiles(): Generator<
-    {
-      readonly x: number;
-      readonly y: number;
-      readonly tile: TileData;
-      readonly regionX: number;
-      readonly regionY: number;
-      readonly regionId: string;
-    },
-    void,
-    void
-  > {
+  *#tiles(): Generator<TileDrawData, void, void> {
     for (const [_x, row] of Object.entries(this.data)) {
       const x = Number.parseInt(_x, 10);
       if (Number.isNaN(x)) continue;
@@ -280,8 +287,8 @@ export abstract class BaseTilemap extends PixiEntity {
         const tile = this.palette[paletteId];
         if (!tile) continue;
 
-        const [regionX, regionY, regionId] = this.#region(x, y);
-        yield { x, y, tile, regionX, regionY, regionId };
+        const chunkInfo = this.#chunkInfo(x, y);
+        yield { x, y, tile, ...chunkInfo };
       }
     }
   }
@@ -315,75 +322,128 @@ export abstract class BaseTilemap extends PixiEntity {
     const removed = this.container.removeChildren();
     for (const child of removed) child.destroy({ children: true });
 
-    const container = this.container;
-    const regions = new Map<string, PIXI.Container>();
+    for (const chunk of this.#chunks.values()) chunk.destroy({ children: true });
+    for (const sprite of this.#sprites.values()) sprite.destroy();
 
-    const getRegion = (x: number, y: number, id: string): PIXI.Container => {
-      const cached = regions.get(id);
-      if (cached !== undefined) return cached;
+    this.#chunks.clear();
+    this.#sprites.clear();
 
-      const pixi = container.getChildByLabel(id, false) ?? undefined;
-      if (pixi !== undefined) {
-        regions.set(id, pixi);
-        return pixi;
-      }
+    for (const tile of this.#tiles()) this.#drawTile(tile);
+  }
 
-      const region = new PIXI.Container({
-        label: id,
-        interactive: false,
-        eventMode: "none",
-        position: { x: x * this.chunkSize, y: y * this.chunkSize },
-      });
+  readonly #chunks = new Map<string, PIXI.Container>();
+  #getChunkContainer({ chunkId: id, chunkX: x, chunkY: y }: ChunkData): PIXI.Container {
+    const cached = this.#chunks.get(id);
+    if (cached !== undefined) return cached;
 
-      region.cacheAsTexture({ resolution: this.resolution });
-      regions.set(id, region);
-      container.addChild(region);
+    const chunk = new PIXI.Container({
+      label: `chunk:${id}`,
+      interactive: false,
+      eventMode: "none",
+      position: { x: x * this.chunkSize, y: -y * this.chunkSize },
+    });
 
-      return region;
+    this.#chunks.set(id, chunk);
+    return chunk;
+  }
+
+  readonly #sprites = new Map<string, PIXI.Sprite>();
+  #getChunkSprite({ chunkId: id, chunkX: x, chunkY: y }: ChunkData): PIXI.Sprite {
+    if (!this.container) throw new Error("missing container");
+
+    const cached = this.#sprites.get(id);
+    if (cached !== undefined) return cached;
+
+    const sprite = new PIXI.Sprite({
+      label: `spriite:${id}`,
+      position: { x: x * this.chunkSize, y: -y * this.chunkSize },
+      width: this.chunkSize,
+      height: this.chunkSize,
+    });
+
+    this.container.addChild(sprite);
+    this.#sprites.set(id, sprite);
+    return sprite;
+  }
+
+  #drawTile(data: TileDrawData): void {
+    if (!this.container) return;
+
+    const tile = data.tile;
+    const chunk = this.#getChunkContainer(data);
+    const position = {
+      x: data.x % this.chunkSize,
+      y: -data.y % this.chunkSize,
     };
 
-    for (const { x, y: _y, tile, regionX, regionY: _regionY, regionId } of this.#tiles()) {
-      const y = -_y;
-      const regionY = -_regionY;
+    switch (tile.type) {
+      case "color": {
+        const gfx = new PIXI.Graphics({
+          context: this.#ctx,
+          position,
+          tint: tile.color,
+          alpha: tile.alpha,
+        });
 
-      const region = getRegion(regionX, regionY, regionId);
-      const position = {
-        x: x % this.chunkSize,
-        y: y % this.chunkSize,
-      };
+        chunk.addChild(gfx);
+        break;
+      }
 
-      switch (tile.type) {
-        case "color": {
-          const gfx = new PIXI.Graphics({
-            context: this.#ctx,
-            position,
-            tint: tile.color,
-            alpha: tile.alpha,
-          });
+      case "texture": {
+        const texture = this.#textureCache.get(tile.texture);
+        if (!texture) return;
 
-          region.addChild(gfx);
-          break;
-        }
+        const sprite = new PIXI.Sprite({
+          texture,
+          width: 1,
+          height: 1,
+          anchor: 0.5,
+          position,
+        });
 
-        case "texture": {
-          const texture = this.#textureCache.get(tile.texture);
-          if (!texture) continue;
-
-          const sprite = new PIXI.Sprite({
-            texture,
-            width: 1,
-            height: 1,
-            anchor: 0.5,
-            position,
-          });
-
-          region.addChild(sprite);
-          break;
-        }
+        chunk.addChild(sprite);
+        break;
       }
     }
 
-    for (const child of container.children) child.updateCacheTexture();
+    if (!this.#updateChunkQueue.includes(data.chunkId)) {
+      this.#updateChunkQueue.push(data.chunkId);
+    }
+  }
+
+  readonly #updateChunkQueue: string[] = [];
+  #checkChunkQueue(): void {
+    if (!this.container) return;
+
+    const chunkId = this.#updateChunkQueue.shift();
+    if (!chunkId) return;
+
+    this.#updateChunkTexture(chunkId);
+  }
+
+  #updateChunkTexture(id: string): void {
+    if (!this.game.isClient()) throw new Error("not a client");
+    const renderer = this.game.renderer.app.renderer;
+
+    const [chunkX, chunkY] = id.split(":").map(x => Number.parseInt(x, 10));
+    const data = { chunkId: id, chunkX, chunkY } satisfies ChunkData;
+
+    const chunk = this.#getChunkContainer(data);
+    chunk.effects ??= [];
+
+    const sprite = this.#getChunkSprite(data);
+    const oldTexture = sprite.texture;
+
+    const texture = renderer.textureGenerator.generateTexture({
+      target: chunk,
+      resolution: this.resolution,
+      width: this.chunkSize,
+      height: this.chunkSize,
+      frame: new PIXI.Rectangle(-0.5, -this.chunkSize + 0.5, this.chunkSize, this.chunkSize),
+    });
+
+    sprite.texture = texture;
+    oldTexture.destroy(true);
   }
 
   #recalculateBounds(): void {
