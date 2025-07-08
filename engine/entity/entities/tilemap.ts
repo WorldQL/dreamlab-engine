@@ -1,6 +1,7 @@
 import {
   defineSyncedObject,
   Entity,
+  EntityConstructor,
   EntityContext,
   EntityTransformUpdate,
   GameRender,
@@ -49,6 +50,9 @@ export abstract class BaseTilemap extends PixiEntity {
     return structuredClone(this.#bounds);
   }
 
+  chunkSize: number = 64;
+  resolution: number = 64;
+
   palette: Record<number, TileData> = {};
   data: Record<number, Record<number, number>> = {};
   #dirty: boolean = false;
@@ -81,15 +85,22 @@ export abstract class BaseTilemap extends PixiEntity {
   constructor(ctx: EntityContext) {
     super(ctx);
 
-    const palette = defineSyncedObject(this, "palette", ctx.sync ?? {});
-    palette.onChanged(() => {
+    const markDirty = () => {
       this.#dirty = true;
-    });
+    };
 
+    // @ts-expect-error: abstract class
+    const ctor: EntityConstructor<BaseTilemap> = BaseTilemap;
+
+    const chunkSize = this.defineValue(ctor, "chunkSize");
+    const resolution = this.defineValue(ctor, "resolution");
+    const palette = defineSyncedObject(this, "palette", ctx.sync ?? {});
     const data = defineSyncedObject(this, "data", ctx.sync ?? {});
-    data.onChanged(() => {
-      this.#dirty = true;
-    });
+
+    chunkSize.onChanged(markDirty);
+    resolution.onChanged(markDirty);
+    palette.onChanged(markDirty);
+    data.onChanged(markDirty);
 
     this.on(EntityTransformUpdate, () => this.#updateSize());
 
@@ -237,10 +248,9 @@ export abstract class BaseTilemap extends PixiEntity {
   // #endregion
 
   // #region private methods
-  static readonly #REGION_SIZE = 32;
   #region(x: number, y: number): readonly [x: number, y: number, id: string] {
-    const rx = Math.floor(x / BaseTilemap.#REGION_SIZE);
-    const ry = Math.floor(y / BaseTilemap.#REGION_SIZE);
+    const rx = Math.floor(x / this.chunkSize);
+    const ry = Math.floor(y / this.chunkSize);
 
     return [rx, ry, `${rx}:${ry}`];
   }
@@ -322,10 +332,10 @@ export abstract class BaseTilemap extends PixiEntity {
         label: id,
         interactive: false,
         eventMode: "none",
-        position: { x: x * BaseTilemap.#REGION_SIZE, y: y * BaseTilemap.#REGION_SIZE },
+        position: { x: x * this.chunkSize, y: y * this.chunkSize },
       });
 
-      region.cacheAsTexture({ resolution: 128 });
+      region.cacheAsTexture({ resolution: this.resolution });
       regions.set(id, region);
       container.addChild(region);
 
@@ -338,8 +348,8 @@ export abstract class BaseTilemap extends PixiEntity {
 
       const region = getRegion(regionX, regionY, regionId);
       const position = {
-        x: x % BaseTilemap.#REGION_SIZE,
-        y: y % BaseTilemap.#REGION_SIZE,
+        x: x % this.chunkSize,
+        y: y % this.chunkSize,
       };
 
       switch (tile.type) {
