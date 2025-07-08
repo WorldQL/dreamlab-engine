@@ -122,6 +122,7 @@ export class SyncedDeepObject<T extends JsonObject>
     this.set(proxy);
 
     Object.defineProperty(this.container, this.field, {
+      configurable: true,
       get: () => proxy,
       set: _v => {
         throw new Error(
