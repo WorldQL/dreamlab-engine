@@ -9,6 +9,7 @@ import { workerConnectHandler } from "../common-host/worker.ts";
 import { reportPlayerCount, teardownActor } from "./actor-reporting.ts";
 import { CONFIG } from "./config.ts";
 import { PlayInstance } from "./instance.ts";
+import * as uuid from "jsr:@std/uuid@1.0.9";
 
 const instance = new PlayInstance(CONFIG.INSTANCE_ID, CONFIG.WORLD_ID);
 
@@ -22,6 +23,19 @@ router.get("/api/v1/connect/:instance", async ctx => {
     throw new JsonAPIError(Status.MisdirectedRequest, "not running this instance");
 
   await instance.ready();
+
+  console.log("project id:", CONFIG.WORLD_ID);
+  if (CONFIG.INSTANCE_ID === "standalone") {
+    const standaloneInstanceId = await uuid.v5.generate(
+      "dfd8e476-f776-475c-ac09-d2baf1a43a4a", // random namespace
+      new TextEncoder().encode(CONFIG.WORLD_ID),
+    );
+    console.log(standaloneInstanceId);
+    // TODO: Add a check to make sure the player's token matches the fakeInstanceId
+    // and also get the token into this scope??
+
+    // with this setup all standaloneInstances "share" an ID, but it still achieves the primary purpose of limiting scope of tokens to prevent devs from stealing one token and impersonating a user across the platform.
+  }
 
   const connectionId = createId("conn");
   const playerId = ctx.request.url.searchParams.get("player_id");
