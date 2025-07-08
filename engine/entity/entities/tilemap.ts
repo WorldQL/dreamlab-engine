@@ -322,6 +322,7 @@ export abstract class BaseTilemap extends PixiEntity {
         label: id,
         interactive: false,
         eventMode: "none",
+        position: { x: x * BaseTilemap.#REGION_SIZE, y: y * BaseTilemap.#REGION_SIZE },
       });
 
       region.cacheAsTexture({ resolution: 128 });
@@ -331,20 +332,21 @@ export abstract class BaseTilemap extends PixiEntity {
       return region;
     };
 
-    for (const { x, y: _y, tile, regionX, regionY, regionId } of this.#tiles()) {
+    for (const { x, y: _y, tile, regionX, regionY: _regionY, regionId } of this.#tiles()) {
       const y = -_y;
+      const regionY = -_regionY;
 
-      const region = getRegion(x, y, regionId);
-      // const offset = {
-      //   x: regionX * BaseTilemap.#REGION_SIZE,
-      //   y: regionY * BaseTilemap.#REGION_SIZE,
-      // };
+      const region = getRegion(regionX, regionY, regionId);
+      const position = {
+        x: x % BaseTilemap.#REGION_SIZE,
+        y: y % BaseTilemap.#REGION_SIZE,
+      };
 
       switch (tile.type) {
         case "color": {
           const gfx = new PIXI.Graphics({
             context: this.#ctx,
-            position: { x, y },
+            position,
             tint: tile.color,
             alpha: tile.alpha,
           });
@@ -362,7 +364,7 @@ export abstract class BaseTilemap extends PixiEntity {
             width: 1,
             height: 1,
             anchor: 0.5,
-            position: { x, y },
+            position,
           });
 
           region.addChild(sprite);
