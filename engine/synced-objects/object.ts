@@ -15,6 +15,7 @@ export type SyncedObjectInfo = { kind: string; clock: number; net?: boolean; val
 type SyncedObjectChangeListener<T> = (
   value: T,
   from: ConnectionId,
+  source: AnySyncedObject,
   op?: SyncedObjectOperation,
 ) => void;
 
@@ -46,10 +47,14 @@ export abstract class SyncedObject<T> {
 
   #changeListeners: SyncedObjectChangeListener<T>[] = [];
 
-  protected notifyChange(from: ConnectionId, op?: SyncedObjectOperation): void {
+  protected notifyChange(
+    from: ConnectionId,
+    source: AnySyncedObject,
+    op?: SyncedObjectOperation,
+  ): void {
     const value = this.get();
     for (const f of this.#changeListeners) {
-      f(value, from, op);
+      f(value, from, source, op);
     }
   }
 

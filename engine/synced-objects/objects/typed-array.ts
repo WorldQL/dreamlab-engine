@@ -108,7 +108,11 @@ export class SyncedUint8Array extends SyncedObject<Uint8Array> {
               value: Number(value),
             } as const;
             syncedObject.registry.emit(syncedObject, ++syncedObject.clock, op);
-            syncedObject.notifyChange(syncedObject.registry.game.network.self, op);
+            syncedObject.notifyChange(
+              syncedObject.registry.game.network.self,
+              syncedObject,
+              op,
+            );
 
             return true;
           }
@@ -140,7 +144,7 @@ export class SyncedUint8Array extends SyncedObject<Uint8Array> {
 
     if (op.t === "array-set-at") {
       wrapper._inner[op.index] = Number(op.value);
-      this.notifyChange(from, op);
+      this.notifyChange(from, this, op);
       return true;
     }
 

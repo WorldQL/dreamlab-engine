@@ -38,7 +38,7 @@ export class SyncedPrimitive<T extends Primitive> extends SyncedObject<T> {
           value,
         } as const;
         registry.emit(syncedObject, ++syncedObject.clock, op);
-        syncedObject.notifyChange(syncedObject.registry.game.network.self, op);
+        syncedObject.notifyChange(syncedObject.registry.game.network.self, syncedObject, op);
       },
     });
   }
@@ -56,7 +56,7 @@ export class SyncedPrimitive<T extends Primitive> extends SyncedObject<T> {
 
     if (op.t === "primitive-write") {
       this.#inner = op.value as T;
-      this.notifyChange(from, op);
+      this.notifyChange(from, this, op);
       return true;
     }
     return false;

@@ -60,7 +60,7 @@ export class SyncedArray<T extends Primitive> extends SyncedObject<T[]> {
             newLength: +value,
           } as const;
           syncedObject.registry.emit(syncedObject, ++syncedObject.clock, op);
-          syncedObject.notifyChange(syncedObject.registry.game.network.self, op);
+          syncedObject.notifyChange(syncedObject.registry.game.network.self, syncedObject, op);
           return ret;
         }
 
@@ -72,7 +72,7 @@ export class SyncedArray<T extends Primitive> extends SyncedObject<T[]> {
             value,
           } as const;
           syncedObject.registry.emit(syncedObject, ++syncedObject.clock, op);
-          syncedObject.notifyChange(syncedObject.registry.game.network.self, op);
+          syncedObject.notifyChange(syncedObject.registry.game.network.self, syncedObject, op);
         }
 
         return ret;
@@ -99,17 +99,17 @@ export class SyncedArray<T extends Primitive> extends SyncedObject<T[]> {
 
     if (op.t === "array-push") {
       inner.push(...(op.items as T[]));
-      this.notifyChange(from, op);
+      this.notifyChange(from, this, op);
       return true;
     }
     if (op.t === "array-set-at") {
       inner[op.index] = op.value as T;
-      this.notifyChange(from, op);
+      this.notifyChange(from, this, op);
       return true;
     }
     if (op.t === "array-resize") {
       inner.length = op.newLength;
-      this.notifyChange(from, op);
+      this.notifyChange(from, this, op);
       return true;
     }
 

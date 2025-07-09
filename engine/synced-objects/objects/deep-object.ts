@@ -58,7 +58,7 @@ export class SyncedDeepObject<T extends JsonObject>
         if (ret) {
           const op = { t: "deep-object-set", key: prop, value } as const;
           obj.registry.emit(obj, ++obj.clock, op);
-          obj.notifyChange(obj.registry.game.network.self, op);
+          obj.notifyChange(obj.registry.game.network.self, obj, op);
         }
 
         if (typeof value === "object" && value !== null) obj.#syncChild(target, prop, value);
@@ -73,7 +73,7 @@ export class SyncedDeepObject<T extends JsonObject>
         if (ret) {
           const op = { t: "deep-object-delete", key: prop } as const;
           obj.registry.emit(obj, ++obj.clock, op);
-          obj.notifyChange(obj.registry.game.network.self, op);
+          obj.notifyChange(obj.registry.game.network.self, obj, op);
         }
 
         // TODO: delete child if was object
@@ -104,7 +104,7 @@ export class SyncedDeepObject<T extends JsonObject>
     };
     const childObj = new SyncedDeepObject(this.registry, key, this, access);
     childObj.setup(child);
-    childObj.onChanged((_, from, op) => this.notifyChange(from, op));
+    childObj.onChanged((_, from, source, op) => this.notifyChange(from, source, op));
   }
 
   setup(initial?: T): void {
@@ -155,7 +155,7 @@ export class SyncedDeepObject<T extends JsonObject>
 
       this.clock = Math.max(this.clock, clock);
       this.#writers.set(key, [from, clock]);
-      this.notifyChange(from, op);
+      this.notifyChange(from, this, op);
 
       return true;
     } else if (op.t === "deep-object-delete") {
@@ -174,7 +174,7 @@ export class SyncedDeepObject<T extends JsonObject>
 
       this.clock = Math.max(this.clock, clock);
       this.#writers.set(key, [from, clock]);
-      this.notifyChange(from, op);
+      this.notifyChange(from, this, op);
 
       return true;
     }
