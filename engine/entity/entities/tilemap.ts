@@ -370,6 +370,7 @@ export abstract class BaseTilemap extends PixiEntity {
       position: { x: x * this.chunkSize, y: -y * this.chunkSize },
       width: this.chunkSize,
       height: this.chunkSize,
+      anchor: { x: 0, y: 1 },
     });
 
     this.container.addChild(sprite);
