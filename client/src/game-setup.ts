@@ -111,9 +111,6 @@ export const setupGame = async (
     const camera = game.local._.Camera.cast(Camera);
     camera.pos.x = avgX;
     camera.pos.y = avgY;
-    setTimeout(() => {
-      camera.zoom = 0.1;
-    }, 1);
   }
 
   conn.send({ t: "LoadPhaseChanged", phase: "loaded" });
