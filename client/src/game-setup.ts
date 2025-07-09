@@ -101,6 +101,9 @@ export const setupGame = async (
       }
     };
     for (const entity of game.world._.EditEntities.children.values()) {
+      if (entity.id === "world/EditEntities/prefabs") {
+        continue;
+      }
       collectEntitiesRecursively(entity);
     }
     const avgX = xAcc / allEntities.length;
@@ -108,7 +111,9 @@ export const setupGame = async (
     const camera = game.local._.Camera.cast(Camera);
     camera.pos.x = avgX;
     camera.pos.y = avgY;
-    camera.zoom = 0.1;
+    setTimeout(() => {
+      camera.zoom = 0.1;
+    }, 1);
   }
 
   conn.send({ t: "LoadPhaseChanged", phase: "loaded" });
