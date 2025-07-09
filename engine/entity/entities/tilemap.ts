@@ -82,6 +82,9 @@ export abstract class BaseTilemap extends PixiEntity {
     x: Integer<X>,
     y: Integer<Y>,
   ): TileData | undefined {
+    if (Object.is(x, -0)) x = 0 as Integer<X>;
+    if (Object.is(y, -0)) y = 0 as Integer<Y>;
+
     const paletteId = this.data[x as number]?.[y as number];
     if (paletteId === undefined) return undefined;
   }
@@ -91,6 +94,9 @@ export abstract class BaseTilemap extends PixiEntity {
     y: Integer<Y>,
     paletteId: number | undefined,
   ): void {
+    if (Object.is(x, -0)) x = 0 as Integer<X>;
+    if (Object.is(y, -0)) y = 0 as Integer<Y>;
+
     const _x = x as number;
     const _y = y as number;
 
