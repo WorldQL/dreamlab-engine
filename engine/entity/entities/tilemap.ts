@@ -387,45 +387,47 @@ export abstract class BaseTilemap extends PixiEntity {
   #drawTile(data: TileDrawData): void {
     if (!this.container) return;
 
-    const tile = data.tile;
-    const chunk = this.#getChunkContainer(data);
-    const position = {
-      x: data.x % this.chunkSize,
-      y: -data.y % this.chunkSize,
-    };
+    try {
+      const tile = data.tile;
+      const chunk = this.#getChunkContainer(data);
+      const position = {
+        x: data.x % this.chunkSize,
+        y: -data.y % this.chunkSize,
+      };
 
-    switch (tile.type) {
-      case "color": {
-        const gfx = new PIXI.Graphics({
-          context: this.#ctx,
-          position,
-          tint: tile.color,
-          alpha: tile.alpha,
-        });
+      switch (tile.type) {
+        case "color": {
+          const gfx = new PIXI.Graphics({
+            context: this.#ctx,
+            position,
+            tint: tile.color,
+            alpha: tile.alpha,
+          });
 
-        chunk.addChild(gfx);
-        break;
+          chunk.addChild(gfx);
+          break;
+        }
+
+        case "texture": {
+          const texture = this.#textureCache.get(tile.texture);
+          if (!texture) return;
+
+          const sprite = new PIXI.Sprite({
+            texture,
+            width: 1,
+            height: 1,
+            anchor: 0.5,
+            position,
+          });
+
+          chunk.addChild(sprite);
+          break;
+        }
       }
-
-      case "texture": {
-        const texture = this.#textureCache.get(tile.texture);
-        if (!texture) return;
-
-        const sprite = new PIXI.Sprite({
-          texture,
-          width: 1,
-          height: 1,
-          anchor: 0.5,
-          position,
-        });
-
-        chunk.addChild(sprite);
-        break;
+    } finally {
+      if (!this.#updateChunkQueue.includes(data.chunkId)) {
+        this.#updateChunkQueue.push(data.chunkId);
       }
-    }
-
-    if (!this.#updateChunkQueue.includes(data.chunkId)) {
-      this.#updateChunkQueue.push(data.chunkId);
     }
   }
 
