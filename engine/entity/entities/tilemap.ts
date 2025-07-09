@@ -128,7 +128,25 @@ export abstract class BaseTilemap extends PixiEntity {
     resolution.onChanged(markDirty);
     scale.onChanged(markDirty);
     palette.onChanged(markDirty);
-    data.onChanged(markDirty); // TODO: only change relevant tile on data changed
+    // data.onChanged(markDirty);
+    data.onChanged((_data, _from, obj, op) => {
+      if (!op) return;
+      if (op.t !== "deep-object-set" && op.t !== "deep-object-delete") return;
+      if (!(obj instanceof SyncedDeepObject)) return;
+
+      const [, , _x] = obj.ref.split("/");
+      const x = Number.parseInt(_x, 10);
+      const y = Number.parseInt(op.key, 10);
+      if (Number.isNaN(x) || Number.isNaN(y)) return;
+
+      const paletteId = this.data[x][y];
+      const tile = paletteId === undefined ? undefined : this.palette[paletteId];
+      const chunkInfo = this.#chunkInfo(x, y);
+      const data = { x, y, tile, ...chunkInfo } satisfies TileDrawData;
+
+      this.#drawTile(data);
+      this.#recalculateBounds();
+    });
 
     this.on(EntityTransformUpdate, () => this.#updateSize());
 
