@@ -41,7 +41,7 @@ type TilemapData = {
 type TileDrawData = {
   readonly x: number;
   readonly y: number;
-  readonly tile: TileData;
+  readonly tile: TileData | undefined;
   readonly chunkX: number;
   readonly chunkY: number;
   readonly chunkId: string;
@@ -390,6 +390,13 @@ export abstract class BaseTilemap extends PixiEntity {
     try {
       const tile = data.tile;
       const chunk = this.#getChunkContainer(data);
+
+      const label = `${data.x}:${data.y}`;
+      const previous = chunk.getChildByLabel(label);
+      previous?.destroy();
+
+      if (!tile) return;
+
       const position = {
         x: data.x % this.chunkSize,
         y: -data.y % this.chunkSize,
@@ -398,6 +405,7 @@ export abstract class BaseTilemap extends PixiEntity {
       switch (tile.type) {
         case "color": {
           const gfx = new PIXI.Graphics({
+            label,
             context: this.#ctx,
             position,
             tint: tile.color,
@@ -413,6 +421,7 @@ export abstract class BaseTilemap extends PixiEntity {
           if (!texture) return;
 
           const sprite = new PIXI.Sprite({
+            label,
             texture,
             width: 1,
             height: 1,
