@@ -203,139 +203,145 @@ export class Properties implements InspectorUIWidget {
       table.addEntry("prefab-instance", "Prefab Instance", control);
     }
 
-    const transformSection = new DataDetails();
-    container.append(transformSection);
-    transformSection.setHeaderContent(elem("h2", {}, ["Transform"]));
+    if (!entity.protected) {
+      const transformSection = new DataDetails();
+      container.append(transformSection);
+      transformSection.setHeaderContent(elem("h2", {}, ["Transform"]));
 
-    const txfmTable = new DataTable();
-    transformSection.addContent(txfmTable);
+      const txfmTable = new DataTable();
+      transformSection.addContent(txfmTable);
 
-    const numeric = z.number({ coerce: true }).refine(Number.isFinite, "Value must be finite!");
-    const [transformXField, refreshX] = createInputField({
-      get: () => entity.transform.position.x,
-      set: x => (entity.transform.position.x = x),
-      convert: numeric.parse,
-      convertBack: n => n.toFixed(4),
-    });
-    txfmTable.addEntry("posX", "Position X", transformXField);
-    transformFieldsToRegisterWithUndoRedo.push({
-      field: transformXField,
-      path: ["position", "x"],
-    });
+      const numeric = z
+        .number({ coerce: true })
+        .refine(Number.isFinite, "Value must be finite!");
+      const [transformXField, refreshX] = createInputField({
+        get: () => entity.transform.position.x,
+        set: x => (entity.transform.position.x = x),
+        convert: numeric.parse,
+        convertBack: n => n.toFixed(4),
+      });
+      txfmTable.addEntry("posX", "Position X", transformXField);
+      transformFieldsToRegisterWithUndoRedo.push({
+        field: transformXField,
+        path: ["position", "x"],
+      });
 
-    const [transformYField, refreshY] = createInputField({
-      get: () => entity.transform.position.y,
-      set: y => (entity.transform.position.y = y),
-      convert: numeric.parse,
-      convertBack: n => n.toFixed(4),
-    });
-    txfmTable.addEntry("posY", "Position Y", transformYField);
-    transformFieldsToRegisterWithUndoRedo.push({
-      field: transformYField,
-      path: ["position", "y"],
-    });
+      const [transformYField, refreshY] = createInputField({
+        get: () => entity.transform.position.y,
+        set: y => (entity.transform.position.y = y),
+        convert: numeric.parse,
+        convertBack: n => n.toFixed(4),
+      });
+      txfmTable.addEntry("posY", "Position Y", transformYField);
+      transformFieldsToRegisterWithUndoRedo.push({
+        field: transformYField,
+        path: ["position", "y"],
+      });
 
-    const [transformRotation, refreshRotation] = createInputField({
-      get: () => entity.transform.rotation,
-      set: r => (entity.transform.rotation = r),
-      convert: numeric.transform(v => (v * Math.PI) / 180).parse,
-      convertBack: v => ((v * 180) / Math.PI).toFixed(1),
-    });
-    txfmTable.addEntry("rot", "Rotation", transformRotation);
-    transformFieldsToRegisterWithUndoRedo.push({
-      field: transformRotation,
-      path: ["rotation"],
-    });
+      const [transformRotation, refreshRotation] = createInputField({
+        get: () => entity.transform.rotation,
+        set: r => (entity.transform.rotation = r),
+        convert: numeric.transform(v => (v * Math.PI) / 180).parse,
+        convertBack: v => ((v * 180) / Math.PI).toFixed(1),
+      });
+      txfmTable.addEntry("rot", "Rotation", transformRotation);
+      transformFieldsToRegisterWithUndoRedo.push({
+        field: transformRotation,
+        path: ["rotation"],
+      });
 
-    const [scaleXField, refreshScaleX] = createInputField({
-      get: () => entity.transform.scale.x,
-      set: x => (entity.transform.scale.x = x),
-      convert: numeric.parse,
-      convertBack: n => n.toFixed(4),
-    });
-    txfmTable.addEntry("scaleX", "Scale X", scaleXField);
-    transformFieldsToRegisterWithUndoRedo.push({ field: scaleXField, path: ["scale", "x"] });
+      const [scaleXField, refreshScaleX] = createInputField({
+        get: () => entity.transform.scale.x,
+        set: x => (entity.transform.scale.x = x),
+        convert: numeric.parse,
+        convertBack: n => n.toFixed(4),
+      });
+      txfmTable.addEntry("scaleX", "Scale X", scaleXField);
+      transformFieldsToRegisterWithUndoRedo.push({ field: scaleXField, path: ["scale", "x"] });
 
-    const [scaleYField, refreshScaleY] = createInputField({
-      get: () => entity.transform.scale.y,
-      set: y => (entity.transform.scale.y = y),
-      convert: numeric.parse,
-      convertBack: n => n.toFixed(4),
-    });
-    txfmTable.addEntry("scaleY", "Scale Y", scaleYField);
-    transformFieldsToRegisterWithUndoRedo.push({ field: scaleYField, path: ["scale", "y"] });
+      const [scaleYField, refreshScaleY] = createInputField({
+        get: () => entity.transform.scale.y,
+        set: y => (entity.transform.scale.y = y),
+        convert: numeric.parse,
+        convertBack: n => n.toFixed(4),
+      });
+      txfmTable.addEntry("scaleY", "Scale Y", scaleYField);
+      transformFieldsToRegisterWithUndoRedo.push({ field: scaleYField, path: ["scale", "y"] });
 
-    const [zIndexField, refreshZIndex] = createInputField({
-      get: () => entity.transform.z,
-      set: z => (entity.transform.z = z),
-      convert: numeric.refine(Number.isSafeInteger, "Number must be an integer!").parse,
-      convertBack: n => n.toFixed(0),
-    });
-    txfmTable.addEntry("z", "Z Index", zIndexField);
-    transformFieldsToRegisterWithUndoRedo.push({ field: zIndexField, path: ["z"] });
+      const [zIndexField, refreshZIndex] = createInputField({
+        get: () => entity.transform.z,
+        set: z => (entity.transform.z = z),
+        convert: numeric.refine(Number.isSafeInteger, "Number must be an integer!").parse,
+        convertBack: n => n.toFixed(0),
+      });
+      txfmTable.addEntry("z", "Z Index", zIndexField);
+      transformFieldsToRegisterWithUndoRedo.push({ field: zIndexField, path: ["z"] });
 
-    entity.on(EntityTransformUpdate, () => {
-      refreshX();
-      refreshY();
-      refreshRotation();
-      refreshScaleX();
-      refreshScaleY();
-      refreshZIndex();
-    });
+      entity.on(EntityTransformUpdate, () => {
+        refreshX();
+        refreshY();
+        refreshRotation();
+        refreshScaleX();
+        refreshScaleY();
+        refreshZIndex();
+      });
 
-    const toggleGlobalTransformButton = elem("button", { type: "button" }, [
-      "Show Global Transform",
-    ]);
-    container.append(toggleGlobalTransformButton);
+      const toggleGlobalTransformButton = elem("button", { type: "button" }, [
+        "Show Global Transform",
+      ]);
+      container.append(toggleGlobalTransformButton);
 
-    const globalTransformSection = elem(
-      "section",
-      { id: "global-transform", style: { display: "none" } },
-      [],
-    );
-    container.append(globalTransformSection);
+      const globalTransformSection = elem(
+        "section",
+        { id: "global-transform", style: { display: "none" } },
+        [],
+      );
+      container.append(globalTransformSection);
 
-    globalTransformSection.append(elem("h2", {}, ["Global Transform"]));
+      globalTransformSection.append(elem("h2", {}, ["Global Transform"]));
 
-    const globalTransformTable = new DataTable();
-    globalTransformSection.append(globalTransformTable);
+      const globalTransformTable = new DataTable();
+      globalTransformSection.append(globalTransformTable);
 
-    const globalPosXField = elem("code", {}, [entity.pos.x.toFixed(2)]);
-    globalTransformTable.addEntry("global-pos-x", "Position X", globalPosXField);
+      const globalPosXField = elem("code", {}, [entity.pos.x.toFixed(2)]);
+      globalTransformTable.addEntry("global-pos-x", "Position X", globalPosXField);
 
-    const globalPosYField = elem("code", {}, [entity.pos.y.toFixed(2)]);
-    globalTransformTable.addEntry("global-pos-y", "Position Y", globalPosYField);
+      const globalPosYField = elem("code", {}, [entity.pos.y.toFixed(2)]);
+      globalTransformTable.addEntry("global-pos-y", "Position Y", globalPosYField);
 
-    const globalRotationField = elem("code", {}, [entity.globalTransform.rotation.toFixed(2)]);
-    globalTransformTable.addEntry("global-rot", "Rotation", globalRotationField);
+      const globalRotationField = elem("code", {}, [
+        entity.globalTransform.rotation.toFixed(2),
+      ]);
+      globalTransformTable.addEntry("global-rot", "Rotation", globalRotationField);
 
-    const globalScaleXField = elem("code", {}, [entity.globalTransform.scale.x.toFixed(2)]);
-    globalTransformTable.addEntry("global-scale-x", "Scale X", globalScaleXField);
+      const globalScaleXField = elem("code", {}, [entity.globalTransform.scale.x.toFixed(2)]);
+      globalTransformTable.addEntry("global-scale-x", "Scale X", globalScaleXField);
 
-    const globalScaleYField = elem("code", {}, [entity.globalTransform.scale.y.toFixed(2)]);
-    globalTransformTable.addEntry("global-scale-y", "Scale Y", globalScaleYField);
+      const globalScaleYField = elem("code", {}, [entity.globalTransform.scale.y.toFixed(2)]);
+      globalTransformTable.addEntry("global-scale-y", "Scale Y", globalScaleYField);
 
-    const globalZField = elem("code", {}, [entity.z.toFixed(0)]);
-    globalTransformTable.addEntry("global-z", "Z Index", globalZField);
+      const globalZField = elem("code", {}, [entity.z.toFixed(0)]);
+      globalTransformTable.addEntry("global-z", "Z Index", globalZField);
 
-    entity.on(EntityTransformUpdate, () => {
-      globalPosXField.textContent = entity.pos.x.toFixed(2);
-      globalPosYField.textContent = entity.pos.y.toFixed(2);
-      globalRotationField.textContent = entity.globalTransform.rotation.toFixed(2);
-      globalScaleXField.textContent = entity.globalTransform.scale.x.toFixed(2);
-      globalScaleYField.textContent = entity.globalTransform.scale.y.toFixed(2);
-      globalZField.textContent = entity.z.toFixed(0);
-    });
+      entity.on(EntityTransformUpdate, () => {
+        globalPosXField.textContent = entity.pos.x.toFixed(2);
+        globalPosYField.textContent = entity.pos.y.toFixed(2);
+        globalRotationField.textContent = entity.globalTransform.rotation.toFixed(2);
+        globalScaleXField.textContent = entity.globalTransform.scale.x.toFixed(2);
+        globalScaleYField.textContent = entity.globalTransform.scale.y.toFixed(2);
+        globalZField.textContent = entity.z.toFixed(0);
+      });
 
-    toggleGlobalTransformButton.addEventListener("click", () => {
-      if (globalTransformSection.style.display === "none") {
-        globalTransformSection.style.display = "block";
-        toggleGlobalTransformButton.textContent = "Hide Global Transform";
-      } else {
-        globalTransformSection.style.display = "none";
-        toggleGlobalTransformButton.textContent = "Show Global Transform";
-      }
-    });
+      toggleGlobalTransformButton.addEventListener("click", () => {
+        if (globalTransformSection.style.display === "none") {
+          globalTransformSection.style.display = "block";
+          toggleGlobalTransformButton.textContent = "Hide Global Transform";
+        } else {
+          globalTransformSection.style.display = "none";
+          toggleGlobalTransformButton.textContent = "Show Global Transform";
+        }
+      });
+    }
 
     const valuesSection = new DataDetails();
     container.append(valuesSection);
