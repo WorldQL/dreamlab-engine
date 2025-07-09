@@ -372,7 +372,7 @@ export abstract class BaseTilemap extends PixiEntity {
     if (cached !== undefined) return cached;
 
     const sprite = new PIXI.Sprite({
-      label: `spriite:${id}`,
+      label: `sprite:${id}`,
       position: { x: x * this.chunkSize, y: -y * this.chunkSize },
       width: this.chunkSize,
       height: this.chunkSize,
