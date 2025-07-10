@@ -12,6 +12,7 @@ import {
   IBounds,
   JsonValue,
   PixiEntity,
+  SyncedDeepObject,
 } from "@dreamlab/engine";
 import * as cbor from "@dreamlab/vendor/cbor2.ts";
 import { gzip, ungzip } from "@dreamlab/vendor/pako.ts";
