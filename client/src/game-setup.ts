@@ -4,7 +4,6 @@ import { ReceivedInitialNetworkSnapshot } from "@dreamlab/proto/common/signals.t
 import { convertEntityDefinition, getSceneFromProject, ProjectSchema } from "@dreamlab/scene";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { ClientConnection } from "./networking/net-connection.ts";
-import { EditorRootFacadeEntity } from "../../editor/common/mod.ts";
 
 export const setupGame = async (
   game: ClientGame,
@@ -92,7 +91,7 @@ export const setupGame = async (
     let xAcc = 0;
     let yAcc = 0;
     const collectEntitiesRecursively = (entity: Entity) => {
-      if (!(entity instanceof EditorRootFacadeEntity)) allEntities.push(entity);
+      if (!entity.protected) allEntities.push(entity);
       for (const child of entity.children.values()) {
         if (child.name === "__EditorMetadata") continue;
         xAcc += child.globalTransform.position.x;
