@@ -85,33 +85,6 @@ export const setupGame = async (
 
   await networkSnapshotPromise;
 
-  if (editMode) {
-    // center the camera on average position of entities
-    const allEntities: Entity[] = [];
-    let xAcc = 0;
-    let yAcc = 0;
-    const collectEntitiesRecursively = (entity: Entity) => {
-      if (!entity.protected) allEntities.push(entity);
-      for (const child of entity.children.values()) {
-        if (child.name === "__EditorMetadata") continue;
-        xAcc += child.globalTransform.position.x;
-        yAcc += child.globalTransform.position.y;
-        collectEntitiesRecursively(child);
-      }
-    };
-    for (const entity of game.world._.EditEntities.children.values()) {
-      if (entity.id === "world/EditEntities/prefabs") {
-        continue;
-      }
-      collectEntitiesRecursively(entity);
-    }
-    const avgX = xAcc / allEntities.length;
-    const avgY = yAcc / allEntities.length;
-    const camera = game.local._.Camera.cast(Camera);
-    camera.pos.x = avgX;
-    camera.pos.y = avgY;
-  }
-
   conn.send({ t: "LoadPhaseChanged", phase: "loaded" });
   game.setStatus(GameStatus.LoadingFinished);
   game.setStatus(GameStatus.Running);

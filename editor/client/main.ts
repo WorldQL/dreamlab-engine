@@ -275,6 +275,34 @@ Object.defineProperties(globalThis, {
 
 // setupMultiplayerCursors(game);
 await setupGame(game, conn, handshake.edit_mode);
+
+// center the camera on average position of entities
+{
+  const allEntities: Entity[] = [];
+  let xAcc = 0;
+  let yAcc = 0;
+  const collectEntitiesRecursively = (entity: Entity) => {
+    if (!entity.protected) allEntities.push(entity);
+    for (const child of entity.children.values()) {
+      if (child.name === "__EditorMetadata") continue;
+      xAcc += child.globalTransform.position.x;
+      yAcc += child.globalTransform.position.y;
+      collectEntitiesRecursively(child);
+    }
+  };
+  for (const entity of game.world._.EditEntities.children.values()) {
+    if (entity.id === "world/EditEntities/prefabs") {
+      continue;
+    }
+    collectEntitiesRecursively(entity);
+  }
+  const avgX = xAcc / allEntities.length;
+  const avgY = yAcc / allEntities.length;
+  const camera = game.local._.Camera.cast(Camera);
+  camera.pos.x = avgX;
+  camera.pos.y = avgY;
+}
+
 fonts.then(() => {
   game.entities.lookupByType(RichText).forEach(text => text.rerender());
 });
