@@ -509,9 +509,51 @@ export abstract class BaseTilemap extends PixiEntity {
   #recalculateBounds(): void {
     const bounds = new PIXI.Bounds(-0.5, -0.5, 0.5, 0.5);
 
-    for (const { x, y } of this.tiles()) {
-      bounds.addBounds(new PIXI.Bounds(x - 0.5, y - 0.5, x + 0.5, y + 0.5));
-    }
+    const { minX, maxX, minY, maxY } = Object.entries(this.data)
+      .map(([k, v]) => {
+        const x = Number.parseInt(k, 10);
+        if (Number.isNaN(x)) return undefined;
+
+        const { min: minY, max: maxY } = Object.keys(v)
+          .map(k => {
+            const y = Number.parseInt(k, 10);
+            if (Number.isNaN(y)) return undefined;
+
+            return y;
+          })
+          .filter(x => x !== undefined)
+          .reduce(
+            (acc, y) => {
+              if (y < acc.min) acc.min = y;
+              if (y > acc.max) acc.max = y;
+
+              return acc;
+            },
+            { min: Number.POSITIVE_INFINITY, max: Number.NEGATIVE_INFINITY },
+          );
+
+        return { x, minY, maxY };
+      })
+      .filter(x => x !== undefined)
+      .reduce(
+        (acc, { x, minY, maxY }) => {
+          if (x < acc.minX) acc.minX = x;
+          if (x > acc.maxX) acc.maxX = x;
+          if (minY < acc.minY) acc.minY = minY;
+          if (maxY > acc.maxY) acc.maxY = maxY;
+
+          return acc;
+        },
+        {
+          minX: Number.POSITIVE_INFINITY,
+          maxX: Number.NEGATIVE_INFINITY,
+          minY: Number.POSITIVE_INFINITY,
+          maxY: Number.NEGATIVE_INFINITY,
+        },
+      );
+
+    bounds.addBounds(new PIXI.Bounds(minX - 0.5, minY - 0.5, minX + 0.5, minY + 0.5));
+    bounds.addBounds(new PIXI.Bounds(maxX - 0.5, maxY - 0.5, maxX + 0.5, maxY + 0.5));
 
     const width = bounds.width;
     const height = bounds.height;
