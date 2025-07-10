@@ -1,4 +1,4 @@
-import { Application, HttpServerNative } from "@oak/oak";
+import { Application } from "@oak/oak";
 import * as cli from "@std/cli";
 import { NIL_UUID } from "@std/uuid/constants";
 import { CONFIG } from "./config.ts";
@@ -15,7 +15,7 @@ addEventListener("unhandledrejection", event => {
 
 let instance: GameInstance | undefined;
 
-const app = new Application({ serverConstructor: HttpServerNative });
+const app = new Application();
 await setupWeb(app);
 
 const webAbortController = new AbortController();

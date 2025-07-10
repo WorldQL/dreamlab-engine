@@ -1,6 +1,6 @@
 import { Codec, getCodec, isCodec } from "@dreamlab/proto/codecs/mod.ts";
 import { createId } from "@dreamlab/vendor/nanoid.ts";
-import { Application, HttpServerNative, Router, Status } from "@oak/oak";
+import { Application, Router, Status } from "@oak/oak";
 import { oakCors } from "https://deno.land/x/cors@v1.2.2/mod.ts";
 
 import * as uuid from "jsr:@std/uuid@1.0.9";
@@ -14,7 +14,7 @@ import { PlayInstance } from "./instance.ts";
 
 const instance = new PlayInstance(CONFIG.INSTANCE_ID, CONFIG.WORLD_ID);
 
-const app = new Application({ serverConstructor: HttpServerNative });
+const app = new Application();
 const router = new Router();
 
 router.get("/internal/worker", workerConnectHandler);
