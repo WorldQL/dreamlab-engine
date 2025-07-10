@@ -416,9 +416,10 @@ export abstract class BaseTilemap extends PixiEntity {
 
       if (!tile) return;
 
+      const chunkSize = this.chunkSize;
       const position = {
-        x: data.x % this.chunkSize,
-        y: -data.y % this.chunkSize,
+        x: ((data.x % chunkSize) + chunkSize) % chunkSize,
+        y: -(((data.y % chunkSize) + chunkSize) % chunkSize),
       };
 
       switch (tile.type) {
