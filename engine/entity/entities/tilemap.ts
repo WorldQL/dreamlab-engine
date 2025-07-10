@@ -18,7 +18,6 @@ import * as cbor from "@dreamlab/vendor/cbor2.ts";
 import { gzip, ungzip } from "@dreamlab/vendor/pako.ts";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import type { Simplify } from "@dreamlab/vendor/type-fest.ts";
-import { Integer } from "@dreamlab/vendor/type-fest.ts";
 import { decodeBase64Url, encodeBase64Url } from "jsr:@std/encoding@^1/base64url";
 
 type ScaleFilterMode = enumAdapter.Union<typeof ScaleFilterModeAdapter>;
@@ -54,7 +53,7 @@ export type TileData =
   | {
       type: "color";
       color: string;
-      alpha: number;
+      alpha?: number;
     }
   | {
       type: "texture";
@@ -79,24 +78,23 @@ export abstract class BaseTilemap extends PixiEntity {
   #dirty: boolean = false;
 
   // #region tilemap operations
-  getTile<X extends number, Y extends number>(
-    x: Integer<X>,
-    y: Integer<Y>,
-  ): TileData | undefined {
-    if (Object.is(x, -0)) x = 0 as Integer<X>;
-    if (Object.is(y, -0)) y = 0 as Integer<Y>;
+  getTile(x: number, y: number): TileData | undefined {
+    x = Math.floor(x);
+    y = Math.floor(y);
+
+    if (Object.is(x, -0)) x = 0;
+    if (Object.is(y, -0)) y = 0;
 
     const paletteId = this.data[x as number]?.[y as number];
     if (paletteId === undefined) return undefined;
   }
 
-  setTile<X extends number, Y extends number>(
-    x: Integer<X>,
-    y: Integer<Y>,
-    paletteId: number | undefined,
-  ): void {
-    if (Object.is(x, -0)) x = 0 as Integer<X>;
-    if (Object.is(y, -0)) y = 0 as Integer<Y>;
+  setTile(x: number, y: number, paletteId: number | undefined): void {
+    x = Math.floor(x);
+    y = Math.floor(y);
+
+    if (Object.is(x, -0)) x = 0;
+    if (Object.is(y, -0)) y = 0;
 
     const _x = x as number;
     const _y = y as number;
@@ -106,6 +104,12 @@ export abstract class BaseTilemap extends PixiEntity {
 
     if (paletteId === undefined) delete row[_y];
     else row[_y] = paletteId;
+  }
+
+  clearTiles(): void {
+    for (const { x, y } of [...this.tiles()]) {
+      this.setTile(x, y, undefined);
+    }
   }
   // #endregion
 
@@ -180,7 +184,7 @@ export abstract class BaseTilemap extends PixiEntity {
       switch (entry.type) {
         case "color": {
           const ret = [...base, entry.color];
-          if (entry.alpha !== 1) ret.push(entry.alpha);
+          if (entry.alpha && entry.alpha !== 1) ret.push(entry.alpha);
           return ret;
         }
 
@@ -309,7 +313,7 @@ export abstract class BaseTilemap extends PixiEntity {
     return { chunkX, chunkY, chunkId } as const;
   }
 
-  *#tiles(): Generator<TileDrawData, void, void> {
+  *tiles(): Generator<TileDrawData, void, void> {
     for (const [_x, row] of Object.entries(this.data)) {
       const x = Number.parseInt(_x, 10);
       if (Number.isNaN(x)) continue;
@@ -364,7 +368,7 @@ export abstract class BaseTilemap extends PixiEntity {
     this.#chunks.clear();
     this.#sprites.clear();
 
-    for (const tile of this.#tiles()) this.#drawTile(tile);
+    for (const tile of this.tiles()) this.#drawTile(tile);
   }
 
   readonly #chunks = new Map<string, PIXI.Container>();
@@ -505,7 +509,7 @@ export abstract class BaseTilemap extends PixiEntity {
   #recalculateBounds(): void {
     const bounds = new PIXI.Bounds(-0.5, -0.5, 0.5, 0.5);
 
-    for (const { x, y } of this.#tiles()) {
+    for (const { x, y } of this.tiles()) {
       bounds.addBounds(new PIXI.Bounds(x - 0.5, y - 0.5, x + 0.5, y + 0.5));
     }
 
