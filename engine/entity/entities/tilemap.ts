@@ -75,7 +75,8 @@ export abstract class BaseTilemap extends PixiEntity {
 
   palette: Record<number, TileData> = {};
   data: Record<number, Record<number, number>> = {};
-  #dirty: boolean = false;
+  #tilesDirty: boolean = false;
+  #boundsDirty: boolean = false;
 
   // #region tilemap operations
   getTile(x: number, y: number): TileData | undefined {
@@ -117,7 +118,8 @@ export abstract class BaseTilemap extends PixiEntity {
     super(ctx);
 
     const markDirty = () => {
-      this.#dirty = true;
+      this.#tilesDirty = true;
+      this.#boundsDirty = true;
     };
 
     // @ts-expect-error: abstract class
@@ -150,20 +152,22 @@ export abstract class BaseTilemap extends PixiEntity {
       const data = { x, y, tile, ...chunkInfo } satisfies TileDrawData;
 
       this.#drawTile(data);
-      this.#recalculateBounds();
+      this.#boundsDirty = true;
     });
 
     this.on(EntityTransformUpdate, () => this.#updateSize());
 
-    this.listen(this.game, GameRender, () => {
-      if (!this.#dirty) return;
-      this.#dirty = false;
-
-      void this.#populateTextureCache().then(() => this.#redraw());
-      this.#recalculateBounds();
-    });
-
     this.listen(this.game, GameTick, () => {
+      if (this.#tilesDirty) {
+        this.#tilesDirty = false;
+        void this.#populateTextureCache().then(() => this.#redraw());
+      }
+
+      if (this.#boundsDirty) {
+        this.#boundsDirty = false;
+        this.#recalculateBounds();
+      }
+
       this.#checkChunkQueue();
     });
 
