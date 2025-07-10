@@ -39,13 +39,23 @@ export class Properties implements InspectorUIWidget {
 
     this.#section.append(selectSomethingNotification);
 
+    const teardown: (() => void)[] = [];
     ui.selectedEntity.listen(() => {
       const entity = ui.selectedEntity.entities.at(0);
+
+      teardown.forEach(it => it());
+      teardown.length = 0;
 
       if (entity) {
         selectSomethingNotification.style.display = "none";
         container.style.display = "flex";
         this.drawEntityProperties(container, entity);
+
+        const prefabInstanceChanged = () => this.drawEntityProperties(container, entity);
+        entity.values.get("clonedFromRef")!.onChanged(prefabInstanceChanged);
+        teardown.push(() => {
+          entity.values.get("clonedFromRef")!.removeChangeListener(prefabInstanceChanged);
+        });
       } else {
         container.style.display = "none";
         selectSomethingNotification.style.display = "block";
@@ -200,12 +210,6 @@ export class Properties implements InspectorUIWidget {
       });
 
       table.addEntry("prefab-instance", "Prefab Instance", control);
-
-      entity.values.get("clonedFromRef")!.onChanged(() => {
-        if (!entity.clonedFromRef) {
-          table.removeEntry("prefab-instance");
-        }
-      });
     }
 
     if (!entity.protected) {
