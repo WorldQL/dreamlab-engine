@@ -1,0 +1,46 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "engine_revision": "2024-08.001"
+  },
+  "scenes": {
+    "main": {
+      "registration": [],
+      "world": [
+        {
+          "ref": "ent_cneSSPUlVA",
+          "type": "@core/Tilemap",
+          "name": "Tilemap",
+          "enabled": true,
+          "data": "AIKAgA",
+          "behaviors": [
+            {
+              "ref": "bhv_SK93564VD4",
+              "script": "res://src/generate.ts"
+            }
+          ]
+        }
+      ],
+      "local": [
+        {
+          "ref": "ent_alYcS9c9jP",
+          "type": "@core/Camera",
+          "name": "Camera",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": 25,
+              "y": 25
+            }
+          },
+          "values": {
+            "active": true,
+            "zoom": 0.18
+          }
+        }
+      ],
+      "server": [],
+      "prefabs": []
+    }
+  }
+}
