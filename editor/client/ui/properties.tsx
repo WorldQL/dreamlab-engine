@@ -197,10 +197,15 @@ export class Properties implements InspectorUIWidget {
           value: "",
         });
         entity.clonedFromRef = "";
-        table.removeEntry("prefab-instance");
       });
 
       table.addEntry("prefab-instance", "Prefab Instance", control);
+
+      entity.values.get("clonedFromRef")!.onChanged(() => {
+        if (!entity.clonedFromRef) {
+          table.removeEntry("prefab-instance");
+        }
+      });
     }
 
     if (!entity.protected) {
