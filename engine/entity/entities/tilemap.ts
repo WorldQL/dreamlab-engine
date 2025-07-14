@@ -369,15 +369,21 @@ export abstract class BaseTilemap extends PixiEntity {
     const jobs = textures.map(async entry => {
       const cacheId = this.#textureCacheId(entry);
 
+      const camera = Camera.getActive(this.game);
+      const scaleMode = camera?.scaleFilterMode ?? "nearest";
+
       if (entry.type === "texture") {
         const url = this.game.resolveResource(entry.texture);
-        const texture = await PIXI.Assets.load(url);
+        const texture = await PIXI.Assets.load({ src: url, data: { scaleMode } });
         if (!(texture instanceof PIXI.Texture)) return;
 
         this.#textureCache.set(cacheId, texture);
       } else if (entry.type === "spritesheet") {
         const url = this.game.resolveResource(entry.spritesheet);
-        const spritesheet = await PIXI.Assets.load(url);
+        const spritesheet = await PIXI.Assets.load({
+          src: url,
+          data: { textureOptions: { scaleMode } },
+        });
         if (!(spritesheet instanceof PIXI.Spritesheet)) return;
 
         const textures = Object.values(spritesheet.textures);
