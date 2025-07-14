@@ -51,17 +51,17 @@ export const handleObjectSync: ServerNetworkSetupRoutine = (net, game) => {
     const denials: NonNullable<Packet["denials"]> = {};
 
     for (const [containerId, fields] of Object.entries(packet.reports)) {
-      for (const [field, arr] of Object.entries(fields)) {
-        for (const inner of arr) {
-          const report = { containerId, field, ...inner };
-          const op = SyncedObjectOperationSchema.parse(report.op);
+      const container = game.sync.get(containerId);
+      if (!container) continue;
+      const objects = container[internal.syncedObjectContainerObjectsField];
+      if (!objects) continue;
 
-          const container = game.sync.get(report.containerId);
-          if (!container) continue;
-          const objects = container[internal.syncedObjectContainerObjectsField];
-          if (!objects) continue;
-          const object = objects.get(report.field);
-          if (!object) continue;
+      for (const [field, arr] of Object.entries(fields)) {
+        const object = objects.get(field);
+        if (!object) continue;
+
+        for (const report of arr) {
+          const op = SyncedObjectOperationSchema.parse(report.op);
 
           if (!object.receive(from, report.clock, op)) {
             denials[object.containerId] ??= {};
@@ -77,9 +77,9 @@ export const handleObjectSync: ServerNetworkSetupRoutine = (net, game) => {
             continue;
           }
 
-          reports[report.containerId] ??= {};
-          reports[report.containerId][report.field] ??= [];
-          const arr = reports[report.containerId][report.field];
+          reports[containerId] ??= {};
+          reports[containerId][field] ??= [];
+          const arr = reports[containerId][field];
           arr.push({ from, clock: report.clock, op: report.op });
         }
       }

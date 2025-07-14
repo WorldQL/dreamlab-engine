@@ -48,17 +48,17 @@ export const handleObjectSync: ClientNetworkSetupRoutine = (net, game) => {
   net.registerPacketHandler("SyncedObjectReports", packet => {
     if (packet.denials) {
       for (const [containerId, fields] of Object.entries(packet.denials)) {
-        for (const [field, arr] of Object.entries(fields)) {
-          for (const inner of arr) {
-            const denial = { containerId, field, ...inner };
-            if (denial.to !== net.id) continue;
+        const container = game.sync.get(containerId);
+        if (!container) continue;
+        const objects = container[internal.syncedObjectContainerObjectsField];
+        if (!objects) continue;
 
-            const container = game.sync.get(denial.containerId);
-            if (!container) continue;
-            const objects = container[internal.syncedObjectContainerObjectsField];
-            if (!objects) continue;
-            const object = objects.get(denial.field);
-            if (!object) continue;
+        for (const [field, arr] of Object.entries(fields)) {
+          const object = objects.get(field);
+          if (!object) continue;
+
+          for (const denial of arr) {
+            if (denial.to !== net.id) continue;
 
             object.clock = denial.clock;
             object.lastWriter = undefined;
@@ -69,18 +69,18 @@ export const handleObjectSync: ClientNetworkSetupRoutine = (net, game) => {
     }
 
     for (const [containerId, fields] of Object.entries(packet.reports)) {
+      const container = game.sync.get(containerId);
+      if (!container) continue;
+      const objects = container[internal.syncedObjectContainerObjectsField];
+      if (!objects) continue;
+
       for (const [field, arr] of Object.entries(fields)) {
-        for (const inner of arr) {
-          const report = { containerId, field, ...inner };
+        const object = objects.get(field);
+
+        for (const report of arr) {
           if (report.from === net.id) continue;
 
           const op = SyncedObjectOperationSchema.parse(report.op);
-
-          const container = game.sync.get(report.containerId);
-          if (!container) continue;
-          const objects = container[internal.syncedObjectContainerObjectsField];
-          if (!objects) continue;
-          const object = objects.get(report.field);
           if (object) object.receive(report.from ?? "server", report.clock, op);
         }
       }
