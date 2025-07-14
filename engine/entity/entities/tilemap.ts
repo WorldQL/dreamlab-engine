@@ -605,8 +605,8 @@ export abstract class BaseTilemap extends PixiEntity {
 
     const width = bounds.width;
     const height = bounds.height;
-    const x = bounds.x + width / 2;
-    const y = bounds.y + height / 2;
+    const x = bounds.x + width / 2 + 0.5;
+    const y = bounds.y + height / 2 + 0.5;
 
     this.#bounds = { width, height, offset: { x, y } };
   }
