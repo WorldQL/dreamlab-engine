@@ -1,30 +1,54 @@
-import { Behavior, Tilemap } from "@dreamlab/engine";
+import { Behavior, Rng, Tilemap, syncedValue } from "@dreamlab/engine";
+import { sample } from "jsr:@std/random@0.1.2";
+import { createNoise2D } from "npm:simplex-noise";
 
 export default class Generate extends Behavior {
   #tilemap = this.entity.cast(Tilemap);
 
+  @syncedValue()
+  seed: number = 0;
+
   fillPalette(): void {
-    this.#tilemap.palette[0] = { type: "color", color: "#ffadad" };
-    this.#tilemap.palette[1] = { type: "color", color: "#ffd6a5" };
-    this.#tilemap.palette[2] = { type: "color", color: "#fdffB6" };
-    this.#tilemap.palette[3] = { type: "color", color: "#caffbf" };
-    this.#tilemap.palette[4] = { type: "color", color: "#9bf6ff" };
-    this.#tilemap.palette[5] = { type: "color", color: "#a0c4ff" };
-    this.#tilemap.palette[6] = { type: "color", color: "#bdb2ff" };
-    this.#tilemap.palette[7] = { type: "color", color: "#ffc6ff" };
-    this.#tilemap.palette[8] = { type: "color", color: "#fffffc" };
+    for (let idx = 0; idx < 34; idx++) {
+      this.#tilemap.palette[idx] = {
+        type: "spritesheet",
+        spritesheet: "res://assets/grass.json",
+        frame: idx,
+      };
+    }
   }
 
   clearData(): void {
     this.#tilemap.clearTiles();
   }
 
-  generateMap(
-    size = 50,
-    fn: (x: number, y: number) => number = () => Math.floor(Math.random() * 9),
-  ): void {
-    for (let x = 0; x < size; x++) {
-      for (let y = 0; y < size; y++) {
+  // prettier-ignore
+  static readonly #GRASS_TILES: readonly number[] = [1, 2, 3, 8, 9, 10, 11, 16, 17, 18, 19, 24, 25, 26, 27] as const;
+  // prettier-ignore
+  static readonly #FLOWER_TILES: readonly number[] = [4, 5, 6, 7, 12, 13, 14, 20, 21, 22, 23, 28, 29, 30, 31] as const;
+
+  generateMap(): void {
+    const SIZE = 50;
+    const rng = Rng.Seeded(BigInt(this.seed));
+    const noise = createNoise2D(rng);
+
+    const fn = (x: number, y: number): number => {
+      const value = noise(x, y);
+      const prng = Rng.Seeded(BigInt(y * SIZE + x));
+
+      if (value < 0.05) {
+        return 0;
+      } else if (value < 0.6) {
+        // grass
+        return sample(Generate.#GRASS_TILES, { prng })!;
+      } else {
+        // flowers
+        return sample(Generate.#FLOWER_TILES, { prng })!;
+      }
+    };
+
+    for (let x = 0; x < SIZE; x++) {
+      for (let y = 0; y < SIZE; y++) {
         const paletteId = fn(x, y);
         this.#tilemap.setTile(x, y, paletteId);
       }
@@ -34,19 +58,12 @@ export default class Generate extends Behavior {
   onInitialize() {
     if (!this.game.isServer()) return;
 
+    const seed = this.values.get("seed");
+    seed?.onChanged(() => {
+      this.generateMap();
+    });
+
     this.fillPalette();
     this.generateMap();
-  }
-
-  onTick() {
-    if (!this.game.isServer()) return;
-
-    // every n ticks
-    if (this.game.time.ticks % 2 !== 0) return;
-
-    const x = Math.floor(Math.random() * 50);
-    const y = Math.floor(Math.random() * 50);
-    const tile = Math.floor(Math.random() * 9);
-    this.#tilemap.setTile(x, y, tile);
   }
 }

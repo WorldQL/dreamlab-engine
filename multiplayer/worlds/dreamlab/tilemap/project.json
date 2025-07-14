@@ -13,6 +13,9 @@
           "name": "Tilemap",
           "enabled": true,
           "data": "AIKAgA",
+          "values": {
+            "resolution": 32
+          },
           "behaviors": [
             {
               "ref": "bhv_SK93564VD4",
@@ -35,7 +38,7 @@
           },
           "values": {
             "active": true,
-            "zoom": 0.18
+            "zoom": 0.5
           }
         }
       ],
