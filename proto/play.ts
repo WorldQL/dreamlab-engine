@@ -116,30 +116,45 @@ export const ServerRenameEntityPacket = BaseRenameEntityPacket.extend({
   from: ConnectionIdSchema.optional(),
 });
 
-// TODO: deduplicate data
-export const SyncedObjectReport = z.object({
-  containerId: z.string(),
-  field: z.string(),
-  clock: z.number(),
-  op: z.unknown(),
-});
+export const SyncedObjectReports = z.record(
+  z.string(), // containerId
+  z.record(
+    z.string(), // field
+    z.object({ clock: z.number(), op: z.unknown() }).array(),
+  ),
+);
 
 export const ClientSyncedObjectReports = z.object({
   t: z.literal("SyncedObjectReports"),
-  reports: SyncedObjectReport.array(),
+  reports: SyncedObjectReports,
 });
 export const ServerSyncedObjectReports = z.object({
   t: z.literal("SyncedObjectReports"),
-  reports: SyncedObjectReport.extend({ from: ConnectionIdSchema.optional() }).array(),
+  reports: z.record(
+    SyncedObjectReports.keySchema,
+    z.record(
+      SyncedObjectReports.valueSchema.keySchema,
+      SyncedObjectReports.valueSchema.valueSchema.element
+        .extend({
+          from: ConnectionIdSchema.optional(),
+        })
+        .array(),
+    ),
+  ),
   denials: z
-    .object({
-      to: ConnectionIdSchema,
-      containerId: z.string(),
-      field: z.string(),
-      clock: z.number(),
-      value: z.unknown(),
-    })
-    .array()
+    .record(
+      z.string(), // containerId
+      z.record(
+        z.string(), // field
+        z
+          .object({
+            to: ConnectionIdSchema,
+            clock: z.number(),
+            value: z.unknown(),
+          })
+          .array(),
+      ),
+    )
     .optional(),
 });
 

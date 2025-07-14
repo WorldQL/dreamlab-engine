@@ -23,55 +23,67 @@ export const handleObjectSync: ClientNetworkSetupRoutine = (net, game) => {
   game.on(InternalGameTick, () => {
     if (game.status !== GameStatus.Running) return;
 
-    const syncedObjectReports: PlayPacket<"SyncedObjectReports", "client">["reports"] = [];
+    const syncedObjectReports: PlayPacket<"SyncedObjectReports", "client">["reports"] = {};
+    let modified = false;
+
     for (const op of syncedObjectOpQueue) {
       syncedObjectOpQueue.delete(op);
 
       const container = game.sync.get(op.object.containerId);
       if (!container) continue;
 
-      syncedObjectReports.push({
-        containerId: op.object.containerId,
-        field: op.object.field,
-        clock: op.clock,
-        op: op.op,
-      });
+      syncedObjectReports[op.object.containerId] ??= {};
+      syncedObjectReports[op.object.containerId][op.object.field] ??= [];
+      const arr = syncedObjectReports[op.object.containerId][op.object.field];
+
+      arr.push({ clock: op.clock, op: op.op });
+      modified = true;
     }
 
-    if (syncedObjectReports.length) {
+    if (modified) {
       net.send({ t: "SyncedObjectReports", reports: syncedObjectReports });
     }
   });
 
   net.registerPacketHandler("SyncedObjectReports", packet => {
     if (packet.denials) {
-      for (const denial of packet.denials) {
-        if (denial.to !== net.id) continue;
+      for (const [containerId, fields] of Object.entries(packet.denials)) {
+        for (const [field, arr] of Object.entries(fields)) {
+          for (const inner of arr) {
+            const denial = { containerId, field, ...inner };
+            if (denial.to !== net.id) continue;
 
-        const container = game.sync.get(denial.containerId);
-        if (!container) continue;
-        const objects = container[internal.syncedObjectContainerObjectsField];
-        if (!objects) continue;
-        const object = objects.get(denial.field);
-        if (!object) continue;
+            const container = game.sync.get(denial.containerId);
+            if (!container) continue;
+            const objects = container[internal.syncedObjectContainerObjectsField];
+            if (!objects) continue;
+            const object = objects.get(denial.field);
+            if (!object) continue;
 
-        object.clock = denial.clock;
-        object.lastWriter = undefined;
-        object.setup(denial.value);
+            object.clock = denial.clock;
+            object.lastWriter = undefined;
+            object.setup(denial.value);
+          }
+        }
       }
     }
 
-    for (const report of packet.reports) {
-      if (report.from === net.id) continue;
+    for (const [containerId, fields] of Object.entries(packet.reports)) {
+      for (const [field, arr] of Object.entries(fields)) {
+        for (const inner of arr) {
+          const report = { containerId, field, ...inner };
+          if (report.from === net.id) continue;
 
-      const op = SyncedObjectOperationSchema.parse(report.op);
+          const op = SyncedObjectOperationSchema.parse(report.op);
 
-      const container = game.sync.get(report.containerId);
-      if (!container) continue;
-      const objects = container[internal.syncedObjectContainerObjectsField];
-      if (!objects) continue;
-      const object = objects.get(report.field);
-      if (object) object.receive(report.from ?? "server", report.clock, op);
+          const container = game.sync.get(report.containerId);
+          if (!container) continue;
+          const objects = container[internal.syncedObjectContainerObjectsField];
+          if (!objects) continue;
+          const object = objects.get(report.field);
+          if (object) object.receive(report.from ?? "server", report.clock, op);
+        }
+      }
     }
   });
 };

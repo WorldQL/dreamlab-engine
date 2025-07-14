@@ -23,57 +23,68 @@ export const handleObjectSync: ServerNetworkSetupRoutine = (net, game) => {
   game.on(InternalGameTick, () => {
     if (game.status !== GameStatus.Running) return;
 
-    const syncedObjectReports: PlayPacket<"SyncedObjectReports", "server">["reports"] = [];
+    const syncedObjectReports: PlayPacket<"SyncedObjectReports", "server">["reports"] = {};
+    let modified = false;
+
     for (const op of syncedObjectOpQueue) {
       syncedObjectOpQueue.delete(op);
 
       const container = game.sync.get(op.object.containerId);
       if (!container) continue;
 
-      syncedObjectReports.push({
-        containerId: op.object.containerId,
-        field: op.object.field,
-        clock: op.clock,
-        op: op.op,
-      });
+      syncedObjectReports[op.object.containerId] ??= {};
+      syncedObjectReports[op.object.containerId][op.object.field] ??= [];
+      const arr = syncedObjectReports[op.object.containerId][op.object.field];
+
+      arr.push({ clock: op.clock, op: op.op });
+      modified = true;
     }
 
-    if (syncedObjectReports.length) {
+    if (modified) {
       net.broadcast({ t: "SyncedObjectReports", reports: syncedObjectReports });
     }
   });
 
   net.registerPacketHandler("SyncedObjectReports", (from, packet) => {
     type Packet = PlayPacket<"SyncedObjectReports", "server">;
-    const reports: Packet["reports"] = [];
-    const denials: NonNullable<Packet["denials"]> = [];
+    const reports: Packet["reports"] = {};
+    const denials: NonNullable<Packet["denials"]> = {};
 
-    for (const report of packet.reports) {
-      const op = SyncedObjectOperationSchema.parse(report.op);
+    for (const [containerId, fields] of Object.entries(packet.reports)) {
+      for (const [field, arr] of Object.entries(fields)) {
+        for (const inner of arr) {
+          const report = { containerId, field, ...inner };
+          const op = SyncedObjectOperationSchema.parse(report.op);
 
-      const container = game.sync.get(report.containerId);
-      if (!container) continue;
-      const objects = container[internal.syncedObjectContainerObjectsField];
-      if (!objects) continue;
-      const object = objects.get(report.field);
-      if (!object) continue;
+          const container = game.sync.get(report.containerId);
+          if (!container) continue;
+          const objects = container[internal.syncedObjectContainerObjectsField];
+          if (!objects) continue;
+          const object = objects.get(report.field);
+          if (!object) continue;
 
-      if (!object.receive(from, report.clock, op)) {
-        denials.push({
-          to: from,
-          containerId: object.containerId,
-          field: object.field,
-          clock: object.clock,
-          value: object.serializeForNetwork(object.get()),
-        });
+          if (!object.receive(from, report.clock, op)) {
+            denials[object.containerId] ??= {};
+            denials[object.containerId][object.field] ??= [];
+            const arr = denials[object.containerId][object.field];
 
-        continue;
+            arr.push({
+              to: from,
+              clock: object.clock,
+              value: object.serializeForNetwork(object.get()),
+            });
+
+            continue;
+          }
+
+          reports[report.containerId] ??= {};
+          reports[report.containerId][report.field] ??= [];
+          const arr = reports[report.containerId][report.field];
+          arr.push({ from, clock: report.clock, op: report.op });
+        }
       }
-
-      reports.push({ ...report, from });
     }
 
-    if (denials.length > 0) net.broadcast({ t: "SyncedObjectReports", reports, denials });
-    else net.broadcast({ t: "SyncedObjectReports", reports });
+    net.broadcast({ t: "SyncedObjectReports", reports, denials });
   });
 };
