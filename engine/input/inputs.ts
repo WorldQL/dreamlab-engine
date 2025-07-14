@@ -225,11 +225,13 @@ export class Inputs implements ISignalHandler {
 
     const cursor = this.cursor;
     if (pressed) {
+      this.#keys.add(input);
       if (cursor.screen && cursor.world) {
         this.fire(MouseDown, button, { screen: cursor.screen, world: cursor.world }, ev);
         if (button === "left") this.fire(Click, { screen: cursor.screen, world: cursor.world });
       }
     } else {
+      this.#keys.delete(input);
       this.fire(MouseUp, button, cursor, ev);
     }
 
