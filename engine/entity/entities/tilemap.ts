@@ -7,7 +7,6 @@ import {
   EntityContext,
   EntityTransformUpdate,
   enumAdapter,
-  GameRender,
   GameTick,
   IBounds,
   JsonValue,
@@ -27,6 +26,7 @@ const ScaleFilterModeAdapter = enumAdapter(["default", "linear", "nearest"]);
 const TILE_TYPES = {
   color: 0,
   texture: 1,
+  spritesheet: 2,
 } as const satisfies Record<TileData["type"], number>;
 
 const REVERSE_TILE_TYPES: ReadonlyMap<number, TileData["type"]> = new Map(
@@ -58,6 +58,11 @@ export type TileData =
   | {
       type: "texture";
       texture: string;
+    }
+  | {
+      type: "spritesheet";
+      spritesheet: string;
+      frame: number;
     };
 // #endregion
 
@@ -197,6 +202,11 @@ export abstract class BaseTilemap extends PixiEntity {
           return ret;
         }
 
+        case "spritesheet": {
+          const ret = [...base, entry.spritesheet, entry.frame];
+          return ret;
+        }
+
         default:
           throw new Error(`unknown type: ${type}`);
       }
@@ -253,6 +263,12 @@ export abstract class BaseTilemap extends PixiEntity {
           case "texture": {
             const texture = rest[0] as string;
             return [id, { type, texture }];
+          }
+
+          case "spritesheet": {
+            const spritesheet = rest[0] as string;
+            const frame = rest[1] as number;
+            return [id, { type, spritesheet, frame }];
           }
 
           default:
@@ -342,20 +358,46 @@ export abstract class BaseTilemap extends PixiEntity {
     if (!this.container) return;
 
     const textures = Object.values(this.palette)
-      .filter(entry => entry.type === "texture")
-      .map(entry => entry.texture)
-      .filter(tex => !this.#textureCache.has(tex));
+      .filter(entry => entry.type === "texture" || entry.type === "spritesheet")
+      .filter(entry => {
+        const url = this.#textureCacheId(entry);
+        return !this.#textureCache.has(url);
+      });
 
     if (textures.length === 0) return;
 
-    const jobs = textures.map(async url => {
-      const texture = await PIXI.Assets.load(url);
-      if (!(texture instanceof PIXI.Texture)) return;
+    const jobs = textures.map(async entry => {
+      const cacheId = this.#textureCacheId(entry);
 
-      this.#textureCache.set(url, texture);
+      if (entry.type === "texture") {
+        const url = this.game.resolveResource(entry.texture);
+        const texture = await PIXI.Assets.load(url);
+        if (!(texture instanceof PIXI.Texture)) return;
+
+        this.#textureCache.set(cacheId, texture);
+      } else if (entry.type === "spritesheet") {
+        const url = this.game.resolveResource(entry.spritesheet);
+        const spritesheet = await PIXI.Assets.load(url);
+        if (!(spritesheet instanceof PIXI.Spritesheet)) return;
+
+        const textures = Object.values(spritesheet.textures);
+        const texture = textures.at(entry.frame);
+        if (!texture) return;
+
+        this.#textureCache.set(cacheId, texture);
+      }
     });
 
     await Promise.all(jobs);
+  }
+
+  #textureCacheId(entry: Extract<TileData, { type: "texture" | "spritesheet" }>): string {
+    const type = entry.type;
+
+    if (entry.type === "texture") return entry.texture;
+    if (entry.type === "spritesheet") return `${entry.spritesheet}@${entry.frame}`;
+
+    throw new Error(`unsupported entry: ${type}`);
   }
 
   readonly #ctx = new PIXI.GraphicsContext().rect(-0.5, -0.5, 1, 1).fill("white");
@@ -444,8 +486,10 @@ export abstract class BaseTilemap extends PixiEntity {
           break;
         }
 
-        case "texture": {
-          const texture = this.#textureCache.get(tile.texture);
+        case "texture":
+        case "spritesheet": {
+          const cacheId = this.#textureCacheId(tile);
+          const texture = this.#textureCache.get(cacheId);
           if (!texture) return;
 
           const sprite = new PIXI.Sprite({
