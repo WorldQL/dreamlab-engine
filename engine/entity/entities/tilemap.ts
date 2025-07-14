@@ -11,7 +11,9 @@ import {
   IBounds,
   JsonValue,
   PixiEntity,
+  pointWorldToLocal,
   SyncedDeepObject,
+  Vector2,
 } from "@dreamlab/engine";
 import * as cbor from "@dreamlab/vendor/cbor2.ts";
 import { gzip, ungzip } from "@dreamlab/vendor/pako.ts";
@@ -84,6 +86,20 @@ export abstract class BaseTilemap extends PixiEntity {
   #boundsDirty: boolean = false;
 
   // #region tilemap operations
+  getTileAtPoint(
+    world: Vector2,
+  ): (TileData & { readonly x: number; readonly y: number }) | undefined {
+    const local = pointWorldToLocal(this.globalTransform, world);
+
+    const x = Math.floor(local.x);
+    const y = Math.floor(local.y);
+
+    const tile = this.getTile(x, y);
+    if (!tile) return undefined;
+
+    return { ...tile, x, y };
+  }
+
   getTile(x: number, y: number): TileData | undefined {
     x = Math.floor(x);
     y = Math.floor(y);
@@ -91,8 +107,10 @@ export abstract class BaseTilemap extends PixiEntity {
     if (Object.is(x, -0)) x = 0;
     if (Object.is(y, -0)) y = 0;
 
-    const paletteId = this.data[x as number]?.[y as number];
+    const paletteId = this.data[x]?.[y];
     if (paletteId === undefined) return undefined;
+
+    return this.palette[paletteId];
   }
 
   setTile(x: number, y: number, paletteId: number | undefined): void {
