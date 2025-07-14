@@ -32,11 +32,15 @@ export default class Generate extends Behavior {
   }
 
   onInitialize() {
+    if (!this.game.isServer()) return;
+
     this.fillPalette();
     this.generateMap();
   }
 
   onTick() {
+    if (!this.game.isServer()) return;
+
     // every n ticks
     if (this.game.time.ticks % 2 !== 0) return;
 
