@@ -1,41 +1,77 @@
-import { SyncedObjectOperationSchema } from "@dreamlab/engine";
+import {
+  AnySyncedObject,
+  GameStatus,
+  InternalGameTick,
+  SyncedObjectOperation,
+  SyncedObjectOperationSchema,
+} from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
+import type { PlayPacket } from "@dreamlab/proto/play.ts";
 import { ClientNetworkSetupRoutine } from "./net-connection.ts";
 
 export const handleObjectSync: ClientNetworkSetupRoutine = (net, game) => {
+  type SyncedObjectOpInfo = {
+    object: AnySyncedObject;
+    clock: number;
+    op: SyncedObjectOperation;
+  };
+  const syncedObjectOpQueue = new Set<SyncedObjectOpInfo>();
   game.sync.listen((object, clock, op) => {
-    net.send({
-      t: "SyncedObjectOperation",
-      clock,
-      containerId: object.containerId,
-      field: object.field,
-      op,
-    });
+    syncedObjectOpQueue.add({ object, clock, op });
   });
 
-  net.registerPacketHandler("SyncedObjectOperation", packet => {
-    if (packet.from === net.id) return;
+  game.on(InternalGameTick, () => {
+    if (game.status !== GameStatus.Running) return;
 
-    const op = SyncedObjectOperationSchema.parse(packet.op);
+    const syncedObjectReports: PlayPacket<"SyncedObjectReports", "client">["reports"] = [];
+    for (const op of syncedObjectOpQueue) {
+      syncedObjectOpQueue.delete(op);
 
-    const container = game.sync.get(packet.containerId);
-    if (!container) return;
-    const objects = container[internal.syncedObjectContainerObjectsField];
-    if (!objects) return;
-    const object = objects.get(packet.field);
-    if (object) object.receive(packet.from ?? "server", packet.clock, op);
+      const container = game.sync.get(op.object.containerId);
+      if (!container) continue;
+
+      syncedObjectReports.push({
+        containerId: op.object.containerId,
+        field: op.object.field,
+        clock: op.clock,
+        op: op.op,
+      });
+    }
+
+    if (syncedObjectReports.length) {
+      net.send({ t: "SyncedObjectReports", reports: syncedObjectReports });
+    }
   });
 
-  net.registerPacketHandler("DenySyncedObjectOp", packet => {
-    const container = game.sync.get(packet.containerId);
-    if (!container) return;
-    const objects = container[internal.syncedObjectContainerObjectsField];
-    if (!objects) return;
-    const object = objects.get(packet.field);
-    if (!object) return;
+  net.registerPacketHandler("SyncedObjectReports", packet => {
+    if (packet.denials) {
+      for (const denial of packet.denials) {
+        if (denial.to !== net.id) continue;
 
-    object.clock = packet.clock;
-    object.lastWriter = undefined;
-    object.setup(packet.value);
+        const container = game.sync.get(denial.containerId);
+        if (!container) continue;
+        const objects = container[internal.syncedObjectContainerObjectsField];
+        if (!objects) continue;
+        const object = objects.get(denial.field);
+        if (!object) continue;
+
+        object.clock = denial.clock;
+        object.lastWriter = undefined;
+        object.setup(denial.value);
+      }
+    }
+
+    for (const report of packet.reports) {
+      if (report.from === net.id) continue;
+
+      const op = SyncedObjectOperationSchema.parse(report.op);
+
+      const container = game.sync.get(report.containerId);
+      if (!container) continue;
+      const objects = container[internal.syncedObjectContainerObjectsField];
+      if (!objects) continue;
+      const object = objects.get(report.field);
+      if (object) object.receive(report.from ?? "server", report.clock, op);
+    }
   });
 };

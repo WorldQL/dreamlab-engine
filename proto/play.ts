@@ -116,22 +116,31 @@ export const ServerRenameEntityPacket = BaseRenameEntityPacket.extend({
   from: ConnectionIdSchema.optional(),
 });
 
-export const ClientSyncedObjectOperation = z.object({
-  t: z.literal("SyncedObjectOperation"),
+// TODO: deduplicate data
+export const SyncedObjectReport = z.object({
   containerId: z.string(),
   field: z.string(),
   clock: z.number(),
   op: z.unknown(),
 });
-export const ServerSyncedObjectOperation = ClientSyncedObjectOperation.extend({
-  from: ConnectionIdSchema.optional(),
+
+export const ClientSyncedObjectReports = z.object({
+  t: z.literal("SyncedObjectReports"),
+  reports: SyncedObjectReport.array(),
 });
-export const ServerDenySyncedObjectOp = z.object({
-  t: z.literal("DenySyncedObjectOp"),
-  containerId: z.string(),
-  field: z.string(),
-  clock: z.number(),
-  value: z.unknown(),
+export const ServerSyncedObjectReports = z.object({
+  t: z.literal("SyncedObjectReports"),
+  reports: SyncedObjectReport.extend({ from: ConnectionIdSchema.optional() }).array(),
+  denials: z
+    .object({
+      to: ConnectionIdSchema,
+      containerId: z.string(),
+      field: z.string(),
+      clock: z.number(),
+      value: z.unknown(),
+    })
+    .array()
+    .optional(),
 });
 
 const BaseReparentEntityPacket = z.object({
@@ -284,7 +293,7 @@ export const ClientPacketSchema = z.discriminatedUnion("t", [
   ClientDeleteBehaviorPacket,
   ClientEntityEnableChanged,
   ClientEntityEnableReport,
-  ClientSyncedObjectOperation,
+  ClientSyncedObjectReports,
 ]);
 export type ClientPacket = z.infer<typeof ClientPacketSchema>;
 
@@ -313,8 +322,7 @@ export const ServerPacketSchema = z.discriminatedUnion("t", [
   ServerDeleteBehaviorPacket,
   ServerEntityEnableChanged,
   ServerEntityEnableReport,
-  ServerSyncedObjectOperation,
-  ServerDenySyncedObjectOp,
+  ServerSyncedObjectReports,
 ]);
 export type ServerPacket = z.infer<typeof ServerPacketSchema>;
 
