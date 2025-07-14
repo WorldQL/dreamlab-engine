@@ -62,16 +62,34 @@ export default class Generate extends Behavior {
   }
 
   onInitialize() {
-    if (!this.game.isServer()) return;
-
     const seed = this.values.get("seed");
     seed?.onChanged(() => {
       this.#setRng();
-      this.generateMap();
+      if (this.game.isServer()) this.generateMap();
     });
 
     this.#setRng();
-    this.fillPalette();
-    this.generateMap();
+
+    if (this.game.isServer()) {
+      this.fillPalette();
+      this.generateMap();
+    }
+  }
+
+  onFrame(): void {
+    if (!this.game.isClient()) return;
+
+    const world = this.inputs.cursor.world;
+    if (!world) return;
+
+    const left = this.inputs.getKey("MouseLeft");
+    const right = this.inputs.getKey("MouseRight");
+    if (!left && !right) return;
+
+    const tile = this.#tilemap.getTileAtPoint(world);
+    if (!tile) return;
+
+    const id = left ? 33 : this.#getTile(tile.x, tile.y);
+    this.#tilemap.setTile(tile.x, tile.y, id);
   }
 }
