@@ -143,13 +143,11 @@ export abstract class BaseTilemap extends PixiEntity {
     // @ts-expect-error: abstract class
     const ctor: EntityConstructor<BaseTilemap> = BaseTilemap;
 
-    const chunkSize = this.defineValue(ctor, "chunkSize");
     const resolution = this.defineValue(ctor, "resolution");
     const scale = this.defineValue(ctor, "scaleFilterMode", { type: ScaleFilterModeAdapter });
     const palette = defineSyncedObject(this, "palette", ctx.sync ?? {});
     const data = defineSyncedObject(this, "data", ctx.sync ?? {});
 
-    chunkSize.onChanged(markDirty);
     resolution.onChanged(markDirty);
     scale.onChanged(markDirty);
     palette.onChanged(markDirty);
@@ -185,8 +183,6 @@ export abstract class BaseTilemap extends PixiEntity {
         this.#boundsDirty = false;
         this.#recalculateBounds();
       }
-
-      this.#checkChunkQueue();
     });
 
     this.listen(this.game, CameraFilterModeChanged, markDirty);
@@ -460,23 +456,15 @@ export abstract class BaseTilemap extends PixiEntity {
     for (const child of removed) child.destroy({ children: true });
 
     for (const chunk of this.#chunks.values()) chunk.destroy({ children: true });
-    for (const sprite of this.#sprites.values()) {
-      if (sprite.texture) {
-        sprite.texture.source.destroy();
-        sprite.texture.destroy();
-      }
-
-      sprite.destroy();
-    }
-
     this.#chunks.clear();
-    this.#sprites.clear();
 
     for (const tile of this.tiles()) this.#drawTile(tile);
   }
 
   readonly #chunks = new Map<string, PIXI.Container>();
   #getChunkContainer({ chunkId: id, chunkX: x, chunkY: y }: ChunkData): PIXI.Container {
+    if (!this.container) throw new Error("missing container");
+
     const cached = this.#chunks.get(id);
     if (cached !== undefined) return cached;
 
@@ -488,131 +476,62 @@ export abstract class BaseTilemap extends PixiEntity {
     });
 
     this.#chunks.set(id, chunk);
+    this.container.addChild(chunk);
     return chunk;
-  }
-
-  readonly #sprites = new Map<string, PIXI.Sprite>();
-  #getChunkSprite({ chunkId: id, chunkX: x, chunkY: y }: ChunkData): PIXI.Sprite {
-    if (!this.container) throw new Error("missing container");
-
-    const cached = this.#sprites.get(id);
-    if (cached !== undefined) return cached;
-
-    const sprite = new PIXI.Sprite({
-      label: `sprite:${id}`,
-      position: { x: x * this.chunkSize, y: -y * this.chunkSize },
-      width: this.chunkSize,
-      height: this.chunkSize,
-      anchor: { x: 0, y: 1 },
-    });
-
-    this.container.addChild(sprite);
-    this.#sprites.set(id, sprite);
-    return sprite;
   }
 
   #drawTile(data: TileDrawData): void {
     if (!this.container) return;
 
-    try {
-      const tile = data.tile;
-      const chunk = this.#getChunkContainer(data);
+    const tile = data.tile;
+    const chunk = this.#getChunkContainer(data);
 
-      const label = `${data.x}:${data.y}`;
-      const previous = chunk.getChildByLabel(label);
-      previous?.destroy();
+    const label = `${data.x}:${data.y}`;
+    const previous = chunk.getChildByLabel(label);
+    previous?.destroy();
 
-      if (!tile) return;
+    if (!tile) return;
 
-      const chunkSize = this.chunkSize;
-      const position = {
-        x: ((data.x % chunkSize) + chunkSize) % chunkSize,
-        y: -(((data.y % chunkSize) + chunkSize) % chunkSize),
-      };
+    const chunkSize = this.chunkSize;
+    const position = {
+      x: ((data.x % chunkSize) + chunkSize) % chunkSize,
+      y: -(((data.y % chunkSize) + chunkSize) % chunkSize),
+    };
 
-      switch (tile.type) {
-        case "color": {
-          const gfx = new PIXI.Graphics({
-            label,
-            context: this.#ctx,
-            position,
-            tint: tile.color,
-            alpha: tile.alpha,
-          });
+    switch (tile.type) {
+      case "color": {
+        const gfx = new PIXI.Graphics({
+          label,
+          context: this.#ctx,
+          position,
+          tint: tile.color,
+          alpha: tile.alpha,
+        });
 
-          chunk.addChild(gfx);
-          break;
-        }
-
-        case "texture":
-        case "spritesheet":
-        case "texture-slice": {
-          const cacheId = this.#textureCacheId(tile);
-          const texture = this.#textureCache.get(cacheId);
-          if (!texture) return;
-
-          const sprite = new PIXI.Sprite({
-            label,
-            texture,
-            width: 1,
-            height: 1,
-            anchor: 0.5,
-            position,
-          });
-
-          chunk.addChild(sprite);
-          break;
-        }
+        chunk.addChild(gfx);
+        break;
       }
-    } finally {
-      if (!this.#updateChunkQueue.includes(data.chunkId)) {
-        this.#updateChunkQueue.push(data.chunkId);
+
+      case "texture":
+      case "spritesheet":
+      case "texture-slice": {
+        const cacheId = this.#textureCacheId(tile);
+        const texture = this.#textureCache.get(cacheId);
+        if (!texture) return;
+
+        const sprite = new PIXI.Sprite({
+          label,
+          texture,
+          width: 1,
+          height: 1,
+          anchor: 0.5,
+          position,
+        });
+
+        chunk.addChild(sprite);
+        break;
       }
     }
-  }
-
-  readonly #updateChunkQueue: string[] = [];
-  #checkChunkQueue(): void {
-    if (!this.container) return;
-
-    const chunkId = this.#updateChunkQueue.shift();
-    if (!chunkId) return;
-
-    this.#updateChunkTexture(chunkId);
-  }
-
-  #updateChunkTexture(id: string): void {
-    if (!this.game.isClient()) throw new Error("not a client");
-    const renderer = this.game.renderer.app.renderer;
-
-    const [chunkX, chunkY] = id.split(":").map(x => Number.parseInt(x, 10));
-    const data = { chunkId: id, chunkX, chunkY } satisfies ChunkData;
-
-    const chunk = this.#getChunkContainer(data);
-    chunk.effects ??= [];
-
-    const sprite = this.#getChunkSprite(data);
-    const oldTexture = sprite.texture;
-    sprite.texture = PIXI.Texture.EMPTY;
-    oldTexture.source.destroy();
-    oldTexture.destroy();
-
-    const camera = Camera.getActive(this.game);
-    const scaleMode: Exclude<ScaleFilterMode, "default"> =
-      this.scaleFilterMode === "default"
-        ? (camera?.scaleFilterMode ?? "nearest")
-        : this.scaleFilterMode;
-
-    const texture = renderer.textureGenerator.generateTexture({
-      target: chunk,
-      resolution: this.resolution,
-      width: this.chunkSize,
-      height: this.chunkSize,
-      frame: new PIXI.Rectangle(-0.5, -this.chunkSize + 0.5, this.chunkSize, this.chunkSize),
-      textureSourceOptions: { scaleMode },
-    });
-
-    sprite.texture = texture;
   }
 
   #recalculateBounds(): void {
