@@ -42,12 +42,12 @@ export class EditorFacadeTilemap extends BaseTilemap {
     const atlasWidth = Math.floor(img.naturalWidth / this.resolution);
     const atlasHeight = Math.floor(img.naturalHeight / this.resolution);
 
-    for (let img = 0; img < atlasWidth; img++) {
+    for (let x = 0; x < atlasWidth; x++) {
       for (let y = 0; y < atlasHeight; y++) {
-        this.palette[img * atlasWidth + y] = {
+        this.palette[x * atlasWidth + y] = {
           type: "texture-slice",
           texture: this.atlas,
-          x: img * this.resolution,
+          x: x * this.resolution,
           y: y * this.resolution,
         };
       }
