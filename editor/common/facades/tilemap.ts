@@ -3,11 +3,13 @@ import {
   Entity,
   EntityContext,
   GameRender,
+  pointWorldToLocal,
   TextureAdapter,
   Tilemap,
 } from "@dreamlab/engine";
 import { SelectedEntityService } from "../../client/ui/selected-entity.ts";
 import { Facades } from "./manager.ts";
+import * as PIXI from "@dreamlab/vendor/pixi.ts";
 
 export class EditorFacadeTilemap extends BaseTilemap {
   static {
@@ -55,11 +57,24 @@ export class EditorFacadeTilemap extends BaseTilemap {
     }
   }
 
+  tooltip: PIXI.Graphics | undefined;
+
   onInitialize(): void {
     super.onInitialize();
 
     if (!this.game.isClient()) return;
     const game = this.game;
+
+    setTimeout(() => {
+      this.tooltip = new PIXI.Graphics();
+      this.tooltip.rect(-0.5, -0.5, 1, 1).fill("white");
+      this.container!.addChild(this.tooltip);
+      console.log("hi");
+
+      // setTimeout(() => {
+      //   gfx.destroy();
+      // }, 2000);
+    }, 1000);
 
     this.#initializePalette();
     this.listen(this.game, GameRender, () => {
@@ -68,6 +83,19 @@ export class EditorFacadeTilemap extends BaseTilemap {
 
       const world = this.inputs.cursor.world;
       if (!world) return;
+
+      if (this.tooltip && this.inputs.cursor.screen) {
+        const stw = pointWorldToLocal(this.globalTransform, this.inputs.cursor.world);
+        this.tooltip.position = {
+          x: Math.round(stw.x),
+          y: Math.round(-stw.y),
+        };
+      } else if (!this.tooltip) {
+        this.tooltip = new PIXI.Graphics();
+        this.tooltip.rect(-0.5, -0.5, 1, 1).fill("white");
+        this.container!.addChild(this.tooltip);
+        // TODO: clean up. render into subchild on tilemap?
+      }
 
       const left = this.inputs.getKey("MouseLeft");
       const right = this.inputs.getKey("MouseRight");
