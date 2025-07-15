@@ -16,6 +16,7 @@ export class EditorFacadeTilemap extends BaseTilemap {
   }
 
   atlas: string = "";
+  paletteId: number[] = [0];
 
   constructor(ctx: EntityContext) {
     super(ctx);
@@ -74,8 +75,7 @@ export class EditorFacadeTilemap extends BaseTilemap {
 
       const { x, y } = this.getTileCoordinatesAtPoint(world);
 
-      const paletteId = 0; // TODO: get from ui
-      this.setTile(x, y, left ? paletteId : undefined);
+      this.setTile(x, y, left ? this.paletteId[0] : undefined);
     });
   }
 }

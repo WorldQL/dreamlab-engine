@@ -2,8 +2,8 @@ import { element as elem } from "@dreamlab/ui";
 import { InspectorUI, InspectorUIWidget, NewRecommendedActions } from "./inspector.ts";
 import { LogViewer } from "./log-viewer.ts";
 import { PrefabViewer } from "./prefab-viewer.tsx";
-import { Terminal, Box, icon, Bot, Wand, LoaderCircle } from "../_icons.tsx";
-import { ClientGame, Tilemap } from "@dreamlab/engine";
+import { Terminal, Box, icon, Bot, Wand, LoaderCircle, Map } from "../_icons.tsx";
+import { ClientGame } from "@dreamlab/engine";
 import { Assistant } from "./assistant/assistant.tsx";
 import { AISuggestionsPopup } from "./ai-suggestions-popup.tsx";
 import { TileMapViewer } from "./tilemap-viewer.tsx";
@@ -71,7 +71,7 @@ export class BottomTabs implements InspectorUIWidget {
 
     const tilemapTab = elem("div", { className: "bottom-tab hidden" });
     tilemapTab.setAttribute("data-tab-id", "tilemap");
-    tilemapTab.append(icon(Box), elem("span", {}, ["TileMap"]));
+    tilemapTab.append(icon(Map), elem("span", {}, ["TileMap"]));
     tilemapTab.addEventListener("click", () => switchTab("tilemap"));
 
     setTimeout(() => {
