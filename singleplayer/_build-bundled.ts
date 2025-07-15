@@ -178,7 +178,7 @@ async function bundleSingleFile(world: string) {
   </head>
   <body>
     <div id="loading">Loading...</div>
-    <main id="layout"><div id="viewport"></div></main>
+    <main id="layout"><div id="viewport"><div id="game"></div></div></main>
     <script type="module">${js}</script>
   </body>
 </html>
