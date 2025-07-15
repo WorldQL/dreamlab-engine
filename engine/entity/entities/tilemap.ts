@@ -67,7 +67,7 @@ export abstract class BaseTilemap extends PixiEntity {
     return structuredClone(this.#bounds);
   }
 
-  chunkSize: number = 64;
+  readonly chunkSize: number = 64;
   resolution: number = 64;
   scaleFilterMode: ScaleFilterMode = "default";
 
