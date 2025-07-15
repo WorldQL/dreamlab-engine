@@ -1,5 +1,6 @@
-import { ClientGame, Tilemap } from "@dreamlab/engine";
+import { ClientGame } from "@dreamlab/engine";
 import { InspectorUI } from "./inspector.ts";
+import { EditorFacadeTilemap } from "../../common/facades/tilemap.ts";
 
 export class TileMapViewer {
   #section = (<section id="tilemap-viewer" />) as HTMLElement;
@@ -16,7 +17,7 @@ export class TileMapViewer {
 
     ui.selectedEntity.listen(() => {
       const sel = ui.selectedEntity.entities;
-      if (sel.length === 1 && sel[0] instanceof Tilemap) {
+      if (sel.length === 1 && sel[0] instanceof EditorFacadeTilemap) {
         this.render(sel[0]);
       } else {
         this.clear();
@@ -24,14 +25,12 @@ export class TileMapViewer {
     });
   }
 
-  private render(tilemap: Tilemap) {
+  private render(tilemap: EditorFacadeTilemap) {
     this.clear();
 
     const meta = document.createElement("div");
     meta.innerHTML = `
       <strong>TileMap: ${tilemap.name}</strong><br>
-      Resolution: ${tilemap.resolution}<br>
-      Chunk Size: ${tilemap.chunkSize}<br>
     `;
     this.#content.append(meta);
 

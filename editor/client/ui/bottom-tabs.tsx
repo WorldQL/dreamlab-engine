@@ -7,6 +7,7 @@ import { ClientGame, Tilemap } from "@dreamlab/engine";
 import { Assistant } from "./assistant/assistant.tsx";
 import { AISuggestionsPopup } from "./ai-suggestions-popup.tsx";
 import { TileMapViewer } from "./tilemap-viewer.tsx";
+import { EditorFacadeTilemap } from "../../common/facades/tilemap.ts";
 
 export class BottomTabs implements InspectorUIWidget {
   #logViewer: LogViewer;
@@ -159,7 +160,7 @@ export class BottomTabs implements InspectorUIWidget {
     this.#tilemapViewer.setup(ui);
 
     ui.selectedEntity.listen(selected => {
-      const hasTileMap = selected.length === 1 && selected[0] instanceof Tilemap;
+      const hasTileMap = selected.length === 1 && selected[0] instanceof EditorFacadeTilemap;
       tilemapTab.classList.toggle("hidden", !hasTileMap);
       if (!hasTileMap && tilemapTab.hasAttribute("data-active")) {
         switchTab("assistant");
