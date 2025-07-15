@@ -3,19 +3,22 @@ import { InspectorUI, InspectorUIWidget, NewRecommendedActions } from "./inspect
 import { LogViewer } from "./log-viewer.ts";
 import { PrefabViewer } from "./prefab-viewer.tsx";
 import { Terminal, Box, icon, Bot, Wand, LoaderCircle } from "../_icons.tsx";
-import { ClientGame } from "@dreamlab/engine";
+import { ClientGame, Tilemap } from "@dreamlab/engine";
 import { Assistant } from "./assistant/assistant.tsx";
-import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 import { AISuggestionsPopup } from "./ai-suggestions-popup.tsx";
+import { TileMapViewer } from "./tilemap-viewer.tsx";
 
 export class BottomTabs implements InspectorUIWidget {
-  #container: HTMLElement;
   #logViewer: LogViewer;
   #assistant: Assistant;
   #prefabViewer: PrefabViewer;
+  #tilemapViewer: TileMapViewer;
+
+  #container: HTMLElement;
   #logContent: HTMLElement;
   #prefabContent: HTMLElement;
   #assistantContent: HTMLElement;
+  #tilemapContent: HTMLElement;
 
   constructor(games: { edit: ClientGame; play?: ClientGame }) {
     this.#container = elem("div", { className: "bottom-tabs" });
@@ -23,10 +26,12 @@ export class BottomTabs implements InspectorUIWidget {
     this.#logContent = elem("div", { id: "log-viewer-content" });
     this.#prefabContent = elem("div", { id: "prefab-viewer-content" });
     this.#assistantContent = elem("div", { id: "assistant-viewer-content" });
+    this.#tilemapContent = elem("div", { id: "tilemap-viewer-content" });
 
     this.#logViewer = new LogViewer(this.#logContent, games);
     this.#prefabViewer = new PrefabViewer(games.edit, this.#prefabContent);
     this.#assistant = new Assistant(games.edit, this.#assistantContent);
+    this.#tilemapViewer = new TileMapViewer(games.edit, this.#tilemapContent);
   }
 
   setup(ui: InspectorUI): void {
@@ -34,13 +39,10 @@ export class BottomTabs implements InspectorUIWidget {
       const tabs = Array.from(this.#container.querySelectorAll(".bottom-tab"));
       for (const tab of tabs) {
         if (!(tab instanceof HTMLElement)) continue;
-
         const isActive = tab.getAttribute("data-tab-id") === tabId;
         if (isActive) {
           tab.setAttribute("data-active", "");
-          if (tab.getAttribute("data-tab-id") === "logs") {
-            tab.classList.remove("has-new");
-          }
+          if (tabId === "logs") tab.classList.remove("has-new");
         } else {
           tab.removeAttribute("data-active");
         }
@@ -48,6 +50,7 @@ export class BottomTabs implements InspectorUIWidget {
       this.#logContent.style.display = tabId === "logs" ? "flex" : "none";
       this.#prefabContent.style.display = tabId === "prefabs" ? "flex" : "none";
       this.#assistantContent.style.display = tabId === "assistant" ? "flex" : "none";
+      this.#tilemapContent.style.display = tabId === "tilemap" ? "flex" : "none";
     };
 
     const aiSuggestionsPopup = new AISuggestionsPopup();
@@ -65,18 +68,14 @@ export class BottomTabs implements InspectorUIWidget {
     assistantTab.setAttribute("data-tab-id", "assistant");
     assistantTab.append(icon(Bot), elem("span", {}, ["Assistant"]));
 
+    const tilemapTab = elem("div", { className: "bottom-tab hidden" });
+    tilemapTab.setAttribute("data-tab-id", "tilemap");
+    tilemapTab.append(icon(Box), elem("span", {}, ["TileMap"]));
+    tilemapTab.addEventListener("click", () => switchTab("tilemap"));
+
     setTimeout(() => {
       switchTab("assistant");
     });
-
-    // const externalTab = elem("div", { className: "bottom-tab" });
-    // externalTab.setAttribute("data-tab-id", "external");
-    // externalTab.append(icon(Wand), elem("span", {}, ["Generate Asset"]));
-    // externalTab.addEventListener("click", () => {
-    //   if (ui.game.instanceId === NIL_UUID)
-    //     window.open("https://app.dreamlab.gg/create/asset", "_blank", "noopener,noreferrer");
-    //   else window.parent.postMessage({ type: "SHOW_ASSET_CREATOR" }, "*");
-    // });
 
     const recommendedActionsTab = (
       <div
@@ -99,8 +98,6 @@ export class BottomTabs implements InspectorUIWidget {
     );
 
     recommendedActionsTab.addEventListener("click", e => {
-      console.log("hi");
-
       aiSuggestionsPopup.show();
       e.preventDefault();
       e.stopPropagation();
@@ -109,18 +106,14 @@ export class BottomTabs implements InspectorUIWidget {
 
     // @ts-expect-error Global
     (game as ClientGame).on(NewRecommendedActions, e => {
-      console.log("Received:", e.path);
       if (e.plan) {
-        // success
         aiSuggestionsPopup.setPlan(e.plan);
         recommendedActionsTab.classList.remove("hidden");
         loadingActionsTab.classList.add("hidden");
       } else if (e.plan === "fail") {
-        // failed to make plan, hide both,
         recommendedActionsTab.classList.add("hidden");
         loadingActionsTab.classList.add("hidden");
       } else {
-        // undefined plan, set loading
         loadingActionsTab.classList.remove("hidden");
       }
     });
@@ -129,6 +122,7 @@ export class BottomTabs implements InspectorUIWidget {
       assistantTab,
       prefabsTab,
       logsTab,
+      tilemapTab,
       recommendedActionsTab,
       loadingActionsTab,
     ]);
@@ -139,7 +133,7 @@ export class BottomTabs implements InspectorUIWidget {
 
     tabBar.addEventListener("click", e => {
       const tab = (e.target as HTMLElement).closest(".bottom-tab");
-      if (tab && tab instanceof HTMLElement) {
+      if (tab) {
         const tabId = tab.getAttribute("data-tab-id");
         if (tabId && tabId !== "external") switchTab(tabId);
       }
@@ -149,23 +143,33 @@ export class BottomTabs implements InspectorUIWidget {
       this.#logContent,
       this.#prefabContent,
       this.#assistantContent,
+      this.#tilemapContent,
     ]);
 
     this.#prefabContent.style.display = "none";
     this.#assistantContent.style.display = "flex";
     this.#logContent.style.display = "none";
+    this.#tilemapContent.style.display = "none";
+
     this.#container.append(tabBar, content);
 
     this.#logViewer.setup(ui);
     this.#prefabViewer.setup(ui);
     this.#assistant.setup(ui);
+    this.#tilemapViewer.setup(ui);
+
+    ui.selectedEntity.listen(selected => {
+      const hasTileMap = selected.length === 1 && selected[0] instanceof Tilemap;
+      tilemapTab.classList.toggle("hidden", !hasTileMap);
+      if (!hasTileMap && tilemapTab.hasAttribute("data-active")) {
+        switchTab("assistant");
+      }
+    });
   }
 
   show(uiRoot: HTMLElement): void {
     const bottomBar = uiRoot.querySelector("#bottom-bar");
-    if (bottomBar) {
-      bottomBar.appendChild(this.#container);
-    }
+    if (bottomBar) bottomBar.appendChild(this.#container);
   }
 
   hide(): void {
