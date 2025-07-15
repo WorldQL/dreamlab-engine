@@ -29,6 +29,7 @@ const TILE_TYPES = {
   color: 0,
   texture: 1,
   spritesheet: 2,
+  "texture-slice": 3,
 } as const satisfies Record<TileData["type"], number>;
 
 const REVERSE_TILE_TYPES: ReadonlyMap<number, TileData["type"]> = new Map(
@@ -52,20 +53,10 @@ type TileDrawData = {
 type ChunkData = Simplify<Pick<TileDrawData, "chunkX" | "chunkY" | "chunkId">>;
 
 export type TileData =
-  | {
-      type: "color";
-      color: string;
-      alpha?: number;
-    }
-  | {
-      type: "texture";
-      texture: string;
-    }
-  | {
-      type: "spritesheet";
-      spritesheet: string;
-      frame: number;
-    };
+  | { type: "color"; color: string; alpha?: number }
+  | { type: "texture"; texture: string }
+  | { type: "spritesheet"; spritesheet: string; frame: number }
+  | { type: "texture-slice"; texture: string; x: number; y: number };
 // #endregion
 
 export abstract class BaseTilemap extends PixiEntity {
@@ -229,6 +220,11 @@ export abstract class BaseTilemap extends PixiEntity {
           return ret;
         }
 
+        case "texture-slice": {
+          const ret = [...base, entry.texture, entry.x, entry.y];
+          return ret;
+        }
+
         default:
           throw new Error(`unknown type: ${type}`);
       }
@@ -291,6 +287,13 @@ export abstract class BaseTilemap extends PixiEntity {
             const spritesheet = rest[0] as string;
             const frame = rest[1] as number;
             return [id, { type, spritesheet, frame }];
+          }
+
+          case "texture-slice": {
+            const texture = rest[0] as string;
+            const x = rest[1] as number;
+            const y = rest[2] as number;
+            return [id, { type, texture, x, y }];
           }
 
           default:
@@ -380,7 +383,12 @@ export abstract class BaseTilemap extends PixiEntity {
     if (!this.container) return;
 
     const textures = Object.values(this.palette)
-      .filter(entry => entry.type === "texture" || entry.type === "spritesheet")
+      .filter(
+        entry =>
+          entry.type === "texture" ||
+          entry.type === "spritesheet" ||
+          entry.type === "texture-slice",
+      )
       .filter(entry => {
         const url = this.#textureCacheId(entry);
         return !this.#textureCache.has(url);
@@ -413,17 +421,29 @@ export abstract class BaseTilemap extends PixiEntity {
         if (!texture) return;
 
         this.#textureCache.set(cacheId, texture);
+      } else if (entry.type === "texture-slice") {
+        const url = this.game.resolveResource(entry.texture);
+        const texture = await PIXI.Assets.load({ src: url, data: { scaleMode } });
+        if (!(texture instanceof PIXI.Texture)) return;
+
+        const x = new PIXI.Texture({ source: texture.source, frame: new PIXI.Rectangle() });
       }
     });
 
     await Promise.all(jobs);
   }
 
-  #textureCacheId(entry: Extract<TileData, { type: "texture" | "spritesheet" }>): string {
+  #textureCacheId(
+    entry: Extract<TileData, { type: "texture" | "spritesheet" | "texture-slice" }>,
+  ): string {
     const type = entry.type;
 
     if (entry.type === "texture") return entry.texture;
     if (entry.type === "spritesheet") return `${entry.spritesheet}@${entry.frame}`;
+    if (entry.type === "texture-slice") {
+      const size = this.resolution;
+      return `${entry.texture}@${size}@${entry.x}:${entry.y}`;
+    }
 
     throw new Error(`unsupported entry: ${type}`);
   }
@@ -515,7 +535,8 @@ export abstract class BaseTilemap extends PixiEntity {
         }
 
         case "texture":
-        case "spritesheet": {
+        case "spritesheet":
+        case "texture-slice": {
           const cacheId = this.#textureCacheId(tile);
           const texture = this.#textureCache.get(cacheId);
           if (!texture) return;
