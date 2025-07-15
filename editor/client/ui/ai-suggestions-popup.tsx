@@ -60,6 +60,7 @@ export class AISuggestionsPopup extends DreamlabEditorUIComponent {
     this.game = globalThis.game as ClientGame;
 
     globalThis.addEventListener("message", message => {
+      if (!message.data.payload) return;
       console.debug(message);
       if (message.data.payload?.length > 0) {
         this.setPlan(message.data.payload);
