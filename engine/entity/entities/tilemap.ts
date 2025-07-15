@@ -75,6 +75,7 @@ export abstract class BaseTilemap extends PixiEntity {
   data: Record<number, Record<number, number>> = {};
   #tilesDirty: boolean = false;
   #boundsDirty: boolean = false;
+  #container: PIXI.Container | undefined;
 
   // #region tilemap operations
   getTileCoordinatesAtPoint(world: Vector2): Vector2 {
@@ -319,6 +320,8 @@ export abstract class BaseTilemap extends PixiEntity {
   onInitialize(): void {
     super.onInitialize();
     if (!this.container) return;
+    this.#container = new PIXI.Container({ label: "container" });
+    this.container.addChild(this.#container);
 
     void this.#populateTextureCache().then(() => this.#redraw());
     this.#updateSize();
@@ -376,7 +379,7 @@ export abstract class BaseTilemap extends PixiEntity {
 
   #textureCache = new Map<string, PIXI.Texture>();
   async #populateTextureCache(): Promise<void> {
-    if (!this.container) return;
+    if (!this.#container) return;
 
     const textures = Object.values(this.palette)
       .filter(
@@ -450,9 +453,9 @@ export abstract class BaseTilemap extends PixiEntity {
   readonly #ctx = new PIXI.GraphicsContext().rect(-0.5, -0.5, 1, 1).fill("white");
 
   #redraw(): void {
-    if (!this.container) return;
+    if (!this.#container) return;
 
-    const removed = this.container.removeChildren();
+    const removed = this.#container.removeChildren();
     for (const child of removed) child.destroy({ children: true });
 
     for (const chunk of this.#chunks.values()) chunk.destroy({ children: true });
@@ -463,7 +466,7 @@ export abstract class BaseTilemap extends PixiEntity {
 
   readonly #chunks = new Map<string, PIXI.Container>();
   #getChunkContainer({ chunkId: id, chunkX: x, chunkY: y }: ChunkData): PIXI.Container {
-    if (!this.container) throw new Error("missing container");
+    if (!this.#container) throw new Error("missing container");
 
     const cached = this.#chunks.get(id);
     if (cached !== undefined) return cached;
@@ -476,12 +479,12 @@ export abstract class BaseTilemap extends PixiEntity {
     });
 
     this.#chunks.set(id, chunk);
-    this.container.addChild(chunk);
+    this.#container.addChild(chunk);
     return chunk;
   }
 
   #drawTile(data: TileDrawData): void {
-    if (!this.container) return;
+    if (!this.#container) return;
 
     const tile = data.tile;
     const chunk = this.#getChunkContainer(data);
