@@ -86,14 +86,18 @@ export abstract class BaseTilemap extends PixiEntity {
   #boundsDirty: boolean = false;
 
   // #region tilemap operations
-  getTileAtPoint(
-    world: Vector2,
-  ): (TileData & { readonly x: number; readonly y: number }) | undefined {
+  getTileCoordinatesAtPoint(world: Vector2): Vector2 {
     const local = pointWorldToLocal(this.globalTransform, world);
-
     const x = Math.floor(local.x);
     const y = Math.floor(local.y);
 
+    return new Vector2(x, y);
+  }
+
+  getTileAtPoint(
+    world: Vector2,
+  ): (TileData & { readonly x: number; readonly y: number }) | undefined {
+    const { x, y } = this.getTileCoordinatesAtPoint(world);
     const tile = this.getTile(x, y);
     if (!tile) return undefined;
 
