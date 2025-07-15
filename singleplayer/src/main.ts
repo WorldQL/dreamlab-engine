@@ -16,7 +16,12 @@ import * as internal from "@dreamlab/engine/internal";
 import { getSceneFromProject, loadSceneDefinition, ProjectSchema } from "@dreamlab/scene";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { setAspectRatio } from "../../client/src/aspect-ratio.ts";
-import { createFetch, IS_SINGLE_FILE, patchBehaviorLoader } from "./single-file.ts";
+import {
+  createFetch,
+  createResolveResource,
+  IS_SINGLE_FILE,
+  patchBehaviorLoader,
+} from "./single-file.ts";
 import { SingleplayerKv } from "./singleplayer-kv.ts";
 import { SingleplayerNetworking } from "./singleplayer-networking.ts";
 
@@ -39,6 +44,7 @@ const game = new ClientGame({
   network: network.createNetworking(),
   kv: game => new SingleplayerKv({ game }),
   fetch: createFetch(),
+  resolveResource: createResolveResource(),
 });
 patchBehaviorLoader(game);
 if (IS_SINGLE_FILE) {

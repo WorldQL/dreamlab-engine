@@ -5,7 +5,9 @@ import type {
   GameOptions,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
+import { ungzip } from "@dreamlab/vendor/pako.ts";
 import { Assets } from "@dreamlab/vendor/pixi.ts";
+import { decodeBase64 } from "@dreamlab/vendor/std__encoding.ts";
 
 let single = false;
 try {
@@ -24,6 +26,40 @@ const behaviors = globalThis.__dreamlab_behavior_map as Map<string, BehaviorCons
 const assets = globalThis.__dreamlab_assets_map as Map<string, string>;
 // @ts-expect-error: injected by esbuild
 const css = globalThis.__dreamlab_custom_css as string | undefined;
+
+const resolveCache = new Map<string, string>();
+
+type ResolveFn = NonNullable<GameOptions["resolveResource"]>;
+export const createResolveResource = (): ResolveFn | undefined => {
+  if (!single) return undefined;
+
+  return uri => {
+    const cached = resolveCache.get(uri);
+    if (cached) return cached;
+
+    if (!uri.startsWith("res://assets/")) return uri;
+    try {
+      const url = new URL(uri);
+      if (!url.searchParams.has("static")) return uri;
+
+      const cloned = new URL(url);
+      cloned.search = "";
+      const href = cloned.toString();
+      if (!assets.has(href)) return uri;
+
+      const b64c = assets.get(href)!;
+      const compressed = decodeBase64(b64c);
+      const blob = new Blob([ungzip(compressed)]);
+
+      const objectUrl = URL.createObjectURL(blob);
+      resolveCache.set(uri, objectUrl);
+      return objectUrl;
+    } catch (error) {
+      console.error(error);
+      return uri;
+    }
+  };
+};
 
 type FetchFn = NonNullable<GameOptions["fetch"]>;
 export const createFetch = (): FetchFn | undefined => {

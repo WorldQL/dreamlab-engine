@@ -48,6 +48,7 @@ export interface GameOptions {
   instanceId: string;
   worldId: string;
 
+  resolveResource?: (uri: string) => string;
   fetch?: (opts: {
     game: Game;
     uri: string;
@@ -88,6 +89,7 @@ export abstract class BaseGame implements ISignalHandler {
     this.instanceId = opts.instanceId;
     this.worldId = opts.worldId;
 
+    this.#resolveResource = opts.resolveResource;
     this.#fetch = opts.fetch;
 
     // now that we know we are ServerGame | ClientGame, we can safely cast to Game
@@ -159,7 +161,10 @@ export abstract class BaseGame implements ISignalHandler {
     }
   }
 
+  readonly #resolveResource: GameOptions["resolveResource"] | undefined;
+
   resolveResource(uri: string): string {
+    if (this.#resolveResource) uri = this.#resolveResource(uri);
     return this.resolveResourceURL(uri).toString();
   }
 
