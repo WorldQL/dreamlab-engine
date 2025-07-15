@@ -1,105 +1,85 @@
 import {
+  BaseTilemap,
   Entity,
-  IBounds,
-  JsonValue,
-  PixiEntity,
+  EntityContext,
+  GameRender,
+  TextureAdapter,
   Tilemap,
-  TilemapOperations,
 } from "@dreamlab/engine";
-import * as PIXI from "@dreamlab/vendor/pixi.ts";
+import { SelectedEntityService } from "../../client/ui/selected-entity.ts";
 import { Facades } from "./manager.ts";
 
-export class EditorFacadeTilemap extends PixiEntity implements TilemapOperations {
+export class EditorFacadeTilemap extends BaseTilemap {
   static {
-    // Entity.registerType(this, "@editor");
-    // Facades.register(Tilemap, this);
+    Entity.registerType(this, "@editor");
+    Facades.register(Tilemap, this);
   }
 
-  static readonly icon = Tilemap.icon;
+  atlas: string = "";
+  atlasWidth: number = 1;
+  atlasHeight: number = 1;
 
-  #bounds: IBounds = { width: 1, height: 1 };
-  get bounds(): IBounds | undefined {
-    return structuredClone(this.#bounds);
+  constructor(ctx: EntityContext) {
+    super(ctx);
+
+    const onAtlasChanged = () => {
+      this.#initializePalette();
+    };
+
+    const atlas = this.defineValue(EditorFacadeTilemap, "atlas", { type: TextureAdapter });
+    const atlasWidth = this.defineValue(EditorFacadeTilemap, "atlasWidth");
+    const atlasHeight = this.defineValue(EditorFacadeTilemap, "atlasHeight");
+
+    atlas.onChanged(onAtlasChanged);
+    atlasWidth.onChanged(onAtlasChanged);
+    atlasHeight.onChanged(onAtlasChanged);
   }
 
-  #gfx: PIXI.Graphics | undefined;
-  palette: Tilemap["palette"] = {};
-  data: Tilemap["data"] = {};
+  #initializePalette() {
+    // clear existing palette
+    for (const key of [...Object.keys(this.palette)]) {
+      const idx = Number.parseInt(key, 10);
+      if (Number.isNaN(idx)) continue;
 
-  // #region lifecycle
+      delete this.palette[idx];
+    }
+
+    for (let x = 0; x < this.atlasWidth; x++) {
+      for (let y = 0; y < this.atlasHeight; y++) {
+        this.palette[x * this.atlasWidth + y] = {
+          type: "texture-slice",
+          texture: this.atlas,
+          x: x * this.resolution,
+          y: y * this.resolution,
+        };
+      }
+    }
+
+    console.log(this.palette);
+  }
+
   onInitialize(): void {
     super.onInitialize();
-    if (!this.container) return;
 
-    this.#gfx = new PIXI.Graphics();
-    this.#redraw();
-    this.#updateSize();
-    this.#recalculateBounds();
+    if (!this.game.isClient()) return;
+    const game = this.game;
 
-    this.container.addChild(this.#gfx);
-  }
+    this.#initializePalette();
+    this.listen(this.game, GameRender, () => {
+      const svc = SelectedEntityService.serviceForGame(game);
+      if (!svc?.entities.includes(this)) return;
 
-  protected saveDataForScene(): JsonValue | undefined {
-    return Tilemap.serialize(this);
-  }
+      const world = this.inputs.cursor.world;
+      if (!world) return;
 
-  protected loadDataForScene(value: JsonValue | undefined): void {
-    if (typeof value !== "string") return;
+      const left = this.inputs.getKey("MouseLeft");
+      const right = this.inputs.getKey("MouseRight");
+      if (!left && !right) return;
 
-    try {
-      const { palette, data } = Tilemap.deserialize(value);
-      Object.assign(this.palette, palette);
-      Object.assign(this.data, data);
+      const { x, y } = this.getTileCoordinatesAtPoint(world);
 
-      this.#redraw();
-      this.#recalculateBounds();
-    } catch {
-      // ignore
-    }
-  }
-  // #endregion
-
-  // #region private methods
-  #textureCache = new Map<string, PIXI.Texture>();
-  #redraw(): void {
-    if (!this.#gfx) return;
-
-    const textures = Object.values(this.palette)
-      .filter(entry => entry.type === "texture")
-      .map(entry => entry.texture)
-      .filter(tex => !this.#textureCache.has(tex));
-
-    if (textures.length === 0) {
-      this.#draw();
-      return;
-    }
-
-    const jobs = textures.map(async url => {
-      const texture = await PIXI.Assets.load(url);
-      if (!(texture instanceof PIXI.Texture)) return;
-
-      this.#textureCache.set(url, texture);
+      const paletteId = 0; // TODO: get from ui
+      this.setTile(x, y, left ? paletteId : undefined);
     });
-
-    Promise.all(jobs).then(() => this.#draw());
   }
-
-  #draw(): void {
-    if (!this.container || !this.#gfx) return;
-
-    this.#gfx.clear();
-
-    this.container.updateCacheTexture();
-  }
-
-  #recalculateBounds(): void {
-    this.#bounds = Tilemap.calculateBounds(this);
-  }
-
-  #updateSize(): void {
-    if (!this.#gfx) return;
-
-    this.#gfx.scale.set(this.globalTransform.scale.x, this.globalTransform.scale.y);
-  }
-  // #endregion
 }
