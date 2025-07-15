@@ -199,6 +199,13 @@ export class TileMapViewer {
     this.resolution = tilemap.resolution;
     this.chunkSize = tilemap.chunkSize;
 
+    const resValue = tilemap.values.get("resolution");
+    resValue?.onChanged(() => {
+      this.resolution = tilemap.resolution;
+      this.selectedTiles.clear();
+      this.draw();
+    });
+
     fetch(url)
       .then(r => {
         if (!r.ok) throw new Error(r.statusText);
