@@ -54,8 +54,6 @@ export class EditorFacadeTilemap extends BaseTilemap {
         };
       }
     }
-
-    console.log(this.palette);
   }
 
   onInitialize(): void {
