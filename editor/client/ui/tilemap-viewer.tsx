@@ -28,15 +28,52 @@ export class TileMapViewer {
   private render(tilemap: EditorFacadeTilemap) {
     this.clear();
 
-    const meta = document.createElement("div");
-    meta.innerHTML = `
-      <strong>TileMap: ${tilemap.name}</strong><br>
-    `;
-    this.#content.append(meta);
+    const url = this.game.resolveResource(tilemap.atlas);
 
-    const pre = document.createElement("pre");
-    pre.textContent = JSON.stringify(tilemap.data, null, 2);
-    this.#content.append(pre);
+    fetch(url)
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.blob();
+      })
+      .then(blob => createImageBitmap(blob))
+      .then(bitmap => {
+        const width = bitmap.width;
+        const height = bitmap.height;
+
+        const resolution = tilemap.resolution;
+        const chunkSize = tilemap.chunkSize;
+        const tileW = width / resolution;
+        const tileH = height / resolution;
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(bitmap, 0, 0);
+
+        ctx.strokeStyle = "rgba(255,255,255,0.25)";
+        ctx.lineWidth = 1;
+        for (let i = 1; i < resolution; i++) {
+          ctx.beginPath();
+          ctx.moveTo(i * tileW, 0);
+          ctx.lineTo(i * tileW, height);
+          ctx.stroke();
+        }
+        for (let j = 1; j < resolution; j++) {
+          ctx.beginPath();
+          ctx.moveTo(0, j * tileH);
+          ctx.lineTo(width, j * tileH);
+          ctx.stroke();
+        }
+
+        this.#content.append(canvas);
+      })
+      .catch(err => {
+        console.error("TileMapViewer failed to load atlas:", err);
+        const errDiv = document.createElement("div");
+        errDiv.textContent = `Failed to load tilemap atlas: ${err.message}`;
+        this.#content.append(errDiv);
+      });
   }
 
   private clear() {
