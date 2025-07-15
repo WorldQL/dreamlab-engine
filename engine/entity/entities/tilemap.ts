@@ -460,7 +460,14 @@ export abstract class BaseTilemap extends PixiEntity {
     for (const child of removed) child.destroy({ children: true });
 
     for (const chunk of this.#chunks.values()) chunk.destroy({ children: true });
-    for (const sprite of this.#sprites.values()) sprite.destroy();
+    for (const sprite of this.#sprites.values()) {
+      if (sprite.texture) {
+        sprite.texture.source.destroy();
+        sprite.texture.destroy();
+      }
+
+      sprite.destroy();
+    }
 
     this.#chunks.clear();
     this.#sprites.clear();
@@ -586,6 +593,9 @@ export abstract class BaseTilemap extends PixiEntity {
 
     const sprite = this.#getChunkSprite(data);
     const oldTexture = sprite.texture;
+    sprite.texture = PIXI.Texture.EMPTY;
+    oldTexture.source.destroy();
+    oldTexture.destroy();
 
     const camera = Camera.getActive(this.game);
     const scaleMode: Exclude<ScaleFilterMode, "default"> =
@@ -603,7 +613,6 @@ export abstract class BaseTilemap extends PixiEntity {
     });
 
     sprite.texture = texture;
-    oldTexture.destroy(true);
   }
 
   #recalculateBounds(): void {
