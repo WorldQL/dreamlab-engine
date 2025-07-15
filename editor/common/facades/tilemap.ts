@@ -16,26 +16,17 @@ export class EditorFacadeTilemap extends BaseTilemap {
   }
 
   atlas: string = "";
-  atlasWidth: number = 1;
-  atlasHeight: number = 1;
 
   constructor(ctx: EntityContext) {
     super(ctx);
 
-    const onAtlasChanged = () => {
-      this.#initializePalette();
-    };
-
     const atlas = this.defineValue(EditorFacadeTilemap, "atlas", { type: TextureAdapter });
-    const atlasWidth = this.defineValue(EditorFacadeTilemap, "atlasWidth");
-    const atlasHeight = this.defineValue(EditorFacadeTilemap, "atlasHeight");
-
-    atlas.onChanged(onAtlasChanged);
-    atlasWidth.onChanged(onAtlasChanged);
-    atlasHeight.onChanged(onAtlasChanged);
+    atlas.onChanged(() => {
+      this.#initializePalette();
+    });
   }
 
-  #initializePalette() {
+  async #initializePalette() {
     // clear existing palette
     for (const key of [...Object.keys(this.palette)]) {
       const idx = Number.parseInt(key, 10);
@@ -44,12 +35,19 @@ export class EditorFacadeTilemap extends BaseTilemap {
       delete this.palette[idx];
     }
 
-    for (let x = 0; x < this.atlasWidth; x++) {
-      for (let y = 0; y < this.atlasHeight; y++) {
-        this.palette[x * this.atlasWidth + y] = {
+    const img = new Image();
+    img.src = this.game.resolveResource(this.atlas);
+    await img.decode();
+
+    const atlasWidth = Math.floor(img.naturalWidth / this.resolution);
+    const atlasHeight = Math.floor(img.naturalHeight / this.resolution);
+
+    for (let img = 0; img < atlasWidth; img++) {
+      for (let y = 0; y < atlasHeight; y++) {
+        this.palette[img * atlasWidth + y] = {
           type: "texture-slice",
           texture: this.atlas,
-          x: x * this.resolution,
+          x: img * this.resolution,
           y: y * this.resolution,
         };
       }
