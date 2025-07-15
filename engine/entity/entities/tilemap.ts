@@ -426,7 +426,10 @@ export abstract class BaseTilemap extends PixiEntity {
         const texture = await PIXI.Assets.load({ src: url, data: { scaleMode } });
         if (!(texture instanceof PIXI.Texture)) return;
 
-        const x = new PIXI.Texture({ source: texture.source, frame: new PIXI.Rectangle() });
+        const frame = new PIXI.Rectangle(entry.x, entry.y, this.resolution, this.resolution);
+        const slice = new PIXI.Texture({ source: texture.source, frame });
+
+        this.#textureCache.set(cacheId, slice);
       }
     });
 
