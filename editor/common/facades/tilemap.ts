@@ -67,7 +67,7 @@ export class EditorFacadeTilemap extends BaseTilemap {
 
     setTimeout(() => {
       this.tooltip = new PIXI.Graphics();
-      this.tooltip.rect(-0.5, -0.5, 1, 1).fill("white");
+      this.tooltip.rect(-0.5, -0.5, 1, 1).stroke({ width: 0.05 });
       this.container!.addChild(this.tooltip);
       console.log("hi");
 
@@ -86,9 +86,14 @@ export class EditorFacadeTilemap extends BaseTilemap {
 
       if (this.tooltip && this.inputs.cursor.screen) {
         const stw = pointWorldToLocal(this.globalTransform, this.inputs.cursor.world);
+        const { x, y } = this.getTileCoordinatesAtPoint(world);
+        const worldPosOfTile = {
+          x: x * this.globalTransform.scale.x,
+          y: y * this.globalTransform.scale.y,
+        };
         this.tooltip.position = {
-          x: Math.round(stw.x),
-          y: Math.round(-stw.y),
+          x: worldPosOfTile.x + 0.5 * this.globalTransform.scale.x,
+          y: -worldPosOfTile.y - 0.5 * this.globalTransform.scale.y,
         };
       } else if (!this.tooltip) {
         this.tooltip = new PIXI.Graphics();
