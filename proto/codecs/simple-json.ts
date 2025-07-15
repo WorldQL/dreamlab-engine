@@ -1,5 +1,5 @@
 import { gzip, ungzip } from "@dreamlab/vendor/pako.ts";
-import { decodeBase64, encodeBase64 } from "jsr:@std/encoding@^1/base64";
+import { decodeBase64, encodeBase64 } from "@dreamlab/vendor/std__encoding.ts";
 import { PlayPacket } from "../play.ts";
 import { PlayCodec } from "./mod.ts";
 

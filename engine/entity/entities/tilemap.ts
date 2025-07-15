@@ -18,8 +18,8 @@ import {
 import * as cbor from "@dreamlab/vendor/cbor2.ts";
 import { gzip, ungzip } from "@dreamlab/vendor/pako.ts";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
+import { decodeBase64Url, encodeBase64Url } from "@dreamlab/vendor/std__encoding.ts";
 import type { Simplify } from "@dreamlab/vendor/type-fest.ts";
-import { decodeBase64Url, encodeBase64Url } from "jsr:@std/encoding@^1/base64url";
 
 type ScaleFilterMode = enumAdapter.Union<typeof ScaleFilterModeAdapter>;
 const ScaleFilterModeAdapter = enumAdapter(["default", "linear", "nearest"]);

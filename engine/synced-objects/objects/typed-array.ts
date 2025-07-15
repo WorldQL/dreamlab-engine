@@ -1,5 +1,5 @@
 import { ConnectionId, JsonValue } from "@dreamlab/engine";
-import { decodeBase64, encodeBase64 } from "jsr:@std/encoding@^1/base64";
+import { decodeBase64, encodeBase64 } from "@dreamlab/vendor/std__encoding.ts";
 import { SyncedObject } from "../object.ts";
 import { SyncedObjectOperation } from "../operation.ts";
 import { SyncedObjectRegistry } from "../registry.ts";
