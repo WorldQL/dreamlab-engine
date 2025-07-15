@@ -44,6 +44,7 @@ export class TileMapViewer {
     this.canvas.style.height = "auto";
     this.canvas.style.display = "block";
     this.canvas.style.imageRendering = "pixelated";
+    this.canvas.style.transformOrigin = "top left";
 
     this.canvas.addEventListener("wheel", e => {
       e.preventDefault();
@@ -81,10 +82,7 @@ export class TileMapViewer {
         const bx = (e.clientX - rect.left) * scaleX;
         const by = (e.clientY - rect.top) * scaleY;
 
-        this.selectStart = {
-          x: (bx - this.offsetX) / this.scale,
-          y: (by - this.offsetY) / this.scale,
-        };
+        this.selectStart = { x: bx, y: by };
 
         this.selectEnd = null;
         isDragging = false;
@@ -100,10 +98,8 @@ export class TileMapViewer {
         const scaleY = this.canvas.height / rect.height;
         const bx = (e.clientX - rect.left) * scaleX;
         const by = (e.clientY - rect.top) * scaleY;
-        this.selectEnd = {
-          x: (bx - this.offsetX) / this.scale,
-          y: (by - this.offsetY) / this.scale,
-        };
+
+        this.selectEnd = { x: bx, y: by };
         this.draw();
       } else if (this.isPanning) {
         e.preventDefault();
@@ -116,9 +112,8 @@ export class TileMapViewer {
     });
 
     globalThis.addEventListener("mouseup", e => {
-      if (e.button === 1) {
-        this.isPanning = false;
-      }
+      if (e.button === 1) this.isPanning = false;
+
       if (e.button === 0 && this.selectStart) {
         if (isDragging && this.selectEnd) {
           const x0 = Math.min(this.selectStart.x, this.selectEnd.x);
@@ -148,8 +143,9 @@ export class TileMapViewer {
           const scaleY = this.canvas.height / rect.height;
           const bx = (e.clientX - rect.left) * scaleX;
           const by = (e.clientY - rect.top) * scaleY;
-          const cx = (bx - this.offsetX) / this.scale;
-          const cy = (by - this.offsetY) / this.scale;
+
+          const cx = bx;
+          const cy = by;
           const tx = Math.floor(cx / this.resolution);
           const ty = Math.floor(cy / this.resolution);
           const key = `${tx}:${ty}`;
@@ -230,7 +226,7 @@ export class TileMapViewer {
     const ctx = this.ctx;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    ctx.setTransform(this.scale, 0, 0, this.scale, this.offsetX, this.offsetY);
+
     ctx.drawImage(this.atlasBitmap, 0, 0);
 
     ctx.strokeStyle = "rgba(255,255,255,0.25)";
@@ -272,7 +268,6 @@ export class TileMapViewer {
     }
 
     if (this.selectStart && this.selectEnd) {
-      ctx.setTransform(this.scale, 0, 0, this.scale, this.offsetX, this.offsetY);
       ctx.strokeStyle = "rgba(0,255,0,0.5)";
       ctx.lineWidth = 2 / this.scale;
       const x0 = Math.min(this.selectStart.x, this.selectEnd.x);
@@ -282,7 +277,6 @@ export class TileMapViewer {
       ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
     }
 
-    ctx.setTransform(this.scale, 0, 0, this.scale, this.offsetX, this.offsetY);
     ctx.strokeStyle = "rgba(0,255,0,0.8)";
     ctx.lineWidth = 3 / this.scale;
     for (const { x, y } of this.selectedTiles.values()) {
@@ -293,6 +287,8 @@ export class TileMapViewer {
         this.resolution,
       );
     }
+
+    this.canvas.style.transform = `translate(${this.offsetX}px, ${this.offsetY}px) scale(${this.scale})`;
   }
 
   private clear() {
@@ -301,5 +297,6 @@ export class TileMapViewer {
     this.#content.append(this.canvas);
     this.ctx.setTransform(1, 0, 0, 1, 0, 0);
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.canvas.style.transform = "none";
   }
 }
