@@ -568,7 +568,8 @@ export class SceneGraph implements InspectorUIWidget {
           [
             "Delete",
             () => {
-              const toDelete = [...ui.selectedEntity.entities];
+              const toDelete = ui.selectedEntity.entities.filter(e => !isRoot(e));
+
               const undoOps = toDelete.map(entity => ({
                 t: "destroy-entity" as const,
                 def: entity.getDefinition(),
@@ -576,12 +577,15 @@ export class SceneGraph implements InspectorUIWidget {
               }));
 
               toDelete.forEach(entity => entity.destroy());
-              UndoRedoManager._.push({ t: "compound", ops: undoOps });
-              ui.selectedEntity.entities = [];
+              if (undoOps.length) {
+                UndoRedoManager._.push({ t: "compound", ops: undoOps });
+              }
+
+              ui.selectedEntity.entities = ui.selectedEntity.entities.filter(isRoot);
             },
             false,
             "Backspace",
-            20,
+            50,
             1,
           ],
         );
