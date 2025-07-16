@@ -21,10 +21,16 @@ export class TileMapViewer {
   private selectedTiles = new Map<string, { x: number; y: number }>();
   private currentTilemap?: EditorFacadeTilemap;
 
-  private atlasBitmap!: ImageBitmap;
+  private atlasBitmap: ImageBitmap | null = null;
   private imgW = 0;
   private imgH = 0;
   private resolution = 0;
+
+  private showingMessage = false;
+  private msgEl: HTMLDivElement | null = null;
+
+  private resOff?: () => void;
+  private atlasOff?: () => void;
 
   constructor(
     private game: ClientGame,
@@ -140,6 +146,12 @@ export class TileMapViewer {
       }
 
       if (e.button === 0 && this.selectStart) {
+        if (!this.atlasBitmap || !this.resolution) {
+          this.selectStart = this.selectEnd = null;
+          this.draw();
+          return;
+        }
+
         const maxTileX = Math.floor(this.imgW / this.resolution) - 1;
         const maxTileY = Math.floor(this.imgH / this.resolution) - 1;
 
@@ -254,20 +266,44 @@ export class TileMapViewer {
   }
 
   private loadAndDraw(tilemap: EditorFacadeTilemap) {
+    this.resOff?.();
+    this.resOff = undefined;
+    this.atlasOff?.();
+    this.atlasOff = undefined;
+
     this.clear();
     this.selectedTiles.clear();
     this.scale = 1;
     this.offsetX = this.offsetY = 0;
-
-    const url = this.game.resolveResource(tilemap.atlas);
     this.resolution = tilemap.resolution;
 
     const resValue = tilemap.values.get("resolution");
-    resValue?.onChanged(() => {
-      this.resolution = tilemap.resolution;
-      this.selectedTiles.clear();
+    if (resValue) {
+      const off = resValue.onChanged?.(() => {
+        this.resolution = tilemap.resolution;
+        this.selectedTiles.clear();
+        this.draw();
+      });
+      if (typeof off === "function") this.resOff = off;
+    }
+
+    const atlasValue = tilemap.values.get("atlas");
+    if (atlasValue) {
+      const off = atlasValue.onChanged?.(() => {
+        this.loadAndDraw(tilemap);
+      });
+      if (typeof off === "function") this.atlasOff = off;
+    }
+
+    if (!tilemap.atlas) {
+      this.atlasBitmap = null;
+      this.imgW = this.imgH = 0;
       this.draw();
-    });
+      this.showMessage("No atlas assigned.");
+      return;
+    }
+
+    const url = this.game.resolveResource(tilemap.atlas);
 
     fetch(url)
       .then(r => {
@@ -276,6 +312,7 @@ export class TileMapViewer {
       })
       .then(b => createImageBitmap(b))
       .then(bitmap => {
+        this.hideMessage();
         this.atlasBitmap = bitmap;
         this.imgW = bitmap.width;
         this.imgH = bitmap.height;
@@ -285,17 +322,63 @@ export class TileMapViewer {
       })
       .catch(err => {
         console.error("Failed to load atlas:", err);
-        this.clear();
-        const msg = document.createElement("div");
-        msg.textContent = "Error loading tilemap atlas.";
-        this.#content.append(msg);
+        this.atlasBitmap = null;
+        this.imgW = this.imgH = 0;
+        this.draw();
+        this.showMessage("Error loading tilemap atlas.");
       });
+  }
+
+  private showMessage(text: string) {
+    this.showingMessage = true;
+    this.canvas.style.display = "none";
+
+    const c = this.#content;
+    c.style.display = "flex";
+    c.style.flexDirection = "column";
+    c.style.alignItems = "center";
+    c.style.justifyContent = "center";
+    c.style.minHeight = "100%";
+
+    if (!this.msgEl) {
+      this.msgEl = document.createElement("div");
+      this.msgEl.style.padding = "8px 12px";
+      this.msgEl.style.fontSize = "13px";
+      this.msgEl.style.opacity = "0.75";
+      this.msgEl.style.pointerEvents = "none";
+      c.append(this.msgEl);
+    }
+    this.msgEl.textContent = text;
+  }
+
+  private hideMessage() {
+    if (!this.showingMessage) return;
+    this.showingMessage = false;
+    const c = this.#content;
+    c.style.display = "";
+    c.style.flexDirection = "";
+    c.style.alignItems = "";
+    c.style.justifyContent = "";
+    c.style.minHeight = "";
+    if (this.msgEl) {
+      this.msgEl.remove();
+      this.msgEl = null;
+    }
+    this.canvas.style.display = "block";
+    if (!c.contains(this.canvas)) c.append(this.canvas);
   }
 
   private draw() {
     const ctx = this.ctx;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+    if (!this.atlasBitmap) {
+      this.canvas.style.transform = `translate(${this.offsetX}px, ${this.offsetY}px) scale(${this.scale})`;
+      return;
+    }
+
+    this.hideMessage();
 
     ctx.drawImage(this.atlasBitmap, 0, 0);
 
@@ -343,6 +426,7 @@ export class TileMapViewer {
   }
 
   private clear() {
+    this.hideMessage();
     this.selectedTiles.clear();
     this.#content.innerHTML = "";
     this.#content.append(this.canvas);
