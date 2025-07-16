@@ -80,8 +80,8 @@ export abstract class BaseTilemap extends PixiEntity {
   // #region tilemap operations
   getTileCoordinatesAtPoint(world: Vector2): Vector2 {
     const local = pointWorldToLocal(this.globalTransform, world);
-    const x = Math.floor(local.x);
-    const y = Math.floor(local.y);
+    const x = Math.floor(local.x + 0.5);
+    const y = Math.floor(local.y + 0.5);
 
     return new Vector2(x, y);
   }
