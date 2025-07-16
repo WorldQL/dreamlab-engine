@@ -22,41 +22,75 @@ export class EditorFacadeTilemap extends BaseTilemap {
   paletteCols = 1;
   paletteRows = 1;
 
+  #atlasWpx = 0;
+  #atlasHpx = 0;
+
   constructor(ctx: EntityContext) {
     super(ctx);
 
     const atlas = this.defineValue(EditorFacadeTilemap, "atlas", { type: TextureAdapter });
     atlas.onChanged(() => {
-      this.#initializePalette();
+      void this.#initializePalette();
+    });
+
+    const resValue = this.values.get("resolution");
+    resValue?.onChanged?.(() => {
+      this.#updatePaletteXY();
     });
   }
 
-  async #initializePalette() {
-    for (const key of [...Object.keys(this.palette)]) {
+  async #initializePalette(): Promise<void> {
+    for (const key of Object.keys(this.palette)) {
       const idx = Number.parseInt(key, 10);
-      if (Number.isNaN(idx)) continue;
-      delete this.palette[idx];
+      if (!Number.isNaN(idx)) delete this.palette[idx];
     }
 
-    if (!this.atlas) return;
+    if (!this.atlas) {
+      this.#atlasWpx = this.#atlasHpx = 0;
+      return;
+    }
 
     const img = new Image();
     img.src = this.game.resolveResource(this.atlas);
     await img.decode();
+    this.#atlasWpx = img.naturalWidth;
+    this.#atlasHpx = img.naturalHeight;
 
-    const atlasWidth = Math.floor(img.naturalWidth / this.resolution);
-    const atlasHeight = Math.floor(img.naturalHeight / this.resolution);
+    const res = this.resolution || 1;
+    const atlasWidth = Math.floor(this.#atlasWpx / res);
+    const atlasHeight = Math.floor(this.#atlasHpx / res);
 
-    for (let x = 0; x < atlasWidth; x++) {
-      for (let y = 0; y < atlasHeight; y++) {
+    for (let y = 0; y < atlasHeight; y++) {
+      for (let x = 0; x < atlasWidth; x++) {
         const idx = y * atlasWidth + x;
         this.palette[idx] = {
           type: "texture-slice",
           texture: this.atlas,
-          x: x * this.resolution,
-          y: y * this.resolution,
+          x: x * res,
+          y: y * res,
         };
       }
+    }
+  }
+
+  #updatePaletteXY(): void {
+    const wpx = this.#atlasWpx;
+    const hpx = this.#atlasHpx;
+    if (!wpx || !hpx) return;
+
+    const res = this.resolution || 1;
+    const cols = Math.floor(wpx / res);
+    const rows = Math.floor(hpx / res);
+    const total = cols * rows;
+
+    for (let idx = 0; idx < total; idx++) {
+      const entry = this.palette[idx];
+      if (!entry || entry.type !== "texture-slice") continue;
+
+      const x = idx % cols;
+      const y = Math.floor(idx / cols);
+      entry.x = x * res;
+      entry.y = y * res;
     }
   }
 
@@ -99,7 +133,7 @@ export class EditorFacadeTilemap extends BaseTilemap {
     this.#tooltip.alpha = 0;
     this.container.addChild(this.#tooltip);
 
-    this.#initializePalette();
+    void this.#initializePalette();
 
     this.listen(this.game, GameRender, () => {
       if (!this.#tooltip) return;
