@@ -19,6 +19,7 @@ import { UndoRedoManager } from "../undo-redo.ts";
 import { createBooleanField, createInputField } from "../util/easy-input.ts";
 import { createValueControl } from "../util/value-controls.ts";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
+import { EditorFacadeTilemap } from "../../common/facades/tilemap.ts";
 
 export class Properties implements InspectorUIWidget {
   #section = (
@@ -435,6 +436,17 @@ export class Properties implements InspectorUIWidget {
       });
 
       valuesTable.addEntry("spritesheetguide", "Guide", button);
+    }
+
+    if (entity instanceof EditorFacadeTilemap) {
+      const button = elem("button", { type: "button" }, ["Clear All Tiles"]);
+
+      button.addEventListener("click", () => {
+        const action = confirm("Are you sure?\nThis cannot be undone.");
+        if (action) entity.clearTiles();
+      });
+
+      valuesTable.addEntry("clear", "tiles", button);
     }
 
     for (const transformField of transformFieldsToRegisterWithUndoRedo) {
