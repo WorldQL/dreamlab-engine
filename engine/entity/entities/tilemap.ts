@@ -193,6 +193,17 @@ export abstract class BaseTilemap extends PixiEntity {
   static readonly #COMPRESSION_THRESHOLD = 384;
 
   static #serialize(opts: TilemapData): string {
+    const textures: string[] = [];
+    const textureRef = (texture: string): number => {
+      const idx = textures.indexOf(texture);
+      if (idx === -1) {
+        textures.push(texture);
+        return textures.indexOf(texture);
+      }
+
+      return idx;
+    };
+
     const palette = Object.entries(opts.palette).map(([k, entry]) => {
       const id = Number.parseInt(k, 10);
       if (Number.isNaN(id)) throw new Error("invalid palette key");
@@ -208,17 +219,17 @@ export abstract class BaseTilemap extends PixiEntity {
         }
 
         case "texture": {
-          const ret = [...base, entry.texture];
+          const ret = [...base, textureRef(entry.texture)];
           return ret;
         }
 
         case "spritesheet": {
-          const ret = [...base, entry.spritesheet, entry.frame];
+          const ret = [...base, textureRef(entry.spritesheet), entry.frame];
           return ret;
         }
 
         case "texture-slice": {
-          const ret = [...base, entry.texture, entry.x, entry.y];
+          const ret = [...base, textureRef(entry.texture), entry.x, entry.y];
           return ret;
         }
 
@@ -242,7 +253,7 @@ export abstract class BaseTilemap extends PixiEntity {
       }
     }
 
-    const encoded = cbor.encode([palette, data]);
+    const encoded = cbor.encode([textures, palette, data]);
     const compressed = encoded.byteLength > BaseTilemap.#COMPRESSION_THRESHOLD;
     const buffer = compressed ? gzip(encoded) : encoded;
 
@@ -262,7 +273,13 @@ export abstract class BaseTilemap extends PixiEntity {
     const decoded = cbor.decode(bytes);
     if (!Array.isArray(decoded)) throw new Error("invalid data");
 
-    const _palette = decoded[0] as [number, number, ...unknown[]][];
+    const textures = decoded[0] as string[];
+    const textureRef = (ref: string | number): string => {
+      if (typeof ref === "string") return ref;
+      return textures[ref];
+    };
+
+    const _palette = decoded[1] as [number, number, ...unknown[]][];
     const palette = Object.fromEntries(
       _palette.map(([id, ty, ...rest]): [key: number, value: TileData] => {
         const type = REVERSE_TILE_TYPES.get(ty);
@@ -276,18 +293,21 @@ export abstract class BaseTilemap extends PixiEntity {
           }
 
           case "texture": {
-            const texture = rest[0] as string;
+            const ref = rest[0] as string | number;
+            const texture = textureRef(ref);
             return [id, { type, texture }];
           }
 
           case "spritesheet": {
-            const spritesheet = rest[0] as string;
+            const ref = rest[0] as string | number;
+            const spritesheet = textureRef(ref);
             const frame = rest[1] as number;
             return [id, { type, spritesheet, frame }];
           }
 
           case "texture-slice": {
-            const texture = rest[0] as string;
+            const ref = rest[0] as string | number;
+            const texture = textureRef(ref);
             const x = rest[1] as number;
             const y = rest[2] as number;
             return [id, { type, texture, x, y }];
@@ -299,7 +319,7 @@ export abstract class BaseTilemap extends PixiEntity {
       }),
     );
 
-    const _data = decoded[1] as number[];
+    const _data = decoded[2] as number[];
     if (_data.length % 3 !== 0) throw new Error("invalid data length");
 
     const data: BaseTilemap["data"] = {};
