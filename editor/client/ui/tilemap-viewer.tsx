@@ -25,7 +25,6 @@ export class TileMapViewer {
   private imgW = 0;
   private imgH = 0;
   private resolution = 0;
-  private chunkSize = 0;
 
   constructor(
     private game: ClientGame,
@@ -197,7 +196,6 @@ export class TileMapViewer {
 
     const url = this.game.resolveResource(tilemap.atlas);
     this.resolution = tilemap.resolution;
-    this.chunkSize = tilemap.chunkSize;
 
     const resValue = tilemap.values.get("resolution");
     resValue?.onChanged(() => {
@@ -255,25 +253,6 @@ export class TileMapViewer {
       ctx.stroke();
     }
 
-    ctx.strokeStyle = "rgba(255,0,0,0.5)";
-    ctx.lineWidth = 2 / this.scale;
-    const chunkCols = Math.floor(cols / this.chunkSize);
-    const chunkRows = Math.floor(rows / this.chunkSize);
-    for (let i = 1; i < chunkCols; i++) {
-      const x = i * this.chunkSize * this.resolution;
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, this.imgH);
-      ctx.stroke();
-    }
-    for (let j = 1; j < chunkRows; j++) {
-      const y = j * this.chunkSize * this.resolution;
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(this.imgW, y);
-      ctx.stroke();
-    }
-
     if (this.selectStart && this.selectEnd) {
       ctx.strokeStyle = "rgba(0,255,0,0.5)";
       ctx.lineWidth = 2 / this.scale;
@@ -285,7 +264,7 @@ export class TileMapViewer {
     }
 
     ctx.strokeStyle = "rgba(0,255,0,0.8)";
-    ctx.lineWidth = 3 / this.scale;
+    ctx.lineWidth = 2 / this.scale;
     for (const { x, y } of this.selectedTiles.values()) {
       ctx.strokeRect(
         x * this.resolution,
