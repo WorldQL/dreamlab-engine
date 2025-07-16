@@ -19,6 +19,8 @@ export class EditorFacadeTilemap extends BaseTilemap {
 
   atlas: string = "";
   paletteId: number[] = [0];
+  paletteCols = 1;
+  paletteRows = 1;
 
   constructor(ctx: EntityContext) {
     super(ctx);
@@ -30,11 +32,9 @@ export class EditorFacadeTilemap extends BaseTilemap {
   }
 
   async #initializePalette() {
-    // clear existing palette
     for (const key of [...Object.keys(this.palette)]) {
       const idx = Number.parseInt(key, 10);
       if (Number.isNaN(idx)) continue;
-
       delete this.palette[idx];
     }
 
@@ -47,7 +47,8 @@ export class EditorFacadeTilemap extends BaseTilemap {
 
     for (let x = 0; x < atlasWidth; x++) {
       for (let y = 0; y < atlasHeight; y++) {
-        this.palette[x * atlasWidth + y] = {
+        const idx = y * atlasWidth + x;
+        this.palette[idx] = {
           type: "texture-slice",
           texture: this.atlas,
           x: x * this.resolution,
@@ -91,7 +92,21 @@ export class EditorFacadeTilemap extends BaseTilemap {
       if (!left && !right) return;
 
       const { x, y } = this.getTileCoordinatesAtPoint(world);
-      this.setTile(x, y, left ? this.paletteId[0] : undefined);
+
+      const cols = Math.max(1, this.paletteCols | 0);
+      const rows = Math.max(1, this.paletteRows | 0);
+
+      for (let dy = 0; dy < rows; dy++) {
+        for (let dx = 0; dx < cols; dx++) {
+          const sy = rows - 1 - dy;
+          const idx = sy * cols + dx;
+          const tileId = this.paletteId[idx] ?? -1;
+
+          if (tileId < 0) continue;
+
+          this.setTile(x + dx, y + dy, left ? tileId : undefined);
+        }
+      }
     });
   }
 }

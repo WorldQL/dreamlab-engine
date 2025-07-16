@@ -159,12 +159,39 @@ export class TileMapViewer {
         }
 
         if (this.currentTilemap) {
-          const rows = this.imgH / this.resolution;
-          const ids = Array.from(this.selectedTiles.keys()).map(key => {
-            const [tx, ty] = key.split(":").map(n => parseInt(n, 10));
-            return tx * rows + ty;
-          });
-          this.currentTilemap.paletteId = ids;
+          const cols = this.imgW / this.resolution;
+          const tileCoords = Array.from(this.selectedTiles.values());
+
+          if (tileCoords.length > 0) {
+            let minX = Infinity,
+              minY = Infinity,
+              maxX = -Infinity,
+              maxY = -Infinity;
+            for (const t of tileCoords) {
+              if (t.x < minX) minX = t.x;
+              if (t.y < minY) minY = t.y;
+              if (t.x > maxX) maxX = t.x;
+              if (t.y > maxY) maxY = t.y;
+            }
+            const w = maxX - minX + 1;
+            const h = maxY - minY + 1;
+
+            const ids: number[] = new Array(w * h).fill(-1);
+            for (const t of tileCoords) {
+              const relX = t.x - minX;
+              const relY = t.y - minY;
+              const paletteIndex = t.y * cols + t.x;
+              ids[relY * w + relX] = paletteIndex;
+            }
+
+            this.currentTilemap.paletteId = ids;
+            this.currentTilemap.paletteCols = w;
+            this.currentTilemap.paletteRows = h;
+          } else {
+            this.currentTilemap.paletteId = [0];
+            this.currentTilemap.paletteCols = 1;
+            this.currentTilemap.paletteRows = 1;
+          }
         }
 
         this.selectStart = this.selectEnd = null;
