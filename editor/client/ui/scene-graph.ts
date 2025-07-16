@@ -11,6 +11,7 @@ import {
   Vector2,
 } from "@dreamlab/engine";
 import { element as elem, element } from "@dreamlab/ui";
+import { EditorFacadeTilemap } from "../../common/facades/tilemap.ts";
 import { EditorMetadataEntity, EditorRootFacadeEntity, Facades } from "../../common/mod.ts";
 import { ChevronDown, icon } from "../_icons.tsx";
 import { entityNameSort } from "../entity-sort.ts";
@@ -127,6 +128,10 @@ export class SceneGraph implements InspectorUIWidget {
       if (ui.selectedEntity.entities.length === 1) {
         target = ui.selectedEntity.entities[0];
       }
+
+      // ignore tilemaps
+      // breaks right-click to remove tile
+      if (target instanceof EditorFacadeTilemap) return;
 
       const modifierKey = getModifierKeySymbol();
       const contextMenuItems: ContextMenuItem[] = [];
