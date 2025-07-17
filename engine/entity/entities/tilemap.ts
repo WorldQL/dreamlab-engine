@@ -19,7 +19,6 @@ import * as cbor from "@dreamlab/vendor/cbor2.ts";
 import { gzip, ungzip } from "@dreamlab/vendor/pako.ts";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { decodeBase64Url, encodeBase64Url } from "@dreamlab/vendor/std__encoding.ts";
-import type { Simplify } from "@dreamlab/vendor/type-fest.ts";
 
 type ScaleFilterMode = enumAdapter.Union<typeof ScaleFilterModeAdapter>;
 const ScaleFilterModeAdapter = enumAdapter(["default", "linear", "nearest"]);
@@ -45,18 +44,15 @@ type TileDrawData = {
   readonly x: number;
   readonly y: number;
   readonly tile: TileData | undefined;
-  readonly chunkX: number;
-  readonly chunkY: number;
-  readonly chunkId: string;
 };
-
-type ChunkData = Simplify<Pick<TileDrawData, "chunkX" | "chunkY" | "chunkId">>;
 
 export type TileData =
   | { type: "color"; color: string; alpha?: number }
   | { type: "texture"; texture: string }
   | { type: "spritesheet"; spritesheet: string; frame: number }
   | { type: "texture-slice"; texture: string; x: number; y: number };
+
+type TextureTileData = Extract<TileData, { type: "texture" | "spritesheet" | "texture-slice" }>;
 // #endregion
 
 export abstract class BaseTilemap extends PixiEntity {
@@ -67,7 +63,6 @@ export abstract class BaseTilemap extends PixiEntity {
     return structuredClone(this.#bounds);
   }
 
-  readonly chunkSize: number = 64;
   resolution: number = 64;
   scaleFilterMode: ScaleFilterMode = "default";
 
@@ -149,7 +144,11 @@ export abstract class BaseTilemap extends PixiEntity {
     const palette = defineSyncedObject(this, "palette", ctx.sync ?? {});
     const data = defineSyncedObject(this, "data", ctx.sync ?? {});
 
-    resolution.onChanged(markDirty);
+    resolution.onChanged(() => {
+      this.#textureCache.clear();
+      this.#tilesDirty = true;
+    });
+
     scale.onChanged(markDirty);
     palette.onChanged(markDirty);
     // data.onChanged(markDirty);
@@ -165,8 +164,7 @@ export abstract class BaseTilemap extends PixiEntity {
 
       const paletteId = this.data[x][y];
       const tile = paletteId === undefined ? undefined : this.palette[paletteId];
-      const chunkInfo = this.#chunkInfo(x, y);
-      const data = { x, y, tile, ...chunkInfo } satisfies TileDrawData;
+      const data = { x, y, tile } satisfies TileDrawData;
 
       this.#drawTile(data);
       this.#boundsDirty = true;
@@ -177,7 +175,7 @@ export abstract class BaseTilemap extends PixiEntity {
     this.listen(this.game, GameTick, () => {
       if (this.#tilesDirty) {
         this.#tilesDirty = false;
-        void this.#populateTextureCache().then(() => this.#redraw());
+        void this.#redraw();
       }
 
       if (this.#boundsDirty) {
@@ -343,7 +341,7 @@ export abstract class BaseTilemap extends PixiEntity {
     this.#container = new PIXI.Container({ label: "container" });
     this.container.addChild(this.#container);
 
-    void this.#populateTextureCache().then(() => this.#redraw());
+    void this.#redraw();
     this.#updateSize();
     this.#recalculateBounds();
   }
@@ -360,7 +358,7 @@ export abstract class BaseTilemap extends PixiEntity {
       Object.assign(this.palette, palette);
       Object.assign(this.data, data);
 
-      void this.#populateTextureCache().then(() => this.#redraw());
+      void this.#redraw();
       this.#recalculateBounds();
     } catch {
       // ignore
@@ -369,13 +367,6 @@ export abstract class BaseTilemap extends PixiEntity {
   // #endregion
 
   // #region private methods
-  #chunkInfo(x: number, y: number): ChunkData {
-    const chunkX = Math.floor(x / this.chunkSize);
-    const chunkY = Math.floor(y / this.chunkSize);
-    const chunkId = `${chunkX}:${chunkY}`;
-
-    return { chunkX, chunkY, chunkId } as const;
-  }
 
   *tiles(): Generator<TileDrawData, void, void> {
     for (const [_x, row] of Object.entries(this.data)) {
@@ -391,134 +382,99 @@ export abstract class BaseTilemap extends PixiEntity {
         const tile = this.palette[paletteId];
         if (!tile) continue;
 
-        const chunkInfo = this.#chunkInfo(x, y);
-        yield { x, y, tile, ...chunkInfo };
+        yield { x, y, tile };
       }
     }
   }
 
-  #textureCache = new Map<string, PIXI.Texture>();
-  async #populateTextureCache(): Promise<void> {
-    if (!this.#container) return;
+  #textureCacheId(tile: TextureTileData): string {
+    const type = tile.type;
 
-    const textures = Object.values(this.palette)
-      .filter(
-        entry =>
-          entry.type === "texture" ||
-          entry.type === "spritesheet" ||
-          entry.type === "texture-slice",
-      )
-      .filter(entry => {
-        const url = this.#textureCacheId(entry);
-        return !this.#textureCache.has(url);
-      });
-
-    if (textures.length === 0) return;
-
-    const jobs = textures.map(async entry => {
-      const cacheId = this.#textureCacheId(entry);
-
-      const camera = Camera.getActive(this.game);
-      const scaleMode = camera?.scaleFilterMode ?? "nearest";
-
-      if (entry.type === "texture") {
-        const url = this.game.resolveResource(entry.texture);
-        const texture = await PIXI.Assets.load({ src: url, data: { scaleMode } });
-        if (!(texture instanceof PIXI.Texture)) return;
-
-        this.#textureCache.set(cacheId, texture);
-      } else if (entry.type === "spritesheet") {
-        const url = this.game.resolveResource(entry.spritesheet);
-        const spritesheet = await PIXI.Assets.load({
-          src: url,
-          data: { textureOptions: { scaleMode } },
-        });
-        if (!(spritesheet instanceof PIXI.Spritesheet)) return;
-
-        const textures = Object.values(spritesheet.textures);
-        const texture = textures.at(entry.frame);
-        if (!texture) return;
-
-        this.#textureCache.set(cacheId, texture);
-      } else if (entry.type === "texture-slice") {
-        const url = this.game.resolveResource(entry.texture);
-        const texture = await PIXI.Assets.load({ src: url, data: { scaleMode } });
-        if (!(texture instanceof PIXI.Texture)) return;
-
-        const frame = new PIXI.Rectangle(entry.x, entry.y, this.resolution, this.resolution);
-        const slice = new PIXI.Texture({ source: texture.source, frame });
-
-        this.#textureCache.set(cacheId, slice);
-      }
-    });
-
-    await Promise.all(jobs);
-  }
-
-  #textureCacheId(
-    entry: Extract<TileData, { type: "texture" | "spritesheet" | "texture-slice" }>,
-  ): string {
-    const type = entry.type;
-
-    if (entry.type === "texture") return entry.texture;
-    if (entry.type === "spritesheet") return `${entry.spritesheet}@${entry.frame}`;
-    if (entry.type === "texture-slice") {
+    if (tile.type === "texture") return tile.texture;
+    if (tile.type === "spritesheet") return `${tile.spritesheet}@${tile.frame}`;
+    if (tile.type === "texture-slice") {
       const size = this.resolution;
-      return `${entry.texture}@${size}@${entry.x}:${entry.y}`;
+      return `${tile.texture}@${size}@${tile.x}:${tile.y}`;
     }
 
     throw new Error(`unsupported entry: ${type}`);
   }
 
+  #textureCache = new Map<string, PIXI.Texture>();
+  async #loadTexture(tile: TextureTileData): Promise<PIXI.Texture> {
+    const cacheId = this.#textureCacheId(tile);
+    const cached = this.#textureCache.get(cacheId);
+    if (cached) return cached;
+
+    const camera = Camera.getActive(this.game);
+    const scaleMode = camera?.scaleFilterMode ?? "nearest";
+
+    switch (tile.type) {
+      case "texture": {
+        const url = this.game.resolveResource(tile.texture);
+        const texture = await PIXI.Assets.load({ src: url, data: { scaleMode } });
+        if (!(texture instanceof PIXI.Texture)) throw new Error("invalid texture");
+
+        this.#textureCache.set(cacheId, texture);
+        return texture;
+      }
+
+      case "spritesheet": {
+        const url = this.game.resolveResource(tile.spritesheet);
+        const spritesheet = await PIXI.Assets.load({
+          src: url,
+          data: { textureOptions: { scaleMode } },
+        });
+        if (!(spritesheet instanceof PIXI.Spritesheet)) throw new Error("invalid spritesheet");
+
+        const textures = Object.values(spritesheet.textures);
+        const texture = textures.at(tile.frame);
+        if (!texture) throw new Error("missing texture in spritesheet");
+
+        this.#textureCache.set(cacheId, texture);
+        return texture;
+      }
+
+      case "texture-slice": {
+        const url = this.game.resolveResource(tile.texture);
+        const texture = await PIXI.Assets.load({ src: url, data: { scaleMode } });
+        if (!(texture instanceof PIXI.Texture)) throw new Error("invalid texture");
+
+        const frame = new PIXI.Rectangle(tile.x, tile.y, this.resolution, this.resolution);
+        const slice = new PIXI.Texture({ source: texture.source, frame });
+
+        this.#textureCache.set(cacheId, slice);
+        return slice;
+      }
+    }
+  }
+
   readonly #ctx = new PIXI.GraphicsContext().rect(-0.5, -0.5, 1, 1).fill("white");
 
-  #redraw(): void {
+  async #redraw(): Promise<void> {
     if (!this.#container) return;
 
     const removed = this.#container.removeChildren();
     for (const child of removed) child.destroy({ children: true });
 
-    for (const chunk of this.#chunks.values()) chunk.destroy({ children: true });
-    this.#chunks.clear();
-
-    for (const tile of this.tiles()) this.#drawTile(tile);
+    for (const tile of this.tiles()) await this.#drawTile(tile);
   }
 
-  readonly #chunks = new Map<string, PIXI.Container>();
-  #getChunkContainer({ chunkId: id, chunkX: x, chunkY: y }: ChunkData): PIXI.Container {
-    if (!this.#container) throw new Error("missing container");
-
-    const cached = this.#chunks.get(id);
-    if (cached !== undefined) return cached;
-
-    const chunk = new PIXI.Container({
-      label: `chunk:${id}`,
-      interactive: false,
-      eventMode: "none",
-      position: { x: x * this.chunkSize, y: -y * this.chunkSize },
-    });
-
-    this.#chunks.set(id, chunk);
-    this.#container.addChild(chunk);
-    return chunk;
-  }
-
-  #drawTile(data: TileDrawData): void {
+  async #drawTile(data: TileDrawData): Promise<void> {
     if (!this.#container) return;
 
     const tile = data.tile;
-    const chunk = this.#getChunkContainer(data);
-
     const label = `${data.x}:${data.y}`;
-    const previous = chunk.getChildByLabel(label);
-    previous?.destroy();
+    const previous = this.#container.getChildByLabel(label);
 
-    if (!tile) return;
+    if (!tile) {
+      previous?.destroy();
+      return;
+    }
 
-    const chunkSize = this.chunkSize;
     const position = {
-      x: ((data.x % chunkSize) + chunkSize) % chunkSize,
-      y: -(((data.y % chunkSize) + chunkSize) % chunkSize),
+      x: data.x,
+      y: -data.y,
     };
 
     switch (tile.type) {
@@ -531,17 +487,14 @@ export abstract class BaseTilemap extends PixiEntity {
           alpha: tile.alpha,
         });
 
-        chunk.addChild(gfx);
+        this.#container.addChild(gfx);
         break;
       }
 
       case "texture":
       case "spritesheet":
       case "texture-slice": {
-        const cacheId = this.#textureCacheId(tile);
-        const texture = this.#textureCache.get(cacheId);
-        if (!texture) return;
-
+        const texture = await this.#loadTexture(tile);
         const sprite = new PIXI.Sprite({
           label,
           texture,
@@ -551,10 +504,12 @@ export abstract class BaseTilemap extends PixiEntity {
           position,
         });
 
-        chunk.addChild(sprite);
+        this.#container.addChild(sprite);
         break;
       }
     }
+
+    previous?.destroy();
   }
 
   #recalculateBounds(): void {

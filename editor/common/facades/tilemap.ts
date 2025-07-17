@@ -37,6 +37,10 @@ export class EditorFacadeTilemap extends BaseTilemap {
     resValue?.onChanged?.(() => {
       this.#updatePaletteXY();
     });
+
+    this.values.get("resolution")?.onChanged(() => {
+      this.#initializePalette();
+    });
   }
 
   async #initializePalette(): Promise<void> {
@@ -65,6 +69,9 @@ export class EditorFacadeTilemap extends BaseTilemap {
     for (let y = 0; y < atlasHeight; y++) {
       for (let x = 0; x < atlasWidth; x++) {
         const idx = y * atlasWidth + x;
+        // cap the number of tiles
+        if (idx >= 256) return;
+
         this.palette[idx] = {
           type: "texture-slice",
           texture: this.atlas,
