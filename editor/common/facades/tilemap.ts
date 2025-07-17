@@ -40,6 +40,8 @@ export class EditorFacadeTilemap extends BaseTilemap {
   }
 
   async #initializePalette(): Promise<void> {
+    if (!this.game.isClient()) return;
+
     for (const key of Object.keys(this.palette)) {
       const idx = Number.parseInt(key, 10);
       if (!Number.isNaN(idx)) delete this.palette[idx];
