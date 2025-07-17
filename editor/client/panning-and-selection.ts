@@ -16,6 +16,7 @@ import { BoxResizeGizmo, Gizmo } from "../common/entities/mod.ts";
 import { EditorMetadataEntity } from "../common/mod.ts";
 import { InspectorUI } from "./ui/inspector.ts";
 import { EmptyFacade } from "../common/facades/empty.ts";
+import { EditorFacadeTilemap } from "../common/facades/tilemap.ts";
 
 let TOUCHPAD_DETECTED = false;
 export class CameraPanBehavior extends Behavior {
@@ -115,6 +116,10 @@ export class CameraPanBehavior extends Behavior {
     if (!this.game.isClient()) return;
 
     if (this.#drag) this.#setDrag(undefined);
+
+    if (this.ui?.selectedEntity.entities[0] instanceof EditorFacadeTilemap) {
+      return;
+    }
 
     if (!this.#drag && event.button === "left" && event.cursor.world && !this.#wasGizmo) {
       const gizmo = this.game.local.children.get("Gizmo")?.cast(Gizmo);
