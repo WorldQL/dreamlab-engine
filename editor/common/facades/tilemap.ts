@@ -70,7 +70,7 @@ export class EditorFacadeTilemap extends BaseTilemap {
       for (let x = 0; x < atlasWidth; x++) {
         const idx = y * atlasWidth + x;
         // cap the number of tiles
-        if (idx >= 1000) return;
+        if (idx >= 1024) return;
 
         this.palette[idx] = {
           type: "texture-slice",
