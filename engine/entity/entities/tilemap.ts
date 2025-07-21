@@ -13,6 +13,7 @@ import {
   PixiEntity,
   pointWorldToLocal,
   SyncedDeepObject,
+  TextureAdapter,
   Vector2,
 } from "@dreamlab/engine";
 import * as cbor from "@dreamlab/vendor/cbor2.ts";
@@ -143,7 +144,7 @@ export abstract class BaseTilemap extends PixiEntity {
     const ctor: EntityConstructor<BaseTilemap> = BaseTilemap;
 
     const resolution = this.defineValue(ctor, "resolution");
-    const atlasValue = this.defineValue(ctor, "atlas");
+    const atlasValue = this.defineValue(ctor, "atlas", { type: TextureAdapter });
     const scale = this.defineValue(ctor, "scaleFilterMode", { type: ScaleFilterModeAdapter });
     const paletteOverrides = defineSyncedObject(this, "paletteOverrides", ctx.sync ?? {});
     const data = defineSyncedObject(this, "data", ctx.sync ?? {});
