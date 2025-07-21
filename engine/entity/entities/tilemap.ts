@@ -433,7 +433,6 @@ export abstract class BaseTilemap extends PixiEntity {
   // #endregion
 
   // #region private methods
-
   *tiles(): Generator<TileDrawData, void, void> {
     for (const [_x, row] of Object.entries(this.data)) {
       const x = Number.parseInt(_x, 10);
@@ -453,7 +452,7 @@ export abstract class BaseTilemap extends PixiEntity {
     }
   }
 
-  #textureCacheId(tile: TextureTileData): string {
+  protected textureCacheId(tile: TextureTileData): string {
     const type = tile.type;
 
     if (tile.type === "texture") return tile.texture;
@@ -467,8 +466,8 @@ export abstract class BaseTilemap extends PixiEntity {
   }
 
   #textureCache = new Map<string, PIXI.Texture>();
-  async #loadTexture(tile: TextureTileData): Promise<PIXI.Texture> {
-    const cacheId = this.#textureCacheId(tile);
+  protected async loadTexture(tile: TextureTileData): Promise<PIXI.Texture> {
+    const cacheId = this.textureCacheId(tile);
     const cached = this.#textureCache.get(cacheId);
     if (cached) return cached;
 
@@ -560,7 +559,7 @@ export abstract class BaseTilemap extends PixiEntity {
       case "texture":
       case "spritesheet":
       case "texture-slice": {
-        const texture = await this.#loadTexture(tile);
+        const texture = await this.loadTexture(tile);
         const sprite = new PIXI.Sprite({
           label,
           texture,

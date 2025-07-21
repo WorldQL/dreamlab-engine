@@ -254,10 +254,12 @@ export class TileMapViewer {
             this.currentTilemap.paletteId = ids;
             this.currentTilemap.paletteCols = w;
             this.currentTilemap.paletteRows = h;
+            this.currentTilemap.paletteIdDirty = true;
           } else {
             this.currentTilemap.paletteId = [0];
             this.currentTilemap.paletteCols = 1;
             this.currentTilemap.paletteRows = 1;
+            this.currentTilemap.paletteIdDirty = true;
           }
         }
 

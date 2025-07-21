@@ -1,5 +1,6 @@
 import {
   BaseTilemap,
+  Camera,
   Entity,
   EntityContext,
   GameRender,
@@ -19,12 +20,16 @@ export class EditorFacadeTilemap extends BaseTilemap {
   paletteId: number[] = [0];
   paletteCols = 1;
   paletteRows = 1;
+  paletteIdDirty: boolean = true;
 
   constructor(ctx: EntityContext) {
     super(ctx);
 
     const resValue = this.values.get("resolution");
     resValue?.onChanged?.(() => {
+      for (const texture of this.#textureCache.values()) texture.destroy(true);
+      this.#textureCache.clear();
+
       this.#updatePaletteXY();
     });
   }
@@ -54,9 +59,33 @@ export class EditorFacadeTilemap extends BaseTilemap {
   #tooltipCols = 0;
   #tooltipRows = 0;
 
-  #buildTooltip(cols: number, rows: number) {
+  #textureCache = new Map<string, PIXI.Texture>();
+  async #loadTexture(tile: Parameters<BaseTilemap["loadTexture"]>[0]): Promise<PIXI.Texture> {
+    if (!this.game.isClient()) throw new Error();
+    const renderer = this.game.renderer.app.renderer;
+
+    const cacheId = super.textureCacheId(tile);
+    const cached = this.#textureCache.get(cacheId);
+    if (cached) return cached;
+
+    const base = await super.loadTexture(tile);
+    const camera = Camera.getActive(this.game);
+    const scaleMode = camera?.scaleFilterMode ?? "nearest";
+
+    const texture = renderer.generateTexture({
+      target: new PIXI.Sprite(base),
+      resolution: this.resolution,
+      textureSourceOptions: { scaleMode },
+    });
+
+    this.#textureCache.set(cacheId, texture);
+    return texture;
+  }
+
+  async #buildTooltip(cols: number, rows: number) {
     if (!this.#tooltip) return;
-    if (this.#tooltipCols === cols && this.#tooltipRows === rows) return;
+    if (!this.paletteIdDirty) return;
+    this.paletteIdDirty = false;
 
     this.#tooltipCols = cols;
     this.#tooltipRows = rows;
@@ -66,16 +95,43 @@ export class EditorFacadeTilemap extends BaseTilemap {
 
     for (let dy = 0; dy < rows; dy++) {
       for (let dx = 0; dx < cols; dx++) {
-        g.rect(dx - 0.5, -dy - 0.5, 1, 1);
+        const sy = rows - 1 - dy;
+        const idx = sy * cols + dx;
+
+        const tileId = this.paletteId[idx] ?? -1;
+        if (tileId < 0) continue;
+
+        const tile = this.palette[tileId];
+        if (!tile || tile.type !== "texture-slice") continue;
+
+        const texture = await this.#loadTexture(tile);
+        g.rect(dx - 0.5, -dy - 0.5, 1, 1)
+          .fill({ texture, alpha: 0.7 })
+          .stroke({
+            pixelLine: true,
+            color: 0xffffff,
+            alpha: 0.75,
+            width: 1,
+          });
       }
     }
 
-    g.stroke({
-      pixelLine: true,
-      color: 0xffffff,
-      alpha: 0.75,
-      width: 1,
-    });
+    // for (let dy = 0; dy < rows; dy++) {
+    //   for (let dx = 0; dx < cols; dx++) {
+    //     const tile = this.palette[this.paletteId[++idx]];
+    //     if (!tile || tile.type !== "texture-slice") continue;
+
+    //     const texture = await this.#loadTexture(tile);
+    //     g.rect(dx - 0.5, -dy - 0.5, 1, 1)
+    //       .fill({ texture, alpha: 0.7 })
+    //       .stroke({
+    //         pixelLine: true,
+    //         color: 0xffffff,
+    //         alpha: 0.75,
+    //         width: 1,
+    //       });
+    //   }
+    // }
   }
 
   onInitialize(): void {
