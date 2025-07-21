@@ -7,6 +7,8 @@ export class TileMapViewer {
   #section = (<section id="tilemap-viewer" />) as HTMLElement;
   #content = (<div id="tilemap-grid" />) as HTMLElement;
 
+  static readonly MAX_TILES = 1024;
+
   private canvas!: HTMLCanvasElement;
   private ctx!: CanvasRenderingContext2D;
 
@@ -22,16 +24,14 @@ export class TileMapViewer {
   private selectedTiles = new Map<string, { x: number; y: number }>();
   private currentTilemap?: EditorFacadeTilemap;
 
-  private atlasBitmap: CanvasImageSource | null = null;
-  private imgW = 0;
-  private imgH = 0;
+  private atlas: CanvasImageSource | null = null;
+  private atlasWidth = 0;
+  private atlasHeight = 0;
   private resolution = 0;
 
   private showingMessage = false;
-  private msgEl: HTMLDivElement | null = null;
+  private messageElement: HTMLDivElement | null = null;
   private cleanupListeners: Array<() => void> = [];
-
-  static readonly MAX_TILES = 1024;
 
   constructor(
     private game: ClientGame,
@@ -147,15 +147,15 @@ export class TileMapViewer {
       }
 
       if (e.button === 0 && this.selectStart) {
-        if (!this.atlasBitmap || !this.resolution) {
+        if (!this.atlas || !this.resolution) {
           this.selectStart = this.selectEnd = null;
           this.draw();
           return;
         }
 
-        const maxTileX = Math.floor(this.imgW / this.resolution) - 1;
-        const maxTileY = Math.floor(this.imgH / this.resolution) - 1;
-        const cols = Math.floor(this.imgW / this.resolution);
+        const maxTileX = Math.floor(this.atlasWidth / this.resolution) - 1;
+        const maxTileY = Math.floor(this.atlasHeight / this.resolution) - 1;
+        const cols = Math.floor(this.atlasWidth / this.resolution);
 
         if (isDragging && this.selectEnd) {
           const x0 = Math.min(this.selectStart.x, this.selectEnd.x);
@@ -219,7 +219,7 @@ export class TileMapViewer {
         }
 
         if (this.currentTilemap) {
-          const rows = Math.floor(this.imgH / this.resolution);
+          const rows = Math.floor(this.atlasHeight / this.resolution);
           const total = cols * rows;
           const tileCoords = Array.from(this.selectedTiles.values());
 
@@ -316,38 +316,36 @@ export class TileMapViewer {
     this.scale = 1;
     this.offsetX = this.offsetY = 0;
     this.resolution = tilemap.resolution;
+    const path = tilemap.atlas.trim();
 
-    if (!tilemap.atlas?.trim()) {
-      this.atlasBitmap = null;
-      this.imgW = this.imgH = 0;
+    if (!path) {
+      this.atlas = null;
+      this.atlasWidth = this.atlasHeight = 0;
       this.draw();
       this.showMessage("No atlas assigned.");
       return;
     }
-    const path = tilemap.atlas.trim();
 
-    try {
-      this.showMessage("Loading atlas…");
+    this.showMessage("Add atlas to tilemap entity.");
 
-      const tex = await PIXI.Assets.load(this.game.resolveResource(path));
-      if (!(tex instanceof PIXI.Texture)) throw new TypeError("not a texture");
-      const img = (tex.source as { resource: HTMLImageElement }).resource;
-
-      this.atlasBitmap = img;
-      this.imgW = img.width;
-      this.imgH = img.height;
-      this.canvas.width = img.width;
-      this.canvas.height = img.height;
-
-      this.hideMessage();
+    const tex = await PIXI.Assets.load(this.game.resolveResource(path));
+    if (!(tex instanceof PIXI.Texture)) {
+      this.atlas = null;
+      this.atlasWidth = this.atlasHeight = 0;
       this.draw();
-    } catch (_err) {
-      console.error("Failed to load atlas");
-      this.atlasBitmap = null;
-      this.imgW = this.imgH = 0;
-      this.draw();
-      this.showMessage("Error loading atlas.");
+      this.showMessage("Failed to load atlas.");
+      return;
     }
+    const img = (tex.source as { resource: HTMLImageElement }).resource;
+
+    this.atlas = img;
+    this.atlasWidth = img.width;
+    this.atlasHeight = img.height;
+    this.canvas.width = img.width;
+    this.canvas.height = img.height;
+
+    this.hideMessage();
+    this.draw();
   }
 
   private showMessage(text: string) {
@@ -361,15 +359,15 @@ export class TileMapViewer {
     c.style.justifyContent = "center";
     c.style.minHeight = "100%";
 
-    if (!this.msgEl) {
-      this.msgEl = document.createElement("div");
-      this.msgEl.style.padding = "8px 12px";
-      this.msgEl.style.fontSize = "13px";
-      this.msgEl.style.opacity = "0.75";
-      this.msgEl.style.pointerEvents = "none";
-      c.append(this.msgEl);
+    if (!this.messageElement) {
+      this.messageElement = document.createElement("div");
+      this.messageElement.style.padding = "8px 12px";
+      this.messageElement.style.fontSize = "13px";
+      this.messageElement.style.opacity = "0.75";
+      this.messageElement.style.pointerEvents = "none";
+      c.append(this.messageElement);
     }
-    this.msgEl.textContent = text;
+    this.messageElement.textContent = text;
   }
 
   private hideMessage() {
@@ -381,9 +379,9 @@ export class TileMapViewer {
     c.style.alignItems = "";
     c.style.justifyContent = "";
     c.style.minHeight = "";
-    if (this.msgEl) {
-      this.msgEl.remove();
-      this.msgEl = null;
+    if (this.messageElement) {
+      this.messageElement.remove();
+      this.messageElement = null;
     }
     this.canvas.style.display = "block";
     if (!c.contains(this.canvas)) c.append(this.canvas);
@@ -394,31 +392,31 @@ export class TileMapViewer {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    if (!this.atlasBitmap) {
+    if (!this.atlas) {
       this.canvas.style.transform = `translate(${this.offsetX}px, ${this.offsetY}px) scale(${this.scale})`;
       return;
     }
 
     this.hideMessage();
 
-    ctx.drawImage(this.atlasBitmap, 0, 0);
+    ctx.drawImage(this.atlas, 0, 0);
 
     ctx.strokeStyle = "rgba(255,255,255,0.25)";
     ctx.lineWidth = 1 / this.scale;
-    const cols = this.imgW / this.resolution;
-    const rows = this.imgH / this.resolution;
+    const cols = this.atlasWidth / this.resolution;
+    const rows = this.atlasHeight / this.resolution;
     for (let i = 1; i < cols; i++) {
       const x = i * this.resolution;
       ctx.beginPath();
       ctx.moveTo(x, 0);
-      ctx.lineTo(x, this.imgH);
+      ctx.lineTo(x, this.atlasHeight);
       ctx.stroke();
     }
     for (let j = 1; j < rows; j++) {
       const y = j * this.resolution;
       ctx.beginPath();
       ctx.moveTo(0, y);
-      ctx.lineTo(this.imgW, y);
+      ctx.lineTo(this.atlasWidth, y);
       ctx.stroke();
     }
 
