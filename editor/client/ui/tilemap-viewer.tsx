@@ -1,6 +1,7 @@
 import { ClientGame } from "@dreamlab/engine";
 import { InspectorUI } from "./inspector.ts";
 import { EditorFacadeTilemap } from "../../common/facades/tilemap.ts";
+import * as PIXI from "@dreamlab/vendor/pixi.ts";
 
 export class TileMapViewer {
   #section = (<section id="tilemap-viewer" />) as HTMLElement;
@@ -21,16 +22,14 @@ export class TileMapViewer {
   private selectedTiles = new Map<string, { x: number; y: number }>();
   private currentTilemap?: EditorFacadeTilemap;
 
-  private atlasBitmap: ImageBitmap | null = null;
+  private atlasBitmap: CanvasImageSource | null = null;
   private imgW = 0;
   private imgH = 0;
   private resolution = 0;
 
   private showingMessage = false;
   private msgEl: HTMLDivElement | null = null;
-
-  private resOff?: () => void;
-  private atlasOff?: () => void;
+  private cleanupListeners: Array<() => void> = [];
 
   static readonly MAX_TILES = 1024;
 
@@ -269,12 +268,40 @@ export class TileMapViewer {
     });
 
     ui.selectedEntity.listen(() => {
+      this.cleanupListeners.forEach(fn => fn());
+      this.cleanupListeners = [];
+
       const sel = ui.selectedEntity.entities;
       if (sel.length === 1 && sel[0] instanceof EditorFacadeTilemap) {
         const newTilemap = sel[0];
         if (this.currentTilemap !== newTilemap) {
           this.currentTilemap = newTilemap;
           this.loadAndDraw(newTilemap);
+
+          const resValue = newTilemap.values.get("resolution");
+          const atlasValue = newTilemap.values.get("atlas");
+
+          if (resValue) {
+            const onResChanged = () => {
+              this.resolution = newTilemap.resolution;
+              this.selectedTiles.clear();
+              this.draw();
+            };
+            resValue.onChanged(onResChanged);
+            this.cleanupListeners.push(() => {
+              resValue.removeChangeListener?.(onResChanged);
+            });
+          }
+
+          if (atlasValue) {
+            const onAtlasChanged = () => {
+              this.loadAndDraw(newTilemap);
+            };
+            atlasValue.onChanged(onAtlasChanged);
+            this.cleanupListeners.push(() => {
+              atlasValue.removeChangeListener?.(onAtlasChanged);
+            });
+          }
         }
       } else {
         this.currentTilemap = undefined;
@@ -283,68 +310,44 @@ export class TileMapViewer {
     });
   }
 
-  private loadAndDraw(tilemap: EditorFacadeTilemap) {
-    this.resOff?.();
-    this.resOff = undefined;
-    this.atlasOff?.();
-    this.atlasOff = undefined;
-
+  private async loadAndDraw(tilemap: EditorFacadeTilemap) {
     this.clear();
     this.selectedTiles.clear();
     this.scale = 1;
     this.offsetX = this.offsetY = 0;
     this.resolution = tilemap.resolution;
 
-    const resValue = tilemap.values.get("resolution");
-    if (resValue) {
-      const off = resValue.onChanged?.(() => {
-        this.resolution = tilemap.resolution;
-        this.selectedTiles.clear();
-        this.draw();
-      });
-      if (typeof off === "function") this.resOff = off;
-    }
-
-    const atlasValue = tilemap.values.get("atlas");
-    if (atlasValue) {
-      const off = atlasValue.onChanged?.(() => {
-        this.loadAndDraw(tilemap);
-      });
-      if (typeof off === "function") this.atlasOff = off;
-    }
-
-    if (!tilemap.atlas) {
+    if (!tilemap.atlas?.trim()) {
       this.atlasBitmap = null;
       this.imgW = this.imgH = 0;
       this.draw();
       this.showMessage("No atlas assigned.");
       return;
     }
+    const path = tilemap.atlas.trim();
 
-    const url = this.game.resolveResource(tilemap.atlas);
+    try {
+      this.showMessage("Loading atlas…");
 
-    fetch(url)
-      .then(r => {
-        if (!r.ok) throw new Error(r.statusText);
-        return r.blob();
-      })
-      .then(b => createImageBitmap(b))
-      .then(bitmap => {
-        this.hideMessage();
-        this.atlasBitmap = bitmap;
-        this.imgW = bitmap.width;
-        this.imgH = bitmap.height;
-        this.canvas.width = this.imgW;
-        this.canvas.height = this.imgH;
-        this.draw();
-      })
-      .catch(err => {
-        console.error("Failed to load atlas:", err);
-        this.atlasBitmap = null;
-        this.imgW = this.imgH = 0;
-        this.draw();
-        this.showMessage("Error loading tilemap atlas.");
-      });
+      const tex = await PIXI.Assets.load(this.game.resolveResource(path));
+      if (!(tex instanceof PIXI.Texture)) throw new TypeError("not a texture");
+      const img = (tex.source as { resource: HTMLImageElement }).resource;
+
+      this.atlasBitmap = img;
+      this.imgW = img.width;
+      this.imgH = img.height;
+      this.canvas.width = img.width;
+      this.canvas.height = img.height;
+
+      this.hideMessage();
+      this.draw();
+    } catch (_err) {
+      console.error("Failed to load atlas");
+      this.atlasBitmap = null;
+      this.imgW = this.imgH = 0;
+      this.draw();
+      this.showMessage("Error loading atlas.");
+    }
   }
 
   private showMessage(text: string) {
