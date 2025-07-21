@@ -32,6 +32,8 @@ export class TileMapViewer {
   private resOff?: () => void;
   private atlasOff?: () => void;
 
+  static readonly MAX_TILES = 1024;
+
   constructor(
     private game: ClientGame,
     private container: HTMLElement,
@@ -154,6 +156,7 @@ export class TileMapViewer {
 
         const maxTileX = Math.floor(this.imgW / this.resolution) - 1;
         const maxTileY = Math.floor(this.imgH / this.resolution) - 1;
+        const cols = Math.floor(this.imgW / this.resolution);
 
         if (isDragging && this.selectEnd) {
           const x0 = Math.min(this.selectStart.x, this.selectEnd.x);
@@ -176,6 +179,8 @@ export class TileMapViewer {
               ty++
             ) {
               if (ty < 0 || ty > maxTileY) continue;
+              const paletteIndex = ty * cols + tx;
+              if (paletteIndex >= TileMapViewer.MAX_TILES) continue;
               map.set(`${tx}:${ty}`, { x: tx, y: ty });
             }
           }
@@ -194,6 +199,15 @@ export class TileMapViewer {
           if (tx > maxTileX) tx = maxTileX;
           if (ty > maxTileY) ty = maxTileY;
 
+          const paletteIndex = ty * cols + tx;
+          if (paletteIndex >= TileMapViewer.MAX_TILES) {
+            this.canvas.title = `Too many tiles - tile #${paletteIndex} cannot be selected.`;
+            this.selectStart = this.selectEnd = null;
+            isDragging = false;
+            this.draw();
+            return;
+          }
+
           const key = `${tx}:${ty}`;
           if (addMode) {
             this.selectedTiles.has(key)
@@ -206,7 +220,6 @@ export class TileMapViewer {
         }
 
         if (this.currentTilemap) {
-          const cols = Math.floor(this.imgW / this.resolution);
           const rows = Math.floor(this.imgH / this.resolution);
           const total = cols * rows;
           const tileCoords = Array.from(this.selectedTiles.values());
@@ -230,7 +243,12 @@ export class TileMapViewer {
               const relX = t.x - minX;
               const relY = t.y - minY;
               const paletteIndex = t.y * cols + t.x;
-              if (paletteIndex < 0 || paletteIndex >= total) continue;
+              if (
+                paletteIndex < 0 ||
+                paletteIndex >= total ||
+                paletteIndex >= TileMapViewer.MAX_TILES
+              )
+                continue;
               ids[relY * w + relX] = paletteIndex;
             }
 
@@ -399,6 +417,23 @@ export class TileMapViewer {
       ctx.moveTo(0, y);
       ctx.lineTo(this.imgW, y);
       ctx.stroke();
+    }
+
+    if (cols * rows > TileMapViewer.MAX_TILES) {
+      ctx.strokeStyle = "rgba(255,51,51,0.5)";
+      ctx.lineWidth = 2 / this.scale;
+      for (let idx = TileMapViewer.MAX_TILES; idx < cols * rows; idx++) {
+        const tx = idx % cols;
+        const ty = Math.floor(idx / cols);
+        const x = tx * this.resolution;
+        const y = ty * this.resolution;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + this.resolution, y + this.resolution);
+        ctx.moveTo(x + this.resolution, y);
+        ctx.lineTo(x, y + this.resolution);
+        ctx.stroke();
+      }
     }
 
     if (this.selectStart && this.selectEnd) {

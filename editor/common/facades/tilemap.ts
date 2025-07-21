@@ -10,6 +10,7 @@ import {
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { SelectedEntityService } from "../../client/ui/selected-entity.ts";
 import { Facades } from "./manager.ts";
+import { TileMapViewer } from "../../client/ui/tilemap-viewer.tsx";
 
 export class EditorFacadeTilemap extends BaseTilemap {
   static {
@@ -70,7 +71,7 @@ export class EditorFacadeTilemap extends BaseTilemap {
       for (let x = 0; x < atlasWidth; x++) {
         const idx = y * atlasWidth + x;
         // cap the number of tiles
-        if (idx >= 1024) return;
+        if (idx >= TileMapViewer.MAX_TILES) return;
 
         this.palette[idx] = {
           type: "texture-slice",
