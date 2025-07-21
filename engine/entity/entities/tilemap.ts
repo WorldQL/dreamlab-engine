@@ -36,7 +36,7 @@ const REVERSE_TILE_TYPES: ReadonlyMap<number, TileData["type"]> = new Map(
 );
 
 type TilemapData = {
-  readonly palette: BaseTilemap["palette"];
+  readonly paletteOverrides: BaseTilemap["paletteOverrides"];
   readonly data: BaseTilemap["data"];
 };
 
@@ -63,10 +63,13 @@ export abstract class BaseTilemap extends PixiEntity {
     return structuredClone(this.#bounds);
   }
 
+  atlas: string = "";
   resolution: number = 64;
   scaleFilterMode: ScaleFilterMode = "default";
 
+  // full palette data - generated from paletteOverrides + atlas
   palette: Record<number, TileData> = {};
+  paletteOverrides: Record<number, TileData> = {};
   data: Record<number, Record<number, number>> = {};
   #tilesDirty: boolean = false;
   #boundsDirty: boolean = false;
@@ -140,17 +143,28 @@ export abstract class BaseTilemap extends PixiEntity {
     const ctor: EntityConstructor<BaseTilemap> = BaseTilemap;
 
     const resolution = this.defineValue(ctor, "resolution");
+    const atlasValue = this.defineValue(ctor, "atlas");
     const scale = this.defineValue(ctor, "scaleFilterMode", { type: ScaleFilterModeAdapter });
-    const palette = defineSyncedObject(this, "palette", ctx.sync ?? {});
+    const paletteOverrides = defineSyncedObject(this, "paletteOverrides", ctx.sync ?? {});
     const data = defineSyncedObject(this, "data", ctx.sync ?? {});
 
     resolution.onChanged(() => {
       this.#textureCache.clear();
       this.#tilesDirty = true;
+
+      void this.#recomputePalette();
+    });
+
+    atlasValue.onChanged(() => {
+      this.#textureCache.clear();
+      void this.#recomputePalette();
+    });
+
+    paletteOverrides.onChanged(() => {
+      void this.#recomputePalette();
     });
 
     scale.onChanged(markDirty);
-    palette.onChanged(markDirty);
     // data.onChanged(markDirty);
     data.onChanged((_data, _from, obj, op) => {
       if (!op) return;
@@ -187,6 +201,50 @@ export abstract class BaseTilemap extends PixiEntity {
     this.listen(this.game, CameraFilterModeChanged, markDirty);
   }
 
+  // #region full palette
+  protected atlasImgWidth: number = 0;
+  protected atlasImgHeight: number = 0;
+
+  async #recomputePalette(): Promise<void> {
+    if (!this.game.isClient()) return;
+    this.palette = {};
+
+    if (this.atlas) {
+      const img = new Image();
+      img.src = this.game.resolveResource(this.atlas);
+      await img.decode();
+
+      this.atlasImgWidth = img.naturalWidth;
+      this.atlasImgHeight = img.naturalHeight;
+
+      const res = this.resolution || 1;
+      const atlasWidth = Math.floor(img.naturalWidth / res);
+      const atlasHeight = Math.floor(img.naturalHeight / res);
+
+      const TILE_LIMIT = 16384;
+      for (let y = 0; y < atlasHeight; y++) {
+        for (let x = 0; x < atlasWidth; x++) {
+          const idx = y * atlasWidth + x;
+          if (idx > TILE_LIMIT) break;
+
+          this.palette[idx] = {
+            type: "texture-slice",
+            texture: this.atlas,
+            x: x * res,
+            y: y * res,
+          };
+        }
+      }
+    }
+
+    for (const [key, value] of Object.entries(this.paletteOverrides)) {
+      Reflect.set(this.palette, key, value);
+    }
+
+    this.#tilesDirty = true;
+  }
+  // #endregion
+
   // #region (de)serialize methods
   static readonly #COMPRESSION_THRESHOLD = 384;
 
@@ -202,7 +260,7 @@ export abstract class BaseTilemap extends PixiEntity {
       return idx;
     };
 
-    const palette = Object.entries(opts.palette).map(([k, entry]) => {
+    const palette = Object.entries(opts.paletteOverrides).map(([k, entry]) => {
       const id = Number.parseInt(k, 10);
       if (Number.isNaN(id)) throw new Error("invalid palette key");
 
@@ -278,7 +336,7 @@ export abstract class BaseTilemap extends PixiEntity {
     };
 
     const _palette = decoded[1] as [number, number, ...unknown[]][];
-    const palette = Object.fromEntries(
+    const paletteOverrides = Object.fromEntries(
       _palette.map(([id, ty, ...rest]): [key: number, value: TileData] => {
         const type = REVERSE_TILE_TYPES.get(ty);
 
@@ -330,7 +388,7 @@ export abstract class BaseTilemap extends PixiEntity {
       data[x][y] = paletteId;
     }
 
-    return { palette, data };
+    return { paletteOverrides, data };
   }
   // #endregion
 
@@ -341,7 +399,14 @@ export abstract class BaseTilemap extends PixiEntity {
     this.#container = new PIXI.Container({ label: "container" });
     this.container.addChild(this.#container);
 
-    void this.#redraw();
+    if (this.atlas) {
+      void (async () => {
+        await this.#recomputePalette();
+        await this.#redraw();
+      })();
+    } else {
+      void this.#redraw();
+    }
     this.#updateSize();
     this.#recalculateBounds();
   }
@@ -354,8 +419,8 @@ export abstract class BaseTilemap extends PixiEntity {
     if (typeof value !== "string") return;
 
     try {
-      const { palette, data } = BaseTilemap.#deserialize(value);
-      Object.assign(this.palette, palette);
+      const { paletteOverrides, data } = BaseTilemap.#deserialize(value);
+      Object.assign(this.paletteOverrides, paletteOverrides);
       Object.assign(this.data, data);
 
       void this.#redraw();

@@ -10,7 +10,7 @@ export default class Generate extends Behavior {
 
   fillPalette(): void {
     for (let idx = 0; idx < 34; idx++) {
-      this.#tilemap.palette[idx] = {
+      this.#tilemap.paletteOverrides[idx] = {
         type: "spritesheet",
         spritesheet: "res://assets/grass.json",
         frame: idx,

@@ -111,6 +111,22 @@
               "y": -1.158657518946752
             }
           }
+        },
+        {
+          "ref": "ent_g26YyMXbEh",
+          "type": "@core/Tilemap",
+          "name": "Tilemap",
+          "enabled": true,
+          "transform": {
+            "position": {
+              "x": 0.6737378906468151,
+              "y": -0.6519888744107225
+            }
+          },
+          "data": "AIOAgJiBABEAAhEABBEABhcABxEABxcACBcACREACRcAChAAChEACxAACxEACxcADBAADBcADREADhEADhcADxEAEBEAEBIAEBcAERAAERIAERcAEhAAEhMAExAAExQAExcAFA8AFBQAFBcAFRUAFRcAFhUAFhYAFxUAFxYAIhEAIxEAIBEA",
+          "values": {
+            "atlas": "res://assets/tilemap-atlas.png"
+          }
         }
       ],
       "local": [

@@ -4,13 +4,11 @@ import {
   EntityContext,
   GameRender,
   pointWorldToLocal,
-  TextureAdapter,
   Tilemap,
 } from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { SelectedEntityService } from "../../client/ui/selected-entity.ts";
 import { Facades } from "./manager.ts";
-import { TileMapViewer } from "../../client/ui/tilemap-viewer.tsx";
 
 export class EditorFacadeTilemap extends BaseTilemap {
   static {
@@ -18,74 +16,22 @@ export class EditorFacadeTilemap extends BaseTilemap {
     Facades.register(Tilemap, this);
   }
 
-  atlas: string = "";
   paletteId: number[] = [0];
   paletteCols = 1;
   paletteRows = 1;
 
-  #atlasWpx = 0;
-  #atlasHpx = 0;
-
   constructor(ctx: EntityContext) {
     super(ctx);
-
-    const atlas = this.defineValue(EditorFacadeTilemap, "atlas", { type: TextureAdapter });
-    atlas.onChanged(() => {
-      void this.#initializePalette();
-    });
 
     const resValue = this.values.get("resolution");
     resValue?.onChanged?.(() => {
       this.#updatePaletteXY();
     });
-
-    this.values.get("resolution")?.onChanged(() => {
-      this.#initializePalette();
-    });
-  }
-
-  async #initializePalette(): Promise<void> {
-    if (!this.game.isClient()) return;
-
-    for (const key of Object.keys(this.palette)) {
-      const idx = Number.parseInt(key, 10);
-      if (!Number.isNaN(idx)) delete this.palette[idx];
-    }
-
-    if (!this.atlas) {
-      this.#atlasWpx = this.#atlasHpx = 0;
-      return;
-    }
-
-    const img = new Image();
-    img.src = this.game.resolveResource(this.atlas);
-    await img.decode();
-    this.#atlasWpx = img.naturalWidth;
-    this.#atlasHpx = img.naturalHeight;
-
-    const res = this.resolution || 1;
-    const atlasWidth = Math.floor(this.#atlasWpx / res);
-    const atlasHeight = Math.floor(this.#atlasHpx / res);
-
-    for (let y = 0; y < atlasHeight; y++) {
-      for (let x = 0; x < atlasWidth; x++) {
-        const idx = y * atlasWidth + x;
-        // cap the number of tiles
-        if (idx >= TileMapViewer.MAX_TILES) return;
-
-        this.palette[idx] = {
-          type: "texture-slice",
-          texture: this.atlas,
-          x: x * res,
-          y: y * res,
-        };
-      }
-    }
   }
 
   #updatePaletteXY(): void {
-    const wpx = this.#atlasWpx;
-    const hpx = this.#atlasHpx;
+    const wpx = this.atlasImgWidth;
+    const hpx = this.atlasImgHeight;
     if (!wpx || !hpx) return;
 
     const res = this.resolution || 1;
@@ -142,8 +88,6 @@ export class EditorFacadeTilemap extends BaseTilemap {
     this.#tooltip = new PIXI.Graphics();
     this.#tooltip.alpha = 0;
     this.container.addChild(this.#tooltip);
-
-    void this.#initializePalette();
 
     this.listen(this.game, GameRender, () => {
       if (!this.#tooltip) return;
