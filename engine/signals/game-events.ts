@@ -44,12 +44,12 @@ export class GameRenderResize {
   [exclusiveSignalType] = BaseGame;
 }
 
-export class GameChangeRequiresRestart {
+export class EditorChangeRequiresRestart {
   constructor(public reason: string) {}
   [exclusiveSignalType] = BaseGame;
 }
 
-export class GameChangeRestartCleared {
+export class EditorChangeRestartCleared {
   constructor(public reason: string) {}
   [exclusiveSignalType] = BaseGame;
 }

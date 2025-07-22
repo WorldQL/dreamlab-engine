@@ -1,8 +1,8 @@
 import {
   Camera,
   ClientGame,
-  GameChangeRequiresRestart,
-  GameChangeRestartCleared,
+  EditorChangeRequiresRestart,
+  EditorChangeRestartCleared,
   InternalGameTick,
   IVector2,
   MouseMove,
@@ -65,11 +65,11 @@ export class Toolbar implements InspectorUIWidget {
       this.#toolbar.right.append(this.#drawStatsButton(), this.#drawRatioDropdown());
     }
 
-    this.game.on(GameChangeRequiresRestart, e => {
+    this.game.on(EditorChangeRequiresRestart, e => {
       this.showRestartRequired(e.reason);
     });
 
-    this.game.on(GameChangeRestartCleared, e => {
+    this.game.on(EditorChangeRestartCleared, e => {
       this.clearRestartReason(e.reason);
     });
   }

@@ -2,13 +2,12 @@ import {
   Camera,
   CameraFilterModeChanged,
   defineSyncedObject,
+  EditorChangeRestartCleared,
   Entity,
   EntityConstructor,
   EntityContext,
   EntityTransformUpdate,
   enumAdapter,
-  GameChangeRequiresRestart,
-  GameChangeRestartCleared,
   GameTick,
   IBounds,
   JsonValue,
@@ -182,13 +181,13 @@ export abstract class BaseTilemap extends PixiEntity {
       if (originalScale === undefined) {
         originalScale = oldValue;
         this.game.fire(
-          GameChangeRequiresRestart,
+          EditorChangeRestartCleared,
           `Scale filter mode for "${this.name}" entity has changed.`,
         );
       } else if (newValue === originalScale) {
         originalScale = undefined;
         this.game.fire(
-          GameChangeRestartCleared,
+          EditorChangeRestartCleared,
           `Scale filter mode for "${this.name}" entity has changed.`,
         );
       }
