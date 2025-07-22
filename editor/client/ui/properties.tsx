@@ -7,11 +7,13 @@ import {
   EntityRenamed,
   EntityReparented,
   EntityTransformUpdate,
+  SignalSubscription,
   Vector2,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { BaseElement, element as elem } from "@dreamlab/ui";
 import { z } from "@dreamlab/vendor/zod.ts";
+import { EditorFacadeTilemap } from "../../common/facades/tilemap.ts";
 import { EditorMetadataEntity, Facades, PrefabRootFacade } from "../../common/mod.ts";
 import { icon, X } from "../_icons.tsx";
 import { DataDetails, DataTable } from "../components/mod.ts";
@@ -19,7 +21,6 @@ import { UndoRedoManager } from "../undo-redo.ts";
 import { createBooleanField, createInputField } from "../util/easy-input.ts";
 import { createValueControl } from "../util/value-controls.ts";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
-import { EditorFacadeTilemap } from "../../common/facades/tilemap.ts";
 
 export class Properties implements InspectorUIWidget {
   #section = (
@@ -73,11 +74,16 @@ export class Properties implements InspectorUIWidget {
     this.#section.remove();
   }
 
+  entityPropertyTeardown: (() => void)[] = [];
+
   drawEntityProperties(container: BaseElement, entity: Entity) {
     container.innerHTML = "";
 
-    // TODO: clean up old listeners instead of leaking them
-    // i think it would be easier if .on() gave u an object that u can .unsubscribe() on
+    this.entityPropertyTeardown.forEach(it => it());
+    this.entityPropertyTeardown.length = 0;
+    // deno-lint-ignore no-explicit-any
+    const autoCleanup = (s: SignalSubscription<any>) =>
+      this.entityPropertyTeardown.push(s.unsubscribe);
 
     const table = new DataTable();
     container.append(table);
@@ -96,7 +102,7 @@ export class Properties implements InspectorUIWidget {
         set: name => (entity.name = name),
         convert: z.string().min(1).parse,
       });
-      entity.on(EntityRenamed, refreshName);
+      autoCleanup(entity.on(EntityRenamed, refreshName));
       nameField.id = "rename-entity-input";
 
       let renameState: string | undefined;
@@ -124,8 +130,8 @@ export class Properties implements InspectorUIWidget {
     table.addEntry("name", "Name", nameField);
     const entityId = () => entity.id.replace("world/EditEntities/", "");
     const idField = elem("code", {}, [entityId()]);
-    entity.on(EntityRenamed, () => (idField.textContent = entityId()));
-    entity.on(EntityReparented, () => (idField.textContent = entityId()));
+    autoCleanup(entity.on(EntityRenamed, () => (idField.textContent = entityId())));
+    autoCleanup(entity.on(EntityReparented, () => (idField.textContent = entityId())));
     table.addEntry("id", "ID", idField);
 
     const typeField = elem("code", {}, [
@@ -139,7 +145,7 @@ export class Properties implements InspectorUIWidget {
         get: () => entity[internal.entityOwnEnabled],
         set: v => (entity.enabled = v),
       });
-      entity.on(EntityOwnEnableChanged, () => refreshEnabled());
+      autoCleanup(entity.on(EntityOwnEnableChanged, () => refreshEnabled()));
       table.addEntry("enabled", "Enabled", enabledField);
 
       const metadata = EditorMetadataEntity.getInstanceFor(entity);
@@ -287,14 +293,16 @@ export class Properties implements InspectorUIWidget {
       txfmTable.addEntry("z", "Z Index", zIndexField);
       transformFieldsToRegisterWithUndoRedo.push({ field: zIndexField, path: ["z"] });
 
-      entity.on(EntityTransformUpdate, () => {
-        refreshX();
-        refreshY();
-        refreshRotation();
-        refreshScaleX();
-        refreshScaleY();
-        refreshZIndex();
-      });
+      autoCleanup(
+        entity.on(EntityTransformUpdate, () => {
+          refreshX();
+          refreshY();
+          refreshRotation();
+          refreshScaleX();
+          refreshScaleY();
+          refreshZIndex();
+        }),
+      );
 
       const toggleGlobalTransformButton = elem("button", { type: "button" }, [
         "Show Global Transform",
@@ -333,14 +341,16 @@ export class Properties implements InspectorUIWidget {
       const globalZField = elem("code", {}, [entity.z.toFixed(0)]);
       globalTransformTable.addEntry("global-z", "Z Index", globalZField);
 
-      entity.on(EntityTransformUpdate, () => {
-        globalPosXField.textContent = entity.pos.x.toFixed(2);
-        globalPosYField.textContent = entity.pos.y.toFixed(2);
-        globalRotationField.textContent = entity.globalTransform.rotation.toFixed(2);
-        globalScaleXField.textContent = entity.globalTransform.scale.x.toFixed(2);
-        globalScaleYField.textContent = entity.globalTransform.scale.y.toFixed(2);
-        globalZField.textContent = entity.z.toFixed(0);
-      });
+      autoCleanup(
+        entity.on(EntityTransformUpdate, () => {
+          globalPosXField.textContent = entity.pos.x.toFixed(2);
+          globalPosYField.textContent = entity.pos.y.toFixed(2);
+          globalRotationField.textContent = entity.globalTransform.rotation.toFixed(2);
+          globalScaleXField.textContent = entity.globalTransform.scale.x.toFixed(2);
+          globalScaleYField.textContent = entity.globalTransform.scale.y.toFixed(2);
+          globalZField.textContent = entity.z.toFixed(0);
+        }),
+      );
 
       toggleGlobalTransformButton.addEventListener("click", () => {
         if (globalTransformSection.style.display === "none") {
@@ -404,6 +414,7 @@ export class Properties implements InspectorUIWidget {
 
       valuesTable.addEntry(`value:${key}`, key, valueField);
       value.onChanged(refreshValue);
+      this.entityPropertyTeardown.push(() => value.removeChangeListener(refreshValue));
     }
 
     // TODO: Move this into AnimatedSprite once we have a way to define button actions in the entities.
@@ -490,7 +501,10 @@ export class Properties implements InspectorUIWidget {
       else delete valuesSection.dataset.hidden;
     };
 
-    entity.values.forEach(value => value.onChanged(() => updateHiddenStates()));
+    entity.values.forEach(value => value.onChanged(updateHiddenStates));
+    this.entityPropertyTeardown.push(() => {
+      entity.values.forEach(value => value.removeChangeListener(updateHiddenStates));
+    });
     updateHiddenStates();
   }
 }
