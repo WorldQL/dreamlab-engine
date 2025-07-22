@@ -8,7 +8,9 @@ export class Facades {
     this.#facades.set(entity, facade);
     this.#reverse.set(facade, entity);
 
-    facade.prototype.cast = <T extends Entity>() => this as unknown as T;
+    facade.prototype.cast = function <T extends Entity>() {
+      return this as unknown as T;
+    };
   }
 
   static lookupFacadeEntityType(entityType: EntityConstructor): EntityConstructor {
