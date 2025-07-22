@@ -5,6 +5,8 @@ import { Accessor, AnySyncedObject, SyncedObject } from "../object.ts";
 import { SyncedObjectOperation } from "../operation.ts";
 import { isContainer, SyncedObjectContainer, SyncedObjectRegistry } from "../registry.ts";
 
+const deepObjectSymbol = Symbol.for("dreamlab.synced-objects.deep-object");
+
 export const DeepObjectOperationSet = z.object({
   t: z.literal("deep-object-set"),
   key: z.string(),
@@ -49,6 +51,11 @@ export class SyncedDeepObject<T extends JsonObject>
   #makeProxy(): T {
     const obj = this;
 
+    // @ts-expect-error blind symbol access
+    if (this.#inner![deepObjectSymbol]) {
+      return this.#inner!;
+    }
+
     return new Proxy(this.#inner!, {
       set(target, prop, value, receiver) {
         const ret = Reflect.set(target, prop, value, receiver);
@@ -79,6 +86,10 @@ export class SyncedDeepObject<T extends JsonObject>
         // TODO: delete child if was object
 
         return ret;
+      },
+      get(target, prop, receiver) {
+        if (prop === deepObjectSymbol) return true;
+        return Reflect.get(target, prop, receiver);
       },
     });
   }
