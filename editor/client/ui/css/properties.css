@@ -150,3 +150,15 @@ button:disabled {
   font-size: 1em;
   line-height: 0.5;
 }
+
+.clear-feedback {
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.clear-feedback.cleared {
+  background-color: #4caf50;
+  color: #fff;
+  cursor: default;
+}

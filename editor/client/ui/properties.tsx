@@ -139,6 +139,27 @@ export class Properties implements InspectorUIWidget {
     ]);
     table.addEntry("type", "Type", typeField);
 
+    if (entity.id === "world/EditEntities/server") {
+      const button = elem("button", { type: "button", className: "clear-feedback" }, [
+        "Clear KV Data",
+      ]);
+
+      button.addEventListener("click", () => {
+        this.game.network.sendCustomMessage("server", "@kv/clear", {});
+        this.game.kv.player.clear();
+
+        button.textContent = "Cleared!";
+        button.classList.add("cleared");
+
+        setTimeout(() => {
+          button.textContent = "Clear KV Data";
+          button.classList.remove("cleared");
+        }, 3000);
+      });
+
+      table.addEntry("Clear KV Data", "KV", button);
+    }
+
     if (!entity.protected) {
       const [enabledField, refreshEnabled] = createBooleanField({
         default: true,

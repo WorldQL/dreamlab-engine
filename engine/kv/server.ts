@@ -97,6 +97,12 @@ export class KvServer extends KvServerBase implements ServerKV {
       this.game.network.sendCustomMessage(from, channel, response);
     });
 
+    this.game.network.onReceiveCustomMessage((_from, channel, _data) => {
+      if (channel !== "@kv/clear") return;
+
+      this.game.kv.server.clear();
+    });
+
     this.game.on(GameTick, async () => {
       if (this.#getQueue.length === 0) return;
 
