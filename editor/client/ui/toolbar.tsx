@@ -1,6 +1,8 @@
 import {
   Camera,
   ClientGame,
+  GameChangeRequiresRestart,
+  GameChangeRestartCleared,
   InternalGameTick,
   IVector2,
   MouseMove,
@@ -20,6 +22,8 @@ import {
   ZoomIn,
   ChartLine,
   ChevronDown,
+  icon,
+  AlertCircle,
 } from "../_icons.tsx";
 import { stats } from "../_stats.ts";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
@@ -29,7 +33,7 @@ import { ASPECT_RATIOS, setAspectRatio } from "../aspect-ratio.ts";
 export class Toolbar implements InspectorUIWidget {
   #editMode: boolean = false;
 
-  #toolbar: { main: HTMLElement; left: HTMLElement; right: HTMLElement };
+  #toolbar: { main: HTMLElement; left: HTMLElement; center: HTMLElement; right: HTMLElement };
   #overlays: HTMLElement;
   #cursorOverlayEl: BaseElement;
 
@@ -38,17 +42,17 @@ export class Toolbar implements InspectorUIWidget {
     private gameContainer: HTMLDivElement,
   ) {
     const left = elem("div", { dataset: { left: "" } });
+    const center = elem("div", { dataset: { center: "" } });
     const right = elem("div", { dataset: { right: "" } });
-    const main = elem("div", { id: "toolbar" }, [left, right]);
+    const main = elem("div", { id: "toolbar" }, [left, center, right]);
 
-    this.#toolbar = { main, left, right };
+    this.#toolbar = { main, left, center, right };
     this.#overlays = elem("div", { id: "overlays" });
     this.#cursorOverlayEl = this.#drawCursorOverlay();
   }
 
   setup(ui: InspectorUI): void {
     this.#editMode = ui.editMode;
-
     const mode = this.#editMode ? "edit" : "play";
     this.#toolbar.main.dataset.mode = mode;
 
@@ -60,6 +64,14 @@ export class Toolbar implements InspectorUIWidget {
       this.#toolbar.left.append(this.#drawPhysicsDebugButton());
       this.#toolbar.right.append(this.#drawStatsButton(), this.#drawRatioDropdown());
     }
+
+    this.game.on(GameChangeRequiresRestart, e => {
+      this.showRestartRequired(e.reason);
+    });
+
+    this.game.on(GameChangeRestartCleared, e => {
+      this.clearRestartReason(e.reason);
+    });
   }
 
   show(_uiRoot: HTMLElement): void {
@@ -67,6 +79,55 @@ export class Toolbar implements InspectorUIWidget {
     gameview.prepend(this.#toolbar.main);
 
     this.gameContainer.append(this.#overlays);
+  }
+
+  private showRestartRequired(reason: string) {
+    const center = this.#toolbar.center;
+
+    let wrap = center.querySelector<HTMLDivElement>(".restart-required");
+    if (!wrap) {
+      center.innerHTML = "";
+      const reloadBtn = elem("button", { type: "button", onClick: () => location.reload() }, [
+        "Reload Website",
+      ]);
+      wrap = elem("div", { classList: ["restart-required"] }, [
+        elem("div", { classList: ["trigger"] }, [
+          icon(AlertCircle),
+          elem("strong", {}, ["Restart Required"]),
+        ]),
+        elem("div", { classList: ["restart-dropdown"] }, [
+          elem("p", {}, ["Changes require a restart to apply."]),
+          reloadBtn,
+          elem("ul"),
+        ]),
+      ]) as HTMLDivElement;
+      center.append(wrap);
+    }
+
+    const list = wrap.querySelector("ul")!;
+    const exists = Array.from(list.children).some(li => li.textContent === reason);
+    if (!exists) {
+      list.append(elem("li", {}, [reason]));
+    }
+  }
+
+  private clearRestartReason(reason: string) {
+    const wrap = this.#toolbar.center.querySelector<HTMLDivElement>(".restart-required");
+    if (!wrap) return;
+    const list = wrap.querySelector("ul");
+    if (!list) return;
+
+    for (const li of Array.from(list.children)) {
+      if (li.textContent === reason) {
+        li.remove();
+        break;
+      }
+    }
+
+    if (list.children.length === 0) {
+      wrap.remove();
+      this.#toolbar.center.innerHTML = "";
+    }
   }
 
   hide(): void {

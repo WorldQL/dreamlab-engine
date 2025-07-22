@@ -3,6 +3,7 @@ import {
   CameraFilterModeChanged,
   defineSyncedObject,
   Entity,
+  GameChangeRequiresRestart,
   EntityConstructor,
   EntityContext,
   EntityTransformUpdate,
@@ -15,6 +16,7 @@ import {
   SyncedDeepObject,
   TextureAdapter,
   Vector2,
+  GameChangeRestartCleared,
 } from "@dreamlab/engine";
 import * as cbor from "@dreamlab/vendor/cbor2.ts";
 import { gzip, ungzip } from "@dreamlab/vendor/pako.ts";
@@ -165,7 +167,26 @@ export abstract class BaseTilemap extends PixiEntity {
       void this.#recomputePalette();
     });
 
-    scale.onChanged(markDirty);
+    let originalScale: ScaleFilterMode | undefined;
+
+    scale.onChanged((newValue, oldValue) => {
+      markDirty();
+      if (!this.game.isEditMode || oldValue === newValue) return;
+
+      if (originalScale === undefined) {
+        originalScale = oldValue;
+        this.game.fire(
+          GameChangeRequiresRestart,
+          `Scale filter mode for "${this.name}" entity has changed.`,
+        );
+      } else if (newValue === originalScale) {
+        originalScale = undefined;
+        this.game.fire(
+          GameChangeRestartCleared,
+          `Scale filter mode for "${this.name}" entity has changed.`,
+        );
+      }
+    });
     // data.onChanged(markDirty);
     data.onChanged((_data, _from, obj, op) => {
       if (!op) return;

@@ -43,3 +43,13 @@ export class GameRenderResize {
   static __singleton = new this();
   [exclusiveSignalType] = BaseGame;
 }
+
+export class GameChangeRequiresRestart {
+  constructor(public reason: string) {}
+  [exclusiveSignalType] = BaseGame;
+}
+
+export class GameChangeRestartCleared {
+  constructor(public reason: string) {}
+  [exclusiveSignalType] = BaseGame;
+}
