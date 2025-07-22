@@ -30,6 +30,11 @@ export class EditorFacadeTilemap extends BaseTilemap {
       for (const texture of this.#textureCache.values()) texture.destroy(true);
       this.#textureCache.clear();
 
+      this.paletteIdDirty = true;
+      const cols = Math.max(1, this.paletteCols | 0);
+      const rows = Math.max(1, this.paletteRows | 0);
+      this.#buildTooltip(cols, rows);
+
       this.#updatePaletteXY();
     });
   }
