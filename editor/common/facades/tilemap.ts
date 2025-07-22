@@ -4,12 +4,16 @@ import {
   Entity,
   EntityContext,
   GameRender,
+  MouseDown,
+  MouseMove,
+  MouseUp,
   pointWorldToLocal,
   Tilemap,
+  Vector2,
 } from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { SelectedEntityService } from "../../client/ui/selected-entity.ts";
-import { UndoRedoManager } from "../../client/undo-redo.ts";
+import { UndoRedoManager, UndoRedoOperation } from "../../client/undo-redo.ts";
 import { Facades } from "./manager.ts";
 
 export class EditorFacadeTilemap extends BaseTilemap {
@@ -151,28 +155,14 @@ export class EditorFacadeTilemap extends BaseTilemap {
     this.#tooltip.alpha = 0;
     this.container.addChild(this.#tooltip);
 
-    this.listen(this.game, GameRender, () => {
-      if (!this.#tooltip) return;
-
-      const world = this.inputs.cursor.world;
-      const svc = SelectedEntityService.serviceForGame(game);
-      if (!svc?.entities.includes(this) || !world) {
-        this.#tooltip.alpha = 0;
-        return;
-      }
-
-      this.#tooltip.alpha = 1;
-      const local = pointWorldToLocal(this.globalTransform, world);
-      this.#tooltip.position.set(Math.floor(local.x + 0.5), Math.floor(-local.y + 0.5));
-
-      const cols = Math.max(1, this.paletteCols | 0);
-      const rows = Math.max(1, this.paletteRows | 0);
-      this.#buildTooltip(cols, rows);
-
+    let paintOperations: (UndoRedoOperation & { t: "modify-tilemap" })[] = [];
+    const paint = (world: Vector2) => {
       const left = this.inputs.getKey("MouseLeft");
       const right = this.inputs.getKey("MouseRight");
       if (!left && !right) return;
 
+      const cols = Math.max(1, this.paletteCols | 0);
+      const rows = Math.max(1, this.paletteRows | 0);
       const { x, y } = this.getTileCoordinatesAtPoint(world);
 
       for (let dy = 0; dy < rows; dy++) {
@@ -190,7 +180,7 @@ export class EditorFacadeTilemap extends BaseTilemap {
             this.setTile(tileX, tileY, newId);
             // TODO: it would be nice to build up a compound undo/redo op and then commit
             // it on mouseup
-            UndoRedoManager._.push({
+            paintOperations.push({
               t: "modify-tilemap",
               tilemapRef: this.ref,
               x: tileX,
@@ -201,6 +191,39 @@ export class EditorFacadeTilemap extends BaseTilemap {
           }
         }
       }
+    };
+
+    this.listen(this.game.inputs, MouseDown, ({ cursor }) => {
+      paintOperations = [];
+      paint(cursor.world);
+    });
+    this.listen(this.game.inputs, MouseUp, () => {
+      if (paintOperations.length > 0) {
+        UndoRedoManager._.push({ t: "compound", ops: paintOperations });
+        paintOperations = [];
+      }
+    });
+    this.listen(this.game.inputs, MouseMove, ({ cursor }) => {
+      paint(cursor.world);
+    });
+
+    this.listen(this.game, GameRender, () => {
+      if (!this.#tooltip) return;
+
+      const world = this.inputs.cursor.world;
+      const svc = SelectedEntityService.serviceForGame(game);
+      if (!svc?.entities.includes(this) || !world) {
+        this.#tooltip.alpha = 0;
+        return;
+      }
+
+      this.#tooltip.alpha = 1;
+      const local = pointWorldToLocal(this.globalTransform, world);
+      this.#tooltip.position.set(Math.floor(local.x + 0.5), Math.floor(-local.y + 0.5));
+
+      const cols = Math.max(1, this.paletteCols | 0);
+      const rows = Math.max(1, this.paletteRows | 0);
+      this.#buildTooltip(cols, rows);
     });
   }
 }
