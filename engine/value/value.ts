@@ -50,25 +50,23 @@ export class Value<T = unknown> {
 
   [internal.valueRelatedEntity]: Entity | undefined;
 
-  #changeListeners: ((newValue: this["value"]) => void)[] | undefined;
+  #changeListeners: ((newValue: this["value"], oldValue: this["value"]) => void)[] | undefined;
   /* any type is required here or deno complains about stuff like:
    Type 'unknown' is not assignable to type 'number'.
     this.values.get("points")?.onChanged((newPoints: number) => {
   */
 
   // deno-lint-ignore no-explicit-any
-  onChanged(listener: (newValue: any) => void): void {
+  onChanged(listener: (newValue: any, oldValue: any) => void): void {
     if (!this.#changeListeners) this.#changeListeners = [];
     this.#changeListeners.push(listener);
   }
 
   // deno-lint-ignore no-explicit-any
-  removeChangeListener(listener: (newValue: any) => void): void {
+  removeChangeListener(listener: (newValue: any, oldValue: any) => void): void {
     if (!this.#changeListeners) return;
     const index = this.#changeListeners.indexOf(listener);
-    if (index !== -1) {
-      this.#changeListeners.splice(index, 1);
-    }
+    if (index !== -1) this.#changeListeners.splice(index, 1);
   }
 
   get value(): ReadonlyIfObject<T> {
@@ -209,6 +207,8 @@ export class Value<T = unknown> {
       }
     }
 
+    const oldValue = this.#value;
+
     this.#value = incomingValue;
     this.lastSource = incomingSource;
     this.clock = incomingClock;
@@ -216,7 +216,7 @@ export class Value<T = unknown> {
     if (this.#changeListeners) {
       const listenerCount = this.#changeListeners.length;
       for (let i = 0; i < listenerCount; i++) {
-        this.#changeListeners[i](incomingValue);
+        this.#changeListeners[i](incomingValue, oldValue);
       }
     }
   }
