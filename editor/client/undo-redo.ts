@@ -1,5 +1,5 @@
 import type { ITransform } from "@dreamlab/engine";
-import { ClientGame, EntityDefinition } from "@dreamlab/engine";
+import { BaseTilemap, ClientGame, EntityDefinition } from "@dreamlab/engine";
 import { EditorMetadataEntity } from "../common/mod.ts";
 
 class NotImplementedError extends Error {}
@@ -37,6 +37,14 @@ export type UndoRedoOperation =
       previous: boolean;
     }
   // | { t: "modify-behavior-value" }
+  | {
+      t: "modify-tilemap";
+      tilemapRef: string;
+      x: number;
+      y: number;
+      prevId?: number;
+      newId?: number;
+    }
   | { t: "compound"; ops: Exclude<UndoRedoOperation, { t: "compound" }>[] };
 
 export class UndoRedoManager {
@@ -166,6 +174,12 @@ export class UndoRedoManager {
         break;
       }
 
+      case "modify-tilemap": {
+        const entity = this.#game.entities.lookupByRef(op.tilemapRef);
+        if (entity) entity.cast(BaseTilemap).setTile(op.x, op.y, op.prevId);
+        break;
+      }
+
       default: {
         const t = (op as unknown as UndoRedoOperation).t;
         throw new NotImplementedError(`undo operation not implemented: ${t}`);
@@ -244,6 +258,12 @@ export class UndoRedoManager {
         if (metadata) {
           metadata.locked = op.locked;
         }
+        break;
+      }
+
+      case "modify-tilemap": {
+        const entity = this.#game.entities.lookupByRef(op.tilemapRef);
+        if (entity) entity.cast(BaseTilemap).setTile(op.x, op.y, op.newId);
         break;
       }
 

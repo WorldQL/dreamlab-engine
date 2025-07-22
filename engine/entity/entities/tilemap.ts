@@ -3,11 +3,12 @@ import {
   CameraFilterModeChanged,
   defineSyncedObject,
   Entity,
-  GameChangeRequiresRestart,
   EntityConstructor,
   EntityContext,
   EntityTransformUpdate,
   enumAdapter,
+  GameChangeRequiresRestart,
+  GameChangeRestartCleared,
   GameTick,
   IBounds,
   JsonValue,
@@ -16,7 +17,6 @@ import {
   SyncedDeepObject,
   TextureAdapter,
   Vector2,
-  GameChangeRestartCleared,
 } from "@dreamlab/engine";
 import * as cbor from "@dreamlab/vendor/cbor2.ts";
 import { gzip, ungzip } from "@dreamlab/vendor/pako.ts";
@@ -97,7 +97,7 @@ export abstract class BaseTilemap extends PixiEntity {
     return { ...tile, x, y };
   }
 
-  getTile(x: number, y: number): TileData | undefined {
+  getTilePaletteId(x: number, y: number): number | undefined {
     x = Math.floor(x);
     y = Math.floor(y);
 
@@ -107,6 +107,12 @@ export abstract class BaseTilemap extends PixiEntity {
     const paletteId = this.data[x]?.[y];
     if (paletteId === undefined) return undefined;
 
+    return paletteId;
+  }
+
+  getTile(x: number, y: number): TileData | undefined {
+    const paletteId = this.getTilePaletteId(x, y);
+    if (paletteId === undefined) return undefined;
     return this.palette[paletteId];
   }
 

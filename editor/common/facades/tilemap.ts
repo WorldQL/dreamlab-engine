@@ -9,6 +9,7 @@ import {
 } from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { SelectedEntityService } from "../../client/ui/selected-entity.ts";
+import { UndoRedoManager } from "../../client/undo-redo.ts";
 import { Facades } from "./manager.ts";
 
 export class EditorFacadeTilemap extends BaseTilemap {
@@ -181,7 +182,23 @@ export class EditorFacadeTilemap extends BaseTilemap {
           const tileId = this.paletteId[idx] ?? -1;
           if (tileId < 0) continue;
 
-          this.setTile(x + dx, y + dy, left ? tileId : undefined);
+          const tileX = x + dx,
+            tileY = y + dy;
+          const prevId = this.getTilePaletteId(tileX, tileY);
+          const newId = left ? tileId : undefined;
+          if (prevId !== newId) {
+            this.setTile(tileX, tileY, newId);
+            // TODO: it would be nice to build up a compound undo/redo op and then commit
+            // it on mouseup
+            UndoRedoManager._.push({
+              t: "modify-tilemap",
+              tilemapRef: this.ref,
+              x: tileX,
+              y: tileY,
+              prevId,
+              newId,
+            });
+          }
         }
       }
     });
