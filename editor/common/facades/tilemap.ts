@@ -161,6 +161,11 @@ export class EditorFacadeTilemap extends BaseTilemap {
       const right = this.inputs.getKey("MouseRight");
       if (!left && !right) return;
 
+      const svc = SelectedEntityService.serviceForGame(game);
+      if (!svc?.entities.includes(this)) {
+        return;
+      }
+
       const cols = Math.max(1, this.paletteCols | 0);
       const rows = Math.max(1, this.paletteRows | 0);
       const { x, y } = this.getTileCoordinatesAtPoint(world);
