@@ -542,18 +542,46 @@ export abstract class BaseTilemap extends PixiEntity {
 
   readonly #ctx = new PIXI.GraphicsContext().rect(-0.5, -0.5, 1, 1).fill("white");
 
+  #redrawing: boolean = false;
+  #redrawQueued: boolean = false;
   async #redraw(): Promise<void> {
     if (!this.#container) return;
 
-    const seen = new Set<string>();
-    for (const tile of this.tiles()) {
-      await this.#drawTile(tile);
-      seen.add(`${tile.x}:${tile.y}`);
+    if (this.#redrawing) {
+      this.#redrawQueued = true;
+      return;
     }
 
-    // remove tiles that shouldnt be there
-    for (const child of this.#container.children) {
-      if (!seen.has(child.label)) child.destroy();
+    this.#redrawing = true;
+    try {
+      const seen = new Set<string>();
+      let idx = 0;
+      for (const tile of this.tiles()) {
+        await this.#drawTile(tile);
+        seen.add(`${tile.x}:${tile.y}`);
+
+        const BATCH_SIZE = 1000; // TODO: tweak numbers
+        if (idx >= BATCH_SIZE) {
+          await this.game.time.waitForNextTick();
+          idx = 0;
+        } else {
+          idx += 1;
+        }
+      }
+
+      // remove tiles that shouldnt be there
+      await this.game.time.waitForNextTick();
+      for (const child of this.#container.children) {
+        if (!seen.has(child.label)) child.destroy();
+      }
+    } finally {
+      this.#redrawing = false;
+    }
+
+    if (this.#redrawQueued) {
+      await this.game.time.waitForNextTick();
+      this.#redrawQueued = false;
+      this.#redraw();
     }
   }
 
