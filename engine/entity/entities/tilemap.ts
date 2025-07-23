@@ -568,17 +568,25 @@ export abstract class BaseTilemap extends PixiEntity {
       y: -data.y,
     };
 
+    let shouldDestroy = false;
     switch (tile.type) {
       case "color": {
-        const gfx = new PIXI.Graphics({
-          label,
-          context: this.#ctx,
-          position,
-          tint: tile.color,
-          alpha: tile.alpha,
-        });
+        if (previous instanceof PIXI.Graphics) {
+          previous.tint = tile.color;
+          previous.alpha = tile.alpha ?? 1;
+        } else {
+          const gfx = new PIXI.Graphics({
+            label,
+            context: this.#ctx,
+            position,
+            tint: tile.color,
+            alpha: tile.alpha,
+          });
 
-        this.#container.addChild(gfx);
+          shouldDestroy = true;
+          this.#container.addChild(gfx);
+        }
+
         break;
       }
 
@@ -586,21 +594,26 @@ export abstract class BaseTilemap extends PixiEntity {
       case "spritesheet":
       case "texture-slice": {
         const texture = await this.loadTexture(tile);
-        const sprite = new PIXI.Sprite({
-          label,
-          texture,
-          width: 1,
-          height: 1,
-          anchor: 0.5,
-          position,
-        });
+        if (previous instanceof PIXI.Sprite) {
+          previous.texture = texture;
+        } else {
+          const sprite = new PIXI.Sprite({
+            label,
+            texture,
+            width: 1,
+            height: 1,
+            anchor: 0.5,
+            position,
+          });
 
-        this.#container.addChild(sprite);
+          shouldDestroy = true;
+          this.#container.addChild(sprite);
+        }
         break;
       }
     }
 
-    previous?.destroy();
+    if (shouldDestroy) previous?.destroy();
   }
 
   #recalculateBounds(): void {
