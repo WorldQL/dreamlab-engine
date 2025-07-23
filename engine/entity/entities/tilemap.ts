@@ -560,7 +560,7 @@ export abstract class BaseTilemap extends PixiEntity {
       for (const child of removed) child.destroy({ children: true });
 
       for (const tile of this.tiles()) await this.#drawTile(tile);
-    }, this.redrawCounter * 5000);
+    }, (this.redrawCounter - 1) * 5000);
   }
 
   async #drawTile(data: TileDrawData): Promise<void> {
