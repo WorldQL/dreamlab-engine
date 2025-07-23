@@ -545,10 +545,16 @@ export abstract class BaseTilemap extends PixiEntity {
   async #redraw(): Promise<void> {
     if (!this.#container) return;
 
-    const removed = this.#container.removeChildren();
-    for (const child of removed) child.destroy({ children: true });
+    const seen = new Set<string>();
+    for (const tile of this.tiles()) {
+      await this.#drawTile(tile);
+      seen.add(`${tile.x}:${tile.y}`);
+    }
 
-    for (const tile of this.tiles()) await this.#drawTile(tile);
+    // remove tiles that shouldnt be there
+    for (const child of this.#container.children) {
+      if (!seen.has(child.label)) child.destroy();
+    }
   }
 
   async #drawTile(data: TileDrawData): Promise<void> {
@@ -556,9 +562,9 @@ export abstract class BaseTilemap extends PixiEntity {
 
     const tile = data.tile;
     const label = `${data.x}:${data.y}`;
-    const previous = this.#container.getChildByLabel(label);
 
     if (!tile) {
+      const previous = this.#container.getChildByLabel(label);
       previous?.destroy();
       return;
     }
@@ -568,9 +574,9 @@ export abstract class BaseTilemap extends PixiEntity {
       y: -data.y,
     };
 
-    let shouldDestroy = false;
     switch (tile.type) {
       case "color": {
+        const previous = this.#container.getChildByLabel(label);
         if (previous instanceof PIXI.Graphics) {
           previous.tint = tile.color;
           previous.alpha = tile.alpha ?? 1;
@@ -583,7 +589,7 @@ export abstract class BaseTilemap extends PixiEntity {
             alpha: tile.alpha,
           });
 
-          shouldDestroy = true;
+          previous?.destroy();
           this.#container.addChild(gfx);
         }
 
@@ -594,6 +600,8 @@ export abstract class BaseTilemap extends PixiEntity {
       case "spritesheet":
       case "texture-slice": {
         const texture = await this.loadTexture(tile);
+        const previous = this.#container.getChildByLabel(label);
+
         if (previous instanceof PIXI.Sprite) {
           previous.texture = texture;
         } else {
@@ -606,14 +614,12 @@ export abstract class BaseTilemap extends PixiEntity {
             position,
           });
 
-          shouldDestroy = true;
+          previous?.destroy();
           this.#container.addChild(sprite);
         }
         break;
       }
     }
-
-    if (shouldDestroy) previous?.destroy();
   }
 
   #recalculateBounds(): void {
