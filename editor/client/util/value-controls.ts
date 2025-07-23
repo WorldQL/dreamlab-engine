@@ -345,6 +345,9 @@ export function createValueControl(
       picker.style.height = "150px";
 
       const popup = elem("div", { className: "color-picker-popup" }, [header, picker]);
+      popup.style.position = "fixed";
+      popup.style.zIndex = "1000";
+      popup.style.display = "none";
 
       const container = elem("div", { className: "color-picker-container" }, [
         colorBox,
