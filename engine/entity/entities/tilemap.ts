@@ -542,25 +542,13 @@ export abstract class BaseTilemap extends PixiEntity {
 
   readonly #ctx = new PIXI.GraphicsContext().rect(-0.5, -0.5, 1, 1).fill("white");
 
-  redrawCounter = 0;
   async #redraw(): Promise<void> {
-    console.log(
-      "called redraw this many times: ",
-      ++this.redrawCounter,
-      "QUEUEING REDRAW FOR ",
-      this.redrawCounter * 5,
-      "SECONDS FROM NOW",
-    );
+    if (!this.#container) return;
 
-    setTimeout(async () => {
-      console.log("running redraw");
-      if (!this.#container) return;
+    const removed = this.#container.removeChildren();
+    for (const child of removed) child.destroy({ children: true });
 
-      const removed = this.#container.removeChildren();
-      for (const child of removed) child.destroy({ children: true });
-
-      for (const tile of this.tiles()) await this.#drawTile(tile);
-    }, this.redrawCounter * 5000);
+    for (const tile of this.tiles()) await this.#drawTile(tile);
   }
 
   async #drawTile(data: TileDrawData): Promise<void> {
