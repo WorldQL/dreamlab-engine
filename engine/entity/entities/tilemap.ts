@@ -216,7 +216,10 @@ export abstract class BaseTilemap extends PixiEntity {
     this.listen(this.game, GameTick, () => {
       if (this.#tilesDirty) {
         this.#tilesDirty = false;
-        void this.#redraw();
+        console.log("calling #redraw due to dirty tiles!");
+        setTimeout(() => {
+          void this.#redraw();
+        }, 10000);
       }
 
       if (this.#boundsDirty) {
@@ -426,16 +429,19 @@ export abstract class BaseTilemap extends PixiEntity {
     this.#container = new PIXI.Container({ label: "container" });
     this.container.addChild(this.#container);
 
-    if (this.atlas) {
-      void (async () => {
-        await this.#recomputePalette();
-        await this.#redraw();
-      })();
-    } else {
-      void this.#redraw();
-    }
-    this.#updateSize();
-    this.#recalculateBounds();
+    setTimeout(() => {
+      console.log("oninitialize redraw");
+      if (this.atlas) {
+        void (async () => {
+          await this.#recomputePalette();
+          await this.#redraw();
+        })();
+      } else {
+        void this.#redraw();
+      }
+      this.#updateSize();
+      this.#recalculateBounds();
+    }, 10000);
   }
 
   protected saveDataForScene(): JsonValue | undefined {
@@ -450,8 +456,11 @@ export abstract class BaseTilemap extends PixiEntity {
       Object.assign(this.paletteOverrides, paletteOverrides);
       Object.assign(this.data, data);
 
-      void this.#redraw();
-      this.#recalculateBounds();
+      setTimeout(() => {
+        console.log("loadDataForScene redraw");
+        void this.#redraw();
+        this.#recalculateBounds();
+      }, 10000);
     } catch {
       // ignore
     }
@@ -542,7 +551,10 @@ export abstract class BaseTilemap extends PixiEntity {
 
   readonly #ctx = new PIXI.GraphicsContext().rect(-0.5, -0.5, 1, 1).fill("white");
 
+  redrawCounter = 0;
+
   async #redraw(): Promise<void> {
+    console.log("#redraw called!!, times called:", ++this.redrawCounter);
     if (!this.#container) return;
 
     const removed = this.#container.removeChildren();
