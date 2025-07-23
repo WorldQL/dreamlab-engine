@@ -23,7 +23,12 @@ const instanceWatchdogTask = () => {
   // kills instances which are not responding, run frequently
 
   for (const instance of GameInstance.INSTANCES.values()) {
-    for (const session of [instance.session, instance.playSession]) {
+    const sessions = [
+      [instance.session, false] as const,
+      [instance.playSession, true] as const,
+    ] as const;
+
+    for (const [session, play] of sessions) {
       if (session === undefined) continue;
       if (session.wasShutDown) continue;
 
@@ -31,10 +36,13 @@ const instanceWatchdogTask = () => {
         instance.logs.error("Forcefully terminating session as it was not responding");
         try {
           session.ipc.process.kill("SIGKILL");
-        } catch (err) {
+        } catch {
           // ignore
         }
         session.shutdown();
+
+        if (play) instance.playSession = undefined;
+        else instance.session = undefined;
       }
     }
   }

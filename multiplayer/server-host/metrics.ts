@@ -67,6 +67,7 @@ export const report = async (
     sessions.map(async input => {
       const isObject = "session" in input && "metrics" in input;
       const session = isObject ? input.session : input;
+      if (session.wasShutDown) return;
       const metrics = isObject ? input.metrics : await session.metrics();
 
       internalReport(write, session, metrics, { ts: now });

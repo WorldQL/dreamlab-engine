@@ -25,6 +25,7 @@ const interval = setInterval(async () => {
   const jobs = [...GameInstance.INSTANCES.values()].flatMap(instance =>
     [instance.session, instance.playSession]
       .filter(it => it !== undefined)
+      .filter(it => !it.wasShutDown)
       .map(
         async session =>
           ({ session, worker: session.ipc, metrics: await session.metrics() }) as const,
