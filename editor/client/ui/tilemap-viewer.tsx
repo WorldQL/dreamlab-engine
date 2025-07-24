@@ -61,7 +61,7 @@ export class TileMapViewer {
 
         if (isZoomGesture) {
           const oldScale = this.scale;
-          const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
+          const zoomFactor = e.deltaY < 0 ? 1.05 : 0.95;
           this.scale = Math.min(5, Math.max(0.2, this.scale * zoomFactor));
 
           const rect = this.canvas.getBoundingClientRect();
