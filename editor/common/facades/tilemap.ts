@@ -22,7 +22,7 @@ export class EditorFacadeTilemap extends BaseTilemap {
     Facades.register(Tilemap, this);
   }
 
-  paletteId: number[] = [0];
+  paletteId: number[] = [];
   paletteCols = 1;
   paletteRows = 1;
   paletteIdDirty: boolean = true;
@@ -106,6 +106,8 @@ export class EditorFacadeTilemap extends BaseTilemap {
     const g = this.#tooltip;
     g.clear();
 
+    if (this.paletteId.length === 0) return;
+
     for (let dy = 0; dy < rows; dy++) {
       for (let dx = 0; dx < cols; dx++) {
         const sy = rows - 1 - dy;
@@ -128,23 +130,6 @@ export class EditorFacadeTilemap extends BaseTilemap {
           });
       }
     }
-
-    // for (let dy = 0; dy < rows; dy++) {
-    //   for (let dx = 0; dx < cols; dx++) {
-    //     const tile = this.palette[this.paletteId[++idx]];
-    //     if (!tile || tile.type !== "texture-slice") continue;
-
-    //     const texture = await this.#loadTexture(tile);
-    //     g.rect(dx - 0.5, -dy - 0.5, 1, 1)
-    //       .fill({ texture, alpha: 0.7 })
-    //       .stroke({
-    //         pixelLine: true,
-    //         color: 0xffffff,
-    //         alpha: 0.75,
-    //         width: 1,
-    //       });
-    //   }
-    // }
   }
 
   onInitialize(): void {
@@ -160,6 +145,8 @@ export class EditorFacadeTilemap extends BaseTilemap {
 
     let paintOperations: (UndoRedoOperation & { t: "modify-tilemap" })[] = [];
     const paint = (world: Vector2) => {
+      if (this.paletteId.length === 0) return;
+
       const left = this.inputs.getKey("MouseLeft");
       const right = this.inputs.getKey("MouseRight");
       if (!left && !right) return;

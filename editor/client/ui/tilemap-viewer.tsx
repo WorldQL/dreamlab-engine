@@ -346,6 +346,15 @@ export class TileMapViewer {
     this.canvas.width = img.width;
     this.canvas.height = img.height;
 
+    if (tilemap.paletteId.length > 0) {
+      const cols = this.atlasWidth / tilemap.resolution;
+      for (const idx of tilemap.paletteId) {
+        const x = idx % cols;
+        const y = Math.floor(idx / cols);
+        this.selectedTiles.set(`${x}:${y}`, { x, y });
+      }
+    }
+
     this.hideMessage();
     this.draw();
   }
