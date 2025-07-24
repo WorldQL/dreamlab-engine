@@ -2,6 +2,7 @@ import {
   Camera,
   CameraFilterModeChanged,
   defineSyncedObject,
+  EditorChangeRequiresRestart,
   EditorChangeRestartCleared,
   Entity,
   EntityConstructor,
@@ -181,7 +182,7 @@ export abstract class BaseTilemap extends PixiEntity {
       if (originalScale === undefined) {
         originalScale = oldValue;
         this.game.fire(
-          EditorChangeRestartCleared,
+          EditorChangeRequiresRestart,
           `Scale filter mode for "${this.name}" entity has changed.`,
         );
       } else if (newValue === originalScale) {
