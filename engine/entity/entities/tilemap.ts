@@ -500,11 +500,18 @@ export abstract class BaseTilemap extends PixiEntity {
     const camera = Camera.getActive(this.game);
     const scaleMode = camera?.scaleFilterMode ?? "nearest";
 
+    const updateScaleMode = (texture: PIXI.Texture) => {
+      if (texture.source.scaleMode === scaleMode) return;
+      texture.source.scaleMode = scaleMode;
+      texture.source.update();
+    };
+
     switch (tile.type) {
       case "texture": {
         const url = this.game.resolveResource(tile.texture);
-        const texture = await PIXI.Assets.load({ src: url, data: { scaleMode } });
+        const texture = await PIXI.Assets.load<PIXI.Texture>({ src: url, data: { scaleMode } });
         if (!(texture instanceof PIXI.Texture)) throw new Error("invalid texture");
+        updateScaleMode(texture);
 
         this.#textureCache.set(cacheId, texture);
         return texture;
@@ -521,6 +528,7 @@ export abstract class BaseTilemap extends PixiEntity {
         const textures = Object.values(spritesheet.textures);
         const texture = textures.at(tile.frame);
         if (!texture) throw new Error("missing texture in spritesheet");
+        updateScaleMode(texture);
 
         this.#textureCache.set(cacheId, texture);
         return texture;
@@ -530,6 +538,7 @@ export abstract class BaseTilemap extends PixiEntity {
         const url = this.game.resolveResource(tile.texture);
         const texture = await PIXI.Assets.load({ src: url, data: { scaleMode } });
         if (!(texture instanceof PIXI.Texture)) throw new Error("invalid texture");
+        updateScaleMode(texture);
 
         const frame = new PIXI.Rectangle(tile.x, tile.y, this.resolution, this.resolution);
         const slice = new PIXI.Texture({ source: texture.source, frame });
