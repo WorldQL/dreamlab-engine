@@ -80,7 +80,10 @@ export class EditorFacadeTilemap extends BaseTilemap {
 
     const base = await super.loadTexture(tile);
     const camera = Camera.getActive(this.game);
-    const scaleMode = camera?.scaleFilterMode ?? "nearest";
+    const scaleMode: Exclude<BaseTilemap["scaleFilterMode"], "default"> =
+      this.scaleFilterMode === "default"
+        ? (camera?.scaleFilterMode ?? "nearest")
+        : this.scaleFilterMode;
 
     const texture = renderer.generateTexture({
       target: new PIXI.Sprite(base),

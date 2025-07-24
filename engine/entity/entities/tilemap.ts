@@ -498,7 +498,10 @@ export abstract class BaseTilemap extends PixiEntity {
     if (cached) return cached;
 
     const camera = Camera.getActive(this.game);
-    const scaleMode = camera?.scaleFilterMode ?? "nearest";
+    const scaleMode: Exclude<ScaleFilterMode, "default"> =
+      this.scaleFilterMode === "default"
+        ? (camera?.scaleFilterMode ?? "nearest")
+        : this.scaleFilterMode;
 
     const updateScaleMode = (texture: PIXI.Texture) => {
       if (texture.source.scaleMode === scaleMode) return;
