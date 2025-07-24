@@ -18,6 +18,22 @@ import { InspectorUI } from "./ui/inspector.ts";
 import { EmptyFacade } from "../common/facades/empty.ts";
 import { EditorFacadeTilemap } from "../common/facades/tilemap.ts";
 
+const PINCH_THRESHOLD = 50; // px   – mouse wheels are almost always > 100
+const SCROLL_THRESHOLD = 15; // px   – track‑pad two‑finger scrolls are small
+
+function isPinch(ev: WheelEvent) {
+  return (ev.ctrlKey || ev.metaKey) && Math.abs(ev.deltaY) < PINCH_THRESHOLD && ev.deltaY !== 0;
+}
+
+function isTrackpadScroll(ev: WheelEvent) {
+  return (
+    // @ts-expect-error non-standard
+    ev.wheelDeltaY === -3 * ev.deltaY &&
+    ev.deltaY !== 0 &&
+    Math.abs(ev.deltaY) < SCROLL_THRESHOLD
+  );
+}
+
 let TOUCHPAD_DETECTED = false;
 export class CameraPanBehavior extends Behavior {
   ui: InspectorUI | undefined;
@@ -226,8 +242,7 @@ export class CameraPanBehavior extends Behavior {
     ev.stopPropagation();
 
     if (!TOUCHPAD_DETECTED) {
-      // @ts-expect-error non-standard
-      TOUCHPAD_DETECTED = ev.wheelDeltaY === -3 * ev.deltaY && ev.deltaY !== 0;
+      TOUCHPAD_DETECTED = isPinch(ev) || isTrackpadScroll(ev);
     }
 
     // mouse mode
