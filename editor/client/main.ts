@@ -290,17 +290,20 @@ await setupGame(game, conn, handshake.edit_mode);
       collectEntitiesRecursively(child);
     }
   };
-  for (const entity of game.world._.EditEntities.children.values()) {
-    if (entity.id === "world/EditEntities/prefabs") {
-      continue;
+
+  if (allEntities.length > 0) {
+    for (const entity of game.world._.EditEntities.children.values()) {
+      if (entity.id === "world/EditEntities/prefabs") {
+        continue;
+      }
+      collectEntitiesRecursively(entity);
     }
-    collectEntitiesRecursively(entity);
+    const avgX = xAcc / allEntities.length;
+    const avgY = yAcc / allEntities.length;
+    const camera = game.local._.Camera.cast(Camera);
+    camera.pos.x = avgX;
+    camera.pos.y = avgY;
   }
-  const avgX = xAcc / allEntities.length;
-  const avgY = yAcc / allEntities.length;
-  const camera = game.local._.Camera.cast(Camera);
-  camera.pos.x = avgX;
-  camera.pos.y = avgY;
 }
 
 fonts.then(() => {
