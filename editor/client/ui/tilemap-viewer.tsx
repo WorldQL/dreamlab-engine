@@ -8,6 +8,8 @@ export class TileMapViewer {
   #content = (<div id="tilemap-grid" />) as HTMLElement;
 
   static readonly MAX_TILES = 1024;
+  private static readonly BASE_MAX_SCALE = 5;
+  private static readonly TARGET_TILE_SIZE = 64;
 
   private canvas!: HTMLCanvasElement;
   private ctx!: CanvasRenderingContext2D;
@@ -61,8 +63,14 @@ export class TileMapViewer {
 
         if (isZoomGesture) {
           const oldScale = this.scale;
-          const zoomFactor = e.deltaY < 0 ? 1.05 : 0.95;
-          this.scale = Math.min(5, Math.max(0.2, this.scale * zoomFactor));
+          const zoomFactor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
+
+          const maxScale = Math.max(
+            TileMapViewer.BASE_MAX_SCALE,
+            TileMapViewer.TARGET_TILE_SIZE / this.resolution,
+          );
+
+          this.scale = Math.min(maxScale, Math.max(0.2, this.scale * zoomFactor));
 
           const rect = this.canvas.getBoundingClientRect();
           const scaleX = this.canvas.width / rect.width;
@@ -200,7 +208,7 @@ export class TileMapViewer {
 
           const paletteIndex = ty * cols + tx;
           if (paletteIndex >= TileMapViewer.MAX_TILES) {
-            this.canvas.title = `Too many tiles - tile #${paletteIndex} cannot be selected.`;
+            this.canvas.title = "All tiles below this tile cannot be selected.";
             this.selectStart = this.selectEnd = null;
             isDragging = false;
             this.draw();
@@ -409,61 +417,69 @@ export class TileMapViewer {
     }
 
     this.hideMessage();
-
     ctx.drawImage(this.atlas, 0, 0);
 
-    ctx.strokeStyle = "rgba(255,255,255,0.25)";
-    ctx.lineWidth = 1 / this.scale;
     const cols = this.atlasWidth / this.resolution;
     const rows = this.atlasHeight / this.resolution;
-    for (let i = 1; i < cols; i++) {
-      const x = i * this.resolution;
+    const selectableRows = Math.ceil(TileMapViewer.MAX_TILES / cols);
+    const selectableH = selectableRows * this.resolution;
+    const overLimit = rows * cols > TileMapViewer.MAX_TILES;
+
+    const offset = 0.5;
+    const gridLineW = 1;
+    const hiLineW = 2;
+
+    const MIN_GAP_PX = 4;
+    const step = Math.max(1, Math.ceil(MIN_GAP_PX / (this.resolution * this.scale)));
+
+    ctx.strokeStyle = "rgba(255,255,255,0.45)";
+    ctx.lineWidth = gridLineW;
+
+    for (let i = step; i < cols; i += step) {
+      const x = i * this.resolution + offset;
       ctx.beginPath();
       ctx.moveTo(x, 0);
-      ctx.lineTo(x, this.atlasHeight);
+      ctx.lineTo(x, selectableH);
       ctx.stroke();
     }
-    for (let j = 1; j < rows; j++) {
-      const y = j * this.resolution;
+
+    for (let j = step; j < selectableRows; j += step) {
+      const y = j * this.resolution + offset;
       ctx.beginPath();
       ctx.moveTo(0, y);
       ctx.lineTo(this.atlasWidth, y);
       ctx.stroke();
     }
 
-    if (cols * rows > TileMapViewer.MAX_TILES) {
-      ctx.strokeStyle = "rgba(255,51,51,0.5)";
-      ctx.lineWidth = 2 / this.scale;
-      for (let idx = TileMapViewer.MAX_TILES; idx < cols * rows; idx++) {
-        const tx = idx % cols;
-        const ty = Math.floor(idx / cols);
-        const x = tx * this.resolution;
-        const y = ty * this.resolution;
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(x + this.resolution, y + this.resolution);
-        ctx.moveTo(x + this.resolution, y);
-        ctx.lineTo(x, y + this.resolution);
-        ctx.stroke();
-      }
+    if (overLimit) {
+      ctx.strokeStyle = "rgba(255,51,51,0.9)";
+      ctx.lineWidth = hiLineW;
+      const y = selectableH + offset;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(this.atlasWidth, y);
+      ctx.stroke();
     }
 
     if (this.selectStart && this.selectEnd) {
-      ctx.strokeStyle = "rgba(0,255,0,0.5)";
-      ctx.lineWidth = 2 / this.scale;
+      ctx.strokeStyle = "rgba(0,255,0,0.6)";
+      ctx.lineWidth = hiLineW;
+
       const x0 = Math.min(this.selectStart.x, this.selectEnd.x);
       const x1 = Math.max(this.selectStart.x, this.selectEnd.x);
       const y0 = Math.min(this.selectStart.y, this.selectEnd.y);
       const y1 = Math.max(this.selectStart.y, this.selectEnd.y);
-      ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
+
+      ctx.strokeRect(x0 + offset, y0 + offset, x1 - x0, y1 - y0);
     }
 
-    ctx.strokeStyle = "rgba(0,255,0,0.8)";
-    ctx.lineWidth = 2 / this.scale;
+    ctx.strokeStyle = "rgba(0,255,0,0.9)";
+    ctx.lineWidth = hiLineW;
+
     for (const { x, y } of this.selectedTiles.values()) {
       ctx.strokeRect(
-        x * this.resolution,
-        y * this.resolution,
+        x * this.resolution + offset,
+        y * this.resolution + offset,
         this.resolution,
         this.resolution,
       );
