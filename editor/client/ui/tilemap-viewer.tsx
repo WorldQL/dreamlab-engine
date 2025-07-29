@@ -92,6 +92,11 @@ export class TileMapViewer {
     this.canvas.addEventListener("mousedown", e => {
       e.preventDefault();
 
+      (document.getElementById("tilemap-tooltip") as HTMLDivElement | null)?.style.setProperty(
+        "opacity",
+        "0",
+      );
+
       if (e.button === 1) {
         this.isPanning = true;
         this.panStart = { x: e.clientX, y: e.clientY };
@@ -193,7 +198,35 @@ export class TileMapViewer {
             this.selectedTiles.set(key, { x: tx, y: ty });
           }
         } else {
-          this.canvas.title = "All tiles below this line cannot be selected.";
+          const id = "tilemap-tooltip";
+          let tip = document.getElementById(id) as HTMLDivElement | null;
+
+          if (!tip) {
+            tip = document.createElement("div");
+            tip.id = id;
+            Object.assign(tip.style, {
+              position: "fixed",
+              zIndex: "9999",
+              pointerEvents: "none",
+              padding: "6px 10px",
+              fontSize: "12px",
+              lineHeight: "1.4",
+              color: "rgb(var(--color-text))",
+              background: "rgba(var(--color-bg-danger) / 0.9)",
+              border: "1px solid rgb(var(--color-danger))",
+              borderRadius: "var(--border-radius)",
+              boxShadow: "0 2px 6px rgba(0,0,0,.4)",
+              whiteSpace: "pre-wrap",
+              transition: "opacity 150ms ease",
+              opacity: "0",
+            });
+            document.body.appendChild(tip);
+          }
+
+          tip.textContent = `Tiles below the red line\ncan’t be selected (limit ${TileMapViewer.MAX_TILES}).`;
+          tip.style.left = `${e.clientX + 12}px`;
+          tip.style.top = `${e.clientY + 12}px`;
+          tip.style.opacity = "1";
         }
       }
 
