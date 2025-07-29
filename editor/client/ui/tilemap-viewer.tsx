@@ -10,6 +10,11 @@ export class TileMapViewer {
   static readonly MAX_TILES = 1024;
   private static readonly BASE_MAX_SCALE = 5;
   private static readonly TARGET_TILE_SIZE = 64;
+  private static readonly PINCH_THRESHOLD = 50;
+  private static readonly SCROLL_THRESHOLD = 15;
+  private static readonly PINCH_SENS = 0.012;
+
+  private isTouchpad = false;
 
   private canvas!: HTMLCanvasElement;
   private ctx!: CanvasRenderingContext2D;
@@ -40,6 +45,24 @@ export class TileMapViewer {
     private container: HTMLElement,
   ) {}
 
+  private isPinch(ev: WheelEvent) {
+    return (
+      (ev.ctrlKey || ev.metaKey) &&
+      Math.abs(ev.deltaY) < TileMapViewer.PINCH_THRESHOLD &&
+      ev.deltaY !== 0
+    );
+  }
+
+  private isTrackpadScroll(ev: WheelEvent) {
+    const wheelDeltaY = (ev as unknown as { wheelDeltaY?: number }).wheelDeltaY ?? 0;
+
+    return (
+      wheelDeltaY === -3 * ev.deltaY &&
+      ev.deltaY !== 0 &&
+      Math.abs(ev.deltaY) < TileMapViewer.SCROLL_THRESHOLD
+    );
+  }
+
   setup(ui: InspectorUI): void {
     this.canvas = document.createElement("canvas");
     this.ctx = this.canvas.getContext("2d")!;
@@ -59,23 +82,53 @@ export class TileMapViewer {
       "wheel",
       e => {
         e.preventDefault();
-        const zoom = e.ctrlKey || e.metaKey || e.altKey;
 
-        if (zoom) {
+        if (!this.isTouchpad) {
+          this.isTouchpad = this.isPinch(e) || this.isTrackpadScroll(e);
+        }
+
+        if (this.isTouchpad) {
+          if (this.isPinch(e)) {
+            const old = this.scale;
+            const zoomFac = Math.exp(-e.deltaY * TileMapViewer.PINCH_SENS);
+            const max = Math.max(
+              TileMapViewer.BASE_MAX_SCALE,
+              TileMapViewer.TARGET_TILE_SIZE / this.resolution,
+            );
+            this.scale = Math.min(max, Math.max(0.2, this.scale * zoomFac));
+
+            const { x: mx, y: my } = this.screenToAtlas(e);
+            this.offsetX = mx - (mx - this.offsetX) * (this.scale / old);
+            this.offsetY = my - (my - this.offsetY) * (this.scale / old);
+          } else {
+            const pf = 1 / Math.min(Math.max(this.scale, 1), 4);
+            this.offsetX -= e.deltaX * pf;
+            this.offsetY -= e.deltaY * pf;
+          }
+
+          this.clampPan();
+          this.draw();
+          return;
+        }
+
+        const panMode = e.ctrlKey || e.metaKey;
+        const notchY = e.deltaMode === 1 ? e.deltaY : e.deltaY / 100;
+
+        if (!panMode) {
+          const zoomStep = Math.pow(1.1, -notchY);
           const old = this.scale;
-          const zf = e.deltaY < 0 ? 1.15 : 1 / 1.15;
           const max = Math.max(
             TileMapViewer.BASE_MAX_SCALE,
             TileMapViewer.TARGET_TILE_SIZE / this.resolution,
           );
-          this.scale = Math.min(max, Math.max(0.2, this.scale * zf));
+          this.scale = Math.min(max, Math.max(0.2, this.scale * zoomStep));
 
           const { x: mx, y: my } = this.screenToAtlas(e);
           this.offsetX = mx - (mx - this.offsetX) * (this.scale / old);
           this.offsetY = my - (my - this.offsetY) * (this.scale / old);
         } else {
-          const factor = e.deltaMode === 1 ? 16 : 1;
           const pf = 1 / Math.min(Math.max(this.scale, 1), 4);
+          const factor = e.deltaMode === 1 ? 16 : 1;
           this.offsetX -= e.deltaX * factor * pf;
           this.offsetY -= e.deltaY * factor * pf;
         }
@@ -410,24 +463,28 @@ export class TileMapViewer {
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     if (!this.atlas) {
-      const snapX = Math.round(this.offsetX);
-      const snapY = Math.round(this.offsetY);
-      ctx.setTransform(this.scale, 0, 0, this.scale, snapX, snapY);
+      ctx.setTransform(
+        this.scale,
+        0,
+        0,
+        this.scale,
+        Math.round(this.offsetX),
+        Math.round(this.offsetY),
+      );
       return;
     }
 
     ctx.imageSmoothingEnabled = false;
     ctx.imageSmoothingQuality = "low";
 
-    const snapX = Math.round(this.offsetX);
-    const snapY = Math.round(this.offsetY);
-    ctx.setTransform(this.scale, 0, 0, this.scale, snapX, snapY);
-
-    const dpr = window.devicePixelRatio || 1;
-    const pxPerTile = this.resolution * this.scale;
-    const tinyMode = pxPerTile < 4;
-    const lineW = 1 / (dpr * this.scale);
-    const halfLine = lineW * 0.5;
+    ctx.setTransform(
+      this.scale,
+      0,
+      0,
+      this.scale,
+      Math.round(this.offsetX),
+      Math.round(this.offsetY),
+    );
 
     ctx.drawImage(this.atlas, 0, 0);
 
@@ -436,40 +493,31 @@ export class TileMapViewer {
     const selectableRows = Math.ceil(TileMapViewer.MAX_TILES / cols);
     const selectableH = selectableRows * this.resolution;
 
-    if (!tinyMode) {
-      const MIN_GAP = 4;
-      const step = Math.max(1, Math.ceil(MIN_GAP / pxPerTile));
+    const pxPerTile = this.resolution * this.scale;
+    const MIN_GAP = 4;
+    const step = Math.max(1, Math.ceil(MIN_GAP / pxPerTile));
 
-      ctx.strokeStyle = "rgba(255,255,255,0.45)";
-      ctx.lineWidth = lineW;
+    const dpr = window.devicePixelRatio || 1;
+    const lineW = 1 / (dpr * this.scale);
+    const halfLine = lineW * 0.5;
 
-      for (let i = step; i < cols; i += step) {
-        const x = i * this.resolution + halfLine;
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, selectableH);
-        ctx.stroke();
-      }
+    ctx.strokeStyle = "rgba(255,255,255,0.45)";
+    ctx.lineWidth = lineW;
 
-      for (let j = step; j < selectableRows; j += step) {
-        const y = j * this.resolution + halfLine;
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(this.atlasWidth, y);
-        ctx.stroke();
-      }
-    } else {
-      ctx.fillStyle = "rgba(255,255,255,0.07)";
-      for (let y = 0; y < selectableRows; ++y) {
-        for (let x = y & 1; x < cols; x += 2) {
-          ctx.fillRect(
-            x * this.resolution,
-            y * this.resolution,
-            this.resolution,
-            this.resolution,
-          );
-        }
-      }
+    for (let i = step; i < cols; i += step) {
+      const x = i * this.resolution + halfLine;
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, selectableH);
+      ctx.stroke();
+    }
+
+    for (let j = step; j < selectableRows; j += step) {
+      const y = j * this.resolution + halfLine;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(this.atlasWidth, y);
+      ctx.stroke();
     }
 
     if (rows * cols > TileMapViewer.MAX_TILES) {
@@ -494,28 +542,15 @@ export class TileMapViewer {
       ctx.strokeRect(x0 + halfLine, y0 + halfLine, x1 - x0, y1 - y0);
     }
 
-    if (!tinyMode) {
-      ctx.strokeStyle = "rgba(0,255,0,0.9)";
-      ctx.lineWidth = lineW;
+    ctx.fillStyle = "rgba(0,255,0,0.20)";
+    ctx.strokeStyle = "rgba(0,255,0,0.7)";
+    ctx.lineWidth = lineW;
 
-      for (const { x, y } of this.selectedTiles.values()) {
-        ctx.strokeRect(
-          x * this.resolution + halfLine,
-          y * this.resolution + halfLine,
-          this.resolution,
-          this.resolution,
-        );
-      }
-    } else {
-      ctx.fillStyle = "rgba(0,255,0,0.35)";
-      for (const { x, y } of this.selectedTiles.values()) {
-        ctx.fillRect(
-          x * this.resolution,
-          y * this.resolution,
-          this.resolution,
-          this.resolution,
-        );
-      }
+    for (const { x, y } of this.selectedTiles.values()) {
+      const rx = x * this.resolution;
+      const ry = y * this.resolution;
+      ctx.fillRect(rx, ry, this.resolution, this.resolution);
+      ctx.strokeRect(rx + halfLine, ry + halfLine, this.resolution, this.resolution);
     }
   }
 
