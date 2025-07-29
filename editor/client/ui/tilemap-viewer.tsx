@@ -208,7 +208,7 @@ export class TileMapViewer {
 
           const paletteIndex = ty * cols + tx;
           if (paletteIndex >= TileMapViewer.MAX_TILES) {
-            this.canvas.title = "All tiles below this tile cannot be selected.";
+            this.canvas.title = "All tiles below this line cannot be selected.";
             this.selectStart = this.selectEnd = null;
             isDragging = false;
             this.draw();
@@ -427,7 +427,7 @@ export class TileMapViewer {
 
     const offset = 0.5;
     const gridLineW = 1;
-    const hiLineW = 2;
+    const hiLineW = 1;
 
     const MIN_GAP_PX = 4;
     const step = Math.max(1, Math.ceil(MIN_GAP_PX / (this.resolution * this.scale)));
