@@ -44,6 +44,7 @@ export class TileMapViewer {
     this.canvas = document.createElement("canvas");
     this.ctx = this.canvas.getContext("2d")!;
     this.ctx.imageSmoothingEnabled = false;
+
     this.#content.append(this.canvas);
     this.#section.append(this.#content);
     this.container.append(this.#section);
@@ -58,43 +59,29 @@ export class TileMapViewer {
       "wheel",
       e => {
         e.preventDefault();
+        const zoom = e.ctrlKey || e.metaKey || e.altKey;
 
-        const isZoomGesture = e.ctrlKey || e.metaKey || e.altKey;
-
-        if (isZoomGesture) {
-          const oldScale = this.scale;
-          const zoomFactor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
-
-          const maxScale = Math.max(
+        if (zoom) {
+          const old = this.scale;
+          const zf = e.deltaY < 0 ? 1.15 : 1 / 1.15;
+          const max = Math.max(
             TileMapViewer.BASE_MAX_SCALE,
             TileMapViewer.TARGET_TILE_SIZE / this.resolution,
           );
+          this.scale = Math.min(max, Math.max(0.2, this.scale * zf));
 
-          this.scale = Math.min(maxScale, Math.max(0.2, this.scale * zoomFactor));
-
-          const rect = this.canvas.getBoundingClientRect();
-          const scaleX = this.canvas.width / rect.width;
-          const scaleY = this.canvas.height / rect.height;
-          let mx = (e.clientX - rect.left) * scaleX;
-          let my = (e.clientY - rect.top) * scaleY;
-
-          if (mx < 0 || mx > this.canvas.width || my < 0 || my > this.canvas.height) {
-            mx = this.canvas.width / 2;
-            my = this.canvas.height / 2;
-          }
-
-          this.offsetX = mx - (mx - this.offsetX) * (this.scale / oldScale);
-          this.offsetY = my - (my - this.offsetY) * (this.scale / oldScale);
-          this.clampPan();
-          this.draw();
+          const { x: mx, y: my } = this.screenToAtlas(e);
+          this.offsetX = mx - (mx - this.offsetX) * (this.scale / old);
+          this.offsetY = my - (my - this.offsetY) * (this.scale / old);
         } else {
-          const { deltaX, deltaY, deltaMode } = e;
-          const factor = deltaMode === 1 ? 16 : 1;
-          this.offsetX -= deltaX * factor;
-          this.offsetY -= deltaY * factor;
-          this.clampPan();
-          this.draw();
+          const factor = e.deltaMode === 1 ? 16 : 1;
+          const pf = 1 / Math.min(Math.max(this.scale, 1), 4);
+          this.offsetX -= e.deltaX * factor * pf;
+          this.offsetY -= e.deltaY * factor * pf;
         }
+
+        this.clampPan();
+        this.draw();
       },
       { passive: false },
     );
@@ -113,12 +100,8 @@ export class TileMapViewer {
       }
 
       if (e.button === 0) {
-        const rect = this.canvas.getBoundingClientRect();
-        const scaleX = this.canvas.width / rect.width;
-        const scaleY = this.canvas.height / rect.height;
-        const bx = (e.clientX - rect.left) * scaleX;
-        const by = (e.clientY - rect.top) * scaleY;
-        this.selectStart = { x: bx, y: by };
+        const { x, y } = this.screenToAtlas(e);
+        this.selectStart = { x, y };
         this.selectEnd = null;
         isDragging = false;
         addMode = e.ctrlKey || e.metaKey;
@@ -128,8 +111,9 @@ export class TileMapViewer {
     this.canvas.addEventListener("mousemove", e => {
       if (this.isPanning) {
         e.preventDefault();
-        this.offsetX += e.clientX - this.panStart.x;
-        this.offsetY += e.clientY - this.panStart.y;
+        const pf = 1 / Math.min(Math.max(this.scale, 1), 4);
+        this.offsetX += (e.clientX - this.panStart.x) * pf;
+        this.offsetY += (e.clientY - this.panStart.y) * pf;
         this.panStart = { x: e.clientX, y: e.clientY };
         this.clampPan();
         this.draw();
@@ -138,12 +122,8 @@ export class TileMapViewer {
 
       if (this.selectStart) {
         isDragging = true;
-        const rect = this.canvas.getBoundingClientRect();
-        const scaleX = this.canvas.width / rect.width;
-        const scaleY = this.canvas.height / rect.height;
-        const bx = (e.clientX - rect.left) * scaleX;
-        const by = (e.clientY - rect.top) * scaleY;
-        this.selectEnd = { x: bx, y: by };
+        const { x, y } = this.screenToAtlas(e);
+        this.selectEnd = { x, y };
         this.draw();
       }
     });
@@ -153,68 +133,56 @@ export class TileMapViewer {
         this.isPanning = false;
         return;
       }
+      if (e.button !== 0 || !this.selectStart) return;
 
-      if (e.button === 0 && this.selectStart) {
-        if (!this.atlas || !this.resolution) {
-          this.selectStart = this.selectEnd = null;
-          this.draw();
-          return;
-        }
+      if (!this.atlas || !this.resolution) {
+        this.selectStart = this.selectEnd = null;
+        this.draw();
+        return;
+      }
+      const cols = Math.floor(this.atlasWidth / this.resolution);
+      const maxTileX = cols - 1;
+      const maxTileY = Math.floor(this.atlasHeight / this.resolution) - 1;
 
-        const maxTileX = Math.floor(this.atlasWidth / this.resolution) - 1;
-        const maxTileY = Math.floor(this.atlasHeight / this.resolution) - 1;
-        const cols = Math.floor(this.atlasWidth / this.resolution);
+      if (isDragging && this.selectEnd) {
+        const x0 = Math.min(this.selectStart.x, this.selectEnd.x);
+        const x1 = Math.max(this.selectStart.x, this.selectEnd.x);
+        const y0 = Math.min(this.selectStart.y, this.selectEnd.y);
+        const y1 = Math.max(this.selectStart.y, this.selectEnd.y);
 
-        if (isDragging && this.selectEnd) {
-          const x0 = Math.min(this.selectStart.x, this.selectEnd.x);
-          const x1 = Math.max(this.selectStart.x, this.selectEnd.x);
-          const y0 = Math.min(this.selectStart.y, this.selectEnd.y);
-          const y1 = Math.max(this.selectStart.y, this.selectEnd.y);
-          const map = addMode
-            ? new Map(this.selectedTiles)
-            : new Map<string, { x: number; y: number }>();
+        const map = addMode
+          ? new Map(this.selectedTiles)
+          : new Map<string, { x: number; y: number }>();
 
+        for (
+          let tx = Math.floor(x0 / this.resolution);
+          tx <= Math.floor(x1 / this.resolution);
+          tx++
+        ) {
+          if (tx < 0 || tx > maxTileX) continue;
           for (
-            let tx = Math.floor(x0 / this.resolution);
-            tx <= Math.floor(x1 / this.resolution);
-            tx++
+            let ty = Math.floor(y0 / this.resolution);
+            ty <= Math.floor(y1 / this.resolution);
+            ty++
           ) {
-            if (tx < 0 || tx > maxTileX) continue;
-            for (
-              let ty = Math.floor(y0 / this.resolution);
-              ty <= Math.floor(y1 / this.resolution);
-              ty++
-            ) {
-              if (ty < 0 || ty > maxTileY) continue;
-              const paletteIndex = ty * cols + tx;
-              if (paletteIndex >= TileMapViewer.MAX_TILES) continue;
-              map.set(`${tx}:${ty}`, { x: tx, y: ty });
-            }
+            if (ty < 0 || ty > maxTileY) continue;
+            const paletteIndex = ty * cols + tx;
+            if (paletteIndex >= TileMapViewer.MAX_TILES) continue;
+            map.set(`${tx}:${ty}`, { x: tx, y: ty });
           }
-          this.selectedTiles = map;
-        } else {
-          const rect = this.canvas.getBoundingClientRect();
-          const scaleX = this.canvas.width / rect.width;
-          const scaleY = this.canvas.height / rect.height;
-          const bx = (e.clientX - rect.left) * scaleX;
-          const by = (e.clientY - rect.top) * scaleY;
+        }
+        this.selectedTiles = map;
+      } else {
+        const { x: ax, y: ay } = this.screenToAtlas(e);
+        let tx = Math.floor(ax / this.resolution);
+        let ty = Math.floor(ay / this.resolution);
+        if (tx < 0) tx = 0;
+        if (ty < 0) ty = 0;
+        if (tx > maxTileX) tx = maxTileX;
+        if (ty > maxTileY) ty = maxTileY;
 
-          let tx = Math.floor(bx / this.resolution);
-          let ty = Math.floor(by / this.resolution);
-          if (tx < 0) tx = 0;
-          if (ty < 0) ty = 0;
-          if (tx > maxTileX) tx = maxTileX;
-          if (ty > maxTileY) ty = maxTileY;
-
-          const paletteIndex = ty * cols + tx;
-          if (paletteIndex >= TileMapViewer.MAX_TILES) {
-            this.canvas.title = "All tiles below this line cannot be selected.";
-            this.selectStart = this.selectEnd = null;
-            isDragging = false;
-            this.draw();
-            return;
-          }
-
+        const paletteIndex = ty * cols + tx;
+        if (paletteIndex < TileMapViewer.MAX_TILES) {
           const key = `${tx}:${ty}`;
           if (addMode) {
             this.selectedTiles.has(key)
@@ -224,57 +192,59 @@ export class TileMapViewer {
             this.selectedTiles.clear();
             this.selectedTiles.set(key, { x: tx, y: ty });
           }
+        } else {
+          this.canvas.title = "All tiles below this line cannot be selected.";
         }
-
-        if (this.currentTilemap) {
-          const rows = Math.floor(this.atlasHeight / this.resolution);
-          const total = cols * rows;
-          const tileCoords = Array.from(this.selectedTiles.values());
-
-          if (tileCoords.length > 0) {
-            let minX = Infinity,
-              minY = Infinity,
-              maxX = -Infinity,
-              maxY = -Infinity;
-            for (const t of tileCoords) {
-              if (t.x < minX) minX = t.x;
-              if (t.y < minY) minY = t.y;
-              if (t.x > maxX) maxX = t.x;
-              if (t.y > maxY) maxY = t.y;
-            }
-            const w = maxX - minX + 1;
-            const h = maxY - minY + 1;
-
-            const ids: number[] = new Array(w * h).fill(-1);
-            for (const t of tileCoords) {
-              const relX = t.x - minX;
-              const relY = t.y - minY;
-              const paletteIndex = t.y * cols + t.x;
-              if (
-                paletteIndex < 0 ||
-                paletteIndex >= total ||
-                paletteIndex >= TileMapViewer.MAX_TILES
-              )
-                continue;
-              ids[relY * w + relX] = paletteIndex;
-            }
-
-            this.currentTilemap.paletteId = ids;
-            this.currentTilemap.paletteCols = w;
-            this.currentTilemap.paletteRows = h;
-            this.currentTilemap.paletteIdDirty = true;
-          } else {
-            this.currentTilemap.paletteId = [0];
-            this.currentTilemap.paletteCols = 1;
-            this.currentTilemap.paletteRows = 1;
-            this.currentTilemap.paletteIdDirty = true;
-          }
-        }
-
-        this.selectStart = this.selectEnd = null;
-        isDragging = false;
-        this.draw();
       }
+
+      if (this.currentTilemap) {
+        const rows = Math.floor(this.atlasHeight / this.resolution);
+        const total = cols * rows;
+        const tileCoords = Array.from(this.selectedTiles.values());
+
+        if (tileCoords.length > 0) {
+          let minX = Infinity,
+            minY = Infinity,
+            maxX = -Infinity,
+            maxY = -Infinity;
+          for (const t of tileCoords) {
+            if (t.x < minX) minX = t.x;
+            if (t.y < minY) minY = t.y;
+            if (t.x > maxX) maxX = t.x;
+            if (t.y > maxY) maxY = t.y;
+          }
+          const w = maxX - minX + 1;
+          const h = maxY - minY + 1;
+
+          const ids: number[] = new Array(w * h).fill(-1);
+          for (const t of tileCoords) {
+            const relX = t.x - minX;
+            const relY = t.y - minY;
+            const paletteIndex = t.y * cols + t.x;
+            if (
+              paletteIndex < 0 ||
+              paletteIndex >= total ||
+              paletteIndex >= TileMapViewer.MAX_TILES
+            )
+              continue;
+            ids[relY * w + relX] = paletteIndex;
+          }
+
+          this.currentTilemap.paletteId = ids;
+          this.currentTilemap.paletteCols = w;
+          this.currentTilemap.paletteRows = h;
+          this.currentTilemap.paletteIdDirty = true;
+        } else {
+          this.currentTilemap.paletteId = [0];
+          this.currentTilemap.paletteCols = 1;
+          this.currentTilemap.paletteRows = 1;
+          this.currentTilemap.paletteIdDirty = true;
+        }
+      }
+
+      this.selectStart = this.selectEnd = null;
+      isDragging = false;
+      this.draw();
     });
 
     ui.selectedEntity.listen(() => {
@@ -283,34 +253,28 @@ export class TileMapViewer {
 
       const sel = ui.selectedEntity.entities;
       if (sel.length === 1 && sel[0] instanceof EditorFacadeTilemap) {
-        const newTilemap = sel[0];
-        if (this.currentTilemap !== newTilemap) {
-          this.currentTilemap = newTilemap;
-          this.loadAndDraw(newTilemap);
+        const tm = sel[0];
+        if (this.currentTilemap !== tm) {
+          this.currentTilemap = tm;
+          this.loadAndDraw(tm);
 
-          const resValue = newTilemap.values.get("resolution");
-          const atlasValue = newTilemap.values.get("atlas");
+          const resVal = tm.values.get("resolution");
+          const atlasVal = tm.values.get("atlas");
 
-          if (resValue) {
-            const onResChanged = () => {
-              this.resolution = newTilemap.resolution;
+          if (resVal) {
+            const onRes = () => {
+              this.resolution = tm.resolution;
               this.selectedTiles.clear();
               this.draw();
             };
-            resValue.onChanged(onResChanged);
-            this.cleanupListeners.push(() => {
-              resValue.removeChangeListener?.(onResChanged);
-            });
+            resVal.onChanged(onRes);
+            this.cleanupListeners.push(() => resVal.removeChangeListener?.(onRes));
           }
 
-          if (atlasValue) {
-            const onAtlasChanged = () => {
-              this.loadAndDraw(newTilemap);
-            };
-            atlasValue.onChanged(onAtlasChanged);
-            this.cleanupListeners.push(() => {
-              atlasValue.removeChangeListener?.(onAtlasChanged);
-            });
+          if (atlasVal) {
+            const onAtlas = () => this.loadAndDraw(tm);
+            atlasVal.onChanged(onAtlas);
+            this.cleanupListeners.push(() => atlasVal.removeChangeListener?.(onAtlas));
           }
         }
       } else {
@@ -408,53 +372,77 @@ export class TileMapViewer {
 
   private draw() {
     const ctx = this.ctx;
+
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     if (!this.atlas) {
-      this.canvas.style.transform = `translate(${this.offsetX}px, ${this.offsetY}px) scale(${this.scale})`;
+      const snapX = Math.round(this.offsetX);
+      const snapY = Math.round(this.offsetY);
+      ctx.setTransform(this.scale, 0, 0, this.scale, snapX, snapY);
       return;
     }
 
-    this.hideMessage();
+    ctx.imageSmoothingEnabled = false;
+    ctx.imageSmoothingQuality = "low";
+
+    const snapX = Math.round(this.offsetX);
+    const snapY = Math.round(this.offsetY);
+    ctx.setTransform(this.scale, 0, 0, this.scale, snapX, snapY);
+
+    const dpr = window.devicePixelRatio || 1;
+    const pxPerTile = this.resolution * this.scale;
+    const tinyMode = pxPerTile < 4;
+    const lineW = 1 / (dpr * this.scale);
+    const halfLine = lineW * 0.5;
+
     ctx.drawImage(this.atlas, 0, 0);
 
     const cols = this.atlasWidth / this.resolution;
     const rows = this.atlasHeight / this.resolution;
     const selectableRows = Math.ceil(TileMapViewer.MAX_TILES / cols);
     const selectableH = selectableRows * this.resolution;
-    const overLimit = rows * cols > TileMapViewer.MAX_TILES;
 
-    const offset = 0.5;
-    const gridLineW = 1;
-    const hiLineW = 1;
+    if (!tinyMode) {
+      const MIN_GAP = 4;
+      const step = Math.max(1, Math.ceil(MIN_GAP / pxPerTile));
 
-    const MIN_GAP_PX = 4;
-    const step = Math.max(1, Math.ceil(MIN_GAP_PX / (this.resolution * this.scale)));
+      ctx.strokeStyle = "rgba(255,255,255,0.45)";
+      ctx.lineWidth = lineW;
 
-    ctx.strokeStyle = "rgba(255,255,255,0.45)";
-    ctx.lineWidth = gridLineW;
+      for (let i = step; i < cols; i += step) {
+        const x = i * this.resolution + halfLine;
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, selectableH);
+        ctx.stroke();
+      }
 
-    for (let i = step; i < cols; i += step) {
-      const x = i * this.resolution + offset;
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, selectableH);
-      ctx.stroke();
+      for (let j = step; j < selectableRows; j += step) {
+        const y = j * this.resolution + halfLine;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(this.atlasWidth, y);
+        ctx.stroke();
+      }
+    } else {
+      ctx.fillStyle = "rgba(255,255,255,0.07)";
+      for (let y = 0; y < selectableRows; ++y) {
+        for (let x = y & 1; x < cols; x += 2) {
+          ctx.fillRect(
+            x * this.resolution,
+            y * this.resolution,
+            this.resolution,
+            this.resolution,
+          );
+        }
+      }
     }
 
-    for (let j = step; j < selectableRows; j += step) {
-      const y = j * this.resolution + offset;
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(this.atlasWidth, y);
-      ctx.stroke();
-    }
-
-    if (overLimit) {
+    if (rows * cols > TileMapViewer.MAX_TILES) {
       ctx.strokeStyle = "rgba(255,51,51,0.9)";
-      ctx.lineWidth = hiLineW;
-      const y = selectableH + offset;
+      ctx.lineWidth = lineW;
+      const y = selectableH + halfLine;
       ctx.beginPath();
       ctx.moveTo(0, y);
       ctx.lineTo(this.atlasWidth, y);
@@ -463,29 +451,53 @@ export class TileMapViewer {
 
     if (this.selectStart && this.selectEnd) {
       ctx.strokeStyle = "rgba(0,255,0,0.6)";
-      ctx.lineWidth = hiLineW;
+      ctx.lineWidth = lineW;
 
       const x0 = Math.min(this.selectStart.x, this.selectEnd.x);
       const x1 = Math.max(this.selectStart.x, this.selectEnd.x);
       const y0 = Math.min(this.selectStart.y, this.selectEnd.y);
       const y1 = Math.max(this.selectStart.y, this.selectEnd.y);
 
-      ctx.strokeRect(x0 + offset, y0 + offset, x1 - x0, y1 - y0);
+      ctx.strokeRect(x0 + halfLine, y0 + halfLine, x1 - x0, y1 - y0);
     }
 
-    ctx.strokeStyle = "rgba(0,255,0,0.9)";
-    ctx.lineWidth = hiLineW;
+    if (!tinyMode) {
+      ctx.strokeStyle = "rgba(0,255,0,0.9)";
+      ctx.lineWidth = lineW;
 
-    for (const { x, y } of this.selectedTiles.values()) {
-      ctx.strokeRect(
-        x * this.resolution + offset,
-        y * this.resolution + offset,
-        this.resolution,
-        this.resolution,
-      );
+      for (const { x, y } of this.selectedTiles.values()) {
+        ctx.strokeRect(
+          x * this.resolution + halfLine,
+          y * this.resolution + halfLine,
+          this.resolution,
+          this.resolution,
+        );
+      }
+    } else {
+      ctx.fillStyle = "rgba(0,255,0,0.35)";
+      for (const { x, y } of this.selectedTiles.values()) {
+        ctx.fillRect(
+          x * this.resolution,
+          y * this.resolution,
+          this.resolution,
+          this.resolution,
+        );
+      }
     }
+  }
 
-    this.canvas.style.transform = `translate(${this.offsetX}px, ${this.offsetY}px) scale(${this.scale})`;
+  private screenToAtlas(e: MouseEvent | WheelEvent) {
+    const rect = this.canvas.getBoundingClientRect();
+    const scaleX = this.canvas.width / rect.width;
+    const scaleY = this.canvas.height / rect.height;
+
+    const cx = (e.clientX - rect.left) * scaleX;
+    const cy = (e.clientY - rect.top) * scaleY;
+
+    return {
+      x: (cx - this.offsetX) / this.scale,
+      y: (cy - this.offsetY) / this.scale,
+    };
   }
 
   private clear() {
@@ -511,30 +523,24 @@ export class TileMapViewer {
     const scaledW = baseW * this.scale;
     const scaledH = baseH * this.scale;
 
-    const gutter = 64;
-    const maxX = gutter;
-    const minX = -(scaledW - viewW) - gutter;
-    const maxY = gutter;
-    const minY = -(scaledH - viewH) - gutter;
+    const gutter = 64 / this.scale;
 
     if (scaledW <= viewW) {
-      const centerX = (viewW - scaledW) / 2;
-      this.offsetX = Math.min(maxX, Math.max(minX, this.offsetX));
-      if (this.offsetX < centerX - gutter) this.offsetX = centerX - gutter;
-      if (this.offsetX > centerX + gutter) this.offsetX = centerX + gutter;
+      const cx = (viewW - scaledW) / 2;
+      this.offsetX = Math.min(cx + gutter, Math.max(cx - gutter, this.offsetX));
     } else {
-      if (this.offsetX < minX) this.offsetX = minX;
-      if (this.offsetX > maxX) this.offsetX = maxX;
+      const minX = -(scaledW - viewW) - gutter;
+      const maxX = gutter;
+      this.offsetX = Math.min(maxX, Math.max(minX, this.offsetX));
     }
 
     if (scaledH <= viewH) {
-      const centerY = (viewH - scaledH) / 2;
-      this.offsetY = Math.min(maxY, Math.max(minY, this.offsetY));
-      if (this.offsetY < centerY - gutter) this.offsetY = centerY - gutter;
-      if (this.offsetY > centerY + gutter) this.offsetY = centerY + gutter;
+      const cy = (viewH - scaledH) / 2;
+      this.offsetY = Math.min(cy + gutter, Math.max(cy - gutter, this.offsetY));
     } else {
-      if (this.offsetY < minY) this.offsetY = minY;
-      if (this.offsetY > maxY) this.offsetY = maxY;
+      const minY = -(scaledH - viewH) - gutter;
+      const maxY = gutter;
+      this.offsetY = Math.min(maxY, Math.max(minY, this.offsetY));
     }
   }
 }
