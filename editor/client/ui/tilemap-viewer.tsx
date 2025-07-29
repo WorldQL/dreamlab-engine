@@ -586,29 +586,17 @@ export class TileMapViewer {
   private clampPan() {
     const { w: viewW, h: viewH } = this.getViewSize();
 
-    const baseW = this.canvas.offsetWidth || viewW;
-    const baseH = this.canvas.offsetHeight || viewH;
-    const scaledW = baseW * this.scale;
-    const scaledH = baseH * this.scale;
+    const scaledW = (this.canvas.offsetWidth || viewW) * this.scale;
+    const scaledH = (this.canvas.offsetHeight || viewH) * this.scale;
 
     const gutter = 64 / this.scale;
 
-    if (scaledW <= viewW) {
-      const cx = (viewW - scaledW) / 2;
-      this.offsetX = Math.min(cx + gutter, Math.max(cx - gutter, this.offsetX));
-    } else {
-      const minX = -(scaledW - viewW) - gutter;
-      const maxX = gutter;
-      this.offsetX = Math.min(maxX, Math.max(minX, this.offsetX));
-    }
+    const minX = Math.min(viewW - scaledW, 0) - gutter;
+    const maxX = gutter;
+    this.offsetX = Math.min(maxX, Math.max(minX, this.offsetX));
 
-    if (scaledH <= viewH) {
-      const cy = (viewH - scaledH) / 2;
-      this.offsetY = Math.min(cy + gutter, Math.max(cy - gutter, this.offsetY));
-    } else {
-      const minY = -(scaledH - viewH) - gutter;
-      const maxY = gutter;
-      this.offsetY = Math.min(maxY, Math.max(minY, this.offsetY));
-    }
+    const minY = Math.min(viewH - scaledH, 0) - gutter;
+    const maxY = gutter;
+    this.offsetY = Math.min(maxY, Math.max(minY, this.offsetY));
   }
 }
