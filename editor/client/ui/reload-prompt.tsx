@@ -1,8 +1,8 @@
 import type { ClientGame } from "@dreamlab/engine";
-import type { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 import { Button } from "../components/button.ts";
+import type { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 
-const TIMEOUT_MS = 2500;
+const TIMEOUT_MS = 5000;
 
 export class ReloadPrompt implements InspectorUIWidget {
   constructor(private game: ClientGame) {}
@@ -53,23 +53,21 @@ export class ReloadPrompt implements InspectorUIWidget {
       }, 500);
     });
 
-    setInterval(() => {
-      const now = Date.now();
-      const last = ui.conn.lastPacketTime;
-      const delta = now - last;
-
-      // no packets recieved in timeout ms
-      if (delta > TIMEOUT_MS) {
-        // show modal and prevent retriggering
+    let timeout: number | undefined;
+    const resetTimer = () => {
+      if (timeout !== undefined) clearTimeout(timeout);
+      timeout = setTimeout(() => {
         if (this.#triggered) return;
         this.#triggered = true;
         this.#dialog.showModal();
-      } else {
-        // we've recieved more packets, reset trigger
-        this.#triggered = false;
-        this.#dialog.close();
-      }
-    }, 1000);
+      }, TIMEOUT_MS);
+    };
+
+    ui.conn.socket.addEventListener("message", () => {
+      resetTimer();
+      this.#triggered = false;
+      this.#dialog.close();
+    });
 
     globalThis.addEventListener("visibilitychange", () => {
       // prevent false positives on the popup due to the document being in the background.
