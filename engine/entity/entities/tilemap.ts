@@ -7,6 +7,7 @@ import {
   Entity,
   EntityConstructor,
   EntityContext,
+  EntityDestroyed,
   EntityTransformUpdate,
   enumAdapter,
   GameTick,
@@ -230,6 +231,10 @@ export abstract class BaseTilemap extends PixiEntity {
     });
 
     this.listen(this.game, CameraFilterModeChanged, markDirty);
+
+    this.on(EntityDestroyed, () => {
+      this.#pixiMap.clear();
+    });
   }
 
   // #region full palette
@@ -594,7 +599,10 @@ export abstract class BaseTilemap extends PixiEntity {
       // remove tiles that shouldnt be there
       await this.game.time.waitForNextTick();
       for (const child of this.#container.children) {
-        if (!seen.has(child.label)) child.destroy();
+        if (!seen.has(child.label)) {
+          this.#pixiMap.delete(child.label);
+          child.destroy();
+        }
       }
     } finally {
       this.fire(TilemapRedrawProgress, 1);
@@ -609,6 +617,7 @@ export abstract class BaseTilemap extends PixiEntity {
     }
   }
 
+  #pixiMap = new Map<string, PIXI.Sprite | PIXI.Graphics>();
   async #drawTile(data: TileDrawData): Promise<void> {
     if (!this.#container) return;
 
@@ -616,8 +625,9 @@ export abstract class BaseTilemap extends PixiEntity {
     const label = `${data.x}:${data.y}`;
 
     if (!tile) {
-      const previous = this.#container.getChildByLabel(label);
+      const previous = this.#pixiMap.get(label);
       previous?.destroy();
+      this.#pixiMap.delete(label);
       return;
     }
 
@@ -628,7 +638,7 @@ export abstract class BaseTilemap extends PixiEntity {
 
     switch (tile.type) {
       case "color": {
-        const previous = this.#container.getChildByLabel(label);
+        const previous = this.#pixiMap.get(label);
         if (previous instanceof PIXI.Graphics) {
           previous.tint = tile.color;
           previous.alpha = tile.alpha ?? 1;
@@ -643,6 +653,7 @@ export abstract class BaseTilemap extends PixiEntity {
 
           previous?.destroy();
           this.#container.addChild(gfx);
+          this.#pixiMap.set(label, gfx);
         }
 
         break;
@@ -652,7 +663,7 @@ export abstract class BaseTilemap extends PixiEntity {
       case "spritesheet":
       case "texture-slice": {
         const texture = await this.loadTexture(tile);
-        const previous = this.#container.getChildByLabel(label);
+        const previous = this.#pixiMap.get(label);
 
         if (previous instanceof PIXI.Sprite) {
           previous.texture = texture;
@@ -668,6 +679,7 @@ export abstract class BaseTilemap extends PixiEntity {
 
           previous?.destroy();
           this.#container.addChild(sprite);
+          this.#pixiMap.set(label, sprite);
         }
         break;
       }
