@@ -7,11 +7,15 @@ export class WelcomeMenu implements InspectorUIWidget {
   constructor(private game: ClientGame) {}
   setup(_ui: InspectorUI): void {}
 
+  showSubscribe() {
+    window.parent.postMessage({ type: "SHOW_SUBSCRIBE_MODAL" }, "*");
+  }
+
   show(uiRoot: HTMLElement): void {
     const worldId = this.game.worldId;
-    if (!worldId.includes("Dreamlab_Tutorial")) return;
+    // if (!worldId.includes("Dreamlab_Tutorial")) return;
 
-    const storageKey = `@dreamlab_welcomeCardDismissed_${worldId}`;
+    const storageKey = `@dreamlab___2welcomeCardDismissed_${worldId}`;
     const isDismissed = localStorage.getItem(storageKey);
     if (isDismissed) return;
 
@@ -41,11 +45,14 @@ export class WelcomeMenu implements InspectorUIWidget {
           <a
             className="simple-open-tutorial-button"
             target="_blank"
-            href="https://docs.dreamlab.gg/"
+            href="https://docs.dreamlab.gg/quick-start"
             rel="noreferrer"
           >
             Open Tutorial!
-          </a>
+          </a><br/>
+          <button type="button" onClick={this.showSubscribe} style={{ marginTop: "10px" }}>
+            Get Pro for live development help
+          </button>
         </div>
       </div>
     ) as HTMLDivElement;
