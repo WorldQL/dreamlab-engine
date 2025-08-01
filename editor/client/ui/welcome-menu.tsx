@@ -49,7 +49,8 @@ export class WelcomeMenu implements InspectorUIWidget {
             rel="noreferrer"
           >
             Open Tutorial!
-          </a><br/>
+          </a>
+          <br />
           <button type="button" onClick={this.showSubscribe} style={{ marginTop: "10px" }}>
             Get Pro for live development help
           </button>
