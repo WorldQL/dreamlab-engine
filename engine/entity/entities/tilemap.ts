@@ -16,6 +16,9 @@ import {
   pointWorldToLocal,
   SyncedDeepObject,
   TextureAdapter,
+  TilemapRedrawFinished,
+  TilemapRedrawProgress,
+  TilemapRedrawStarted,
   Vector2,
 } from "@dreamlab/engine";
 import * as cbor from "@dreamlab/vendor/cbor2.ts";
@@ -566,15 +569,21 @@ export abstract class BaseTilemap extends PixiEntity {
     }
 
     this.#redrawing = true;
+    this.fire(TilemapRedrawStarted);
     try {
+      const tiles = [...this.tiles()]; // this is suboptimal for memory but we need to get an accurate count for progress
+      let count = 0;
+
       const seen = new Set<string>();
       let idx = 0;
       for (const tile of this.tiles()) {
         await this.#drawTile(tile);
         seen.add(`${tile.x}:${tile.y}`);
+        count++;
 
-        const BATCH_SIZE = 1000; // TODO: tweak numbers
+        const BATCH_SIZE = 5000; // TODO: tweak numbers
         if (idx >= BATCH_SIZE) {
+          this.fire(TilemapRedrawProgress, count / tiles.length);
           await this.game.time.waitForNextTick();
           idx = 0;
         } else {
@@ -588,6 +597,8 @@ export abstract class BaseTilemap extends PixiEntity {
         if (!seen.has(child.label)) child.destroy();
       }
     } finally {
+      this.fire(TilemapRedrawProgress, 1);
+      this.fire(TilemapRedrawFinished);
       this.#redrawing = false;
     }
 
