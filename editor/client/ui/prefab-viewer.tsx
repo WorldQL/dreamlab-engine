@@ -280,6 +280,7 @@ export class PrefabViewer {
     card = (
       <div
         className="prefab-card"
+        id={`prefab-tab-` + entity.name}
         draggable
         data-entity={entity.ref}
         onClick={click}

@@ -61,7 +61,7 @@ export class BottomTabs implements InspectorUIWidget {
     logsTab.setAttribute("data-tab-id", "logs");
     logsTab.append(icon(Terminal), elem("span", {}, ["Logs"]));
 
-    const prefabsTab = elem("div", { className: "bottom-tab" });
+    const prefabsTab = elem("div", { className: "bottom-tab", id: "prefab-tab" });
     prefabsTab.setAttribute("data-tab-id", "prefabs");
     prefabsTab.append(icon(Box), elem("span", {}, ["Prefabs"]));
 
