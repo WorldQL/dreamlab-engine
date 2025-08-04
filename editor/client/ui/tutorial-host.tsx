@@ -17,7 +17,7 @@ const tutorial = [
     until: () => {
       // @ts-expect-error global.
       const games: { edit: ClientGame; play: ClientGame | undefined } = globalThis.games;
-            console.log(games);
+      console.log(games);
 
       if (games.play) return true;
     },
@@ -33,6 +33,11 @@ const tutorial = [
       const playButton = document.getElementById("stop-button");
       if (!playButton) return;
       playButton.style.border = "none";
+      // @ts-expect-error global.
+
+      const games: { edit: ClientGame; play: ClientGame | undefined } = globalThis.games;
+      console.log(games);
+      games.edit!.entities.lookupById("world/EditEntities/world/Sprite")!.enabled = true;
     },
     until: () => {
       // @ts-expect-error global.
@@ -62,7 +67,7 @@ export class TutorialHost implements InspectorUIWidget {
       let step = 0;
       const runNextStep = () => {
         if (step > tutorial.length - 1) {
-          console.log('hiding dialog')
+          console.log("hiding dialog");
           this.hideDialog();
           return;
         }
@@ -85,14 +90,13 @@ export class TutorialHost implements InspectorUIWidget {
   }
   setup(_ui: InspectorUI): void {}
 
-
   changeText(text: string) {
-    const welcomeCard = document.getElementById('tutorial-card')!;
+    const welcomeCard = document.getElementById("tutorial-card")!;
     welcomeCard!.innerHTML = text;
     welcomeCard!.style.display = "block";
   }
   hideDialog() {
-    const welcomeCard = document.getElementById('tutorial-card')!;
+    const welcomeCard = document.getElementById("tutorial-card")!;
     welcomeCard.style.display = "none";
   }
 
@@ -101,12 +105,14 @@ export class TutorialHost implements InspectorUIWidget {
     TutorialHost.didMount = true;
 
     this.welcomeCard = (
-      <div
-        className="simple-welcome-card"
-        id="tutorial-card"
-        style={{ padding: "1rem", display: "none" }}
-      >
-        Test!
+      <div>
+        <div
+          className="simple-welcome-card"
+          id="tutorial-card"
+          style={{ padding: "1rem", display: "none" }}
+        >
+          Test!
+        </div>
       </div>
     ) as HTMLDivElement;
 
