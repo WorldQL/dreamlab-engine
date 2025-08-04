@@ -188,6 +188,7 @@ export class PrefabViewer {
   }
 
   renderPrefabCard(ui: InspectorUI, entity: Entity) {
+    if (entity.name.startsWith(".")) return; // hide prefab from bottom pane. useful if you use it in code but don't want it to show in the spawn panel.
     if (this.entryElementMap.has(entity.ref)) return;
 
     let card: HTMLDivElement;
