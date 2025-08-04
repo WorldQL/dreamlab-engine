@@ -89,7 +89,7 @@ export class FileTree implements InspectorUIWidget {
     const files = fetch(filesURL)
       .then(r => r.json())
       .then(obj => ({
-        files: (obj.files || []).filter((file: string) => !file.startsWith(".aider")),
+        files: (obj.files || []).filter((file: string) => !file.startsWith(".")),
       }));
 
 
