@@ -19,6 +19,7 @@ import { DataTree } from "../components/mod.ts";
 import { InspectorUIWidget } from "./inspector.ts";
 
 import { ImportPopup } from "./import-popup.tsx";
+import { PrefabViewer } from "./prefab-viewer.tsx";
 
 type FileTreeNode =
   | { type: "file"; name: string; path: string }
@@ -91,7 +92,12 @@ export class FileTree implements InspectorUIWidget {
         files: (obj.files || []).filter((file: string) => !file.startsWith(".aider")),
       }));
 
+
     files.then(({ files }) => {
+      if (files.includes('.singleplayer')) {
+        PrefabViewer.singleplayerMode = true;
+      }
+      
       const fileTreeRoot: FileTreeNode = { type: "directory", name: "", children: new Map() };
 
       for (const file of files) {

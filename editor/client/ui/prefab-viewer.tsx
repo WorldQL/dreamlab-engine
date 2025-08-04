@@ -29,10 +29,9 @@ export class PrefabViewer {
   prefabsRoot!: Entity;
   #iconPicker: IconPicker;
 
-  constructor(
-    private game: ClientGame,
-    private container: HTMLElement,
-  ) {
+  static singleplayerMode = false;
+
+  constructor(private game: ClientGame, private container: HTMLElement) {
     this.#iconPicker = new IconPicker((newIcon: string) => {
       this.changeEntityIcon(this.inspectorUI, newIcon);
     });
@@ -244,7 +243,12 @@ export class PrefabViewer {
         let parentEntity = undefined;
 
         if (ui.selectedEntity.entities.length === 0) {
-          parentEntity = this.game.world._.EditEntities._.world;
+          if (!PrefabViewer.singleplayerMode) {
+            // replace this with the three states you showed in your screenshot
+            parentEntity = this.game.world._.EditEntities._.world;
+          } else {
+            parentEntity = this.game.world._.EditEntities._.local;
+          }
         } else {
           const facadeRoot = getFacadeRoot(ui.selectedEntity.entities[0]);
           if (facadeRoot.constructor.name === "PrefabRootFacade") {
