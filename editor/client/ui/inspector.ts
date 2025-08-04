@@ -76,7 +76,6 @@ export class InspectorUI {
     this.fileTree.setup();
     this.reloadPrompt.setup(this);
 
-
     setupKeyboardShortcuts(this.game, this.selectedEntity, editMode);
 
     conn.registerPacketHandler("ScriptEdited", async packet => {

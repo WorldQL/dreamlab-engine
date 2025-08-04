@@ -1,9 +1,11 @@
 import {
   ClientGame,
   Entity,
+  EntityChildReparented,
   EntityChildSpawned,
   EntityDestroyed,
   EntityRenamed,
+  EntityReparented,
   getFacadeRoot,
 } from "@dreamlab/engine";
 import { EditorMetadataEntity } from "../../common/mod.ts";
@@ -79,6 +81,14 @@ export class PrefabViewer {
     });
 
     this.prefabsRoot.on(EntityChildSpawned, event => {
+      this.#noPrefabsMessage.remove();
+      const newEntity = event.child;
+      if (!(newEntity instanceof EditorMetadataEntity)) {
+        this.renderPrefabCard(ui, newEntity);
+      }
+    });
+
+    this.prefabsRoot.on(EntityChildReparented, event => {
       this.#noPrefabsMessage.remove();
       const newEntity = event.child;
       if (!(newEntity instanceof EditorMetadataEntity)) {
@@ -296,6 +306,17 @@ export class PrefabViewer {
       const nameElement = card.querySelector(".prefab-name");
       if (nameElement) {
         nameElement.textContent = entity.name;
+      }
+    });
+
+    entity.on(EntityReparented, evt => {
+      if (
+        evt.oldParent.id === this.prefabsRoot.id &&
+        entity.parent?.id !== this.prefabsRoot.id
+      ) {
+        card.remove();
+        this.entryElementMap.delete(entity.ref);
+        this.checkForNoPrefabs();
       }
     });
   }
