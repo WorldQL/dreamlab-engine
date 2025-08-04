@@ -31,7 +31,8 @@ const tutorial: TutorialStep[] = [
     until: () => Boolean(games().play),
   },
   {
-    dialog: "Hmm... Not much here. Now press the stop button to return to the editor...",
+    dialog:
+      "Nothing here but a light breeze... 🌬️<br> Press the stop button to return to the editor.",
     start: () => highlight("stop-button", true),
     cleanup: () => highlight("stop-button", false),
     until: () => !games().play,
@@ -47,11 +48,8 @@ const tutorial: TutorialStep[] = [
     cleanup: () => {
       highlight("prefab-tab", false);
       highlight("prefab-tab-Player", false);
-      if (hasEntity("world/Player")) {
-        const player = games()
-          .edit.entities.lookupById("world/EditEntities/world/Player")!
-          .cloneInto(games().edit.entities.lookupById("world/EditEntities/local")!);
-        games().edit.entities.lookupById("world/EditEntities/world/Player")!.destroy();
+      if (hasEntity("local/Player")) {
+        const player = games().edit.entities.lookupById("world/EditEntities/local/Player")!;
         player.pos = new Vector2(-0.2, -19);
       }
       games().edit.entities.lookupById("world/EditEntities/local/AddPlayerHint")!.enabled =
@@ -195,16 +193,17 @@ export class TutorialHost implements InspectorUIWidget {
           left: "50%",
           transform: "translateX(-50%)",
           zIndex: 1000,
+          border: "3px solid rgba(var(--color-yellow))",
         }}
       >
         <div
           id="tutorial-content"
           className="simple-welcome-card-content"
-          style={{ padding: "10px" }}
+          style={{ padding: "15px" }}
         />
         <div
           style={{
-            display: "flex",
+            display: "none",
             justifyContent: "space-between",
             alignItems: "center",
             padding: "6px 12px",

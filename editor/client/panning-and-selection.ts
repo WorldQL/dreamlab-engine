@@ -57,7 +57,7 @@ export class CameraPanBehavior extends Behavior {
     this.listen(this.game.inputs, MouseOut, this.#onMouseOut.bind(this));
     this.listen(this.game.inputs, Scroll, this.#onScroll.bind(this));
 
-    this.#camera.zoom = 0.15;
+    this.#camera.zoom = 0.3;
 
     this.listen(this.#space, ActionChanged, ({ value }) => {
       if (value) canvas.classList.add("grab");
