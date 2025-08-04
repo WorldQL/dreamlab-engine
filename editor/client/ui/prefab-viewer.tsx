@@ -16,7 +16,7 @@ import { IconPicker } from "./icon-picker.ts";
 import { InspectorUI } from "./inspector.ts";
 
 export class PrefabViewer {
-  #section = (<section id="prefab-viewer" />);
+  #section = (<section id="prefab-viewer" style={{ position: "relative" }} />);
   #content = (<div id="prefab-grid" />) as HTMLElement;
   #noPrefabsMessage = (
     <div className="no-prefabs-message">
@@ -29,19 +29,99 @@ export class PrefabViewer {
   prefabsRoot!: Entity;
   #iconPicker: IconPicker;
 
-  static singleplayerMode = false;
+  static singleplayerMode = true;
 
-  constructor(private game: ClientGame, private container: HTMLElement) {
+  private dropRoot: "world" | "local" | "server";
+
+  private getDropRootEntity(): Entity {
+    const edit = this.game.world._.EditEntities;
+    switch (this.dropRoot) {
+      case "local":
+        return edit._.local ?? edit._.world;
+      case "server":
+        return edit._.server ?? edit._.world;
+      case "world":
+      default:
+        return edit._.world;
+    }
+  }
+
+  constructor(
+    private game: ClientGame,
+    private container: HTMLElement,
+  ) {
     this.#iconPicker = new IconPicker((newIcon: string) => {
       this.changeEntityIcon(this.inspectorUI, newIcon);
     });
+
+    const key = `@dreamlab_${this.game.instanceId}_prefab-drop-root`;
+    const stored = localStorage.getItem(key) as "world" | "local" | "server" | null;
+
+    if (stored) {
+      this.dropRoot = stored;
+    } else if (PrefabViewer.singleplayerMode) {
+      this.dropRoot = "local";
+      localStorage.setItem(key, "local");
+    } else {
+      this.dropRoot = "world";
+    }
   }
 
   private inspectorUI!: InspectorUI;
 
   setup(ui: InspectorUI): void {
     this.inspectorUI = ui;
-    this.#section.append(this.#content);
+
+    const dropSelect = (
+      <select
+        className="prefab-drop-root-select"
+        title="Choose the default parent for dropped prefabs"
+        value={this.dropRoot}
+        style={{
+          padding: "2px 6px",
+          borderRadius: "var(--border-radius)",
+          fontSize: "12px",
+          background: "rgb(var(--color-bg-1))",
+          color: "rgb(var(--color-text))",
+          border: "1px solid rgb(var(--color-grey-lighter))",
+        }}
+        onChange={e => {
+          const v = (e.target as HTMLSelectElement).value as "world" | "local" | "server";
+          this.dropRoot = v;
+          localStorage.setItem(`@dreamlab_${this.game.instanceId}_prefab-drop-root`, v);
+          dropSelect.value = v;
+        }}
+      >
+        <option value="world">world</option>
+        <option value="local">local</option>
+        <option value="server">server</option>
+      </select>
+    ) as HTMLSelectElement;
+
+    dropSelect.value = this.dropRoot;
+
+    const dropContainer = (
+      <div
+        style={{
+          position: "absolute",
+          top: "6px",
+          right: "8px",
+          display: "flex",
+          gap: "6px",
+          alignItems: "center",
+          fontSize: "12px",
+          padding: "4px 8px",
+          borderRadius: "6px",
+          background: "rgba(var(--color-bg-2) / 0.6)",
+          backdropFilter: "blur(4px)",
+        }}
+      >
+        <span style={{ opacity: 0.75 }}>Default drop root:</span>
+        {dropSelect}
+      </div>
+    ) as HTMLDivElement;
+
+    this.#section.append(dropContainer, this.#content);
 
     this.prefabsRoot = ui.editMode
       ? this.game.world._.EditEntities._.prefabs
@@ -240,19 +320,14 @@ export class PrefabViewer {
           return;
         }
 
-        let parentEntity = undefined;
+        let parentEntity: Entity | undefined;
 
         if (ui.selectedEntity.entities.length === 0) {
-          if (!PrefabViewer.singleplayerMode) {
-            // replace this with the three states you showed in your screenshot
-            parentEntity = this.game.world._.EditEntities._.world;
-          } else {
-            parentEntity = this.game.world._.EditEntities._.local;
-          }
+          parentEntity = this.getDropRootEntity();
         } else {
           const facadeRoot = getFacadeRoot(ui.selectedEntity.entities[0]);
           if (facadeRoot.constructor.name === "PrefabRootFacade") {
-            parentEntity = this.game.world._.EditEntities._.world;
+            parentEntity = this.getDropRootEntity();
           } else {
             parentEntity = facadeRoot;
           }

@@ -92,12 +92,11 @@ export class FileTree implements InspectorUIWidget {
         files: (obj.files || []).filter((file: string) => !file.startsWith(".")),
       }));
 
-
     files.then(({ files }) => {
-      if (files.includes('.singleplayer')) {
+      if (files.includes(".singleplayer")) {
         PrefabViewer.singleplayerMode = true;
       }
-      
+
       const fileTreeRoot: FileTreeNode = { type: "directory", name: "", children: new Map() };
 
       for (const file of files) {
