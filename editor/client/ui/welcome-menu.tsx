@@ -13,7 +13,7 @@ export class WelcomeMenu implements InspectorUIWidget {
 
   show(uiRoot: HTMLElement): void {
     const worldId = this.game.worldId;
-    // if (!worldId.includes("Dreamlab_Tutorial")) return;
+    if (worldId.toLowerCase().includes("dreamlab_tutorial")) return;
 
     const storageKey = `@dreamlab___2welcomeCardDismissed_${worldId}`;
     const isDismissed = localStorage.getItem(storageKey);

@@ -1,128 +1,117 @@
 import type { ClientGame } from "@dreamlab/engine";
 import type { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 
-const tutorial = [
+interface GlobalGames {
+  edit: ClientGame;
+  play?: ClientGame;
+}
+
+const games = (): GlobalGames =>
+  (globalThis as typeof globalThis & { games: GlobalGames }).games;
+
+interface TutorialStep {
+  dialog: string;
+  start(): void;
+  cleanup(): void;
+  until(): boolean;
+}
+
+const highlight = (id: string, on: boolean): void => {
+  const el = document.getElementById(id);
+  if (el) el.style.border = on ? "3px solid yellow" : "none";
+};
+
+const tutorial: TutorialStep[] = [
   {
     dialog: "Welcome to Dreamlab! Press the play button to start!",
-    startFn: () => {
-      const playButton = document.getElementById("play-button");
-      if (!playButton) return;
-      playButton.style.border = "3px solid yellow";
-    },
-    cleanupFn: () => {
-      const playButton = document.getElementById("play-button");
-      if (!playButton) return;
-      playButton.style.border = "none";
-    },
-    until: () => {
-      // @ts-expect-error global.
-      const games: { edit: ClientGame; play: ClientGame | undefined } = globalThis.games;
-      console.log(games);
-
-      if (games.play) return true;
-    },
+    start: () => highlight("play-button", true),
+    cleanup: () => highlight("play-button", false),
+    until: () => Boolean(games().play),
   },
   {
     dialog: "Hmm... Not much here. Now press the stop button to return to the editor...",
-    startFn: () => {
-      const playButton = document.getElementById("stop-button");
-      if (!playButton) return;
-      playButton.style.border = "3px solid yellow";
+    start: () => highlight("stop-button", true),
+    cleanup: () => {
+      highlight("stop-button", false);
+      games().edit.entities.lookupById("world/EditEntities/world/Sprite")!.enabled = true;
     },
-    cleanupFn: () => {
-      const playButton = document.getElementById("stop-button");
-      if (!playButton) return;
-      playButton.style.border = "none";
-      // @ts-expect-error global.
-
-      const games: { edit: ClientGame; play: ClientGame | undefined } = globalThis.games;
-      console.log(games);
-      games.edit!.entities.lookupById("world/EditEntities/world/Sprite")!.enabled = true;
-    },
-    until: () => {
-      // @ts-expect-error global.
-      const games: { edit: ClientGame; play: ClientGame | undefined } = globalThis.games;
-      console.log(games);
-      if (!games.play) return true;
-    },
+    until: () => !games().play,
   },
 ];
 
 export class TutorialHost implements InspectorUIWidget {
-  private welcomeCard: HTMLElement | null = null;
-
-  private uiRoot = undefined;
-
-  content: string = "";
+  private card: HTMLElement | null = null;
+  content = "";
 
   static didLoad = false;
   static didMount = false;
 
-  constructor(private game: ClientGame) {
+  constructor(_game: ClientGame) {
     if (TutorialHost.didLoad) return;
     TutorialHost.didLoad = true;
 
-    console.log("constructor");
-    setTimeout(() => {
-      let step = 0;
-      const runNextStep = () => {
-        if (step > tutorial.length - 1) {
-          console.log("hiding dialog");
-          this.hideDialog();
-          return;
-        }
-
-        this.changeText(tutorial[step].dialog);
-
-        tutorial[step].startFn();
-        const interval = setInterval(() => {
-          if (tutorial[step].until()) {
-            clearInterval(interval);
-            this.hideDialog();
-            tutorial[step].cleanupFn();
-            step++;
-            runNextStep();
-          }
-        }, 300);
-      };
-      runNextStep();
-    }, 1000);
+    setTimeout(() => this.runTutorial(), 1_000);
   }
+
   setup(_ui: InspectorUI): void {}
 
-  changeText(text: string) {
-    const welcomeCard = document.getElementById("tutorial-card")!;
-    welcomeCard!.innerHTML = text;
-    welcomeCard!.style.display = "block";
-  }
-  hideDialog() {
-    const welcomeCard = document.getElementById("tutorial-card")!;
-    welcomeCard.style.display = "none";
+  private runTutorial(): void {
+    let i = 0;
+
+    const next = (): void => {
+      if (i >= tutorial.length) {
+        this.hideCard();
+        return;
+      }
+
+      const step = tutorial[i];
+      this.updateCard(step.dialog);
+      step.start();
+
+      const tid = setInterval(() => {
+        if (step.until()) {
+          clearInterval(tid);
+          step.cleanup();
+          this.hideCard();
+          i += 1;
+          next();
+        }
+      }, 300);
+    };
+
+    next();
   }
 
-  show(uiRoot: HTMLElement): void {
+  private updateCard(text: string): void {
+    const el = document.getElementById("tutorial-card") as HTMLDivElement | null;
+    if (el) {
+      el.innerHTML = text;
+      el.style.display = "block";
+    }
+  }
+
+  private hideCard(): void {
+    const el = document.getElementById("tutorial-card") as HTMLDivElement | null;
+    if (el) el.style.display = "none";
+  }
+
+  show(root: HTMLElement): void {
     if (TutorialHost.didMount) return;
     TutorialHost.didMount = true;
 
-    this.welcomeCard = (
-      <div>
-        <div
-          className="simple-welcome-card"
-          id="tutorial-card"
-          style={{ padding: "1rem", display: "none" }}
-        >
-          Test!
-        </div>
-      </div>
+    this.card = (
+      <div
+        id="tutorial-card"
+        className="simple-welcome-card"
+        style={{ padding: "1rem", display: "none" }}
+      />
     ) as HTMLDivElement;
 
-    uiRoot.appendChild(this.welcomeCard);
+    root.appendChild(this.card);
   }
 
   hide(): void {
-    if (this.welcomeCard) {
-      this.welcomeCard.remove();
-      this.welcomeCard = null;
-    }
+    this.card?.remove();
+    this.card = null;
   }
 }
