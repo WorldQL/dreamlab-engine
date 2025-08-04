@@ -116,7 +116,7 @@ export class PrefabViewer {
           backdropFilter: "blur(4px)",
         }}
       >
-        <span style={{ opacity: 0.75 }}>Default drop root:</span>
+        <span style={{ opacity: 0.75, textDecorationStyle: 'dotted', textDecorationLine: 'underline', cursor: 'help' }} title="If you have no entity selected when dragging a prefab into the world, it will go under this tree. When you have an entity selected, the prefab will be created under it. ">Default drop root:</span>
         {dropSelect}
       </div>
     ) as HTMLDivElement;
