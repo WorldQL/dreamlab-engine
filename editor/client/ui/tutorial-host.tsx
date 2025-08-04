@@ -18,7 +18,9 @@ interface TutorialStep {
 
 const highlight = (id: string, on: boolean): void => {
   const el = document.getElementById(id);
-  if (el) el.style.border = on ? "3px solid yellow" : "none";
+  if (!el) return;
+
+  el.classList.toggle("tutorial-flash-border", on);
 };
 
 const tutorial: TutorialStep[] = [
