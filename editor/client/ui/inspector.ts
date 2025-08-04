@@ -13,6 +13,7 @@ import { SceneGraph } from "./scene-graph.ts";
 import { SelectedEntityService } from "./selected-entity.ts";
 import { Toolbar } from "./toolbar.tsx";
 import { WelcomeMenu } from "./welcome-menu.tsx";
+import { TutorialHost } from "./tutorial-host.tsx";
 
 export interface InspectorUIWidget {
   setup(ui: InspectorUI): void;
@@ -40,6 +41,7 @@ export class InspectorUI {
   toolbar: Toolbar;
   fileTree: FileTree;
   welcomeMenu: WelcomeMenu;
+  tutorialHost: TutorialHost;
   reloadPrompt: ReloadPrompt;
 
   constructor(
@@ -58,6 +60,7 @@ export class InspectorUI {
     this.toolbar = new Toolbar(game, gameContainer);
     this.fileTree = new FileTree(game);
     this.welcomeMenu = new WelcomeMenu(game);
+    this.tutorialHost = new TutorialHost(game);
     this.reloadPrompt = new ReloadPrompt(game);
 
     if (editMode) {
@@ -72,6 +75,7 @@ export class InspectorUI {
     this.contextMenu.setup(this);
     this.fileTree.setup();
     this.reloadPrompt.setup(this);
+
 
     setupKeyboardShortcuts(this.game, this.selectedEntity, editMode);
 
@@ -170,6 +174,7 @@ export class InspectorUI {
     this.fileTree.show(uiRoot);
     this.welcomeMenu.show(uiRoot);
     this.reloadPrompt.show(uiRoot);
+    this.tutorialHost.show(uiRoot);
   }
 
   hide() {
