@@ -1,115 +1,97 @@
 #context-menu-container {
-  visibility: hidden;
-
   position: fixed;
-  width: auto;
-  height: auto;
   top: var(--cursor-y);
   left: var(--cursor-x);
-
   z-index: 98;
+  visibility: hidden;
 }
-
 #context-menu-container:has(#context-menu[data-open]) {
   visibility: visible;
 }
 
 #context-menu {
-  visibility: hidden;
-
   position: relative;
   z-index: 99;
-
   display: flex;
-  flex-direction: row;
-  align-items: first baseline;
-  gap: 4px;
+  gap: 6px;
+  font-size: 13px;
+  line-height: 1.4;
+  visibility: hidden;
 }
-
-#context-menu section {
-  display: flex;
-  flex-direction: column;
-
-  --section-offset: 0em;
-
-  padding: 0;
-
-  width: auto;
-  min-width: 19ch;
-  background-color: rgb(var(--color-bg-2));
-  color: rgb(var(--color-text));
-  outline: 1px solid rgb(var(--color-text));
-
-  border-radius: var(--border-radius);
-}
-
 #context-menu[data-open] {
   visibility: visible;
 }
 
-#context-menu a {
-  display: inline-flex;
-  padding: 0.5em;
-  background-color: rgb(var(--color-bg-2));
+#context-menu section {
+  min-width: 180px;
+  background: rgb(var(--color-bg-2));
   color: rgb(var(--color-text));
+  border: 1px solid rgb(var(--color-text) / 40%);
+  border-radius: 4px;
+  padding: 4px 0;
+  box-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.25),
+    0 1px 2px rgba(0, 0, 0, 0.15);
+}
 
-  height: 2.25em;
-  max-height: 2.25em;
-
-  align-content: center;
-  justify-content: space-between;
-
+#context-menu a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  height: 26px;
   text-decoration: none;
+  color: inherit;
+  user-select: none;
+  cursor: default;
+  white-space: nowrap;
+  border-radius: 2px;
+  position: relative;
+  cursor: pointer;
+}
 
-  &[data-group]::after {
-    content: "⏵";
-  }
+#context-menu a[data-group]::after {
+  content: "";
+  margin-left: auto;
+  border: solid currentColor;
+  border-width: 0 1px 1px 0;
+  display: inline-block;
+  padding: 3px;
+  transform: rotate(-45deg);
+  opacity: 0.5;
+}
 
-  &:hover,
-  &[data-selected] {
-    --alpha: 1;
-    background-color: rgb(var(--color-primary) / var(--alpha));
-    .theme-darker & {
-      --alpha: 16.5%;
-    }
-  }
+#context-menu a:hover,
+#context-menu a[data-selected] {
+  background: rgb(var(--color-primary) / 20%);
+  color: rgb(var(--color-text));
+}
+.theme-darker #context-menu a:hover,
+.theme-darker #context-menu a[data-selected] {
+  background: rgb(var(--color-primary) / 16.5%);
 }
 
 #context-menu a[aria-disabled="true"] {
   opacity: 0.5;
-  color: rgb(var(--color-text));
   cursor: not-allowed;
-  position: relative;
-
-  &::before {
-    position: absolute;
-    left: 0.2em;
-    font-size: 1.2em;
-    opacity: 0.7;
-  }
-
-  &:hover {
-    background-color: rgba(var(--color-text), 0.1);
-  }
+}
+#context-menu a[aria-disabled="true"]:hover {
+  background: transparent;
 }
 
 .context-menu-hint {
-  display: flex;
-  align-items: center;
   margin-left: auto;
-  font-size: 0.8em;
-  color: rgb(150, 150, 150);
-  opacity: 0.75;
-
-  #context-menu a:hover &,
-  #context-menu a[data-selected] & {
-    color: rgb(var(--color-text));
-    opacity: 0.7;
-  }
+  font-size: 11px;
+  opacity: 0.6;
+}
+#context-menu a:hover .context-menu-hint,
+#context-menu a[data-selected] .context-menu-hint {
+  opacity: 0.8;
 }
 
 .context-menu-separator {
-  margin: 0;
+  height: 1px;
+  margin: 4px 0;
+  background: rgb(var(--color-text) / 20%);
   border: none;
-  border-top: 1px solid grey;
 }
