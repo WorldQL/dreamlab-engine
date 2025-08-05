@@ -46,10 +46,7 @@ export class PrefabViewer {
     }
   }
 
-  constructor(
-    private game: ClientGame,
-    private container: HTMLElement,
-  ) {
+  constructor(private game: ClientGame, private container: HTMLElement) {
     this.#iconPicker = new IconPicker((newIcon: string) => {
       this.changeEntityIcon(this.inspectorUI, newIcon);
     });
@@ -104,14 +101,14 @@ export class PrefabViewer {
       <div
         style={{
           position: "absolute",
-          top: "6px",
-          right: "8px",
+          top: "2px",
+          right: "2px",
           display: "flex",
-          gap: "6px",
+          gap: "4px",
           alignItems: "center",
-          fontSize: "12px",
+          fontSize: "11px",
           padding: "4px 8px",
-          borderRadius: "6px",
+          borderRadius: "4px",
           background: "rgba(var(--color-bg-2) / 0.6)",
           backdropFilter: "blur(4px)",
         }}
@@ -119,12 +116,13 @@ export class PrefabViewer {
         <span
           style={{
             opacity: 0.75,
-            borderBottom: "1px dotted currentColor",
+            textDecorationStyle: "dotted",
+            textDecorationLine: "underline",
             cursor: "help",
           }}
-          title="When you drag a prefab into the scene with no entity selected, it's placed under this root. If an entity is selected, the prefab is created as its child."
+          title="If you have no entity selected when dragging a prefab into the world, it will go under this tree. When you have an entity selected, the prefab will be created under it. For multiplayer games, you usually want this to be 'world' and for singleplayer games you usually want 'local'."
         >
-          Default drop root
+          Default drop
         </span>
         {dropSelect}
       </div>
@@ -317,6 +315,7 @@ export class PrefabViewer {
         const screenPos = this.game.inputs.cursor.screen;
         if (!screenPos) {
           this.currentDragSource = undefined;
+          console.log('waah!')
           return;
         }
 
@@ -363,7 +362,7 @@ export class PrefabViewer {
         }
 
         this.currentDragSource = undefined;
-      }, 20);
+      }, 100);
     };
 
     card = (

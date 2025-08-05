@@ -75,7 +75,7 @@ export class BottomTabs implements InspectorUIWidget {
     tilemapTab.addEventListener("click", () => switchTab("tilemap"));
 
     setTimeout(() => {
-      switchTab("assistant");
+      switchTab("prefabs");
     });
 
     const recommendedActionsTab = (

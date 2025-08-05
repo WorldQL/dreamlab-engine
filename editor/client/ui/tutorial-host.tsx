@@ -23,6 +23,77 @@ const highlight = (id: string, on: boolean): void => {
   if (el) el.classList.toggle("tutorial-flash-border", on);
 };
 
+let activeOverlays: string[] = [];
+
+const updateOverlayPositions = (): void => {
+  activeOverlays.forEach(sectionId => {
+    const section = document.getElementById(sectionId);
+    const overlay = document.getElementById(`${sectionId}-overlay`);
+    if (!section || !overlay) return;
+
+    const rect = section.getBoundingClientRect();
+    overlay.style.top = `${rect.top}px`;
+    overlay.style.left = `${rect.left}px`;
+    overlay.style.width = `${rect.width}px`;
+    overlay.style.height = `${rect.height}px`;
+  });
+};
+
+const createSectionOverlay = (sectionIds: string[]): void => {
+  sectionIds.forEach(sectionId => {
+    const section = document.getElementById(sectionId);
+    if (!section) return;
+
+    const rect = section.getBoundingClientRect();
+    const overlay = document.createElement('div');
+    overlay.id = `${sectionId}-overlay`;
+    overlay.style.cssText = `
+      position: fixed;
+      top: ${rect.top}px;
+      left: ${rect.left}px;
+      width: ${rect.width}px;
+      height: ${rect.height}px;
+      background-color: rgba(19, 21, 26, 0.8);
+      z-index: 999;
+      pointer-events: all;
+    `;
+
+    overlay.addEventListener('contextmenu', (e) => e.preventDefault());
+    overlay.addEventListener('click', (e) => e.preventDefault());
+    overlay.addEventListener('mousedown', (e) => e.preventDefault());
+
+    document.body.appendChild(overlay);
+    
+    if (!activeOverlays.includes(sectionId)) {
+      activeOverlays.push(sectionId);
+    }
+  });
+
+  if (activeOverlays.length === sectionIds.length && activeOverlays.length > 0) {
+    window.addEventListener('resize', updateOverlayPositions);
+    window.addEventListener('scroll', updateOverlayPositions, true);
+  }
+};
+
+const removeSectionOverlay = (sectionIds: string[]): void => {
+  sectionIds.forEach(sectionId => {
+    const overlay = document.getElementById(`${sectionId}-overlay`);
+    if (overlay) {
+      overlay.remove();
+    }
+    
+    const index = activeOverlays.indexOf(sectionId);
+    if (index > -1) {
+      activeOverlays.splice(index, 1);
+    }
+  });
+
+  if (activeOverlays.length === 0) {
+    window.removeEventListener('resize', updateOverlayPositions);
+    window.removeEventListener('scroll', updateOverlayPositions, true);
+  }
+};
+
 const tutorial: TutorialStep[] = [
   {
     dialog: "Welcome to Dreamlab! Press the play button to start!",
@@ -50,12 +121,12 @@ const tutorial: TutorialStep[] = [
       highlight("prefab-tab-Player", false);
       if (hasEntity("local/Player")) {
         const player = games().edit.entities.lookupById("world/EditEntities/local/Player")!;
-        player.pos = new Vector2(-0.2, -19);
+        player.pos = new Vector2(3, -14.6);
       }
       games().edit.entities.lookupById("world/EditEntities/local/AddPlayerHint")!.enabled =
         false;
     },
-    until: () => hasEntity("world/Player") || hasEntity("local/Player"),
+    until: () => hasEntity("local/Player"),
   },
   {
     dialog: "Great! Press Play again.",
@@ -65,25 +136,21 @@ const tutorial: TutorialStep[] = [
   },
   {
     dialog:
-      "Move left/right/up with WASD and Spacebar - cool, but still boring. Press Stop to add platforms and coins.",
+      "Move left/right/up with WASD and Spacebar. But you can't reach the tree! Press Stop to add a platform to jump on.",
     start: () => highlight("stop-button", true),
     cleanup: () => highlight("stop-button", false),
     until: () => !games().play,
   },
   {
-    dialog: "Drag some Platform and Coin prefabs into the scene from the Prefabs tab.",
+    dialog: "Drag a Platform to jump on so you can reach the tree!",
     start: () => {
-      highlight("prefab-tab", true);
       highlight("prefab-tab-Platform", true);
-      highlight("prefab-tab-Coin", true);
     },
     cleanup: () => {
-      highlight("prefab-tab", false);
       highlight("prefab-tab-Platform", false);
-      highlight("prefab-tab-Coin", false);
       //TODO: move coins and platform from world to local
     },
-    until: () => hasEntity("world/Platform") && hasEntity("world/Coin"),
+    until: () => hasEntity("local/Platform"),
   },
 
   {
@@ -99,22 +166,26 @@ const tutorial: TutorialStep[] = [
     until: () => !games().play,
   },
   {
-    dialog: "Drag the Win-Condition prefab into the scene.",
+    dialog: "Drag the Gem prefab into the scene. Put it under the tree (or wherever you want!)",
     start: () => {
-      highlight("prefab-tab", true);
-      highlight("prefab-tab-WinCondition", true);
+      highlight("prefab-tab-Gem", true);
     },
     cleanup: () => {
-      highlight("prefab-tab", false);
-      highlight("prefab-tab-WinCondition", false);
+      highlight("prefab-tab-Gem", false);
     },
-    until: () => hasEntity("world/WinCondition"),
+    until: () => hasEntity("local/Gem"),
   },
   {
     dialog: "Press Play. Reach the goal with your player to finish the tutorial!",
     start: () => highlight("play-button", true),
     cleanup: () => highlight("play-button", false),
-    until: () => !games().play && !hasEntity("world/WinCondition"),
+    until: () => games().play?.entities.lookupById("local/WinConfetti")?.enabled === true,
+  },
+    {
+    dialog: "You did it!",
+    start: () => {},
+    cleanup: () => {},
+    until: () => {return false},
   },
 ];
 
@@ -123,6 +194,14 @@ export class TutorialHost implements InspectorUIWidget {
   private contentEl!: HTMLDivElement;
   private counterEl!: HTMLSpanElement;
   private polling: number | null = null;
+
+  public maskSections(sectionIds: string[]): void {
+    createSectionOverlay(sectionIds);
+  }
+
+  public unmaskSections(sectionIds: string[]): void {
+    removeSectionOverlay(sectionIds);
+  }
 
   private reposition = (): void => {
     if (!this.card) return;
@@ -137,12 +216,13 @@ export class TutorialHost implements InspectorUIWidget {
   constructor(_game: ClientGame) {
     if (TutorialHost.didLoad) return;
     TutorialHost.didLoad = true;
-    setTimeout(() => this.runTutorial(), 1_000);
+    setTimeout(() => this.runTutorial(), 1);
   }
 
   setup(_ui: InspectorUI): void {}
 
   private runTutorial(): void {
+    this.maskSections(['scene-graph', 'file-tree', 'properties', 'behavior-panel', 'script-button', 'source-button'])
     let i = 0;
 
     const next = (): void => {
