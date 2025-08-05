@@ -136,7 +136,7 @@ const tutorial: TutorialStep[] = [
   },
   {
     dialog:
-      "Move left/right with WASD and jump with space. But you can't reach the tree! Press Stop to add a platform to jump on.",
+      "WASD = move. Space = jump<br>But you can't reach the tree! Press Stop to add a platform to jump on.",
     start: () => highlight("stop-button", true),
     cleanup: () => highlight("stop-button", false),
     until: () => !games().play,
