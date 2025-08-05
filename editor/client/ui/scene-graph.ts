@@ -13,7 +13,7 @@ import {
 import { element as elem, element } from "@dreamlab/ui";
 import { EditorFacadeTilemap } from "../../common/facades/tilemap.ts";
 import { EditorMetadataEntity, EditorRootFacadeEntity, Facades } from "../../common/mod.ts";
-import { ChevronDown, icon } from "../_icons.tsx";
+import { ChevronDown, Ellipsis, icon } from "../_icons.tsx";
 import { entityNameSort } from "../entity-sort.ts";
 import { UndoRedoManager, type UndoRedoOperation } from "../undo-redo.ts";
 import { createEntityMenu } from "../util/entity-types.ts";
@@ -36,7 +36,19 @@ const chevronDownIcon = icon(ChevronDown);
 
 export class SceneGraph implements InspectorUIWidget {
   #section: HTMLElement = elem("section", { id: "scene-graph" }, [
-    elem("h1", {}, ["Scene Graph"]),
+    elem("h1", { style: { display: "flex", alignItems: "center" } }, [
+      "Scene Graph",
+      elem(
+        "button",
+        {
+          id: "scene-graph-menu-button",
+          className: "menu-button",
+          type: "button",
+          title: "Scene actions",
+        },
+        [icon(Ellipsis)],
+      ),
+    ]),
   ]);
 
   entryElementMap = new Map<string, HTMLElement>();
@@ -61,6 +73,40 @@ export class SceneGraph implements InspectorUIWidget {
   setup(ui: InspectorUI): void {
     const treeRoot = elem("div", { id: "scene-graph-tree" });
     this.#section.append(treeRoot);
+
+    const headerBtn = this.#section.querySelector<HTMLButtonElement>(
+      "#scene-graph-menu-button",
+    );
+    headerBtn?.addEventListener("click", ev => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      const rect = headerBtn.getBoundingClientRect();
+      const world = ui.editMode ? this.game.world._.EditEntities._.world : this.game.world;
+
+      ui.contextMenu.drawContextMenu(rect.left, rect.bottom, [
+        createEntityMenu("New Entity", type => {
+          const typeToSpawn = ui.editMode ? Facades.lookupFacadeEntityType(type) : type;
+          const newEntity = world.spawn({
+            type: typeToSpawn,
+            name: type.name,
+            transform: {
+              position: this.game.local._.Camera.globalTransform.position,
+            },
+          });
+
+          UndoRedoManager._.push({
+            t: "create-entity",
+            parentRef: world.ref,
+            def: newEntity.getDefinition(),
+          });
+
+          ui.selectedEntity.entities = [newEntity];
+
+          const newEntryElement = this.entryElementMap.get(newEntity.ref);
+          if (newEntryElement) this.triggerRename(newEntity, newEntryElement);
+        }),
+      ]);
+    });
 
     this.#section.setAttribute("tabindex", "0");
     this.#section.addEventListener("keydown", ev => {

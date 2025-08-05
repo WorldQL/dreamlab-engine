@@ -199,7 +199,12 @@ export class CameraPanBehavior extends Behavior {
       // But only if we're not already cycling through (i.e., not a double-click)
       // and only if the EmptyFacade parent is not already in the entities list at this position
       // and only if the entity we're selecting is not already the current target
-      if (newTarget?.parent instanceof EmptyFacade && !shouldUpdateIndex && !entities.includes(newTarget.parent) && newTarget !== target) {
+      if (
+        newTarget?.parent instanceof EmptyFacade &&
+        !shouldUpdateIndex &&
+        !entities.includes(newTarget.parent) &&
+        newTarget !== target
+      ) {
         newTarget = newTarget.parent;
       }
 

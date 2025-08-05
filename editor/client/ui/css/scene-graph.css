@@ -129,3 +129,20 @@
 #scene-graph-tree details[data-prefab-instance] span.name {
   color: #9cedff;
 }
+
+.menu-button,
+#scene-graph-menu-button {
+  background: none;
+  border: none;
+  padding: 0.25rem;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.menu-button:hover,
+#scene-graph-menu-button:hover {
+  background-color: rgb(var(--color-bg-2) / 0.5);
+}

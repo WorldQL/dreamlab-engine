@@ -23,7 +23,7 @@ const highlight = (id: string, on: boolean): void => {
   if (el) el.classList.toggle("tutorial-flash-border", on);
 };
 
-let activeOverlays: string[] = [];
+const activeOverlays: string[] = [];
 
 const updateOverlayPositions = (): void => {
   activeOverlays.forEach(sectionId => {
@@ -70,8 +70,8 @@ const createSectionOverlay = (sectionIds: string[]): void => {
   });
 
   if (activeOverlays.length === sectionIds.length && activeOverlays.length > 0) {
-    window.addEventListener("resize", updateOverlayPositions);
-    window.addEventListener("scroll", updateOverlayPositions, true);
+    globalThis.addEventListener("resize", updateOverlayPositions);
+    globalThis.addEventListener("scroll", updateOverlayPositions, true);
   }
 };
 
@@ -89,8 +89,8 @@ const removeSectionOverlay = (sectionIds: string[]): void => {
   });
 
   if (activeOverlays.length === 0) {
-    window.removeEventListener("resize", updateOverlayPositions);
-    window.removeEventListener("scroll", updateOverlayPositions, true);
+    globalThis.removeEventListener("resize", updateOverlayPositions);
+    globalThis.removeEventListener("scroll", updateOverlayPositions, true);
   }
 };
 
@@ -154,7 +154,8 @@ const tutorial: TutorialStep[] = [
   },
 
   {
-    dialog: "Press Play and give it a try.<br><br>If you need to move the platform, drag the blue box that appears when it's selected.",
+    dialog:
+      "Press Play and give it a try.<br><br>If you need to move the platform, drag the blue box that appears when it's selected.",
     start: () => highlight("play-button", true),
     cleanup: () => highlight("play-button", false),
     until: () => Boolean(games().play),
