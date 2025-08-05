@@ -230,11 +230,9 @@ export class TutorialHost implements InspectorUIWidget {
         if (tutorialNumber === 1) {
           tutorial = tutorial1;
           console.log("loading tutorial 1");
+          setTimeout(() => this.runTutorial(), 1);
         }
-      } catch (_) {
-      } finally {
-        setTimeout(() => this.runTutorial(), 1);
-      }
+      } catch (_) {}
     }
   }
 
