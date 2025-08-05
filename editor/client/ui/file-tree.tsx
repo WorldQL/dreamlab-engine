@@ -45,7 +45,25 @@ export class FileTree implements InspectorUIWidget {
     this.#registerIcon(AudioLines, ".mp3", ".ogg", ".wav", ".flac");
   }
 
-  #section = elem("section", { id: "file-tree" }, [elem("h1", {}, ["Project"])]);
+  #section = elem(
+    "section",
+    {
+      id: "file-tree",
+    },
+    [
+      elem(
+        "h1",
+        {
+          title:
+            "Project Files - drag a behavior file onto an entity to add it, drag an image onto a spritesheet URL to swap it, or double-click a file to open it",
+          ariaLabel:
+            "Project Files - drag a behavior file onto an entity to add it, drag an image onto a spritesheet URL to swap it, or double click a file to open it",
+        },
+        ["Project"],
+      ),
+    ],
+  );
+
   #openDirectories: Set<string> = new Set();
   #importPopup: ImportPopup;
 
@@ -228,6 +246,8 @@ export class FileTree implements InspectorUIWidget {
         }}
       >
         <div
+          title="Project Files - drag a behavior file onto an entity to add it, drag an image onto a spritesheet URL to swap it, or double-click a file to open it"
+          ariaLabel="Project Files - drag a behavior file onto an entity to add it, drag an image onto a spritesheet URL to swap it, or double click a file to open it"
           style={{
             flexShrink: 1,
             overflow: "hidden",

@@ -25,7 +25,12 @@ import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 export class Properties implements InspectorUIWidget {
   #section = (
     <section id="properties">
-      <h1>Properties</h1>
+      <h1
+        title="Entity Properties - select an entity to inspect or edit its name, transform, and values."
+        ariaLabel="Entity Properties - select an entity to inspect or edit its name, transform, and values."
+      >
+        Properties
+      </h1>
     </section>
   );
 

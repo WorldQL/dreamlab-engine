@@ -35,21 +35,35 @@ function eventTargetsEntry(event: Event, entryElement: HTMLElement) {
 const chevronDownIcon = icon(ChevronDown);
 
 export class SceneGraph implements InspectorUIWidget {
-  #section: HTMLElement = elem("section", { id: "scene-graph" }, [
-    elem("h1", { style: { display: "flex", alignItems: "center" } }, [
-      "Scene Graph",
+  #section: HTMLElement = elem(
+    "section",
+    {
+      id: "scene-graph",
+    },
+    [
       elem(
-        "button",
+        "h1",
         {
-          id: "scene-graph-menu-button",
-          className: "menu-button",
-          type: "button",
-          title: "Scene actions",
+          title: "Browse the hierarchy and right-click an entity for actions",
+          ariaLabel: "Browse the hierarchy and right-click an entity for actions",
+          style: { display: "flex", alignItems: "center" },
         },
-        [icon(Ellipsis)],
+        [
+          "Scene Graph",
+          elem(
+            "button",
+            {
+              id: "scene-graph-menu-button",
+              className: "menu-button",
+              type: "button",
+              title: "Scene actions",
+            },
+            [icon(Ellipsis)],
+          ),
+        ],
       ),
-    ]),
-  ]);
+    ],
+  );
 
   entryElementMap = new Map<string, HTMLElement>();
   currentDragSource: { entities: Entity[]; entries: HTMLElement[] } | undefined;

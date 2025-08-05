@@ -7,7 +7,18 @@ import { InspectorUI, InspectorUIWidget } from "../inspector.ts";
 import { BehaviorList } from "./behavior-list.ts";
 
 export class BehaviorPanel implements InspectorUIWidget {
-  #titleBar = elem("header", {}, [elem("h1", {}, ["Behaviors"])]);
+  #titleBar = elem("header", {}, [
+    elem(
+      "h1",
+      {
+        title:
+          "Behaviors - view, edit, or add scripts to the selected entity. Drag the file to this panel or click the plus button to add a behavior.",
+        ariaLabel:
+          "Behaviors - view, edit, or add scripts to the selected entity. Drag the file to this panel or click the plus button to add a behavior.",
+      },
+      ["Behaviors"],
+    ),
+  ]);
   #section = elem("section", { id: "behavior-panel" }, [this.#titleBar]);
 
   behaviorLists = new Map<Entity, BehaviorList>();
