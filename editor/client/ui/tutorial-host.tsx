@@ -45,7 +45,7 @@ const createSectionOverlay = (sectionIds: string[]): void => {
     if (!section) return;
 
     const rect = section.getBoundingClientRect();
-    const overlay = document.createElement('div');
+    const overlay = document.createElement("div");
     overlay.id = `${sectionId}-overlay`;
     overlay.style.cssText = `
       position: fixed;
@@ -58,20 +58,20 @@ const createSectionOverlay = (sectionIds: string[]): void => {
       pointer-events: all;
     `;
 
-    overlay.addEventListener('contextmenu', (e) => e.preventDefault());
-    overlay.addEventListener('click', (e) => e.preventDefault());
-    overlay.addEventListener('mousedown', (e) => e.preventDefault());
+    overlay.addEventListener("contextmenu", e => e.preventDefault());
+    overlay.addEventListener("click", e => e.preventDefault());
+    overlay.addEventListener("mousedown", e => e.preventDefault());
 
     document.body.appendChild(overlay);
-    
+
     if (!activeOverlays.includes(sectionId)) {
       activeOverlays.push(sectionId);
     }
   });
 
   if (activeOverlays.length === sectionIds.length && activeOverlays.length > 0) {
-    window.addEventListener('resize', updateOverlayPositions);
-    window.addEventListener('scroll', updateOverlayPositions, true);
+    window.addEventListener("resize", updateOverlayPositions);
+    window.addEventListener("scroll", updateOverlayPositions, true);
   }
 };
 
@@ -81,7 +81,7 @@ const removeSectionOverlay = (sectionIds: string[]): void => {
     if (overlay) {
       overlay.remove();
     }
-    
+
     const index = activeOverlays.indexOf(sectionId);
     if (index > -1) {
       activeOverlays.splice(index, 1);
@@ -89,8 +89,8 @@ const removeSectionOverlay = (sectionIds: string[]): void => {
   });
 
   if (activeOverlays.length === 0) {
-    window.removeEventListener('resize', updateOverlayPositions);
-    window.removeEventListener('scroll', updateOverlayPositions, true);
+    window.removeEventListener("resize", updateOverlayPositions);
+    window.removeEventListener("scroll", updateOverlayPositions, true);
   }
 };
 
@@ -109,7 +109,7 @@ const tutorial: TutorialStep[] = [
     until: () => !games().play,
   },
   {
-    dialog: "Open the Prefabs tab and drag the Player prefab into the scene.",
+    dialog: "Drag the Player prefab into the scene.",
     start: () => {
       highlight("prefab-tab", true);
       highlight("prefab-tab-Player", true);
@@ -136,7 +136,7 @@ const tutorial: TutorialStep[] = [
   },
   {
     dialog:
-      "Move left/right/up with WASD and Spacebar. But you can't reach the tree! Press Stop to add a platform to jump on.",
+      "Move left/right with WASD and jump with space. But you can't reach the tree! Press Stop to add a platform to jump on.",
     start: () => highlight("stop-button", true),
     cleanup: () => highlight("stop-button", false),
     until: () => !games().play,
@@ -181,11 +181,13 @@ const tutorial: TutorialStep[] = [
     cleanup: () => highlight("play-button", false),
     until: () => games().play?.entities.lookupById("local/WinConfetti")?.enabled === true,
   },
-    {
+  {
     dialog: "You did it!",
     start: () => {},
     cleanup: () => {},
-    until: () => {return false},
+    until: () => {
+      return false;
+    },
   },
 ];
 
@@ -222,7 +224,14 @@ export class TutorialHost implements InspectorUIWidget {
   setup(_ui: InspectorUI): void {}
 
   private runTutorial(): void {
-    this.maskSections(['scene-graph', 'file-tree', 'properties', 'behavior-panel', 'script-button', 'source-button'])
+    this.maskSections([
+      "scene-graph",
+      "file-tree",
+      "properties",
+      "behavior-panel",
+      "script-button",
+      "source-button",
+    ]);
     let i = 0;
 
     const next = (): void => {
