@@ -221,20 +221,21 @@ export class TutorialHost implements InspectorUIWidget {
   constructor(_game: ClientGame) {
     if (TutorialHost.didLoad) return;
     TutorialHost.didLoad = true;
-    const worldId = _game.worldId;
-    console.log(worldId);
-    if (worldId.includes("TutorialInteractive")) {
+    const projectId = _game.worldId;
+    console.log(projectId);
+    if (projectId.includes("TutorialInteractive")) {
       try {
-        const worldName = worldId.split("/")[1];
-        const tutorialNumber = parseInt(worldName.split("_")[0].split(".")[1]);
+        const projectName = projectId.split("/")[1];
+        const tutorialNumber = parseInt(projectName.split("_")[0].split(".")[1]);
         if (tutorialNumber === 1) {
           tutorial = tutorial1;
-          console.log('loading tutorial 1')
+          console.log("loading tutorial 1");
         }
-      } catch (_) {}
+      } catch (_) {
+      } finally {
+        setTimeout(() => this.runTutorial(), 1);
+      }
     }
-
-    setTimeout(() => this.runTutorial(), 1);
   }
 
   setup(_ui: InspectorUI): void {}
