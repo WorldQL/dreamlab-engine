@@ -1,11 +1,15 @@
 import type { Game } from "@dreamlab/engine";
-import { syncedObjectContainerObjectsField as objects } from "@dreamlab/engine/internal";
+import {
+  syncedObjectContainerObjectsField as objects,
+  syncedObjectContainerReadyField as ready,
+} from "@dreamlab/engine/internal";
 import type { Accessor, AnySyncedObject } from "./object.ts";
 import type { SyncedObjectOperation } from "./operation.ts";
 
 export interface SyncedObjectContainer {
   readonly ref: string;
   readonly [objects]: Map<string, AnySyncedObject>;
+  readonly [ready]: boolean;
 }
 export function isContainer(o: unknown): o is SyncedObjectContainer {
   return typeof o === "object" && o !== null && objects in o;

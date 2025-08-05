@@ -17,6 +17,9 @@ export const handleObjectSync: ServerNetworkSetupRoutine = (net, game) => {
   };
   const syncedObjectOpQueue = new Set<SyncedObjectOpInfo>();
   game.sync.listen((object, clock, op) => {
+    const container = game.sync.get(object.containerId);
+    if (!container || !container[internal.syncedObjectContainerReadyField]) return;
+
     syncedObjectOpQueue.add({ object, clock, op });
   });
 

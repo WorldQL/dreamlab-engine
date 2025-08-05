@@ -92,6 +92,9 @@ export class Behavior implements ISignalHandler {
   }
 
   readonly [internal.syncedObjectContainerObjectsField] = new Map<string, AnySyncedObject>();
+  get [internal.syncedObjectContainerReadyField]() {
+    return this.entity[internal.syncedObjectContainerReadyField];
+  }
 
   static createRef(): string {
     return createId("bhv", { length: 10 });

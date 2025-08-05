@@ -71,3 +71,6 @@ export const colliderReparentBody = Symbol.for("dreamlab.internal.colliderRepare
 export const syncedObjectContainerObjectsField = Symbol.for(
   "dreamlab.internal.syncedObjectContainerObjectsField",
 );
+export const syncedObjectContainerReadyField = Symbol.for(
+  "dreamlab.internal.syncedObjectContainerReadyField",
+);

@@ -135,6 +135,9 @@ export abstract class Entity implements ISignalHandler {
   }
 
   readonly [internal.syncedObjectContainerObjectsField] = new Map<string, AnySyncedObject>();
+  get [internal.syncedObjectContainerReadyField]() {
+    return this[internal.entityDoneSpawning];
+  }
   #syncOverrides: Record<string, SyncedObjectInfo> = {};
 
   // #region Name / ID / Hierarchy
