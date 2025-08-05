@@ -153,21 +153,33 @@ export class AppMenu {
     });
 
     this.navigation = {
-      editor: new IconButton(Box, {
-        id: "game-button",
-        title: "Editor",
-        ariaLabel: "Editor",
-      }),
-      script: new IconButton(ScrollText, {
-        id: "script-button",
-        title: "Go to Scripts",
-        ariaLabel: "Go to Scripts",
-      }),
-      source: new IconButton(GitCompareArrows, {
-        id: "source-button",
-        title: "Go to Source Control",
-        ariaLabel: "Go to Source Control",
-      }),
+      editor: new IconButton(
+        Box,
+        {
+          id: "game-button",
+          title: "Editor",
+          ariaLabel: "Editor",
+        },
+        "Editor",
+      ),
+      script: new IconButton(
+        ScrollText,
+        {
+          id: "script-button",
+          title: "Go to Scripts",
+          ariaLabel: "Go to Scripts",
+        },
+        "Scripts",
+      ),
+      source: new IconButton(
+        GitCompareArrows,
+        {
+          id: "source-button",
+          title: "Go to Source Control",
+          ariaLabel: "Go to Source Control",
+        },
+        "Versions",
+      ),
     };
 
     this.navigation.editor.disable();
