@@ -12,6 +12,8 @@ export class WelcomeMenu implements InspectorUIWidget {
   }
 
   show(uiRoot: HTMLElement): void {
+    return; // disable this component;
+
     const worldId = this.game.worldId;
     if (worldId.toLowerCase().includes("dreamlab_tutorial")) return;
 

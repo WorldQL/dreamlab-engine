@@ -94,7 +94,7 @@ const removeSectionOverlay = (sectionIds: string[]): void => {
   }
 };
 
-const tutorial: TutorialStep[] = [
+const tutorial1: TutorialStep[] = [
   {
     dialog: "Welcome to Dreamlab! Press the play button to start!",
     start: () => highlight("play-button", true),
@@ -192,6 +192,8 @@ const tutorial: TutorialStep[] = [
   },
 ];
 
+let tutorial: TutorialStep[] = [];
+
 export class TutorialHost implements InspectorUIWidget {
   private card: HTMLElement | null = null;
   private contentEl!: HTMLDivElement;
@@ -219,7 +221,20 @@ export class TutorialHost implements InspectorUIWidget {
   constructor(_game: ClientGame) {
     if (TutorialHost.didLoad) return;
     TutorialHost.didLoad = true;
-    // setTimeout(() => this.runTutorial(), 1);
+    const worldId = _game.worldId;
+    console.log(worldId);
+    if (worldId.includes("TutorialInteractive")) {
+      try {
+        const worldName = worldId.split("/")[1];
+        const tutorialNumber = parseInt(worldName.split("_")[0].split(".")[1]);
+        if (tutorialNumber === 1) {
+          tutorial = tutorial1;
+          console.log('loading tutorial 1')
+        }
+      } catch (_) {}
+    }
+
+    setTimeout(() => this.runTutorial(), 1);
   }
 
   setup(_ui: InspectorUI): void {}
