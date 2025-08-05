@@ -1,4 +1,5 @@
 import {
+  Camera,
   ClientGame,
   Entity,
   EntityChildReparented,
@@ -7,6 +8,7 @@ import {
   EntityRenamed,
   EntityReparented,
   getFacadeRoot,
+  Vector2,
 } from "@dreamlab/engine";
 import { EditorMetadataEntity } from "../../common/mod.ts";
 import { UndoRedoManager } from "../undo-redo.ts";
@@ -303,65 +305,68 @@ export class PrefabViewer {
       }
     };
 
-    const dragend = () => {
-      setTimeout(() => {
-        if (this.currentDragSource) {
-          for (const entry of this.currentDragSource.entries) {
-            delete entry.dataset.dragging;
-          }
+    const dragend = (event: DragEvent) => {
+      if (this.currentDragSource) {
+        for (const entry of this.currentDragSource.entries) {
+          delete entry.dataset.dragging;
         }
+      }
 
-        const canvas = this.game.renderer.app.canvas;
-        const screenPos = this.game.inputs.cursor.screen;
-        if (!screenPos) {
-          this.currentDragSource = undefined;
-          return;
-        }
+      // Update cursor position from drag event coordinates
+      const canvas = this.game.renderer.app.canvas;
+      const canvasRect = canvas.getBoundingClientRect();
+      const canvasCoords = {
+        x: event.clientX - canvasRect.x,
+        y: event.clientY - canvasRect.y,
+      };
 
-        if (
-          screenPos.x < 0 ||
-          screenPos.y < 0 ||
-          screenPos.x > canvas.width ||
-          screenPos.y > canvas.height
-        ) {
-          this.currentDragSource = undefined;
-          return;
-        }
+      // Check if drop is within canvas bounds
+      if (
+        canvasCoords.x < 0 ||
+        canvasCoords.y < 0 ||
+        canvasCoords.x > canvasRect.width ||
+        canvasCoords.y > canvasRect.height
+      ) {
+        this.currentDragSource = undefined;
+        return;
+      }
 
-        let parentEntity: Entity | undefined;
+      // Calculate world position directly from canvas coordinates
+      const screenPos = new Vector2(canvasCoords);
+      const camera = Camera.getActive(this.game);
+      const worldPos = camera ? camera.screenToWorld(screenPos) : undefined;
 
-        if (ui.selectedEntity.entities.length === 0) {
+      let parentEntity: Entity | undefined;
+
+      if (ui.selectedEntity.entities.length === 0) {
+        parentEntity = this.getDropRootEntity();
+      } else {
+        const facadeRoot = getFacadeRoot(ui.selectedEntity.entities[0]);
+        if (facadeRoot.constructor.name === "PrefabRootFacade") {
           parentEntity = this.getDropRootEntity();
         } else {
-          const facadeRoot = getFacadeRoot(ui.selectedEntity.entities[0]);
-          if (facadeRoot.constructor.name === "PrefabRootFacade") {
-            parentEntity = this.getDropRootEntity();
-          } else {
-            parentEntity = facadeRoot;
-          }
+          parentEntity = facadeRoot;
         }
+      }
 
-        if (parentEntity && this.currentDragSource) {
-          const spawnPosition = this.game.inputs.cursor.world;
-
-          const newEntities: Entity[] = [];
-          this.currentDragSource.entities.forEach(e => {
-            const newEntity = e.cloneInto(parentEntity, {
-              transform: { position: spawnPosition },
-              enabled: true,
-            });
-            UndoRedoManager._.push({
-              t: "create-entity",
-              parentRef: parentEntity.ref,
-              def: newEntity.getDefinition(),
-            });
-            newEntities.push(newEntity);
-            ui.selectedEntity.entities = [newEntity];
+      if (parentEntity && this.currentDragSource && worldPos) {
+        const newEntities: Entity[] = [];
+        this.currentDragSource.entities.forEach(e => {
+          const newEntity = e.cloneInto(parentEntity, {
+            transform: { position: worldPos },
+            enabled: true,
           });
-        }
+          UndoRedoManager._.push({
+            t: "create-entity",
+            parentRef: parentEntity.ref,
+            def: newEntity.getDefinition(),
+          });
+          newEntities.push(newEntity);
+          ui.selectedEntity.entities = [newEntity];
+        });
+      }
 
-        this.currentDragSource = undefined;
-      }, 100);
+      this.currentDragSource = undefined;
     };
 
     card = (
