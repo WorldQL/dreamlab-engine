@@ -156,7 +156,7 @@ export class Camera extends Entity {
     }
 
     if (this.root === this.game.local && this.game.isClient()) {
-      this.container = new PIXI.Container();
+      this.container = new PIXI.Container({ eventMode: "none" });
       this.game.renderer.app.stage.addChild(this.container);
 
       this.listen(this.game, GameRender, () => {
