@@ -17,7 +17,7 @@ export class IconButton extends HTMLElement {
     const children: Array<string | Element | Text> = [icon(svg) as Element];
     if (label)
       children.push(
-        elem("span", { className: "label", style: { paddingRight: "0.15em" } }, [label]),
+        elem("span", { className: "label", style: { paddingRight: "0.4rem", fontSize: '14px' } }, [label]),
       );
 
     const element = elem("button", { ...attrs, type: "button" }, children);
