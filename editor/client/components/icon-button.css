@@ -16,6 +16,7 @@ dreamlab-icon-button {
     min-width: var(--size);
     background-color: var(--color);
     border-radius: var(--rounded);
+    user-select: none;
 
     cursor: pointer;
     transition: background-color 0.1s ease;
