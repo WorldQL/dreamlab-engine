@@ -136,6 +136,7 @@
   border: none;
   padding: 0.25rem;
   border-radius: var(--border-radius);
+  color: rgba(var(--color-text) / 0.8);
   cursor: pointer;
   display: flex;
   align-items: center;

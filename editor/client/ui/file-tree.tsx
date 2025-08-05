@@ -10,6 +10,7 @@ import {
   Folder,
   icon,
   Image,
+  Plus,
   Settings,
   SimpleIcon,
   siReact,
@@ -17,9 +18,9 @@ import {
 } from "../_icons.tsx";
 import { DataTree } from "../components/mod.ts";
 import { InspectorUIWidget } from "./inspector.ts";
-
 import { ImportPopup } from "./import-popup.tsx";
 import { PrefabViewer } from "./prefab-viewer.tsx";
+import { ContextMenu } from "./context-menu.ts";
 
 type FileTreeNode =
   | { type: "file"; name: string; path: string }
@@ -66,6 +67,7 @@ export class FileTree implements InspectorUIWidget {
 
   #openDirectories: Set<string> = new Set();
   #importPopup: ImportPopup;
+  #contextMenu: ContextMenu;
 
   constructor(private game: ClientGame) {
     const savedState = sessionStorage.getItem(`${this.game.worldId}/editor/file-tree/opened`);
@@ -73,6 +75,7 @@ export class FileTree implements InspectorUIWidget {
       this.#openDirectories = new Set(JSON.parse(savedState));
     }
     this.#importPopup = new ImportPopup();
+    this.#contextMenu = new ContextMenu(game);
   }
 
   #getIconForNode(node: FileTreeNode): Icon {
@@ -99,7 +102,9 @@ export class FileTree implements InspectorUIWidget {
     const tree = new DataTree();
     tree.style.setProperty("--tree-indent-amount", "0.5em");
 
-    // remove open image preview which are about to have their listeners destroyed and become stuck on screen
+    let contextMenuOpen = false;
+    let outsideClickHandler: ((e: MouseEvent) => void) | null = null;
+
     document.querySelectorAll(".image-preview").forEach(e => e.remove());
 
     const filesURL = new URL(connectionDetails.serverUrl);
@@ -215,24 +220,108 @@ export class FileTree implements InspectorUIWidget {
       }
     });
 
-    const addAssetsBtn = (
-      <a
-        id="import-project-button"
-        title="Add or Create Assets"
-        ariaLabel="Add or Create Assets"
-        style={{
-          cursor: "pointer",
-          flexShrink: 0,
-          whiteSpace: "nowrap",
-        }}
-      >
-        <div>Add Assets</div>
-      </a>
+    const addAssetsBtn = elem(
+      "button",
+      {
+        id: "import-project-button",
+        className: "menu-button",
+        type: "button",
+        title: "Add Assets",
+      },
+      [icon(Plus)],
     );
 
-    addAssetsBtn.addEventListener("click", () => {
-      this.#importPopup?.show();
-      return;
+    addAssetsBtn.addEventListener("click", evt => {
+      const { clientX, clientY } = evt as MouseEvent;
+
+      if (contextMenuOpen) {
+        this.#contextMenu.hideContextMenu();
+        contextMenuOpen = false;
+        return;
+      }
+
+      this.#contextMenu.drawContextMenu(clientX, clientY, [
+        [
+          (() => {
+            const emojis = ["✨", "🧪", "🛠️", "💡", "🎨"];
+            let index = 0;
+
+            const emojiSpan = document.createElement("span");
+            emojiSpan.className = "emoji-rotator";
+            emojiSpan.textContent = emojis[index];
+
+            const updateEmoji = () => {
+              emojiSpan.classList.add("sway-pop");
+              setTimeout(() => {
+                index = (index + 1) % emojis.length;
+                emojiSpan.textContent = emojis[index];
+                emojiSpan.classList.remove("sway-pop");
+              }, 400);
+            };
+
+            setInterval(updateEmoji, 2000);
+
+            const label = document.createElement("span");
+            label.className = "premium-menu-label";
+            label.textContent = "Generate New Asset";
+
+            const wrapper = document.createElement("span");
+            wrapper.className = "premium-menu-item";
+            wrapper.append(label, emojiSpan);
+
+            return wrapper;
+          })(),
+          () => {
+            contextMenuOpen = false;
+            this.#importPopup.openGenerator();
+          },
+          false,
+          undefined,
+          0,
+        ],
+
+        [
+          "Upload Assets",
+          () => {
+            contextMenuOpen = false;
+            this.#importPopup.open("upload");
+          },
+          false,
+          undefined,
+          1,
+        ],
+
+        [
+          "Import Project",
+          () => {
+            contextMenuOpen = false;
+            this.#importPopup.open("import");
+          },
+          false,
+          undefined,
+          1,
+        ],
+      ]);
+
+      contextMenuOpen = true;
+
+      if (!outsideClickHandler) {
+        outsideClickHandler = e => {
+          const target = e.target as HTMLElement;
+          const clickedInsideMenu = target.closest("#context-menu");
+          const clickedAddAssetsBtn = target.closest("#import-project-button");
+
+          if (!clickedInsideMenu && !clickedAddAssetsBtn) {
+            this.#contextMenu.hideContextMenu();
+            contextMenuOpen = false;
+
+            document.removeEventListener("click", outsideClickHandler!, true);
+            outsideClickHandler = null;
+          }
+        };
+
+        document.addEventListener("click", outsideClickHandler, true);
+      }
     });
 
     this.#section.replaceChildren(tree);
@@ -288,10 +377,12 @@ export class FileTree implements InspectorUIWidget {
     left.append(this.#section);
     this.#importPopup.mount(uiRoot);
     this.#importPopup.hide();
+    this.#contextMenu.show(uiRoot);
   }
 
   hide(): void {
     this.#section.remove();
+    this.#contextMenu.hide();
   }
 }
 

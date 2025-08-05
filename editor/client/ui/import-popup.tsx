@@ -1,183 +1,226 @@
-import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 import { DreamlabEditorUIComponent } from "./_component.tsx";
 import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
+import { NIL_UUID } from "jsr:@std/uuid@1/constants";
+import type { ClientGame } from "@dreamlab/engine";
+import { icon, X } from "../_icons.tsx";
 
-type Tab = "generate" | "upload-import";
+type View = "upload" | "import";
 
 export class ImportPopup extends DreamlabEditorUIComponent {
-  private currentTab: Tab = "upload-import";
-  private importError: string = "";
-  private projectId: string = "";
+  private view: View = "upload";
+  private projectId = "";
+  private importError = "";
+  private uploadMessage = "";
 
   // @ts-expect-error global;
   private game: ClientGame = globalThis.game;
 
-  // tabs unused but leaving code in if we want to re-add later
-  switchTab(tab: Tab) {
-    this.currentTab = tab;
-    this.rerender();
+  open(which: View) {
+    this.view = which;
+    this.show();
   }
 
-  async handleImport(event: Event) {
-    event.preventDefault();
-    this.importError = "";
-    const trimmedId = this.projectId.trim();
-    if (!trimmedId) {
-      this.importError = "Please enter a project ID.";
+  private close = () => this.hide();
+
+  private async uploadFile(file: File) {
+    const textish = /^(text\/|application\/(json|javascript|xml|x-httpd-php))/;
+    const body = textish.test(file.type) ? await file.text() : await file.arrayBuffer();
+
+    const url = new URL(connectionDetails.serverUrl);
+    url.pathname = `/api/v1/edit/${this.game.instanceId}/files/assets/${file.name}`;
+    url.searchParams.set("no_restart", "false");
+
+    await fetch(url.toString(), {
+      method: "PUT",
+      body,
+      headers: {
+        "Content-Type": textish.test(file.type) ? "text/plain" : "application/octet-stream",
+      },
+    });
+  }
+
+  private async handleFileChange(e: Event) {
+    const files = (e.currentTarget as HTMLInputElement).files;
+    if (files) {
+      for (const f of Array.from(files)) await this.uploadFile(f);
+
+      this.uploadMessage = `${files.length} file${
+        files.length > 1 ? "s" : ""
+      } uploaded successfully!`;
       this.rerender();
-      return;
+
+      setTimeout(() => {
+        this.uploadMessage = "";
+        this.rerender();
+      }, 3000);
+    }
+  }
+
+  private async importFromProject(e: SubmitEvent) {
+    e.preventDefault();
+    this.importError = "";
+
+    const sourceProject = this.projectId.trim();
+    if (!sourceProject) {
+      this.importError = "Please enter a project ID.";
+      return this.rerender();
     }
 
     const url = new URL(connectionDetails.serverUrl);
     url.pathname = `/api/v1/edit/${this.game.instanceId}/import-project`;
 
     try {
-      const response = await fetch(url.toString(), {
+      const res = await fetch(url.toString(), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sourceProject: trimmedId }),
+        body: JSON.stringify({ sourceProject }),
       });
-
-      if (response.ok) {
-        this.projectId = "";
-        this.hide();
-      } else {
-        this.importError = "Please check the project ID and try again.";
-      }
-    } catch (_error) {
+      if (res.ok) this.hide();
+      else this.importError = "Please check the project ID and try again.";
+    } catch {
       this.importError = "An error occurred. Please try again.";
     }
-
     this.rerender();
   }
 
-  async uploadFile(file: File): Promise<void> {
-    const isText = (mimeType: string): boolean => {
-      const textTypes = [
-        "text/",
-        "application/json",
-        "application/javascript",
-        "application/xml",
-        "application/x-httpd-php",
-      ];
-      return textTypes.some(type => mimeType.startsWith(type));
-    };
-
-    let content: string | ArrayBuffer;
-    if (isText(file.type)) {
-      content = await file.text();
-    } else {
-      content = await file.arrayBuffer();
-    }
-
-    const fileName = `assets/${file.name}`;
-    const url = new URL(connectionDetails.serverUrl);
-    url.pathname = `/api/v1/edit/${this.game.instanceId}/files/${fileName}`;
-    url.searchParams.set("no_restart", "false");
-
-    await fetch(url.toString(), {
-      method: "PUT",
-      body: content,
-      headers: {
-        "Content-Type": isText(file.type) ? "text/plain" : "application/octet-stream",
-      },
-    });
-  }
-
-  openAssetGenerator = () => {
+  openGenerator = () => {
     if (this.game.instanceId === NIL_UUID)
       window.open("https://app.dreamlab.gg/create/asset", "_blank", "noopener,noreferrer");
     else window.parent.postMessage({ type: "SHOW_ASSET_CREATOR" }, "*");
-
     this.hide();
   };
 
-  async handleFileChange(event: Event) {
-    const input = event.currentTarget as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      for (let i = 0; i < input.files.length; i++) {
-        const file = input.files[i];
-        try {
-          await this.uploadFile(file);
-        } catch (err) {
-          console.error("Error uploading file:", err);
-        }
-      }
-    }
-  }
-
   render() {
+    if (this.view === "upload") {
+      return (
+        <div className="import-popup">
+          <div className="popup-header">
+            <h1>Upload Assets</h1>
+            <button type="button" className="close-button" onClick={this.close}>
+              {icon(X)}
+            </button>
+          </div>
+
+          <div className="popup-content">
+            <p className="info-text">Drag files here or click below to choose files.</p>
+            <p className="info-text">
+              You can also upload assets by directly dragging files into the editor.
+            </p>
+
+            <div
+              className="upload-box"
+              onClick={() =>
+                (document.getElementById("hidden-file-input") as HTMLInputElement)?.click()
+              }
+              onDragOver={e => e.preventDefault()}
+              onDrop={async e => {
+                e.preventDefault();
+                const files = Array.from(e.dataTransfer?.files || []);
+                if (files.length) {
+                  for (const f of files) await this.uploadFile(f);
+
+                  this.uploadMessage = `${files.length} file${
+                    files.length > 1 ? "s" : ""
+                  } uploaded successfully!`;
+                  this.rerender();
+
+                  setTimeout(() => {
+                    this.uploadMessage = "";
+                    this.rerender();
+                  }, 3000);
+                }
+              }}
+            >
+              Choose Files…
+            </div>
+
+            <input
+              id="hidden-file-input"
+              type="file"
+              multiple
+              style={{ display: "none" }}
+              onChange={e => this.handleFileChange(e)}
+            />
+
+            {this.uploadMessage && (
+              <p
+                className="info-text"
+                style={{ color: "var(--color-green)", marginTop: "10px" }}
+              >
+                {this.uploadMessage}
+              </p>
+            )}
+
+            <hr className="groove" />
+
+            <button
+              type="button"
+              className="text-link"
+              onClick={() => {
+                this.view = "import";
+                this.rerender();
+              }}
+            >
+              ➜ Import from another project
+            </button>
+
+            <span></span>
+
+            <button
+              type="button"
+              className="text-link primary"
+              onClick={this.openGenerator}
+              style={{ marginLeft: "10px" }}
+            >
+              ➜ Generate new asset
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="import-popup">
         <div className="popup-header">
-          <h1>Add Assets</h1>
-          <button onClick={() => this.hide()} className="close-button">
-            ×
+          <h1>Import Project</h1>
+          <button type="button" className="close-button" onClick={this.close}>
+            {icon(X)}
           </button>
         </div>
-        <div className="popup-content">
-          <div className="upload-import-tab">
-            <button className="generator-button" onClick={this.openAssetGenerator}>
-              Generate New Asset
-            </button>
-            <p className="info-text">Create animated sprites, backgrounds, and level props!</p>
-            <hr className="groove"></hr>
-            <div className="upload-section">
-              <p className="info-text">
-                Drag files onto the editor or click below to choose files.
-              </p>
-              <div
-                className="upload-box"
-                onClick={() => {
-                  const fileInput = document.getElementById(
-                    "hidden-file-input",
-                  ) as HTMLInputElement;
-                  if (fileInput) fileInput.click();
-                }}
-              >
-                <p>Upload File</p>
-              </div>
-              <input
-                type="file"
-                id="hidden-file-input"
-                style={{ display: "none" }}
-                onChange={(e: Event) => this.handleFileChange(e)}
-              />
-            </div>
-            <hr className="groove"></hr>
 
-            <div className="import-section">
-              <p className="info-text">
-                Or enter a Project ID to import assets.{" "}
-                <a
-                  style={{ color: "var(--color-primary-lighter)" }}
-                  href="https://forum.dreamlab.gg/c/assets/9"
-                  target="_blank"
-                >
-                  Browse assets.
-                </a>
-              </p>
-              <form onSubmit={(e: Event) => this.handleImport(e)} className="import-form">
-                <input
-                  type="text"
-                  name="projectId"
-                  placeholder="Enter Project ID"
-                  autocomplete="off"
-                  value={this.projectId}
-                  className="text-input"
-                  onChange={(e: Event) => {
-                    const target = e.currentTarget as HTMLInputElement;
-                    this.projectId = target.value;
-                    this.rerender();
-                  }}
-                />
-                <button type="submit" className="submit-button">
-                  Import
-                </button>
-              </form>
-              {this.importError && <p className="error-text">{this.importError}</p>}
-            </div>
-          </div>
+        <div className="popup-content">
+          <p className="info-text">Enter a public Project ID</p>
+
+          <form className="import-form" onSubmit={e => this.importFromProject(e)}>
+            <input
+              className="text-input"
+              placeholder="dreq81jzslk3l1t9f0gqxw0a0/myproject"
+              value={this.projectId}
+              autocomplete="off"
+              onChange={e => {
+                this.projectId = (e.currentTarget as HTMLInputElement).value;
+                this.rerender();
+              }}
+            />
+
+            <button className="submit-button" type="submit">
+              Import
+            </button>
+          </form>
+
+          {this.importError && <p className="error-text">{this.importError}</p>}
+
+          <hr className="groove" />
+          <button
+            type="button"
+            className="text-link"
+            onClick={() => {
+              this.view = "upload";
+              this.rerender();
+            }}
+          >
+            ⇦ Back to upload
+          </button>
         </div>
       </div>
     );

@@ -14,59 +14,6 @@
   padding: 0 0.5em;
 }
 
-#file-tree #import-project-button {
-  color: color-mix(in srgb, rgb(var(--color-primary)), white 50%);
-  display: inline-flex;
-  font-size: 14px;
-  align-items: center;
-  text-decoration: none;
-  padding: 8px 12px;
-  border-radius: 6px;
-  background: rgba(var(--color-primary) / 0.1);
-  font-weight: 500;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(var(--color-primary) / 0.2);
-}
-
-#file-tree #import-project-button svg {
-  margin-left: 8px;
-  transition: transform 0.3s ease;
-}
-
-#file-tree #import-project-button:before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(var(--color-primary) / 0.2),
-    transparent
-  );
-  transition: left 0.7s ease;
-}
-
-#file-tree #import-project-button:hover {
-  color: color-mix(in srgb, rgb(var(--color-primary)), white 60%);
-  background: rgba(var(--color-primary) / 0.15);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(var(--color-primary) / 0.2);
-}
-
-#file-tree #import-project-button:hover svg {
-  transform: translateX(3px) scale(1.1);
-}
-
-#file-tree #import-project-button:hover:before {
-  left: 100%;
-}
-
 #file-tree #import-project-button:active {
   transform: translateY(0);
   box-shadow: 0 2px 4px rgba(var(--color-primary) / 0.1);
@@ -246,4 +193,45 @@
 .behavior-value-row span:last-child {
   color: rgb(var(--color-text));
   word-break: break-word;
+}
+
+.premium-menu-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5em;
+  width: 100%;
+}
+
+.premium-menu-label {
+  font-weight: 500;
+}
+
+.emoji-rotator {
+  display: inline-block;
+  font-size: 1.1em;
+  transition: transform 0.3s ease;
+  will-change: transform;
+}
+
+.emoji-rotator.sway-pop {
+  animation: sway-pop 0.4s ease-in-out;
+}
+
+@keyframes sway-pop {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  25% {
+    transform: rotate(-10deg) scale(1.1);
+  }
+  50% {
+    transform: rotate(10deg) scale(1.15);
+  }
+  75% {
+    transform: rotate(-5deg) scale(1.1);
+  }
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
 }
