@@ -193,7 +193,15 @@ export class CameraPanBehavior extends Behavior {
         queryEntity = entities[currentIdx];
       }
 
-      const newTarget = entities.length > 0 ? queryEntity : undefined;
+      let newTarget = entities.length > 0 ? queryEntity : undefined;
+
+      // If selected entity's parent is an EmptyFacade, select the parent instead
+      // But only if we're not already cycling through (i.e., not a double-click)
+      // and only if the EmptyFacade parent is not already in the entities list at this position
+      // and only if the entity we're selecting is not already the current target
+      if (newTarget?.parent instanceof EmptyFacade && !shouldUpdateIndex && !entities.includes(newTarget.parent) && newTarget !== target) {
+        newTarget = newTarget.parent;
+      }
 
       if (newTarget && event.ev.shiftKey) {
         if (gizmo) gizmo.auxTargets = [...gizmo.auxTargets, newTarget];

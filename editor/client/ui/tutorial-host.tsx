@@ -154,7 +154,7 @@ const tutorial: TutorialStep[] = [
   },
 
   {
-    dialog: "Press Play and give it a try.",
+    dialog: "Press Play and give it a try.<br><br>If you need to move the platform, drag the blue box that appears when it's selected.",
     start: () => highlight("play-button", true),
     cleanup: () => highlight("play-button", false),
     until: () => Boolean(games().play),
@@ -218,7 +218,7 @@ export class TutorialHost implements InspectorUIWidget {
   constructor(_game: ClientGame) {
     if (TutorialHost.didLoad) return;
     TutorialHost.didLoad = true;
-    setTimeout(() => this.runTutorial(), 1);
+    // setTimeout(() => this.runTutorial(), 1);
   }
 
   setup(_ui: InspectorUI): void {}

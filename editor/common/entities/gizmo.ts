@@ -89,9 +89,10 @@ export class Gizmo extends Entity {
     .poly([Gizmo.#ARROW_W / 2, -1.1, -Gizmo.#ARROW_W / 2, -1.1, 0, -1.1 - Gizmo.#ARROW_H])
     .fill(Gizmo.#Y_COLOR)
     .moveTo(0, 0)
-    .rect(-0.15, -0.15, 0.3, 0.3)
-    .fill({ alpha: 0.2, color: Gizmo.#Z_COLOR })
-    .stroke({ alpha: 0.5, color: Gizmo.#Z_COLOR, width: 0.01 })
+    .rect(-0.25, -0.25, 0.5, 0.5)
+    .fill({ alpha: 0.4, color: Gizmo.#Z_COLOR })
+    .stroke({ alpha: 0.8, color: Gizmo.#Z_COLOR, width: 0.02 })
+    .stroke({ color: "white", width: 0.01 })
     // Rotation circle
     .scale(0.1)
     .circle(0, 0, 10)
@@ -153,7 +154,7 @@ export class Gizmo extends Entity {
       type: Clickable,
       name: "TranslateBoth",
       transform: { position: { x: 0, y: 0 } },
-      values: { shape: "Rectangle", width: 0.3, height: 0.3 },
+      values: { shape: "Rectangle", width: 0.5, height: 0.5 },
     });
 
     const rotate = this.spawn({
