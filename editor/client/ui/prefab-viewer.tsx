@@ -315,7 +315,6 @@ export class PrefabViewer {
         const screenPos = this.game.inputs.cursor.screen;
         if (!screenPos) {
           this.currentDragSource = undefined;
-          console.log('waah!')
           return;
         }
 
