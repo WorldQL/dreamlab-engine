@@ -42,8 +42,14 @@ export class EditorFacadeComplexCollider extends PixiEntity {
 
   constructor(ctx: EntityContext) {
     super(ctx, false);
-    this.defineValue(EditorFacadeComplexCollider, "isSensor");
-    this.defineValue(EditorFacadeComplexCollider, "mass");
+    this.defineValue(EditorFacadeComplexCollider, "isSensor", {
+      description:
+        "Marks the collider as a sensor, meaning it will detect collisions but not respond physically.",
+    });
+
+    this.defineValue(EditorFacadeComplexCollider, "mass", {
+      description: "Sets the mass of the collider, affecting its physical interactions.",
+    });
 
     if (this.game.isClient()) {
       const svc = SelectedEntityService.serviceForGame(this.game);

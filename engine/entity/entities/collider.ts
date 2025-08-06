@@ -160,9 +160,17 @@ export class Collider extends Entity {
   constructor(ctx: EntityContext, shape: ColliderShape = "Rectangle") {
     super(ctx);
     this.shape = shape;
-    this.defineValue(Collider, "isSensor");
-    this.defineValue(Collider, "shape", { type: ColliderShapeAdapter });
-    this.defineValue(Collider, "mass");
+    this.defineValue(Collider, "isSensor", {
+      description:
+        "Determines if the collider is a sensor (detects collisions without affecting physics).",
+    });
+    this.defineValue(Collider, "shape", {
+      type: ColliderShapeAdapter,
+      description: "Shape of the collider.",
+    });
+    this.defineValue(Collider, "mass", {
+      description: "Mass of the collider, used for physics calculations.",
+    });
   }
 
   onInitialize(): void {

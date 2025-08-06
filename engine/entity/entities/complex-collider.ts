@@ -66,8 +66,14 @@ export class ComplexCollider extends Entity {
 
   constructor(ctx: EntityContext) {
     super(ctx);
-    this.defineValue(ComplexCollider, "isSensor");
-    this.defineValue(ComplexCollider, "mass");
+    this.defineValue(ComplexCollider, "isSensor", {
+      description:
+        "Indicates whether this collider is a sensor (doesn't trigger collisions but detects overlap).",
+    });
+
+    this.defineValue(ComplexCollider, "mass", {
+      description: "The mass of the collider, affecting its response to forces.",
+    });
   }
 
   onInitialize(): void {

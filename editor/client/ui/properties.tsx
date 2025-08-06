@@ -508,7 +508,7 @@ export class Properties implements InspectorUIWidget {
         });
       });
 
-      valuesTable.addEntry(`value:${key}`, key, "", valueField);
+      valuesTable.addEntry(`value:${key}`, key, value.description, valueField);
       value.onChanged(refreshValue);
       this.entityPropertyTeardown.push(() => value.removeChangeListener(refreshValue));
     }

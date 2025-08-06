@@ -46,16 +46,36 @@ export class EditorFacadeClickable extends PixiEntity {
 
   constructor(ctx: EntityContext) {
     super(ctx, false);
-    this.defineValue(EditorFacadeClickable, "active");
-    this.defineValue(EditorFacadeClickable, "shape", { type: ClickableShapeAdapter });
+    this.defineValue(EditorFacadeClickable, "active", {
+      description: "Indicates whether the clickable entity is active.",
+    });
+    this.defineValue(EditorFacadeClickable, "shape", {
+      type: ClickableShapeAdapter,
+      description: "Defines the shape of the clickable entity (Rectangle or Circle).",
+    });
 
     const isRect: Value["hidden"] = values => values.get("shape")?.value !== "Rectangle";
-    this.defineValue(EditorFacadeClickable, "width", { hidden: isRect });
-    this.defineValue(EditorFacadeClickable, "height", { hidden: isRect });
+    this.defineValue(EditorFacadeClickable, "width", {
+      hidden: isRect,
+      description:
+        "Defines the width of the clickable entity (only used if shape is Rectangle).",
+    });
+    this.defineValue(EditorFacadeClickable, "height", {
+      hidden: isRect,
+      description:
+        "Defines the height of the clickable entity (only used if shape is Rectangle).",
+    });
 
     const isCircle: Value["hidden"] = values => values.get("shape")?.value !== "Circle";
-    this.defineValue(EditorFacadeClickable, "radius", { hidden: isCircle });
-    this.defineValue(EditorFacadeClickable, "innerRadius", { hidden: isCircle });
+    this.defineValue(EditorFacadeClickable, "radius", {
+      hidden: isCircle,
+      description: "Defines the radius of the clickable entity (only used if shape is Circle).",
+    });
+    this.defineValue(EditorFacadeClickable, "innerRadius", {
+      hidden: isCircle,
+      description:
+        "Defines the inner radius of the clickable entity (only used if shape is Circle).",
+    });
   }
 
   onInitialize(): void {
@@ -112,7 +132,12 @@ export class EditorFacadeClickableRect extends PixiEntity {
 
   constructor(ctx: EntityContext) {
     super(ctx, false);
-    this.defineValues(EditorFacadeClickableRect, "width", "height");
+    this.defineValue(EditorFacadeClickableRect, "width", {
+      description: "Defines the width of the clickable rectangle.",
+    });
+    this.defineValue(EditorFacadeClickableRect, "height", {
+      description: "Defines the height of the clickable rectangle.",
+    });
   }
 
   onInitialize(): void {
@@ -153,7 +178,12 @@ export class EditorFacadeClickableCircle extends PixiEntity {
 
   constructor(ctx: EntityContext) {
     super(ctx, false);
-    this.defineValues(EditorFacadeClickableCircle, "radius", "innerRadius");
+    this.defineValue(EditorFacadeClickableCircle, "radius", {
+      description: "Defines the radius of the clickable circle.",
+    });
+    this.defineValue(EditorFacadeClickableCircle, "innerRadius", {
+      description: "Defines the inner radius of the clickable circle.",
+    });
   }
 
   onInitialize(): void {

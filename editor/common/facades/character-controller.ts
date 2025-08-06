@@ -14,7 +14,9 @@ export class EditorFacadeCharacterController extends EditorFacadeCollider {
   public offset: number = 0.0625;
   constructor(ctx: EntityContext) {
     super(ctx);
-    this.defineValue(EditorFacadeCharacterController, "offset");
+    this.defineValue(EditorFacadeCharacterController, "offset", {
+      description: "Adjusts the offset for the character controller.",
+    });
   }
 }
 

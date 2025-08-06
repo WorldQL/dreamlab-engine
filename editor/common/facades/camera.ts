@@ -51,21 +51,40 @@ export class EditorFacadeCamera extends PixiEntity {
     this.defineValue(EditorFacadeCamera, "showBounds", {
       replicated: false,
       persistent: false,
+      description: "Controls whether the camera bounds are visible in the editor.",
     });
 
-    this.defineValues(
-      EditorFacadeCamera,
-      "active",
-      "smooth",
-      "unlocked",
-      "zoom",
-      "lockAspectRatio",
-    );
+    this.defineValue(EditorFacadeCamera, "active", {
+      description: "Indicates if the camera is active in the editor.",
+    });
+
+    this.defineValue(EditorFacadeCamera, "smooth", {
+      description: "Controls the smoothness of the camera movement.",
+    });
+
+    this.defineValue(EditorFacadeCamera, "unlocked", {
+      description: "Determines whether the camera is locked or can be moved freely.",
+    });
+
+    this.defineValue(EditorFacadeCamera, "zoom", {
+      description: "Sets the zoom level of the camera.",
+    });
+
+    this.defineValue(EditorFacadeCamera, "lockAspectRatio", {
+      description: "Locks the camera's aspect ratio during resizing.",
+    });
+
     this.defineValue(EditorFacadeCamera, "aspectRatio", {
       type: AspectRatioAdapter,
       hidden: values => values.get("lockAspectRatio")?.value === false,
+      description:
+        "Defines the aspect ratio of the camera view. Hidden when aspect ratio locking is disabled.",
     });
-    this.defineValue(EditorFacadeCamera, "scaleFilterMode", { type: ScaleFilterModeAdapter });
+
+    this.defineValue(EditorFacadeCamera, "scaleFilterMode", {
+      type: ScaleFilterModeAdapter,
+      description: "Sets the scale filter mode for the camera view (e.g., nearest or linear).",
+    });
 
     if (this.game.isClient()) {
       const svc = SelectedEntityService.serviceForGame(this.game);

@@ -39,10 +39,33 @@ export class Sprite extends PixiEntity {
   constructor(ctx: EntityContext) {
     super(ctx);
 
-    this.defineValue(Sprite, "texture", { type: TextureAdapter, sortOrder: 10 });
-    this.defineValues(Sprite, "width", "height", "alpha");
-    this.defineValue(Sprite, "tint", { type: ColorAdapter });
-    this.defineValue(Sprite, "preserveAspectRatio");
+    this.defineValue(Sprite, "texture", {
+      type: TextureAdapter,
+      sortOrder: 10,
+      description:
+        "Path to the image texture used for this sprite. Can be dragged from the project panel or typed with 'res://<path>'.",
+    });
+
+    this.defineValue(Sprite, "width", {
+      description: "Logical width of the sprite (in local units).",
+    });
+
+    this.defineValue(Sprite, "height", {
+      description: "Logical height of the sprite (in local units).",
+    });
+
+    this.defineValue(Sprite, "alpha", {
+      description: "Opacity from 0 (invisible) to 1 (fully visible).",
+    });
+
+    this.defineValue(Sprite, "tint", {
+      type: ColorAdapter,
+      description: "Tint color applied to the sprite (e.g., white = no tint).",
+    });
+
+    this.defineValue(Sprite, "preserveAspectRatio", {
+      description: "If true, scales the sprite to fit while maintaining original aspect ratio.",
+    });
 
     if (this.game.isClient() && this.texture !== "") {
       // PIXI.Assets.backgroundLoad(this.game.resolveResource(this.texture));

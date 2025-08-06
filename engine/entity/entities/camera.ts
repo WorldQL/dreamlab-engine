@@ -209,18 +209,43 @@ export class Camera extends Entity {
       });
     }
 
-    this.defineValue(Camera, "active", { replicated: false });
-    this.defineValue(Camera, "smooth", { replicated: false });
-    this.defineValue(Camera, "unlocked", { replicated: false });
-    this.defineValue(Camera, "zoom", { replicated: false });
-    const lockAspectRatio = this.defineValue(Camera, "lockAspectRatio", { replicated: false });
+    this.defineValue(Camera, "active", {
+      replicated: false,
+      description: "Whether this camera is currently active (local only).",
+    });
+
+    this.defineValue(Camera, "smooth", {
+      replicated: false,
+      description: "Smoothing duration in seconds. 0 = no smoothing.",
+    });
+
+    this.defineValue(Camera, "unlocked", {
+      replicated: false,
+      description: "Allows the camera to freely scale with resolution.",
+    });
+
+    this.defineValue(Camera, "zoom", {
+      replicated: false,
+      description: "Zoom level of the camera. Higher = closer in.",
+    });
+
+    const lockAspectRatio = this.defineValue(Camera, "lockAspectRatio", {
+      replicated: false,
+      description: "Locks the camera to a specific aspect ratio.",
+    });
+
     const aspectRatio = this.defineValue(Camera, "aspectRatio", {
       replicated: false,
       type: AspectRatioAdapter,
       hidden: values => values.get("lockAspectRatio")?.value === false,
+      description: "Target aspect ratio (width x height) to maintain.",
     });
 
-    const scaleFilterMode = this.defineValue(Camera, "scaleFilterMode", { replicated: false });
+    const scaleFilterMode = this.defineValue(Camera, "scaleFilterMode", {
+      replicated: false,
+      description: "Controls pixel scaling of rendered content (nearest or linear).",
+    });
+
     scaleFilterMode.onChanged(() => {
       this.game.fire(CameraFilterModeChanged, this);
     });

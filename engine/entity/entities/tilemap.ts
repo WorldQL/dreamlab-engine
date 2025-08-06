@@ -164,9 +164,20 @@ export abstract class BaseTilemap extends PixiEntity {
     // @ts-expect-error: abstract class
     const ctor: EntityConstructor<BaseTilemap> = BaseTilemap;
 
-    const resolution = this.defineValue(ctor, "resolution");
-    const atlasValue = this.defineValue(ctor, "atlas", { type: TextureAdapter });
-    const scale = this.defineValue(ctor, "scaleFilterMode", { type: ScaleFilterModeAdapter });
+    const resolution = this.defineValue(ctor, "resolution", {
+      description: "The resolution (pixel size) of each tile in the tilemap.",
+    });
+    const atlasValue = this.defineValue(ctor, "atlas", {
+      type: TextureAdapter,
+      description:
+        "The texture atlas used for rendering tilemap textures. Can be dragged from the project panel or typed with 'res://<path>'.",
+    });
+    const scale = this.defineValue(ctor, "scaleFilterMode", {
+      type: ScaleFilterModeAdapter,
+      description:
+        "The scale filter mode for rendering textures in the tilemap (default, linear, nearest).",
+    });
+
     const paletteOverrides = defineSyncedObject(this, "paletteOverrides", ctx.sync ?? {});
     const data = defineSyncedObject(this, "data", ctx.sync ?? {});
 

@@ -1103,7 +1103,11 @@ export abstract class Entity implements ISignalHandler {
     }
 
     // @ts-expect-error we dont expect base Entity to have values rn
-    this.defineValue(Entity, "clonedFromRef", { type: String, hidden: true });
+    this.defineValue(Entity, "clonedFromRef", {
+      type: String,
+      hidden: true,
+      desc: "Internal reference to the prefab or entity this was cloned from.",
+    });
     if (ctx.clonedFrom) {
       const clonedFrom = ctx.game.entities.lookupByRef(ctx.clonedFrom);
 

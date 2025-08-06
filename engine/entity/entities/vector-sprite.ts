@@ -33,8 +33,21 @@ export class VectorSprite extends PixiEntity {
   constructor(ctx: EntityContext) {
     super(ctx);
 
-    this.defineValues(VectorSprite, "width", "height", "alpha");
-    this.defineValue(VectorSprite, "texture", { type: TextureAdapter });
+    this.defineValue(VectorSprite, "width", {
+      description: "The width of the vector sprite in world units.",
+    });
+    this.defineValue(VectorSprite, "height", {
+      description: "The height of the vector sprite in world units.",
+    });
+    this.defineValue(VectorSprite, "alpha", {
+      description:
+        "The transparency level of the sprite, from 0 (invisible) to 1 (fully opaque).",
+    });
+    this.defineValue(VectorSprite, "texture", {
+      type: TextureAdapter,
+      description:
+        "The path to the vector texture asset to be rendered. Can be dragged from the project panel or typed with 'res://<path>'.",
+    });
 
     if (this.game.isClient() && this.texture !== "") {
       PIXI.Assets.backgroundLoad(this.game.resolveResource(this.texture));

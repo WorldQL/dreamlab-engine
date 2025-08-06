@@ -201,7 +201,12 @@ export class BehaviorList {
     });
     scriptField.name = "script";
 
-    table.addEntry("script", "Script", "", scriptField);
+    table.addEntry(
+      "script",
+      "Script",
+      "Can be dragged from the project panel or typed with 'res://<path>'.",
+      scriptField,
+    );
     table.addFullWidthEntry("add-behavior", submitButton);
 
     const form = elem("form", { id: "add-behavior" }, [table]);

@@ -34,16 +34,34 @@ export class AudioSource extends Entity {
   constructor(ctx: EntityContext) {
     super(ctx);
 
-    this.defineValue(AudioSource, "clip", { type: AudioAdapter });
-    this.defineValues(
-      AudioSource,
-      "volume",
-      "loop",
-      "minRange",
-      "maxRange",
-      "falloff",
-      "stream",
-    );
+    this.defineValue(AudioSource, "clip", {
+      type: AudioAdapter,
+      description: "Audio file to play (MP3, WAV, etc).",
+    });
+
+    this.defineValue(AudioSource, "volume", {
+      description: "Volume of the audio (0.0 to 1.0).",
+    });
+
+    this.defineValue(AudioSource, "loop", {
+      description: "Whether the audio should loop continuously.",
+    });
+
+    this.defineValue(AudioSource, "minRange", {
+      description: "Minimum distance where the audio is at full volume.",
+    });
+
+    this.defineValue(AudioSource, "maxRange", {
+      description: "Maximum distance where the audio becomes inaudible. Set -1 for no falloff.",
+    });
+
+    this.defineValue(AudioSource, "falloff", {
+      description: "How quickly volume decreases between min and max range.",
+    });
+
+    this.defineValue(AudioSource, "stream", {
+      description: "Whether to stream the file instead of loading it fully into memory.",
+    });
 
     const clipValue = this.values.get("clip");
     clipValue?.onChanged(() => {

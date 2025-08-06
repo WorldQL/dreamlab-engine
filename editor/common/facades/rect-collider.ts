@@ -23,7 +23,10 @@ export class EditorFacadeRectCollider extends PixiEntity {
 
   constructor(ctx: EntityContext) {
     super(ctx, false);
-    this.defineValues(EditorFacadeRectCollider, "isSensor");
+    this.defineValue(EditorFacadeRectCollider, "isSensor", {
+      description:
+        "Indicates whether the collider acts as a sensor, detecting collisions without physical response.",
+    });
   }
 
   #debug: DebugSquare | undefined;

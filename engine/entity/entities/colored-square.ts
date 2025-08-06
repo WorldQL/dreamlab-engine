@@ -46,9 +46,23 @@ export class ColoredSquare extends PixiEntity {
   constructor(ctx: EntityContext) {
     super(ctx);
 
-    this.defineValues(ColoredSquare, "width", "height");
-    this.defineValue(ColoredSquare, "color", { type: ColorAdapter });
-    this.defineValue(ColoredSquare, "tint", { type: ColorAdapter });
+    this.defineValue(ColoredSquare, "width", {
+      description: "Width of the square in local space units.",
+    });
+
+    this.defineValue(ColoredSquare, "height", {
+      description: "Height of the square in local space units.",
+    });
+
+    this.defineValue(ColoredSquare, "color", {
+      type: ColorAdapter,
+      description: "Fill color of the square.",
+    });
+
+    this.defineValue(ColoredSquare, "tint", {
+      type: ColorAdapter,
+      description: "Tint applied as a color multiplier to the fill.",
+    });
 
     const updateGfx = () => {
       this.#draw();

@@ -176,16 +176,33 @@ export class Clickable extends ClickableEntity {
   constructor(ctx: EntityContext) {
     super(ctx);
 
-    this.defineValue(Clickable, "active");
-    this.defineValue(Clickable, "shape", { type: ClickableShapeAdapter });
+    this.defineValue(Clickable, "active", {
+      description: "Whether the entity can currently be clicked or hovered.",
+    });
+    this.defineValue(Clickable, "shape", {
+      type: ClickableShapeAdapter,
+      description: "Shape used to determine clickable bounds.",
+    });
 
     const isRect: Value["hidden"] = values => values.get("shape")?.value !== "Rectangle";
-    this.defineValue(Clickable, "width", { hidden: isRect });
-    this.defineValue(Clickable, "height", { hidden: isRect });
+    this.defineValue(Clickable, "width", {
+      hidden: isRect,
+      description: "Width of the clickable rectangle.",
+    });
+    this.defineValue(Clickable, "height", {
+      hidden: isRect,
+      description: "Height of the clickable rectangle.",
+    });
 
     const isCircle: Value["hidden"] = values => values.get("shape")?.value !== "Circle";
-    this.defineValue(Clickable, "radius", { hidden: isCircle });
-    this.defineValue(Clickable, "innerRadius", { hidden: isCircle });
+    this.defineValue(Clickable, "radius", {
+      hidden: isCircle,
+      description: "Radius of the clickable circle.",
+    });
+    this.defineValue(Clickable, "innerRadius", {
+      hidden: isCircle,
+      description: "Optional inner radius to create a ring-shaped clickable area.",
+    });
   }
 
   public isInBounds(worldPosition: Vector2): boolean {

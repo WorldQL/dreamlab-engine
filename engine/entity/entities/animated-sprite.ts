@@ -171,30 +171,71 @@ export class AnimatedSprite extends PixiEntity {
       type: TextureAdapter,
       hidden: values => values.get("jsonSpritesheet")?.value !== "",
       sortOrder: 100,
+      description:
+        "Spritesheet image file to slice manually into frames. Can be dragged from the project panel or typed with 'res://<path>'.",
     });
+
     this.defineValue(AnimatedSprite, "jsonSpritesheet", {
       type: SpritesheetAdapter,
       hidden: values => values.get("spritesheet")?.value !== "",
       sortOrder: 90,
+      description:
+        "Predefined JSON spritesheet with frame metadata. Can be dragged from the project panel or typed with 'res://<path>'",
     });
+
     this.defineValue(AnimatedSprite, "frameDimensions", {
       type: Vector2Adapter,
       hidden: values => values.get("jsonSpritesheet")?.value !== "",
       sortOrder: 80,
+      description: "Width and height of each frame when slicing from a raw spritesheet.",
     });
-    this.defineValue(AnimatedSprite, "startFrame", { sortOrder: 70 });
-    this.defineValue(AnimatedSprite, "endFrame", { sortOrder: 60 });
+
+    this.defineValue(AnimatedSprite, "startFrame", {
+      sortOrder: 70,
+      description: "Index of the first frame to play (inclusive).",
+    });
+
+    this.defineValue(AnimatedSprite, "endFrame", {
+      sortOrder: 60,
+      description: "Index of the last frame to play (inclusive). Use -1 to play until the end.",
+    });
+
     this.defineValue(AnimatedSprite, "totalFrames", {
       sortOrder: 65,
       hidden: () => true,
+      description: "Total number of frames after slicing. Auto-calculated.",
     });
 
-    this.defineValue(AnimatedSprite, "speed", { sortOrder: 50 });
-    this.defineValue(AnimatedSprite, "loop", { sortOrder: 40 });
-    this.defineValue(AnimatedSprite, "width", { sortOrder: 30 });
-    this.defineValue(AnimatedSprite, "height", { sortOrder: 20 });
-    this.defineValue(AnimatedSprite, "alpha", { sortOrder: 10 });
-    this.defineValue(AnimatedSprite, "tint", { type: ColorAdapter, sortOrder: 9 });
+    this.defineValue(AnimatedSprite, "speed", {
+      sortOrder: 50,
+      description: "Playback speed of the animation. Higher = faster.",
+    });
+
+    this.defineValue(AnimatedSprite, "loop", {
+      sortOrder: 40,
+      description: "Whether the animation should loop continuously.",
+    });
+
+    this.defineValue(AnimatedSprite, "width", {
+      sortOrder: 30,
+      description: "Logical width of the sprite (in local units).",
+    });
+
+    this.defineValue(AnimatedSprite, "height", {
+      sortOrder: 20,
+      description: "Logical height of the sprite (in local units).",
+    });
+
+    this.defineValue(AnimatedSprite, "alpha", {
+      sortOrder: 10,
+      description: "Opacity from 0 (invisible) to 1 (fully visible).",
+    });
+
+    this.defineValue(AnimatedSprite, "tint", {
+      type: ColorAdapter,
+      sortOrder: 9,
+      description: "Tint color applied to the sprite (e.g., white = no tint).",
+    });
 
     // why was this disabled?
     // if (this.game.isClient() && this.spritesheet !== "") {

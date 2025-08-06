@@ -26,7 +26,10 @@ export class EditorFacadeRigidbody extends PixiEntity {
 
   constructor(ctx: EntityContext) {
     super(ctx, false);
-    this.defineValue(EditorFacadeRigidbody, "type", { type: RigidbodyTypeAdapter });
+    this.defineValue(EditorFacadeRigidbody, "type", {
+      type: RigidbodyTypeAdapter,
+      description: "Defines the type of the rigidbody, such as dynamic or fixed.",
+    });
   }
 }
 

@@ -47,9 +47,24 @@ export class ColoredPolygon extends PixiEntity {
   constructor(ctx: EntityContext) {
     super(ctx);
 
-    this.defineValues(ColoredPolygon, "width", "height", "sides");
-    this.defineValue(ColoredPolygon, "color", { type: ColorAdapter });
-    this.defineValue(ColoredPolygon, "tint", { type: ColorAdapter });
+    this.defineValue(ColoredPolygon, "width", {
+      description: "Width of the polygon in local space units.",
+    });
+    this.defineValue(ColoredPolygon, "height", {
+      description: "Height of the polygon in local space units.",
+    });
+    this.defineValue(ColoredPolygon, "sides", {
+      description: "Number of sides for the polygon (minimum 3).",
+    });
+    this.defineValue(ColoredPolygon, "color", {
+      type: ColorAdapter,
+      description: "Base color of the polygon. Use hex.",
+    });
+
+    this.defineValue(ColoredPolygon, "tint", {
+      type: ColorAdapter,
+      description: "Multiplies the color output (like a filter). Use hex.",
+    });
 
     const updateGfx = () => {
       this.#draw();

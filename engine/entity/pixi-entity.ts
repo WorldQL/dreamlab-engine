@@ -75,11 +75,16 @@ export abstract class PixiEntity extends Entity {
       const staticValue = this.defineValue(
         this.constructor as EntityConstructor<PixiEntity>,
         "static",
+        {
+          description:
+            "If true, the entity will not update its position or rotation, optimizing performance by avoiding interpolation.",
+        },
       );
 
       const hiddenValue = this.defineValue(
         this.constructor as EntityConstructor<PixiEntity>,
         "hidden",
+        { description: "If true, the entity is hidden and will not be visible in the scene." },
       );
 
       staticValue.onChanged(() => this.#updateTransformListeners());

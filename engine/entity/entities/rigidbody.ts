@@ -38,7 +38,10 @@ export class Rigidbody extends Entity {
 
   constructor(ctx: EntityContext) {
     super(ctx);
-    this.defineValue(Rigidbody, "type", { type: RigidbodyTypeAdapter });
+    this.defineValue(Rigidbody, "type", {
+      type: RigidbodyTypeAdapter,
+      description: "The type of the rigid body (e.g., dynamic, fixed).",
+    });
 
     this.#initializeBody();
 

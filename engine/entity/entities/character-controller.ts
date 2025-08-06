@@ -31,7 +31,9 @@ export class CharacterController extends Collider {
 
   constructor(ctx: EntityContext) {
     super(ctx);
-    this.defineValue(CharacterController, "offset");
+    this.defineValue(CharacterController, "offset", {
+      description: "Controls how far the collider is offset from the ground.",
+    });
   }
 
   override onInitialize(): void {

@@ -75,18 +75,62 @@ export class RichText extends PixiEntity {
   constructor(ctx: EntityContext) {
     super(ctx);
 
-    this.defineValues(RichText, "text", "fontFamily", "fontSize");
-    this.defineValue(RichText, "fontStyle", { type: FontStyleAdapter });
-    this.defineValue(RichText, "fontWeight", { type: FontWeightAdapter });
-    this.defineValue(RichText, "align", { type: AlignAdapter });
-    this.defineValue(RichText, "color", { type: ColorAdapter });
+    this.defineValue(RichText, "text", {
+      description: "The text content to be displayed.",
+    });
+    this.defineValue(RichText, "fontFamily", {
+      description: "The font family used for the text.",
+    });
+    this.defineValue(RichText, "fontSize", {
+      description: "The size of the font in pixels.",
+    });
 
-    this.defineValue(RichText, "stroke");
+    this.defineValue(RichText, "fontStyle", {
+      type: FontStyleAdapter,
+      description: "The style of the font (normal, italic, oblique).",
+    });
+
+    this.defineValue(RichText, "fontWeight", {
+      type: FontWeightAdapter,
+      description: "The weight of the font (e.g., normal, bold, or numeric values).",
+    });
+
+    this.defineValue(RichText, "align", {
+      type: AlignAdapter,
+      description: "The text alignment (left, center, right).",
+    });
+
+    this.defineValue(RichText, "color", {
+      type: ColorAdapter,
+      description: "The color of the text.",
+    });
+
+    this.defineValue(RichText, "stroke", {
+      description: "Whether the text has a stroke (outline) applied.",
+    });
+
     const hidden: Value["hidden"] = values => values.get("stroke")?.value !== true;
-    this.defineValue(RichText, "strokeColor", { type: ColorAdapter, hidden: hidden });
-    this.defineValue(RichText, "strokeWidth", { hidden: hidden });
-    this.defineValue(RichText, "strokeJoin", { type: StrokeJoinAdapter, hidden: hidden });
-    this.defineValue(RichText, "scaleFilterMode", { type: ScaleFilterModeAdapter });
+    this.defineValue(RichText, "strokeColor", {
+      type: ColorAdapter,
+      hidden: hidden,
+      description: "The color of the text stroke.",
+    });
+
+    this.defineValue(RichText, "strokeWidth", {
+      hidden: hidden,
+      description: "The width of the text stroke.",
+    });
+
+    this.defineValue(RichText, "strokeJoin", {
+      type: StrokeJoinAdapter,
+      hidden: hidden,
+      description: "The join style for the stroke (round, bevel, miter).",
+    });
+
+    this.defineValue(RichText, "scaleFilterMode", {
+      type: ScaleFilterModeAdapter,
+      description: "The scale filter mode used for texture scaling (default, linear, nearest).",
+    });
 
     // const scaleFilterModeValue = this.values.get("scaleFilterMode");
     // scaleFilterModeValue?.onChanged(() => {

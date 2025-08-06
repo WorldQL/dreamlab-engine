@@ -59,7 +59,12 @@ export class BehaviorEditor {
 
     // this.#table.addEntry("id", "ID", elem("code", {}, [behavior.ref]));
     this.scriptElement = elem("code", {}, [behavior.script]);
-    this.#table.addEntry("script", "Script", "", this.scriptElement);
+    this.#table.addEntry(
+      "script",
+      "Script",
+      "Can be dragged from the project panel or typed with 'res://<path>'.",
+      this.scriptElement,
+    );
 
     this.scriptElement.addEventListener("dblclick", () => {
       window.parent.postMessage(

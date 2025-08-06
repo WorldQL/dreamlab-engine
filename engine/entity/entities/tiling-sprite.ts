@@ -43,11 +43,39 @@ export class TilingSprite extends PixiEntity {
   constructor(ctx: EntityContext) {
     super(ctx);
 
-    this.defineValues(TilingSprite, "width", "height", "alpha", "tileRotation");
-    this.defineValue(TilingSprite, "tint", { type: ColorAdapter });
-    this.defineValue(TilingSprite, "tilePosition", { type: Vector2Adapter });
-    this.defineValue(TilingSprite, "tileScale", { type: Vector2Adapter });
-    this.defineValue(TilingSprite, "texture", { type: TextureAdapter, sortOrder: 10 });
+    this.defineValue(TilingSprite, "width", {
+      description: "The width of the tiling sprite in world units.",
+    });
+    this.defineValue(TilingSprite, "height", {
+      description: "The height of the tiling sprite in world units.",
+    });
+    this.defineValue(TilingSprite, "alpha", {
+      description:
+        "The transparency level of the sprite, from 0 (invisible) to 1 (fully opaque).",
+    });
+    this.defineValue(TilingSprite, "tileRotation", {
+      description: "The rotation of the tiled texture in radians.",
+    });
+
+    this.defineValue(TilingSprite, "tint", {
+      type: ColorAdapter,
+      description: "The tint color applied to the entire sprite.",
+    });
+    this.defineValue(TilingSprite, "tilePosition", {
+      type: Vector2Adapter,
+      description:
+        "The tile offset within the texture, shifting how it appears inside the sprite.",
+    });
+    this.defineValue(TilingSprite, "tileScale", {
+      type: Vector2Adapter,
+      description: "The scale of the texture tiling relative to the sprite dimensions.",
+    });
+    this.defineValue(TilingSprite, "texture", {
+      type: TextureAdapter,
+      sortOrder: 10,
+      description:
+        "The texture to be used for tiling across the sprite's surface. Can be dragged from the project panel or typed with 'res://<path>'.",
+    });
 
     if (this.game.isClient() && this.texture !== "") {
       PIXI.Assets.backgroundLoad(this.game.resolveResource(this.texture));
