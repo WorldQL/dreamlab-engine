@@ -132,17 +132,22 @@ export class Properties implements InspectorUIWidget {
       });
     }
 
-    table.addEntry("name", "Name", nameField);
+    table.addEntry(
+      "name",
+      "Name",
+      "Display name shown in the editor and hierarchy.",
+      nameField,
+    );
     const entityId = () => entity.id.replace("world/EditEntities/", "");
     const idField = elem("code", {}, [entityId()]);
     autoCleanup(entity.on(EntityRenamed, () => (idField.textContent = entityId())));
     autoCleanup(entity.on(EntityReparented, () => (idField.textContent = entityId())));
-    table.addEntry("id", "ID", idField);
+    table.addEntry("id", "ID", "Unique path / reference inside the world.", idField);
 
     const typeField = elem("code", {}, [
       Facades.reverseFacadeEntityType(entity.constructor as EntityConstructor).name,
     ]);
-    table.addEntry("type", "Type", typeField);
+    table.addEntry("type", "Type", "Engine class for this entity.", typeField);
 
     if (entity.id === "world/EditEntities/server") {
       const button = elem("button", { type: "button", className: "clear-feedback" }, [
@@ -162,7 +167,12 @@ export class Properties implements InspectorUIWidget {
         }, 3000);
       });
 
-      table.addEntry("Clear KV Data", "KV", button);
+      table.addEntry(
+        "Clear KV Data",
+        "KV",
+        "Erase all key-value data stored on the server and player for this project.",
+        button,
+      );
     }
 
     if (!entity.protected) {
@@ -172,7 +182,12 @@ export class Properties implements InspectorUIWidget {
         set: v => (entity.enabled = v),
       });
       autoCleanup(entity.on(EntityOwnEnableChanged, () => refreshEnabled()));
-      table.addEntry("enabled", "Enabled", enabledField);
+      table.addEntry(
+        "enabled",
+        "Enabled",
+        "Toggle whether the entity is active; disabled entities don't render",
+        enabledField,
+      );
 
       const metadata = EditorMetadataEntity.getInstanceFor(entity);
       if (metadata) {
@@ -192,7 +207,12 @@ export class Properties implements InspectorUIWidget {
           },
         });
 
-        table.addEntry("locked", "Locked", lockedField);
+        table.addEntry(
+          "locked",
+          "Locked",
+          "Prevent selecting this entity until it's unlocked.",
+          lockedField,
+        );
       }
     }
 
@@ -213,7 +233,12 @@ export class Properties implements InspectorUIWidget {
         }
       });
 
-      table.addEntry("prefab", "Prefab", button);
+      table.addEntry(
+        "prefab",
+        "Prefab",
+        "Push current prefab changes to every instance in the scene.",
+        button,
+      );
     }
 
     const clonedFrom = entity.clonedFromRef
@@ -242,7 +267,7 @@ export class Properties implements InspectorUIWidget {
         entity.clonedFromRef = "";
       });
 
-      table.addEntry("prefab-instance", "Prefab Instance", control);
+      table.addEntry("prefab-instance", "Prefab Instance", "", control);
     }
 
     if (!entity.protected) {
@@ -262,7 +287,12 @@ export class Properties implements InspectorUIWidget {
         convert: numeric.parse,
         convertBack: n => n.toFixed(4),
       });
-      txfmTable.addEntry("posX", "Position X", transformXField);
+      txfmTable.addEntry(
+        "posX",
+        "Position X",
+        "Local X coordinates relative to the parent.",
+        transformXField,
+      );
       transformFieldsToRegisterWithUndoRedo.push({
         field: transformXField,
         path: ["position", "x"],
@@ -274,7 +304,12 @@ export class Properties implements InspectorUIWidget {
         convert: numeric.parse,
         convertBack: n => n.toFixed(4),
       });
-      txfmTable.addEntry("posY", "Position Y", transformYField);
+      txfmTable.addEntry(
+        "posY",
+        "Position Y",
+        "Local Y coordinates relative to the parent.",
+        transformYField,
+      );
       transformFieldsToRegisterWithUndoRedo.push({
         field: transformYField,
         path: ["position", "y"],
@@ -286,7 +321,7 @@ export class Properties implements InspectorUIWidget {
         convert: numeric.transform(v => (v * Math.PI) / 180).parse,
         convertBack: v => ((v * 180) / Math.PI).toFixed(1),
       });
-      txfmTable.addEntry("rot", "Rotation", transformRotation);
+      txfmTable.addEntry("rot", "Rotation", "Local rotation in degrees.", transformRotation);
       transformFieldsToRegisterWithUndoRedo.push({
         field: transformRotation,
         path: ["rotation"],
@@ -298,7 +333,7 @@ export class Properties implements InspectorUIWidget {
         convert: numeric.parse,
         convertBack: n => n.toFixed(4),
       });
-      txfmTable.addEntry("scaleX", "Scale X", scaleXField);
+      txfmTable.addEntry("scaleX", "Scale X", "Local X scale factors.", scaleXField);
       transformFieldsToRegisterWithUndoRedo.push({ field: scaleXField, path: ["scale", "x"] });
 
       const [scaleYField, refreshScaleY] = createInputField({
@@ -307,7 +342,7 @@ export class Properties implements InspectorUIWidget {
         convert: numeric.parse,
         convertBack: n => n.toFixed(4),
       });
-      txfmTable.addEntry("scaleY", "Scale Y", scaleYField);
+      txfmTable.addEntry("scaleY", "Scale Y", "Local Y scale factors.", scaleYField);
       transformFieldsToRegisterWithUndoRedo.push({ field: scaleYField, path: ["scale", "y"] });
 
       const [zIndexField, refreshZIndex] = createInputField({
@@ -316,7 +351,12 @@ export class Properties implements InspectorUIWidget {
         convert: numeric.refine(Number.isSafeInteger, "Number must be an integer!").parse,
         convertBack: n => n.toFixed(0),
       });
-      txfmTable.addEntry("z", "Z Index", zIndexField);
+      txfmTable.addEntry(
+        "z",
+        "Z Index",
+        "Local draw-order; higher values render above lower ones.",
+        zIndexField,
+      );
       transformFieldsToRegisterWithUndoRedo.push({ field: zIndexField, path: ["z"] });
 
       autoCleanup(
@@ -348,24 +388,54 @@ export class Properties implements InspectorUIWidget {
       globalTransformSection.append(globalTransformTable);
 
       const globalPosXField = elem("code", {}, [entity.pos.x.toFixed(2)]);
-      globalTransformTable.addEntry("global-pos-x", "Position X", globalPosXField);
+      globalTransformTable.addEntry(
+        "global-pos-x",
+        "Position X",
+        "World-space X coordinates.",
+        globalPosXField,
+      );
 
       const globalPosYField = elem("code", {}, [entity.pos.y.toFixed(2)]);
-      globalTransformTable.addEntry("global-pos-y", "Position Y", globalPosYField);
+      globalTransformTable.addEntry(
+        "global-pos-y",
+        "Position Y",
+        "World-space Y coordinates.",
+        globalPosYField,
+      );
 
       const globalRotationField = elem("code", {}, [
         entity.globalTransform.rotation.toFixed(2),
       ]);
-      globalTransformTable.addEntry("global-rot", "Rotation", globalRotationField);
+      globalTransformTable.addEntry(
+        "global-rot",
+        "Rotation",
+        "World-space rotation in degrees.",
+        globalRotationField,
+      );
 
       const globalScaleXField = elem("code", {}, [entity.globalTransform.scale.x.toFixed(2)]);
-      globalTransformTable.addEntry("global-scale-x", "Scale X", globalScaleXField);
+      globalTransformTable.addEntry(
+        "global-scale-x",
+        "Scale X",
+        "World-space X scale factors.",
+        globalScaleXField,
+      );
 
       const globalScaleYField = elem("code", {}, [entity.globalTransform.scale.y.toFixed(2)]);
-      globalTransformTable.addEntry("global-scale-y", "Scale Y", globalScaleYField);
+      globalTransformTable.addEntry(
+        "global-scale-y",
+        "Scale Y",
+        "World-space Y scale factors.",
+        globalScaleYField,
+      );
 
       const globalZField = elem("code", {}, [entity.z.toFixed(0)]);
-      globalTransformTable.addEntry("global-z", "Z Index", globalZField);
+      globalTransformTable.addEntry(
+        "global-z",
+        "Z Index",
+        "World-space draw-order.",
+        globalZField,
+      );
 
       autoCleanup(
         entity.on(EntityTransformUpdate, () => {
@@ -438,7 +508,7 @@ export class Properties implements InspectorUIWidget {
         });
       });
 
-      valuesTable.addEntry(`value:${key}`, key, valueField);
+      valuesTable.addEntry(`value:${key}`, key, "", valueField);
       value.onChanged(refreshValue);
       this.entityPropertyTeardown.push(() => value.removeChangeListener(refreshValue));
     }
@@ -472,7 +542,7 @@ export class Properties implements InspectorUIWidget {
         }
       });
 
-      valuesTable.addEntry("spritesheetguide", "Guide", button);
+      valuesTable.addEntry("spritesheetguide", "Guide", "", button);
     }
 
     if (entity instanceof EditorFacadeTilemap) {
@@ -483,7 +553,7 @@ export class Properties implements InspectorUIWidget {
         if (action) entity.clearTiles();
       });
 
-      valuesTable.addEntry("clear", "tiles", button);
+      valuesTable.addEntry("clear", "tiles", "Clear all tiles for this entity", button);
     }
 
     for (const transformField of transformFieldsToRegisterWithUndoRedo) {

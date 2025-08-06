@@ -201,7 +201,7 @@ export class BehaviorList {
     });
     scriptField.name = "script";
 
-    table.addEntry("script", "Script", scriptField);
+    table.addEntry("script", "Script", "", scriptField);
     table.addFullWidthEntry("add-behavior", submitButton);
 
     const form = elem("form", { id: "add-behavior" }, [table]);

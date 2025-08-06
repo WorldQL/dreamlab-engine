@@ -59,7 +59,7 @@ export class BehaviorEditor {
 
     // this.#table.addEntry("id", "ID", elem("code", {}, [behavior.ref]));
     this.scriptElement = elem("code", {}, [behavior.script]);
-    this.#table.addEntry("script", "Script", this.scriptElement);
+    this.#table.addEntry("script", "Script", "", this.scriptElement);
 
     this.scriptElement.addEventListener("dblclick", () => {
       window.parent.postMessage(
@@ -153,7 +153,7 @@ export class BehaviorEditor {
     });
 
     this.valueFields.set(key, [control, refresh]);
-    this.#table.addEntry(`value:${key}`, key, control);
+    this.#table.addEntry(`value:${key}`, key, "", control);
   }
 
   #populateValueFields(behaviorInfo?: BehaviorTypeInfo) {

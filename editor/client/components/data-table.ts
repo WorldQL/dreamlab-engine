@@ -13,11 +13,11 @@ export class DataTable extends HTMLElement {
     this.append(this.#table);
   }
 
-  addEntry(id: string, key: string, ...value: (Element | string | Text)[]) {
+  addEntry(id: string, key: string, title?: string, ...value: (Element | string | Text)[]) {
     if (this.entries.has(id)) return;
 
     const row = element("tr", {}, [
-      element("th", {}, [key]),
+      element("th", { title, ariaLabel: title }, [key]),
       element("td", { colSpan: 2 }, value),
     ]);
     this.#table.append(row);
