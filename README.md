@@ -4,11 +4,13 @@
 [![ezgif-386f81fca4019](https://github.com/user-attachments/assets/a6772d27-1915-43c3-bfc3-e7040984d540)](https://app.dreamlab.gg)
 
 ## Features
-- Singleplayer and multiplayer games
+- Built in multiplayer networking
+- Singleplayer export support
+- Tilemaps
 - Rapier physics engine
-- TypeScript scripting
+- TypeScript scripting. Uses a Unity-style Behavior script system
 - In-browser code editor
-- Graphical editor and Behavior system
+- Graphical editor
 - Real-time collaboration
 - One-click deployment / bundling
 - Built-in version control
