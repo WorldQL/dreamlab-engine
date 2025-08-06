@@ -13,12 +13,10 @@
 - Real-time collaboration
 - One-click deployment / bundling
 - Built-in version control*
-- In-browser code editor*
-
-  * only on [web version](https://app.dreamlab.gg)
+- In-browser script editor*
 
 ## Setup
-We recommend [using Dreamlab in your browser with no setup required](https://app.dreamlab.gg/). AI features are currently unavailable locally but we will include documentation on importing your own OpenAI/Anthropic key very soon.
+We recommend [using Dreamlab in your browser with no setup required](https://app.dreamlab.gg/). This version has all the features, including built-in version control and an in-browser script editor. AI features are currently unavailable locally but we will include documentation on importing your own OpenAI/Anthropic key very soon.
 However, you can run it locally with the following:
 
 ```bash
