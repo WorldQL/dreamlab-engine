@@ -109,6 +109,12 @@ export class AISuggestionsPopup extends DreamlabEditorUIComponent {
         action.id === id ? { ...action, applied: true } : action,
       );
       this.rerender();
+
+      // Check if all actions are applied and auto-close if so
+      const allApplied = this.state.actions.every(action => action.applied);
+      if (allApplied) {
+        this.handleClose();
+      }
     } catch (error) {
       console.error("Error applying action:", error);
       // Optionally show an error message to the user
@@ -125,7 +131,7 @@ export class AISuggestionsPopup extends DreamlabEditorUIComponent {
     return (
       <div
         className="ai-actions-menu"
-        style={{ width: "450px", height: "400px", zIndex: 2000 }}
+        style={{ width: "450px", height: "400px", zIndex: '2000' }}
       >
         {/* Close button */}
         <button
