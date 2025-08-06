@@ -14,7 +14,7 @@
 - Built-in version control
 
 ## Setup
-We recommend [using Dreamlab in your browser with no setup required](https://app.dreamlab.gg/). **AI features are currently unavailable locally but we will include documentation on importing your own OpenAI key very soon.**
+We recommend [using Dreamlab in your browser with no setup required](https://app.dreamlab.gg/). AI features are currently unavailable locally but we will include documentation on importing your own OpenAI/Anthropic key very soon.
 However, you can run it locally with the following:
 
 ```bash
@@ -38,7 +38,8 @@ deno task watch
 Then open http://localhost:5173/?instance=00000000-0000-0000-0000-000000000000&server=ws%3A%2F%2Flocalhost%3A8001 and you'll see the editor! 
 
 ## **Need Help?**  
-If you need any help, feel free to:  
+If you need any help, feel free to: 
+- Post on the forum: https://forum.dreamlab.gg/
 - Open a **[GitHub issue](https://github.com/WorldQL/dreamlab-engine/issues)**  
 - Join our **[Discord community](https://discord.gg/nwXFvtJ92g)** and ask questions in the help channel!
 
