@@ -87,7 +87,8 @@ export class AnimatedSprite extends PixiEntity {
       this.frameDimensions.x !== 1 &&
       this.frameDimensions.y !== 1
     ) {
-      const cached = texturesCache.get(this.spritesheet);
+      const cacheKey = `${this.spritesheet}:${this.frameDimensions.x}x${this.frameDimensions.y}`;
+      const cached = texturesCache.get(cacheKey);
       if (cached) return cached;
 
       const resource = this.game.resolveResource(this.spritesheet);
@@ -132,7 +133,7 @@ export class AnimatedSprite extends PixiEntity {
 
       const textures = Object.values(spritesheet.textures);
       if (textures.length > 0) {
-        texturesCache.set(this.spritesheet, textures);
+        texturesCache.set(cacheKey, textures);
         return textures;
       }
 
