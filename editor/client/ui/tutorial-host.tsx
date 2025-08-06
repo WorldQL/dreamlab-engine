@@ -113,7 +113,7 @@ const tutorial1: TutorialStep[] = [
     start: () => {
       highlight("prefab-tab", true);
       highlight("prefab-tab-Player", true);
-      games().edit.entities.lookupById("world/EditEntities/local/AddPlayerHint")!.enabled =
+      games().edit.entities.lookupById("world/EditEntities/local/HintAddPlayer")!.enabled =
         true;
     },
     cleanup: () => {
@@ -123,7 +123,7 @@ const tutorial1: TutorialStep[] = [
         const player = games().edit.entities.lookupById("world/EditEntities/local/Player")!;
         player.pos = new Vector2(3, -14.6);
       }
-      games().edit.entities.lookupById("world/EditEntities/local/AddPlayerHint")!.enabled =
+      games().edit.entities.lookupById("world/EditEntities/local/HintAddPlayer")!.enabled =
         false;
     },
     until: () => hasEntity("local/Player"),
@@ -177,18 +177,153 @@ const tutorial1: TutorialStep[] = [
     until: () => hasEntity("local/Gem"),
   },
   {
-    dialog: "Press Play. Reach the goal with your player to finish the tutorial!",
+    dialog: "Press Play. Reach the goal with your player to win!",
     start: () => highlight("play-button", true),
     cleanup: () => highlight("play-button", false),
     until: () => games().play?.entities.lookupById("local/WinConfetti")?.enabled === true,
   },
   {
-    dialog: "You did it!",
+    dialog: "You did it! Now press the Stop button and we'll keep building!",
+    start: () => {
+      highlight("stop-button", true);
+    },
+    cleanup: () => {
+      highlight("stop-button", false);
+    },
+    until: () => !games().play,
+  },
+  {
+    dialog: "Now, let's delete these rocks to give your player more room to move!",
+    start: () => {
+      games().edit.entities.lookupById("world/EditEntities/local/HintDeleteRocks")!.enabled =
+        true;
+      TutorialHost.unmaskSections(["scene-graph"]);
+    },
+    cleanup: () => {
+      games().edit.entities.lookupById("world/EditEntities/local/HintDeleteRocks")!.enabled =
+        false;
+    },
+    until: () => !hasEntity("local/rocks") && !hasEntity("local/rocks.1"),
+  },
+  {
+    dialog: "Nice, now let's try playing again.",
+    start: () => {
+      highlight("play-button", true);
+    },
+    cleanup: () => {
+      highlight("play-button", false);
+    },
+    until: () => !!games().play,
+  },
+  {
+    dialog:
+      "Certainly more freedom.<br>But we can't see our player when it moves outside the camera! Let's make it follow the player...",
+    start: () => {
+      highlight("stop-button", true);
+    },
+    cleanup: () => {
+      highlight("stop-button", false);
+    },
+    until: () => !games().play,
+  },
+  {
+    dialog: "Open the Assistant panel",
+    start: () => {
+      highlight("assistant-tab", true);
+      setTimeout(() => {
+        const a = document.getElementById("assistant-viewer-content")?.querySelector("iframe");
+        if (a) {
+          console.log(a);
+          a.contentWindow?.postMessage(
+            {
+              type: "fillInput",
+              text: "Make the camera follow the player by modifying the player controller script. :)",
+            },
+            "*",
+          );
+        }
+      }, 1000);
+    },
+    cleanup: () => {
+      highlight("assistant-tab", false);
+    },
+    until: () => !!document.getElementById("assistant-tab")?.hasAttribute("data-active"),
+  },
+  {
+    dialog: "Now hit 'Send' to prompt the AI.<br>Press Play when it's done.",
     start: () => {},
     cleanup: () => {},
-    until: () => {
-      return false;
+    until: () => !!games().play,
+  },
+  {
+    dialog: "Cool, the camera follows the player now! Now let's spice it up with an enemy.",
+    start: () => {
+      highlight("stop-button", true);
     },
+    cleanup: () => {
+      highlight("stop-button", false);
+    },
+    until: () => !games().play,
+  },
+  {
+    dialog:
+      "Let's prompt the AI to create an enemy! When a suggestion from the AI appears, accept it then close the window with the X.",
+    start: () => {
+      highlight("assistant-tab", true);
+      setTimeout(() => {
+        const a = document.getElementById("assistant-viewer-content")?.querySelector("iframe");
+        if (a) {
+          console.log(a);
+          a.contentWindow?.postMessage(
+            {
+              type: "fillInput",
+              text: "Create an enemy prefab that chases and knocks back player. When the player jumps on its head it disappears.",
+            },
+            "*",
+          );
+        }
+      }, 100);
+    },
+    cleanup: () => {
+      highlight("assistant-tab", false);
+    },
+    until: () => hasEntity("prefabs/Enemy"),
+  },
+  {
+    dialog: "Now let's drag some enemies into our scene! Try adding three or four!",
+    start: () => {
+      highlight("prefab-tab", true);
+      highlight("prefab-tab-Enemy", true);
+    },
+    cleanup: () => {
+      highlight("prefab-tab", false);
+      highlight("prefab-tab-Enemy", false);
+      TutorialHost.unmaskSections(["behavior-panel"]);
+      TutorialHost.unmaskSections(["properties"]);
+      TutorialHost.unmaskSections(["file-tree"]);
+    },
+    until: () => hasEntity("local/Enemy") && hasEntity("local/Enemy.1") && hasEntity("local/Enemy.2"),
+  },
+  {
+    dialog: "And let's test!",
+    start: () => {
+      highlight("play-button", true);
+    },
+    cleanup: () => {
+      highlight("play-button", false);
+    },
+    until: () => !!games().play,
+  },
+  {
+    dialog: "Your game is looking great! Hit stop when you're done.",
+    start: () => {
+      highlight("stop-button", true);
+    },
+    cleanup: () => {
+      highlight("stop-button", false);
+      window.parent.postMessage({ type: "SHOW_SUBSCRIBE_MODAL" }, "*");
+    },
+    until: () => !games().play,
   },
 ];
 
@@ -200,11 +335,11 @@ export class TutorialHost implements InspectorUIWidget {
   private counterEl!: HTMLSpanElement;
   private polling: number | null = null;
 
-  public maskSections(sectionIds: string[]): void {
+  static maskSections(sectionIds: string[]): void {
     createSectionOverlay(sectionIds);
   }
 
-  public unmaskSections(sectionIds: string[]): void {
+  static unmaskSections(sectionIds: string[]): void {
     removeSectionOverlay(sectionIds);
   }
 
@@ -239,13 +374,13 @@ export class TutorialHost implements InspectorUIWidget {
   setup(_ui: InspectorUI): void {}
 
   private runTutorial(): void {
-    this.maskSections([
+    TutorialHost.maskSections([
       "scene-graph",
       "file-tree",
       "properties",
       "behavior-panel",
-      "script-button",
-      "source-button",
+      // "script-button",
+      // "source-button",
     ]);
     let i = 0;
 

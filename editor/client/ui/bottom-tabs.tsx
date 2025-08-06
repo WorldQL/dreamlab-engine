@@ -67,6 +67,7 @@ export class BottomTabs implements InspectorUIWidget {
 
     const assistantTab = elem("div", { className: "bottom-tab" });
     assistantTab.setAttribute("data-tab-id", "assistant");
+    assistantTab.setAttribute("id", "assistant-tab");
     assistantTab.append(icon(Bot), elem("span", {}, ["Assistant"]));
 
     const tilemapTab = elem("div", { className: "bottom-tab hidden" });
