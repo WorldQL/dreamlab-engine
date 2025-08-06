@@ -123,7 +123,10 @@ export class AISuggestionsPopup extends DreamlabEditorUIComponent {
 
   render() {
     return (
-      <div className="ai-actions-menu" style={{ width: "450px", height: "400px" }}>
+      <div
+        className="ai-actions-menu"
+        style={{ width: "450px", height: "400px", zIndex: 2000 }}
+      >
         {/* Close button */}
         <button
           onClick={this.handleClose}
