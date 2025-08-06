@@ -8,3 +8,4 @@ _dist_*
 /dreamlab/**/scene-description.md
 
 !/deno.json
+!/deno.world.json
