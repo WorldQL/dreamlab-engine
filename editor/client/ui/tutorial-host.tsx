@@ -320,14 +320,13 @@ const tutorial1: TutorialStep[] = [
     until: () => !!games().play,
   },
   {
-    dialog: "Your game is looking great! Hit stop when you're done.",
+    dialog: "Now there should be enemies that chase you around! Hit stop when you're done.",
     start: () => {
       highlight("stop-button", true);
     },
     cleanup: () => {
       highlight("stop-button", false);
       window.parent.postMessage({ type: "posthogCapture", captureString: "tut1finish" }, "*");
-
       window.parent.postMessage({ type: "SHOW_SUBSCRIBE_MODAL" }, "*");
     },
     until: () => !games().play,
