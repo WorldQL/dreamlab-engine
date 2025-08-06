@@ -10,10 +10,12 @@ import {
   EntityDestroyed,
   EntityTransformUpdate,
   enumAdapter,
+  GameRender,
   GameTick,
   IBounds,
   JsonValue,
   PixiEntity,
+  pointLocalToWorld,
   pointWorldToLocal,
   SyncedDeepObject,
   TextureAdapter,
@@ -26,6 +28,7 @@ import * as cbor from "@dreamlab/vendor/cbor2.ts";
 import { gzip, ungzip } from "@dreamlab/vendor/pako.ts";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { decodeBase64Url, encodeBase64Url } from "@dreamlab/vendor/std__encoding.ts";
+import { Simplify } from "@dreamlab/vendor/type-fest.ts";
 
 type ScaleFilterMode = enumAdapter.Union<typeof ScaleFilterModeAdapter>;
 const ScaleFilterModeAdapter = enumAdapter(["default", "linear", "nearest"]);
@@ -51,7 +54,12 @@ type TileDrawData = {
   readonly x: number;
   readonly y: number;
   readonly tile: TileData | undefined;
+  readonly chunkX: number;
+  readonly chunkY: number;
+  readonly chunkId: string;
 };
+
+type ChunkData = Simplify<Pick<TileDrawData, "chunkX" | "chunkY" | "chunkId">>;
 
 export type TileData =
   | { type: "color"; color: string; alpha?: number }
@@ -63,6 +71,7 @@ type TextureTileData = Extract<TileData, { type: "texture" | "spritesheet" | "te
 // #endregion
 
 export abstract class BaseTilemap extends PixiEntity {
+  static readonly #CHUNK_SIZE = 64;
   static readonly icon = "🗺️";
 
   #bounds: IBounds = { width: 1, height: 1 };
@@ -210,7 +219,8 @@ export abstract class BaseTilemap extends PixiEntity {
 
       const paletteId = this.data[x][y];
       const tile = paletteId === undefined ? undefined : this.palette[paletteId];
-      const data = { x, y, tile } satisfies TileDrawData;
+      const chunkInfo = this.#chunkInfo(x, y);
+      const data = { x, y, tile, ...chunkInfo } satisfies TileDrawData;
 
       this.#drawTile(data);
       this.#boundsDirty = true;
@@ -233,7 +243,12 @@ export abstract class BaseTilemap extends PixiEntity {
     this.listen(this.game, CameraFilterModeChanged, markDirty);
 
     this.on(EntityDestroyed, () => {
+      this.#chunks.clear();
       this.#pixiMap.clear();
+    });
+
+    this.listen(this.game, GameRender, () => {
+      this.#cullChunks();
     });
   }
 
@@ -468,6 +483,14 @@ export abstract class BaseTilemap extends PixiEntity {
   // #endregion
 
   // #region private methods
+  #chunkInfo(x: number, y: number): ChunkData {
+    const chunkX = Math.floor(x / BaseTilemap.#CHUNK_SIZE);
+    const chunkY = Math.floor(y / BaseTilemap.#CHUNK_SIZE);
+    const chunkId = `${chunkX}:${chunkY}`;
+
+    return { chunkX, chunkY, chunkId } as const;
+  }
+
   *tiles(): Generator<TileDrawData, void, void> {
     for (const [_x, row] of Object.entries(this.data)) {
       const x = Number.parseInt(_x, 10);
@@ -482,7 +505,8 @@ export abstract class BaseTilemap extends PixiEntity {
         const tile = this.palette[paletteId];
         if (!tile) continue;
 
-        yield { x, y, tile };
+        const chunkInfo = this.#chunkInfo(x, y);
+        yield { x, y, tile, ...chunkInfo };
       }
     }
   }
@@ -598,7 +622,7 @@ export abstract class BaseTilemap extends PixiEntity {
 
       // remove tiles that shouldnt be there
       await this.game.time.waitForNextTick();
-      for (const child of this.#container.children) {
+      for (const child of this.#container.children.flatMap(x => x.children)) {
         if (!seen.has(child.label)) {
           this.#pixiMap.delete(child.label);
           child.destroy();
@@ -617,12 +641,36 @@ export abstract class BaseTilemap extends PixiEntity {
     }
   }
 
+  readonly #chunks = new Map<string, PIXI.Container>();
+  #getChunkContainer({ chunkId: id, chunkX: x, chunkY: y }: ChunkData): PIXI.Container {
+    if (!this.#container) throw new Error("missing container");
+
+    const cached = this.#chunks.get(id);
+    if (cached !== undefined) return cached;
+
+    const chunkSize = BaseTilemap.#CHUNK_SIZE;
+    const chunk = new PIXI.Container({
+      label: `chunk:${id}`,
+      interactive: false,
+      eventMode: "none",
+      position: { x: x * chunkSize, y: -y * chunkSize },
+      cullable: true,
+      cullableChildren: false,
+      // cullArea: new PIXI.Rectangle(0, 0, 1, 1),
+    });
+
+    this.#chunks.set(id, chunk);
+    this.#container.addChild(chunk);
+    return chunk;
+  }
+
   #pixiMap = new Map<string, PIXI.Sprite | PIXI.Graphics>();
   async #drawTile(data: TileDrawData): Promise<void> {
     if (!this.#container) return;
 
     const tile = data.tile;
     const label = `${data.x}:${data.y}`;
+    const chunk = this.#getChunkContainer(data);
 
     if (!tile) {
       const previous = this.#pixiMap.get(label);
@@ -631,9 +679,10 @@ export abstract class BaseTilemap extends PixiEntity {
       return;
     }
 
+    const chunkSize = BaseTilemap.#CHUNK_SIZE;
     const position = {
-      x: data.x,
-      y: -data.y,
+      x: ((data.x % chunkSize) + chunkSize) % chunkSize,
+      y: -(((data.y % chunkSize) + chunkSize) % chunkSize),
     };
 
     switch (tile.type) {
@@ -652,7 +701,7 @@ export abstract class BaseTilemap extends PixiEntity {
           });
 
           previous?.destroy();
-          this.#container.addChild(gfx);
+          chunk.addChild(gfx);
           this.#pixiMap.set(label, gfx);
         }
 
@@ -678,7 +727,7 @@ export abstract class BaseTilemap extends PixiEntity {
           });
 
           previous?.destroy();
-          this.#container.addChild(sprite);
+          chunk.addChild(sprite);
           this.#pixiMap.set(label, sprite);
         }
         break;
@@ -746,6 +795,38 @@ export abstract class BaseTilemap extends PixiEntity {
   #updateSize(): void {
     if (!this.container) return;
     this.container.scale.set(this.globalTransform.scale.x, this.globalTransform.scale.y);
+  }
+
+  #cullChunks(): void {
+    if (!this.game.isClient()) return;
+    if (!this.#container) return;
+
+    const camera = Camera.getActive(this.game);
+    if (!camera) return;
+
+    const { width, height } = this.game.renderer.app.canvas;
+    const screen = new PIXI.Rectangle(0, 0, width, height);
+    const bounds = new PIXI.Bounds();
+
+    for (const chunk of this.#container.children) {
+      const xfm = this.globalTransform;
+      const pos = new Vector2(chunk.position.x, -chunk.position.y);
+      const chunkSize = BaseTilemap.#CHUNK_SIZE;
+
+      const a = camera.worldToScreen(pointLocalToWorld(xfm, pos));
+      const b = camera.worldToScreen(pointLocalToWorld(xfm, pos.add({ x: 0, y: -chunkSize })));
+      const c = camera.worldToScreen(pointLocalToWorld(xfm, pos.add({ x: chunkSize, y: 0 })));
+      const d = camera.worldToScreen(
+        pointLocalToWorld(xfm, pos.add({ x: chunkSize, y: chunkSize })),
+      );
+
+      bounds
+        .clear()
+        .addVertexData(new Float32Array([a.x, a.y, b.x, b.y, c.x, c.y, d.x, d.y]), 0, 8);
+
+      bounds.pad(100);
+      chunk.culled = !screen.intersects(bounds.rectangle);
+    }
   }
   // #endregion
 }
