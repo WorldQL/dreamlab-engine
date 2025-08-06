@@ -105,7 +105,10 @@ const tutorial1: TutorialStep[] = [
     dialog:
       "Nothing here but a light breeze... 🌬️<br> Press the stop button to return to the editor.",
     start: () => highlight("stop-button", true),
-    cleanup: () => highlight("stop-button", false),
+    cleanup: () => {
+      highlight("stop-button", false);
+      window.parent.postMessage({ type: "posthogCapture", captureString: "tut1step2" }, "*");
+    },
     until: () => !games().play,
   },
   {
@@ -125,6 +128,7 @@ const tutorial1: TutorialStep[] = [
       }
       games().edit.entities.lookupById("world/EditEntities/local/HintAddPlayer")!.enabled =
         false;
+      window.parent.postMessage({ type: "posthogCapture", captureString: "tut1step3" }, "*");
     },
     until: () => hasEntity("local/Player"),
   },
@@ -302,7 +306,8 @@ const tutorial1: TutorialStep[] = [
       TutorialHost.unmaskSections(["properties"]);
       TutorialHost.unmaskSections(["file-tree"]);
     },
-    until: () => hasEntity("local/Enemy") && hasEntity("local/Enemy.1") && hasEntity("local/Enemy.2"),
+    until: () =>
+      hasEntity("local/Enemy") && hasEntity("local/Enemy.1") && hasEntity("local/Enemy.2"),
   },
   {
     dialog: "And let's test!",
@@ -321,6 +326,8 @@ const tutorial1: TutorialStep[] = [
     },
     cleanup: () => {
       highlight("stop-button", false);
+            window.parent.postMessage({ type: "posthogCapture", captureString: "tut1finish" }, "*");
+
       window.parent.postMessage({ type: "SHOW_SUBSCRIBE_MODAL" }, "*");
     },
     until: () => !games().play,
