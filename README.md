@@ -9,11 +9,13 @@
 - Tilemaps
 - Rapier physics engine
 - TypeScript scripting. Uses a Unity-style Behavior script system
-- In-browser code editor
 - Graphical editor
 - Real-time collaboration
 - One-click deployment / bundling
-- Built-in version control
+- Built-in version control*
+- In-browser code editor*
+
+  * only on [web version](https://app.dreamlab.gg)
 
 ## Setup
 We recommend [using Dreamlab in your browser with no setup required](https://app.dreamlab.gg/). AI features are currently unavailable locally but we will include documentation on importing your own OpenAI/Anthropic key very soon.
