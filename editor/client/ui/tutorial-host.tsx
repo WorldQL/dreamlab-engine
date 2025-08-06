@@ -326,7 +326,7 @@ const tutorial1: TutorialStep[] = [
     },
     cleanup: () => {
       highlight("stop-button", false);
-            window.parent.postMessage({ type: "posthogCapture", captureString: "tut1finish" }, "*");
+      window.parent.postMessage({ type: "posthogCapture", captureString: "tut1finish" }, "*");
 
       window.parent.postMessage({ type: "SHOW_SUBSCRIBE_MODAL" }, "*");
     },
