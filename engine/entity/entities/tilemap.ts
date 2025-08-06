@@ -87,6 +87,7 @@ export abstract class BaseTilemap extends PixiEntity {
   palette: Record<number, TileData> = {};
   paletteOverrides: Record<number, TileData> = {};
   data: Record<number, Record<number, number>> = {};
+  #optimizeForColor: boolean = false;
   #tilesDirty: boolean = false;
   #boundsDirty: boolean = false;
   #container: PIXI.Container | undefined;
@@ -233,7 +234,7 @@ export abstract class BaseTilemap extends PixiEntity {
       const chunkInfo = this.#chunkInfo(x, y);
       const data = { x, y, tile, ...chunkInfo } satisfies TileDrawData;
 
-      this.#drawTile(data);
+      this.#drawTile(data, this.#optimizeForColor);
       this.#boundsDirty = true;
     });
 
@@ -302,6 +303,11 @@ export abstract class BaseTilemap extends PixiEntity {
     for (const [key, value] of Object.entries(this.paletteOverrides)) {
       Reflect.set(this.palette, key, value);
     }
+
+    // experimental: comment out this line to disable color optimized rendering
+    const allColor = Object.values(this.palette).every(x => x.type === "color");
+    const optimizeForColor = allColor && Object.keys(this.palette).length > 0;
+    this.#optimizeForColor = optimizeForColor;
 
     this.#tilesDirty = true;
   }
@@ -600,6 +606,7 @@ export abstract class BaseTilemap extends PixiEntity {
 
   #redrawing: boolean = false;
   #redrawQueued: boolean = false;
+  #lastRedrawOptimized: boolean = false;
   async #redraw(): Promise<void> {
     if (!this.#container) return;
 
@@ -610,14 +617,25 @@ export abstract class BaseTilemap extends PixiEntity {
 
     this.#redrawing = true;
     this.fire(TilemapRedrawStarted);
+
+    if (this.#lastRedrawOptimized !== this.#optimizeForColor) {
+      this.#lastRedrawOptimized = this.#optimizeForColor;
+      this.#pixiMap.clear();
+      this.#chunks.clear();
+      for (const chunk of this.#container.children) {
+        chunk.destroy({ children: true });
+      }
+    }
+
     try {
+      const optimized = this.#optimizeForColor;
       const tiles = [...this.tiles()]; // this is suboptimal for memory but we need to get an accurate count for progress
       let count = 0;
 
       const seen = new Set<string>();
       let idx = 0;
       for (const tile of this.tiles()) {
-        await this.#drawTile(tile);
+        await this.#drawTile(tile, optimized);
         seen.add(`${tile.x}:${tile.y}`);
         count++;
 
@@ -631,12 +649,14 @@ export abstract class BaseTilemap extends PixiEntity {
         }
       }
 
-      // remove tiles that shouldnt be there
-      await this.game.time.waitForNextTick();
-      for (const child of this.#container.children.flatMap(x => x.children)) {
-        if (!seen.has(child.label)) {
-          this.#pixiMap.delete(child.label);
-          child.destroy();
+      if (!optimized) {
+        // remove tiles that shouldnt be there
+        await this.game.time.waitForNextTick();
+        for (const child of this.#container.children.flatMap(x => x.children)) {
+          if (!seen.has(child.label)) {
+            this.#pixiMap.delete(child.label);
+            child.destroy();
+          }
         }
       }
     } finally {
@@ -665,9 +685,6 @@ export abstract class BaseTilemap extends PixiEntity {
       interactive: false,
       eventMode: "none",
       position: { x: x * chunkSize, y: -y * chunkSize },
-      cullable: true,
-      cullableChildren: false,
-      // cullArea: new PIXI.Rectangle(0, 0, 1, 1),
     });
 
     this.#chunks.set(id, chunk);
@@ -676,12 +693,70 @@ export abstract class BaseTilemap extends PixiEntity {
   }
 
   #pixiMap = new Map<string, PIXI.Sprite | PIXI.Graphics>();
-  async #drawTile(data: TileDrawData): Promise<void> {
+  async #drawTile(data: TileDrawData, optimized = false): Promise<void> {
     if (!this.#container) return;
 
     const tile = data.tile;
     const label = `${data.x}:${data.y}`;
     const chunk = this.#getChunkContainer(data);
+
+    const chunkSize = BaseTilemap.#CHUNK_SIZE;
+    const position = {
+      x: ((data.x % chunkSize) + chunkSize) % chunkSize,
+      y: -(((data.y % chunkSize) + chunkSize) % chunkSize),
+    };
+
+    if (optimized) {
+      if (tile?.type !== "color" && tile?.type !== undefined) {
+        throw new Error("tried to use optimized rendering for a non-color tile");
+      }
+
+      const ensureSprite = (): PIXI.Sprite => {
+        if (chunk.children.length > 1) throw new Error("oh no");
+        const existing = chunk.children[0];
+        if (existing instanceof PIXI.Sprite) return existing;
+
+        const resource = new Uint8ClampedArray(chunkSize * chunkSize * 4);
+        const texture = PIXI.Texture.from({
+          resource,
+          width: chunkSize,
+          height: chunkSize,
+          scaleMode: "nearest",
+        });
+
+        const sprite = new PIXI.Sprite({
+          texture,
+          position: { x: -0.5, y: 0.5 },
+          scale: { x: 1, y: -1 },
+          label: `chunk:${chunk.x}:${chunk.y}`,
+        });
+
+        chunk.addChild(sprite);
+        return sprite;
+      };
+
+      const sprite = ensureSprite();
+      const texture: PIXI.Texture<PIXI.BufferImageSource> = sprite.texture;
+      const buffer = texture.source.resource as Uint8ClampedArray;
+      const idx = (-position.y * chunkSize + position.x) * 4;
+
+      if (tile) {
+        const color = new PIXI.Color(tile.color);
+        buffer[idx + 0] = color.red * 255;
+        buffer[idx + 1] = color.green * 255;
+        buffer[idx + 2] = color.blue * 255;
+        buffer[idx + 3] = color.alpha * 255;
+      } else {
+        buffer[idx + 0] = 0;
+        buffer[idx + 1] = 0;
+        buffer[idx + 2] = 0;
+        buffer[idx + 3] = 0;
+      }
+
+      texture.source.update();
+
+      return;
+    }
 
     if (!tile) {
       const previous = this.#pixiMap.get(label);
@@ -689,12 +764,6 @@ export abstract class BaseTilemap extends PixiEntity {
       this.#pixiMap.delete(label);
       return;
     }
-
-    const chunkSize = BaseTilemap.#CHUNK_SIZE;
-    const position = {
-      x: ((data.x % chunkSize) + chunkSize) % chunkSize,
-      y: -(((data.y % chunkSize) + chunkSize) % chunkSize),
-    };
 
     switch (tile.type) {
       case "color": {
