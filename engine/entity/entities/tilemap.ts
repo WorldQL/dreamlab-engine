@@ -1,7 +1,5 @@
 import {
   Camera,
-  CameraFilterModeChanged,
-  defineSyncedObject,
   EditorChangeRequiresRestart,
   EditorChangeRestartCleared,
   Entity,
@@ -10,68 +8,28 @@ import {
   EntityDestroyed,
   EntityTransformUpdate,
   enumAdapter,
-  GameRender,
-  GameTick,
   IBounds,
-  JsonValue,
+  IVector2,
   PixiEntity,
-  pointLocalToWorld,
   pointWorldToLocal,
-  SyncedDeepObject,
   TextureAdapter,
-  TilemapRedrawFinished,
-  TilemapRedrawProgress,
-  TilemapRedrawStarted,
   Vector2,
 } from "@dreamlab/engine";
-import * as cbor from "@dreamlab/vendor/cbor2.ts";
-import { gzip, ungzip } from "@dreamlab/vendor/pako.ts";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import { decodeBase64Url, encodeBase64Url } from "@dreamlab/vendor/std__encoding.ts";
-import { Simplify } from "@dreamlab/vendor/type-fest.ts";
+import type { ChunkId, ChunkInfo } from "./gpu-tilemap-chunk.ts";
+import { GPUTilemapChunk, TilemapChunk } from "./gpu-tilemap-chunk.ts";
 
 type ScaleFilterMode = enumAdapter.Union<typeof ScaleFilterModeAdapter>;
 const ScaleFilterModeAdapter = enumAdapter(["default", "linear", "nearest"]);
 
 // #region data and types
-const TILE_TYPES = {
-  color: 0,
-  texture: 1,
-  spritesheet: 2,
-  "texture-slice": 3,
-} as const satisfies Record<TileData["type"], number>;
-
-const REVERSE_TILE_TYPES: ReadonlyMap<number, TileData["type"]> = new Map(
-  Object.entries(TILE_TYPES).map(([k, v]) => [v, k as TileData["type"]]),
-);
-
-type TilemapData = {
-  readonly paletteOverrides: BaseTilemap["paletteOverrides"];
-  readonly data: BaseTilemap["data"];
-};
-
-type TileDrawData = {
-  readonly x: number;
-  readonly y: number;
-  readonly tile: TileData | undefined;
-  readonly chunkX: number;
-  readonly chunkY: number;
-  readonly chunkId: string;
-};
-
-type ChunkData = Simplify<Pick<TileDrawData, "chunkX" | "chunkY" | "chunkId">>;
-
-export type TileData =
-  | { type: "color"; color: string; alpha?: number }
-  | { type: "texture"; texture: string }
-  | { type: "spritesheet"; spritesheet: string; frame: number }
-  | { type: "texture-slice"; texture: string; x: number; y: number };
-
-type TextureTileData = Extract<TileData, { type: "texture" | "spritesheet" | "texture-slice" }>;
+type TileInfo =
+  | { readonly type: "atlas"; readonly id: number }
+  | { readonly type: "color"; readonly color: string };
 // #endregion
 
 export abstract class BaseTilemap extends PixiEntity {
-  static readonly #CHUNK_SIZE = 64;
+  static readonly #CHUNK_SIZE = 256; // do not change ever
   static readonly icon = "🗺️";
 
   #bounds: IBounds = { width: 1, height: 1 };
@@ -83,14 +41,56 @@ export abstract class BaseTilemap extends PixiEntity {
   resolution: number = 64;
   scaleFilterMode: ScaleFilterMode = "default";
 
-  // full palette data - generated from paletteOverrides + atlas
-  palette: Record<number, TileData> = {};
-  paletteOverrides: Record<number, TileData> = {};
-  data: Record<number, Record<number, number>> = {};
-  #optimizeForColor: boolean = false;
-  #tilesDirty: boolean = false;
   #boundsDirty: boolean = false;
   #container: PIXI.Container | undefined;
+
+  // #region atlas
+  protected atlasImgWidth: number = 0;
+  protected atlasImgHeight: number = 0;
+
+  #atlasTexture: PIXI.Texture | undefined;
+  protected get atlasTexture(): PIXI.Texture {
+    return this.#atlasTexture ?? PIXI.Texture.EMPTY;
+  }
+
+  async #getAtlasTexture(): Promise<PIXI.Texture> {
+    if (this.atlas === "") return PIXI.Texture.EMPTY;
+
+    const _texture = await PIXI.Assets.load(this.game.resolveResource(this.atlas));
+    if (!(_texture instanceof PIXI.Texture)) {
+      throw new TypeError("texture is not a pixi texture");
+    }
+
+    const texture: PIXI.Texture<PIXI.TextureSource> = _texture;
+    const camera = Camera.getActive(this.game);
+    const scaleMode = camera?.scaleFilterMode ?? "nearest";
+
+    texture.source.scaleMode = scaleMode;
+    texture.source.update();
+    texture.update();
+
+    texture.label = this.atlas;
+    return texture;
+  }
+
+  async #updateAtlasTexture(): Promise<void> {
+    if (this.#atlasTexture?.label !== this.atlas) {
+      this.#atlasTexture = await this.#getAtlasTexture();
+      this.atlasImgWidth = this.#atlasTexture.width;
+      this.atlasImgHeight = this.#atlasTexture.height;
+    }
+
+    const atlas = this.#atlasTexture;
+    const atlasDimensions = [
+      atlas.width / this.resolution,
+      atlas.height / this.resolution,
+    ] as const;
+
+    for (const chunk of this.#chunks.values()) {
+      chunk.updateAtlas(atlasDimensions, atlas);
+    }
+  }
+  // #endregion
 
   // #region tilemap operations
   getTileCoordinatesAtPoint(world: Vector2): Vector2 {
@@ -101,56 +101,128 @@ export abstract class BaseTilemap extends PixiEntity {
     return new Vector2(x, y);
   }
 
-  getTileAtPoint(
-    world: Vector2,
-  ): (TileData & { readonly x: number; readonly y: number }) | undefined {
-    const { x, y } = this.getTileCoordinatesAtPoint(world);
-    const tile = this.getTile(x, y);
-    if (!tile) return undefined;
+  getTile(x: number, y: number): number | undefined {
+    const info = this.getTileInfo(x, y);
+    if (info?.type !== "atlas") return undefined;
 
-    return { ...tile, x, y };
+    return info.id;
   }
 
-  getTilePaletteId(x: number, y: number): number | undefined {
-    x = Math.floor(x);
-    y = Math.floor(y);
-
-    if (Object.is(x, -0)) x = 0;
-    if (Object.is(y, -0)) y = 0;
-
-    const paletteId = this.data[x]?.[y];
-    if (paletteId === undefined) return undefined;
-
-    return paletteId;
+  setTile(x: number, y: number, atlasId: number | undefined): void {
+    if (atlasId === undefined) return this.clearTile(x, y);
+    this.setTileInfo(x, y, { type: "atlas", id: atlasId });
   }
 
-  getTile(x: number, y: number): TileData | undefined {
-    const paletteId = this.getTilePaletteId(x, y);
-    if (paletteId === undefined) return undefined;
-    return this.palette[paletteId];
+  getColor(x: number, y: number): string | undefined {
+    const info = this.getTileInfo(x, y);
+    if (info?.type !== "color") return undefined;
+
+    return info.color;
   }
 
-  setTile(x: number, y: number, paletteId: number | undefined): void {
-    x = Math.floor(x);
-    y = Math.floor(y);
-
-    if (Object.is(x, -0)) x = 0;
-    if (Object.is(y, -0)) y = 0;
-
-    const _x = x as number;
-    const _y = y as number;
-
-    this.data[x] ??= {};
-    const row = this.data[_x];
-
-    if (paletteId === undefined) delete row[_y];
-    else row[_y] = paletteId;
+  setColor(x: number, y: number, color: string | undefined): void {
+    if (color === undefined) return this.clearTile(x, y);
+    this.setTileInfo(x, y, { type: "color", color });
   }
 
-  clearTiles(): void {
-    for (const { x, y } of [...this.tiles()]) {
-      this.setTile(x, y, undefined);
+  getTileInfo(x: number, y: number): TileInfo | undefined {
+    const chunkInfo = this.#getChunkInfo(x, y);
+    if (!this.#chunks.has(chunkInfo.id)) return undefined;
+
+    const chunk = this.#getChunk(chunkInfo);
+    const coords = this.#tileToChunkCoords(x, y);
+    const id = chunk.getTile(coords.x, coords.y);
+    if (id === undefined) return undefined;
+
+    return { type: "atlas", id };
+    // TODO: color tiles
+  }
+
+  setTileInfo(x: number, y: number, info: TileInfo | undefined): void {
+    if (info === undefined) {
+      this.clearTile(x, y);
+      return;
     }
+
+    const chunkInfo = this.#getChunkInfo(x, y);
+    const chunk = this.#getChunk(chunkInfo);
+    const coords = this.#tileToChunkCoords(x, y);
+
+    if (info.type === "atlas") {
+      chunk.setTile(coords.x, coords.y, info.id);
+    } else if (info.type === "color") {
+      // TODO
+    }
+  }
+
+  clearTile(x: number, y: number): void {
+    const chunkInfo = this.#getChunkInfo(x, y);
+    if (!this.#chunks.has(chunkInfo.id)) return;
+
+    const chunk = this.#getChunk(chunkInfo);
+    const coords = this.#tileToChunkCoords(x, y);
+
+    chunk.setTile(coords.x, coords.y, undefined);
+  }
+  // #endregion
+
+  // #region chunks
+  readonly #chunks = new Map<ChunkId, TilemapChunk>();
+  #getChunkInfo(x: number, y: number): ChunkInfo {
+    const chunkX = Math.floor(x / BaseTilemap.#CHUNK_SIZE);
+    const chunkY = Math.floor(y / BaseTilemap.#CHUNK_SIZE);
+    const chunkId = `${chunkX}:${chunkY}` as const;
+
+    return { id: chunkId, x: chunkX, y: chunkY } as const;
+  }
+
+  #getChunk(info: ChunkInfo): TilemapChunk {
+    const cached = this.#chunks.get(info.id);
+    if (cached) return cached;
+
+    if (!this.#atlasTexture) throw new Error("atlas texture not initialized");
+    const atlas = this.#atlasTexture;
+    const atlasDimensions = [
+      atlas.width / this.resolution,
+      atlas.height / this.resolution,
+    ] as const;
+
+    // specialized chunk impl for server
+    if (this.game.isServer()) {
+      const chunk = new TilemapChunk({
+        ...info,
+        size: BaseTilemap.#CHUNK_SIZE,
+        atlasDimensions,
+      });
+
+      this.#chunks.set(info.id, chunk);
+      return chunk;
+    }
+
+    if (!this.#container) throw new Error("no container");
+
+    const chunk = new GPUTilemapChunk({
+      ...info,
+      size: BaseTilemap.#CHUNK_SIZE,
+      atlas,
+      atlasDimensions,
+    });
+
+    const chunkSize = BaseTilemap.#CHUNK_SIZE;
+    chunk.mesh.position.x += info.x * chunkSize;
+    chunk.mesh.position.y += -info.y * chunkSize;
+    this.#container.addChild(chunk.mesh);
+
+    this.#chunks.set(info.id, chunk);
+    return chunk;
+  }
+
+  #tileToChunkCoords(x: number, y: number): IVector2 {
+    const chunkSize = BaseTilemap.#CHUNK_SIZE;
+    return {
+      x: ((x % chunkSize) + chunkSize) % chunkSize,
+      y: ((y % chunkSize) + chunkSize) % chunkSize,
+    };
   }
   // #endregion
 
@@ -158,7 +230,6 @@ export abstract class BaseTilemap extends PixiEntity {
     super(ctx);
 
     const markDirty = () => {
-      this.#tilesDirty = true;
       this.#boundsDirty = true;
     };
 
@@ -179,23 +250,12 @@ export abstract class BaseTilemap extends PixiEntity {
         "The scale filter mode for rendering textures in the tilemap (default, linear, nearest).",
     });
 
-    const paletteOverrides = defineSyncedObject(this, "paletteOverrides", ctx.sync ?? {});
-    const data = defineSyncedObject(this, "data", ctx.sync ?? {});
-
     resolution.onChanged(() => {
-      this.#textureCache.clear();
-      this.#tilesDirty = true;
-
-      void this.#recomputePalette();
+      this.#updateAtlasTexture();
     });
 
     atlasValue.onChanged(() => {
-      this.#textureCache.clear();
-      void this.#recomputePalette();
-    });
-
-    paletteOverrides.onChanged(() => {
-      void this.#recomputePalette();
+      this.#updateAtlasTexture();
     });
 
     let originalScale: ScaleFilterMode | undefined;
@@ -218,247 +278,63 @@ export abstract class BaseTilemap extends PixiEntity {
         );
       }
     });
-    // data.onChanged(markDirty);
-    data.onChanged((_data, _from, obj, op) => {
-      if (!op) return;
-      if (op.t !== "deep-object-set" && op.t !== "deep-object-delete") return;
-      if (!(obj instanceof SyncedDeepObject)) return;
-
-      const [, , _x] = obj.ref.split("/");
-      const x = Number.parseInt(_x, 10);
-      const y = Number.parseInt(op.key, 10);
-      if (Number.isNaN(x) || Number.isNaN(y)) return;
-
-      const paletteId = this.data[x][y];
-      const tile = paletteId === undefined ? undefined : this.palette[paletteId];
-      const chunkInfo = this.#chunkInfo(x, y);
-      const data = { x, y, tile, ...chunkInfo } satisfies TileDrawData;
-
-      this.#drawTile(data, this.#optimizeForColor);
-      this.#boundsDirty = true;
-    });
 
     this.on(EntityTransformUpdate, () => this.#updateSize());
 
-    this.listen(this.game, GameTick, () => {
-      if (this.#tilesDirty) {
-        this.#tilesDirty = false;
-        void this.#redraw();
-      }
+    // this.listen(this.game, GameTick, () => {
+    //   if (this.#tilesDirty) {
+    //     this.#tilesDirty = false;
+    //     void this.#redraw();
+    //   }
 
-      if (this.#boundsDirty) {
-        this.#boundsDirty = false;
-        this.#recalculateBounds();
-      }
-    });
+    //   if (this.#boundsDirty) {
+    //     this.#boundsDirty = false;
+    //     this.#recalculateBounds();
+    //   }
+    // });
 
-    this.listen(this.game, CameraFilterModeChanged, markDirty);
+    // this.listen(this.game, CameraFilterModeChanged, markDirty);
 
     this.on(EntityDestroyed, () => {
+      for (const chunk of this.#chunks.values()) {
+        chunk.destroy();
+      }
+
       this.#chunks.clear();
-      this.#pixiMap.clear();
-    });
-
-    this.listen(this.game, GameRender, () => {
-      this.#cullChunks();
     });
   }
 
-  // #region full palette
-  protected atlasImgWidth: number = 0;
-  protected atlasImgHeight: number = 0;
+  // // #region (de)serialize methods
+  // static readonly #COMPRESSION_THRESHOLD = 384;
 
-  async #recomputePalette(): Promise<void> {
-    if (!this.game.isClient()) return;
-    this.palette = {};
+  // static #serialize(chunks: Map<ChunkId, GPUTilemapChunk>): string {
+  //   const data = new Map<ChunkId, Uint8Array>();
+  //   for (const [id, chunk] of chunks) {
+  //     data.set(id, chunk.tileData);
+  //   }
 
-    if (this.atlas) {
-      const img = new Image();
-      img.src = this.game.resolveResource(this.atlas);
-      await img.decode();
+  //   const encoded = cbor.encode(data);
+  //   const compressed = encoded.byteLength > BaseTilemap.#COMPRESSION_THRESHOLD;
+  //   const buffer = compressed ? gzip(encoded) : encoded;
 
-      this.atlasImgWidth = img.naturalWidth;
-      this.atlasImgHeight = img.naturalHeight;
+  //   const final = new Uint8Array(buffer.length + 1);
+  //   final.set(compressed ? [1] : [0]);
+  //   final.set(buffer, 1);
 
-      const res = this.resolution || 1;
-      const atlasWidth = Math.floor(img.naturalWidth / res);
-      const atlasHeight = Math.floor(img.naturalHeight / res);
+  //   return encodeBase64Url(final);
+  // }
 
-      const TILE_LIMIT = 16384;
-      for (let y = 0; y < atlasHeight; y++) {
-        for (let x = 0; x < atlasWidth; x++) {
-          const idx = y * atlasWidth + x;
-          if (idx > TILE_LIMIT) break;
+  // static #deserialize(value: string): Record<ChunkId, Uint8Array> {
+  //   const buffer = decodeBase64Url(value);
+  //   const compressed = buffer[0] === 1;
+  //   const payload = buffer.slice(1);
+  //   const bytes = compressed ? ungzip(payload) : payload;
 
-          this.palette[idx] = {
-            type: "texture-slice",
-            texture: this.atlas,
-            x: x * res,
-            y: y * res,
-          };
-        }
-      }
-    }
-
-    for (const [key, value] of Object.entries(this.paletteOverrides)) {
-      Reflect.set(this.palette, key, value);
-    }
-
-    // experimental: comment out this line to disable color optimized rendering
-    const allColor = Object.values(this.palette).every(x => x.type === "color");
-    const optimizeForColor = allColor && Object.keys(this.palette).length > 0;
-    this.#optimizeForColor = optimizeForColor;
-
-    this.#tilesDirty = true;
-  }
-  // #endregion
-
-  // #region (de)serialize methods
-  static readonly #COMPRESSION_THRESHOLD = 384;
-
-  static #serialize(opts: TilemapData): string {
-    const textures: string[] = [];
-    const textureRef = (texture: string): number => {
-      const idx = textures.indexOf(texture);
-      if (idx === -1) {
-        textures.push(texture);
-        return textures.indexOf(texture);
-      }
-
-      return idx;
-    };
-
-    const palette = Object.entries(opts.paletteOverrides).map(([k, entry]) => {
-      const id = Number.parseInt(k, 10);
-      if (Number.isNaN(id)) throw new Error("invalid palette key");
-
-      const type = entry.type;
-      const base = [id, TILE_TYPES[type]];
-
-      switch (entry.type) {
-        case "color": {
-          const ret = [...base, entry.color];
-          if (entry.alpha && entry.alpha !== 1) ret.push(entry.alpha);
-          return ret;
-        }
-
-        case "texture": {
-          const ret = [...base, textureRef(entry.texture)];
-          return ret;
-        }
-
-        case "spritesheet": {
-          const ret = [...base, textureRef(entry.spritesheet), entry.frame];
-          return ret;
-        }
-
-        case "texture-slice": {
-          const ret = [...base, textureRef(entry.texture), entry.x, entry.y];
-          return ret;
-        }
-
-        default:
-          throw new Error(`unknown type: ${type}`);
-      }
-    });
-
-    const data: number[] = [];
-    for (const [_x, row] of Object.entries(opts.data)) {
-      const x = Number.parseInt(_x, 10);
-      if (Number.isNaN(x)) continue;
-
-      for (const [_y, paletteId] of Object.entries(row)) {
-        const y = Number.parseInt(_y, 10);
-        if (Number.isNaN(y)) continue;
-        if (paletteId === undefined) continue;
-
-        // TODO: ensure palette id is valid
-        data.push(x, y, paletteId);
-      }
-    }
-
-    const encoded = cbor.encode([textures, palette, data]);
-    const compressed = encoded.byteLength > BaseTilemap.#COMPRESSION_THRESHOLD;
-    const buffer = compressed ? gzip(encoded) : encoded;
-
-    const final = new Uint8Array(buffer.length + 1);
-    final.set(compressed ? [1] : [0]);
-    final.set(buffer, 1);
-
-    return encodeBase64Url(final);
-  }
-
-  static #deserialize(value: string): TilemapData {
-    const buffer = decodeBase64Url(value);
-    const compressed = buffer[0] === 1;
-    const payload = buffer.slice(1);
-    const bytes = compressed ? ungzip(payload) : payload;
-
-    const decoded = cbor.decode(bytes);
-    if (!Array.isArray(decoded)) throw new Error("invalid data");
-
-    const textures = decoded[0] as string[];
-    const textureRef = (ref: string | number): string => {
-      if (typeof ref === "string") return ref;
-      return textures[ref];
-    };
-
-    const _palette = decoded[1] as [number, number, ...unknown[]][];
-    const paletteOverrides = Object.fromEntries(
-      _palette.map(([id, ty, ...rest]): [key: number, value: TileData] => {
-        const type = REVERSE_TILE_TYPES.get(ty);
-
-        switch (type) {
-          case "color": {
-            const color = rest[0] as string;
-            const alpha = (rest[1] as number | undefined) ?? 1;
-
-            return [id, { type, color, alpha }];
-          }
-
-          case "texture": {
-            const ref = rest[0] as string | number;
-            const texture = textureRef(ref);
-            return [id, { type, texture }];
-          }
-
-          case "spritesheet": {
-            const ref = rest[0] as string | number;
-            const spritesheet = textureRef(ref);
-            const frame = rest[1] as number;
-            return [id, { type, spritesheet, frame }];
-          }
-
-          case "texture-slice": {
-            const ref = rest[0] as string | number;
-            const texture = textureRef(ref);
-            const x = rest[1] as number;
-            const y = rest[2] as number;
-            return [id, { type, texture, x, y }];
-          }
-
-          default:
-            throw new Error("unknown type");
-        }
-      }),
-    );
-
-    const _data = decoded[2] as number[];
-    if (_data.length % 3 !== 0) throw new Error("invalid data length");
-
-    const data: BaseTilemap["data"] = {};
-    for (let idx = 0; idx < _data.length; idx += 3) {
-      const x = _data[idx];
-      const y = _data[idx + 1];
-      const paletteId = _data[idx + 2];
-
-      data[x] ??= {};
-      data[x][y] = paletteId;
-    }
-
-    return { paletteOverrides, data };
-  }
-  // #endregion
+  //   const decoded = cbor.decode(bytes);
+  //   console.log(decoded);
+  //   return {};
+  // }
+  // // #endregion
 
   // #region lifecycle
   onInitialize(): void {
@@ -468,355 +344,36 @@ export abstract class BaseTilemap extends PixiEntity {
     this.container.addChild(this.#container);
 
     if (this.atlas) {
-      void (async () => {
-        await this.#recomputePalette();
-        await this.#redraw();
-      })();
-    } else {
-      void this.#redraw();
+      void this.#updateAtlasTexture();
     }
+
     this.#updateSize();
     this.#recalculateBounds();
   }
 
-  protected saveDataForScene(): JsonValue | undefined {
-    return BaseTilemap.#serialize(this);
-  }
+  // protected saveDataForScene(): JsonValue | undefined {
+  //   return BaseTilemap.#serialize(this.#chunks);
+  // }
 
-  protected loadDataForScene(value: JsonValue | undefined): void {
-    if (typeof value !== "string") return;
+  // protected loadDataForScene(value: JsonValue | undefined): void {
+  //   if (typeof value !== "string") return;
 
-    try {
-      const { paletteOverrides, data } = BaseTilemap.#deserialize(value);
-      Object.assign(this.paletteOverrides, paletteOverrides);
-      Object.assign(this.data, data);
+  //   try {
+  //     const { paletteOverrides, data } = BaseTilemap.#deserialize(value);
+  //     Object.assign(this.paletteOverrides, paletteOverrides);
+  //     Object.assign(this.data, data);
 
-      void this.#redraw();
-      this.#recalculateBounds();
-    } catch {
-      // ignore
-    }
-  }
+  //     void this.#redraw();
+  //     this.#recalculateBounds();
+  //   } catch {
+  //     // ignore
+  //   }
+  // }
   // #endregion
 
-  // #region private methods
-  #chunkInfo(x: number, y: number): ChunkData {
-    const chunkX = Math.floor(x / BaseTilemap.#CHUNK_SIZE);
-    const chunkY = Math.floor(y / BaseTilemap.#CHUNK_SIZE);
-    const chunkId = `${chunkX}:${chunkY}`;
-
-    return { chunkX, chunkY, chunkId } as const;
-  }
-
-  *tiles(): Generator<TileDrawData, void, void> {
-    for (const [_x, row] of Object.entries(this.data)) {
-      const x = Number.parseInt(_x, 10);
-      if (Number.isNaN(x)) continue;
-
-      for (const [_y, paletteId] of Object.entries(row)) {
-        const y = Number.parseInt(_y, 10);
-        if (Number.isNaN(y)) continue;
-
-        if (paletteId === undefined) continue;
-
-        const tile = this.palette[paletteId];
-        if (!tile) continue;
-
-        const chunkInfo = this.#chunkInfo(x, y);
-        yield { x, y, tile, ...chunkInfo };
-      }
-    }
-  }
-
-  protected textureCacheId(tile: TextureTileData): string {
-    const type = tile.type;
-
-    if (tile.type === "texture") return tile.texture;
-    if (tile.type === "spritesheet") return `${tile.spritesheet}@${tile.frame}`;
-    if (tile.type === "texture-slice") {
-      const size = this.resolution;
-      return `${tile.texture}@${size}@${tile.x}:${tile.y}`;
-    }
-
-    throw new Error(`unsupported entry: ${type}`);
-  }
-
-  #textureCache = new Map<string, PIXI.Texture>();
-  protected async loadTexture(tile: TextureTileData): Promise<PIXI.Texture> {
-    const cacheId = this.textureCacheId(tile);
-    const cached = this.#textureCache.get(cacheId);
-    if (cached) return cached;
-
-    const camera = Camera.getActive(this.game);
-    const scaleMode: Exclude<ScaleFilterMode, "default"> =
-      this.scaleFilterMode === "default"
-        ? (camera?.scaleFilterMode ?? "nearest")
-        : this.scaleFilterMode;
-
-    const updateScaleMode = (texture: PIXI.Texture) => {
-      if (texture.source.scaleMode === scaleMode) return;
-      texture.source.scaleMode = scaleMode;
-      texture.source.update();
-    };
-
-    switch (tile.type) {
-      case "texture": {
-        const url = this.game.resolveResource(tile.texture);
-        const texture = await PIXI.Assets.load<PIXI.Texture>({ src: url, data: { scaleMode } });
-        if (!(texture instanceof PIXI.Texture)) throw new Error("invalid texture");
-        updateScaleMode(texture);
-
-        this.#textureCache.set(cacheId, texture);
-        return texture;
-      }
-
-      case "spritesheet": {
-        const url = this.game.resolveResource(tile.spritesheet);
-        const spritesheet = await PIXI.Assets.load({
-          src: url,
-          data: { textureOptions: { scaleMode } },
-        });
-        if (!(spritesheet instanceof PIXI.Spritesheet)) throw new Error("invalid spritesheet");
-
-        const textures = Object.values(spritesheet.textures);
-        const texture = textures.at(tile.frame);
-        if (!texture) throw new Error("missing texture in spritesheet");
-        updateScaleMode(texture);
-
-        this.#textureCache.set(cacheId, texture);
-        return texture;
-      }
-
-      case "texture-slice": {
-        const url = this.game.resolveResource(tile.texture);
-        const texture = await PIXI.Assets.load({ src: url, data: { scaleMode } });
-        if (!(texture instanceof PIXI.Texture)) throw new Error("invalid texture");
-        updateScaleMode(texture);
-
-        const frame = new PIXI.Rectangle(tile.x, tile.y, this.resolution, this.resolution);
-        const slice = new PIXI.Texture({ source: texture.source, frame });
-
-        this.#textureCache.set(cacheId, slice);
-        return slice;
-      }
-    }
-  }
-
-  readonly #ctx = new PIXI.GraphicsContext().rect(-0.5, -0.5, 1, 1).fill("white");
-
-  #redrawing: boolean = false;
-  #redrawQueued: boolean = false;
-  #lastRedrawOptimized: boolean = false;
-  async #redraw(): Promise<void> {
-    if (!this.#container) return;
-
-    if (this.#redrawing) {
-      this.#redrawQueued = true;
-      return;
-    }
-
-    this.#redrawing = true;
-    this.fire(TilemapRedrawStarted);
-
-    if (this.#lastRedrawOptimized !== this.#optimizeForColor) {
-      this.#lastRedrawOptimized = this.#optimizeForColor;
-      this.#pixiMap.clear();
-      this.#chunks.clear();
-      for (const chunk of this.#container.children) {
-        chunk.destroy({ children: true });
-      }
-    }
-
-    try {
-      const optimized = this.#optimizeForColor;
-      const tiles = [...this.tiles()]; // this is suboptimal for memory but we need to get an accurate count for progress
-      let count = 0;
-
-      const seen = new Set<string>();
-      let idx = 0;
-      for (const tile of this.tiles()) {
-        await this.#drawTile(tile, optimized);
-        seen.add(`${tile.x}:${tile.y}`);
-        count++;
-
-        const BATCH_SIZE = 5000; // TODO: tweak numbers
-        if (idx >= BATCH_SIZE) {
-          this.fire(TilemapRedrawProgress, count / tiles.length);
-          await this.game.time.waitForNextTick();
-          idx = 0;
-        } else {
-          idx += 1;
-        }
-      }
-
-      if (!optimized) {
-        // remove tiles that shouldnt be there
-        await this.game.time.waitForNextTick();
-        for (const child of this.#container.children.flatMap(x => x.children)) {
-          if (!seen.has(child.label)) {
-            this.#pixiMap.delete(child.label);
-            child.destroy();
-          }
-        }
-      }
-    } finally {
-      this.fire(TilemapRedrawProgress, 1);
-      this.fire(TilemapRedrawFinished);
-      this.#redrawing = false;
-    }
-
-    if (this.#redrawQueued) {
-      await this.game.time.waitForNextTick();
-      this.#redrawQueued = false;
-      this.#redraw();
-    }
-  }
-
-  readonly #chunks = new Map<string, PIXI.Container>();
-  #getChunkContainer({ chunkId: id, chunkX: x, chunkY: y }: ChunkData): PIXI.Container {
-    if (!this.#container) throw new Error("missing container");
-
-    const cached = this.#chunks.get(id);
-    if (cached !== undefined) return cached;
-
-    const chunkSize = BaseTilemap.#CHUNK_SIZE;
-    const chunk = new PIXI.Container({
-      label: `chunk:${id}`,
-      interactive: false,
-      eventMode: "none",
-      position: { x: x * chunkSize, y: -y * chunkSize },
-    });
-
-    this.#chunks.set(id, chunk);
-    this.#container.addChild(chunk);
-    return chunk;
-  }
-
-  #pixiMap = new Map<string, PIXI.Sprite | PIXI.Graphics>();
-  async #drawTile(data: TileDrawData, optimized = false): Promise<void> {
-    if (!this.#container) return;
-
-    const tile = data.tile;
-    const label = `${data.x}:${data.y}`;
-    const chunk = this.#getChunkContainer(data);
-
-    const chunkSize = BaseTilemap.#CHUNK_SIZE;
-    const position = {
-      x: ((data.x % chunkSize) + chunkSize) % chunkSize,
-      y: -(((data.y % chunkSize) + chunkSize) % chunkSize),
-    };
-
-    if (optimized) {
-      if (tile?.type !== "color" && tile?.type !== undefined) {
-        throw new Error("tried to use optimized rendering for a non-color tile");
-      }
-
-      const ensureSprite = (): PIXI.Sprite => {
-        if (chunk.children.length > 1) throw new Error("oh no");
-        const existing = chunk.children[0];
-        if (existing instanceof PIXI.Sprite) return existing;
-
-        const resource = new Uint8ClampedArray(chunkSize * chunkSize * 4);
-        const texture = PIXI.Texture.from({
-          resource,
-          width: chunkSize,
-          height: chunkSize,
-          scaleMode: "nearest",
-        });
-
-        const sprite = new PIXI.Sprite({
-          texture,
-          position: { x: -0.5, y: 0.5 },
-          scale: { x: 1, y: -1 },
-          label: `chunk:${chunk.x}:${chunk.y}`,
-        });
-
-        chunk.addChild(sprite);
-        return sprite;
-      };
-
-      const sprite = ensureSprite();
-      const texture: PIXI.Texture<PIXI.BufferImageSource> = sprite.texture;
-      const buffer = texture.source.resource as Uint8ClampedArray;
-      const idx = (-position.y * chunkSize + position.x) * 4;
-
-      if (tile) {
-        const color = new PIXI.Color(tile.color);
-        buffer[idx + 0] = color.red * 255;
-        buffer[idx + 1] = color.green * 255;
-        buffer[idx + 2] = color.blue * 255;
-        buffer[idx + 3] = color.alpha * 255;
-      } else {
-        buffer[idx + 0] = 0;
-        buffer[idx + 1] = 0;
-        buffer[idx + 2] = 0;
-        buffer[idx + 3] = 0;
-      }
-
-      texture.source.update();
-
-      return;
-    }
-
-    if (!tile) {
-      const previous = this.#pixiMap.get(label);
-      previous?.destroy();
-      this.#pixiMap.delete(label);
-      return;
-    }
-
-    switch (tile.type) {
-      case "color": {
-        const previous = this.#pixiMap.get(label);
-        if (previous instanceof PIXI.Graphics) {
-          previous.tint = tile.color;
-          previous.alpha = tile.alpha ?? 1;
-        } else {
-          const gfx = new PIXI.Graphics({
-            label,
-            context: this.#ctx,
-            position,
-            tint: tile.color,
-            alpha: tile.alpha,
-          });
-
-          previous?.destroy();
-          chunk.addChild(gfx);
-          this.#pixiMap.set(label, gfx);
-        }
-
-        break;
-      }
-
-      case "texture":
-      case "spritesheet":
-      case "texture-slice": {
-        const texture = await this.loadTexture(tile);
-        const previous = this.#pixiMap.get(label);
-
-        if (previous instanceof PIXI.Sprite) {
-          previous.texture = texture;
-        } else {
-          const sprite = new PIXI.Sprite({
-            label,
-            texture,
-            width: 1,
-            height: 1,
-            anchor: 0.5,
-            position,
-          });
-
-          previous?.destroy();
-          chunk.addChild(sprite);
-          this.#pixiMap.set(label, sprite);
-        }
-        break;
-      }
-    }
-  }
-
   #recalculateBounds(): void {
-    const bounds = new PIXI.Bounds(-0.5, -0.5, 0.5, 0.5);
+    // TODO: reimplement with new chunk based system
+    /* const bounds = new PIXI.Bounds(-0.5, -0.5, 0.5, 0.5);
 
     const { minX, maxX, minY, maxY } = Object.entries(this.data)
       .map(([k, v]) => {
@@ -869,46 +426,13 @@ export abstract class BaseTilemap extends PixiEntity {
     const x = bounds.x + width / 2 + 0.5;
     const y = bounds.y + height / 2 + 0.5;
 
-    this.#bounds = { width, height, offset: { x, y } };
+    this.#bounds = { width, height, offset: { x, y } }; */
   }
 
   #updateSize(): void {
     if (!this.container) return;
     this.container.scale.set(this.globalTransform.scale.x, this.globalTransform.scale.y);
   }
-
-  #cullChunks(): void {
-    if (!this.game.isClient()) return;
-    if (!this.#container) return;
-
-    const camera = Camera.getActive(this.game);
-    if (!camera) return;
-
-    const { width, height } = this.game.renderer.app.canvas;
-    const screen = new PIXI.Rectangle(0, 0, width, height);
-    const bounds = new PIXI.Bounds();
-
-    for (const chunk of this.#container.children) {
-      const xfm = this.globalTransform;
-      const pos = new Vector2(chunk.position.x, -chunk.position.y);
-      const chunkSize = BaseTilemap.#CHUNK_SIZE;
-
-      const a = camera.worldToScreen(pointLocalToWorld(xfm, pos));
-      const b = camera.worldToScreen(pointLocalToWorld(xfm, pos.add({ x: 0, y: -chunkSize })));
-      const c = camera.worldToScreen(pointLocalToWorld(xfm, pos.add({ x: chunkSize, y: 0 })));
-      const d = camera.worldToScreen(
-        pointLocalToWorld(xfm, pos.add({ x: chunkSize, y: chunkSize })),
-      );
-
-      bounds
-        .clear()
-        .addVertexData(new Float32Array([a.x, a.y, b.x, b.y, c.x, c.y, d.x, d.y]), 0, 8);
-
-      bounds.pad(100);
-      chunk.culled = !screen.intersects(bounds.rectangle);
-    }
-  }
-  // #endregion
 }
 
 export class Tilemap extends BaseTilemap {

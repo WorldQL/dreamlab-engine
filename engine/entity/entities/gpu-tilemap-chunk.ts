@@ -1,5 +1,7 @@
-import { Vector2 } from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
+
+export type ChunkId = `${number}:${number}`;
+export type ChunkInfo = { readonly id: ChunkId; readonly x: number; readonly y: number };
 
 // look up base atlas uv in tile data
 const fragment = `
@@ -8,19 +10,19 @@ in vec2 vUV;
 uniform sampler2D uAtlas;
 uniform sampler2D uTiles;
 
-uniform vec2 uSize;
+uniform float uSize;
 uniform vec2 uAtlasDimensions;
 
 void main() {
-  vec2 tilePos = floor(vUV * uSize) / uSize;
+  vec2 tilePos = floor(vUV * vec2(uSize)) / vec2(uSize);
   vec4 tileData = texture2D(uTiles, tilePos);
 
   if (tileData.a == 0.0) gl_FragColor = vec4(0.0);
   else {
     vec2 tileBase = floor(tileData.rg * vec2(256.0)) / vec2(256.0);
-    vec2 offset = vec2(mod(vUV.x * uSize.x, 1.0), mod(vUV.y * uSize.y, 1.0)) / uSize;
+    vec2 offset = vec2(mod(vUV.x * uSize, 1.0), mod(vUV.y * uSize, 1.0)) / vec2(uSize);
 
-    gl_FragColor = texture2D(uAtlas, (offset * uSize / uAtlasDimensions) + tileBase).rgba;
+    gl_FragColor = texture2D(uAtlas, (offset * vec2(uSize) / uAtlasDimensions) + tileBase).rgba;
   }
 }
 `;
@@ -45,89 +47,39 @@ void main() {
 }
 `;
 
-// chunks are units of tile data
-export class GPUTilemapChunk {
-  tileTexture: PIXI.Texture;
-  mesh: PIXI.Mesh<PIXI.Geometry, PIXI.Shader>;
-  tileData: Uint8Array;
+type TilemapChunkOptions = {
+  // chunk info
+  readonly id: ChunkId;
+  readonly x: number;
+  readonly y: number;
+  readonly size: number;
 
-  width: number;
-  height: number;
+  // data
+  readonly atlasDimensions: readonly [width: number, height: number];
+  readonly tileData?: Uint8Array;
+};
 
-  constructor(
-    opts: { width: number; height: number; offset: Vector2 },
-    atlas: PIXI.Texture,
-    private atlasDimensions: readonly [number, number],
-  ) {
-    this.width = opts.width;
-    this.height = opts.height;
+export class TilemapChunk {
+  readonly id: ChunkId;
+  readonly x: number;
+  readonly y: number;
+  readonly size: number;
 
-    this.tileData = new Uint8Array(4 * this.width * this.height);
-    const tileBuffer = new PIXI.BufferImageSource({
-      resource: this.tileData,
-      format: "rgba8unorm",
-      alphaMode: "premultiply-alpha-on-upload",
-      scaleMode: "nearest",
-      autoGenerateMipmaps: false,
-      width: this.width,
-      height: this.height,
-    });
-    this.tileTexture = new PIXI.Texture({ source: tileBuffer });
+  readonly tileData: Uint8Array;
+  protected atlasDimensions: readonly [width: number, height: number];
 
-    const shader = PIXI.Shader.from({
-      gl: { fragment, vertex },
-      resources: {
-        uAtlas: atlas.source,
-        uTiles: this.tileTexture.source,
-        extra: {
-          uAtlasDimensions: { value: atlasDimensions, type: "vec2<f32>" },
-          uSize: { value: [this.width, this.height], type: "vec2<f32>" },
-        },
-      },
-    });
+  constructor(opts: TilemapChunkOptions) {
+    this.id = opts.id;
+    this.x = opts.x;
+    this.y = opts.y;
+    this.size = opts.size;
 
-    const { x: offX, y: offY } = opts.offset;
-
-    // simple origin-centered quad
-    const geometry = new PIXI.Geometry({
-      attributes: {
-        aPosition: [
-          -this.width + offX,
-          -this.height + offY,
-          this.width + offX,
-          -this.height + offY,
-          this.width + offX,
-          this.height + offY,
-          -this.width + offX,
-          this.height + offY,
-        ],
-        aUV: [0, 0, 1, 0, 1, 1, 0, 1],
-      },
-      indexBuffer: [0, 1, 2, 0, 2, 3],
-    });
-
-    this.mesh = new PIXI.Mesh({ geometry, shader });
-  }
-
-  setTile(localX: number, localY: number, tileId: number | undefined) {
-    const baseIdx = 4 * (this.height * localY + localX);
-
-    if (tileId === undefined) {
-      this.tileData[baseIdx + 3] = 0;
-    } else {
-      const tileY = Math.floor(tileId / this.atlasDimensions[1]);
-      const tileX = tileId % this.atlasDimensions[0];
-
-      this.tileData[baseIdx + 0] = (tileX / this.atlasDimensions[0]) * 256; // r
-      this.tileData[baseIdx + 1] = (tileY / this.atlasDimensions[1]) * 256; // g
-      this.tileData[baseIdx + 2] = 0; // b
-      this.tileData[baseIdx + 3] = 255; // a
-    }
-    this.tileTexture.source.update();
+    this.atlasDimensions = opts.atlasDimensions;
+    this.tileData = opts.tileData ?? new Uint8Array(4 * this.size * this.size);
   }
 
   getTile(localX: number, localY: number): number | undefined {
-    const baseIdx = 4 * (this.height * localY + localX);
+    const baseIdx = 4 * (this.size * localY + localX);
     const a = this.tileData[baseIdx + 3];
     if (a === 0) return undefined;
 
@@ -139,5 +91,99 @@ export class GPUTilemapChunk {
 
     const tileId = tileY * this.atlasDimensions[0] + tileX;
     return tileId;
+  }
+
+  setTile(localX: number, localY: number, atlasId: number | undefined): void {
+    const baseIdx = 4 * (this.size * localY + localX);
+
+    if (atlasId === undefined) {
+      this.tileData[baseIdx + 3] = 0;
+    } else {
+      const tileY = Math.floor(atlasId / this.atlasDimensions[1]);
+      const tileX = atlasId % this.atlasDimensions[0];
+
+      this.tileData[baseIdx + 0] = (tileX / this.atlasDimensions[0]) * 256; // r
+      this.tileData[baseIdx + 1] = (tileY / this.atlasDimensions[1]) * 256; // g
+      this.tileData[baseIdx + 2] = 0; // b
+      this.tileData[baseIdx + 3] = 255; // a
+    }
+  }
+
+  updateAtlas(
+    dimensions: readonly [width: number, height: number],
+    _atlas?: PIXI.Texture,
+  ): void {
+    this.atlasDimensions = dimensions;
+  }
+
+  destroy(): void {
+    // no-op
+  }
+}
+
+type GPUTilemapChunkOptions = {
+  readonly atlas: PIXI.Texture;
+};
+
+export class GPUTilemapChunk extends TilemapChunk {
+  readonly mesh: PIXI.Mesh<PIXI.Geometry, PIXI.Shader>;
+  readonly #shader: PIXI.Shader;
+  readonly #tileTexture: PIXI.Texture;
+
+  constructor(opts: TilemapChunkOptions & GPUTilemapChunkOptions) {
+    super(opts);
+
+    const tileBuffer = new PIXI.BufferImageSource({
+      resource: this.tileData,
+      format: "rgba8unorm",
+      alphaMode: "premultiply-alpha-on-upload",
+      scaleMode: "nearest",
+      autoGenerateMipmaps: false,
+      width: this.size,
+      height: this.size,
+    });
+
+    this.#tileTexture = new PIXI.Texture({ source: tileBuffer });
+
+    this.#shader = PIXI.Shader.from({
+      gl: { fragment, vertex },
+      resources: {
+        uAtlas: opts.atlas.source,
+        uTiles: this.#tileTexture.source,
+        extra: {
+          uAtlasDimensions: { value: this.atlasDimensions, type: "vec2<f32>" },
+          uSize: { value: this.size, type: "f32" },
+        },
+      },
+    });
+
+    const geometry = new PIXI.Geometry({
+      attributes: {
+        aPosition: [0, 0, this.size, 0, this.size, -this.size, 0, -this.size],
+        aUV: [0, 0, 1, 0, 1, 1, 0, 1],
+      },
+      indexBuffer: [0, 1, 2, 0, 2, 3],
+    });
+
+    this.mesh = new PIXI.Mesh({
+      geometry,
+      shader: this.#shader,
+      position: { x: -0.5, y: 0.5 },
+    });
+  }
+
+  updateAtlas(dimensions: readonly [width: number, height: number], atlas: PIXI.Texture): void {
+    super.updateAtlas(dimensions);
+    this.#shader.resources.uAtlas = atlas;
+  }
+
+  setTile(localX: number, localY: number, atlasId: number | undefined): void {
+    super.setTile(localX, localY, atlasId);
+    this.#tileTexture.source.update();
+  }
+
+  destroy(): void {
+    this.mesh.destroy();
+    this.mesh.geometry.destroy();
   }
 }

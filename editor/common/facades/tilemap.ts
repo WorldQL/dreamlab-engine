@@ -40,59 +40,75 @@ export class EditorFacadeTilemap extends BaseTilemap {
       const rows = Math.max(1, this.paletteRows | 0);
       this.#buildTooltip(cols, rows);
 
-      this.#updatePaletteXY();
+      // this.#updatePaletteXY();
     });
   }
 
-  #updatePaletteXY(): void {
-    const wpx = this.atlasImgWidth;
-    const hpx = this.atlasImgHeight;
-    if (!wpx || !hpx) return;
+  // #updatePaletteXY(): void {
+  //   const wpx = this.atlasImgWidth;
+  //   const hpx = this.atlasImgHeight;
+  //   if (!wpx || !hpx) return;
 
-    const res = this.resolution || 1;
-    const cols = Math.floor(wpx / res);
-    const rows = Math.floor(hpx / res);
-    const total = cols * rows;
+  //   const res = this.resolution || 1;
+  //   const cols = Math.floor(wpx / res);
+  //   const rows = Math.floor(hpx / res);
+  //   const total = cols * rows;
 
-    for (let idx = 0; idx < total; idx++) {
-      const entry = this.palette[idx];
-      if (!entry || entry.type !== "texture-slice") continue;
+  //   for (let idx = 0; idx < total; idx++) {
+  //     const entry = this.palette[idx];
+  //     if (!entry || entry.type !== "texture-slice") continue;
 
-      const x = idx % cols;
-      const y = Math.floor(idx / cols);
-      entry.x = x * res;
-      entry.y = y * res;
-    }
-  }
+  //     const x = idx % cols;
+  //     const y = Math.floor(idx / cols);
+  //     entry.x = x * res;
+  //     entry.y = y * res;
+  //   }
+  // }
 
   #tooltip: PIXI.Graphics | undefined;
   #tooltipCols = 0;
   #tooltipRows = 0;
 
   #textureCache = new Map<string, PIXI.Texture>();
-  async #loadTexture(tile: Parameters<BaseTilemap["loadTexture"]>[0]): Promise<PIXI.Texture> {
+  async #loadTexture(atlasId: number): Promise<PIXI.Texture> {
     if (!this.game.isClient()) throw new Error();
     const renderer = this.game.renderer.app.renderer;
 
-    const cacheId = super.textureCacheId(tile);
+    const cacheId = `${this.atlas}@${atlasId}`;
     const cached = this.#textureCache.get(cacheId);
     if (cached) return cached;
 
-    const base = await super.loadTexture(tile);
     const camera = Camera.getActive(this.game);
     const scaleMode: Exclude<BaseTilemap["scaleFilterMode"], "default"> =
       this.scaleFilterMode === "default"
         ? (camera?.scaleFilterMode ?? "nearest")
         : this.scaleFilterMode;
 
-    const texture = renderer.generateTexture({
-      target: new PIXI.Sprite(base),
+    const updateScaleMode = (texture: PIXI.Texture) => {
+      if (texture.source.scaleMode === scaleMode) return;
+      texture.source.scaleMode = scaleMode;
+      texture.source.update();
+    };
+
+    const url = this.game.resolveResource(this.atlas);
+    const texture = await PIXI.Assets.load({ src: url, data: { scaleMode } });
+    if (!(texture instanceof PIXI.Texture)) throw new Error("invalid texture");
+    updateScaleMode(texture);
+
+    const frameX = 0 * this.resolution; // TODO
+    const frameY = 0 * this.resolution; // TODO
+
+    const frame = new PIXI.Rectangle(frameX, frameY, this.resolution, this.resolution);
+    const slice = new PIXI.Texture({ source: texture.source, frame });
+
+    const final = renderer.generateTexture({
+      target: new PIXI.Sprite(slice),
       resolution: this.resolution,
       textureSourceOptions: { scaleMode },
     });
 
-    this.#textureCache.set(cacheId, texture);
-    return texture;
+    this.#textureCache.set(cacheId, final);
+    return final;
   }
 
   async #buildTooltip(cols: number, rows: number) {
@@ -116,10 +132,7 @@ export class EditorFacadeTilemap extends BaseTilemap {
         const tileId = this.paletteId[idx] ?? -1;
         if (tileId < 0) continue;
 
-        const tile = this.palette[tileId];
-        if (!tile || tile.type !== "texture-slice") continue;
-
-        const texture = await this.#loadTexture(tile);
+        const texture = await this.#loadTexture(tileId);
         g.rect(dx - 0.5, -dy - 0.5, 1, 1)
           .fill({ texture, alpha: 0.7 })
           .stroke({
@@ -169,7 +182,7 @@ export class EditorFacadeTilemap extends BaseTilemap {
 
           const tileX = x + dx,
             tileY = y + dy;
-          const prevId = this.getTilePaletteId(tileX, tileY);
+          const prevId = this.getTile(tileX, tileY);
           const newId = left ? tileId : undefined;
           if (prevId !== newId) {
             this.setTile(tileX, tileY, newId);
