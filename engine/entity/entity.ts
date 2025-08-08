@@ -592,10 +592,7 @@ export abstract class Entity implements ISignalHandler {
       values: entityValues,
       // @ts-expect-error hard-cast string -> Exclude<keyof this, …>
       sync: syncOverrides,
-      data: (() => {
-        const result = this.saveDataForScene?.();
-        return result;
-      })(),
+      data: this.saveDataForScene?.(),
     };
   }
 
