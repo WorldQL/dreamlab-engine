@@ -22,9 +22,11 @@ import { gzip, ungzip } from "@dreamlab/vendor/pako.ts";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { decodeBase64Url, encodeBase64Url } from "@dreamlab/vendor/std__encoding.ts";
 import { JsonValue } from "../../value/data.ts";
-import type { ChunkId } from "./tilemap-chunk.ts";
+import type { ChunkId, ChunkType, TilemapBounds } from "./tilemap-chunk.ts";
 import {
+  ClientColorTilemapChunk,
   ClientTextureTilemapChunk,
+  ColorTilemapChunk,
   TextureTilemapChunk,
   TilemapChunk,
 } from "./tilemap-chunk.ts";
@@ -35,7 +37,7 @@ const ScaleFilterModeAdapter = enumAdapter(["default", "linear", "nearest"]);
 // #region data and types
 export type TileInfo =
   | { readonly type: "atlas"; readonly id: number }
-  | { readonly type: "color"; readonly color: string };
+  | { readonly type: "color"; readonly color: number };
 // #endregion
 
 export abstract class BaseTilemap extends PixiEntity {
@@ -95,7 +97,9 @@ export abstract class BaseTilemap extends PixiEntity {
     const atlas = this.#atlasTexture;
 
     for (const chunk of this.#chunks.values()) {
-      (chunk as ClientTextureTilemapChunk).updateAtlas(atlas.width / this.resolution, atlas);
+      if (chunk instanceof ClientTextureTilemapChunk) {
+        chunk.updateAtlas(atlas.width / this.resolution, atlas);
+      }
     }
   }
   // #endregion
@@ -128,7 +132,7 @@ export abstract class BaseTilemap extends PixiEntity {
       const chunkX = Math.floor(x / TilemapChunk.CHUNK_SIZE);
       const chunkY = Math.floor(y / TilemapChunk.CHUNK_SIZE);
 
-      if (chunkX !== chunk?.x || chunkY !== chunk?.y) chunk = this.#getChunk(x, y);
+      if (chunkX !== chunk?.x || chunkY !== chunk?.y) chunk = this.#getChunk("atlas", x, y);
       chunk!.setTile(x & 0xff, y & 0xff, atlasId);
     }
   }
@@ -138,28 +142,37 @@ export abstract class BaseTilemap extends PixiEntity {
     this.setTileInfo(x, y, { type: "atlas", id: atlasId });
   }
 
-  getColor(x: number, y: number): string | undefined {
+  getColor(x: number, y: number): number | undefined {
     const info = this.getTileInfo(x, y);
     if (info?.type !== "color") return undefined;
 
     return info.color;
   }
 
-  setColor(x: number, y: number, color: string | undefined): void {
+  setColor(x: number, y: number, color: number | undefined): void {
     if (color === undefined) return this.clearTile(x, y);
     this.setTileInfo(x, y, { type: "color", color });
   }
 
   getTileInfo(x: number, y: number): TileInfo | undefined {
-    const chunk = this.#getExistingChunk(x, y);
-    if (!chunk) return undefined;
+    const atlasChunk = this.#getExistingChunk("atlas", x, y);
+    const colorChunk = this.#getExistingChunk("color", x, y);
+    if (!atlasChunk && !colorChunk) return undefined;
 
     const coords = this.#tileToChunkCoords(x, y);
-    const id = chunk.getTile(coords.x, coords.y);
-    if (id === undefined) return undefined;
+    if (atlasChunk) {
+      const id = atlasChunk.getTile(coords.x, coords.y);
+      if (!id) return undefined;
 
-    return { type: "atlas", id };
-    // TODO: color tiles
+      return { type: "atlas", id };
+    } else if (colorChunk) {
+      const color = colorChunk.getTile(coords.x, coords.y);
+      if (!color) return undefined;
+
+      return { type: "color", color };
+    }
+
+    return undefined;
   }
 
   setTileInfo(x: number, y: number, info: TileInfo | undefined): void {
@@ -173,22 +186,30 @@ export abstract class BaseTilemap extends PixiEntity {
     this.game.fire(TilemapUpdate, this, x, y, info);
     this.fire(TilemapUpdate, this, x, y, info);
 
-    const chunk = this.#getChunk(x, y);
     const coords = this.#tileToChunkCoords(x, y);
-
     if (info.type === "atlas") {
+      const chunk = this.#getChunk("atlas", x, y);
       chunk.setTile(coords.x, coords.y, info.id);
+
+      const colorChunk = this.#getExistingChunk("color", x, y);
+      if (colorChunk) colorChunk.setTile(coords.x, coords.y, undefined);
     } else if (info.type === "color") {
-      // TODO
+      const chunk = this.#getChunk("color", x, y);
+      chunk.setTile(coords.x, coords.y, info.color);
+
+      const atlasChunk = this.#getExistingChunk("atlas", x, y);
+      if (atlasChunk) atlasChunk.setTile(coords.x, coords.y, undefined);
     }
   }
 
   clearTile(x: number, y: number): void {
-    const chunk = this.#getExistingChunk(x, y);
-    if (!chunk) return;
-    const coords = this.#tileToChunkCoords(x, y);
+    const atlasChunk = this.#getExistingChunk("atlas", x, y);
+    const colorChunk = this.#getExistingChunk("color", x, y);
+    if (!atlasChunk && !colorChunk) return;
 
-    chunk.setTile(coords.x, coords.y, undefined);
+    const coords = this.#tileToChunkCoords(x, y);
+    atlasChunk?.setTile(coords.x, coords.y, undefined);
+    colorChunk?.setTile(coords.x, coords.y, undefined);
 
     this.game.fire(TilemapUpdate, this, x, y, undefined);
     this.fire(TilemapUpdate, this, x, y, undefined);
@@ -203,53 +224,71 @@ export abstract class BaseTilemap extends PixiEntity {
   // #endregion
 
   // #region chunks
-  readonly #chunks = new Map<ChunkId, TextureTilemapChunk>();
+  readonly #chunks = new Map<ChunkId, TilemapChunk>();
 
-  #getExistingChunk(x: number, y: number): TextureTilemapChunk | undefined {
+  #getExistingChunk(type: "atlas", x: number, y: number): TextureTilemapChunk | undefined;
+  #getExistingChunk(type: "color", x: number, y: number): ColorTilemapChunk | undefined;
+  #getExistingChunk(type: ChunkType, x: number, y: number): TilemapChunk | undefined {
     const chunkX = Math.floor(x / TilemapChunk.CHUNK_SIZE);
     const chunkY = Math.floor(y / TilemapChunk.CHUNK_SIZE);
-    const id = `${chunkX}:${chunkY}` as const;
+    const id = `${type}:${chunkX}:${chunkY}` as const;
     return this.#chunks.get(id);
   }
 
-  #getChunk(x: number, y: number): TextureTilemapChunk {
+  #getChunk(type: "atlas", x: number, y: number): TextureTilemapChunk;
+  #getChunk(type: "color", x: number, y: number): ColorTilemapChunk;
+  #getChunk(type: ChunkType, x: number, y: number): TilemapChunk {
     const chunkX = Math.floor(x / TilemapChunk.CHUNK_SIZE);
     const chunkY = Math.floor(y / TilemapChunk.CHUNK_SIZE);
-    const id = `${chunkX}:${chunkY}` as const;
+    const id = `${type}:${chunkX}:${chunkY}` as const;
 
     const cached = this.#chunks.get(id);
     if (cached) return cached;
 
+    const opts = {
+      id,
+      x: chunkX,
+      y: chunkY,
+    };
+
     // specialized chunk impl for server
     if (this.game.isServer()) {
-      const chunk = new TextureTilemapChunk({
-        id,
-        x: chunkX,
-        y: chunkY,
-      });
+      const chunk =
+        type === "atlas" ? new TextureTilemapChunk(opts) : new ColorTilemapChunk(opts);
 
       this.#chunks.set(id, chunk);
       return chunk;
     }
 
     if (!this.#container) throw new Error("no container");
-    const atlas = this.#atlasTexture ?? PIXI.Texture.WHITE;
-
-    const chunk = new ClientTextureTilemapChunk({
-      id,
-      x: chunkX,
-      y: chunkY,
-      atlas,
-      atlasTileWidth: atlas.width / this.resolution,
-    });
 
     const chunkSize = TilemapChunk.CHUNK_SIZE;
-    chunk.mesh.position.x += chunkX * chunkSize;
-    chunk.mesh.position.y += -chunkY * chunkSize;
-    this.#container.addChild(chunk.mesh);
+    if (type === "atlas") {
+      const atlas = this.#atlasTexture ?? PIXI.Texture.WHITE;
+      const chunk = new ClientTextureTilemapChunk({
+        ...opts,
+        atlas,
+        atlasTileWidth: atlas.width / this.resolution,
+      });
 
-    this.#chunks.set(id, chunk);
-    return chunk;
+      chunk.mesh.position.x += chunkX * chunkSize;
+      chunk.mesh.position.y += -chunkY * chunkSize;
+      this.#container.addChild(chunk.mesh);
+
+      this.#chunks.set(id, chunk);
+      return chunk;
+    } else if (type === "color") {
+      const chunk = new ClientColorTilemapChunk(opts);
+
+      chunk.sprite.position.x += chunkX * chunkSize;
+      chunk.sprite.position.y += -chunkY * chunkSize;
+      this.#container.addChild(chunk.sprite);
+
+      this.#chunks.set(id, chunk);
+      return chunk;
+    } else {
+      throw new Error("unknown chunk type");
+    }
   }
 
   #tileToChunkCoords(x: number, y: number): IVector2 {
@@ -340,9 +379,12 @@ export abstract class BaseTilemap extends PixiEntity {
 
   // #region (de)serialize methods
   #serialize(): Uint8Array {
-    const data = Object.fromEntries([
-      ...this.#chunks.entries().map(([key, chunk]) => [key, chunk.save()]),
-    ]);
+    const entries = this.#chunks
+      .entries()
+      .map(([key, chunk]) => [key, chunk.save()] as const)
+      .filter(x => x[1] !== undefined);
+
+    const data = new Map(entries);
     const encoded = cbor.encode(data);
     const compressed = encoded.byteLength > 320;
     const buffer = compressed ? gzip(encoded) : encoded;
@@ -370,12 +412,21 @@ export abstract class BaseTilemap extends PixiEntity {
     for (const [key, chunkData] of Object.entries(data)) {
       if (!(chunkData instanceof Uint8Array)) continue;
 
-      const [chunkX, chunkY] = key.split(":").map(x => Number(x));
+      const [chunkType, chunkXStr, chunkYStr] = key.split(":");
+      if (chunkType !== "atlas" && chunkType !== "color") continue;
+
+      chunkType;
+      const chunkX = Number(chunkXStr);
+      const chunkY = Number(chunkYStr);
       if (!Number.isFinite(chunkX) || !Number.isFinite(chunkY)) continue;
+
       const chunk = this.#getChunk(
+        // @ts-expect-error: type narrowing
+        chunkType,
         chunkX * TilemapChunk.CHUNK_SIZE,
         chunkY * TilemapChunk.CHUNK_SIZE,
       );
+
       chunk.load(chunkData);
     }
   }
@@ -414,7 +465,7 @@ export abstract class BaseTilemap extends PixiEntity {
     const { minX, minY, maxX, maxY } = this.#chunks
       .values()
       .map(chunk => chunk.bounds)
-      .reduce(
+      .reduce<TilemapBounds>(
         (acc, { minX, maxX, minY, maxY }) => {
           acc.minX = Math.min(acc.minX, minX);
           acc.minY = Math.min(acc.minY, minY);

@@ -1,6 +1,7 @@
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 
-export type ChunkId = `${number}:${number}`;
+export type ChunkType = "atlas" | "color";
+export type ChunkId = `${ChunkType}:${number}:${number}`;
 export type ChunkInfo = { readonly id: ChunkId; readonly x: number; readonly y: number };
 
 // look up base atlas uv in tile data
@@ -49,7 +50,7 @@ void main() {
 }
 `;
 
-type TilemapBounds = { minX: number; minY: number; maxX: number; maxY: number };
+export type TilemapBounds = { minX: number; minY: number; maxX: number; maxY: number };
 
 type TilemapChunkOptions = {
   readonly id: ChunkId;
@@ -74,7 +75,7 @@ export abstract class TilemapChunk {
   abstract getTile(localX: number, localY: number): number | undefined;
   abstract setTile(localX: number, localY: number, value: number | undefined): void;
 
-  abstract save(): Uint8Array;
+  abstract save(): Uint8Array | undefined;
   abstract load(data: Uint8Array): void;
   abstract destroy(): void;
 }
@@ -91,8 +92,11 @@ export class TextureTilemapChunk extends TilemapChunk {
 
   getTile(localX: number, localY: number): number | undefined {
     const baseIdx = 4 * (TilemapChunk.CHUNK_SIZE * localY + localX);
+    const r = this.tileData[baseIdx + 0];
+    const g = this.tileData[baseIdx + 1];
+    const b = this.tileData[baseIdx + 2];
     const a = this.tileData[baseIdx + 3];
-    if (a === 0) return undefined;
+    if (r === 255 && g === 255 && b === 255 && a === 255) return undefined;
 
     const tileId = this.tileData[baseIdx + 1] * 256 + this.tileData[baseIdx + 0];
     return tileId;
@@ -116,10 +120,11 @@ export class TextureTilemapChunk extends TilemapChunk {
       this.tileData[baseIdx + 3] = 255; // a
     }
 
-    // this.#boundsDirty = true;
+    this.#boundsDirty = true;
   }
 
   save(): Uint8Array {
+    // TODO: check if empty and skip saving
     /* const buf = new Uint8Array(4 * this.size * this.size);
 
     let i = 0;
@@ -218,7 +223,7 @@ export class ClientTextureTilemapChunk extends TextureTilemapChunk {
     super(opts);
 
     const size = TilemapChunk.CHUNK_SIZE;
-    const tileBuffer = new PIXI.BufferImageSource({
+    const source = new PIXI.BufferImageSource({
       resource: this.tileData,
       format: "rgba8unorm",
       alphaMode: "premultiply-alpha-on-upload",
@@ -228,7 +233,7 @@ export class ClientTextureTilemapChunk extends TextureTilemapChunk {
       height: size,
     });
 
-    this.#tileTexture = new PIXI.Texture({ source: tileBuffer });
+    this.#tileTexture = new PIXI.Texture({ source });
 
     this.#shader = PIXI.Shader.from({
       gl: { fragment, vertex },
@@ -281,6 +286,122 @@ export class ClientTextureTilemapChunk extends TextureTilemapChunk {
   }
 }
 
-// export class ColorTilemapChunk extends TilemapChunk {}
+export class ColorTilemapChunk extends TilemapChunk {
+  readonly tileData: Uint8Array;
 
-// export class ClientColorTilemapChunk extends ColorTilemapChunk {}
+  constructor(opts: TilemapChunkOptions) {
+    super(opts);
+
+    this.tileData = new Uint8Array(4 * TilemapChunk.CHUNK_SIZE * TilemapChunk.CHUNK_SIZE);
+  }
+
+  getTile(localX: number, localY: number): number | undefined {
+    const baseIdx = 4 * (TilemapChunk.CHUNK_SIZE * localY + localX);
+
+    const r = this.tileData[baseIdx + 0];
+    const g = this.tileData[baseIdx + 1];
+    const b = this.tileData[baseIdx + 2];
+    const a = this.tileData[baseIdx + 3];
+
+    if (r === 0 && g === 0 && b === 0 && a === 0) return undefined;
+
+    if (a === 255) return (r << 16) | (g << 8) | b;
+    else return ((a << 24) | (r << 16) | (g << 8) | b) >>> 0;
+  }
+
+  setTile(localX: number, localY: number, color: number | undefined): void {
+    const baseIdx = 4 * (TilemapChunk.CHUNK_SIZE * localY + localX);
+
+    if (color === undefined) {
+      this.tileData[baseIdx + 0] = 0;
+      this.tileData[baseIdx + 1] = 0;
+      this.tileData[baseIdx + 2] = 0;
+      this.tileData[baseIdx + 3] = 0;
+    } else {
+      if (color > 0xffffff) {
+        this.tileData[baseIdx + 0] = (color >> 24) & 0xff;
+        this.tileData[baseIdx + 1] = (color >> 16) & 0xff;
+        this.tileData[baseIdx + 2] = (color >> 8) & 0xff;
+        this.tileData[baseIdx + 3] = color & 0xff;
+      } else {
+        this.tileData[baseIdx + 0] = (color >> 16) & 0xff;
+        this.tileData[baseIdx + 1] = (color >> 8) & 0xff;
+        this.tileData[baseIdx + 2] = color & 0xff;
+        this.tileData[baseIdx + 3] = 255;
+      }
+    }
+  }
+
+  save(): Uint8Array {
+    // TODO: check if empty and skip saving
+    return this.tileData;
+  }
+
+  load(data: Uint8Array) {
+    this.tileData.set(data);
+    this.#boundsDirty = true;
+  }
+
+  #boundsDirty: boolean = true;
+  #bounds: TilemapBounds = {
+    minX: Number.POSITIVE_INFINITY,
+    minY: Number.POSITIVE_INFINITY,
+    maxX: Number.NEGATIVE_INFINITY,
+    maxY: Number.NEGATIVE_INFINITY,
+  };
+
+  get bounds(): TilemapBounds {
+    // TODO
+    return this.#bounds;
+  }
+
+  destroy(): void {
+    // no-op
+  }
+}
+
+export class ClientColorTilemapChunk extends ColorTilemapChunk {
+  readonly sprite: PIXI.Sprite;
+  readonly #tileTexture: PIXI.Texture;
+
+  constructor(opts: TilemapChunkOptions) {
+    super(opts);
+
+    const size = TilemapChunk.CHUNK_SIZE;
+    const source = new PIXI.BufferImageSource({
+      resource: this.tileData,
+      format: "rgba8unorm",
+      alphaMode: "premultiply-alpha-on-upload",
+      scaleMode: "nearest",
+      autoGenerateMipmaps: false,
+      width: size,
+      height: size,
+    });
+
+    this.#tileTexture = new PIXI.Texture({ source });
+    this.sprite = new PIXI.Sprite({
+      texture: this.#tileTexture,
+      scale: { x: 1, y: -1 },
+      position: { x: -0.5, y: 0.5 },
+    });
+  }
+
+  setTile(localX: number, localY: number, atlasId: number | undefined): void {
+    super.setTile(localX, localY, atlasId);
+    this.#tileTexture.source.update();
+  }
+
+  load(data: Uint8Array): void {
+    super.load(data);
+    this.#tileTexture.source.update();
+  }
+
+  destroy(): void {
+    super.destroy();
+    try {
+      this.sprite.destroy(true);
+    } catch {
+      // ignore
+    }
+  }
+}
