@@ -17,7 +17,7 @@ import {
   Vector2,
 } from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import type { ChunkId, ChunkInfo } from "./gpu-tilemap-chunk.ts";
+import type { ChunkId } from "./gpu-tilemap-chunk.ts";
 import { GPUTilemapChunk, TilemapChunk } from "./gpu-tilemap-chunk.ts";
 
 type ScaleFilterMode = enumAdapter.Union<typeof ScaleFilterModeAdapter>;
@@ -129,10 +129,9 @@ export abstract class BaseTilemap extends PixiEntity {
   }
 
   getTileInfo(x: number, y: number): TileInfo | undefined {
-    const chunkInfo = this.#getChunkInfo(x, y);
-    if (!this.#chunks.has(chunkInfo.id)) return undefined;
+    const chunk = this.#getExistingChunk(x, y);
+    if (!chunk) return undefined;
 
-    const chunk = this.#getChunk(chunkInfo);
     const coords = this.#tileToChunkCoords(x, y);
     const id = chunk.getTile(coords.x, coords.y);
     if (id === undefined) return undefined;
@@ -149,8 +148,7 @@ export abstract class BaseTilemap extends PixiEntity {
       return;
     }
 
-    const chunkInfo = this.#getChunkInfo(x, y);
-    const chunk = this.#getChunk(chunkInfo);
+    const chunk = this.#getChunk(x, y);
     const coords = this.#tileToChunkCoords(x, y);
 
     if (info.type === "atlas") {
@@ -161,10 +159,8 @@ export abstract class BaseTilemap extends PixiEntity {
   }
 
   clearTile(x: number, y: number): void {
-    const chunkInfo = this.#getChunkInfo(x, y);
-    if (!this.#chunks.has(chunkInfo.id)) return;
-
-    const chunk = this.#getChunk(chunkInfo);
+    const chunk = this.#getExistingChunk(x, y);
+    if (!chunk) return;
     const coords = this.#tileToChunkCoords(x, y);
 
     chunk.setTile(coords.x, coords.y, undefined);
@@ -173,16 +169,21 @@ export abstract class BaseTilemap extends PixiEntity {
 
   // #region chunks
   readonly #chunks = new Map<ChunkId, TilemapChunk>();
-  #getChunkInfo(x: number, y: number): ChunkInfo {
+
+  #getExistingChunk(x: number, y: number): TilemapChunk | undefined {
     const chunkX = Math.floor(x / BaseTilemap.#CHUNK_SIZE);
     const chunkY = Math.floor(y / BaseTilemap.#CHUNK_SIZE);
-    const chunkId = `${chunkX}:${chunkY}` as const;
-
-    return { id: chunkId, x: chunkX, y: chunkY } as const;
+    const id = `${chunkX}:${chunkY}` as const;
+    return this.#chunks.get(id);
   }
 
-  #getChunk(info: ChunkInfo): TilemapChunk {
-    const cached = this.#chunks.get(info.id);
+  #getChunk(x: number, y: number): TilemapChunk {
+    const chunkX = Math.floor(x / BaseTilemap.#CHUNK_SIZE);
+    const chunkY = Math.floor(y / BaseTilemap.#CHUNK_SIZE);
+
+    const id = `${chunkX}:${chunkY}` as const;
+
+    const cached = this.#chunks.get(id);
     if (cached) return cached;
 
     if (!this.#atlasTexture) throw new Error("atlas texture not initialized");
@@ -195,30 +196,34 @@ export abstract class BaseTilemap extends PixiEntity {
     // specialized chunk impl for server
     if (this.game.isServer()) {
       const chunk = new TilemapChunk({
-        ...info,
+        id,
+        x: chunkX,
+        y: chunkY,
         size: BaseTilemap.#CHUNK_SIZE,
         atlasDimensions,
       });
 
-      this.#chunks.set(info.id, chunk);
+      this.#chunks.set(id, chunk);
       return chunk;
     }
 
     if (!this.#container) throw new Error("no container");
 
     const chunk = new GPUTilemapChunk({
-      ...info,
+      id,
+      x: chunkX,
+      y: chunkY,
       size: BaseTilemap.#CHUNK_SIZE,
       atlas,
       atlasDimensions,
     });
 
     const chunkSize = BaseTilemap.#CHUNK_SIZE;
-    chunk.mesh.position.x += info.x * chunkSize;
-    chunk.mesh.position.y += -info.y * chunkSize;
+    chunk.mesh.position.x += chunkX * chunkSize;
+    chunk.mesh.position.y += -chunkY * chunkSize;
     this.#container.addChild(chunk.mesh);
 
-    this.#chunks.set(info.id, chunk);
+    this.#chunks.set(id, chunk);
     return chunk;
   }
 
