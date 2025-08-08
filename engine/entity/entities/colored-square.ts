@@ -25,6 +25,8 @@ export class ColoredSquare extends PixiEntity {
   color: string = "white";
   tint: string = "white";
   borderRadius: number = 0;
+  strokeColor: string = "black";
+  strokeWidth: number = 0;
 
   get #color(): PIXI.Color {
     try {
@@ -39,6 +41,14 @@ export class ColoredSquare extends PixiEntity {
       return new PIXI.Color(this.tint);
     } catch {
       return new PIXI.Color("white");
+    }
+  }
+
+  get #strokeColor(): PIXI.Color {
+    try {
+      return new PIXI.Color(this.strokeColor);
+    } catch {
+      return new PIXI.Color("black");
     }
   }
 
@@ -69,6 +79,15 @@ export class ColoredSquare extends PixiEntity {
       description: "Border radius (rounded edges)",
     });
 
+    this.defineValue(ColoredSquare, "strokeColor", {
+      type: ColorAdapter,
+      description: "Stroke color for the border outline.",
+    });
+
+    this.defineValue(ColoredSquare, "strokeWidth", {
+      description: "Width of the stroke border (0 = no stroke).",
+    });
+
     const updateGfx = () => {
       this.#draw();
     };
@@ -87,6 +106,12 @@ export class ColoredSquare extends PixiEntity {
 
     const borderRadiusValue = this.values.get("borderRadius");
     borderRadiusValue?.onChanged(updateGfx);
+
+    const strokeColorValue = this.values.get("strokeColor");
+    strokeColorValue?.onChanged(updateGfx);
+
+    const strokeWidthValue = this.values.get("strokeWidth");
+    strokeWidthValue?.onChanged(updateGfx);
   }
 
   #draw(): void {
@@ -95,6 +120,8 @@ export class ColoredSquare extends PixiEntity {
     const width = Math.abs(this.width * this.globalTransform.scale.x);
     const height = Math.abs(this.height * this.globalTransform.scale.y);
     const color = this.#color;
+    const strokeColor = this.#strokeColor;
+    const strokeWidth = Math.abs(this.strokeWidth) / 100;
 
     if (this.borderRadius !== 0) {
       // render at 100x the size so the border radius is controllable
@@ -105,6 +132,7 @@ export class ColoredSquare extends PixiEntity {
       const hiResWidth = width * resolution;
       const hiResHeight = height * resolution;
       const hiResBorderRadius = Math.abs(this.borderRadius);
+      const hiResStrokeWidth = strokeWidth * resolution;
 
       this.#gfx
         .clear()
@@ -117,12 +145,20 @@ export class ColoredSquare extends PixiEntity {
         )
         .fill({ color: color, alpha: color.alpha });
 
+      if (strokeWidth > 0) {
+        this.#gfx.stroke({ color: strokeColor, alpha: strokeColor.alpha, width: hiResStrokeWidth });
+      }
+
       this.#gfx.scale.set(scale, scale);
     } else {
       this.#gfx
         .clear()
         .rect(-width / 2, -height / 2, width, height)
         .fill({ color: color, alpha: color.alpha });
+
+      if (strokeWidth > 0) {
+        this.#gfx.stroke({ color: strokeColor, alpha: strokeColor.alpha, width: strokeWidth });
+      }
 
       this.#gfx.scale.set(1, 1);
     }

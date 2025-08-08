@@ -20,6 +20,8 @@ export class ColoredPolygon extends PixiEntity {
   height: number = 1;
   color: string = "white";
   tint: string = "white";
+  strokeColor: string = "black";
+  strokeWidth: number = 0;
 
   get #color(): PIXI.Color {
     try {
@@ -34,6 +36,14 @@ export class ColoredPolygon extends PixiEntity {
       return new PIXI.Color(this.tint);
     } catch {
       return new PIXI.Color("white");
+    }
+  }
+
+  get #strokeColor(): PIXI.Color {
+    try {
+      return new PIXI.Color(this.strokeColor);
+    } catch {
+      return new PIXI.Color("black");
     }
   }
 
@@ -66,6 +76,15 @@ export class ColoredPolygon extends PixiEntity {
       description: "Multiplies the color output (like a filter). Use hex.",
     });
 
+    this.defineValue(ColoredPolygon, "strokeColor", {
+      type: ColorAdapter,
+      description: "Stroke color for the border outline.",
+    });
+
+    this.defineValue(ColoredPolygon, "strokeWidth", {
+      description: "Width of the stroke border (0 = no stroke).",
+    });
+
     const updateGfx = () => {
       this.#draw();
     };
@@ -85,6 +104,12 @@ export class ColoredPolygon extends PixiEntity {
 
     const tintValue = this.values.get("tint");
     tintValue?.onChanged(updateGfx);
+
+    const strokeColorValue = this.values.get("strokeColor");
+    strokeColorValue?.onChanged(updateGfx);
+
+    const strokeWidthValue = this.values.get("strokeWidth");
+    strokeWidthValue?.onChanged(updateGfx);
   }
 
   #draw(): void {
@@ -96,6 +121,8 @@ export class ColoredPolygon extends PixiEntity {
     }
 
     const color = this.#color;
+    const strokeColor = this.#strokeColor;
+    const strokeWidth = Math.abs(this.strokeWidth) / 100;
     const halfWidth = Math.abs((this.width * this.globalTransform.scale.x) / 2);
     const halfHeight = Math.abs((this.height * this.globalTransform.scale.y) / 2);
 
@@ -105,6 +132,11 @@ export class ColoredPolygon extends PixiEntity {
     });
 
     this.#gfx.clear().poly(points, true).fill({ color: color, alpha: color.alpha });
+
+    if (strokeWidth > 0) {
+      this.#gfx.stroke({ color: strokeColor, alpha: strokeColor.alpha, width: strokeWidth });
+    }
+
     this.#gfx.tint = this.#tint;
   }
 
