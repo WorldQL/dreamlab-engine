@@ -14,9 +14,14 @@ import {
   PixiEntity,
   pointWorldToLocal,
   TextureAdapter,
+  TilemapUpdate,
   Vector2,
 } from "@dreamlab/engine";
+import * as cbor from "@dreamlab/vendor/cbor2.ts";
+import { gzip, ungzip } from "@dreamlab/vendor/pako.ts";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
+import { decodeBase64Url, encodeBase64Url } from "@dreamlab/vendor/std__encoding.ts";
+import { JsonValue } from "../../value/data.ts";
 import type { ChunkId } from "./gpu-tilemap-chunk.ts";
 import { GPUTilemapChunk, TilemapChunk } from "./gpu-tilemap-chunk.ts";
 
@@ -24,7 +29,7 @@ type ScaleFilterMode = enumAdapter.Union<typeof ScaleFilterModeAdapter>;
 const ScaleFilterModeAdapter = enumAdapter(["default", "linear", "nearest"]);
 
 // #region data and types
-type TileInfo =
+export type TileInfo =
   | { readonly type: "atlas"; readonly id: number }
   | { readonly type: "color"; readonly color: string };
 // #endregion
@@ -148,6 +153,9 @@ export abstract class BaseTilemap extends PixiEntity {
       return;
     }
 
+    this.game.fire(TilemapUpdate, this, x, y, info);
+    this.fire(TilemapUpdate, this, x, y, info);
+
     const chunk = this.#getChunk(x, y);
     const coords = this.#tileToChunkCoords(x, y);
 
@@ -164,6 +172,9 @@ export abstract class BaseTilemap extends PixiEntity {
     const coords = this.#tileToChunkCoords(x, y);
 
     chunk.setTile(coords.x, coords.y, undefined);
+
+    this.game.fire(TilemapUpdate, this, x, y, undefined);
+    this.fire(TilemapUpdate, this, x, y, undefined);
   }
   // #endregion
 
@@ -310,35 +321,46 @@ export abstract class BaseTilemap extends PixiEntity {
   }
 
   // // #region (de)serialize methods
-  // static readonly #COMPRESSION_THRESHOLD = 384;
+  #serialize(): Uint8Array {
+    const data = Object.fromEntries([
+      ...this.#chunks.entries().map(([key, chunk]) => [key, chunk.dump()]),
+    ]);
+    const encoded = cbor.encode(data);
+    const compressed = encoded.byteLength > 320;
+    const buffer = compressed ? gzip(encoded) : encoded;
 
-  // static #serialize(chunks: Map<ChunkId, GPUTilemapChunk>): string {
-  //   const data = new Map<ChunkId, Uint8Array>();
-  //   for (const [id, chunk] of chunks) {
-  //     data.set(id, chunk.tileData);
-  //   }
+    const bytes = new Uint8Array(buffer.length + 1);
+    bytes.set(compressed ? [1] : [0]);
+    bytes.set(buffer, 1);
 
-  //   const encoded = cbor.encode(data);
-  //   const compressed = encoded.byteLength > BaseTilemap.#COMPRESSION_THRESHOLD;
-  //   const buffer = compressed ? gzip(encoded) : encoded;
+    return bytes;
+  }
 
-  //   const final = new Uint8Array(buffer.length + 1);
-  //   final.set(compressed ? [1] : [0]);
-  //   final.set(buffer, 1);
+  #deserialize(buffer: Uint8Array) {
+    for (const [key, chunk] of this.#chunks.entries()) {
+      chunk.destroy();
+      this.#chunks.delete(key);
+    }
 
-  //   return encodeBase64Url(final);
-  // }
+    const compressed = buffer[0] === 1;
+    const payload = buffer.slice(1);
+    const bytes = compressed ? ungzip(payload) : payload;
 
-  // static #deserialize(value: string): Record<ChunkId, Uint8Array> {
-  //   const buffer = decodeBase64Url(value);
-  //   const compressed = buffer[0] === 1;
-  //   const payload = buffer.slice(1);
-  //   const bytes = compressed ? ungzip(payload) : payload;
+    const data = cbor.decode(bytes);
+    if (typeof data !== "object" || data === null) return;
 
-  //   const decoded = cbor.decode(bytes);
-  //   console.log(decoded);
-  //   return {};
-  // }
+    for (const [key, chunkData] of Object.entries(data)) {
+      if (!(chunkData instanceof Uint8Array)) continue;
+
+      const [chunkX, chunkY] = key.split(":").map(x => Number(x));
+      if (!Number.isFinite(chunkX) || !Number.isFinite(chunkY)) continue;
+      const chunk = this.#getChunk(
+        chunkX * BaseTilemap.#CHUNK_SIZE,
+        chunkY * BaseTilemap.#CHUNK_SIZE,
+      );
+      chunk.load(chunkData);
+    }
+  }
   // // #endregion
 
   // #region lifecycle
@@ -356,24 +378,15 @@ export abstract class BaseTilemap extends PixiEntity {
     this.#recalculateBounds();
   }
 
-  // protected saveDataForScene(): JsonValue | undefined {
-  //   return BaseTilemap.#serialize(this.#chunks);
-  // }
+  protected override saveDataForScene(): JsonValue | undefined {
+    return encodeBase64Url(this.#serialize());
+  }
 
-  // protected loadDataForScene(value: JsonValue | undefined): void {
-  //   if (typeof value !== "string") return;
-
-  //   try {
-  //     const { paletteOverrides, data } = BaseTilemap.#deserialize(value);
-  //     Object.assign(this.paletteOverrides, paletteOverrides);
-  //     Object.assign(this.data, data);
-
-  //     void this.#redraw();
-  //     this.#recalculateBounds();
-  //   } catch {
-  //     // ignore
-  //   }
-  // }
+  protected override loadDataForScene(value: JsonValue | undefined): void {
+    if (typeof value !== "string") return;
+    const buffer = decodeBase64Url(value);
+    this.#deserialize(buffer);
+  }
   // #endregion
 
   #recalculateBounds(): void {

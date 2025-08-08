@@ -3,6 +3,7 @@ import {
   Entity,
   EntityDefinition,
   Game,
+  JsonValue,
   TransformOptions,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
@@ -49,6 +50,7 @@ export const convertEntityDefinition = async (
     authority: def.authority,
     behaviors,
     children,
+    data: def.data as JsonValue,
   };
 };
 
@@ -83,6 +85,7 @@ export const serializeBehaviorDefinition = (
     ref,
     script,
     values: def.values ?? {},
+    // @ts-expect-error generic cast
     sync: def.sync ?? {},
   };
 };
@@ -112,6 +115,7 @@ export const serializeEntityDefinition = (
     name: def.name,
     enabled: def.enabled,
     values: def.values,
+    // @ts-expect-error generic cast
     sync: def.sync,
     transform: def.transform ? serializeTransform(def.transform) : undefined,
     authority: def.authority,
@@ -119,6 +123,7 @@ export const serializeEntityDefinition = (
     children,
     ref,
     parent: parentRef,
+    data: def.data,
   };
 };
 

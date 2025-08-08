@@ -1,4 +1,5 @@
 import {
+  BaseTilemap,
   Behavior,
   BehaviorConstructor,
   BehaviorDefinition,
@@ -15,6 +16,8 @@ import {
   GameStatus,
   GameStatusChange,
   InternalGameTick,
+  TileInfo,
+  TilemapUpdate,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { ClientNetworkSetupRoutine } from "./net-connection.ts";
@@ -355,5 +358,48 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
       entity[internal.entitySetEnabledFromNetwork](report.enabled, packet.from);
       prevEntityEnabled.set(entity, report.enabled);
     }
+  });
+
+  const tilemapIgnoreSet = new Set<BaseTilemap>();
+  const dirtyTilemaps = new Map<BaseTilemap, TilemapUpdate[]>();
+  game.on(TilemapUpdate, signal => {
+    const tilemap = signal.tilemap;
+    if (tilemapIgnoreSet.has(tilemap)) return;
+    if (!(tilemap.root === game.world || tilemap.root === game.prefabs)) return;
+    const arr = dirtyTilemaps.get(tilemap) ?? [];
+    arr.push(signal);
+    dirtyTilemaps.set(tilemap, arr);
+  });
+
+  game.on(InternalGameTick, () => {
+    for (const [tilemap, updates] of dirtyTilemaps) {
+      if (updates.length > 256 && false) {
+        // TODO:
+        // find affected chunks??? maybe???
+        // serialize the whole tilemap and do the thing
+      } else {
+        conn.send({
+          t: "UpdateTilemap",
+          ref: tilemap.ref,
+          updates: updates.map(it => ({ x: it.x, y: it.y, info: it.info })),
+        });
+      }
+
+      dirtyTilemaps.delete(tilemap);
+    }
+  });
+
+  conn.registerPacketHandler("UpdateTilemap", packet => {
+    if (packet.from === conn.id) return;
+
+    const tilemap = game.entities.lookupByRef(packet.ref);
+    if (!tilemap) return;
+    if (!(tilemap instanceof BaseTilemap)) return;
+
+    tilemapIgnoreSet.add(tilemap);
+    for (const update of packet.updates) {
+      tilemap.setTileInfo(update.x, update.y, update.info as TileInfo | undefined);
+    }
+    tilemapIgnoreSet.delete(tilemap);
   });
 };

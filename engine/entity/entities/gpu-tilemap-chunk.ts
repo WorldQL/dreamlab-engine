@@ -17,10 +17,10 @@ void main() {
   vec2 tilePos = floor(vUV * vec2(uSize)) / vec2(uSize);
   vec4 tileData = texture2D(uTiles, tilePos);
 
-  if (tileData.a == 0.0) gl_FragColor = vec4(0.0);
+  if (tileData.rg == vec2(1.0)) gl_FragColor = vec4(0.0);
   else {
     vec2 tileBase = floor(tileData.rg * vec2(256.0)) / vec2(256.0);
-    vec2 offset = vec2(mod(vUV.x * uSize, 1.0), mod(vUV.y * uSize, 1.0)) / vec2(uSize);
+    vec2 offset = vec2(mod(vUV.x * uSize, 1.0), mod(-vUV.y * uSize, 1.0)) / vec2(uSize);
 
     gl_FragColor = texture2D(uAtlas, (offset * vec2(uSize) / uAtlasDimensions) + tileBase).rgba;
   }
@@ -75,7 +75,12 @@ export class TilemapChunk {
     this.size = opts.size;
 
     this.atlasDimensions = opts.atlasDimensions;
-    this.tileData = opts.tileData ?? new Uint8Array(4 * this.size * this.size);
+    if (opts.tileData) {
+      this.tileData = opts.tileData;
+    } else {
+      this.tileData = new Uint8Array(4 * this.size * this.size);
+      this.tileData.fill(255);
+    }
   }
 
   getTile(localX: number, localY: number): number | undefined {
@@ -97,15 +102,54 @@ export class TilemapChunk {
     const baseIdx = 4 * (this.size * localY + localX);
 
     if (atlasId === undefined) {
-      this.tileData[baseIdx + 3] = 0;
+      this.tileData[baseIdx + 0] = 255;
+      this.tileData[baseIdx + 1] = 255;
+      this.tileData[baseIdx + 2] = 255;
+      this.tileData[baseIdx + 3] = 255;
     } else {
-      const tileY = Math.floor(atlasId / this.atlasDimensions[1]);
+      const tileY = Math.floor(atlasId / this.atlasDimensions[0]);
       const tileX = atlasId % this.atlasDimensions[0];
 
       this.tileData[baseIdx + 0] = (tileX / this.atlasDimensions[0]) * 256; // r
       this.tileData[baseIdx + 1] = (tileY / this.atlasDimensions[1]) * 256; // g
       this.tileData[baseIdx + 2] = 0; // b
       this.tileData[baseIdx + 3] = 255; // a
+    }
+  }
+
+  dump(): Uint8Array {
+    const buf = new Uint8Array(4 * this.size * this.size);
+
+    let i = 0;
+    for (let y = 0; y < this.size; y++) {
+      for (let x = 0; x < this.size; x++) {
+        const baseIdx = 4 * (this.size * y + x);
+        const r = this.tileData[baseIdx + 0];
+        const g = this.tileData[baseIdx + 1];
+        if (r === 255 && g === 255) continue;
+
+        buf[i++] = x;
+        buf[i++] = y;
+        buf[i++] = r;
+        buf[i++] = g;
+      }
+    }
+
+    return buf.subarray(0, i);
+  }
+
+  load(data: Uint8Array) {
+    this.tileData.fill(0xffff);
+
+    for (let i = 0; i < data.byteLength / 4; i++) {
+      const x = data[i * 4 + 0];
+      const y = data[i * 4 + 1];
+      const r = data[i * 4 + 2];
+      const g = data[i * 4 + 3];
+
+      const baseIdx = 4 * (this.size * y + x);
+      this.tileData[baseIdx + 0] = r;
+      this.tileData[baseIdx + 1] = g;
     }
   }
 
@@ -204,6 +248,11 @@ export class GPUTilemapChunk extends TilemapChunk {
 
   setTile(localX: number, localY: number, atlasId: number | undefined): void {
     super.setTile(localX, localY, atlasId);
+    this.#tileTexture.source.update();
+  }
+
+  load(data: Uint8Array): void {
+    super.load(data);
     this.#tileTexture.source.update();
   }
 

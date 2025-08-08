@@ -54,6 +54,7 @@ const BaseEntityDefinitionSchema = z.object({
   transform: TransformSchema.optional(),
   ref: EntityReferenceSchema,
   authority: ConnectionIdSchema.optional(),
+  data: z.unknown(),
 });
 type EntityDefinitionSchemaTypeIn = z.input<typeof BaseEntityDefinitionSchema> & {
   children?: EntityDefinitionSchemaTypeIn[];

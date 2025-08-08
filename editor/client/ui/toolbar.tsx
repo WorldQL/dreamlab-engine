@@ -13,22 +13,22 @@ import type { BaseElement } from "@dreamlab/ui";
 import { element as elem } from "@dreamlab/ui";
 import { BoxResizeGizmo, Gizmo } from "../../common/entities/mod.ts";
 import {
+  AlertCircle,
   Box,
   BoxSelect,
+  ChartLine,
+  ChevronDown,
   Icon,
+  icon,
   MousePointer2,
   Move,
   Move3D,
   ZoomIn,
-  ChartLine,
-  ChevronDown,
-  icon,
-  AlertCircle,
 } from "../_icons.tsx";
 import { stats } from "../_stats.ts";
-import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 import type { AspectRatio } from "../aspect-ratio.ts";
 import { ASPECT_RATIOS, setAspectRatio } from "../aspect-ratio.ts";
+import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 
 export class Toolbar implements InspectorUIWidget {
   #editMode: boolean = false;
@@ -59,6 +59,7 @@ export class Toolbar implements InspectorUIWidget {
     if (this.#editMode) {
       this.#toolbar.left.append(this.#drawGizmoButtons());
       this.#overlays.append(this.#drawCursorOverlay());
+      if (globalThis.env.IS_DEV) this.#toolbar.right.append(this.#drawStatsButton());
       this.#toolbar.right.append(this.#drawRatioDropdown());
     } else {
       this.#toolbar.left.append(this.#drawPhysicsDebugButton());

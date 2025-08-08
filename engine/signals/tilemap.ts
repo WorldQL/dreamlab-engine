@@ -1,11 +1,10 @@
-export class TilemapRedrawStarted {
-  static __singleton = new this();
-}
+import { BaseTilemap, TileInfo } from "@dreamlab/engine";
 
-export class TilemapRedrawProgress {
-  public constructor(public readonly progress: number) {}
-}
-
-export class TilemapRedrawFinished {
-  static __singleton = new this();
+export class TilemapUpdate {
+  constructor(
+    public tilemap: BaseTilemap,
+    public x: number,
+    public y: number,
+    public info: TileInfo | undefined,
+  ) {}
 }

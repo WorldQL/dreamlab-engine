@@ -119,12 +119,13 @@
           "enabled": true,
           "transform": {
             "position": {
-              "x": 0.6737378906468151,
-              "y": -0.6519888744107225
+              "x": -6.834402289268869,
+              "y": 6.660808329962069
             }
           },
-          "data": "AIOAgJiBABEAAhEABBEABhcABxEABxcACBcACREACRcAChAAChEACxAACxEACxcADBAADBcADREADhEADhcADxEAEBEAEBIAEBcAERAAERIAERcAEhAAEhMAExAAExQAExcAFA8AFBQAFBcAFRUAFRcAFhUAFhYAFxUAFxYAIhEAIxEAIBEA",
+          "data": "AKA",
           "values": {
+            "resolution": 16,
             "atlas": "res://assets/tilemap-atlas.png"
           }
         }
