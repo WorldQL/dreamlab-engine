@@ -188,6 +188,13 @@ export abstract class BaseTilemap extends PixiEntity {
     this.game.fire(TilemapUpdate, this, x, y, undefined);
     this.fire(TilemapUpdate, this, x, y, undefined);
   }
+
+  clearTiles(): void {
+    for (const [id, chunk] of this.#chunks) {
+      chunk.destroy();
+      this.#chunks.delete(id);
+    }
+  }
   // #endregion
 
   // #region chunks
