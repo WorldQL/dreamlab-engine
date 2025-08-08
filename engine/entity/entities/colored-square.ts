@@ -24,6 +24,7 @@ export class ColoredSquare extends PixiEntity {
   height: number = 1;
   color: string = "white";
   tint: string = "white";
+  borderRadius: number = 0;
 
   get #color(): PIXI.Color {
     try {
@@ -64,6 +65,10 @@ export class ColoredSquare extends PixiEntity {
       description: "Tint applied as a color multiplier to the fill.",
     });
 
+    this.defineValue(ColoredSquare, "borderRadius", {
+      description: "Border radius (rounded edges)",
+    });
+
     const updateGfx = () => {
       this.#draw();
     };
@@ -79,6 +84,9 @@ export class ColoredSquare extends PixiEntity {
 
     const tintValue = this.values.get("tint");
     tintValue?.onChanged(updateGfx);
+
+    const borderRadiusValue = this.values.get("borderRadius");
+    borderRadiusValue?.onChanged(updateGfx);
   }
 
   #draw(): void {
@@ -87,10 +95,37 @@ export class ColoredSquare extends PixiEntity {
     const width = Math.abs(this.width * this.globalTransform.scale.x);
     const height = Math.abs(this.height * this.globalTransform.scale.y);
     const color = this.#color;
-    this.#gfx
-      .clear()
-      .rect(-width / 2, -height / 2, width, height)
-      .fill({ color: color, alpha: color.alpha });
+
+    if (this.borderRadius !== 0) {
+      // render at 100x the size so the border radius is controllable
+      // otherwise a borderRadius of 1 would make a 1x1 (in Dreamlab units) entity a jagged circle.
+      const resolution = 100;
+      const scale = 1 / resolution;
+
+      const hiResWidth = width * resolution;
+      const hiResHeight = height * resolution;
+      const hiResBorderRadius = Math.abs(this.borderRadius);
+
+      this.#gfx
+        .clear()
+        .roundRect(
+          -hiResWidth / 2,
+          -hiResHeight / 2,
+          hiResWidth,
+          hiResHeight,
+          hiResBorderRadius,
+        )
+        .fill({ color: color, alpha: color.alpha });
+
+      this.#gfx.scale.set(scale, scale);
+    } else {
+      this.#gfx
+        .clear()
+        .rect(-width / 2, -height / 2, width, height)
+        .fill({ color: color, alpha: color.alpha });
+
+      this.#gfx.scale.set(1, 1);
+    }
 
     this.#gfx.tint = this.#tint;
   }
