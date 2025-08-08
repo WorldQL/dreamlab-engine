@@ -49,40 +49,48 @@ void main() {
 }
 `;
 
+type TilemapBounds = { minX: number; minY: number; maxX: number; maxY: number };
+
 type TilemapChunkOptions = {
-  // chunk info
   readonly id: ChunkId;
   readonly x: number;
   readonly y: number;
-  readonly size: number;
-
-  readonly tileData?: Uint8Array;
 };
 
-export class TilemapChunk {
+export abstract class TilemapChunk {
+  static readonly CHUNK_SIZE = 256; // do not change ever
+
   readonly id: ChunkId;
   readonly x: number;
   readonly y: number;
-  readonly size: number;
-
-  readonly tileData: Uint8Array;
+  abstract readonly bounds: Readonly<TilemapBounds>;
 
   constructor(opts: TilemapChunkOptions) {
     this.id = opts.id;
     this.x = opts.x;
     this.y = opts.y;
-    this.size = opts.size;
+  }
 
-    if (opts.tileData) {
-      this.tileData = opts.tileData;
-    } else {
-      this.tileData = new Uint8Array(4 * this.size * this.size);
-      this.tileData.fill(255);
-    }
+  abstract getTile(localX: number, localY: number): number | undefined;
+  abstract setTile(localX: number, localY: number, value: number | undefined): void;
+
+  abstract save(): Uint8Array;
+  abstract load(data: Uint8Array): void;
+  abstract destroy(): void;
+}
+
+export class TextureTilemapChunk extends TilemapChunk {
+  readonly tileData: Uint8Array;
+
+  constructor(opts: TilemapChunkOptions) {
+    super(opts);
+
+    this.tileData = new Uint8Array(4 * TilemapChunk.CHUNK_SIZE * TilemapChunk.CHUNK_SIZE);
+    this.tileData.fill(255);
   }
 
   getTile(localX: number, localY: number): number | undefined {
-    const baseIdx = 4 * (this.size * localY + localX);
+    const baseIdx = 4 * (TilemapChunk.CHUNK_SIZE * localY + localX);
     const a = this.tileData[baseIdx + 3];
     if (a === 0) return undefined;
 
@@ -91,7 +99,7 @@ export class TilemapChunk {
   }
 
   setTile(localX: number, localY: number, atlasId: number | undefined): void {
-    const baseIdx = 4 * (this.size * localY + localX);
+    const baseIdx = 4 * (TilemapChunk.CHUNK_SIZE * localY + localX);
 
     if (atlasId === undefined) {
       this.tileData[baseIdx + 0] = 255;
@@ -108,10 +116,10 @@ export class TilemapChunk {
       this.tileData[baseIdx + 3] = 255; // a
     }
 
-    this.#boundsDirty = true;
+    // this.#boundsDirty = true;
   }
 
-  dump(): Uint8Array {
+  save(): Uint8Array {
     /* const buf = new Uint8Array(4 * this.size * this.size);
 
     let i = 0;
@@ -152,24 +160,25 @@ export class TilemapChunk {
   }
 
   #boundsDirty: boolean = true;
-  #bounds: { minX: number; minY: number; maxX: number; maxY: number } = {
+  #bounds: TilemapBounds = {
     minX: Number.POSITIVE_INFINITY,
     minY: Number.POSITIVE_INFINITY,
     maxX: Number.NEGATIVE_INFINITY,
     maxY: Number.NEGATIVE_INFINITY,
   };
 
-  calculateBounds(): { minX: number; minY: number; maxX: number; maxY: number } {
+  get bounds(): TilemapBounds {
     if (!this.#boundsDirty) return this.#bounds;
 
+    const size = TilemapChunk.CHUNK_SIZE;
     let minX = Number.POSITIVE_INFINITY;
     let minY = Number.POSITIVE_INFINITY;
     let maxX = Number.NEGATIVE_INFINITY;
     let maxY = Number.NEGATIVE_INFINITY;
 
-    for (let y = 0; y < this.size; y++) {
-      for (let x = 0; x < this.size; x++) {
-        const baseIdx = 4 * (this.size * y + x);
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        const baseIdx = 4 * (size * y + x);
         if (this.tileData[baseIdx + 3] === 0) continue;
         minX = Math.min(minX, x);
         minY = Math.min(minY, y);
@@ -178,10 +187,10 @@ export class TilemapChunk {
       }
     }
 
-    if (Number.isFinite(minX)) minX += this.x * this.size;
-    if (Number.isFinite(minY)) minY += this.y * this.size;
-    if (Number.isFinite(maxX)) maxX += this.x * this.size;
-    if (Number.isFinite(maxY)) maxY += this.y * this.size;
+    if (Number.isFinite(minX)) minX += this.x * size;
+    if (Number.isFinite(minY)) minY += this.y * size;
+    if (Number.isFinite(maxX)) maxX += this.x * size;
+    if (Number.isFinite(maxY)) maxY += this.y * size;
 
     const bounds = { minX, minY, maxX, maxY };
     this.#boundsDirty = false;
@@ -195,27 +204,28 @@ export class TilemapChunk {
   }
 }
 
-type GPUTilemapChunkOptions = {
+type ClientTextureTilemapChunkOptions = {
   readonly atlasTileWidth: number;
   readonly atlas: PIXI.Texture;
 };
 
-export class GPUTilemapChunk extends TilemapChunk {
+export class ClientTextureTilemapChunk extends TextureTilemapChunk {
   readonly mesh: PIXI.Mesh<PIXI.Geometry, PIXI.Shader>;
   readonly #shader: PIXI.Shader;
   readonly #tileTexture: PIXI.Texture;
 
-  constructor(opts: TilemapChunkOptions & GPUTilemapChunkOptions) {
+  constructor(opts: TilemapChunkOptions & ClientTextureTilemapChunkOptions) {
     super(opts);
 
+    const size = TilemapChunk.CHUNK_SIZE;
     const tileBuffer = new PIXI.BufferImageSource({
       resource: this.tileData,
       format: "rgba8unorm",
       alphaMode: "premultiply-alpha-on-upload",
       scaleMode: "nearest",
       autoGenerateMipmaps: false,
-      width: this.size,
-      height: this.size,
+      width: size,
+      height: size,
     });
 
     this.#tileTexture = new PIXI.Texture({ source: tileBuffer });
@@ -227,14 +237,14 @@ export class GPUTilemapChunk extends TilemapChunk {
         uTiles: this.#tileTexture.source,
         extra: {
           uAtlasTileWidth: { value: opts.atlasTileWidth, type: "f32" },
-          uSize: { value: this.size, type: "f32" },
+          uSize: { value: size, type: "f32" },
         },
       },
     });
 
     const geometry = new PIXI.Geometry({
       attributes: {
-        aPosition: [0, 0, this.size, 0, this.size, -this.size, 0, -this.size],
+        aPosition: [0, 0, size, 0, size, -size, 0, -size],
         aUV: [0, 0, 1, 0, 1, 1, 0, 1],
       },
       indexBuffer: [0, 1, 2, 0, 2, 3],
@@ -270,3 +280,7 @@ export class GPUTilemapChunk extends TilemapChunk {
     geometry?.destroy();
   }
 }
+
+// export class ColorTilemapChunk extends TilemapChunk {}
+
+// export class ClientColorTilemapChunk extends ColorTilemapChunk {}
