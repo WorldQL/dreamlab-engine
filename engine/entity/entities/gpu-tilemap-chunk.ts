@@ -247,6 +247,6 @@ export class GPUTilemapChunk extends TilemapChunk {
 
     const geometry = this.mesh.geometry;
     this.mesh.destroy();
-    geometry.destroy();
+    geometry?.destroy();
   }
 }
