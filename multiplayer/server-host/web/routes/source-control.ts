@@ -26,6 +26,12 @@ export const serveSourceControlAPI = (router: Router) => {
 
     if (fileExists) {
       await buildWorld(instance.info.worldId, sourceRoot, "_dist", instance.logs);
+
+      if (path.basename(filePath) === "project.json") {
+        instance.session?.ipc.send({ op: "ReloadEditScene" });
+        return;
+      }
+
       const isBehavior = await fileIsProbablyBehaviorScript(computedPath);
       instance.session?.broadcastPacket({
         t: "ScriptEdited",
@@ -183,6 +189,8 @@ export const serveSourceControlAPI = (router: Router) => {
         ctx.response.body = { error: "Reset failed during force pull." };
         return;
       }
+
+      await broadcastWorldUpdate(instance, "project.json");
       ctx.response.body = { success: true };
     } else {
       const pullProcess = new Deno.Command("git", {
@@ -1685,6 +1693,7 @@ export const serveSourceControlAPI = (router: Router) => {
       ctx.response.body = { error: `Failed to reset: ${new TextDecoder().decode(stderr)}` };
       return;
     }
+    await broadcastWorldUpdate(instance, "project.json");
     ctx.response.body = { success: true, output: new TextDecoder().decode(stdout) };
   });
   // #endregion
