@@ -81,18 +81,7 @@ export abstract class BaseTilemap extends PixiEntity {
   }
 
   async #updateAtlasTexture(): Promise<void> {
-    if (this.game.isServer()) {
-      const resp = await fetch(this.game.resolveResource(this.atlas));
-      const blob = await resp.blob();
-
-      const atlas = await createImageBitmap(blob);
-      this.#atlasDimensions = [
-        atlas.width / this.resolution,
-        atlas.height / this.resolution,
-      ] as const;
-
-      return;
-    }
+    if (!this.game.isClient()) return;
 
     if (this.#atlasTexture?.label !== this.atlas) {
       this.#atlasTexture = await this.#getAtlasTexture();
@@ -101,13 +90,9 @@ export abstract class BaseTilemap extends PixiEntity {
     }
 
     const atlas = this.#atlasTexture;
-    this.#atlasDimensions = [
-      atlas.width / this.resolution,
-      atlas.height / this.resolution,
-    ] as const;
 
     for (const chunk of this.#chunks.values()) {
-      chunk.updateAtlas(this.#atlasDimensions, atlas);
+      (chunk as GPUTilemapChunk).updateAtlas(atlas.width / this.resolution, atlas);
     }
   }
   // #endregion
@@ -215,9 +200,6 @@ export abstract class BaseTilemap extends PixiEntity {
     const cached = this.#chunks.get(id);
     if (cached) return cached;
 
-    if (!this.#atlasDimensions) throw new Error("atlas dimensions not initialized");
-    const atlasDimensions = this.#atlasDimensions;
-
     // specialized chunk impl for server
     if (this.game.isServer()) {
       const chunk = new TilemapChunk({
@@ -225,7 +207,6 @@ export abstract class BaseTilemap extends PixiEntity {
         x: chunkX,
         y: chunkY,
         size: BaseTilemap.#CHUNK_SIZE,
-        atlasDimensions,
       });
 
       this.#chunks.set(id, chunk);
@@ -233,8 +214,7 @@ export abstract class BaseTilemap extends PixiEntity {
     }
 
     if (!this.#container) throw new Error("no container");
-    if (!this.#atlasTexture) throw new Error("atlas texture not initialized");
-    const atlas = this.#atlasTexture;
+    const atlas = this.#atlasTexture ?? PIXI.Texture.WHITE;
 
     const chunk = new GPUTilemapChunk({
       id,
@@ -242,7 +222,7 @@ export abstract class BaseTilemap extends PixiEntity {
       y: chunkY,
       size: BaseTilemap.#CHUNK_SIZE,
       atlas,
-      atlasDimensions,
+      atlasTileWidth: atlas.width / this.resolution,
     });
 
     const chunkSize = BaseTilemap.#CHUNK_SIZE;
@@ -265,6 +245,10 @@ export abstract class BaseTilemap extends PixiEntity {
 
   constructor(ctx: EntityContext) {
     super(ctx);
+
+    if (this.game.isClient()) {
+      this.#container = new PIXI.Container({ label: "container" });
+    }
 
     const markDirty = () => {
       this.#boundsDirty = true;
@@ -387,8 +371,7 @@ export abstract class BaseTilemap extends PixiEntity {
     }
 
     if (!this.container) return;
-    this.#container = new PIXI.Container({ label: "container" });
-    this.container.addChild(this.#container);
+    this.container.addChild(this.#container!);
 
     if (this.atlas) {
       void this.#updateAtlasTexture();

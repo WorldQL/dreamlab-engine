@@ -11,7 +11,7 @@ uniform sampler2D uAtlas;
 uniform sampler2D uTiles;
 
 uniform float uSize;
-uniform vec2 uAtlasDimensions;
+uniform float uAtlasTileWidth;
 
 void main() {
   vec2 tilePos = floor(vUV * vec2(uSize)) / vec2(uSize);
@@ -19,10 +19,12 @@ void main() {
 
   if (tileData.rg == vec2(1.0)) gl_FragColor = vec4(0.0);
   else {
-    vec2 tileBase = floor(tileData.rg * vec2(256.0)) / vec2(256.0);
-    vec2 offset = vec2(mod(vUV.x * uSize, 1.0), mod(-vUV.y * uSize, 1.0)) / vec2(uSize);
-
-    gl_FragColor = texture2D(uAtlas, (offset * vec2(uSize) / uAtlasDimensions) + tileBase).rgba;
+    float r = floor(tileData.r * 256.0);
+    float g = floor(tileData.g * 256.0);
+    float tileId = g * 256.0 + r;
+    vec2 tileBaseUV = vec2(mod(tileId, uAtlasTileWidth), floor(tileId / uAtlasTileWidth)) / vec2(uAtlasTileWidth);
+    vec2 offsetUV = vec2(mod(vUV.x * uSize, 1.0), mod(-vUV.y * uSize, 1.0));
+    gl_FragColor = texture2D(uAtlas, tileBaseUV + offsetUV / vec2(uAtlasTileWidth)).rgba;
   }
 }
 `;
@@ -54,8 +56,6 @@ type TilemapChunkOptions = {
   readonly y: number;
   readonly size: number;
 
-  // data
-  readonly atlasDimensions: readonly [width: number, height: number];
   readonly tileData?: Uint8Array;
 };
 
@@ -66,7 +66,6 @@ export class TilemapChunk {
   readonly size: number;
 
   readonly tileData: Uint8Array;
-  protected atlasDimensions: readonly [width: number, height: number];
 
   constructor(opts: TilemapChunkOptions) {
     this.id = opts.id;
@@ -74,7 +73,6 @@ export class TilemapChunk {
     this.y = opts.y;
     this.size = opts.size;
 
-    this.atlasDimensions = opts.atlasDimensions;
     if (opts.tileData) {
       this.tileData = opts.tileData;
     } else {
@@ -88,13 +86,7 @@ export class TilemapChunk {
     const a = this.tileData[baseIdx + 3];
     if (a === 0) return undefined;
 
-    const r = this.tileData[baseIdx + 0] / 256;
-    const g = this.tileData[baseIdx + 1] / 256;
-
-    const tileX = r * this.atlasDimensions[0];
-    const tileY = g * this.atlasDimensions[1];
-
-    const tileId = tileY * this.atlasDimensions[0] + tileX;
+    const tileId = this.tileData[baseIdx + 1] * 256 + this.tileData[baseIdx + 0];
     return tileId;
   }
 
@@ -107,11 +99,11 @@ export class TilemapChunk {
       this.tileData[baseIdx + 2] = 255;
       this.tileData[baseIdx + 3] = 255;
     } else {
-      const tileY = Math.floor(atlasId / this.atlasDimensions[0]);
-      const tileX = atlasId % this.atlasDimensions[0];
+      const g = (atlasId >> 8) & 0xff;
+      const r = atlasId & 0xff;
 
-      this.tileData[baseIdx + 0] = (tileX / this.atlasDimensions[0]) * 256; // r
-      this.tileData[baseIdx + 1] = (tileY / this.atlasDimensions[1]) * 256; // g
+      this.tileData[baseIdx + 0] = r; // r
+      this.tileData[baseIdx + 1] = g; // g
       this.tileData[baseIdx + 2] = 0; // b
       this.tileData[baseIdx + 3] = 255; // a
     }
@@ -178,19 +170,13 @@ export class TilemapChunk {
     return { minX, minY, maxX, maxY };
   }
 
-  updateAtlas(
-    dimensions: readonly [width: number, height: number],
-    _atlas?: PIXI.Texture,
-  ): void {
-    this.atlasDimensions = dimensions;
-  }
-
   destroy(): void {
     // no-op
   }
 }
 
 type GPUTilemapChunkOptions = {
+  readonly atlasTileWidth: number;
   readonly atlas: PIXI.Texture;
 };
 
@@ -220,7 +206,7 @@ export class GPUTilemapChunk extends TilemapChunk {
         uAtlas: opts.atlas.source,
         uTiles: this.#tileTexture.source,
         extra: {
-          uAtlasDimensions: { value: this.atlasDimensions, type: "vec2<f32>" },
+          uAtlasTileWidth: { value: opts.atlasTileWidth, type: "f32" },
           uSize: { value: this.size, type: "f32" },
         },
       },
@@ -241,8 +227,8 @@ export class GPUTilemapChunk extends TilemapChunk {
     });
   }
 
-  updateAtlas(dimensions: readonly [width: number, height: number], atlas: PIXI.Texture): void {
-    super.updateAtlas(dimensions);
+  updateAtlas(atlasTileWidth: number, atlas: PIXI.Texture): void {
+    this.#shader.resources.extra.uniforms.uAtlasTileWidth = atlasTileWidth;
     this.#shader.resources.uAtlas = atlas;
   }
 
