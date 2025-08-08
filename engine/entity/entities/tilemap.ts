@@ -8,6 +8,7 @@ import {
   EntityDestroyed,
   EntityTransformUpdate,
   enumAdapter,
+  GameTick,
   IBounds,
   IVector2,
   PixiEntity,
@@ -74,6 +75,8 @@ export abstract class BaseTilemap extends PixiEntity {
   }
 
   async #updateAtlasTexture(): Promise<void> {
+    if (!this.game.isClient()) return;
+
     if (this.#atlasTexture?.label !== this.atlas) {
       this.#atlasTexture = await this.#getAtlasTexture();
       this.atlasImgWidth = this.#atlasTexture.width;
@@ -139,6 +142,8 @@ export abstract class BaseTilemap extends PixiEntity {
   }
 
   setTileInfo(x: number, y: number, info: TileInfo | undefined): void {
+    this.#boundsDirty = true;
+
     if (info === undefined) {
       this.clearTile(x, y);
       return;
@@ -281,17 +286,12 @@ export abstract class BaseTilemap extends PixiEntity {
 
     this.on(EntityTransformUpdate, () => this.#updateSize());
 
-    // this.listen(this.game, GameTick, () => {
-    //   if (this.#tilesDirty) {
-    //     this.#tilesDirty = false;
-    //     void this.#redraw();
-    //   }
-
-    //   if (this.#boundsDirty) {
-    //     this.#boundsDirty = false;
-    //     this.#recalculateBounds();
-    //   }
-    // });
+    this.listen(this.game, GameTick, () => {
+      if (this.#boundsDirty) {
+        this.#boundsDirty = false;
+        this.#recalculateBounds();
+      }
+    });
 
     // this.listen(this.game, CameraFilterModeChanged, markDirty);
 
@@ -372,61 +372,33 @@ export abstract class BaseTilemap extends PixiEntity {
   // #endregion
 
   #recalculateBounds(): void {
-    // TODO: reimplement with new chunk based system
-    /* const bounds = new PIXI.Bounds(-0.5, -0.5, 0.5, 0.5);
-
-    const { minX, maxX, minY, maxY } = Object.entries(this.data)
-      .map(([k, v]) => {
-        const x = Number.parseInt(k, 10);
-        if (Number.isNaN(x)) return undefined;
-
-        const { min: minY, max: maxY } = Object.keys(v)
-          .map(k => {
-            const y = Number.parseInt(k, 10);
-            if (Number.isNaN(y)) return undefined;
-
-            return y;
-          })
-          .filter(x => x !== undefined)
-          .reduce(
-            (acc, y) => {
-              if (y < acc.min) acc.min = y;
-              if (y > acc.max) acc.max = y;
-
-              return acc;
-            },
-            { min: Number.POSITIVE_INFINITY, max: Number.NEGATIVE_INFINITY },
-          );
-
-        return { x, minY, maxY };
-      })
-      .filter(x => x !== undefined)
+    const { minX, minY, maxX, maxY } = this.#chunks
+      .values()
+      .map(chunk => chunk.calculateBounds())
       .reduce(
-        (acc, { x, minY, maxY }) => {
-          if (x < acc.minX) acc.minX = x;
-          if (x > acc.maxX) acc.maxX = x;
-          if (minY < acc.minY) acc.minY = minY;
-          if (maxY > acc.maxY) acc.maxY = maxY;
-
+        (acc, { minX, maxX, minY, maxY }) => {
+          acc.minX = Math.min(acc.minX, minX);
+          acc.minY = Math.min(acc.minY, minY);
+          acc.maxX = Math.max(acc.maxX, maxX);
+          acc.maxY = Math.max(acc.maxY, maxY);
           return acc;
         },
         {
           minX: Number.POSITIVE_INFINITY,
-          maxX: Number.NEGATIVE_INFINITY,
           minY: Number.POSITIVE_INFINITY,
+          maxX: Number.NEGATIVE_INFINITY,
           maxY: Number.NEGATIVE_INFINITY,
         },
       );
 
+    const bounds = new PIXI.Bounds(-0.5, -0.5, 0.5, 0.5);
     bounds.addBounds(new PIXI.Bounds(minX - 0.5, minY - 0.5, minX + 0.5, minY + 0.5));
     bounds.addBounds(new PIXI.Bounds(maxX - 0.5, maxY - 0.5, maxX + 0.5, maxY + 0.5));
-
-    const width = bounds.width;
-    const height = bounds.height;
-    const x = bounds.x + width / 2 + 0.5;
-    const y = bounds.y + height / 2 + 0.5;
-
-    this.#bounds = { width, height, offset: { x, y } }; */
+    this.#bounds = {
+      width: bounds.width,
+      height: bounds.height,
+      offset: { x: bounds.x + bounds.width / 2 + 0.5, y: bounds.y + bounds.height / 2 + 0.5 },
+    };
   }
 
   #updateSize(): void {

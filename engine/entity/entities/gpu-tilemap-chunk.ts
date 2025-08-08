@@ -109,6 +109,31 @@ export class TilemapChunk {
     }
   }
 
+  calculateBounds(): { minX: number; minY: number; maxX: number; maxY: number } {
+    let minX = Number.POSITIVE_INFINITY;
+    let minY = Number.POSITIVE_INFINITY;
+    let maxX = Number.NEGATIVE_INFINITY;
+    let maxY = Number.NEGATIVE_INFINITY;
+
+    for (let y = 0; y < this.size; y++) {
+      for (let x = 0; x < this.size; x++) {
+        const baseIdx = 4 * (this.size * y + x);
+        if (this.tileData[baseIdx + 3] === 0) continue;
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x);
+        maxY = Math.max(maxY, y);
+      }
+    }
+
+    if (Number.isFinite(minX)) minX += this.x;
+    if (Number.isFinite(minY)) minY += this.y;
+    if (Number.isFinite(maxX)) maxX += this.x;
+    if (Number.isFinite(maxY)) maxY += this.y;
+
+    return { minX, minY, maxX, maxY };
+  }
+
   updateAtlas(
     dimensions: readonly [width: number, height: number],
     _atlas?: PIXI.Texture,
