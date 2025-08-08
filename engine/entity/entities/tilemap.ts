@@ -55,6 +55,7 @@ export abstract class BaseTilemap extends PixiEntity {
   protected atlasImgHeight: number = 0;
 
   #atlasTexture: PIXI.Texture | undefined;
+  #atlasDimensions: readonly [width: number, height: number] | undefined;
   protected get atlasTexture(): PIXI.Texture {
     return this.#atlasTexture ?? PIXI.Texture.EMPTY;
   }
@@ -80,7 +81,18 @@ export abstract class BaseTilemap extends PixiEntity {
   }
 
   async #updateAtlasTexture(): Promise<void> {
-    if (!this.game.isClient()) return;
+    if (this.game.isServer()) {
+      const resp = await fetch(this.game.resolveResource(this.atlas));
+      const blob = await resp.blob();
+
+      const atlas = await createImageBitmap(blob);
+      this.#atlasDimensions = [
+        atlas.width / this.resolution,
+        atlas.height / this.resolution,
+      ] as const;
+
+      return;
+    }
 
     if (this.#atlasTexture?.label !== this.atlas) {
       this.#atlasTexture = await this.#getAtlasTexture();
@@ -89,13 +101,13 @@ export abstract class BaseTilemap extends PixiEntity {
     }
 
     const atlas = this.#atlasTexture;
-    const atlasDimensions = [
+    this.#atlasDimensions = [
       atlas.width / this.resolution,
       atlas.height / this.resolution,
     ] as const;
 
     for (const chunk of this.#chunks.values()) {
-      chunk.updateAtlas(atlasDimensions, atlas);
+      chunk.updateAtlas(this.#atlasDimensions, atlas);
     }
   }
   // #endregion
@@ -191,18 +203,13 @@ export abstract class BaseTilemap extends PixiEntity {
   #getChunk(x: number, y: number): TilemapChunk {
     const chunkX = Math.floor(x / BaseTilemap.#CHUNK_SIZE);
     const chunkY = Math.floor(y / BaseTilemap.#CHUNK_SIZE);
-
     const id = `${chunkX}:${chunkY}` as const;
 
     const cached = this.#chunks.get(id);
     if (cached) return cached;
 
-    if (!this.#atlasTexture) throw new Error("atlas texture not initialized");
-    const atlas = this.#atlasTexture;
-    const atlasDimensions = [
-      atlas.width / this.resolution,
-      atlas.height / this.resolution,
-    ] as const;
+    if (!this.#atlasDimensions) throw new Error("atlas dimensions not initialized");
+    const atlasDimensions = this.#atlasDimensions;
 
     // specialized chunk impl for server
     if (this.game.isServer()) {
@@ -219,6 +226,8 @@ export abstract class BaseTilemap extends PixiEntity {
     }
 
     if (!this.#container) throw new Error("no container");
+    if (!this.#atlasTexture) throw new Error("atlas texture not initialized");
+    const atlas = this.#atlasTexture;
 
     const chunk = new GPUTilemapChunk({
       id,
@@ -320,7 +329,7 @@ export abstract class BaseTilemap extends PixiEntity {
     });
   }
 
-  // // #region (de)serialize methods
+  // #region (de)serialize methods
   #serialize(): Uint8Array {
     const data = Object.fromEntries([
       ...this.#chunks.entries().map(([key, chunk]) => [key, chunk.dump()]),
@@ -361,11 +370,15 @@ export abstract class BaseTilemap extends PixiEntity {
       chunk.load(chunkData);
     }
   }
-  // // #endregion
+  // #endregion
 
   // #region lifecycle
   onInitialize(): void {
     super.onInitialize();
+    if (this.atlas) {
+      void this.#updateAtlasTexture();
+    }
+
     if (!this.container) return;
     this.#container = new PIXI.Container({ label: "container" });
     this.container.addChild(this.#container);
