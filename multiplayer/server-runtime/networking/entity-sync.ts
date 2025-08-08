@@ -327,7 +327,10 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
   const tilemapIgnoreSet = new Set<BaseTilemap>();
   const dirtyTilemaps = new Map<BaseTilemap, TilemapUpdate[]>();
   game.on(TilemapUpdate, signal => {
+    if (game.status !== GameStatus.Running) return;
+
     const tilemap = signal.tilemap;
+    if (!tilemap[internal.entityDoneSpawning]) return;
     if (tilemapIgnoreSet.has(tilemap)) return;
     if (!(tilemap.root === game.world || tilemap.root === game.prefabs)) return;
 

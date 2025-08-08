@@ -107,10 +107,12 @@ export class TilemapChunk {
       this.tileData[baseIdx + 2] = 0; // b
       this.tileData[baseIdx + 3] = 255; // a
     }
+
+    this.#boundsDirty = true;
   }
 
   dump(): Uint8Array {
-    const buf = new Uint8Array(4 * this.size * this.size);
+    /* const buf = new Uint8Array(4 * this.size * this.size);
 
     let i = 0;
     for (let y = 0; y < this.size; y++) {
@@ -127,13 +129,15 @@ export class TilemapChunk {
       }
     }
 
-    return buf.subarray(0, i);
+    return buf.subarray(0, i); */
+
+    return this.tileData;
   }
 
   load(data: Uint8Array) {
-    this.tileData.fill(0xffff);
+    this.tileData.set(data);
 
-    for (let i = 0; i < data.byteLength / 4; i++) {
+    /* for (let i = 0; i < data.byteLength / 4; i++) {
       const x = data[i * 4 + 0];
       const y = data[i * 4 + 1];
       const r = data[i * 4 + 2];
@@ -142,10 +146,22 @@ export class TilemapChunk {
       const baseIdx = 4 * (this.size * y + x);
       this.tileData[baseIdx + 0] = r;
       this.tileData[baseIdx + 1] = g;
-    }
+    } */
+
+    this.#boundsDirty = true;
   }
 
+  #boundsDirty: boolean = true;
+  #bounds: { minX: number; minY: number; maxX: number; maxY: number } = {
+    minX: Number.POSITIVE_INFINITY,
+    minY: Number.POSITIVE_INFINITY,
+    maxX: Number.NEGATIVE_INFINITY,
+    maxY: Number.NEGATIVE_INFINITY,
+  };
+
   calculateBounds(): { minX: number; minY: number; maxX: number; maxY: number } {
+    if (!this.#boundsDirty) return this.#bounds;
+
     let minX = Number.POSITIVE_INFINITY;
     let minY = Number.POSITIVE_INFINITY;
     let maxX = Number.NEGATIVE_INFINITY;
@@ -162,12 +178,16 @@ export class TilemapChunk {
       }
     }
 
-    if (Number.isFinite(minX)) minX += this.x;
-    if (Number.isFinite(minY)) minY += this.y;
-    if (Number.isFinite(maxX)) maxX += this.x;
-    if (Number.isFinite(maxY)) maxY += this.y;
+    if (Number.isFinite(minX)) minX += this.x * this.size;
+    if (Number.isFinite(minY)) minY += this.y * this.size;
+    if (Number.isFinite(maxX)) maxX += this.x * this.size;
+    if (Number.isFinite(maxY)) maxY += this.y * this.size;
 
-    return { minX, minY, maxX, maxY };
+    const bounds = { minX, minY, maxX, maxY };
+    this.#boundsDirty = false;
+    this.#bounds = bounds;
+
+    return bounds;
   }
 
   destroy(): void {

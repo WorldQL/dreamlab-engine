@@ -113,6 +113,23 @@ export abstract class BaseTilemap extends PixiEntity {
     return info.id;
   }
 
+  setTiles(xs: number[], ys: number[], atlasIds: (number | undefined)[]): void {
+    // assert(xs.length === ys.length && xs.length === ids.length)
+
+    let chunk: TilemapChunk | undefined;
+    for (let i = 0; i < xs.length; i++) {
+      const x = xs[i];
+      const y = ys[i];
+      const atlasId = atlasIds[i];
+
+      const chunkX = Math.floor(x / BaseTilemap.#CHUNK_SIZE);
+      const chunkY = Math.floor(y / BaseTilemap.#CHUNK_SIZE);
+
+      if (chunkX !== chunk?.x || chunkY !== chunk?.y) chunk = this.#getChunk(x, y);
+      chunk!.setTile(x & 0xff, y & 0xff, atlasId);
+    }
+  }
+
   setTile(x: number, y: number, atlasId: number | undefined): void {
     if (atlasId === undefined) return this.clearTile(x, y);
     this.setTileInfo(x, y, { type: "atlas", id: atlasId });
