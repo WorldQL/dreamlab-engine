@@ -379,8 +379,7 @@ export abstract class BaseTilemap extends PixiEntity {
 
   // #region (de)serialize methods
   #serialize(): Uint8Array {
-    const entries = this.#chunks
-      .entries()
+    const entries = [...this.#chunks.entries()]
       .map(([key, chunk]) => [key, chunk.save()] as const)
       .filter(x => x[1] !== undefined);
 
@@ -462,8 +461,7 @@ export abstract class BaseTilemap extends PixiEntity {
   // #endregion
 
   #recalculateBounds(): void {
-    const { minX, minY, maxX, maxY } = this.#chunks
-      .values()
+    const { minX, minY, maxX, maxY } = [...this.#chunks.values()]
       .map(chunk => chunk.bounds)
       .reduce<TilemapBounds>(
         (acc, { minX, maxX, minY, maxY }) => {

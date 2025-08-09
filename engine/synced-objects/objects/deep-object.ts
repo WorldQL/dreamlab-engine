@@ -1,5 +1,8 @@
 import { ConnectionId, JsonObject, JsonValue } from "@dreamlab/engine";
-import { syncedObjectContainerObjectsField as objects } from "@dreamlab/engine/internal";
+import {
+  syncedObjectContainerObjectsField as objects,
+  syncedObjectContainerReadyField as ready,
+} from "@dreamlab/engine/internal";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { Accessor, AnySyncedObject, SyncedObject } from "../object.ts";
 import { SyncedObjectOperation } from "../operation.ts";
@@ -29,6 +32,10 @@ export class SyncedDeepObject<T extends JsonObject>
 
   readonly ref: string;
   readonly [objects]: Map<string, AnySyncedObject>;
+
+  get [ready]() {
+    return true; // TODO(charlotte): check this is right
+  }
 
   #writers = new Map<keyof T, [conn: ConnectionId, clock: number]>();
 
