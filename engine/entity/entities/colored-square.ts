@@ -146,7 +146,11 @@ export class ColoredSquare extends PixiEntity {
         .fill({ color: color, alpha: color.alpha });
 
       if (strokeWidth > 0) {
-        this.#gfx.stroke({ color: strokeColor, alpha: strokeColor.alpha, width: hiResStrokeWidth });
+        this.#gfx.stroke({
+          color: strokeColor,
+          alpha: strokeColor.alpha,
+          width: hiResStrokeWidth,
+        });
       }
 
       this.#gfx.scale.set(scale, scale);
