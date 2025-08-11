@@ -74,7 +74,7 @@ export class EditorFacadeTilemap extends BaseTilemap {
     if (!this.game.isClient()) throw new Error();
     const renderer = this.game.renderer.app.renderer;
 
-    const cacheId = `${this.atlas}@${atlasId}`;
+    const cacheId = `${this.atlas}@${this.resolution}@${atlasId}`;
     const cached = this.#textureCache.get(cacheId);
     if (cached) return cached;
 
@@ -95,8 +95,13 @@ export class EditorFacadeTilemap extends BaseTilemap {
     if (!(texture instanceof PIXI.Texture)) throw new Error("invalid texture");
     updateScaleMode(texture);
 
-    const frameX = 0 * this.resolution; // TODO
-    const frameY = 0 * this.resolution; // TODO
+    this.#tooltipCols = Math.floor(texture.width / this.resolution);
+    this.#tooltipRows = Math.floor(texture.height / this.resolution);
+
+    const x = atlasId % this.#tooltipCols;
+    const y = Math.floor(atlasId / this.#tooltipCols);
+    const frameX = x * this.resolution;
+    const frameY = y * this.resolution;
 
     const frame = new PIXI.Rectangle(frameX, frameY, this.resolution, this.resolution);
     const slice = new PIXI.Texture({ source: texture.source, frame });
