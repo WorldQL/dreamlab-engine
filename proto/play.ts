@@ -161,7 +161,14 @@ export const ServerSyncedObjectReports = z.object({
 export const ClientUpdateTilemapPacketSchema = z.object({
   t: z.literal("UpdateTilemap"),
   ref: EntityReferenceSchema,
-  updates: z.array(z.object({ x: z.number(), y: z.number(), info: z.unknown() })),
+  updates: z.array(
+    z.object({
+      x: z.number(),
+      y: z.number(),
+      type: z.literal("atlas").or(z.literal("color")),
+      value: z.number().optional(),
+    }),
+  ),
 });
 
 export const ServerUpdateTilemapPacketSchema = ClientUpdateTilemapPacketSchema.extend({
@@ -171,6 +178,7 @@ export const ServerUpdateTilemapPacketSchema = ClientUpdateTilemapPacketSchema.e
 export const ClientDumpTilemapPacketSchema = z.object({
   t: z.literal("DumpTilemap"),
   ref: EntityReferenceSchema,
+  type: z.literal("atlas").or(z.literal("color")),
   data: z.unknown(), // uint8array
 });
 

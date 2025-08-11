@@ -16,7 +16,7 @@ import {
   GameStatus,
   GameStatusChange,
   InternalGameTick,
-  TileInfo,
+  TilemapBatchUpdate,
   TilemapUpdate,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
@@ -361,7 +361,10 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
   });
 
   const tilemapIgnoreSet = new Set<BaseTilemap>();
-  const dirtyTilemaps = new Map<BaseTilemap, TilemapUpdate[]>();
+  const dirtyTilemaps = new Map<
+    BaseTilemap,
+    { x: number; y: number; type: "atlas" | "color"; value?: number }[]
+  >();
   game.on(TilemapUpdate, signal => {
     if (game.status !== GameStatus.Running) return;
 
@@ -370,7 +373,30 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
     if (!tilemap[internal.entityDoneSpawning]) return;
     if (!(tilemap.root === game.world || tilemap.root === game.prefabs)) return;
     const arr = dirtyTilemaps.get(tilemap) ?? [];
-    arr.push(signal);
+    arr.push({
+      x: signal.x,
+      y: signal.y,
+      type: signal.info?.type ?? "atlas",
+      value: signal.info?.type === "atlas" ? signal.info.id : signal.info?.color,
+    });
+    dirtyTilemaps.set(tilemap, arr);
+  });
+
+  game.on(TilemapBatchUpdate, signal => {
+    if (game.status !== GameStatus.Running) return;
+
+    const tilemap = signal.tilemap;
+    if (!tilemap[internal.entityDoneSpawning]) return;
+    if (tilemapIgnoreSet.has(tilemap)) return;
+    if (!(tilemap.root === game.world || tilemap.root === game.prefabs)) return;
+
+    const arr = dirtyTilemaps.get(tilemap) ?? [];
+    for (let i = 0; i < signal.xs.length; i++) {
+      const x = signal.xs[i];
+      const y = signal.ys[i];
+      const id = signal.atlasIds[i];
+      arr.push({ x, y, type: "atlas", value: id });
+    }
     dirtyTilemaps.set(tilemap, arr);
   });
 
@@ -384,7 +410,7 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
         conn.send({
           t: "UpdateTilemap",
           ref: tilemap.ref,
-          updates: updates.map(it => ({ x: it.x, y: it.y, info: it.info })),
+          updates,
         });
       }
 
@@ -401,7 +427,19 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
 
     tilemapIgnoreSet.add(tilemap);
     for (const update of packet.updates) {
-      tilemap.setTileInfo(update.x, update.y, update.info as TileInfo | undefined);
+      if (update.type === "atlas") {
+        tilemap.setTileInfo(
+          update.x,
+          update.y,
+          update.value ? { type: "atlas", id: update.value } : undefined,
+        );
+      } else if (update.type === "color") {
+        tilemap.setTileInfo(
+          update.x,
+          update.y,
+          update.value ? { type: "color", color: update.value } : undefined,
+        );
+      }
     }
     tilemapIgnoreSet.delete(tilemap);
   });

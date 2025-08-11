@@ -14,6 +14,7 @@ import {
   PixiEntity,
   pointWorldToLocal,
   TextureAdapter,
+  TilemapBatchUpdate,
   TilemapUpdate,
   Vector2,
 } from "@dreamlab/engine";
@@ -135,6 +136,9 @@ export abstract class BaseTilemap extends PixiEntity {
       if (chunkX !== chunk?.x || chunkY !== chunk?.y) chunk = this.#getChunk("atlas", x, y);
       chunk!.setTile(x & 0xff, y & 0xff, atlasId);
     }
+
+    this.game.fire(TilemapBatchUpdate, this, xs, ys, atlasIds);
+    this.fire(TilemapBatchUpdate, this, xs, ys, atlasIds);
   }
 
   setTile(x: number, y: number, atlasId: number | undefined): void {

@@ -8,3 +8,12 @@ export class TilemapUpdate {
     public info: TileInfo | undefined,
   ) {}
 }
+
+export class TilemapBatchUpdate {
+  constructor(
+    public tilemap: BaseTilemap,
+    public xs: number[],
+    public ys: number[],
+    public atlasIds: (number | undefined)[],
+  ) {}
+}
