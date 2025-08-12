@@ -116,7 +116,7 @@ export class PrefabViewer {
           borderRadius: "4px",
           background: "rgba(var(--color-bg-2) / 0.6)",
           backdropFilter: "blur(4px)",
-          zIndex: "100",
+          zIndex: "95",
         }}
       >
         <span
