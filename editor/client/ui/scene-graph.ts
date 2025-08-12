@@ -122,19 +122,25 @@ export class SceneGraph implements InspectorUIWidget {
       ]);
     });
 
-    this.#section.setAttribute("tabindex", "0");
-    this.#section.addEventListener("keydown", ev => {
-      if (ev.key === "F2") {
-        if (document.activeElement instanceof HTMLInputElement) return;
+    const onF2KeyDown = (ev: KeyboardEvent) => {
+      if (ev.key !== "F2") return;
+      if (
+        document.activeElement instanceof HTMLInputElement ||
+        document.activeElement instanceof HTMLTextAreaElement ||
+        (document.activeElement && (document.activeElement as HTMLElement).isContentEditable)
+      )
+        return;
 
-        ev.preventDefault();
-        const [ent] = ui.selectedEntity.entities;
-        if (!ent) return;
-        if (ent instanceof EditorRootFacadeEntity || ent instanceof Root) return;
-        const entryEl = this.entryElementMap.get(ent.ref);
-        if (entryEl) this.triggerRename(ent, entryEl);
-      }
-    });
+      ev.preventDefault();
+      const [ent] = ui.selectedEntity.entities;
+      if (!ent) return;
+      if (ent instanceof EditorRootFacadeEntity || ent instanceof Root) return;
+
+      const entryEl = this.entryElementMap.get(ent.ref);
+      if (entryEl) this.triggerRename(ent, entryEl);
+    };
+
+    document.addEventListener("keydown", onF2KeyDown, { capture: true });
 
     this.handleEntitySelection(ui, treeRoot);
 
