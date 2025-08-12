@@ -13,7 +13,7 @@ import {
 import { element as elem, element } from "@dreamlab/ui";
 import { EditorFacadeTilemap } from "../../common/facades/tilemap.ts";
 import { EditorMetadataEntity, EditorRootFacadeEntity, Facades } from "../../common/mod.ts";
-import { ChevronDown, Ellipsis, icon } from "../_icons.tsx";
+import { ChevronDown, Ellipsis, icon, Lock } from "../_icons.tsx";
 import { entityNameSort } from "../entity-sort.ts";
 import { UndoRedoManager, type UndoRedoOperation } from "../undo-redo.ts";
 import { createEntityMenu } from "../util/entity-types.ts";
@@ -286,15 +286,21 @@ export class SceneGraph implements InspectorUIWidget {
         ? entity.root.icon
         : (entity.constructor as typeof Entity).icon;
 
+    const lockBadge = elem(
+      "span",
+      { className: "lock-badge", title: "Locked", style: { display: "none" } },
+      [icon(Lock)],
+    );
+
     const summary = elem("summary", {}, [
       toggle,
       elem("a", {}, [
         elem("span", { className: "icon emoji" }, [entityIcon]),
         " ",
         elem("span", { className: "name" }, [elem("span", {}, [entity.name])]),
+        lockBadge,
       ]),
     ]);
-
     const entryElement = elem(
       "details",
       {
@@ -316,8 +322,13 @@ export class SceneGraph implements InspectorUIWidget {
     if (metadata) {
       const lockedValue = metadata.values.get("locked") as Value<boolean>;
       const updateLocked = () => {
-        if (lockedValue.value) entryElement.setAttribute("data-locked", "");
-        else entryElement.removeAttribute("data-locked");
+        if (lockedValue.value) {
+          entryElement.setAttribute("data-locked", "");
+          lockBadge.style.display = "inline-flex";
+        } else {
+          entryElement.removeAttribute("data-locked");
+          lockBadge.style.display = "none";
+        }
       };
       lockedValue.onChanged(updateLocked);
       updateLocked();

@@ -66,14 +66,6 @@
   }
 }
 
-#scene-graph-tree details[data-locked] {
-  filter: grayscale(100%);
-
-  & * {
-    cursor: not-allowed;
-  }
-}
-
 #scene-graph-tree details.selected > summary {
   --alpha: 1;
   background-color: rgb(var(--color-primary) / var(--alpha));
@@ -146,4 +138,46 @@
 .menu-button:hover,
 #scene-graph-menu-button:hover {
   background-color: rgb(var(--color-bg-2) / 0.5);
+}
+
+#scene-graph-tree details[data-locked] {
+  filter: grayscale(100%);
+  opacity: 0.85;
+}
+
+#scene-graph-tree details[data-locked]:not(.selected) > summary:hover {
+  background-color: rgb(var(--color-bg-2) / 0.5);
+}
+
+#scene-graph-tree details[data-locked] .name {
+  text-decoration: none;
+}
+
+#scene-graph-tree details > summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+#scene-graph-tree details > summary > a {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+#scene-graph-tree .lock-badge {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  opacity: 0.9;
+}
+#scene-graph-tree .lock-badge > svg {
+  width: 0.95em;
+  height: 0.95em;
+}
+
+#scene-graph-tree details[data-locked].selected > summary {
+  background-color: rgb(var(--color-primary) / 16.5%);
 }
