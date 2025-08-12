@@ -88,11 +88,21 @@ export class ColoredSquare extends PixiEntity {
       description: "Width of the stroke border (0 = no stroke).",
     });
 
+    this.on(EntityTransformUpdate, () => {
+      if (!this.#gfx) return;
+      const scale = this.globalTransform.scale.clone();
+      if (this.borderRadius !== 0) {
+        scale.x /= ColoredSquare.#HI_RES;
+        scale.y /= ColoredSquare.#HI_RES;
+      }
+
+      this.#gfx.scale.set(scale.x, scale.y);
+    });
+
     const updateGfx = () => {
       this.#draw();
     };
 
-    this.on(EntityTransformUpdate, updateGfx);
     const widthValue = this.values.get("width");
     const heightValue = this.values.get("height");
     widthValue?.onChanged(updateGfx);
@@ -114,11 +124,12 @@ export class ColoredSquare extends PixiEntity {
     strokeWidthValue?.onChanged(updateGfx);
   }
 
+  static readonly #HI_RES: number = 100;
   #draw(): void {
     if (!this.#gfx) return;
 
-    const width = Math.abs(this.width * this.globalTransform.scale.x);
-    const height = Math.abs(this.height * this.globalTransform.scale.y);
+    const width = Math.abs(this.width);
+    const height = Math.abs(this.height);
     const color = this.#color;
     const strokeColor = this.#strokeColor;
     const strokeWidth = Math.abs(this.strokeWidth) / 100;
@@ -126,7 +137,7 @@ export class ColoredSquare extends PixiEntity {
     if (this.borderRadius !== 0) {
       // render at 100x the size so the border radius is controllable
       // otherwise a borderRadius of 1 would make a 1x1 (in Dreamlab units) entity a jagged circle.
-      const resolution = 100;
+      const resolution = ColoredSquare.#HI_RES;
       const scale = 1 / resolution;
 
       const hiResWidth = width * resolution;
@@ -153,7 +164,10 @@ export class ColoredSquare extends PixiEntity {
         });
       }
 
-      this.#gfx.scale.set(scale, scale);
+      const globalScale = this.globalTransform.scale;
+      const scaleX = globalScale.x * scale;
+      const scaleY = globalScale.y * scale;
+      this.#gfx.scale.set(scaleX, scaleY);
     } else {
       this.#gfx
         .clear()
@@ -164,7 +178,8 @@ export class ColoredSquare extends PixiEntity {
         this.#gfx.stroke({ color: strokeColor, alpha: strokeColor.alpha, width: strokeWidth });
       }
 
-      this.#gfx.scale.set(1, 1);
+      const scale = this.globalTransform.scale;
+      this.#gfx.scale.set(scale.x, scale.y);
     }
 
     this.#gfx.tint = this.#tint;
