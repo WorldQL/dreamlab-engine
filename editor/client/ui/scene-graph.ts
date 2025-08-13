@@ -123,7 +123,7 @@ export class SceneGraph implements InspectorUIWidget {
     });
 
     const onF2KeyDown = (ev: KeyboardEvent) => {
-      if (ev.key !== "F2") return;
+      if (ev.key !== "F2" && ev.key !== "Enter") return;
       if (
         document.activeElement instanceof HTMLInputElement ||
         document.activeElement instanceof HTMLTextAreaElement ||
