@@ -129,9 +129,10 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
 
     const parent = game.entities.lookupByRef(def.parent);
     if (!parent) {
-      throw new Error(
-        `entity sync: Tried to spawn underneath a non-existent entity! (${def.parent})`,
-      );
+      // throw new Error(
+      //   `entity sync: Tried to spawn underneath a non-existent entity! (${def.parent})`,
+      // );
+      return;
     }
 
     // ensure authority can only be delegated to self or server
