@@ -167,7 +167,7 @@ export abstract class BaseTilemap extends PixiEntity {
     const coords = this.#tileToChunkCoords(x, y);
     if (atlasChunk) {
       const id = atlasChunk.getTile(coords.x, coords.y);
-      if (!id) return undefined;
+      if (id === undefined) return undefined;
 
       return { type: "atlas", id };
     } else if (colorChunk) {
