@@ -55,6 +55,7 @@ export abstract class BaseTilemap extends PixiEntity {
   scaleFilterMode: ScaleFilterMode = "default";
 
   #boundsDirty: boolean = false;
+  #dirtyChunks: Set<ClientTextureTilemapChunk | ClientColorTilemapChunk> = new Set();
   #container: PIXI.Container | undefined;
 
   // #region atlas
@@ -62,7 +63,6 @@ export abstract class BaseTilemap extends PixiEntity {
   protected atlasImgHeight: number = 0;
 
   #atlasTexture: PIXI.Texture | undefined;
-  #atlasDimensions: readonly [width: number, height: number] | undefined;
   protected get atlasTexture(): PIXI.Texture {
     return this.#atlasTexture ?? PIXI.Texture.EMPTY;
   }
@@ -180,8 +180,6 @@ export abstract class BaseTilemap extends PixiEntity {
     return undefined;
   }
 
-  dirtyChunks: Set<ClientColorTilemapChunk> = new Set();
-
   setTileInfo(x: number, y: number, info: TileInfo | undefined): void {
     this.#boundsDirty = true;
 
@@ -197,19 +195,31 @@ export abstract class BaseTilemap extends PixiEntity {
     if (info.type === "atlas") {
       const chunk = this.#getChunk("atlas", x, y);
       chunk.setTile(coords.x, coords.y, info.id);
+      if (chunk instanceof ClientTextureTilemapChunk) {
+        this.#dirtyChunks.add(chunk);
+      }
 
       const colorChunk = this.#getExistingChunk("color", x, y);
-      if (colorChunk) colorChunk.setTile(coords.x, coords.y, undefined);
+      if (colorChunk) {
+        colorChunk.setTile(coords.x, coords.y, undefined);
+        if (colorChunk instanceof ClientColorTilemapChunk) {
+          this.#dirtyChunks.add(colorChunk);
+        }
+      }
     } else if (info.type === "color") {
       const chunk = this.#getChunk("color", x, y);
       chunk.setTile(coords.x, coords.y, info.color);
-      if (this.game.isClient()) {
-        this.dirtyChunks.add(chunk as ClientColorTilemapChunk);
+      if (chunk instanceof ClientColorTilemapChunk) {
+        this.#dirtyChunks.add(chunk);
       }
-      // TODO: Do this for atlas updates too.
 
       const atlasChunk = this.#getExistingChunk("atlas", x, y);
-      if (atlasChunk) atlasChunk.setTile(coords.x, coords.y, undefined);
+      if (atlasChunk) {
+        atlasChunk.setTile(coords.x, coords.y, undefined);
+        if (atlasChunk instanceof ClientTextureTilemapChunk) {
+          this.#dirtyChunks.add(atlasChunk);
+        }
+      }
     }
   }
 
@@ -380,11 +390,12 @@ export abstract class BaseTilemap extends PixiEntity {
         this.#boundsDirty = false;
         this.#recalculateBounds();
       }
+
       if (this.game.isClient()) {
-        for (const chunk of this.dirtyChunks) {
+        for (const chunk of this.#dirtyChunks) {
           chunk.update();
+          this.#dirtyChunks.delete(chunk);
         }
-        this.dirtyChunks.clear();
       }
     });
 

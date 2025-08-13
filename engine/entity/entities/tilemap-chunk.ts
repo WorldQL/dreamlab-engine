@@ -269,6 +269,9 @@ export class ClientTextureTilemapChunk extends TextureTilemapChunk {
 
   setTile(localX: number, localY: number, atlasId: number | undefined): void {
     super.setTile(localX, localY, atlasId);
+  }
+
+  update() {
     this.#tileTexture.source.update();
   }
 
