@@ -180,6 +180,8 @@ export abstract class BaseTilemap extends PixiEntity {
     return undefined;
   }
 
+  dirtyChunks: Set<ClientColorTilemapChunk> = new Set();
+
   setTileInfo(x: number, y: number, info: TileInfo | undefined): void {
     this.#boundsDirty = true;
 
@@ -201,6 +203,10 @@ export abstract class BaseTilemap extends PixiEntity {
     } else if (info.type === "color") {
       const chunk = this.#getChunk("color", x, y);
       chunk.setTile(coords.x, coords.y, info.color);
+      if (this.game.isClient()) {
+        this.dirtyChunks.add(chunk as ClientColorTilemapChunk);
+      }
+      // TODO: Do this for atlas updates too.
 
       const atlasChunk = this.#getExistingChunk("atlas", x, y);
       if (atlasChunk) atlasChunk.setTile(coords.x, coords.y, undefined);
@@ -373,6 +379,12 @@ export abstract class BaseTilemap extends PixiEntity {
       if (this.#boundsDirty) {
         this.#boundsDirty = false;
         this.#recalculateBounds();
+      }
+      if (this.game.isClient()) {
+        for (const chunk of this.dirtyChunks) {
+          chunk.update();
+        }
+        this.dirtyChunks.clear();
       }
     });
 
