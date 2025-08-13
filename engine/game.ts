@@ -42,6 +42,7 @@ import {
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { urlWithParams } from "@dreamlab/util/url.ts";
+import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { SyncedObjectRegistry } from "./synced-objects/registry.ts";
 
 export interface GameOptions {
@@ -369,9 +370,9 @@ export class ClientGame extends BaseGame {
 
   [internal.inputsShutdownFn]: (() => void) | undefined;
 
-  async initialize() {
+  async initialize(options: Partial<PIXI.ApplicationOptions> = {}) {
     await super.initialize();
-    if (!this.headless) await this.renderer[internal.rendererInit]();
+    if (!this.headless) await this.renderer[internal.rendererInit](options);
     this[internal.inputsShutdownFn] = this.inputs[internal.inputsRegisterHandlers]();
     this.ui[internal.uiInit]();
   }

@@ -21,11 +21,12 @@ export class GameRenderer {
     this.app.stage.addChild(this.scene);
   }
 
-  async [internal.rendererInit](): Promise<void> {
+  async [internal.rendererInit](options: Partial<PIXI.ApplicationOptions> = {}): Promise<void> {
     if (this.#initialized === true || this.#initialized === "pending") return;
     this.#initialized = "pending";
 
     await this.app.init({
+      ...options,
       autoDensity: true,
       resizeTo: this.#game.container,
       antialias: true,
