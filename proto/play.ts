@@ -179,6 +179,8 @@ export const ClientDumpTilemapPacketSchema = z.object({
   t: z.literal("DumpTilemap"),
   ref: EntityReferenceSchema,
   type: z.literal("atlas").or(z.literal("color")),
+  chunkX: z.number(),
+  chunkY: z.number(),
   data: z.unknown(), // uint8array
 });
 

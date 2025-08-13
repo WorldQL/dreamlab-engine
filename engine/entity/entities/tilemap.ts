@@ -18,6 +18,7 @@ import {
   TilemapUpdate,
   Vector2,
 } from "@dreamlab/engine";
+import * as internal from "@dreamlab/engine/internal";
 import * as cbor from "@dreamlab/vendor/cbor2.ts";
 import { gzip, ungzip } from "@dreamlab/vendor/pako.ts";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
@@ -293,6 +294,11 @@ export abstract class BaseTilemap extends PixiEntity {
     } else {
       throw new Error("unknown chunk type");
     }
+  }
+
+  [internal.tilemapGetChunk](type: ChunkType, x: number, y: number): TilemapChunk {
+    // @ts-expect-error overload not statically resolvable
+    return this.#getChunk(type, x * TilemapChunk.CHUNK_SIZE, y * TilemapChunk.CHUNK_SIZE);
   }
 
   #tileToChunkCoords(x: number, y: number): IVector2 {

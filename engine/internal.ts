@@ -74,3 +74,4 @@ export const syncedObjectContainerObjectsField = Symbol.for(
 export const syncedObjectContainerReadyField = Symbol.for(
   "dreamlab.internal.syncedObjectContainerReadyField",
 );
+export const tilemapGetChunk = Symbol.for("dreamlab.internal.tilemapChunks");

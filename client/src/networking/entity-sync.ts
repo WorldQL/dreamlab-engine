@@ -443,4 +443,15 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
     }
     tilemapIgnoreSet.delete(tilemap);
   });
+
+  conn.registerPacketHandler("DumpTilemap", packet => {
+    if (packet.from === conn.id) return;
+
+    const tilemap = game.entities.lookupByRef(packet.ref);
+    if (!tilemap) return;
+    if (!(tilemap instanceof BaseTilemap)) return;
+
+    const chunk = tilemap[internal.tilemapGetChunk](packet.type, packet.chunkX, packet.chunkY);
+    chunk.load(packet.data as Uint8Array);
+  });
 };

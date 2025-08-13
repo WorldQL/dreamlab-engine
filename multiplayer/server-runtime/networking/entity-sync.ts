@@ -409,4 +409,15 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
 
     net.broadcast({ ...packet, from });
   });
+
+  net.registerPacketHandler("DumpTilemap", (from, packet) => {
+    const tilemap = game.entities.lookupByRef(packet.ref);
+    if (!tilemap) return;
+    if (!(tilemap instanceof BaseTilemap)) return;
+
+    const chunk = tilemap[internal.tilemapGetChunk](packet.type, packet.chunkX, packet.chunkY);
+    chunk.load(packet.data as Uint8Array);
+
+    net.broadcast({ ...packet, from });
+  });
 };
