@@ -27,6 +27,30 @@ export interface ServerKV {
   };
 }
 
+export const DUMMY_CLIENT_KV = {
+  player: {
+    get: () => Promise.resolve(undefined),
+    set: () => Promise.resolve(),
+    delete: () => Promise.resolve(),
+    clear: () => Promise.resolve(),
+  },
+} satisfies ClientKV;
+
+export const DUMMY_SERVER_KV = {
+  server: {
+    get: () => Promise.resolve(undefined),
+    set: () => Promise.resolve(),
+    delete: () => Promise.resolve(),
+    clear: () => Promise.resolve(),
+  },
+  player: {
+    get: () => Promise.resolve(undefined),
+    set: () => Promise.resolve(),
+    delete: () => Promise.resolve(),
+    clear: () => Promise.resolve(),
+  },
+} satisfies ServerKV;
+
 export * from "./base.ts";
 export * from "./client.ts";
 export * from "./server.ts";

@@ -1,9 +1,9 @@
 import {
   BehaviorConstructor,
   ClientGame,
+  DUMMY_CLIENT_KV,
   Empty,
   Entity,
-  ClientKV,
   ValueTypeTag,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
@@ -120,14 +120,7 @@ export class BehaviorTypeInfoService {
           onReceiveCustomMessage() {},
           disconnect() {},
         },
-        kv: {
-          player: {
-            get: () => Promise.resolve(undefined),
-            set: () => Promise.resolve(),
-            delete: () => Promise.resolve(),
-            clear: () => Promise.resolve(),
-          },
-        } satisfies ClientKV,
+        kv: DUMMY_CLIENT_KV,
       },
       true /*headless*/,
     );
