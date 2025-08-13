@@ -172,7 +172,7 @@ export abstract class BaseTilemap extends PixiEntity {
       return { type: "atlas", id };
     } else if (colorChunk) {
       const color = colorChunk.getTile(coords.x, coords.y);
-      if (!color) return undefined;
+      if (color === undefined) return undefined;
 
       return { type: "color", color };
     }
