@@ -229,8 +229,18 @@ export abstract class BaseTilemap extends PixiEntity {
     if (!atlasChunk && !colorChunk) return;
 
     const coords = this.#tileToChunkCoords(x, y);
-    atlasChunk?.setTile(coords.x, coords.y, undefined);
-    colorChunk?.setTile(coords.x, coords.y, undefined);
+    if (atlasChunk) {
+      atlasChunk.setTile(coords.x, coords.y, undefined);
+      if (atlasChunk instanceof ClientTextureTilemapChunk) {
+        this.#dirtyChunks.add(atlasChunk);
+      }
+    }
+    if (colorChunk) {
+      colorChunk.setTile(coords.x, coords.y, undefined);
+      if (colorChunk instanceof ClientColorTilemapChunk) {
+        this.#dirtyChunks.add(colorChunk);
+      }
+    }
 
     this.game.fire(TilemapUpdate, this, x, y, undefined);
     this.fire(TilemapUpdate, this, x, y, undefined);
