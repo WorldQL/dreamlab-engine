@@ -21,8 +21,9 @@ export abstract class KvClientBase extends KvBase implements ClientKV {
   }
 
   readonly player = {
-    get: (key: string): Promise<JsonValue | undefined> => {
-      return this.get(this.scope(), key);
+    get: async <T extends JsonValue = JsonValue>(key: string): Promise<T | undefined> => {
+      const value = await this.get(this.scope(), key);
+      return value as T | undefined;
     },
     set: (key: string, value: JsonValue): Promise<void> => {
       return this.set(this.scope(), key, value);

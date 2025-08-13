@@ -20,8 +20,9 @@ export abstract class KvServerBase extends KvBase implements ServerKV {
   }
 
   readonly server = {
-    get: (key: string): Promise<JsonValue | undefined> => {
-      return this.get(this.scope(), key);
+    get: async <T extends JsonValue = JsonValue>(key: string): Promise<T | undefined> => {
+      const value = await this.get(this.scope(), key);
+      return value as T | undefined;
     },
     set: (key: string, value: JsonValue): Promise<void> => {
       return this.set(this.scope(), key, value);
@@ -35,8 +36,12 @@ export abstract class KvServerBase extends KvBase implements ServerKV {
   };
 
   readonly player = {
-    get: (key: string, playerId: string): Promise<JsonValue | undefined> => {
-      return this.get(this.scope(playerId), key);
+    get: async <T extends JsonValue = JsonValue>(
+      key: string,
+      playerId: string,
+    ): Promise<T | undefined> => {
+      const value = await this.get(this.scope(playerId), key);
+      return value as T | undefined;
     },
     set: (key: string, value: JsonValue, playerId: string): Promise<void> => {
       return this.set(this.scope(playerId), key, value);
