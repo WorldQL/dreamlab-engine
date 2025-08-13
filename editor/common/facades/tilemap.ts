@@ -169,8 +169,7 @@ export class EditorFacadeTilemap extends BaseTilemap {
       const right = this.inputs.getKey("MouseRight");
       if (!left && !right) return;
 
-      const svc = SelectedEntityService.serviceForGame(game);
-      if (!svc?.entities.includes(this)) {
+      if (!this.shouldPaint()) {
         return;
       }
 
@@ -224,8 +223,7 @@ export class EditorFacadeTilemap extends BaseTilemap {
       if (!this.#tooltip) return;
 
       const world = this.inputs.cursor.world;
-      const svc = SelectedEntityService.serviceForGame(game);
-      if (!svc?.entities.includes(this) || !world) {
+      if (!this.shouldPaint() || !world) {
         this.#tooltip.alpha = 0;
         return;
       }
@@ -238,5 +236,16 @@ export class EditorFacadeTilemap extends BaseTilemap {
       const rows = Math.max(1, this.paletteRows | 0);
       this.#buildTooltip(cols, rows);
     });
+  }
+
+  shouldPaint(): boolean {
+    if (this.game.isServer()) return false;
+    const svc = SelectedEntityService.serviceForGame(this.game);
+    const selected = svc?.entities?.includes(this) ?? false;
+
+    // TODO: need inspector ui root instead of document (prevent crosstalk between edit and play)
+    const tilemapTabOpen =
+      document.querySelector("[data-tab-id=tilemap][data-active]") !== null;
+    return selected && tilemapTabOpen;
   }
 }
