@@ -19,6 +19,7 @@ import {
   TilemapUpdate,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
+import { TilemapChunk } from "@dreamlab/engine/internal";
 import {
   convertBehaviorDefinition,
   convertEntityDefinition,
@@ -369,10 +370,28 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
 
   game.on(InternalGameTick, () => {
     for (const [tilemap, updates] of dirtyTilemaps) {
-      if (updates.length > 256 && false) {
-        // TODO:
-        // find affected chunks??? maybe???
-        // serialize the whole tilemap and do the thing
+      if (updates.length > 256 * 64) {
+        const chunkIds = new Set<`${"atlas" | "color"}:${number}:${number}`>();
+        for (const update of updates) {
+          const chunkX = Math.floor(update.x / TilemapChunk.CHUNK_SIZE);
+          const chunkY = Math.floor(update.y / TilemapChunk.CHUNK_SIZE);
+          chunkIds.add(`${update.type}:${chunkX}:${chunkY}`);
+        }
+
+        for (const id of chunkIds) {
+          const type = id.substring(id.indexOf(":")) as "atlas" | "color";
+          const chunk = tilemap[internal.tilemapGetChunkById](id);
+          if (!chunk) continue;
+
+          net.broadcast({
+            t: "DumpTilemap",
+            chunkX: chunk.x,
+            chunkY: chunk.y,
+            ref: tilemap.ref,
+            type,
+            data: chunk.save()!,
+          });
+        }
       } else {
         net.broadcast({
           t: "UpdateTilemap",

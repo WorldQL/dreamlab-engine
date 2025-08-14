@@ -329,6 +329,9 @@ export abstract class BaseTilemap extends PixiEntity {
     // @ts-expect-error overload not statically resolvable
     return this.#getChunk(type, x * TilemapChunk.CHUNK_SIZE, y * TilemapChunk.CHUNK_SIZE);
   }
+  [internal.tilemapGetChunkById](id: ChunkId): TilemapChunk | undefined {
+    return this.#chunks.get(id);
+  }
 
   #tileToChunkCoords(x: number, y: number): IVector2 {
     const chunkSize = TilemapChunk.CHUNK_SIZE;
