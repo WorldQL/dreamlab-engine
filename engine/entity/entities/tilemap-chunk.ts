@@ -123,8 +123,10 @@ export class TextureTilemapChunk extends TilemapChunk {
     this.#boundsDirty = true;
   }
 
-  save(): Uint8Array {
-    // TODO: check if empty and skip saving
+  save(): Uint8Array | undefined {
+    // skip saving if empty
+    if (this.tileData.every(x => x === 255)) return undefined;
+
     /* const buf = new Uint8Array(4 * this.size * this.size);
 
     let i = 0;
@@ -335,8 +337,10 @@ export class ColorTilemapChunk extends TilemapChunk {
     }
   }
 
-  save(): Uint8Array {
-    // TODO: check if empty and skip saving
+  save(): Uint8Array | undefined {
+    // skip saving if empty
+    if (this.tileData.every(x => x === 0)) return undefined;
+
     return this.tileData;
   }
 
