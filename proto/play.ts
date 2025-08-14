@@ -188,6 +188,15 @@ export const ServerDumpTilemapPacketSchema = ClientDumpTilemapPacketSchema.exten
   from: ConnectionIdSchema.optional(),
 });
 
+export const ClientClearTilemapPacketSchema = z.object({
+  t: z.literal("ClearTilemap"),
+  ref: EntityReferenceSchema,
+});
+
+export const ServerClearTilemapPacketSchema = ClientClearTilemapPacketSchema.extend({
+  from: ConnectionIdSchema.optional(),
+});
+
 const BaseReparentEntityPacket = z.object({
   t: z.literal("ReparentEntity"),
   entity: EntityReferenceSchema,
@@ -341,6 +350,7 @@ export const ClientPacketSchema = z.discriminatedUnion("t", [
   ClientSyncedObjectReports,
   ClientUpdateTilemapPacketSchema,
   ClientDumpTilemapPacketSchema,
+  ClientClearTilemapPacketSchema,
 ]);
 export type ClientPacket = z.infer<typeof ClientPacketSchema>;
 
@@ -372,6 +382,7 @@ export const ServerPacketSchema = z.discriminatedUnion("t", [
   ServerSyncedObjectReports,
   ServerUpdateTilemapPacketSchema,
   ServerDumpTilemapPacketSchema,
+  ServerClearTilemapPacketSchema,
 ]);
 export type ServerPacket = z.infer<typeof ServerPacketSchema>;
 

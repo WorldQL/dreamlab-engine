@@ -1,5 +1,9 @@
 import { BaseTilemap, TileInfo } from "@dreamlab/engine";
 
+export class TilemapClear {
+  constructor(public tilemap: BaseTilemap) {}
+}
+
 export class TilemapUpdate {
   constructor(
     public tilemap: BaseTilemap,

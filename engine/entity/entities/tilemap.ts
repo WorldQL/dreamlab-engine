@@ -15,6 +15,7 @@ import {
   pointWorldToLocal,
   TextureAdapter,
   TilemapBatchUpdate,
+  TilemapClear,
   TilemapUpdate,
   Vector2,
 } from "@dreamlab/engine";
@@ -251,6 +252,8 @@ export abstract class BaseTilemap extends PixiEntity {
       chunk.destroy();
       this.#chunks.delete(id);
     }
+
+    this.game.fire(TilemapClear, this);
   }
   // #endregion
 

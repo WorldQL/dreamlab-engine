@@ -15,6 +15,7 @@ import {
   GameStatus,
   InternalGameTick,
   TilemapBatchUpdate,
+  TilemapClear,
   TilemapUpdate,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
@@ -384,6 +385,18 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
     }
   });
 
+  const clearTilemapIgnoreSet = new Set<BaseTilemap>();
+  game.on(TilemapClear, signal => {
+    if (game.status !== GameStatus.Running) return;
+
+    const tilemap = signal.tilemap;
+    if (!tilemap[internal.entityDoneSpawning]) return;
+    if (clearTilemapIgnoreSet.has(tilemap)) return;
+    if (!(tilemap.root === game.world || tilemap.root === game.prefabs)) return;
+
+    net.broadcast({ t: "ClearTilemap", ref: tilemap.ref });
+  });
+
   net.registerPacketHandler("UpdateTilemap", (from, packet) => {
     const tilemap = game.entities.lookupByRef(packet.ref);
     if (!tilemap) return;
@@ -418,6 +431,18 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
 
     const chunk = tilemap[internal.tilemapGetChunk](packet.type, packet.chunkX, packet.chunkY);
     chunk.load(packet.data as Uint8Array);
+
+    net.broadcast({ ...packet, from });
+  });
+
+  net.registerPacketHandler("ClearTilemap", (from, packet) => {
+    const tilemap = game.entities.lookupByRef(packet.ref);
+    if (!tilemap) return;
+    if (!(tilemap instanceof BaseTilemap)) return;
+
+    clearTilemapIgnoreSet.add(tilemap);
+    tilemap.clearTiles();
+    clearTilemapIgnoreSet.delete(tilemap);
 
     net.broadcast({ ...packet, from });
   });
