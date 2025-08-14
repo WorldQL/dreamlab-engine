@@ -432,13 +432,13 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
         tilemap.setTileInfo(
           update.x,
           update.y,
-          update.value ? { type: "atlas", id: update.value } : undefined,
+          update.value !== undefined ? { type: "atlas", id: update.value } : undefined,
         );
       } else if (update.type === "color") {
         tilemap.setTileInfo(
           update.x,
           update.y,
-          update.value ? { type: "color", color: update.value } : undefined,
+          update.value !== undefined ? { type: "color", color: update.value } : undefined,
         );
       }
     }
