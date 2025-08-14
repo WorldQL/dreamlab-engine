@@ -496,6 +496,7 @@ export abstract class BaseTilemap extends PixiEntity {
   }
 
   protected override saveDataForScene(): JsonValue | undefined {
+    if (this.#chunks.size === 0) return undefined;
     return encodeBase64Url(this.#serialize());
   }
 
