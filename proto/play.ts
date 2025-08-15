@@ -161,14 +161,10 @@ export const ServerSyncedObjectReports = z.object({
 export const ClientUpdateTilemapPacketSchema = z.object({
   t: z.literal("UpdateTilemap"),
   ref: EntityReferenceSchema,
-  updates: z.array(
-    z.object({
-      x: z.number(),
-      y: z.number(),
-      type: z.literal("atlas").or(z.literal("color")),
-      value: z.number().optional(),
-    }),
-  ),
+  xs: z.array(z.number()),
+  ys: z.array(z.number()),
+  values: z.array(z.number().optional()),
+  types: z.array(z.literal("atlas").or(z.literal("color"))),
 });
 
 export const ServerUpdateTilemapPacketSchema = ClientUpdateTilemapPacketSchema.extend({

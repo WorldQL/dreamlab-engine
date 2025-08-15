@@ -412,7 +412,10 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
         conn.send({
           t: "UpdateTilemap",
           ref: tilemap.ref,
-          updates,
+          xs: updates.map(it => it.x),
+          ys: updates.map(it => it.y),
+          values: updates.map(it => it.value),
+          types: updates.map(it => it.type),
         });
       }
 
@@ -440,18 +443,20 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
     if (!(tilemap instanceof BaseTilemap)) return;
 
     tilemapIgnoreSet.add(tilemap);
-    for (const update of packet.updates) {
-      if (update.type === "atlas") {
+    for (let i = 0; i < packet.xs.length; i++) {
+      const type = packet.types[i];
+      const value = packet.values[i];
+      if (type === "atlas") {
         tilemap.setTileInfo(
-          update.x,
-          update.y,
-          update.value !== undefined ? { type: "atlas", id: update.value } : undefined,
+          packet.xs[i],
+          packet.ys[i],
+          value !== undefined ? { type: "atlas", id: value } : undefined,
         );
-      } else if (update.type === "color") {
+      } else if (type === "color") {
         tilemap.setTileInfo(
-          update.x,
-          update.y,
-          update.value !== undefined ? { type: "color", color: update.value } : undefined,
+          packet.xs[i],
+          packet.ys[i],
+          value !== undefined ? { type: "color", color: value } : undefined,
         );
       }
     }
