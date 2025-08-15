@@ -66,7 +66,11 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
 
     const definition = serializeEntityDefinition(
       game,
-      entity.getDefinition(), // TODO: (see client entity-sync)
+      entity[internal.entityGenerateDefinition]({
+        withRefs: true,
+        forNetwork: true,
+        withData: true,
+      }),
       event.entity.parent!.ref,
     );
 
@@ -330,7 +334,7 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
   const tilemapIgnoreSet = new Set<BaseTilemap>();
   const dirtyTilemaps = new Map<
     BaseTilemap,
-    { x: number; y: number; type: "atlas" | "color"; value?: number }[]
+    { xs: number[]; ys: number[]; types: ("atlas" | "color")[]; values: (number | undefined)[] }
   >();
   game.on(TilemapUpdate, signal => {
     if (game.status !== GameStatus.Running) return;
@@ -340,14 +344,12 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
     if (tilemapIgnoreSet.has(tilemap)) return;
     if (!(tilemap.root === game.world || tilemap.root === game.prefabs)) return;
 
-    const arr = dirtyTilemaps.get(tilemap) ?? [];
-    arr.push({
-      x: signal.x,
-      y: signal.y,
-      type: signal.info?.type ?? "atlas",
-      value: signal.info?.type === "atlas" ? signal.info.id : signal.info?.color,
-    });
-    dirtyTilemaps.set(tilemap, arr);
+    const updates = dirtyTilemaps.get(tilemap) ?? { xs: [], ys: [], types: [], values: [] };
+    updates.xs.push(signal.x);
+    updates.ys.push(signal.y);
+    updates.types.push(signal.info?.type ?? "atlas");
+    updates.values.push(signal.info?.type === "atlas" ? signal.info.id : signal.info?.color);
+    dirtyTilemaps.set(tilemap, updates);
   });
 
   game.on(TilemapBatchUpdate, signal => {
@@ -358,24 +360,22 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
     if (tilemapIgnoreSet.has(tilemap)) return;
     if (!(tilemap.root === game.world || tilemap.root === game.prefabs)) return;
 
-    const arr = dirtyTilemaps.get(tilemap) ?? [];
-    for (let i = 0; i < signal.xs.length; i++) {
-      const x = signal.xs[i];
-      const y = signal.ys[i];
-      const id = signal.atlasIds[i];
-      arr.push({ x, y, type: "atlas", value: id });
-    }
-    dirtyTilemaps.set(tilemap, arr);
+    const updates = dirtyTilemaps.get(tilemap) ?? { xs: [], ys: [], types: [], values: [] };
+    updates.xs = updates.xs.concat(signal.xs);
+    updates.ys = updates.ys.concat(signal.ys);
+    for (let i = 0; i < signal.xs.length; i++) updates.types.push("atlas");
+    updates.values = updates.values.concat(signal.atlasIds);
+    dirtyTilemaps.set(tilemap, updates);
   });
 
   game.on(InternalGameTick, () => {
     for (const [tilemap, updates] of dirtyTilemaps) {
-      if (updates.length > 256 * 64) {
+      if (updates.xs.length > 256 * 64) {
         const chunkIds = new Set<`${"atlas" | "color"}:${number}:${number}`>();
-        for (const update of updates) {
-          const chunkX = Math.floor(update.x / TilemapChunk.CHUNK_SIZE);
-          const chunkY = Math.floor(update.y / TilemapChunk.CHUNK_SIZE);
-          chunkIds.add(`${update.type}:${chunkX}:${chunkY}`);
+        for (let i = 0; i < updates.xs.length; i++) {
+          const chunkX = Math.floor(updates.xs[i] / TilemapChunk.CHUNK_SIZE);
+          const chunkY = Math.floor(updates.ys[i] / TilemapChunk.CHUNK_SIZE);
+          chunkIds.add(`${updates.types[i]}:${chunkX}:${chunkY}`);
         }
 
         for (const id of chunkIds) {
@@ -396,10 +396,10 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
         net.broadcast({
           t: "UpdateTilemap",
           ref: tilemap.ref,
-          xs: updates.map(it => it.x),
-          ys: updates.map(it => it.y),
-          values: updates.map(it => it.value),
-          types: updates.map(it => it.type),
+          xs: updates.xs,
+          ys: updates.ys,
+          values: updates.values,
+          types: updates.types,
         });
       }
 

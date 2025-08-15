@@ -76,5 +76,6 @@ export const syncedObjectContainerReadyField = Symbol.for(
 );
 export const tilemapGetChunk = Symbol.for("dreamlab.internal.tilemapGetChunk");
 export const tilemapGetChunkById = Symbol.for("dreamlab.internal.tilemapGetChunkById");
+export const tilemapChunkMap = Symbol.for("dreamlab.internal.tilemapChunkMap");
 
 export { TilemapChunk } from "./entity/entities/tilemap-chunk.ts";

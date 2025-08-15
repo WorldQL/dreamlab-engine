@@ -548,6 +548,7 @@ export abstract class Entity implements ISignalHandler {
   #generatePlainDefinition(
     withRefs: boolean,
     forNetwork: boolean,
+    withData: boolean,
   ): EntityDefinition<this> & { typeName: string } {
     const entityValues: Partial<Omit<this, keyof Entity>> = {};
     for (const [key, value] of this.values.entries()) {
@@ -592,7 +593,7 @@ export abstract class Entity implements ISignalHandler {
       values: entityValues,
       // @ts-expect-error hard-cast string -> Exclude<keyof this, …>
       sync: syncOverrides,
-      data: this.saveDataForScene?.(),
+      data: withData ? this.saveDataForScene?.() : undefined,
     };
   }
 
@@ -638,8 +639,12 @@ export abstract class Entity implements ISignalHandler {
     };
   }
 
-  #generateRichDefinition(withRefs: boolean, forNetwork: boolean): EntityDefinition<this> {
-    const definition = this.#generatePlainDefinition(withRefs, forNetwork);
+  #generateRichDefinition(
+    withRefs: boolean,
+    forNetwork: boolean,
+    withData: boolean,
+  ): EntityDefinition<this> {
+    const definition = this.#generatePlainDefinition(withRefs, forNetwork, withData);
     definition.behaviors =
       this.behaviors.length === 0
         ? undefined
@@ -659,12 +664,17 @@ export abstract class Entity implements ISignalHandler {
   [internal.entityGenerateDefinition](opts: {
     withRefs?: boolean;
     forNetwork?: boolean;
+    withData?: boolean;
   }): EntityDefinition<this> {
-    return this.#generateRichDefinition(opts.withRefs ?? false, opts.forNetwork ?? false);
+    return this.#generateRichDefinition(
+      opts.withRefs ?? false,
+      opts.forNetwork ?? false,
+      opts.withData ?? true,
+    );
   }
 
   getDefinition(): EntityDefinition<this> {
-    return this.#generateRichDefinition(true, false);
+    return this.#generateRichDefinition(true, false, true);
   }
 
   cloneInto(other: Entity, overrides: Partial<EntityDefinition<this>> = {}): this {

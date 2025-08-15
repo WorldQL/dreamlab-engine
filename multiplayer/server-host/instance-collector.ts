@@ -32,7 +32,7 @@ const instanceWatchdogTask = () => {
       if (session === undefined) continue;
       if (session.wasShutDown) continue;
 
-      if (Date.now() - session.lastHeartbeat > 5_000) {
+      if (Date.now() - session.lastHeartbeat > 7_500) {
         instance.logs.error("Forcefully terminating session as it was not responding");
         try {
           session.ipc.process.kill("SIGKILL");

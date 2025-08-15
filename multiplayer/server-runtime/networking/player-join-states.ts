@@ -1,8 +1,14 @@
-import { ConnectionId, PlayerJoined, PlayerLeft, ServerRoot } from "@dreamlab/engine";
+import {
+  BaseTilemap,
+  ConnectionId,
+  PlayerJoined,
+  PlayerLeft,
+  ServerRoot,
+} from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { serializeEntityDefinition } from "@dreamlab/proto/common/entity-sync.ts";
 import { PlayerConnectionDropped } from "@dreamlab/proto/common/signals.ts";
-import { PlayPacket } from "@dreamlab/proto/play.ts";
+import { PlayPacket, ServerPacket } from "@dreamlab/proto/play.ts";
 import { EntitySchema, getSceneFromProject, ProjectSchema } from "@dreamlab/scene";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { ServerNetworkSetupRoutine } from "./net-manager.ts";
@@ -16,6 +22,8 @@ export const handlePlayerJoinExchange: ServerNetworkSetupRoutine = (net, game) =
     if (connectionState === undefined && packet.phase === "initialized") {
       connectionStates.set(from, packet.phase);
 
+      const auxPackets: ServerPacket[] = [];
+
       // TODO: remove hack
       // BEGIN HACK: load scene def for use below
       const projectDesc = await game
@@ -28,16 +36,42 @@ export const handlePlayerJoinExchange: ServerNetworkSetupRoutine = (net, game) =
 
       const worldEntities = [];
       for (const child of game.world.children.values()) {
+        const isTilemap = child instanceof BaseTilemap;
         worldEntities.push(
-          serializeEntityDefinition(game, child.getDefinition(), game.world.ref),
+          serializeEntityDefinition(
+            game,
+            child[internal.entityGenerateDefinition]({
+              withRefs: true,
+              forNetwork: true,
+              withData: !isTilemap,
+            }),
+            game.world.ref,
+          ),
         );
+
+        if (isTilemap) {
+          for (const chunk of child[internal.tilemapChunkMap].values()) {
+            auxPackets.push({
+              t: "DumpTilemap",
+              ref: child.ref,
+              chunkX: chunk.x,
+              chunkY: chunk.y,
+              type: chunk.type,
+              data: chunk.save(),
+            });
+          }
+        }
       }
 
       const prefabEntities = [];
       for (const child of game.prefabs.children.values()) {
         const serialized = serializeEntityDefinition(
           game,
-          child.getDefinition(),
+          child[internal.entityGenerateDefinition]({
+            withRefs: true,
+            forNetwork: true,
+            withData: true,
+          }),
           game.prefabs.ref,
         );
 
@@ -85,7 +119,8 @@ export const handlePlayerJoinExchange: ServerNetworkSetupRoutine = (net, game) =
         prefabEntities,
       });
 
-      // TODO: send RichReportValues here after we have packet queue handling in the client
+      // TODO: send aux packets
+      for (const packet of auxPackets) net.send(from, packet);
     }
 
     if (connectionState === "initialized" && packet.phase === "loaded") {

@@ -56,6 +56,7 @@ type TilemapChunkOptions = {
   readonly id: ChunkId;
   readonly x: number;
   readonly y: number;
+  readonly type: ChunkType;
 };
 
 export abstract class TilemapChunk {
@@ -64,12 +65,14 @@ export abstract class TilemapChunk {
   readonly id: ChunkId;
   readonly x: number;
   readonly y: number;
+  readonly type: ChunkType;
   abstract readonly bounds: Readonly<TilemapBounds>;
 
   constructor(opts: TilemapChunkOptions) {
     this.id = opts.id;
     this.x = opts.x;
     this.y = opts.y;
+    this.type = opts.type;
   }
 
   abstract getTile(localX: number, localY: number): number | undefined;

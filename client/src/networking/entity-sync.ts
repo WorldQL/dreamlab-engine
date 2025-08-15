@@ -72,7 +72,11 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
 
     const definition = serializeEntityDefinition(
       game,
-      entity[internal.entityGenerateDefinition]({ withRefs: true, forNetwork: true }),
+      entity[internal.entityGenerateDefinition]({
+        withRefs: true,
+        forNetwork: true,
+        withData: true,
+      }),
       event.entity.parent!.ref,
     );
 

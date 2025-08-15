@@ -4,6 +4,52 @@
     "engine_revision": "2024-08.001"
   },
   "scenes": {
-    "main": {}
+    "main": {
+      "registration": [],
+      "world": [
+        {
+          "ref": "ent_W3axUCxgmg",
+          "type": "@core/Tilemap",
+          "name": "Tilemap",
+          "enabled": true,
+          "values": {
+            "resolution": 16,
+            "atlas": "res://assets/tilemap-atlas.png"
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_4svnkCvvYG",
+              "script": "res://src/generate.ts",
+              "values": {
+                "width": 4500,
+                "height": 4500
+              }
+            }
+          ]
+        }
+      ],
+      "local": [
+        {
+          "ref": "ent_WsGEtUUFZH",
+          "type": "@core/Camera",
+          "name": "Camera",
+          "enabled": true,
+          "values": {
+            "active": true
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_h8qBBgcmYw",
+              "script": "res://src/camera-controller.ts",
+              "values": {
+                "minZoom": 0.001
+              }
+            }
+          ]
+        }
+      ],
+      "server": [],
+      "prefabs": []
+    }
   }
 }

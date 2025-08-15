@@ -7,18 +7,24 @@ export default class GenerateBehavior extends Behavior {
   height = 200;
 
   onInitialize(): void {
-    const ys = [];
-    const xs = [];
-    const tileIds = [];
+    if (!this.game.isServer()) return;
 
-    for (let y = 0; y < this.width; y++) {
-      for (let x = 0; x < this.width; x++) {
-        ys.push(y);
-        xs.push(x);
-        tileIds.push(Math.floor(Math.random() * 6));
+      const then = performance.now();
+
+      const ys = [];
+      const xs = [];
+      const tileIds = [];
+
+      for (let y = 0; y < this.width; y++) {
+        for (let x = 0; x < this.width; x++) {
+          ys.push(y);
+          xs.push(x);
+          tileIds.push(Math.floor(Math.random() * 6));
+        }
       }
-    }
 
-    this.entity.cast(Tilemap).setTiles(xs, ys, tileIds);
+      this.entity.cast(Tilemap).setTiles(xs, ys, tileIds);
+
+      console.log(`spawned tiles in ${(performance.now() - then).toFixed(3)}ms`)
   }
 }

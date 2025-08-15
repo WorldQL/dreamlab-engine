@@ -283,6 +283,7 @@ export abstract class BaseTilemap extends PixiEntity {
       id,
       x: chunkX,
       y: chunkY,
+      type,
     };
 
     // specialized chunk impl for server
@@ -331,6 +332,9 @@ export abstract class BaseTilemap extends PixiEntity {
   }
   [internal.tilemapGetChunkById](id: ChunkId): TilemapChunk | undefined {
     return this.#chunks.get(id);
+  }
+  get [internal.tilemapChunkMap](): Map<ChunkId, TilemapChunk> {
+    return this.#chunks;
   }
 
   #tileToChunkCoords(x: number, y: number): IVector2 {
