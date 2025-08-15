@@ -52,6 +52,7 @@ export class BottomTabs implements InspectorUIWidget {
       this.#prefabContent.style.display = tabId === "prefabs" ? "flex" : "none";
       this.#assistantContent.style.display = tabId === "assistant" ? "flex" : "none";
       this.#tilemapContent.style.display = tabId === "tilemap" ? "flex" : "none";
+      if (tabId === "tilemap") this.#tilemapViewer.resize();
     };
 
     const aiSuggestionsPopup = new AISuggestionsPopup();
