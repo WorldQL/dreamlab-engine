@@ -322,7 +322,7 @@ export abstract class BaseTilemap extends PixiEntity {
       this.#chunks.set(id, chunk);
       return chunk;
     } else {
-      throw new Error("unknown chunk type");
+      throw new Error("unknown chunk type: " + type);
     }
   }
 
