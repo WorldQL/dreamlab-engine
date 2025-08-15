@@ -379,7 +379,7 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
         }
 
         for (const id of chunkIds) {
-          const type = id.substring(id.indexOf(":")) as "atlas" | "color";
+          const type = id.substring(0, id.indexOf(":")) as "atlas" | "color";
           const chunk = tilemap[internal.tilemapGetChunkById](id);
           if (!chunk) continue;
 
