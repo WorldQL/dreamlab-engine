@@ -1,13 +1,9 @@
 import {
-  Camera,
-  EditorChangeRequiresRestart,
-  EditorChangeRestartCleared,
   Entity,
   EntityConstructor,
   EntityContext,
   EntityDestroyed,
   EntityTransformUpdate,
-  enumAdapter,
   GameTick,
   IBounds,
   IVector2,
@@ -34,9 +30,6 @@ import {
   TilemapChunk,
 } from "./tilemap-chunk.ts";
 
-type ScaleFilterMode = enumAdapter.Union<typeof ScaleFilterModeAdapter>;
-const ScaleFilterModeAdapter = enumAdapter(["default", "linear", "nearest"]);
-
 // #region data and types
 export type TileInfo =
   | { readonly type: "atlas"; readonly id: number }
@@ -53,7 +46,6 @@ export abstract class BaseTilemap extends PixiEntity {
 
   atlas: string = "";
   resolution: number = 64;
-  scaleFilterMode: ScaleFilterMode = "default";
 
   #boundsDirty: boolean = false;
   #dirtyChunks: Set<ClientTextureTilemapChunk | ClientColorTilemapChunk> = new Set();
@@ -77,13 +69,6 @@ export abstract class BaseTilemap extends PixiEntity {
     }
 
     const texture: PIXI.Texture<PIXI.TextureSource> = _texture;
-    const camera = Camera.getActive(this.game);
-    const scaleMode = camera?.scaleFilterMode ?? "nearest";
-
-    texture.source.scaleMode = scaleMode;
-    texture.source.update();
-    texture.update();
-
     texture.label = this.atlas;
     return texture;
   }
@@ -353,10 +338,6 @@ export abstract class BaseTilemap extends PixiEntity {
       this.#container = new PIXI.Container({ label: "container" });
     }
 
-    const markDirty = () => {
-      this.#boundsDirty = true;
-    };
-
     // @ts-expect-error: abstract class
     const ctor: EntityConstructor<BaseTilemap> = BaseTilemap;
 
@@ -368,11 +349,6 @@ export abstract class BaseTilemap extends PixiEntity {
       description:
         "The texture atlas used for rendering tilemap textures. Can be dragged from the project panel or typed with 'res://<path>'.",
     });
-    const scale = this.defineValue(ctor, "scaleFilterMode", {
-      type: ScaleFilterModeAdapter,
-      description:
-        "The scale filter mode for rendering textures in the tilemap (default, linear, nearest).",
-    });
 
     resolution.onChanged(() => {
       this.#updateAtlasTexture();
@@ -380,27 +356,6 @@ export abstract class BaseTilemap extends PixiEntity {
 
     atlasValue.onChanged(() => {
       this.#updateAtlasTexture();
-    });
-
-    let originalScale: ScaleFilterMode | undefined;
-
-    scale.onChanged((newValue, oldValue) => {
-      markDirty();
-      if (!this.game.isEditMode || oldValue === newValue) return;
-
-      if (originalScale === undefined) {
-        originalScale = oldValue;
-        this.game.fire(
-          EditorChangeRequiresRestart,
-          `Scale filter mode for "${this.name}" entity has changed.`,
-        );
-      } else if (newValue === originalScale) {
-        originalScale = undefined;
-        this.game.fire(
-          EditorChangeRestartCleared,
-          `Scale filter mode for "${this.name}" entity has changed.`,
-        );
-      }
     });
 
     this.on(EntityTransformUpdate, () => this.#updateSize());
