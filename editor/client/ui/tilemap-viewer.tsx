@@ -41,7 +41,7 @@ export class TileMapViewer {
   #dragging: { start: IVector2; end: IVector2 } | undefined = undefined;
   #selectedTiles = new Set<number>();
 
-  async setup(ui: InspectorUI): Promise<void> {
+  async setup(ui: InspectorUI, content: HTMLDivElement): Promise<void> {
     const app = new PIXI.Application();
     await app.init({
       autoDensity: true,
@@ -50,6 +50,9 @@ export class TileMapViewer {
       resolution: globalThis.devicePixelRatio,
       backgroundAlpha: 0,
     });
+
+    app.canvas.width = content.clientWidth;
+    app.canvas.height = content.clientHeight;
 
     this.container.appendChild(app.canvas);
     this.#app = app;
@@ -400,6 +403,6 @@ export class TileMapViewer {
   }
 
   resize() {
-    this.#app.resize();
+    this.#app.queueResize();
   }
 }

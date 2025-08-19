@@ -159,7 +159,7 @@ export class BottomTabs implements InspectorUIWidget {
     this.#logViewer.setup(ui);
     this.#prefabViewer.setup(ui);
     this.#assistant.setup(ui);
-    this.#tilemapViewer.setup(ui);
+    this.#tilemapViewer.setup(ui, content);
 
     ui.selectedEntity.listen(selected => {
       const hasTileMap = selected.length === 1 && selected[0] instanceof EditorFacadeTilemap;
