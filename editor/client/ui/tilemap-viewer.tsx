@@ -134,6 +134,7 @@ export class TileMapViewer {
           await this.#loadAtlas(tilemap);
 
           this.#selectedTiles.clear();
+          this.#updateSelectedTiles(tilemap);
           this.#drawGrid();
           this.#drawSelected();
         };
