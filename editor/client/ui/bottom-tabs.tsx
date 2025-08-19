@@ -6,7 +6,7 @@ import { Terminal, Box, icon, Bot, Wand, LoaderCircle, Map } from "../_icons.tsx
 import { ClientGame } from "@dreamlab/engine";
 import { Assistant } from "./assistant/assistant.tsx";
 import { AISuggestionsPopup } from "./ai-suggestions-popup.tsx";
-import { TileMapViewer } from "./tilemap-viewer.tsx";
+import { TileMapViewer } from "./tilemap-viewer.ts";
 import { EditorFacadeTilemap } from "../../common/facades/tilemap.ts";
 
 export class BottomTabs implements InspectorUIWidget {
