@@ -1,6 +1,5 @@
 import {
   BaseTilemap,
-  Camera,
   Entity,
   EntityContext,
   GameRender,
@@ -78,22 +77,9 @@ export class EditorFacadeTilemap extends BaseTilemap {
     const cached = this.#textureCache.get(cacheId);
     if (cached) return cached;
 
-    const camera = Camera.getActive(this.game);
-    const scaleMode: Exclude<BaseTilemap["scaleFilterMode"], "default"> =
-      this.scaleFilterMode === "default"
-        ? (camera?.scaleFilterMode ?? "nearest")
-        : this.scaleFilterMode;
-
-    const updateScaleMode = (texture: PIXI.Texture) => {
-      if (texture.source.scaleMode === scaleMode) return;
-      texture.source.scaleMode = scaleMode;
-      texture.source.update();
-    };
-
     const url = this.game.resolveResource(this.atlas);
-    const texture = await PIXI.Assets.load({ src: url, data: { scaleMode } });
+    const texture = await PIXI.Assets.load({ src: url, data: { scaleMode: "nearest" } });
     if (!(texture instanceof PIXI.Texture)) throw new Error("invalid texture");
-    updateScaleMode(texture);
 
     this.#tooltipCols = Math.floor(texture.width / this.resolution);
     this.#tooltipRows = Math.floor(texture.height / this.resolution);
@@ -109,7 +95,7 @@ export class EditorFacadeTilemap extends BaseTilemap {
     const final = renderer.generateTexture({
       target: new PIXI.Sprite(slice),
       resolution: this.resolution,
-      textureSourceOptions: { scaleMode },
+      textureSourceOptions: { scaleMode: "nearest" },
     });
 
     this.#textureCache.set(cacheId, final);
@@ -155,7 +141,6 @@ export class EditorFacadeTilemap extends BaseTilemap {
 
     if (!this.game.isClient()) return;
     if (!this.container) return;
-    const game = this.game;
 
     this.#tooltip = new PIXI.Graphics();
     this.#tooltip.alpha = 0;

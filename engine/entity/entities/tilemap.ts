@@ -63,7 +63,8 @@ export abstract class BaseTilemap extends PixiEntity {
   async #getAtlasTexture(): Promise<PIXI.Texture> {
     if (this.atlas === "") return PIXI.Texture.EMPTY;
 
-    const _texture = await PIXI.Assets.load(this.game.resolveResource(this.atlas));
+    const url = this.game.resolveResource(this.atlas);
+    const _texture = await PIXI.Assets.load({ src: url, data: { scaleMode: "nearest" } });
     if (!(_texture instanceof PIXI.Texture)) {
       throw new TypeError("texture is not a pixi texture");
     }

@@ -254,7 +254,7 @@ export class TileMapViewer {
       if (tilemap.atlas === "") throw new Error("empty texture");
 
       const url = this.game.resolveResource(tilemap.atlas);
-      const texture = await PIXI.Assets.load({ src: url, data: { scaleMode: "linear" } });
+      const texture = await PIXI.Assets.load({ src: url, data: { scaleMode: "nearest" } });
       if (!(texture instanceof PIXI.Texture)) {
         throw new Error("not a texture");
       }
