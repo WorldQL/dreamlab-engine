@@ -229,7 +229,14 @@ export class TileMapViewer {
         throw new Error("not a texture");
       }
 
+      if (this.#sprite.texture === texture) return;
       this.#sprite.texture = texture;
+
+      const canvas = this.#app.canvas;
+      const pad = 1.1;
+      const w = canvas.width / (texture.width * pad);
+      const h = canvas.height / (texture.height * pad);
+      this.#zoom = Math.min(w, h);
     } catch {
       this.#sprite.texture = PIXI.Texture.EMPTY;
     }
