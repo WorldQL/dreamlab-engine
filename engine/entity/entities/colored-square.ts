@@ -28,6 +28,12 @@ export class ColoredSquare extends PixiEntity {
   strokeColor: string = "black";
   strokeWidth: number = 0;
 
+  // this seems like an ugly hack but it isn't.
+  // The alternative to this is passing through signals or adding this to every entity
+  // We can add this pattern to other entities if they need to avoid redrawing on every EntityTransformUpdate
+  #prevGlobalScaleX = 1;
+  #prevGlobalScaleY = 1;
+
   get #color(): PIXI.Color {
     try {
       return new PIXI.Color(this.color);
@@ -88,20 +94,21 @@ export class ColoredSquare extends PixiEntity {
       description: "Width of the stroke border (0 = no stroke).",
     });
 
-    this.on(EntityTransformUpdate, () => {
-      if (!this.#gfx) return;
-      const scale = this.globalTransform.scale.clone();
-      if (this.borderRadius !== 0) {
-        scale.x /= ColoredSquare.#HI_RES;
-        scale.y /= ColoredSquare.#HI_RES;
-      }
-
-      this.#gfx.scale.set(scale.x, scale.y);
-    });
-
     const updateGfx = () => {
       this.#draw();
     };
+
+    this.on(EntityTransformUpdate, () => {
+      if (!this.#gfx) return;
+      if (
+        this.globalTransform.scale.x !== this.#prevGlobalScaleX ||
+        this.globalTransform.scale.y !== this.#prevGlobalScaleY
+      ) {
+        updateGfx();
+      }
+      this.#prevGlobalScaleX = this.globalTransform.scale.x;
+      this.#prevGlobalScaleY = this.globalTransform.scale.y;
+    });
 
     const widthValue = this.values.get("width");
     const heightValue = this.values.get("height");
@@ -124,12 +131,23 @@ export class ColoredSquare extends PixiEntity {
     strokeWidthValue?.onChanged(updateGfx);
   }
 
+  /* Stroke is always uniform across the shape. Pixi does not have support for multiple stroke widths.
+  TODO: Implement a way to "squish and squash" entire colored squares including their border using scale.
+  This would require complex behavior with multiple Rects per draw
+
+  Right now we've designed this to accomodate 99% of needs:
+  - Build easily with ColoredSquare in the editor
+  - Get consistent stroke widths regardless of shape dimensions
+  - Only redraw on scale change for performance reasons.
+  
+  */
+
   static readonly #HI_RES: number = 100;
   #draw(): void {
     if (!this.#gfx) return;
 
-    const width = Math.abs(this.width);
-    const height = Math.abs(this.height);
+    const width = Math.abs(this.width * this.globalTransform.scale.x);
+    const height = Math.abs(this.height * this.globalTransform.scale.y);
     const color = this.#color;
     const strokeColor = this.#strokeColor;
     const strokeWidth = Math.abs(this.strokeWidth) / 100;
@@ -164,10 +182,7 @@ export class ColoredSquare extends PixiEntity {
         });
       }
 
-      const globalScale = this.globalTransform.scale;
-      const scaleX = globalScale.x * scale;
-      const scaleY = globalScale.y * scale;
-      this.#gfx.scale.set(scaleX, scaleY);
+      this.#gfx.scale.set(scale, scale);
     } else {
       this.#gfx
         .clear()
@@ -178,8 +193,7 @@ export class ColoredSquare extends PixiEntity {
         this.#gfx.stroke({ color: strokeColor, alpha: strokeColor.alpha, width: strokeWidth });
       }
 
-      const scale = this.globalTransform.scale;
-      this.#gfx.scale.set(scale.x, scale.y);
+      this.#gfx.scale.set(1, 1);
     }
 
     this.#gfx.tint = this.#tint;
