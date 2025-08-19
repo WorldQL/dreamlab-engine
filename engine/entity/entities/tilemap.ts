@@ -167,13 +167,12 @@ export abstract class BaseTilemap extends PixiEntity {
   }
 
   setTileInfo(x: number, y: number, info: TileInfo | undefined): void {
-    this.#boundsDirty = true;
-
     if (info === undefined) {
       this.clearTile(x, y);
       return;
     }
 
+    this.#boundsDirty = true;
     this.game.fire(TilemapUpdate, this, x, y, info);
     this.fire(TilemapUpdate, this, x, y, info);
 
@@ -228,6 +227,7 @@ export abstract class BaseTilemap extends PixiEntity {
       }
     }
 
+    this.#boundsDirty = true;
     this.game.fire(TilemapUpdate, this, x, y, undefined);
     this.fire(TilemapUpdate, this, x, y, undefined);
   }
@@ -238,6 +238,7 @@ export abstract class BaseTilemap extends PixiEntity {
       this.#chunks.delete(id);
     }
 
+    this.#boundsDirty = true;
     this.game.fire(TilemapClear, this);
   }
   // #endregion
