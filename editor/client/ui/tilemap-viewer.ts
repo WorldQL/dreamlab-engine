@@ -1,6 +1,8 @@
 import { ClientGame, IVector2, Vector2 } from "@dreamlab/engine";
+import { element as elem } from "@dreamlab/ui";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { EditorFacadeTilemap } from "../../common/facades/tilemap.ts";
+import { icon, SquarePen } from "../_icons.tsx";
 import { InspectorUI } from "./inspector.ts";
 
 const PINCH_THRESHOLD = 50;
@@ -42,6 +44,11 @@ export class TileMapViewer {
   #selectedTiles = new Set<number>();
 
   async setup(ui: InspectorUI, content: HTMLDivElement): Promise<void> {
+    await this.#setupApp(ui, content);
+    this.#setupOverlays(ui, content);
+  }
+
+  async #setupApp(ui: InspectorUI, content: HTMLDivElement): Promise<void> {
     const app = new PIXI.Application();
     await app.init({
       autoDensity: true,
@@ -225,6 +232,23 @@ export class TileMapViewer {
     });
   }
 
+  #overlay!: HTMLDivElement;
+  #overlayLabel!: HTMLSpanElement;
+  #overlayValue!: HTMLSpanElement;
+
+  #setupOverlays(_ui: InspectorUI, _content: HTMLDivElement): void {
+    this.#overlayLabel = elem("span", {}, ["Selected Tile"]);
+    this.#overlayValue = elem("span", {}, ["N/A"]);
+
+    this.#overlay = elem("div", { id: "tile-overlay", style: { display: "none" } }, [
+      icon(SquarePen),
+      this.#overlayLabel,
+      this.#overlayValue,
+    ]);
+
+    this.container.appendChild(elem("div", { id: "tilemap-overlays" }, [this.#overlay]));
+  }
+
   async #loadAtlas(tilemap: EditorFacadeTilemap): Promise<void> {
     try {
       if (tilemap.atlas === "") throw new Error("empty texture");
@@ -255,6 +279,10 @@ export class TileMapViewer {
       tilemap.paletteId = [];
       tilemap.paletteRows = 1;
       tilemap.paletteCols = 1;
+
+      this.#overlay.style.display = "none";
+      this.#overlayLabel.textContent = "Selected Tile";
+      this.#overlayValue.textContent = "N/A";
     } else {
       const texture = this.#sprite.texture;
       const res = tilemap.resolution;
@@ -292,6 +320,11 @@ export class TileMapViewer {
       tilemap.paletteId = palette;
       tilemap.paletteCols = w;
       tilemap.paletteRows = h;
+
+      this.#overlay.style.display = palette.length > 0 ? "" : "none";
+      this.#overlayLabel.textContent = palette.length > 1 ? "Selected Tiles" : "Selected Tile";
+      this.#overlayValue.textContent =
+        palette.length > 5 ? `${palette.length}\u00d7 Tiles` : palette.join(" ");
     }
 
     tilemap.paletteIdDirty = true;

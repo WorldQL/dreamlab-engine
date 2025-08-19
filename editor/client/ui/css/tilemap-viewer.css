@@ -1,9 +1,44 @@
-#tilemap-viewer {
-  width: 100%;
-  height: 100%;
-}
+#tilemap-viewer-content {
+  position: relative;
 
-#tilemap-grid {
-  width: 100%;
-  height: 100%;
+  & > #tilemap-overlays {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+
+    & > #tile-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      border-radius: 0 0 var(--border-radius) 0;
+
+      display: flex;
+      flex-direction: row;
+      gap: 0.4rem;
+      padding: 0.5em;
+      background-color: rgb(var(--color-bg-1));
+      width: auto;
+      font-size: 0.7em;
+      opacity: 0.65;
+
+      pointer-events: none;
+
+      & * {
+        font-family: var(--font-mono);
+        font-weight: 600;
+      }
+
+      svg {
+        width: 1em;
+        height: 1em;
+      }
+
+      /* & > :nth-child(3) {
+        margin-right: 0.5rem;
+      }
+      & > :nth-child(6) {
+        margin-right: 0.5rem;
+      } */
+    }
+  }
 }
