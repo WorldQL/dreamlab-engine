@@ -1,7 +1,7 @@
 import { ClientGame, IVector2, Vector2 } from "@dreamlab/engine";
-import { InspectorUI } from "./inspector.ts";
-import { EditorFacadeTilemap } from "../../common/facades/tilemap.ts";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
+import { EditorFacadeTilemap } from "../../common/facades/tilemap.ts";
+import { InspectorUI } from "./inspector.ts";
 
 const PINCH_THRESHOLD = 50;
 const SCROLL_THRESHOLD = 15;
@@ -73,6 +73,12 @@ export class TileMapViewer {
     this.#app.stage.addChild(this.#selected);
 
     app.ticker.add(() => {
+      const texture = this.#sprite.texture;
+      const w = (texture.width * this.#zoom) / 2;
+      const h = (texture.height * this.#zoom) / 2;
+      this.#pan.x = Math.min(Math.max(this.#pan.x, -w), w);
+      this.#pan.y = Math.min(Math.max(this.#pan.y, -h), h);
+
       const { width, height } = this.#app.canvas;
       const x = width / 2 + this.#pan.x;
       const y = height / 2 + this.#pan.y;
@@ -236,6 +242,8 @@ export class TileMapViewer {
       const pad = 1.1;
       const w = canvas.width / (texture.width * pad);
       const h = canvas.height / (texture.height * pad);
+      this.#pan.x = 0;
+      this.#pan.y = 0;
       this.#zoom = Math.min(w, h);
     } catch {
       this.#sprite.texture = PIXI.Texture.EMPTY;
