@@ -363,7 +363,6 @@ export class TutorialHost implements InspectorUIWidget {
     if (TutorialHost.didLoad) return;
     TutorialHost.didLoad = true;
     const projectId = _game.worldId;
-    console.log(projectId);
     if (projectId.includes("TutorialInteractive")) {
       try {
         const projectName = projectId.split("/")[1];
