@@ -111,13 +111,10 @@ export class FileTree implements InspectorUIWidget {
     filesURL.pathname = `/api/v1/edit/${this.game.instanceId}/files`;
     const files = fetch(filesURL)
       .then(r => r.json())
-      .then(obj => ({
-        files: (obj.files || []).filter((file: string) => !file.startsWith(".")),
-      }));
 
     files.then(({ files }) => {
       if (files.includes(".singleplayer")) {
-        PrefabViewer.singleplayerMode = true;
+        PrefabViewer.instance?.updateDropRoot(true);
       }
 
       const fileTreeRoot: FileTreeNode = { type: "directory", name: "", children: new Map() };
@@ -142,6 +139,8 @@ export class FileTree implements InspectorUIWidget {
       }
 
       const addNode = (node: FileTreeNode, parent?: HTMLElement, path = "") => {
+        if (node.name.startsWith('.')) return; // don't render dotfiles.
+        
         const currentPath = path ? `${path}/${node.name}` : node.name;
         const header = elem("span", {}, [
           elem("span", { className: "icon" }, [icon(this.#getIconForNode(node))]),

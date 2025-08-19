@@ -31,9 +31,9 @@ export class PrefabViewer {
   prefabsRoot!: Entity;
   #iconPicker: IconPicker;
 
-  static singleplayerMode = true;
+  static instance: PrefabViewer | undefined = undefined;
 
-  private dropRoot: "world" | "local" | "server";
+  private dropRoot: "world" | "local" | "server" = "world";
 
   private getDropRootEntity(): Entity {
     const edit = this.game.world._.EditEntities;
@@ -55,18 +55,22 @@ export class PrefabViewer {
     this.#iconPicker = new IconPicker((newIcon: string) => {
       this.changeEntityIcon(this.inspectorUI, newIcon);
     });
+    PrefabViewer.instance = this;
+    this.updateDropRoot();
+  }
 
+  public updateDropRoot(isSingleplayerMode = false) {
     const key = `@dreamlab_${this.game.instanceId}_prefab-drop-root`;
     const stored = localStorage.getItem(key) as "world" | "local" | "server" | null;
-
     if (stored) {
       this.dropRoot = stored;
-    } else if (PrefabViewer.singleplayerMode) {
+    } else if (isSingleplayerMode) {
       this.dropRoot = "local";
       localStorage.setItem(key, "local");
-    } else {
-      this.dropRoot = "world";
     }
+
+    const d = document.getElementById("prefab-drop-root-select") as HTMLSelectElement;
+    if (d) d.value = this.dropRoot;
   }
 
   private inspectorUI!: InspectorUI;
@@ -76,6 +80,7 @@ export class PrefabViewer {
 
     const dropSelect = (
       <select
+        id="prefab-drop-root-select"
         className="prefab-drop-root-select"
         title="Choose the default parent for dropped prefabs"
         value={this.dropRoot}
