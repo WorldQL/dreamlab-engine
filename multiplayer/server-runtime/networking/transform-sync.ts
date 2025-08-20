@@ -112,9 +112,9 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
           entityTransformReports.teleports.length = 0;
           entityTransformReports.parents.length = 0;
         }
-
-        transformDirtyEntities.clear();
       }
+
+      transformDirtyEntities.clear();
     },
     { priority: -10 },
   );
