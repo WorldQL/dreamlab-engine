@@ -177,7 +177,7 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
   net.registerPacketHandler("ReportEntityTransforms", (from, packet) => {
     for (let i = 0; i < packet.entities.length; i++) {
       const entity = game.entities.lookupByRef(packet.entities[i]);
-      if (entity === undefined) return;
+      if (entity === undefined) continue;
       if (entity.authority === undefined || from === entity.authority) {
         ignoredEntityRefs.add(entity.ref);
         entity[internal.transformFromNetwork](
