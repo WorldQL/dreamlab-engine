@@ -32,6 +32,7 @@ jobs:
           IS_DEV: "true"
       - name: Pin engine revision
         continue-on-error: true
+        working-directory: ./dreamlab
         run: deno run -A ./build-system/postprocess-html.ts ./editor/web/
       - name: Upload build
         uses: actions/upload-artifact@v4
