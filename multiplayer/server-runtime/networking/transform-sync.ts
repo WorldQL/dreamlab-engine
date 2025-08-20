@@ -58,7 +58,7 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
 
       if (entity.name.includes(".NoNetTransform")) {
         continue;
-      };
+      }
 
       const currTransform = transformFor(entity);
       const lastTransform = lastTransforms.get(entity);

@@ -109,8 +109,7 @@ export class FileTree implements InspectorUIWidget {
 
     const filesURL = new URL(connectionDetails.serverUrl);
     filesURL.pathname = `/api/v1/edit/${this.game.instanceId}/files`;
-    const files = fetch(filesURL)
-      .then(r => r.json())
+    const files = fetch(filesURL).then(r => r.json());
 
     files.then(({ files }) => {
       if (files.includes(".singleplayer")) {
@@ -139,8 +138,8 @@ export class FileTree implements InspectorUIWidget {
       }
 
       const addNode = (node: FileTreeNode, parent?: HTMLElement, path = "") => {
-        if (node.name.startsWith('.')) return; // don't render dotfiles.
-        
+        if (node.name.startsWith(".")) return; // don't render dotfiles.
+
         const currentPath = path ? `${path}/${node.name}` : node.name;
         const header = elem("span", {}, [
           elem("span", { className: "icon" }, [icon(this.#getIconForNode(node))]),
