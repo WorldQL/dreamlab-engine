@@ -971,6 +971,14 @@ export abstract class Entity implements ISignalHandler {
   [internal.entityNotifyEnableChanged](enabled_: boolean) {
     this.game[internal.entityTickingOrderDirty] = true;
     const enabled = enabled_ && this.#enabled;
+
+    if (enabled) {
+      this.#prevPosition = this.globalTransform.position.bare();
+      this.#prevRotation = this.globalTransform.rotation;
+      this.#prevScale = this.globalTransform.scale.bare();
+      this.#interpolated = new Transform(this.globalTransform);
+    }
+
     this.fire(EntityEnableChanged, enabled);
     for (const child of this.children.values()) {
       child[internal.entityNotifyEnableChanged](enabled);
