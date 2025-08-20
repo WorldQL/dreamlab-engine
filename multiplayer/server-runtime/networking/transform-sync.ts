@@ -9,7 +9,8 @@ import {
   Transform,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
-import { EntityTransformReport } from "@dreamlab/proto/play.ts";
+import { PlayPacket } from "@dreamlab/proto/play.ts";
+import { Simplify } from "@dreamlab/vendor/type-fest.ts";
 import { ServerNetworkSetupRoutine } from "./net-manager.ts";
 
 export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
@@ -51,8 +52,21 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
     });
   });
 
+  type EntityTransformReports = Simplify<
+    Omit<PlayPacket<"ReportEntityTransforms", "client">, "t">
+  >;
+
+  const entityTransformReports: EntityTransformReports = {
+    entities: [],
+    positions: [],
+    rotations: [],
+    scales: [],
+    zs: [],
+    teleports: [],
+    parents: [],
+  };
+
   game.on(InternalGameTick, () => {
-    const entityTransformReports: EntityTransformReport[] = [];
     for (const entity of transformDirtyEntities.values()) {
       // if (entity.authority !== undefined && entity.authority !== game.network.self) continue;
 
@@ -65,26 +79,33 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
       if (!lastTransform || !transformsEq(lastTransform, currTransform)) {
         lastTransforms.set(entity, currTransform);
 
-        entityTransformReports.push({
-          entity: entity.ref,
-          position: entity.transform.position.bare(),
-          rotation: entity.transform.rotation,
-          scale: entity.transform.scale.bare(),
-          z: entity.transform.z,
-          teleport: entity[internal.entityTeleportingThisTick],
-          parent: entity.parent?.ref,
-        });
+        entityTransformReports.entities.push(entity.ref);
+        entityTransformReports.positions.push(entity.transform.position.bare());
+        entityTransformReports.rotations.push(entity.transform.rotation);
+        entityTransformReports.scales.push(entity.transform.scale.bare());
+        entityTransformReports.zs.push(entity.transform.z);
+        entityTransformReports.teleports.push(entity[internal.entityTeleportingThisTick]);
+        entityTransformReports.parents.push(entity.parent?.ref);
       }
-    }
 
-    if (entityTransformReports.length > 0) {
-      net.broadcast({
-        t: "ReportEntityTransforms",
-        reports: entityTransformReports,
-      });
-    }
+      if (entityTransformReports.entities.length > 0) {
+        net.broadcast({
+          t: "ReportEntityTransforms",
+          ...entityTransformReports,
+        });
 
-    transformDirtyEntities.clear();
+        // clear arrays
+        entityTransformReports.entities.length = 0;
+        entityTransformReports.positions.length = 0;
+        entityTransformReports.rotations.length = 0;
+        entityTransformReports.scales.length = 0;
+        entityTransformReports.zs.length = 0;
+        entityTransformReports.teleports.length = 0;
+        entityTransformReports.parents.length = 0;
+      }
+
+      transformDirtyEntities.clear();
+    }
   });
 
   function announceAuthority(
@@ -143,18 +164,18 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
   });
 
   net.registerPacketHandler("ReportEntityTransforms", (from, packet) => {
-    for (const report of packet.reports) {
-      const entity = game.entities.lookupByRef(report.entity);
+    for (let i = 0; i < packet.entities.length; i++) {
+      const entity = game.entities.lookupByRef(packet.entities[i]);
       if (entity === undefined) return;
       if (entity.authority === undefined || from === entity.authority) {
         ignoredEntityRefs.add(entity.ref);
         entity[internal.transformFromNetwork](
           from,
           new Transform({
-            position: report.position,
-            rotation: report.rotation,
-            scale: report.scale,
-            z: report.z,
+            position: packet.positions[i],
+            rotation: packet.rotations[i],
+            scale: packet.scales[i],
+            z: packet.zs[i],
           }),
           true,
         );
@@ -163,9 +184,8 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
     }
 
     net.broadcast({
-      t: "ReportEntityTransforms",
+      ...packet,
       from,
-      reports: packet.reports,
     });
   });
 };

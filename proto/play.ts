@@ -232,20 +232,15 @@ export const ServerDenyExclusiveAuthorityPacket = z.object({
 });
 
 // clients can only report transform for entities over which they have exclusive authority
-export type EntityTransformReport = z.infer<typeof EntityTransformReportSchema>;
-export const EntityTransformReportSchema = z.object({
-  entity: EntityReferenceSchema,
-  position: Vector2Schema,
-  rotation: z.number(),
-  scale: Vector2Schema,
-  z: z.number(),
-  teleport: z.boolean().optional(),
-  parent: EntityReferenceSchema.optional(),
-});
-
 export const ClientReportEntityTransformsPacket = z.object({
   t: z.literal("ReportEntityTransforms"),
-  reports: EntityTransformReportSchema.array(),
+  entities: z.array(EntityReferenceSchema),
+  positions: z.array(Vector2Schema),
+  rotations: z.array(z.number()),
+  scales: z.array(Vector2Schema),
+  zs: z.array(z.number()),
+  teleports: z.array(z.boolean()),
+  parents: z.array(EntityReferenceSchema.or(z.undefined())),
 });
 
 export const ServerReportEntityTransformsPacket = ClientReportEntityTransformsPacket.extend({
