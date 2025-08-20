@@ -33,9 +33,11 @@ export const handleTransformSync: ClientNetworkSetupRoutine = (conn, game) => {
 
   const entityTransformReports: EntityTransformReports = {
     entities: [],
-    positions: [],
+    positionxs: [],
+    positionys: [],
     rotations: [],
-    scales: [],
+    scalexs: [],
+    scaleys: [],
     zs: [],
     teleports: [],
     parents: [],
@@ -49,11 +51,14 @@ export const handleTransformSync: ClientNetworkSetupRoutine = (conn, game) => {
 
       if (entity.authority !== undefined && entity.authority !== game.network.self) continue;
 
+      const transform = entity.transform;
       entityTransformReports.entities.push(entity.ref);
-      entityTransformReports.positions.push(entity.transform.position.bare());
-      entityTransformReports.rotations.push(entity.transform.rotation);
-      entityTransformReports.scales.push(entity.transform.scale.bare());
-      entityTransformReports.zs.push(entity.transform.z);
+      entityTransformReports.positionxs.push(transform.position.x);
+      entityTransformReports.positionys.push(transform.position.y);
+      entityTransformReports.rotations.push(transform.rotation);
+      entityTransformReports.scalexs.push(transform.scale.x);
+      entityTransformReports.scaleys.push(transform.scale.y);
+      entityTransformReports.zs.push(transform.z);
       entityTransformReports.teleports.push(entity[internal.entityTeleportingThisTick]);
       entityTransformReports.parents.push(entity.parent?.ref);
     }
@@ -66,9 +71,11 @@ export const handleTransformSync: ClientNetworkSetupRoutine = (conn, game) => {
 
       // clear arrays
       entityTransformReports.entities.length = 0;
-      entityTransformReports.positions.length = 0;
+      entityTransformReports.positionxs.length = 0;
+      entityTransformReports.positionys.length = 0;
       entityTransformReports.rotations.length = 0;
-      entityTransformReports.scales.length = 0;
+      entityTransformReports.scalexs.length = 0;
+      entityTransformReports.scaleys.length = 0;
       entityTransformReports.zs.length = 0;
       entityTransformReports.teleports.length = 0;
       entityTransformReports.parents.length = 0;
@@ -104,9 +111,15 @@ export const handleTransformSync: ClientNetworkSetupRoutine = (conn, game) => {
       entity[internal.transformFromNetwork](
         packet.from ?? "server",
         new Transform({
-          position: packet.positions[i],
+          position: {
+            x: packet.positionxs[i],
+            y: packet.positionys[i],
+          },
           rotation: packet.rotations[i],
-          scale: packet.scales[i],
+          scale: {
+            x: packet.scalexs[i],
+            y: packet.scaleys[i],
+          },
           z: packet.zs[i],
         }),
         packet.teleports[i],

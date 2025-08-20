@@ -4,7 +4,6 @@ import {
   ConnectionIdSchema,
   EntityDefinitionSchema,
   EntityReferenceSchema,
-  Vector2Schema,
 } from "./datamodel.ts";
 
 export const PLAY_PROTO_VERSION = 1;
@@ -235,9 +234,11 @@ export const ServerDenyExclusiveAuthorityPacket = z.object({
 export const ClientReportEntityTransformsPacket = z.object({
   t: z.literal("ReportEntityTransforms"),
   entities: z.array(EntityReferenceSchema),
-  positions: z.array(Vector2Schema),
+  positionxs: z.array(z.number()),
+  positionys: z.array(z.number()),
   rotations: z.array(z.number()),
-  scales: z.array(Vector2Schema),
+  scalexs: z.array(z.number()),
+  scaleys: z.array(z.number()),
   zs: z.array(z.number()),
   teleports: z.array(z.boolean()),
   parents: z.array(EntityReferenceSchema.or(z.undefined())),
