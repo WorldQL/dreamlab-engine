@@ -43,46 +43,50 @@ export const handleTransformSync: ClientNetworkSetupRoutine = (conn, game) => {
     parents: [],
   };
 
-  game.on(InternalGameTick, () => {
-    for (const entity of transformDirtyEntities.values()) {
-      if (entity.name.includes(".NoNetTransform")) {
-        continue;
+  game.on(
+    InternalGameTick,
+    () => {
+      for (const entity of transformDirtyEntities.values()) {
+        if (entity.name.includes(".NoNetTransform")) {
+          continue;
+        }
+
+        if (entity.authority !== undefined && entity.authority !== game.network.self) continue;
+
+        const transform = entity.transform;
+        entityTransformReports.entities.push(entity.ref);
+        entityTransformReports.positionxs.push(transform.position.x);
+        entityTransformReports.positionys.push(transform.position.y);
+        entityTransformReports.rotations.push(transform.rotation);
+        entityTransformReports.scalexs.push(transform.scale.x);
+        entityTransformReports.scaleys.push(transform.scale.y);
+        entityTransformReports.zs.push(transform.z);
+        entityTransformReports.teleports.push(entity[internal.entityTeleportingThisTick]);
+        entityTransformReports.parents.push(entity.parent?.ref);
       }
 
-      if (entity.authority !== undefined && entity.authority !== game.network.self) continue;
+      if (entityTransformReports.entities.length > 0) {
+        conn.send({
+          t: "ReportEntityTransforms",
+          ...entityTransformReports,
+        });
 
-      const transform = entity.transform;
-      entityTransformReports.entities.push(entity.ref);
-      entityTransformReports.positionxs.push(transform.position.x);
-      entityTransformReports.positionys.push(transform.position.y);
-      entityTransformReports.rotations.push(transform.rotation);
-      entityTransformReports.scalexs.push(transform.scale.x);
-      entityTransformReports.scaleys.push(transform.scale.y);
-      entityTransformReports.zs.push(transform.z);
-      entityTransformReports.teleports.push(entity[internal.entityTeleportingThisTick]);
-      entityTransformReports.parents.push(entity.parent?.ref);
-    }
+        // clear arrays
+        entityTransformReports.entities.length = 0;
+        entityTransformReports.positionxs.length = 0;
+        entityTransformReports.positionys.length = 0;
+        entityTransformReports.rotations.length = 0;
+        entityTransformReports.scalexs.length = 0;
+        entityTransformReports.scaleys.length = 0;
+        entityTransformReports.zs.length = 0;
+        entityTransformReports.teleports.length = 0;
+        entityTransformReports.parents.length = 0;
+      }
 
-    if (entityTransformReports.entities.length > 0) {
-      conn.send({
-        t: "ReportEntityTransforms",
-        ...entityTransformReports,
-      });
-
-      // clear arrays
-      entityTransformReports.entities.length = 0;
-      entityTransformReports.positionxs.length = 0;
-      entityTransformReports.positionys.length = 0;
-      entityTransformReports.rotations.length = 0;
-      entityTransformReports.scalexs.length = 0;
-      entityTransformReports.scaleys.length = 0;
-      entityTransformReports.zs.length = 0;
-      entityTransformReports.teleports.length = 0;
-      entityTransformReports.parents.length = 0;
-    }
-
-    transformDirtyEntities.clear();
-  });
+      transformDirtyEntities.clear();
+    },
+    { priority: -10 },
+  );
 
   game.on(EntityExclusiveAuthorityChanged, event => {
     const entity = event.entity;
