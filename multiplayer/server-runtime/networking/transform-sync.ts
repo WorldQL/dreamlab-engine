@@ -56,6 +56,10 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
     for (const entity of transformDirtyEntities.values()) {
       // if (entity.authority !== undefined && entity.authority !== game.network.self) continue;
 
+      if (entity.name.includes(".NoNetTransform")) {
+        continue;
+      };
+
       const currTransform = transformFor(entity);
       const lastTransform = lastTransforms.get(entity);
       if (!lastTransform || !transformsEq(lastTransform, currTransform)) {
