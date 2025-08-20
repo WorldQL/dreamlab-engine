@@ -23,6 +23,11 @@ addEventListener("unhandledrejection", event => {
   if (event.reason) console.error("caught potential fatal error:", event.reason);
 });
 
+addEventListener("error", event => {
+  event.preventDefault();
+  if (event.error) console.error("caught potential fatal error:", event.error);
+});
+
 const workerData = JSON.parse(Deno.env.get("DREAMLAB_MP_WORKER_DATA")!) as WorkerInitData;
 Deno.env.delete("DREAMLAB_MP_WORKER_DATA");
 
