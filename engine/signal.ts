@@ -36,6 +36,7 @@ export interface SignalSubscription<S extends Signal = Signal> {
 }
 
 export interface SignalListenerOptions {
+  /** lower number runs before higher number */
   priority?: number;
   abort?: AbortSignal;
 }
