@@ -72,23 +72,23 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
           entityTransformReports.z.push(transform.z);
           entityTransformReports.tp.push(entity[internal.entityTeleportingThisTick]);
         }
+      }
 
-        if (entityTransformReports.ref.length > 0) {
-          net.broadcast({
-            t: "ReportEntityTransforms",
-            ...entityTransformReports,
-          });
+      if (entityTransformReports.ref.length > 0) {
+        net.broadcast({
+          t: "ReportEntityTransforms",
+          ...entityTransformReports,
+        });
 
-          // clear arrays
-          entityTransformReports.ref.length = 0;
-          entityTransformReports.posX.length = 0;
-          entityTransformReports.posY.length = 0;
-          entityTransformReports.rot.length = 0;
-          entityTransformReports.sclX.length = 0;
-          entityTransformReports.sclY.length = 0;
-          entityTransformReports.z.length = 0;
-          entityTransformReports.tp.length = 0;
-        }
+        // clear arrays
+        entityTransformReports.ref.length = 0;
+        entityTransformReports.posX.length = 0;
+        entityTransformReports.posY.length = 0;
+        entityTransformReports.rot.length = 0;
+        entityTransformReports.sclX.length = 0;
+        entityTransformReports.sclY.length = 0;
+        entityTransformReports.z.length = 0;
+        entityTransformReports.tp.length = 0;
       }
 
       transformDirtyEntities.clear();
