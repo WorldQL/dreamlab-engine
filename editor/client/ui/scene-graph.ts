@@ -85,6 +85,7 @@ export class SceneGraph implements InspectorUIWidget {
   }
 
   setup(ui: InspectorUI): void {
+    console.log('setting up inspector UI. (ignore this log)')
     const treeRoot = elem("div", { id: "scene-graph-tree" });
     this.#section.append(treeRoot);
 
