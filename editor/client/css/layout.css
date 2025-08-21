@@ -213,3 +213,41 @@ main > div {
 .row-resize {
   cursor: row-resize !important;
 }
+
+html[data-popout="true"],
+html[data-popout="true"] body {
+  height: 100%;
+  overflow: hidden;
+}
+
+html[data-popout="true"] main {
+  display: block !important;
+  padding: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+}
+
+html[data-popout="true"] main > :not(#gameview) {
+  display: none !important;
+}
+
+html[data-popout="true"] #gameview {
+  display: block !important;
+  position: fixed !important;
+  inset: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+}
+
+html[data-popout="true"] #viewport {
+  height: 100% !important;
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+html[data-popout="true"] #viewport > div#games {
+  width: 100% !important;
+  height: 100% !important;
+}

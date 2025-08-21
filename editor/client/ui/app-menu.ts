@@ -31,6 +31,7 @@ import {
 import { AspectRatio, getAspectRatio, setAspectRatio } from "../aspect-ratio.ts";
 import { IconButton } from "../components/mod.ts";
 import { InspectorUI } from "./inspector.ts";
+import { ContextMenu, ContextMenuItem } from "./context-menu.ts";
 
 export class AppMenu {
   #section = elem("section", { id: "app-menu" });
@@ -44,6 +45,8 @@ export class AppMenu {
     paused: false,
   };
   private playFocused: boolean = false;
+  private ctxMenu!: ContextMenu;
+  private _popoutAttemptToken = 0;
 
   constructor(
     private uiRoot: HTMLElement,
@@ -113,6 +116,24 @@ export class AppMenu {
         ariaLabel: "Stop",
       }),
     };
+
+    this.ctxMenu = new ContextMenu(this.games.edit);
+    this.ctxMenu.setup(editUI);
+    this.ctxMenu.show(this.uiRoot);
+
+    this.#attachSplitMenu(this.controls.play, [
+      { label: "Open in new tab", onClick: () => this.#openNewTab(), group: 0 },
+      { label: "Open 1 pop-out", onClick: () => this.#openPopouts(1), group: 1 },
+      { label: "Open 2 pop-outs", onClick: () => this.#openPopouts(2), group: 1 },
+      { label: "Open 3 pop-outs", onClick: () => this.#openPopouts(3), group: 1 },
+    ]);
+
+    this.#attachSplitMenu(this.controls.edit, [
+      { label: "Open in new tab", onClick: () => this.#openNewTab(), group: 0 },
+      { label: "Open 1 pop-out", onClick: () => this.#openPopouts(1), group: 1 },
+      { label: "Open 2 pop-outs", onClick: () => this.#openPopouts(2), group: 1 },
+      { label: "Open 3 pop-outs", onClick: () => this.#openPopouts(3), group: 1 },
+    ]);
 
     this.controls.play.addEventListener("click", async () => {
       const playButton = this.controls.play.querySelector("button")!;
@@ -418,6 +439,13 @@ export class AppMenu {
       pause.disable();
     }
 
+    (this.controls.play as unknown as HTMLElement).style.display = this.playFocused
+      ? "none"
+      : "";
+    (this.controls.edit as unknown as HTMLElement).style.display = this.playFocused
+      ? ""
+      : "none";
+
     if (paused) {
       pause.setIcon(Play);
       pause.className = "resume";
@@ -449,5 +477,146 @@ export class AppMenu {
       this.updateButtonStates();
     });
     this.games.edit.network.sendCustomMessage("server", "edit:play-session", {});
+  }
+
+  #attachSplitMenu(
+    host: IconButton,
+    items: {
+      label: string | HTMLSpanElement;
+      onClick: () => void;
+      disabled?: boolean;
+      hint?: string;
+      group?: number;
+      order?: number;
+    }[],
+  ) {
+    const container = host;
+    const btn = container.querySelector("button");
+    if (!btn) return;
+
+    container.classList.add("has-split");
+
+    const SPLIT_W = 18;
+    container.style.setProperty("--split-w", `${SPLIT_W}px`);
+
+    const split = document.createElement("span");
+    split.className = "split-zone";
+    split.tabIndex = 0;
+    split.setAttribute("aria-label", "More options");
+    btn.append(split);
+
+    const openMenu = () => {
+      if (btn.disabled) return;
+
+      const menuItems = items.map(
+        ({ label, onClick, disabled, hint, group, order }) =>
+          [label, onClick, disabled, hint, group, order] as ContextMenuItem,
+      );
+
+      const r = split.getBoundingClientRect();
+      this.ctxMenu.drawContextMenu(r.right, r.bottom + 6, menuItems);
+    };
+
+    split.addEventListener("pointerdown", e => {
+      if (btn.disabled) return;
+      e.preventDefault();
+      e.stopPropagation();
+    });
+    split.addEventListener("click", e => {
+      if (btn.disabled) return;
+      e.preventDefault();
+      e.stopPropagation();
+      openMenu();
+    });
+    split.addEventListener("keydown", e => {
+      if (btn.disabled) return;
+      if (e.key === "Enter" || e.key === " " || e.key === "ArrowDown") {
+        e.preventDefault();
+        openMenu();
+      }
+    });
+  }
+
+  #openNewTab() {
+    const url = this.#buildEditorUrl();
+    const w = window.open(url, "_blank");
+    if (!w) {
+      console.warn("New tab was blocked by the browser.");
+    }
+  }
+
+  #openPopouts(count: number) {
+    const url = this.#buildEditorUrl();
+    const token = ++this._popoutAttemptToken;
+    let created = 0;
+
+    for (let i = 0; i < count; i++) {
+      const name = `dreamlab-popout-${Date.now()}-${i}`;
+      const features = this.#popupFeatures(1200, 800, i);
+
+      const w = window.open(url, name, features);
+      if (w) {
+        created++;
+        try {
+          if (w.location && w.location.href === "about:blank") {
+            w.location.replace(url);
+          }
+          w.focus();
+        } catch {
+          // ignore
+        }
+      }
+    }
+
+    if (created === 0 && this._popoutAttemptToken === token) {
+      console.warn("Pop-outs were blocked by the browser.");
+    }
+  }
+
+  #popupFeatures(width: number, height: number, idx: number): string {
+    const { left, top } = this.#calcPopupRect(width, height, idx);
+    return [
+      `width=${width}`,
+      `height=${height}`,
+      `left=${left}`,
+      `top=${top}`,
+      "toolbar=0",
+      "menubar=0",
+      "location=0",
+      "status=0",
+      "resizable=1",
+      "scrollbars=1",
+      "noopener",
+    ].join(",");
+  }
+
+  #calcPopupRect(width: number, height: number, idx: number) {
+    const GAP = 40 * idx;
+    const availW = screen.availWidth ?? window.innerWidth;
+    const availH = screen.availHeight ?? window.innerHeight;
+    const left = Math.max(0, Math.floor((availW - width) / 2) + GAP);
+    const top = Math.max(0, Math.floor((availH - height) / 2) + GAP);
+    return { width, height, left, top };
+  }
+
+  #buildEditorUrl(): string {
+    const base = new URL(`${window.location.origin}/`);
+    base.search = "";
+    base.hash = "";
+
+    base.searchParams.set("game", String(this.games.edit.worldId || ""));
+    base.searchParams.set("instance", this.games.edit.instanceId);
+    base.searchParams.set("server", this.#resolveWsRoot());
+    base.searchParams.set("play_session", "1");
+    base.searchParams.set("popout", "true");
+
+    return base.toString();
+  }
+
+  #resolveWsRoot(): string {
+    const url = new URL(connectionDetails.serverUrl);
+    if (url.protocol === "http:") url.protocol = "ws:";
+    else if (url.protocol === "https:") url.protocol = "wss:";
+    return `${url.protocol}//${url.host}/`;
   }
 }

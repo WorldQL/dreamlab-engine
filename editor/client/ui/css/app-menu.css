@@ -46,7 +46,11 @@
     margin-bottom: 0;
   }
 
-  & :is(#edit-button, #play-button):has(> .disabled) {
+  &:not([data-play-focused]) #edit-button {
+    display: none;
+  }
+
+  &[data-play-focused] #play-button {
     display: none;
   }
 
@@ -56,7 +60,7 @@
     --color-active: rgb(var(--color-accent-darker) / 1);
   }
 
-  & #edit-button {
+  #edit-button {
     --color: rgb(var(--color-bg-2) / 1);
     --color-hover: rgb(var(--color-bg-2) / 0.5);
     --color-active: rgb(var(--color-bg-2) / 1);
@@ -66,11 +70,11 @@
     --color: rgb(var(--color-yellow) / 1);
     --color-hover: rgb(var(--color-yellow-darker) / 1);
     --color-active: rgb(var(--color-yellow-darker) / 1);
-    &.resume {
-      --color: rgb(var(--color-green) / 1);
-      --color-hover: rgb(var(--color-green-darker) / 1);
-      --color-active: rgb(var(--color-green-darker) / 1);
-    }
+  }
+  &[data-play-focused] #pause-button.resume {
+    --color: rgb(var(--color-green) / 1);
+    --color-hover: rgb(var(--color-green-darker) / 1);
+    --color-active: rgb(var(--color-green-darker) / 1);
   }
   &:not([data-play-focused]) #pause-button {
     --color: rgb(var(--color-grey) / 1);
@@ -78,13 +82,13 @@
     --color-active: rgb(var(--color-grey-darker) / 1);
   }
 
-  & #stop-button {
+  #stop-button {
     --color: rgb(var(--color-danger) / 1);
     --color-hover: rgb(var(--color-danger-darker) / 1);
     --color-active: rgb(var(--color-danger-darker) / 1);
   }
 
-  & #stats {
+  #stats {
     display: flex;
     flex-direction: column;
     gap: 0.125em;
@@ -158,13 +162,77 @@
     }
   }
 
-  #play-button:has(> button[disabled]) {
+  #play-button:has(button[disabled]) {
     opacity: 0.5;
     pointer-events: none;
   }
-
-  #play-button:has(> button[disabled]):hover {
+  #play-button:has(button[disabled]):hover {
     background-color: transparent;
     color: rgb(var(--color-grey));
+  }
+
+  :is(#play-button, #edit-button).has-split {
+    position: relative;
+    display: inline-flex;
+  }
+
+  :is(#play-button, #edit-button).has-split > button:first-child {
+    position: relative;
+    padding-right: var(--split-w, 18px);
+  }
+
+  :is(#play-button, #edit-button).has-split > button:first-child:hover {
+    background: var(--color-hover);
+  }
+
+  :is(#play-button, #edit-button).has-split > button:first-child:has(.split-zone:hover) {
+    background: var(--color);
+  }
+
+  .split-zone {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: var(--split-w, 18px);
+    border-top-right-radius: inherit;
+    border-bottom-right-radius: inherit;
+    cursor: pointer;
+    background: var(--color);
+  }
+  .split-zone:hover {
+    background: var(--color-hover);
+  }
+
+  .split-zone::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 5px;
+    bottom: 5px;
+    width: 1px;
+    background: color-mix(in oklab, rgba(255, 255, 255, 0.45), transparent);
+    opacity: 0.7;
+    pointer-events: none;
+  }
+
+  .split-zone::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: calc(50% - 4px);
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid currentColor;
+    opacity: 0.9;
+    pointer-events: none;
+  }
+
+  .split-zone:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
   }
 }

@@ -42,16 +42,24 @@ import { BottomTabs } from "./ui/bottom-tabs.tsx";
 import { InspectorUI } from "./ui/inspector.ts";
 import { UndoRedoManager } from "./undo-redo.ts";
 
-// TODO: loading screen ?
-
 const nickname = "Player" + Math.floor(Math.random() * 999) + 1;
 const info = await auth(nickname);
 
+const urlParams = new URLSearchParams(window.location.search);
+const isPopout = urlParams.get("popout") === "true";
+
 const connectUrl = urlToWebSocket(connectionDetails.serverUrl);
 connectUrl.pathname = `/api/v1/connect/${connectionDetails.instanceId}`;
-connectUrl.searchParams.set("token", info.token);
-connectUrl.searchParams.set("player_id", info.playerId);
-connectUrl.searchParams.set("nickname", info.nickname === "" ? nickname : info.nickname);
+
+if (isPopout) {
+  connectUrl.searchParams.set("player_id", info.playerId);
+  connectUrl.searchParams.set("nickname", info.nickname === "" ? nickname : info.nickname);
+  connectUrl.searchParams.set("play_session", "1");
+} else {
+  connectUrl.searchParams.set("token", info.token);
+  connectUrl.searchParams.set("player_id", info.playerId);
+  connectUrl.searchParams.set("nickname", info.nickname === "" ? nickname : info.nickname);
+}
 
 // #region Handle dropping files to upload directly into /assets
 export async function createFile(fileName: string, file: File | string, no_restart = false) {
@@ -277,11 +285,10 @@ Object.defineProperties(globalThis, {
   games: { value: games },
 });
 
-// setupMultiplayerCursors(game);
-await setupGame(game, conn, handshake.edit_mode);
+const editModeFlag = isPopout ? false : handshake.edit_mode;
+await setupGame(game, conn, editModeFlag);
 
-// center the camera on average position of entities
-{
+if (editModeFlag) {
   const allEntities: Entity[] = [];
   let xAcc = 0;
   let yAcc = 0;
@@ -320,7 +327,7 @@ for (const [type, namespace] of registry) {
   Object.defineProperty(globalThis, type.name, { value: type });
 }
 
-if (handshake.edit_mode) {
+if (editModeFlag) {
   game[internal.behaviorLoader].registerInternalBehavior(CameraPanBehavior, "@editor");
   game.local._.Camera.cast(Camera).addBehavior({ type: CameraPanBehavior });
 }
@@ -328,13 +335,15 @@ if (handshake.edit_mode) {
 loadingElem.style.display = "none";
 uiRoot.style.display = "";
 
-const inspector = new InspectorUI(game, conn, handshake.edit_mode, container);
-inspector.show(uiRoot);
+const inspector = new InspectorUI(game, conn, editModeFlag, container);
+if (!isPopout) {
+  inspector.show(uiRoot);
+} else {
+  document.documentElement.setAttribute("data-popout", "true");
+  document.getElementById("top-bar")?.style.setProperty("display", "none");
+}
 
-// const cursors = new MultiplayerCursors(game, uiRoot);
-// Reflect.defineProperty(globalThis, "cursors", { value: cursors });
-
-if (handshake.edit_mode) {
+if (editModeFlag) {
   game.network.onReceiveCustomMessage((_from, channel, data) => {
     if (channel !== "@editor/rename-behavior") return;
     const packet = z.object({ oldUri: z.string(), newUri: z.string() }).parse(data);
@@ -343,12 +352,14 @@ if (handshake.edit_mode) {
   });
 }
 
-const appMenu = new AppMenu(uiRoot, games);
-appMenu.setup(inspector);
+if (editModeFlag) {
+  const appMenu = new AppMenu(uiRoot, games);
+  appMenu.setup(inspector);
 
-const bottomTabs = new BottomTabs(games);
-bottomTabs.setup(inspector);
-bottomTabs.show(uiRoot);
+  const bottomTabs = new BottomTabs(games);
+  bottomTabs.setup(inspector);
+  bottomTabs.show(uiRoot);
+}
 
 const _ = new UndoRedoManager(game);
 
