@@ -5,10 +5,11 @@ import {
   EntityExclusiveAuthorityChanged,
   EntityTransformUpdate,
   InternalGameTick,
-  IVector2,
+  ITransform,
   Transform,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
+import { transformFor, transformsEq } from "@dreamlab/proto/common/transform.ts";
 import { PlayPacket } from "@dreamlab/proto/play.ts";
 import { Simplify } from "@dreamlab/vendor/type-fest.ts";
 import { ServerNetworkSetupRoutine } from "./net-manager.ts";
@@ -17,28 +18,7 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
   const ignoredEntityRefs = new Set<string>();
   const transformDirtyEntities = new Set<Entity>();
 
-  interface ITransform {
-    position: IVector2;
-    rotation: number;
-    scale: IVector2;
-    z: number;
-  }
   const lastTransforms = new WeakMap<Entity, ITransform>();
-
-  const transformFor = (entity: Entity): ITransform => ({
-    position: entity.globalTransform.position.bare(),
-    rotation: entity.globalTransform.rotation,
-    scale: entity.globalTransform.scale.bare(),
-    z: entity.globalTransform.z,
-  });
-
-  const transformsEq = (a: ITransform, b: ITransform) =>
-    a.position.x === b.position.x &&
-    a.position.y === b.position.y &&
-    a.rotation === b.rotation &&
-    a.scale.x === b.scale.x &&
-    a.scale.y === b.scale.y &&
-    a.z === b.z;
 
   game.world.on(EntityDescendantSpawned, event => {
     const entity = event.descendant;
@@ -57,15 +37,14 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
   >;
 
   const entityTransformReports: EntityTransformReports = {
-    entities: [],
-    positionxs: [],
-    positionys: [],
-    rotations: [],
-    scalexs: [],
-    scaleys: [],
-    zs: [],
-    teleports: [],
-    parents: [],
+    ref: [],
+    posX: [],
+    posY: [],
+    rot: [],
+    sclX: [],
+    sclY: [],
+    z: [],
+    tp: [],
   };
 
   game.on(
@@ -84,33 +63,31 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
           lastTransforms.set(entity, currTransform);
 
           const transform = entity.transform;
-          entityTransformReports.entities.push(entity.ref);
-          entityTransformReports.positionxs.push(transform.position.x);
-          entityTransformReports.positionys.push(transform.position.y);
-          entityTransformReports.rotations.push(transform.rotation);
-          entityTransformReports.scalexs.push(transform.scale.x);
-          entityTransformReports.scaleys.push(transform.scale.y);
-          entityTransformReports.zs.push(transform.z);
-          entityTransformReports.teleports.push(entity[internal.entityTeleportingThisTick]);
-          entityTransformReports.parents.push(entity.parent?.ref);
+          entityTransformReports.ref.push(entity.ref);
+          entityTransformReports.posX.push(transform.position.x);
+          entityTransformReports.posY.push(transform.position.y);
+          entityTransformReports.rot.push(transform.rotation);
+          entityTransformReports.sclX.push(transform.scale.x);
+          entityTransformReports.sclY.push(transform.scale.y);
+          entityTransformReports.z.push(transform.z);
+          entityTransformReports.tp.push(entity[internal.entityTeleportingThisTick]);
         }
 
-        if (entityTransformReports.entities.length > 0) {
+        if (entityTransformReports.ref.length > 0) {
           net.broadcast({
             t: "ReportEntityTransforms",
             ...entityTransformReports,
           });
 
           // clear arrays
-          entityTransformReports.entities.length = 0;
-          entityTransformReports.positionxs.length = 0;
-          entityTransformReports.positionys.length = 0;
-          entityTransformReports.rotations.length = 0;
-          entityTransformReports.scalexs.length = 0;
-          entityTransformReports.scaleys.length = 0;
-          entityTransformReports.zs.length = 0;
-          entityTransformReports.teleports.length = 0;
-          entityTransformReports.parents.length = 0;
+          entityTransformReports.ref.length = 0;
+          entityTransformReports.posX.length = 0;
+          entityTransformReports.posY.length = 0;
+          entityTransformReports.rot.length = 0;
+          entityTransformReports.sclX.length = 0;
+          entityTransformReports.sclY.length = 0;
+          entityTransformReports.z.length = 0;
+          entityTransformReports.tp.length = 0;
         }
       }
 
@@ -175,8 +152,8 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
   });
 
   net.registerPacketHandler("ReportEntityTransforms", (from, packet) => {
-    for (let i = 0; i < packet.entities.length; i++) {
-      const entity = game.entities.lookupByRef(packet.entities[i]);
+    for (let i = 0; i < packet.ref.length; i++) {
+      const entity = game.entities.lookupByRef(packet.ref[i]);
       if (entity === undefined) continue;
       if (entity.authority === undefined || from === entity.authority) {
         ignoredEntityRefs.add(entity.ref);
@@ -184,15 +161,15 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
           from,
           new Transform({
             position: {
-              x: packet.positionxs[i],
-              y: packet.positionys[i],
+              x: packet.posX[i],
+              y: packet.posY[i],
             },
-            rotation: packet.rotations[i],
+            rotation: packet.rot[i],
             scale: {
-              x: packet.scalexs[i],
-              y: packet.scaleys[i],
+              x: packet.sclX[i],
+              y: packet.sclY[i],
             },
-            z: packet.zs[i],
+            z: packet.z[i],
           }),
           true,
         );
