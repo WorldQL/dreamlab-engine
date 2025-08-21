@@ -26,9 +26,7 @@ export class Transform {
     return this.#position;
   }
   set position(value: IVector2) {
-    this.#position = new Vector2(value);
-    this.#assignSignalListeners();
-    this[transformOnChanged]();
+    this.#position.assign(value);
   }
 
   #scale = new Vector2(1, 1);
@@ -36,9 +34,7 @@ export class Transform {
     return this.#scale;
   }
   set scale(value: IVector2) {
-    this.#scale = new Vector2(value);
-    this.#assignSignalListeners();
-    this[transformOnChanged]();
+    this.#scale.assign(value);
   }
 
   #rotation: number = 0;
@@ -46,6 +42,7 @@ export class Transform {
     return this.#rotation;
   }
   set rotation(value: number) {
+    if (this.#rotation === value) return;
     this.#rotation = value;
     this[transformOnChanged]();
   }
@@ -55,8 +52,8 @@ export class Transform {
     return this.#z;
   }
   set z(value: number) {
+    if (this.#z === value) return;
     this.#z = value;
-    this[transformOnChanged]();
   }
 
   #assignSignalListeners() {
