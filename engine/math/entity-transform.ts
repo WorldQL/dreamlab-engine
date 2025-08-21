@@ -3,6 +3,7 @@ import { Vector2 } from "@dreamlab/engine";
 import {
   transformForceUpdate,
   transformOnChanged,
+  vectorForceUpdate,
   vectorOnChanged,
 } from "@dreamlab/engine/internal";
 
@@ -54,6 +55,7 @@ export class Transform {
   set z(value: number) {
     if (this.#z === value) return;
     this.#z = value;
+    this[transformOnChanged]();
   }
 
   #assignSignalListeners() {
@@ -90,8 +92,8 @@ export class Transform {
   [transformOnChanged]: () => void = () => {};
   [transformForceUpdate](transform: Transform): void {
     // update without issuing onChanged()
-    this.#position = new Vector2(transform.position);
-    this.#scale = new Vector2(transform.scale);
+    this.#position[vectorForceUpdate](transform.position.x, transform.position.y);
+    this.#scale[vectorForceUpdate](transform.scale.x, transform.scale.y);
     this.#rotation = transform.rotation;
     this.#z = transform.z;
 

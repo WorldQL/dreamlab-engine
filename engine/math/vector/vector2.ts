@@ -67,6 +67,11 @@ export class Vector2 implements IVector2, Vector<IVector2, Vector2> {
     this.#y = value;
     this[internal.vectorOnChanged]();
   }
+
+  [internal.vectorForceUpdate](x: number, y: number): void {
+    this.#x = x;
+    this.#y = y;
+  }
   // #endregion
 
   constructor(x: number, y: number);
