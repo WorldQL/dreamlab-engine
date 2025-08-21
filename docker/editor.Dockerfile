@@ -31,7 +31,7 @@ RUN deno install --entrypoint mod.ts
 COPY --chown=deno ./client /app/client
 COPY --chown=deno ./editor /app/editor
 WORKDIR /app/editor
-RUN deno task build
+RUN deno task build && deno run -A /app/build-system/postprocess-html.ts web
 
 FROM nginx:alpine
 COPY --from=build /app/editor/web /usr/share/nginx/html
