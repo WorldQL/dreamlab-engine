@@ -184,7 +184,11 @@ const container = document.createElement("div");
 uiRoot.querySelector<HTMLDivElement>("div#viewport > div#games")!.append(container);
 uiRoot.style.display = "none";
 
-const codec = pickCodec(connectUrl, undefined);
+const params = new URLSearchParams(window.location.search);
+const codec = pickCodec(
+  connectUrl,
+  params.get("editor-codec") ?? params.get("codec") ?? undefined,
+);
 const socket = new WebSocket(connectUrl);
 socket.binaryType = "arraybuffer";
 

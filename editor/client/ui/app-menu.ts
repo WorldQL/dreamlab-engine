@@ -258,7 +258,11 @@ export class AppMenu {
     connectURL.searchParams.set("nickname", player.nickname);
     connectURL.searchParams.set("play_session", "1");
 
-    const codec = pickCodec(connectURL, undefined);
+    const params = new URLSearchParams(window.location.search);
+    const codec = pickCodec(
+      connectURL,
+      params.get("play-codec") ?? params.get("codec") ?? undefined,
+    );
     const playSocket = new WebSocket(connectURL);
     playSocket.binaryType = "arraybuffer";
 
