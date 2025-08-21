@@ -655,7 +655,7 @@ export abstract class Entity implements ISignalHandler {
         : this.children
             .values()
             // @ts-ignore This breaks in typedef-gen. something wrong with shim?
-            .map(entity => entity.#generateRichDefinition(withRefs, forNetwork))
+            .map(entity => entity.#generateRichDefinition(withRefs, forNetwork, withData))
             .toArray();
 
     return definition;
