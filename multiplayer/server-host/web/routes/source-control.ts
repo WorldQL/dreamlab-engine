@@ -239,6 +239,7 @@ export const serveSourceControlAPI = (router: Router) => {
       }).spawn();
       await pruneProcess.status;
 
+      await broadcastWorldUpdate(instance, "project.json");
       ctx.response.body = { success: true };
     }
   });
@@ -461,7 +462,7 @@ export const serveSourceControlAPI = (router: Router) => {
       ctx.response.body = { error: errorMsg.trim() };
       return;
     }
-
+    await broadcastWorldUpdate(instance, "project.json");
     ctx.response.body = { success: true, message: `Checked out branch ${branch}` };
   });
   // #endregion
@@ -469,6 +470,7 @@ export const serveSourceControlAPI = (router: Router) => {
   // #region checkout commit
   router.post("/api/v1/source-control/:instance_id/checkout/commit", async ctx => {
     const BodySchema = z.object({ commit_hash: z.string() });
+
     let body;
     try {
       body = BodySchema.parse(await ctx.request.body.json());
@@ -477,6 +479,7 @@ export const serveSourceControlAPI = (router: Router) => {
       ctx.response.body = { error: err.toString() };
       return;
     }
+
     const instanceId = ctx.params.instance_id;
     if (!instanceId) {
       throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
@@ -488,19 +491,29 @@ export const serveSourceControlAPI = (router: Router) => {
     if (!instance.info.editMode) {
       throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
     }
+
     const sourceRoot = instance.info.worldDirectory;
-    const newBranchName = `branch-from-${body.commit_hash.slice(0, 7)}`;
+
     const checkoutProcess = new Deno.Command("git", {
-      args: ["checkout", "-b", newBranchName, body.commit_hash],
+      args: ["checkout", "--detach", body.commit_hash],
       cwd: sourceRoot,
+      stdout: "piped",
+      stderr: "piped",
     }).spawn();
-    const checkoutStatus = await checkoutProcess.status;
-    if (!checkoutStatus.success) {
+
+    const { code, stderr } = await checkoutProcess.output();
+    if (code !== 0) {
+      const err = new TextDecoder().decode(stderr).trim();
       ctx.response.status = Status.InternalServerError;
-      ctx.response.body = { error: `Failed to checkout commit ${body.commit_hash}` };
+      ctx.response.body = { error: `Failed to checkout ${body.commit_hash}: ${err}` };
       return;
     }
-    ctx.response.body = { success: true };
+
+    await broadcastWorldUpdate(instance, "project.json");
+    ctx.response.body = {
+      success: true,
+      message: `HEAD detached at ${body.commit_hash.slice(0, 7)}`,
+    };
   });
   // #endregion
 
@@ -537,6 +550,7 @@ export const serveSourceControlAPI = (router: Router) => {
       ctx.response.body = { error: `Failed to revert commit ${body.commit_hash}` };
       return;
     }
+    await broadcastWorldUpdate(instance, "project.json");
 
     ctx.response.body = { success: true };
   });
@@ -642,6 +656,7 @@ export const serveSourceControlAPI = (router: Router) => {
       };
       return;
     }
+    await broadcastWorldUpdate(instance, "project.json");
 
     ctx.response.body = { success: true };
   });
@@ -767,6 +782,7 @@ export const serveSourceControlAPI = (router: Router) => {
     }
 
     await buildWorld("default", Deno.cwd(), "_dist", instance.logs);
+    await broadcastWorldUpdate(instance, "project.json");
     ctx.response.body = { success: true };
   });
   // #endregion
@@ -1068,12 +1084,9 @@ export const serveSourceControlAPI = (router: Router) => {
 
     try {
       await runGitCommand(["fetch", "--all"]);
-
-      const branches = await runGitCommand(["branch", "-a", "--format=%(refname:short)"]);
-
       const logArgs = [
         "log",
-        ...branches.filter(b => !b.toLowerCase().includes("stash")),
+        "--all",
         "--pretty=format:%H|%P|%D|%s|%an|%ae|%ad",
         "--date=iso",
         "--abbrev-commit",
@@ -1262,7 +1275,7 @@ export const serveSourceControlAPI = (router: Router) => {
     }
     const sourceRoot = instance.info.worldDirectory;
     const branchProcess = new Deno.Command("git", {
-      args: ["branch", "-a", "--format=%(refname:short)"],
+      args: ["for-each-ref", "--format=%(refname:short)", "refs/heads", "refs/remotes"],
       cwd: sourceRoot,
       stdout: "piped",
       stderr: "piped",
@@ -1278,9 +1291,16 @@ export const serveSourceControlAPI = (router: Router) => {
     const branchOutput = new TextDecoder().decode(stdout);
     const branches = branchOutput
       .split("\n")
+      .map(l => l.trim())
       .filter(Boolean)
-      .map(line => line.trim())
-      .filter(branch => branch !== "origin/HEAD" && !branch.includes("->"));
+      .filter(
+        b =>
+          b !== "origin/HEAD" &&
+          b !== "HEAD" &&
+          !b.includes("->") &&
+          !b.startsWith("(") &&
+          !b.toLowerCase().includes("detached"),
+      );
     ctx.response.body = { branches };
   });
   // #endregion
@@ -1513,6 +1533,7 @@ export const serveSourceControlAPI = (router: Router) => {
       ctx.response.body = { error: "Failed to stash changes" };
       return;
     }
+    await broadcastWorldUpdate(instance, "project.json");
     ctx.response.body = { success: true };
   });
   // #endregion
@@ -1597,6 +1618,8 @@ export const serveSourceControlAPI = (router: Router) => {
       ctx.response.body = { error: `Failed to pop stash: ${new TextDecoder().decode(stderr)}` };
       return;
     }
+
+    await broadcastWorldUpdate(instance, "project.json");
     ctx.response.body = { success: true, output: new TextDecoder().decode(stdout) };
   });
   // #endregion
