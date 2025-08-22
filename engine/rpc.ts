@@ -7,6 +7,10 @@ import { createId } from "@dreamlab/vendor/nanoid.ts";
 export const rpc = Object.freeze({
   /**
    * Run a function on the server regardless of where it is called
+   *
+   * Function parameters must be serializable to {@link JsonValue}
+   *
+   * Server functions **must** return `void | Promise<void> | Promise<JsonValue>`
    */
   server<
     B extends Behavior,
@@ -75,9 +79,22 @@ export const rpc = Object.freeze({
 
   /**
    * Run a function on all clients
+   *
+   * Function parameters must be serializable to {@link JsonValue}
+   *
+   * Broadcast functions **must** return `void | Promise<void>`
    */
   broadcast<B extends Behavior, const A extends JsonValue[], R extends void | Promise<void>>(
-    opts: { target?: "all" | "only-clients" } = {},
+    opts: {
+      /**
+       * Target(s) to run the function on (default: `all`)
+       *
+       * `all` - Run function on server and all clients
+       *
+       * `only-clients` - Run function on all clients but *not* the server
+       */
+      target?: "all" | "only-clients";
+    } = {},
   ) {
     const target = opts.target ?? "all";
 
