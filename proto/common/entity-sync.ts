@@ -57,16 +57,24 @@ export const convertEntityDefinition = async (
 export const serializeTransform = (
   transform: TransformOptions,
 ): z.infer<typeof TransformSchema> => {
-  return {
+  const txfm = {
     position: transform.position
       ? { x: transform.position.x ?? 0, y: transform.position.y ?? 0 }
-      : { x: 0, y: 0 },
-    rotation: transform.rotation ?? 0,
+      : undefined,
+    rotation: transform.rotation,
     scale: transform.scale
       ? { x: transform.scale.x ?? 1, y: transform.scale.y ?? 1 }
-      : { x: 1, y: 1 },
-    z: transform.z ?? 0,
+      : undefined,
+    z: transform.z,
   };
+
+  if (txfm.position?.x === 0 && txfm.position?.y === 0) delete txfm.position;
+  if (txfm?.rotation === 0) delete txfm.rotation;
+  if (txfm.scale?.x === 1 && txfm.scale?.y === 1) delete txfm.scale;
+  if (txfm?.z === 0) delete txfm.z;
+
+  // @ts-expect-error: this works cba to fix the type
+  return txfm;
 };
 
 export const serializeBehaviorDefinition = (
@@ -110,7 +118,7 @@ export const serializeEntityDefinition = (
     ? def.behaviors.map(behavior => serializeBehaviorDefinition(game, behavior))
     : undefined;
 
-  return {
+  const desc: z.infer<typeof EntityDefinitionSchema> = {
     type: Entity.getTypeName(def.type),
     name: def.name,
     enabled: def.enabled,
@@ -125,6 +133,15 @@ export const serializeEntityDefinition = (
     parent: parentRef,
     data: def.data,
   };
+
+  if (desc.enabled === true) delete desc.enabled;
+  if (desc.values && Object.keys(desc.values).length === 0) delete desc.values;
+  if (desc.sync && Object.keys(desc.sync).length === 0) delete desc.sync;
+  if (desc.transform && Object.keys(desc.transform).length === 0) delete desc.transform;
+  if (desc.children && desc.children.length === 0) delete desc.children;
+  if (desc.data === undefined) delete desc.data;
+
+  return desc;
 };
 
 export const getAllEntityRefs = (def: EntityDefinition, refs?: Set<string>): Set<string> => {

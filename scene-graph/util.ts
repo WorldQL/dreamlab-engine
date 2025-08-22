@@ -112,6 +112,7 @@ export const serializeEntityDefinition = (
     children,
   };
 
+  if (desc.enabled === true) delete desc.enabled;
   if (desc.values && Object.keys(desc.values).length === 0) delete desc.values;
   if (desc.transform && Object.keys(desc.transform).length === 0) delete desc.transform;
   if (desc.children && desc.children.length === 0) delete desc.children;
