@@ -13,6 +13,7 @@ export * from "./kv/mod.ts";
 export * from "./network.ts";
 export * from "./physics.ts";
 export * from "./renderer/mod.ts";
+export * from "./rpc.ts";
 export * from "./signals/mod.ts";
 export * from "./synced-objects/mod.ts";
 export * from "./time.ts";
