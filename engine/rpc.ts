@@ -56,8 +56,7 @@ export const rpc = Object.freeze({
 
       return function (this: B, ...args: A): R {
         if (this.game.isServer()) {
-          const bound = original.bind(this);
-          return bound(...args);
+          return original.call(this, ...args);
         }
 
         const _id = createId();
@@ -104,15 +103,14 @@ export const rpc = Object.freeze({
       });
 
       return function (this: B, ...args: A): R {
-        const bound = original.bind(this);
         const channel = `@rpc/broadcast/${this.ref}/${name}`;
         const data = { target, args };
 
         if (this.game.isServer()) {
-          if (target === "all") bound(...args);
+          if (target === "all") original.call(this, ...data.args);
           this.game.network.broadcastCustomMessage(channel, data);
         } else {
-          bound(...args);
+          original.call(this, ...data.args);
           this.game.network.sendCustomMessage("server", channel, data);
         }
 
