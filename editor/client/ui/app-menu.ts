@@ -153,6 +153,7 @@ export class AppMenu {
         this.updateButtonStates();
         this.updateViewportStates(editUI);
         window.parent.postMessage("analytics-playButtonClicked", "*");
+        editUI.selectedEntity.entities = [];
       } finally {
         playButton.disabled = false;
       }
