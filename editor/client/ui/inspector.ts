@@ -185,6 +185,7 @@ export class InspectorUI {
     this.fileTree.hide();
     this.welcomeMenu.hide();
     this.reloadPrompt.hide();
-    this.tutorialHost.hide();
+    // hiding this breaks tutorial
+    // this.tutorialHost.hide();
   }
 }
