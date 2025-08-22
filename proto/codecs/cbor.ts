@@ -1,10 +1,11 @@
 import * as cbor from "@dreamlab/vendor/cbor2.ts";
+import { encodeCBOR } from "@dreamlab/vendor/exp-fast-cbor.ts";
 import { PlayPacket } from "../play.ts";
 import { PlayCodec } from "./mod.ts";
 
 export const CBOR_CODEC: PlayCodec = {
   encodePacket(packet: PlayPacket): Uint8Array {
-    return cbor.encode(packet);
+    return encodeCBOR(packet);
   },
   decodePacket(data: string | ArrayBufferLike | Blob | ArrayBufferView): PlayPacket {
     if (typeof data === "string") throw new TypeError("CBOR decoder expects binary data");

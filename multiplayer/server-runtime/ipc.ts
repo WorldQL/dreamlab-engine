@@ -1,5 +1,6 @@
 import { urlWithParams } from "@dreamlab/util/url.ts";
 import * as cbor from "@dreamlab/vendor/cbor2.ts";
+import { encodeCBOR } from "@dreamlab/vendor/exp-fast-cbor.ts";
 import { HostIPCMessage, WorkerIPCMessage } from "../server-common/ipc.ts";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 
@@ -67,7 +68,7 @@ export class IPCMessageBus {
 
   send(message: WorkerIPCMessage) {
     // this.#socket.send(JSON.stringify(message));
-    this.#socket.send(cbor.encode(message));
+    this.#socket.send(encodeCBOR(message));
   }
 
   addMessageListener<const Op extends HostIPCMessage["op"]>(
