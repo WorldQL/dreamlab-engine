@@ -12,14 +12,14 @@ interface Context {
 }
 
 function resizeIfNeeded(ctx: Context, needed: number): void {
-  if (ctx.buf.byteLength < ctx.pos + needed) {
-    ctx.chunks.push(ctx.buf.subarray(0, ctx.pos));
-    ctx.len += ctx.pos;
+  if (ctx.pos + needed <= ctx.buf.byteLength) return;
 
-    ctx.buf = new Uint8Array(Math.max(CHUNK_SIZE, needed));
-    ctx.view = undefined;
-    ctx.pos = 0;
-  }
+  ctx.chunks.push(ctx.buf.subarray(0, ctx.pos));
+  ctx.len += ctx.pos;
+
+  ctx.buf = new Uint8Array(needed < CHUNK_SIZE ? CHUNK_SIZE : needed);
+  ctx.view = undefined;
+  ctx.pos = 0;
 }
 
 function writeU8(ctx: Context, val: number): void {
@@ -173,9 +173,10 @@ function writeBytes(ctx: Context, buf: Uint8Array): void {
 function writeValue(ctx: Context, root: unknown): void {
   // deno-lint-ignore no-explicit-any
   const stack: any[] = [root];
+  let sp: number = 1;
 
-  while (stack.length > 0) {
-    const val = stack.pop();
+  while (sp > 0) {
+    const val = stack[--sp];
 
     switch (typeof val) {
       case "boolean": {
@@ -208,26 +209,29 @@ function writeValue(ctx: Context, root: unknown): void {
 
           // push backwards, so array pops in-order
           for (let idx = len - 1; idx >= 0; idx--) {
-            stack.push(val[idx]);
+            stack[sp++] = val[idx];
           }
 
           break;
         }
 
         if (val.constructor === Object) {
-          const keys = getObjectKeys(val);
-          const len = keys.length;
+          let len = 0;
+
+          const keys = Object.keys(val);
+          for (let i = keys.length - 1; i >= 0; i--) {
+            const k = keys[i];
+            const v = val[k];
+            if (v !== undefined) {
+              stack[sp++] = v;
+              stack[sp++] = k;
+
+              len++;
+            }
+          }
 
           resizeIfNeeded(ctx, MAX_TYPE_ARG_LEN);
           writeTypeAndArg(ctx, 5, len);
-
-          // backwards again
-          for (let idx = len - 1; idx >= 0; idx--) {
-            const key = keys[idx];
-
-            stack.push(val[key]);
-            stack.push(key);
-          }
 
           break;
         }
@@ -238,12 +242,12 @@ function writeValue(ctx: Context, root: unknown): void {
         }
 
         if ("toJSON" in val) {
-          stack.push(val.toJSON());
+          stack[sp++] = val.toJSON();
           break;
         }
 
         if ("toCBOR" in val) {
-          stack.push(val.toCBOR());
+          stack[sp++] = val.toCBOR();
           break;
         }
       }
@@ -271,19 +275,4 @@ export const encodeCBOR = (value: unknown): Uint8Array => {
 
   ctx.chunks.push(ctx.buf.subarray(0, ctx.pos));
   return concat(ctx.chunks, ctx.len + ctx.pos);
-};
-
-/** like object.keys but without undefined values */
-const getObjectKeys = (obj: Record<string, unknown>): string[] => {
-  const keys = Object.keys(obj);
-
-  // in-place filter undefineds via read-ptr/write-ptr
-  let w = 0;
-  for (let r = 0; r < keys.length; r++) {
-    const key = keys[r];
-    if (obj[key] !== undefined) keys[w++] = key;
-  }
-  keys.length = w;
-
-  return keys;
 };
