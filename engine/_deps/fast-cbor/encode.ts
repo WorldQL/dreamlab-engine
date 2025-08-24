@@ -119,8 +119,13 @@ function writeNumber(ctx: Context, val: number): void {
   else writeFloat(ctx, val);
 }
 
-function getHeaderLen(arg: number): number {
-  return arg < 24 ? 1 : arg < 0x100 ? 2 : arg < 0x10000 ? 3 : arg < 0x100000000 ? 5 : 9;
+// prettier-ignore
+function getHeaderSize(arg: number): number {
+  return arg < 24 ? 1
+    : arg < 0x100 ? 2
+    : arg < 0x10000 ? 3
+    : arg < 0x100000000 ? 5
+    : 9;
 }
 
 function writeString(ctx: Context, val: string): void {
@@ -129,11 +134,11 @@ function writeString(ctx: Context, val: string): void {
 
   // ascii fast-path: assume strLength === realLen, relocate header otherwise
 
-  const estimatedHeaderSize = getHeaderLen(strLength);
+  const estimatedHeaderSize = getHeaderSize(strLength);
   const estimatedPosition = ctx.pos + estimatedHeaderSize;
   const realLen = encodeUtf8Into(ctx.buf, val, estimatedPosition);
 
-  const headerSize = getHeaderLen(realLen);
+  const headerSize = getHeaderSize(realLen);
   if (estimatedHeaderSize !== headerSize) {
     ctx.buf.copyWithin(ctx.pos + headerSize, estimatedPosition, estimatedPosition + realLen);
   }
@@ -152,78 +157,86 @@ function writeBytes(ctx: Context, buf: Uint8Array): void {
   ctx.pos += len;
 }
 
-// deno-lint-ignore no-explicit-any
-function writeValue(ctx: Context, val: any): void {
-  switch (typeof val) {
-    case "boolean": {
-      resizeIfNeeded(ctx, 1);
-      // @ts-expect-error boolean coercion
-      writeU8(ctx, 0xf4 + (val & 1));
-      return;
-    }
-    case "number": {
-      writeNumber(ctx, val);
-      return;
-    }
-    case "string": {
-      writeString(ctx, val);
-      return;
-    }
-    case "object": {
-      if (val === null) {
+function writeValue(ctx: Context, root: unknown): void {
+  // deno-lint-ignore no-explicit-any
+  const stack: any[] = [root];
+
+  while (stack.length > 0) {
+    const val = stack.pop();
+
+    switch (typeof val) {
+      case "boolean": {
         resizeIfNeeded(ctx, 1);
-        writeU8(ctx, 0xf6);
-        return;
+        // @ts-expect-error boolean coercion
+        writeU8(ctx, 0xf4 + (val & 1));
+        break;
       }
-
-      if (Array.isArray(val)) {
-        const len = val.length;
-        resizeIfNeeded(ctx, MAX_TYPE_ARG_LEN);
-        writeTypeAndArg(ctx, 4, len);
-
-        for (let idx = 0; idx < len; idx++) {
-          writeValue(ctx, val[idx]);
+      case "number": {
+        writeNumber(ctx, val);
+        break;
+      }
+      case "string": {
+        writeString(ctx, val);
+        break;
+      }
+      // deno-lint-ignore no-fallthrough
+      case "object": {
+        if (val === null) {
+          resizeIfNeeded(ctx, 1);
+          writeU8(ctx, 0xf6);
+          break;
         }
 
-        return;
-      }
+        if (Array.isArray(val)) {
+          const len = val.length;
+          resizeIfNeeded(ctx, MAX_TYPE_ARG_LEN);
+          writeTypeAndArg(ctx, 4, len);
 
-      if (val.constructor === Uint8Array) {
-        writeBytes(ctx, val);
-        return;
-      }
+          // push backwards, so array pops in-order
+          for (let idx = len - 1; idx >= 0; idx--) {
+            stack.push(val[idx]);
+          }
 
-      if (val.constructor === Object) {
-        const keys = getObjectKeys(val);
-        const len = keys.length;
-
-        resizeIfNeeded(ctx, MAX_TYPE_ARG_LEN);
-        writeTypeAndArg(ctx, 5, len);
-
-        for (let idx = 0; idx < len; idx++) {
-          const key = keys[idx];
-
-          writeString(ctx, key);
-          writeValue(ctx, val[key]);
+          break;
         }
 
-        return;
-      }
+        if (val.constructor === Uint8Array) {
+          writeBytes(ctx, val);
+          break;
+        }
 
-      if ("toJSON" in val) {
-        writeValue(ctx, val.toJSON());
-        return;
-      }
-      if ("toCBOR" in val) {
-        writeValue(ctx, val.toCBOR());
-        return;
-      }
+        if (val.constructor === Object) {
+          const keys = getObjectKeys(val);
+          const len = keys.length;
 
-      // TODO: support Map ?
+          resizeIfNeeded(ctx, MAX_TYPE_ARG_LEN);
+          writeTypeAndArg(ctx, 5, len);
+
+          for (let idx = 0; idx < len; idx++) {
+            const key = keys[idx];
+
+            writeString(ctx, key);
+            writeValue(ctx, val[key]);
+          }
+
+          break;
+        }
+
+        if ("toJSON" in val) {
+          stack.push(val.toJSON());
+          break;
+        }
+
+        if ("toCBOR" in val) {
+          stack.push(val.toCBOR());
+          break;
+        }
+      }
+      default: {
+        throw new TypeError(`unsupported type: ${typeof val} (${val?.constructor?.name})`);
+      }
     }
   }
-
-  throw new TypeError(`unsupported type: ${typeof val} (${val?.constructor?.name})`);
 }
 
 function createContext(): Context {
