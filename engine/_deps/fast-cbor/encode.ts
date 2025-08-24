@@ -1,7 +1,7 @@
 import { concat, encodeUtf8Into } from "./u8.ts";
 
 const MAX_TYPE_ARG_LEN = 9;
-const CHUNK_SIZE = 512;
+const CHUNK_SIZE = 1024;
 
 interface Context {
   chunks: Uint8Array[];
@@ -114,11 +114,6 @@ function writeFloat(ctx: Context, val: number): void {
   writeF64(ctx, val);
 }
 
-function writeNumber(ctx: Context, val: number): void {
-  if (Number.isSafeInteger(val)) writeInt(ctx, val);
-  else writeFloat(ctx, val);
-}
-
 // prettier-ignore
 function getHeaderSize(arg: number): number {
   return arg < 24 ? 1
@@ -130,9 +125,27 @@ function getHeaderSize(arg: number): number {
 
 function writeString(ctx: Context, val: string): void {
   const strLength = val.length;
+
+  // ascii fast path for small strings (likely object keys)
+  if (strLength < 24 && ctx.buf.byteLength >= ctx.pos + strLength + 1) {
+    outer: do {
+      for (let i = 0, j = ctx.pos + 1; i < strLength; i++, j++) {
+        const c = val.charCodeAt(i);
+        if (c & 0x80) {
+          break outer;
+        }
+        ctx.buf[j] = c;
+      }
+
+      ctx.buf[ctx.pos] = 0x60 | strLength; // === writeTypeAndArg(ctx, 3, strLength)
+      ctx.pos += strLength + 1;
+      return;
+    } while (false);
+  }
+
   resizeIfNeeded(ctx, strLength * 3 + MAX_TYPE_ARG_LEN);
 
-  // ascii fast-path: assume strLength === realLen, relocate header otherwise
+  // assume strLength is approximately equal to realLen, relocate to after true header size otherwise
 
   const estimatedHeaderSize = getHeaderSize(strLength);
   const estimatedPosition = ctx.pos + estimatedHeaderSize;
@@ -172,7 +185,8 @@ function writeValue(ctx: Context, root: unknown): void {
         break;
       }
       case "number": {
-        writeNumber(ctx, val);
+        if (Number.isSafeInteger(val)) writeInt(ctx, val);
+        else writeFloat(ctx, val);
         break;
       }
       case "string": {
@@ -200,11 +214,6 @@ function writeValue(ctx: Context, root: unknown): void {
           break;
         }
 
-        if (val.constructor === Uint8Array) {
-          writeBytes(ctx, val);
-          break;
-        }
-
         if (val.constructor === Object) {
           const keys = getObjectKeys(val);
           const len = keys.length;
@@ -212,13 +221,19 @@ function writeValue(ctx: Context, root: unknown): void {
           resizeIfNeeded(ctx, MAX_TYPE_ARG_LEN);
           writeTypeAndArg(ctx, 5, len);
 
-          for (let idx = 0; idx < len; idx++) {
+          // backwards again
+          for (let idx = len - 1; idx >= 0; idx--) {
             const key = keys[idx];
 
-            writeString(ctx, key);
-            writeValue(ctx, val[key]);
+            stack.push(val[key]);
+            stack.push(key);
           }
 
+          break;
+        }
+
+        if (val.constructor === Uint8Array) {
+          writeBytes(ctx, val);
           break;
         }
 
