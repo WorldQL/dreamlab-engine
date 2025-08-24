@@ -1,7 +1,7 @@
 import type { HostIPCMessage, WorkerIPCMessage } from "../server-common/ipc.ts";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 
-import * as cbor from "@dreamlab/vendor/cbor2.ts";
+import { decodeCBOR, encodeCBOR } from "@dreamlab/vendor/exp-fast-cbor.ts";
 import { Context, Status } from "@oak/oak";
 import * as colors from "@std/fmt/colors";
 import { TextLineStream } from "@std/streams";
@@ -131,7 +131,7 @@ export class IPCWorker {
       }
       if (data instanceof ArrayBuffer) {
         try {
-          const message = cbor.decode(new Uint8Array(data));
+          const message = decodeCBOR(new Uint8Array(data));
           this.#onReceive(message as WorkerIPCMessage);
         } catch {
           // skip message
@@ -190,7 +190,7 @@ export class IPCWorker {
   send(message: HostIPCMessage) {
     try {
       // this.#activeIPCSocket?.send(JSON.stringify(message));
-      this.#activeIPCSocket?.send(cbor.encode(message));
+      this.#activeIPCSocket?.send(encodeCBOR(message));
     } catch {
       // ignore
     }

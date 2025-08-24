@@ -1,5 +1,4 @@
-import * as cbor from "@dreamlab/vendor/cbor2.ts";
-import { encodeCBOR } from "@dreamlab/vendor/exp-fast-cbor.ts";
+import { decodeCBOR, encodeCBOR } from "@dreamlab/vendor/exp-fast-cbor.ts";
 import { PlayPacket } from "../play.ts";
 import { PlayCodec } from "./mod.ts";
 
@@ -15,7 +14,7 @@ export const CBOR_CODEC: PlayCodec = {
     }
 
     const buffer = "buffer" in data ? data.buffer : data;
-    const obj = cbor.decode(new Uint8Array(buffer));
+    const obj = decodeCBOR(new Uint8Array(buffer));
     return obj as PlayPacket;
   },
 };

@@ -1,5 +1,4 @@
-import * as cbor from "@dreamlab/vendor/cbor2.ts";
-import { encodeCBOR } from "@dreamlab/vendor/exp-fast-cbor.ts";
+import { decodeCBOR, encodeCBOR } from "@dreamlab/vendor/exp-fast-cbor.ts";
 import { gzip, ungzip } from "@dreamlab/vendor/pako.ts";
 import { PlayPacket } from "../play.ts";
 import { PlayCodec } from "./mod.ts";
@@ -31,7 +30,7 @@ export const CBOR_COMPRESSED_CODEC: PlayCodec = {
     const payload = buffer.slice(1);
 
     const bytes = compressed ? ungzip(payload) : payload;
-    const obj = cbor.decode(bytes);
+    const obj = decodeCBOR(bytes);
     return obj as PlayPacket;
   },
 };

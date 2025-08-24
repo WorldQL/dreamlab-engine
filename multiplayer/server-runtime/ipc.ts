@@ -1,6 +1,5 @@
 import { urlWithParams } from "@dreamlab/util/url.ts";
-import * as cbor from "@dreamlab/vendor/cbor2.ts";
-import { encodeCBOR } from "@dreamlab/vendor/exp-fast-cbor.ts";
+import { decodeCBOR, encodeCBOR } from "@dreamlab/vendor/exp-fast-cbor.ts";
 import { HostIPCMessage, WorkerIPCMessage } from "../server-common/ipc.ts";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 
@@ -48,7 +47,7 @@ export class IPCMessageBus {
       }
       if (data instanceof ArrayBuffer) {
         try {
-          const message = cbor.decode(new Uint8Array(data));
+          const message = decodeCBOR(new Uint8Array(data));
           this.#onReceiveMessage(message as HostIPCMessage);
         } catch (err) {
           console.error(err);
