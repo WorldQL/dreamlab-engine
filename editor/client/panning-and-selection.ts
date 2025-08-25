@@ -12,6 +12,7 @@ import {
   Scroll,
   Vector2,
 } from "@dreamlab/engine";
+import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { BoxResizeGizmo, Gizmo } from "../common/entities/mod.ts";
 import { EditorMetadataEntity } from "../common/mod.ts";
 import { InspectorUI } from "./ui/inspector.ts";
@@ -43,6 +44,8 @@ export class CameraPanBehavior extends Behavior {
   #drag: Vector2 | undefined = undefined;
   #wasGizmo: boolean = false;
   #space = this.game.inputs.create("@editor/cameragrip", "Camera Grip", "Space");
+  #selectionBox: { start: Vector2; current: Vector2; gfx: PIXI.Graphics } | undefined;
+  #selectionHighlights: Map<Entity, PIXI.Graphics> = new Map();
 
   onInitialize(): void {
     if (!this.game.isClient()) return;
@@ -95,12 +98,318 @@ export class CameraPanBehavior extends Behavior {
         });
 
       this.#wasGizmo = local.length > 0;
+
+      if (!this.#wasGizmo && event.cursor.world) {
+        const entities = this.game.entities
+          .lookupByPosition(event.cursor.world)
+          .filter(entity => entity.enabled)
+          .filter(entity => this.ui?.sceneGraph?.entryElementMap?.has(entity.ref) ?? true)
+          .filter(entity => EditorMetadataEntity.getLockedBy(entity) === undefined);
+
+        if (entities.length === 0) {
+          this.#startSelectionBox(event.cursor.world);
+        }
+      }
     } else if (event.button === "middle") {
       this.#setDrag(event.cursor.screen.clone());
     }
   }
 
   #lastClickTime = 0;
+
+  #startSelectionBox(worldPos: Vector2) {
+    if (!this.game.isClient()) return;
+
+    this.#clearAllHighlights();
+
+    const gfx = new PIXI.Graphics();
+    gfx.zIndex = 10000000000;
+    this.game.renderer.scene.addChild(gfx);
+
+    this.#selectionBox = {
+      start: worldPos.clone(),
+      current: worldPos.clone(),
+      gfx,
+    };
+  }
+
+  #highlightEntity(entity: Entity) {
+    if (!this.game.isClient()) return;
+    if (this.#selectionHighlights.has(entity)) return;
+
+    const bounds = entity.bounds;
+    if (!bounds) return;
+
+    const gfx = new PIXI.Graphics();
+    gfx.zIndex = 9999999999;
+    this.game.renderer.scene.addChild(gfx);
+
+    const entityPos = entity.globalTransform.position;
+    const entityScale = entity.globalTransform.scale;
+    const entityRotation = entity.globalTransform.rotation;
+    const halfWidth = (bounds.width * entityScale.x) / 2;
+    const halfHeight = (bounds.height * entityScale.y) / 2;
+
+    gfx.position = { x: entityPos.x, y: -entityPos.y };
+    gfx.rotation = -entityRotation;
+
+    gfx.context
+      .rect(
+        -halfWidth,
+        -halfHeight,
+        bounds.width * entityScale.x,
+        bounds.height * entityScale.y,
+      )
+      .stroke({ color: 0x22a2ff, width: 0.08, alpha: 0.9 });
+
+    this.#selectionHighlights.set(entity, gfx);
+  }
+
+  #unhighlightEntity(entity: Entity) {
+    if (!this.game.isClient()) return;
+    const gfx = this.#selectionHighlights.get(entity);
+    if (gfx) {
+      gfx.destroy();
+      this.#selectionHighlights.delete(entity);
+    }
+  }
+
+  #clearAllHighlights() {
+    if (!this.game.isClient()) return;
+    for (const [_entity, gfx] of this.#selectionHighlights) {
+      gfx.destroy();
+    }
+    this.#selectionHighlights.clear();
+  }
+
+  #updateSelectionBox(worldPos: Vector2) {
+    if (!this.#selectionBox || !this.game.isClient()) return;
+
+    this.#selectionBox.current = worldPos;
+    const { start, current, gfx } = this.#selectionBox;
+
+    gfx.clear();
+
+    const minX = Math.min(start.x, current.x);
+    const minY = Math.min(start.y, current.y);
+    const maxX = Math.max(start.x, current.x);
+    const maxY = Math.max(start.y, current.y);
+
+    const width = maxX - minX;
+    const height = maxY - minY;
+
+    gfx.context
+      .rect(minX, -maxY, width, height)
+      .fill({ color: 0x22a2ff, alpha: 0.1 })
+      .stroke({ color: 0x22a2ff, width: 0.05, alpha: 0.8 });
+
+    const currentlyHighlighted = new Set<Entity>();
+    const MIN_SELECTION_SIZE = 0.1;
+
+    if (
+      Math.abs(maxX - minX) > MIN_SELECTION_SIZE ||
+      Math.abs(maxY - minY) > MIN_SELECTION_SIZE
+    ) {
+      for (const entity of this.game.entities) {
+        if (!entity.enabled) continue;
+        if (
+          this.ui?.sceneGraph?.entryElementMap &&
+          !this.ui.sceneGraph.entryElementMap.has(entity.ref)
+        )
+          continue;
+        if (EditorMetadataEntity.getLockedBy(entity) !== undefined) continue;
+        if (entity instanceof Gizmo || entity.parent instanceof Gizmo) continue;
+        if (entity instanceof BoxResizeGizmo || entity.parent instanceof BoxResizeGizmo)
+          continue;
+
+        const bounds = entity.bounds;
+        if (!bounds) continue;
+
+        const entityPos = entity.globalTransform.position;
+        const entityScale = entity.globalTransform.scale;
+        const entityRotation = entity.globalTransform.rotation;
+
+        let shouldHighlight = false;
+
+        if (Math.abs(entityRotation) < 0.001) {
+          const halfWidth = (bounds.width * entityScale.x) / 2;
+          const halfHeight = (bounds.height * entityScale.y) / 2;
+
+          const entityMinX = entityPos.x - halfWidth;
+          const entityMaxX = entityPos.x + halfWidth;
+          const entityMinY = entityPos.y - halfHeight;
+          const entityMaxY = entityPos.y + halfHeight;
+
+          if (
+            entityMinX >= minX &&
+            entityMaxX <= maxX &&
+            entityMinY >= minY &&
+            entityMaxY <= maxY
+          ) {
+            shouldHighlight = true;
+          }
+        } else {
+          const halfWidth = (bounds.width * entityScale.x) / 2;
+          const halfHeight = (bounds.height * entityScale.y) / 2;
+
+          const corners = [
+            { x: halfWidth, y: halfHeight },
+            { x: -halfWidth, y: halfHeight },
+            { x: -halfWidth, y: -halfHeight },
+            { x: halfWidth, y: -halfHeight },
+          ];
+
+          const sin = Math.sin(entityRotation);
+          const cos = Math.cos(entityRotation);
+
+          for (const corner of corners) {
+            const x = corner.x * cos - corner.y * sin + entityPos.x;
+            const y = corner.x * sin + corner.y * cos + entityPos.y;
+            corner.x = x;
+            corner.y = y;
+          }
+
+          const allCornersInside = corners.every(
+            corner =>
+              corner.x >= minX && corner.x <= maxX && corner.y >= minY && corner.y <= maxY,
+          );
+
+          if (allCornersInside) {
+            shouldHighlight = true;
+          }
+        }
+
+        if (shouldHighlight) {
+          currentlyHighlighted.add(entity);
+          this.#highlightEntity(entity);
+        }
+      }
+    }
+
+    for (const [entity, _gfx] of this.#selectionHighlights) {
+      if (!currentlyHighlighted.has(entity)) {
+        this.#unhighlightEntity(entity);
+      }
+    }
+  }
+
+  #finishSelectionBox() {
+    if (!this.#selectionBox || !this.game.isClient()) return;
+
+    const { start, current } = this.#selectionBox;
+
+    const minX = Math.min(start.x, current.x);
+    const minY = Math.min(start.y, current.y);
+    const maxX = Math.max(start.x, current.x);
+    const maxY = Math.max(start.y, current.y);
+
+    const selectedEntities: Entity[] = [];
+
+    const MIN_SELECTION_SIZE = 0.1;
+    if (
+      Math.abs(maxX - minX) > MIN_SELECTION_SIZE ||
+      Math.abs(maxY - minY) > MIN_SELECTION_SIZE
+    ) {
+      for (const entity of this.game.entities) {
+        if (!entity.enabled) continue;
+        if (
+          this.ui?.sceneGraph?.entryElementMap &&
+          !this.ui.sceneGraph.entryElementMap.has(entity.ref)
+        )
+          continue;
+        if (EditorMetadataEntity.getLockedBy(entity) !== undefined) continue;
+        if (entity instanceof Gizmo || entity.parent instanceof Gizmo) continue;
+        if (entity instanceof BoxResizeGizmo || entity.parent instanceof BoxResizeGizmo)
+          continue;
+
+        const bounds = entity.bounds;
+        if (!bounds) continue;
+
+        const entityPos = entity.globalTransform.position;
+        const entityScale = entity.globalTransform.scale;
+        const entityRotation = entity.globalTransform.rotation;
+
+        if (Math.abs(entityRotation) < 0.001) {
+          const halfWidth = (bounds.width * entityScale.x) / 2;
+          const halfHeight = (bounds.height * entityScale.y) / 2;
+
+          const entityMinX = entityPos.x - halfWidth;
+          const entityMaxX = entityPos.x + halfWidth;
+          const entityMinY = entityPos.y - halfHeight;
+          const entityMaxY = entityPos.y + halfHeight;
+
+          if (
+            entityMinX >= minX &&
+            entityMaxX <= maxX &&
+            entityMinY >= minY &&
+            entityMaxY <= maxY
+          ) {
+            selectedEntities.push(entity);
+          }
+        } else {
+          const halfWidth = (bounds.width * entityScale.x) / 2;
+          const halfHeight = (bounds.height * entityScale.y) / 2;
+
+          const corners = [
+            { x: halfWidth, y: halfHeight },
+            { x: -halfWidth, y: halfHeight },
+            { x: -halfWidth, y: -halfHeight },
+            { x: halfWidth, y: -halfHeight },
+          ];
+
+          const sin = Math.sin(entityRotation);
+          const cos = Math.cos(entityRotation);
+
+          for (const corner of corners) {
+            const x = corner.x * cos - corner.y * sin + entityPos.x;
+            const y = corner.x * sin + corner.y * cos + entityPos.y;
+            corner.x = x;
+            corner.y = y;
+          }
+
+          const allCornersInside = corners.every(
+            corner =>
+              corner.x >= minX && corner.x <= maxX && corner.y >= minY && corner.y <= maxY,
+          );
+
+          if (allCornersInside) {
+            selectedEntities.push(entity);
+          }
+        }
+      }
+    }
+
+    this.#selectionBox.gfx.destroy();
+    this.#selectionBox = undefined;
+    this.#clearAllHighlights();
+
+    const gizmo = this.game.local.children.get("Gizmo")?.cast(Gizmo);
+    const boxresize = this.game.local.children.get("BoxResizeGizmo")?.cast(BoxResizeGizmo);
+
+    if (selectedEntities.length > 0) {
+      if (gizmo) {
+        gizmo.target = selectedEntities[0];
+        gizmo.auxTargets = selectedEntities.slice(1);
+      }
+      if (boxresize) {
+        boxresize.target = selectedEntities[0];
+      }
+      if (this.ui) {
+        this.ui.selectedEntity.entities = selectedEntities;
+      }
+    } else {
+      if (gizmo) {
+        gizmo.target = undefined;
+        gizmo.auxTargets = [];
+      }
+      if (boxresize) {
+        boxresize.target = undefined;
+      }
+      if (this.ui) {
+        this.ui.selectedEntity.entities = [];
+      }
+    }
+  }
 
   #isPointInComplexCollider(entity: Entity, point: Vector2): boolean {
     const children = [...entity.children.values()]
@@ -132,6 +441,11 @@ export class CameraPanBehavior extends Behavior {
     if (!this.game.isClient()) return;
 
     if (this.#drag) this.#setDrag(undefined);
+
+    if (this.#selectionBox) {
+      this.#finishSelectionBox();
+      return;
+    }
 
     if (this.ui?.selectedEntity.entities[0] instanceof EditorFacadeTilemap) {
       return;
@@ -226,6 +540,12 @@ export class CameraPanBehavior extends Behavior {
 
   #onMouseMove({ cursor }: MouseMove) {
     if (!this.game.isClient()) return;
+
+    if (this.#selectionBox && cursor.world) {
+      this.#updateSelectionBox(cursor.world);
+      return;
+    }
+
     if (!this.#drag) return;
     if (!this.#hover) return;
 
@@ -246,6 +566,13 @@ export class CameraPanBehavior extends Behavior {
   #onMouseOut() {
     this.#hover = false;
     if (this.#drag) this.#setDrag(undefined);
+
+    // Clean up selection box if mouse leaves canvas
+    if (this.#selectionBox) {
+      this.#selectionBox.gfx.destroy();
+      this.#selectionBox = undefined;
+      this.#clearAllHighlights();
+    }
   }
 
   #onScroll({ delta, ev }: Scroll) {
