@@ -118,21 +118,131 @@ export class BoxResizeGizmo extends Entity {
 
   #shift = this.inputs.create("@box-resize/Shift", "Shift", "ShiftLeft");
 
-  #target: Entity | undefined;
+  #target: [Entity, Vector2] | undefined;
   get target(): Entity | undefined {
-    return this.#target;
+    return this.#target?.[0];
   }
   set target(value: Entity | undefined) {
-    if (this.#target) this.#target.unregister(EntityDestroyed, this.#onTargetDestroyed);
+    if (this.#target) this.#target[0].unregister(EntityDestroyed, this.#onTargetDestroyed);
 
-    this.#target = value;
+    if (this.#target) {
+      this.#unhighlightEntity(this.#target[0]);
+    }
+
+    this.#target = value ? [value, Vector2.ZERO] : undefined;
+    this.#updateTargetOffsets();
     this.#updateHandles();
-    if (this.#target) this.#target.on(EntityDestroyed, this.#onTargetDestroyed);
+
+    if (this.#target && this.#auxTargets.size > 0) {
+      this.#highlightEntity(this.#target[0]);
+    }
+
+    if (this.#target) this.#target[0].on(EntityDestroyed, this.#onTargetDestroyed);
   }
 
   #onTargetDestroyed = () => {
     this.target = undefined;
   };
+
+  #auxTargets = new Map<Entity, Vector2>();
+  #selectionHighlights = new Map<Entity, PIXI.Graphics>();
+  get auxTargets(): Entity[] {
+    return [...this.#auxTargets.keys()];
+  }
+  set auxTargets(value: Entity[]) {
+    this.#auxTargets.clear();
+    this.#clearAllHighlights();
+
+    const sorted = value.toSorted((a, b) => a.depth - b.depth);
+    for (const entity of sorted) {
+      this.#auxTargets.set(entity, Vector2.ZERO);
+      this.#highlightEntity(entity);
+    }
+
+    if (this.#target && this.#auxTargets.size > 0) {
+      this.#highlightEntity(this.#target[0]);
+      this.#updateTargetOffsets();
+    }
+
+    this.#updateHandles();
+  }
+
+  #calculateAvgPosition(): Vector2 {
+    if (this.#target === undefined) throw new Error("invalid average access");
+
+    const averagePosition = new Vector2(this.#target[0].globalTransform.position);
+    for (const auxTarget of this.auxTargets) {
+      averagePosition.x = (averagePosition.x + auxTarget.globalTransform.position.x) / 2;
+      averagePosition.y = (averagePosition.y + auxTarget.globalTransform.position.y) / 2;
+    }
+
+    return averagePosition;
+  }
+
+  #updateTargetOffsets() {
+    if (this.#target === undefined) {
+      for (const vector of this.#auxTargets.values()) {
+        vector.assign(Vector2.ZERO);
+      }
+      return;
+    }
+
+    const pos = this.#calculateAvgPosition();
+    this.#target[1].assign(this.#target[0].pos.sub(pos));
+
+    for (const [entity, offset] of this.#auxTargets) {
+      offset.assign(entity.pos.sub(pos));
+    }
+  }
+
+  #highlightEntity(entity: Entity) {
+    if (!this.game.isClient()) return;
+    if (this.#selectionHighlights.has(entity)) return;
+
+    const bounds = entity.bounds;
+    if (!bounds) return;
+
+    const gfx = new PIXI.Graphics();
+    gfx.zIndex = 9999999999;
+    this.game.renderer.scene.addChild(gfx);
+
+    const entityPos = entity.globalTransform.position;
+    const entityScale = entity.globalTransform.scale;
+    const entityRotation = entity.globalTransform.rotation;
+    const halfWidth = (bounds.width * entityScale.x) / 2;
+    const halfHeight = (bounds.height * entityScale.y) / 2;
+
+    gfx.position = { x: entityPos.x, y: -entityPos.y };
+    gfx.rotation = -entityRotation;
+
+    gfx.context
+      .rect(
+        -halfWidth,
+        -halfHeight,
+        bounds.width * entityScale.x,
+        bounds.height * entityScale.y,
+      )
+      .stroke({ color: 0x22a2ff, width: 0.08, alpha: 0.9 });
+
+    this.#selectionHighlights.set(entity, gfx);
+  }
+
+  #unhighlightEntity(entity: Entity) {
+    if (!this.game.isClient()) return;
+    const gfx = this.#selectionHighlights.get(entity);
+    if (gfx) {
+      gfx.destroy();
+      this.#selectionHighlights.delete(entity);
+    }
+  }
+
+  #clearAllHighlights() {
+    if (!this.game.isClient()) return;
+    for (const [_entity, gfx] of this.#selectionHighlights) {
+      gfx.destroy();
+    }
+    this.#selectionHighlights.clear();
+  }
 
   // #region Handles
   #calculateGripSizes(scaled: IVector2): IVector2 {
@@ -166,8 +276,8 @@ export class BoxResizeGizmo extends Entity {
     this.children.forEach(c => c.destroy());
 
     // Don't spawn handles if no target entity
-    const entity = this.#target;
-    if (!entity) return;
+    if (!this.#target) return;
+    const entity = this.#target[0];
 
     const translateOnMouseDown =
       (axis: "x" | "y" | "both") =>
@@ -176,15 +286,22 @@ export class BoxResizeGizmo extends Entity {
         if (button !== "left") return;
 
         const offset = world.sub(this.globalTransform.position);
-        const original = this.#target.globalTransform.clone();
-        this.#action = { type: "translate", axis, offset, original };
+        const entities = [this.#target[0], ...this.#auxTargets.keys()];
+        const originals = new Map(
+          entities.map(entity => [entity, entity.globalTransform.clone()] as const),
+        );
+        this.#action = { type: "translate", axis, offset, originals };
       };
 
     const translateBoth = this.spawn({
       type: Clickable,
       name: "TranslateBoth",
       transform: { position: { x: 0, y: 0 } },
-      values: { shape: "Rectangle", width: 0.3, height: 0.3 },
+      values: {
+        shape: "Rectangle",
+        width: this.#auxTargets.size > 0 ? 0.5 : 0.3,
+        height: this.#auxTargets.size > 0 ? 0.5 : 0.3,
+      },
     });
     translateBoth.on(MouseDown, translateOnMouseDown("both"));
 
@@ -192,6 +309,7 @@ export class BoxResizeGizmo extends Entity {
     const bounds = entity.bounds;
     if (!bounds) return;
     if (bounds.offset && (bounds.offset.x !== 0 || bounds.offset.y !== 0)) return;
+    if (this.#auxTargets.size > 0) return;
 
     // TODO: support offset bounds
     const scaled = Vector2.mul(
@@ -319,8 +437,11 @@ export class BoxResizeGizmo extends Entity {
       if (!this.#target) return;
       if (button !== "left") return;
 
-      const original = this.#target.globalTransform.clone();
-      this.#action = { type: "rotate", original };
+      const entities = [this.#target[0], ...this.#auxTargets.keys()];
+      const originals = new Map(
+        entities.map(entity => [entity, entity.globalTransform.clone()] as const),
+      );
+      this.#action = { type: "rotate", originals };
     });
 
     const onMouseDown =
@@ -329,14 +450,17 @@ export class BoxResizeGizmo extends Entity {
         if (!this.#target) return;
         if (button !== "left") return;
 
-        const opposite = handlePos(oppositeHandle(handle), this.#target);
-        const original = this.#target.globalTransform.clone();
+        const opposite = handlePos(oppositeHandle(handle), this.#target[0]);
+        const entities = [this.#target[0], ...this.#auxTargets.keys()];
+        const originals = new Map(
+          entities.map(entity => [entity, entity.globalTransform.clone()] as const),
+        );
         this.#action = {
           type: "scale",
           handle,
           handleType,
           opposite,
-          original,
+          originals,
         };
       };
 
@@ -357,8 +481,8 @@ export class BoxResizeGizmo extends Entity {
   #updateHandlePositions(camera: Camera) {
     // We dont want the handle sizes to change with scale
 
-    const entity = this.#target;
-    if (!entity) return;
+    if (!this.#target) return;
+    const entity = this.#target[0];
     const bounds = entity.bounds;
     if (!bounds) return;
     if (bounds.offset && (bounds.offset.x !== 0 || bounds.offset.y !== 0)) return;
@@ -443,14 +567,19 @@ export class BoxResizeGizmo extends Entity {
 
   // #region Action / Signals
   #action:
-    | { type: "translate"; axis: "x" | "y" | "both"; offset: Vector2; original: Transform }
-    | { type: "rotate"; original: Transform }
+    | {
+        type: "translate";
+        axis: "x" | "y" | "both";
+        offset: Vector2;
+        originals: Map<Entity, Transform>;
+      }
+    | { type: "rotate"; originals: Map<Entity, Transform> }
     | {
         type: "scale";
         handle: Handle;
         handleType: HandleType;
         opposite: Vector2;
-        original: Transform;
+        originals: Map<Entity, Transform>;
       }
     | undefined;
 
@@ -463,42 +592,62 @@ export class BoxResizeGizmo extends Entity {
     if (!cursor.world) return;
 
     if (this.#action.type === "rotate") {
-      let angle = Vector2.lookAt(this.#target.globalTransform.position, cursor.world);
+      const rotationCenter =
+        this.#auxTargets.size > 0
+          ? this.#calculateAvgPosition()
+          : this.#target[0].globalTransform.position;
+      let angle = Vector2.lookAt(rotationCenter, cursor.world);
       if (this.#shift.held) {
         const snap = Math.PI / 8;
         angle = Math.round(angle / snap) * snap;
       }
 
-      this.#target.globalTransform.rotation = angle;
+      if (this.#auxTargets.size > 0) {
+        const entities = [this.#target[0], ...this.#auxTargets.keys()];
+        for (const entity of entities) {
+          const original = this.#action.originals.get(entity)!;
+          const deltaRot = angle - original.rotation;
+
+          entity.globalTransform.position = Vector2.rotateAbout(
+            original.position,
+            deltaRot,
+            rotationCenter,
+          );
+          entity.globalTransform.rotation = angle;
+        }
+        this.#updateTargetOffsets();
+      } else {
+        this.#target[0].globalTransform.rotation = angle;
+      }
       return;
     }
 
     if (this.#action.type === "translate") {
       const pos = cursor.world.sub(this.#action.offset);
+
       const local = pointWorldToLocal(this.globalTransform, pos);
       if (this.#action.axis === "x") local.y = 0;
       if (this.#action.axis === "y") local.x = 0;
-
       const world = pointLocalToWorld(this.globalTransform, local);
 
       if (event.shiftKey) {
         const snapThreshold = 0.1;
-        const originalPos = this.#target.globalTransform.position.clone();
+        const originalPos = this.#target[0].globalTransform.position.clone();
 
-        this.#target.globalTransform.position = world;
-        const targetBounds = this.#computeGlobalBounds(this.#target);
+        this.#target[0].globalTransform.position = world;
+        const targetBounds = this.#computeGlobalBounds(this.#target[0]);
 
         const targetCenterX = (targetBounds.minX + targetBounds.maxX) / 2;
         const targetCenterY = (targetBounds.minY + targetBounds.maxY) / 2;
 
-        this.#target.globalTransform.position = originalPos;
+        this.#target[0].globalTransform.position = originalPos;
 
         let snapX: number | undefined;
         let snapY: number | undefined;
 
         for (const e of this.game.entities) {
-          if (e === this.#target) continue;
-          if (e.parent === this.#target) continue;
+          if (e === this.#target[0]) continue;
+          if (e.parent === this.#target[0]) continue;
           if (!e.enabled) continue;
           if (e instanceof Root) continue;
           if (e instanceof Gizmo || e.parent instanceof Gizmo) continue;
@@ -647,7 +796,14 @@ export class BoxResizeGizmo extends Entity {
         if (snapY !== undefined) world.y = snapY;
       }
 
-      this.#target.globalTransform.position = world;
+      if (this.#auxTargets.size > 0) {
+        this.#target[0].globalTransform.position = world.add(this.#target[1]);
+        for (const [entity, offset] of this.#auxTargets) {
+          entity.globalTransform.position = world.add(offset);
+        }
+      } else {
+        this.#target[0].globalTransform.position = world;
+      }
 
       return;
     }
@@ -660,14 +816,14 @@ export class BoxResizeGizmo extends Entity {
           ? "y"
           : undefined;
 
-    const rotation = this.#target.globalTransform.rotation;
+    const rotation = this.#target[0].globalTransform.rotation;
     const rotated = Vector2.rotateAbout(cursor.world, -rotation, this.#action.opposite);
 
     const edge = Vector2.sub(rotated, this.#action.opposite);
-    if (lockedAxis === "x") edge.x = this.#target.globalTransform.scale.x;
-    if (lockedAxis === "y") edge.y = this.#target.globalTransform.scale.y;
+    if (lockedAxis === "x") edge.x = this.#target[0].globalTransform.scale.x;
+    if (lockedAxis === "y") edge.y = this.#target[0].globalTransform.scale.y;
 
-    this.#target.globalTransform.scale.assign(Vector2.abs(edge));
+    this.#target[0].globalTransform.scale.assign(Vector2.abs(edge));
 
     const newOrigin = Vector2.ZERO;
     if (this.#action.handleType === "corner") {
@@ -680,11 +836,11 @@ export class BoxResizeGizmo extends Entity {
       newOrigin.assign(Vector2.add(this.#action.opposite, x));
     }
 
-    this.#target.pos.assign(Vector2.rotateAbout(newOrigin, rotation, this.#action.opposite));
+    this.#target[0].pos.assign(Vector2.rotateAbout(newOrigin, rotation, this.#action.opposite));
 
     if (event.shiftKey) {
       const snapThreshold = 0.1;
-      const targetBounds = this.#computeGlobalBounds(this.#target);
+      const targetBounds = this.#computeGlobalBounds(this.#target[0]);
       const targetCenterX = (targetBounds.minX + targetBounds.maxX) / 2;
       const targetCenterY = (targetBounds.minY + targetBounds.maxY) / 2;
 
@@ -692,8 +848,8 @@ export class BoxResizeGizmo extends Entity {
       let snapY: number | undefined;
 
       for (const e of this.game.entities) {
-        if (e === this.#target) continue;
-        if (e.parent === this.#target) continue;
+        if (e === this.#target[0]) continue;
+        if (e.parent === this.#target[0]) continue;
         if (!e.enabled) continue;
         if (e instanceof Root) continue;
         if (e instanceof Gizmo || e.parent instanceof Gizmo) continue;
@@ -839,7 +995,7 @@ export class BoxResizeGizmo extends Entity {
       }
 
       if (snapX !== undefined || snapY !== undefined) {
-        const currentPos = this.#target.pos;
+        const currentPos = this.#target[0].pos;
         if (snapX !== undefined) currentPos.x = snapX;
         if (snapY !== undefined) currentPos.y = snapY;
       }
@@ -854,15 +1010,14 @@ export class BoxResizeGizmo extends Entity {
       return;
     }
 
-    const entities = [
-      {
-        entity: this.#target,
-        transform: this.#target.globalTransform.clone(),
-        previous: this.#action.original,
-      },
-    ];
+    const entityArray = [this.#target[0], ...this.#auxTargets.keys()];
+    const entities = entityArray.map(entity => ({
+      entity,
+      transform: entity.globalTransform.clone(),
+      previous: this.#action!.originals.get(entity)!,
+    }));
 
-    const signal = [GizmoUpdateEnd, this.#action.type, entities] as const;
+    const signal = [GizmoUpdateEnd, this.#action!.type, entities] as const;
     this.fire(...signal);
     this.game.fire(...signal);
 
@@ -887,15 +1042,47 @@ export class BoxResizeGizmo extends Entity {
       this.#gfx.scale = camera.smoothed.scale;
       this.globalTransform.scale = camera.smoothed.scale;
 
-      const entity = this.#target;
-      if (!entity) return;
+      if (!this.#target) return;
+      const entity = this.#target[0];
 
-      const pos = entity.pos;
-      this.pos.assign(entity.pos);
-      this.globalTransform.rotation = entity.globalTransform.rotation;
+      let pos: Vector2;
+      if (this.#auxTargets.size > 0) {
+        pos = this.#calculateAvgPosition();
+        this.globalTransform.position = pos;
+        this.globalTransform.rotation = entity.globalTransform.rotation;
+      } else {
+        pos = entity.pos;
+        this.globalTransform.position = entity.pos;
+        this.globalTransform.rotation = entity.globalTransform.rotation;
+      }
 
       this.#gfx.position = { x: pos.x, y: -pos.y };
       this.#gfx.rotation = -entity.globalTransform.rotation;
+
+      for (const [highlightEntity, gfx] of this.#selectionHighlights) {
+        const entityPos = highlightEntity.globalTransform.position;
+        const entityScale = highlightEntity.globalTransform.scale;
+        const entityRotation = highlightEntity.globalTransform.rotation;
+
+        gfx.position = { x: entityPos.x, y: -entityPos.y };
+        gfx.rotation = -entityRotation;
+
+        const bounds = highlightEntity.bounds;
+        if (bounds) {
+          const halfWidth = (bounds.width * entityScale.x) / 2;
+          const halfHeight = (bounds.height * entityScale.y) / 2;
+
+          gfx.clear();
+          gfx.context
+            .rect(
+              -halfWidth,
+              -halfHeight,
+              bounds.width * entityScale.x,
+              bounds.height * entityScale.y,
+            )
+            .stroke({ color: 0x22a2ff, width: 0.08, alpha: 0.9 });
+        }
+      }
 
       const _bounds = entity.bounds;
       if (!_bounds || (_bounds.offset && (_bounds.offset.x !== 0 || _bounds.offset.y !== 0))) {
@@ -904,6 +1091,15 @@ export class BoxResizeGizmo extends Entity {
           .fill({ alpha: 0.2, color: "blue" })
           .stroke({ alpha: 0.5, color: "blue", width: 0.01 });
 
+        return;
+      }
+
+      if (this.#auxTargets.size > 0) {
+        this.#gfx.context
+          .rect(-0.25, -0.25, 0.5, 0.5)
+          .fill({ alpha: 0.3, color: 0x22ff88 })
+          .stroke({ alpha: 0.8, color: 0x22ff88, width: 0.04 })
+          .stroke({ color: "white", width: 0.02 });
         return;
       }
 
@@ -969,6 +1165,7 @@ export class BoxResizeGizmo extends Entity {
     this.on(EntityDestroyed, () => {
       this.#gfx?.destroy();
       this.#snapLinesGfx?.destroy();
+      this.#clearAllHighlights();
 
       if (this.game.isClient()) {
         const canvas = this.game.renderer.app.canvas;

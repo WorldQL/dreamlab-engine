@@ -172,25 +172,28 @@ export class Toolbar implements InspectorUIWidget {
       const gizmo = this.game.local.children.get("Gizmo")?.cast(Gizmo);
       const boxresize = this.game.local.children.get("BoxResizeGizmo")?.cast(BoxResizeGizmo);
       const target = gizmo?.target ?? boxresize?.target;
+      const auxTargets = gizmo?.auxTargets ?? boxresize?.auxTargets ?? [];
 
       gizmo?.destroy();
       boxresize?.destroy();
 
       if (tool === "dimensions") {
-        const gizmo = this.game.local.spawn({
+        const newGizmo = this.game.local.spawn({
           type: BoxResizeGizmo,
           name: BoxResizeGizmo.name,
         });
 
-        gizmo.target = target;
+        newGizmo.target = target;
+        newGizmo.auxTargets = auxTargets;
       } else {
-        const gizmo = this.game.local.spawn({
+        const newGizmo = this.game.local.spawn({
           type: Gizmo,
           name: Gizmo.name,
         });
 
-        gizmo.mode = tool ?? "combined";
-        gizmo.target = target;
+        newGizmo.mode = tool ?? "combined";
+        newGizmo.target = target;
+        newGizmo.auxTargets = auxTargets;
       }
     };
 

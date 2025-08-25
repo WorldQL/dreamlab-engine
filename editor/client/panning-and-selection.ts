@@ -393,6 +393,7 @@ export class CameraPanBehavior extends Behavior {
       }
       if (boxresize) {
         boxresize.target = selectedEntities[0];
+        boxresize.auxTargets = selectedEntities.slice(1);
       }
       if (this.ui) {
         this.ui.selectedEntity.entities = selectedEntities;
@@ -404,6 +405,7 @@ export class CameraPanBehavior extends Behavior {
       }
       if (boxresize) {
         boxresize.target = undefined;
+        boxresize.auxTargets = [];
       }
       if (this.ui) {
         this.ui.selectedEntity.entities = [];
@@ -527,8 +529,14 @@ export class CameraPanBehavior extends Behavior {
         if (this.ui)
           this.ui.selectedEntity.entities = [...this.ui.selectedEntity.entities, newTarget];
       } else {
-        if (gizmo) gizmo.target = newTarget;
-        if (boxresize) boxresize.target = newTarget;
+        if (gizmo) {
+          gizmo.target = newTarget;
+          gizmo.auxTargets = [];
+        }
+        if (boxresize) {
+          boxresize.target = newTarget;
+          boxresize.auxTargets = [];
+        }
         if (this.ui) this.ui.selectedEntity.entities = newTarget ? [newTarget] : [];
       }
 
