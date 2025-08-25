@@ -81,13 +81,18 @@ export class Gizmo extends Entity {
     // Scale handles
     .rect(0.7, -Gizmo.#SCALE_S / 2, Gizmo.#SCALE_S, Gizmo.#SCALE_S)
     .fill(Gizmo.#X_COLOR)
+    .stroke({ color: "black", width: 0.01 }) // red square
     .rect(-Gizmo.#SCALE_S / 2, -0.7 - Gizmo.#SCALE_S, Gizmo.#SCALE_S, Gizmo.#SCALE_S)
     .fill(Gizmo.#Y_COLOR)
+    .stroke({ color: "black", width: 0.01 }) // green square
     // Move handles
     .poly([1.1, Gizmo.#ARROW_W / 2, 1.1, -Gizmo.#ARROW_W / 2, 1.1 + Gizmo.#ARROW_H, 0])
     .fill(Gizmo.#X_COLOR)
+    .stroke({ color: "black", width: 0.01 }) // red arrow
     .poly([Gizmo.#ARROW_W / 2, -1.1, -Gizmo.#ARROW_W / 2, -1.1, 0, -1.1 - Gizmo.#ARROW_H])
     .fill(Gizmo.#Y_COLOR)
+    .stroke({ color: "black", width: 0.01 }) // green arrow
+    // Center square
     .moveTo(0, 0)
     .rect(-0.25, -0.25, 0.5, 0.5)
     .fill({ alpha: 0.4, color: Gizmo.#Z_COLOR })
