@@ -524,10 +524,25 @@ export class CameraPanBehavior extends Behavior {
         newTarget = newTarget.parent;
       }
 
-      if (newTarget && event.ev.shiftKey) {
-        if (gizmo) gizmo.auxTargets = [...gizmo.auxTargets, newTarget];
-        if (this.ui)
-          this.ui.selectedEntity.entities = [...this.ui.selectedEntity.entities, newTarget];
+      if (newTarget && (event.ev.shiftKey || event.ev.ctrlKey)) {
+        const currentEntities = this.ui?.selectedEntity.entities || [];
+        const newEntities = [...currentEntities, newTarget];
+
+        if (newEntities.length === 1) {
+          if (gizmo) {
+            gizmo.target = newTarget;
+            gizmo.auxTargets = [];
+          }
+          if (boxresize) {
+            boxresize.target = newTarget;
+            boxresize.auxTargets = [];
+          }
+        } else {
+          if (gizmo) gizmo.auxTargets = [...gizmo.auxTargets, newTarget];
+          if (boxresize) boxresize.auxTargets = [...boxresize.auxTargets, newTarget];
+        }
+
+        if (this.ui) this.ui.selectedEntity.entities = newEntities;
       } else {
         if (gizmo) {
           gizmo.target = newTarget;
