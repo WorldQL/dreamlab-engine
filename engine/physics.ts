@@ -82,6 +82,7 @@ export class PhysicsEngine {
       const entity1 = this.#lookupEntity(collider1);
       const entity2 = this.#lookupEntity(collider2);
       if (!entity1 || !entity2) return;
+      if (entity1.destroyed || entity2.destroyed) return;
 
       const normal1 = Vector2.ZERO;
       const normal2 = Vector2.ZERO;
@@ -166,6 +167,7 @@ export class PhysicsEngine {
       const entity1 = this.game.entities.lookupByRef(entityRef1);
       const entity2 = this.game.entities.lookupByRef(entityRef2);
       if (!entity1 || !entity2) continue;
+      if (entity1.destroyed || entity2.destroyed) return;
 
       const collisionKey = this.#makeCollisionKey(controllerHandle, entityRef1, entityRef2);
       currentTickCollisions.add(collisionKey);
