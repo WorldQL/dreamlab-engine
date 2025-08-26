@@ -85,6 +85,7 @@ export const serveInstanceManagementAPI = (router: Router) => {
           nil: z.boolean().optional(),
           force_random_id: z.boolean().optional(),
           revision: z.string().optional(),
+          git_id: z.string().optional(),
         }),
         response: InstanceInfoSchema,
       },
@@ -120,6 +121,7 @@ export const serveInstanceManagementAPI = (router: Router) => {
         const instance = createInstance({
           instanceId: instanceId,
           worldId,
+          gitId: body.git_id,
           worldDirectory: `${CONFIG.WORLDS_DIRECTORY}/${worldId}`,
           startedBy: body.started_by,
           editMode: body.edit_mode,

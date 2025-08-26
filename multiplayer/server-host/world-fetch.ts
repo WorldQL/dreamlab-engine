@@ -7,7 +7,7 @@ import { CONFIG } from "./config.ts";
 export const fetchWorld = async (instance: GameInstance) => {
   // TODO: dont fetch the world if it's an edit session with uncommitted changes..
 
-  const world = instance.info.worldId;
+  const world = instance.info.gitId ?? instance.info.worldId;
   const revision = instance.info.worldRevision ?? "main";
   const dir = instance.info.worldDirectory;
 

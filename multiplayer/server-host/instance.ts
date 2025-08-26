@@ -20,6 +20,7 @@ export enum GameInstanceState {
 export interface GameInstanceInfo {
   instanceId: string;
   worldId: string;
+  gitId?: string;
   worldDirectory: string;
   // defaults to "origin/main"
   worldRevision?: string;
