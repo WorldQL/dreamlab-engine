@@ -166,7 +166,31 @@ export class TileMapViewer {
           this.#isTouchpad = isPinch(ev) || isTrackpadScroll(ev);
         }
 
-        console.log(ev);
+        if (this.#isTouchpad) {
+          if (isPinch(ev)) {
+            const zoomFac = Math.exp(-ev.deltaY * PINCH_SENS);
+            this.#zoom = this.#zoom * zoomFac;
+          } else {
+            const pf = 1 / Math.min(Math.max(this.#zoom, 1), 4);
+            this.#pan.x -= ev.deltaX * pf;
+            this.#pan.y -= ev.deltaY * pf;
+          }
+
+          return;
+        }
+
+        const panMode = ev.ctrlKey || ev.metaKey;
+        const notchY = ev.deltaMode === 1 ? ev.deltaY : ev.deltaY / 100;
+
+        if (!panMode) {
+          const zoomStep = Math.pow(1.1, -notchY);
+          this.#zoom = this.#zoom * zoomStep;
+        } else {
+          const pf = 1 / Math.min(Math.max(this.#zoom, 1), 4);
+          const factor = ev.deltaMode === 1 ? 16 : 1;
+          this.#pan.x -= ev.deltaX * factor * pf;
+          this.#pan.y -= ev.deltaY * factor * pf;
+        }
       },
       { passive: false },
     );
