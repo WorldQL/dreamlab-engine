@@ -37,6 +37,7 @@ export class EditorMetadataEntity extends Entity {
 
   static getInstanceFor(entity: Entity): EditorMetadataEntity {
     const existing = EditorMetadataEntity.getExistingInstanceFor(entity);
+    console.log(existing?.behaviorsJson);
     if (existing) return existing;
 
     const metadataEntity = entity.spawn({

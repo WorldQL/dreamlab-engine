@@ -152,6 +152,22 @@ export class BehaviorEditor {
         value.value = v;
         if (!this.behavior.values) this.behavior.values = {};
         this.behavior.values[key] = v as z.infer<typeof ValueSchema>;
+
+        // TODO: Only store this information if the entity has clonedFrom not null (is a prefab instance)
+        const overwrittenKey = `${this.behavior.ref}/${key}`;
+        // TODO: Change type to accomodate this.
+        if (!this.behavior.overwritten) {
+          this.behavior.overwritten = {};
+        }
+        if (v) {
+          this.behavior.overwritten[overwrittenKey] = v;
+        } else {
+          delete this.behavior.overwritten[overwrittenKey]
+        }
+
+        if (Object.keys(this.behavior.overwritten).length === 0) {
+          delete this.behavior.overwritten;
+        }
         this.parent.sync();
       },
       relatedEntity: this.parent.entity,

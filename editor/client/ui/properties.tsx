@@ -228,6 +228,21 @@ export class Properties implements InspectorUIWidget {
           const parent = instance.parent!;
           const { scale: _, ...transform } = instance.transform.bare();
 
+          const behaviorJson = JSON.parse(EditorMetadataEntity.getInstanceFor(instance).behaviorsJson)
+          let behaviorOverrides = {}
+          for (const behavior of behaviorJson) {
+            if (behavior.overwritten) {
+              for (const key of Object.keys(behavior.overwritten)) {
+                behaviorOverrides[key] = behavior.overwritten[key]
+              }
+            }
+          }
+          if (Object.keys(behaviorOverrides).length > 0) {
+            console.log("GOT OVERWRITTEN BEHAVIORS", behaviorOverrides)
+          }
+
+          // TODO: Properly apply these overrides to the prefab instance and persist the "overwritten" object.
+
           instance.destroy();
           entity.cloneInto(parent, { _ref: ref, name, transform });
         }
