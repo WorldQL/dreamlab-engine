@@ -315,6 +315,13 @@ export class ServerGame extends BaseGame {
   readonly remote: ServerRoot = new ServerRoot(this);
   readonly local: undefined;
 
+  /**
+   * Alias of {@link remote}
+   */
+  get server() {
+    return this.remote;
+  }
+
   readonly network: ServerNetworking;
 
   readonly kv: ServerKV;
@@ -389,6 +396,13 @@ export class ClientGame extends BaseGame {
 
   readonly local: LocalRoot = new LocalRoot(this);
   readonly remote: undefined;
+
+  /**
+   * Alias of {@link remote}
+   */
+  get server() {
+    return this.remote;
+  }
 
   [internal.submitEntityTickingOrder](entities: Entity[]) {
     super[internal.submitEntityTickingOrder](entities);
