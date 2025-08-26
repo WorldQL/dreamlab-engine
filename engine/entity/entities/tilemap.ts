@@ -109,7 +109,11 @@ export abstract class BaseTilemap extends PixiEntity {
     return info.id;
   }
 
-  setTiles(xs: number[], ys: number[], atlasIds: (number | undefined)[]): void {
+  setTiles(
+    xs: number[],
+    ys: number[],
+    atlasIds: (number | undefined)[] | Uint8Array | Uint16Array,
+  ): void {
     // assert(xs.length === ys.length && xs.length === ids.length)
 
     let chunk: TextureTilemapChunk | undefined;
@@ -125,8 +129,9 @@ export abstract class BaseTilemap extends PixiEntity {
       chunk!.setTile(x & 0xff, y & 0xff, atlasId);
     }
 
-    this.game.fire(TilemapBatchUpdate, this, xs, ys, atlasIds);
-    this.fire(TilemapBatchUpdate, this, xs, ys, atlasIds);
+    const arr = Array.isArray(atlasIds) ? atlasIds : [...atlasIds];
+    this.game.fire(TilemapBatchUpdate, this, xs, ys, arr);
+    this.fire(TilemapBatchUpdate, this, xs, ys, arr);
   }
 
   setTile(x: number, y: number, atlasId: number | undefined): void {
