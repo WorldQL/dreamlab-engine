@@ -11,6 +11,11 @@ export const fetchWorld = async (instance: GameInstance) => {
   const revision = instance.info.worldRevision ?? "main";
   const dir = instance.info.worldDirectory;
 
+  if (world.startsWith("external/") || !dir.startsWith(CONFIG.WORLDS_DIRECTORY)) {
+    instance.logs.debug("Skipping world update (external world directory)");
+    return;
+  }
+
   if (!(await fs.exists(dir))) {
     instance.logs.debug("Fetching world", { world, revision });
     await fs.ensureDir(path.dirname(dir));

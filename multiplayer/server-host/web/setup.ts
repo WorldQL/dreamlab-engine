@@ -19,7 +19,7 @@ export const setupWeb = async (app: Application) => {
 
   router.get("/internal/worker", workerConnectHandler);
   await servePlayRoutes(router);
-  serveWorlds(router);
+  serveWorlds(router, GameInstance.INSTANCES);
   serveSchemas(router);
   serveInstanceManagementAPI(router);
   serveLogStreamingAPI(router);

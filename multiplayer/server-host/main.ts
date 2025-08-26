@@ -1,5 +1,6 @@
 import { Application } from "@oak/oak";
 import * as cli from "@std/cli";
+import * as path from "@std/path";
 import { NIL_UUID } from "@std/uuid/constants";
 import { CONFIG } from "./config.ts";
 import { startInstanceCollector } from "./instance-collector.ts";
@@ -62,7 +63,10 @@ try {
   // not supported on windows
 }
 
-const args = cli.parseArgs(Deno.args, { string: ["spawn", "clone"], boolean: ["play-mode"] });
+const args = cli.parseArgs(Deno.args, {
+  string: ["spawn", "spawn-dir", "clone"],
+  boolean: ["play-mode"],
+});
 
 if (args.clone !== undefined) {
   const world = args.clone;
@@ -84,20 +88,33 @@ startInstanceCollector();
 await Promise.all([
   // boot instance
   (async () => {
-    const world = args.spawn;
-    if (!world) return;
+    if (args.spawn) {
+      const world = args.spawn;
+      console.log("Spawning an instance...");
 
-    console.log("Spawning an instance...");
+      instance = createInstance({
+        instanceId: NIL_UUID,
+        worldId: world,
+        worldDirectory: `${CONFIG.WORLDS_DIRECTORY}/${world}`,
+        editMode: !(args["play-mode"] ?? false),
+        inspect: "127.0.0.1:9229",
+      });
 
-    instance = createInstance({
-      instanceId: NIL_UUID,
-      worldId: world,
-      worldDirectory: `${CONFIG.WORLDS_DIRECTORY}/${world}`,
-      editMode: !(args["play-mode"] ?? false),
-      inspect: "127.0.0.1:9229",
-    });
+      await instance.waitForSessionBoot();
+    } else if (args["spawn-dir"]) {
+      const worldDirectory = args["spawn-dir"];
+      const world = "external/" + path.basename(worldDirectory);
 
-    await instance.waitForSessionBoot();
+      instance = createInstance({
+        instanceId: NIL_UUID,
+        worldId: world,
+        worldDirectory,
+        editMode: true,
+        inspect: "127.0.0.1:9229",
+      });
+
+      await instance.waitForSessionBoot();
+    }
   })(),
   // listen web
   (async () => {
