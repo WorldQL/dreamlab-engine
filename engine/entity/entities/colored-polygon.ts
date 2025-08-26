@@ -24,6 +24,12 @@ export class ColoredPolygon extends PixiEntity {
   strokeColor: string = "black";
   strokeWidth: number = 0;
 
+  // this seems like an ugly hack but it isn't.
+  // The alternative to this is passing through signals or adding this to every entity
+  // We can add this pattern to other entities if they need to avoid redrawing on every EntityTransformUpdate
+  #prevGlobalScaleX = 1;
+  #prevGlobalScaleY = 1;
+
   get #color(): PIXI.Color {
     try {
       return new PIXI.Color(this.color);
@@ -96,7 +102,17 @@ export class ColoredPolygon extends PixiEntity {
       this.#draw();
     };
 
-    this.on(EntityTransformUpdate, updateGfx);
+    this.on(EntityTransformUpdate, () => {
+      if (!this.#gfx) return;
+      if (
+        this.globalTransform.scale.x !== this.#prevGlobalScaleX ||
+        this.globalTransform.scale.y !== this.#prevGlobalScaleY
+      ) {
+        updateGfx();
+      }
+      this.#prevGlobalScaleX = this.globalTransform.scale.x;
+      this.#prevGlobalScaleY = this.globalTransform.scale.y;
+    });
 
     const widthValue = this.values.get("width");
     const heightValue = this.values.get("height");
