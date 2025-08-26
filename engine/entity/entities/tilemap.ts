@@ -16,7 +16,7 @@ import {
   Vector2,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
-import * as cbor from "@dreamlab/vendor/cbor2.ts";
+import { decodeCBOR, encodeCBOR } from "@dreamlab/vendor/exp-fast-cbor.ts";
 import { gzip, ungzip } from "@dreamlab/vendor/pako.ts";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { decodeBase64Url, encodeBase64Url } from "@dreamlab/vendor/std__encoding.ts";
@@ -389,12 +389,14 @@ export abstract class BaseTilemap extends PixiEntity {
 
   // #region (de)serialize methods
   #serialize(): Uint8Array {
-    const entries = [...this.#chunks.entries()]
-      .map(([key, chunk]) => [key, chunk.save()] as const)
-      .filter(x => x[1] !== undefined);
+    const data: Record<ChunkId, Uint8Array> = {};
+    for (const [key, chunk] of this.#chunks.entries()) {
+      const chunkData = chunk.save();
+      if (chunkData === undefined) continue;
+      data[key] = chunkData;
+    }
 
-    const data = new Map(entries);
-    const encoded = cbor.encode(data);
+    const encoded = encodeCBOR(data);
     const compressed = encoded.byteLength > 320;
     const buffer = compressed ? gzip(encoded) : encoded;
 
@@ -415,7 +417,7 @@ export abstract class BaseTilemap extends PixiEntity {
     const payload = buffer.slice(1);
     const bytes = compressed ? ungzip(payload) : payload;
 
-    const data = cbor.decode(bytes);
+    const data = decodeCBOR(bytes);
     if (typeof data !== "object" || data === null) return;
 
     for (const [key, chunkData] of Object.entries(data)) {
