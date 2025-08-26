@@ -17,13 +17,13 @@ jobs:
   prepare:
     runs-on: ubuntu-latest
     outputs:
-      targets: ${{ steps.generate.outputs.targets }}
+      matrix: ${{ steps.generate.outputs.matrix }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: List targets
+      - name: Generate matrix
         id: generate
-        uses: docker/bake-action/subaction/list-targets@v6
+        uses: docker/bake-action/subaction/matrix@v6
 
   build:
     runs-on: ubuntu-latest
@@ -32,7 +32,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: ${{ fromJson(needs.prepare.outputs.targets) }}
+        include: ${{ fromJson(needs.prepare.outputs.matrix) }}
     env:
       DOCKER_BUILD_RECORD_UPLOAD: "false"
     steps:
