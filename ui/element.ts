@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-explicit-any
 import type { ElementPropertyMap } from "./_jsx_codegen/element-property-map.generated.ts";
-import type { CSSProperties, ExtendedCSSProperties } from "./css.ts";
+import { isCSSLengthProperty, type CSSProperties, type ExtendedCSSProperties } from "./css.ts";
 import { SVG_NAMESPACE, SVG_TAG_NAMES, TagNames, TagType, VOID_TAG_NAMES } from "./tags.ts";
 
 export type BaseElement = HTMLElement | SVGElement;
@@ -168,7 +168,9 @@ export function element<K extends TagNames>(
       } else {
         const k = key as keyof CSSProperties;
         if (value != undefined) {
-          const v = (typeof value === "number" ? value + "px" : value) as string;
+          const v = (
+            isCSSLengthProperty(key) && typeof value === "number" ? value + "px" : value
+          ) as string;
           el.style[k] = v;
         } else {
           delete el.style[k];

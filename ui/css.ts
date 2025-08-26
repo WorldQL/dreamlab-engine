@@ -14,3 +14,13 @@ export type CSSProperties = {
 };
 
 export type ExtendedCSSProperties = CSSProperties & { [custom: `--${string}`]: string };
+
+export function isCSSLengthProperty(key: string): boolean {
+  if (["x", "y", "width", "height", "blockSize", "fontSize", "gap"].includes(key)) return true;
+  if (key.includes("Width") || key.includes("Height") || key.includes("Radius")) return true;
+  if (key.includes("BlockSize") || key.includes("Gap")) return true;
+
+  // TODO(char): any other cases?
+
+  return false;
+}
