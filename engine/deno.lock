@@ -2,6 +2,7 @@
   "version": "5",
   "specifiers": {
     "jsr:@char/cbor@0.1.0": "0.1.0",
+    "jsr:@char/cbor@0.1.2": "0.1.2",
     "jsr:@deno/cache-dir@0.8": "0.8.0",
     "jsr:@deno/emit@0.41": "0.41.0",
     "jsr:@deno/emit@0.41.0": "0.41.0",
@@ -73,6 +74,9 @@
   "jsr": {
     "@char/cbor@0.1.0": {
       "integrity": "cfa7c9d15503b6429460ff01cf9ba81c9bbb1ec5ca296c0aed67a1a5d2384738"
+    },
+    "@char/cbor@0.1.2": {
+      "integrity": "029ccb096ffd6cc628957e73f32e173eabd7c86ae11218d567756eaab0fa0387"
     },
     "@deno/cache-dir@0.8.0": {
       "integrity": "e87e80a404958f6350d903e6238b72afb92468378b0b32111f7a1e4916ac7fe7",

@@ -1,6 +1,7 @@
 {
   "version": "5",
   "specifiers": {
+    "jsr:@char/cbor@0.1.2": "0.1.2",
     "jsr:@luca/esbuild-deno-loader@0.11.1": "0.11.1",
     "jsr:@noble/ed25519@^2.2.3": "2.2.3",
     "jsr:@oak/commons@1": "1.0.1",
@@ -56,6 +57,9 @@
     "npm:zod-validation-error@3.3.1": "3.3.1_zod@3.25.60"
   },
   "jsr": {
+    "@char/cbor@0.1.2": {
+      "integrity": "029ccb096ffd6cc628957e73f32e173eabd7c86ae11218d567756eaab0fa0387"
+    },
     "@luca/esbuild-deno-loader@0.11.1": {
       "integrity": "dc020d16d75b591f679f6b9288b10f38bdb4f24345edb2f5732affa1d9885267",
       "dependencies": [
