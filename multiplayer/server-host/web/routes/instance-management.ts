@@ -122,7 +122,7 @@ export const serveInstanceManagementAPI = (router: Router) => {
           instanceId: instanceId,
           worldId,
           gitId: body.git_id,
-          worldDirectory: `${CONFIG.WORLDS_DIRECTORY}/${body.git_id ?? worldId}`,
+          worldDirectory: `${CONFIG.WORLDS_DIRECTORY}/${worldId}`,
           startedBy: body.started_by,
           editMode: body.edit_mode,
         });
