@@ -64,7 +64,7 @@ try {
 }
 
 const args = cli.parseArgs(Deno.args, {
-  string: ["spawn", "spawn-dir", "clone"],
+  string: ["spawn", "spawn-dir", "spawn-repo", "clone"],
   boolean: ["play-mode"],
 });
 
@@ -97,6 +97,7 @@ await Promise.all([
         worldId: world,
         worldDirectory: `${CONFIG.WORLDS_DIRECTORY}/${world}`,
         editMode: !(args["play-mode"] ?? false),
+        gitId: args["spawn-repo"],
         inspect: "127.0.0.1:9229",
       });
 
