@@ -103,15 +103,15 @@ export const handleEditMode = async (
     name: "EditEntities",
     _ref: "EDIT_ROOT",
   });
-  const editWorld = editEntities.spawn({
-    type: WorldRootFacade,
-    name: "world",
-    _ref: "EDIT_WORLD",
-  });
   const editPrefabs = editEntities.spawn({
     type: PrefabRootFacade,
     name: "prefabs",
     _ref: "EDIT_PREFABS",
+  });
+  const editWorld = editEntities.spawn({
+    type: WorldRootFacade,
+    name: "world",
+    _ref: "EDIT_WORLD",
   });
   const editLocal = editEntities.spawn({
     type: LocalRootFacade,
@@ -154,10 +154,10 @@ export const handleEditMode = async (
   });
 
   let sceneRoots: [SceneDescEntity[], Entity][] = [
+    [scene.prefabs, editPrefabs],
     [scene.world, editWorld],
     [scene.local, editLocal],
     [scene.server, editServer],
-    [scene.prefabs, editPrefabs],
   ];
 
   const loadFromScene = async () => {
@@ -195,16 +195,16 @@ export const handleEditMode = async (
     }
 
     const newScene = await getSceneFromProject(game, projectDesc, "main");
+    scene.prefabs = newScene.prefabs;
     scene.world = newScene.world;
     scene.local = newScene.local;
     scene.server = newScene.server;
-    scene.prefabs = newScene.prefabs;
 
     sceneRoots = [
+      [scene.prefabs, editPrefabs],
       [scene.world, editWorld],
       [scene.local, editLocal],
       [scene.server, editServer],
-      [scene.prefabs, editPrefabs],
     ];
 
     await loadFromScene();

@@ -141,8 +141,8 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
     initialNetSpawnedEntityRefs = new Set<string>();
 
     for (const { root, defs } of [
-      { root: game.world, defs: packet.worldEntities },
       { root: game.prefabs, defs: packet.prefabEntities },
+      { root: game.world, defs: packet.worldEntities },
     ]) {
       for (const def of defs) {
         entityPromises.push(
