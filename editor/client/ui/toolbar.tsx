@@ -262,7 +262,7 @@ export class Toolbar implements InspectorUIWidget {
     const button = (
       <button type="button" data-active={state()} onClick={toggle}>
         <Icon icon={Box} />
-        Show Physics Debug
+        Show Debug
       </button>
     );
 
