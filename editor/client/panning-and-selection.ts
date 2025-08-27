@@ -303,7 +303,7 @@ export class CameraPanBehavior extends Behavior {
     const maxX = Math.max(start.x, current.x);
     const maxY = Math.max(start.y, current.y);
 
-    const selectedEntities: Entity[] = [];
+    const candidateEntities: Entity[] = [];
 
     const MIN_SELECTION_SIZE = 0.1;
     if (
@@ -344,7 +344,7 @@ export class CameraPanBehavior extends Behavior {
             entityMinY >= minY &&
             entityMaxY <= maxY
           ) {
-            selectedEntities.push(entity);
+            candidateEntities.push(entity);
           }
         } else {
           const halfWidth = (bounds.width * entityScale.x) / 2;
@@ -373,11 +373,22 @@ export class CameraPanBehavior extends Behavior {
           );
 
           if (allCornersInside) {
-            selectedEntities.push(entity);
+            candidateEntities.push(entity);
           }
         }
       }
     }
+
+    const selectedEntities = candidateEntities.filter(entity => {
+      let current = entity.parent;
+      while (current) {
+        if (candidateEntities.includes(current)) {
+          return false;
+        }
+        current = current.parent;
+      }
+      return true;
+    });
 
     this.#selectionBox.gfx.destroy();
     this.#selectionBox = undefined;
