@@ -19,6 +19,8 @@ export function isCSSLengthProperty(key: string): boolean {
   if (["x", "y", "width", "height", "blockSize", "fontSize", "gap"].includes(key)) return true;
   if (key.includes("Width") || key.includes("Height") || key.includes("Radius")) return true;
   if (key.includes("BlockSize") || key.includes("Gap")) return true;
+  if (key.startsWith("margin") || key.startsWith("padding")) return true;
+  if (["top", "right", "bottom", "left"].includes(key)) return true;
 
   // TODO(char): any other cases?
 
