@@ -7,10 +7,12 @@ import {
   EntityRenamed,
   EntityReparented,
   EntityTransformUpdate,
+  JsonValue,
   SignalSubscription,
   Vector2,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
+import type { SceneDescBehavior } from "@dreamlab/scene";
 import { BaseElement, element as elem } from "@dreamlab/ui";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { EditorFacadeTilemap } from "../../common/facades/tilemap.ts";
@@ -228,8 +230,38 @@ export class Properties implements InspectorUIWidget {
           const parent = instance.parent!;
           const { scale: _, ...transform } = instance.transform.bare();
 
+          const editorMetadata = EditorMetadataEntity.getInstanceFor(instance);
+          const behaviors: SceneDescBehavior[] = JSON.parse(editorMetadata.behaviorsJson);
+
+          const behaviorOverrides: Record<string, Record<string, JsonValue>> = {};
+          for (const behavior of behaviors) {
+            if (!behavior.overrides) continue;
+
+            for (const [key, value] of Object.entries(behavior.overrides)) {
+              behaviorOverrides[behavior.script] ??= {};
+              behaviorOverrides[behavior.script][key] = value;
+            }
+          }
+
           instance.destroy();
-          entity.cloneInto(parent, { _ref: ref, name, transform });
+          const cloned = entity.cloneInto(parent, { _ref: ref, name, transform });
+          if (Object.keys(behaviorOverrides).length === 0) return;
+
+          const clonedMetadata = EditorMetadataEntity.getInstanceFor(cloned);
+          const clonedBehaviors: SceneDescBehavior[] = JSON.parse(clonedMetadata.behaviorsJson);
+
+          for (const [script, overrides] of Object.entries(behaviorOverrides)) {
+            const behavior = clonedBehaviors.find(bhv => bhv.script === script);
+            if (!behavior) continue;
+
+            behavior.overrides = overrides;
+            for (const [k, v] of Object.entries(overrides)) {
+              behavior.values ??= {};
+              behavior.values[k] = v;
+            }
+          }
+
+          clonedMetadata.behaviorsJson = JSON.stringify(clonedBehaviors);
         }
       });
 

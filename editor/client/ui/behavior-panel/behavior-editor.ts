@@ -1,7 +1,7 @@
 import { SceneDescBehavior, ValueSchema } from "@dreamlab/scene";
 import { element as elem } from "@dreamlab/ui";
 
-import { ClientGame, Value } from "@dreamlab/engine";
+import { ClientGame, Entity, Value } from "@dreamlab/engine";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { icon, Trash2 as Trash } from "../../_icons.tsx";
 import { DataDetails, DataTable } from "../../components/mod.ts";
@@ -152,6 +152,30 @@ export class BehaviorEditor {
         value.value = v;
         if (!this.behavior.values) this.behavior.values = {};
         this.behavior.values[key] = v as z.infer<typeof ValueSchema>;
+
+        // TODO: track child behaviors
+        // TODO: propagate this down to avoid expensive tree walk
+        // const getClonedFrom = (entity: Entity): string | undefined => {
+        //   let e: Entity | undefined = entity;
+        //   while (e !== undefined) {
+        //     if (e.clonedFromRef !== "") return e.clonedFromRef;
+        //     e = e.parent;
+        //   }
+
+        //   return undefined;
+        // };
+
+        // track override if the entity is is cloned from a prefab
+        if (this.parent.entity.clonedFromRef !== "") {
+          this.behavior.overrides ??= {};
+          if (v) this.behavior.overrides[key] = v;
+          else delete this.behavior.overrides[key];
+
+          if (Object.keys(this.behavior.overrides).length === 0) {
+            delete this.behavior.overrides;
+          }
+        }
+
         this.parent.sync();
       },
       relatedEntity: this.parent.entity,

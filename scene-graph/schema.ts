@@ -55,6 +55,7 @@ export const BehaviorSchema = z.object({
   ref: BehaviorReferenceSchema,
   script: ResourceLocationSchema,
   values: z.record(ValueSchema).default({}),
+  overrides: z.record(ValueSchema).optional(),
   sync: z.record(SyncedObjectSchema).default({}),
 });
 export type SceneDescBehavior = z.input<typeof BehaviorSchema>;

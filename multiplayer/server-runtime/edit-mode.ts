@@ -70,6 +70,7 @@ const applyEditorMetadata = (entity: Entity, def: SceneDescEntity): SceneDescEnt
       // TODO: elide any default values
       behaviors.map(b => {
         if (b.values && Object.keys(b.values).length === 0) delete b.values;
+        if (b.overrides && Object.keys(b.overrides).length === 0) delete b.overrides;
         if (b.sync && Object.keys(b.sync).length === 0) delete b.sync;
       });
 
