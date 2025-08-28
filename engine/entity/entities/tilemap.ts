@@ -117,7 +117,9 @@ export abstract class BaseTilemap extends PixiEntity {
     // assert(xs.length === ys.length && xs.length === ids.length)
 
     let chunk: TextureTilemapChunk | undefined;
-    for (let i = 0; i < xs.length; i++) {
+
+    const len = Math.min(xs.length, ys.length, atlasIds.length);
+    for (let i = 0; i < len; i++) {
       const x = xs[i];
       const y = ys[i];
       const atlasId = atlasIds[i];
@@ -149,6 +151,31 @@ export abstract class BaseTilemap extends PixiEntity {
   setColor(x: number, y: number, color: number | undefined): void {
     if (color === undefined) return this.clearTile(x, y);
     this.setTileInfo(x, y, { type: "color", color });
+  }
+
+  setColorTiles(
+    xs: number[],
+    ys: number[],
+    colors: (number | undefined)[] | Uint8Array | Uint16Array,
+  ): void {
+    let chunk: ColorTilemapChunk | undefined;
+
+    const len = Math.min(xs.length, ys.length, colors.length);
+    for (let i = 0; i < len; i++) {
+      const x = xs[i];
+      const y = ys[i];
+      const color = colors[i];
+
+      const chunkX = Math.floor(x / TilemapChunk.CHUNK_SIZE);
+      const chunkY = Math.floor(y / TilemapChunk.CHUNK_SIZE);
+
+      if (chunkX !== chunk?.x || chunkY !== chunk?.y) chunk = this.#getChunk("color", x, y);
+      chunk!.setTile(x & 0xff, y & 0xff, color);
+    }
+
+    const arr = Array.isArray(colors) ? colors : [...colors];
+    this.game.fire(TilemapBatchUpdate, this, xs, ys, arr);
+    this.fire(TilemapBatchUpdate, this, xs, ys, arr);
   }
 
   getTileInfo(x: number, y: number): TileInfo | undefined {
