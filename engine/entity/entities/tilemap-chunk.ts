@@ -13,6 +13,7 @@ uniform sampler2D uTiles;
 
 uniform float uSize;
 uniform float uAtlasTileWidth;
+uniform float uAtlasTileHeight;
 
 void main() {
   vec2 tilePos = floor(vUV * vec2(uSize)) / vec2(uSize);
@@ -23,9 +24,9 @@ void main() {
     float r = floor(tileData.r * 256.0);
     float g = floor(tileData.g * 256.0);
     float tileId = g * 256.0 + r;
-    vec2 tileBaseUV = vec2(mod(tileId, uAtlasTileWidth), floor(tileId / uAtlasTileWidth)) / vec2(uAtlasTileWidth);
+    vec2 tileBaseUV = vec2(mod(tileId, uAtlasTileWidth), floor(tileId / uAtlasTileWidth)) / vec2(uAtlasTileWidth, uAtlasTileHeight);
     vec2 offsetUV = vec2(mod(vUV.x * uSize, 1.0), mod(-vUV.y * uSize, 1.0));
-    gl_FragColor = texture2D(uAtlas, tileBaseUV + offsetUV / vec2(uAtlasTileWidth)).rgba;
+    gl_FragColor = texture2D(uAtlas, tileBaseUV + offsetUV / vec2(uAtlasTileWidth, uAtlasTileHeight)).rgba;
   }
 }
 `;
@@ -216,6 +217,7 @@ export class TextureTilemapChunk extends TilemapChunk {
 
 type ClientTextureTilemapChunkOptions = {
   readonly atlasTileWidth: number;
+  readonly atlasTileHeight: number;
   readonly atlas: PIXI.Texture;
 };
 
@@ -247,6 +249,7 @@ export class ClientTextureTilemapChunk extends TextureTilemapChunk {
         uTiles: this.#tileTexture.source,
         extra: {
           uAtlasTileWidth: { value: opts.atlasTileWidth, type: "f32" },
+          uAtlasTileHeight: { value: opts.atlasTileHeight, type: "f32" },
           uSize: { value: size, type: "f32" },
         },
       },
@@ -267,8 +270,9 @@ export class ClientTextureTilemapChunk extends TextureTilemapChunk {
     });
   }
 
-  updateAtlas(atlasTileWidth: number, atlas: PIXI.Texture): void {
+  updateAtlas(atlasTileWidth: number, atlasTileHeight: number, atlas: PIXI.Texture): void {
     this.#shader.resources.extra.uniforms.uAtlasTileWidth = atlasTileWidth;
+    this.#shader.resources.extra.uniforms.uAtlasTileHeight = atlasTileHeight;
     this.#shader.resources.uAtlas = atlas;
   }
 

@@ -87,7 +87,7 @@ export abstract class BaseTilemap extends PixiEntity {
 
     for (const chunk of this.#chunks.values()) {
       if (chunk instanceof ClientTextureTilemapChunk) {
-        chunk.updateAtlas(atlas.width / this.resolution, atlas);
+        chunk.updateAtlas(atlas.width / this.resolution, atlas.height / this.resolution, atlas);
       }
     }
   }
@@ -323,6 +323,7 @@ export abstract class BaseTilemap extends PixiEntity {
         ...opts,
         atlas,
         atlasTileWidth: atlas.width / this.resolution,
+        atlasTileHeight: atlas.height / this.resolution,
       });
 
       chunk.mesh.position.x += chunkX * chunkSize;
