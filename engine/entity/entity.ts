@@ -482,11 +482,23 @@ export abstract class Entity implements ISignalHandler {
       behavior[internal.implicitSetup]();
       behavior.setup();
     }
-    for (const child of this.children.values()) child[internal.entitySpawnFinalize1]();
+    for (const child of this.children.values()) {
+      try {
+        child[internal.entitySpawnFinalize1]();
+      } catch (e) {
+        throw new Error(`spawning child: ${child.id}`, { cause: e });
+      }
+    }
   }
   [internal.entitySpawnFinalize2]() {
     this.#spawn();
-    for (const child of this.children.values()) child[internal.entitySpawnFinalize2]();
+    for (const child of this.children.values()) {
+      try {
+        child[internal.entitySpawnFinalize2]();
+      } catch (e) {
+        throw new Error(`spawning child: ${child.id}`, { cause: e });
+      }
+    }
   }
 
   // #endregion
