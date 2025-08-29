@@ -478,6 +478,8 @@ export abstract class Entity implements ISignalHandler {
   }
 
   [internal.entitySpawnFinalize1]() {
+    if (this.#spawned) return;
+
     for (const behavior of this.behaviors) {
       behavior[internal.implicitSetup]();
       behavior.setup();
@@ -491,6 +493,8 @@ export abstract class Entity implements ISignalHandler {
     }
   }
   [internal.entitySpawnFinalize2]() {
+    if (this.#spawned) return;
+
     this.#spawn();
     for (const child of this.children.values()) {
       try {
