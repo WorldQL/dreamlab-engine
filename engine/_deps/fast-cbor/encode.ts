@@ -195,7 +195,8 @@ function writeValue(ctx: Context, root: unknown): void {
         break;
       }
       case "undefined": {
-        // we need this handler or undo in tilemap will crash the engine.
+        resizeIfNeeded(ctx, 1);
+        writeU8(ctx, 0xf7);
         break;
       }
       // deno-lint-ignore no-fallthrough

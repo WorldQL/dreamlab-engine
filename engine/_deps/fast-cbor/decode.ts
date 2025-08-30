@@ -140,6 +140,8 @@ function readValue(ctx: Context): unknown {
           return true;
         case 22:
           return null;
+        case 23:
+          return undefined;
         case 27:
           return readF64(ctx);
         default:
