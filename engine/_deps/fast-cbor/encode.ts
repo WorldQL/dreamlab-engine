@@ -194,6 +194,10 @@ function writeValue(ctx: Context, root: unknown): void {
         writeString(ctx, val);
         break;
       }
+      case "undefined": {
+        // we need this handler or undo in tilemap will crash the engine.
+        break;
+      }
       // deno-lint-ignore no-fallthrough
       case "object": {
         if (val === null) {
