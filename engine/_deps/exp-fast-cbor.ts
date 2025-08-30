@@ -1,1 +1,1 @@
-export * from "jsr:@char/cbor@0.1.2";
+export * from "./fast-cbor/mod.ts"
