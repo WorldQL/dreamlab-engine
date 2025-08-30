@@ -14,6 +14,7 @@ import {
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { EditorMetadataEntity } from "../metadata.ts";
 import { EditorFacadeCamera, EditorRootFacadeEntity } from "../mod.ts";
+import { EditorFacadeTilemap } from "../facades/tilemap.ts";
 
 // #region Signals
 export class GizmoUpdateStart {
@@ -107,10 +108,15 @@ export class Gizmo extends Entity {
 
   #snapLinesGfx: PIXI.Graphics | undefined;
 
+  #lastPaintingState = false;
+
   get #ctx() {
     if (!this.#target) return Gizmo.#blankCtx;
-    else if (this.mode === "combined") return Gizmo.#combinedCtx;
-    else throw new Error("invalid mode");
+    if (this.#target[0] instanceof EditorFacadeTilemap && this.#target[0].shouldPaint()) {
+      return Gizmo.#blankCtx;
+    }
+    if (this.mode === "combined") return Gizmo.#combinedCtx;
+    throw new Error("invalid mode");
   }
   // #endregion
 
@@ -128,13 +134,26 @@ export class Gizmo extends Entity {
 
   // #region Handles
   #updateHandles() {
-    // Destroy existing chilldren
-    this.children.forEach(c => c.destroy());
+    const isPainting =
+      this.#target?.[0] instanceof EditorFacadeTilemap && this.#target[0].shouldPaint();
 
-    // Don't spawn handles if no target entity
-    if (!this.#target) return;
-    else if (this.mode === "combined") this.#combinedHandles();
-    else throw new Error("invalid mode");
+    if (isPainting) {
+      this.children.forEach(c => (c.enabled = false));
+      return;
+    } else {
+      this.children.forEach(c => (c.enabled = true));
+    }
+
+    if (!this.#target) {
+      this.children.forEach(c => c.destroy());
+      return;
+    }
+
+    if (this.children.size === 0 && this.mode === "combined") {
+      this.#combinedHandles();
+    } else if (this.mode !== "combined") {
+      throw new Error("invalid mode");
+    }
   }
 
   #combinedHandles() {
@@ -674,6 +693,14 @@ export class Gizmo extends Entity {
 
     this.listen(this.game, GameRender, () => {
       if (!this.#gfx) return;
+
+      const currentPaintingState =
+        this.#target?.[0] instanceof EditorFacadeTilemap && this.#target[0].shouldPaint();
+      if (currentPaintingState !== this.#lastPaintingState) {
+        this.#gfx.context = this.#ctx;
+        this.#lastPaintingState = currentPaintingState;
+        this.#updateHandles();
+      }
 
       if (this.#target) {
         const averagePosition = this.#calculateAvgPosition();
