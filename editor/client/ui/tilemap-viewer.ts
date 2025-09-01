@@ -26,6 +26,12 @@ export class TileMapViewer {
     private container: HTMLElement,
   ) {}
 
+  set visible(value: boolean) {
+    if (!this.#app) return;
+    if (value) this.#app.ticker.start();
+    else this.#app.ticker.stop();
+  }
+
   #isTouchpad: boolean = false;
 
   #app!: PIXI.Application;
