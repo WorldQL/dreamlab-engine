@@ -145,7 +145,7 @@ export class EditorFacadeTilemap extends BaseTilemap {
     this.#tooltip.alpha = 0;
     this.container.addChild(this.#tooltip);
 
-    let paintOperations: (UndoRedoOperation & { t: "modify-tilemap" })[] = [];
+    let paintOperations: (UndoRedoOperation & { t: "modify-tilemap" })["ops"] = [];
     const paint = (world: Vector2) => {
       if (this.paletteId.length === 0) return;
 
@@ -174,15 +174,12 @@ export class EditorFacadeTilemap extends BaseTilemap {
           const newId = left ? tileId : undefined;
           if (prevId !== newId) {
             this.setTile(tileX, tileY, newId);
-            // TODO: it would be nice to build up a compound undo/redo op and then commit
-            // it on mouseup
+
             paintOperations.push({
-              t: "modify-tilemap",
-              tilemapRef: this.ref,
               x: tileX,
               y: tileY,
-              prevId,
-              newId,
+              id: newId,
+              previous: prevId,
             });
           }
         }
@@ -195,7 +192,11 @@ export class EditorFacadeTilemap extends BaseTilemap {
     });
     this.listen(this.game.inputs, MouseUp, () => {
       if (paintOperations.length > 0) {
-        UndoRedoManager._.push({ t: "compound", ops: paintOperations });
+        UndoRedoManager._.push({
+          t: "modify-tilemap",
+          tilemapRef: this.ref,
+          ops: [...paintOperations],
+        });
         paintOperations = [];
       }
     });
