@@ -116,7 +116,7 @@ export abstract class BaseTilemap extends PixiEntity {
   ): void {
     // assert(xs.length === ys.length && xs.length === ids.length)
 
-    let chunk: TextureTilemapChunk | undefined;
+    let chunk: TextureTilemapChunk | ClientTextureTilemapChunk | undefined;
 
     const len = Math.min(xs.length, ys.length, atlasIds.length);
     for (let i = 0; i < len; i++) {
@@ -129,6 +129,9 @@ export abstract class BaseTilemap extends PixiEntity {
 
       if (chunkX !== chunk?.x || chunkY !== chunk?.y) chunk = this.#getChunk("atlas", x, y);
       chunk!.setTile(x & 0xff, y & 0xff, atlasId);
+      if (chunk instanceof ClientTextureTilemapChunk) {
+        this.#dirtyChunks.add(chunk);
+      }
     }
 
     const arr = Array.isArray(atlasIds) ? atlasIds : [...atlasIds];
@@ -158,7 +161,7 @@ export abstract class BaseTilemap extends PixiEntity {
     ys: number[],
     colors: (number | undefined)[] | Uint8Array | Uint16Array,
   ): void {
-    let chunk: ColorTilemapChunk | undefined;
+    let chunk: ColorTilemapChunk | ClientColorTilemapChunk | undefined;
 
     const len = Math.min(xs.length, ys.length, colors.length);
     for (let i = 0; i < len; i++) {
@@ -171,6 +174,9 @@ export abstract class BaseTilemap extends PixiEntity {
 
       if (chunkX !== chunk?.x || chunkY !== chunk?.y) chunk = this.#getChunk("color", x, y);
       chunk!.setTile(x & 0xff, y & 0xff, color);
+      if (chunk instanceof ClientColorTilemapChunk) {
+        this.#dirtyChunks.add(chunk);
+      }
     }
 
     const arr = Array.isArray(colors) ? colors : [...colors];
