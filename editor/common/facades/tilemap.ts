@@ -94,7 +94,6 @@ export class EditorFacadeTilemap extends BaseTilemap {
 
     const final = renderer.generateTexture({
       target: new PIXI.Sprite(slice),
-      resolution: this.resolution,
       textureSourceOptions: { scaleMode: "nearest" },
     });
 
