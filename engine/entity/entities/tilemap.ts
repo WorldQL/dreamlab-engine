@@ -141,6 +141,27 @@ export abstract class BaseTilemap extends PixiEntity {
     this.fire(TilemapBatchUpdate, this, xs, ys, arr);
   }
 
+  setTilesContiguous(
+    width: number,
+    atlasIds: (number | undefined)[] | Uint8Array | Uint16Array,
+    startX = 0,
+    startY = 0,
+  ) {
+    if (width <= 0 || atlasIds.length === 0) return;
+
+    const xs: number[] = [];
+    const ys: number[] = [];
+
+    for (let i = 0; i < atlasIds.length; i++) {
+      const x = startX + (i % width);
+      const y = startY + Math.floor(i / width);
+      xs.push(x);
+      ys.push(y);
+    }
+
+    this.setTiles(xs, ys, atlasIds);
+  }
+
   setTile(x: number, y: number, atlasId: number | undefined): void {
     if (atlasId === undefined) return this.clearTile(x, y);
     this.setTileInfo(x, y, { type: "atlas", id: atlasId });
