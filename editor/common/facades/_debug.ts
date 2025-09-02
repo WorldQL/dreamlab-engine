@@ -44,6 +44,7 @@ interface DebugShapeOptions {
   readonly color?: PIXI.ColorSource;
   readonly alpha?: number;
   readonly width?: number;
+  readonly pixelLine?: boolean;
   readonly alwaysOnTop?: boolean;
   readonly alignment?: number;
   readonly disableScale?: boolean;
@@ -62,6 +63,7 @@ abstract class DebugShape {
   #color: PIXI.ColorSource;
   #alpha: number;
   #width: number;
+  #pixelLine: boolean;
   #alwaysOnTop: boolean;
 
   public get color(): PIXI.ColorSource {
@@ -85,6 +87,14 @@ abstract class DebugShape {
   }
   public set width(value) {
     this.#width = value;
+    this.#redraw();
+  }
+
+  public get pixelLine(): boolean {
+    return this.#pixelLine;
+  }
+  public set pixelLine(value) {
+    this.#pixelLine = value;
     this.#redraw();
   }
 
@@ -127,6 +137,7 @@ abstract class DebugShape {
     color = "white",
     alpha = 0.8,
     width = 0.04,
+    pixelLine = false,
     alwaysOnTop = false,
     alignment = 1,
     disableScale = false,
@@ -149,6 +160,7 @@ abstract class DebugShape {
     this.#color = color;
     this.#alpha = alpha;
     this.#width = width;
+    this.#pixelLine = pixelLine;
     this.#alwaysOnTop = alwaysOnTop;
     this.alignment = alignment;
     this.disableScale = disableScale;
@@ -297,6 +309,7 @@ export class DebugSquare extends DebugShape {
     const color = this.color;
     const width = this.scaledWidth;
     const offset = this.alignment * width;
+    const pixelLine = this.pixelLine;
 
     // this.label.container.x = bounds.x / -2 - offset;
     // this.label.container.y = bounds.y / -2 - 0.36;
@@ -306,7 +319,7 @@ export class DebugSquare extends DebugShape {
     this.gfx
       .clear()
       .rect(bounds.x / -2, bounds.y / -2, bounds.x, bounds.y)
-      .stroke({ color, width, alignment: this.alignment });
+      .stroke({ color, width, alignment: this.alignment, pixelLine });
 
     if (this.diagonals) {
       this.gfx
@@ -314,7 +327,7 @@ export class DebugSquare extends DebugShape {
         .lineTo(bounds.x / 2 - offset, bounds.y / 2 - offset)
         .moveTo(bounds.x / -2 + offset, bounds.y / 2 - offset)
         .lineTo(bounds.x / 2 - offset, bounds.y / -2 + offset)
-        .stroke({ color, width });
+        .stroke({ color, width, pixelLine });
     }
   }
 }
@@ -340,6 +353,7 @@ export class DebugCircle extends DebugShape {
       width: this.scaledWidth,
       color: this.color,
       alignment: this.alignment,
+      pixelLine: this.pixelLine,
     });
 
     const segments = Math.max(60, Math.ceil(radius / 2));
@@ -378,6 +392,7 @@ export class DebugCapsule extends DebugShape {
       width: this.scaledWidth,
       color: this.color,
       alignment: this.alignment,
+      pixelLine: this.pixelLine,
     });
 
     this.gfx
@@ -418,6 +433,7 @@ export class DebugPolygon extends DebugShape {
       width: this.scaledWidth,
       color: this.color,
       alignment: this.alignment,
+      pixelLine: this.pixelLine,
     });
 
     const points = _points.map(([x, y]) => ({ x, y: -y }));
