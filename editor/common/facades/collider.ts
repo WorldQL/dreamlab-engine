@@ -89,11 +89,12 @@ export class EditorFacadeCollider extends PixiEntity {
   }
 
   private createDebugShape(): DebugSquare | DebugCircle | DebugCapsule {
+    const pixelLine = true;
     return this.shape === "Rectangle"
-      ? new DebugSquare({ entity: this })
+      ? new DebugSquare({ entity: this, pixelLine })
       : this.shape === "Circle"
-        ? new DebugCircle({ entity: this })
-        : new DebugCapsule({ entity: this });
+        ? new DebugCircle({ entity: this, pixelLine })
+        : new DebugCapsule({ entity: this, pixelLine });
   }
 
   #onSelectedSvc(svc: SelectedEntityService) {
