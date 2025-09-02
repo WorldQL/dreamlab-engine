@@ -14,10 +14,10 @@ import {
 } from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { BoxResizeGizmo, Gizmo } from "../common/entities/mod.ts";
-import { EditorMetadataEntity } from "../common/mod.ts";
-import { InspectorUI } from "./ui/inspector.ts";
 import { EmptyFacade } from "../common/facades/empty.ts";
 import { EditorFacadeTilemap } from "../common/facades/tilemap.ts";
+import { EditorMetadataEntity } from "../common/mod.ts";
+import { InspectorUI } from "./ui/inspector.ts";
 
 const PINCH_THRESHOLD = 50; // px   – mouse wheels are almost always > 100
 const SCROLL_THRESHOLD = 15; // px   – track‑pad two‑finger scrolls are small
@@ -100,6 +100,10 @@ export class CameraPanBehavior extends Behavior {
       this.#wasGizmo = local.length > 0;
 
       if (!this.#wasGizmo && event.cursor.world) {
+        if (this.ui?.selectedEntity.entities[0] instanceof EditorFacadeTilemap) {
+          return;
+        }
+
         const entities = this.game.entities
           .lookupByPosition(event.cursor.world)
           .filter(entity => entity.enabled)
