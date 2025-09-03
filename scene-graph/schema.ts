@@ -102,6 +102,7 @@ export const ProjectSchema = z.object({
     schema_version: z.number(),
     engine_revision: z.string(),
   }),
+  tick_rate: z.number().default(60),
   scenes: z
     .object({ main: SceneOrSceneLocationSchema })
     .and(z.record(SceneOrSceneLocationSchema)),

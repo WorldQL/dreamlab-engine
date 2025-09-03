@@ -42,6 +42,7 @@ export const connectToGame = (
           network: conn.createNetworking(),
           cacheBuster: cacheBust ? createId("cch", { secure: false }) : undefined,
           kv: game => new KvClient({ game }),
+          ticksPerSecond: packet.tick_rate,
         });
         game.worldScriptBaseURL = new URL(
           packet.world_script_base_url,

@@ -7,10 +7,11 @@ export class Time {
 
   #game: Game;
 
-  readonly TPS: number = 60;
+  readonly TPS: number;
 
-  constructor(game: Game) {
+  constructor(game: Game, tps: number) {
     this.#game = game;
+    this.TPS = tps;
   }
 
   // #region Time Access

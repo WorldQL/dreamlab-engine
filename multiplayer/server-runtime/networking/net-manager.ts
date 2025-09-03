@@ -145,6 +145,7 @@ export class ServerNetworkManager {
           ? `${this.ipc.workerData.worldResourcesBaseUrl}/${game.worldId}/${this.ipc.workerData.worldSubdirectory}/`
           : `${this.ipc.workerData.worldResourcesBaseUrl}/${game.worldId}/`,
         edit_mode: this.ipc.workerData.editMode,
+        tick_rate: game.time.TPS,
       });
 
       // TODO: create playerconnection entity and put it in game.remote

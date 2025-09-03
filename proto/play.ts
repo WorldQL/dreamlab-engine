@@ -16,6 +16,7 @@ export const HandshakePacketSchema = z.object({
   player_id: z.string(),
   world_script_base_url: z.string(),
   edit_mode: z.boolean(),
+  tick_rate: z.number().default(60),
 });
 
 export const PingPacketSchema = z.object({

@@ -48,6 +48,8 @@ import { SyncedObjectRegistry } from "./synced-objects/registry.ts";
 export interface GameOptions {
   instanceId: string;
   worldId: string;
+  /** defaults to 60 tps */
+  ticksPerSecond?: number;
 
   resolveResource?: (uri: string) => string;
   fetch?: (opts: {
@@ -87,13 +89,15 @@ export abstract class BaseGame implements ISignalHandler {
     if (!(this instanceof ServerGame || this instanceof ClientGame))
       throw new Error("BaseGame is sealed to ServerGame and ClientGame!");
 
+    // now that we know we are ServerGame | ClientGame, we can safely cast to Game
+
     this.instanceId = opts.instanceId;
     this.worldId = opts.worldId;
 
     this.#resolveResource = opts.resolveResource;
     this.#fetch = opts.fetch;
 
-    // now that we know we are ServerGame | ClientGame, we can safely cast to Game
+    this.time = new Time(this as unknown as Game, opts.ticksPerSecond ?? 60);
   }
 
   readonly signalSubscriptionMap = DefaultSignalHandlerImpls.map();
@@ -106,7 +110,7 @@ export abstract class BaseGame implements ISignalHandler {
   readonly world: WorldRoot = new WorldRoot(this as unknown as Game);
   readonly prefabs: PrefabsRoot = new PrefabsRoot(this as unknown as Game);
 
-  readonly time: Time = new Time(this as unknown as Game);
+  readonly time: Time;
   readonly inputs: Inputs = new Inputs(this as unknown as Game);
 
   [internal.behaviorLoader] = new BehaviorLoader(this as unknown as Game);
