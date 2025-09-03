@@ -1334,7 +1334,7 @@ export abstract class Entity implements ISignalHandler {
       this[internal.entityTeleportingThisTick] = false;
 
       if (this.#netTransformFrom && this.#netTransformTo) {
-        const INTERP_TIME_TICKS = 7; // 6 ticks = 100ms
+        const INTERP_TIME_TICKS = 7 * (this.game.time.TPS / 60);
 
         const age = this.game.time.ticks - this.#netTransformTicks;
         if (age <= INTERP_TIME_TICKS) {
@@ -1353,7 +1353,7 @@ export abstract class Entity implements ISignalHandler {
       this[internal.entityTeleportingThisTick] = false;
 
       if (this.#netTransformFrom && this.#netTransformTo) {
-        const INTERP_TIME_TICKS = 3; // 6 ticks = 100ms
+        const INTERP_TIME_TICKS = 3 * (this.game.time.TPS / 60); // 6 ticks = 100ms
 
         const age = this.game.time.ticks - this.#netTransformTicks;
         if (age <= INTERP_TIME_TICKS) {
