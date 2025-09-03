@@ -1,1 +1,1 @@
-export * from "./fast-cbor/mod.ts"
+export * from "./fast-cbor/mod.ts";
