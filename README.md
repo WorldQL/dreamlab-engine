@@ -20,24 +20,27 @@ We recommend [using Dreamlab in your browser with no setup required](https://app
 However, you can run it locally with the following:
 
 ```bash
+# clone the dreamlab engine repo
 git clone https://github.com/WorldQL/dreamlab-engine
-cd dreamlab-engine/multiplayer
-# create project and start server
-PROJECT_NAME=my-new-project
-
-cp -r multiplayer/worlds/dreamlab/template-project "multiplayer/worlds/dreamlab/$PROJECT_NAME" \
-&& cd multiplayer \
-&& deno task start --spawn "dreamlab/$PROJECT_NAME"
-
-
-# open new terminal window
-# start editor
 cd dreamlab-engine
-cd editor/
-deno task watch
+
+# initialize local environment variables
+# this only needs to be done once per clone
+deno task init-local-env
+
+# initialize a new dreamlab project
+deno task init-project ~/my-project
+
+# start the multiplayer server
+# be sure to pass the path to your project
+deno task run-server ~/my-project
+
+# start the editor
+# this needs to be run in a new terminal while the multiplayer server runs in the background
+deno task run-editor
 ```
 
-Then open http://localhost:5173/?instance=00000000-0000-0000-0000-000000000000&server=ws%3A%2F%2Flocalhost%3A8001 and you'll see the editor! 
+Then open http://localhost:5173/ and you'll see the editor! 
 
 ## **Need Help?**  
 If you need any help, feel free to: 
