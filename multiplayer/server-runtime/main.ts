@@ -39,7 +39,7 @@ await ipc.connected();
 // TODO: hook the console to do proper logging
 
 const earlyProjectJson = await Deno.readTextFile(
-  workerData.worldsDirectory + "/project.json",
+  workerData.worldDirectory + "/project.json",
 ).then(txt => JSON.parse(txt) as unknown);
 const earlyProjectSchema = ProjectSchema.safeParse(earlyProjectJson);
 
