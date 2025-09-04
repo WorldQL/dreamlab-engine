@@ -73,8 +73,7 @@ export class UIPanel extends Entity {
     if (!camera) return; // TODO: Cull when no camera exists
 
     const resolution = globalThis.devicePixelRatio;
-    const screen = camera.worldToScreen(this.pos); // TODO: this doesnt apply smoothing to position :(
-    // this is because adding smoothing to the worldToScreen() fn breaks other stuff
+    const screen = camera.worldToScreen(this.interpolated.position, true);
 
     element.style.zIndex = this.z.toString();
     element.style.left = screen.x.toString() + "px";
@@ -89,11 +88,10 @@ export class UIPanel extends Entity {
       scale = axis / Camera.TARGET_VIEWPORT_SIZE / resolution;
     }
 
-    // TODO: maybe we should interpolate this
     element.style.transform = `translateX(-50%) translateY(-50%)
-      rotate(${camera.smoothed.rotation - this.globalTransform.rotation}rad)
-      scaleX(${(this.globalTransform.scale.x / camera.smoothed.scale.x) * scale})
-      scaleY(${(this.globalTransform.scale.y / camera.smoothed.scale.y) * scale})`;
+      rotate(${camera.smoothed.rotation - this.interpolated.rotation}rad)
+      scaleX(${(this.interpolated.scale.x / camera.smoothed.scale.x) * scale})
+      scaleY(${(this.interpolated.scale.y / camera.smoothed.scale.y) * scale})`;
   }
 
   onInitialize() {

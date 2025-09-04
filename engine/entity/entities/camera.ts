@@ -269,7 +269,7 @@ export class Camera extends Entity {
     }
   }
 
-  public worldToScreen(position: IVector2): Vector2 {
+  public worldToScreen(position: IVector2, interpolated = false): Vector2 {
     const game = this.game as ClientGame;
     const resolution = globalThis.devicePixelRatio;
 
@@ -282,8 +282,9 @@ export class Camera extends Entity {
       scale = axis / Camera.TARGET_VIEWPORT_SIZE / resolution;
     }
 
+    const pos = interpolated ? this.#position : this.globalTransform.position;
     const matrix = PIXI.Matrix.shared
-      .translate(-this.globalTransform.position.x, this.globalTransform.position.y)
+      .translate(-pos.x, pos.y)
       .rotate(this.#rotation)
       .scale(Camera.METERS_TO_PIXELS, Camera.METERS_TO_PIXELS)
       .scale(1 / (this.#scale.x / scale), 1 / (this.#scale.y / scale))
