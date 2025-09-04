@@ -72,6 +72,7 @@ export class UIPanel extends Entity {
     const camera = Camera.getActive(this.game);
     if (!camera) return; // TODO: Cull when no camera exists
 
+    const resolution = globalThis.devicePixelRatio;
     const screen = camera.worldToScreen(this.pos); // TODO: this doesnt apply smoothing to position :(
     // this is because adding smoothing to the worldToScreen() fn breaks other stuff
 
@@ -85,7 +86,7 @@ export class UIPanel extends Entity {
       const w = canvas.width / Camera.METERS_TO_PIXELS;
       const h = canvas.height / Camera.METERS_TO_PIXELS;
       const axis = Math.min(w, h);
-      scale = axis / Camera.TARGET_VIEWPORT_SIZE;
+      scale = axis / Camera.TARGET_VIEWPORT_SIZE / resolution;
     }
 
     // TODO: maybe we should interpolate this
