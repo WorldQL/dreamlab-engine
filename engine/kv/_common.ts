@@ -19,6 +19,14 @@ export async function get(presigned: string): Promise<JsonValue | undefined> {
   return json.value as JsonValue;
 }
 
+export async function list(presigned: string): Promise<Record<string, JsonValue>> {
+  const resp = await fetch(presigned);
+  if (!resp.ok) throw new Error("failed to list kv");
+
+  const json = await resp.json();
+  return json as Record<string, JsonValue>;
+}
+
 export async function set(presigned: string, value: JsonValue): Promise<void> {
   const resp = await fetch(presigned, {
     method: "PUT",

@@ -3,6 +3,7 @@
   "specifiers": {
     "jsr:@char/cbor@0.1.2": "0.1.2",
     "jsr:@luca/esbuild-deno-loader@0.11.1": "0.11.1",
+    "jsr:@noble/ed25519@3.0.0": "3.0.0",
     "jsr:@noble/ed25519@^2.2.3": "2.2.3",
     "jsr:@oak/commons@1": "1.0.1",
     "jsr:@oak/oak@^17.1.5": "17.1.5",
@@ -70,6 +71,9 @@
     },
     "@noble/ed25519@2.2.3": {
       "integrity": "77d984ee6b823c8b1a4a36aa56105d60e696a4e7b599b821712d1251481e2f9c"
+    },
+    "@noble/ed25519@3.0.0": {
+      "integrity": "cf3cc8022e0ab17649af2064be922b9653af8a2bbe695bd02f88317746dc619e"
     },
     "@oak/commons@1.0.1": {
       "integrity": "889ff210f0b4292591721be07244ecb1b5c118742f5273c70cf30d7cd4184d0c",

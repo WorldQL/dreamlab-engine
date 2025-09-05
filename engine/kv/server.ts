@@ -24,6 +24,9 @@ export abstract class KvServerBase extends KvBase implements ServerKV {
       const value = await this.get(this.scope(), key);
       return value as T | undefined;
     },
+    list: (): Promise<Record<string, JsonValue>> => {
+      return this.list(this.scope());
+    },
     set: (key: string, value: JsonValue): Promise<void> => {
       return this.set(this.scope(), key, value);
     },
@@ -42,6 +45,9 @@ export abstract class KvServerBase extends KvBase implements ServerKV {
     ): Promise<T | undefined> => {
       const value = await this.get(this.scope(playerId), key);
       return value as T | undefined;
+    },
+    list: (playerId: string): Promise<Record<string, JsonValue>> => {
+      return this.list(this.scope(playerId));
     },
     set: (key: string, value: JsonValue, playerId: string): Promise<void> => {
       return this.set(this.scope(playerId), key, value);
@@ -214,6 +220,12 @@ export class KvServer extends KvServerBase implements ServerKV {
 
     const value = await promise;
     return value;
+  }
+
+  protected async list(scope: string): Promise<Record<string, JsonValue>> {
+    const data = createPayload("list", scope, "", 10);
+    const url = await presign(this.#url, this.#signingKey, data);
+    return common.list(url);
   }
 
   protected async set(scope: string, key: string, value: JsonValue): Promise<void> {

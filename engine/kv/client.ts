@@ -25,6 +25,9 @@ export abstract class KvClientBase extends KvBase implements ClientKV {
       const value = await this.get(this.scope(), key);
       return value as T | undefined;
     },
+    list: (): Promise<Record<string, JsonValue>> => {
+      return this.list(this.scope());
+    },
     set: (key: string, value: JsonValue): Promise<void> => {
       return this.set(this.scope(), key, value);
     },
@@ -195,6 +198,11 @@ export class KvClient extends KvClientBase implements ClientKV {
 
     const value = await promise;
     return value;
+  }
+
+  protected async list(scope: string): Promise<Record<string, JsonValue>> {
+    const { url } = await this.#presign({ action: "list", scope, key: "" });
+    return common.list(url);
   }
 
   protected async set(scope: string, key: string, value: JsonValue): Promise<void> {
