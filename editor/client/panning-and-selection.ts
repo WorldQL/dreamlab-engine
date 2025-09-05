@@ -383,7 +383,7 @@ export class CameraPanBehavior extends Behavior {
       }
     }
 
-    const selectedEntities = candidateEntities.filter(entity => {
+    let selectedEntities = candidateEntities.filter(entity => {
       let current = entity.parent;
       while (current) {
         if (candidateEntities.includes(current)) {
@@ -393,6 +393,20 @@ export class CameraPanBehavior extends Behavior {
       }
       return true;
     });
+
+    // useful for empties which have no bounds.
+    const shouldSelectParent =
+      selectedEntities.length > 0 &&
+      selectedEntities[0].parent &&
+      selectedEntities.length ===
+        Array.from(selectedEntities[0].parent?.children.values() ?? []).filter(
+          e => !(e instanceof EditorMetadataEntity),
+        ).length &&
+      selectedEntities.every(e => e.parent === selectedEntities[0].parent);
+
+    if (shouldSelectParent) {
+      selectedEntities = [selectedEntities[0].parent!];
+    }
 
     this.#selectionBox.gfx.destroy();
     this.#selectionBox = undefined;
@@ -524,20 +538,7 @@ export class CameraPanBehavior extends Behavior {
         queryEntity = entities[currentIdx];
       }
 
-      let newTarget = entities.length > 0 ? queryEntity : undefined;
-
-      // If selected entity's parent is an EmptyFacade, select the parent instead
-      // But only if we're not already cycling through (i.e., not a double-click)
-      // and only if the EmptyFacade parent is not already in the entities list at this position
-      // and only if the entity we're selecting is not already the current target
-      if (
-        newTarget?.parent instanceof EmptyFacade &&
-        !shouldUpdateIndex &&
-        !entities.includes(newTarget.parent) &&
-        newTarget !== target
-      ) {
-        newTarget = newTarget.parent;
-      }
+      const newTarget = entities.length > 0 ? queryEntity : undefined;
 
       if (newTarget && (event.ev.shiftKey || event.ev.ctrlKey)) {
         const currentEntities = this.ui?.selectedEntity.entities || [];
