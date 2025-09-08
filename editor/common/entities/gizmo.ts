@@ -329,31 +329,39 @@ export class Gizmo extends Entity {
       if (this.#action.axis === "y") local.x = 0;
       const world = pointLocalToWorld(this.globalTransform, local);
 
-      // TODO: consider disabling snapping when using multiselect
-      // because i dont want to think of the implementation issues lmao
-      if (
-        event.shiftKey &&
-        SelectedEntityService.serviceForGame(this.game as ClientGame)?.entities.length === 1
-      ) {
+      const selectedEntities = SelectedEntityService.serviceForGame(
+        this.game as ClientGame,
+      )!.entities;
+      if (event.shiftKey) {
         const snapThreshold = 0.1;
 
-        // Save original position
-        const originalPos = this.#target[0].globalTransform.position.clone();
+        // Get all selected entities for AABB calculation
+        const allSelectedEntities = [this.#target[0], ...this.#auxTargets.keys()];
+        
+        // Save original positions
+        const originalPositions = new Map(
+          allSelectedEntities.map(entity => [entity, entity.globalTransform.position.clone()])
+        );
 
-        // Temporarily move target to the tentative position
+        // Temporarily move all entities to tentative position
         this.#target[0].globalTransform.position = world.add(this.#target[1]);
-        const targetBounds = this.#computeGlobalBounds(this.#target[0]);
+        for (const [entity, offset] of this.#auxTargets) {
+          entity.globalTransform.position = world.add(offset);
+        }
 
-        // Get target corners at the tentative position (while temporarily moved)
-        const targetCorners = Gizmo.getTransformedCorners(this.#target[0]);
+        // Calculate AABB for all selected entities at tentative position
+        const targetBounds = this.#computeAABBForEntities(allSelectedEntities);
+        const targetCorners = Gizmo.getAABBCorners(targetBounds);
 
         const targetCenter = {
           x: (targetBounds.minX + targetBounds.maxX) / 2,
           y: (targetBounds.minY + targetBounds.maxY) / 2,
         };
 
-        // Restore after bounds computation, since we only needed it for calculation
-        this.#target[0].globalTransform.position = originalPos;
+        // Restore original positions after bounds computation
+        for (const [entity, originalPos] of originalPositions) {
+          entity.globalTransform.position = originalPos;
+        }
 
         let snapX: number | undefined;
         let snapY: number | undefined;
@@ -367,8 +375,8 @@ export class Gizmo extends Entity {
           | undefined;
 
         for (const e of this.game.entities) {
-          if (e === this.#target[0]) continue;
-          if (e.parent === this.#target[0]) continue;
+          if (allSelectedEntities.includes(e)) continue;
+          if (allSelectedEntities.some(selected => e.parent === selected)) continue;
           if (!e.enabled) continue;
           if (e instanceof Root) continue;
           if (e instanceof Gizmo || e.parent instanceof Gizmo) continue;
@@ -892,5 +900,29 @@ export class Gizmo extends Entity {
       const y = corner.x * sin + corner.y * cos + pos.y;
       return { x, y };
     });
+  }
+
+  #computeAABBForEntities(entities: Entity[]) {
+    let minX = Infinity, maxX = -Infinity;
+    let minY = Infinity, maxY = -Infinity;
+
+    for (const entity of entities) {
+      const bounds = this.#computeGlobalBounds(entity);
+      minX = Math.min(minX, bounds.minX);
+      maxX = Math.max(maxX, bounds.maxX);
+      minY = Math.min(minY, bounds.minY);
+      maxY = Math.max(maxY, bounds.maxY);
+    }
+
+    return { minX, maxX, minY, maxY };
+  }
+
+  static getAABBCorners(bounds: { minX: number; maxX: number; minY: number; maxY: number }) {
+    return [
+      { x: bounds.maxX, y: bounds.maxY }, // top-right
+      { x: bounds.minX, y: bounds.maxY }, // top-left
+      { x: bounds.minX, y: bounds.minY }, // bottom-left
+      { x: bounds.maxX, y: bounds.minY }, // bottom-right
+    ];
   }
 }
