@@ -345,7 +345,7 @@ export class Gizmo extends Entity {
         const targetBounds = this.#computeGlobalBounds(this.#target[0]);
 
         // Get target corners at the tentative position (while temporarily moved)
-        const targetCorners = this.#getTransformedCorners(this.#target[0]);
+        const targetCorners = Gizmo.getTransformedCorners(this.#target[0]);
 
         const targetCenter = {
           x: (targetBounds.minX + targetBounds.maxX) / 2,
@@ -379,7 +379,7 @@ export class Gizmo extends Entity {
           if (e.ref === "EDIT_ROOT") continue;
 
           const entityBounds = this.#computeGlobalBounds(e);
-          const entityCorners = this.#getTransformedCorners(e);
+          const entityCorners = Gizmo.getTransformedCorners(e);
           const entityCenter = {
             x: (entityBounds.minX + entityBounds.maxX) / 2,
             y: (entityBounds.minY + entityBounds.maxY) / 2,
@@ -866,7 +866,7 @@ export class Gizmo extends Entity {
     return { minX, maxX, minY, maxY };
   }
 
-  #getTransformedCorners(entity: Entity) {
+  static getTransformedCorners(entity: Entity) {
     // Get the actual transformed corners (not just bounding box)
     const half = {
       x: 0.5 * entity.globalTransform.scale.x,
