@@ -1,8 +1,7 @@
-import type { ClientGame, EntityContext, Transform } from "@dreamlab/engine";
+import type { EntityContext, Transform } from "@dreamlab/engine";
 import {
   Camera,
   Clickable,
-  Empty,
   Entity,
   EntityDestroyed,
   GameRender,
@@ -16,8 +15,8 @@ import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { EditorMetadataEntity } from "../metadata.ts";
 import { EditorFacadeCamera, EditorRootFacadeEntity } from "../mod.ts";
 import { EditorFacadeTilemap } from "../facades/tilemap.ts";
-import { SelectedEntityService } from "../../client/ui/selected-entity.ts";
 import { EmptyFacade } from "../facades/empty.ts";
+import { BoxResizeGizmo } from "./box-resize.ts";
 
 // #region Signals
 export class GizmoUpdateStart {
@@ -329,18 +328,15 @@ export class Gizmo extends Entity {
       if (this.#action.axis === "y") local.x = 0;
       const world = pointLocalToWorld(this.globalTransform, local);
 
-      const selectedEntities = SelectedEntityService.serviceForGame(
-        this.game as ClientGame,
-      )!.entities;
       if (event.shiftKey) {
         const snapThreshold = 0.1;
 
         // Get all selected entities for AABB calculation
         const allSelectedEntities = [this.#target[0], ...this.#auxTargets.keys()];
-        
+
         // Save original positions
         const originalPositions = new Map(
-          allSelectedEntities.map(entity => [entity, entity.globalTransform.position.clone()])
+          allSelectedEntities.map(entity => [entity, entity.globalTransform.position.clone()]),
         );
 
         // Temporarily move all entities to tentative position
@@ -350,7 +346,7 @@ export class Gizmo extends Entity {
         }
 
         // Calculate AABB for all selected entities at tentative position
-        const targetBounds = this.#computeAABBForEntities(allSelectedEntities);
+        const targetBounds = Gizmo.computeAABBForEntities(allSelectedEntities);
         const targetCorners = Gizmo.getAABBCorners(targetBounds);
 
         const targetCenter = {
@@ -380,13 +376,19 @@ export class Gizmo extends Entity {
           if (!e.enabled) continue;
           if (e instanceof Root) continue;
           if (e instanceof Gizmo || e.parent instanceof Gizmo) continue;
+          if (
+            e instanceof BoxResizeGizmo ||
+            e.parent instanceof BoxResizeGizmo ||
+            e.parent?.parent instanceof BoxResizeGizmo
+          )
+            continue;
           if (e instanceof Camera || e instanceof EditorFacadeCamera) continue;
           if (e instanceof EditorRootFacadeEntity) continue;
           if (e instanceof EditorMetadataEntity) continue;
           if (e instanceof EmptyFacade) continue;
           if (e.ref === "EDIT_ROOT") continue;
 
-          const entityBounds = this.#computeGlobalBounds(e);
+          const entityBounds = Gizmo.computeGlobalBounds(e);
           const entityCorners = Gizmo.getTransformedCorners(e);
           const entityCenter = {
             x: (entityBounds.minX + entityBounds.maxX) / 2,
@@ -826,7 +828,7 @@ export class Gizmo extends Entity {
     canvas.addEventListener("pointerup", this.#onMouseUp);
   }
 
-  #computeGlobalBounds(entity: Entity) {
+  static computeGlobalBounds(entity: Entity) {
     // Assume entity.bounds returns {x:1,y:1}
     // Compute half-size
     const half = {
@@ -902,12 +904,14 @@ export class Gizmo extends Entity {
     });
   }
 
-  #computeAABBForEntities(entities: Entity[]) {
-    let minX = Infinity, maxX = -Infinity;
-    let minY = Infinity, maxY = -Infinity;
+  static computeAABBForEntities(entities: Entity[]) {
+    let minX = Infinity,
+      maxX = -Infinity;
+    let minY = Infinity,
+      maxY = -Infinity;
 
     for (const entity of entities) {
-      const bounds = this.#computeGlobalBounds(entity);
+      const bounds = Gizmo.computeGlobalBounds(entity);
       minX = Math.min(minX, bounds.minX);
       maxX = Math.max(maxX, bounds.maxX);
       minY = Math.min(minY, bounds.minY);

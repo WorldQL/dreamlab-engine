@@ -1,4 +1,4 @@
-import type { ClientGame, EntityContext, EntityDefinition, Transform } from "@dreamlab/engine";
+import type { EntityContext, EntityDefinition, Transform } from "@dreamlab/engine";
 import {
   Camera,
   Clickable,
@@ -19,7 +19,6 @@ import { EditorMetadataEntity } from "../metadata.ts";
 import { EditorFacadeCamera, EditorRootFacadeEntity } from "../mod.ts";
 import { Gizmo, GizmoUpdateEnd } from "./gizmo.ts";
 import { EmptyFacade } from "../facades/empty.ts";
-import { SelectedEntityService } from "../../client/ui/selected-entity.ts";
 
 export class BoxResizeGizmoResizeEnd {
   constructor(
@@ -632,31 +631,36 @@ export class BoxResizeGizmo extends Entity {
       if (this.#action.axis === "y") local.x = 0;
       const world = pointLocalToWorld(this.globalTransform, local);
 
-      // TODO: consider disabling snapping when using multiselect
-      // because i dont want to think of the implementation issues lmao
-      if (
-        event.shiftKey &&
-        SelectedEntityService.serviceForGame(this.game as ClientGame)?.entities.length === 1
-      ) {
+      if (event.shiftKey) {
         const snapThreshold = 0.1;
 
-        // Save original position
-        const originalPos = this.#target[0].globalTransform.position.clone();
+        // Get all selected entities for AABB calculation
+        const allSelectedEntities = [this.#target[0], ...this.#auxTargets.keys()];
 
-        // Temporarily move target to the tentative position
+        // Save original positions
+        const originalPositions = new Map(
+          allSelectedEntities.map(entity => [entity, entity.globalTransform.position.clone()]),
+        );
+
+        // Temporarily move all entities to tentative position
         this.#target[0].globalTransform.position = world.add(this.#target[1]);
-        const targetBounds = this.#computeGlobalBounds(this.#target[0]);
+        for (const [entity, offset] of this.#auxTargets) {
+          entity.globalTransform.position = world.add(offset);
+        }
 
-        // Get target corners at the tentative position (while temporarily moved)
-        const targetCorners = Gizmo.getTransformedCorners(this.#target[0]);
+        // Calculate AABB for all selected entities at tentative position
+        const targetBounds = Gizmo.computeAABBForEntities(allSelectedEntities);
+        const targetCorners = Gizmo.getAABBCorners(targetBounds);
 
         const targetCenter = {
           x: (targetBounds.minX + targetBounds.maxX) / 2,
           y: (targetBounds.minY + targetBounds.maxY) / 2,
         };
 
-        // Restore after bounds computation, since we only needed it for calculation
-        this.#target[0].globalTransform.position = originalPos;
+        // Restore original positions after bounds computation
+        for (const [entity, originalPos] of originalPositions) {
+          entity.globalTransform.position = originalPos;
+        }
 
         let snapX: number | undefined;
         let snapY: number | undefined;
@@ -670,25 +674,24 @@ export class BoxResizeGizmo extends Entity {
           | undefined;
 
         for (const e of this.game.entities) {
-          if (e === this.#target[0]) continue;
-          if (e.parent === this.#target[0]) continue;
+          if (allSelectedEntities.includes(e)) continue;
+          if (allSelectedEntities.some(selected => e.parent === selected)) continue;
           if (!e.enabled) continue;
           if (e instanceof Root) continue;
           if (e instanceof Gizmo || e.parent instanceof Gizmo) continue;
           if (
             e instanceof BoxResizeGizmo ||
             e.parent instanceof BoxResizeGizmo ||
-            e.parent?.parent instanceof BoxResizeGizmo // great code
+            e.parent?.parent instanceof BoxResizeGizmo
           )
             continue;
-
           if (e instanceof Camera || e instanceof EditorFacadeCamera) continue;
           if (e instanceof EditorRootFacadeEntity) continue;
           if (e instanceof EditorMetadataEntity) continue;
           if (e instanceof EmptyFacade) continue;
           if (e.ref === "EDIT_ROOT") continue;
 
-          const entityBounds = this.#computeGlobalBounds(e);
+          const entityBounds = Gizmo.computeGlobalBounds(e);
           const entityCorners = Gizmo.getTransformedCorners(e);
           const entityCenter = {
             x: (entityBounds.minX + entityBounds.maxX) / 2,
@@ -928,7 +931,7 @@ export class BoxResizeGizmo extends Entity {
 
     if (event.shiftKey) {
       const snapThreshold = 0.1;
-      const targetBounds = this.#computeGlobalBounds(this.#target[0]);
+      const targetBounds = Gizmo.computeGlobalBounds(this.#target[0]);
       const targetCenterX = (targetBounds.minX + targetBounds.maxX) / 2;
       const targetCenterY = (targetBounds.minY + targetBounds.maxY) / 2;
 
@@ -941,13 +944,18 @@ export class BoxResizeGizmo extends Entity {
         if (!e.enabled) continue;
         if (e instanceof Root) continue;
         if (e instanceof Gizmo || e.parent instanceof Gizmo) continue;
-        if (e instanceof BoxResizeGizmo || e.parent instanceof BoxResizeGizmo) continue;
+        if (
+          e instanceof BoxResizeGizmo ||
+          e.parent instanceof BoxResizeGizmo ||
+          e.parent?.parent instanceof BoxResizeGizmo
+        )
+          continue;
         if (e instanceof Camera || e instanceof EditorFacadeCamera) continue;
         if (e instanceof EditorRootFacadeEntity) continue;
         if (e instanceof EditorMetadataEntity) continue;
         if (e.ref === "EDIT_ROOT") continue;
 
-        const entityBounds = this.#computeGlobalBounds(e);
+        const entityBounds = Gizmo.computeGlobalBounds(e);
         const entityCenterX = (entityBounds.minX + entityBounds.maxX) / 2;
         const entityCenterY = (entityBounds.minY + entityBounds.maxY) / 2;
 
@@ -1278,59 +1286,5 @@ export class BoxResizeGizmo extends Entity {
     const canvas = this.game.renderer.app.canvas;
     canvas.addEventListener("pointermove", this.#onMouseMove);
     canvas.addEventListener("pointerup", this.#onMouseUp);
-  }
-
-  #computeGlobalBounds(entity: Entity) {
-    const bounds = entity.bounds;
-    if (!bounds) {
-      const half = {
-        x: 0.5 * entity.globalTransform.scale.x,
-        y: 0.5 * entity.globalTransform.scale.y,
-      };
-      const pos = entity.globalTransform.position;
-      return {
-        minX: pos.x - half.x,
-        maxX: pos.x + half.x,
-        minY: pos.y - half.y,
-        maxY: pos.y + half.y,
-      };
-    }
-
-    const half = {
-      x: (bounds.width * entity.globalTransform.scale.x) / 2,
-      y: (bounds.height * entity.globalTransform.scale.y) / 2,
-    };
-
-    const corners = [
-      new Vector2(half.x, half.y),
-      new Vector2(-half.x, half.y),
-      new Vector2(-half.x, -half.y),
-      new Vector2(half.x, -half.y),
-    ];
-
-    const pos = entity.globalTransform.position;
-    const rot = entity.globalTransform.rotation;
-    const sin = Math.sin(rot);
-    const cos = Math.cos(rot);
-
-    for (const c of corners) {
-      const x = c.x * cos - c.y * sin;
-      const y = c.x * sin + c.y * cos;
-      c.x = x + pos.x;
-      c.y = y + pos.y;
-    }
-
-    let minX = Infinity,
-      maxX = -Infinity;
-    let minY = Infinity,
-      maxY = -Infinity;
-    for (const c of corners) {
-      if (c.x < minX) minX = c.x;
-      if (c.x > maxX) maxX = c.x;
-      if (c.y < minY) minY = c.y;
-      if (c.y > maxY) maxY = c.y;
-    }
-
-    return { minX, maxX, minY, maxY };
   }
 }
