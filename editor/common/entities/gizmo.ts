@@ -1,7 +1,8 @@
-import type { EntityContext, Transform } from "@dreamlab/engine";
+import type { ClientGame, EntityContext, Transform } from "@dreamlab/engine";
 import {
   Camera,
   Clickable,
+  Empty,
   Entity,
   EntityDestroyed,
   GameRender,
@@ -15,6 +16,8 @@ import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { EditorMetadataEntity } from "../metadata.ts";
 import { EditorFacadeCamera, EditorRootFacadeEntity } from "../mod.ts";
 import { EditorFacadeTilemap } from "../facades/tilemap.ts";
+import { SelectedEntityService } from "../../client/ui/selected-entity.ts";
+import { EmptyFacade } from "../facades/empty.ts";
 
 // #region Signals
 export class GizmoUpdateStart {
@@ -330,7 +333,10 @@ export class Gizmo extends Entity {
 
       // TODO: consider disabling snapping when using multiselect
       // because i dont want to think of the implementation issues lmao
-      if (event.shiftKey) {
+      if (
+        event.shiftKey &&
+        SelectedEntityService.serviceForGame(this.game as ClientGame)?.entities.length === 1
+      ) {
         const snapThreshold = 0.1;
 
         // Save original position
@@ -355,10 +361,10 @@ export class Gizmo extends Entity {
           if (!e.enabled) continue;
           if (e instanceof Root) continue;
           if (e instanceof Gizmo || e.parent instanceof Gizmo) continue;
-          // constructor.name checks because imports sometimes cause circular import issues
           if (e instanceof Camera || e instanceof EditorFacadeCamera) continue;
           if (e instanceof EditorRootFacadeEntity) continue;
           if (e instanceof EditorMetadataEntity) continue;
+          if (e instanceof EmptyFacade) continue;
           if (e.ref === "EDIT_ROOT") continue;
 
           // const distanceFromTarget = this.#target.pos.distance(e.pos);
@@ -382,7 +388,7 @@ export class Gizmo extends Entity {
 
             this.#snapLinesGfx!.context.moveTo(entityBounds.maxX, -combinedMinY)
               .lineTo(entityBounds.maxX, -combinedMaxY)
-              .stroke({ color: 0xabddff, width: 0.03 });
+              .stroke({ color: 0xabddff, width: 0.03, pixelLine: true });
           }
 
           // Align target's right edge to entity's left edge
@@ -395,7 +401,7 @@ export class Gizmo extends Entity {
 
             this.#snapLinesGfx!.context.moveTo(entityBounds.minX, -combinedMinY)
               .lineTo(entityBounds.minX, -combinedMaxY)
-              .stroke({ color: 0xabddff, width: 0.03 });
+              .stroke({ color: 0xabddff, width: 0.03, pixelLine: true });
           }
 
           // Align target's left edge to entity's left edge
@@ -408,7 +414,7 @@ export class Gizmo extends Entity {
 
             this.#snapLinesGfx!.context.moveTo(entityBounds.minX, -combinedMinY)
               .lineTo(entityBounds.minX, -combinedMaxY)
-              .stroke({ color: 0xabddff, width: 0.03 });
+              .stroke({ color: 0xabddff, width: 0.03, pixelLine: true });
           }
 
           // Align target's right edge to entity's right edge
@@ -421,7 +427,7 @@ export class Gizmo extends Entity {
 
             this.#snapLinesGfx!.context.moveTo(entityBounds.maxX, -combinedMinY)
               .lineTo(entityBounds.maxX, -combinedMaxY)
-              .stroke({ color: 0xabddff, width: 0.03 });
+              .stroke({ color: 0xabddff, width: 0.03, pixelLine: true });
           }
 
           // Center alignment horizontally
@@ -434,7 +440,7 @@ export class Gizmo extends Entity {
 
             this.#snapLinesGfx!.context.moveTo(entityCenterX, -combinedMinY)
               .lineTo(entityCenterX, -combinedMaxY)
-              .stroke({ color: 0xabddff, width: 0.03 });
+              .stroke({ color: 0xabddff, width: 0.03, pixelLine: true });
           }
 
           // Align target's top edge to entity's top edge
@@ -447,7 +453,7 @@ export class Gizmo extends Entity {
 
             this.#snapLinesGfx!.context.moveTo(combinedMinX, -entityBounds.minY)
               .lineTo(combinedMaxX, -entityBounds.minY)
-              .stroke({ color: 0xabddff, width: 0.03 });
+              .stroke({ color: 0xabddff, width: 0.03, pixelLine: true });
           }
 
           // Align target's bottom edge to entity's bottom edge
@@ -460,7 +466,7 @@ export class Gizmo extends Entity {
 
             this.#snapLinesGfx!.context.moveTo(combinedMinX, -entityBounds.maxY)
               .lineTo(combinedMaxX, -entityBounds.maxY)
-              .stroke({ color: 0xabddff, width: 0.03 });
+              .stroke({ color: 0xabddff, width: 0.03, pixelLine: true });
           }
 
           // Align target's top edge to entity's bottom edge (no vertical gap)
@@ -473,7 +479,7 @@ export class Gizmo extends Entity {
 
             this.#snapLinesGfx!.context.moveTo(combinedMinX, -entityBounds.maxY)
               .lineTo(combinedMaxX, -entityBounds.maxY)
-              .stroke({ color: 0xabddff, width: 0.03 });
+              .stroke({ color: 0xabddff, width: 0.03, pixelLine: true });
           }
 
           // Align target's bottom edge to entity's top edge (no vertical gap)
@@ -486,7 +492,7 @@ export class Gizmo extends Entity {
 
             this.#snapLinesGfx!.context.moveTo(combinedMinX, -entityBounds.minY)
               .lineTo(combinedMaxX, -entityBounds.minY)
-              .stroke({ color: 0xabddff, width: 0.03 });
+              .stroke({ color: 0xabddff, width: 0.03, pixelLine: true });
           }
 
           // Center alignment vertically
@@ -499,7 +505,7 @@ export class Gizmo extends Entity {
 
             this.#snapLinesGfx!.context.moveTo(combinedMinX, -entityCenterY)
               .lineTo(combinedMaxX, -entityCenterY)
-              .stroke({ color: 0xabddff, width: 0.03 });
+              .stroke({ color: 0xabddff, width: 0.03, pixelLine: true });
           }
         }
 
