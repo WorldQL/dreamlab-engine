@@ -85,7 +85,7 @@ export abstract class ClickableEntity extends Entity {
             const isInBounds =
               hoverCount > 0
                 ? false
-                : ((cursor.world && entity.isInBounds(cursor.world)) ?? false);
+                : (cursor.world && entity.isInBounds(cursor.world)) ?? false;
 
             entity[hoverSetter](isInBounds, cursor);
             if (isInBounds) hoverCount++;
@@ -97,7 +97,10 @@ export abstract class ClickableEntity extends Entity {
             if (entity.hover) {
               const clickable = entity as Clickable;
               // Allow dynamic cursor calculation via getCursor method
-              topCursor = (typeof clickable.getCursor === 'function' ? clickable.getCursor() : clickable.cursor) || "pointer";
+              topCursor =
+                (typeof clickable.getCursor === "function"
+                  ? clickable.getCursor()
+                  : clickable.cursor) || "pointer";
               break;
             }
           }

@@ -332,12 +332,12 @@ export class BoxResizeGizmo extends Entity {
         cursor: "move",
       },
     });
-    
+
     // Override cursor dynamically - don't show move cursor when dragging
     translateBoth.getCursor = () => {
       return this.#action ? "" : "move";
     };
-    
+
     translateBoth.on(MouseDown, translateOnMouseDown("both"));
 
     // Don't spawn handles for entities with offset bounds
