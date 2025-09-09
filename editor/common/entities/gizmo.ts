@@ -736,13 +736,15 @@ export class Gizmo extends Entity {
   #calculateAvgPosition(): Vector2 {
     if (this.#target === undefined) throw new Error("invalid average access");
 
-    const averagePosition = new Vector2(this.#target[0].globalTransform.position);
-    for (const auxTarget of this.auxTargets) {
-      averagePosition.x = (averagePosition.x + auxTarget.globalTransform.position.x) / 2;
-      averagePosition.y = (averagePosition.y + auxTarget.globalTransform.position.y) / 2;
+    const allEntities = [this.#target[0], ...this.auxTargets];
+    const sum = new Vector2(0, 0);
+
+    for (const entity of allEntities) {
+      sum.x += entity.globalTransform.position.x;
+      sum.y += entity.globalTransform.position.y;
     }
 
-    return averagePosition;
+    return new Vector2(sum.x / allEntities.length, sum.y / allEntities.length);
   }
 
   #updateTargetOffsets() {
