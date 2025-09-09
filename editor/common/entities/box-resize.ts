@@ -631,7 +631,6 @@ export class BoxResizeGizmo extends Entity {
       if (this.#action.axis === "y") local.x = 0;
       const world = pointLocalToWorld(this.globalTransform, local);
 
-      // identical to event.shiftKey block in gizmo.ts
       if (event.shiftKey) {
         const snapThreshold = 0.1;
 

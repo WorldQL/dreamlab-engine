@@ -569,21 +569,23 @@ export class Gizmo extends Entity {
           }
         }
 
-        // Draw only the best snap candidates
-        if (bestXSnapInfo) {
-          this.#snapLinesGfx!.context.moveTo(bestXSnapInfo.line, -bestXSnapInfo.minY)
-            .lineTo(bestXSnapInfo.line, -bestXSnapInfo.maxY)
-            .stroke({ color: bestXSnapInfo.color, width: 0.03, pixelLine: true });
-        }
-        if (bestYSnapInfo) {
-          this.#snapLinesGfx!.context.moveTo(bestYSnapInfo.minX, -bestYSnapInfo.line)
-            .lineTo(bestYSnapInfo.maxX, -bestYSnapInfo.line)
-            .stroke({ color: bestYSnapInfo.color, width: 0.03, pixelLine: true });
+        // Draw only the best snap candidates when moving on both axes
+        if (this.#action.axis === "both") {
+          if (bestXSnapInfo) {
+            this.#snapLinesGfx!.context.moveTo(bestXSnapInfo.line, -bestXSnapInfo.minY)
+              .lineTo(bestXSnapInfo.line, -bestXSnapInfo.maxY)
+              .stroke({ color: bestXSnapInfo.color, width: 0.03, pixelLine: true });
+          }
+          if (bestYSnapInfo) {
+            this.#snapLinesGfx!.context.moveTo(bestYSnapInfo.minX, -bestYSnapInfo.line)
+              .lineTo(bestYSnapInfo.maxX, -bestYSnapInfo.line)
+              .stroke({ color: bestYSnapInfo.color, width: 0.03, pixelLine: true });
+          }
         }
 
-        // Apply any snap adjustments
-        if (snapX !== undefined) world.x = snapX;
-        if (snapY !== undefined) world.y = snapY;
+        // Apply snap adjustments only when moving on both axes
+        if (snapX !== undefined && this.#action.axis === "both") world.x = snapX;
+        if (snapY !== undefined && this.#action.axis === "both") world.y = snapY;
       }
 
       this.#target[0].globalTransform.position = world.add(this.#target[1]);
