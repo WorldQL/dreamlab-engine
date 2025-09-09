@@ -9,3 +9,7 @@ export abstract class KvBase {
   protected abstract delete(scope: string, key: string): Promise<void>;
   protected abstract clear(scope: string): Promise<void>;
 }
+
+export abstract class KvBaseServer extends KvBase {
+  protected abstract players(scope: string): Promise<Set<string>>;
+}

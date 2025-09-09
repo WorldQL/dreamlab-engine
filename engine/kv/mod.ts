@@ -28,6 +28,9 @@ export interface ServerKV {
     readonly delete: (key: string, playerId: string) => Promise<void>;
     readonly clear: (playerId: string) => Promise<void>;
   };
+  readonly info: {
+    readonly players: () => Promise<Set<string>>;
+  };
 }
 
 export const DUMMY_CLIENT_KV = {
@@ -54,6 +57,9 @@ export const DUMMY_SERVER_KV = {
     set: () => Promise.resolve(),
     delete: () => Promise.resolve(),
     clear: () => Promise.resolve(),
+  },
+  info: {
+    players: () => Promise.resolve(new Set()),
   },
 } satisfies ServerKV;
 

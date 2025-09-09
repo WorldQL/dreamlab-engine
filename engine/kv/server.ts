@@ -4,11 +4,11 @@ import { decodeBase64Url } from "@dreamlab/vendor/std__encoding.ts";
 import * as common from "./_common.ts";
 import { createPayload, presign, sign } from "./_crypto.ts";
 import type { PresignRequest, PresignResponse, SignRequest, SignResponse } from "./_rpc.ts";
-import { KvBase } from "./base.ts";
+import { KvBaseServer } from "./base.ts";
 import type { ServerKV } from "./mod.ts";
 
 export type KvServerBaseOptions = { readonly game: ServerGame };
-export abstract class KvServerBase extends KvBase implements ServerKV {
+export abstract class KvServerBase extends KvBaseServer implements ServerKV {
   protected readonly game: ServerGame;
   public constructor(opts: KvServerBaseOptions) {
     super();
@@ -57,6 +57,12 @@ export abstract class KvServerBase extends KvBase implements ServerKV {
     },
     clear: (playerId: string): Promise<void> => {
       return this.clear(this.scope(playerId));
+    },
+  };
+
+  readonly info = {
+    players: (): Promise<Set<string>> => {
+      return this.players(this.scope());
     },
   };
 }
@@ -248,5 +254,15 @@ export class KvServer extends KvServerBase implements ServerKV {
     const data = createPayload("clear", scope, "", 10);
     const url = await presign(this.#url, this.#signingKey, data);
     return common.clear(url);
+  }
+
+  protected async players(scope: string): Promise<Set<string>> {
+    const data = createPayload("players", scope, "", 10);
+    const url = await presign(this.#url, this.#signingKey, data);
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error("failed to list players");
+
+    const json: string[] = await resp.json();
+    return new Set(json);
   }
 }

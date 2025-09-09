@@ -3,7 +3,7 @@ import { decodeBase64Url, encodeBase64Url } from "@dreamlab/vendor/std__encoding
 import { getPublicKeyAsync, signAsync, verifyAsync } from "jsr:@noble/ed25519@3.0.0";
 
 export type Action = (typeof actions)[number];
-export const actions = ["get", "list", "set", "delete", "clear"] as const;
+export const actions = ["get", "list", "players", "set", "delete", "clear"] as const;
 
 export function isAction(value: string): value is Action {
   // @ts-expect-error type guard
@@ -43,7 +43,7 @@ export function createPayload(
     expires,
     action,
     scope,
-    key: action === "clear" || action === "list" ? "" : key,
+    key: action === "clear" || action === "list" || action === "players" ? "" : key,
   };
 }
 
@@ -135,8 +135,10 @@ export async function presign(
     payload.action === "clear"
       ? `/kv/${payload.scope}`
       : payload.action === "list"
-        ? `/list/${payload.scope}`
-        : `/kv/${payload.scope}/${payload.key}`;
+        ? `/info/list/${payload.scope}`
+        : payload.action === "players"
+          ? `/info/players/${payload.scope}`
+          : `/kv/${payload.scope}/${payload.key}`;
 
   const { payload: serialized, sig } = await sign(key, payload);
   url.searchParams.set("payload", serialized);
