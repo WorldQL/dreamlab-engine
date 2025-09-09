@@ -296,20 +296,44 @@ export class BoxResizeGizmo extends Entity {
         this.#action = { type: "translate", axis, offset, originals };
       };
 
+    // Get entity bounds first
+    const bounds = entity.bounds;
+
+    // Calculate the size for the translate area based on entity bounds
+    let translateWidth = 0.5;
+    let translateHeight = 0.5;
+    
+    if (this.#auxTargets.size > 0) {
+      // Use small box for multi-select (old behavior)
+      translateWidth = 0.5;
+      translateHeight = 0.5;
+    } else if (bounds) {
+      // Use full area for single select
+      const scaled = Vector2.mul(
+        { x: bounds.width, y: bounds.height },
+        entity.globalTransform.scale,
+      );
+      translateWidth = scaled.x;
+      translateHeight = scaled.y;
+    } else {
+      // Fallback for entities without bounds
+      translateWidth = 0.3;
+      translateHeight = 0.3;
+    }
+
     const translateBoth = this.spawn({
       type: Clickable,
       name: "TranslateBoth",
       transform: { position: { x: 0, y: 0 } },
       values: {
         shape: "Rectangle",
-        width: this.#auxTargets.size > 0 ? 0.5 : 0.3,
-        height: this.#auxTargets.size > 0 ? 0.5 : 0.3,
+        width: translateWidth,
+        height: translateHeight,
       },
     });
     translateBoth.on(MouseDown, translateOnMouseDown("both"));
 
     // Don't spawn handles for entities with offset bounds
-    const bounds = entity.bounds;
     if (!bounds) return;
     if (bounds.offset && (bounds.offset.x !== 0 || bounds.offset.y !== 0)) return;
     if (this.#auxTargets.size > 0) return;
@@ -515,6 +539,20 @@ export class BoxResizeGizmo extends Entity {
 
     const grip = this.#calculateGripSizes(scaled);
     const handles = this.#calculateHandlePositions(scaled);
+
+    // Update the translate area size
+    const translateBoth = this.children.get("TranslateBoth")?.cast(Clickable);
+    if (translateBoth) {
+      if (this.#auxTargets.size > 0) {
+        // Use small box for multi-select (old behavior)
+        translateBoth.width = 0.5;
+        translateBoth.height = 0.5;
+      } else {
+        // Use full area for single select
+        translateBoth.width = scaled.x;
+        translateBoth.height = scaled.y;
+      }
+    }
 
     const leftEdge = container?.children.get("LeftEdge")?.cast(Clickable);
     if (leftEdge) {
@@ -1184,10 +1222,7 @@ export class BoxResizeGizmo extends Entity {
         .circle(0, (-halfy - BoxResizeGizmo.#ROTATE_OFFSET) / 0.01, 5)
         .fill("white")
         .stroke(HANDLE_STROKE)
-        .scale(1 / 0.01)
-        .rect(-0.15, -0.15, 0.3, 0.3)
-        .fill({ alpha: 0.2, color: "blue" })
-        .stroke({ alpha: 0.5, color: "blue", width: 0.01 });
+        .scale(1 / 0.01);
     });
 
     this.on(EntityDestroyed, () => {
