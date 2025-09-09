@@ -631,13 +631,12 @@ export class BoxResizeGizmo extends Entity {
       if (this.#action.axis === "y") local.x = 0;
       const world = pointLocalToWorld(this.globalTransform, local);
 
+      // identical to event.shiftKey block in gizmo.ts
       if (event.shiftKey) {
         const snapThreshold = 0.1;
 
-        // Get all selected entities for AABB calculation
         const allSelectedEntities = [this.#target[0], ...this.#auxTargets.keys()];
 
-        // Save original positions
         const originalPositions = new Map(
           allSelectedEntities.map(entity => [entity, entity.globalTransform.position.clone()]),
         );
@@ -648,16 +647,20 @@ export class BoxResizeGizmo extends Entity {
           entity.globalTransform.position = world.add(offset);
         }
 
-        // Calculate AABB for all selected entities at tentative position
-        const targetBounds = Gizmo.computeAABBForEntities(allSelectedEntities);
-        const targetCorners = Gizmo.getAABBCorners(targetBounds);
+        let targetCorners = Gizmo.getTransformedCorners(this.#target[0]);
+        let targetBounds = Gizmo.computeGlobalBounds(this.#target[0]);
+
+        if (allSelectedEntities.length > 1) {
+          // aabb if we have multiselect
+          targetBounds = Gizmo.computeAABBForEntities(allSelectedEntities);
+          targetCorners = Gizmo.getAABBCorners(targetBounds);
+        }
 
         const targetCenter = {
           x: (targetBounds.minX + targetBounds.maxX) / 2,
           y: (targetBounds.minY + targetBounds.maxY) / 2,
         };
 
-        // Restore original positions after bounds computation
         for (const [entity, originalPos] of originalPositions) {
           entity.globalTransform.position = originalPos;
         }
