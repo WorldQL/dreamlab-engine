@@ -394,6 +394,67 @@ export class CameraPanBehavior extends Behavior {
       return true;
     });
 
+    // Helper function to check if an entity is within the selection box bounds
+    const isEntityInBounds = (entity: Entity): boolean => {
+      const bounds = entity.bounds;
+      const entityPos = entity.globalTransform.position;
+
+      // If no bounds, just check if the position is within the selection box
+      if (!bounds) {
+        return (
+          entityPos.x >= minX &&
+          entityPos.x <= maxX &&
+          entityPos.y >= minY &&
+          entityPos.y <= maxY
+        );
+      }
+
+      const entityScale = entity.globalTransform.scale;
+      const entityRotation = entity.globalTransform.rotation;
+
+      if (Math.abs(entityRotation) < 0.001) {
+        const halfWidth = (bounds.width * entityScale.x) / 2;
+        const halfHeight = (bounds.height * entityScale.y) / 2;
+
+        const entityMinX = entityPos.x - halfWidth;
+        const entityMaxX = entityPos.x + halfWidth;
+        const entityMinY = entityPos.y - halfHeight;
+        const entityMaxY = entityPos.y + halfHeight;
+
+        return (
+          entityMinX >= minX &&
+          entityMaxX <= maxX &&
+          entityMinY >= minY &&
+          entityMaxY <= maxY
+        );
+      } else {
+        const halfWidth = (bounds.width * entityScale.x) / 2;
+        const halfHeight = (bounds.height * entityScale.y) / 2;
+
+        const corners = [
+          { x: halfWidth, y: halfHeight },
+          { x: -halfWidth, y: halfHeight },
+          { x: -halfWidth, y: -halfHeight },
+          { x: halfWidth, y: -halfHeight },
+        ];
+
+        const sin = Math.sin(entityRotation);
+        const cos = Math.cos(entityRotation);
+
+        for (const corner of corners) {
+          const x = corner.x * cos - corner.y * sin + entityPos.x;
+          const y = corner.x * sin + corner.y * cos + entityPos.y;
+          corner.x = x;
+          corner.y = y;
+        }
+
+        return corners.every(
+          corner =>
+            corner.x >= minX && corner.x <= maxX && corner.y >= minY && corner.y <= maxY,
+        );
+      }
+    };
+
     // useful for empties which have no bounds.
     const shouldSelectParent =
       selectedEntities.length > 0 &&
@@ -402,7 +463,8 @@ export class CameraPanBehavior extends Behavior {
         Array.from(selectedEntities[0].parent?.children.values() ?? []).filter(
           e => !(e instanceof EditorMetadataEntity),
         ).length &&
-      selectedEntities.every(e => e.parent === selectedEntities[0].parent);
+      selectedEntities.every(e => e.parent === selectedEntities[0].parent) &&
+      isEntityInBounds(selectedEntities[0].parent!);
 
     if (shouldSelectParent) {
       selectedEntities = [selectedEntities[0].parent!];
