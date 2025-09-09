@@ -173,7 +173,7 @@ export class BoxResizeGizmo extends Entity {
 
     const allEntities = [this.#target[0], ...this.auxTargets];
     const sum = new Vector2(0, 0);
-    
+
     for (const entity of allEntities) {
       sum.x += entity.globalTransform.position.x;
       sum.y += entity.globalTransform.position.y;
@@ -302,7 +302,7 @@ export class BoxResizeGizmo extends Entity {
     // Calculate the size for the translate area based on entity bounds
     let translateWidth = 0.5;
     let translateHeight = 0.5;
-    
+
     if (this.#auxTargets.size > 0) {
       // Use small box for multi-select (old behavior)
       translateWidth = 0.5;
@@ -329,8 +329,15 @@ export class BoxResizeGizmo extends Entity {
         shape: "Rectangle",
         width: translateWidth,
         height: translateHeight,
+        cursor: "move",
       },
     });
+    
+    // Override cursor dynamically - don't show move cursor when dragging
+    translateBoth.getCursor = () => {
+      return this.#action ? "" : "move";
+    };
+    
     translateBoth.on(MouseDown, translateOnMouseDown("both"));
 
     // Don't spawn handles for entities with offset bounds
@@ -370,7 +377,12 @@ export class BoxResizeGizmo extends Entity {
         z: 999_999,
         position: { x: -(scaled.x / 2 + BoxResizeGizmo.#CLICK_WIDTH / 2), y: 0 },
       },
-      values: { shape: "Rectangle", width: BoxResizeGizmo.#CLICK_WIDTH, height: grip.y },
+      values: {
+        shape: "Rectangle",
+        width: BoxResizeGizmo.#CLICK_WIDTH,
+        height: grip.y,
+        cursor: "pointer",
+      },
     });
 
     const rightEdge = container.spawn({
@@ -380,7 +392,12 @@ export class BoxResizeGizmo extends Entity {
         z: 999_999,
         position: { x: scaled.x / 2 + BoxResizeGizmo.#CLICK_WIDTH / 2, y: 0 },
       },
-      values: { shape: "Rectangle", width: BoxResizeGizmo.#CLICK_WIDTH, height: grip.y },
+      values: {
+        shape: "Rectangle",
+        width: BoxResizeGizmo.#CLICK_WIDTH,
+        height: grip.y,
+        cursor: "pointer",
+      },
     });
 
     const topEdge = container.spawn({
@@ -390,7 +407,12 @@ export class BoxResizeGizmo extends Entity {
         z: 999_999,
         position: { x: 0, y: scaled.y / 2 + BoxResizeGizmo.#CLICK_WIDTH / 2 },
       },
-      values: { shape: "Rectangle", width: grip.x, height: BoxResizeGizmo.#CLICK_WIDTH },
+      values: {
+        shape: "Rectangle",
+        width: grip.x,
+        height: BoxResizeGizmo.#CLICK_WIDTH,
+        cursor: "pointer",
+      },
     });
 
     const bottomEdge = container.spawn({
@@ -400,7 +422,12 @@ export class BoxResizeGizmo extends Entity {
         z: 999_999,
         position: { x: 0, y: -(scaled.y / 2 + BoxResizeGizmo.#CLICK_WIDTH / 2) },
       },
-      values: { shape: "Rectangle", width: grip.x, height: BoxResizeGizmo.#CLICK_WIDTH },
+      values: {
+        shape: "Rectangle",
+        width: grip.x,
+        height: BoxResizeGizmo.#CLICK_WIDTH,
+        cursor: "pointer",
+      },
     });
 
     const handles = this.#calculateHandlePositions(scaled);
@@ -417,7 +444,7 @@ export class BoxResizeGizmo extends Entity {
         z: 1_000_000,
         position: handles.tl,
       },
-      values: handleValues,
+      values: { ...handleValues, cursor: "pointer" },
     });
 
     const topRight = container.spawn({
@@ -427,7 +454,7 @@ export class BoxResizeGizmo extends Entity {
         z: 1_000_000,
         position: handles.tr,
       },
-      values: handleValues,
+      values: { ...handleValues, cursor: "pointer" },
     });
 
     const bottomLeft = container.spawn({
@@ -437,7 +464,7 @@ export class BoxResizeGizmo extends Entity {
         z: 1_000_000,
         position: handles.bl,
       },
-      values: handleValues,
+      values: { ...handleValues, cursor: "pointer" },
     });
 
     const bottomRight = container.spawn({
@@ -447,7 +474,7 @@ export class BoxResizeGizmo extends Entity {
         z: 1_000_000,
         position: handles.br,
       },
-      values: handleValues,
+      values: { ...handleValues, cursor: "pointer" },
     });
 
     const rotate = container.spawn({
@@ -457,7 +484,7 @@ export class BoxResizeGizmo extends Entity {
         z: 1_000_000,
         position: handles.rot,
       },
-      values: handleValues,
+      values: { ...handleValues, cursor: "pointer" },
     });
 
     rotate.on(MouseDown, ({ button }) => {
@@ -956,9 +983,11 @@ export class BoxResizeGizmo extends Entity {
     if (event.shiftKey) {
       const snapThreshold = 0.1;
       const targetEntity = this.#target[0];
-      
+
       let bestSnapDistance = snapThreshold;
-      let bestSnapInfo: { line: number; minCoord: number; maxCoord: number; color: number } | undefined;
+      let bestSnapInfo:
+        | { line: number; minCoord: number; maxCoord: number; color: number }
+        | undefined;
       let snapTarget: number | undefined;
 
       for (const e of this.game.entities) {
@@ -986,7 +1015,7 @@ export class BoxResizeGizmo extends Entity {
           const snapCandidates = [
             { pos: entityBounds.minY, type: "edge" },
             { pos: entityBounds.maxY, type: "edge" },
-            ...entityCorners.map(corner => ({ pos: corner.y, type: "corner" }))
+            ...entityCorners.map(corner => ({ pos: corner.y, type: "corner" })),
           ];
 
           for (const candidate of snapCandidates) {
@@ -994,12 +1023,12 @@ export class BoxResizeGizmo extends Entity {
             if (distance < bestSnapDistance) {
               snapTarget = candidate.pos;
               bestSnapDistance = distance;
-              
+
               const targetBounds = Gizmo.computeGlobalBounds(targetEntity);
               const minX = Math.min(entityBounds.minX, targetBounds.minX);
               const maxX = Math.max(entityBounds.maxX, targetBounds.maxX);
               const color = candidate.type === "edge" ? 0xabddff : 0xff6b9d;
-              
+
               bestSnapInfo = { line: candidate.pos, minCoord: minX, maxCoord: maxX, color };
             }
           }
@@ -1008,7 +1037,7 @@ export class BoxResizeGizmo extends Entity {
           const snapCandidates = [
             { pos: entityBounds.minX, type: "edge" },
             { pos: entityBounds.maxX, type: "edge" },
-            ...entityCorners.map(corner => ({ pos: corner.x, type: "corner" }))
+            ...entityCorners.map(corner => ({ pos: corner.x, type: "corner" })),
           ];
 
           for (const candidate of snapCandidates) {
@@ -1016,12 +1045,12 @@ export class BoxResizeGizmo extends Entity {
             if (distance < bestSnapDistance) {
               snapTarget = candidate.pos;
               bestSnapDistance = distance;
-              
+
               const targetBounds = Gizmo.computeGlobalBounds(targetEntity);
               const minY = Math.min(entityBounds.minY, targetBounds.minY);
               const maxY = Math.max(entityBounds.maxY, targetBounds.maxY);
               const color = candidate.type === "edge" ? 0xabddff : 0xff6b9d;
-              
+
               bestSnapInfo = { line: candidate.pos, minCoord: minY, maxCoord: maxY, color };
             }
           }
@@ -1038,7 +1067,7 @@ export class BoxResizeGizmo extends Entity {
             .stroke({ color: bestSnapInfo.color, width: 0.03, pixelLine: true });
         } else if (lockedAxis === "y") {
           adjustedCursor = new Vector2(snapTarget, cursor.world.y);
-          // Draw vertical line  
+          // Draw vertical line
           this.#snapLinesGfx!.context.moveTo(bestSnapInfo.line, -bestSnapInfo.minCoord)
             .lineTo(bestSnapInfo.line, -bestSnapInfo.maxCoord)
             .stroke({ color: bestSnapInfo.color, width: 0.03, pixelLine: true });
@@ -1153,9 +1182,10 @@ export class BoxResizeGizmo extends Entity {
       const _bounds = entity.bounds;
       if (!_bounds || (_bounds.offset && (_bounds.offset.x !== 0 || _bounds.offset.y !== 0))) {
         this.#gfx.context
-          .rect(-0.15, -0.15, 0.3, 0.3)
-          .fill({ alpha: 0.2, color: "blue" })
-          .stroke({ alpha: 0.5, color: "blue", width: 0.01 });
+          .rect(-0.25, -0.25, 0.5, 0.5)
+          .fill({ alpha: 0.3, color: 0x22ff88 })
+          .stroke({ alpha: 0.8, color: 0x22ff88, width: 0.04 })
+          .stroke({ color: "white", width: 0.02 });
 
         return;
       }

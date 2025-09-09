@@ -91,8 +91,17 @@ export abstract class ClickableEntity extends Entity {
             if (isInBounds) hoverCount++;
           }
 
-          if (hoverCount > 0) canvas.style.cursor = "pointer";
-          else canvas.style.cursor = "";
+          // Find the topmost hovered entity and use its cursor
+          let topCursor = "";
+          for (const entity of entities) {
+            if (entity.hover) {
+              const clickable = entity as Clickable;
+              // Allow dynamic cursor calculation via getCursor method
+              topCursor = (typeof clickable.getCursor === 'function' ? clickable.getCursor() : clickable.cursor) || "pointer";
+              break;
+            }
+          }
+          canvas.style.cursor = topCursor;
         };
 
         ClickableEntity.#GameRenderListeners.set(this.game, fn);
@@ -172,6 +181,7 @@ export class Clickable extends ClickableEntity {
   height: number = 1;
   radius: number = 1;
   innerRadius: number = 0;
+  cursor: string = "pointer";
 
   constructor(ctx: EntityContext) {
     super(ctx);
@@ -203,6 +213,9 @@ export class Clickable extends ClickableEntity {
       hidden: isCircle,
       description: "Optional inner radius to create a ring-shaped clickable area.",
     });
+    this.defineValue(Clickable, "cursor", {
+      description: "CSS cursor to display when hovering over this clickable area.",
+    });
   }
 
   public isInBounds(worldPosition: Vector2): boolean {
@@ -226,6 +239,9 @@ export class Clickable extends ClickableEntity {
       return false;
     }
   }
+
+  // Optional method for dynamic cursor calculation
+  getCursor?(): string;
 }
 
 /**
