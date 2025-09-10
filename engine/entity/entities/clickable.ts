@@ -85,7 +85,7 @@ export abstract class ClickableEntity extends Entity {
             const isInBounds =
               hoverCount > 0
                 ? false
-                : (cursor.world && entity.isInBounds(cursor.world)) ?? false;
+                : ((cursor.world && entity.isInBounds(cursor.world)) ?? false);
 
             entity[hoverSetter](isInBounds, cursor);
             if (isInBounds) hoverCount++;

@@ -422,10 +422,7 @@ export class CameraPanBehavior extends Behavior {
         const entityMaxY = entityPos.y + halfHeight;
 
         return (
-          entityMinX >= minX &&
-          entityMaxX <= maxX &&
-          entityMinY >= minY &&
-          entityMaxY <= maxY
+          entityMinX >= minX && entityMaxX <= maxX && entityMinY >= minY && entityMaxY <= maxY
         );
       } else {
         const halfWidth = (bounds.width * entityScale.x) / 2;
@@ -605,8 +602,8 @@ export class CameraPanBehavior extends Behavior {
       if (newTarget && (event.ev.shiftKey || event.ev.ctrlKey)) {
         const currentEntities = this.ui?.selectedEntity.entities || [];
         // Don't add duplicate entities
-        const newEntities = currentEntities.includes(newTarget) 
-          ? currentEntities 
+        const newEntities = currentEntities.includes(newTarget)
+          ? currentEntities
           : [...currentEntities, newTarget];
 
         if (newEntities.length === 1) {
@@ -620,8 +617,10 @@ export class CameraPanBehavior extends Behavior {
           }
         } else {
           // Don't add the target entity to aux targets if it's already the main target
-          if (gizmo && gizmo.target !== newTarget) gizmo.auxTargets = [...gizmo.auxTargets, newTarget];
-          if (boxresize && boxresize.target !== newTarget) boxresize.auxTargets = [...boxresize.auxTargets, newTarget];
+          if (gizmo && gizmo.target !== newTarget)
+            gizmo.auxTargets = [...gizmo.auxTargets, newTarget];
+          if (boxresize && boxresize.target !== newTarget)
+            boxresize.auxTargets = [...boxresize.auxTargets, newTarget];
         }
 
         if (this.ui) this.ui.selectedEntity.entities = newEntities;
