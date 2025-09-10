@@ -1,5 +1,6 @@
 #tilemap-viewer-content {
   position: relative;
+  background-color: rgb(var(--color-bg-1));
 
   & > #tilemap-overlays {
     position: absolute;
@@ -39,6 +40,38 @@
       & > :nth-child(6) {
         margin-right: 0.5rem;
       } */
+    }
+
+    & > #no-atlas-message {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: all;
+      background-color: rgba(var(--color-bg-1), 0.98);
+
+      & .message-content {
+        text-align: center;
+        padding: 2rem;
+        border-radius: var(--border-radius);
+        border: 1px solid rgb(var(--color-border));
+        max-width: 300px;
+
+        h3 {
+          margin: 0 0 1rem 0;
+          color: rgb(var(--color-text-1));
+          font-size: 1.1em;
+          font-weight: 600;
+        }
+
+        p {
+          margin: 0;
+          color: rgb(var(--color-text-2));
+          font-size: 0.9em;
+          line-height: 1.4;
+        }
+      }
     }
   }
 }

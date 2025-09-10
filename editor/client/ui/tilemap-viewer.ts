@@ -48,6 +48,7 @@ export class TileMapViewer {
   #panning: IVector2 | undefined = undefined;
   #dragging: { start: IVector2; end: IVector2 } | undefined = undefined;
   #selectedTiles = new Set<number>();
+  #hasValidAtlas = false;
 
   async setup(ui: InspectorUI, content: HTMLDivElement): Promise<void> {
     await this.#setupApp(ui, content);
@@ -86,6 +87,12 @@ export class TileMapViewer {
     this.#app.stage.addChild(this.#selected);
 
     app.ticker.add(() => {
+      if (!this.#hasValidAtlas) {
+        this.#app.stage.position.set(this.#app.canvas.width / 2, this.#app.canvas.height / 2);
+        this.#app.stage.scale.set(1);
+        return;
+      }
+
       const texture = this.#sprite.texture;
       const w = (texture.width * this.#zoom) / 2;
       const h = (texture.height * this.#zoom) / 2;
@@ -166,6 +173,7 @@ export class TileMapViewer {
     app.canvas.addEventListener(
       "wheel",
       ev => {
+        if (!this.#hasValidAtlas) return;
         ev.preventDefault();
 
         if (!this.#isTouchpad) {
@@ -202,6 +210,7 @@ export class TileMapViewer {
     );
 
     app.canvas.addEventListener("mousedown", ev => {
+      if (!this.#hasValidAtlas) return;
       ev.preventDefault();
       if (ev.button === 1 /* MMB */) {
         this.#panning = { x: ev.clientX, y: ev.clientY };
@@ -215,6 +224,7 @@ export class TileMapViewer {
     });
 
     app.canvas.addEventListener("mousemove", ev => {
+      if (!this.#hasValidAtlas) return;
       if (this.#panning) {
         const offset: IVector2 = {
           x: ev.clientX - this.#panning.x,
@@ -265,6 +275,7 @@ export class TileMapViewer {
   #overlay!: HTMLDivElement;
   #overlayLabel!: HTMLSpanElement;
   #overlayValue!: HTMLSpanElement;
+  #noAtlasMessage!: HTMLDivElement;
 
   #setupOverlays(_ui: InspectorUI, _content: HTMLDivElement): void {
     this.#overlayLabel = elem("span", {}, ["Selected Tile"]);
@@ -276,7 +287,18 @@ export class TileMapViewer {
       this.#overlayValue,
     ]);
 
-    this.container.appendChild(elem("div", { id: "tilemap-overlays" }, [this.#overlay]));
+    this.#noAtlasMessage = elem("div", { id: "no-atlas-message", style: { display: "none" } }, [
+      elem("div", { className: "message-content" }, [
+        elem("h3", {}, ["No Atlas Texture"]),
+        elem("p", {}, [
+          "Add an atlas texture to the tilemap in the properties panel to start painting tiles.",
+        ]),
+      ]),
+    ]);
+
+    this.container.appendChild(
+      elem("div", { id: "tilemap-overlays" }, [this.#overlay, this.#noAtlasMessage]),
+    );
   }
 
   async #loadAtlas(tilemap: EditorFacadeTilemap): Promise<void> {
@@ -291,6 +313,8 @@ export class TileMapViewer {
 
       if (this.#sprite.texture === texture) return;
       this.#sprite.texture = texture;
+      this.#hasValidAtlas = true;
+      this.#noAtlasMessage.style.display = "none";
 
       const canvas = this.#app.canvas;
       const pad = 1.1;
@@ -301,6 +325,11 @@ export class TileMapViewer {
       this.#zoom = Math.min(w, h);
     } catch {
       this.#sprite.texture = PIXI.Texture.EMPTY;
+      this.#hasValidAtlas = false;
+      this.#selectedTiles.clear();
+      this.#drawGrid();
+      this.#drawSelected();
+      this.#noAtlasMessage.style.display = "flex";
     }
   }
 
@@ -362,7 +391,7 @@ export class TileMapViewer {
 
   #drawGrid(): void {
     this.#grid.clear();
-    if (!this.#tilemap) return;
+    if (!this.#tilemap || !this.#hasValidAtlas) return;
 
     const texture = this.#sprite.texture;
     const res = this.#tilemap.resolution;
@@ -385,7 +414,7 @@ export class TileMapViewer {
   #drawSelected(): void {
     this.#selected.clear();
     if (this.#selectedTiles.size === 0) return;
-    if (!this.#tilemap) return;
+    if (!this.#tilemap || !this.#hasValidAtlas) return;
 
     const texture = this.#sprite.texture;
     const res = this.#tilemap.resolution;
