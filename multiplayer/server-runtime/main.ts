@@ -43,7 +43,11 @@ const earlyProjectJson = await Deno.readTextFile(
 ).then(txt => JSON.parse(txt) as unknown);
 const earlyProjectSchema = ProjectSchema.safeParse(earlyProjectJson);
 
-const ticksPerSecond = earlyProjectSchema.success ? earlyProjectSchema.data.tick_rate : 60;
+const ticksPerSecond = workerData.editMode
+  ? undefined
+  : earlyProjectSchema.success
+    ? earlyProjectSchema.data.tick_rate
+    : undefined;
 
 const net = new ServerNetworkManager(ipc);
 const game = new ServerGame({
