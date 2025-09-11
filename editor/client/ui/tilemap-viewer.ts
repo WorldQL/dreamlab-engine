@@ -345,7 +345,40 @@ export class TileMapViewer {
       title: "Pick color from screen",
     });
 
-    inputContainer.append(hashLabel, this.#colorInput, this.#eyedropperButton);
+    const windowWithEyeDropper = window as typeof window & {
+      EyeDropper?: {
+        new (): {
+          open(): Promise<{ sRGBHex: string }>;
+        };
+      };
+    };
+
+    if (windowWithEyeDropper.EyeDropper) {
+      inputContainer.append(hashLabel, this.#colorInput, this.#eyedropperButton);
+
+      this.#eyedropperButton.addEventListener("click", async e => {
+        e.stopPropagation();
+
+        try {
+          const eyeDropper = new windowWithEyeDropper.EyeDropper();
+          const result = await eyeDropper.open();
+
+          const hexColor = result.sRGBHex;
+          const colorValue = parseInt(hexColor.slice(1), 16);
+
+          this.#selectedColor = colorValue;
+          const picker = this.#colorPicker as HTMLElement & { color: string };
+          picker.color = hexColor;
+          this.#colorInput.value = hexColor.slice(1);
+          this.#colorBox.style.backgroundColor = hexColor;
+          this.#syncColorBrush();
+        } catch (error) {
+          console.log("Eyedropper was cancelled or failed:", error);
+        }
+      });
+    } else {
+      inputContainer.append(hashLabel, this.#colorInput);
+    }
 
     const header = elem("div", { className: "color-picker-header" }, [
       elem("span", { className: "color-picker-title" }, ["Color Picker"]),
@@ -493,40 +526,6 @@ export class TileMapViewer {
         this.#syncColorBrush();
       } else {
         this.#colorInput.classList.add("invalid");
-      }
-    });
-
-    this.#eyedropperButton.addEventListener("click", async e => {
-      e.stopPropagation();
-
-      const windowWithEyeDropper = window as typeof window & {
-        EyeDropper?: {
-          new (): {
-            open(): Promise<{ sRGBHex: string }>;
-          };
-        };
-      };
-
-      if (!windowWithEyeDropper.EyeDropper) {
-        console.warn("EyeDropper API is not supported in this browser");
-        return;
-      }
-
-      try {
-        const eyeDropper = new windowWithEyeDropper.EyeDropper();
-        const result = await eyeDropper.open();
-
-        const hexColor = result.sRGBHex;
-        const colorValue = parseInt(hexColor.slice(1), 16);
-
-        this.#selectedColor = colorValue;
-        const picker = this.#colorPicker as HTMLElement & { color: string };
-        picker.color = hexColor;
-        this.#colorInput.value = hexColor.slice(1);
-        this.#colorBox.style.backgroundColor = hexColor;
-        this.#syncColorBrush();
-      } catch (error) {
-        console.log("Eyedropper was cancelled or failed:", error);
       }
     });
 
