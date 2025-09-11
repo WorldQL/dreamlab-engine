@@ -2,6 +2,7 @@ import {
   ClientGame,
   Entity,
   EntityChildSpawned,
+  EntityConstructor,
   EntityDestroyed,
   EntityEnableChanged,
   EntityRenamed,
@@ -905,6 +906,13 @@ export class SceneGraph implements InspectorUIWidget {
           2,
         ]);
         if (!entity.protected && !lockedByEntity) {
+          const replaceMenuItem = createEntityMenu("Replace", type => {
+            if (type === entity.constructor) return;
+            this.replaceEntityType(ui, entity, type);
+          });
+          replaceMenuItem.push(false, undefined, 40, 1);
+          bottomItems.push(replaceMenuItem);
+
           bottomItems.push(
             [
               "Delete",
@@ -1044,5 +1052,34 @@ export class SceneGraph implements InspectorUIWidget {
       current = current.parent;
     }
     return false;
+  }
+
+  private replaceEntityType(ui: InspectorUI, entity: Entity, newType: EntityConstructor) {
+    const parent = entity.parent;
+    if (!parent) return;
+
+    const currentDef = entity.getDefinition();
+    const children = [...entity.children.values()];
+
+    const typeToSpawn = ui.editMode ? Facades.lookupFacadeEntityType(newType) : newType;
+    const newEntity = parent.spawn({
+      type: typeToSpawn,
+      name: currentDef.name,
+      transform: currentDef.transform,
+      behaviors: currentDef.behaviors,
+      values: currentDef.values,
+      enabled: currentDef.enabled,
+    });
+
+    for (const child of children) {
+      child.parent = newEntity;
+    }
+
+    // TODO: add undo/redo support
+
+    entity.destroy();
+    ui.selectedEntity.entities = [newEntity];
+
+    return newEntity;
   }
 }
