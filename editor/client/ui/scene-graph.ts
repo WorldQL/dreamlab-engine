@@ -624,6 +624,19 @@ export class SceneGraph implements InspectorUIWidget {
             1,
           ],
           [
+            "Duplicate",
+            () => {
+              ui.selectedEntity.entities = [...ui.selectedEntity.entities];
+              copyEntitiesToClipboard(ui.selectedEntity).then(() => {
+                pasteEntitiesFromClipboard(this.game, ui.selectedEntity);
+              });
+            },
+            false,
+            `${modifierKey}+D`,
+            10,
+            2,
+          ],
+          [
             "Cut",
             () => {
               ui.selectedEntity.entities = [...ui.selectedEntity.entities];
@@ -645,7 +658,7 @@ export class SceneGraph implements InspectorUIWidget {
             false,
             `${modifierKey}+X`,
             10,
-            2,
+            3,
           ],
           [
             "Delete",
@@ -802,6 +815,19 @@ export class SceneGraph implements InspectorUIWidget {
               2,
             ],
             [
+              "Duplicate",
+              () => {
+                ui.selectedEntity.entities = [entity];
+                copyEntitiesToClipboard(ui.selectedEntity).then(() => {
+                  pasteEntitiesFromClipboard(this.game, ui.selectedEntity);
+                });
+              },
+              false,
+              `${modifierKey}+D`,
+              1,
+              3,
+            ],
+            [
               "Paste",
               () => {
                 pasteEntitiesFromClipboard(this.game, ui.selectedEntity);
@@ -809,7 +835,7 @@ export class SceneGraph implements InspectorUIWidget {
               false,
               `${modifierKey}+V`,
               1,
-              3,
+              4,
             ],
           );
         }

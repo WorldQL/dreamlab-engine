@@ -460,6 +460,14 @@ export function setupKeyboardShortcuts(
       return;
     }
 
+    // Duplicate
+    if (event.key.toLowerCase() === "d" && (event.ctrlKey || event.metaKey)) {
+      event.preventDefault();
+      await copyEntitiesToClipboard(selectedService);
+      await pasteEntitiesFromClipboard(game, selectedService);
+      return;
+    }
+
     // Cut
     if (event.key.toLowerCase() === "x" && (event.ctrlKey || event.metaKey)) {
       event.preventDefault();
