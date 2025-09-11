@@ -114,6 +114,8 @@ export class EditorFacadeTilemap extends BaseTilemap {
 
     if (this.paletteId.length === 0) return;
 
+    const isColorMode = this.atlas === "";
+
     for (let dy = 0; dy < rows; dy++) {
       for (let dx = 0; dx < cols; dx++) {
         const sy = rows - 1 - dy;
@@ -122,15 +124,26 @@ export class EditorFacadeTilemap extends BaseTilemap {
         const tileId = this.paletteId[idx] ?? -1;
         if (tileId < 0) continue;
 
-        const texture = await this.#loadTexture(tileId);
-        g.rect(dx - 0.5, -dy - 0.5, 1, 1)
-          .fill({ texture, alpha: 0.7 })
-          .stroke({
-            pixelLine: true,
-            color: 0xffffff,
-            alpha: 0.75,
-            width: 1,
-          });
+        if (isColorMode) {
+          g.rect(dx - 0.5, -dy - 0.5, 1, 1)
+            .fill({ color: tileId, alpha: 0.7 })
+            .stroke({
+              pixelLine: true,
+              color: 0xffffff,
+              alpha: 0.75,
+              width: 1,
+            });
+        } else {
+          const texture = await this.#loadTexture(tileId);
+          g.rect(dx - 0.5, -dy - 0.5, 1, 1)
+            .fill({ texture, alpha: 0.7 })
+            .stroke({
+              pixelLine: true,
+              color: 0xffffff,
+              alpha: 0.75,
+              width: 1,
+            });
+        }
       }
     }
   }
@@ -160,6 +173,7 @@ export class EditorFacadeTilemap extends BaseTilemap {
       const cols = Math.max(1, this.paletteCols | 0);
       const rows = Math.max(1, this.paletteRows | 0);
       const { x, y } = this.getTileCoordinatesAtPoint(world);
+      const isColorMode = this.atlas === "";
 
       for (let dy = 0; dy < rows; dy++) {
         for (let dx = 0; dx < cols; dx++) {
@@ -170,17 +184,33 @@ export class EditorFacadeTilemap extends BaseTilemap {
 
           const tileX = x + dx,
             tileY = y + dy;
-          const prevId = this.getTile(tileX, tileY);
-          const newId = left ? tileId : undefined;
-          if (prevId !== newId) {
-            this.setTile(tileX, tileY, newId);
 
-            paintOperations.push({
-              x: tileX,
-              y: tileY,
-              id: newId,
-              previous: prevId,
-            });
+          if (isColorMode) {
+            const prevColor = this.getColor(tileX, tileY);
+            const newColor = left ? tileId : undefined;
+            if (prevColor !== newColor) {
+              this.setColor(tileX, tileY, newColor);
+
+              paintOperations.push({
+                x: tileX,
+                y: tileY,
+                id: newColor,
+                previous: prevColor,
+              });
+            }
+          } else {
+            const prevId = this.getTile(tileX, tileY);
+            const newId = left ? tileId : undefined;
+            if (prevId !== newId) {
+              this.setTile(tileX, tileY, newId);
+
+              paintOperations.push({
+                x: tileX,
+                y: tileY,
+                id: newId,
+                previous: prevId,
+              });
+            }
           }
         }
       }

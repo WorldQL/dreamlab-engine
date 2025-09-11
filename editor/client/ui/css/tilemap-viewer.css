@@ -33,13 +33,6 @@
         width: 1em;
         height: 1em;
       }
-
-      /* & > :nth-child(3) {
-        margin-right: 0.5rem;
-      }
-      & > :nth-child(6) {
-        margin-right: 0.5rem;
-      } */
     }
 
     & > #no-atlas-message {
@@ -52,6 +45,9 @@
       background-color: rgba(var(--color-bg-1), 0.98);
 
       & .message-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         text-align: center;
         padding: 2rem;
         border-radius: var(--border-radius);
@@ -70,6 +66,90 @@
           color: rgb(var(--color-text-2));
           font-size: 0.9em;
           line-height: 1.4;
+        }
+
+        .or-separator {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          margin: 1rem 0;
+          color: rgb(var(--color-text-2));
+          font-size: 0.75em;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          user-select: none;
+
+          &::before,
+          &::after {
+            content: "";
+            height: 1px;
+            flex: 1;
+            background: rgb(var(--color-border));
+            opacity: 0.6;
+          }
+        }
+
+        .toggle-input-group,
+        .color-input-group {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.5rem;
+          margin-bottom: 0.5rem;
+          width: 100%;
+        }
+
+        .toggle-input-group:last-child,
+        .color-input-group:last-child {
+          margin-bottom: 0;
+        }
+
+        .toggle-input-group label,
+        .color-input-group label {
+          min-width: auto;
+          display: inline-flex;
+          align-items: center;
+          line-height: 1;
+          color: rgb(var(--color-text-2));
+          font-size: 0.7em;
+          font-weight: 500;
+        }
+
+        #color-paint-toggle {
+          width: 1rem;
+          height: 1rem;
+          margin: 0;
+          cursor: pointer;
+          vertical-align: middle;
+        }
+
+        #color-inputs {
+          display: none;
+          border: 1px solid rgb(var(--color-border));
+          border-radius: var(--border-radius);
+          background-color: rgb(var(--color-bg-1));
+          padding: 0.75rem;
+          margin-top: 0.5rem;
+
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.5rem;
+          width: 100%;
+          max-width: 260px;
+        }
+
+        #color-picker {
+          width: 2rem;
+          height: 1.5rem;
+          border: none;
+          border-radius: 3px;
+          cursor: pointer;
+
+          &::-webkit-color-swatch {
+            border: none;
+            border-radius: 3px;
+          }
         }
       }
     }

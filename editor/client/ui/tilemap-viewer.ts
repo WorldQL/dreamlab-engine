@@ -1,8 +1,10 @@
 import { ClientGame, IVector2, Vector2 } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
+import "npm:vanilla-colorful/hex-color-picker.js";
 import { EditorFacadeTilemap } from "../../common/facades/tilemap.ts";
-import { icon, SquarePen } from "../_icons.tsx";
+import { icon, Pipette, SquarePen, X } from "../_icons.tsx";
+import { IconButton } from "../components/icon-button.ts";
 import { InspectorUI } from "./inspector.ts";
 
 const PINCH_THRESHOLD = 50;
@@ -210,7 +212,17 @@ export class TileMapViewer {
     );
 
     app.canvas.addEventListener("mousedown", ev => {
-      if (!this.#hasValidAtlas) return;
+      if (!this.#hasValidAtlas) {
+        if (this.#tilemap && ev.button === 0 /* LMB */ && this.#colorPaintingEnabled) {
+          ev.preventDefault();
+          this.#paintColorAtPoint({ x: ev.offsetX, y: ev.offsetY });
+          this.#dragging = {
+            start: { x: ev.offsetX, y: ev.offsetY },
+            end: { x: ev.offsetX, y: ev.offsetY },
+          };
+        }
+        return;
+      }
       ev.preventDefault();
       if (ev.button === 1 /* MMB */) {
         this.#panning = { x: ev.clientX, y: ev.clientY };
@@ -224,7 +236,12 @@ export class TileMapViewer {
     });
 
     app.canvas.addEventListener("mousemove", ev => {
-      if (!this.#hasValidAtlas) return;
+      if (!this.#hasValidAtlas) {
+        if (this.#tilemap && this.#dragging && this.#colorPaintingEnabled) {
+          this.#paintColorAtPoint({ x: ev.offsetX, y: ev.offsetY });
+        }
+        return;
+      }
       if (this.#panning) {
         const offset: IVector2 = {
           x: ev.clientX - this.#panning.x,
@@ -250,12 +267,11 @@ export class TileMapViewer {
         const dragging = this.#dragging;
         this.#dragging = undefined;
 
-        if (this.#tilemap) {
+        if (this.#tilemap && this.#hasValidAtlas) {
           const add = ev.ctrlKey || ev.metaKey;
           if (!add) this.#selectedTiles.clear();
           const selected = this.#areaToAtlasIds(dragging.start, dragging.end);
           if (selected.length === 0) {
-            // ensure single clicks register correctly
             const id = this.#coordsToAtlasId(dragging.end);
             if (id !== undefined) selected.push(id);
           }
@@ -277,6 +293,33 @@ export class TileMapViewer {
   #overlayValue!: HTMLSpanElement;
   #noAtlasMessage!: HTMLDivElement;
 
+  #colorPicker!: HTMLElement;
+  #colorPickerContainer!: HTMLDivElement;
+  #colorPickerPopup!: HTMLDivElement;
+  #colorBox!: HTMLDivElement;
+  #colorInput!: HTMLInputElement;
+  #eyedropperButton!: IconButton;
+  #colorInputs!: HTMLDivElement;
+  #colorPaintToggle!: HTMLInputElement;
+
+  #selectedColor: number = 0xff0000;
+  #colorPaintingEnabled: boolean = false;
+
+  #syncColorBrush(): void {
+    if (!this.#tilemap) return;
+
+    if (this.#colorPaintingEnabled) {
+      this.#tilemap.paletteId = [this.#selectedColor];
+      this.#tilemap.paletteCols = 1;
+      this.#tilemap.paletteRows = 1;
+    } else {
+      this.#tilemap.paletteId = [];
+      this.#tilemap.paletteCols = 1;
+      this.#tilemap.paletteRows = 1;
+    }
+    this.#tilemap.paletteIdDirty = true;
+  }
+
   #setupOverlays(_ui: InspectorUI, _content: HTMLDivElement): void {
     this.#overlayLabel = elem("span", {}, ["Selected Tile"]);
     this.#overlayValue = elem("span", {}, ["N/A"]);
@@ -287,18 +330,218 @@ export class TileMapViewer {
       this.#overlayValue,
     ]);
 
+    this.#colorBox = elem("div", { className: "color-box" }) as HTMLDivElement;
+    const inputContainer = elem("div", { className: "color-input-container" });
+    const hashLabel = elem("span", { className: "color-hash-label" }, ["#"]);
+    this.#colorInput = elem("input", {
+      type: "text",
+      className: "color-input",
+      placeholder: "FF0000",
+      value: "ff0000",
+    }) as HTMLInputElement;
+
+    this.#eyedropperButton = new IconButton(Pipette, {
+      className: "eyedropper-button",
+      title: "Pick color from screen",
+    });
+
+    inputContainer.append(hashLabel, this.#colorInput, this.#eyedropperButton);
+
+    const header = elem("div", { className: "color-picker-header" }, [
+      elem("span", { className: "color-picker-title" }, ["Color Picker"]),
+      elem("button", { className: "color-picker-close" }, [icon(X)]),
+    ]);
+
+    this.#colorPicker = elem("hex-color-picker");
+    this.#colorPicker.style.width = "150px";
+    this.#colorPicker.style.height = "150px";
+
+    this.#colorPickerPopup = elem("div", { className: "color-picker-popup" }, [
+      header,
+      this.#colorPicker,
+    ]) as HTMLDivElement;
+    this.#colorPickerPopup.style.position = "fixed";
+    this.#colorPickerPopup.style.zIndex = "1000";
+    this.#colorPickerPopup.style.display = "none";
+
+    this.#colorPickerContainer = elem("div", { className: "color-picker-container" }, [
+      this.#colorBox,
+      inputContainer,
+      this.#colorPickerPopup,
+    ]) as HTMLDivElement;
+
+    this.#colorPaintToggle = elem("input", {
+      type: "checkbox",
+      id: "color-paint-toggle",
+    }) as HTMLInputElement;
+
+    const orSeparator = elem("div", { className: "or-separator" }, [elem("span", {}, ["or"])]);
+    const toggleRow = elem("div", { className: "toggle-input-group" }, [
+      this.#colorPaintToggle,
+      elem("label", { htmlFor: "color-paint-toggle" }, ["Paint with color"]),
+    ]);
+
+    this.#colorInputs = elem("div", { id: "color-inputs" }, [
+      elem("div", { className: "color-input-group" }, [
+        elem("label", {}, ["Color:"]),
+        this.#colorPickerContainer,
+      ]),
+    ]) as HTMLDivElement;
+
     this.#noAtlasMessage = elem("div", { id: "no-atlas-message", style: { display: "none" } }, [
       elem("div", { className: "message-content" }, [
         elem("h3", {}, ["No Atlas Texture"]),
         elem("p", {}, [
           "Add an atlas texture to the tilemap in the properties panel to start painting tiles.",
         ]),
+        orSeparator,
+        toggleRow,
+        this.#colorInputs,
       ]),
     ]);
 
     this.container.appendChild(
       elem("div", { id: "tilemap-overlays" }, [this.#overlay, this.#noAtlasMessage]),
     );
+    this.#setupColorPaintEvents();
+  }
+
+  #setColorPainting(on: boolean): void {
+    this.#colorPaintingEnabled = !!on;
+    if (this.#colorPaintToggle) this.#colorPaintToggle.checked = this.#colorPaintingEnabled;
+    if (this.#colorInputs)
+      this.#colorInputs.style.display = this.#colorPaintingEnabled ? "block" : "none";
+    this.#syncColorBrush();
+  }
+
+  #setupColorPaintEvents(): void {
+    this.#colorBox.addEventListener("click", e => {
+      const noAtlasMessage = this.#noAtlasMessage;
+      if (!noAtlasMessage) return;
+
+      if (this.#colorPickerPopup.style.display === "block") {
+        this.#colorPickerPopup.style.display = "none";
+        return;
+      }
+
+      this.#colorPickerPopup.style.visibility = "hidden";
+      this.#colorPickerPopup.style.display = "block";
+
+      const popupRect = this.#colorPickerPopup.getBoundingClientRect();
+      const popupH = popupRect.height;
+
+      const boxRect = this.#colorBox.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - boxRect.bottom;
+      const spaceAbove = boxRect.top;
+
+      let finalTop: number;
+      if (spaceBelow < popupH && spaceAbove >= popupH) {
+        finalTop = boxRect.top - popupH - 4;
+      } else if (spaceBelow < popupH && spaceAbove < popupH) {
+        finalTop = Math.max(10, window.innerHeight - popupH - 10);
+      } else {
+        finalTop = boxRect.bottom + 4;
+      }
+
+      const finalLeft = Math.max(
+        10,
+        Math.min(boxRect.left - 75, window.innerWidth - popupRect.width - 10),
+      );
+
+      this.#colorPickerPopup.style.top = finalTop + "px";
+      this.#colorPickerPopup.style.left = finalLeft + "px";
+      this.#colorPickerPopup.style.visibility = "";
+      this.#colorPickerPopup.style.display = "block";
+
+      e.stopPropagation();
+    });
+
+    document.addEventListener("pointerdown", e => {
+      if (!this.#colorPickerPopup.contains(e.target as Node) && e.target !== this.#colorBox) {
+        this.#colorPickerPopup.style.display = "none";
+      }
+    });
+
+    const closeButton = this.#colorPickerPopup.querySelector(
+      ".color-picker-close",
+    ) as HTMLButtonElement;
+    closeButton.addEventListener("click", e => {
+      this.#colorPickerPopup.style.display = "none";
+      e.stopPropagation();
+    });
+
+    this.#colorPicker.addEventListener("color-changed", () => {
+      const picker = this.#colorPicker as HTMLElement & { color: string };
+      const color = picker.color;
+      this.#selectedColor = parseInt(color.slice(1), 16);
+      this.#colorInput.value = color.slice(1);
+      this.#colorBox.style.backgroundColor = color;
+      this.#syncColorBrush();
+    });
+
+    this.#colorInput.addEventListener("input", () => {
+      const value = this.#colorInput.value;
+      const fullValue = "#" + value;
+
+      // TODO: allow alpha in color picker, if possible? - alpha breaks paint preview and throws an error
+      if (/^([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(value)) {
+        const picker = this.#colorPicker as HTMLElement & { color: string };
+        picker.color = fullValue;
+        this.#selectedColor = parseInt(value, 16);
+        this.#colorBox.style.backgroundColor = fullValue;
+        this.#colorInput.classList.remove("invalid");
+        this.#syncColorBrush();
+      } else {
+        this.#colorInput.classList.add("invalid");
+      }
+    });
+
+    this.#eyedropperButton.addEventListener("click", async e => {
+      e.stopPropagation();
+
+      const windowWithEyeDropper = window as typeof window & {
+        EyeDropper?: {
+          new (): {
+            open(): Promise<{ sRGBHex: string }>;
+          };
+        };
+      };
+
+      if (!windowWithEyeDropper.EyeDropper) {
+        console.warn("EyeDropper API is not supported in this browser");
+        return;
+      }
+
+      try {
+        const eyeDropper = new windowWithEyeDropper.EyeDropper();
+        const result = await eyeDropper.open();
+
+        const hexColor = result.sRGBHex;
+        const colorValue = parseInt(hexColor.slice(1), 16);
+
+        this.#selectedColor = colorValue;
+        const picker = this.#colorPicker as HTMLElement & { color: string };
+        picker.color = hexColor;
+        this.#colorInput.value = hexColor.slice(1);
+        this.#colorBox.style.backgroundColor = hexColor;
+        this.#syncColorBrush();
+      } catch (error) {
+        console.log("Eyedropper was cancelled or failed:", error);
+      }
+    });
+
+    this.#colorPaintToggle.addEventListener("change", e => {
+      const on = (e.target as HTMLInputElement).checked;
+      this.#setColorPainting(on);
+    });
+
+    const initialColor = "#ff0000";
+    const picker = this.#colorPicker as HTMLElement & { color: string };
+    picker.color = initialColor;
+    this.#colorBox.style.backgroundColor = initialColor;
+    this.#colorInput.value = "ff0000";
+
+    this.#colorInputs.style.display = "none";
   }
 
   async #loadAtlas(tilemap: EditorFacadeTilemap): Promise<void> {
@@ -315,6 +558,7 @@ export class TileMapViewer {
       this.#sprite.texture = texture;
       this.#hasValidAtlas = true;
       this.#noAtlasMessage.style.display = "none";
+      this.#setColorPainting(false);
 
       const canvas = this.#app.canvas;
       const pad = 1.1;
@@ -508,6 +752,37 @@ export class TileMapViewer {
     }
 
     return ids;
+  }
+
+  #paintColorAtPoint(screenPos: IVector2): void {
+    if (!this.#tilemap) return;
+
+    const tileCoords = this.#screenToTileCoords(screenPos);
+    if (!tileCoords) return;
+
+    this.#tilemap.setColor(tileCoords.x, tileCoords.y, this.#selectedColor);
+  }
+
+  #screenToTileCoords(screenPos: IVector2): IVector2 | undefined {
+    if (!this.#tilemap) return undefined;
+
+    let world: IVector2;
+    if (this.#hasValidAtlas) {
+      world = this.#screenToWorld(screenPos);
+    } else {
+      const stage = this.#app.stage;
+      world = {
+        x: screenPos.x - stage.position.x,
+        y: screenPos.y - stage.position.y,
+      };
+    }
+
+    const tileSize = this.#tilemap.resolution;
+
+    const x = Math.floor(world.x / tileSize);
+    const y = Math.floor(-world.y / tileSize);
+
+    return { x, y };
   }
 
   resize() {
