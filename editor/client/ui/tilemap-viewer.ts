@@ -341,7 +341,7 @@ export class TileMapViewer {
     }) as HTMLInputElement;
 
     this.#eyedropperButton = new IconButton(Pipette, {
-      className: "eyedropper-button",
+      className: "tilemap-eyedropper-button",
       title: "Pick color from screen",
     });
 
