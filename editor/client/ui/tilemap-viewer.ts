@@ -353,14 +353,14 @@ export class TileMapViewer {
       };
     };
 
-    if (windowWithEyeDropper.EyeDropper) {
+    if (windowWithEyeDropper.EyeDropper !== undefined) {
       inputContainer.append(hashLabel, this.#colorInput, this.#eyedropperButton);
 
       this.#eyedropperButton.addEventListener("click", async e => {
         e.stopPropagation();
 
         try {
-          const eyeDropper = new windowWithEyeDropper.EyeDropper();
+          const eyeDropper = new windowWithEyeDropper.EyeDropper!();
           const result = await eyeDropper.open();
 
           const hexColor = result.sRGBHex;
