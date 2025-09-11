@@ -20,7 +20,8 @@ import { element as elem } from "@dreamlab/ui";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
 import "npm:vanilla-colorful/hex-alpha-color-picker.js";
-import { icon, X } from "../_icons.tsx";
+import { icon, Pipette, X } from "../_icons.tsx";
+import { IconButton } from "../components/icon-button.ts";
 import { createBooleanField, createInputFieldWithDefault } from "./easy-input.ts";
 
 interface ValueControlOptions<T> {
@@ -333,7 +334,25 @@ export function createValueControl(
         className: "color-input",
         placeholder: "e.g., FF0000",
       });
-      inputContainer.append(hashLabel, input);
+
+      const eyedropperButton = new IconButton(Pipette, {
+        className: "eyedropper-button",
+        title: "Pick color from screen",
+      });
+
+      const windowWithEyeDropper = window as typeof window & {
+        EyeDropper?: {
+          new (): {
+            open(): Promise<{ sRGBHex: string }>;
+          };
+        };
+      };
+
+      if (windowWithEyeDropper.EyeDropper !== undefined) {
+        inputContainer.append(hashLabel, input, eyedropperButton);
+      } else {
+        inputContainer.append(hashLabel, input);
+      }
 
       const header = elem("div", { className: "color-picker-header" }, [
         elem("span", { className: "color-picker-title" }, ["Color Picker"]),
@@ -425,6 +444,25 @@ export function createValueControl(
           input.classList.add("invalid");
         }
       });
+
+      if (windowWithEyeDropper.EyeDropper !== undefined) {
+        eyedropperButton.addEventListener("click", async e => {
+          e.stopPropagation();
+
+          try {
+            const eyeDropper = new windowWithEyeDropper.EyeDropper!();
+            const result = await eyeDropper.open();
+
+            const hexColor = result.sRGBHex;
+            picker.color = hexColor;
+            opts.set(hexColor);
+            input.value = hexColor.slice(1);
+            colorBox.style.backgroundColor = hexColor;
+          } catch (error) {
+            console.log("Eyedropper was cancelled or failed:", error);
+          }
+        });
+      }
 
       const refresh = () => {
         const colorValue = opts.get() ?? opts.default ?? "#ffffffff";

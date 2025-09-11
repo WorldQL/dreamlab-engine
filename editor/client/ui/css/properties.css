@@ -98,6 +98,29 @@ button:disabled {
   background-color: white;
 }
 
+.eyedropper-button {
+  all: unset;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background-color: rgb(var(--color-bg-2)) !important;
+  color: rgb(var(--color-text-2));
+  cursor: pointer;
+  margin-left: 0.25em;
+}
+
+.eyedropper-button svg {
+  width: 14px;
+  height: 14px;
+}
+
+.eyedropper-button svg:hover {
+  color: rgb(var(--color-primary)) !important;
+  transition-duration: 200ms;
+}
+
 .color-input-container {
   display: flex;
   align-items: center;
