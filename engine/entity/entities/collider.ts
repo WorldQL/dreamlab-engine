@@ -137,6 +137,8 @@ export class Collider extends Entity {
   shape: ColliderShape = "Rectangle";
   isSensor: boolean = false;
   mass: number = 1;
+  restitution: number = 0;
+  friction: number = 0;
 
   #rigidbody: Rigidbody | undefined;
   #internal:
@@ -170,6 +172,12 @@ export class Collider extends Entity {
     });
     this.defineValue(Collider, "mass", {
       description: "Mass of the collider, used for physics calculations.",
+    });
+    this.defineValue(Collider, "restitution", {
+      description: "Coefficient of restitution [0-1], used for physics calculations.",
+    });
+    this.defineValue(Collider, "friction", {
+      description: "Friction coefficient, used for physics calculations.",
     });
   }
 
@@ -230,7 +238,9 @@ export class Collider extends Entity {
       desc
         .setTranslation(this.globalTransform.position.x, this.globalTransform.position.y)
         .setRotation(this.globalTransform.rotation)
-        .setMass(this.mass);
+        .setMass(this.mass)
+        .setRestitution(this.restitution)
+        .setFriction(this.friction);
 
       if (body) {
         desc.setTranslation(this.transform.position.x, this.transform.position.y);
