@@ -138,7 +138,7 @@ export class Collider extends Entity {
   isSensor: boolean = false;
   mass: number = 1;
   restitution: number = 0;
-  friction: number = 0;
+  friction: number = 1;
 
   #rigidbody: Rigidbody | undefined;
   #internal:
