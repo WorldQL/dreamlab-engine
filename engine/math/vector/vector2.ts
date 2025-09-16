@@ -3,10 +3,10 @@ import * as internal from "@dreamlab/engine/internal";
 import { Prng, RandomDistribution, Rng, StandardNormal, StandardUniform } from "../random.ts";
 import type { Vector } from "./_vector.ts";
 
-export interface IVector2 {
+export type IVector2 = {
   x: number;
   y: number;
-}
+};
 
 export class Vector2 implements IVector2, Vector<IVector2, Vector2> {
   [internal.vectorOnChanged]: () => void = () => {};
