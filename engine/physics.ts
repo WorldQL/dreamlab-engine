@@ -214,6 +214,7 @@ export class PhysicsEngine {
           entity2,
           new Vector2(collision.witness2),
           new Vector2(collision.normal2),
+          Vector2.ZERO,
         );
 
         entity2.fire(
@@ -222,6 +223,7 @@ export class PhysicsEngine {
           entity1,
           new Vector2(collision.witness1),
           new Vector2(collision.normal1),
+          Vector2.ZERO,
         );
       } else {
         // Reset missing ticks counter for active collision
