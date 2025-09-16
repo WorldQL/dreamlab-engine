@@ -1,5 +1,4 @@
-import type { Entity, Game } from "@dreamlab/engine";
-import { EntityCollision, Vector2 } from "@dreamlab/engine";
+import { Entity, EntityCollision, Game, Vector2 } from "@dreamlab/engine";
 import type {
   Collider,
   KinematicCharacterController,
@@ -65,6 +64,26 @@ export class PhysicsEngine {
   tick() {
     if (this.enabled) this.world.step(this.#events);
 
+    const contactForces = new Map<Entity, { other: Entity; force: Vector2 }[]>();
+
+    this.#events.drainContactForceEvents(ev => {
+      const collider1 = this.world.getCollider(ev.collider1());
+      const collider2 = this.world.getCollider(ev.collider2());
+
+      const entity1 = this.#lookupEntity(collider1);
+      const entity2 = this.#lookupEntity(collider2);
+      if (!entity1 || !entity2) return;
+      if (entity1.destroyed || entity2.destroyed) return;
+
+      const force = new Vector2(ev.totalForce());
+      const force1 = contactForces.get(entity1) ?? [];
+      const force2 = contactForces.get(entity2) ?? [];
+      force1.push({ other: entity2, force });
+      contactForces.set(entity1, force1);
+      force2.push({ other: entity2, force });
+      contactForces.set(entity2, force2);
+    });
+
     const collisionEventQueue: {
       started: boolean;
       entity1: Entity;
@@ -73,6 +92,7 @@ export class PhysicsEngine {
       contact2: Vector2;
       normal1: Vector2;
       normal2: Vector2;
+      force: Vector2;
     }[] = [];
 
     this.#events.drainCollisionEvents((handle1, handle2, started) => {
@@ -104,6 +124,16 @@ export class PhysicsEngine {
         // TODO: contact points
       });
 
+      const force1 = contactForces
+        .get(entity1)
+        ?.filter(it => it.other === entity2)
+        ?.reduce((a, b) => a.add(b.force), Vector2.ZERO);
+      const force2 = contactForces
+        .get(entity2)
+        ?.filter(it => it.other === entity1)
+        ?.reduce((a, b) => a.add(b.force), Vector2.ZERO);
+      const force = (force1 ?? Vector2.ZERO).add(force2 ?? Vector2.ZERO).div(2);
+
       collisionEventQueue.push({
         started,
         entity1,
@@ -112,6 +142,7 @@ export class PhysicsEngine {
         contact2,
         normal1,
         normal2,
+        force,
       });
     });
 
@@ -123,9 +154,10 @@ export class PhysicsEngine {
       contact2,
       normal1,
       normal2,
+      force,
     } of collisionEventQueue) {
-      entity1.fire(EntityCollision, started, entity2, contact1, normal1);
-      entity2.fire(EntityCollision, started, entity1, contact2, normal2);
+      entity1.fire(EntityCollision, started, entity2, contact1, normal1, force);
+      entity2.fire(EntityCollision, started, entity1, contact2, normal2, force);
     }
   }
 

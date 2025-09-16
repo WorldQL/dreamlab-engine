@@ -10,6 +10,7 @@ export class EntityCollision {
      */
     public readonly contactPoint: Vector2,
     public readonly normal: Vector2,
+    public readonly force: Vector2,
   ) {}
   [exclusiveSignalType] = Entity;
 }
