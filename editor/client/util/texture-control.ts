@@ -1,0 +1,212 @@
+import { ClientGame } from "@dreamlab/engine";
+import type { ContextMenuItem } from "../ui/context-menu.ts";
+import { element as elem } from "@dreamlab/ui";
+import * as PIXI from "@dreamlab/vendor/pixi.ts";
+import { z } from "@dreamlab/vendor/zod.ts";
+import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
+import { ChevronDown, icon } from "../_icons.tsx";
+import { createInputFieldWithDefault } from "./easy-input.ts";
+
+interface TextureControlOptions {
+  default?: string;
+  get: () => string | undefined;
+  set: (value: string | undefined) => void;
+}
+
+export function createTextureControl(
+  game: ClientGame,
+  opts: TextureControlOptions,
+): [control: HTMLElement, refresh: () => void] {
+  const container = elem("div", { className: "texture-control" });
+  const imgPreview = elem("img", { className: "texture-preview hidden" });
+  const dropdownButton = elem(
+    "button",
+    {
+      type: "button",
+      className: "texture-dropdown-button",
+      title: "Select texture from files",
+    },
+    [icon(ChevronDown)],
+  );
+
+  const loadMediaFiles = async () => {
+    try {
+      const filesURL = new URL(connectionDetails.serverUrl);
+      filesURL.pathname = `/api/v1/edit/${game.instanceId}/files`;
+      const response = await fetch(filesURL);
+      const data = await response.json();
+      const files = data.files || data;
+      return files.filter((file: string) =>
+        [".png", ".jpg", ".jpeg", ".gif", ".webp"].some(ext =>
+          file.toLowerCase().endsWith(ext),
+        ),
+      );
+    } catch (error) {
+      console.error("Failed to load media files:", error);
+      return [];
+    }
+  };
+
+  const buildFileMenuItems = (files: string[]): ContextMenuItem[] => {
+    if (files.length === 0) {
+      return [["No image files found", () => {}, true]];
+    }
+
+    const menuItems: ContextMenuItem[] = [];
+    const sortedFiles = [...files].sort((a, b) => a.localeCompare(b));
+
+    sortedFiles.forEach((file: string) => {
+      const fileName = file.split("/").pop() || file;
+      menuItems.push([fileName, () => selectFile(file)]);
+    });
+
+    return menuItems;
+  };
+
+  const selectFile = async (file: string) => {
+    const resourceUrl = `res://${file}`;
+    opts.set(resourceUrl);
+    await updateImagePreview(resourceUrl);
+  };
+
+  let cachedFiles: string[] | null = null;
+  let cacheTimestamp = 0;
+  const CACHE_DURATION = 5000;
+
+  const openFileMenu = async (x: number, y: number) => {
+    const { ContextMenu } = await import("../ui/context-menu.ts");
+    const contextMenu = new ContextMenu(game);
+    contextMenu.setup({} as Parameters<typeof contextMenu.setup>[0]);
+    contextMenu.show(document.body);
+
+    const now = Date.now();
+    if (!cachedFiles || now - cacheTimestamp > CACHE_DURATION) {
+      cachedFiles = await loadMediaFiles();
+      cacheTimestamp = now;
+    }
+
+    const allFiles = cachedFiles || [];
+    const items = buildFileMenuItems(allFiles);
+    contextMenu.drawContextMenu(x, y, items);
+
+    const applyScrolling = () => {
+      const section = document.querySelector("#context-menu section") as HTMLElement;
+      if (section && allFiles.length > 10) {
+        section.style.maxHeight = "268px";
+        section.style.overflowY = "auto";
+        section.style.overflowX = "hidden";
+
+        const scrollbarStyle = document.createElement("style");
+        scrollbarStyle.textContent = `
+          #context-menu section {
+            max-height: 268px !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+          }
+          #context-menu section::-webkit-scrollbar {
+            width: 6px;
+          }
+          #context-menu section::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+          }
+          #context-menu section::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+          }
+          #context-menu section::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+          }
+        `;
+
+        const oldStyle = document.getElementById("texture-scroll-style");
+        if (oldStyle) oldStyle.remove();
+        scrollbarStyle.id = "texture-scroll-style";
+        document.head.appendChild(scrollbarStyle);
+      }
+    };
+
+    applyScrolling();
+    setTimeout(applyScrolling, 0);
+    requestAnimationFrame(applyScrolling);
+  };
+
+  const updateImagePreview = async (url: string) => {
+    const hasTexture = !!url;
+    imgPreview.classList.toggle("hidden", !hasTexture);
+    container.classList.toggle("no-texture", !hasTexture);
+    dropdownButton.classList.toggle("hidden", hasTexture);
+
+    if (!hasTexture) {
+      imgPreview.src = "";
+      return;
+    }
+
+    try {
+      const resolvedUrl = game.resolveResource(url);
+      const texture = await PIXI.Assets.load(resolvedUrl);
+      if (!(texture instanceof PIXI.Texture)) throw new TypeError("Not a texture");
+      imgPreview.src = resolvedUrl;
+    } catch {
+      imgPreview.classList.add("hidden");
+      container.classList.add("no-texture");
+      imgPreview.src = "";
+      dropdownButton.classList.remove("hidden");
+    }
+  };
+
+  const [control, refreshInput] = createInputFieldWithDefault({
+    default: opts.default,
+    title: "Drag & drop an asset here, or enter a valid resource path (e.g., res://image.png)",
+    get: opts.get,
+    set: async v => {
+      opts.set(v ?? "");
+      await updateImagePreview(v ?? "");
+    },
+    convert: async value => {
+      const url = z.literal("").or(z.string().url()).parse(value);
+      await updateImagePreview(url);
+      return url;
+    },
+  });
+
+  const showFileMenu = (e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const rect = (e.target as Element).getBoundingClientRect();
+    openFileMenu(rect.left, rect.bottom + 4);
+  };
+
+  dropdownButton.addEventListener("click", showFileMenu);
+  imgPreview.addEventListener("click", showFileMenu);
+  imgPreview.style.cursor = "pointer";
+  imgPreview.title = "Click to select a different texture";
+
+  const getDraggedFile = (): string | undefined => {
+    const dragTarget = document.querySelector(
+      "[data-file][data-dragging]",
+    ) as HTMLElement | null;
+    return dragTarget?.dataset.file ? `res://${dragTarget.dataset.file}` : undefined;
+  };
+
+  container.addEventListener("dragover", ev => {
+    if (getDraggedFile()) ev.preventDefault();
+  });
+
+  container.addEventListener("drop", async () => {
+    const url = getDraggedFile();
+    if (url) {
+      opts.set(url);
+      await updateImagePreview(url);
+    }
+  });
+
+  const refresh = () => {
+    refreshInput();
+    updateImagePreview(opts.get() ?? "");
+  };
+
+  updateImagePreview(opts.get() ?? "");
+  container.append(imgPreview, dropdownButton, control);
+
+  return [container, refresh];
+}

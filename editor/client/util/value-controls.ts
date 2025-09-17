@@ -23,6 +23,7 @@ import "npm:vanilla-colorful/hex-alpha-color-picker.js";
 import { icon, Pipette, X } from "../_icons.tsx";
 import { IconButton } from "../components/icon-button.ts";
 import { createBooleanField, createInputFieldWithDefault } from "./easy-input.ts";
+import { createTextureControl } from "./texture-control.ts";
 
 interface ValueControlOptions<T> {
   id?: string;
@@ -100,82 +101,11 @@ export function createValueControl(
 
     case TextureAdapter: {
       const opts = _opts as ValueControlOptions<string | undefined>;
-
-      const container = elem("div", { className: "texture-control" });
-      const imgPreview = elem("img", { className: "texture-preview hidden" });
-      const noTextureClass = "no-texture";
-
-      const updateImagePreview = async (url: string) => {
-        if (!url) {
-          imgPreview.classList.add("hidden");
-          container.classList.add(noTextureClass);
-          imgPreview.src = "";
-          return;
-        }
-
-        try {
-          const resolvedUrl = game.resolveResource(url);
-          const texture = await PIXI.Assets.load(resolvedUrl);
-          if (!(texture instanceof PIXI.Texture)) throw new TypeError("Not a texture");
-
-          imgPreview.src = resolvedUrl;
-          imgPreview.classList.remove("hidden");
-          container.classList.remove(noTextureClass);
-        } catch {
-          imgPreview.classList.add("hidden");
-          container.classList.add(noTextureClass);
-          imgPreview.src = "";
-        }
-      };
-
-      const [control, refreshInput] = createInputFieldWithDefault({
+      return createTextureControl(game, {
         default: opts.default,
-        title:
-          "Drag & drop an asset here, or enter a valid resource path (e.g., res://image.png)",
         get: opts.get,
-        set: async v => {
-          opts.set(v ?? "");
-          await updateImagePreview(v ?? "");
-        },
-        convert: async value => {
-          const url = z.literal("").or(z.string().url()).parse(value);
-          await updateImagePreview(url);
-          return url;
-        },
+        set: opts.set,
       });
-
-      updateImagePreview(opts.get() ?? "");
-      container.append(imgPreview, control);
-
-      const getUrl = (): string | undefined => {
-        const dragTarget = document.querySelector(
-          "[data-file][data-dragging]",
-        ) as HTMLElement | null;
-        if (!dragTarget) return;
-
-        const file = `res://${dragTarget.dataset.file}`;
-        return file;
-      };
-
-      container.addEventListener("dragover", ev => {
-        const url = getUrl();
-        if (url !== undefined) ev.preventDefault();
-      });
-
-      container.addEventListener("drop", async () => {
-        const url = getUrl();
-        if (url) {
-          opts.set(url);
-          await updateImagePreview(url);
-        }
-      });
-
-      const refresh = () => {
-        refreshInput();
-        updateImagePreview(opts.get() ?? "");
-      };
-
-      return [container, refresh];
     }
 
     case SpritesheetAdapter: {
