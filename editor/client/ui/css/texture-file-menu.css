@@ -1,0 +1,67 @@
+.texture-file-menu {
+  position: fixed;
+  min-width: 180px;
+  max-height: 268px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: rgb(var(--color-bg-2));
+  color: rgb(var(--color-text));
+  border: 1px solid rgb(var(--color-text) / 40%);
+  border-radius: 4px;
+  padding: 4px 0;
+  box-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.25),
+    0 1px 2px rgba(0, 0, 0, 0.15);
+  z-index: 99999;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.texture-file-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.texture-file-menu::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.texture-file-menu::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.texture-file-menu::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.texture-file-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  height: 26px;
+  text-decoration: none;
+  color: inherit;
+  user-select: none;
+  cursor: pointer;
+  white-space: nowrap;
+  border-radius: 2px;
+  position: relative;
+}
+
+.texture-file-item:hover {
+  background: rgb(var(--color-primary) / 20%);
+}
+
+.theme-darker .texture-file-item:hover {
+  background: rgb(var(--color-primary) / 16.5%);
+}
+
+.texture-file-item[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.texture-file-item[aria-disabled="true"]:hover {
+  background: transparent;
+}

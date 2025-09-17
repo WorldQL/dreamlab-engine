@@ -1,5 +1,4 @@
 import { ClientGame } from "@dreamlab/engine";
-import type { ContextMenuItem } from "../ui/context-menu.ts";
 import { element as elem } from "@dreamlab/ui";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { z } from "@dreamlab/vendor/zod.ts";
@@ -47,22 +46,6 @@ export function createTextureControl(
     }
   };
 
-  const buildFileMenuItems = (files: string[]): ContextMenuItem[] => {
-    if (files.length === 0) {
-      return [["No image files found", () => {}, true]];
-    }
-
-    const menuItems: ContextMenuItem[] = [];
-    const sortedFiles = [...files].sort((a, b) => a.localeCompare(b));
-
-    sortedFiles.forEach((file: string) => {
-      const fileName = file.split("/").pop() || file;
-      menuItems.push([fileName, () => selectFile(file)]);
-    });
-
-    return menuItems;
-  };
-
   const selectFile = async (file: string) => {
     const resourceUrl = `res://${file}`;
     opts.set(resourceUrl);
@@ -74,11 +57,6 @@ export function createTextureControl(
   const CACHE_DURATION = 5000;
 
   const openFileMenu = async (x: number, y: number) => {
-    const { ContextMenu } = await import("../ui/context-menu.ts");
-    const contextMenu = new ContextMenu(game);
-    contextMenu.setup({} as Parameters<typeof contextMenu.setup>[0]);
-    contextMenu.show(document.body);
-
     const now = Date.now();
     if (!cachedFiles || now - cacheTimestamp > CACHE_DURATION) {
       cachedFiles = await loadMediaFiles();
@@ -86,48 +64,59 @@ export function createTextureControl(
     }
 
     const allFiles = cachedFiles || [];
-    const items = buildFileMenuItems(allFiles);
-    contextMenu.drawContextMenu(x, y, items);
 
-    const applyScrolling = () => {
-      const section = document.querySelector("#context-menu section") as HTMLElement;
-      if (section && allFiles.length > 10) {
-        section.style.maxHeight = "268px";
-        section.style.overflowY = "auto";
-        section.style.overflowX = "hidden";
+    const textureMenu = elem("div", {
+      className: "texture-file-menu",
+      style: {
+        left: `${x}px`,
+        top: `${y}px`,
+      },
+    });
 
-        const scrollbarStyle = document.createElement("style");
-        scrollbarStyle.textContent = `
-          #context-menu section {
-            max-height: 268px !important;
-            overflow-y: auto !important;
-            overflow-x: hidden !important;
-          }
-          #context-menu section::-webkit-scrollbar {
-            width: 6px;
-          }
-          #context-menu section::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.1);
-          }
-          #context-menu section::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 3px;
-          }
-          #context-menu section::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.3);
-          }
-        `;
+    if (allFiles.length === 0) {
+      const noFilesItem = elem(
+        "div",
+        {
+          className: "texture-file-item",
+          ariaDisabled: "true",
+        },
+        ["No image files found"],
+      );
+      textureMenu.appendChild(noFilesItem);
+    } else {
+      const sortedFiles = [...allFiles].sort((a, b) => a.localeCompare(b));
+      sortedFiles.forEach((file: string) => {
+        const fileName = file.split("/").pop() || file;
+        const fileItem = elem("div", { className: "texture-file-item" }, [fileName]);
 
-        const oldStyle = document.getElementById("texture-scroll-style");
-        if (oldStyle) oldStyle.remove();
-        scrollbarStyle.id = "texture-scroll-style";
-        document.head.appendChild(scrollbarStyle);
+        fileItem.addEventListener("click", () => {
+          selectFile(file);
+          textureMenu.remove();
+        });
+
+        textureMenu.appendChild(fileItem);
+      });
+    }
+
+    document.body.appendChild(textureMenu);
+    const rect = textureMenu.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    if (x + rect.width > viewportWidth) {
+      textureMenu.style.left = `${viewportWidth - rect.width - 10}px`;
+    }
+    if (y + rect.height > viewportHeight) {
+      textureMenu.style.top = `${viewportHeight - rect.height - 10}px`;
+    }
+
+    const closeMenu = (event: Event) => {
+      if (!textureMenu.contains(event.target as Node)) {
+        textureMenu.remove();
+        document.removeEventListener("click", closeMenu, true);
       }
     };
-
-    applyScrolling();
-    setTimeout(applyScrolling, 0);
-    requestAnimationFrame(applyScrolling);
+    setTimeout(() => document.addEventListener("click", closeMenu, true), 0);
   };
 
   const updateImagePreview = async (url: string) => {
