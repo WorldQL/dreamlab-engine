@@ -41,6 +41,7 @@ export class EditorFacadeClickable extends PixiEntity {
   height: number = 1;
   radius: number = 1;
   innerRadius: number = 0;
+  cursor: string = "pointer";
 
   #debug: DebugSquare | DebugCircle | undefined;
 
@@ -75,6 +76,9 @@ export class EditorFacadeClickable extends PixiEntity {
       hidden: isCircle,
       description:
         "Defines the inner radius of the clickable entity (only used if shape is Circle).",
+    });
+    this.defineValue(EditorFacadeClickable, "cursor", {
+      description: "CSS cursor to display when hovering over this clickable area.",
     });
   }
 
