@@ -182,7 +182,7 @@ export class Clickable extends ClickableEntity {
   shape: ClickableShape = "Rectangle";
   width: number = 1;
   height: number = 1;
-  radius: number = 1;
+  radius: number = 0.5;
   innerRadius: number = 0;
   cursor: string = "pointer";
 
