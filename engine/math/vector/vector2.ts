@@ -339,7 +339,7 @@ export class Vector2 implements IVector2, Vector<IVector2, Vector2> {
   }
 
   /**
-   * Get Euclidean distance between two vectors
+   * Get euclidean distance between two vectors
    */
   public distance(this: Vector2, other: IVector2): number {
     return Vector2.distance(this, other);
@@ -354,7 +354,9 @@ export class Vector2 implements IVector2, Vector<IVector2, Vector2> {
   }
 
   /**
-   * Returns a new vector with the magnitude (length) normalized to 1.
+   * Get squared euclidean distance between two vectors
+   *
+   * Avoids an expensive square root operation
    */
   public distanceSquared(this: Vector2, other: IVector2): number {
     return Vector2.distanceSquared(this, other);
