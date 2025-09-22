@@ -38,8 +38,20 @@ export abstract class EnumAdapter<const T extends readonly string[]> extends Val
 
 export function enumAdapter<const T extends readonly string[]>(
   values: T,
-): AdapterTypeTag<T[number]> {
+): AdapterTypeTag<T[number]> & {
+  readonly values: T;
+  isValue(value: unknown): value is T[number];
+} {
   return class ConcreteEnumAdapter extends EnumAdapter<T> {
+    static get values(): T {
+      return values;
+    }
+
+    static isValue(value: unknown): value is T[number] {
+      if (typeof value !== "string") return false;
+      return this.values.includes(value);
+    }
+
     constructor(game: Game) {
       super(values, game);
     }
