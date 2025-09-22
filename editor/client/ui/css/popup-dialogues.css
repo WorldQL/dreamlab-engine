@@ -196,3 +196,27 @@ hr.groove {
     margin-bottom: 10px;
   }
 }
+
+.popup-content > .projects {
+  min-height: initial;
+  gap: 1.5rem;
+
+  & > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+
+    & > p {
+      margin: 0;
+    }
+
+    & > .project-title {
+      font-weight: bold;
+    }
+
+    & > .project-description {
+      font-size: 0.9rem;
+      font-style: italic;
+    }
+  }
+}

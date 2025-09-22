@@ -1,10 +1,32 @@
-import { DreamlabEditorUIComponent } from "./_component.tsx";
 import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
-import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 import type { ClientGame } from "@dreamlab/engine";
+import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 import { icon, X } from "../_icons.tsx";
+import { DreamlabEditorUIComponent } from "./_component.tsx";
 
 type View = "upload" | "import";
+
+// non-exhaustive
+type Project = {
+  id: string;
+  images: string[];
+  tags: string[];
+  thumbnail: string | null;
+  title: string;
+  description: string;
+  created: string;
+  lastEdited: string;
+  publishingStatus: string[];
+  timesPlayed: number;
+  sortWeight: number;
+  userId: string;
+  deploymentMode: string;
+  name: string;
+  username: string;
+  password: string;
+  isLegacy: boolean;
+  favorite: boolean;
+};
 
 export class ImportPopup extends DreamlabEditorUIComponent {
   private view: View = "upload";
@@ -12,10 +34,19 @@ export class ImportPopup extends DreamlabEditorUIComponent {
   private importError = "";
   private uploadMessage = "";
 
+  private importableProjects: Project[] = [];
+
   // @ts-expect-error global;
   private game: ClientGame = globalThis.game;
 
   open(which: View) {
+    void this.#importableProjects()
+      .then(projects => {
+        this.importableProjects = projects;
+        this.rerender();
+      })
+      .catch(console.error);
+
     this.view = which;
     this.show();
   }
@@ -89,6 +120,17 @@ export class ImportPopup extends DreamlabEditorUIComponent {
     else window.parent.postMessage({ type: "SHOW_ASSET_CREATOR" }, "*");
     this.hide();
   };
+
+  async #importableProjects() {
+    const url = new URL("/api/project/with-tags", globalThis.env.DREAMLAB_NEXT_PUBLIC_URL);
+    url.searchParams.set("tag", "importable-asset");
+
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error("failed to fetch importable projects");
+
+    const json: Project[] = await resp.json();
+    return json;
+  }
 
   render() {
     if (this.view === "upload") {
@@ -189,6 +231,23 @@ export class ImportPopup extends DreamlabEditorUIComponent {
         </div>
 
         <div className="popup-content">
+          <div className="projects">
+            {this.importableProjects.map(project => (
+              <div
+                data-project-id={project.id}
+                onClick={e => {
+                  this.projectId = (e.currentTarget as HTMLDivElement).dataset.projectId!;
+                  this.rerender();
+                }}
+              >
+                <p className="project-title">{project.title ?? project.name}</p>
+                <p className="project-description">
+                  {project.description ?? "Importable asset."}
+                </p>
+              </div>
+            ))}
+          </div>
+
           <p className="info-text">Enter a public Project ID</p>
 
           <form className="import-form" onSubmit={e => this.importFromProject(e)}>
