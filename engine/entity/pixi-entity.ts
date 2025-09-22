@@ -60,6 +60,7 @@ export abstract class PixiEntity extends Entity {
 
   #updateVisibility() {
     if (!this.container) return;
+    this.#updateContainerPosition();
 
     const culled = !this.enabled;
     const visible = !(this.hidden || culled);
