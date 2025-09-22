@@ -12,7 +12,7 @@ import {
   IVector2,
   Vector2,
   enumAdapter,
-  smoothLerp,
+  smoothLerpAngle,
 } from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 
@@ -185,7 +185,7 @@ export class Camera extends Entity {
           delta,
         );
 
-        this.#rotation = smoothLerp(
+        this.#rotation = smoothLerpAngle(
           this.#rotation,
           this.interpolated.rotation,
           this.#lnsmooth,

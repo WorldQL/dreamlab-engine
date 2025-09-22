@@ -46,3 +46,20 @@ export function smoothLerp(
 
   return target + (current - target) * Math.exp(-decay * deltaTime);
 }
+
+export function smoothLerpAngle(
+  current: number,
+  target: number,
+  decay: number,
+  deltaTime: number,
+  epsilon = EPSILON,
+): number {
+  const difference = (current - target) % TAU;
+  const distance = ((2 * difference) % TAU) - difference;
+
+  if (Math.abs(distance) < epsilon) {
+    return target;
+  }
+
+  return target + distance * Math.exp(-decay * deltaTime);
+}
