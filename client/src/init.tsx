@@ -74,7 +74,7 @@ const showLoading = ({ steps = 1 }: { steps?: number } = {}): Loading => {
 export const init = async () => {
   const loading = showLoading({ steps: 4 });
 
-  console.log('starting loading screen')
+  console.log("starting loading screen");
 
   // load scripts **after** showing loading
   const [

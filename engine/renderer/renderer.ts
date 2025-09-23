@@ -33,6 +33,7 @@ export class GameRenderer {
       autoStart: false,
       sharedTicker: false,
       resolution: globalThis.devicePixelRatio,
+      backgroundAlpha: 0,
     });
 
     this.#game.container.append(this.app.canvas);

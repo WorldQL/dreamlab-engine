@@ -13,13 +13,44 @@ import {
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 
 export type Label = { readonly container: PIXI.Container; readonly text: PIXI.Text };
+
+const getContrastColor = (): string => {
+  const viewport = document.getElementById("viewport");
+  const hasWhiteBackground = viewport?.classList.contains("white-background");
+  return hasWhiteBackground ? "black" : "white";
+};
+
+const activeDebugShapes = new Set<DebugShape>();
+
+let backgroundObserver: MutationObserver | null = null;
+const initBackgroundObserver = () => {
+  if (backgroundObserver) return;
+
+  const viewport = document.getElementById("viewport");
+  if (!viewport) return;
+
+  backgroundObserver = new MutationObserver(() => {
+    const newColor = getContrastColor();
+    for (const shape of activeDebugShapes) {
+      if (shape.color === "white" || shape.color === "black") {
+        shape.color = newColor;
+      }
+    }
+  });
+
+  backgroundObserver.observe(viewport, {
+    attributes: true,
+    attributeFilter: ["class"],
+  });
+};
+
 export const createLabel = (icon: string, text?: string): Label => {
   const container = new PIXI.Container();
 
   const style = {
     fontFamily: "Iosevka",
     fontSize: 120,
-    fill: "white",
+    fill: getContrastColor(),
     align: "left",
   } satisfies Partial<PIXI.TextStyle>;
 
@@ -134,7 +165,7 @@ abstract class DebugShape {
     entity,
     enabled = true,
     suffix = "",
-    color = "white",
+    color = getContrastColor(),
     alpha = 0.8,
     width = 0.04,
     pixelLine = false,
@@ -156,6 +187,9 @@ abstract class DebugShape {
     this.container.addChild(this.gfx);
     this.#scene.addChild(this.container);
     this.#reparent();
+
+    activeDebugShapes.add(this);
+    initBackgroundObserver();
 
     this.#color = color;
     this.#alpha = alpha;
@@ -252,6 +286,8 @@ abstract class DebugShape {
   #onTransformUpdate: SignalSubscription<EntityTransformUpdate> | undefined;
   #onEnabledChange: SignalSubscription<EntityEnableChanged> | undefined;
   destroy(): void {
+    activeDebugShapes.delete(this);
+
     this.gfx.destroy();
 
     if (this.#zoomFn) {

@@ -89,6 +89,14 @@ export class SceneGraph implements InspectorUIWidget {
     const treeRoot = elem("div", { id: "scene-graph-tree" });
     this.#section.append(treeRoot);
 
+    const savedBackground = sessionStorage.getItem("editor-viewport-background");
+    if (savedBackground === "white") {
+      const viewport = document.getElementById("viewport");
+      if (viewport) {
+        viewport.classList.add("white-background");
+      }
+    }
+
     const headerBtn = this.#section.querySelector<HTMLButtonElement>(
       "#scene-graph-menu-button",
     );
@@ -237,6 +245,26 @@ export class SceneGraph implements InspectorUIWidget {
         },
         false,
         `${modifierKey}+V`,
+      ]);
+
+      const viewport = document.getElementById("viewport");
+      const hasWhiteBackground = viewport?.classList.contains("white-background");
+      contextMenuItems.push([
+        "Toggle Background Color",
+        () => {
+          const viewport = document.getElementById("viewport");
+          if (viewport) {
+            if (hasWhiteBackground) {
+              viewport.classList.remove("white-background");
+              sessionStorage.setItem("editor-viewport-background", "black");
+            } else {
+              viewport.classList.add("white-background");
+              sessionStorage.setItem("editor-viewport-background", "white");
+            }
+          }
+        },
+        false,
+        undefined,
       ]);
 
       ui.contextMenu.drawContextMenu(event.clientX, event.clientY, contextMenuItems);
