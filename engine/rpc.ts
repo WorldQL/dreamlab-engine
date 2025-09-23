@@ -123,15 +123,18 @@ export const rpc = Object.freeze({
         this.game.network.onReceiveCustomMessage((from, channel, data) => {
           if (channel !== `@rpc/broadcast/${this.ref}/${name}`) return;
           const args = data.args as A;
-          const ctx: rpc.Context = { from };
 
           if (isServer) {
+            const ctx: rpc.Context = { from };
+
             if (data.target === "all") bound(...args, ctx);
             this.game.network.broadcastCustomMessage(channel, { ...data, from });
             return;
           }
 
           if (data.from === this.game.network.self) return;
+
+          const ctx: rpc.Context = { from: data.from };
           bound(...args, ctx);
         });
       });
