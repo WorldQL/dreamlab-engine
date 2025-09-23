@@ -8,11 +8,11 @@ export type CustomMessageListener = (
   data: CustomMessageData,
 ) => void | Promise<void>;
 
-export interface ConnectionInfo {
+export type ConnectionInfo = {
   readonly id: ConnectionId;
   readonly playerId: string;
   readonly nickname: string;
-}
+};
 
 export interface BaseNetworking {
   get self(): ConnectionId;
