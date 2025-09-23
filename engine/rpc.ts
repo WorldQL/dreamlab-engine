@@ -1,5 +1,11 @@
-import type { Behavior, JsonValue } from "@dreamlab/engine";
+import { Behavior, ConnectionId, JsonValue } from "@dreamlab/engine";
 import { createId } from "@dreamlab/vendor/nanoid.ts";
+
+export declare namespace rpc {
+  export type Context = {
+    readonly from: ConnectionId;
+  };
+}
 
 /**
  * Method decorators for Remote Procedure Calls
@@ -17,8 +23,11 @@ export const rpc = Object.freeze({
     const A extends JsonValue[],
     R extends void | Promise<void> | Promise<JsonValue>,
   >() {
-    type Fn = (this: B, ...args: A) => R;
-    return function (original: (...args: A) => R, ctx: ClassMethodDecoratorContext<B, Fn>) {
+    type Fn = (this: B, ...args: [...A, ctx?: rpc.Context]) => R;
+    return function (
+      original: (...args: [...A, ctx?: rpc.Context]) => R,
+      ctx: ClassMethodDecoratorContext<B, Fn>,
+    ) {
       const name = String(ctx.name);
       const resolvers = new Map<string, PromiseWithResolvers<unknown>>();
 
@@ -28,8 +37,10 @@ export const rpc = Object.freeze({
           this.game.network.onReceiveCustomMessage(async (from, channel, data) => {
             if (channel !== `@rpc/server/${this.ref}/${name}`) return;
 
+            const ctx: rpc.Context = { from };
+
             try {
-              const ret = await bound(...data.args);
+              const ret = await bound(...(data.args as A), ctx);
               this.game.network.sendCustomMessage(from, channel, {
                 _id: data._id,
                 ok: true,
@@ -60,7 +71,7 @@ export const rpc = Object.freeze({
 
       return function (this: B, ...args: A): R {
         if (this.game.isServer()) {
-          return original.call(this, ...args);
+          return original.call(this, ...args, { from: "server" });
         }
 
         const _id = createId();
@@ -98,8 +109,11 @@ export const rpc = Object.freeze({
   ) {
     const target = opts.target ?? "all";
 
-    type Fn = (this: B, ...args: A) => R;
-    return function (original: (...args: A) => R, ctx: ClassMethodDecoratorContext<B, Fn>) {
+    type Fn = (this: B, ...args: [...A, ctx?: rpc.Context]) => R;
+    return function (
+      original: (...args: [...A, ctx?: rpc.Context]) => R,
+      ctx: ClassMethodDecoratorContext<B, Fn>,
+    ) {
       const name = String(ctx.name);
 
       ctx.addInitializer(function () {
@@ -108,14 +122,17 @@ export const rpc = Object.freeze({
         const isServer = this.game.isServer();
         this.game.network.onReceiveCustomMessage((from, channel, data) => {
           if (channel !== `@rpc/broadcast/${this.ref}/${name}`) return;
+          const args = data.args as A;
+          const ctx: rpc.Context = { from };
+
           if (isServer) {
-            if (data.target === "all") bound(...data.args);
+            if (data.target === "all") bound(...args, ctx);
             this.game.network.broadcastCustomMessage(channel, { ...data, from });
             return;
           }
 
           if (data.from === this.game.network.self) return;
-          bound(...data.args);
+          bound(...args, ctx);
         });
       });
 
@@ -124,10 +141,10 @@ export const rpc = Object.freeze({
         const data = { target, args };
 
         if (this.game.isServer()) {
-          if (target === "all") original.call(this, ...data.args);
+          if (target === "all") original.call(this, ...data.args, { from: "server" });
           this.game.network.broadcastCustomMessage(channel, data);
         } else {
-          original.call(this, ...data.args);
+          original.call(this, ...data.args, { from: this.game.network.self });
           this.game.network.sendCustomMessage("server", channel, data);
         }
 
@@ -135,5 +152,9 @@ export const rpc = Object.freeze({
         return Promise.resolve(undefined) as R;
       };
     };
+  },
+
+  get DEFAULT_CONTEXT(): rpc.Context {
+    return { from: "unknown" };
   },
 });
