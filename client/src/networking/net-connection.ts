@@ -120,6 +120,7 @@ export class ClientConnection {
     this.registerPacketHandler("PeerChangedNickname", packet => {
       const peer = this.peers.get(packet.connection_id);
       if (!peer) return;
+      // @ts-expect-error: lmao
       peer.nickname = packet.new_nickname;
     });
 
@@ -165,6 +166,9 @@ export class ClientConnection {
       },
       get connections(): ConnectionInfo[] {
         return conn.peers.values().toArray();
+      },
+      connection(id): ConnectionInfo | undefined {
+        return conn.peers.get(id);
       },
       sendCustomMessage(to: ConnectionId, channel: string, data: CustomMessageData) {
         conn.send({ t: "CustomMessage", channel, data, to: to === "server" ? undefined : to });

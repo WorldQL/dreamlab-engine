@@ -9,14 +9,15 @@ export type CustomMessageListener = (
 ) => void | Promise<void>;
 
 export interface ConnectionInfo {
-  id: ConnectionId;
-  playerId: string;
-  nickname: string;
+  readonly id: ConnectionId;
+  readonly playerId: string;
+  readonly nickname: string;
 }
 
 export interface BaseNetworking {
   get self(): ConnectionId;
   get connections(): ConnectionInfo[];
+  connection(id: string): ConnectionInfo | undefined;
   sendCustomMessage(to: ConnectionId, channel: string, data: CustomMessageData): void;
   broadcastCustomMessage(channel: string, data: CustomMessageData): void;
   onReceiveCustomMessage(listener: CustomMessageListener): void;

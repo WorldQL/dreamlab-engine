@@ -230,6 +230,9 @@ export class ServerNetworkManager {
       get connections(): ConnectionInfo[] {
         return [...net.clients.values()];
       },
+      connection(id): ConnectionInfo | undefined {
+        return net.clients.get(id);
+      },
       sendCustomMessage(to: ConnectionId, channel: string, data: CustomMessageData) {
         net.send(to, { t: "CustomMessage", channel, data });
       },

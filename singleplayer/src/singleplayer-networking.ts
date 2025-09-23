@@ -13,6 +13,12 @@ const SINGLEPLAYER_PLAYER_ID = "ply_singleplayer";
 const SINGLEPLAYER_CONNECTION_ID = "conn_singleplayer";
 const SINGLEPLAYER_NICKNAME = "Player";
 
+const SINGLEPLAYER_CONNECTION = Object.freeze({
+  id: SINGLEPLAYER_CONNECTION_ID,
+  nickname: SINGLEPLAYER_NICKNAME,
+  playerId: SINGLEPLAYER_PLAYER_ID,
+});
+
 export class SingleplayerNetworking {
   customMessageListeners: CustomMessageListener[] = [];
 
@@ -28,20 +34,21 @@ export class SingleplayerNetworking {
         return SINGLEPLAYER_CONNECTION_ID;
       },
       get selfInfo() {
-        return {
-          id: SINGLEPLAYER_CONNECTION_ID,
-          nickname: SINGLEPLAYER_NICKNAME,
-          playerId: SINGLEPLAYER_PLAYER_ID,
-        };
+        return SINGLEPLAYER_CONNECTION;
       },
       get connections(): ConnectionInfo[] {
-        return [
-          {
+        return [SINGLEPLAYER_CONNECTION];
+      },
+      connection(id): ConnectionInfo | undefined {
+        if (id === SINGLEPLAYER_CONNECTION_ID) {
+          return {
             id: SINGLEPLAYER_CONNECTION_ID,
             nickname: SINGLEPLAYER_NICKNAME,
             playerId: SINGLEPLAYER_PLAYER_ID,
-          },
-        ];
+          };
+        }
+
+        return undefined;
       },
       sendCustomMessage(to: ConnectionId, channel: string, data: CustomMessageData) {
         queueMicrotask(() => {
