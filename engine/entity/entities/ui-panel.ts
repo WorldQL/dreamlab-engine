@@ -82,8 +82,8 @@ export class UIPanel extends Entity {
     let scale = 1;
     if (!camera.unlocked) {
       const canvas = this.game.renderer.app.canvas;
-      const w = canvas.width / Camera.METERS_TO_PIXELS;
-      const h = canvas.height / Camera.METERS_TO_PIXELS;
+      const w = canvas.width / Camera.METERS_TO_PIXELS_UNSCALED;
+      const h = canvas.height / Camera.METERS_TO_PIXELS_UNSCALED;
       const axis = Math.min(w, h);
       scale = axis / Camera.TARGET_VIEWPORT_SIZE / resolution;
     }
