@@ -53,6 +53,7 @@
     "npm:markdown-it@*": "14.1.0",
     "npm:markdown-it@14.1.0": "14.1.0",
     "npm:morphdom@*": "2.7.5",
+    "npm:morphdom@2.7.5": "2.7.5",
     "npm:nanoid@5.0.9": "5.0.9",
     "npm:object-inspect@1.13.2": "1.13.2",
     "npm:pako@2.1.0": "2.1.0",

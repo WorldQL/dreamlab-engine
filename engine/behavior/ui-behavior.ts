@@ -1,7 +1,7 @@
 // deno-lint-ignore-file no-explicit-any
 import { Behavior, UILayer, UIPanel } from "@dreamlab/engine";
-import type { BaseElement } from "../../ui/element.ts";
-import morphdom from "npm:morphdom";
+import type { BaseElement } from "@dreamlab/ui";
+import morphdom from "@dreamlab/vendor/morphdom.ts";
 
 export abstract class UIBehavior extends Behavior {
   private uiRoot: HTMLElement | undefined;
