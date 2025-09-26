@@ -246,7 +246,17 @@ export async function pasteEntitiesFromClipboard(
       targetParent = selected;
     }
   } else {
-    targetParent = game.world._.EditEntities._.world;
+    const selected = selectedService.entities;
+    const parents = selected
+      .map(entity => entity.parent)
+      .filter(parent => parent !== undefined);
+
+    const allSameParent = parents.every(parent => parent === parents[0]);
+    if (allSameParent) {
+      targetParent = parents[0];
+    } else {
+      targetParent = game.world._.EditEntities._.world;
+    }
   }
 
   const pastedEntities: Entity[] = [];
