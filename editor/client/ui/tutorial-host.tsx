@@ -159,7 +159,7 @@ const tutorial1: TutorialStep[] = [
 
   {
     dialog:
-      "Press Play and give it a try.<br><br>If you need to move the platform, click and drag to select it with the box selector. Then use the move tool that appears.",
+      "Press Play and give it a try.<br><br>If you need to move the platform, click and drag to select it with the box selector. Drag the blue box in the center of the move tool that appears.",
     start: () => highlight("play-button", true),
     cleanup: () => highlight("play-button", false),
     until: () => Boolean(games().play),
