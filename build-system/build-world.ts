@@ -54,6 +54,25 @@ export const prepareBundleWorld = async (
   const buildOpts: esbuild.BuildOptions = {
     ...BASE_BUILD_OPTIONS,
     plugins: [
+      {
+        name: "css-plugin",
+        setup: (build: esbuild.PluginBuild) => {
+          build.onLoad({ filter: /\.css/ }, async args => {
+            const raw = await Deno.readTextFile(args.path);
+            try {
+              const transformed = await build.esbuild.transform(raw, {
+                loader: "css",
+                minify: true,
+              });
+
+              return { loader: "text", contents: transformed.code };
+            } catch {
+              // ignore, return raw css
+              return { loader: "text", contents: raw };
+            }
+          });
+        },
+      },
       dreamlabEngineExternalPlugin(),
       dreamlabVendorExternalPlugin(),
       dreamlabUIExternalPlugin(),
