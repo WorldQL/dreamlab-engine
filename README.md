@@ -1,7 +1,11 @@
 # Dreamlab – Cross-Platform Multiplayer 2D Game Engine
 **[Use Dreamlab in your browser now, no downloads required](https://app.dreamlab.gg/)**
 
-[![ezgif-386f81fca4019](https://github.com/user-attachments/assets/a6772d27-1915-43c3-bfc3-e7040984d540)](https://app.dreamlab.gg)
+
+
+https://github.com/user-attachments/assets/a4b748ff-bee2-45bc-9d27-5b595d56ba0b
+
+
 
 ## Features
 - Built in multiplayer networking
