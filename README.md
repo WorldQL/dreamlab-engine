@@ -2,7 +2,9 @@
 **[Use Dreamlab in your browser now, no downloads required](https://app.dreamlab.gg/)**
 
 
-https://github.com/user-attachments/assets/368ade02-9931-43a4-b0d7-e6f8ca573f40
+
+https://github.com/user-attachments/assets/a8a539ea-c39b-462c-835a-d1c906b4507e
+
 
 
 ## Features
