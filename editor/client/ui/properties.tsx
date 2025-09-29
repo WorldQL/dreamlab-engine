@@ -1,6 +1,7 @@
 import {
   AnimatedSprite,
   ClientGame,
+  ColorAdapter,
   Entity,
   EntityConstructor,
   EntityOwnEnableChanged,
@@ -521,11 +522,17 @@ export class Properties implements InspectorUIWidget {
 
       let state: { value: unknown } | undefined = undefined;
 
-      valueField.addEventListener("focus", () => {
-        state = { value: value.value };
-      });
+      const inputField =
+        value.adapter instanceof ColorAdapter ? valueField.querySelector("input")! : valueField;
 
-      valueField.addEventListener("blur", () => {
+      const begin = () => {
+        state = { value: value.value };
+      };
+
+      inputField.addEventListener("focus", begin);
+      valueField.addEventListener("control-opened", begin);
+
+      const update = () => {
         if (!state) return;
         const previous = state.value;
         state = undefined;
@@ -538,7 +545,10 @@ export class Properties implements InspectorUIWidget {
           value: value.value,
           previous,
         });
-      });
+      };
+
+      inputField.addEventListener("blur", update);
+      valueField.addEventListener("control-closed", update);
 
       valuesTable.addEntry(`value:${key}`, key, value.description, valueField);
       value.onChanged(refreshValue);

@@ -304,12 +304,24 @@ export function createValueControl(
         popup,
       ]);
 
+      // fire an input blur event on popup close so that the Undo/Redo listeners catch the action
+      const openPopup = () => {
+        popup.style.visibility = "";
+        popup.style.display = "block";
+        container.dispatchEvent(new CustomEvent("control-opened"));
+      };
+
+      const closePopup = () => {
+        popup.style.display = "none";
+        container.dispatchEvent(new CustomEvent("control-closed"));
+      };
+
       colorBox.addEventListener("click", e => {
         const tr = colorBox.closest("tr");
         if (!tr) return;
 
         if (popup.style.display === "block") {
-          popup.style.display = "none";
+          closePopup();
           return;
         }
 
@@ -336,21 +348,20 @@ export function createValueControl(
 
         popup.style.top = finalTop + "px";
         popup.style.left = finalLeft + "px";
-        popup.style.visibility = "";
-        popup.style.display = "block";
+        openPopup();
 
         e.stopPropagation();
       });
 
       document.addEventListener("pointerdown", e => {
         if (!popup.contains(e.target as Node) && e.target !== colorBox) {
-          popup.style.display = "none";
+          closePopup();
         }
       });
 
       const closeButton = header.querySelector(".color-picker-close") as HTMLButtonElement;
       closeButton.addEventListener("click", e => {
-        popup.style.display = "none";
+        closePopup();
         e.stopPropagation();
       });
 
