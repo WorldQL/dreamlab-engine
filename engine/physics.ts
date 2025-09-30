@@ -1,4 +1,5 @@
 import { Entity, EntityCollision, Game, Vector2 } from "@dreamlab/engine";
+import * as internal from "@dreamlab/engine/internal";
 import type {
   Collider,
   KinematicCharacterController,
@@ -167,7 +168,7 @@ export class PhysicsEngine {
     return `${controllerHandle}:${first}:${second}`;
   }
 
-  emitCharacterControllerCollisions(
+  [internal.emitCharacterControllerCollisions](
     collider: Collider,
     controller: KinematicCharacterController,
   ): void {

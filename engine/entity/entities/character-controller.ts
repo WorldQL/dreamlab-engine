@@ -1,5 +1,6 @@
 import type { EntityContext } from "@dreamlab/engine";
 import { Collider, Entity, EntityDestroyed, GamePostTick, Vector2 } from "@dreamlab/engine";
+import * as internal from "@dreamlab/engine/internal";
 import { KinematicCharacterController, QueryFilterFlags } from "@dreamlab/vendor/rapier.ts";
 
 export class CharacterController extends Collider {
@@ -77,7 +78,10 @@ export class CharacterController extends Collider {
         );
         this.#isGrounded = this.#controller.computedGrounded();
 
-        this.game.physics.emitCharacterControllerCollisions(this.collider, this.#controller);
+        this.game.physics[internal.emitCharacterControllerCollisions](
+          this.collider,
+          this.#controller,
+        );
 
         const authority = this.authority ?? "server";
         const hasAuthority = authority === this.game.network.self;
