@@ -51,6 +51,10 @@ export const prepareBundleWorld = async (
     `${src}/**/*.jsx`,
   ];
 
+  if (await fs.exists(path.join(worldOpts.dir, "preload.ts"))) {
+    entryPoints.push(`${worldOpts.dir}/preload.ts`);
+  }
+
   const buildOpts: esbuild.BuildOptions = {
     ...BASE_BUILD_OPTIONS,
     plugins: [

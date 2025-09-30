@@ -18,3 +18,5 @@ export * from "./signals/mod.ts";
 export * from "./synced-objects/mod.ts";
 export * from "./time.ts";
 export * from "./ui.ts";
+
+export { definePreload, type PreloadInfo } from "./preload.ts";

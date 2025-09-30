@@ -1,4 +1,11 @@
-import { Camera, ClientGame, Entity, GameShutdown, GameStatus } from "@dreamlab/engine";
+import {
+  Camera,
+  ClientGame,
+  Entity,
+  GameShutdown,
+  GameStatus,
+  PreloadInfo,
+} from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { ReceivedInitialNetworkSnapshot } from "@dreamlab/proto/common/signals.ts";
 import { convertEntityDefinition, getSceneFromProject, ProjectSchema } from "@dreamlab/scene";
@@ -32,6 +39,23 @@ export const setupGame = async (
   /* await Promise.allSettled(
     Object.values(behaviorPreloadInfo).map(b => game.loadBehavior(b.uri)),
   ); */
+
+  try {
+    const mod = await import(game.resolveResource("res://preload.js"));
+    if (
+      !("default" in mod) ||
+      typeof mod.default !== "object" ||
+      mod.default === null ||
+      !(internal.preloadInfo in mod.default) ||
+      mod.default[internal.preloadInfo] !== true
+    ) {
+      throw new Error("no default module");
+    }
+
+    await internal.preload(game, mod.default as PreloadInfo);
+  } catch {
+    // ignore
+  }
 
   try {
     const resp = await game.fetch("res://custom.css");
