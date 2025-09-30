@@ -5,6 +5,8 @@ interface SimpleEntityDefinition {
   type: string;
   children: SimpleEntityDefinition[];
   behaviors: string[];
+  position: { x: number; y: number };
+  scale: { x: number; y: number };
 }
 
 /**
@@ -21,12 +23,15 @@ function buildSimpleDefinitionOfNodeAndChildren(
   for (const behavior of entity.behaviors ?? []) {
     behaviors.push(behavior.script.split("res://").pop()!);
   }
+
+  const position = entity.transform?.position ?? { x: 0, y: 0 };
+  const scale = entity.transform?.scale ?? { x: 1, y: 1 };
   const children: SimpleEntityDefinition[] = [];
   for (const child of entity.children ?? []) {
     children.push(buildSimpleDefinitionOfNodeAndChildren(child));
   }
 
-  return { name, type, children, behaviors };
+  return { name, type, children, behaviors, position, scale };
 }
 
 /**
@@ -43,12 +48,21 @@ function getEntitySignature(entity: SimpleEntityDefinition): string {
 }
 
 /**
+ * Formats a number with up to 2 decimal places, dropping trailing zeros.
+ */
+function formatNumber(n: number): string {
+  if (n === 0) return "0";
+  return n.toFixed(2).replace(/\.?0+$/, "");
+}
+
+/**
  * Converts a single entity into its markdown representation.
  * It prints the entity name and type, then any behavior scripts,
  * and then its children (using grouping).
  */
 function entityToMarkdown(entity: SimpleEntityDefinition, indent: string = ""): string {
-  let md = `${indent}- ${entity.name} (${entity.type})\n`;
+  const posAndScale = `(${formatNumber(entity.position.x)}, ${formatNumber(entity.position.y)}, ${formatNumber(entity.scale.x)}, ${formatNumber(entity.scale.y)})`;
+  let md = `${indent}- ${entity.name} (${entity.type}) ${posAndScale}\n`;
   // List attached behavior scripts first.
   for (const behavior of entity.behaviors) {
     md += `${indent}  - ${behavior}\n`;

@@ -235,12 +235,10 @@ export const serveInstanceManagementAPI = (router: Router) => {
       },
       async (_ctx, { params }) => {
         const instance = params.instance;
-        const scene = await dumpSceneDefinition(instance);
+        if (!instance.session)
+          throw new Error("The given instance is not currently running a session.");
 
-        const projectJsonFile = path.join(instance.info.worldDirectory, "project.json");
-        const projectDesc = JSON.parse(await Deno.readTextFile(projectJsonFile));
-        projectDesc.scenes = { ...(projectDesc.scenes ?? {}), main: scene };
-        await Deno.writeTextFile(projectJsonFile, JSON.stringify(projectDesc, undefined, 2));
+        await instance.session.saveScene();
 
         return { success: true };
       },

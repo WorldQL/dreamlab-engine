@@ -164,7 +164,7 @@ export class GameSession {
     projectDesc.scenes = { ...(projectDesc.scenes ?? {}), main: scene };
 
     const markdownScene =
-      "The following is a description of the current scene in a compact format: \n\n" +
+      "The following is a description of the current scene in a compact format. (posX, posY, scaleX, scaleY). All child positions and scale are relative to parent. \n\n" +
       toMarkdownSceneTree(scene);
     const markdownSceneFile = path.join(
       this.parent.info.worldDirectory,
