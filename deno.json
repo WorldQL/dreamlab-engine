@@ -16,7 +16,9 @@
     "@dreamlab/vendor/": "./engine/_deps/",
     "@dreamlab/proto/": "./proto/",
     "@dreamlab/scene": "./scene-graph/mod.ts",
-    "@dreamlab/util/": "./util/"
+    "@dreamlab/util/": "./util/",
+    "@dreamlab/ui": "./ui/mod.ts",
+    "@dreamlab/ui/jsx-runtime": "./ui/jsx.ts"
   },
   "compilerOptions": {
     "lib": ["deno.window", "dom"],
