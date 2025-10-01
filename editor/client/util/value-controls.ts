@@ -207,8 +207,10 @@ export function createValueControl(
       });
 
       control.addEventListener("drop", async () => {
+        control.dispatchEvent(new CustomEvent("input-begin"));
         const url = await getUrl();
         if (url) opts.set(url);
+        control.dispatchEvent(new CustomEvent("input-finalize"));
       });
 
       return [control, refresh];
