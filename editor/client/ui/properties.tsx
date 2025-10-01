@@ -526,7 +526,7 @@ export class Properties implements InspectorUIWidget {
         value.adapter instanceof ColorAdapter ? valueField.querySelector("input")! : valueField;
 
       const begin = () => {
-        state = { value: value.value };
+        state = { value: structuredClone(value.value) };
       };
 
       inputField.addEventListener("focus", begin);
