@@ -553,6 +553,15 @@ export function createValueControl(
         refreshH();
       };
 
+      [wControl, hControl].forEach(c => {
+        c.addEventListener("focus", () =>
+          control.dispatchEvent(new CustomEvent("input-begin")),
+        );
+        c.addEventListener("blur", () =>
+          control.dispatchEvent(new CustomEvent("input-finalize")),
+        );
+      });
+
       return [control, refresh];
     }
 
