@@ -40,13 +40,8 @@ export class PhysicsEngine {
     collider.userData = { ...ud, entityRef: entity.ref };
   }
 
-  #lookupEntity(handlerOrCollider: Collider | RAPIER.ColliderHandle): Entity | undefined {
-    const body =
-      typeof handlerOrCollider === "number"
-        ? this.world.getCollider(handlerOrCollider)
-        : handlerOrCollider;
-
-    const udata = (body as ColliderWithUserData)?.userData as unknown;
+  lookupEntity(colliderOrBody: Collider | RigidBody): Entity | undefined {
+    const udata = (colliderOrBody as ColliderWithUserData | RigidBody)?.userData as unknown;
 
     let entityRef: string | undefined;
     if (
@@ -60,6 +55,15 @@ export class PhysicsEngine {
 
     if (!entityRef) return;
     return this.game.entities.lookupByRef(entityRef);
+  }
+
+  #lookupEntity(handlerOrCollider: Collider | RAPIER.ColliderHandle): Entity | undefined {
+    const collider =
+      typeof handlerOrCollider === "number"
+        ? this.world.getCollider(handlerOrCollider)
+        : handlerOrCollider;
+
+    return this.lookupEntity(collider);
   }
 
   tick() {
