@@ -197,7 +197,8 @@ const tutorial1: TutorialStep[] = [
     until: () => !games().play,
   },
   {
-    dialog: "Now, let's delete these rocks to give your player more room to move!<br><small>Tip: You can click and drag with the middle mouse button to move the camera and use the scroll wheel to zoom. If you're on a laptop, you can use two fingers to pan/zoom.</small>",
+    dialog:
+      "Now, let's delete these rocks to give your player more room to move!<br><small>Tip: You can click and drag with the middle mouse button to move the camera and use the scroll wheel to zoom. If you're on a laptop, you can use two fingers to pan/zoom.</small>",
     start: () => {
       games().edit.entities.lookupById("world/EditEntities/local/HintDeleteRocks")!.enabled =
         true;
@@ -207,7 +208,11 @@ const tutorial1: TutorialStep[] = [
       games().edit.entities.lookupById("world/EditEntities/local/HintDeleteRocks")!.enabled =
         false;
     },
-    until: () => !hasEntity("local/rock.1") && !hasEntity("local/rock.2") && !hasEntity("local/rock.3") && !hasEntity("local/rock.4"),
+    until: () =>
+      !hasEntity("local/rock.1") &&
+      !hasEntity("local/rock.2") &&
+      !hasEntity("local/rock.3") &&
+      !hasEntity("local/rock.4"),
   },
   {
     dialog: "Nice, now let's try playing again.",

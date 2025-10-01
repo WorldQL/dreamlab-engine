@@ -1343,7 +1343,11 @@ export abstract class Entity implements ISignalHandler {
           newTransform.position.assign(
             Vector2.lerp(this.#netTransformFrom.position, this.#netTransformTo.position, t),
           );
-          newTransform.rotation = lerpAngle(this.#netTransformFrom.rotation, this.#netTransformTo.rotation, t);
+          newTransform.rotation = lerpAngle(
+            this.#netTransformFrom.rotation,
+            this.#netTransformTo.rotation,
+            t,
+          );
           this.transform[internal.transformForceUpdate](newTransform);
           this.#updateTransform(false, this, this.#netTransformSource);
           // this.transform[internal.transformOnChanged]();
@@ -1363,7 +1367,11 @@ export abstract class Entity implements ISignalHandler {
           newTransform.position.assign(
             Vector2.lerp(this.#netTransformFrom.position, this.#netTransformTo.position, t),
           );
-          newTransform.rotation = lerpAngle(this.#netTransformFrom.rotation, this.#netTransformTo.rotation, t);
+          newTransform.rotation = lerpAngle(
+            this.#netTransformFrom.rotation,
+            this.#netTransformTo.rotation,
+            t,
+          );
           this.transform[internal.transformForceUpdate](newTransform);
           this.#updateTransform(false, this, this.#netTransformSource);
         }
