@@ -182,11 +182,13 @@ export function createTextureControl(
   });
 
   container.addEventListener("drop", async () => {
+    container.dispatchEvent(new CustomEvent("input-begin"));
     const url = getDraggedFile();
     if (url) {
       opts.set(url);
       await updateImagePreview(url);
     }
+    container.dispatchEvent(new CustomEvent("input-finalize"));
   });
 
   const refresh = () => {
