@@ -206,39 +206,69 @@ export const loadSceneDefinition = async (game: Game, scene: Scene) => {
     const defs = await Promise.all(
       scene.prefabs.map(def => convertEntityDefinition(game, def)),
     );
-    spawnedEntities.push(
-      ...defs.map(d => game.prefabs[internal.entitySpawn](d, { inert: true })),
-    );
+    for (const def of defs) {
+      try {
+        const e = game.prefabs[internal.entitySpawn](def, { inert: true });
+        spawnedEntities.push(e);
+      } catch (err) {
+        console.warn(`spawning ${def._ref}`, err);
+      }
+    }
   }
 
   if (scene.world) {
     const defs = await Promise.all(scene.world.map(def => convertEntityDefinition(game, def)));
-    spawnedEntities.push(
-      ...defs.map(d => game.world[internal.entitySpawn](d, { inert: true })),
-    );
+    for (const def of defs) {
+      try {
+        const e = game.world[internal.entitySpawn](def, { inert: true });
+        spawnedEntities.push(e);
+      } catch (err) {
+        console.warn(`spawning ${def._ref}`, err);
+      }
+    }
   }
 
   if (scene.local && game instanceof ClientGame) {
     const defs = await Promise.all(scene.local.map(def => convertEntityDefinition(game, def)));
-
-    spawnedEntities.push(
-      ...defs.map(d => game.local[internal.entitySpawn](d, { inert: true })),
-    );
+    for (const def of defs) {
+      try {
+        const e = game.local[internal.entitySpawn](def, { inert: true });
+        spawnedEntities.push(e);
+      } catch (err) {
+        console.warn(`spawning ${def._ref}`, err);
+      }
+    }
   }
 
   if (scene.server && game instanceof ServerGame) {
     const defs = await Promise.all(scene.server.map(def => convertEntityDefinition(game, def)));
-
-    spawnedEntities.push(
-      ...defs.map(d => game.remote[internal.entitySpawn](d, { inert: true })),
-    );
+    for (const def of defs) {
+      try {
+        const e = game.server[internal.entitySpawn](def, { inert: true });
+        spawnedEntities.push(e);
+      } catch (err) {
+        console.warn(`spawning ${def._ref}`, err);
+      }
+    }
   }
 
   const listener = game.on(GameStatusChange, () => {
     if (game.status === GameStatus.LoadingFinished) {
       listener.unsubscribe();
-      spawnedEntities.forEach(e => e[internal.entitySpawnFinalize1]());
-      spawnedEntities.forEach(e => e[internal.entitySpawnFinalize2]());
+      spawnedEntities.forEach(e => {
+        try {
+          e[internal.entitySpawnFinalize1]();
+        } catch (err) {
+          console.error(`spawning ${e.id}`, err);
+        }
+      });
+      spawnedEntities.forEach(e => {
+        try {
+          e[internal.entitySpawnFinalize2]();
+        } catch (err) {
+          console.error(`spawning ${e.id}`, err);
+        }
+      });
       spawnedEntities = [];
     }
   });
