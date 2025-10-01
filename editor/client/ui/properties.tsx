@@ -530,7 +530,7 @@ export class Properties implements InspectorUIWidget {
       };
 
       inputField.addEventListener("focus", begin);
-      valueField.addEventListener("control-opened", begin);
+      valueField.addEventListener("input-begin", begin);
 
       const update = () => {
         if (!state) return;
@@ -548,7 +548,7 @@ export class Properties implements InspectorUIWidget {
       };
 
       inputField.addEventListener("blur", update);
-      valueField.addEventListener("control-closed", update);
+      valueField.addEventListener("input-finalize", update);
 
       valuesTable.addEntry(`value:${key}`, key, value.description, valueField);
       value.onChanged(refreshValue);

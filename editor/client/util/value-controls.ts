@@ -308,12 +308,12 @@ export function createValueControl(
       const openPopup = () => {
         popup.style.visibility = "";
         popup.style.display = "block";
-        container.dispatchEvent(new CustomEvent("control-opened"));
+        container.dispatchEvent(new CustomEvent("input-begin"));
       };
 
       const closePopup = () => {
         popup.style.display = "none";
-        container.dispatchEvent(new CustomEvent("control-closed"));
+        container.dispatchEvent(new CustomEvent("input-finalize"));
       };
 
       colorBox.addEventListener("click", e => {
@@ -447,12 +447,16 @@ export function createValueControl(
       });
 
       control.addEventListener("drop", () => {
+        control.dispatchEvent(new CustomEvent("input-begin"));
         const entity = getEntity();
         if (entity !== null) setEntity(entity);
+        control.dispatchEvent(new CustomEvent("input-finalize"));
       });
 
       clear.addEventListener("click", () => {
+        control.dispatchEvent(new CustomEvent("input-begin"));
         setEntity(undefined);
+        control.dispatchEvent(new CustomEvent("input-finalize"));
         refresh();
       });
 
