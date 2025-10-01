@@ -5,31 +5,30 @@ WORKDIR /app
 USER deno
 
 COPY --chown=deno ./util /app/util
+COPY --chown=deno ./scene-graph /app/scene-graph
+COPY --chown=deno ./build-system /app/build-system
+COPY --chown=deno ./ui /app/ui
+COPY --chown=deno ./proto /app/proto
+COPY --chown=deno ./engine /app/engine
+COPY --chown=deno ./editor/client/_icons.tsx /app/editor/client/_icons.tsx
+COPY --chown=deno ./client /app/client
+
+
 WORKDIR /app/util
 RUN deno install
 
-COPY --chown=deno ./scene-graph /app/scene-graph
 WORKDIR /app/scene-graph
 RUN deno install --entrypoint mod.ts
 
-COPY --chown=deno ./ui /app/ui
 WORKDIR /app/ui
 RUN deno install --entrypoint mod.ts
 
-COPY --chown=deno ./build-system /app/build-system
 WORKDIR /app/build-system
 RUN deno install --entrypoint mod.ts
 
-COPY --chown=deno ./proto /app/proto
-WORKDIR /app/proto
-RUN deno install --entrypoint mod.ts
-
-COPY --chown=deno ./engine /app/engine
 WORKDIR /app/engine
 RUN deno install --entrypoint mod.ts
 
-COPY --chown=deno ./editor/client/_icons.tsx /app/editor/client/_icons.tsx
-COPY --chown=deno ./client /app/client
 WORKDIR /app/client
 RUN deno task build && deno run -A /app/build-system/postprocess-html.ts web
 
