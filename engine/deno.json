@@ -14,7 +14,7 @@
   },
   "lint": {
     "rules": {
-      "exclude": ["no-this-alias"]
+      "exclude": ["no-this-alias", "no-import-prefix"]
     }
   },
   "compilerOptions": {

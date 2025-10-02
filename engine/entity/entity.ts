@@ -1,6 +1,6 @@
+import deepEqual from "@dreamlab/vendor/fast-deep-equal.ts";
 import { createId } from "@dreamlab/vendor/nanoid.ts";
 import type { ConditionalExcept } from "@dreamlab/vendor/type-fest.ts";
-import deepEqual from "npm:fast-deep-equal";
 
 import type {
   AdapterTypeTag,
