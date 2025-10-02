@@ -52,7 +52,11 @@ export function createValueControl(
       adapter.values.map(value => elem("option", { value }, [value])),
     );
 
-    control.addEventListener("input", () => _opts.set(control.value));
+    control.addEventListener("input", () => {
+      control.dispatchEvent(new CustomEvent("input-begin"));
+      _opts.set(control.value);
+      control.dispatchEvent(new CustomEvent("input-finalize"));
+    });
 
     const refresh = () => {
       const val = _opts.get() ?? _opts.default;
