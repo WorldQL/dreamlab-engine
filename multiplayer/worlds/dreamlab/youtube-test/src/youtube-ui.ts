@@ -1,7 +1,7 @@
 import { Behavior, Click, Clickable, UIPanel } from "@dreamlab/engine";
 import { element } from "@dreamlab/ui";
 
-// important for `typeof YT` !! but breaks the build!!! uh oh!!!!
+// important for `typeof YT` !!
 import type {} from "npm:@types/youtube";
 
 export default class YoutubeUIBehavior extends Behavior {
