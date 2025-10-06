@@ -1,0 +1,49 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "engine_revision": "2024-08.001"
+  },
+  "scenes": {
+    "main": {
+      "registration": [],
+      "world": [
+        {
+          "ref": "ent_GdODunw20A",
+          "type": "@core/ColoredSquare",
+          "name": "ColoredSquare",
+          "behaviors": [
+            {
+              "ref": "bhv_SyJUoeWQxX",
+              "script": "res://src/move-lissajous.ts"
+            }
+          ],
+          "children": [
+            {
+              "ref": "ent_FzE1V0FHAs",
+              "type": "@core/UIPanel",
+              "name": "UIPanel",
+              "behaviors": [
+                {
+                  "ref": "bhv_aJM7FwTqhP",
+                  "script": "res://src/youtube-ui.ts"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "local": [
+        {
+          "ref": "ent_JJ0kij7Tjj",
+          "type": "@core/Camera",
+          "name": "Camera",
+          "values": {
+            "active": true
+          }
+        }
+      ],
+      "server": [],
+      "prefabs": []
+    }
+  }
+}
