@@ -1,7 +1,7 @@
 {
   "lock": false,
   "tasks": {
-    "format:base": "deno run -A npm:prettier@3.5 --config .prettierrc --ignore-unknown",
+    "format:base": "deno run -A npm:prettier@3.5 --config .prettierrc.ci --ignore-unknown",
     "format:install": "cd .git/hooks && ln -s ../../_pre-commit.sh pre-commit",
     "format": "deno task format:base --write .",
 
