@@ -1,4 +1,4 @@
-import { Behavior, UIPanel } from "@dreamlab/engine";
+import { Behavior, Click, Clickable, UIPanel } from "@dreamlab/engine";
 import { element } from "@dreamlab/ui";
 
 // important for `typeof YT` !! but breaks the build!!! uh oh!!!!
@@ -28,6 +28,11 @@ export default class YoutubeUIBehavior extends Behavior {
 
       const player = new yt.Player(video, { videoId: "dQw4w9WgXcQ" });
       player.addEventListener("onReady", () => {
+        player.playVideo();
+      });
+
+      this.game.world._.SkipTo1Minute.cast(Clickable).on(Click, () => {
+        player.seekTo(60, true);
         player.playVideo();
       });
     })();

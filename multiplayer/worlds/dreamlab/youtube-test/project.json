@@ -30,6 +30,36 @@
               ]
             }
           ]
+        },
+        {
+          "ref": "ent_RTHPLWxnUL",
+          "type": "@core/Clickable",
+          "name": "SkipTo1Minute",
+          "transform": {
+            "position": {
+              "x": 0,
+              "y": -3.735673964007858
+            },
+            "scale": {
+              "x": 5,
+              "y": 1
+            }
+          },
+          "children": [
+            {
+              "ref": "ent_f4hxalsRs6",
+              "type": "@core/ColoredSquare",
+              "name": "ColoredSquare",
+              "values": {
+                "color": [
+                  1,
+                  0.5215686559677124,
+                  0.5215686559677124,
+                  1
+                ]
+              }
+            }
+          ]
         }
       ],
       "local": [
