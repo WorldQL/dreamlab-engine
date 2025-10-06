@@ -221,6 +221,12 @@ socket.addEventListener("error", () => {
   loadingElem.textContent = `Failed to connect. Try reloading the page.`;
 });
 
+socket.addEventListener("close", () => {
+  if (isPopout) {
+    self.close();
+  }
+});
+
 const [game, conn, handshake] = await connectToGame(
   connectionDetails.instanceId,
   container,
