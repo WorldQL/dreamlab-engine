@@ -639,7 +639,7 @@ export class Gizmo extends Entity {
       const offset = cursor.world.sub(this.globalTransform.position);
       const offsetDistance = offset.magnitude();
 
-      const mul = Vector2.splat((offsetDistance / originalDistance) * 0.5);
+      const mul = Vector2.splat(offsetDistance / originalDistance);
       if (this.#action.axis === "x") mul.y = 1;
       if (this.#action.axis === "y") mul.x = 1;
 
