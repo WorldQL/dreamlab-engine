@@ -60,6 +60,9 @@ export class BottomTabs implements InspectorUIWidget {
       }
     };
 
+    // @ts-ignore using globals correctly to save time and energy
+    globalThis.bottomBarSwitchTab = switchTab;
+
     const aiSuggestionsPopup = new AISuggestionsPopup();
     aiSuggestionsPopup.mount(this.#container, false);
 

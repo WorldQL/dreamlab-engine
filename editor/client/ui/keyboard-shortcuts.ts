@@ -651,6 +651,31 @@ export function setupKeyboardShortcuts(
       UndoRedoManager._.push({ t: "compound", ops } as unknown as UndoRedoOperation);
       return;
     }
+
+    if (event.key === "a" && event.altKey) {
+      event.preventDefault();
+
+      // @ts-ignore using globals correctly to save time and energy
+      globalThis.bottomBarSwitchTab("assistant");
+      document.getElementById("assistant-viewer-content")?.focus();
+
+      return;
+    }
+
+    if (event.key === "p" && event.altKey) {
+      event.preventDefault();
+      event.stopPropagation();
+      document.getElementById("play-button")?.click();
+      return;
+    }
+
+    if (event.key === "o" && event.altKey) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      document.getElementById("stop-button")?.click();
+      return;
+    }
   });
   // #endregion
 }

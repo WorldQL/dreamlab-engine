@@ -152,6 +152,9 @@ export class AppMenu {
         this.playFocused = true;
         this.updateButtonStates();
         this.updateViewportStates(editUI);
+        if (this.games.play?.container) {
+          this.games.play.container.focus();
+        }
         window.parent.postMessage("analytics-playButtonClicked", "*");
         editUI.selectedEntity.entities = [];
       } finally {
@@ -268,6 +271,7 @@ export class AppMenu {
 
   async #connectToPlayGame(editUI: InspectorUI) {
     const container = document.createElement("div");
+    container.tabIndex = -1;
     this.uiRoot.querySelector<HTMLDivElement>("div#viewport > div#games")!.append(container);
 
     const connectURL = new URL(connectionDetails.serverUrl);
