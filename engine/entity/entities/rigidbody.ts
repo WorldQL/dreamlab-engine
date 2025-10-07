@@ -49,7 +49,10 @@ export class Rigidbody extends Entity {
     typeValue?.onChanged(() => this.#initializeBody());
 
     this.on(EntityDestroyed, () => {
-      if (this.#body) this.game.physics.world.removeRigidBody(this.#body);
+      if (this.#body) {
+        this.game.physics.world.removeRigidBody(this.#body);
+        this.#body = undefined;
+      }
     });
   }
 
