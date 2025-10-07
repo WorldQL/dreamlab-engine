@@ -628,6 +628,29 @@ export function setupKeyboardShortcuts(
     if (event.key === "Escape") {
       selectedService.entities = [];
     }
+
+    // Reset position (Alt+0)
+    if (event.key === "0" && event.altKey) {
+      event.preventDefault();
+      const entitiesToReset = selectedService.entities.filter(e => !isRoot(e));
+      if (entitiesToReset.length === 0) return;
+
+      const ops = entitiesToReset.map(entity => {
+        const previous = entity.globalTransform.bare();
+        entity.transform.position.x = 0;
+        entity.transform.position.y = 0;
+        const transform = entity.globalTransform.bare();
+        return {
+          t: "transform-change",
+          entityRef: entity.ref,
+          transform,
+          previous,
+        } as UndoRedoOperation;
+      });
+
+      UndoRedoManager._.push({ t: "compound", ops } as unknown as UndoRedoOperation);
+      return;
+    }
   });
   // #endregion
 }
