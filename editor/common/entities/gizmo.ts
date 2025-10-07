@@ -12,10 +12,10 @@ import {
   Vector2,
 } from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
+import { EmptyFacade } from "../facades/empty.ts";
+import { EditorFacadeTilemap } from "../facades/tilemap.ts";
 import { EditorMetadataEntity } from "../metadata.ts";
 import { EditorFacadeCamera, EditorRootFacadeEntity } from "../mod.ts";
-import { EditorFacadeTilemap } from "../facades/tilemap.ts";
-import { EmptyFacade } from "../facades/empty.ts";
 import { BoxResizeGizmo } from "./box-resize.ts";
 
 // #region Signals
@@ -639,7 +639,7 @@ export class Gizmo extends Entity {
       const offset = cursor.world.sub(this.globalTransform.position);
       const offsetDistance = offset.magnitude();
 
-      const mul = Vector2.splat(offsetDistance / originalDistance);
+      const mul = Vector2.splat((offsetDistance / originalDistance) * 0.5);
       if (this.#action.axis === "x") mul.y = 1;
       if (this.#action.axis === "y") mul.x = 1;
 
