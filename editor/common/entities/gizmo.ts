@@ -276,7 +276,14 @@ export class Gizmo extends Entity {
         }));
 
         const originals = new Map(
-          entityArray.map(entity => [entity, entity.globalTransform.clone()] as const),
+          entityArray.map(entity => {
+            const transform = entity.globalTransform.clone();
+            if (entity instanceof Camera || entity instanceof EditorFacadeCamera) {
+              transform.scale = Vector2.splat(1 / entity.zoom);
+            }
+
+            return [entity, transform] as const;
+          }),
         );
 
         this.#action = {
