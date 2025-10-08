@@ -78,9 +78,12 @@ export class CameraPanBehavior extends Behavior {
     else canvas.classList.add("grabbing");
   }
 
+  #wasMouseDownOverCanvas: boolean = false;
   #onMouseDown(event: MouseDown) {
     if (!this.game.isClient()) return;
     if (event.button === "left") {
+      this.#wasMouseDownOverCanvas = this.game.inputs.cursor.world !== undefined;
+
       if (this.#space.held) {
         this.#setDrag(event.cursor.screen.clone());
         return;
@@ -530,6 +533,9 @@ export class CameraPanBehavior extends Behavior {
   #onMouseUp(event: MouseUp) {
     if (!this.game.isClient()) return;
 
+    const wasMouseDownOverCanvas = this.#wasMouseDownOverCanvas;
+    this.#wasMouseDownOverCanvas = false;
+
     if (this.#drag) this.#setDrag(undefined);
 
     if (this.#selectionBox) {
@@ -541,6 +547,7 @@ export class CameraPanBehavior extends Behavior {
       return;
     }
 
+    if (!wasMouseDownOverCanvas) return;
     if (!this.#drag && event.button === "left" && event.cursor.world && !this.#wasGizmo) {
       const gizmo = this.game.local.children.get("Gizmo")?.cast(Gizmo);
       const boxresize = this.game.local.children.get("BoxResizeGizmo")?.cast(BoxResizeGizmo);
