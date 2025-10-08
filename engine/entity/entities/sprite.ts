@@ -72,32 +72,7 @@ export class Sprite extends PixiEntity {
     }
 
     const updateSize = () => {
-      if (!this.#sprite) return;
-      this.#sprite.scale.set(0);
-
-      const targetWidth = this.width * this.globalTransform.scale.x;
-      const targetHeight = this.height * this.globalTransform.scale.y;
-
-      if (this.preserveAspectRatio && this.#sprite.texture !== PIXI.Texture.WHITE) {
-        // Get original texture dimensions
-        const originalWidth = this.#sprite.texture.orig.width;
-        const originalHeight = this.#sprite.texture.orig.height;
-
-        // Calculate scale factors
-        const scaleX = targetWidth / originalWidth;
-        const scaleY = targetHeight / originalHeight;
-
-        // Use the smaller scale factor to maintain aspect ratio (letterboxing)
-        const scale = Math.min(scaleX, scaleY);
-
-        // Apply the scaled dimensions
-        this.#sprite.width = originalWidth * scale;
-        this.#sprite.height = originalHeight * scale;
-      } else {
-        // Original behavior - fill the entire target area
-        this.#sprite.width = targetWidth;
-        this.#sprite.height = targetHeight;
-      }
+      this.#updateSize();
     };
 
     this.on(EntityTransformUpdate, updateSize);
@@ -186,6 +161,35 @@ export class Sprite extends PixiEntity {
     return texture;
   }
 
+  #updateSize() {
+    if (!this.#sprite) return;
+    this.#sprite.scale.set(0);
+
+    const targetWidth = this.width * this.globalTransform.scale.x;
+    const targetHeight = this.height * this.globalTransform.scale.y;
+
+    if (this.preserveAspectRatio && this.#sprite.texture !== PIXI.Texture.WHITE) {
+      // Get original texture dimensions
+      const originalWidth = this.#sprite.texture.orig.width;
+      const originalHeight = this.#sprite.texture.orig.height;
+
+      // Calculate scale factors
+      const scaleX = targetWidth / originalWidth;
+      const scaleY = targetHeight / originalHeight;
+
+      // Use the smaller scale factor to maintain aspect ratio (letterboxing)
+      const scale = Math.abs(Math.min(scaleX, scaleY));
+
+      // Apply the scaled dimensions
+      this.#sprite.width = originalWidth * scale * Math.sign(targetWidth);
+      this.#sprite.height = originalHeight * scale * Math.sign(targetHeight);
+    } else {
+      // Original behavior - fill the entire target area
+      this.#sprite.width = targetWidth;
+      this.#sprite.height = targetHeight;
+    }
+  }
+
   async onInitialize() {
     super.onInitialize();
     if (!this.container) return;
@@ -205,31 +209,7 @@ export class Sprite extends PixiEntity {
 
     // Apply aspect ratio preservation if needed
     if (this.preserveAspectRatio) {
-      const updateSize = () => {
-        if (!this.#sprite) return;
-        this.#sprite.scale.set(0);
-
-        const targetWidth = this.width * this.globalTransform.scale.x;
-        const targetHeight = this.height * this.globalTransform.scale.y;
-
-        if (this.preserveAspectRatio && this.#sprite.texture !== PIXI.Texture.WHITE) {
-          const originalWidth = this.#sprite.texture.orig.width;
-          const originalHeight = this.#sprite.texture.orig.height;
-
-          const scaleX = targetWidth / originalWidth;
-          const scaleY = targetHeight / originalHeight;
-
-          const scale = Math.min(scaleX, scaleY);
-
-          this.#sprite.width = originalWidth * scale;
-          this.#sprite.height = originalHeight * scale;
-        } else {
-          this.#sprite.width = targetWidth;
-          this.#sprite.height = targetHeight;
-        }
-      };
-
-      updateSize();
+      this.#updateSize();
     }
   }
 }
