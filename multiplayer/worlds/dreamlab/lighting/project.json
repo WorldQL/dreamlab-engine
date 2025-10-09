@@ -1,0 +1,91 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "engine_revision": "2024-08.001"
+  },
+  "scenes": {
+    "main": {
+      "registration": [],
+      "world": [
+        {
+          "ref": "ent_yWerOAATJh",
+          "type": "@core/Empty",
+          "name": "Obstacles",
+          "behaviors": [
+            {
+              "ref": "bhv_e1WL2k111L",
+              "script": "res://src/obstacles.ts",
+              "values": {
+                "container": "ent_yWerOAATJh",
+                "size": {
+                  "x": 16,
+                  "y": 9
+                },
+                "count": 15,
+                "seed": 123
+              }
+            }
+          ]
+        },
+        {
+          "ref": "ent_hKsHZyXUK9",
+          "type": "@core/ColoredSquare",
+          "name": "ColoredSquare",
+          "transform": {
+            "scale": {
+              "x": 100,
+              "y": 100
+            },
+            "z": -1
+          },
+          "values": {
+            "color": [
+              0.10196078568696976,
+              0.10196078568696976,
+              0.10196078568696976,
+              1
+            ]
+          }
+        }
+      ],
+      "local": [
+        {
+          "ref": "ent_BUgbDyXVKy",
+          "type": "@core/Camera",
+          "name": "Camera",
+          "values": {
+            "active": true,
+            "scaleFilterMode": "linear"
+          }
+        },
+        {
+          "ref": "ent_rgj4phrlHW",
+          "type": "@core/RawPixi",
+          "name": "LightOverlay",
+          "transform": {
+            "z": 100
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_yBqLy3RXzC",
+              "script": "res://src/light-overlay.ts"
+            }
+          ]
+        },
+        {
+          "ref": "ent_VP8KS5owEm",
+          "type": "@core/UILayer",
+          "name": "Text",
+          "behaviors": [
+            {
+              "ref": "bhv_oNRMKqXuBG",
+              "script": "res://src/text.tsx"
+            }
+          ]
+        }
+      ],
+      "server": [],
+      "prefabs": []
+    }
+  }
+}
