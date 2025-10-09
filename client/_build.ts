@@ -9,8 +9,8 @@ import {
 if (import.meta.main) {
   const args = cli.parseArgs(Deno.args, {
     boolean: ["watch", "clean", "wasm-b64"],
-    string: ["serve-port", "out-dir", "serve-dir", "define"],
-    collect: ["define"],
+    string: ["serve-port", "out-dir", "serve-dir", "env", "define"],
+    collect: ["env", "define"],
     default: { "serve-port": "5179", "out-dir": "./web/dist", "serve-dir": "./web" },
   });
 
@@ -25,6 +25,10 @@ if (import.meta.main) {
       }
     }
   }
+
+  const env: Record<string, string> = Object.fromEntries(
+    args.env.map(x => x.split("=")).filter(x => x.length === 2),
+  );
 
   const define: Record<string, string> = Object.fromEntries(
     args.define.map(x => x.split("=")).filter(x => x.length === 2),
@@ -48,7 +52,7 @@ if (import.meta.main) {
         servedir: args["serve-dir"],
       },
     },
-    undefined,
+    env,
     define,
   );
 }

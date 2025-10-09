@@ -2,9 +2,13 @@ import { ensureDir } from "jsr:@std/fs@1";
 import { dirname, relative } from "jsr:@std/path@1";
 import { bundleWorld } from "../build-system/mod.ts";
 
-export async function bundleSingleplayerWorld(worldId: string) {
-  const sourceWorldDir = "../multiplayer/worlds/" + worldId;
-  const targetWorldDir = "./web/worlds/" + worldId;
+export async function bundleSingleplayerWorld(
+  worldId: string,
+  {
+    sourceWorldDir = "../multiplayer/worlds/" + worldId,
+    targetWorldDir = "./web/worlds/" + worldId,
+  }: { sourceWorldDir?: string; targetWorldDir?: string } = {},
+) {
   const rel = relative(sourceWorldDir, targetWorldDir);
 
   await ensureDir(dirname(targetWorldDir));

@@ -3,3 +3,4 @@
 /web/worlds
 /web/bundled
 /.env.local
+/build
