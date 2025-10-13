@@ -35,6 +35,7 @@
     "jsr:@std/streams@^1.0.8": "1.0.10",
     "jsr:@std/uuid@^1.0.4": "1.0.9",
     "npm:@dimforge/rapier2d-compat@0.14.0": "0.14.0",
+    "npm:@dimforge/rapier2d-compat@0.19.1": "0.19.1",
     "npm:@influxdata/influxdb-client@*": "1.35.0",
     "npm:@t3-oss/env-core@0.12": "0.12.0",
     "npm:@types/howler@2.2.11": "2.2.11",
@@ -174,6 +175,9 @@
   "npm": {
     "@dimforge/rapier2d-compat@0.14.0": {
       "integrity": "sha512-sljQVPstRS63hVLnVNphsZUjH51TZoptVM0XlglKAdZ8CT+kWnmA6olwjkF7omPWYrlKMd/nHORxOUdJDOSoAQ=="
+    },
+    "@dimforge/rapier2d-compat@0.19.1": {
+      "integrity": "sha512-lK1d4NgS451qeT9vQ8C01VIzKy23NV0kBAyOflvyUFeeyCPPJkdG16V3jglM+H6ZfwjxUF9/EeOdhg06wo4/gA=="
     },
     "@esbuild/aix-ppc64@0.24.0": {
       "integrity": "sha512-WtKdFM7ls47zkKHFVzMz8opM7LkcsIp9amDUBIAWirg70RM71WRSjdILPsY5Uv1D42ZpUfaPILDlfactHgsRkw==",

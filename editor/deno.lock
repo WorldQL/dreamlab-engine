@@ -30,6 +30,7 @@
     "jsr:@std/toml@*": "1.0.0",
     "jsr:@std/uuid@1": "1.0.0",
     "npm:@dimforge/rapier2d-compat@0.14.0": "0.14.0",
+    "npm:@dimforge/rapier2d-compat@0.19.1": "0.19.1",
     "npm:@paralleldrive/cuid2@2.2.2": "2.2.2",
     "npm:@types/howler@2.2.11": "2.2.11",
     "npm:@types/node@*": "22.12.0",
@@ -195,6 +196,9 @@
   "npm": {
     "@dimforge/rapier2d-compat@0.14.0": {
       "integrity": "sha512-sljQVPstRS63hVLnVNphsZUjH51TZoptVM0XlglKAdZ8CT+kWnmA6olwjkF7omPWYrlKMd/nHORxOUdJDOSoAQ=="
+    },
+    "@dimforge/rapier2d-compat@0.19.1": {
+      "integrity": "sha512-lK1d4NgS451qeT9vQ8C01VIzKy23NV0kBAyOflvyUFeeyCPPJkdG16V3jglM+H6ZfwjxUF9/EeOdhg06wo4/gA=="
     },
     "@esbuild/aix-ppc64@0.20.2": {
       "integrity": "sha512-D+EBOJHXdNZcLJRBkhENNG8Wji2kgc9AZ9KiPr1JuZjsNtyHzrsfLRrY0tk2H2aoFu6RANO1y1iPPUCDYWkb5g==",

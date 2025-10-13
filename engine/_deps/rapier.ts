@@ -1,5 +1,5 @@
-import RAPIER from "npm:@dimforge/rapier2d-compat@0.14.0";
-export * from "npm:@dimforge/rapier2d-compat@0.14.0";
+import RAPIER from "npm:@dimforge/rapier2d-compat@0.19.1";
+export * from "npm:@dimforge/rapier2d-compat@0.19.1";
 export default RAPIER;
 
 let initializing = false;
