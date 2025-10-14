@@ -46,6 +46,10 @@ export const serveLogStreamingAPI = (router: Router) => {
       // TODO: filter these more elegantly
       if (entry.message.startsWith("play: ")) return;
 
+      // filter out debugger notes
+      if (entry.message.includes("Debugger listening on")) return;
+      if (entry.message.includes("chrome://inspect")) return;
+
       try {
         socket.send(JSON.stringify({ t: "New", entry }));
       } catch {
