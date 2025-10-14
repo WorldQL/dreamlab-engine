@@ -180,7 +180,12 @@ export class GameSession {
   }
 
   broadcastPacket(packet: ServerPacket) {
+    // do not send peerconnected to the peer that is connecting
+    // this is always dropped by the client anyway
+    const skip = packet.t === "PeerConnected" ? packet.connection_id : undefined;
+
     for (const connection of this.connections.values()) {
+      if (skip && connection.connectionId === skip) continue;
       const packetData = connection.codec.encodePacket(packet);
       try {
         connection.socket.send(packetData);
