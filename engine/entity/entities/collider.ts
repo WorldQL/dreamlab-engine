@@ -182,7 +182,7 @@ export class Collider extends Entity {
   }
 
   onInitialize(): void {
-    if (this.root !== this.game.prefabs) {
+    if (this.enabled && this.root !== this.game.prefabs) {
       this.#rigidbody = this.parent instanceof Rigidbody ? this.parent : undefined;
       this.#setupCollider(this.#rigidbody?.body);
     }
