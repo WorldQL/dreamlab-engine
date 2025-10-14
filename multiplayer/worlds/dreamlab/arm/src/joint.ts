@@ -7,7 +7,7 @@ import {
   Vector2,
   Vector2Adapter,
 } from "@dreamlab/engine";
-import * as RAPIER from "@dreamlab/vendor/rapier.ts";
+import RAPIER from "@dreamlab/vendor/rapier.ts";
 
 export default class Joint extends Behavior {
   @value({ type: EntityRef })
