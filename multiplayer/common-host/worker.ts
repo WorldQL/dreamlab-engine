@@ -106,6 +106,13 @@ export class IPCWorker {
     })();
     void (async () => {
       for await (const line of errLines.values()) {
+        if (
+          line ===
+          "using deprecated parameters for the initialization function; pass a single object instead"
+        ) {
+          continue;
+        }
+
         console.log(colors.dim(`[worker …${shortId}]`) + ` ${line}`);
         logs.log("stderr", line);
       }
