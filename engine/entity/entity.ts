@@ -65,6 +65,7 @@ import { SyncedObjectConstructor } from "../synced-objects/registry.ts";
 export interface EntityContext {
   game: Game;
   name: string;
+  enabled?: boolean;
   parent?: Entity;
   transform?: TransformOptions;
   authority?: ConnectionId;
@@ -386,6 +387,7 @@ export abstract class Entity implements ISignalHandler {
     const entity = new def.type({
       game: parent.game,
       name: def.name,
+      enabled: def.enabled,
       parent,
       transform: def.transform,
       authority: def.authority ?? parent.authority,
@@ -395,7 +397,6 @@ export abstract class Entity implements ISignalHandler {
       sync: def.sync,
       clonedFrom,
     });
-    if (def.enabled !== undefined) entity.enabled = def.enabled;
     return entity;
   }
 
@@ -1086,6 +1087,7 @@ export abstract class Entity implements ISignalHandler {
 
     this.#name = ctx.name;
     this.id = serializeIdentifier(ctx.parent?.id, this.#name);
+    this.enabled = ctx.enabled ?? true;
     this.parent = ctx.parent;
     this.transform = new Transform(ctx.transform);
     this.globalTransform = new Transform();
