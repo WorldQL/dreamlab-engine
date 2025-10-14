@@ -38,6 +38,7 @@
           "ref": "ent_lXuXuc7VnR",
           "type": "@core/Collider",
           "name": "Goal",
+          "enabled": false,
           "transform": {
             "position": {
               "x": 0,
@@ -100,6 +101,7 @@
           "ref": "ent_quYRgVlkFh",
           "type": "@core/Empty",
           "name": "Walls",
+          "enabled": false,
           "children": [
             {
               "ref": "ent_iRkowhc0Sm",
@@ -244,10 +246,6 @@
               "type": "@core/Rigidbody",
               "name": "Anchor",
               "transform": {
-                "position": {
-                  "x": 0.8948885007372129,
-                  "y": -0.5760176567313864
-                },
                 "scale": {
                   "x": 0.7,
                   "y": 0.7
@@ -296,7 +294,7 @@
                   "values": {
                     "body1": "ent_JSyfw0lOil",
                     "body2": "ent_Y9trdjuZPL",
-                    "angle": 90,
+                    "angle": -90,
                     "stiffness": 10000,
                     "damping": 1000
                   }
@@ -605,6 +603,7 @@
           "ref": "ent_bKZaZryOWL",
           "type": "@core/Rigidbody",
           "name": "Ball",
+          "enabled": false,
           "behaviors": [
             {
               "ref": "bhv_RfzDghg5di",

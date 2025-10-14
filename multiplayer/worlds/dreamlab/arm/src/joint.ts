@@ -75,7 +75,7 @@ export default class Joint extends Behavior {
   get #joint(): RAPIER.RevoluteImpulseJoint {
     const world = this.game.physics.world;
 
-    if (this.#handle) {
+    if (this.#handle !== undefined) {
       const joint = world.impulseJoints.get(this.#handle);
       if (joint !== null) return joint as RAPIER.RevoluteImpulseJoint;
     }
