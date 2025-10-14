@@ -58,7 +58,7 @@ export class GameInstance {
   logs = new LogStore();
   #printLogs() {
     const shortId = this.info.instanceId.substring(this.info.instanceId.length - 8);
-    printLogs(`[worker …${shortId}]`, this.logs.subscribe());
+    printLogs(`worker …${shortId}`, this.logs.subscribe());
   }
   // #endregion
 
