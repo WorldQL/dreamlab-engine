@@ -12,6 +12,7 @@ const validAudioExtensions = [".mp3", ".wav", ".ogg"];
 const validAudioMIMEs = ["audio/mpeg", "audio/wav", "audio/ogg"];
 
 export const audioLoader = {
+  id: "audio",
   name: "loadAudio",
 
   extension: {

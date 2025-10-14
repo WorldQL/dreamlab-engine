@@ -1,2 +1,1 @@
-import deepEqual from "npm:fast-deep-equal@3.1.3";
-export default deepEqual;
+export { default } from "npm:fast-deep-equal@3.1.3";

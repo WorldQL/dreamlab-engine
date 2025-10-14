@@ -1,1 +1,1 @@
-export { default } from "npm:morphdom@2.7.5";
+export { default } from "npm:morphdom@2.7.7";

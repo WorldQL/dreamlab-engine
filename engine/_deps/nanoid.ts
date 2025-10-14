@@ -1,5 +1,5 @@
-import { customAlphabet } from "npm:nanoid@5.0.9";
-import { customAlphabet as insecureCustomAlphabet } from "npm:nanoid@5.0.9/non-secure";
+import { customAlphabet } from "npm:nanoid@5.1.6";
+import { customAlphabet as insecureCustomAlphabet } from "npm:nanoid@5.1.6/non-secure";
 
 // modified from https://github.com/ai/nanoid/blob/main/url-alphabet/index.js
 // removing - and _ from the set of characters
