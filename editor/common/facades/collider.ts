@@ -27,6 +27,8 @@ export class EditorFacadeCollider extends PixiEntity {
   isSensor: boolean = false;
   shape: ColliderShape = "Rectangle";
   mass: number = 1;
+  restitution: number = 0;
+  friction: number = 1;
 
   static readonly icon = Collider.icon;
   readonly bounds = Bounds.ONE;
@@ -35,16 +37,20 @@ export class EditorFacadeCollider extends PixiEntity {
     super(ctx, false);
     this.defineValue(EditorFacadeCollider, "isSensor", {
       description:
-        "Marks the collider as a sensor, meaning it will detect collisions but not respond physically.",
+        "Determines if the collider is a sensor (detects collisions without affecting physics).",
     });
-
     this.defineValue(EditorFacadeCollider, "shape", {
       type: ColliderShapeAdapter,
-      description: "Defines the shape of the collider. Options include Rectangle and Circle.",
+      description: "Shape of the collider.",
     });
-
     this.defineValue(EditorFacadeCollider, "mass", {
-      description: "Sets the mass of the collider, affecting its physical interactions.",
+      description: "Mass of the collider, used for physics calculations.",
+    });
+    this.defineValue(EditorFacadeCollider, "restitution", {
+      description: "Coefficient of restitution [0-1], used for physics calculations.",
+    });
+    this.defineValue(EditorFacadeCollider, "friction", {
+      description: "Friction coefficient, used for physics calculations.",
     });
 
     if (this.game.isClient()) {
