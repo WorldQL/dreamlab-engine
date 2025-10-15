@@ -8,45 +8,17 @@
       "registration": [],
       "world": [
         {
-          "ref": "ent_pnWCpU3gk4",
-          "type": "@core/Empty",
-          "name": "Gravity",
-          "behaviors": [
-            {
-              "ref": "bhv_RCl1onxPKy",
-              "script": "res://src/gravity.ts",
-              "values": {
-                "gravity": {
-                  "x": 0,
-                  "y": 0
-                }
-              }
-            }
-          ]
-        }
-      ],
-      "local": [
-        {
-          "ref": "ent_5nZLuqEtdL",
-          "type": "@core/Camera",
-          "name": "Camera",
-          "values": {
-            "active": true
-          }
-        },
-        {
           "ref": "ent_lXuXuc7VnR",
           "type": "@core/Collider",
           "name": "Goal",
-          "enabled": false,
           "transform": {
             "position": {
               "x": 0,
-              "y": -4.5
+              "y": -9
             },
             "scale": {
-              "x": 5,
-              "y": 1
+              "x": 8,
+              "y": 2
             }
           },
           "values": {
@@ -69,175 +41,13 @@
           ]
         },
         {
-          "ref": "ent_q2wQU0Am5B",
-          "type": "@core/ColoredSquare",
-          "name": "Background",
-          "transform": {
-            "scale": {
-              "x": 50,
-              "y": 50
-            },
-            "z": -100
-          },
-          "locked": true
-        },
-        {
-          "ref": "ent_eERVfdnnor",
-          "type": "@core/UILayer",
-          "name": "ControlUI",
-          "behaviors": [
-            {
-              "ref": "bhv_WMpc3QOVwp",
-              "script": "res://src/control-ui.tsx",
-              "values": {
-                "joint1": "ent_Y9trdjuZPL",
-                "joint2": "ent_VgufHP9xsp"
-              }
-            }
-          ],
-          "locked": true
-        },
-        {
-          "ref": "ent_quYRgVlkFh",
-          "type": "@core/Empty",
-          "name": "Walls",
-          "enabled": false,
-          "children": [
-            {
-              "ref": "ent_iRkowhc0Sm",
-              "type": "@core/Collider",
-              "name": "Left",
-              "transform": {
-                "position": {
-                  "x": -10,
-                  "y": 0
-                },
-                "scale": {
-                  "x": 10,
-                  "y": 30
-                }
-              },
-              "children": [
-                {
-                  "ref": "ent_I0ubTQBKEq",
-                  "type": "@core/ColoredSquare",
-                  "name": "ColoredSquare",
-                  "values": {
-                    "static": true,
-                    "color": [
-                      0.5411764979362488,
-                      0.5411764979362488,
-                      0.5411764979362488,
-                      1
-                    ]
-                  }
-                }
-              ]
-            },
-            {
-              "ref": "ent_jKnGyOwPCD",
-              "type": "@core/Collider",
-              "name": "Right",
-              "transform": {
-                "position": {
-                  "x": 10,
-                  "y": 0
-                },
-                "scale": {
-                  "x": 10,
-                  "y": 30
-                }
-              },
-              "children": [
-                {
-                  "ref": "ent_11V3ARwHHJ",
-                  "type": "@core/ColoredSquare",
-                  "name": "ColoredSquare",
-                  "values": {
-                    "static": true,
-                    "color": [
-                      0.5411764979362488,
-                      0.5411764979362488,
-                      0.5411764979362488,
-                      1
-                    ]
-                  }
-                }
-              ]
-            },
-            {
-              "ref": "ent_Jl7LviQNtp",
-              "type": "@core/Collider",
-              "name": "Top",
-              "transform": {
-                "position": {
-                  "x": 0,
-                  "y": 10
-                },
-                "scale": {
-                  "x": 10,
-                  "y": 10
-                }
-              },
-              "children": [
-                {
-                  "ref": "ent_aG0lNwzytG",
-                  "type": "@core/ColoredSquare",
-                  "name": "ColoredSquare",
-                  "values": {
-                    "static": true,
-                    "color": [
-                      0.5411764979362488,
-                      0.5411764979362488,
-                      0.5411764979362488,
-                      1
-                    ]
-                  }
-                }
-              ]
-            },
-            {
-              "ref": "ent_aIVhEExi68",
-              "type": "@core/Collider",
-              "name": "Bottom",
-              "transform": {
-                "position": {
-                  "x": 0,
-                  "y": -10
-                },
-                "scale": {
-                  "x": 10,
-                  "y": 10
-                }
-              },
-              "children": [
-                {
-                  "ref": "ent_WTtkVINpQI",
-                  "type": "@core/ColoredSquare",
-                  "name": "ColoredSquare",
-                  "values": {
-                    "static": true,
-                    "color": [
-                      0.5411764979362488,
-                      0.5411764979362488,
-                      0.5411764979362488,
-                      1
-                    ]
-                  }
-                }
-              ]
-            }
-          ],
-          "locked": true
-        },
-        {
           "ref": "ent_B6JeqAElv9",
           "type": "@core/Empty",
           "name": "ArmLeft",
           "transform": {
             "position": {
-              "x": -3.2033506774401808,
-              "y": 1.1973689425383194
+              "x": -4.5,
+              "y": 3
             }
           },
           "children": [
@@ -256,14 +66,6 @@
                 "type": "fixed"
               },
               "children": [
-                {
-                  "ref": "ent_kJV2L54cPC",
-                  "type": "@core/Collider",
-                  "name": "Collider",
-                  "values": {
-                    "shape": "Circle"
-                  }
-                },
                 {
                   "ref": "ent_s9dbgGffGf",
                   "type": "@core/ColoredPolygon",
@@ -293,10 +95,7 @@
                   "script": "res://src/joint.ts",
                   "values": {
                     "body1": "ent_JSyfw0lOil",
-                    "body2": "ent_Y9trdjuZPL",
-                    "angle": -90,
-                    "stiffness": 10000,
-                    "damping": 1000
+                    "body2": "ent_Y9trdjuZPL"
                   }
                 }
               ],
@@ -595,15 +394,590 @@
               ]
             }
           ]
+        },
+        {
+          "ref": "ent_hcZSHcmx02",
+          "type": "@core/Empty",
+          "name": "ArmRight",
+          "transform": {
+            "position": {
+              "x": 4.5,
+              "y": -3
+            }
+          },
+          "children": [
+            {
+              "ref": "ent_77SoPRKExW",
+              "type": "@core/Rigidbody",
+              "name": "Anchor",
+              "transform": {
+                "scale": {
+                  "x": 0.7,
+                  "y": 0.7
+                },
+                "z": 2
+              },
+              "values": {
+                "type": "fixed"
+              },
+              "children": [
+                {
+                  "ref": "ent_RYyvlNiYO9",
+                  "type": "@core/ColoredPolygon",
+                  "name": "ColoredPolygon",
+                  "values": {
+                    "sides": 30,
+                    "color": [
+                      0.14901961386203766,
+                      0.14901961386203766,
+                      0.14901961386203766,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_LeLZCt4H3E",
+              "type": "@core/Rigidbody",
+              "name": "Segment1",
+              "transform": {
+                "rotation": -3.141592653589793,
+                "z": 1
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_ueHdjnqsC5",
+                  "script": "res://src/joint.ts",
+                  "values": {
+                    "body1": "ent_77SoPRKExW",
+                    "body2": "ent_LeLZCt4H3E",
+                    "angle": 180
+                  }
+                }
+              ],
+              "children": [
+                {
+                  "ref": "ent_pe9KI4g3rT",
+                  "type": "@core/Collider",
+                  "name": "Collider",
+                  "transform": {
+                    "scale": {
+                      "x": 0.6,
+                      "y": 0.6
+                    }
+                  },
+                  "values": {
+                    "shape": "Circle",
+                    "mass": 0.1
+                  }
+                },
+                {
+                  "ref": "ent_vKiFaBrtrS",
+                  "type": "@core/Collider",
+                  "name": "Collider.1",
+                  "transform": {
+                    "position": {
+                      "x": 3,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.6,
+                      "y": 0.6
+                    }
+                  },
+                  "values": {
+                    "shape": "Circle",
+                    "mass": 0.1
+                  }
+                },
+                {
+                  "ref": "ent_O136IdUNa8",
+                  "type": "@core/Collider",
+                  "name": "Collider.2",
+                  "transform": {
+                    "position": {
+                      "x": 1.5,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 3,
+                      "y": 0.6
+                    }
+                  },
+                  "values": {
+                    "mass": 0.1
+                  }
+                },
+                {
+                  "ref": "ent_H2awtID4vU",
+                  "type": "@core/ColoredPolygon",
+                  "name": "ColoredPolygon",
+                  "transform": {
+                    "scale": {
+                      "x": 0.6,
+                      "y": 0.6
+                    }
+                  },
+                  "values": {
+                    "sides": 30,
+                    "color": [
+                      0.8509804010391235,
+                      0.8509804010391235,
+                      0.8509804010391235,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_MxnvxHvNpP",
+                  "type": "@core/ColoredPolygon",
+                  "name": "ColoredPolygon.1",
+                  "transform": {
+                    "position": {
+                      "x": 3,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.6,
+                      "y": 0.6
+                    }
+                  },
+                  "values": {
+                    "sides": 30,
+                    "color": [
+                      0.8509804010391235,
+                      0.8509804010391235,
+                      0.8509804010391235,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_O8h60BpDZt",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "transform": {
+                    "position": {
+                      "x": 1.5,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 1,
+                      "y": 0.6
+                    }
+                  },
+                  "values": {
+                    "width": 3,
+                    "color": [
+                      0.8509804010391235,
+                      0.8509804010391235,
+                      0.8509804010391235,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_F2AfThVfbu",
+                  "type": "@core/ColoredPolygon",
+                  "name": "ColoredPolygon.2",
+                  "transform": {
+                    "position": {
+                      "x": 3,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.7,
+                      "y": 0.7
+                    }
+                  },
+                  "values": {
+                    "sides": 30,
+                    "color": [
+                      0.14901961386203766,
+                      0.14901961386203766,
+                      0.14901961386203766,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_WXewCecnKG",
+              "type": "@core/Rigidbody",
+              "name": "Segment2",
+              "transform": {
+                "position": {
+                  "x": -3,
+                  "y": 0
+                },
+                "rotation": -3.141592653589793
+              },
+              "behaviors": [
+                {
+                  "ref": "bhv_ueHdjnqsC5",
+                  "script": "res://src/joint.ts",
+                  "values": {
+                    "body1": "ent_LeLZCt4H3E",
+                    "body2": "ent_WXewCecnKG",
+                    "anchor1": {
+                      "x": 3,
+                      "y": 0
+                    },
+                    "angle": 0
+                  }
+                }
+              ],
+              "children": [
+                {
+                  "ref": "ent_NWO67NrIpm",
+                  "type": "@core/Collider",
+                  "name": "Collider",
+                  "transform": {
+                    "scale": {
+                      "x": 0.6,
+                      "y": 0.6
+                    }
+                  },
+                  "values": {
+                    "shape": "Circle",
+                    "mass": 0.1
+                  }
+                },
+                {
+                  "ref": "ent_cqR67clGUi",
+                  "type": "@core/Collider",
+                  "name": "Collider.1",
+                  "transform": {
+                    "position": {
+                      "x": 3,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.6,
+                      "y": 0.6
+                    }
+                  },
+                  "values": {
+                    "shape": "Circle",
+                    "mass": 0.1
+                  }
+                },
+                {
+                  "ref": "ent_TvvFhwf4NS",
+                  "type": "@core/Collider",
+                  "name": "Collider.2",
+                  "transform": {
+                    "position": {
+                      "x": 1.5,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 3,
+                      "y": 0.6
+                    }
+                  },
+                  "values": {
+                    "mass": 0.1
+                  }
+                },
+                {
+                  "ref": "ent_AFXjFTL9ca",
+                  "type": "@core/ColoredPolygon",
+                  "name": "ColoredPolygon",
+                  "transform": {
+                    "scale": {
+                      "x": 0.6,
+                      "y": 0.6
+                    }
+                  },
+                  "values": {
+                    "sides": 30,
+                    "color": [
+                      0.8509804010391235,
+                      0.8509804010391235,
+                      0.8509804010391235,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_6oRGFEYkma",
+                  "type": "@core/ColoredPolygon",
+                  "name": "ColoredPolygon.1",
+                  "transform": {
+                    "position": {
+                      "x": 3,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 0.6,
+                      "y": 0.6
+                    }
+                  },
+                  "values": {
+                    "sides": 30,
+                    "color": [
+                      0.8509804010391235,
+                      0.8509804010391235,
+                      0.8509804010391235,
+                      1
+                    ]
+                  }
+                },
+                {
+                  "ref": "ent_RCFIfJ8kHS",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "transform": {
+                    "position": {
+                      "x": 1.5,
+                      "y": 0
+                    },
+                    "scale": {
+                      "x": 1,
+                      "y": 0.6
+                    }
+                  },
+                  "values": {
+                    "width": 3,
+                    "color": [
+                      0.8509804010391235,
+                      0.8509804010391235,
+                      0.8509804010391235,
+                      1
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": "ent_pnWCpU3gk4",
+          "type": "@core/Empty",
+          "name": "Gravity",
+          "behaviors": [
+            {
+              "ref": "bhv_RCl1onxPKy",
+              "script": "res://src/gravity.ts",
+              "values": {
+                "gravity": {
+                  "x": 0,
+                  "y": 0
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ref": "ent_quYRgVlkFh",
+          "type": "@core/Empty",
+          "name": "Walls",
+          "behaviors": [
+            {
+              "ref": "bhv_QM8Bstpyz6",
+              "script": "res://src/mark-static.ts"
+            }
+          ],
+          "children": [
+            {
+              "ref": "ent_iRkowhc0Sm",
+              "type": "@core/Collider",
+              "name": "Left",
+              "transform": {
+                "position": {
+                  "x": -20.0085,
+                  "y": 0
+                },
+                "scale": {
+                  "x": 20,
+                  "y": 60
+                }
+              },
+              "children": [
+                {
+                  "ref": "ent_I0ubTQBKEq",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "values": {
+                    "color": [
+                      0.5411764979362488,
+                      0.5411764979362488,
+                      0.5411764979362488,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_jKnGyOwPCD",
+              "type": "@core/Collider",
+              "name": "Right",
+              "transform": {
+                "position": {
+                  "x": 20,
+                  "y": 0
+                },
+                "scale": {
+                  "x": 20,
+                  "y": 60
+                }
+              },
+              "children": [
+                {
+                  "ref": "ent_11V3ARwHHJ",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "values": {
+                    "color": [
+                      0.5411764979362488,
+                      0.5411764979362488,
+                      0.5411764979362488,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_Jl7LviQNtp",
+              "type": "@core/Collider",
+              "name": "Top",
+              "transform": {
+                "position": {
+                  "x": 0,
+                  "y": 20
+                },
+                "scale": {
+                  "x": 20,
+                  "y": 20
+                }
+              },
+              "children": [
+                {
+                  "ref": "ent_aG0lNwzytG",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "values": {
+                    "color": [
+                      0.5411764979362488,
+                      0.5411764979362488,
+                      0.5411764979362488,
+                      1
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "ent_aIVhEExi68",
+              "type": "@core/Collider",
+              "name": "Bottom",
+              "transform": {
+                "position": {
+                  "x": 0,
+                  "y": -20
+                },
+                "scale": {
+                  "x": 20,
+                  "y": 20
+                }
+              },
+              "children": [
+                {
+                  "ref": "ent_WTtkVINpQI",
+                  "type": "@core/ColoredSquare",
+                  "name": "ColoredSquare",
+                  "values": {
+                    "color": [
+                      0.5411764979362488,
+                      0.5411764979362488,
+                      0.5411764979362488,
+                      1
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "locked": true
         }
       ],
-      "server": [],
+      "local": [
+        {
+          "ref": "ent_5nZLuqEtdL",
+          "type": "@core/Camera",
+          "name": "Camera",
+          "values": {
+            "active": true,
+            "zoom": 0.5
+          }
+        },
+        {
+          "ref": "ent_q2wQU0Am5B",
+          "type": "@core/ColoredSquare",
+          "name": "Background",
+          "transform": {
+            "scale": {
+              "x": 50,
+              "y": 50
+            },
+            "z": -100
+          },
+          "locked": true
+        },
+        {
+          "ref": "ent_eERVfdnnor",
+          "type": "@core/UILayer",
+          "name": "ControlUI",
+          "behaviors": [
+            {
+              "ref": "bhv_WMpc3QOVwp",
+              "script": "res://src/control-ui.tsx",
+              "values": {
+                "joint1": "ent_Y9trdjuZPL",
+                "joint2": "ent_VgufHP9xsp",
+                "joint1l": "ent_Y9trdjuZPL",
+                "joint2l": "ent_VgufHP9xsp",
+                "joint1r": "ent_LeLZCt4H3E",
+                "joint2r": "ent_WXewCecnKG"
+              }
+            }
+          ],
+          "locked": true
+        }
+      ],
+      "server": [
+        {
+          "ref": "ent_rEfKrDVUG8",
+          "type": "@core/Empty",
+          "name": "GameLogic",
+          "transform": {
+            "position": {
+              "x": 2.584978942242491,
+              "y": -1.0517693885132768
+            }
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_13HrQZANPk",
+              "script": "res://src/game-logic.ts",
+              "values": {
+                "ball": "ent_bKZaZryOWL",
+                "goal": "ent_lXuXuc7VnR"
+              }
+            }
+          ]
+        }
+      ],
       "prefabs": [
         {
           "ref": "ent_bKZaZryOWL",
           "type": "@core/Rigidbody",
           "name": "Ball",
-          "enabled": false,
           "behaviors": [
             {
               "ref": "bhv_RfzDghg5di",
