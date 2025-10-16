@@ -48,7 +48,6 @@ Then open http://localhost:5173/ and you'll see the editor!
 
 ## **Need Help?**  
 If you need any help, feel free to: 
-- Post on the forum: https://forum.dreamlab.gg/
 - Open a **[GitHub issue](https://github.com/WorldQL/dreamlab-engine/issues)**  
 - Join our **[Discord community](https://discord.gg/nwXFvtJ92g)** and ask questions in the help channel!
 
