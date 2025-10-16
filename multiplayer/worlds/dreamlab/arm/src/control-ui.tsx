@@ -56,7 +56,7 @@ export default class ControlUI extends UIBehavior {
     const angle2r = this.#joint2r.angle;
 
     return (
-      <div style={{ background: "rgb(0 0 0 / 25%)" }}>
+      <div style={{ background: "rgb(0 0 0 / 25%)", width: "fit-content" }}>
         <div>
           <h1>Left</h1>
 
@@ -68,8 +68,10 @@ export default class ControlUI extends UIBehavior {
               max="360"
               step="1"
               value={angle1l.toString()}
-              onChange={ev => {
-                this.#joint1l.angle = (ev.target as HTMLInputElement)!.valueAsNumber;
+              onInput={ev => {
+                const angle = Number.parseInt((ev.target as HTMLInputElement)!.value, 10);
+                if (Number.isNaN(angle)) return;
+                this.#joint1l.angle = angle;
               }}
             />
           </div>
@@ -81,8 +83,10 @@ export default class ControlUI extends UIBehavior {
               max="360"
               step="1"
               value={angle2l.toString()}
-              onChange={ev => {
-                this.#joint2l.angle = (ev.target as HTMLInputElement)!.valueAsNumber;
+              onInput={ev => {
+                const angle = Number.parseInt((ev.target as HTMLInputElement)!.value, 10);
+                if (Number.isNaN(angle)) return;
+                this.#joint2l.angle = angle;
               }}
             />
           </div>
@@ -99,8 +103,10 @@ export default class ControlUI extends UIBehavior {
               max="360"
               step="1"
               value={angle1r.toString()}
-              onChange={ev => {
-                this.#joint1r.angle = (ev.target as HTMLInputElement)!.valueAsNumber;
+              onInput={ev => {
+                const angle = Number.parseInt((ev.target as HTMLInputElement)!.value, 10);
+                if (Number.isNaN(angle)) return;
+                this.#joint1r.angle = angle;
               }}
             />
           </div>
@@ -112,8 +118,10 @@ export default class ControlUI extends UIBehavior {
               max="360"
               step="1"
               value={angle2r.toString()}
-              onChange={ev => {
-                this.#joint2r.angle = (ev.target as HTMLInputElement)!.valueAsNumber;
+              onInput={ev => {
+                const angle = Number.parseInt((ev.target as HTMLInputElement)!.value, 10);
+                if (Number.isNaN(angle)) return;
+                this.#joint2r.angle = angle;
               }}
             />
           </div>
