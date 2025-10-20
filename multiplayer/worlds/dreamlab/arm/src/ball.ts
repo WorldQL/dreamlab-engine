@@ -11,7 +11,7 @@ export default class Ball extends Behavior {
 
   #lastHandle: number | undefined;
   #setDamping(): void {
-    if (!this.hasAuthority()) return;
+    if (!this.hasAuthority(true)) return;
 
     const body = this.#rigidbody.body;
     this.#lastHandle = body.handle;
