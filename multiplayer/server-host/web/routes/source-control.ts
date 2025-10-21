@@ -1063,6 +1063,18 @@ export const serveSourceControlAPI = (router: Router) => {
 
     const sourceRoot = instance.info.worldDirectory;
 
+    const limitParam = ctx.request.url.searchParams.get("limit");
+    const offsetParam = ctx.request.url.searchParams.get("offset");
+    const limit = limitParam ? parseInt(limitParam, 10) : undefined;
+    const offset = offsetParam ? parseInt(offsetParam, 10) : 0;
+
+    if (limit !== undefined && (isNaN(limit) || limit <= 0)) {
+      throw new JsonAPIError(Status.BadRequest, "Invalid limit parameter");
+    }
+    if (isNaN(offset) || offset < 0) {
+      throw new JsonAPIError(Status.BadRequest, "Invalid offset parameter");
+    }
+
     async function runGitCommand(args: string[]): Promise<string[]> {
       const proc = new Deno.Command("git", {
         args,
@@ -1084,6 +1096,7 @@ export const serveSourceControlAPI = (router: Router) => {
 
     try {
       await runGitCommand(["fetch", "--all"]);
+
       const logArgs = [
         "log",
         "--all",
@@ -1092,6 +1105,14 @@ export const serveSourceControlAPI = (router: Router) => {
         "--abbrev-commit",
         "--topo-order",
       ];
+
+      if (offset > 0) {
+        logArgs.push(`--skip=${offset}`);
+      }
+      if (limit !== undefined) {
+        logArgs.push(`--max-count=${limit}`);
+      }
+
       const logOutput = await runGitCommand(logArgs);
 
       const commits = logOutput.map(line => {
@@ -1114,6 +1135,9 @@ export const serveSourceControlAPI = (router: Router) => {
         };
       });
 
+      const countOutput = await runGitCommand(["rev-list", "--all", "--count"]);
+      const totalCommits = parseInt(countOutput[0], 10);
+
       const stashOutput = await runGitCommand(["stash", "list"]);
       const stashCommits = stashOutput.map(line => {
         const parts = line.split(": ");
@@ -1135,7 +1159,16 @@ export const serveSourceControlAPI = (router: Router) => {
       const currentBranchResult = await runGitCommand(["rev-parse", "--abbrev-ref", "HEAD"]);
       const currentBranch = currentBranchResult[0] || "unknown";
 
-      ctx.response.body = { commits: allCommits, currentBranch };
+      ctx.response.body = {
+        commits: allCommits,
+        currentBranch,
+        pagination: {
+          total: totalCommits + stashCommits.length,
+          limit: limit || totalCommits + stashCommits.length,
+          offset: offset,
+          hasMore: limit !== undefined && offset + limit < totalCommits + stashCommits.length,
+        },
+      };
     } catch (err) {
       throw new JsonAPIError(Status.InternalServerError, err.message);
     }
