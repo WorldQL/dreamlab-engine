@@ -46,7 +46,22 @@ export class Rigidbody extends Entity {
     this.#initializeBody();
 
     const typeValue = this.values.get("type");
-    typeValue?.onChanged(() => this.#initializeBody());
+    typeValue?.onChanged(() => {
+      if (!this.#body) {
+        this.#initializeBody();
+        return;
+      }
+
+      const type = this.#body.bodyType();
+      const bodyType: RigidBodyType | undefined =
+        type === 0 ? "dynamic" : type === 1 ? "fixed" : undefined;
+
+      if (!bodyType) throw new Error("unsupported rigid body type");
+      if (this.type !== bodyType) {
+        this.#initializeBody();
+        return;
+      }
+    });
 
     this.on(EntityDestroyed, () => {
       if (this.#body) {
