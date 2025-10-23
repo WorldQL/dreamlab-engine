@@ -948,6 +948,22 @@
               }
             }
           ]
+        },
+        {
+          "ref": "ent_4ObDScYXtW",
+          "type": "@core/Empty",
+          "name": "Report",
+          "behaviors": [
+            {
+              "ref": "bhv_EclD07rmbd",
+              "script": "res://src/report.ts",
+              "values": {
+                "leftArm": "ent_B6JeqAElv9",
+                "rightArm": "ent_hcZSHcmx02",
+                "gameLogic": "ent_rEfKrDVUG8"
+              }
+            }
+          ]
         }
       ],
       "local": [
@@ -990,35 +1006,42 @@
               "ref": "bhv_WMpc3QOVwp",
               "script": "res://src/control-ui.tsx",
               "values": {
-                "joint1": "ent_Y9trdjuZPL",
-                "joint2": "ent_VgufHP9xsp",
-                "joint1l": "ent_Y9trdjuZPL",
-                "joint2l": "ent_VgufHP9xsp",
-                "joint1r": "ent_LeLZCt4H3E",
-                "joint2r": "ent_WXewCecnKG"
+                "segment1l": "ent_Y9trdjuZPL",
+                "segment2l": "ent_VgufHP9xsp",
+                "segment1r": "ent_LeLZCt4H3E",
+                "segment2r": "ent_WXewCecnKG"
               }
             }
           ],
           "locked": true
-        },
+        }
+      ],
+      "server": [
         {
-          "ref": "ent_4ObDScYXtW",
+          "ref": "ent_ISYDVmnUW6",
           "type": "@core/Empty",
-          "name": "Report",
+          "name": "ControlApi",
+          "transform": {
+            "position": {
+              "x": 0.04845243287249978,
+              "y": -0.35946734695308075
+            }
+          },
           "behaviors": [
             {
-              "ref": "bhv_EclD07rmbd",
-              "script": "res://src/report.ts",
+              "ref": "bhv_HhmbHpIYaW",
+              "script": "res://src/control-api.ts",
               "values": {
-                "leftArm": "ent_B6JeqAElv9",
-                "rightArm": "ent_hcZSHcmx02",
-                "gameLogic": "ent_rEfKrDVUG8"
+                "report": "ent_4ObDScYXtW",
+                "segment1l": "ent_Y9trdjuZPL",
+                "segment2l": "ent_VgufHP9xsp",
+                "segment1r": "ent_LeLZCt4H3E",
+                "segment2r": "ent_WXewCecnKG"
               }
             }
           ]
         }
       ],
-      "server": [],
       "prefabs": [
         {
           "ref": "ent_bKZaZryOWL",

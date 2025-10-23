@@ -4,36 +4,36 @@ import Joint from "./joint.ts";
 
 export default class ControlUI extends UIBehavior {
   @value({ type: EntityRef })
-  joint1l: Entity | undefined;
+  segment1l: Entity | undefined;
   get #joint1l(): Joint {
-    const joint = this.joint1l?.getBehaviorIfExists(Joint);
+    const joint = this.segment1l?.getBehaviorIfExists(Joint);
     if (!joint) throw new Error("missing left joint 1");
 
     return joint;
   }
 
   @value({ type: EntityRef })
-  joint2l: Entity | undefined;
+  segment2l: Entity | undefined;
   get #joint2l(): Joint {
-    const joint = this.joint2l?.getBehaviorIfExists(Joint);
+    const joint = this.segment2l?.getBehaviorIfExists(Joint);
     if (!joint) throw new Error("missing left joint 2");
 
     return joint;
   }
 
   @value({ type: EntityRef })
-  joint1r: Entity | undefined;
+  segment1r: Entity | undefined;
   get #joint1r(): Joint {
-    const joint = this.joint1r?.getBehaviorIfExists(Joint);
+    const joint = this.segment1r?.getBehaviorIfExists(Joint);
     if (!joint) throw new Error("missing right joint 1");
 
     return joint;
   }
 
   @value({ type: EntityRef })
-  joint2r: Entity | undefined;
+  segment2r: Entity | undefined;
   get #joint2r(): Joint {
-    const joint = this.joint2r?.getBehaviorIfExists(Joint);
+    const joint = this.segment2r?.getBehaviorIfExists(Joint);
     if (!joint) throw new Error("missing right joint 2");
 
     return joint;
@@ -43,10 +43,10 @@ export default class ControlUI extends UIBehavior {
     super.onInitialize();
 
     const onChanged = () => this.rerender();
-    this.joint1l?.values.get("angle")?.onChanged(onChanged);
-    this.joint2l?.values.get("angle")?.onChanged(onChanged);
-    this.joint1r?.values.get("angle")?.onChanged(onChanged);
-    this.joint2r?.values.get("angle")?.onChanged(onChanged);
+    this.#joint1l?.values.get("angle")?.onChanged(onChanged);
+    this.#joint2l?.values.get("angle")?.onChanged(onChanged);
+    this.#joint1r?.values.get("angle")?.onChanged(onChanged);
+    this.#joint2r?.values.get("angle")?.onChanged(onChanged);
   }
 
   protected render(): BaseElement {
