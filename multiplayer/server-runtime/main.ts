@@ -16,6 +16,7 @@ import { rewriteStackTraces } from "./stack.ts";
 import { ProjectSchema, getSceneFromProject, loadSceneDefinition } from "@dreamlab/scene";
 import { z } from "@dreamlab/vendor/zod.ts";
 import { handleEditMode } from "./edit-mode.ts";
+import { handleHttpAPI } from "./http-api.ts";
 import { KvServerStub } from "./kv-server-stub.ts";
 
 addEventListener("unhandledrejection", event => {
@@ -74,6 +75,8 @@ game.paused.onChanged(paused => {
 });
 
 await game.initialize();
+
+await handleHttpAPI(ipc, game);
 
 const BehaviorSchema = z.record(
   z.object({ uri: z.string(), name: z.string().optional(), hash: z.string().optional() }),

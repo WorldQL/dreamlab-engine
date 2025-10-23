@@ -8,6 +8,7 @@ export * from "./behavior/mod.ts";
 export * from "./entity/mod.ts";
 export * from "./game.ts";
 
+export * from "./http-api.ts";
 export * from "./input/mod.ts";
 export * from "./kv/mod.ts";
 export * from "./network.ts";

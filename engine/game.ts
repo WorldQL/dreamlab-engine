@@ -33,6 +33,7 @@ import {
   LocalRoot,
   PhysicsEngine,
   PrefabsRoot,
+  ServerHttpAPI,
   ServerRoot,
   Time,
   UIManager,
@@ -330,12 +331,16 @@ export class ServerGame extends BaseGame {
 
   readonly kv: ServerKV;
 
+  readonly httpAPI: ServerHttpAPI;
+
   constructor(opts: ServerGameOptions) {
     super(opts);
     this.network = opts.network;
 
     const kv = typeof opts.kv === "function" ? opts.kv(this) : opts.kv;
     this.kv = kv;
+
+    this.httpAPI = new ServerHttpAPI();
   }
 
   override shutdown(): void {

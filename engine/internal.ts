@@ -82,6 +82,7 @@ export const preloadInfo = Symbol.for("dreamlab.internal.preloadInfo");
 export const emitCharacterControllerCollisions = Symbol.for(
   "dreamlab.internal.emitCharacterControllerCollisions",
 );
+export const httpAPIHandle = Symbol.for("dreamlab.internal.httpAPIHandle");
 
 export { TilemapChunk } from "./entity/entities/tilemap-chunk.ts";
 export { preload } from "./preload.ts";

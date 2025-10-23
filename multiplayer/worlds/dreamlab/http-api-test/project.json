@@ -1,0 +1,27 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "engine_revision": "2024-08.001"
+  },
+  "scenes": {
+    "main": {
+      "registration": [],
+      "world": [
+        {
+          "ref": "ent_PjDFiW1Vim",
+          "type": "@core/Empty",
+          "name": "Empty",
+          "behaviors": [
+            {
+              "ref": "bhv_v33bEexnAj",
+              "script": "res://src/hello-world.ts"
+            }
+          ]
+        }
+      ],
+      "local": [],
+      "server": [],
+      "prefabs": []
+    }
+  }
+}

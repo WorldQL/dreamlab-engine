@@ -1,8 +1,8 @@
 import { ConnectionId } from "@dreamlab/engine";
 import { ClientPacket, ServerPacket } from "@dreamlab/proto/play.ts";
 import { Scene, SceneDescEntity } from "@dreamlab/scene";
-import type { RichGameStatus } from "./rich-status.ts";
 import type { WorkerMetrics } from "../server-host/metrics.ts";
+import type { RichGameStatus } from "./rich-status.ts";
 
 interface ConnectionEstablishedMessage {
   op: "ConnectionEstablished";
@@ -46,6 +46,25 @@ interface MetricsRequestMessage {
   id: string;
 }
 
+interface HttpAPICallMessage {
+  op: "HttpAPICall";
+  callId: string;
+  route: string;
+  params: unknown[];
+}
+
+interface HttpAPIResponseMessage {
+  op: "HttpAPIResponse";
+  callId: string;
+  result: unknown;
+}
+
+interface HttpAPIErrorMessage {
+  op: "HttpAPIError";
+  callId: string;
+  error: unknown; // TODO: invalid params / route not found / exception in user code
+}
+
 export type HostIPCMessage =
   | ConnectionEstablishedMessage
   | ConnectionDroppedMessage
@@ -54,7 +73,8 @@ export type HostIPCMessage =
   | ReloadEditSceneMessage
   | PlaySessionStateMessage
   | ImportEditPrefab
-  | MetricsRequestMessage;
+  | MetricsRequestMessage
+  | HttpAPICallMessage;
 
 interface WorkerUpMessage {
   op: "WorkerUp";
@@ -103,4 +123,6 @@ export type WorkerIPCMessage =
   | SceneDefinitionResponseMessage
   | PauseChangedMessage
   | GameLoadedMessage
-  | MetricsResponseMessage;
+  | MetricsResponseMessage
+  | HttpAPIResponseMessage
+  | HttpAPIErrorMessage;

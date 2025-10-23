@@ -5,6 +5,7 @@ import { generate as generateUUIDv5 } from "@std/uuid/v5";
 
 import { SceneSchema } from "@dreamlab/scene";
 import { JsonAPIError, typedJsonHandler } from "../../../common-host/web-util/api.ts";
+import type { WorkerIPCMessage } from "../../../server-common/ipc.ts";
 import { CONFIG } from "../../config.ts";
 import { deleteRoomsForInstance } from "../../instance-collector.ts";
 import { createInstance, dumpSceneDefinition, GameInstance } from "../../instance.ts";
@@ -272,6 +273,68 @@ export const serveInstanceManagementAPI = (router: Router) => {
         });
 
         return { success: true };
+      },
+    ),
+  );
+
+  router.post(
+    "/api/v1/instance/:instance/call",
+    typedJsonHandler(
+      {
+        params: z.object({ instance: RunningInstanceByIdSchema }),
+        body: z.object({ identifier: z.string(), params: z.array(z.unknown()) }),
+        response: z.union([
+          z.object({ result: z.unknown() }),
+          z.object({ error: z.unknown() }),
+        ]),
+      },
+      async (_ctx, { params: { instance }, body }) => {
+        const session = instance.playSession ?? instance.session;
+        if (!session) throw new Error("The given instance is not currently running a session.");
+
+        const callId = crypto.randomUUID();
+
+        let cleanedUp = false;
+        const cleanup = () => {
+          if (cleanedUp) return;
+          // @ts-expect-error funny polymorphic listener
+          session.ipc.removeMessageListener(responseListener);
+          cleanedUp = true;
+        };
+        const responsePromise = Promise.withResolvers<unknown>();
+        const responseListener = (
+          message: WorkerIPCMessage & { op: "HttpAPIResponse" | "HttpAPIError" },
+        ) => {
+          if (message.callId !== callId) return;
+          switch (message.op) {
+            case "HttpAPIResponse": {
+              responsePromise.resolve(message.result);
+              cleanup();
+              break;
+            }
+            case "HttpAPIError": {
+              responsePromise.reject(message.error);
+              cleanup();
+              break;
+            }
+          }
+        };
+        session.ipc.addMessageListener("HttpAPIResponse", responseListener);
+        session.ipc.addMessageListener("HttpAPIError", responseListener);
+        session.ipc.send({
+          op: "HttpAPICall",
+          callId,
+          route: body.identifier,
+          params: body.params,
+        });
+
+        try {
+          const sleep = new Promise<void>((_, rej) => setTimeout(() => rej("timed out"), 5000));
+          const res = await Promise.race([responsePromise.promise, sleep]);
+          return { result: res };
+        } catch (err) {
+          return { error: err };
+        }
       },
     ),
   );
