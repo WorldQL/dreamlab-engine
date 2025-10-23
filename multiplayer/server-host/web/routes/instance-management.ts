@@ -283,9 +283,9 @@ export const serveInstanceManagementAPI = (router: Router) => {
       {
         params: z.object({ instance: RunningInstanceByIdSchema }),
         body: z.object({ identifier: z.string(), params: z.array(z.unknown()) }),
-        response: z.union([
-          z.object({ result: z.unknown() }),
-          z.object({ error: z.unknown() }),
+        response: z.discriminatedUnion("status", [
+          z.object({ status: z.literal("ok"), result: z.unknown() }),
+          z.object({ status: z.literal("error"), error: z.unknown() }),
         ]),
       },
       async (_ctx, { params: { instance }, body }) => {
@@ -331,9 +331,9 @@ export const serveInstanceManagementAPI = (router: Router) => {
         try {
           const sleep = new Promise<void>((_, rej) => setTimeout(() => rej("timed out"), 5000));
           const res = await Promise.race([responsePromise.promise, sleep]);
-          return { result: res };
+          return { status: "ok", result: res } as const;
         } catch (err) {
-          return { error: err };
+          return { status: "error", error: err } as const;
         }
       },
     ),
