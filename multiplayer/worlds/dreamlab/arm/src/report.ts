@@ -44,7 +44,7 @@ export default class Report extends Behavior {
       report += `Ball:\n\t- Position: ${pos}\n\t- Reached goal: ${gameLogic.reachedGoal}\n`;
     }
 
-    return report;
+    return report.replaceAll("\t", "  ");
   }
 
   #armReport(arm: Entity, label: string): string {
