@@ -1209,6 +1209,238 @@ export const serveSourceControlAPI = (router: Router) => {
   });
   // #endregion
 
+  // #region detailed diff
+  router.get("/api/v1/source-control/:instance_id/detailed-diff", async ctx => {
+    const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
+    const instance = GameInstance.INSTANCES.get(instanceId);
+    if (!instance) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+    if (!instance.info.editMode) {
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+    const sourceRoot = instance.info.worldDirectory;
+    const filePath = ctx.request.url.searchParams.get("file");
+
+    if (!filePath) {
+      throw new JsonAPIError(Status.BadRequest, "File path is required.");
+    }
+
+    try {
+      const stagedDiffProcess = new Deno.Command("git", {
+        args: ["diff", "--cached", "--", filePath],
+        cwd: sourceRoot,
+        stdout: "piped",
+        stderr: "piped",
+      });
+      const stagedOutput = await stagedDiffProcess.output();
+      const stagedDiff = new TextDecoder().decode(stagedOutput.stdout);
+
+      const unstagedDiffProcess = new Deno.Command("git", {
+        args: ["diff", "--", filePath],
+        cwd: sourceRoot,
+        stdout: "piped",
+        stderr: "piped",
+      });
+      const unstagedOutput = await unstagedDiffProcess.output();
+      const unstagedDiff = new TextDecoder().decode(unstagedOutput.stdout);
+
+      ctx.response.body = {
+        file: filePath,
+        stagedDiff,
+        unstagedDiff,
+      };
+    } catch (err) {
+      throw new JsonAPIError(
+        Status.InternalServerError,
+        `Failed to fetch diff: ${err.message}`,
+      );
+    }
+  });
+  // #endregion
+
+  // #region stage patch
+  router.post("/api/v1/source-control/:instance_id/stage-patch", async ctx => {
+    const BodySchema = z.object({
+      file: z.string(),
+      patch: z.string(),
+    });
+
+    let body;
+    try {
+      body = BodySchema.parse(await ctx.request.body.json());
+    } catch (err) {
+      ctx.response.status = Status.BadRequest;
+      ctx.response.body = { error: err.toString() };
+      return;
+    }
+
+    const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
+    const instance = GameInstance.INSTANCES.get(instanceId);
+    if (!instance) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+    if (!instance.info.editMode) {
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+    const sourceRoot = instance.info.worldDirectory;
+
+    try {
+      const applyProcess = new Deno.Command("git", {
+        args: ["apply", "--cached", "--unidiff-zero", "-"],
+        cwd: sourceRoot,
+        stdin: "piped",
+        stdout: "piped",
+        stderr: "piped",
+      });
+
+      const process = applyProcess.spawn();
+      const writer = process.stdin.getWriter();
+      await writer.write(new TextEncoder().encode(body.patch));
+      await writer.close();
+
+      const { code, stderr } = await process.output();
+      if (code !== 0) {
+        const errorMsg = new TextDecoder().decode(stderr);
+        throw new Error(`Failed to apply patch: ${errorMsg}`);
+      }
+
+      ctx.response.body = {
+        success: true,
+        message: `Staged partial changes for ${body.file}`,
+      };
+    } catch (error) {
+      throw new JsonAPIError(Status.InternalServerError, error.message);
+    }
+  });
+  // #endregion
+
+  // #region unstage patch
+  router.post("/api/v1/source-control/:instance_id/unstage-patch", async ctx => {
+    const BodySchema = z.object({
+      file: z.string(),
+      patch: z.string(),
+    });
+
+    let body;
+    try {
+      body = BodySchema.parse(await ctx.request.body.json());
+    } catch (err) {
+      ctx.response.status = Status.BadRequest;
+      ctx.response.body = { error: err.toString() };
+      return;
+    }
+
+    const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
+    const instance = GameInstance.INSTANCES.get(instanceId);
+    if (!instance) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+    if (!instance.info.editMode) {
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+    const sourceRoot = instance.info.worldDirectory;
+
+    try {
+      const applyProcess = new Deno.Command("git", {
+        args: ["apply", "--cached", "--reverse", "--unidiff-zero", "-"],
+        cwd: sourceRoot,
+        stdin: "piped",
+        stdout: "piped",
+        stderr: "piped",
+      });
+
+      const process = applyProcess.spawn();
+      const writer = process.stdin.getWriter();
+      await writer.write(new TextEncoder().encode(body.patch));
+      await writer.close();
+
+      const { code, stderr } = await process.output();
+      if (code !== 0) {
+        const errorMsg = new TextDecoder().decode(stderr);
+        throw new Error(`Failed to unstage patch: ${errorMsg}`);
+      }
+
+      ctx.response.body = {
+        success: true,
+        message: `Unstaged partial changes for ${body.file}`,
+      };
+    } catch (error) {
+      throw new JsonAPIError(Status.InternalServerError, error.message);
+    }
+  });
+  // #endregion
+
+  // #region discard patch
+  router.post("/api/v1/source-control/:instance_id/discard-patch", async ctx => {
+    const BodySchema = z.object({
+      file: z.string(),
+      patch: z.string(),
+    });
+
+    let body;
+    try {
+      body = BodySchema.parse(await ctx.request.body.json());
+    } catch (err) {
+      ctx.response.status = Status.BadRequest;
+      ctx.response.body = { error: err.toString() };
+      return;
+    }
+
+    const instanceId = ctx.params.instance_id;
+    if (!instanceId) {
+      throw new JsonAPIError(Status.BadRequest, "Instance ID is required.");
+    }
+    const instance = GameInstance.INSTANCES.get(instanceId);
+    if (!instance) {
+      throw new JsonAPIError(Status.NotFound, "Instance not found.");
+    }
+    if (!instance.info.editMode) {
+      throw new JsonAPIError(Status.Forbidden, "Not in edit mode.");
+    }
+    const sourceRoot = instance.info.worldDirectory;
+
+    try {
+      const applyProcess = new Deno.Command("git", {
+        args: ["apply", "--reverse", "--unidiff-zero", "-"],
+        cwd: sourceRoot,
+        stdin: "piped",
+        stdout: "piped",
+        stderr: "piped",
+      });
+
+      const process = applyProcess.spawn();
+      const writer = process.stdin.getWriter();
+      await writer.write(new TextEncoder().encode(body.patch));
+      await writer.close();
+
+      const { code, stderr } = await process.output();
+      if (code !== 0) {
+        const errorMsg = new TextDecoder().decode(stderr);
+        throw new Error(`Failed to discard patch: ${errorMsg}`);
+      }
+
+      await broadcastWorldUpdate(instance, body.file);
+
+      ctx.response.body = {
+        success: true,
+        message: `Discarded partial changes for ${body.file}`,
+      };
+    } catch (error) {
+      throw new JsonAPIError(Status.InternalServerError, error.message);
+    }
+  });
+  // #endregion
+
   // #region diff
   router.get("/api/v1/source-control/:instance_id/diff", async ctx => {
     const instanceId = ctx.params.instance_id;
