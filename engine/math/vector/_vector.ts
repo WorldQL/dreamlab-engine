@@ -46,6 +46,10 @@ export interface Vector<I, T extends I> {
   max(this: T, other: I): T;
   min(this: T, other: I): T;
 
+  round(this: T): T;
+  floor(this: T): T;
+  ceil(this: T): T;
+
   rotate(this: T, angle: number): T;
   rotateAbout(this: T, angle: number, point: I): T;
 

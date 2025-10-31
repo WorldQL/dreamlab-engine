@@ -331,7 +331,7 @@ export class Vector2 implements IVector2, Vector<IVector2, Vector2> {
   }
   // #endregion
 
-  // #region distance
+  // #region Distance
   public static distance(a: IVector2, b: IVector2): number {
     const dx = a.x - b.x;
     const dy = a.y - b.y;
@@ -346,7 +346,7 @@ export class Vector2 implements IVector2, Vector<IVector2, Vector2> {
   }
   // #endregion
 
-  // #region distanceSquared
+  // #region Distance Squared
   public static distanceSquared(a: IVector2, b: IVector2): number {
     const dx = a.x - b.x;
     const dy = a.y - b.y;
@@ -380,6 +380,36 @@ export class Vector2 implements IVector2, Vector<IVector2, Vector2> {
 
   public min(this: Vector2, other: IVector2): Vector2 {
     return Vector2.min(this, other);
+  }
+  // #endregion
+
+  // #region Round
+  public static round(vector: Vector2): Vector2 {
+    return new Vector2(Math.round(vector.x), Math.round(vector.y));
+  }
+
+  public round(this: Vector2): Vector2 {
+    return Vector2.round(this);
+  }
+  // #endregion
+
+  // #region Floor
+  public static floor(vector: Vector2): Vector2 {
+    return new Vector2(Math.floor(vector.x), Math.floor(vector.y));
+  }
+
+  public floor(this: Vector2): Vector2 {
+    return Vector2.floor(this);
+  }
+  // #endregion
+
+  // #region Ceil
+  public static ceil(vector: Vector2): Vector2 {
+    return new Vector2(Math.ceil(vector.x), Math.ceil(vector.y));
+  }
+
+  public ceil(this: Vector2): Vector2 {
+    return Vector2.ceil(this);
   }
   // #endregion
 
