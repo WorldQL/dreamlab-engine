@@ -1,0 +1,57 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "engine_revision": "2024-08.001"
+  },
+  "scenes": {
+    "main": {
+      "registration": [],
+      "world": [
+        {
+          "ref": "ent_diIkTR4dUm",
+          "type": "@core/Tilemap",
+          "name": "Tilemap",
+          "behaviors": [
+            {
+              "ref": "bhv_EUIXO8FWFQ",
+              "script": "res://src/tilemap.ts"
+            }
+          ]
+        }
+      ],
+      "local": [
+        {
+          "ref": "ent_TprIQECK7K",
+          "type": "@core/Camera",
+          "name": "Camera",
+          "values": {
+            "active": true
+          }
+        },
+        {
+          "ref": "ent_lXTrYV2qST",
+          "type": "@core/Empty",
+          "name": "Player",
+          "behaviors": [
+            {
+              "ref": "bhv_ReTzZwgE2e",
+              "script": "res://src/player-movement.ts",
+              "values": {
+                "tilemap": "ent_diIkTR4dUm"
+              }
+            }
+          ],
+          "children": [
+            {
+              "ref": "ent_ZcovmqLQCE",
+              "type": "@core/ColoredSquare",
+              "name": "ColoredSquare"
+            }
+          ]
+        }
+      ],
+      "server": [],
+      "prefabs": []
+    }
+  }
+}
