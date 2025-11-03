@@ -1,4 +1,4 @@
-import { ClientGame, IVector2, Vector2 } from "@dreamlab/engine";
+import { ClientGame, EntityDestroyed, IVector2, Vector2 } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import "npm:vanilla-colorful/hex-color-picker.js";
@@ -170,6 +170,11 @@ export class TileMapViewer {
         atlasVal.onChanged(onAtlasChanged);
         this.#listeners.push(() => atlasVal.removeChangeListener(onAtlasChanged));
       }
+
+      const onEntityDestroyed = tilemap.on(EntityDestroyed, () => {
+        ui.selectedEntity.entities = [];
+      });
+      this.#listeners.push(() => onEntityDestroyed.unsubscribe());
     });
 
     app.canvas.addEventListener(
