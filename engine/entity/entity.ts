@@ -1187,7 +1187,7 @@ export abstract class Entity implements ISignalHandler {
 
     for (const k of ["transform", "globalTransform"] as const) {
       const value = this[k];
-      Reflect.defineProperty(this, "transform", { value, writable: false });
+      Reflect.defineProperty(this, k, { value, writable: false });
     }
   }
 
