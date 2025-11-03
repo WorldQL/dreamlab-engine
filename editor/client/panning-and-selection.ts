@@ -455,20 +455,49 @@ export class CameraPanBehavior extends Behavior {
       }
     };
 
-    // useful for empties which have no bounds.
-    const shouldSelectParent =
-      selectedEntities.length > 0 &&
-      selectedEntities[0].parent &&
-      selectedEntities.length ===
-        Array.from(selectedEntities[0].parent?.children.values() ?? []).filter(
-          e => !(e instanceof EditorMetadataEntity),
-        ).length &&
-      selectedEntities.every(e => e.parent === selectedEntities[0].parent) &&
-      isEntityInBounds(selectedEntities[0].parent!);
+    let processedEntities = [...selectedEntities];
+    let changed = true;
 
-    if (shouldSelectParent) {
-      selectedEntities = [selectedEntities[0].parent!];
+    while (changed) {
+      changed = false;
+      const parentGroups = new Map<Entity, Entity[]>();
+
+      for (const entity of processedEntities) {
+        if (entity.parent) {
+          if (!parentGroups.has(entity.parent)) {
+            parentGroups.set(entity.parent, []);
+          }
+          parentGroups.get(entity.parent)!.push(entity);
+        }
+      }
+
+      const toRemove = new Set<Entity>();
+      const toAdd: Entity[] = [];
+
+      for (const [parent, children] of parentGroups) {
+        const allParentChildren = Array.from(parent.children.values()).filter(
+          e => !(e instanceof EditorMetadataEntity),
+        );
+
+        if (
+          children.length === allParentChildren.length &&
+          (parent instanceof EmptyFacade || isEntityInBounds(parent))
+        ) {
+          for (const child of children) {
+            toRemove.add(child);
+          }
+          toAdd.push(parent);
+          changed = true;
+        }
+      }
+
+      if (changed) {
+        processedEntities = processedEntities.filter(e => !toRemove.has(e));
+        processedEntities.push(...toAdd);
+      }
     }
+
+    selectedEntities = processedEntities;
 
     this.#selectionBox.gfx.destroy();
     this.#selectionBox = undefined;
