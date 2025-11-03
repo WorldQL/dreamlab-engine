@@ -11,6 +11,7 @@ import {
   Vector2,
 } from "@dreamlab/engine";
 import { EditorMetadataEntity } from "../../common/mod.ts";
+import { EmptyFacade } from "../../common/facades/empty.ts";
 import { UndoRedoManager } from "../undo-redo.ts";
 import { createEntityMenu } from "../util/entity-types.ts";
 import { ContextMenuItem } from "./context-menu.ts";
@@ -30,6 +31,10 @@ export class PrefabViewer {
   currentDragSource: { entities: Entity[]; entries: HTMLElement[] } | undefined;
   prefabsRoot!: Entity;
   #iconPicker: IconPicker;
+  #currentFolder: Entity | null = null;
+  #refreshTimeout: number | undefined;
+  #entityListeners = new Set<string>();
+  #breadcrumbContainer!: HTMLDivElement;
 
   static instance: PrefabViewer | undefined = undefined;
 
@@ -139,24 +144,23 @@ export class PrefabViewer {
       </div>
     ) as HTMLDivElement;
 
-    this.#section.append(dropContainer, this.#content);
+    this.#breadcrumbContainer = (<div className="prefab-breadcrumbs" />) as HTMLDivElement;
+
+    this.#section.append(this.#breadcrumbContainer, dropContainer, this.#content);
 
     this.prefabsRoot = ui.editMode
       ? this.game.world._.EditEntities._.prefabs
       : this.game.prefabs;
 
-    if (this.prefabsRoot.children.size === 0) {
-      this.#content.append(this.#noPrefabsMessage);
-    } else {
-      for (const prefab of this.prefabsRoot.children.values()) {
-        if (!(prefab instanceof EditorMetadataEntity)) {
-          this.renderPrefabCard(ui, prefab);
-        }
-      }
-    }
+    this.refreshView();
 
     this.#content.addEventListener("click", (event: MouseEvent) => {
-      if (!(event.target instanceof HTMLElement) || !event.target.closest(".prefab-card")) {
+      if (
+        !(event.target instanceof HTMLElement) ||
+        (!event.target.closest(".prefab-card") &&
+          !event.target.closest(".prefab-back-button") &&
+          !event.target.closest(".prefab-folder"))
+      ) {
         ui.selectedEntity.entities = [];
         this.#content.querySelectorAll(".prefab-card.preselected").forEach(el => {
           el.classList.remove("preselected");
@@ -177,50 +181,40 @@ export class PrefabViewer {
       }
     });
 
-    this.prefabsRoot.on(EntityChildSpawned, event => {
-      this.#noPrefabsMessage.remove();
-      const newEntity = event.child;
-      if (!(newEntity instanceof EditorMetadataEntity)) {
-        this.renderPrefabCard(ui, newEntity);
+    const refreshOnChange = () => {
+      if (this.#currentFolder === null || this.#currentFolder === this.prefabsRoot) {
+        this.refreshView();
       }
-    });
+    };
 
-    this.prefabsRoot.on(EntityChildReparented, event => {
-      this.#noPrefabsMessage.remove();
-      const newEntity = event.child;
-      if (!(newEntity instanceof EditorMetadataEntity)) {
-        this.renderPrefabCard(ui, newEntity);
-      }
-    });
-
-    this.prefabsRoot.on(EntityDestroyed, () => {
-      const card = this.entryElementMap.get(this.prefabsRoot.ref);
-      if (card) {
-        card.remove();
-        this.entryElementMap.delete(this.prefabsRoot.ref);
-      }
-      this.checkForNoPrefabs();
-    });
+    this.prefabsRoot.on(EntityChildSpawned, refreshOnChange);
+    this.prefabsRoot.on(EntityChildReparented, refreshOnChange);
+    this.prefabsRoot.on(EntityDestroyed, refreshOnChange);
 
     this.container.append(this.#section);
   }
 
   renderPrefabCard(ui: InspectorUI, entity: Entity) {
-    if (entity.name.startsWith(".")) return; // hide prefab from bottom pane. useful if you use it in code but don't want it to show in the spawn panel.
+    if (entity.name.startsWith(".")) return;
     if (this.entryElementMap.has(entity.ref)) return;
 
+    const isFolder = entity instanceof EmptyFacade && entity.isFolder;
     let card: HTMLDivElement;
 
     const click = (event: MouseEvent) => {
       event.stopPropagation();
 
-      this.#content.querySelectorAll(".prefab-card.preselected").forEach(el => {
-        if (el !== card) {
-          el.classList.remove("preselected");
-        }
-      });
-      ui.selectedEntity.entities = [];
-      card.classList.add("preselected");
+      if (isFolder) {
+        this.navigateToFolder(entity);
+      } else {
+        this.#content.querySelectorAll(".prefab-card.preselected").forEach(el => {
+          if (el !== card) {
+            el.classList.remove("preselected");
+          }
+        });
+        ui.selectedEntity.entities = [];
+        card.classList.add("preselected");
+      }
     };
 
     const dblclick = (event: MouseEvent) => {
@@ -292,6 +286,8 @@ export class PrefabViewer {
     };
 
     const dragstart = () => {
+      if (isFolder) return;
+
       const selectedEntities = ui.selectedEntity.entities;
       const selectedCards = selectedEntities
         .map(e => this.entryElementMap.get(e.ref))
@@ -321,7 +317,6 @@ export class PrefabViewer {
         }
       }
 
-      // Update cursor position from drag event coordinates
       const canvas = this.game.renderer.app.canvas;
       const canvasRect = canvas.getBoundingClientRect();
       const canvasCoords = {
@@ -329,7 +324,6 @@ export class PrefabViewer {
         y: event.clientY - canvasRect.y,
       };
 
-      // Check if drop is within canvas bounds
       if (
         canvasCoords.x < 0 ||
         canvasCoords.y < 0 ||
@@ -340,7 +334,6 @@ export class PrefabViewer {
         return;
       }
 
-      // Calculate world position directly from canvas coordinates
       const screenPos = new Vector2(canvasCoords);
       const camera = Camera.getActive(this.game);
       const worldPos = camera ? camera.screenToWorld(screenPos) : undefined;
@@ -378,30 +371,49 @@ export class PrefabViewer {
       this.currentDragSource = undefined;
     };
 
-    card = (
-      <div
-        className="prefab-card"
-        id={`prefab-tab-` + entity.name}
-        draggable
-        data-entity={entity.ref}
-        onClick={click}
-        onDblClick={dblclick}
-        onContextMenu={contextmenu}
-        onDragStart={dragstart}
-        onDragEnd={dragend}
-      >
-        <div className="prefab-icon emoji">{entity.icon ?? "🌟"}</div>
-        <div className="prefab-name">{entity.name}</div>
-      </div>
-    ) as HTMLDivElement;
+    if (isFolder) {
+      card = (
+        <div
+          className="prefab-folder"
+          id={`prefab-tab-` + entity.name}
+          data-entity={entity.ref}
+          data-folder="true"
+          onClick={click}
+          onDblClick={dblclick}
+          onContextMenu={contextmenu}
+        >
+          <div className="prefab-icon emoji">{entity.icon}</div>
+          <div className="prefab-name">{entity.name}</div>
+        </div>
+      ) as HTMLDivElement;
+    } else {
+      card = (
+        <div
+          className="prefab-card"
+          id={`prefab-tab-` + entity.name}
+          draggable
+          data-entity={entity.ref}
+          onClick={click}
+          onDblClick={dblclick}
+          onContextMenu={contextmenu}
+          onDragStart={dragstart}
+          onDragEnd={dragend}
+        >
+          <div className="prefab-icon emoji">{entity.icon}</div>
+          <div className="prefab-name">{entity.name}</div>
+        </div>
+      ) as HTMLDivElement;
+    }
 
     this.entryElementMap.set(entity.ref, card);
     this.#content.append(card);
 
     entity.on(EntityDestroyed, () => {
-      card.remove();
-      this.entryElementMap.delete(entity.ref);
-      this.checkForNoPrefabs();
+      if (this.#currentFolder === entity) {
+        this.navigateToFolder(null);
+      } else {
+        this.refreshView();
+      }
     });
 
     entity.on(EntityRenamed, () => {
@@ -409,54 +421,225 @@ export class PrefabViewer {
       if (nameElement) {
         nameElement.textContent = entity.name;
       }
-    });
 
-    entity.on(EntityReparented, evt => {
-      if (
-        evt.oldParent.id === this.prefabsRoot.id &&
-        entity.parent?.id !== this.prefabsRoot.id
-      ) {
-        card.remove();
-        this.entryElementMap.delete(entity.ref);
-        this.checkForNoPrefabs();
+      const iconElement = card.querySelector(".prefab-icon");
+      if (iconElement) {
+        iconElement.textContent = entity.icon;
       }
     });
+
+    entity.on(EntityReparented, () => {
+      this.refreshView();
+    });
+
+    if (entity instanceof EmptyFacade && !this.#entityListeners.has(entity.ref)) {
+      this.#entityListeners.add(entity.ref);
+      const isFolderValue = entity.values.get("isFolder");
+      isFolderValue?.onChanged(() => {
+        this.refreshView();
+      });
+
+      entity.on(EntityDestroyed, () => {
+        this.#entityListeners.delete(entity.ref);
+      });
+    }
+
+    if (isFolder) {
+      const folderRefreshOnChange = () => {
+        if (this.#currentFolder === entity) {
+          this.refreshView();
+        }
+      };
+
+      entity.on(EntityChildSpawned, folderRefreshOnChange);
+      entity.on(EntityChildReparented, folderRefreshOnChange);
+    }
+  }
+
+  private navigateToFolder(folder: Entity | null) {
+    this.#currentFolder = folder;
+    this.refreshView();
+  }
+
+  #renderBreadcrumbs(): HTMLElement[] {
+    const breadcrumbs: HTMLElement[] = [];
+
+    if (this.#currentFolder) {
+      const rootCrumb = (
+        <span
+          className="breadcrumb-item breadcrumb-link"
+          onClick={() => this.navigateToFolder(null)}
+        >
+          Prefabs
+        </span>
+      ) as HTMLSpanElement;
+      breadcrumbs.push(rootCrumb);
+    } else {
+      const rootCrumb = (
+        <span className="breadcrumb-item breadcrumb-current">Prefabs</span>
+      ) as HTMLSpanElement;
+      breadcrumbs.push(rootCrumb);
+    }
+
+    if (this.#currentFolder) {
+      const path: Entity[] = [];
+      let current: Entity | undefined = this.#currentFolder;
+      while (current && current !== this.prefabsRoot) {
+        path.unshift(current);
+        current = current.parent;
+      }
+
+      for (let i = 0; i < path.length; i++) {
+        const folder = path[i];
+        breadcrumbs.push(
+          (<span className="breadcrumb-separator"> › </span>) as HTMLSpanElement,
+        );
+
+        if (i === path.length - 1) {
+          breadcrumbs.push(
+            (
+              <span className="breadcrumb-item breadcrumb-current">{folder.name}</span>
+            ) as HTMLSpanElement,
+          );
+        } else {
+          breadcrumbs.push(
+            (
+              <span
+                className="breadcrumb-item breadcrumb-link"
+                onClick={() => this.navigateToFolder(folder)}
+              >
+                {folder.name}
+              </span>
+            ) as HTMLSpanElement,
+          );
+        }
+      }
+    }
+
+    return breadcrumbs;
+  }
+
+  private refreshView() {
+    if (this.#refreshTimeout !== undefined) {
+      clearTimeout(this.#refreshTimeout);
+    }
+
+    this.#refreshTimeout = setTimeout(() => {
+      this.#doRefresh();
+      this.#refreshTimeout = undefined;
+    }, 100);
+  }
+
+  #doRefresh() {
+    this.#content.innerHTML = "";
+
+    this.#breadcrumbContainer.innerHTML = "";
+    const breadcrumbs = this.#renderBreadcrumbs();
+    breadcrumbs.forEach(crumb => this.#breadcrumbContainer.append(crumb));
+
+    if (this.#currentFolder) {
+      const parentFolder =
+        this.#currentFolder.parent === this.prefabsRoot
+          ? null
+          : (this.#currentFolder.parent ?? null);
+      const backButton = (
+        <div className="prefab-back-button" onClick={() => this.navigateToFolder(parentFolder)}>
+          <div className="prefab-icon">←</div>
+          <div className="prefab-name">Back</div>
+        </div>
+      ) as HTMLDivElement;
+      this.#content.append(backButton);
+    }
+
+    this.entryElementMap.clear();
+    const currentParent = this.#currentFolder ?? this.prefabsRoot;
+
+    if (currentParent.children.size === 0) {
+      this.#content.append(this.#noPrefabsMessage);
+      return;
+    }
+
+    const children = Array.from(currentParent.children.values());
+    const folders = children.filter(
+      prefab =>
+        !(prefab instanceof EditorMetadataEntity) &&
+        prefab instanceof EmptyFacade &&
+        prefab.isFolder,
+    );
+    const nonFolders = children.filter(
+      prefab =>
+        !(prefab instanceof EditorMetadataEntity) &&
+        !(prefab instanceof EmptyFacade && prefab.isFolder),
+    );
+
+    for (const prefab of folders) {
+      this.renderPrefabCard(this.inspectorUI, prefab);
+    }
+
+    for (const prefab of nonFolders) {
+      this.renderPrefabCard(this.inspectorUI, prefab);
+    }
   }
 
   private addContextMenu(ui: InspectorUI) {
     this.#content.addEventListener("contextmenu", (event: MouseEvent) => {
-      if (event.target instanceof HTMLElement && event.target.closest(".prefab-card")) {
+      if (
+        event.target instanceof HTMLElement &&
+        (event.target.closest(".prefab-card") ||
+          event.target.closest(".prefab-back-button") ||
+          event.target.closest(".prefab-folder"))
+      ) {
         return;
       }
 
       event.preventDefault();
       event.stopPropagation();
 
+      const targetParent = this.#currentFolder ?? this.prefabsRoot;
+
       const entityMenu: ContextMenuItem = createEntityMenu("New Prefab", type => {
-        const newEntity = this.prefabsRoot.spawn({
+        const newEntity = targetParent.spawn({
           type: type,
           name: type.name,
         });
 
         UndoRedoManager._.push({
           t: "create-entity",
-          parentRef: this.prefabsRoot.ref,
+          parentRef: targetParent.ref,
           def: newEntity.getDefinition(),
         });
 
         ui.selectedEntity.entities = [newEntity];
       });
 
-      const contextMenuItems: ContextMenuItem[] = [entityMenu];
+      const folderMenuItem: ContextMenuItem = [
+        "New Folder",
+        () => {
+          const newFolder = targetParent.spawn({
+            type: EmptyFacade,
+            name: "New Folder",
+          });
+
+          newFolder.isFolder = true;
+
+          UndoRedoManager._.push({
+            t: "create-entity",
+            parentRef: targetParent.ref,
+            def: newFolder.getDefinition(),
+          });
+
+          ui.selectedEntity.entities = [newFolder];
+        },
+        false,
+        undefined,
+        0,
+        1,
+      ];
+
+      const contextMenuItems: ContextMenuItem[] = [folderMenuItem, entityMenu];
 
       ui.contextMenu.drawContextMenu(event.clientX, event.clientY, contextMenuItems);
     });
-  }
-
-  private checkForNoPrefabs() {
-    if (this.prefabsRoot.children.size === 0) {
-      this.#content.append(this.#noPrefabsMessage);
-    }
   }
 
   private openIconPicker(x: number, y: number, entity: Entity) {

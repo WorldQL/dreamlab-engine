@@ -13,6 +13,7 @@ import {
 } from "@dreamlab/engine";
 import { element as elem, element } from "@dreamlab/ui";
 import { EditorFacadeTilemap } from "../../common/facades/tilemap.ts";
+import { EmptyFacade } from "../../common/facades/empty.ts";
 import { EditorMetadataEntity, EditorRootFacadeEntity, Facades } from "../../common/mod.ts";
 import { ChevronDown, Ellipsis, icon, Lock } from "../_icons.tsx";
 import { entityNameSort } from "../entity-sort.ts";
@@ -313,7 +314,7 @@ export class SceneGraph implements InspectorUIWidget {
       (entity.id === "prefabs" || entity.id === "world" || entity.id === "local") &&
       entity.root.icon
         ? entity.root.icon
-        : (entity.constructor as typeof Entity).icon;
+        : (entity.icon ?? (entity.constructor as typeof Entity).icon);
 
     const lockBadge = elem(
       "span",
@@ -434,6 +435,19 @@ export class SceneGraph implements InspectorUIWidget {
       this.entryElementMap.delete(currentEntityRef);
     });
 
+    const updateIcon = () => {
+      const iconElement = entryElement.querySelector(":scope > summary .icon");
+      if (iconElement) {
+        const newIcon =
+          !this.game.isEditMode &&
+          (entity.id === "prefabs" || entity.id === "world" || entity.id === "local") &&
+          entity.root.icon
+            ? entity.root.icon
+            : (entity.icon ?? (entity.constructor as typeof Entity).icon);
+        iconElement.textContent = newIcon;
+      }
+    };
+
     entity.on(EntityRenamed, () => {
       const name = entryElement.querySelector(":scope > summary .name")!;
       name.textContent = entity.name;
@@ -444,6 +458,13 @@ export class SceneGraph implements InspectorUIWidget {
       if (parentElement === undefined) return;
       this.sortEntries(parentElement);
     });
+
+    if (entity instanceof EmptyFacade) {
+      const isFolderValue = entity.values.get("isFolder");
+      isFolderValue?.onChanged(() => {
+        updateIcon();
+      });
+    }
 
     this.handleEntryDragAndDrop(ui, entity, entryElement);
     this.handleEntryContextMenu(ui, entity, entryElement);

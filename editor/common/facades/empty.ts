@@ -25,6 +25,12 @@ export class EmptyFacade extends PixiEntity {
     Facades.register(Empty, this);
   }
 
+  public isFolder: boolean = false;
+
+  get icon(): string {
+    return this.isFolder ? "🗂️" : Empty.icon;
+  }
+
   get isColliderChildAndSelected(): boolean {
     const selectedService = SelectedEntityService.serviceForGame(this.game as ClientGame);
     if (!selectedService) return false;
@@ -51,6 +57,12 @@ export class EmptyFacade extends PixiEntity {
 
   constructor(ctx: EntityContext) {
     super(ctx, false);
+
+    this.defineValue(EmptyFacade, "isFolder", {
+      description: "Marks this empty as a folder for organizing prefabs",
+      replicated: true,
+      persistent: true,
+    });
 
     const camera = Camera.getActive(this.game);
     const zoom = camera?.values.get("zoom");

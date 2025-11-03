@@ -107,3 +107,105 @@
   font-size: 1em;
   padding: 0.2em;
 }
+
+.prefab-folder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+  height: fit-content;
+  background: rgb(var(--color-bg-1));
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px dashed rgb(var(--color-bg-2) / 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.prefab-folder:hover {
+  background: rgb(var(--color-bg-2));
+}
+
+.prefab-folder .prefab-icon {
+  font-size: 1.5rem;
+}
+
+.prefab-folder .prefab-name {
+  font-size: 0.75rem;
+  text-align: center;
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.prefab-back-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+  height: fit-content;
+  background: rgb(var(--color-bg-1));
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.prefab-back-button:hover {
+  background: rgb(var(--color-bg-2));
+}
+
+.prefab-breadcrumbs {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(var(--color-bg-2) / 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 95;
+  color: rgb(var(--color-text-secondary));
+}
+
+.breadcrumb-item {
+  display: inline-block;
+}
+
+.breadcrumb-link {
+  color: rgb(var(--color-primary));
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.breadcrumb-link:hover {
+  opacity: 0.7;
+  text-decoration: underline;
+}
+
+.breadcrumb-current {
+  color: rgb(var(--color-text));
+  font-weight: 500;
+}
+
+.breadcrumb-separator {
+  color: rgb(var(--color-text-secondary));
+  opacity: 0.5;
+  user-select: none;
+}
