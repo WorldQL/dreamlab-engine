@@ -1184,6 +1184,11 @@ export abstract class Entity implements ISignalHandler {
     this.listen(this.game, EntityDestroyOperation, ({ entity }) => {
       if (entity.ref === this.clonedFromRef) this.clonedFromRef = "";
     });
+
+    for (const k of ["transform", "globalTransform"] as const) {
+      const value = this[k];
+      Reflect.defineProperty(this, "transform", { value, writable: false });
+    }
   }
 
   // #region Signals
