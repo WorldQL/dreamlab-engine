@@ -12,6 +12,7 @@ uniform sampler2D uAtlas;
 uniform sampler2D uTiles;
 
 uniform float uSize;
+uniform float uAlpha;
 uniform float uAtlasTileWidth;
 uniform float uAtlasTileHeight;
 
@@ -26,7 +27,7 @@ void main() {
     float tileId = g * 256.0 + r;
     vec2 tileBaseUV = vec2(mod(tileId, uAtlasTileWidth), floor(tileId / uAtlasTileWidth)) / vec2(uAtlasTileWidth, uAtlasTileHeight);
     vec2 offsetUV = vec2(mod(vUV.x * uSize, 1.0), mod(-vUV.y * uSize, 1.0));
-    gl_FragColor = texture2D(uAtlas, tileBaseUV + offsetUV / vec2(uAtlasTileWidth, uAtlasTileHeight)).rgba;
+    gl_FragColor = texture2D(uAtlas, tileBaseUV + offsetUV / vec2(uAtlasTileWidth, uAtlasTileHeight)).rgba * uAlpha;
   }
 }
 `;
@@ -219,6 +220,7 @@ type ClientTextureTilemapChunkOptions = {
   readonly atlasTileWidth: number;
   readonly atlasTileHeight: number;
   readonly atlas: PIXI.Texture;
+  readonly alpha: number;
 };
 
 export class ClientTextureTilemapChunk extends TextureTilemapChunk {
@@ -251,6 +253,7 @@ export class ClientTextureTilemapChunk extends TextureTilemapChunk {
           uAtlasTileWidth: { value: opts.atlasTileWidth, type: "f32" },
           uAtlasTileHeight: { value: opts.atlasTileHeight, type: "f32" },
           uSize: { value: size, type: "f32" },
+          uAlpha: { value: opts.alpha, type: "f32" },
         },
       },
     });
@@ -274,6 +277,10 @@ export class ClientTextureTilemapChunk extends TextureTilemapChunk {
     this.#shader.resources.extra.uniforms.uAtlasTileWidth = atlasTileWidth;
     this.#shader.resources.extra.uniforms.uAtlasTileHeight = atlasTileHeight;
     this.#shader.resources.uAtlas = atlas;
+  }
+
+  updateAlpha(alpha: number): void {
+    this.#shader.resources.extra.uniforms.uAlpha = alpha;
   }
 
   setTile(localX: number, localY: number, atlasId: number | undefined): void {

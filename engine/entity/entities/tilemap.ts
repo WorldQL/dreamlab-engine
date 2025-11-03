@@ -46,6 +46,7 @@ export abstract class BaseTilemap extends PixiEntity {
 
   atlas: string = "";
   resolution: number = 64;
+  alpha: number = 1;
 
   #boundsDirty: boolean = false;
   #dirtyChunks: Set<ClientTextureTilemapChunk | ClientColorTilemapChunk> = new Set();
@@ -88,6 +89,16 @@ export abstract class BaseTilemap extends PixiEntity {
     for (const chunk of this.#chunks.values()) {
       if (chunk instanceof ClientTextureTilemapChunk) {
         chunk.updateAtlas(atlas.width / this.resolution, atlas.height / this.resolution, atlas);
+      }
+    }
+  }
+
+  #updateAlpha(): void {
+    for (const chunk of this.#chunks.values()) {
+      if (chunk instanceof ClientTextureTilemapChunk) {
+        chunk.updateAlpha(this.alpha);
+      } else if (chunk instanceof ClientColorTilemapChunk) {
+        chunk.sprite.alpha = this.alpha;
       }
     }
   }
@@ -353,6 +364,7 @@ export abstract class BaseTilemap extends PixiEntity {
         atlas,
         atlasTileWidth: atlas.width / this.resolution,
         atlasTileHeight: atlas.height / this.resolution,
+        alpha: this.alpha,
       });
 
       chunk.mesh.position.x += chunkX * chunkSize;
@@ -413,6 +425,9 @@ export abstract class BaseTilemap extends PixiEntity {
       description:
         "The texture atlas used for rendering tilemap textures. Can be dragged from the project panel or typed with 'res://<path>'.",
     });
+    const alpha = this.defineValue(ctor, "alpha", {
+      description: "Opacity from 0 (invisible) to 1 (fully visible).",
+    });
 
     resolution.onChanged(() => {
       this.#updateAtlasTexture();
@@ -420,6 +435,10 @@ export abstract class BaseTilemap extends PixiEntity {
 
     atlasValue.onChanged(() => {
       this.#updateAtlasTexture();
+    });
+
+    alpha.onChanged(() => {
+      this.#updateAlpha();
     });
 
     this.on(EntityTransformUpdate, () => this.#updateSize());
@@ -519,6 +538,7 @@ export abstract class BaseTilemap extends PixiEntity {
       void this.#updateAtlasTexture();
     }
 
+    this.#updateAlpha();
     this.#updateSize();
     this.#recalculateBounds();
   }
