@@ -407,8 +407,8 @@ export class ClientColorTilemapChunk extends ColorTilemapChunk {
     });
   }
 
-  setTile(localX: number, localY: number, atlasId: number | undefined): void {
-    super.setTile(localX, localY, atlasId);
+  setTile(localX: number, localY: number, color: number | undefined): void {
+    super.setTile(localX, localY, color);
   }
 
   update() {
