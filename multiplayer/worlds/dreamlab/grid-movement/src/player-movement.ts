@@ -3,6 +3,7 @@ import {
   Entity,
   EntityRef,
   IVector2,
+  LocalRoot,
   Tilemap,
   value,
   Vector2,
@@ -31,9 +32,17 @@ export default class PlayerMovement extends Behavior {
   // store a real position on the int grid
   // entity transform is smoothed
   #pos: Vector2 = this.entity.pos.floor();
+  get pos() {
+    return this.#pos.clone();
+  }
 
   onTick(): void {
-    this.#tryMoveThisTick();
+    const isLocal = this.game.isClient() && this.entity.root instanceof LocalRoot;
+    if (!(isLocal || this.hasAuthority())) return;
+
+    if (this.game.isClient()) {
+      this.#tryMoveThisTick();
+    }
 
     this.entity.pos.assign(
       Vector2.smoothLerp(this.entity.pos, this.#pos, 0.03, this.time.delta),
@@ -86,6 +95,16 @@ export default class PlayerMovement extends Behavior {
     } else {
       return undefined;
     }
+  }
+
+  /** @see {PlayerSpawner} */
+  moveTo(newPos: Vector2): boolean {
+    // TODO: check moveTicks ?
+    const signal = this.game.fire<PlayerMoved, typeof PlayerMoved>(PlayerMoved, this, newPos);
+    if (signal.cancelled) return false;
+
+    this.#pos.assign(newPos);
+    return true;
   }
 
   @value({ type: EntityRef })
