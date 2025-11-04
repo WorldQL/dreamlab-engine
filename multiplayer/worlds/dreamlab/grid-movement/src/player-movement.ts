@@ -9,6 +9,7 @@ import {
 } from "@dreamlab/engine";
 
 export class PlayerMoved {
+  public cancelled: boolean = false;
   public constructor(
     public readonly player: PlayerMovement,
     public readonly position: IVector2,
@@ -29,82 +30,58 @@ export default class PlayerMovement extends Behavior {
   #pos: Vector2 = this.entity.pos.floor();
 
   onTick(): void {
-    this.#movementCheck();
+    this.#tryMoveThisTick();
 
     this.entity.pos.assign(
       Vector2.smoothLerp(this.entity.pos, this.#pos, 0.03, this.time.delta),
     );
   }
 
-  #movement: Vector2 = Vector2.ZERO; // re-use vector
   #moveTicks: number = 0;
-  #movementCheck() {
-    let moved = false;
+  #tryMoveThisTick() {
+    if (this.#moveTicks > 0) {
+      this.#moveTicks -= 1;
+      return;
+    }
 
-    try {
-      if (this.#moveTicks > 0) {
-        this.#moveTicks -= 1;
-        return;
-      }
+    const x = (-this.#left.held + +this.#right.held) as -1 | 0 | 1;
+    const y = (-this.#down.held + +this.#up.held) as -1 | 0 | 1;
+    if (x === 0 && y === 0) return;
 
-      this.#movement.x = 0;
-      this.#movement.y = 0;
-      if (this.#up.held) this.#movement.y += 1;
-      if (this.#down.held) this.#movement.y -= 1;
-      if (this.#right.held) this.#movement.x += 1;
-      if (this.#left.held) this.#movement.x -= 1;
+    const newPos = this.checkMove(x, y);
+    this.#moveTicks += this.moveCooldownTicks;
+    if (newPos) {
+      // FIXME(charlotte): why do we need this generic? can we fix signals so that we don't
+      const signal = this.game.fire<PlayerMoved, typeof PlayerMoved>(PlayerMoved, this, newPos);
+      if (signal.cancelled) return;
 
-      if (this.#movement.x === 0 && this.#movement.y === 0) return;
+      this.#pos.assign(newPos);
+    }
+  }
 
-      const newPos = Vector2.add(this.#pos, this.#movement);
-      const valid = this.#tileCheck(newPos);
-      if (!valid) return;
+  checkMove(x: -1 | 0 | 1, y: -1 | 0 | 1): Vector2 | undefined {
+    const newPos = this.#pos.add({ x, y });
+    const valid = this.#tileCheck(newPos);
 
-      if (this.#movement.x === 0 || this.#movement.y === 0) {
-        // moving along a cardinal direction (no diagonals)
-        this.#pos.x = newPos.x;
-        this.#pos.y = newPos.y;
-        moved = true;
+    // if one axis is zero, we don't need to check for corner cutting
+    if (x === 0 || y === 0) {
+      if (!valid) return undefined;
+      return newPos;
+    }
 
-        return;
-      }
-
-      // handle corner cutting
-      const cx = Vector2.add(this.#pos, { x: this.#movement.x, y: 0 });
-      const cy = Vector2.add(this.#pos, { x: 0, y: this.#movement.y });
-
-      const cxValid = this.#tileCheck(cx);
-      const cyValid = this.#tileCheck(cy);
-      if (cxValid && cyValid) {
-        // both corners are clear
-        this.#pos.x = newPos.x;
-        this.#pos.y = newPos.y;
-        moved = true;
-
-        return;
-      }
-
-      if (!cxValid && cyValid) {
-        // free to slide vertically
-        this.#pos.x = cy.x;
-        this.#pos.y = cy.y;
-        moved = true;
-
-        return;
-      }
-
-      if (!cyValid && cxValid) {
-        // free to slide horizontally
-        this.#pos.x = cx.x;
-        this.#pos.y = cx.y;
-        moved = true;
-
-        return;
-      }
-    } finally {
-      if (moved) {
-        this.#moveTicks += this.moveCooldownTicks;
-      }
+    // corner cutting: if diagonal move attempted and partially blocked, slide along the wall
+    const cx = Vector2.add(this.#pos, { x, y: 0 });
+    const cy = Vector2.add(this.#pos, { x: 0, y });
+    const cxValid = this.#tileCheck(cx);
+    const cyValid = this.#tileCheck(cy);
+    if (valid && cxValid && cyValid) {
+      return newPos;
+    } else if (!cxValid && cyValid) {
+      return cy;
+    } else if (cxValid && !cyValid) {
+      return cx;
+    } else {
+      return undefined;
     }
   }
 
