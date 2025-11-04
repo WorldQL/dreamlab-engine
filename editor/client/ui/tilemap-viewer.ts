@@ -1,4 +1,11 @@
-import { ClientGame, EntityDestroyed, IVector2, Vector2 } from "@dreamlab/engine";
+import {
+  ClientGame,
+  EntityDestroyed,
+  IVector2,
+  TilemapBatchUpdate,
+  TilemapUpdate,
+  Vector2,
+} from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import "npm:vanilla-colorful/hex-color-picker.js";
@@ -143,6 +150,7 @@ export class TileMapViewer {
       await this.#loadAtlas(tilemap);
       this.#drawGrid();
       this.#drawSelected();
+      this.#scanTilemapColors();
 
       const resVal = tilemap.values.get("resolution");
       if (resVal) {
@@ -175,6 +183,26 @@ export class TileMapViewer {
         ui.selectedEntity.entities = [];
       });
       this.#listeners.push(() => onEntityDestroyed.unsubscribe());
+
+      const onTilemapBatchUpdate = tilemap.on(TilemapBatchUpdate, event => {
+        if (tilemap.atlas === "") {
+          for (const value of event.atlasIds) {
+            if (typeof value === "number" && value !== undefined) {
+              this.#colorHistory.add(value);
+            }
+          }
+          this.#renderColorHistory();
+        }
+      });
+      this.#listeners.push(() => onTilemapBatchUpdate.unsubscribe());
+
+      const onTilemapUpdate = tilemap.on(TilemapUpdate, event => {
+        if (tilemap.atlas === "" && event.info?.type === "color") {
+          this.#colorHistory.add(event.info.color);
+          this.#renderColorHistory();
+        }
+      });
+      this.#listeners.push(() => onTilemapUpdate.unsubscribe());
     });
 
     app.canvas.addEventListener(
@@ -306,9 +334,11 @@ export class TileMapViewer {
   #eyedropperButton!: IconButton;
   #colorInputs!: HTMLDivElement;
   #colorPaintToggle!: HTMLInputElement;
+  #colorHistoryContainer!: HTMLDivElement;
 
   #selectedColor: number = 0xff0000;
   #colorPaintingEnabled: boolean = false;
+  #colorHistory: Set<number> = new Set();
 
   #syncColorBrush(): void {
     if (!this.#tilemap) return;
@@ -419,11 +449,17 @@ export class TileMapViewer {
       elem("label", { htmlFor: "color-paint-toggle" }, ["Paint with color"]),
     ]);
 
+    this.#colorHistoryContainer = elem("div", { className: "color-history-container" }, [
+      elem("label", { className: "color-history-label" }, ["Recent colors:"]),
+      elem("div", { className: "color-history-swatches" }),
+    ]) as HTMLDivElement;
+
     this.#colorInputs = elem("div", { id: "color-inputs" }, [
       elem("div", { className: "color-input-group" }, [
         elem("label", {}, ["Color:"]),
         this.#colorPickerContainer,
       ]),
+      this.#colorHistoryContainer,
     ]) as HTMLDivElement;
 
     this.#noAtlasMessage = elem("div", { id: "no-atlas-message", style: { display: "none" } }, [
@@ -449,7 +485,23 @@ export class TileMapViewer {
     if (this.#colorPaintToggle) this.#colorPaintToggle.checked = this.#colorPaintingEnabled;
     if (this.#colorInputs)
       this.#colorInputs.style.display = this.#colorPaintingEnabled ? "block" : "none";
+    if (this.#colorPaintingEnabled) {
+      this.#scanTilemapColors();
+      this.#renderColorHistory();
+    }
     this.#syncColorBrush();
+  }
+
+  #scanTilemapColors(): void {
+    if (!this.#tilemap) return;
+
+    const usedColors = (
+      this.#tilemap as EditorFacadeTilemap & { getUsedColors(): number[] }
+    ).getUsedColors();
+
+    for (const color of usedColors) {
+      this.#colorHistory.add(color);
+    }
   }
 
   #setupColorPaintEvents(): void {
@@ -787,6 +839,56 @@ export class TileMapViewer {
     const y = Math.floor(-world.y / tileSize);
 
     return { x, y };
+  }
+
+  #renderColorHistory(): void {
+    const swatchesContainer = this.#colorHistoryContainer.querySelector(
+      ".color-history-swatches",
+    ) as HTMLDivElement;
+    if (!swatchesContainer) return;
+
+    swatchesContainer.innerHTML = "";
+
+    const colors = Array.from(this.#colorHistory);
+
+    if (colors.length === 0) {
+      this.#colorHistoryContainer.style.display = "none";
+      return;
+    }
+
+    this.#colorHistoryContainer.style.display = "";
+
+    for (const color of colors) {
+      const hexColor = "#" + color.toString(16).padStart(6, "0");
+      const swatch = elem("div", {
+        className: "color-swatch",
+        title: hexColor,
+      }) as HTMLDivElement;
+      swatch.style.backgroundColor = hexColor;
+
+      if (color === this.#selectedColor) {
+        swatch.classList.add("selected");
+      }
+
+      swatch.addEventListener("click", () => {
+        this.#selectColorFromHistory(color);
+      });
+
+      swatchesContainer.appendChild(swatch);
+    }
+  }
+
+  #selectColorFromHistory(color: number): void {
+    this.#selectedColor = color;
+    const hexColor = "#" + color.toString(16).padStart(6, "0");
+
+    const picker = this.#colorPicker as HTMLElement & { color: string };
+    picker.color = hexColor;
+    this.#colorInput.value = hexColor.slice(1);
+    this.#colorBox.style.backgroundColor = hexColor;
+
+    this.#renderColorHistory();
+    this.#syncColorBrush();
   }
 
   resize() {

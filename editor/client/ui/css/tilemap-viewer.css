@@ -152,6 +152,55 @@
             border-radius: 3px;
           }
         }
+
+        .color-history-container {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+          width: 100%;
+          margin-top: 0.5rem;
+
+          .color-history-label {
+            font-size: 0.7em;
+            color: rgb(var(--color-text-2));
+            font-weight: 500;
+            text-align: left;
+          }
+
+          .color-history-swatches {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+            padding: 0.5rem;
+            border: 1px solid rgb(var(--color-border));
+            border-radius: var(--border-radius);
+            background-color: rgba(var(--color-bg-2), 0.3);
+            min-height: 2rem;
+
+            .color-swatch {
+              width: 1.5rem;
+              height: 1.5rem;
+              border-radius: 3px;
+              cursor: pointer;
+              border: 2px solid rgb(var(--color-border));
+              transition:
+                transform 0.1s ease,
+                border-color 0.1s ease;
+              box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+
+              &:hover {
+                transform: scale(1.1);
+                border-color: rgb(var(--color-text-1));
+              }
+
+              &.selected {
+                border-color: rgb(var(--color-primary));
+                border-width: 3px;
+                box-shadow: 0 0 0 1px rgb(var(--color-primary));
+              }
+            }
+          }
+        }
       }
     }
   }

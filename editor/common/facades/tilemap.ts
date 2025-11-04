@@ -10,6 +10,7 @@ import {
   Tilemap,
   Vector2,
 } from "@dreamlab/engine";
+import * as internal from "@dreamlab/engine/internal";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 import { SelectedEntityService } from "../../client/ui/selected-entity.ts";
 import { UndoRedoManager, UndoRedoOperation } from "../../client/undo-redo.ts";
@@ -262,5 +263,34 @@ export class EditorFacadeTilemap extends BaseTilemap {
     const tilemapTabOpen =
       document.querySelector("[data-tab-id=tilemap][data-active]") !== null;
     return selected && tilemapTabOpen;
+  }
+
+  getUsedColors(): number[] {
+    const colors = new Set<number>();
+    const chunks = this[internal.tilemapChunkMap];
+    const CHUNK_SIZE = 256;
+    const CHUNK_BYTE_SIZE = 4 * CHUNK_SIZE * CHUNK_SIZE;
+
+    for (const [id, chunk] of chunks) {
+      if (id.startsWith("color:")) {
+        const tileData = (chunk as unknown as { tileData: Uint8Array }).tileData;
+        if (!tileData) continue;
+
+        for (let i = 0; i < CHUNK_BYTE_SIZE; i += 4) {
+          const r = tileData[i + 0];
+          const g = tileData[i + 1];
+          const b = tileData[i + 2];
+          const a = tileData[i + 3];
+
+          if (a === 0) continue;
+
+          const color =
+            a === 255 ? (r << 16) | (g << 8) | b : ((a << 24) | (r << 16) | (g << 8) | b) >>> 0;
+          colors.add(color);
+        }
+      }
+    }
+
+    return Array.from(colors);
   }
 }
