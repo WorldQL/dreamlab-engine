@@ -1,4 +1,6 @@
 import { Behavior, Rng, Tilemap, value, Vector2, Vector2Adapter } from "@dreamlab/engine";
+import { createNoise2D } from "npm:simplex-noise";
+import { Colors } from "../lib/colors.ts";
 
 export default class GenerateTilemap extends Behavior {
   #tilemap = this.entity.cast(Tilemap);
@@ -14,6 +16,7 @@ export default class GenerateTilemap extends Behavior {
 
   onInitialize(): void {
     const prng = Rng.Seeded(BigInt(this.seed));
+    const noise = createNoise2D(prng);
 
     for (let x = -this.halfExtents.x; x < this.halfExtents.x; x++) {
       for (let y = -this.halfExtents.y; y < this.halfExtents.y; y++) {
@@ -26,8 +29,13 @@ export default class GenerateTilemap extends Behavior {
           continue;
         }
 
-        const wall = prng() > 0.8;
-        if (wall) this.#tilemap.setColor(x, y, 0x555555);
+        const val = noise(x, y);
+        const rng = (val + 1) / 2;
+
+        if (rng <= 0.3) this.#tilemap.setColor(x, y, Colors.Water);
+        else if (rng <= 0.4) this.#tilemap.setColor(x, y, Colors.Sand);
+        else if (rng <= 0.8) this.#tilemap.setColor(x, y, Colors.Grass);
+        else this.#tilemap.setColor(x, y, Colors.Wall);
       }
     }
   }

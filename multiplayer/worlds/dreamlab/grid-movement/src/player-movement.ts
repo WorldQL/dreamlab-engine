@@ -7,9 +7,12 @@ import {
   value,
   Vector2,
 } from "@dreamlab/engine";
+import { Colors } from "../lib/colors.ts";
 
 export class PlayerMoved {
   public cancelled: boolean = false;
+  public delay: number = 0;
+
   public constructor(
     public readonly player: PlayerMovement,
     public readonly position: IVector2,
@@ -51,9 +54,9 @@ export default class PlayerMovement extends Behavior {
     const newPos = this.checkMove(x, y);
     this.#moveTicks += this.moveCooldownTicks;
     if (newPos) {
-      // FIXME(charlotte): why do we need this generic? can we fix signals so that we don't
-      const signal = this.game.fire<PlayerMoved, typeof PlayerMoved>(PlayerMoved, this, newPos);
+      const signal = this.game.fire(PlayerMoved, this, newPos);
       if (signal.cancelled) return;
+      this.#moveTicks += signal.delay;
 
       this.#pos.assign(newPos);
     }
@@ -91,6 +94,6 @@ export default class PlayerMovement extends Behavior {
   #tileCheck(tile: IVector2): boolean {
     const tilemap = this.tilemap as Tilemap;
     const color = tilemap.getColor(tile.x, tile.y);
-    return color === undefined;
+    return color !== Colors.Wall;
   }
 }

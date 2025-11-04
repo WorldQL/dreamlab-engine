@@ -17,6 +17,20 @@
               "script": "res://src/tilemap.ts"
             }
           ]
+        },
+        {
+          "ref": "ent_ti1dS1KLwP",
+          "type": "@core/Empty",
+          "name": "ColorActions",
+          "behaviors": [
+            {
+              "ref": "bhv_fc7CTSkAFy",
+              "script": "res://src/color-action.ts",
+              "values": {
+                "tilemap": "ent_diIkTR4dUm"
+              }
+            }
+          ]
         }
       ],
       "local": [
