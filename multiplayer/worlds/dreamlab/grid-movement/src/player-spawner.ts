@@ -48,11 +48,11 @@ export class PlayerSpawner extends Behavior {
           return { ok: false, error: "provided entity was not a puppeted player!" };
 
         const newPos = playerMovement.checkMove(x, y);
-        if (!newPos) return { ok: false, error: "move was not valid" };
+        if (!newPos) return { ok: false, error: "move was not valid", pos: playerMovement.pos };
 
-        // TODO: rate limit on ticks
+        if (!playerMovement.moveTo(newPos))
+          return { ok: false, error: "can't move yet!", pos: playerMovement.pos };
 
-        playerMovement.moveTo(newPos);
         return { ok: true, pos: playerMovement.pos };
       },
     );

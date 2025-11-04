@@ -42,6 +42,8 @@ export default class PlayerMovement extends Behavior {
 
     if (this.game.isClient()) {
       this.#tryMoveThisTick();
+    } else {
+      if (this.#moveTicks > 0) this.#moveTicks -= 1;
     }
 
     this.entity.pos.assign(
@@ -99,9 +101,13 @@ export default class PlayerMovement extends Behavior {
 
   /** @see {PlayerSpawner} */
   moveTo(newPos: Vector2): boolean {
-    // TODO: check moveTicks ?
+    if (this.#moveTicks > 0) return false;
+
+    this.#moveTicks += this.moveCooldownTicks;
+
     const signal = this.game.fire(PlayerMoved, this, newPos);
     if (signal.cancelled) return false;
+    this.#moveTicks += signal.delay;
 
     this.#pos.assign(newPos);
     return true;
