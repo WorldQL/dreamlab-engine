@@ -8,6 +8,13 @@ import {
   Vector2,
 } from "@dreamlab/engine";
 
+export class PlayerMoved {
+  public constructor(
+    public readonly player: PlayerMovement,
+    public readonly position: IVector2,
+  ) {}
+}
+
 export default class PlayerMovement extends Behavior {
   #up = this.inputs.create("@player/up", "Move Up", "KeyW");
   #down = this.inputs.create("@player/down", "Move Down", "KeyS");
