@@ -291,10 +291,10 @@ export abstract class BaseGame implements ISignalHandler {
   // #endregion
 
   // #region SignalHandler impl
-  fire<S extends Signal, C extends SignalConstructor<S>>(
+  fire<C extends SignalConstructor>(
     type: C,
     ...params: ConstructorParameters<C>
-  ): S {
+  ): C extends SignalConstructor<infer S> ? S : object {
     return DefaultSignalHandlerImpls.fire(this, type, ...params);
   }
 

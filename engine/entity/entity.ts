@@ -1194,10 +1194,10 @@ export abstract class Entity implements ISignalHandler {
   // #region Signals
   readonly signalSubscriptionMap = DefaultSignalHandlerImpls.map();
 
-  fire<S extends Signal, C extends SignalConstructor<S>>(
+  fire<C extends SignalConstructor>(
     type: C,
     ...params: ConstructorParameters<C>
-  ): S {
+  ): C extends SignalConstructor<infer S> ? S : object {
     return DefaultSignalHandlerImpls.fire(this, type, ...params);
   }
 

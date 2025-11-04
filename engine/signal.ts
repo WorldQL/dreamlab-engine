@@ -61,18 +61,17 @@ export class DefaultSignalHandlerImpls {
     return new Map<SignalConstructor, SignalSubscription[]>();
   }
 
-  static fire<S extends Signal, C extends SignalConstructor<S>>(
-    handler: ISignalHandler,
-    type: C,
-    ...params: ConstructorParameters<C>
-  ): S {
+  static fire<
+    C extends SignalConstructor,
+    S extends C extends SignalConstructor<infer S> ? S : Signal,
+  >(handler: ISignalHandler, type: C, ...params: ConstructorParameters<C>): S {
     let signal: S;
     if (params.length === 0) {
       // @ts-expect-error perf code
       signal = type.__singleton;
-      if (!signal) signal = new type();
+      if (!signal) signal = new type() as S;
     } else {
-      signal = new type(...params);
+      signal = new type(...params) as S;
     }
 
     const subscriptions_ = handler.signalSubscriptionMap.get(type);
