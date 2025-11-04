@@ -100,7 +100,7 @@ export default class PlayerMovement extends Behavior {
   /** @see {PlayerSpawner} */
   moveTo(newPos: Vector2): boolean {
     // TODO: check moveTicks ?
-    const signal = this.game.fire<PlayerMoved, typeof PlayerMoved>(PlayerMoved, this, newPos);
+    const signal = this.game.fire(PlayerMoved, this, newPos);
     if (signal.cancelled) return false;
 
     this.#pos.assign(newPos);
