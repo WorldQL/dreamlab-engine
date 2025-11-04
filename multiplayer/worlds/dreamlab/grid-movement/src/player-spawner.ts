@@ -19,10 +19,20 @@ export class PlayerSpawner extends Behavior {
       // thats it right
     });
 
+    this.game.httpAPI.attach("spawn-player", [], () => {
+      if (!this.playerPrefab)
+        throw new Error("no player prefab is assigned to the PlayerSpawner!");
+      const player = this.playerPrefab.cloneInto(this.game.world, {
+        authority: "server",
+        name: "Player.Puppet",
+      });
+      return { ref: player.ref };
+    });
+
     this.game.httpAPI.attach(
       "move-player",
       [
-        z.string().describe("entity ref"),
+        z.string().describe("player ref"),
         z.object({
           x: z.union([z.literal(-1), z.literal(0), z.literal(1)]),
           y: z.union([z.literal(-1), z.literal(0), z.literal(1)]),
