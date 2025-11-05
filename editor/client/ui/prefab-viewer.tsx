@@ -464,22 +464,19 @@ export class PrefabViewer {
   #renderBreadcrumbs(): HTMLElement[] {
     const breadcrumbs: HTMLElement[] = [];
 
-    if (this.#currentFolder) {
-      const rootCrumb = (
-        <span
-          className="breadcrumb-item breadcrumb-link"
-          onClick={() => this.navigateToFolder(null)}
-        >
-          Prefabs
-        </span>
-      ) as HTMLSpanElement;
-      breadcrumbs.push(rootCrumb);
-    } else {
-      const rootCrumb = (
-        <span className="breadcrumb-item breadcrumb-current">Prefabs</span>
-      ) as HTMLSpanElement;
-      breadcrumbs.push(rootCrumb);
+    if (!this.#currentFolder) {
+      return breadcrumbs;
     }
+
+    const rootCrumb = (
+      <span
+        className="breadcrumb-item breadcrumb-link"
+        onClick={() => this.navigateToFolder(null)}
+      >
+        Prefabs
+      </span>
+    ) as HTMLSpanElement;
+    breadcrumbs.push(rootCrumb);
 
     if (this.#currentFolder) {
       const path: Entity[] = [];
@@ -535,7 +532,13 @@ export class PrefabViewer {
 
     this.#breadcrumbContainer.innerHTML = "";
     const breadcrumbs = this.#renderBreadcrumbs();
-    breadcrumbs.forEach(crumb => this.#breadcrumbContainer.append(crumb));
+
+    if (breadcrumbs.length === 0) {
+      this.#breadcrumbContainer.style.display = "none";
+    } else {
+      this.#breadcrumbContainer.style.display = "flex";
+      breadcrumbs.forEach(crumb => this.#breadcrumbContainer.append(crumb));
+    }
 
     if (this.#currentFolder) {
       const parentFolder =
