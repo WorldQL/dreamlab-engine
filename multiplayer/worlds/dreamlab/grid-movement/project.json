@@ -41,7 +41,25 @@
           "values": {
             "active": true
           }
-        },
+        }
+      ],
+      "server": [
+        {
+          "ref": "ent_mi0ynfi2V4",
+          "type": "@core/Empty",
+          "name": "PlayerSpawner",
+          "behaviors": [
+            {
+              "ref": "bhv_mnl60GT9hA",
+              "script": "res://src/player-spawner.ts",
+              "values": {
+                "playerPrefab": "ent_lXTrYV2qST"
+              }
+            }
+          ]
+        }
+      ],
+      "prefabs": [
         {
           "ref": "ent_lXTrYV2qST",
           "type": "@core/Empty",
@@ -63,9 +81,7 @@
             }
           ]
         }
-      ],
-      "server": [],
-      "prefabs": []
+      ]
     }
   }
 }

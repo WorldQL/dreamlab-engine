@@ -2,7 +2,7 @@ import { Behavior, Entity, EntityRef, PlayerJoined, value } from "@dreamlab/engi
 import { z } from "@dreamlab/vendor/zod.ts";
 import PlayerMovement from "./player-movement.ts";
 
-export class PlayerSpawner extends Behavior {
+export default class PlayerSpawner extends Behavior {
   @value({ type: EntityRef })
   playerPrefab: Entity | undefined;
 
