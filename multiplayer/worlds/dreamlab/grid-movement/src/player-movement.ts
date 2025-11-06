@@ -3,6 +3,7 @@ import {
   Entity,
   EntityRef,
   IVector2,
+  JsonValue,
   LocalRoot,
   Tilemap,
   value,
@@ -10,9 +11,12 @@ import {
 } from "@dreamlab/engine";
 import { Colors } from "../lib/colors.ts";
 
+type Action = { id: string; data: JsonValue };
+
 export class PlayerMoved {
   public cancelled: boolean = false;
   public delay: number = 0;
+  public actions: Action[] = [];
 
   public constructor(
     public readonly player: PlayerMovement,
@@ -100,17 +104,17 @@ export default class PlayerMovement extends Behavior {
   }
 
   /** @see {PlayerSpawner} */
-  moveTo(newPos: Vector2): boolean {
-    if (this.#moveTicks > 0) return false;
+  moveTo(newPos: Vector2): { success: boolean; actions?: Action[] } {
+    if (this.#moveTicks > 0) return { success: false };
 
     this.#moveTicks += this.moveCooldownTicks;
 
     const signal = this.game.fire(PlayerMoved, this, newPos);
-    if (signal.cancelled) return false;
+    if (signal.cancelled) return { success: false };
     this.#moveTicks += signal.delay;
 
     this.#pos.assign(newPos);
-    return true;
+    return { success: true, actions: signal.actions };
   }
 
   @value({ type: EntityRef })

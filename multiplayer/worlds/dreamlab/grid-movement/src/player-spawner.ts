@@ -50,10 +50,12 @@ export default class PlayerSpawner extends Behavior {
         const newPos = playerMovement.checkMove(x, y);
         if (!newPos) return { ok: false, error: "move was not valid", pos: playerMovement.pos };
 
-        if (!playerMovement.moveTo(newPos))
+        const moveResult = playerMovement.moveTo(newPos);
+        if (!moveResult.success)
           return { ok: false, error: "can't move yet!", pos: playerMovement.pos };
 
-        return { ok: true, pos: playerMovement.pos };
+        const actions = moveResult.actions?.length === 0 ? undefined : moveResult.actions;
+        return { ok: true, pos: playerMovement.pos, actions };
       },
     );
   }

@@ -31,6 +31,27 @@
               }
             }
           ]
+        },
+        {
+          "ref": "ent_PSQRkfXXRD",
+          "type": "@core/Empty",
+          "name": "Hello",
+          "transform": {
+            "position": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_C9GGfct9pG",
+              "script": "res://src/dialogue-tile.ts",
+              "values": {
+                "prefab": "ent_wBpqHzazuk",
+                "text": "Hello world!"
+              }
+            }
+          ]
         }
       ],
       "local": [
@@ -61,6 +82,17 @@
       ],
       "prefabs": [
         {
+          "ref": "ent_wBpqHzazuk",
+          "type": "@core/UIPanel",
+          "name": "DialogueText",
+          "behaviors": [
+            {
+              "ref": "bhv_1TAzrMmL90",
+              "script": "res://src/dialogue-tile-text.tsx"
+            }
+          ]
+        },
+        {
           "ref": "ent_lXTrYV2qST",
           "type": "@core/Empty",
           "name": "Player",
@@ -71,6 +103,10 @@
               "values": {
                 "tilemap": "ent_diIkTR4dUm"
               }
+            },
+            {
+              "ref": "bhv_nRsjdlUkRJ",
+              "script": "res://src/camera-follow.ts"
             }
           ],
           "children": [
