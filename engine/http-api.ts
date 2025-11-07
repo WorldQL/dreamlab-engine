@@ -13,7 +13,7 @@ export class ServerHttpRouteNotFound extends Error {}
 export class ServerHttpAPI {
   #routes = new Map<string, HttpAPIRoute>();
 
-  attach<P extends [z.ZodType, ...z.ZodType[]] | []>(
+  attach<const P extends [z.core.SomeType, ...z.core.SomeType[]] | []>(
     identifier: string,
     params: P,
     handler: (...params: z.infer<z.ZodTuple<P, null>>) => unknown,
