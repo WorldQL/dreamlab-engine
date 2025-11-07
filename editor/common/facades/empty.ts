@@ -59,6 +59,9 @@ export class EmptyFacade extends PixiEntity {
     super(ctx, false);
 
     this.defineValue(EmptyFacade, "isFolder", {
+      hidden: _ => {
+        return !this.id.startsWith("world/EditEntities/prefabs");
+      },
       description: "Marks this empty as a folder for organizing prefabs",
       replicated: true,
       persistent: true,
