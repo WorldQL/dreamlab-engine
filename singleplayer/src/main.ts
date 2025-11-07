@@ -14,7 +14,7 @@ import {
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import { getSceneFromProject, loadSceneDefinition, ProjectSchema } from "@dreamlab/scene";
-import { z } from "@dreamlab/vendor/zod.ts";
+import * as z from "@dreamlab/vendor/zod.ts";
 import { setAspectRatio } from "../../client/src/aspect-ratio.ts";
 import {
   createFetch,
@@ -75,6 +75,7 @@ await game.initialize();
 game.setStatus(GameStatus.Loading);
 
 const BehaviorSchema = z.record(
+  z.string(),
   z.object({ uri: z.string(), name: z.string().optional(), hash: z.string().optional() }),
 );
 

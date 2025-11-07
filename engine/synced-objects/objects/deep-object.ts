@@ -3,7 +3,7 @@ import {
   syncedObjectContainerObjectsField as objects,
   syncedObjectContainerReadyField as ready,
 } from "@dreamlab/engine/internal";
-import { z } from "@dreamlab/vendor/zod.ts";
+import * as z from "@dreamlab/vendor/zod.ts";
 import { Accessor, AnySyncedObject, SyncedObject } from "../object.ts";
 import { SyncedObjectOperation } from "../operation.ts";
 import { isContainer, SyncedObjectContainer, SyncedObjectRegistry } from "../registry.ts";

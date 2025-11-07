@@ -14,7 +14,7 @@ import { ServerNetworkManager } from "./networking/net-manager.ts";
 import { rewriteStackTraces } from "./stack.ts";
 
 import { ProjectSchema, getSceneFromProject, loadSceneDefinition } from "@dreamlab/scene";
-import { z } from "@dreamlab/vendor/zod.ts";
+import * as z from "@dreamlab/vendor/zod.ts";
 import { handleEditMode } from "./edit-mode.ts";
 import { handleHttpAPI } from "./http-api.ts";
 import { KvServerStub } from "./kv-server-stub.ts";
@@ -79,6 +79,7 @@ await game.initialize();
 await handleHttpAPI(ipc, game);
 
 const BehaviorSchema = z.record(
+  z.string(),
   z.object({ uri: z.string(), name: z.string().optional(), hash: z.string().optional() }),
 );
 

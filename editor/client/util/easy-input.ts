@@ -1,5 +1,5 @@
 import { element as elem } from "@dreamlab/ui";
-import { validationError, ZodError } from "@dreamlab/vendor/zod.ts";
+import * as z from "@dreamlab/vendor/zod.ts";
 
 // TODO: there's a lot of code duplication here, but the differing types make it hard to reconcile
 
@@ -30,8 +30,8 @@ export function createInputField<T>({
     } catch (err) {
       if (err instanceof Error) {
         let message = err.message;
-        if (err instanceof ZodError) {
-          message = validationError.fromError(err).message;
+        if (err instanceof z.ZodError) {
+          message = z.prettifyError(err);
         }
         input.setCustomValidity(message);
       } else {
@@ -87,7 +87,7 @@ export function createInputFieldWithDefault<T>({
     } catch (err) {
       if (err instanceof Error) {
         let message = err.message;
-        if (err instanceof ZodError) message = validationError.fromError(err).message;
+        if (err instanceof z.ZodError) message = z.prettifyError(err);
         input.setCustomValidity(message);
       } else {
         input.setCustomValidity("Unknown error");

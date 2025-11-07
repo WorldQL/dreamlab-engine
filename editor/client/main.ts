@@ -32,7 +32,7 @@ import {
 import * as internal from "@dreamlab/engine/internal";
 import { element } from "@dreamlab/ui";
 import { urlToWebSocket } from "@dreamlab/util/url.ts";
-import { z } from "@dreamlab/vendor/zod.ts";
+import * as z from "@dreamlab/vendor/zod.ts";
 import { icon, Loader } from "./_icons.tsx";
 import { stats } from "./_stats.ts";
 import { updateAspectRatio } from "./aspect-ratio.ts";

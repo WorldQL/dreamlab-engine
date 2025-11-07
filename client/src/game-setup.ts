@@ -9,7 +9,7 @@ import {
 import * as internal from "@dreamlab/engine/internal";
 import { ReceivedInitialNetworkSnapshot } from "@dreamlab/proto/common/signals.ts";
 import { convertEntityDefinition, getSceneFromProject, ProjectSchema } from "@dreamlab/scene";
-import { z } from "@dreamlab/vendor/zod.ts";
+import * as z from "@dreamlab/vendor/zod.ts";
 import { ClientConnection } from "./networking/net-connection.ts";
 
 export const setupGame = async (
@@ -28,6 +28,7 @@ export const setupGame = async (
   await Promise.all(scene.registration.map(script => import(game.resolveResource(script))));
 
   const BehaviorSchema = z.record(
+    z.string(),
     z.object({ uri: z.string(), name: z.string().optional(), hash: z.string().optional() }),
   );
 

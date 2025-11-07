@@ -1,4 +1,4 @@
-import { z } from "@dreamlab/vendor/zod.ts";
+import * as z from "@dreamlab/vendor/zod.ts";
 import {
   ArrayOperationPush,
   ArrayOperationResize,

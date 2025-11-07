@@ -12,7 +12,7 @@ import {
   TransformOptions,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
-import { z } from "@dreamlab/vendor/zod.ts";
+import type * as z from "@dreamlab/vendor/zod.ts";
 import {
   EntitySchema,
   ProjectSchema,

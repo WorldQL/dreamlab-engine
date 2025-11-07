@@ -1,5 +1,5 @@
 import { Behavior, ObjectAdapter, PlayerJoined, syncedValue } from "@dreamlab/engine";
-import { z } from "@dreamlab/vendor/zod.ts";
+import * as z from "@dreamlab/vendor/zod.ts";
 
 export default class GlobalStats extends Behavior {
   @syncedValue(ObjectAdapter)
@@ -32,7 +32,7 @@ export default class GlobalStats extends Behavior {
     this.updateLeaderboard();
 
     // Listen for PlayerJoined
-    this.listen(this.game, PlayerJoined, async (player) => {
+    this.listen(this.game, PlayerJoined, async player => {
       if (!this.game.isServer()) return;
 
       const playerId = player.connection.playerId;
@@ -92,7 +92,7 @@ export default class GlobalStats extends Behavior {
     // Ensure allPlayers is an array of objects and filter out duplicates
     const updatedPlayers = [
       ...allPlayers.filter(
-        (player) => typeof player === "object" && player.playerId !== playerId,
+        player => typeof player === "object" && player.playerId !== playerId,
       ),
       { playerId, nickname },
     ];

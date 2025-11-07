@@ -1,4 +1,4 @@
-import { z } from "@dreamlab/vendor/zod.ts";
+import * as z from "@dreamlab/vendor/zod.ts";
 import { parseArgs } from "@std/cli";
 import { load as dotenv } from "@std/dotenv";
 import { createEnv } from "@t3-oss/env-core";
@@ -19,13 +19,13 @@ const SocketAddressSchema = z
     try {
       url = new URL(`tcp://${address}/`);
     } catch {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Invalid bind address" });
+      ctx.addIssue({ code: "custom", message: "Invalid bind address" });
       return z.NEVER;
     }
 
     const port = Number(url.port);
     if (Number.isNaN(port)) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Port is not properly defined" });
+      ctx.addIssue({ code: "custom", message: "Port is not properly defined" });
       return z.NEVER;
     }
 
@@ -68,7 +68,7 @@ export const CONFIG = createEnv({
       .url()
       .default(`http://${early.BIND_ADDRESS.hostname}:${early.BIND_ADDRESS.port}`),
 
-    KV_PUBLIC_URL: z.string().url().optional(),
+    KV_PUBLIC_URL: z.url().optional(),
     KV_SIGNING_KEY: z.string().min(1).optional(),
     WORLDS_DIRECTORY: z.string().default(`${Deno.cwd()}/worlds`),
 
@@ -82,7 +82,7 @@ export const CONFIG = createEnv({
 
     // optionally report existence to dreamlab-next (for running production play instances)
     ACTOR_ID: z.string().optional(),
-    SERVER_TRACKER: z.string().url().optional(),
+    SERVER_TRACKER: z.url().optional(),
     MULTIPLAYER_AUTH_TOKEN: z.string().min(1).optional(),
     AUTO_CLEANUP_IDLE_SECS: z.coerce.number().optional(),
   },

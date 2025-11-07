@@ -1,5 +1,5 @@
 import { urlWithParams } from "@dreamlab/util/url.ts";
-import { z } from "@dreamlab/vendor/zod.ts";
+import * as z from "@dreamlab/vendor/zod.ts";
 import type { AuthToken } from "./auth.ts";
 import { icon, X } from "../../editor/client/_icons.tsx";
 
@@ -168,7 +168,7 @@ export class DreamlabConnectFormElement extends HTMLElement {
 
 type InstanceInfo = z.infer<typeof InstanceInfoSchema>;
 export const InstanceInfoSchema = z.object({
-  id: z.string().uuid(),
+  id: z.uuid(),
   server: z.string(),
   world: z.string(),
   status: z.string(),
@@ -181,7 +181,7 @@ export const InstanceInfoSchema = z.object({
 });
 
 type APIInstancesResponse = z.infer<typeof APIInstancesSchema>;
-const APIInstancesSchema = z.record(InstanceInfoSchema);
+const APIInstancesSchema = z.record(z.string(), InstanceInfoSchema);
 
 export const fetchInstances = async (worldId: string): Promise<APIInstancesResponse> => {
   const base = globalThis.env.DREAMLAB_NEXT_PUBLIC_URL;

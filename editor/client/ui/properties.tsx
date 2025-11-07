@@ -15,7 +15,7 @@ import {
 import * as internal from "@dreamlab/engine/internal";
 import type { SceneDescBehavior } from "@dreamlab/scene";
 import { BaseElement, element as elem } from "@dreamlab/ui";
-import { z } from "@dreamlab/vendor/zod.ts";
+import * as z from "@dreamlab/vendor/zod.ts";
 import { EditorFacadeTilemap } from "../../common/facades/tilemap.ts";
 import { EditorMetadataEntity, Facades, PrefabRootFacade } from "../../common/mod.ts";
 import { icon, X } from "../_icons.tsx";
@@ -311,9 +311,7 @@ export class Properties implements InspectorUIWidget {
       const txfmTable = new DataTable();
       transformSection.addContent(txfmTable);
 
-      const numeric = z
-        .number({ coerce: true })
-        .refine(Number.isFinite, "Value must be finite!");
+      const numeric = z.coerce.number().refine(Number.isFinite, "Value must be finite!");
       const [transformXField, refreshX] = createInputField({
         get: () => entity.transform.position.x,
         set: x => (entity.transform.position.x = x),

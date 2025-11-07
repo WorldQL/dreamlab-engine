@@ -1,4 +1,4 @@
-import { z } from "@dreamlab/vendor/zod.ts";
+import * as z from "@dreamlab/vendor/zod.ts";
 import { Router, Status } from "@oak/oak";
 import * as path from "@std/path";
 import { generate as generateUUIDv5 } from "@std/uuid/v5";
@@ -136,10 +136,22 @@ export const serveInstanceManagementAPI = (router: Router) => {
   const RunningInstanceByIdSchema = z
     .string()
     .transform(id => GameInstance.INSTANCES.get(id))
-    .refine((instance): instance is GameInstance => instance !== undefined, {
-      message: "There is no running instance with the given ID.",
-      params: { status: Status.NotFound, throwEarly: true },
-    });
+    .pipe(
+      z.transform((instance, ctx) => {
+        if (instance === undefined) {
+          ctx.issues.push({
+            input: instance,
+            message: "There is no running instance with the given ID.",
+            code: "custom",
+            params: { status: Status.NotFound, throwEarly: true },
+          });
+
+          return z.NEVER;
+        }
+
+        return instance;
+      }),
+    );
 
   const EditModeInstanceSchema = RunningInstanceByIdSchema.refine(
     instance => instance.info.editMode,

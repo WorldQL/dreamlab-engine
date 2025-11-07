@@ -10,7 +10,7 @@ import { serializeEntityDefinition } from "@dreamlab/proto/common/entity-sync.ts
 import { PlayerConnectionDropped } from "@dreamlab/proto/common/signals.ts";
 import { PlayPacket, ServerPacket } from "@dreamlab/proto/play.ts";
 import { EntitySchema, getSceneFromProject, ProjectSchema } from "@dreamlab/scene";
-import { z } from "@dreamlab/vendor/zod.ts";
+import type * as z from "@dreamlab/vendor/zod.ts";
 import { ServerNetworkSetupRoutine } from "./net-manager.ts";
 
 export const handlePlayerJoinExchange: ServerNetworkSetupRoutine = (net, game) => {

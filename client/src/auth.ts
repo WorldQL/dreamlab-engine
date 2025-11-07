@@ -1,5 +1,5 @@
 import { createId } from "@dreamlab/vendor/nanoid.ts";
-import { z } from "@dreamlab/vendor/zod.ts";
+import * as z from "@dreamlab/vendor/zod.ts";
 import { jwtDecode } from "npm:jwt-decode";
 import { connectionDetails } from "./util/server-url.ts";
 
@@ -52,7 +52,7 @@ export const auth = async (nickname: string): Promise<AuthToken> => {
 };
 
 const TokenSchema = z.object({
-  instance_id: z.string().uuid(),
+  instance_id: z.uuid(),
   nickname: z.string(),
   player_id: z.string(),
 

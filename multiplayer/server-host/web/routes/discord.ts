@@ -1,4 +1,4 @@
-import { z } from "@dreamlab/vendor/zod.ts";
+import * as z from "@dreamlab/vendor/zod.ts";
 import { Router, Status } from "@oak/oak";
 import { create } from "https://deno.land/x/djwt@v3.0.1/mod.ts";
 import { JsonAPIError, typedJsonHandler } from "../../../common-host/web-util/api.ts";

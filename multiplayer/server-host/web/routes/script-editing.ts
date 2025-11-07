@@ -1,9 +1,9 @@
-import { z } from "@dreamlab/vendor/zod.ts";
+import * as z from "@dreamlab/vendor/zod.ts";
 import { Router, Status } from "@oak/oak";
 
 import * as fs from "@std/fs";
+import { contentType } from "@std/media-types";
 import * as path from "@std/path";
-import { contentType } from "https://deno.land/std@0.224.0/media_types/mod.ts";
 
 import { Entity } from "@dreamlab/engine";
 import { PlayPacket } from "@dreamlab/proto/play.ts";
@@ -21,10 +21,22 @@ export const serveScriptEditingAPI = (router: Router) => {
   const EditModeInstanceSchema = z
     .string()
     .transform(id => instances.get(id))
-    .refine((instance): instance is GameInstance => instance !== undefined, {
-      message: "An instance with the given ID does not exist",
-      params: { status: Status.NotFound, throwEarly: true },
-    })
+    .pipe(
+      z.transform((instance, ctx) => {
+        if (instance === undefined) {
+          ctx.issues.push({
+            input: instance,
+            message: "An instance with the given ID does not exist",
+            code: "custom",
+            params: { status: Status.NotFound, throwEarly: true },
+          });
+
+          return z.NEVER;
+        }
+
+        return instance;
+      }),
+    )
     .refine(instance => instance && instance.info.editMode, {
       message: "The instance is not in edit mode",
       params: { status: Status.Forbidden, throwEarly: true },

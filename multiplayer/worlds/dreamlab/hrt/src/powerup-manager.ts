@@ -6,7 +6,7 @@ import {
   IVector2,
   syncedValue,
 } from "@dreamlab/engine";
-import { z } from "@dreamlab/vendor/zod.ts";
+import * as z from "@dreamlab/vendor/zod.ts";
 import type { PowerupType } from "./powerup.ts";
 import Powerup, { PowerupTypes } from "./powerup.ts";
 

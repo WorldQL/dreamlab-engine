@@ -18,7 +18,7 @@ import {
 } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import { z } from "@dreamlab/vendor/zod.ts";
+import * as z from "@dreamlab/vendor/zod.ts";
 import "npm:vanilla-colorful/hex-alpha-color-picker.js";
 import { icon, Pipette, X } from "../_icons.tsx";
 import { IconButton } from "../components/icon-button.ts";
@@ -34,9 +34,7 @@ interface ValueControlOptions<T> {
   relatedEntity: Entity;
 }
 
-const NumericSchema = z
-  .number({ coerce: true })
-  .refine(Number.isFinite, "Value must be finite!");
+const NumericSchema = z.coerce.number().refine(Number.isFinite, "Value must be finite!");
 
 export function createValueControl(
   game: ClientGame,
@@ -148,7 +146,7 @@ export function createValueControl(
           opts.set(v ?? "");
         },
         convert: async value => {
-          const url = z.literal("").or(z.string().url()).parse(value);
+          const url = z.literal("").or(z.url()).parse(value);
           return await resolve(url);
         },
         convertBack: x => x,
@@ -171,7 +169,7 @@ export function createValueControl(
       const opts = _opts as ValueControlOptions<string | undefined>;
 
       const convert = async (value: string) => {
-        const url = z.literal("").or(z.string().url()).parse(value);
+        const url = z.literal("").or(z.url()).parse(value);
         if (url === "") return url;
 
         try {

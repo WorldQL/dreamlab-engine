@@ -1,7 +1,7 @@
 import { Camera, ClientGame, ConnectionId, PlayerLeft } from "@dreamlab/engine";
 import { EntityReferenceSchema, Vector2Schema } from "@dreamlab/proto/datamodel.ts";
 import { BaseElement } from "@dreamlab/ui";
-import { z } from "@dreamlab/vendor/zod.ts";
+import * as z from "@dreamlab/vendor/zod.ts";
 
 export const MultiplayerCursorPacketSchema = z.discriminatedUnion("t", [
   z.object({ t: z.literal("edit-game"), world: Vector2Schema }),

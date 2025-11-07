@@ -1,5 +1,5 @@
 import { element as elem } from "@dreamlab/ui";
-import type { z } from "@dreamlab/vendor/zod.ts";
+import type * as z from "@dreamlab/vendor/zod.ts";
 
 export const getClientId = () => {
   const idMatches = /^(?<id>\d+)\.discordsays\.com$/.exec(window.location.host);
@@ -44,7 +44,7 @@ const init = async () => {
 
   // load scripts **after** showing loading
   const main = import("./start-game.ts");
-  const { z } = await import("@dreamlab/vendor/zod.ts");
+  const z = await import("@dreamlab/vendor/zod.ts");
   const { DiscordSDK } = await import("npm:@discord/embedded-app-sdk");
   const { InstanceInfoSchema } = await import("./connect-form.tsx");
 

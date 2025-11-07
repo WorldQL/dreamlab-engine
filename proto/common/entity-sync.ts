@@ -7,7 +7,7 @@ import {
   TransformOptions,
 } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
-import type { z } from "@dreamlab/vendor/zod.ts";
+import type * as z from "@dreamlab/vendor/zod.ts";
 import {
   BehaviorDefinitionSchema,
   EntityDefinitionSchema,

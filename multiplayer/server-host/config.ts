@@ -1,4 +1,4 @@
-import { z } from "@dreamlab/vendor/zod.ts";
+import * as z from "@dreamlab/vendor/zod.ts";
 import { load as dotenv } from "@std/dotenv";
 import { createEnv } from "@t3-oss/env-core";
 
@@ -18,13 +18,13 @@ const SocketAddressSchema = z
     try {
       url = new URL(`tcp://${address}/`);
     } catch {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Invalid bind address" });
+      ctx.addIssue({ code: "custom", message: "Invalid bind address" });
       return z.NEVER;
     }
 
     const port = Number(url.port);
     if (Number.isNaN(port)) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Port is not properly defined" });
+      ctx.addIssue({ code: "custom", message: "Port is not properly defined" });
       return z.NEVER;
     }
 
@@ -74,19 +74,15 @@ export const CONFIG = createEnv({
   server: {
     IS_DEV: BoolSchema,
     MULTIPLAYER_PUBLIC_URL: z
-      .string()
       .url()
       .default(`http://${early.BIND_ADDRESS.hostname}:${early.BIND_ADDRESS.port}`),
-    DISTRIBUTION_PUBLIC_URL: z
-      .string()
-      .url()
-      .default("https://distribution.dreamlab.gg/v1/git"),
+    DISTRIBUTION_PUBLIC_URL: z.url().default("https://distribution.dreamlab.gg/v1/git"),
     MULTIPLAYER_AUTH_TOKEN: z.string().min(1),
     NEXT_GAME_JWT_SECRET: z.string().min(1),
-    KV_PUBLIC_URL: z.string().url(),
+    KV_PUBLIC_URL: z.url(),
     KV_SIGNING_KEY: z.string().min(1),
-    NEXT_PUBLIC_URL: z.string().url().default("https://app.dreamlab.gg"),
-    CODE_EDITOR_YJS_URL: z.string().url().optional(),
+    NEXT_PUBLIC_URL: z.url().default("https://app.dreamlab.gg"),
+    CODE_EDITOR_YJS_URL: z.url().optional(),
     MULTIPLAYER_USE_SYSTEMD_LIMITS: BoolSchema,
     MULTIPLAYER_REWRITE_STACK_TRACES: BoolSchema,
     WORLDS_DIRECTORY: z.string().default(`${Deno.cwd()}/worlds`),

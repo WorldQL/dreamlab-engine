@@ -1,4 +1,4 @@
-import { z } from "@dreamlab/vendor/zod.ts";
+import * as z from "@dreamlab/vendor/zod.ts";
 import {
   BehaviorDefinitionSchema,
   ConnectionIdSchema,
@@ -131,10 +131,10 @@ export const ClientSyncedObjectReports = z.object({
 export const ServerSyncedObjectReports = z.object({
   t: z.literal("SyncedObjectReports"),
   reports: z.record(
-    SyncedObjectReports.keySchema,
+    SyncedObjectReports.keyType,
     z.record(
-      SyncedObjectReports.valueSchema.keySchema,
-      SyncedObjectReports.valueSchema.valueSchema.element
+      SyncedObjectReports.valueType.keyType,
+      SyncedObjectReports.valueType.valueType.element
         .extend({
           from: ConnectionIdSchema.optional(),
         })

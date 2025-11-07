@@ -23,10 +23,11 @@
     "@std/fmt": "jsr:@std/fmt@^1.0.4",
     "@std/fs": "jsr:@std/fs@^1.0.10",
     "@std/jsonc": "jsr:@std/jsonc@^1.0.1",
+    "@std/media-types": "jsr:@std/media-types@^1.1.0",
     "@std/path": "jsr:@std/path@^1.0.8",
     "@std/streams": "jsr:@std/streams@^1.0.8",
     "@std/uuid": "jsr:@std/uuid@^1.0.4",
-    "@t3-oss/env-core": "npm:@t3-oss/env-core@^0.12.0",
+    "@t3-oss/env-core": "npm:@t3-oss/env-core@^0.13.8",
   },
   "compilerOptions": {
     "lib": ["deno.window", "dom"],

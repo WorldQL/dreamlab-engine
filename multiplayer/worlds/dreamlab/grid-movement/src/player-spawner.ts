@@ -1,5 +1,5 @@
 import { Behavior, Entity, EntityRef, PlayerJoined, value } from "@dreamlab/engine";
-import { z } from "@dreamlab/vendor/zod.ts";
+import * as z from "@dreamlab/vendor/zod.ts";
 import PlayerMovement from "./player-movement.ts";
 
 export default class PlayerSpawner extends Behavior {

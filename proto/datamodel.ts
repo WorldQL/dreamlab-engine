@@ -1,4 +1,4 @@
-import { z } from "@dreamlab/vendor/zod.ts";
+import * as z from "@dreamlab/vendor/zod.ts";
 
 export const EntityReferenceSchema = z.string().describe("Entity Reference");
 export const EntityTypeSchema = z.string().describe("Entity Type");
@@ -66,7 +66,6 @@ type EntityDefinitionSchemaTypeOut = z.output<typeof BaseEntityDefinitionSchema>
 };
 export const EntityDefinitionSchema: z.ZodType<
   EntityDefinitionSchemaTypeOut,
-  z.ZodTypeDef,
   EntityDefinitionSchemaTypeIn
 > = BaseEntityDefinitionSchema.extend({
   children: z.lazy(() => EntityDefinitionSchema.array().default([])),

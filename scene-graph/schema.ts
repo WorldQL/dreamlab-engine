@@ -1,4 +1,4 @@
-import { z } from "@dreamlab/vendor/zod.ts";
+import * as z from "@dreamlab/vendor/zod.ts";
 
 export const CURRENT_SCHEMA_VERSION: number = 1;
 
@@ -54,9 +54,9 @@ export type SceneDescSyncedObject = z.input<typeof SyncedObjectSchema>;
 export const BehaviorSchema = z.object({
   ref: BehaviorReferenceSchema,
   script: ResourceLocationSchema,
-  values: z.record(ValueSchema).default({}),
-  overrides: z.record(ValueSchema).optional(),
-  sync: z.record(SyncedObjectSchema).default({}),
+  values: z.record(z.string(), ValueSchema).default({}),
+  overrides: z.record(z.string(), ValueSchema).optional(),
+  sync: z.record(z.string(), SyncedObjectSchema).default({}),
 });
 export type SceneDescBehavior = z.input<typeof BehaviorSchema>;
 
@@ -66,7 +66,7 @@ const EntitySchemaNoChildren = z.object({
   enabled: z.boolean().default(true),
   type: EntityTypeSchema,
   transform: TransformSchema.default(TransformSchema.parse({})),
-  values: z.record(ValueSchema).default({}),
+  values: z.record(z.string(), ValueSchema).default({}),
   behaviors: z.array(BehaviorSchema).default([]),
   data: JsonValueSchema.optional(),
   locked: z.boolean().default(false),
@@ -77,13 +77,10 @@ type SceneDescEntityTypeIn = z.input<typeof EntitySchemaNoChildren> & {
 type SceneDescEntityTypeOut = z.output<typeof EntitySchemaNoChildren> & {
   children: SceneDescEntityTypeOut[];
 };
-export const EntitySchema: z.ZodType<
-  SceneDescEntityTypeOut,
-  z.ZodTypeDef,
-  SceneDescEntityTypeIn
-> = EntitySchemaNoChildren.extend({
-  children: z.lazy(() => EntitySchema.array().default([])),
-});
+export const EntitySchema: z.ZodType<SceneDescEntityTypeOut, SceneDescEntityTypeIn> =
+  EntitySchemaNoChildren.extend({
+    children: z.lazy(() => EntitySchema.array().default([])),
+  });
 export type SceneDescEntity = z.input<typeof EntitySchema>;
 
 export const SceneSchema = z.object({
@@ -97,7 +94,7 @@ export const SceneSchema = z.object({
 export const SceneOrSceneLocationSchema = SceneSchema.or(z.string());
 
 export const ProjectSchema = z.object({
-  $schema: z.string().url().optional(),
+  $schema: z.url().optional(),
   meta: z.object({
     schema_version: z.number(),
     engine_revision: z.string(),
@@ -105,7 +102,7 @@ export const ProjectSchema = z.object({
   tick_rate: z.number().default(60),
   scenes: z
     .object({ main: SceneOrSceneLocationSchema })
-    .and(z.record(SceneOrSceneLocationSchema)),
+    .and(z.record(z.string(), SceneOrSceneLocationSchema)),
 });
 
 export type Scene = z.input<typeof SceneSchema>;

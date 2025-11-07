@@ -1,8 +1,8 @@
+import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
 import { ClientGame } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import { z } from "@dreamlab/vendor/zod.ts";
-import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
+import * as z from "@dreamlab/vendor/zod.ts";
 import { ChevronDown, icon } from "../_icons.tsx";
 import { createInputFieldWithDefault } from "./easy-input.ts";
 
@@ -152,7 +152,7 @@ export function createTextureControl(
       await updateImagePreview(v ?? "");
     },
     convert: async value => {
-      const url = z.literal("").or(z.string().url()).parse(value);
+      const url = z.literal("").or(z.url()).parse(value);
       await updateImagePreview(url);
       return url;
     },
