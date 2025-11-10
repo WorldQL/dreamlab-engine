@@ -753,6 +753,92 @@ export class SceneGraph implements InspectorUIWidget {
             1,
           ]);
 
+          const selectedRootPrefixes = new Set<string>();
+          for (const e of ui.selectedEntity.entities) {
+            const idParts = e.id.split("/");
+            const rootPrefix = ui.editMode && idParts.length >= 3 ? idParts[2] : idParts[0];
+            if (rootPrefix) selectedRootPrefixes.add(rootPrefix);
+          }
+
+          if (selectedRootPrefixes.size === 1) {
+            const availableRoots: { name: string; entity: Entity }[] = [];
+
+            if (ui.editMode) {
+              const roots = [
+                {
+                  name: "World",
+                  entity: this.game.world._.EditEntities._.world,
+                  prefix: "world",
+                },
+                {
+                  name: "Local",
+                  entity: this.game.world._.EditEntities._.local,
+                  prefix: "local",
+                },
+                {
+                  name: "Server",
+                  entity: this.game.world._.EditEntities._.server,
+                  prefix: "server",
+                },
+                {
+                  name: "Prefabs",
+                  entity: this.game.world._.EditEntities._.prefabs,
+                  prefix: "prefabs",
+                },
+              ];
+              availableRoots.push(
+                ...roots
+                  .filter(root => !selectedRootPrefixes.has(root.prefix))
+                  .map(({ name, entity }) => ({ name, entity })),
+              );
+            } else {
+              const roots = [
+                { name: "World", entity: this.game.world, prefix: "world" },
+                { name: "Local", entity: this.game.local, prefix: "local" },
+                { name: "Prefabs", entity: this.game.prefabs, prefix: "prefabs" },
+              ];
+              availableRoots.push(
+                ...roots
+                  .filter(root => !selectedRootPrefixes.has(root.prefix))
+                  .map(({ name, entity }) => ({ name, entity })),
+              );
+            }
+
+            if (availableRoots.length > 0) {
+              const reparentMenuItems: ContextMenuItem[] = availableRoots.map(root => [
+                root.name,
+                () => {
+                  const undoableOperations: (UndoRedoOperation & { t: "compound" })[`ops`] = [];
+
+                  const topLevelEntities = ui.selectedEntity.entities.filter(
+                    e => !ui.selectedEntity.entities.includes(e.parent!),
+                  );
+
+                  for (const selectedEntity of topLevelEntities) {
+                    const prevParentRef = selectedEntity.parent?.ref;
+                    selectedEntity.parent = root.entity;
+                    if (prevParentRef) {
+                      undoableOperations.push({
+                        t: "move-entity",
+                        entityRef: selectedEntity.ref,
+                        prevParentRef,
+                        parentRef: root.entity.ref,
+                      });
+                    }
+                  }
+
+                  if (undoableOperations.length > 0) {
+                    UndoRedoManager._.push({ t: "compound", ops: undoableOperations });
+                  }
+                },
+              ]);
+
+              const reparentMenuItem: ContextMenuItem = ["Reparent", reparentMenuItems];
+              (reparentMenuItem as unknown[]).push(false, undefined, 40, 1);
+              contextMenuItems.push(reparentMenuItem);
+            }
+          }
+
           if (lockedByEntity) {
             contextMenuItems.push([
               "Unlock",
@@ -961,6 +1047,74 @@ export class SceneGraph implements InspectorUIWidget {
           });
           replaceMenuItem.push(false, undefined, 40, 1);
           bottomItems.push(replaceMenuItem);
+
+          const idParts = entity.id.split("/");
+          const entityRootPrefix = ui.editMode && idParts.length >= 3 ? idParts[2] : idParts[0];
+
+          const availableRoots: { name: string; entity: Entity }[] = [];
+
+          if (ui.editMode) {
+            const roots = [
+              {
+                name: "World",
+                entity: this.game.world._.EditEntities._.world,
+                prefix: "world",
+              },
+              {
+                name: "Local",
+                entity: this.game.world._.EditEntities._.local,
+                prefix: "local",
+              },
+              {
+                name: "Server",
+                entity: this.game.world._.EditEntities._.server,
+                prefix: "server",
+              },
+              {
+                name: "Prefabs",
+                entity: this.game.world._.EditEntities._.prefabs,
+                prefix: "prefabs",
+              },
+            ];
+            availableRoots.push(
+              ...roots
+                .filter(root => entityRootPrefix !== root.prefix)
+                .map(({ name, entity }) => ({ name, entity })),
+            );
+          } else {
+            const roots = [
+              { name: "World", entity: this.game.world, prefix: "world" },
+              { name: "Local", entity: this.game.local, prefix: "local" },
+              { name: "Prefabs", entity: this.game.prefabs, prefix: "prefabs" },
+            ];
+            availableRoots.push(
+              ...roots
+                .filter(root => entityRootPrefix !== root.prefix)
+                .map(({ name, entity }) => ({ name, entity })),
+            );
+          }
+
+          if (availableRoots.length > 0) {
+            const reparentMenuItems: ContextMenuItem[] = availableRoots.map(root => [
+              root.name,
+              () => {
+                const prevParentRef = entity.parent?.ref;
+                entity.parent = root.entity;
+                if (prevParentRef) {
+                  UndoRedoManager._.push({
+                    t: "move-entity",
+                    entityRef: entity.ref,
+                    prevParentRef,
+                    parentRef: root.entity.ref,
+                  });
+                }
+              },
+            ]);
+
+            const reparentMenuItem: ContextMenuItem = ["Reparent", reparentMenuItems];
+            (reparentMenuItem as unknown[]).push(false, undefined, 40, 2);
+            bottomItems.push(reparentMenuItem);
+          }
 
           bottomItems.push(
             [
