@@ -37,6 +37,12 @@ export class RectCollider extends Entity {
   constructor(ctx: EntityContext) {
     super(ctx);
     this.defineValue(RectCollider, "isSensor");
+
+    this.values.get("isSensor")?.onChanged((newValue: boolean) => {
+      if (this.#internal) {
+        this.#internal.collider.setSensor(newValue);
+      }
+    });
   }
 
   onInitialize(): void {
@@ -178,6 +184,30 @@ export class Collider extends Entity {
     });
     this.defineValue(Collider, "friction", {
       description: "Friction coefficient, used for physics calculations.",
+    });
+
+    this.values.get("isSensor")?.onChanged((newValue: boolean) => {
+      if (this.#internal) {
+        this.#internal.collider.setSensor(newValue);
+      }
+    });
+
+    this.values.get("mass")?.onChanged((newValue: number) => {
+      if (this.#internal) {
+        this.#internal.collider.setMass(newValue);
+      }
+    });
+
+    this.values.get("restitution")?.onChanged((newValue: number) => {
+      if (this.#internal) {
+        this.#internal.collider.setRestitution(newValue);
+      }
+    });
+
+    this.values.get("friction")?.onChanged((newValue: number) => {
+      if (this.#internal) {
+        this.#internal.collider.setFriction(newValue);
+      }
     });
   }
 

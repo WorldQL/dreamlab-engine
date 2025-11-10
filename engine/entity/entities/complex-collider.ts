@@ -74,6 +74,22 @@ export class ComplexCollider extends Entity {
     this.defineValue(ComplexCollider, "mass", {
       description: "The mass of the collider, affecting its response to forces.",
     });
+
+    this.values.get("isSensor")?.onChanged((newValue: boolean) => {
+      if (this.#internal) {
+        for (const collider of this.#internal.colliders) {
+          collider.setSensor(newValue);
+        }
+      }
+    });
+
+    this.values.get("mass")?.onChanged((newValue: number) => {
+      if (this.#internal) {
+        for (const collider of this.#internal.colliders) {
+          collider.setMass(newValue);
+        }
+      }
+    });
   }
 
   onInitialize(): void {
