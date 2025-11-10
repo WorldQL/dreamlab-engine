@@ -2,7 +2,7 @@
   position: fixed;
   top: var(--cursor-y);
   left: var(--cursor-x);
-  z-index: 98;
+  z-index: 1000;
   visibility: hidden;
 }
 #context-menu-container:has(#context-menu[data-open]) {
