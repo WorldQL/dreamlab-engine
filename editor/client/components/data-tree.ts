@@ -68,6 +68,16 @@ export class DataTree extends HTMLElement {
     const summary = elem("summary", {}, [toggle, ...headerContent]);
     const details = elem("details", { open: true }, [summary]);
 
+    let depth = 0;
+    let currentParent: HTMLElement | null = parent ?? this;
+    while (currentParent && currentParent !== this) {
+      if (currentParent.tagName === "DETAILS") {
+        depth++;
+      }
+      currentParent = currentParent.parentElement;
+    }
+    details.style.setProperty("--depth", depth.toString());
+
     summary.addEventListener("click", ev => {
       ev.preventDefault();
       details.open = !details.open;

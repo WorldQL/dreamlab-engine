@@ -2,7 +2,6 @@ dreamlab-data-tree {
   --tree-indent-amount: 1em;
 
   details {
-    padding-left: var(--tree-indent-amount);
     margin-top: 0.125em;
   }
 
@@ -23,10 +22,10 @@ dreamlab-data-tree {
   }
 
   details > summary {
-    margin-left: calc(var(--tree-indent-amount) * -1);
     position: relative;
     border-radius: var(--border-radius);
     padding: 0.25em;
+    padding-left: calc(var(--depth, 0) * var(--tree-indent-amount));
     font-size: 0.95em;
     cursor: pointer;
     display: flex;
@@ -46,7 +45,7 @@ dreamlab-data-tree {
     & > .arrow {
       position: absolute;
       top: 0;
-      left: 0;
+      left: calc(var(--depth, 0) * var(--tree-indent-amount));
       height: 100%;
       width: 2.25ch;
       display: flex;

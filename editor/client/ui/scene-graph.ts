@@ -300,7 +300,7 @@ export class SceneGraph implements InspectorUIWidget {
     }
   }
 
-  renderEntry(ui: InspectorUI, parent: HTMLElement, entity: Entity) {
+  renderEntry(ui: InspectorUI, parent: HTMLElement, entity: Entity, depth: number = 0) {
     if (entity instanceof EditorMetadataEntity) return;
     const currentEntityRef = entity.ref;
 
@@ -337,7 +337,9 @@ export class SceneGraph implements InspectorUIWidget {
         open: this.#shownEntities.has(currentEntityRef) || entity.children.size === 0,
       },
       [summary],
-    );
+    ) as HTMLDetailsElement;
+
+    entryElement.style.setProperty("--depth", depth.toString());
 
     entryElement.setAttribute("data-enabled", entity.enabled ? "true" : "false");
     entryElement.dataset.entity = currentEntityRef;
@@ -409,7 +411,7 @@ export class SceneGraph implements InspectorUIWidget {
         entryElement.append(summary);
         entryElement.append(tooManyEntities);
       } else {
-        this.renderEntry(ui, entryElement, newEntity);
+        this.renderEntry(ui, entryElement, newEntity, depth + 1);
         if (!needsSorting) {
           needsSorting = () => {
             this.sortEntries(entryElement);
@@ -476,7 +478,7 @@ export class SceneGraph implements InspectorUIWidget {
       const children = [...entity.children.values()];
       children.sort(entityNameSort);
       for (const child of children) {
-        this.renderEntry(ui, entryElement, child);
+        this.renderEntry(ui, entryElement, child, depth + 1);
       }
       this.sortEntries(entryElement);
     }

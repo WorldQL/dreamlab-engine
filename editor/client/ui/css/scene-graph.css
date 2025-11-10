@@ -5,14 +5,11 @@
 
 #scene-graph-tree {
   flex: 1;
+  --summary-height: 1.5em;
 }
 
-#scene-graph-tree details {
-  padding-left: 1em;
-}
 #scene-graph-tree details > summary {
   position: relative;
-  margin-left: -1em;
 }
 
 #scene-graph-tree summary::marker {
@@ -32,14 +29,19 @@
 }
 
 #scene-graph-tree details > summary {
+  position: sticky;
+  top: calc(var(--depth, 0) * var(--summary-height) - 8px);
+  z-index: calc(100 - var(--depth, 0));
+  background-color: rgb(var(--color-bg-1));
   border-radius: var(--border-radius);
   padding: 0.25em;
+  padding-left: calc(var(--depth, 0) * 1em + 0.25em);
   user-select: none;
 
   cursor: pointer;
 
   &:hover {
-    background-color: rgb(var(--color-bg-2) / 0.5);
+    background-color: rgb(var(--color-bg-2) / 1);
   }
 }
 
@@ -52,7 +54,7 @@
   opacity: 0.5;
 
   & > summary {
-    background-color: transparent;
+    background-color: rgb(var(--color-bg-1));
     opacity: 1;
 
     &:hover {
@@ -98,7 +100,7 @@
 #scene-graph-tree details > summary > div.arrow {
   position: absolute;
   top: 0;
-  left: 0;
+  left: calc(var(--depth, 0) * 1em);
   height: 100%;
   width: auto;
   aspect-ratio: 1 / 1;
