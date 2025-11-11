@@ -69,7 +69,7 @@ router.get("/api/v1/connect/:instance", async ctx => {
   }
 });
 
-router.get(
+router.post(
   "/api/v1/instance/:instance/call",
   typedJsonHandler(
     {
