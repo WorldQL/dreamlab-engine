@@ -12,25 +12,34 @@ import {
 import * as internal from "@dreamlab/engine/internal";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 
-export abstract class PixiEntity extends Entity {
+export abstract class PixiEntity<
+  T extends PIXI.ContainerChild = PIXI.Container,
+> extends Entity {
   static USE_INTERPOLATION = true;
 
-  public container: PIXI.Container | undefined;
+  #target: T | undefined;
+  get container(): T | undefined {
+    return this.#target;
+  }
+
+  createTarget(): T {
+    return new PIXI.Container() as T;
+  }
 
   static: boolean = false;
   hidden: boolean = false;
 
   #updateContainerPosition() {
-    if (!this.container) return;
-    if (!this.container.position) return;
+    if (!this.#target) return;
+    if (!this.#target.position) return;
 
     const transform = PixiEntity.USE_INTERPOLATION ? this.interpolated : this.globalTransform;
     const pos = transform.position;
     const rot = transform.rotation;
 
-    this.container.position.set(pos.x, -pos.y);
-    this.container.rotation = -rot;
-    this.container.zIndex = this.z;
+    this.#target.position.set(pos.x, -pos.y);
+    this.#target.rotation = -rot;
+    this.#target.zIndex = this.z;
   }
 
   // NB(Charlotte):
@@ -59,12 +68,12 @@ export abstract class PixiEntity extends Entity {
   }
 
   #updateVisibility() {
-    if (!this.container) return;
+    if (!this.#target) return;
     this.#updateContainerPosition();
 
     const culled = !this.enabled;
     const visible = !(this.hidden || culled);
-    this.container.visible = visible;
+    this.#target.visible = visible;
   }
 
   constructor(ctx: EntityContext, defineValues = true) {
@@ -107,7 +116,7 @@ export abstract class PixiEntity extends Entity {
     });
 
     this.on(EntityDestroyed, () => {
-      this.container?.destroy({ children: true });
+      this.#target?.destroy({ children: true });
     });
 
     this.on(EntityOwnEnableChanged, () => {
@@ -119,8 +128,8 @@ export abstract class PixiEntity extends Entity {
   onInitialize() {
     if (!this.game.isClient()) return;
 
-    this.container = new PIXI.Container();
-    this.game.renderer.scene.addChild(this.container);
+    this.#target = this.createTarget();
+    this.game.renderer.scene.addChild(this.#target);
 
     this.#updateContainerPosition();
     this.#updateVisibility();

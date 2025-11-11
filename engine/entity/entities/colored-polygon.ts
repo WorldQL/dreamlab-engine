@@ -9,7 +9,7 @@ import {
 } from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 
-export class ColoredPolygon extends PixiEntity {
+export class ColoredPolygon extends PixiEntity<PIXI.Graphics> {
   static {
     Entity.registerType(this, "@core");
   }
@@ -276,13 +276,10 @@ export class ColoredPolygon extends PixiEntity {
     return minDistance;
   }
 
-  onInitialize() {
-    super.onInitialize();
-    if (!this.container) return;
-
+  override createTarget(): PIXI.Graphics {
     this.#gfx = new PIXI.Graphics();
     this.#draw();
 
-    this.container.addChild(this.#gfx);
+    return this.#gfx;
   }
 }

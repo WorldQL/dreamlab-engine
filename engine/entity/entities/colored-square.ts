@@ -9,7 +9,7 @@ import {
 } from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 
-export class ColoredSquare extends PixiEntity {
+export class ColoredSquare extends PixiEntity<PIXI.Graphics> {
   static {
     Entity.registerType(this, "@core");
   }
@@ -139,7 +139,7 @@ export class ColoredSquare extends PixiEntity {
   - Build easily with ColoredSquare in the editor
   - Get consistent stroke widths regardless of shape dimensions
   - Only redraw on scale change for performance reasons.
-  
+
   */
 
   static readonly #HI_RES: number = 100;
@@ -199,13 +199,10 @@ export class ColoredSquare extends PixiEntity {
     this.#gfx.tint = this.#tint;
   }
 
-  onInitialize() {
-    super.onInitialize();
-    if (!this.container) return;
-
+  override createTarget(): PIXI.Graphics {
     this.#gfx = new PIXI.Graphics();
     this.#draw();
 
-    this.container.addChild(this.#gfx);
+    return this.#gfx;
   }
 }
