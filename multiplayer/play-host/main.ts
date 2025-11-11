@@ -3,11 +3,17 @@ import { createId } from "@dreamlab/vendor/nanoid.ts";
 import { Application, Router, Status } from "@oak/oak";
 import { oakCors } from "https://deno.land/x/cors@v1.2.2/mod.ts";
 
+import { z } from "@dreamlab/vendor/zod.ts";
 import * as uuid from "jsr:@std/uuid@1.0.9";
 import { serveWorlds } from "../common-host/routes/worlds.ts";
-import { handleJsonAPIErrors, JsonAPIError } from "../common-host/web-util/api.ts";
+import {
+  handleJsonAPIErrors,
+  JsonAPIError,
+  typedJsonHandler,
+} from "../common-host/web-util/api.ts";
 import { workerConnectHandler } from "../common-host/worker.ts";
 import { importSecretKey, validateAuthToken } from "../server-common/game-auth.ts";
+import type { WorkerIPCMessage } from "../server-common/ipc.ts";
 import { reportPlayerCount, teardownActor } from "./actor-reporting.ts";
 import { CONFIG } from "./config.ts";
 import { PlayInstance } from "./instance.ts";
@@ -63,9 +69,72 @@ router.get("/api/v1/connect/:instance", async ctx => {
   }
 });
 
+router.get(
+  "/api/v1/instance/:instance/call",
+  typedJsonHandler(
+    {
+      body: z.object({ identifier: z.string(), params: z.array(z.unknown()) }),
+      response: z.discriminatedUnion("status", [
+        z.object({ status: z.literal("ok"), result: z.unknown() }),
+        z.object({ status: z.literal("error"), error: z.unknown() }),
+      ]),
+    },
+    async (ctx, { body }) => {
+      if (ctx.params.instance !== instance.instanceId)
+        throw new JsonAPIError(Status.MisdirectedRequest, "not running this instance");
+
+      await instance.ready();
+      const ipc = instance.ipc!; // ipc can't be undefined because instance is ready
+
+      const callId = crypto.randomUUID();
+      let cleanedUp = false;
+      const cleanup = () => {
+        if (cleanedUp) return;
+        // @ts-expect-error polymorphic listener function
+        ipc.removeMessageListener(responseListener);
+        cleanedUp = true;
+      };
+      const responsePromise = Promise.withResolvers<unknown>();
+      const responseListener = (
+        message: WorkerIPCMessage & { op: "HttpAPIResponse" | "HttpAPIError" },
+      ) => {
+        if (message.callId !== callId) return;
+        switch (message.op) {
+          case "HttpAPIResponse": {
+            responsePromise.resolve(message.result);
+            cleanup();
+            break;
+          }
+          case "HttpAPIError": {
+            responsePromise.reject(message.error);
+            cleanup();
+            break;
+          }
+        }
+      };
+      ipc.addMessageListener("HttpAPIResponse", responseListener);
+      ipc.addMessageListener("HttpAPIError", responseListener);
+      ipc.send({
+        op: "HttpAPICall",
+        callId,
+        route: body.identifier,
+        params: body.params,
+      });
+
+      try {
+        const sleep = new Promise<void>((_, rej) => setTimeout(() => rej("timed out"), 5000));
+        const res = await Promise.race([responsePromise.promise, sleep]);
+        return { status: "ok", result: res } as const;
+      } catch (err) {
+        return { status: "error", error: err } as const;
+      }
+    },
+  ),
+);
+
 // TODO: instance info route
 
-serveWorlds(router);
+serveWorlds(router, new Map());
 
 if (CONFIG.STANDALONE) {
   router.get("/:path*", async ctx => {
