@@ -144,7 +144,13 @@ export class Properties implements InspectorUIWidget {
     const entityId = () => entity.id.replace("world/EditEntities/", "");
     const idField = elem("code", {}, [entityId()]);
     autoCleanup(entity.on(EntityRenamed, () => (idField.textContent = entityId())));
-    autoCleanup(entity.on(EntityReparented, () => (idField.textContent = entityId())));
+    autoCleanup(
+      entity.on(EntityReparented, () => {
+        queueMicrotask(() => {
+          idField.textContent = entityId();
+        });
+      }),
+    );
     table.addEntry("id", "ID", "Unique path / reference inside the world.", idField);
 
     const typeField = elem("code", {}, [
