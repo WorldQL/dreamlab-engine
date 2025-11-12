@@ -129,6 +129,8 @@ export abstract class PixiEntity<
     if (!this.game.isClient()) return;
 
     this.#target = this.createTarget();
+    this.#target.eventMode = "none";
+    this.#target.interactiveChildren = false;
     this.game.renderer.scene.addChild(this.#target);
 
     this.#updateContainerPosition();
