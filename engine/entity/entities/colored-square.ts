@@ -1,5 +1,4 @@
 import {
-  Bounds,
   ColorAdapter,
   Entity,
   EntityContext,
@@ -15,10 +14,6 @@ export class ColoredSquare extends PixiEntity<PIXI.Graphics> {
   }
 
   static readonly icon = "🟩";
-  get bounds(): Readonly<IBounds> | undefined {
-    // TODO: Reuse the same object
-    return new Bounds(this.width, this.height);
-  }
 
   width: number = 1;
   height: number = 1;
@@ -60,6 +55,11 @@ export class ColoredSquare extends PixiEntity<PIXI.Graphics> {
 
   #gfx: PIXI.Graphics | undefined;
 
+  #bounds = { width: this.width, height: this.height };
+  get bounds(): IBounds {
+    return this.#bounds;
+  }
+
   constructor(ctx: EntityContext) {
     super(ctx);
 
@@ -95,6 +95,8 @@ export class ColoredSquare extends PixiEntity<PIXI.Graphics> {
     });
 
     const updateGfx = () => {
+      this.#bounds.width = this.width;
+      this.#bounds.height = this.height;
       this.#draw();
     };
 

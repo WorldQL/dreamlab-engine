@@ -58,9 +58,9 @@ export class ColoredPolygon extends PixiEntity<PIXI.Graphics> {
 
   static readonly #HI_RES: number = 100;
 
-  get bounds(): IBounds | undefined {
-    // TODO: Reuse the same object
-    return new Bounds(this.width, this.height);
+  #bounds = { width: this.width, height: this.height };
+  get bounds(): IBounds {
+    return this.#bounds;
   }
 
   constructor(ctx: EntityContext) {
@@ -99,6 +99,8 @@ export class ColoredPolygon extends PixiEntity<PIXI.Graphics> {
     });
 
     const updateGfx = () => {
+      this.#bounds.width = this.width;
+      this.#bounds.height = this.height;
       this.#draw();
     };
 
