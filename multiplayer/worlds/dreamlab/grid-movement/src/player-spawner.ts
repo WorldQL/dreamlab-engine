@@ -58,5 +58,8 @@ export default class PlayerSpawner extends Behavior {
         return { ok: true, pos: playerMovement.pos, actions };
       },
     );
+
+    // TODO: player-info call that returns gold / items / etc
+    // TODO: world-info call that can show surrounding tiles ?
   }
 }

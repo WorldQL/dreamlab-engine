@@ -116,6 +116,94 @@
               "name": "ColoredSquare"
             }
           ]
+        },
+        {
+          "ref": "ent_MsRXK0tk1k",
+          "type": "@core/Empty",
+          "name": "GoldPile",
+          "behaviors": [
+            {
+              "ref": "bhv_MwUVG24AEK",
+              "script": "res://src/dropped-gold.ts",
+              "values": {
+                "gold": 5
+              }
+            }
+          ],
+          "children": [
+            {
+              "ref": "ent_JOigraAc58",
+              "type": "@core/ColoredSquare",
+              "name": "Gold.1",
+              "transform": {
+                "position": {
+                  "x": -0.16123023191990238,
+                  "y": 0.1930221086365027
+                },
+                "rotation": 0.2067975581042239,
+                "scale": {
+                  "x": 0.3018900790492138,
+                  "y": 0.3156960128701915
+                }
+              },
+              "values": {
+                "color": [
+                  1,
+                  0.8666666746139526,
+                  0.1725490242242813,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_8okJNjfafY",
+              "type": "@core/ColoredSquare",
+              "name": "Gold.2",
+              "transform": {
+                "position": {
+                  "x": 0.23843907537450293,
+                  "y": -0.2634184070804033
+                },
+                "rotation": -0.5270014761212465,
+                "scale": {
+                  "x": 0.30790320452062786,
+                  "y": 0.3239110002086375
+                }
+              },
+              "values": {
+                "color": [
+                  1,
+                  0.8666666746139526,
+                  0.1725490242242813,
+                  1
+                ]
+              }
+            },
+            {
+              "ref": "ent_VjKzMoJ40N",
+              "type": "@core/ColoredSquare",
+              "name": "Gold.3",
+              "transform": {
+                "position": {
+                  "x": -0.21345974366860299,
+                  "y": -0.25660586206970315
+                },
+                "rotation": 1.023670916513098,
+                "scale": {
+                  "x": 0.30790320452062786,
+                  "y": 0.3239110002086375
+                }
+              },
+              "values": {
+                "color": [
+                  1,
+                  0.8666666746139526,
+                  0.1725490242242813,
+                  1
+                ]
+              }
+            }
+          ]
         }
       ]
     }
