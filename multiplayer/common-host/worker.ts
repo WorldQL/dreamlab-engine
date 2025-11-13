@@ -71,7 +71,7 @@ export class IPCWorker {
         "--user",
         "--scope",
         "-p",
-        "MemoryMax=512M" /* TODO: configurable */,
+        "MemoryMax=1024M" /* TODO: configurable */,
         "-p",
         "MemorySwapMax=0",
         /* "-p",
