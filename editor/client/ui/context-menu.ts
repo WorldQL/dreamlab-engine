@@ -121,31 +121,33 @@ export class ContextMenu implements InspectorUIWidget {
           }
 
           button.dataset.selected = "";
+
+          subsection.style.opacity = "0";
+          subsection.style.pointerEvents = "none";
+          subsection.style.position = "fixed";
           section.insertAdjacentElement("afterend", subsection);
 
-          // using double RAF to ensure element is painted before measuring
           requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              const submenuRect = subsection.getBoundingClientRect();
-              const buttonRect = button.getBoundingClientRect();
-              const viewportWidth = window.innerWidth;
-              const viewportHeight = window.innerHeight;
+            const submenuRect = subsection.getBoundingClientRect();
+            const buttonRect = button.getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
 
-              let left = section.getBoundingClientRect().right;
-              let top = buttonRect.top;
+            let left = section.getBoundingClientRect().right;
+            let top = buttonRect.top;
 
-              if (left + submenuRect.width > viewportWidth) {
-                left = section.getBoundingClientRect().left - submenuRect.width;
-              }
+            if (left + submenuRect.width > viewportWidth) {
+              left = section.getBoundingClientRect().left - submenuRect.width;
+            }
 
-              if (top + submenuRect.height > viewportHeight) {
-                top = viewportHeight - submenuRect.height - 10;
-              }
+            if (top + submenuRect.height > viewportHeight) {
+              top = viewportHeight - submenuRect.height - 10;
+            }
 
-              subsection.style.position = "fixed";
-              subsection.style.left = `${left}px`;
-              subsection.style.top = `${top}px`;
-            });
+            subsection.style.left = `${left}px`;
+            subsection.style.top = `${top}px`;
+            subsection.style.pointerEvents = "";
+            subsection.style.opacity = "1";
           });
         });
 
