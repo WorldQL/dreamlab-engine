@@ -8,6 +8,7 @@ import {
   EntityRenamed,
   EntityReparented,
   getFacadeRoot,
+  PixiEntity,
   Vector2,
 } from "@dreamlab/engine";
 import { EditorMetadataEntity } from "../../common/mod.ts";
@@ -35,6 +36,8 @@ export class PrefabViewer {
   #refreshTimeout: number | undefined;
   #entityListeners = new Set<string>();
   #breadcrumbContainer!: HTMLDivElement;
+  #dragPreviewEntities: Entity[] = [];
+  #dragPreviewParent: Entity | undefined;
 
   static instance: PrefabViewer | undefined = undefined;
 
@@ -285,7 +288,7 @@ export class PrefabViewer {
       ui.contextMenu.drawContextMenu(event.clientX, event.clientY, contextMenuItems);
     };
 
-    const dragstart = () => {
+    const dragstart = (event: DragEvent) => {
       if (isFolder) return;
 
       const selectedEntities = ui.selectedEntity.entities;
@@ -308,6 +311,43 @@ export class PrefabViewer {
         };
         card.dataset.dragging = "";
       }
+
+      if (event.dataTransfer) {
+        const emptyImage = document.createElement("img");
+        emptyImage.src =
+          "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+        event.dataTransfer.setDragImage(emptyImage, 0, 0);
+      }
+
+      const canvas = this.game.renderer.app.canvas;
+      const canvasRect = canvas.getBoundingClientRect();
+      const canvasCoords = {
+        x: event.clientX - canvasRect.x,
+        y: event.clientY - canvasRect.y,
+      };
+
+      const screenPos = new Vector2(canvasCoords);
+      const camera = Camera.getActive(this.game);
+      const worldPos = camera ? camera.screenToWorld(screenPos) : new Vector2(0, 0);
+
+      this.#createDragPreview(worldPos);
+    };
+
+    const drag = (event: DragEvent) => {
+      if (!this.currentDragSource) return;
+
+      const canvas = this.game.renderer.app.canvas;
+      const canvasRect = canvas.getBoundingClientRect();
+      const canvasCoords = {
+        x: event.clientX - canvasRect.x,
+        y: event.clientY - canvasRect.y,
+      };
+
+      const screenPos = new Vector2(canvasCoords);
+      const camera = Camera.getActive(this.game);
+      const worldPos = camera ? camera.screenToWorld(screenPos) : new Vector2(0, 0);
+
+      this.#updateDragPreviewPosition(worldPos);
     };
 
     const dragend = (event: DragEvent) => {
@@ -324,12 +364,14 @@ export class PrefabViewer {
         y: event.clientY - canvasRect.y,
       };
 
-      if (
-        canvasCoords.x < 0 ||
-        canvasCoords.y < 0 ||
-        canvasCoords.x > canvasRect.width ||
-        canvasCoords.y > canvasRect.height
-      ) {
+      const onCanvas =
+        canvasCoords.x >= 0 &&
+        canvasCoords.y >= 0 &&
+        canvasCoords.x <= canvasRect.width &&
+        canvasCoords.y <= canvasRect.height;
+
+      if (!onCanvas) {
+        this.#cleanupDragPreview();
         this.currentDragSource = undefined;
         return;
       }
@@ -368,6 +410,7 @@ export class PrefabViewer {
         });
       }
 
+      this.#cleanupDragPreview();
       this.currentDragSource = undefined;
     };
 
@@ -397,6 +440,7 @@ export class PrefabViewer {
           onDblClick={dblclick}
           onContextMenu={contextmenu}
           onDragStart={dragstart}
+          onDrag={drag}
           onDragEnd={dragend}
         >
           <div className="prefab-icon emoji">{entity.icon}</div>
@@ -718,5 +762,57 @@ export class PrefabViewer {
       }
       reset();
     });
+  }
+
+  #createDragPreview(worldPos: Vector2) {
+    if (!this.currentDragSource) return;
+
+    this.#cleanupDragPreview();
+
+    this.#dragPreviewParent = this.game.local.spawn({
+      type: EmptyFacade,
+      name: ".dragPreview",
+    });
+
+    for (const sourceEntity of this.currentDragSource.entities) {
+      const preview = sourceEntity.cloneInto(this.#dragPreviewParent, {
+        transform: { position: worldPos },
+        enabled: true,
+      });
+
+      this.#setEntityAlpha(preview, 0.5);
+
+      this.#dragPreviewEntities.push(preview);
+    }
+  }
+
+  #setEntityAlpha(entity: Entity, alpha: number) {
+    if (entity instanceof PixiEntity && entity.container) {
+      entity.container.alpha = alpha;
+    }
+
+    for (const child of entity.children.values()) {
+      this.#setEntityAlpha(child, alpha);
+    }
+  }
+
+  #updateDragPreviewPosition(worldPos: Vector2) {
+    if (this.#dragPreviewEntities.length === 0) return;
+
+    for (const preview of this.#dragPreviewEntities) {
+      preview.globalTransform.position = worldPos;
+    }
+  }
+
+  #cleanupDragPreview() {
+    for (const preview of this.#dragPreviewEntities) {
+      preview.destroy();
+    }
+    this.#dragPreviewEntities = [];
+
+    if (this.#dragPreviewParent) {
+      this.#dragPreviewParent.destroy();
+      this.#dragPreviewParent = undefined;
+    }
   }
 }
