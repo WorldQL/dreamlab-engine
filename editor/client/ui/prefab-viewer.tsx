@@ -24,7 +24,7 @@ export class PrefabViewer {
   #content = (<div id="prefab-grid" />) as HTMLElement;
   #noPrefabsMessage = (
     <div className="no-prefabs-message">
-      No prefabs created. Create a new prefab to get started!
+      No prefabs created. Create a new prefab to get started.
     </div>
   );
 

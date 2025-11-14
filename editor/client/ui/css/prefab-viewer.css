@@ -93,12 +93,13 @@
 
 .no-prefabs-message {
   grid-column: 1 / -1;
+  align-content: center;
   text-align: center;
-  font-size: 1.25rem;
-  color: rgb(var(--color-text-secondary));
-  margin: 2rem 0;
-  padding: 1rem;
-  border-radius: var(--border-radius);
+  font-size: 0.95em;
+  color: rgb(var(--color-text) / 0.5);
+  padding: 0 0.5em;
+  text-wrap: balance;
+  line-height: 1.4;
 }
 
 .rename-input {
