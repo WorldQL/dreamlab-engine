@@ -14,7 +14,12 @@ import {
 import { element as elem, element } from "@dreamlab/ui";
 import { EditorFacadeTilemap } from "../../common/facades/tilemap.ts";
 import { EmptyFacade } from "../../common/facades/empty.ts";
-import { EditorMetadataEntity, EditorRootFacadeEntity, Facades } from "../../common/mod.ts";
+import {
+  EditorMetadataEntity,
+  EditorRootFacadeEntity,
+  Facades,
+  PrefabRootFacade,
+} from "../../common/mod.ts";
 import { ChevronDown, Ellipsis, icon, Lock } from "../_icons.tsx";
 import { entityNameSort } from "../entity-sort.ts";
 import { UndoRedoManager, type UndoRedoOperation } from "../undo-redo.ts";
@@ -917,6 +922,39 @@ export class SceneGraph implements InspectorUIWidget {
             0,
             2,
           ]);
+
+          const prefabRoot = ui.editMode
+            ? this.game.world._.EditEntities._.prefabs
+            : this.game.prefabs;
+          if (entity === prefabRoot) {
+            contextMenuItems.push([
+              ui.prefabAutoHide ? "Disable Auto-Hide" : "Enable Auto-Hide",
+              () => {
+                ui.prefabAutoHide = !ui.prefabAutoHide;
+                sessionStorage.setItem(
+                  `${this.game.worldId}/editor/prefab-auto-hide`,
+                  ui.prefabAutoHide.toString(),
+                );
+
+                if (ui.editMode) {
+                  const prefabRootEntity = this.game.world._.EditEntities._.prefabs;
+                  if (ui.prefabAutoHide) {
+                    const hasPrefabSelected = ui.selectedEntity.entities.some(
+                      it =>
+                        it === prefabRootEntity || it.id.startsWith(prefabRootEntity.id + "/"),
+                    );
+                    (prefabRootEntity as PrefabRootFacade).localHidden = !hasPrefabSelected;
+                  } else {
+                    (prefabRootEntity as PrefabRootFacade).localHidden = false;
+                  }
+                }
+              },
+              false,
+              undefined,
+              10,
+              1,
+            ]);
+          }
         }
 
         if (!lockedByEntity) {

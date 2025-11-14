@@ -43,6 +43,7 @@ export class InspectorUI {
   welcomeMenu: WelcomeMenu;
   tutorialHost: TutorialHost;
   reloadPrompt: ReloadPrompt;
+  prefabAutoHide: boolean;
 
   constructor(
     public game: ClientGame,
@@ -50,6 +51,11 @@ export class InspectorUI {
     public editMode: boolean,
     public gameContainer: HTMLDivElement,
   ) {
+    const savedPrefabAutoHide = sessionStorage.getItem(
+      `${this.game.worldId}/editor/prefab-auto-hide`,
+    );
+    this.prefabAutoHide = savedPrefabAutoHide !== null ? savedPrefabAutoHide === "true" : true;
+
     this.selectedEntity = new SelectedEntityService(game);
     this.behaviorTypeInfo = new BehaviorTypeInfoService(game);
 
@@ -150,11 +156,12 @@ export class InspectorUI {
 
     if (this.editMode) {
       const prefabRoot = this.game.world._.EditEntities._.prefabs.cast(PrefabRootFacade);
-      prefabRoot.localHidden = true;
+      prefabRoot.localHidden = this.prefabAutoHide;
       this.selectedEntity.listen(entities => {
         // don't hide prefabs if we select nothing, so that clicking empty space by accident doesn't disappear everything
         // if you want to hide the prefabs, selecting and deselect the world works.
         if (entities.length === 0) return;
+        if (!this.prefabAutoHide) return;
 
         const hasPrefabSelected = entities.some(
           it => it === prefabRoot || it.id.startsWith(prefabRoot.id + "/"),
