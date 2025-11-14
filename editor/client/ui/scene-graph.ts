@@ -901,6 +901,24 @@ export class SceneGraph implements InspectorUIWidget {
           1,
         ]);
 
+        if (isRoot(entity)) {
+          contextMenuItems.push([
+            "Copy Children",
+            () => {
+              const children = [...entity.children.values()];
+              if (children.length > 0) {
+                ui.selectedEntity.entities = children;
+                copyEntitiesToClipboard(ui.selectedEntity);
+                ui.selectedEntity.entities = [entity];
+              }
+            },
+            false,
+            undefined,
+            0,
+            2,
+          ]);
+        }
+
         if (!lockedByEntity) {
           contextMenuItems.push(
             createEntityMenu("New Entity", type => {
