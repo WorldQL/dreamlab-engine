@@ -36,6 +36,7 @@ export class Toolbar implements InspectorUIWidget {
   #toolbar: { main: HTMLElement; left: HTMLElement; center: HTMLElement; right: HTMLElement };
   #overlays: HTMLElement;
   #cursorOverlayEl: BaseElement;
+  #setActiveTool?: (tool: "combined" | "dimensions", force?: boolean) => void;
 
   constructor(
     private game: ClientGame,
@@ -61,6 +62,36 @@ export class Toolbar implements InspectorUIWidget {
       this.#overlays.append(this.#drawCursorOverlay());
       if (globalThis.env.IS_DEV) this.#toolbar.right.append(this.#drawStatsButton());
       this.#toolbar.right.append(this.#drawRatioDropdown());
+
+      document.addEventListener("keydown", (event: KeyboardEvent) => {
+        if (
+          document.activeElement instanceof HTMLInputElement ||
+          document.activeElement instanceof HTMLTextAreaElement ||
+          (document.activeElement && (document.activeElement as HTMLElement).isContentEditable)
+        ) {
+          return;
+        }
+
+        if (
+          event.key === "q" &&
+          !event.ctrlKey &&
+          !event.metaKey &&
+          !event.shiftKey &&
+          !event.altKey
+        ) {
+          event.preventDefault();
+          this.#setActiveTool?.("combined");
+        } else if (
+          event.key === "w" &&
+          !event.ctrlKey &&
+          !event.metaKey &&
+          !event.shiftKey &&
+          !event.altKey
+        ) {
+          event.preventDefault();
+          this.#setActiveTool?.("dimensions");
+        }
+      });
     } else {
       this.#toolbar.left.append(this.#drawPhysicsDebugButton());
       this.#toolbar.right.append(this.#drawStatsButton(), this.#drawRatioDropdown());
@@ -140,19 +171,23 @@ export class Toolbar implements InspectorUIWidget {
     const Button = ({
       icon,
       label,
+      title,
     }: {
       readonly icon: string;
       readonly label: string;
+      readonly title: string;
     }): BaseElement => (
-      <button type="button">
+      <button type="button" title={title}>
         <Icon icon={icon} />
         {label}
       </button>
     );
 
-    const combined = (<Button icon={Move3D} label="Edit Transform" />) as HTMLButtonElement;
+    const combined = (
+      <Button icon={Move3D} label="Edit Transform" title="Edit Transform (Q)" />
+    ) as HTMLButtonElement;
     const dimensions = (
-      <Button icon={BoxSelect} label="Edit Dimensions" />
+      <Button icon={BoxSelect} label="Edit Dimensions" title="Edit Dimensions (W)" />
     ) as HTMLButtonElement;
 
     type Tool = keyof typeof tools;
@@ -196,6 +231,8 @@ export class Toolbar implements InspectorUIWidget {
         newGizmo.auxTargets = auxTargets;
       }
     };
+
+    this.#setActiveTool = setActiveTool;
 
     setActiveTool(activeTool, true);
     for (const [key, tool] of Object.entries(tools)) {
