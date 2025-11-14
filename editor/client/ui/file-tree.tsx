@@ -98,12 +98,78 @@ export class FileTree implements InspectorUIWidget {
     );
   }
 
+  #getAddAssetsMenuItems(): Array<
+    [string | HTMLSpanElement, () => void, boolean, string | undefined, number]
+  > {
+    return [
+      [
+        "Generate New Asset ✨",
+        () => {
+          this.#importPopup.openGenerator();
+        },
+        false,
+        undefined,
+        0,
+      ],
+      [
+        "Upload Assets",
+        () => {
+          this.#importPopup.open("upload");
+        },
+        false,
+        undefined,
+        1,
+      ],
+      [
+        "Import Project",
+        () => {
+          this.#importPopup.open("import");
+        },
+        false,
+        undefined,
+        1,
+      ],
+    ];
+  }
+
   setup(): void {
     const tree = new DataTree();
     tree.style.setProperty("--tree-indent-amount", "0.5em");
 
     let contextMenuOpen = false;
     let outsideClickHandler: ((e: MouseEvent) => void) | null = null;
+
+    tree.addEventListener("contextmenu", evt => {
+      evt.preventDefault();
+      const { clientX, clientY } = evt as MouseEvent;
+
+      if (contextMenuOpen) {
+        this.#contextMenu.hideContextMenu();
+        contextMenuOpen = false;
+        return;
+      }
+
+      this.#contextMenu.drawContextMenu(clientX, clientY, this.#getAddAssetsMenuItems());
+
+      contextMenuOpen = true;
+
+      if (!outsideClickHandler) {
+        outsideClickHandler = e => {
+          const target = e.target as HTMLElement;
+          const clickedInsideMenu = target.closest("#context-menu");
+
+          if (!clickedInsideMenu) {
+            this.#contextMenu.hideContextMenu();
+            contextMenuOpen = false;
+
+            document.removeEventListener("click", outsideClickHandler!, true);
+            outsideClickHandler = null;
+          }
+        };
+
+        document.addEventListener("click", outsideClickHandler, true);
+      }
+    });
 
     document.querySelectorAll(".image-preview").forEach(e => e.remove());
 
@@ -238,68 +304,7 @@ export class FileTree implements InspectorUIWidget {
         return;
       }
 
-      this.#contextMenu.drawContextMenu(clientX, clientY, [
-        [
-          (() => {
-            const emojis = ["✨", "🧪", "🛠️", "💡", "🎨"];
-            let index = 0;
-
-            const emojiSpan = document.createElement("span");
-            emojiSpan.className = "emoji-rotator";
-            emojiSpan.textContent = emojis[index];
-
-            const updateEmoji = () => {
-              emojiSpan.classList.add("sway-pop");
-              setTimeout(() => {
-                index = (index + 1) % emojis.length;
-                emojiSpan.textContent = emojis[index];
-                emojiSpan.classList.remove("sway-pop");
-              }, 400);
-            };
-
-            setInterval(updateEmoji, 2000);
-
-            const label = document.createElement("span");
-            label.className = "premium-menu-label";
-            label.textContent = "Generate New Asset";
-
-            const wrapper = document.createElement("span");
-            wrapper.className = "premium-menu-item";
-            wrapper.append(label, emojiSpan);
-
-            return wrapper;
-          })(),
-          () => {
-            contextMenuOpen = false;
-            this.#importPopup.openGenerator();
-          },
-          false,
-          undefined,
-          0,
-        ],
-
-        [
-          "Upload Assets",
-          () => {
-            contextMenuOpen = false;
-            this.#importPopup.open("upload");
-          },
-          false,
-          undefined,
-          1,
-        ],
-
-        [
-          "Import Project",
-          () => {
-            contextMenuOpen = false;
-            this.#importPopup.open("import");
-          },
-          false,
-          undefined,
-          1,
-        ],
-      ]);
+      this.#contextMenu.drawContextMenu(clientX, clientY, this.#getAddAssetsMenuItems());
 
       contextMenuOpen = true;
 
