@@ -1183,6 +1183,14 @@ export class SceneGraph implements InspectorUIWidget {
 
   handleEntitySelection(ui: InspectorUI, treeRoot: HTMLElement) {
     ui.selectedEntity.listen(() => {
+      const selectedCount = ui.selectedEntity.entities.length;
+
+      if (selectedCount > 1) {
+        treeRoot.dataset.multipleSelection = "";
+      } else {
+        delete treeRoot.dataset.multipleSelection;
+      }
+
       for (const [entityRef, entry] of this.entryElementMap.entries()) {
         const entity = this.game.entities.lookupByRef(entityRef);
         if (entity && ui.selectedEntity.entities.includes(entity)) {

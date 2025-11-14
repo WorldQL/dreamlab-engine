@@ -81,6 +81,10 @@
   }
 }
 
+#scene-graph-tree[data-multiple-selection] details.selected > summary {
+  border-radius: 0;
+}
+
 #scene-graph-tree .icon {
   display: inline-block;
 }
