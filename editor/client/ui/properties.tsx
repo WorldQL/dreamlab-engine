@@ -9,6 +9,7 @@ import {
   EntityReparented,
   EntityTransformUpdate,
   JsonValue,
+  RenderContainer,
   SignalSubscription,
   Vector2,
 } from "@dreamlab/engine";
@@ -600,6 +601,16 @@ export class Properties implements InspectorUIWidget {
       });
 
       valuesTable.addEntry("clear", "tiles", "Clear all tiles for this entity", button);
+    }
+
+    if (entity instanceof RenderContainer) {
+      const button = elem("button", { type: "button" }, ["Refresh"]);
+
+      button.addEventListener("click", () => {
+        entity.refresh();
+      });
+
+      valuesTable.addEntry("refresh", "refresh", "Refresh render container", button);
     }
 
     for (const transformField of transformFieldsToRegisterWithUndoRedo) {

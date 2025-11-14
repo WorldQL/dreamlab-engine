@@ -9,6 +9,7 @@ export * from "./complex-collider.ts";
 export * from "./empty.ts";
 export * from "./physics-debug.ts";
 export * from "./raw-pixi.ts";
+export * from "./render-container.ts";
 export * from "./rich-text.ts";
 export * from "./solid-color.ts";
 export * from "./sprite.ts";
