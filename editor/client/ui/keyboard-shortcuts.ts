@@ -578,7 +578,9 @@ export function setupKeyboardShortcuts(
 
       event.preventDefault();
       const entries = Array.from(
-        document.querySelectorAll("#scene-graph-tree details[data-entity]"),
+        document.querySelectorAll(
+          ":is(#scene-graph-tree, details[open]) > details[data-entity]",
+        ),
       ) as HTMLElement[];
       if (entries.length === 0) return;
 
@@ -590,14 +592,31 @@ export function setupKeyboardShortcuts(
           event.key === "ArrowUp"
             ? Math.max(0, currentIndex - 1)
             : Math.min(entries.length - 1, currentIndex + 1);
-        currentSelected.classList.remove("selected");
       }
       const newSelected = entries[newIndex];
-      newSelected.classList.add("selected");
-      newSelected.scrollIntoView({ behavior: "smooth", block: "center" });
       const entityRef = newSelected.dataset.entity!;
       const entity = game.entities.lookupByRef(entityRef);
       if (entity) selectedService.entities = [entity];
+
+      return;
+    }
+
+    if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+      if (selectedService.entities.length !== 1) return;
+
+      event.preventDefault();
+      const entity = selectedService.entities[0];
+      const entries = Array.from(
+        document.querySelectorAll("details[data-entity]"),
+      ) as HTMLDetailsElement[];
+      const entryElement = entries.find(entry => entry.dataset.entity === entity.ref);
+      if (!entryElement) return;
+
+      if (event.key === "ArrowLeft") {
+        entryElement.open = false;
+      } else {
+        entryElement.open = true;
+      }
 
       return;
     }
