@@ -52,21 +52,23 @@ export class Properties implements InspectorUIWidget {
 
     const teardown: (() => void)[] = [];
     ui.selectedEntity.listen(() => {
-      const entity = ui.selectedEntity.entities.at(0);
+      const entities = Array.from(ui.selectedEntity.entities);
 
       teardown.forEach(it => it());
       teardown.length = 0;
 
-      if (entity) {
+      if (entities.length > 0) {
         selectSomethingNotification.style.display = "none";
         container.style.display = "flex";
-        this.drawEntityProperties(container, entity);
+        this.drawEntityProperties(container, entities);
 
-        const prefabInstanceChanged = () => this.drawEntityProperties(container, entity);
-        entity.values.get("clonedFromRef")!.onChanged(prefabInstanceChanged);
-        teardown.push(() => {
-          entity.values.get("clonedFromRef")!.removeChangeListener(prefabInstanceChanged);
-        });
+        for (const entity of entities) {
+          const prefabInstanceChanged = () => this.drawEntityProperties(container, entities);
+          entity.values.get("clonedFromRef")!.onChanged(prefabInstanceChanged);
+          teardown.push(() => {
+            entity.values.get("clonedFromRef")!.removeChangeListener(prefabInstanceChanged);
+          });
+        }
       } else {
         container.style.display = "none";
         selectSomethingNotification.style.display = "block";
@@ -85,7 +87,7 @@ export class Properties implements InspectorUIWidget {
 
   entityPropertyTeardown: (() => void)[] = [];
 
-  drawEntityProperties(container: BaseElement, entity: Entity) {
+  drawEntityProperties(container: BaseElement, entities: Entity[]) {
     container.innerHTML = "";
 
     this.entityPropertyTeardown.forEach(it => it());
@@ -93,6 +95,13 @@ export class Properties implements InspectorUIWidget {
     // deno-lint-ignore no-explicit-any
     const autoCleanup = (s: SignalSubscription<any>) =>
       this.entityPropertyTeardown.push(s.unsubscribe);
+
+    if (entities.length > 1) {
+      this.drawMultiEntityProperties(container, entities, autoCleanup);
+      return;
+    }
+
+    const entity = entities[0];
 
     const table = new DataTable();
     container.append(table);
@@ -658,6 +667,375 @@ export class Properties implements InspectorUIWidget {
     this.entityPropertyTeardown.push(() => {
       entity.values.forEach(value => value.removeChangeListener(updateHiddenStates));
     });
+    updateHiddenStates();
+  }
+
+  drawMultiEntityProperties(
+    container: BaseElement,
+    entities: Entity[],
+    // deno-lint-ignore no-explicit-any
+    autoCleanup: (s: SignalSubscription<any>) => void,
+  ) {
+    const summarySection = new DataDetails();
+    container.append(summarySection);
+    summarySection.setHeaderContent(elem("h2", {}, ["Multi-Selection"]));
+
+    const summaryTable = new DataTable();
+    summarySection.addContent(summaryTable);
+
+    const countField = elem("code", {}, [`${entities.length} entities`]);
+    summaryTable.addEntry("count", "Count", "Number of selected entities", countField);
+
+    const namesList = elem(
+      "div",
+      { className: "multi-entity-names" },
+      entities.map(e => elem("div", { className: "entity-name-item" }, [e.name])),
+    );
+    summaryTable.addEntry("entities", "Entities", "List of selected entities", namesList);
+
+    const firstType = entities[0].constructor;
+    const allSameType = entities.every(e => e.constructor === firstType);
+    const typeField = elem("code", {}, [
+      allSameType
+        ? Facades.reverseFacadeEntityType(firstType as EntityConstructor).name
+        : "Mixed Types",
+    ]);
+    summaryTable.addEntry("type", "Type", "Entity type(s)", typeField);
+
+    const allProtected = entities.every(e => e.protected);
+    if (!allProtected) {
+      const batchOpsSection = new DataDetails();
+      container.append(batchOpsSection);
+      batchOpsSection.setHeaderContent(elem("h2", {}, ["Batch Operations"]));
+
+      const batchOpsTable = new DataTable();
+      batchOpsSection.addContent(batchOpsTable);
+
+      const [enabledField, refreshEnabled] = createBooleanField({
+        default: true,
+        get: () => entities.every(e => e[internal.entityOwnEnabled]),
+        set: v => {
+          for (const entity of entities) {
+            if (!entity.protected) {
+              entity.enabled = v;
+            }
+          }
+        },
+      });
+
+      for (const entity of entities) {
+        autoCleanup(entity.on(EntityOwnEnableChanged, () => refreshEnabled()));
+      }
+
+      batchOpsTable.addEntry(
+        "enabled-all",
+        "Enable All",
+        "Toggle whether all entities are active",
+        enabledField,
+      );
+    }
+
+    const transformSection = new DataDetails();
+    container.append(transformSection);
+    transformSection.setHeaderContent(elem("h2", {}, ["Transform (Common)"]));
+
+    const txfmTable = new DataTable();
+    transformSection.addContent(txfmTable);
+
+    const numeric = z.coerce.number().refine(Number.isFinite, "Value must be finite!");
+
+    const getValue = <T,>(getter: (e: Entity) => T): T | "multiple" => {
+      const values = entities.map(getter);
+      const first = values[0];
+      return values.every(v => v === first) ? first : "multiple";
+    };
+
+    const transformFieldsToRegisterWithUndoRedo: { field: HTMLInputElement; path: string[] }[] =
+      [];
+
+    const [transformXField, refreshX] = createInputField({
+      get: () => {
+        const val = getValue(e => e.transform.position.x);
+        return val === "multiple" ? NaN : val;
+      },
+      set: x => {
+        for (const entity of entities) {
+          if (!entity.protected) entity.transform.position.x = x;
+        }
+      },
+      convert: numeric.parse,
+      convertBack: n => (Number.isNaN(n) ? "Multiple values" : n.toFixed(4)),
+    });
+    txfmTable.addEntry(
+      "posX",
+      "Position X",
+      "Local X coordinates relative to parent",
+      transformXField,
+    );
+    transformFieldsToRegisterWithUndoRedo.push({
+      field: transformXField,
+      path: ["position", "x"],
+    });
+
+    const [transformYField, refreshY] = createInputField({
+      get: () => {
+        const val = getValue(e => e.transform.position.y);
+        return val === "multiple" ? NaN : val;
+      },
+      set: y => {
+        for (const entity of entities) {
+          if (!entity.protected) entity.transform.position.y = y;
+        }
+      },
+      convert: numeric.parse,
+      convertBack: n => (Number.isNaN(n) ? "Multiple values" : n.toFixed(4)),
+    });
+    txfmTable.addEntry(
+      "posY",
+      "Position Y",
+      "Local Y coordinates relative to parent",
+      transformYField,
+    );
+    transformFieldsToRegisterWithUndoRedo.push({
+      field: transformYField,
+      path: ["position", "y"],
+    });
+
+    const [transformRotation, refreshRotation] = createInputField({
+      get: () => {
+        const val = getValue(e => e.transform.rotation);
+        return val === "multiple" ? NaN : val;
+      },
+      set: r => {
+        for (const entity of entities) {
+          if (!entity.protected) entity.transform.rotation = r;
+        }
+      },
+      convert: numeric.transform(v => (v * Math.PI) / 180).parse,
+      convertBack: v =>
+        Number.isNaN(v) ? "Multiple values" : ((v * 180) / Math.PI).toFixed(1),
+    });
+    txfmTable.addEntry("rot", "Rotation", "Local rotation in degrees", transformRotation);
+    transformFieldsToRegisterWithUndoRedo.push({
+      field: transformRotation,
+      path: ["rotation"],
+    });
+
+    const [scaleXField, refreshScaleX] = createInputField({
+      get: () => {
+        const val = getValue(e => e.transform.scale.x);
+        return val === "multiple" ? NaN : val;
+      },
+      set: x => {
+        for (const entity of entities) {
+          if (!entity.protected) entity.transform.scale.x = x;
+        }
+      },
+      convert: numeric.parse,
+      convertBack: n => (Number.isNaN(n) ? "Multiple values" : n.toFixed(4)),
+    });
+    txfmTable.addEntry("scaleX", "Scale X", "Local X scale factors", scaleXField);
+    transformFieldsToRegisterWithUndoRedo.push({ field: scaleXField, path: ["scale", "x"] });
+
+    const [scaleYField, refreshScaleY] = createInputField({
+      get: () => {
+        const val = getValue(e => e.transform.scale.y);
+        return val === "multiple" ? NaN : val;
+      },
+      set: y => {
+        for (const entity of entities) {
+          if (!entity.protected) entity.transform.scale.y = y;
+        }
+      },
+      convert: numeric.parse,
+      convertBack: n => (Number.isNaN(n) ? "Multiple values" : n.toFixed(4)),
+    });
+    txfmTable.addEntry("scaleY", "Scale Y", "Local Y scale factors", scaleYField);
+    transformFieldsToRegisterWithUndoRedo.push({ field: scaleYField, path: ["scale", "y"] });
+
+    const [zIndexField, refreshZIndex] = createInputField({
+      get: () => {
+        const val = getValue(e => e.transform.z);
+        return val === "multiple" ? NaN : val;
+      },
+      set: z => {
+        for (const entity of entities) {
+          if (!entity.protected) entity.transform.z = z;
+        }
+      },
+      convert: numeric.refine(Number.isSafeInteger, "Number must be an integer!").parse,
+      convertBack: n => (Number.isNaN(n) ? "Multiple values" : n.toFixed(0)),
+    });
+    txfmTable.addEntry(
+      "z",
+      "Z Index",
+      "Local draw-order; higher values render above lower ones",
+      zIndexField,
+    );
+    transformFieldsToRegisterWithUndoRedo.push({ field: zIndexField, path: ["z"] });
+
+    for (const entity of entities) {
+      autoCleanup(
+        entity.on(EntityTransformUpdate, () => {
+          refreshX();
+          refreshY();
+          refreshRotation();
+          refreshScaleX();
+          refreshScaleY();
+          refreshZIndex();
+        }),
+      );
+    }
+
+    for (const transformField of transformFieldsToRegisterWithUndoRedo) {
+      let state: { values: Map<string, string> } | undefined = undefined;
+
+      transformField.field.addEventListener("focus", () => {
+        state = { values: new Map(entities.map(e => [e.ref, transformField.field.value])) };
+      });
+
+      transformField.field.addEventListener("blur", () => {
+        if (!state) return;
+        const previous = state.values;
+        state = undefined;
+        if (transformField.field.value === previous.values().next().value) return;
+
+        for (const entity of entities) {
+          if (entity.protected) continue;
+          UndoRedoManager._.push({
+            t: "modify-entity-transform",
+            entityRef: entity.ref,
+            path: transformField.path,
+            value: transformField.field.value,
+            previous: previous.get(entity.ref) || "",
+          });
+        }
+      });
+    }
+
+    const valuesSection = new DataDetails();
+    container.append(valuesSection);
+    valuesSection.setHeaderContent(elem("h2", {}, ["Values (Common)"]));
+
+    const valuesTable = new DataTable();
+    valuesSection.addContent(valuesTable);
+
+    const firstEntity = entities[0];
+    const commonValueKeys = Array.from(firstEntity.values.keys()).filter(key =>
+      entities.every(e => e.values.has(key)),
+    );
+
+    const commonEntries = commonValueKeys
+      .map(key => [key, firstEntity.values.get(key)!] as const)
+      .toSorted(([, a], [, b]) => {
+        if (a.sortOrder === b.sortOrder) return 0;
+        return b.sortOrder - a.sortOrder;
+      });
+
+    for (const [key, firstValue] of commonEntries) {
+      const allSameValue = entities.every(e => {
+        const val = e.values.get(key);
+        return val && JSON.stringify(val.value) === JSON.stringify(firstValue.value);
+      });
+
+      const [valueField, refreshValue] = createValueControl(this.game, {
+        id: `multi/${key}`,
+        typeTag: firstValue.typeTag,
+        get: () => {
+          if (allSameValue) return firstValue.value;
+          return firstValue.value;
+        },
+        set: v => {
+          for (const entity of entities) {
+            const val = entity.values.get(key);
+            if (val) val.value = v;
+          }
+        },
+        default: undefined,
+        relatedEntity: firstEntity,
+      });
+
+      const inputField =
+        firstValue.adapter instanceof ColorAdapter
+          ? valueField.querySelector("input")!
+          : valueField;
+
+      let state: { values: Map<string, unknown> } | undefined = undefined;
+
+      const begin = () => {
+        state = {
+          values: new Map<string, unknown>(
+            entities.map(
+              e => [e.ref, structuredClone(e.values.get(key)?.value)] as [string, unknown],
+            ),
+          ),
+        };
+      };
+
+      inputField.addEventListener("focus", begin);
+      valueField.addEventListener("input-begin", begin);
+
+      const update = () => {
+        if (!state) return;
+        const previousValues = state.values;
+        state = undefined;
+
+        for (const entity of entities) {
+          const val = entity.values.get(key);
+          if (!val) continue;
+          const previous = previousValues.get(entity.ref);
+          if (JSON.stringify(val.value) === JSON.stringify(previous)) continue;
+
+          UndoRedoManager._.push({
+            t: "modify-entity-value",
+            entityRef: entity.ref,
+            key,
+            value: val.value,
+            previous,
+          });
+        }
+      };
+
+      inputField.addEventListener("blur", update);
+      valueField.addEventListener("input-finalize", update);
+
+      const label = allSameValue ? key : `${key} (mixed)`;
+      valuesTable.addEntry(`value:${key}`, label, firstValue.description, valueField);
+
+      for (const entity of entities) {
+        const val = entity.values.get(key);
+        if (val) {
+          val.onChanged(refreshValue);
+          this.entityPropertyTeardown.push(() => val.removeChangeListener(refreshValue));
+        }
+      }
+    }
+
+    const updateHiddenStates = () => {
+      let hiddenCount = 0;
+      for (const [id, element] of valuesTable.entries) {
+        if (!id.startsWith("value:")) continue;
+        const key = id.replace("value:", "");
+        const v = firstEntity.values.get(key);
+        if (!v) continue;
+
+        const hidden = typeof v.hidden === "boolean" ? v.hidden : v.hidden(firstEntity.values);
+        if (hidden) element.dataset.hidden = "";
+        else delete element.dataset.hidden;
+
+        if (hidden) hiddenCount += 1;
+      }
+
+      if (hiddenCount === commonValueKeys.length) valuesSection.dataset.hidden = "";
+      else delete valuesSection.dataset.hidden;
+    };
+
+    for (const entity of entities) {
+      entity.values.forEach(value => value.onChanged(updateHiddenStates));
+      this.entityPropertyTeardown.push(() => {
+        entity.values.forEach(value => value.removeChangeListener(updateHiddenStates));
+      });
+    }
     updateHiddenStates();
   }
 }
