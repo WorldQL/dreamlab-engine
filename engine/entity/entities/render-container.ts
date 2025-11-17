@@ -100,7 +100,7 @@ export class RenderContainer extends Entity {
     const camera = Camera.getActive(this.game);
     const scaleMode: Exclude<ScaleFilterMode, "default"> =
       this.scaleFilterMode === "default"
-        ? (camera?.scaleFilterMode ?? "nearest")
+        ? camera?.scaleFilterMode ?? "nearest"
         : this.scaleFilterMode;
 
     this.#clampTexelDensity();
@@ -168,6 +168,7 @@ export class RenderContainer extends Entity {
     this.#container.interactiveChildren = false;
     this.#container.sortableChildren = true;
     this.game.renderer.scene.addChild(this.#container);
+    this.#container.zIndex = this.z;
 
     // automatically refresh when sprites load a new texture
     // required because we defer sprite loading
