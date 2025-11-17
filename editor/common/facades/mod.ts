@@ -6,6 +6,7 @@ import "./complex-collider.ts";
 import "./edit-roots.ts";
 import "./empty.ts";
 import "./rect-collider.ts";
+import "./render-container.ts";
 import "./rigidbody.ts";
 import "./tilemap.ts";
 
