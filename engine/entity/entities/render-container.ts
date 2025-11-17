@@ -100,7 +100,7 @@ export class RenderContainer extends Entity {
     const camera = Camera.getActive(this.game);
     const scaleMode: Exclude<ScaleFilterMode, "default"> =
       this.scaleFilterMode === "default"
-        ? camera?.scaleFilterMode ?? "nearest"
+        ? (camera?.scaleFilterMode ?? "nearest")
         : this.scaleFilterMode;
 
     this.#clampTexelDensity();
