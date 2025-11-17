@@ -76,13 +76,15 @@ export class RenderContainer extends Entity {
     const width = this.#container.width;
     const height = this.#container.height;
     if (width === 0 || height === 0) return;
+    if (width === Infinity || height === Infinity) return;
 
     const tx = width * this.resolution;
     const ty = height * this.resolution;
     const max = Math.max(tx, ty);
     if (max <= RenderContainer.#MAX_TEXEL_SIZE) return;
 
-    const res = this.resolution * (RenderContainer.#MAX_TEXEL_SIZE / max);
+    const resolution = Number.isNaN(this.resolution) ? 256 : this.resolution;
+    const res = resolution * (RenderContainer.#MAX_TEXEL_SIZE / max);
     this.resolution = Math.floor(res);
 
     console.warn(this.id, "RenderContainer texel density is too large, clamping resolution");
