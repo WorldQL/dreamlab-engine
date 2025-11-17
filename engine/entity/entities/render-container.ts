@@ -148,14 +148,15 @@ export class RenderContainer extends Entity {
     }
   }
 
+  #refreshQueued: boolean = false;
+
   /**
    * Refresh cached texture
    */
   public refresh(): void {
     if (!this.#container) return;
 
-    this.#clampTexelDensity();
-    this.#container.updateCacheTexture();
+    this.#refreshQueued = true;
   }
 
   onInitialize(): void {
@@ -205,5 +206,16 @@ export class RenderContainer extends Entity {
     });
 
     this.#setCacheParams();
+  }
+
+  onUpdate(): void {
+    super.onUpdate();
+    if (!this.#container) return;
+
+    if (this.#refreshQueued) {
+      this.#refreshQueued = false;
+      this.#clampTexelDensity();
+      this.#container.updateCacheTexture();
+    }
   }
 }
