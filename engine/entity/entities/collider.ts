@@ -304,7 +304,9 @@ export class Collider extends Entity {
   }
 
   onUpdate(): void {
-    this[internal.entityApplyPhysicsUpdate]();
+    if (this.#rigidbody) {
+      this[internal.entityApplyPhysicsUpdate]();
+    }
     super.onUpdate();
   }
 
