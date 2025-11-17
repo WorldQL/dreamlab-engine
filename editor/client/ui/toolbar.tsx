@@ -37,6 +37,7 @@ export class Toolbar implements InspectorUIWidget {
   #overlays: HTMLElement;
   #cursorOverlayEl: BaseElement;
   #setActiveTool?: (tool: "combined" | "dimensions", force?: boolean) => void;
+  #keydownHandler?: (event: KeyboardEvent) => void;
 
   constructor(
     private game: ClientGame,
@@ -62,8 +63,7 @@ export class Toolbar implements InspectorUIWidget {
       this.#overlays.append(this.#drawCursorOverlay());
       if (globalThis.env.IS_DEV) this.#toolbar.right.append(this.#drawStatsButton());
       this.#toolbar.right.append(this.#drawRatioDropdown());
-
-      document.addEventListener("keydown", (event: KeyboardEvent) => {
+      this.#keydownHandler = (event: KeyboardEvent) => {
         if (
           document.activeElement instanceof HTMLInputElement ||
           document.activeElement instanceof HTMLTextAreaElement ||
@@ -91,7 +91,7 @@ export class Toolbar implements InspectorUIWidget {
           event.preventDefault();
           this.#setActiveTool?.("dimensions");
         }
-      });
+      };
     } else {
       this.#toolbar.left.append(this.#drawPhysicsDebugButton());
       this.#toolbar.right.append(this.#drawStatsButton(), this.#drawRatioDropdown());
@@ -111,6 +111,10 @@ export class Toolbar implements InspectorUIWidget {
     gameview.prepend(this.#toolbar.main);
 
     this.gameContainer.append(this.#overlays);
+
+    if (this.#keydownHandler) {
+      document.addEventListener("keydown", this.#keydownHandler);
+    }
   }
 
   private showRestartRequired(reason: string) {
@@ -165,6 +169,9 @@ export class Toolbar implements InspectorUIWidget {
   hide(): void {
     this.#toolbar.main.remove();
     this.#overlays.remove();
+    if (this.#keydownHandler) {
+      document.removeEventListener("keydown", this.#keydownHandler);
+    }
   }
 
   #drawGizmoButtons(): BaseElement {
