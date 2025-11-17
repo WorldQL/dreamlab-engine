@@ -19,6 +19,7 @@ const categories = new Map<string, string[]>([
   ["Sprites", ["@core/AnimatedSprite", "@core/Sprite", "@core/TilingSprite"]],
   ["UI", ["@core/UILayer", "@core/UIPanel"]],
   ["Graphics", ["@core/RawPixi", "@core/ColoredSquare", "@core/ColoredPolygon"]],
+  ["Advanced", ["@core/RenderContainer"]],
   [
     "Hidden",
     [

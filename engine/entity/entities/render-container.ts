@@ -68,6 +68,25 @@ export class RenderContainer extends Entity {
     this.#container.visible = this.enabled;
   }
 
+  static readonly #MAX_TEXEL_SIZE = 4096;
+  #clampTexelDensity(): void {
+    if (!this.#container) return;
+
+    const width = this.#container.width;
+    const height = this.#container.height;
+    if (width === 0 || height === 0) return;
+
+    const tx = width * this.resolution;
+    const ty = height * this.resolution;
+    const max = Math.max(tx, ty);
+    if (max <= RenderContainer.#MAX_TEXEL_SIZE) return;
+
+    const res = this.resolution * (RenderContainer.#MAX_TEXEL_SIZE / max);
+    this.resolution = Math.floor(res);
+
+    console.warn(this.id, "RenderContainer texel density is too large, clamping resolution");
+  }
+
   #setCacheParams(): void {
     if (!this.#container) return;
 
@@ -77,6 +96,7 @@ export class RenderContainer extends Entity {
         ? (camera?.scaleFilterMode ?? "nearest")
         : this.scaleFilterMode;
 
+    this.#clampTexelDensity();
     this.#container.cacheAsTexture({
       resolution: this.resolution,
       antialias: this.antialiased,
@@ -91,6 +111,8 @@ export class RenderContainer extends Entity {
    */
   public refresh(): void {
     if (!this.#container) return;
+
+    this.#clampTexelDensity();
     this.#container.updateCacheTexture();
   }
 
@@ -115,7 +137,7 @@ export class RenderContainer extends Entity {
       }
 
       this.#container.sortChildren();
-      this.#container.updateCacheTexture();
+      this.refresh();
     });
 
     // TODO: detect heirarchy changes
