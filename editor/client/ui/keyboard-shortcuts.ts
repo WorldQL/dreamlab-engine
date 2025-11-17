@@ -593,10 +593,22 @@ export function setupKeyboardShortcuts(
             ? Math.max(0, currentIndex - 1)
             : Math.min(entries.length - 1, currentIndex + 1);
       }
-      const newSelected = entries[newIndex];
+      const newSelected = entries[newIndex] as HTMLDetailsElement;
       const entityRef = newSelected.dataset.entity!;
       const entity = game.entities.lookupByRef(entityRef);
-      if (entity) selectedService.entities = [entity];
+
+      if (entity) {
+        const wasOpen = newSelected.open;
+        const isRootEntity = isRoot(entity);
+
+        selectedService.entities = [entity];
+
+        if (isRootEntity) {
+          setTimeout(() => {
+            newSelected.open = wasOpen;
+          }, 0);
+        }
+      }
 
       return;
     }
