@@ -525,6 +525,7 @@ export class SceneGraph implements InspectorUIWidget {
       reset();
 
       this.sortEntries(entryElement);
+      this.scrollToEntity(entryElement);
     });
   }
 
