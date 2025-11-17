@@ -1,10 +1,14 @@
 import {
+  AnyEntityOwnEnableChanged,
   Camera,
   CameraFilterModeChanged,
   Entity,
   EntityContext,
+  EntityDescendantDestroyed,
+  EntityDescendantSpawned,
   EntityDestroyed,
   EntityEnableChanged,
+  EntityHierarchyChanged,
   EntityReparented,
   enumAdapter,
   PixiEntity,
@@ -109,6 +113,41 @@ export class RenderContainer extends Entity {
     this.#container.updateCacheTexture();
   }
 
+  #isInTree(entity: Entity): boolean {
+    return entity === this || entity.ancestors.includes(this);
+  }
+
+  #updateHeirarchy(): void {
+    if (!this.game.isClient()) return;
+    if (!this.#container) return;
+
+    const before = new Set(this.#container.children);
+    for (const descendant of this.#descendants()) {
+      if (!descendant.container) continue;
+      if (before.has(descendant.container)) {
+        before.delete(descendant.container);
+        continue;
+      }
+
+      this.#container.addChild(descendant.container);
+    }
+
+    // reparent to main scene
+    for (const child of before) {
+      this.game.renderer.scene.addChild(child);
+    }
+
+    this.#container.sortChildren();
+    this.refresh();
+  }
+
+  *#descendants(target: Entity = this): Generator<PixiEntity, void, void> {
+    for (const child of target.children.values()) {
+      if (child instanceof PixiEntity) yield child;
+      yield* this.#descendants(child);
+    }
+  }
+
   /**
    * Refresh cached texture
    */
@@ -129,20 +168,6 @@ export class RenderContainer extends Entity {
     this.#container.sortableChildren = true;
     this.game.renderer.scene.addChild(this.#container);
 
-    // we need to wait for all descendants to be initialized
-    this.time.waitForNextTick().then(() => {
-      if (!this.#container) throw new Error("container not initialized");
-
-      for (const descendant of this.#descendants()) {
-        if (!descendant.container) continue;
-
-        this.#container.addChild(descendant.container);
-      }
-
-      this.#container.sortChildren();
-      this.refresh();
-    });
-
     // automatically refresh when sprites load a new texture
     // required because we defer sprite loading
     this.listen(this.game, SpriteTextureChanged, ({ sprite }) => {
@@ -150,15 +175,35 @@ export class RenderContainer extends Entity {
       this.refresh();
     });
 
-    // TODO: detect heirarchy changes
+    this.on(EntityDescendantSpawned, ({ descendant }) => {
+      if (!this.#container) return;
+      if (!(descendant instanceof PixiEntity)) return;
+      if (!descendant.container) return;
+
+      this.#container.addChild(descendant.container);
+      this.#container.sortChildren();
+      this.refresh();
+    });
+
+    this.listen(this.game, EntityHierarchyChanged, ({ oldParent, newParent }) => {
+      const wasInTree = this.#isInTree(oldParent);
+      const isInTree = this.#isInTree(newParent);
+      if (!wasInTree && !isInTree) return;
+      if (wasInTree && isInTree) return;
+
+      this.#updateHeirarchy();
+    });
+
+    // refresh is any descendants are destroyed
+    this.on(EntityDescendantDestroyed, () => {
+      this.refresh();
+    });
+
+    // refresh if any descendants toggle enable state
+    this.listen(this.game, AnyEntityOwnEnableChanged, ({ entity }) => {
+      if (entity.ancestors.includes(this)) this.refresh();
+    });
 
     this.#setCacheParams();
-  }
-
-  *#descendants(target: Entity = this): Generator<PixiEntity, void, void> {
-    for (const child of target.children.values()) {
-      if (child instanceof PixiEntity) yield child;
-      yield* this.#descendants(child);
-    }
   }
 }
