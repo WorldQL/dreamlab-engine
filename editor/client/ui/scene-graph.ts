@@ -434,6 +434,7 @@ export class SceneGraph implements InspectorUIWidget {
       if (parentElement === undefined) return;
       parentElement.append(entryElement);
 
+      this.updateDepth(entryElement);
       this.sortEntries(parentElement);
     });
 
@@ -1322,6 +1323,28 @@ export class SceneGraph implements InspectorUIWidget {
       current = current.parent;
     }
     return false;
+  }
+
+  private updateDepth(entryElement: HTMLElement) {
+    let depth = 0;
+    let currentParent: HTMLElement | null = entryElement.parentElement;
+    const treeRoot = this.#section.querySelector("#scene-graph-tree");
+
+    while (currentParent && currentParent !== treeRoot) {
+      if (currentParent.tagName === "DETAILS") {
+        depth++;
+      }
+      currentParent = currentParent.parentElement;
+    }
+
+    entryElement.style.setProperty("--depth", depth.toString());
+
+    const childEntries = Array.from(
+      entryElement.querySelectorAll(":scope > details[data-entity]"),
+    );
+    for (const child of childEntries) {
+      this.updateDepth(child as HTMLElement);
+    }
   }
 
   private replaceEntityType(ui: InspectorUI, entity: Entity, newType: EntityConstructor) {
