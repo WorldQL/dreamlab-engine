@@ -547,6 +547,10 @@ export const serveSourceControlAPI = (router: Router) => {
     const revertProcess = new Deno.Command("git", {
       args: ["revert", body.commit_hash, "--no-edit"],
       cwd: sourceRoot,
+      env: {
+        ...Deno.env.toObject(),
+        GIT_EDITOR: "true",
+      },
     }).spawn();
     const revertStatus = await revertProcess.status;
     if (!revertStatus.success) {
@@ -760,6 +764,10 @@ export const serveSourceControlAPI = (router: Router) => {
       cwd: sourceRoot,
       stdout: "piped",
       stderr: "piped",
+      env: {
+        ...Deno.env.toObject(),
+        GIT_EDITOR: "true",
+      },
     }).spawn();
 
     const { code, stdout, stderr } = await rebaseProcess.output();
