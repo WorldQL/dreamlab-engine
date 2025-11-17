@@ -28,6 +28,7 @@ import type {
   ValueTypeTag,
 } from "@dreamlab/engine";
 import {
+  AnyEntityOwnEnableChanged,
   DefaultSignalHandlerImpls,
   Empty,
   EntityChildDestroyed,
@@ -42,6 +43,7 @@ import {
   EntityDestroyed,
   EntityEnableChanged,
   EntityExclusiveAuthorityChanged,
+  EntityHierarchyChanged,
   EntityOwnEnableChanged,
   EntityRenamed,
   EntityReparented,
@@ -216,6 +218,8 @@ export abstract class Entity implements ISignalHandler {
     child.#parent = this;
 
     if (oldParent) {
+      this.game.fire(EntityHierarchyChanged, child, oldParent, this);
+
       // fire reparent events:
 
       child.fire(EntityReparented, oldParent);
@@ -1003,6 +1007,7 @@ export abstract class Entity implements ISignalHandler {
     this.#enabled = enabled;
     this.#prevEnabled = enabled; // hack to make sure we don't fire the post-tick signals
     this.fire(EntityOwnEnableChanged, enabled);
+    this.game.fire(AnyEntityOwnEnableChanged, this, enabled);
     this[internal.entityNotifyEnableChanged](enabled);
   }
   get [internal.entityOwnEnabled](): boolean {
@@ -1013,6 +1018,7 @@ export abstract class Entity implements ISignalHandler {
     this.#prevEnabled = this.#enabled;
 
     this.fire(EntityOwnEnableChanged, this.#enabled);
+    this.game.fire(AnyEntityOwnEnableChanged, this, this.#enabled);
     this[internal.entityNotifyEnableChanged](this.enabled);
   }
   // #endregion

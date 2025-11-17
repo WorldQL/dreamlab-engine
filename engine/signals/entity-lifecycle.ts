@@ -124,6 +124,16 @@ export class EntityDescendantReparented {
   [exclusiveSignalType] = Entity;
 }
 
+// for performance, uses Game as the event bus
+export class EntityHierarchyChanged {
+  constructor(
+    public entity: Entity,
+    public oldParent: Entity,
+    public newParent: Entity,
+  ) {}
+  [exclusiveSignalType] = BaseGame;
+}
+
 export class EntityOwnEnableChanged {
   constructor(public enabled: boolean) {}
   [exclusiveSignalType] = Entity;
@@ -132,4 +142,13 @@ export class EntityOwnEnableChanged {
 export class EntityEnableChanged {
   constructor(public enabled: boolean) {}
   [exclusiveSignalType] = Entity;
+}
+
+// for performance, uses Game as the event bus
+export class AnyEntityOwnEnableChanged {
+  constructor(
+    public entity: Entity,
+    public enabled: boolean,
+  ) {}
+  [exclusiveSignalType] = BaseGame;
 }
