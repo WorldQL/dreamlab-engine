@@ -241,8 +241,19 @@ export class FileTree implements InspectorUIWidget {
             }
           });
 
-          element.addEventListener("dragstart", () => {
+          element.addEventListener("dragstart", evt => {
             element.dataset.dragging = "";
+
+            const dragPreview = this.#createDragPreview(node);
+            document.body.appendChild(dragPreview);
+
+            const dragEvent = evt as DragEvent;
+            if (dragEvent.dataTransfer) {
+              dragEvent.dataTransfer.effectAllowed = "copy";
+              dragEvent.dataTransfer.setDragImage(dragPreview, 20, 20);
+            }
+
+            setTimeout(() => dragPreview.remove(), 0);
           });
 
           element.addEventListener("dragend", () => {
@@ -373,6 +384,25 @@ export class FileTree implements InspectorUIWidget {
     };
 
     return imagePreview;
+  }
+
+  #createDragPreview(node: FileTreeNode & { type: "file" }): HTMLElement {
+    const ext = this.#extname(node.path);
+    const isBehavior = [".ts", ".tsx"].includes(ext);
+
+    const hintText = isBehavior
+      ? "Drop into the Behaviors panel to add"
+      : "Drop into the Behaviors panel";
+
+    const preview = elem("div", { className: "file-drag-preview" }, [
+      elem("div", { className: "file-drag-preview-header" }, [
+        elem("span", { className: "icon" }, [icon(this.#getIconForNode(node))]),
+        elem("span", { className: "name" }, [node.name]),
+      ]),
+      elem("div", { className: "file-drag-preview-hint" }, [hintText]),
+    ]);
+
+    return preview;
   }
 
   show(uiRoot: HTMLElement): void {
