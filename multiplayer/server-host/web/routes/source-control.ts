@@ -194,8 +194,12 @@ export const serveSourceControlAPI = (router: Router) => {
       ctx.response.body = { success: true };
     } else {
       const pullProcess = new Deno.Command("git", {
-        args: ["pull", body.remote, body.branch],
+        args: ["pull", "--no-edit", body.remote, body.branch],
         cwd: sourceRoot,
+        env: {
+          ...Deno.env.toObject(),
+          GIT_EDITOR: "true",
+        },
       }).spawn();
       const pullStatus = await pullProcess.status;
       if (!pullStatus.success) {
@@ -627,6 +631,10 @@ export const serveSourceControlAPI = (router: Router) => {
     const mergeProcess = new Deno.Command("git", {
       args: ["merge", "--no-edit", body.source],
       cwd: sourceRoot,
+      env: {
+        ...Deno.env.toObject(),
+        GIT_EDITOR: "true",
+      },
     }).spawn();
     const mergeStatus = await mergeProcess.status;
 
