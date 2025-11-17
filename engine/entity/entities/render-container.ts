@@ -69,7 +69,7 @@ export class RenderContainer extends Entity {
     this.#container.visible = this.enabled;
   }
 
-  static readonly #MAX_TEXEL_SIZE = 4096;
+  static readonly #MAX_TEXEL_SIZE = 4096 * 2;
   #clampTexelDensity(): void {
     if (!this.#container) return;
 
