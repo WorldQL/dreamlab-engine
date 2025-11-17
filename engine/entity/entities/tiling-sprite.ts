@@ -9,6 +9,7 @@ import {
   GameRender,
   IBounds,
   PixiEntity,
+  SpriteTextureChanged,
   TextureAdapter,
   Vector2,
   Vector2Adapter,
@@ -105,6 +106,9 @@ export class TilingSprite extends PixiEntity {
       this.#getTexture().then(texture => {
         if (this.destroyed) return;
         sprite.texture = texture;
+
+        this.fire(SpriteTextureChanged, this);
+        this.game.fire(SpriteTextureChanged, this);
       });
     });
 
@@ -118,6 +122,9 @@ export class TilingSprite extends PixiEntity {
       this.#getTexture().then(texture => {
         if (this.destroyed) return;
         sprite.texture = texture;
+
+        this.fire(SpriteTextureChanged, this);
+        this.game.fire(SpriteTextureChanged, this);
       });
     });
   }
@@ -162,5 +169,8 @@ export class TilingSprite extends PixiEntity {
     });
 
     this.container.addChild(this.#sprite);
+
+    this.fire(SpriteTextureChanged, this);
+    this.game.fire(SpriteTextureChanged, this);
   }
 }

@@ -9,6 +9,7 @@ import {
   EntityTransformUpdate,
   IBounds,
   PixiEntity,
+  SpriteTextureChanged,
   TextureAdapter,
 } from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
@@ -98,6 +99,9 @@ export class Sprite extends PixiEntity {
         if (this.destroyed) return;
         sprite.texture = texture;
         updateSize(); // Update size after texture changes to handle aspect ratio correctly
+
+        this.fire(SpriteTextureChanged, this);
+        this.game.fire(SpriteTextureChanged, this);
       });
     });
 
@@ -115,6 +119,9 @@ export class Sprite extends PixiEntity {
         if (this.destroyed) return;
         sprite.texture = texture;
         updateSize(); // Update size after texture changes to handle aspect ratio correctly
+
+        this.fire(SpriteTextureChanged, this);
+        this.game.fire(SpriteTextureChanged, this);
       });
     });
 
@@ -138,6 +145,9 @@ export class Sprite extends PixiEntity {
         if (this.destroyed) return;
         sprite.texture = texture;
         updateSize(); // Update size after texture changes to handle aspect ratio correctly
+
+        this.fire(SpriteTextureChanged, this);
+        this.game.fire(SpriteTextureChanged, this);
       });
     });
   }
@@ -211,5 +221,8 @@ export class Sprite extends PixiEntity {
     if (this.preserveAspectRatio) {
       this.#updateSize();
     }
+
+    this.fire(SpriteTextureChanged, this);
+    this.game.fire(SpriteTextureChanged, this);
   }
 }

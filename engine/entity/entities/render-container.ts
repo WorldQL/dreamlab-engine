@@ -8,6 +8,7 @@ import {
   EntityReparented,
   enumAdapter,
   PixiEntity,
+  SpriteTextureChanged,
 } from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 
@@ -140,8 +141,14 @@ export class RenderContainer extends Entity {
       this.refresh();
     });
 
+    // automatically refresh when sprites load a new texture
+    // required because we defer sprite loading
+    this.listen(this.game, SpriteTextureChanged, ({ sprite }) => {
+      if (!sprite.ancestors.includes(this)) return;
+      this.refresh();
+    });
+
     // TODO: detect heirarchy changes
-    // TODO: detect sprites loading
 
     this.#setCacheParams();
   }

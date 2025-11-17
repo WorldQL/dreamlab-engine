@@ -7,4 +7,5 @@ export * from "./entity-updates.ts";
 export * from "./game-events.ts";
 export * from "./mouse.ts";
 export * from "./multiplayer.ts";
+export * from "./sprite.ts";
 export * from "./tilemap.ts";

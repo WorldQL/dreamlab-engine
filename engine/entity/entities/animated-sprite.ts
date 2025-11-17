@@ -11,6 +11,7 @@ import {
   IBounds,
   PixiEntity,
   SpritesheetAdapter,
+  SpriteTextureChanged,
   TextureAdapter,
   Vector2,
   Vector2Adapter,
@@ -252,6 +253,9 @@ export class AnimatedSprite extends PixiEntity {
         if (textures.length > 0) {
           sprite.textures = textures;
           sprite.play();
+
+          this.fire(SpriteTextureChanged, this);
+          this.game.fire(SpriteTextureChanged, this);
         }
       });
     };
@@ -348,5 +352,8 @@ export class AnimatedSprite extends PixiEntity {
     this.#sprite.play();
 
     this.container.addChild(this.#sprite);
+
+    this.fire(SpriteTextureChanged, this);
+    this.game.fire(SpriteTextureChanged, this);
   }
 }
