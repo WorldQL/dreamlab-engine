@@ -683,6 +683,12 @@ export function setupKeyboardShortcuts(
       return;
     }
 
+    if (event.key === "t") {
+      if (selectedService.entities.length === 1 && selectedService.entities[0].parent) {
+        selectedService.entities = [selectedService.entities[0].parent];
+      }
+    }
+
     if (event.key === "a" && event.altKey) {
       event.preventDefault();
 
