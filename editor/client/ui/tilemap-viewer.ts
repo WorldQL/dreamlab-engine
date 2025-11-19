@@ -152,6 +152,10 @@ export class TileMapViewer {
       this.#drawSelected();
       this.#scanTilemapColors();
 
+      if (this.#colorHistory.size > 0) {
+        this.#setColorPainting(true);
+      }
+
       const resVal = tilemap.values.get("resolution");
       if (resVal) {
         const onResolutionChanged = () => {
@@ -483,8 +487,11 @@ export class TileMapViewer {
   #setColorPainting(on: boolean): void {
     this.#colorPaintingEnabled = !!on;
     if (this.#colorPaintToggle) this.#colorPaintToggle.checked = this.#colorPaintingEnabled;
-    if (this.#colorInputs)
-      this.#colorInputs.style.display = this.#colorPaintingEnabled ? "block" : "none";
+    if (this.#noAtlasMessage) {
+      if (this.#colorPaintingEnabled) this.#noAtlasMessage.dataset.colorPainting = "";
+      else delete this.#noAtlasMessage.dataset.colorPainting;
+    }
+
     if (this.#colorPaintingEnabled) {
       this.#scanTilemapColors();
       this.#renderColorHistory();
@@ -596,8 +603,6 @@ export class TileMapViewer {
     picker.color = initialColor;
     this.#colorBox.style.backgroundColor = initialColor;
     this.#colorInput.value = "ff0000";
-
-    this.#colorInputs.style.display = "none";
   }
 
   async #loadAtlas(tilemap: EditorFacadeTilemap): Promise<void> {

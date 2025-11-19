@@ -60,6 +60,10 @@
           color: rgb(var(--color-text-1));
           font-size: 1.1em;
           font-weight: 600;
+
+          #no-atlas-message[data-color-painting] & {
+            display: none;
+          }
         }
 
         p {
@@ -67,6 +71,10 @@
           color: rgb(var(--color-text-2));
           font-size: 0.9em;
           line-height: 1.4;
+
+          #no-atlas-message[data-color-painting] & {
+            display: none;
+          }
         }
 
         .or-separator {
@@ -87,6 +95,10 @@
             flex: 1;
             background: rgb(var(--color-border));
             opacity: 0.6;
+          }
+
+          #no-atlas-message[data-color-painting] & {
+            display: none;
           }
         }
 
@@ -132,12 +144,15 @@
           padding: 0.75rem;
           margin-top: 0.5rem;
 
-          display: flex;
           flex-direction: column;
           align-items: center;
           gap: 0.5rem;
           width: 100%;
           max-width: 260px;
+
+          #no-atlas-message[data-color-painting] & {
+            display: flex;
+          }
         }
 
         #color-picker {
