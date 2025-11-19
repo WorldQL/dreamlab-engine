@@ -372,8 +372,40 @@ export class ColorTilemapChunk extends TilemapChunk {
   };
 
   get bounds(): TilemapBounds {
-    // TODO
-    return this.#bounds;
+    if (!this.#boundsDirty) return this.#bounds;
+
+    const size = TilemapChunk.CHUNK_SIZE;
+    let minX = Number.POSITIVE_INFINITY;
+    let minY = Number.POSITIVE_INFINITY;
+    let maxX = Number.NEGATIVE_INFINITY;
+    let maxY = Number.NEGATIVE_INFINITY;
+
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        const baseIdx = 4 * (size * y + x);
+        const r = this.tileData[baseIdx + 0];
+        const g = this.tileData[baseIdx + 1];
+        const b = this.tileData[baseIdx + 2];
+        const a = this.tileData[baseIdx + 3];
+        if (r === 0 && g === 0 && b === 0 && a === 0) continue;
+
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x);
+        maxY = Math.max(maxY, y);
+      }
+    }
+
+    if (Number.isFinite(minX)) minX += this.x * size;
+    if (Number.isFinite(minY)) minY += this.y * size;
+    if (Number.isFinite(maxX)) maxX += this.x * size;
+    if (Number.isFinite(maxY)) maxY += this.y * size;
+
+    const bounds = { minX, minY, maxX, maxY };
+    this.#boundsDirty = false;
+    this.#bounds = bounds;
+
+    return bounds;
   }
 
   destroy(): void {
