@@ -193,6 +193,7 @@ export class EditorFacadeTilemap extends BaseTilemap {
               this.setColor(tileX, tileY, newColor);
 
               paintOperations.push({
+                t: "color",
                 x: tileX,
                 y: tileY,
                 id: newColor,
@@ -206,6 +207,7 @@ export class EditorFacadeTilemap extends BaseTilemap {
               this.setTile(tileX, tileY, newId);
 
               paintOperations.push({
+                t: "atlas",
                 x: tileX,
                 y: tileY,
                 id: newId,

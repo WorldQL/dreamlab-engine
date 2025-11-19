@@ -40,7 +40,13 @@ export type UndoRedoOperation =
   | {
       t: "modify-tilemap";
       tilemapRef: string;
-      ops: { x: number; y: number; id: number | undefined; previous: number | undefined }[];
+      ops: {
+        t: "atlas" | "color";
+        x: number;
+        y: number;
+        id: number | undefined;
+        previous: number | undefined;
+      }[];
     }
   | { t: "compound"; ops: Exclude<UndoRedoOperation, { t: "compound" }>[] };
 
@@ -174,16 +180,27 @@ export class UndoRedoManager {
       case "modify-tilemap": {
         const entity = this.#game.entities.lookupByRef(op.tilemapRef);
         if (entity && entity instanceof BaseTilemap) {
-          const xs: number[] = [];
-          const ys: number[] = [];
-          const ids: (number | undefined)[] = [];
-          for (const { x, y, previous } of op.ops) {
-            xs.push(x);
-            ys.push(y);
-            ids.push(previous);
-          }
+          const allAtlas = op.ops.every(x => x.t === "atlas");
+          const allColor = op.ops.every(x => x.t === "color");
 
-          entity.setTiles(xs, ys, ids);
+          if (allAtlas || allColor) {
+            const xs: number[] = [];
+            const ys: number[] = [];
+            const ids: (number | undefined)[] = [];
+            for (const { x, y, previous } of op.ops) {
+              xs.push(x);
+              ys.push(y);
+              ids.push(previous);
+            }
+
+            if (allAtlas) entity.setTiles(xs, ys, ids);
+            else if (allColor) entity.setColorTiles(xs, ys, ids);
+          } else {
+            for (const { x, y, previous, t } of op.ops) {
+              if (t === "atlas") entity.setTile(x, y, previous);
+              else if (t === "color") entity.setColor(x, y, previous);
+            }
+          }
         }
         break;
       }
@@ -272,16 +289,27 @@ export class UndoRedoManager {
       case "modify-tilemap": {
         const entity = this.#game.entities.lookupByRef(op.tilemapRef);
         if (entity && entity instanceof BaseTilemap) {
-          const xs: number[] = [];
-          const ys: number[] = [];
-          const ids: (number | undefined)[] = [];
-          for (const { x, y, id } of op.ops) {
-            xs.push(x);
-            ys.push(y);
-            ids.push(id);
-          }
+          const allAtlas = op.ops.every(x => x.t === "atlas");
+          const allColor = op.ops.every(x => x.t === "color");
 
-          entity.setTiles(xs, ys, ids);
+          if (allAtlas || allColor) {
+            const xs: number[] = [];
+            const ys: number[] = [];
+            const ids: (number | undefined)[] = [];
+            for (const { x, y, id } of op.ops) {
+              xs.push(x);
+              ys.push(y);
+              ids.push(id);
+            }
+
+            if (allAtlas) entity.setTiles(xs, ys, ids);
+            else if (allColor) entity.setColorTiles(xs, ys, ids);
+          } else {
+            for (const { x, y, id, t } of op.ops) {
+              if (t === "atlas") entity.setTile(x, y, id);
+              else if (t === "color") entity.setColor(x, y, id);
+            }
+          }
         }
         break;
       }
