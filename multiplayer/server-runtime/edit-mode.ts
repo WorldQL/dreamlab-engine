@@ -195,6 +195,8 @@ export const handleEditMode = async (
       }
     }
 
+    await game.time.waitForTicks(2);
+
     const newScene = await getSceneFromProject(game, projectDesc, "main");
     scene.prefabs = newScene.prefabs;
     scene.world = newScene.world;

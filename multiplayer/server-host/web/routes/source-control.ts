@@ -386,9 +386,10 @@ export const serveSourceControlAPI = (router: Router) => {
       throw new JsonAPIError(Status.InternalServerError, error.message);
     }
 
-    if (filePath === "project.json") {
-      instance.session?.ipc.send({ op: "ReloadEditScene" });
-    }
+    // this gets called inside broadcastWorldUpdate() above anyway
+    // if (filePath === "project.json") {
+    //   instance.session?.ipc.send({ op: "ReloadEditScene" });
+    // }
   });
   // #endregion
 
