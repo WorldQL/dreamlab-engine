@@ -7,13 +7,14 @@ import {
   EntityEnableChanged,
   EntityRenamed,
   EntityReparented,
+  PhysicsDebug,
   Root,
   Value,
   Vector2,
 } from "@dreamlab/engine";
 import { element as elem, element } from "@dreamlab/ui";
-import { EditorFacadeTilemap } from "../../common/facades/tilemap.ts";
 import { EmptyFacade } from "../../common/facades/empty.ts";
+import { EditorFacadeTilemap } from "../../common/facades/tilemap.ts";
 import {
   EditorMetadataEntity,
   EditorRootFacadeEntity,
@@ -307,6 +308,7 @@ export class SceneGraph implements InspectorUIWidget {
 
   renderEntry(ui: InspectorUI, parent: HTMLElement, entity: Entity, depth: number = 0) {
     if (entity instanceof EditorMetadataEntity) return;
+    if (entity instanceof PhysicsDebug) return;
     const currentEntityRef = entity.ref;
 
     if (this.entryElementMap.has(currentEntityRef)) return;
