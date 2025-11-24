@@ -1,4 +1,10 @@
-import { Entity, EntityContext, EntityDestroyed, GamePostRender } from "@dreamlab/engine";
+import {
+  Camera,
+  Entity,
+  EntityContext,
+  EntityDestroyed,
+  GamePostRender,
+} from "@dreamlab/engine";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
 
 export class PhysicsDebug extends Entity {
@@ -34,8 +40,23 @@ export class PhysicsDebug extends Entity {
     if (!this.#gfx) return;
     this.#gfx.clear();
 
+    const camera = Camera.getActive(this.game);
+    if (!camera) return;
+
     const { vertices, colors } = this.game.physics.world.debugRender();
     const vtx = vertices;
+
+    if (vtx.length === 0 || colors.length === 0) return;
+
+    const safe = 1.2;
+    const cameraFrustum = camera.frustum;
+    const safeFrustum = {
+      width: cameraFrustum.width * safe,
+      height: cameraFrustum.height * safe,
+    };
+
+    const tl = camera.pos.sub({ x: safeFrustum.width / 2, y: safeFrustum.height / 2 });
+    const rect = new PIXI.Rectangle(tl.x, tl.y, safeFrustum.width, safeFrustum.height);
 
     for (let i = 0; i < vtx.length / 4; i += 1) {
       const x1 = vtx[i * 4 + 0];
@@ -48,6 +69,11 @@ export class PhysicsDebug extends Entity {
         continue;
       }
 
+      // cull lines that arent inside camera frustum
+      const in1 = rect.contains(x1, y1);
+      const in2 = rect.contains(x2, y2);
+      if (!in1 && !in2) continue;
+
       const r = colors[i * 4 + 0];
       const g = colors[i * 4 + 1];
       const b = colors[i * 4 + 2];
@@ -58,20 +84,10 @@ export class PhysicsDebug extends Entity {
         continue;
       }
 
-      const color = new PIXI.Color({
-        r: r * 255,
-        g: g * 255,
-        b: b * 255,
-        a: a * 255,
-      });
-
-      const start = { x: x1, y: -y1 };
-      const end = { x: x2, y: -y2 };
-
       this.#gfx
-        .moveTo(start.x, start.y)
-        .lineTo(end.x, end.y)
-        .stroke({ color, alpha: 1, pixelLine: true });
+        .moveTo(x1, -y1)
+        .lineTo(x2, -y2)
+        .stroke({ color: [r, g, b, a], alpha: 1, pixelLine: true });
     }
   }
 }

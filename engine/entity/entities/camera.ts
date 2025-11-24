@@ -9,6 +9,7 @@ import {
   EntityDestroyed,
   Game,
   GameRender,
+  IBounds,
   IVector2,
   Vector2,
   enumAdapter,
@@ -322,5 +323,15 @@ export class Camera extends Entity {
 
     const { x, y } = matrix.applyInverse(position);
     return new Vector2(x, -y);
+  }
+
+  public get frustum(): IBounds {
+    if (!this.game.isClient()) throw new Error("tried to access Camera.frustum on server");
+    const canvas = this.game.renderer.app.canvas;
+
+    const a = this.screenToWorld({ x: 0, y: 0 });
+    const b = this.screenToWorld({ x: canvas.width, y: canvas.height });
+
+    return { width: Math.abs(a.x - b.x), height: Math.abs(a.y - b.y) };
   }
 }
