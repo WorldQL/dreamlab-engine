@@ -1,5 +1,6 @@
 export * from "./animated-sprite.ts";
 export * from "./audio-source.ts";
+export * from "./bounds-debug.ts";
 export * from "./camera.ts";
 export * from "./clickable.ts";
 export * from "./collider.ts";
