@@ -579,13 +579,14 @@ export abstract class BaseTilemap extends PixiEntity {
         },
       );
 
-    const bounds = new PIXI.Bounds(-0.5, -0.5, 0.5, 0.5);
+    const bounds = new PIXI.Bounds();
     bounds.addBounds(new PIXI.Bounds(minX - 0.5, minY - 0.5, minX + 0.5, minY + 0.5));
     bounds.addBounds(new PIXI.Bounds(maxX - 0.5, maxY - 0.5, maxX + 0.5, maxY + 0.5));
+    if (bounds.isEmpty()) bounds.addBounds(new PIXI.Bounds(-0.5, -0.5, 0.5, 0.5));
     this.#bounds = {
       width: bounds.width,
       height: bounds.height,
-      offset: { x: bounds.x + bounds.width / 2 + 0.5, y: bounds.y + bounds.height / 2 + 0.5 },
+      offset: { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 },
     };
   }
 

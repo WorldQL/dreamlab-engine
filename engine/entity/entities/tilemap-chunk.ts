@@ -191,7 +191,12 @@ export class TextureTilemapChunk extends TilemapChunk {
     for (let y = 0; y < size; y++) {
       for (let x = 0; x < size; x++) {
         const baseIdx = 4 * (size * y + x);
-        if (this.tileData[baseIdx + 3] === 0) continue;
+        const r = this.tileData[baseIdx + 0];
+        const g = this.tileData[baseIdx + 1];
+        const b = this.tileData[baseIdx + 2];
+        const a = this.tileData[baseIdx + 3];
+        if (r === 255 && g === 255 && b === 255 && a === 255) continue;
+
         minX = Math.min(minX, x);
         minY = Math.min(minY, y);
         maxX = Math.max(maxX, x);
