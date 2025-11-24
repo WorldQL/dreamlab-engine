@@ -354,6 +354,8 @@ export class ColorTilemapChunk extends TilemapChunk {
         this.tileData[baseIdx + 3] = 255;
       }
     }
+
+    this.#boundsDirty = true;
   }
 
   save(): Uint8Array | undefined {
