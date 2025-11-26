@@ -256,10 +256,13 @@ export class EditorFacadeTilemap extends BaseTilemap {
     });
   }
 
+  #svc: SelectedEntityService | undefined;
+
   shouldPaint(): boolean {
     if (this.game.isServer()) return false;
-    const svc = SelectedEntityService.serviceForGame(this.game);
-    const selected = svc?.entities?.includes(this) ?? false;
+    this.#svc ??= SelectedEntityService.serviceForGame(this.game);
+    const selected = this.#svc?.entities?.includes(this) ?? false;
+    if (!selected) return false;
 
     // TODO: need inspector ui root instead of document (prevent crosstalk between edit and play)
     const tilemapTabOpen =
