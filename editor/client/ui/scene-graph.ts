@@ -477,7 +477,7 @@ export class SceneGraph implements InspectorUIWidget {
     }
 
     this.handleEntryDragAndDrop(ui, entity, entryElement);
-    this.handleEntryContextMenu(ui, entity, entryElement);
+    this.handleEntryContextMenu(ui, entity, entryElement, summary);
 
     parent.append(entryElement);
     if (entity.children.size > 2500) {
@@ -654,8 +654,12 @@ export class SceneGraph implements InspectorUIWidget {
     });
   }
 
-  handleEntryContextMenu(ui: InspectorUI, entity: Entity, entryElement: HTMLElement) {
-    const summary = entryElement.querySelector(":scope > summary")! as HTMLElement;
+  handleEntryContextMenu(
+    ui: InspectorUI,
+    entity: Entity,
+    entryElement: HTMLDetailsElement,
+    summary: HTMLElement,
+  ) {
     summary.addEventListener("contextmenu", event => {
       event.preventDefault();
       event.stopPropagation();
