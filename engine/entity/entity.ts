@@ -618,7 +618,7 @@ export abstract class Entity implements ISignalHandler {
     };
   }
 
-  #generateBehaviorDefinition(
+  static [internal.entityGenerateBehaviorDefinition](
     behavior: Behavior,
     withRefs: boolean,
     forNetwork: boolean,
@@ -646,7 +646,7 @@ export abstract class Entity implements ISignalHandler {
       syncOverrides[syncedObject.field] = info;
     }
 
-    const uri = this.game[internal.behaviorLoader].lookup(
+    const uri = behavior.game[internal.behaviorLoader].lookup(
       behavior.constructor as BehaviorConstructor,
     );
     if (!uri) throw new Error("Attempted to serialize behavior with no associated uri");
@@ -669,7 +669,9 @@ export abstract class Entity implements ISignalHandler {
     definition.behaviors =
       this.behaviors.length === 0
         ? undefined
-        : this.behaviors.map(b => this.#generateBehaviorDefinition(b, withRefs, forNetwork));
+        : this.behaviors.map(b =>
+            Entity[internal.entityGenerateBehaviorDefinition](b, withRefs, forNetwork),
+          );
     definition.children =
       this.children.size === 0
         ? undefined

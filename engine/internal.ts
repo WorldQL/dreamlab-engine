@@ -60,6 +60,9 @@ export const entityGenerateDefinition = Symbol.for(
   "dreamlab.internal.entityGenerateDefinition",
 );
 export const entitySerializedData = Symbol.for("dreamlab.internal.entitySerializedData");
+export const entityGenerateBehaviorDefinition = Symbol.for(
+  "dreamlab.internal.entityGenerateBehaviorDefinition",
+);
 export const valueRelatedEntity = Symbol.for("dreamlab.internal.valueRelatedEntity");
 export const valueApplyUpdate = Symbol.for("dreamlab.internal.valueApplyUpdate");
 export const defineValuesProperties = Symbol.for("dreamlab.internal.defineValuesProperties");

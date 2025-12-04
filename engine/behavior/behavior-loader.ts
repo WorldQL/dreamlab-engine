@@ -1,4 +1,5 @@
-import { Behavior, BehaviorConstructor, Game } from "@dreamlab/engine";
+import { Behavior, BehaviorConstructor, Entity, Game } from "@dreamlab/engine";
+import * as internal from "@dreamlab/engine/internal";
 import { urlWithParams } from "@dreamlab/util/url.ts";
 import { createId } from "@dreamlab/vendor/nanoid.ts";
 
@@ -77,8 +78,12 @@ export class BehaviorLoader {
     return await this.loadScriptFromSource(replaced, location);
   }
 
-  async loadScriptFromSource(script: string, sourceURI: string): Promise<BehaviorConstructor> {
-    const hash = this.#preloadInfo.find(x => x.uri === script)?.hash;
+  async loadScriptFromSource(
+    script: string,
+    sourceURI: string,
+    force = false,
+  ): Promise<BehaviorConstructor> {
+    const hash = force ? undefined : this.#preloadInfo.find(x => x.uri === script)?.hash;
     const cache = hash ?? createId("cch", { secure: false });
     const url = urlWithParams(sourceURI, { cache });
 
@@ -117,6 +122,44 @@ export class BehaviorLoader {
 
       // re-throw
       throw error;
+    }
+  }
+
+  async reload(script: string): Promise<void> {
+    const replaced = script.replace(/\.tsx?$/, ".js");
+    const original = this.#cache.get(replaced);
+    if (!original) return; // this wasnt loaded before so we dont need to reload anything
+
+    this.#cache.delete(replaced);
+    const location = this.#game.resolveResource(replaced);
+    const ctor = await this.loadScriptFromSource(replaced, location, true);
+
+    for (const entity of this.#game.entities) {
+      for (let i = 0; i < entity.behaviors.length; i++) {
+        const behavior = entity.behaviors[i];
+        if (!(behavior instanceof original)) continue;
+
+        const { sync, values } = Entity[internal.entityGenerateBehaviorDefinition](
+          behavior,
+          true,
+          false,
+        );
+
+        entity.behaviors[i].destroy();
+        const b = new ctor({
+          game: behavior.game,
+          entity,
+          ref: behavior.ref,
+          sync,
+          values,
+        });
+
+        entity.behaviors[i] = b;
+        this.#game[internal.behaviorLoader].initialize(ctor);
+        b[internal.implicitSetup]();
+        b.setup();
+        b[internal.behaviorSpawn]();
+      }
     }
   }
 }
