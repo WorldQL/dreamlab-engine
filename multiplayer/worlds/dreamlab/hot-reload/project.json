@@ -27,6 +27,17 @@
           "values": {
             "active": true
           }
+        },
+        {
+          "ref": "ent_tCtJ7m6AoS",
+          "type": "@core/UILayer",
+          "name": "UILayer",
+          "behaviors": [
+            {
+              "ref": "bhv_Mt71E5Fdcp",
+              "script": "res://src/ui.tsx"
+            }
+          ]
         }
       ],
       "server": [],
