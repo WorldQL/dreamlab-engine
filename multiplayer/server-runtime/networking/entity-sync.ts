@@ -98,6 +98,7 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
     if (game.status !== GameStatus.Running) return;
 
     const behavior = event.behavior;
+    if (behavior[internal.behaviorHotReloading]) return;
     const entity = behavior.entity;
     if (changeIgnoreSet.has(entity.ref)) return;
     if (!entity[internal.entityDoneSpawning]) return;
@@ -118,6 +119,7 @@ export const handleEntitySync: ServerNetworkSetupRoutine = (net, game) => {
     if (game.status !== GameStatus.Running) return;
 
     const behavior = event.behavior;
+    if (behavior[internal.behaviorHotReloading]) return;
     const entity = behavior.entity;
     if (changeIgnoreSet.has(entity.ref)) return;
 

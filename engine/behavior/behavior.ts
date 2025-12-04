@@ -351,6 +351,7 @@ export class Behavior implements ISignalHandler {
 
   #spawned = false;
 
+  [internal.behaviorHotReloading]: boolean = false;
   [internal.behaviorSpawn](): void {
     if (this.#spawned) return;
     this.#spawned = true;

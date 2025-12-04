@@ -145,6 +145,7 @@ export class BehaviorLoader {
           false,
         );
 
+        entity.behaviors[i][internal.behaviorHotReloading] = true;
         entity.behaviors[i].destroy();
         const b = new ctor({
           game: behavior.game,
@@ -154,11 +155,13 @@ export class BehaviorLoader {
           values,
         });
 
+        b[internal.behaviorHotReloading] = true;
         entity.behaviors[i] = b;
         this.#game[internal.behaviorLoader].initialize(ctor);
         b[internal.implicitSetup]();
         b.setup();
         b[internal.behaviorSpawn]();
+        b[internal.behaviorHotReloading] = false;
       }
     }
   }
