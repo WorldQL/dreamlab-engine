@@ -146,6 +146,17 @@ export abstract class UIBehavior extends Behavior {
 
     this.uiRoot = this.#ui.element;
 
+    // Clean up any existing elements from previous hot reload
+    if (this.uiRoot) {
+      while (this.uiRoot.firstChild) {
+        this.uiRoot.removeChild(this.uiRoot.firstChild);
+      }
+    }
+
+    // Reset references
+    this.uiElement = undefined;
+    this.styleElement = undefined;
+
     // Now that we have a UI root, we can ensure the style element is created
     if (this.cssContent) {
       this.ensureStyleElement();
