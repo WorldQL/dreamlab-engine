@@ -65,6 +65,11 @@ interface HttpAPIErrorMessage {
   error: unknown; // TODO: invalid params / route not found / exception in user code
 }
 
+interface ReloadBehaviorsMessage {
+  op: "ReloadBehaviors";
+  scripts: string[];
+}
+
 export type HostIPCMessage =
   | ConnectionEstablishedMessage
   | ConnectionDroppedMessage
@@ -74,7 +79,8 @@ export type HostIPCMessage =
   | PlaySessionStateMessage
   | ImportEditPrefab
   | MetricsRequestMessage
-  | HttpAPICallMessage;
+  | HttpAPICallMessage
+  | ReloadBehaviorsMessage;
 
 interface WorkerUpMessage {
   op: "WorkerUp";

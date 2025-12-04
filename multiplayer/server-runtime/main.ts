@@ -74,6 +74,10 @@ game.paused.onChanged(paused => {
   ipc.send({ op: "PauseChanged", paused });
 });
 
+ipc.addMessageListener("ReloadBehaviors", async message => {
+  await Promise.all(message.scripts.map(s => game[internal.behaviorLoader].reload(s)));
+});
+
 await game.initialize();
 
 await handleHttpAPI(ipc, game);

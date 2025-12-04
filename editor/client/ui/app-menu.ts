@@ -11,6 +11,7 @@ import {
   PlayerJoined,
   PlayerLeft,
 } from "@dreamlab/engine";
+import * as internal from "@dreamlab/engine/internal";
 import { element as elem } from "@dreamlab/ui";
 import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 import {
@@ -30,8 +31,8 @@ import {
 } from "../_icons.tsx";
 import { AspectRatio, getAspectRatio, setAspectRatio } from "../aspect-ratio.ts";
 import { IconButton } from "../components/mod.ts";
-import { InspectorUI } from "./inspector.ts";
 import { ContextMenu, ContextMenuItem } from "./context-menu.ts";
+import { InspectorUI } from "./inspector.ts";
 
 export class AppMenu {
   #section = elem("section", { id: "app-menu" });
@@ -363,6 +364,12 @@ export class AppMenu {
         delete gamesDiv.dataset.aspectDisabled;
 
         setAspectRatio(originalAspect);
+      }
+    });
+
+    conn.registerPacketHandler("ScriptEdited", async packet => {
+      if (packet.behavior_script_id) {
+        await playGame[internal.behaviorLoader].reload(packet.behavior_script_id);
       }
     });
 

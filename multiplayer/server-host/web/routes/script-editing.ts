@@ -12,6 +12,7 @@ import { fileIsProbablyBehaviorScript } from "../../../../build-system/build-wor
 import { JsonAPIError, typedJsonHandler } from "../../../common-host/web-util/api.ts";
 import { buildWorld } from "../../../common-host/world-build.ts";
 import { CONFIG } from "../../config.ts";
+import { emitScriptEditNotifications } from "../../edit-notification.ts";
 import { GameInstance } from "../../instance.ts";
 import { sortPaths } from "../../util/sort-paths.ts";
 
@@ -130,7 +131,7 @@ export const serveScriptEditingAPI = (router: Router) => {
         const instance = params.instance;
         const worldFolder = instance.info.worldDirectory;
 
-        const packets: PlayPacket<"ScriptEdited", "server">[] = [];
+        const touchedPaths = [];
 
         for (const file of body) {
           const computedPath = path.join(worldFolder, file.path);
@@ -142,29 +143,10 @@ export const serveScriptEditingAPI = (router: Router) => {
           await fs.ensureDir(path.dirname(computedPath));
           await Deno.writeTextFile(computedPath, file.content);
 
-          const isBehavior = await fileIsProbablyBehaviorScript(computedPath);
-          packets.push({
-            t: "ScriptEdited",
-            script_location: relativePath,
-            behavior_script_id: isBehavior
-              ? `res://${relativePath.replace(/\.tsx?$/, ".js")}`
-              : undefined,
-          });
-
-          if (file.path === "project.json") {
-            // instance.session?.ipc.send({ op: "ReloadEditScene" });
-            // This was easy to shoot yourself in the foot with.
-            // TODO: Properly address the rename file problem server-side or something.
-          }
+          touchedPaths.push(computedPath);
         }
 
-        await buildWorld(
-          instance.info.worldId,
-          instance.info.worldDirectory,
-          "_dist",
-          instance.logs,
-        );
-        for (const packet of packets) instance.session?.broadcastPacket(packet);
+        await emitScriptEditNotifications(instance, touchedPaths);
 
         return { success: true };
       },
@@ -207,21 +189,7 @@ export const serveScriptEditingAPI = (router: Router) => {
         });
         await ctx.request.body.stream?.pipeTo(file.writable);
 
-        await buildWorld(
-          instance.info.worldId,
-          instance.info.worldDirectory,
-          "_dist",
-          instance.logs,
-        );
-        const isBehavior = await fileIsProbablyBehaviorScript(computedPath);
-        instance.session?.broadcastPacket({
-          t: "ScriptEdited",
-          script_location: relativePath,
-          behavior_script_id: isBehavior
-            ? `res://${relativePath.replace(/\.tsx?$/, ".js")}`
-            : undefined,
-          isFromFileSystem: false,
-        });
+        await emitScriptEditNotifications(instance, [computedPath]);
 
         if (params.path === "project.json") {
           instance.session?.ipc.send({ op: "ReloadEditScene" });
@@ -258,11 +226,7 @@ export const serveScriptEditingAPI = (router: Router) => {
 
         await Deno.remove(computedPath, { recursive: true });
 
-        instance.session?.broadcastPacket({
-          t: "ScriptEdited",
-          script_location: relativePath,
-          behavior_script_id: undefined,
-        });
+        await emitScriptEditNotifications(instance, [computedPath]);
 
         return { success: true };
       },
@@ -314,21 +278,7 @@ export const serveScriptEditingAPI = (router: Router) => {
     await fs.ensureDir(path.dirname(newComputedPath));
     await Deno.rename(oldComputedPath, newComputedPath);
 
-    await buildWorld(
-      instance.info.worldId,
-      instance.info.worldDirectory,
-      "_dist",
-      instance.logs,
-    );
-    const isBehavior = await fileIsProbablyBehaviorScript(newComputedPath);
-    instance.session?.broadcastPacket({
-      t: "ScriptEdited",
-      script_location: newRelativePath,
-      behavior_script_id: isBehavior
-        ? `res://${newRelativePath.replace(/\.tsx?$/, ".js")}`
-        : undefined,
-      isFromFileSystem: false,
-    });
+    await emitScriptEditNotifications(instance, [newRelativePath]);
 
     ctx.response.body = { success: true };
   });
