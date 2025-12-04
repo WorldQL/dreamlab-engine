@@ -1,0 +1,36 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "engine_revision": "2024-08.001"
+  },
+  "scenes": {
+    "main": {
+      "registration": [],
+      "world": [
+        {
+          "ref": "ent_RRGESJdRF5",
+          "type": "@core/ColoredSquare",
+          "name": "ColoredSquare",
+          "behaviors": [
+            {
+              "ref": "bhv_k2xKyz2HCl",
+              "script": "res://src/spin.ts"
+            }
+          ]
+        }
+      ],
+      "local": [
+        {
+          "ref": "ent_HEF2oNBs5a",
+          "type": "@core/Camera",
+          "name": "Camera",
+          "values": {
+            "active": true
+          }
+        }
+      ],
+      "server": [],
+      "prefabs": []
+    }
+  }
+}
