@@ -145,6 +145,17 @@
   background-color: rgb(var(--color-bg-2) / 0.5);
 }
 
+#scene-graph:has(#too-many-total-entities) #scene-graph-menu-button {
+  opacity: 30%;
+  pointer-events: none;
+}
+
+#scene-graph-tree > #too-many-total-entities {
+  width: 100%;
+  text-wrap: wrap;
+  line-height: 1.3rem;
+}
+
 #scene-graph-tree details[data-locked] {
   filter: grayscale(100%);
   opacity: 0.85;

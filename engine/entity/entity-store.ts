@@ -28,6 +28,10 @@ export class EntityStore {
     return this.#entitiesById.values();
   }
 
+  get size(): number {
+    return this.#entitiesById.size;
+  }
+
   lookupById(id: string): Entity | undefined {
     return this.#entitiesById.get(id);
   }

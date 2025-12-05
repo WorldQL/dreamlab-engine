@@ -3,6 +3,7 @@ import {
   Entity,
   EntityChildSpawned,
   EntityConstructor,
+  EntityDescendantSpawned,
   EntityDestroyed,
   EntityEnableChanged,
   EntityRenamed,
@@ -43,6 +44,7 @@ function eventTargetsEntry(event: Event, entryElement: HTMLElement) {
 const chevronDownIcon = icon(ChevronDown);
 
 export class SceneGraph implements InspectorUIWidget {
+  #title = document.createTextNode("Scene Graph");
   #section: HTMLElement = elem(
     "section",
     {
@@ -57,7 +59,7 @@ export class SceneGraph implements InspectorUIWidget {
           style: { display: "flex", alignItems: "center" },
         },
         [
-          "Scene Graph",
+          this.#title,
           elem(
             "button",
             {
@@ -166,14 +168,47 @@ export class SceneGraph implements InspectorUIWidget {
       this.renderEntry(ui, treeRoot, this.game.world._.EditEntities._.server);
       this.renderEntry(ui, treeRoot, this.game.world._.EditEntities._.prefabs);
     } else {
-      this.renderEntry(ui, treeRoot, this.game.world);
-      this.renderEntry(ui, treeRoot, this.game.local);
-      this.renderEntry(ui, treeRoot, this.game.prefabs);
+      const totalEntityCount = (): number =>
+        this.game.world.entities.size +
+        this.game.local.entities.size +
+        this.game.prefabs.entities.size;
+
+      const MAX_ENTITIES = 2500;
+      if (totalEntityCount() <= MAX_ENTITIES) {
+        this.renderEntry(ui, treeRoot, this.game.world);
+        this.renderEntry(ui, treeRoot, this.game.local);
+        this.renderEntry(ui, treeRoot, this.game.prefabs);
+      }
+
+      let tripped: boolean = false;
+      const checkTotalEntities = () => {
+        if (tripped) return;
+        const count = totalEntityCount();
+        if (count <= MAX_ENTITIES) return;
+        tripped = true;
+
+        const tooMany = elem("div", { id: "too-many-total-entities" }, [
+          "Scene contains too many entities, they have been hidden for performance.",
+        ]);
+
+        treeRoot.innerHTML = "";
+        treeRoot.append(tooMany);
+        this.#title.textContent = "⚠️ " + this.#title.textContent;
+      };
+
+      this.game.world.on(EntityDescendantSpawned, checkTotalEntities);
+      this.game.local.on(EntityDescendantSpawned, checkTotalEntities);
+      this.game.prefabs.on(EntityDescendantSpawned, checkTotalEntities);
+
+      checkTotalEntities();
     }
 
     const world = ui.editMode ? this.game.world._.EditEntities._.world : this.game.world;
 
     this.#section.addEventListener("contextmenu", event => {
+      // dont show context menu if entity rendering is disabled
+      if (treeRoot.matches(":scope:has(#too-many-total-entities)")) return;
+
       event.preventDefault();
       event.stopPropagation();
 
