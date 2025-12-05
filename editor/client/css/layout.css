@@ -27,28 +27,28 @@ main {
       3em,
       var(--bottom-bar-height)
     );
+}
 
-  @media (max-width: 600px) {
+@media only screen and (max-width: 600px) {
+  main {
+    /* A single column, two rows */
+    grid-template-areas:
+      "top" /* first row  ─ top bar */
+      "viewport"; /* second row ─ game view */
+
+    /* one column */
+    grid-template-columns: 1fr;
+    /* top bar gets its natural height; the rest is 1fr  */
+    grid-template-rows: auto 1fr;
+
     padding: 0;
-  }
-}
 
-main.topbar-plus-viewport {
-  /* A single column, two rows */
-  grid-template-areas:
-    "top" /* first row  ─ top bar */
-    "viewport"; /* second row ─ game view */
-
-  /* one column */
-  grid-template-columns: 1fr;
-  /* top bar gets its natural height; the rest is 1fr  */
-  grid-template-rows: auto 1fr;
-}
-
-/* Hide every immediate child *except* the pieces
+    /* Hide every immediate child *except* the pieces
    we want to keep on screen. */
-main.topbar-plus-viewport > :not(#top-bar):not(#gameview) {
-  display: none !important;
+    & > :not(#top-bar):not(#gameview) {
+      display: none !important;
+    }
+  }
 }
 
 main > div {

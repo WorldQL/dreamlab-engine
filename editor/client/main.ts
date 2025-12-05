@@ -263,14 +263,6 @@ new ResizeObserver(_ => {
   games.play?.renderer?.resize?.(true);
 }).observe(viewport);
 
-new ResizeObserver(_ => {
-  if (window.innerWidth < 600) {
-    document.getElementById("layout")?.classList.add("topbar-plus-viewport");
-  } else {
-    document.getElementById("layout")?.classList.remove("topbar-plus-viewport");
-  }
-}).observe(uiRoot);
-
 const detectPixelRatioChange = () => {
   globalThis.matchMedia(`(resolution: ${globalThis.devicePixelRatio}dppx)`).addEventListener(
     "change",
