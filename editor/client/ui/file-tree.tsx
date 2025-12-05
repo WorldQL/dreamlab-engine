@@ -8,6 +8,7 @@ import {
   CodeXml,
   File,
   Folder,
+  FolderOpen,
   icon,
   Image,
   Plus,
@@ -207,8 +208,11 @@ export class FileTree implements InspectorUIWidget {
         if (node.name.startsWith(".")) return; // don't render dotfiles.
 
         const currentPath = path ? `${path}/${node.name}` : node.name;
+        const iconElement = elem("span", { className: "icon" }, [
+          icon(this.#getIconForNode(node)),
+        ]);
         const header = elem("span", {}, [
-          elem("span", { className: "icon" }, [icon(this.#getIconForNode(node))]),
+          iconElement,
           elem("span", { className: "name" }, [node.name]),
         ]);
 
@@ -275,11 +279,15 @@ export class FileTree implements InspectorUIWidget {
           const isOpen = this.#openDirectories.has(currentPath);
           element.open = isOpen;
 
+          iconElement.replaceChildren(icon(isOpen ? FolderOpen : Folder));
+
           element.addEventListener("toggle", () => {
             if (element.open) {
               this.#openDirectories.add(currentPath);
+              iconElement.replaceChildren(icon(FolderOpen));
             } else {
               this.#openDirectories.delete(currentPath);
+              iconElement.replaceChildren(icon(Folder));
             }
             this.#saveOpenDirectories();
           });
