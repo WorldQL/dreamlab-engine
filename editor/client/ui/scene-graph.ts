@@ -287,7 +287,10 @@ export class SceneGraph implements InspectorUIWidget {
     this.#section.remove();
   }
 
-  sortEntries(parent: HTMLElement) {
+  sortEntries(entity: Entity, parent: HTMLElement) {
+    // skip sorting if many children
+    if (entity.children.size > 500) return;
+
     const entries = Array.from(parent.querySelectorAll(":scope > details[data-entity]")).map(
       entry => {
         const entity = this.game.entities.lookupByRef(
@@ -421,7 +424,7 @@ export class SceneGraph implements InspectorUIWidget {
         this.renderEntry(ui, entryElement, newEntity, depth + 1);
         if (!needsSorting) {
           needsSorting = () => {
-            this.sortEntries(entryElement);
+            this.sortEntries(entity, entryElement);
             needsSorting = undefined;
           };
           queueMicrotask(needsSorting);
@@ -437,7 +440,7 @@ export class SceneGraph implements InspectorUIWidget {
       parentElement.append(entryElement);
 
       this.updateDepth(entryElement);
-      this.sortEntries(parentElement);
+      this.sortEntries(parent, parentElement);
     });
 
     entity.on(EntityDestroyed, () => {
@@ -466,7 +469,7 @@ export class SceneGraph implements InspectorUIWidget {
       if (parent === undefined) return;
       const parentElement = this.entryElementMap.get(parent.ref);
       if (parentElement === undefined) return;
-      this.sortEntries(parentElement);
+      this.sortEntries(parent, parentElement);
     });
 
     if (entity instanceof EmptyFacade) {
@@ -488,7 +491,7 @@ export class SceneGraph implements InspectorUIWidget {
       for (const child of children) {
         this.renderEntry(ui, entryElement, child, depth + 1);
       }
-      this.sortEntries(entryElement);
+      this.sortEntries(entity, entryElement);
     }
   }
 
@@ -527,7 +530,7 @@ export class SceneGraph implements InspectorUIWidget {
 
       reset();
 
-      this.sortEntries(entryElement);
+      this.sortEntries(entity, entryElement);
       this.scrollToEntity(entryElement);
     });
   }
