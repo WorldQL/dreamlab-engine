@@ -128,13 +128,20 @@ document.addEventListener("drop", async e => {
     "ogg",
   ]);
 
+  const MAX_FILES = 100;
   const toHighlight: string[] = [];
   const uploadTasks: Promise<void>[] = [];
+  let fileCount = 0;
 
   async function traverseEntry(entry: FileSystemEntry): Promise<void> {
     if (entry.isFile) {
       const fileEntry = entry as FileSystemFileEntry;
       const file: File = await new Promise((res, rej) => fileEntry.file(res, rej));
+
+      fileCount++;
+      if (fileCount > MAX_FILES) {
+        throw new Error(`Too many files. Maximum ${MAX_FILES} files allowed.`);
+      }
 
       const ext = file.name.split(".").pop()?.toLowerCase() || "";
       const topFolder = mediaExts.has(ext) ? "assets" : "src";
@@ -164,18 +171,26 @@ document.addEventListener("drop", async e => {
     }
   }
 
+  const traversalPromises: Promise<void>[] = [];
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
     const entry = item.webkitGetAsEntry?.();
     if (entry) {
-      await traverseEntry(entry);
+      traversalPromises.push(traverseEntry(entry));
     }
   }
 
   try {
+    await Promise.all(traversalPromises);
     await Promise.all(uploadTasks);
   } catch (err) {
     console.error("upload error", err);
+    if (err instanceof Error) {
+      alert(`Upload failed: ${err.message}`);
+    } else {
+      alert("Upload failed. Check console for details.");
+    }
+    return;
   }
 
   setTimeout(() => {
