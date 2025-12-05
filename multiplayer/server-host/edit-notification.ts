@@ -2,6 +2,7 @@ import { PlayPacket } from "@dreamlab/proto/play.ts";
 import * as path from "@std/path";
 import { fileIsProbablyBehaviorScript } from "../../build-system/build-world.ts";
 import { buildWorld } from "../common-host/world-build.ts";
+import { CONFIG } from "./config.ts";
 import { GameInstance } from "./instance.ts";
 
 export async function emitScriptEditNotifications(
@@ -41,10 +42,14 @@ export async function emitScriptEditNotifications(
       "_dist_play",
       instance.logs,
     );
-    instance.playSession.ipc.send({
-      op: "ReloadBehaviors",
-      scripts: packets.map(it => it.behavior_script_id).filter(it => it !== undefined),
-    });
+
+    if (!CONFIG.NO_HOT_RELOAD) {
+      instance.playSession.ipc.send({
+        op: "ReloadBehaviors",
+        scripts: packets.map(it => it.behavior_script_id).filter(it => it !== undefined),
+      });
+    }
+
     for (const p of packets) instance.playSession?.broadcastPacket(p);
   }
 }

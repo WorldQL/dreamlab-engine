@@ -367,11 +367,13 @@ export class AppMenu {
       }
     });
 
-    conn.registerPacketHandler("ScriptEdited", async packet => {
-      if (packet.behavior_script_id) {
-        await playGame[internal.behaviorLoader].reload(packet.behavior_script_id);
-      }
-    });
+    if (!globalThis.env.NO_HOT_RELOAD) {
+      conn.registerPacketHandler("ScriptEdited", async packet => {
+        if (packet.behavior_script_id) {
+          await playGame[internal.behaviorLoader].reload(packet.behavior_script_id);
+        }
+      });
+    }
 
     await setupGame(playGame, conn, false);
     if (!globalThis.matchMedia("(max-width: 600px)").matches) {

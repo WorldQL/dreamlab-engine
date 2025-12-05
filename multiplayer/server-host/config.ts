@@ -73,6 +73,7 @@ export const CONFIG = createEnv({
   extends: [early, influx],
   server: {
     IS_DEV: BoolSchema,
+    NO_HOT_RELOAD: BoolSchema.default(false),
     MULTIPLAYER_PUBLIC_URL: z
       .url()
       .default(`http://${early.BIND_ADDRESS.hostname}:${early.BIND_ADDRESS.port}`),
@@ -90,6 +91,7 @@ export const CONFIG = createEnv({
 
   runtimeEnvStrict: {
     IS_DEV: Deno.env.get("IS_DEV"),
+    NO_HOT_RELOAD: Deno.env.get("NO_HOT_RELOAD"),
     MULTIPLAYER_PUBLIC_URL: Deno.env.get("DREAMLAB_MULTIPLAYER_PUBLIC_URL"),
     DISTRIBUTION_PUBLIC_URL: Deno.env.get("DREAMLAB_DISTRIBUTION_PUBLIC_URL"),
     MULTIPLAYER_AUTH_TOKEN: Deno.env.get("DREAMLAB_MULTIPLAYER_AUTH_TOKEN"),
