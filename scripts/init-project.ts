@@ -1,3 +1,4 @@
+import { Entity } from "@dreamlab/engine";
 import * as cli from "jsr:@std/cli";
 import * as fs from "jsr:@std/fs";
 import * as path from "jsr:@std/path";
@@ -8,7 +9,20 @@ const projectTemplate = {
     engine_revision: "2024-08.001",
   },
   scenes: {
-    main: {},
+    main: {
+      registration: [],
+      world: [],
+      local: [
+        {
+          ref: Entity.createRef(),
+          type: "@core/Camera",
+          name: "Camera",
+          values: { active: true },
+        },
+      ],
+      server: [],
+      prefabs: [],
+    },
   },
 };
 
