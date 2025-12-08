@@ -4,6 +4,33 @@
     "engine_revision": "2024-08.001"
   },
   "scenes": {
-    "main": {}
+    "main": {
+      "registration": [],
+      "world": [
+        {
+          "ref": "ent_pC2urQcCAr",
+          "type": "@core/ColoredSquare",
+          "name": "ColoredSquare",
+          "behaviors": [
+            {
+              "ref": "bhv_qO2eBXTpBp",
+              "script": "res://src/hello-world.ts"
+            }
+          ]
+        }
+      ],
+      "local": [
+        {
+          "ref": "ent_0JfArTCBce",
+          "type": "@core/Camera",
+          "name": "Camera",
+          "values": {
+            "active": true
+          }
+        }
+      ],
+      "server": [],
+      "prefabs": []
+    }
   }
 }
