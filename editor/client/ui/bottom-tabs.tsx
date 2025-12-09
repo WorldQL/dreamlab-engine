@@ -112,7 +112,6 @@ export class BottomTabs implements InspectorUIWidget {
       aiSuggestionsPopup.show();
       e.preventDefault();
       e.stopPropagation();
-      recommendedActionsTab.classList.add("hidden");
     });
 
     // @ts-expect-error Global

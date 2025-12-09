@@ -1,39 +1,74 @@
-import * as path from "@std/path";
 import { debounce } from "jsr:@std/async/debounce";
-import { fileIsProbablyBehaviorScript } from "../../build-system/build-world.ts";
-import { buildWorld } from "../common-host/world-build.ts";
 import { emitScriptEditNotifications } from "./edit-notification.ts";
 import { GameSession } from "./session.ts";
 
-export async function watchForEditChanges(session: GameSession, subdir: string) {
+export async function watchForEditChanges(session: GameSession) {
   const instance = session.parent;
+  const worldDir = instance.info.worldDirectory;
+  const editorActionsPath = `${worldDir}/editorActions.json`;
 
   ["src", "instructions"].forEach(dir =>
-    Deno.mkdirSync(`${instance.info.worldDirectory}/${dir}`, { recursive: true }),
+    Deno.mkdirSync(`${worldDir}/${dir}`, { recursive: true }),
   );
 
-  const watcher = Deno.watchFs(
-    [`${instance.info.worldDirectory}/src`, `${instance.info.worldDirectory}/instructions`],
-    { recursive: true },
-  );
-  session.editWatcher = watcher;
+  const stat = await Deno.stat(editorActionsPath).catch(() => null);
+  if (stat?.isFile) {
+    await processEditorActionsFile(session, editorActionsPath);
+  }
+
+  const scriptWatcher = Deno.watchFs([`${worldDir}/src`, `${worldDir}/instructions`], {
+    recursive: true,
+  });
+  const rootWatcher = Deno.watchFs(worldDir, { recursive: false });
+
+  session.editWatcher = scriptWatcher;
 
   const touchedPaths = new Set<string>();
-
   const rebuild = debounce(async () => {
     await emitScriptEditNotifications(instance, [...touchedPaths], true);
     touchedPaths.clear();
   }, 60);
 
-  for await (const event of watcher) {
-    if (
-      event.kind === "modify" ||
-      event.kind === "create" ||
-      event.kind === "rename" ||
-      event.kind === "remove"
-    ) {
-      event.paths.forEach(it => touchedPaths.add(it));
-      rebuild();
+  const watchScriptChanges = async () => {
+    for await (const event of scriptWatcher) {
+      if (["modify", "create", "rename", "remove"].includes(event.kind)) {
+        event.paths.forEach(p => touchedPaths.add(p));
+        rebuild();
+      }
     }
+  };
+
+  const watchEditorActions = async () => {
+    for await (const event of rootWatcher) {
+      if (!event.paths.includes(editorActionsPath)) continue;
+      if (event.kind === "create" || event.kind === "modify") {
+        await processEditorActionsFile(session, editorActionsPath);
+      }
+    }
+  };
+
+  await Promise.all([watchScriptChanges(), watchEditorActions()]);
+}
+
+async function processEditorActionsFile(session: GameSession, filePath: string) {
+  await new Promise(resolve => setTimeout(resolve, 50));
+
+  try {
+    const stat = await Deno.stat(filePath).catch(() => null);
+    if (!stat) return;
+
+    const content = await Deno.readTextFile(filePath);
+    if (!content.trim()) return;
+
+    const actions = JSON.parse(content);
+    if (!Array.isArray(actions) || actions.length === 0) return;
+
+    session.broadcastPacket({
+      t: "EditorActions",
+      actions: actions,
+    });
+  } catch (error) {
+    if (error instanceof Deno.errors.NotFound) return;
+    if (error instanceof SyntaxError && error.message.includes("JSON")) return;
   }
 }

@@ -141,7 +141,7 @@ export class GameSession {
 
     this.#editMode = opts.editMode;
     if (opts.editMode) {
-      watchForEditChanges(this, opts.worldSubDirectory);
+      watchForEditChanges(this);
 
       const save = async () => {
         try {

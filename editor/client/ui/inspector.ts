@@ -1,5 +1,6 @@
 import { ClientConnection } from "@dreamlab/client/networking/net-connection.ts";
 import { ClientGame } from "@dreamlab/engine";
+import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
 import { PrefabRootFacade } from "../../common/mod.ts";
 import { CameraPanBehavior } from "../panning-and-selection.ts";
 import { BehaviorTypeInfoService } from "../util/behavior-type-info.ts";
@@ -154,6 +155,12 @@ export class InspectorUI {
       this.fileTree.setup();
     });
 
+    conn.registerPacketHandler("EditorActions", packet => {
+      this.game.fire(NewRecommendedActions, "", packet.actions);
+    });
+
+    this.checkForExistingEditorActions();
+
     if (this.editMode) {
       const prefabRoot = this.game.world._.EditEntities._.prefabs.cast(PrefabRootFacade);
       prefabRoot.localHidden = this.prefabAutoHide;
@@ -168,6 +175,21 @@ export class InspectorUI {
         );
         prefabRoot.localHidden = !hasPrefabSelected;
       });
+    }
+  }
+
+  async checkForExistingEditorActions() {
+    const url = new URL(connectionDetails.serverUrl);
+    url.pathname = `/api/v1/edit/${this.game.worldId}/editor-actions`;
+    const response = await fetch(url);
+
+    if (response.ok) {
+      const data = await response.json();
+      const actions = data.payload;
+
+      if (Array.isArray(actions) && actions.length > 0) {
+        this.game.fire(NewRecommendedActions, "", actions);
+      }
     }
   }
 

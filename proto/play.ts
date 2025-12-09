@@ -278,6 +278,16 @@ export const ServerScriptEditedPacket = z.object({
   isFromFileSystem: z.boolean().default(true).optional(),
 });
 
+export const ServerEditorActionsPacket = z.object({
+  t: z.literal("EditorActions"),
+  actions: z.array(
+    z.object({
+      editDescription: z.string(),
+      editCode: z.string(),
+    }),
+  ),
+});
+
 export const ClientSpawnBehaviorPacket = z.object({
   t: z.literal("SpawnBehavior"),
   entity: EntityReferenceSchema,
@@ -322,6 +332,10 @@ export const ServerEntityEnableReport = ClientEntityEnableReport.extend({
   from: ConnectionIdSchema.optional(),
 });
 
+export const ClientDismissEditorActionsPacket = z.object({
+  t: z.literal("DismissEditorActions"),
+});
+
 export const ClientPacketSchema = z.discriminatedUnion("t", [
   PingPacketSchema,
   ClientLoadPhaseChangedPacket,
@@ -343,6 +357,7 @@ export const ClientPacketSchema = z.discriminatedUnion("t", [
   ClientUpdateTilemapPacketSchema,
   ClientDumpTilemapPacketSchema,
   ClientClearTilemapPacketSchema,
+  ClientDismissEditorActionsPacket,
 ]);
 export type ClientPacket = z.infer<typeof ClientPacketSchema>;
 
@@ -367,6 +382,7 @@ export const ServerPacketSchema = z.discriminatedUnion("t", [
   ServerReportValuesPacketSchema,
   ServerRichReportValuesPacketSchema,
   ServerScriptEditedPacket,
+  ServerEditorActionsPacket,
   ServerSpawnBehaviorPacket,
   ServerDeleteBehaviorPacket,
   ServerEntityEnableChanged,

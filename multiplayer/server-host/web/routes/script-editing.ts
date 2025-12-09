@@ -602,4 +602,55 @@ export const serveScriptEditingAPI = (router: Router) => {
       },
     ),
   );
+
+  router.get("/api/v1/edit/:instance_id/:world_name/editor-actions", async ctx => {
+    const worldId = `${ctx.params.instance_id}/${ctx.params.world_name}`;
+    const instance = [...instances.values()].find(inst => inst.info.worldId === worldId);
+
+    if (!instance) {
+      ctx.response.status = Status.NotFound;
+      ctx.response.body = { payload: [] };
+      return;
+    }
+
+    const editorActionsPath = path.join(instance.info.worldDirectory, "editorActions.json");
+
+    try {
+      const content = await Deno.readTextFile(editorActionsPath);
+      const actions = JSON.parse(content);
+      ctx.response.body = { payload: Array.isArray(actions) ? actions : [] };
+    } catch (error) {
+      if (error instanceof Deno.errors.NotFound) {
+        ctx.response.body = { payload: [] };
+      } else {
+        ctx.response.status = Status.InternalServerError;
+        ctx.response.body = { payload: [] };
+      }
+    }
+  });
+
+  router.delete("/api/v1/edit/:instance_id/:world_name/editor-actions", async ctx => {
+    const worldId = `${ctx.params.instance_id}/${ctx.params.world_name}`;
+    const instance = [...instances.values()].find(inst => inst.info.worldId === worldId);
+
+    if (!instance) {
+      ctx.response.status = Status.NotFound;
+      ctx.response.body = { success: false };
+      return;
+    }
+
+    const editorActionsPath = path.join(instance.info.worldDirectory, "editorActions.json");
+
+    try {
+      await Deno.remove(editorActionsPath);
+      ctx.response.body = { success: true };
+    } catch (error) {
+      if (error instanceof Deno.errors.NotFound) {
+        ctx.response.body = { success: true };
+      } else {
+        ctx.response.status = Status.InternalServerError;
+        throw error;
+      }
+    }
+  });
 };
