@@ -1,6 +1,7 @@
 import {
   Behavior,
   BehaviorConstructor,
+  BehaviorDestroyed,
   BehaviorSpawned,
   ClientGame,
   Entity,
@@ -155,6 +156,16 @@ export class BehaviorList {
         const editor = new BehaviorEditor(ui, newBehavior, this);
         this.editors.set(newBehavior.ref, editor);
         this.addBehavior(newBehavior);
+      });
+
+      this.entity.on(BehaviorDestroyed, ({ behavior }) => {
+        const existingBehaviorIdx = this.behaviors.findIndex(it => it.ref === behavior.ref);
+        if (existingBehaviorIdx !== -1) this.behaviors.splice(existingBehaviorIdx, 1);
+
+        const editor = this.editors.get(behavior.ref);
+        if (!editor) return;
+        this.editors.delete(behavior.ref);
+        editor.details.remove();
       });
     }
 
