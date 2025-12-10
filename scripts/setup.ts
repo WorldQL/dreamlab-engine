@@ -75,7 +75,9 @@ if (import.meta.main) {
         if (!content.endsWith("\n")) await writer.write(encoder.encode("\n"));
         await writer.write(encoder.encode(`export DREAMLAB_DIR="${DREAMLAB_ROOT}"\n`));
         await writer.write(
-          encoder.encode(`alias wql='deno run -A "$DREAMLAB_DIR/scripts/wql.ts"'\n`),
+          encoder.encode(
+            `alias wql='${Deno.execPath()} run -A "$DREAMLAB_DIR/scripts/wql.ts"'\n`,
+          ),
         );
 
         await writer.ready;
