@@ -603,6 +603,30 @@ export const serveScriptEditingAPI = (router: Router) => {
     ),
   );
 
+  const parseEditorActionsXml = (
+    content: string,
+  ): Array<{ editDescription: string; editCode: string }> => {
+    const actions: Array<{ editDescription: string; editCode: string }> = [];
+    const editorBlockRegex = /<editor>([\s\S]*?)<\/editor>/g;
+
+    let match;
+    while ((match = editorBlockRegex.exec(content)) !== null) {
+      const block = match[1];
+
+      const descMatch = /<editDescription>([\s\S]*?)<\/editDescription>/.exec(block);
+      const codeMatch = /<editCode>([\s\S]*?)<\/editCode>/.exec(block);
+
+      if (descMatch && codeMatch) {
+        actions.push({
+          editDescription: descMatch[1].trim(),
+          editCode: codeMatch[1].trim(),
+        });
+      }
+    }
+
+    return actions;
+  };
+
   router.get("/api/v1/edit/:instance_id/:world_name/editor-actions", async ctx => {
     const worldId = `${ctx.params.instance_id}/${ctx.params.world_name}`;
     const instance = [...instances.values()].find(inst => inst.info.worldId === worldId);
@@ -613,12 +637,12 @@ export const serveScriptEditingAPI = (router: Router) => {
       return;
     }
 
-    const editorActionsPath = path.join(instance.info.worldDirectory, "editorActions.json");
+    const editorActionsPath = path.join(instance.info.worldDirectory, "editorActions.xml");
 
     try {
       const content = await Deno.readTextFile(editorActionsPath);
-      const actions = JSON.parse(content);
-      ctx.response.body = { payload: Array.isArray(actions) ? actions : [] };
+      const actions = parseEditorActionsXml(content);
+      ctx.response.body = { payload: actions };
     } catch (error) {
       if (error instanceof Deno.errors.NotFound) {
         ctx.response.body = { payload: [] };
@@ -639,7 +663,7 @@ export const serveScriptEditingAPI = (router: Router) => {
       return;
     }
 
-    const editorActionsPath = path.join(instance.info.worldDirectory, "editorActions.json");
+    const editorActionsPath = path.join(instance.info.worldDirectory, "editorActions.xml");
 
     try {
       await Deno.remove(editorActionsPath);

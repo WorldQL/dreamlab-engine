@@ -116,9 +116,14 @@ export class BottomTabs implements InspectorUIWidget {
 
     // @ts-expect-error Global
     (game as ClientGame).on(NewRecommendedActions, e => {
-      if (e.plan) {
+      if (Array.isArray(e.plan) && e.plan.length > 0) {
         aiSuggestionsPopup.setPlan(e.plan);
         recommendedActionsTab.classList.remove("hidden");
+        loadingActionsTab.classList.add("hidden");
+      } else if (Array.isArray(e.plan) && e.plan.length === 0) {
+        aiSuggestionsPopup.setPlan([]);
+        aiSuggestionsPopup.hide();
+        recommendedActionsTab.classList.add("hidden");
         loadingActionsTab.classList.add("hidden");
       } else if (e.plan === "fail") {
         recommendedActionsTab.classList.add("hidden");

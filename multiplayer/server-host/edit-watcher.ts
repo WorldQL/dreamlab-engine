@@ -5,7 +5,7 @@ import { GameSession } from "./session.ts";
 export async function watchForEditChanges(session: GameSession) {
   const instance = session.parent;
   const worldDir = instance.info.worldDirectory;
-  const editorActionsPath = `${worldDir}/editorActions.json`;
+  const editorActionsPath = `${worldDir}/editorActions.xml`;
 
   ["src", "instructions"].forEach(dir =>
     Deno.mkdirSync(`${worldDir}/${dir}`, { recursive: true }),
@@ -43,11 +43,40 @@ export async function watchForEditChanges(session: GameSession) {
       if (!event.paths.includes(editorActionsPath)) continue;
       if (event.kind === "create" || event.kind === "modify") {
         await processEditorActionsFile(session, editorActionsPath);
+      } else if (event.kind === "remove") {
+        session.broadcastPacket({
+          t: "EditorActions",
+          actions: [],
+        });
       }
     }
   };
 
   await Promise.all([watchScriptChanges(), watchEditorActions()]);
+}
+
+function parseEditorActionsXml(
+  content: string,
+): Array<{ editDescription: string; editCode: string }> {
+  const actions: Array<{ editDescription: string; editCode: string }> = [];
+  const editorBlockRegex = /<editor>([\s\S]*?)<\/editor>/g;
+
+  let match;
+  while ((match = editorBlockRegex.exec(content)) !== null) {
+    const block = match[1];
+
+    const descMatch = /<editDescription>([\s\S]*?)<\/editDescription>/.exec(block);
+    const codeMatch = /<editCode>([\s\S]*?)<\/editCode>/.exec(block);
+
+    if (descMatch && codeMatch) {
+      actions.push({
+        editDescription: descMatch[1].trim(),
+        editCode: codeMatch[1].trim(),
+      });
+    }
+  }
+
+  return actions;
 }
 
 async function processEditorActionsFile(session: GameSession, filePath: string) {
@@ -58,10 +87,7 @@ async function processEditorActionsFile(session: GameSession, filePath: string) 
     if (!stat) return;
 
     const content = await Deno.readTextFile(filePath);
-    if (!content.trim()) return;
-
-    const actions = JSON.parse(content);
-    if (!Array.isArray(actions) || actions.length === 0) return;
+    const actions = parseEditorActionsXml(content);
 
     session.broadcastPacket({
       t: "EditorActions",
@@ -69,6 +95,5 @@ async function processEditorActionsFile(session: GameSession, filePath: string) 
     });
   } catch (error) {
     if (error instanceof Deno.errors.NotFound) return;
-    if (error instanceof SyntaxError && error.message.includes("JSON")) return;
   }
 }
