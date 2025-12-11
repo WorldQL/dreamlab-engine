@@ -68,6 +68,15 @@ export class CameraPanBehavior extends Behavior {
     });
   }
 
+  #ignoreTilemap(): boolean {
+    const entity = this.ui?.selectedEntity.entities[0];
+    if (!entity) return false;
+    if (!(entity instanceof EditorFacadeTilemap)) return false;
+
+    // TODO: need inspector ui root instead of document (prevent crosstalk between edit and play)
+    return document.querySelector("[data-tab-id=tilemap][data-active]") !== null;
+  }
+
   #setDrag(value: Vector2 | undefined) {
     this.#drag = value;
 
@@ -103,9 +112,7 @@ export class CameraPanBehavior extends Behavior {
       this.#wasGizmo = local.length > 0;
 
       if (!this.#wasGizmo && event.cursor.world) {
-        if (this.ui?.selectedEntity.entities[0] instanceof EditorFacadeTilemap) {
-          return;
-        }
+        if (this.#ignoreTilemap()) return;
 
         const entities = this.game.entities
           .lookupByPosition(event.cursor.world)
@@ -572,9 +579,7 @@ export class CameraPanBehavior extends Behavior {
       return;
     }
 
-    if (this.ui?.selectedEntity.entities[0] instanceof EditorFacadeTilemap) {
-      return;
-    }
+    if (this.#ignoreTilemap()) return;
 
     if (!wasMouseDownOverCanvas) return;
     if (!this.#drag && event.button === "left" && event.cursor.world && !this.#wasGizmo) {
