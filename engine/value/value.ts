@@ -5,7 +5,7 @@ import type {
   JsonObject,
   ValueRegistry,
 } from "@dreamlab/engine";
-import { ObjectAdapter, ValueTypeAdapter } from "@dreamlab/engine";
+import { GameStatus, ObjectAdapter, ValueTypeAdapter } from "@dreamlab/engine";
 import * as internal from "@dreamlab/engine/internal";
 import type { ReadonlyDeep } from "@dreamlab/vendor/type-fest.ts";
 import { JsonValue } from "./data.ts";
@@ -197,6 +197,7 @@ export class Value<T = unknown> {
     incomingClock: number,
     incomingSource: ConnectionId,
   ): void {
+    if (this.#registry.game.status !== GameStatus.Running) return;
     if (this.#destroyed) return;
 
     if (incomingClock < this.clock) return;
