@@ -179,7 +179,7 @@ if (import.meta.main) {
 
   const notes: (string | false)[] = [
     updatedShell === "bash" && "$ source ~/.bashrc",
-    updatedShell === "zsh" && "", // TODO: shell update for zsh
+    updatedShell === "zsh" && "$ source ~/.zshrc",
 
     `$ cd ${directory} && wql up`,
   ];
