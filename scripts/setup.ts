@@ -184,12 +184,16 @@ if (import.meta.main) {
   }
 
   const notes: (string | false)[] = [
-    updatedShell === "bash" && "$ source ~/.bashrc",
-    updatedShell === "zsh" && "$ source ~/.zshrc",
+    updatedShell === "bash" && "source ~/.bashrc",
+    updatedShell === "zsh" && "source ~/.zshrc",
 
-    `$ cd ${directory} && wql up`,
+    `cd ${directory}`,
+    "wql up",
   ];
-  note(notes.filter(line => line !== false).join("\n"), "Next steps:");
+  note(
+    notes.filter(part => part !== false).join(" && "),
+    "Next steps (copy and paste this command):",
+  );
 
   outro(`You're good to go!`);
   Deno.exit(0);

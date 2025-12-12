@@ -1,5 +1,5 @@
 #!/usr/bin/env -S deno run --ext=ts -A
-// deno-lint-ignore-file no-import-prefix
+// deno-lint-ignore-file no-import-prefix no-explicit-any
 import { Command } from "jsr:@cliffy/command@1.0.0-rc.8";
 import * as fs from "jsr:@std/fs@^1";
 import * as path from "jsr:@std/path@^1";
@@ -11,8 +11,8 @@ const DREAMLAB_ROOT = path.join(path.fromFileUrl(import.meta.url), "../..");
 
 const cli = new Command()
   .name("wql")
-  .command("up [path:string]", "nrdkjfgnlkdr")
-  .action(async (_opts, dir = Deno.cwd()) => {
+  .command("up [path:string]", "Start the Dreamlab Engine in an environment")
+  .action(async (_opts: any, dir = Deno.cwd()) => {
     intro(color.bgCyan(" wql up "));
 
     const exists = await fs.exists(path.join(dir, "project.json"));
