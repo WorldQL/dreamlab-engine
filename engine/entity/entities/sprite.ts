@@ -188,7 +188,7 @@ export class Sprite extends PixiEntity {
       const scaleY = targetHeight / originalHeight;
 
       // Use the smaller scale factor to maintain aspect ratio (letterboxing)
-      const scale = Math.abs(Math.min(scaleX, scaleY));
+      const scale = Math.min(Math.abs(scaleX), Math.abs(scaleY));
 
       // Apply the scaled dimensions
       this.#sprite.width = originalWidth * scale * Math.sign(targetWidth);
