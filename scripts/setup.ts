@@ -51,16 +51,17 @@ if (import.meta.main) {
   // detect shell type and inject `wql` alias
   try {
     const shell = detectDefaultShell();
+    const shellName = path.basename(shell);
 
     // TODO: other shell types?
-    if (shell === "/bin/bash" || shell === "/bin/zsh") {
+    if (shellName === "bash" || shellName === "zsh") {
       const rcFile = (() => {
         const zDotDir = Deno.env.get("ZDOTDIR");
-        if (shell === "/bin/zsh" && zDotDir) {
+        if (shellName === "zsh" && zDotDir) {
           return path.join(zDotDir, ".zshrc");
         }
 
-        const rc = shell === "/bin/bash" ? ".bashrc" : ".zshrc";
+        const rc = shellName === "bash" ? ".bashrc" : ".zshrc";
         return path.join(homedir(), rc);
       })();
 
@@ -83,7 +84,7 @@ if (import.meta.main) {
         await writer.ready;
         await writer.close();
 
-        updatedShell = shell === "/bin/bash" ? "bash" : "zsh";
+        updatedShell = shellName === "bash" ? "bash" : "zsh";
       }
     }
   } catch (_error) {
