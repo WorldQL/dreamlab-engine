@@ -183,18 +183,30 @@ if (import.meta.main) {
     // TODO: prompt to initialize a fresh git repo?
   }
 
-  const notes: (string | false)[] = [
-    updatedShell === "bash" && "source ~/.bashrc",
-    updatedShell === "zsh" && "source ~/.zshrc",
-
-    `cd ${directory}`,
-    "wql up",
-  ];
-  note(
-    notes.filter(part => part !== false).join(" && "),
-    "Next steps (copy and paste this command):",
-  );
-
   outro(`You're good to go!`);
+
+  if (updatedShell) {
+    console.log(
+      color.bgBlue(
+        "To start your project, first run this command to reload your shell configuration:",
+      ),
+    );
+
+    console.log(
+      [
+        updatedShell === "bash" && "source ~/.bashrc",
+        updatedShell === "zsh" && "source ~/.zshrc",
+      ]
+        .filter(cmd => cmd !== false)
+        .at(0),
+    );
+    console.log();
+    console.log(color.bgBlue("Then, run:"));
+    console.log(`cd ${directory} && wql up`);
+  } else {
+    console.log(color.bgBlue("To start your project, run:"));
+    console.log(`cd ${directory} && wql up`);
+  }
+
   Deno.exit(0);
 }

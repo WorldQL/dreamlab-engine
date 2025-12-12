@@ -11,7 +11,10 @@ const DREAMLAB_ROOT = path.join(path.fromFileUrl(import.meta.url), "../..");
 
 const cli = new Command()
   .name("wql")
-  .command("up [path:string]", "Start the Dreamlab Engine in an environment")
+  .command(
+    "up [path:string]",
+    "Start the Dreamlab Engine in a project directory. Defaults to cwd",
+  )
   .action(async (_opts: any, dir = Deno.cwd()) => {
     intro(color.bgCyan(" wql up "));
 
