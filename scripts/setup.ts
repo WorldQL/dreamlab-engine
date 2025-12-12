@@ -187,7 +187,7 @@ if (import.meta.main) {
 
   if (updatedShell) {
     console.log(
-      color.bgBlue(
+      color.underline(
         "To start your project, first run this command to reload your shell configuration:",
       ),
     );
@@ -201,10 +201,10 @@ if (import.meta.main) {
         .at(0),
     );
     console.log();
-    console.log(color.bgBlue("Then, run:"));
+    console.log(color.underline("Then, run:"));
     console.log(`cd ${directory} && wql up`);
   } else {
-    console.log(color.bgBlue("To start your project, run:"));
+    console.log(color.underline("To start your project, run:"));
     console.log(`cd ${directory} && wql up`);
   }
 
