@@ -93,10 +93,15 @@ if (import.meta.main) {
 
   intro(color.bgCyan(" WorldQL Setup "));
 
-  await task("Initializing Dreamlab environment", async () => {
-    await Promise.all([initEditorEnv(DREAMLAB_ROOT), initServerEnv(DREAMLAB_ROOT)]);
-    return "Initialized Dreamlab environment";
-  });
+  // await task("Initializing Dreamlab environment", async () => {
+  //   await Promise.all([initEditorEnv(DREAMLAB_ROOT), initServerEnv(DREAMLAB_ROOT)]);
+  //   return "Initialized Dreamlab environment. This is the game engine that powers WorldQL!";
+  // });
+  // bug in Clack. Using task followed by select causes the first key input to be ignored.
+
+  await Promise.all([initEditorEnv(DREAMLAB_ROOT), initServerEnv(DREAMLAB_ROOT)]);
+
+  log.success("Initialized Dreamlab environment. This is the game engine that powers WorldQL!");
 
   const template = await select({
     message: "Pick a project template:",
