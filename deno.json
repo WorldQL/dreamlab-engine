@@ -23,5 +23,10 @@
   "compilerOptions": {
     "lib": ["deno.window", "dom"],
     "noImplicitOverride": false
+  },
+  "lint": {
+    "rules": {
+      "exclude": ["no-this-alias", "no-import-prefix"]
+    }
   }
 }
