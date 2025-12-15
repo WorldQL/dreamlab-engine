@@ -66,6 +66,15 @@ export class CameraPanBehavior extends Behavior {
       if (value) canvas.classList.add("grab");
       else canvas.classList.remove("grab");
     });
+
+    this.game.time.waitForNextTick().then(() => {
+      this.ui!.selectedEntity.listen(() => {
+        // when we unselect everything, clear the flag that prevents us from repeatedly selecting an empty parent.
+        if (this.ui?.selectedEntity.entities.length === 0) {
+          this.#lastParentPrepended = undefined;
+        }
+      });
+    });
   }
 
   #ignoreTilemap(): boolean {
@@ -566,6 +575,8 @@ export class CameraPanBehavior extends Behavior {
     return inside;
   }
 
+  #lastParentPrepended: undefined | EmptyFacade = undefined;
+
   #onMouseUp(event: MouseUp) {
     if (!this.game.isClient()) return;
 
@@ -592,6 +603,7 @@ export class CameraPanBehavior extends Behavior {
         .filter(entity => entity.enabled)
         .filter(entity => this.ui?.sceneGraph?.entryElementMap?.has(entity.ref) ?? true)
         .filter(entity => EditorMetadataEntity.getLockedBy(entity) === undefined)
+        .filter(entity => !(entity instanceof EditorFacadeTilemap))
         .filter(entity => {
           // Special case for ComplexCollider
           if (entity.constructor.name === "EditorFacadeComplexCollider" && event.cursor.world) {
@@ -615,6 +627,13 @@ export class CameraPanBehavior extends Behavior {
           }
           return 0;
         });
+
+      if (entities[0].parent instanceof EmptyFacade) {
+        if (this.#lastParentPrepended !== entities[0].parent) {
+          this.#lastParentPrepended = entities[0].parent;
+          entities.unshift(entities[0].parent);
+        }
+      }
 
       const currentTime = Date.now();
       const target = gizmo?.target ?? boxresize?.target;
