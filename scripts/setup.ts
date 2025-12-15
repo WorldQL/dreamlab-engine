@@ -147,7 +147,7 @@ if (import.meta.main) {
       );
       await Deno.writeTextFile(
         path.join(fullPath, "deno.json"),
-        JSON.stringify(denoJson(DREAMLAB_ROOT), null, 2) + "\n",
+        JSON.stringify(denoJson(), null, 2) + "\n",
       );
 
       await fs.ensureDir(path.join(fullPath, "src"));
@@ -174,8 +174,17 @@ if (import.meta.main) {
       // write correct deno.json
       await Deno.writeTextFile(
         path.join(fullPath, "deno.json"),
-        JSON.stringify(denoJson(DREAMLAB_ROOT), null, 2) + "\n",
+        JSON.stringify(denoJson(), null, 2) + "\n",
       );
+
+      // add the folder .dreamlab-engine to .gitignore (append to end)
+      const gitignorePath = path.join(fullPath, ".gitignore");
+      const gitignore = (await fs.exists(gitignorePath))
+        ? await Deno.readTextFile(gitignorePath)
+        : "";
+      if (!gitignore.includes(".dreamlab-engine")) {
+        await Deno.writeTextFile(gitignorePath, gitignore + "\n.dreamlab-engine\n");
+      }
 
       return `Cloned Template: "${template.label}"`;
     });

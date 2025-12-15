@@ -24,6 +24,25 @@ const cli = new Command()
       Deno.exit(1);
     }
 
+    // Create symlink to .worldql-dreamlab-engine if it doesn't exist
+    const homeDir = Deno.env.get("HOME");
+    if (homeDir) {
+      const sourcePath = path.join(homeDir, ".worldql-dreamlab-engine");
+      const targetPath = path.join(dir, ".dreamlab-engine");
+
+      const symlinkExists = await fs.exists(targetPath);
+      if (!symlinkExists) {
+        try {
+          await Deno.symlink(sourcePath, targetPath);
+          log.success(
+            "Created symlink for engine dependencies. IntelliSense will now function properly. You may need to reload your code editor.",
+          );
+        } catch (error) {
+          log.warning(`Failed to create symlink: ${error}`);
+        }
+      }
+    }
+
     const serverCmd = new Deno.Command(Deno.execPath(), {
       cwd: DREAMLAB_ROOT,
       args: ["task", "run-server", dir],

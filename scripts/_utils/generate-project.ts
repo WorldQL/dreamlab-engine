@@ -25,14 +25,15 @@ export const projectTemplate = () => ({
   },
 });
 
-export const denoJson = (root: string | URL) => ({
+export const denoJson = (root: string = "./.dreamlab-engine") => ({
   imports: {
-    "@dreamlab/engine": path.join(root, "engine/mod.ts"),
-    "@dreamlab/engine/internal": path.join(root, "engine/internal.ts"),
-    "@dreamlab/vendor/": path.join(root, "engine/_deps/"),
-    "@dreamlab/ui": path.join(root, "ui/mod.ts"),
-    "@dreamlab/ui/jsx-runtime": path.join(root, "ui/jsx.ts"),
-    "@dreamlab/util/": path.join(root, "util/"),
+    // deno demands leading ./ or it errors
+    "@dreamlab/engine": "./" + path.join(root, "engine/mod.ts"),
+    "@dreamlab/engine/internal": "./" + path.join(root, "engine/internal.ts"),
+    "@dreamlab/vendor/": "./" + path.join(root, "engine/_deps/"),
+    "@dreamlab/ui": "./" + path.join(root, "ui/mod.ts"),
+    "@dreamlab/ui/jsx-runtime": "./" + path.join(root, "ui/jsx.ts"),
+    "@dreamlab/util/": "./" + path.join(root, "util/"),
   },
   compilerOptions: {
     lib: ["deno.window", "dom"],
