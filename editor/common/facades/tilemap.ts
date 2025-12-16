@@ -6,6 +6,7 @@ import {
   MouseDown,
   MouseMove,
   MouseUp,
+  ObjectAdapter,
   pointWorldToLocal,
   Tilemap,
   Vector2,
@@ -27,8 +28,13 @@ export class EditorFacadeTilemap extends BaseTilemap {
   paletteRows = 1;
   paletteIdDirty: boolean = true;
 
+  colorNames: Record<string, string> = {};
+
   constructor(ctx: EntityContext) {
     super(ctx);
+
+    // @ts-expect-error: this is fine
+    this.defineValue(EditorFacadeTilemap, "colorNames", { type: ObjectAdapter, hidden: true });
 
     const resValue = this.values.get("resolution");
     resValue?.onChanged?.(() => {

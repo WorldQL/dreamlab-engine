@@ -444,6 +444,12 @@ export function setupKeyboardShortcuts(
   // #region Key Events
   document.addEventListener("keydown", async (event: KeyboardEvent) => {
     if (document.activeElement instanceof HTMLInputElement) return;
+    if (
+      document.activeElement instanceof HTMLSpanElement &&
+      document.activeElement.isContentEditable
+    ) {
+      return;
+    }
     if ((window.getSelection()?.toString().length ?? 0) > 0) return;
 
     // Toggle entity enable/disable

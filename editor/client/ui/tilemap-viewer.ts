@@ -8,9 +8,9 @@ import {
 } from "@dreamlab/engine";
 import { element as elem } from "@dreamlab/ui";
 import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import "npm:vanilla-colorful/hex-color-picker.js";
+import "npm:vanilla-colorful@^0.7.2/hex-color-picker.js";
 import { EditorFacadeTilemap } from "../../common/facades/tilemap.ts";
-import { icon, Pipette, SquarePen, X } from "../_icons.tsx";
+import { icon, Pencil, Pipette, SquarePen, X } from "../_icons.tsx";
 import { IconButton } from "../components/icon-button.ts";
 import { InspectorUI } from "./inspector.ts";
 
@@ -207,6 +207,14 @@ export class TileMapViewer {
         }
       });
       this.#listeners.push(() => onTilemapUpdate.unsubscribe());
+
+      const onColorNamesChanged = () => {
+        this.#renderColorHistory();
+      };
+
+      const colorNames = tilemap.values.get("colorNames");
+      colorNames?.onChanged(onColorNamesChanged);
+      this.#listeners.push(() => colorNames?.removeChangeListener(onColorNamesChanged));
     });
 
     app.canvas.addEventListener(
@@ -865,18 +873,86 @@ export class TileMapViewer {
 
     for (const color of colors) {
       const hexColor = "#" + color.toString(16).padStart(6, "0");
-      const swatch = elem("div", {
-        className: "color-swatch",
+      const name = this.#tilemap?.colorNames?.[color];
+
+      const labelSpan = elem("span", { dataset: name ? undefined : { unnamed: "" } }, [
+        name ?? hexColor,
+      ]);
+
+      const renameButton = elem("button", { title: "Rename" }, [icon(Pencil)]);
+
+      const colorButton = elem("button", {
+        type: "button",
+        className: "color",
         title: hexColor,
-      }) as HTMLDivElement;
-      swatch.style.backgroundColor = hexColor;
+      });
 
-      if (color === this.#selectedColor) {
-        swatch.classList.add("selected");
-      }
+      const swatch = elem(
+        "div",
+        {
+          className: "color-swatch",
+          style: { "--swatch-color": hexColor },
+          dataset: color === this.#selectedColor ? { selected: "" } : undefined,
+        },
+        [colorButton, elem("div", { className: "label" }, [labelSpan, renameButton])],
+      );
 
-      swatch.addEventListener("click", () => {
+      colorButton.addEventListener("click", () => {
         this.#selectColorFromHistory(color);
+      });
+
+      const startRename = (): void => {
+        if (labelSpan.isContentEditable) return;
+        labelSpan.contentEditable = "plaintext-only";
+        if (labelSpan.dataset.unnamed !== undefined) {
+          labelSpan.textContent = "";
+          delete labelSpan.dataset.unnamed;
+        }
+
+        labelSpan.focus();
+        window.getSelection()?.selectAllChildren(labelSpan);
+      };
+
+      const endRename = (cancel = false): void => {
+        if (!labelSpan.isContentEditable) return;
+        labelSpan.contentEditable = "false";
+
+        const label = labelSpan.textContent;
+        if (!cancel && this.#tilemap) {
+          if (label) this.#tilemap.colorNames[color] = label;
+          else delete this.#tilemap.colorNames[color];
+        }
+
+        this.#renderColorHistory();
+      };
+
+      labelSpan.addEventListener("keydown", ev => {
+        if (!labelSpan.isContentEditable) return;
+        if (ev.key === "Enter") {
+          ev.preventDefault();
+          endRename();
+          return;
+        }
+
+        if (ev.key === "Escape") {
+          ev.preventDefault();
+          ev.stopPropagation();
+          endRename(true);
+          return;
+        }
+      });
+
+      labelSpan.addEventListener("blur", () => {
+        if (!labelSpan.isContentEditable) return;
+        endRename();
+      });
+
+      labelSpan.addEventListener("dblclick", ev => {
+        ev.preventDefault();
+        startRename();
+      });
+      renameButton.addEventListener("click", ev => {
+        if (ev.button === 0) startRename();
       });
 
       swatchesContainer.appendChild(swatch);

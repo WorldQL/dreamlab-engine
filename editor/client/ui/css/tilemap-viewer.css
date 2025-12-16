@@ -171,8 +171,9 @@
         .color-history-container {
           display: flex;
           flex-direction: column;
+          align-items: center;
           gap: 0.5rem;
-          width: 100%;
+          width: 400%;
           margin-top: 0.5rem;
 
           .color-history-label {
@@ -193,7 +194,59 @@
             min-height: 2rem;
 
             .color-swatch {
-              width: 1.5rem;
+              all: unset;
+              display: flex;
+              flex-direction: column;
+              font-family: var(--font-mono);
+              border-radius: var(--border-radius);
+
+              --size: 8rem;
+              --aspect: 7 / 3;
+
+              width: var(--size);
+              border: 1px solid var(--swatch-color);
+
+              & > .color {
+                all: unset;
+                cursor: pointer;
+                width: 100%;
+                height: calc(var(--size) / (var(--aspect)));
+                background-color: var(--swatch-color);
+              }
+
+              & > .label {
+                display: flex;
+                align-items: center;
+                width: 100%;
+                gap: 0.5rem;
+                padding: 0.25rem 0.4rem;
+
+                & > span {
+                  flex-grow: 1;
+                  padding-top: 2px;
+                  overflow: hidden;
+                  word-wrap: break-word;
+
+                  &[data-unnamed] {
+                    opacity: 80%;
+                  }
+                }
+
+                & > button {
+                  all: unset;
+                  cursor: pointer;
+                  --size: 1.1rem;
+                  width: var(--size);
+                  height: var(--size);
+
+                  & > svg {
+                    width: var(--size);
+                    height: var(--size);
+                  }
+                }
+              }
+
+              /* width: 1.5rem;
               height: 1.5rem;
               border-radius: 3px;
               cursor: pointer;
@@ -208,11 +261,11 @@
                 border-color: rgb(var(--color-text-1));
               }
 
-              &.selected {
+              &[data-selected] {
                 border-color: rgb(var(--color-primary));
                 border-width: 3px;
                 box-shadow: 0 0 0 1px rgb(var(--color-primary));
-              }
+              } */
             }
           }
         }
