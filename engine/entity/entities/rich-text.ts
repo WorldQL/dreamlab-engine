@@ -216,6 +216,7 @@ export class RichText extends PixiEntity {
     this.#text.anchor.set(anchor, 0.5);
 
     const localBounds = this.container.getLocalBounds().rectangle;
+    localBounds.scale(1 / this.globalTransform.scale.x, 1 / this.globalTransform.scale.y);
     const width = localBounds.width;
     const height = localBounds.height;
     const x = localBounds.x + width / 2;
