@@ -21,27 +21,6 @@ import { initEditorEnv, initServerEnv } from "./_utils/init-env.ts";
 
 const DREAMLAB_ROOT = path.join(path.fromFileUrl(import.meta.url), "../..");
 
-type Template = {
-  readonly label: string;
-  readonly directory: string;
-  readonly repo: string | undefined;
-  readonly hint?: string;
-};
-
-const TEMPLATES: [Template, ...(readonly Template[])] = [
-  {
-    label: "OpenMonsters",
-    directory: "openmonsters",
-    repo: "https://github.com/WorldQL/openmonsters.git",
-    hint: "recommended",
-  },
-  {
-    label: "Blank",
-    directory: "dreamlab-project",
-    repo: undefined,
-  },
-];
-
 async function task(title: string, task: Task["task"]) {
   await tasks([{ title, task }]);
 }
@@ -104,93 +83,29 @@ if (import.meta.main) {
 
   log.success("Initialized Dreamlab environment. This is the game engine that powers WorldQL!");
 
-  const template = await select({
-    message: "Pick a project template:",
-    options: TEMPLATES.map(
-      template => ({ label: template.label, value: template, hint: template.hint }) as const,
-    ),
-  });
-  if (isCancel(template)) Deno.exit(1);
+  // Clone https://github.com/WorldQL/worldql into cwd. Inform the user that it has been cloned with the full path.
+  await task("Cloning WorldQL repository", async () => {
+    const cwd = Deno.cwd();
+    const worldqlPath = path.join(cwd, "worldql");
 
-  let directory: string | symbol | undefined = await text({
-    message: "Project directory name:",
-    placeholder: template.directory,
-    validate: value => {
-      const dir = path.join(Deno.cwd(), value === "" ? template.directory : value);
-      const exists = fs.existsSync(dir);
-      if (exists) return "Already exists";
+    // Check if worldql directory already exists
+    if (await fs.exists(worldqlPath)) {
+      return `WorldQL already exists at ${worldqlPath}`;
+    }
 
-      return undefined;
-    },
-  });
-  if (isCancel(directory)) Deno.exit(1);
-
-  directory ??= template.directory;
-  const fullPath = path.join(Deno.cwd(), directory);
-
-  // TODO: show a confirmation step?
-  // const shoudClone = await confirm({
-  //   message: "",
-  // });
-  // if (isCancel(shoudClone)) Deno.exit(1);
-  // if (!shouldClone) {
-  //   cancel('Operation cancelled')
-  //   Deno.exit(0)
-  // }
-
-  if (template.repo === undefined) {
-    await task("Creating blank project", async () => {
-      await fs.emptyDir(fullPath);
-      await Deno.writeTextFile(
-        path.join(fullPath, "project.json"),
-        JSON.stringify(projectTemplate(), null, 2) + "\n",
-      );
-      await Deno.writeTextFile(
-        path.join(fullPath, "deno.json"),
-        JSON.stringify(denoJson(), null, 2) + "\n",
-      );
-
-      await fs.ensureDir(path.join(fullPath, "src"));
-      await Deno.writeTextFile(path.join(fullPath, "src", "hello-world.ts"), helloWorldScript);
-
-      return "Created blank project";
-    });
-  } else {
-    const repo = template.repo;
-    await task(`Cloning Template: "${template.label}"`, async () => {
-      const cmd = new Deno.Command("git", {
-        args: ["clone", "--depth=1", repo, fullPath],
-      });
-
-      const result = await cmd.output();
-      if (!result.success) {
-        log.error("Failed to clone template!");
-        Deno.exit(1);
-      }
-
-      // clear git history
-      await Deno.remove(path.join(fullPath, ".git"), { recursive: true });
-
-      // write correct deno.json
-      await Deno.writeTextFile(
-        path.join(fullPath, "deno.json"),
-        JSON.stringify(denoJson(), null, 2) + "\n",
-      );
-
-      // add the folder .dreamlab-engine to .gitignore (append to end)
-      const gitignorePath = path.join(fullPath, ".gitignore");
-      const gitignore = (await fs.exists(gitignorePath))
-        ? await Deno.readTextFile(gitignorePath)
-        : "";
-      if (!gitignore.includes(".dreamlab-engine")) {
-        await Deno.writeTextFile(gitignorePath, gitignore + "\n.dreamlab-engine\n");
-      }
-
-      return `Cloned Template: "${template.label}"`;
+    const command = new Deno.Command("git", {
+      args: ["clone", "https://github.com/WorldQL/worldql", "worldql"],
+      cwd,
     });
 
-    // TODO: prompt to initialize a fresh git repo?
-  }
+    const { code } = await command.output();
+
+    if (code !== 0) {
+      throw new Error("Failed to clone WorldQL repository");
+    }
+
+    return `Cloned WorldQL repository to ${worldqlPath}`;
+  });
 
   outro(`You're good to go!`);
 
@@ -210,11 +125,11 @@ if (import.meta.main) {
         .at(0),
     );
     console.log();
-    console.log(color.underline("Then, run:"));
-    console.log(`cd ${directory} && wql up`);
+    console.log(color.underline("Then, to run the openmonsters sample project, run:"));
+    console.log(`cd worldql/environments/openmonsters && wql up`);
   } else {
-    console.log(color.underline("To start your project, run:"));
-    console.log(`cd ${directory} && wql up`);
+    console.log(color.underline("To run the openmonsters sample project, run:"));
+    console.log(`cd worldql/environments/openmonsters && wql up`);
   }
 
   Deno.exit(0);
