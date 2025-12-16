@@ -131,7 +131,7 @@ const cli = new Command()
     try {
       await serverStarted.promise;
     } catch {
-      s1.stop("Failed to start Dreamlab server", 2);
+      s1.stop("Failed to start Dreamlab server. Is one already running?", 2);
       shutdown(1);
     }
     s1.stop("Dreamlab server ready");
@@ -139,7 +139,7 @@ const cli = new Command()
     try {
       await editorStarted.promise;
     } catch {
-      log.error("Failed to start Editor");
+      log.error("Failed to start Editor. Is one already running?");
       shutdown(1);
     }
 
