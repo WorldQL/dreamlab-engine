@@ -60,10 +60,24 @@ const cli = new Command()
     const serverHandle = serverCmd.spawn();
     const editorHandle = editorCmd.spawn();
 
+    const shutdown = (code?: number) => {
+      try {
+        serverHandle.kill();
+      } catch {
+        // pass
+      }
+
+      try {
+        editorHandle.kill();
+      } catch {
+        // pass
+      }
+
+      Deno.exit(code);
+    };
+
     Deno.addSignalListener("SIGINT", () => {
-      serverHandle.kill();
-      editorHandle.kill();
-      Deno.exit();
+      shutdown();
     });
 
     const serverStarted = Promise.withResolvers<void>();
@@ -79,6 +93,16 @@ const cli = new Command()
       }
     })();
 
+    serverHandle.status.then(({ success }) => {
+      if (!success) {
+        serverStarted.reject();
+        return;
+      }
+
+      console.log("Dreamlab server exited");
+      shutdown();
+    });
+
     const editorStarted = Promise.withResolvers<void>();
     void (async () => {
       const decoder = new TextDecoder();
@@ -92,12 +116,32 @@ const cli = new Command()
       }
     })();
 
+    editorHandle.status.then(({ success }) => {
+      if (!success) {
+        editorStarted.reject();
+        return;
+      }
+
+      console.log("Dreamlab Editor exited");
+      shutdown();
+    });
+
     const s1 = spinner();
     s1.start("Starting Dreamlab server");
-    await serverStarted.promise;
+    try {
+      await serverStarted.promise;
+    } catch {
+      s1.stop("Failed to start Dreamlab server", 2);
+      shutdown(1);
+    }
     s1.stop("Dreamlab server ready");
 
-    await editorStarted.promise;
+    try {
+      await editorStarted.promise;
+    } catch {
+      log.error("Failed to start Editor");
+      shutdown(1);
+    }
 
     outro(`Open Dreamlab @ http://localhost:5173`);
 

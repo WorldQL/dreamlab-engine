@@ -7,7 +7,7 @@
 
     "init-local-env": "deno run --no-lock -A ./scripts/init-local-env.ts",
     "init-project": "deno run --no-lock -A ./scripts/init-project.ts",
-    "run-server": "cd multiplayer && deno task start --spawn-dir",
+    "run-server": "cd multiplayer && deno task start --spawn-fail --spawn-dir",
     "run-editor": "cd editor && deno task build && deno run -A --no-lock jsr:@std/http/file-server --port=5173 web"
   },
   "imports": {

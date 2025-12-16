@@ -66,6 +66,11 @@ export class GameInstance {
   #state: GameInstanceState = GameInstanceState.Idle;
   #status: string = "Idle";
   #statusDetail: string | undefined;
+  #statusChangeListeners: ((
+    state: GameInstanceState,
+    status: string,
+    detail?: string,
+  ) => void)[] = [];
   // prettier-ignore
   get state() { return this.#state; }
   // prettier-ignore
@@ -78,7 +83,24 @@ export class GameInstance {
     this.#statusDetail = detail;
 
     this.logs.debug("Status updated", { ...{ status }, ...(detail ? { detail } : {}) });
+    for (const listener of this.#statusChangeListeners) {
+      listener(this.#state, this.#status, this.#statusDetail);
+    }
+
     this.bumpIdleTime();
+  }
+
+  onStatusChange(
+    listener: (state: GameInstanceState, status: string, detail?: string) => void,
+  ): { unsubscribe: () => void } {
+    this.#statusChangeListeners.push(listener);
+    return {
+      unsubscribe: () => {
+        const idx = this.#statusChangeListeners.indexOf(listener);
+        if (idx === -1) return;
+        this.#statusChangeListeners.splice(idx, 1);
+      },
+    };
   }
 
   #notifyBooted: (() => void) | undefined;

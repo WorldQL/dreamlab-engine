@@ -4,7 +4,7 @@ import * as path from "@std/path";
 import { NIL_UUID } from "@std/uuid/constants";
 import { CONFIG } from "./config.ts";
 import { startInstanceCollector } from "./instance-collector.ts";
-import { createInstance, GameInstance } from "./instance.ts";
+import { createInstance, GameInstance, GameInstanceState } from "./instance.ts";
 import { report } from "./metrics.ts";
 import { setupWeb } from "./web/setup.ts";
 import { fetchWorld } from "./world-fetch.ts";
@@ -65,7 +65,7 @@ try {
 
 const args = cli.parseArgs(Deno.args, {
   string: ["spawn", "spawn-dir", "spawn-repo", "clone"],
-  boolean: ["play-mode"],
+  boolean: ["play-mode", "spawn-fail"],
 });
 
 if (args.clone !== undefined) {
@@ -101,6 +101,14 @@ await Promise.all([
         inspect: "127.0.0.1:9229",
       });
 
+      instance.onStatusChange(state => {
+        if (!args["spawn-fail"]) return;
+        if (state !== GameInstanceState.Errored) return;
+
+        shutdown();
+        Deno.exit(1);
+      });
+
       await instance.waitForSessionBoot();
     } else if (args["spawn-dir"]) {
       const worldDirectory = args["spawn-dir"];
@@ -112,6 +120,14 @@ await Promise.all([
         worldDirectory,
         editMode: true,
         inspect: "127.0.0.1:9229",
+      });
+
+      instance.onStatusChange(state => {
+        if (!args["spawn-fail"]) return;
+        if (state !== GameInstanceState.Errored) return;
+
+        shutdown();
+        Deno.exit(1);
       });
 
       await instance.waitForSessionBoot();
