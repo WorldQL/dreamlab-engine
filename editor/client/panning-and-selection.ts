@@ -628,7 +628,7 @@ export class CameraPanBehavior extends Behavior {
           return 0;
         });
 
-      if (entities[0].parent instanceof EmptyFacade) {
+      if (entities[0] && entities[0].parent instanceof EmptyFacade) {
         if (this.#lastParentPrepended !== entities[0].parent) {
           this.#lastParentPrepended = entities[0].parent;
           entities.unshift(entities[0].parent);
