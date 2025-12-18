@@ -603,7 +603,6 @@ export class CameraPanBehavior extends Behavior {
         .filter(entity => entity.enabled)
         .filter(entity => this.ui?.sceneGraph?.entryElementMap?.has(entity.ref) ?? true)
         .filter(entity => EditorMetadataEntity.getLockedBy(entity) === undefined)
-        .filter(entity => !(entity instanceof EditorFacadeTilemap))
         .filter(entity => {
           // Special case for ComplexCollider
           if (entity.constructor.name === "EditorFacadeComplexCollider" && event.cursor.world) {
@@ -625,6 +624,14 @@ export class CameraPanBehavior extends Behavior {
           if (b instanceof EmptyFacade && b.isColliderChildAndSelected) {
             return 1;
           }
+          return 0;
+        })
+        .toSorted((a, b) => {
+          // Move tilemaps to the bottom of the selection list
+          const aIsTilemap = a instanceof EditorFacadeTilemap;
+          const bIsTilemap = b instanceof EditorFacadeTilemap;
+          if (aIsTilemap && !bIsTilemap) return 1;
+          if (!aIsTilemap && bIsTilemap) return -1;
           return 0;
         });
 
