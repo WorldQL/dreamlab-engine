@@ -2,6 +2,7 @@ import {
   BaseTilemap,
   Entity,
   EntityContext,
+  EntityDestroyed,
   GameRender,
   MouseDown,
   MouseMove,
@@ -27,6 +28,7 @@ export class EditorFacadeTilemap extends BaseTilemap {
   paletteCols = 1;
   paletteRows = 1;
   paletteIdDirty: boolean = true;
+  #controlHeld = false;
 
   colorNames: Record<string, string> = {};
 
@@ -125,8 +127,15 @@ export class EditorFacadeTilemap extends BaseTilemap {
     const paletteCols = Math.max(1, this.paletteCols | 0);
     const paletteRows = Math.max(1, this.paletteRows | 0);
 
-    for (let dy = 0; dy < rows; dy++) {
-      for (let dx = 0; dx < cols; dx++) {
+    let start = 0;
+    if (this.paletteId.length === 1 && this.#controlHeld) {
+      cols = 2;
+      rows = 2;
+      start = -1;
+    }
+
+    for (let dy = start; dy < rows; dy++) {
+      for (let dx = start; dx < cols; dx++) {
         // Tile the palette to fill the tooltip brush
         const paletteX = dx % paletteCols;
         const paletteY = dy % paletteRows;
@@ -171,8 +180,7 @@ export class EditorFacadeTilemap extends BaseTilemap {
     this.container.addChild(this.#tooltip);
 
     let paintOperations: (UndoRedoOperation & { t: "modify-tilemap" })["ops"] = [];
-    let isControlHeld = false; // Track Control key state for tooltip
-    const paint = (world: Vector2, controlHeld = false) => {
+    const paint = (world: Vector2) => {
       if (this.paletteId.length === 0) return;
 
       const left = this.inputs.getKey("MouseLeft");
@@ -190,15 +198,17 @@ export class EditorFacadeTilemap extends BaseTilemap {
       let rows = paletteRows;
 
       // Override to 3x3 grid when Control is held
-      if (controlHeld) {
-        cols = 3;
-        rows = 3;
+      let start = 0;
+      if (this.paletteId.length === 1 && this.#controlHeld) {
+        cols = 2;
+        rows = 2;
+        start = -1;
       }
       const { x, y } = this.getTileCoordinatesAtPoint(world);
       const isColorMode = this.atlas === "";
 
-      for (let dy = 0; dy < rows; dy++) {
-        for (let dx = 0; dx < cols; dx++) {
+      for (let dy = start; dy < rows; dy++) {
+        for (let dx = start; dx < cols; dx++) {
           // When Control is held, tile the palette to fill the 3x3 brush
           const paletteX = dx % paletteCols;
           const paletteY = dy % paletteRows;
@@ -243,10 +253,44 @@ export class EditorFacadeTilemap extends BaseTilemap {
       }
     };
 
+    const controller = new AbortController();
+    globalThis.addEventListener(
+      "keydown",
+      ev => {
+        const prevCtrlHeld = this.#controlHeld;
+        const ctrlHeld = ev.ctrlKey || ev.metaKey;
+        if (prevCtrlHeld !== ctrlHeld) {
+          this.paletteIdDirty = true;
+          this.#controlHeld = ctrlHeld;
+        }
+      },
+      { signal: controller.signal },
+    );
+    globalThis.addEventListener(
+      "keyup",
+      ev => {
+        const prevCtrlHeld = this.#controlHeld;
+        const ctrlHeld = ev.ctrlKey || ev.metaKey;
+        if (prevCtrlHeld !== ctrlHeld) {
+          this.paletteIdDirty = true;
+          this.#controlHeld = ctrlHeld;
+        }
+      },
+      { signal: controller.signal },
+    );
+
+    this.on(EntityDestroyed, () => controller.abort());
+
     this.listen(this.game.inputs, MouseDown, ({ cursor, ev }) => {
+      const prevCtrlHeld = this.#controlHeld;
+      const ctrlHeld = ev.ctrlKey || ev.metaKey;
+      if (prevCtrlHeld !== ctrlHeld) {
+        this.paletteIdDirty = true;
+        this.#controlHeld = ctrlHeld;
+      }
+
       paintOperations = [];
-      isControlHeld = ev.ctrlKey || ev.metaKey;
-      paint(cursor.world, isControlHeld);
+      paint(cursor.world);
     });
     this.listen(this.game.inputs, MouseUp, () => {
       if (paintOperations.length > 0) {
@@ -259,8 +303,14 @@ export class EditorFacadeTilemap extends BaseTilemap {
       }
     });
     this.listen(this.game.inputs, MouseMove, ({ cursor, ev }) => {
-      isControlHeld = ev.ctrlKey || ev.metaKey;
-      paint(cursor.world, isControlHeld);
+      const prevCtrlHeld = this.#controlHeld;
+      const ctrlHeld = ev.ctrlKey || ev.metaKey;
+      if (prevCtrlHeld !== ctrlHeld) {
+        this.paletteIdDirty = true;
+        this.#controlHeld = ctrlHeld;
+      }
+
+      paint(cursor.world);
     });
 
     this.listen(this.game, GameRender, () => {
@@ -276,14 +326,8 @@ export class EditorFacadeTilemap extends BaseTilemap {
       const local = pointWorldToLocal(this.globalTransform, world);
       this.#tooltip.position.set(Math.floor(local.x + 0.5), Math.floor(-local.y + 0.5));
 
-      let cols = Math.max(1, this.paletteCols | 0);
-      let rows = Math.max(1, this.paletteRows | 0);
-
-      // Show 3x3 tooltip when Control is held
-      if (isControlHeld) {
-        cols = 3;
-        rows = 3;
-      }
+      const cols = Math.max(1, this.paletteCols | 0);
+      const rows = Math.max(1, this.paletteRows | 0);
 
       this.#buildTooltip(cols, rows);
     });
