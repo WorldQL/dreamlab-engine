@@ -1,5 +1,6 @@
 import {
   Bounds,
+  childrenSorted,
   ComplexCollider,
   Entity,
   EntityChildDestroyed,
@@ -19,12 +20,6 @@ import { DebugPolygon } from "./_debug.ts";
 import { Facades } from "./manager.ts";
 
 export class EditorFacadeComplexCollider extends PixiEntity {
-  static childrenSorted(
-    ...args: Parameters<typeof ComplexCollider.childrenSorted>
-  ): ReturnType<typeof ComplexCollider.childrenSorted> {
-    return ComplexCollider.childrenSorted(...args);
-  }
-
   static {
     Entity.registerType(this, "@editor");
     Facades.register(ComplexCollider, this);
@@ -72,7 +67,7 @@ export class EditorFacadeComplexCollider extends PixiEntity {
   #debugListener: { unsubscribe: () => void } | undefined;
 
   #getPoints = () =>
-    ComplexCollider.childrenSorted(this)
+    childrenSorted(this)
       .filter(child => child.name !== "__EditorMetadata")
       .map(child => [child.transform.position.x, child.transform.position.y] as const);
 

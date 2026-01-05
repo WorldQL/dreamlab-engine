@@ -1,5 +1,6 @@
 import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
 import {
+  childrenSorted,
   ClientGame,
   Entity,
   EntityConstructor,
@@ -326,7 +327,7 @@ export async function pasteEntitiesFromClipboard(
     // #region special case: complex collider
     const alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
     if (targetParent instanceof EditorFacadeComplexCollider) {
-      const names = EditorFacadeComplexCollider.childrenSorted(targetParent).map(e => e.name);
+      const names = childrenSorted(targetParent).map(e => e.name);
 
       // only do special renaming if existing entity name is last child
       if (names.indexOf(newDefinition.name) !== names.length - 1) {
