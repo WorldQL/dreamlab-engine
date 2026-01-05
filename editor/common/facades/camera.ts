@@ -171,6 +171,6 @@ export class EditorFacadeCamera extends PixiEntity {
 }
 
 type _HasAllValues = EnsureCompatible<
-  Omit<EntityValueProps<Camera>, "container" | "smoothed">,
+  Omit<EntityValueProps<Camera>, "container" | "smoothed" | "frustum">,
   EntityValueProps<EditorFacadeCamera>
 >;
