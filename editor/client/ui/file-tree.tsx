@@ -248,16 +248,26 @@ export class FileTree implements InspectorUIWidget {
           element.addEventListener("dragstart", evt => {
             element.dataset.dragging = "";
 
-            const dragPreview = this.#createDragPreview(node);
-            document.body.appendChild(dragPreview);
+            const ext = this.#extname(node.path);
+            const isBehavior = [".ts", ".tsx"].includes(ext);
 
-            const dragEvent = evt as DragEvent;
-            if (dragEvent.dataTransfer) {
-              dragEvent.dataTransfer.effectAllowed = "copy";
-              dragEvent.dataTransfer.setDragImage(dragPreview, 20, 20);
+            if (isBehavior) {
+              const dragPreview = this.#createDragPreview(node);
+              document.body.appendChild(dragPreview);
+
+              const dragEvent = evt as DragEvent;
+              if (dragEvent.dataTransfer) {
+                dragEvent.dataTransfer.effectAllowed = "copy";
+                dragEvent.dataTransfer.setDragImage(dragPreview, 20, 20);
+              }
+
+              setTimeout(() => dragPreview.remove(), 0);
+            } else {
+              const dragEvent = evt as DragEvent;
+              if (dragEvent.dataTransfer) {
+                dragEvent.dataTransfer.effectAllowed = "copy";
+              }
             }
-
-            setTimeout(() => dragPreview.remove(), 0);
           });
 
           element.addEventListener("dragend", () => {
