@@ -36,6 +36,8 @@ export const fetchWorld = async (instance: GameInstance) => {
     }).spawn();
     await checkoutProcess.status;
   } else if (await fs.exists(path.join(dir, ".git"))) {
+    if (instance.info.worldId.startsWith("u_test/")) return;
+
     instance.logs.debug("Updating world", { world, revision });
 
     const pullProcess = new Deno.Command("git", {
