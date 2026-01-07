@@ -65,14 +65,19 @@ export abstract class BaseTilemap extends PixiEntity {
     if (this.atlas === "") return PIXI.Texture.EMPTY;
 
     const url = this.game.resolveResource(this.atlas);
-    const _texture = await PIXI.Assets.load({ src: url, data: { scaleMode: "nearest" } });
-    if (!(_texture instanceof PIXI.Texture)) {
-      throw new TypeError("texture is not a pixi texture");
-    }
+    try {
+      const _texture = await PIXI.Assets.load({ src: url, data: { scaleMode: "nearest" } });
+      if (!(_texture instanceof PIXI.Texture)) {
+        throw new TypeError("texture is not a pixi texture");
+      }
 
-    const texture: PIXI.Texture<PIXI.TextureSource> = _texture;
-    texture.label = this.atlas;
-    return texture;
+      const texture: PIXI.Texture<PIXI.TextureSource> = _texture;
+      texture.label = this.atlas;
+      return texture;
+    } catch (err) {
+      console.error("Failed to load Tilemap atlas texture for entity " + this.id + ":", err);
+      return PIXI.Texture.EMPTY;
+    }
   }
 
   async #updateAtlasTexture(): Promise<void> {
@@ -358,7 +363,7 @@ export abstract class BaseTilemap extends PixiEntity {
 
     const chunkSize = TilemapChunk.CHUNK_SIZE;
     if (type === "atlas") {
-      const atlas = this.#atlasTexture ?? PIXI.Texture.WHITE;
+      const atlas = this.#atlasTexture ?? PIXI.Texture.EMPTY;
       const chunk = new ClientTextureTilemapChunk({
         ...opts,
         atlas,
