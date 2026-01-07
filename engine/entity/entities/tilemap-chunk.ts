@@ -281,7 +281,7 @@ export class ClientTextureTilemapChunk extends TextureTilemapChunk {
   updateAtlas(atlasTileWidth: number, atlasTileHeight: number, atlas: PIXI.Texture): void {
     this.#shader.resources.extra.uniforms.uAtlasTileWidth = atlasTileWidth;
     this.#shader.resources.extra.uniforms.uAtlasTileHeight = atlasTileHeight;
-    this.#shader.resources.uAtlas = atlas;
+    this.#shader.resources.uAtlas = atlas.source;
   }
 
   updateAlpha(alpha: number): void {
