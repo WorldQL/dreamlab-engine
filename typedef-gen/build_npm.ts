@@ -116,5 +116,6 @@ await generateVendor({ name: "rapier" });
 await generateVendor({ name: "pixi" });
 await generateVendor({ name: "howler" });
 await generateVendor({ name: "zod" });
+await generateVendor({ name: "type-fest" });
 
 await fs.copy(OUT_DIR, CODE_EDITOR_DIR, { overwrite: true });
