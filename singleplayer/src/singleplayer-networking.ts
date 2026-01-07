@@ -64,6 +64,12 @@ export class SingleplayerNetworking {
       },
       onReceiveCustomMessage(listener: CustomMessageListener) {
         conn.customMessageListeners.push(listener);
+        return {
+          unsubscribe: () => {
+            const idx = conn.customMessageListeners.indexOf(listener);
+            if (idx !== -1) conn.customMessageListeners.splice(idx, 1);
+          },
+        };
       },
       disconnect() {},
     };

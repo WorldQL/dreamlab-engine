@@ -20,7 +20,7 @@ export interface BaseNetworking {
   connection(id: string): ConnectionInfo | undefined;
   sendCustomMessage(to: ConnectionId, channel: string, data: CustomMessageData): void;
   broadcastCustomMessage(channel: string, data: CustomMessageData): void;
-  onReceiveCustomMessage(listener: CustomMessageListener): void;
+  onReceiveCustomMessage(listener: CustomMessageListener): { readonly unsubscribe: () => void };
   disconnect(): void;
 }
 

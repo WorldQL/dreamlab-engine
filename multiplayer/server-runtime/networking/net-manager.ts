@@ -241,6 +241,12 @@ export class ServerNetworkManager {
       },
       onReceiveCustomMessage(listener: CustomMessageListener) {
         net.customMessageListeners.push(listener);
+        return {
+          unsubscribe: () => {
+            const idx = net.customMessageListeners.indexOf(listener);
+            if (idx !== -1) net.customMessageListeners.splice(idx, 1);
+          },
+        };
       },
       disconnect() {
         // TODO: uhhhh
