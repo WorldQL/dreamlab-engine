@@ -183,6 +183,9 @@ export const prepareBundleWorld = async (
     outbase: worldOpts.dir,
     outdir: path.join(worldOpts.dir, out),
     logOverride: { "empty-glob": "silent" },
+    minify: false,
+    minifySyntax: true,
+    minifyWhitespace: true,
   };
 
   return buildOpts;
