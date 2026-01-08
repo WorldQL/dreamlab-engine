@@ -50,6 +50,7 @@ import {
   EntitySpawnOperation,
   EntitySpawned,
   EntityTransformUpdate,
+  GameStatus,
   Transform,
   Value,
   ValueTypeAdapter,
@@ -1190,6 +1191,7 @@ export abstract class Entity implements ISignalHandler {
 
     // remove clonedFromRef if the thing it's cloned from is destroyed
     this.listen(this.game, EntityDestroyOperation, ({ entity }) => {
+      if (this.game.status !== GameStatus.Running) return;
       if (entity.ref === this.clonedFromRef) this.clonedFromRef = "";
     });
 
