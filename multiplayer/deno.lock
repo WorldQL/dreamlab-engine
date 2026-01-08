@@ -37,6 +37,7 @@
     "jsr:@std/uuid@1.0.9": "1.0.9",
     "jsr:@std/uuid@^1.0.4": "1.0.9",
     "jsr:@zod/zod@4.1.12": "4.1.12",
+    "jsr:@zod/zod@4.3.5": "4.3.5",
     "npm:@dimforge/rapier2d-compat@0.14.0": "0.14.0",
     "npm:@dimforge/rapier2d-compat@0.19.1": "0.19.1",
     "npm:@influxdata/influxdb-client@*": "1.35.0",
@@ -183,6 +184,9 @@
     },
     "@zod/zod@4.1.12": {
       "integrity": "5876ed4c6d44673faf5120f0a461a2ada2eb6c735329d3ebaf5ba1fc08387695"
+    },
+    "@zod/zod@4.3.5": {
+      "integrity": "3d14553f025d6e3d1a836b9c56e366bbce27d942301e8c7c1ac4c365df5f8085"
     }
   },
   "npm": {
