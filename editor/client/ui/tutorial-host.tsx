@@ -345,6 +345,7 @@ export class TutorialHost implements InspectorUIWidget {
   private contentEl!: HTMLDivElement;
   private counterEl!: HTMLSpanElement;
   private polling: number | null = null;
+  private projectId: string = "";
 
   static maskSections(sectionIds: string[]): void {
     createSectionOverlay(sectionIds);
@@ -352,6 +353,18 @@ export class TutorialHost implements InspectorUIWidget {
 
   static unmaskSections(sectionIds: string[]): void {
     removeSectionOverlay(sectionIds);
+  }
+
+  private getTutorialStorageKey(): string {
+    return `tutorial_completed_${this.projectId}`;
+  }
+
+  private isTutorialCompleted(): boolean {
+    return localStorage.getItem(this.getTutorialStorageKey()) === "true";
+  }
+
+  private markTutorialCompleted(): void {
+    localStorage.setItem(this.getTutorialStorageKey(), "true");
   }
 
   private reposition = (): void => {
@@ -367,15 +380,18 @@ export class TutorialHost implements InspectorUIWidget {
   constructor(_game: ClientGame) {
     if (TutorialHost.didLoad) return;
     TutorialHost.didLoad = true;
-    const projectId = _game.worldId;
-    if (projectId.includes("TutorialInteractive")) {
+    this.projectId = _game.worldId;
+    if (this.projectId.includes("TutorialInteractive")) {
       try {
-        const projectName = projectId.split("/")[1];
+        const projectName = this.projectId.split("/")[1];
         const tutorialNumber = parseInt(projectName.split("_")[0].split(".")[1]);
         if (tutorialNumber === 1) {
           tutorial = tutorial1;
-          console.log("loading tutorial 1");
-          setTimeout(() => this.runTutorial(), 1);
+          if (!this.isTutorialCompleted()) {
+            setTimeout(() => this.runTutorial(), 1);
+          } else {
+            console.log("Tutorial already completed.");
+          }
         }
       } catch (_) {}
     }
@@ -396,7 +412,15 @@ export class TutorialHost implements InspectorUIWidget {
 
     const next = (): void => {
       if (i >= tutorial.length) {
+        this.markTutorialCompleted();
         this.hideCard();
+        TutorialHost.unmaskSections([
+          "scene-graph",
+          "file-tree",
+          "properties",
+          "behavior-panel",
+        ]);
+        console.log("Tutorial completed!");
         return;
       }
 
