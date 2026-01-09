@@ -413,13 +413,13 @@ export class TutorialHost implements InspectorUIWidget {
     const next = (): void => {
       if (i >= tutorial.length) {
         this.markTutorialCompleted();
-        this.hideCard();
         TutorialHost.unmaskSections([
           "scene-graph",
           "file-tree",
           "properties",
           "behavior-panel",
         ]);
+        this.showCompletionMessage();
         console.log("Tutorial completed!");
         return;
       }
@@ -450,6 +450,37 @@ export class TutorialHost implements InspectorUIWidget {
 
   private hideCard(): void {
     this.card!.style.display = "none";
+  }
+
+  private showCompletionMessage(): void {
+    this.contentEl.innerHTML = `
+      <div style="text-align: center;">
+        <div style="font-size: 24px; margin-bottom: 10px;">🎉 Tutorial Complete! 🎉</div>
+        <div style="margin-bottom: 15px;">
+          You've learned the basics of Dreamlab!<br>
+          Now try creating your own game!
+        </div>
+        <button id="tutorial-complete-btn" style="
+          padding: 8px 16px;
+          background: rgba(var(--color-primary), 1);
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 14px;
+        ">Got it!</button>
+      </div>
+    `;
+    this.counterEl.textContent = "";
+    this.card!.style.display = "block";
+
+    const btn = document.getElementById("tutorial-complete-btn");
+    btn?.addEventListener("click", () => {
+      this.hideCard();
+    });
+
+    setTimeout(() => {
+      this.hideCard();
+    }, 10000);
   }
 
   show(root: HTMLElement): void {
