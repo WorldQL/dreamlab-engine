@@ -150,7 +150,7 @@ export const init = async () => {
     signin.append(span, a);
   } else {
     const span = document.createElement("span");
-    span.textContent = info.nickname;
+    span.textContent = info.nickname === "Guest" ? "" : info.nickname;
     signin.append(span);
   }
   loading.incr();
@@ -188,7 +188,7 @@ export const init = async () => {
 
       const gameName = (
         <div id="game-info">
-          <code data-instance={game.instanceId}>{game.worldId}</code> {serverButton}
+          <code data-instance={game.instanceId}>{game.worldId.split('/').at(1)}</code> {serverButton}
         </div>
       );
 
