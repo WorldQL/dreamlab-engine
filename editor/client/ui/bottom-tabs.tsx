@@ -21,7 +21,7 @@ export class BottomTabs implements InspectorUIWidget {
   #assistantContent: HTMLElement;
   #tilemapContent: HTMLElement;
 
-  constructor(games: { edit: ClientGame; play?: ClientGame }) {
+  constructor(games: { edit: ClientGame; play?: ClientGame }, isPro: boolean) {
     this.#container = elem("div", { className: "bottom-tabs" });
 
     this.#logContent = elem("div", { id: "log-viewer-content" });
@@ -31,7 +31,7 @@ export class BottomTabs implements InspectorUIWidget {
 
     this.#logViewer = new LogViewer(this.#logContent, games);
     this.#prefabViewer = new PrefabViewer(games.edit, this.#prefabContent);
-    this.#assistant = new Assistant(games.edit, this.#assistantContent);
+    this.#assistant = new Assistant(games.edit, this.#assistantContent, isPro);
     this.#tilemapViewer = new TileMapViewer(games.edit, this.#tilemapContent);
   }
 

@@ -8,6 +8,7 @@ export type AuthToken = {
   playerId: string;
   token: string;
   guest?: boolean;
+  isPro?: boolean;
 };
 
 const authToken = async (): Promise<AuthToken> => {
@@ -55,6 +56,7 @@ const TokenSchema = z.object({
   instance_id: z.uuid(),
   nickname: z.string(),
   player_id: z.string(),
+  is_pro: z.boolean().optional(),
 
   // this is not functional currently
   // world: z.string(),
@@ -67,6 +69,7 @@ const decodeToken = (token: string): AuthToken => {
     token,
     nickname: claims.nickname,
     playerId: claims.player_id,
+    isPro: claims.is_pro,
   };
 };
 
@@ -75,7 +78,7 @@ const devAuth = (nickname: string): AuthToken => {
   const playerId = window.localStorage.getItem(PLAYER_ID) ?? createId("ply");
   window.localStorage.setItem(PLAYER_ID, playerId);
 
-  return { nickname, playerId, token: "" } satisfies AuthToken;
+  return { nickname, playerId, token: "", isPro: true } satisfies AuthToken;
 };
 
 export const generateMigrateUrl = (guestPlayerId: string): string => {

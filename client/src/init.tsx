@@ -139,6 +139,7 @@ export const init = async () => {
   }
 
   const info = await auth(nickname);
+
   if (info.guest) {
     const span = document.createElement("span");
     span.textContent = "Guest User ";
@@ -188,7 +189,8 @@ export const init = async () => {
 
       const gameName = (
         <div id="game-info">
-          <code data-instance={game.instanceId}>{game.worldId.split('/').at(1)}</code> {serverButton}
+          <code data-instance={game.instanceId}>{game.worldId.split("/").at(1)}</code>{" "}
+          {serverButton}
         </div>
       );
 

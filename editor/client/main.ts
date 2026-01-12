@@ -44,6 +44,7 @@ import { UndoRedoManager } from "./undo-redo.ts";
 
 const nickname = "Player" + Math.floor(Math.random() * 999) + 1;
 const info = await auth(nickname);
+const isPro = info.isPro ?? false;
 
 const urlParams = new URLSearchParams(window.location.search);
 const isPopout = urlParams.get("popout") === "true";
@@ -369,7 +370,7 @@ if (editModeFlag) {
   const appMenu = new AppMenu(uiRoot, games);
   appMenu.setup(inspector);
 
-  const bottomTabs = new BottomTabs(games);
+  const bottomTabs = new BottomTabs(games, isPro);
   bottomTabs.setup(inspector);
   bottomTabs.show(uiRoot);
 }

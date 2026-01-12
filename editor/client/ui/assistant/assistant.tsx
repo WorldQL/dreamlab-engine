@@ -7,10 +7,12 @@ export class Assistant {
   game: ClientGame;
   container: HTMLElement;
   ui: InspectorUI | undefined;
+  isPro: boolean;
 
-  constructor(game: ClientGame, container: HTMLElement) {
+  constructor(game: ClientGame, container: HTMLElement, isPro: boolean) {
     this.game = game;
     this.container = container;
+    this.isPro = isPro;
   }
 
   setup(ui: InspectorUI) {
@@ -28,7 +30,7 @@ export class Assistant {
 
       const iframeUrl = `${chatbotUIUrl}/?directory=${decodeURIComponent(
         serviceId,
-      )}&baseUrl=${coderBaseUrl}`;
+      )}&baseUrl=${coderBaseUrl}&isPro=${this.isPro}`;
 
       // 5. Create an iframe to show that coder instance
       const iframe = document.createElement("iframe");
