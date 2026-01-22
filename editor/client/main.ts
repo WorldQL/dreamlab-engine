@@ -302,34 +302,37 @@ Object.defineProperties(globalThis, {
 const editModeFlag = isPopout ? false : handshake.edit_mode;
 await setupGame(game, conn, editModeFlag);
 
-if (editModeFlag) {
-  const allEntities: Entity[] = [];
-  let xAcc = 0;
-  let yAcc = 0;
-  const collectEntitiesRecursively = (entity: Entity) => {
-    if (!entity.protected) allEntities.push(entity);
-    for (const child of entity.children.values()) {
-      if (child.name === "__EditorMetadata") continue;
-      xAcc += child.globalTransform.position.x;
-      yAcc += child.globalTransform.position.y;
-      collectEntitiesRecursively(child);
-    }
-  };
+// This averages the camera around the entities that exist. User complained that this put their camera in a weird spot
+// Likely due to an object really far from the origin. So I'm disabling it.
 
-  for (const entity of game.world._.EditEntities.children.values()) {
-    if (entity.id === "world/EditEntities/prefabs") {
-      continue;
-    }
-    collectEntitiesRecursively(entity);
-  }
-  if (allEntities.length > 0) {
-    const avgX = xAcc / allEntities.length;
-    const avgY = yAcc / allEntities.length;
-    const camera = game.local._.Camera.cast(Camera);
-    camera.pos.x = avgX;
-    camera.pos.y = avgY;
-  }
-}
+// if (editModeFlag) {
+//   const allEntities: Entity[] = [];
+//   let xAcc = 0;
+//   let yAcc = 0;
+//   const collectEntitiesRecursively = (entity: Entity) => {
+//     if (!entity.protected) allEntities.push(entity);
+//     for (const child of entity.children.values()) {
+//       if (child.name === "__EditorMetadata") continue;
+//       xAcc += child.globalTransform.position.x;
+//       yAcc += child.globalTransform.position.y;
+//       collectEntitiesRecursively(child);
+//     }
+//   };
+
+//   for (const entity of game.world._.EditEntities.children.values()) {
+//     if (entity.id === "world/EditEntities/prefabs") {
+//       continue;
+//     }
+//     collectEntitiesRecursively(entity);
+//   }
+//   if (allEntities.length > 0) {
+//     const avgX = xAcc / allEntities.length;
+//     const avgY = yAcc / allEntities.length;
+//     const camera = game.local._.Camera.cast(Camera);
+//     camera.pos.x = avgX;
+//     camera.pos.y = avgY;
+//   }
+// }
 
 fonts.then(() => {
   game.entities.lookupByType(RichText).forEach(text => text.rerender());
