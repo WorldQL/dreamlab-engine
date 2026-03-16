@@ -10,13 +10,13 @@ import color from "npm:picocolors@^1.1.1";
 const DREAMLAB_ROOT = path.join(path.fromFileUrl(import.meta.url), "../..");
 
 const cli = new Command()
-  .name("wql")
+  .name("dreamlab")
   .command(
     "up [path:string]",
     "Start the Dreamlab Engine in a project directory. Defaults to cwd",
   )
   .action(async (_opts: any, dir = Deno.cwd()) => {
-    intro(color.bgCyan(" wql up "));
+    intro(color.bgCyan(" dreamlab up "));
 
     const exists = await fs.exists(path.join(dir, "project.json"));
     if (!exists) {
@@ -24,10 +24,9 @@ const cli = new Command()
       Deno.exit(1);
     }
 
-    // Create symlink to .worldql-dreamlab-engine if it doesn't exist
-    const homeDir = Deno.env.get("HOME");
-    if (homeDir) {
-      const sourcePath = path.join(homeDir, ".worldql-dreamlab-engine");
+    // Create symlink to dreamlab engine root if it doesn't exist
+    {
+      const sourcePath = Deno.env.get("DREAMLAB_DIR") ?? DREAMLAB_ROOT;
       const targetPath = path.join(dir, ".dreamlab-engine");
 
       const symlinkExists = await fs.exists(targetPath);
