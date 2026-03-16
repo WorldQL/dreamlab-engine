@@ -71,7 +71,7 @@ if (import.meta.main) {
     // console.error(_error);
   }
 
-  intro(color.bgCyan(" WorldQL Setup "));
+  intro(color.bgCyan(" Dreamlab Setup "));
 
   // await task("Initializing Dreamlab environment", async () => {
   //   await Promise.all([initEditorEnv(DREAMLAB_ROOT), initServerEnv(DREAMLAB_ROOT)]);
@@ -81,9 +81,9 @@ if (import.meta.main) {
 
   await Promise.all([initEditorEnv(DREAMLAB_ROOT), initServerEnv(DREAMLAB_ROOT)]);
 
-  log.success("Initialized Dreamlab environment. This is the game engine that powers WorldQL!");
+  log.success("Initialized Dreamlab environment. Installed 'dreamlab' command.");
 
-  outro(`You're good to go!`);
+  outro(`You're good to go! Please open a new terminal window.`);
 
   Deno.exit(0);
 }
