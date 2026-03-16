@@ -47,7 +47,7 @@ if (import.meta.main) {
       const content = await Deno.readTextFile(rcFile);
       using rc = await Deno.open(rcFile, { read: true, append: true });
 
-      if (!content.includes(`alias wql='`)) {
+      if (!content.includes(`alias dreamlab='`)) {
         const writer = rc.writable.getWriter();
         await writer.ready;
 
@@ -56,7 +56,7 @@ if (import.meta.main) {
         await writer.write(encoder.encode(`export DREAMLAB_DIR="${DREAMLAB_ROOT}"\n`));
         await writer.write(
           encoder.encode(
-            `alias wql='${Deno.execPath()} run -A "$DREAMLAB_DIR/scripts/wql.ts"'\n`,
+            `alias dreamlab='${Deno.execPath()} run -A "$DREAMLAB_DIR/scripts/dreamlab.ts"'\n`,
           ),
         );
 
@@ -83,54 +83,7 @@ if (import.meta.main) {
 
   log.success("Initialized Dreamlab environment. This is the game engine that powers WorldQL!");
 
-  // Clone https://github.com/WorldQL/worldql into cwd. Inform the user that it has been cloned with the full path.
-  await task("Cloning WorldQL repository", async () => {
-    const cwd = Deno.cwd();
-    const worldqlPath = path.join(cwd, "worldql");
-
-    // Check if worldql directory already exists
-    if (await fs.exists(worldqlPath)) {
-      return `WorldQL already exists at ${worldqlPath}`;
-    }
-
-    const command = new Deno.Command("git", {
-      args: ["clone", "https://github.com/WorldQL/worldql", "worldql"],
-      cwd,
-    });
-
-    const { code } = await command.output();
-
-    if (code !== 0) {
-      throw new Error("Failed to clone WorldQL repository");
-    }
-
-    return `Cloned WorldQL repository to ${worldqlPath}`;
-  });
-
   outro(`You're good to go!`);
-
-  if (updatedShell) {
-    console.log(
-      color.underline(
-        "To start your project, first run this command to reload your shell configuration:",
-      ),
-    );
-
-    console.log(
-      [
-        updatedShell === "bash" && "source ~/.bashrc",
-        updatedShell === "zsh" && "source ~/.zshrc",
-      ]
-        .filter(cmd => cmd !== false)
-        .at(0),
-    );
-    console.log();
-    console.log(color.underline("Then, to run the openmonsters sample project, run:"));
-    console.log(`cd worldql/environments/openmonsters && wql up`);
-  } else {
-    console.log(color.underline("To run the openmonsters sample project, run:"));
-    console.log(`cd worldql/environments/openmonsters && wql up`);
-  }
 
   Deno.exit(0);
 }
